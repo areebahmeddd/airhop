@@ -1802,6 +1802,8 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "响铃提醒",
   "settings.security.ring_alerts_desc":
     "响铃的总开关。关闭后将拒绝所有响铃，无论你允许了哪些联系人。",
+  "settings.security.background_notice": "后台通知",
+  "settings.security.background_notice_desc": "可静音或隐藏，消息提醒不受影响",
   "settings.security.no_blocked": "没有被屏蔽的节点",
   "settings.security.no_blocked_desc":
     "被屏蔽的节点不能给你发消息，也不会出现在网状网络标签页",
@@ -1896,8 +1898,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop 关闭时停止网状网络？",
   "settings.conn.background_off_body":
     "只有 Airhop 打开时消息才会送达，这台手机也不再为附近的人做中继。那条常驻通知会消失。",
-  "settings.conn.background_notice": "后台通知",
-  "settings.conn.background_notice_desc": "可静音或隐藏，消息提醒不受影响",
   "settings.conn.autostart": "自动启动",
   "settings.conn.autostart_desc": "手机重启后重新启动网状网络",
   "settings.conn.autostart_on_title": "重启后启动 Airhop？",

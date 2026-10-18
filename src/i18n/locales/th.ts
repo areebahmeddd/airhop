@@ -1874,6 +1874,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "การแจ้งเตือนเสียงเรียก",
   "settings.security.ring_alerts_desc":
     "สวิตช์หลักสำหรับเสียงเรียก การปิดจะปฏิเสธเสียงเรียกทั้งหมดทันที ไม่ว่าคุณจะอนุญาตผู้ติดต่อแต่ละรายไว้อย่างไร",
+  "settings.security.background_notice": "การแจ้งเตือนเบื้องหลัง",
+  "settings.security.background_notice_desc":
+    "ปิดเสียงหรือซ่อนไว้ได้ การแจ้งเตือนข้อความยังทำงานอยู่",
   "settings.security.no_blocked": "ไม่มีเพียร์ที่ถูกบล็อก",
   "settings.security.no_blocked_desc":
     "เพียร์ที่ถูกบล็อกส่งข้อความถึงคุณไม่ได้และไม่ปรากฏบนแท็บเมช",
@@ -1971,9 +1974,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "หยุดเมชเมื่อปิด Airhop หรือไม่",
   "settings.conn.background_off_body":
     "ข้อความจะมาถึงเฉพาะตอนที่ Airhop เปิดอยู่ และโทรศัพท์เครื่องนี้จะหยุดส่งต่อให้ผู้คนที่อยู่ใกล้ การแจ้งเตือนค้างจะหายไป",
-  "settings.conn.background_notice": "การแจ้งเตือนเบื้องหลัง",
-  "settings.conn.background_notice_desc":
-    "ปิดเสียงหรือซ่อนไว้ได้ การแจ้งเตือนข้อความยังทำงานอยู่",
   "settings.conn.autostart": "เริ่มโดยอัตโนมัติ",
   "settings.conn.autostart_desc": "เริ่มเมชใหม่หลังโทรศัพท์ของคุณรีสตาร์ท",
   "settings.conn.autostart_on_title": "เริ่ม Airhop หลังรีสตาร์ทหรือไม่",

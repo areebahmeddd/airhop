@@ -1803,6 +1803,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "የደወል ማንቂያዎች",
   "settings.security.ring_alerts_desc":
     "ለደወል ዋና መቀየሪያ። ማጥፋት ለእያንዳንዱ እውቂያ የፈቀድከውን ሳይለይ ሁሉንም ጥሪ በአንድ ጊዜ ውድቅ ያደርጋል።",
+  "settings.security.background_notice": "የጀርባ ማሳወቂያ",
+  "settings.security.background_notice_desc":
+    "ጸጥ አድርግ ወይም ደብቅ። የመልእክት ማንቂያዎች እንደበሩ ይቆያሉ።",
   "settings.security.no_blocked": "የታገደ አቻ የለም",
   "settings.security.no_blocked_desc":
     "የታገዱ አቻዎች መልእክት ሊልኩልህ አይችሉም፤ በሜሽ ትር ላይም አይታዩም",
@@ -1897,9 +1900,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop ሲዘጋ ሜሹ ይቁም?",
   "settings.conn.background_off_body":
     "መልእክቶች የሚደርሱት Airhop ክፍት ሲሆን ብቻ ነው፤ ይህ ስልክ ደግሞ በአቅራቢያ ላሉ ሰዎች ማስተላለፉን ያቆማል። ቀጣዩ ማሳወቂያ ይጠፋል።",
-  "settings.conn.background_notice": "የጀርባ ማሳወቂያ",
-  "settings.conn.background_notice_desc":
-    "ጸጥ አድርግ ወይም ደብቅ። የመልእክት ማንቂያዎች እንደበሩ ይቆያሉ።",
   "settings.conn.autostart": "በራስ-ሰር ጀምር",
   "settings.conn.autostart_desc": "ስልክህ እንደገና ሲጀምር ሜሹን መልሶ ይጀምራል",
   "settings.conn.autostart_on_title": "እንደገና ከተጀመረ በኋላ Airhop ይጀምር?",

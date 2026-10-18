@@ -1925,6 +1925,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "呼び出しアラート",
   "settings.security.ring_alerts_desc":
     "呼び出し機能のマスタースイッチです。オフにすると、個々の連絡先への許可に関わらずすべての呼び出しを拒否します。",
+  "settings.security.background_notice": "バックグラウンド通知",
+  "settings.security.background_notice_desc":
+    "目立たなくしたり非表示にしたりできます。メッセージ通知はそのまま届きます。",
   "settings.security.no_blocked": "ブロックしたピアはいません",
   "settings.security.no_blocked_desc":
     "ブロックしたピアはメッセージを送れず、メッシュタブにも表示されません",
@@ -2025,9 +2028,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhopを閉じたらメッシュを止めますか",
   "settings.conn.background_off_body":
     "メッセージはAirhopを開いている間しか届かなくなり、この端末は近くの人のための中継もやめます。常時表示の通知は消えます。",
-  "settings.conn.background_notice": "バックグラウンド通知",
-  "settings.conn.background_notice_desc":
-    "目立たなくしたり非表示にしたりできます。メッセージ通知はそのまま届きます。",
   "settings.conn.autostart": "自動的に起動",
   "settings.conn.autostart_desc": "端末の再起動後にメッシュを再度起動します",
   "settings.conn.autostart_on_title": "再起動後にAirhopを起動しますか？",

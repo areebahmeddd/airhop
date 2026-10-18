@@ -1935,6 +1935,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "ზარის შეტყობინებები",
   "settings.security.ring_alerts_desc":
     "ზარის მთავარი გადამრთველი. გამორთვა მაშინვე უარყოფს ყველა ზარს, მიუხედავად იმისა, რაც შენ დართე ცალკეულ კონტაქტებს.",
+  "settings.security.background_notice": "ფონური შეტყობინება",
+  "settings.security.background_notice_desc":
+    "დაადუმეთ ან დამალეთ. შეტყობინებების გაფრთხილებები ჩართული რჩება.",
   "settings.security.no_blocked": "დაბლოკილი კვანძები არ არის",
   "settings.security.no_blocked_desc":
     "დაბლოკილ კვანძებს არ შეუძლიათ მოგწერონ და მეშის ჩანართზეც არ ჩანან",
@@ -2034,9 +2037,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "შევაჩეროთ მეში Airhop-ის დახურვისას?",
   "settings.conn.background_off_body":
     "შეტყობინებები მხოლოდ Airhop-ის გახსნისას მოვა, და ეს ტელეფონი ახლომდებარეებისთვის გადაცემას შეწყვეტს. მუდმივი შეტყობინება გაქრება.",
-  "settings.conn.background_notice": "ფონური შეტყობინება",
-  "settings.conn.background_notice_desc":
-    "დაადუმეთ ან დამალეთ. შეტყობინებების გაფრთხილებები ჩართული რჩება.",
   "settings.conn.autostart": "ავტომატური გაშვება",
   "settings.conn.autostart_desc":
     "გადატვირთავს ქსელს ტელეფონის გადატვირთვის შემდეგ",

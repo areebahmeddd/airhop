@@ -1911,6 +1911,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "هشدارهای زنگ",
   "settings.security.ring_alerts_desc":
     "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",
+  "settings.security.background_notice": "اعلان پس‌زمینه",
+  "settings.security.background_notice_desc":
+    "بی‌صدا یا پنهانش کن. هشدارهای پیام روشن می‌مانند.",
   "settings.security.no_blocked": "همتای مسدودی نیست",
   "settings.security.no_blocked_desc":
     "همتاهای مسدود نمی‌توانند به شما پیام بدهند و در زبانهٔ مش نمایان نمی‌شوند",
@@ -2010,9 +2013,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "با بسته شدن Airhop مش هم متوقف شود؟",
   "settings.conn.background_off_body":
     "پیام‌ها فقط وقتی می‌رسند که Airhop باز باشد، و این گوشی بازپخش برای اطرافیان را متوقف می‌کند. اعلان پایدار از میان می‌رود.",
-  "settings.conn.background_notice": "اعلان پس‌زمینه",
-  "settings.conn.background_notice_desc":
-    "بی‌صدا یا پنهانش کن. هشدارهای پیام روشن می‌مانند.",
   "settings.conn.autostart": "شروع خودکار",
   "settings.conn.autostart_desc":
     "شبکه را پس از راه‌اندازی مجدد گوشی از نو شروع می‌کند",

@@ -1908,6 +1908,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "گھنٹی الرٹس",
   "settings.security.ring_alerts_desc":
     "گھنٹی کے لیے مرکزی سوئچ۔ بند کرنے سے ہر گھنٹی فوراً مسترد ہو جاتی ہے، چاہے آپ نے انفرادی رابطوں کو جو بھی اجازت دی ہو۔",
+  "settings.security.background_notice": "پس منظر کی اطلاع",
+  "settings.security.background_notice_desc":
+    "اسے خاموش کریں یا چھپائیں۔ پیغام کی اطلاعات چالو رہیں گی۔",
   "settings.security.no_blocked": "کوئی مسدود پیئر نہیں",
   "settings.security.no_blocked_desc":
     "مسدود پیئرز آپ کو پیغام نہیں بھیج سکتے اور نہ ہی میش ٹیب میں نظر آتے ہیں",
@@ -2005,9 +2008,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop بند ہونے پر میش روک دیں؟",
   "settings.conn.background_off_body":
     "پیغام صرف تبھی پہنچیں گے جب Airhop کھلا ہو، اور یہ فون قریبی لوگوں کے لیے پہنچانا بند کر دے گا۔ جاری اطلاع ختم ہو جائے گی۔",
-  "settings.conn.background_notice": "پس منظر کی اطلاع",
-  "settings.conn.background_notice_desc":
-    "اسے خاموش کریں یا چھپائیں۔ پیغام کی اطلاعات چالو رہیں گی۔",
   "settings.conn.autostart": "خودکار آغاز",
   "settings.conn.autostart_desc":
     "آپ کے فون کے دوبارہ شروع ہونے کے بعد میش کو دوبارہ شروع کرتا ہے",

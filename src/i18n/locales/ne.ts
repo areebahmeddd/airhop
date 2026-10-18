@@ -1900,6 +1900,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "घण्टी अलर्टहरू",
   "settings.security.ring_alerts_desc":
     "घण्टीका लागि मुख्य स्विच। बन्द गर्दा तपाईंले व्यक्तिगत सम्पर्कहरूलाई जे अनुमति दिनुभएको भए पनि हरेक घण्टी तुरुन्तै अस्वीकार हुन्छ।",
+  "settings.security.background_notice": "पृष्ठभूमि सूचना",
+  "settings.security.background_notice_desc":
+    "यसलाई शान्त पार्नुहोस् वा लुकाउनुहोस्। सन्देश सूचनाहरू चालु रहन्छन्।",
   "settings.security.no_blocked": "कुनै पियर रोकिएको छैन",
   "settings.security.no_blocked_desc":
     "रोकिएका पियरले तपाईंलाई सन्देश पठाउन सक्दैनन् न मेश ट्याबमा देखिन्छन्",
@@ -1998,9 +2001,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop बन्द हुँदा मेश रोक्ने?",
   "settings.conn.background_off_body":
     "सन्देश Airhop खुला हुँदा मात्र आउनेछन्, र यो फोनले नजिकका मानिसका लागि पुर्‍याउन छाड्नेछ। निरन्तर सूचना हराउनेछ।",
-  "settings.conn.background_notice": "पृष्ठभूमि सूचना",
-  "settings.conn.background_notice_desc":
-    "यसलाई शान्त पार्नुहोस् वा लुकाउनुहोस्। सन्देश सूचनाहरू चालु रहन्छन्।",
   "settings.conn.autostart": "स्वतः सुरु गर्नुहोस्",
   "settings.conn.autostart_desc":
     "तपाईंको फोन रिस्टार्ट भएपछि मेशलाई फेरि सुरु गर्छ",

@@ -1943,6 +1943,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Peringatan bel",
   "settings.security.ring_alerts_desc":
     "Saklar utama untuk fitur Bel. Nonaktifkan untuk menolak semua bel sekaligus, apa pun izin yang telah kamu berikan ke masing-masing kontak.",
+  "settings.security.background_notice": "Notifikasi latar belakang",
+  "settings.security.background_notice_desc":
+    "Senyapkan atau sembunyikan. Peringatan pesan tetap aktif.",
   "settings.security.no_blocked": "Tidak ada rekan yang diblokir",
   "settings.security.no_blocked_desc":
     "Rekan yang diblokir tidak bisa mengirimimu pesan atau muncul di tab Mesh",
@@ -2044,9 +2047,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Hentikan mesh saat Airhop tertutup?",
   "settings.conn.background_off_body":
     "Pesan hanya akan tiba selagi Airhop terbuka, dan ponsel ini berhenti meneruskan untuk orang di dekat sini. Notifikasi berjalannya hilang.",
-  "settings.conn.background_notice": "Notifikasi latar belakang",
-  "settings.conn.background_notice_desc":
-    "Senyapkan atau sembunyikan. Peringatan pesan tetap aktif.",
   "settings.conn.autostart": "Mulai otomatis",
   "settings.conn.autostart_desc":
     "Mulai ulang mesh setelah ponselmu dinyalakan ulang",

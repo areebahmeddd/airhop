@@ -1987,6 +1987,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Mga alerto ng tawag",
   "settings.security.ring_alerts_desc":
     "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",
+  "settings.security.background_notice": "Notification sa background",
+  "settings.security.background_notice_desc":
+    "Patahimikin o itago ito. Mananatiling bukas ang mga alerto sa mensahe.",
   "settings.security.no_blocked": "Walang naka-block na peer",
   "settings.security.no_blocked_desc":
     "Hindi ka mame-mensahe ng mga naka-block na peer at hindi sila lilitaw sa tab na Mesh",
@@ -2089,9 +2092,6 @@ export const strings: Strings = {
     "Itigil ang mesh kapag nagsara ang Airhop?",
   "settings.conn.background_off_body":
     "Darating lang ang mga mensahe habang bukas ang Airhop, at titigil ang teleponong ito sa pagpapasa para sa mga taong malapit. Mawawala ang patuloy na abiso.",
-  "settings.conn.background_notice": "Notification sa background",
-  "settings.conn.background_notice_desc":
-    "Patahimikin o itago ito. Mananatiling bukas ang mga alerto sa mensahe.",
   "settings.conn.autostart": "Awtomatikong simulan",
   "settings.conn.autostart_desc":
     "Simulan muli ang mesh pagkatapos mag-restart ang iyong telepono",

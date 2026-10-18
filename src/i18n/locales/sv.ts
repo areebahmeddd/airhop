@@ -1922,6 +1922,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Ringsignaler",
   "settings.security.ring_alerts_desc":
     "Huvudbrytare för Ring. Avstängd avvisar alla ringningar direkt, oavsett vad du har beviljat enskilda kontakter.",
+  "settings.security.background_notice": "Bakgrundsavisering",
+  "settings.security.background_notice_desc":
+    "Tysta eller dölj den. Meddelandeaviseringar stannar på.",
   "settings.security.no_blocked": "Inga blockerade peers",
   "settings.security.no_blocked_desc":
     "Blockerade peers kan inte skriva till dig och syns inte under Mesh",
@@ -2021,9 +2024,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Stoppa meshen när Airhop stängs?",
   "settings.conn.background_off_body":
     "Meddelanden kommer bara fram medan Airhop är öppet, och telefonen slutar skicka vidare åt folk i närheten. Den pågående aviseringen försvinner.",
-  "settings.conn.background_notice": "Bakgrundsavisering",
-  "settings.conn.background_notice_desc":
-    "Tysta eller dölj den. Meddelandeaviseringar stannar på.",
   "settings.conn.autostart": "Starta automatiskt",
   "settings.conn.autostart_desc":
     "Startar om meshen efter att din telefon startat om",

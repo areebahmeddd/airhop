@@ -1950,6 +1950,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Makluman dering",
   "settings.security.ring_alerts_desc":
     "Suis induk untuk Dering. Mematikannya menolak semua dering serta-merta, tanpa mengira kebenaran yang anda beri kepada kenalan individu.",
+  "settings.security.background_notice": "Pemberitahuan latar belakang",
+  "settings.security.background_notice_desc":
+    "Senyapkan atau sembunyikan. Amaran mesej kekal aktif.",
   "settings.security.no_blocked": "Tiada rakan disekat",
   "settings.security.no_blocked_desc":
     "Rakan yang disekat tidak boleh menghantar mesej kepada anda atau muncul dalam tab Mesh",
@@ -2051,9 +2054,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Hentikan mesh apabila Airhop ditutup?",
   "settings.conn.background_off_body":
     "Mesej hanya akan sampai semasa Airhop dibuka, dan telefon ini berhenti menyampaikan untuk orang berdekatan. Pemberitahuan berterusan itu hilang.",
-  "settings.conn.background_notice": "Pemberitahuan latar belakang",
-  "settings.conn.background_notice_desc":
-    "Senyapkan atau sembunyikan. Amaran mesej kekal aktif.",
   "settings.conn.autostart": "Mula secara automatik",
   "settings.conn.autostart_desc":
     "Mulakan semula mesh selepas telefon anda but semula",

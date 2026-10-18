@@ -1948,6 +1948,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Belmeldingen",
   "settings.security.ring_alerts_desc":
     "Hoofdschakelaar voor Bellen. Uitzetten weigert direct elke oproep, ongeacht wat je afzonderlijke contacten hebt toegestaan.",
+  "settings.security.background_notice": "Achtergrondmelding",
+  "settings.security.background_notice_desc":
+    "Maak hem stil of verberg hem. Berichtmeldingen blijven aan.",
   "settings.security.no_blocked": "Geen geblokkeerde peers",
   "settings.security.no_blocked_desc":
     "Geblokkeerde peers kunnen je niet schrijven en verschijnen niet op het Mesh-tabblad",
@@ -2048,9 +2051,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Mesh stoppen als Airhop dichtgaat?",
   "settings.conn.background_off_body":
     "Berichten komen dan alleen aan terwijl Airhop open is, en deze telefoon geeft niets meer door voor mensen in de buurt. De blijvende melding verdwijnt.",
-  "settings.conn.background_notice": "Achtergrondmelding",
-  "settings.conn.background_notice_desc":
-    "Maak hem stil of verberg hem. Berichtmeldingen blijven aan.",
   "settings.conn.autostart": "Automatisch starten",
   "settings.conn.autostart_desc":
     "Start de mesh opnieuw op nadat je telefoon herstart",

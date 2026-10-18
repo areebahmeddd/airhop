@@ -1993,6 +1993,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "அழைப்பு எச்சரிக்கைகள்",
   "settings.security.ring_alerts_desc":
     "அழைப்புக்கான முதன்மை நிலைமாற்றி. அணைத்தால், தனிப்பட்ட தொடர்புகளுக்கு நீங்கள் வழங்கியதைப் பொருட்படுத்தாமல் ஒவ்வொரு அழைப்பையும் உடனடியாக நிராகரிக்கும்.",
+  "settings.security.background_notice": "பின்னணி அறிவிப்பு",
+  "settings.security.background_notice_desc":
+    "இதை அமைதியாக்கலாம் அல்லது மறைக்கலாம். செய்தி அறிவிப்புகள் தொடர்ந்து வரும்.",
   "settings.security.no_blocked": "தடுக்கப்பட்ட பியர்கள் இல்லை",
   "settings.security.no_blocked_desc":
     "தடுக்கப்பட்ட பியர்கள் உங்களுக்குச் செய்தி அனுப்பவோ மெஷ் தாவலில் தோன்றவோ முடியாது",
@@ -2100,9 +2103,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop மூடும்போது மெஷை நிறுத்தவா?",
   "settings.conn.background_off_body":
     "Airhop திறந்திருக்கும்போது மட்டுமே செய்திகள் வரும், அருகிலுள்ளவர்களுக்காக இந்தத் தொலைபேசி கடத்துவதை நிறுத்தும். தொடர் அறிவிப்பு மறையும்.",
-  "settings.conn.background_notice": "பின்னணி அறிவிப்பு",
-  "settings.conn.background_notice_desc":
-    "இதை அமைதியாக்கலாம் அல்லது மறைக்கலாம். செய்தி அறிவிப்புகள் தொடர்ந்து வரும்.",
   "settings.conn.autostart": "தானாக தொடங்கு",
   "settings.conn.autostart_desc":
     "உங்கள் தொலைபேசி மறுதொடக்கம் செய்த பிறகு மெஷை மீண்டும் தொடங்குகிறது",

@@ -1965,6 +1965,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Avvisi di squillo",
   "settings.security.ring_alerts_desc":
     "Interruttore principale degli squilli. Disattivarlo rifiuta ogni squillo all’istante, indipendentemente da ciò che hai concesso ai singoli contatti.",
+  "settings.security.background_notice": "Notifica in background",
+  "settings.security.background_notice_desc":
+    "Silenziala o nascondila. Gli avvisi dei messaggi restano attivi.",
   "settings.security.no_blocked": "Nessun peer bloccato",
   "settings.security.no_blocked_desc":
     "I peer bloccati non possono scriverti e non compaiono nella scheda Mesh",
@@ -2069,9 +2072,6 @@ export const strings: Strings = {
     "Fermare la mesh alla chiusura di Airhop?",
   "settings.conn.background_off_body":
     "I messaggi arriveranno solo con Airhop aperto, e questo telefono smetterà di inoltrare per chi è nelle vicinanze. La notifica permanente sparisce.",
-  "settings.conn.background_notice": "Notifica in background",
-  "settings.conn.background_notice_desc":
-    "Silenziala o nascondila. Gli avvisi dei messaggi restano attivi.",
   "settings.conn.autostart": "Avvio automatico",
   "settings.conn.autostart_desc":
     "Riavvia la rete mesh dopo il riavvio del telefono",

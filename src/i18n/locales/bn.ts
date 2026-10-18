@@ -1903,6 +1903,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "রিং সতর্কতা",
   "settings.security.ring_alerts_desc":
     "রিং-এর প্রধান সুইচ। বন্ধ করলে আপনি পৃথক পরিচিতিদের যা অনুমতি দিয়েছেন তা নির্বিশেষে প্রতিটি রিং সঙ্গে সঙ্গে প্রত্যাখ্যান করে।",
+  "settings.security.background_notice": "পেছনের বিজ্ঞপ্তি",
+  "settings.security.background_notice_desc":
+    "নীরব করুন বা লুকান। বার্তার সতর্কতা চালু থাকবে।",
   "settings.security.no_blocked": "কোনো পিয়ার ব্লক করা নেই",
   "settings.security.no_blocked_desc":
     "ব্লক করা পিয়ার আপনাকে বার্তা পাঠাতে পারে না বা মেশ ট্যাবে দেখা যায় না",
@@ -2001,9 +2004,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop বন্ধ হলে মেশ থামাবেন?",
   "settings.conn.background_off_body":
     "কেবল Airhop খোলা থাকলেই বার্তা পৌঁছাবে, আর এই ফোন কাছের লোকদের জন্য আর পার করবে না। স্থায়ী বিজ্ঞপ্তিটি চলে যাবে।",
-  "settings.conn.background_notice": "পেছনের বিজ্ঞপ্তি",
-  "settings.conn.background_notice_desc":
-    "নীরব করুন বা লুকান। বার্তার সতর্কতা চালু থাকবে।",
   "settings.conn.autostart": "স্বয়ংক্রিয়ভাবে শুরু করুন",
   "settings.conn.autostart_desc":
     "আপনার ফোন রিস্টার্ট হওয়ার পর মেশ আবার চালু করে",

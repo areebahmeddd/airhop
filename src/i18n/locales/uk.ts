@@ -1931,6 +1931,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Сповіщення про дзвінок",
   "settings.security.ring_alerts_desc":
     "Головний перемикач дзвінка. Вимкнення миттєво відхиляє кожен дзвінок, незалежно від того, що ви дозволили окремим контактам.",
+  "settings.security.background_notice": "Фонове сповіщення",
+  "settings.security.background_notice_desc":
+    "Вимкніть звук або приховайте його. Сповіщення про повідомлення залишаться.",
   "settings.security.no_blocked": "Немає заблокованих пірів",
   "settings.security.no_blocked_desc":
     "Заблоковані піри не можуть вам писати й не з’являються на вкладці Mesh",
@@ -2032,9 +2035,6 @@ export const strings: Strings = {
     "Зупиняти mesh, коли Airhop закривається?",
   "settings.conn.background_off_body":
     "Повідомлення надходитимуть, лише поки Airhop відкрито, а цей телефон перестане передавати для людей поблизу. Постійне сповіщення зникне.",
-  "settings.conn.background_notice": "Фонове сповіщення",
-  "settings.conn.background_notice_desc":
-    "Вимкніть звук або приховайте його. Сповіщення про повідомлення залишаться.",
   "settings.conn.autostart": "Запускати автоматично",
   "settings.conn.autostart_desc":
     "Перезапускає mesh після перезавантаження телефону",

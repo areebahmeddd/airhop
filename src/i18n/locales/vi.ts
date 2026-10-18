@@ -1924,6 +1924,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Cảnh báo chuông",
   "settings.security.ring_alerts_desc":
     "Công tắc chính cho tính năng Chuông. Tắt sẽ từ chối mọi cuộc gọi chuông ngay lập tức, bất kể bạn đã cấp quyền gì cho từng liên hệ.",
+  "settings.security.background_notice": "Thông báo chạy nền",
+  "settings.security.background_notice_desc":
+    "Tắt tiếng hoặc ẩn đi. Thông báo tin nhắn vẫn bật.",
   "settings.security.no_blocked": "Không có nút mạng nào bị chặn",
   "settings.security.no_blocked_desc":
     "Nút mạng bị chặn không nhắn tin cho bạn được và không hiện trên thẻ Mạng lưới",
@@ -2027,9 +2030,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Dừng mạng lưới khi Airhop đóng?",
   "settings.conn.background_off_body":
     "Tin nhắn chỉ tới nơi khi Airhop đang mở, và chiếc điện thoại này ngừng chuyển tiếp giúp những người ở gần. Thông báo thường trực sẽ biến mất.",
-  "settings.conn.background_notice": "Thông báo chạy nền",
-  "settings.conn.background_notice_desc":
-    "Tắt tiếng hoặc ẩn đi. Thông báo tin nhắn vẫn bật.",
   "settings.conn.autostart": "Tự động khởi động",
   "settings.conn.autostart_desc":
     "Khởi động lại mạng lưới sau khi điện thoại của bạn khởi động lại",

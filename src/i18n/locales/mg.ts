@@ -1988,6 +1988,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Fampandrenesana antso",
   "settings.security.ring_alerts_desc":
     "Bokotra lehibe ho an'ny Antso. Ny famonoana azy dia mandà ny antso rehetra avy hatrany, na inona na inona nomenao alalana ho an'ny olona tsirairay.",
+  "settings.security.background_notice": "Fampandrenesana any aoriana",
+  "settings.security.background_notice_desc":
+    "Ampangino na afeno. Mbola mandeha ny fampandrenesana hafatra.",
   "settings.security.no_blocked": "Tsy misy teboka voasakana",
   "settings.security.no_blocked_desc":
     "Tsy afaka manoratra aminao ny teboka voasakana ary tsy miseho amin'ny takelaka Harato",
@@ -2095,9 +2098,6 @@ export const strings: Strings = {
     "Ajanona ny harato rehefa mihidy ny Airhop?",
   "settings.conn.background_off_body":
     "Rehefa misokatra ny Airhop ihany no ahatongavan'ny hafatra, ary mitsahatra tsy mampita ho an'ny olona akaiky ity findy ity. Ho lasa ny fampandrenesana maharitra.",
-  "settings.conn.background_notice": "Fampandrenesana any aoriana",
-  "settings.conn.background_notice_desc":
-    "Ampangino na afeno. Mbola mandeha ny fampandrenesana hafatra.",
   "settings.conn.autostart": "Manomboka ho azy",
   "settings.conn.autostart_desc":
     "Manomboka indray ny tambajotra rehefa mi-restart ny findainao",

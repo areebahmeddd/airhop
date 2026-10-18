@@ -1972,6 +1972,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Alertes de sonnerie",
   "settings.security.ring_alerts_desc":
     "Interrupteur principal pour la sonnerie. Le désactiver refuse instantanément toute sonnerie, quelle que soit l’autorisation accordée à chaque contact.",
+  "settings.security.background_notice": "Notification en arrière-plan",
+  "settings.security.background_notice_desc":
+    "La rendre discrète ou la masquer. Les alertes de messages restent actives.",
   "settings.security.no_blocked": "Aucun pair bloqué",
   "settings.security.no_blocked_desc":
     "Les pairs bloqués ne peuvent pas t’écrire et n’apparaissent pas dans l’onglet Maillage",
@@ -2075,9 +2078,6 @@ export const strings: Strings = {
     "Arrêter le maillage à la fermeture d’Airhop ?",
   "settings.conn.background_off_body":
     "Les messages n’arriveront que quand Airhop est ouvert, et ce téléphone cessera de relayer pour les gens à proximité. La notification permanente disparaît.",
-  "settings.conn.background_notice": "Notification en arrière-plan",
-  "settings.conn.background_notice_desc":
-    "La rendre discrète ou la masquer. Les alertes de messages restent actives.",
   "settings.conn.autostart": "Démarrer automatiquement",
   "settings.conn.autostart_desc":
     "Redémarre le maillage après le redémarrage de ton téléphone",

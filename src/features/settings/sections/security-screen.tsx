@@ -8,6 +8,7 @@
 import { t, useT, type TranslationKey } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { disableAppLock, enableAppLock } from "@services/app-lock";
+import { openBackgroundNoticeSettings } from "@services/background-notice";
 import { dismissPreviewNotifications } from "@services/notification-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
@@ -21,7 +22,7 @@ import UpperText from "@ui/components/upper-text";
 import { HIT_SLOP, useThemeColors } from "@ui/theme";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import React, { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import {
   GroupDivider,
   SettingLinkRow,
@@ -55,6 +56,9 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
     (s) => s.hideNotificationPreviews,
   );
   const ringAlertsEnabled = useSettingsStore((s) => s.ringAlertsEnabled);
+  const backgroundMeshEnabled = useSettingsStore(
+    (s) => s.backgroundMeshEnabled,
+  );
   const appLockEnabled = useSettingsStore((s) => s.appLockEnabled);
   const appLockDelaySeconds = useSettingsStore((s) => s.appLockDelaySeconds);
   const [showDelaySheet, setShowDelaySheet] = useState(false);
@@ -197,6 +201,20 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
                 />
               }
             />
+            {/* Android's background notice exists only while background
+                running is on. */}
+            {Platform.OS === "android" && backgroundMeshEnabled && (
+              <>
+                <GroupDivider />
+                <SettingLinkRow
+                  icon="bell-off"
+                  label={T("settings.security.background_notice")}
+                  description={T("settings.security.background_notice_desc")}
+                  onPress={() => void openBackgroundNoticeSettings()}
+                  external
+                />
+              </>
+            )}
           </View>
         </View>
 

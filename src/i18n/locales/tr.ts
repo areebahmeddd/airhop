@@ -1925,6 +1925,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Çağrı uyarıları",
   "settings.security.ring_alerts_desc":
     "Çağrı için ana anahtar. Kapatmak, tek tek kişilere ne izin vermiş olursan ol, her çağrıyı anında reddeder.",
+  "settings.security.background_notice": "Arka plan bildirimi",
+  "settings.security.background_notice_desc":
+    "Sessize al ya da gizle. Mesaj uyarıları açık kalır.",
   "settings.security.no_blocked": "Engellenen eş yok",
   "settings.security.no_blocked_desc":
     "Engellenen eşler sana yazamaz ve Mesh sekmesinde görünemez",
@@ -2024,9 +2027,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop kapanınca mesh dursun mu?",
   "settings.conn.background_off_body":
     "Mesajlar yalnızca Airhop açıkken ulaşır ve bu telefon yakındakiler için aktarmayı bırakır. Kalıcı bildirim kaybolur.",
-  "settings.conn.background_notice": "Arka plan bildirimi",
-  "settings.conn.background_notice_desc":
-    "Sessize al ya da gizle. Mesaj uyarıları açık kalır.",
   "settings.conn.autostart": "Otomatik başlat",
   "settings.conn.autostart_desc":
     "Telefonun yeniden başladığında ağı yeniden başlatır",

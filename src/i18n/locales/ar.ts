@@ -1861,6 +1861,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "تنبيهات الرنين",
   "settings.security.ring_alerts_desc":
     "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",
+  "settings.security.background_notice": "إشعار الخلفية",
+  "settings.security.background_notice_desc":
+    "اجعله صامتًا أو أخفِه. تبقى تنبيهات الرسائل مفعّلة.",
   "settings.security.no_blocked": "لا نظراء محظورون",
   "settings.security.no_blocked_desc":
     "النظراء المحظورون لا يستطيعون مراسلتك ولا يظهرون في تبويب الشبكة",
@@ -1958,9 +1961,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "إيقاف الشبكة عند إغلاق Airhop؟",
   "settings.conn.background_off_body":
     "لن تصل الرسائل إلا وAirhop مفتوح، وسيتوقف هذا الهاتف عن التمرير لمن حوله. ويختفي الإشعار المستمر.",
-  "settings.conn.background_notice": "إشعار الخلفية",
-  "settings.conn.background_notice_desc":
-    "اجعله صامتًا أو أخفِه. تبقى تنبيهات الرسائل مفعّلة.",
   "settings.conn.autostart": "التشغيل التلقائي",
   "settings.conn.autostart_desc": "يعيد تشغيل الشبكة بعد إعادة تشغيل هاتفك",
   "settings.conn.autostart_on_title": "تشغيل Airhop بعد إعادة التشغيل؟",

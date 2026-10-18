@@ -1959,6 +1959,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Alertas de toque",
   "settings.security.ring_alerts_desc":
     "Interruptor principal do Toque. Desativar recusa todos os toques de imediato, seja qual for a permissão que deste a cada contacto.",
+  "settings.security.background_notice": "Notificação em segundo plano",
+  "settings.security.background_notice_desc":
+    "Silencia-a ou oculta-a. Os alertas de mensagens mantêm-se ativos.",
   "settings.security.no_blocked": "Nenhum par bloqueado",
   "settings.security.no_blocked_desc":
     "Os pares bloqueados não te podem escrever nem aparecem no separador Malha",
@@ -2063,9 +2066,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Parar a malha quando o Airhop fecha?",
   "settings.conn.background_off_body":
     "As mensagens só chegam com o Airhop aberto, e este telemóvel deixa de repassar para quem está por perto. A notificação permanente desaparece.",
-  "settings.conn.background_notice": "Notificação em segundo plano",
-  "settings.conn.background_notice_desc":
-    "Silencia-a ou oculta-a. Os alertas de mensagens mantêm-se ativos.",
   "settings.conn.autostart": "Iniciar automaticamente",
   "settings.conn.autostart_desc":
     "Reinicia a malha depois de o teu telemóvel reiniciar",

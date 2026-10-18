@@ -1957,6 +1957,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Arifa za kengele",
   "settings.security.ring_alerts_desc":
     "Kitufe kikuu cha Kengele. Kuzima kunakataa kila kengele mara moja, bila kujali ulichowaruhusu watu binafsi.",
+  "settings.security.background_notice": "Arifa ya chinichini",
+  "settings.security.background_notice_desc":
+    "Inyamazishe au ifiche. Arifa za ujumbe zinaendelea.",
   "settings.security.no_blocked": "Hakuna peer aliyezuiwa",
   "settings.security.no_blocked_desc":
     "Peer waliozuiwa hawawezi kukutumia ujumbe wala kuonekana kwenye kichupo cha Mesh",
@@ -2058,9 +2061,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Usimamishe mesh Airhop inapofungwa?",
   "settings.conn.background_off_body":
     "Jumbe zitafika tu wakati Airhop imefunguliwa, na simu hii itaacha kupitisha kwa ajili ya watu walio karibu. Arifa inayoendelea itatoweka.",
-  "settings.conn.background_notice": "Arifa ya chinichini",
-  "settings.conn.background_notice_desc":
-    "Inyamazishe au ifiche. Arifa za ujumbe zinaendelea.",
   "settings.conn.autostart": "Anza kiotomatiki",
   "settings.conn.autostart_desc":
     "Anzisha upya mtandao baada ya simu yako kuwasha upya",

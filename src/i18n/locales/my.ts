@@ -1973,6 +1973,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "ဖုန်းမြည်သံ သတိပေးချက်များ",
   "settings.security.ring_alerts_desc":
     "ဖုန်းမြည်ခြင်းအတွက် အဓိက ခလုတ်။ ပိတ်ထားခြင်းသည် တစ်ဦးချင်း အဆက်အသွယ်များအား ခွင့်ပြုထားသည်ဖြစ်စေ ဖုန်းမြည်သံအားလုံးကို ချက်ချင်း ငြင်းပယ်သည်။",
+  "settings.security.background_notice": "နောက်ခံ အသိပေးချက်",
+  "settings.security.background_notice_desc":
+    "အသံပိတ်ပါ သို့မဟုတ် ဖျောက်ထားပါ။ မက်ဆေ့ချ် သတိပေးချက်များ ဆက်ဖွင့်ထားမည်။",
   "settings.security.no_blocked": "ပိတ်ဆို့ထားသော လုပ်ဖော်ကိုင်ဖက် မရှိပါ",
   "settings.security.no_blocked_desc":
     "ပိတ်ဆို့ထားသော လုပ်ဖော်ကိုင်ဖက်များသည် သင့်ကို မက်ဆေ့ဂျ်မပို့နိုင်သလို မက်ရှ်တဘ်တွင်လည်း မပေါ်ပါ",
@@ -2078,9 +2081,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Airhop ပိတ်လျှင် မက်ရှ်ကိုပါ ရပ်မလား?",
   "settings.conn.background_off_body":
     "မက်ဆေ့ဂျ်များသည် Airhop ဖွင့်ထားချိန်တွင်သာ ရောက်လာမည်ဖြစ်ပြီး ဤဖုန်းသည် အနီးအနားရှိသူများအတွက် ထပ်ဆင့်ပို့ခြင်း ရပ်တန့်ပါမည်။ ဆက်တိုက်ပြသနေသော အကြောင်းကြားချက်လည်း ပျောက်သွားပါမည်။",
-  "settings.conn.background_notice": "နောက်ခံ အသိပေးချက်",
-  "settings.conn.background_notice_desc":
-    "အသံပိတ်ပါ သို့မဟုတ် ဖျောက်ထားပါ။ မက်ဆေ့ချ် သတိပေးချက်များ ဆက်ဖွင့်ထားမည်။",
   "settings.conn.autostart": "အလိုအလျောက် စတင်ရန်",
   "settings.conn.autostart_desc":
     "သင့်ဖုန်း ပြန်လည်စတင်ပြီးနောက် မက်ရှ်ကို ပြန်လည်စတင်ပါ",

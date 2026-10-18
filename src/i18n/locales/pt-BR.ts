@@ -1953,6 +1953,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Alertas de chamada",
   "settings.security.ring_alerts_desc":
     "Interruptor principal da Chamada. Desativar recusa toda chamada instantaneamente, independentemente do que você concedeu a contatos individuais.",
+  "settings.security.background_notice": "Notificação em segundo plano",
+  "settings.security.background_notice_desc":
+    "Silencie ou oculte. Os alertas de mensagens continuam ativos.",
   "settings.security.no_blocked": "Nenhum par bloqueado",
   "settings.security.no_blocked_desc":
     "Pares bloqueados não conseguem escrever para você nem aparecem na aba Malha",
@@ -2054,9 +2057,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "Parar a malha quando o Airhop fechar?",
   "settings.conn.background_off_body":
     "As mensagens só vão chegar com o Airhop aberto, e este celular para de repassar para quem está por perto. A notificação fixa some.",
-  "settings.conn.background_notice": "Notificação em segundo plano",
-  "settings.conn.background_notice_desc":
-    "Silencie ou oculte. Os alertas de mensagens continuam ativos.",
   "settings.conn.autostart": "Iniciar automaticamente",
   "settings.conn.autostart_desc":
     "Reinicia a malha depois que seu celular reinicia",

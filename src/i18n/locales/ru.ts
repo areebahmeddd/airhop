@@ -1936,6 +1936,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Уведомления о звонке",
   "settings.security.ring_alerts_desc":
     "Главный переключатель звонка. Выключение мгновенно отклоняет любой звонок, независимо от того, что вы разрешили отдельным контактам.",
+  "settings.security.background_notice": "Фоновое уведомление",
+  "settings.security.background_notice_desc":
+    "Сделайте его беззвучным или скройте. Оповещения о сообщениях останутся.",
   "settings.security.no_blocked": "Заблокированных узлов нет",
   "settings.security.no_blocked_desc":
     "Заблокированные узлы не могут вам писать и не появляются на вкладке «Сеть»",
@@ -2040,9 +2043,6 @@ export const strings: Strings = {
     "Останавливать сеть при закрытии Airhop?",
   "settings.conn.background_off_body":
     "Сообщения будут приходить, только пока Airhop открыт, и этот телефон перестанет передавать для тех, кто рядом. Постоянное уведомление исчезнет.",
-  "settings.conn.background_notice": "Фоновое уведомление",
-  "settings.conn.background_notice_desc":
-    "Сделайте его беззвучным или скройте. Оповещения о сообщениях останутся.",
   "settings.conn.autostart": "Запускать автоматически",
   "settings.conn.autostart_desc":
     "Перезапускает сеть после перезагрузки телефона",

@@ -1961,6 +1961,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Alertas de llamada",
   "settings.security.ring_alerts_desc":
     "Interruptor principal de Llamada. Desactivarlo rechaza todas las llamadas de inmediato, sin importar lo que hayas concedido a cada contacto.",
+  "settings.security.background_notice": "Notificación en segundo plano",
+  "settings.security.background_notice_desc":
+    "Silénciala u ocúltala. Los avisos de mensajes siguen activos.",
   "settings.security.no_blocked": "No hay pares bloqueados",
   "settings.security.no_blocked_desc":
     "Los pares bloqueados no pueden escribirte ni aparecen en la pestaña Malla",
@@ -2062,9 +2065,6 @@ export const strings: Strings = {
   "settings.conn.background_off_title": "¿Detener la malla al cerrar Airhop?",
   "settings.conn.background_off_body":
     "Los mensajes solo llegarán con Airhop abierto, y este teléfono dejará de retransmitir para quienes estén cerca. La notificación permanente desaparece.",
-  "settings.conn.background_notice": "Notificación en segundo plano",
-  "settings.conn.background_notice_desc":
-    "Silénciala u ocúltala. Los avisos de mensajes siguen activos.",
   "settings.conn.autostart": "Iniciar automáticamente",
   "settings.conn.autostart_desc": "Reinicia la malla al reiniciar tu teléfono",
   "settings.conn.autostart_on_title": "¿Iniciar Airhop tras un reinicio?",

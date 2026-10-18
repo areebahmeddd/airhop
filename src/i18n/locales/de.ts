@@ -1973,6 +1973,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Klingelbenachrichtigungen",
   "settings.security.ring_alerts_desc":
     "Hauptschalter für Klingeln. Aus lehnt jedes Klingeln sofort ab, unabhängig davon, was du einzelnen Kontakten erlaubt hast.",
+  "settings.security.background_notice": "Hintergrund-Benachrichtigung",
+  "settings.security.background_notice_desc":
+    "Stummschalten oder ausblenden. Nachrichtenhinweise bleiben an.",
   "settings.security.no_blocked": "Keine blockierten Peers",
   "settings.security.no_blocked_desc":
     "Blockierte Peers können dir nicht schreiben und erscheinen nicht im Mesh-Tab",
@@ -2077,9 +2080,6 @@ export const strings: Strings = {
     "Das Mesh stoppen, wenn Airhop schließt?",
   "settings.conn.background_off_body":
     "Nachrichten kommen dann nur an, während Airhop offen ist, und dieses Telefon leitet nichts mehr für Leute in der Nähe weiter. Die dauerhafte Mitteilung verschwindet.",
-  "settings.conn.background_notice": "Hintergrund-Benachrichtigung",
-  "settings.conn.background_notice_desc":
-    "Stummschalten oder ausblenden. Nachrichtenhinweise bleiben an.",
   "settings.conn.autostart": "Automatisch starten",
   "settings.conn.autostart_desc":
     "Startet das Mesh neu, wenn dein Telefon neu startet",
