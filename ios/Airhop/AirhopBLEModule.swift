@@ -12,6 +12,7 @@ import CoreBluetooth
 import Foundation
 import OSLog
 import React
+import UIKit
 
 // MARK: - Constants
 
@@ -70,6 +71,12 @@ final class AirhopBLEModule: RCTEventEmitter {
   private static let centralReadyTimeoutSec: TimeInterval = 10
   private var centralAttempts: [String: UInt64] = [:]
   private var nextCentralAttempt: UInt64 = 0
+  // Off screen a dial is never expired: iOS completes a pending connect when
+  // the peer comes back and wakes the app, which is how the mesh reconnects in
+  // a pocket. Dials whose deadline passed meanwhile are cancelled on return to
+  // the foreground, as bitchat-ios's BLERadioController does. Both on `queue`.
+  private var appActive = true
+  private var overdueDials: Set<String> = []
   // linkID -> CBCentral (peripheral role connections from remote centrals)
   private var peripheralLinks: [String: CBCentral] = [:]
 
@@ -137,6 +144,24 @@ final class AirhopBLEModule: RCTEventEmitter {
 
   // MARK: RCTEventEmitter
 
+  override init() {
+    super.init()
+    let center = NotificationCenter.default
+    center.addObserver(
+      self, selector: #selector(appDidBecomeActive),
+      name: UIApplication.didBecomeActiveNotification, object: nil)
+    center.addObserver(
+      self, selector: #selector(appDidEnterBackground),
+      name: UIApplication.didEnterBackgroundNotification, object: nil)
+    // A Bluetooth relaunch builds this module in the background, before either
+    // notification. Read on main, as UIKit requires; later notifications queue
+    // behind it, so the order holds.
+    DispatchQueue.main.async { [weak self] in
+      let active = UIApplication.shared.applicationState == .active
+      self?.queue.async { self?.appActive = active }
+    }
+  }
+
   override static func requiresMainQueueSetup() -> Bool { false }
 
   override func supportedEvents() -> [String]! {
@@ -147,6 +172,31 @@ final class AirhopBLEModule: RCTEventEmitter {
       BLEEvent.rssiUpdated,
       BLEEvent.adapterStateChanged,
     ]
+  }
+
+  // MARK: App state
+
+  @objc private func appDidBecomeActive() {
+    queue.async { [weak self] in
+      guard let self else { return }
+      self.appActive = true
+      // A connect whose didConnect is still queued is left to it.
+      for linkID in self.overdueDials where self.centralLinks[linkID]?.state != .connected {
+        self.expireDial(linkID)
+      }
+      self.overdueDials.removeAll()
+      // A scan without duplicates reports each peer once, so a peer whose dial
+      // was cancelled is found again only by a fresh scan, as in bitchat-ios.
+      if self.actuallyScanning, self.centralManager?.state == .poweredOn {
+        self.centralManager?.stopScan()
+        self.actuallyScanning = false
+        self.applyState()
+      }
+    }
+  }
+
+  @objc private func appDidEnterBackground() {
+    queue.async { [weak self] in self?.appActive = false }
   }
 
   // MARK: Peripheral (advertising)
@@ -749,6 +799,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     centralLinks.removeAll()
     readyCentralLinks.removeAll()
     centralAttempts.removeAll()
+    overdueDials.removeAll()
     for timer in rssiTimers.values { timer.cancel() }
     rssiTimers.removeAll()
   }
@@ -787,14 +838,24 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
       // A woken app can see an overdue dial deadline and its connect at once.
       // didConnect re-arms.
       if dialing && peripheral.state == .connected { return }
-      self.centralAttempts.removeValue(forKey: linkID)
-      AirhopLog.ble.notice("BLE link timed out before ready (central)")
-      self.centralManager?.cancelPeripheralConnection(peripheral)
-      // A cancelled pending connect may never call back.
-      self.centralLinks.removeValue(forKey: linkID)
-      self.rssiTimers[linkID]?.cancel()
-      self.rssiTimers.removeValue(forKey: linkID)
+      if dialing && !self.appActive {
+        self.overdueDials.insert(linkID)
+        return
+      }
+      self.expireDial(linkID)
     }
+  }
+
+  // Frees a link that never became ready, leaving it to rediscovery.
+  private func expireDial(_ linkID: String) {
+    guard let peripheral = centralLinks[linkID], !readyCentralLinks.contains(linkID) else { return }
+    centralAttempts.removeValue(forKey: linkID)
+    AirhopLog.ble.notice("BLE link timed out before ready (central)")
+    centralManager?.cancelPeripheralConnection(peripheral)
+    // A cancelled pending connect may never call back.
+    centralLinks.removeValue(forKey: linkID)
+    rssiTimers[linkID]?.cancel()
+    rssiTimers.removeValue(forKey: linkID)
   }
 
   func centralManager(
@@ -804,6 +865,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     AirhopLog.ble.notice("BLE link up (central)")
     let linkID = centralLinkID(for: peripheral)
     centralLinks[linkID] = peripheral
+    overdueDials.remove(linkID)
     armCentralDeadline(linkID, dialing: false)
     // linkConnected is deliberately NOT emitted here: the characteristic is
     // not discovered yet, so any write JS makes in response would fail. It
@@ -838,6 +900,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     centralLinks.removeValue(forKey: linkID)
     readyCentralLinks.remove(linkID)
     centralAttempts.removeValue(forKey: linkID)
+    overdueDials.remove(linkID)
   }
 
   func centralManager(
@@ -850,6 +913,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     centralLinks.removeValue(forKey: linkID)
     readyCentralLinks.remove(linkID)
     centralAttempts.removeValue(forKey: linkID)
+    overdueDials.remove(linkID)
     rssiTimers[linkID]?.cancel()
     rssiTimers.removeValue(forKey: linkID)
     sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
