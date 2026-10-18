@@ -1697,6 +1697,12 @@ design exists to prevent.
 | Android  | `FOREGROUND_SERVICE_CONNECTED_DEVICE`               | Required for that service on Android 14+           |
 | Android  | `neverForLocation` on `BLUETOOTH_SCAN`              | Delivers scan results without a location grant     |
 
+Under the iOS scene life cycle launch options are always nil, so the app
+delegate creates the restorable managers on every launch once Bluetooth is
+authorized, and `willRestoreState` marks a Bluetooth relaunch. iOS may relaunch
+without a scene, so that signal starts React Native in a view no window holds
+yet, which the scene adopts when the person opens the app.
+
 React Native pauses JS timers on Android once no Activity is resumed, unless
 a headless JS task is running. The mesh is timer-driven (announces, relay
 jitter, gossip sync, the throttled chat write, Nostr's inbound queue), so

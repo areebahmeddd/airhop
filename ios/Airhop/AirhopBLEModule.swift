@@ -160,8 +160,8 @@ final class AirhopBLEModule: RCTEventEmitter {
   // error, and abandoned the old one mid-connection.
   private func ensureCentralManager() -> CBCentralManager {
     if let existing = centralManager { return existing }
-    // Adopt the manager the app delegate built on a restoration launch
-    // rather than constructing a second against the same restore identifier.
+    // Adopt the manager the app delegate built at launch rather than
+    // constructing a second against the same restore identifier.
     if let restored = AirhopBLERestoration.shared.takeCentral() {
       restored.delegate = self
       centralManager = restored
@@ -170,6 +170,13 @@ final class AirhopBLEModule: RCTEventEmitter {
       for peripheral in AirhopBLERestoration.shared.takeRestoredPeripherals() {
         peripheral.delegate = self
         centralLinks[centralLinkID(for: peripheral)] = peripheral
+      }
+      // Its poweredOn went to AirhopBLERestoration. Replayed so restored links
+      // are rediscovered and JS hears the radio; the handler is idempotent if
+      // the real callback is still queued. The peripheral needs no replay: its
+      // poweredOn only resets what a power cycle discards.
+      if restored.state == .poweredOn {
+        centralManagerDidUpdateState(restored)
       }
       return restored
     }
@@ -1119,12 +1126,11 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
 // call from JS, by which point the restoration callback has been delivered to
 // nobody.
 //
-// Constructing them at launch unconditionally is not an option either, since
-// allocating a CBCentralManager raises the iOS Bluetooth prompt and every new
-// user would meet it on the splash screen. So the app delegate calls prepare()
-// only when launchOptions carries a Bluetooth restoration key, which happens
-// only for an app that already had a live session and therefore already has the
-// permission. First run never takes the branch.
+// The scene life cycle leaves launchOptions nil, so nothing at launch says
+// whether this is such a relaunch. The app delegate therefore calls prepare()
+// on every launch once Bluetooth is authorized (never before, since allocating
+// a manager raises the permission prompt), and willRestoreState is the signal:
+// iOS delivers it only to a relaunch that has state to hand back.
 //
 // Everything here runs on AirhopBLEQueue.shared, so the handover needs no
 // locking: prepare() is enqueued from didFinishLaunching and the take* calls
@@ -1136,14 +1142,18 @@ final class AirhopBLERestoration: NSObject {
   private var peripheral: CBPeripheralManager?
   private var restoredPeripherals: [CBPeripheral] = []
   private var restoredCharacteristic: CBMutableCharacteristic?
+  private var onRestore: (@MainActor () -> Void)?
 
   // Deliberately no private init: NSObject is required for the CoreBluetooth
   // delegate protocols, and narrowing an inherited initializer's access is
   // not portable across Swift versions. Nothing else constructs this type.
 
-  // Called from the app delegate, only on a restoration launch.
-  func prepare() {
+  // Called from the app delegate at launch. `onRestore` runs on the main
+  // thread when iOS hands back state, so a relaunch can start what consumes it.
+  // The options match the module's own managers, which these stand in for.
+  func prepare(onRestore: @escaping @MainActor () -> Void) {
     AirhopBLEQueue.shared.async {
+      self.onRestore = onRestore
       if self.central == nil {
         self.central = CBCentralManager(
           delegate: self,
@@ -1165,6 +1175,11 @@ final class AirhopBLERestoration: NSObject {
         )
       }
     }
+  }
+
+  private func notifyRestored() {
+    guard let onRestore else { return }
+    Task { @MainActor in onRestore() }
   }
 
   // Hand ownership to the module and clear it here, so a second module (a dev
@@ -1202,6 +1217,7 @@ extension AirhopBLERestoration: CBCentralManagerDelegate {
     _ central: CBCentralManager,
     willRestoreState dict: [String: Any]
   ) {
+    notifyRestored()
     guard
       let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey]
         as? [CBPeripheral]
@@ -1219,6 +1235,7 @@ extension AirhopBLERestoration: CBPeripheralManagerDelegate {
     _ peripheral: CBPeripheralManager,
     willRestoreState dict: [String: Any]
   ) {
+    notifyRestored()
     guard
       let services = dict[CBPeripheralManagerRestoredStateServicesKey]
         as? [CBMutableService]
