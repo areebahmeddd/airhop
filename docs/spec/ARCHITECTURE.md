@@ -1123,7 +1123,9 @@ Arti, which refuses local addresses, all three would break. Anything else, and
 web traffic while Tor is off, gets the system's own answer, so a proxy the user
 set for their Wi-Fi still applies. The clients React Native builds share one
 connection pool, and a change of route empties it and refuses a request riding
-a connection opened before the change. System services such as the geocoder run
+a connection opened before the change. The same factory drops React
+Native's `AppName/versionName` User-Agent for OkHttp's generic one, so no server
+can tell Airhop's releases apart. System services such as the geocoder run
 in another process and are outside any app proxy, so no place name is looked up
 while the internet is off or Tor is on or wanted, on either platform.
 

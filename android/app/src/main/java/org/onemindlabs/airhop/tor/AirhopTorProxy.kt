@@ -1,4 +1,5 @@
-// Points the app's outbound web traffic at Arti's SOCKS5 proxy, or direct.
+// Points the app's outbound web traffic at Arti's SOCKS5 proxy, or direct, and
+// keeps its User-Agent generic.
 //
 // Two hooks, because not every HTTP client is built from React Native's
 // provider. The factory installed into OkHttpClientProvider covers `fetch`
@@ -102,6 +103,14 @@ object AirhopTorProxy {
         chain.proceed(chain.request())
     }
 
+    // React Native's default User-Agent names the app and its exact version,
+    // which would let a mint, a relay or GitHub tell releases apart, over Tor
+    // too. Removed before OkHttp fills in its generic `okhttp/<version>`. JS
+    // never sets one, so nothing deliberate is lost.
+    internal val genericUserAgent = Interceptor { chain ->
+        chain.proceed(chain.request().newBuilder().removeHeader("User-Agent").build())
+    }
+
     private fun isWeb(scheme: String?): Boolean =
         when (scheme?.lowercase()) {
             "http",
@@ -160,6 +169,7 @@ object AirhopTorProxy {
         builder
             .proxySelector(selector)
             .connectionPool(pool)
+            .addInterceptor(genericUserAgent)
             .addNetworkInterceptor(routeGuard)
             .build()
 

@@ -131,6 +131,7 @@ class AirhopTorProxyTest {
         assertSame(a.connectionPool, b.connectionPool)
         assertSame(AirhopTorProxy.selector, a.proxySelector)
         assertTrue(a.networkInterceptors.contains(AirhopTorProxy.routeGuard))
+        assertTrue(a.interceptors.contains(AirhopTorProxy.genericUserAgent))
     }
 
     // ---- Route guard ----
@@ -150,11 +151,13 @@ class AirhopTorProxyTest {
     private class FakeChain(private val request: Request, private val connection: Connection?) :
         Interceptor.Chain {
         var proceeded = false
+        var sent: Request? = null
 
         override fun request(): Request = request
 
         override fun proceed(request: Request): Response {
             proceeded = true
+            sent = request
             return Response.Builder()
                 .request(request)
                 .protocol(Protocol.HTTP_1_1)
@@ -234,6 +237,21 @@ class AirhopTorProxyTest {
         val chain = FakeChain(request("http://10.0.2.2:8081/status"), dev)
         AirhopTorProxy.routeGuard.intercept(chain)
         assertTrue(chain.proceeded)
+    }
+
+    // ---- User-Agent ----
+
+    @Test
+    fun dropsTheAppNamingUserAgent() {
+        val named =
+            Request.Builder()
+                .url("https://mint.example/")
+                .header("User-Agent", "Airhop/1.0.0")
+                .build()
+        val chain = FakeChain(named, null)
+        AirhopTorProxy.genericUserAgent.intercept(chain)
+        assertEquals(null, chain.sent?.header("User-Agent"))
+        assertEquals("https://mint.example/", chain.sent?.url.toString())
     }
 
     @Test
