@@ -14,11 +14,9 @@ Where the build stands: what exists and how it is verified, what is in flight, a
 
 **Blocked:**
 
-| Item                                                        | Waiting on                                                          |
-| ----------------------------------------------------------- | ------------------------------------------------------------------- |
-| Mark copied recovery phrases and tokens sensitive (Android) | `expo-clipboard` 58, which ships with Expo SDK 58 (still a preview) |
-| Collapse the per-relay Nostr subscriptions into one         | A nostr-tools release carrying #560                                 |
-| Drop the Go dependency raise in the pluggable transports    | An IPtProxy release that carries it                                 |
+| Item                                                | Waiting on                          |
+| --------------------------------------------------- | ----------------------------------- |
+| Collapse the per-relay Nostr subscriptions into one | A nostr-tools release carrying #560 |
 
 **Known gaps, accepted:**
 

@@ -711,7 +711,7 @@ Medium · Fixed (D15). Android builds unsigned with no secrets; a separate job t
 
 #### SUP-4 · Tor transports and toolchain
 
-Medium · Fixed. IPtProxy 5.5.1 carried Snowflake's pion/stun, pion/dtls and x/text versions with Go panic advisories that a malicious Snowflake proxy could reach, and a Go panic ends the whole process, mesh included. The build raises them within the same major version with plain `go get` (stun 3.1.7, dtls 3.1.9, x/text 0.42.0; D16), recorded as `IPTPROXY_GO_RAISES` in `native/arti/TOOLCHAIN.env`; govulncheck went from three reachable to none. Rust 1.98.1 (a vtable miscompilation fix) and rustls 0.23.45. The binaries are rebuilt ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)). Moving to pion/stun v4 is impossible without Snowflake changing its import paths, and a `replace` is ruled out.
+Medium · Fixed. IPtProxy 5.5.1 carried Snowflake's pion/stun, pion/dtls and x/text versions with Go panic advisories that a malicious Snowflake proxy could reach, and a Go panic ends the whole process, mesh included. The build raised them within the same major version with plain `go get` (stun 3.1.7, dtls 3.1.9, x/text 0.42.0; D16), and govulncheck went from three reachable to none. IPtProxy 5.7.0 (Snowflake v2.15.1) requires the fixed versions itself, so the raise and its build step are removed; govulncheck over it finds none reachable. Rust 1.98.1 (a vtable miscompilation fix) and rustls 0.23.45. The binaries are rebuilt ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)). Moving to pion/stun v4 is impossible without Snowflake changing its import paths, and a `replace` is ruled out.
 
 #### SUP-5 · Signing secrets repo-wide; no release Environment gate
 
@@ -813,13 +813,11 @@ Standing decisions: the gitignored release keystore stays where it is; `"private
 
 ## 7. Blockers and dependencies
 
-| Item                    | Waits on                                                                                                  | State (checked 2026-09-27)                               | Then                                                                                              |
-| ----------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| APP-9 and PAY-14(b)     | Expo SDK 58 (`expo-clipboard` 58 adds `android.isSensitive`)                                              | `latest` 57.0.25; `next` 58.0.0-preview.7                | Pass `{ android: { isSensitive: true } }` on the phrase and token copies with the SDK bump        |
-| NET-4 local measure     | nbd-wtf/nostr-tools#560                                                                                   | Open, unmerged; latest release 2.25.2                    | Upgrade and collapse back to one `subscribeMany`; keep the post-verify set only if #560 lacks one |
-| SUP-4 interim raise     | An IPtProxy tag above 5.5.1 and a Snowflake tag above v2.14.1 carrying the fixed pion and x/text versions | IPtProxy 5.5.1 and Snowflake v2.14.1 are the latest tags | Delete `IPTPROXY_GO_RAISES` from `TOOLCHAIN.env` and rebuild                                      |
-| CRY-2 reference vectors | A macOS machine to run bitchat-ios's XCTest                                                               | Optional; Python `noiseprotocol` vectors are committed   | Commit seal vectors produced by bitchat-ios                                                       |
-| Swift changes           | CI's iOS build (Swift is not compiled on the development machine)                                         | Required before merge                                    | Section 9                                                                                         |
+| Item                    | Waits on                                                          | State (checked 2026-09-27)                             | Then                                                                                              |
+| ----------------------- | ----------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| NET-4 local measure     | nbd-wtf/nostr-tools#560                                           | Open, unmerged; latest release 2.25.2                  | Upgrade and collapse back to one `subscribeMany`; keep the post-verify set only if #560 lacks one |
+| CRY-2 reference vectors | A macOS machine to run bitchat-ios's XCTest                       | Optional; Python `noiseprotocol` vectors are committed | Commit seal vectors produced by bitchat-ios                                                       |
+| Swift changes           | CI's iOS build (Swift is not compiled on the development machine) | Required before merge                                  | Section 9                                                                                         |
 
 ## 8. bitchat-ios upstream findings
 
@@ -890,9 +888,7 @@ For the record only, bitchat-android: the 256-fragment cap (permissionlesstech/b
 
 ### Later
 
-- APP-9 with the Expo SDK 58 bump.
 - Collapse the per-relay Nostr subscriptions once a nostr-tools release carries #560.
-- Drop the IPtProxy Go raises once IPtProxy and Snowflake tag.
 - SUP-14 dashboard items: DNSSEC (Cloudflare, then the DS record at Namecheap), a CAA record, NEL off, Bot Fight Mode off. HSTS preload only as an organisation-wide decision.
 - Immutable releases (needs draft-then-publish), and a strict landing `style-src` alongside other landing work.
 - bitchat-ios's 30-day rotation of unconsumed prekeys.

@@ -1596,15 +1596,15 @@ Apple:
 
 The Tor client and its transports, all in `native/arti/TOOLCHAIN.env`:
 
-| Tool        | Version                | Note                                                                                                                                                               |
-| ----------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rust        | `1.98.1`               |                                                                                                                                                                    |
-| Arti client | `0.46.0`               |                                                                                                                                                                    |
-| cbindgen    | `0.29.4`               | Generates `arti.h`                                                                                                                                                 |
-| Go          | `1.26.8`               |                                                                                                                                                                    |
-| IPtProxy    | `5.5.1`                | Release and commit, so a tag cannot move under us. Built with same-major raises of pion/stun, pion/dtls and x/text (`IPTPROXY_GO_RAISES`) until a tag carries them |
-| gomobile    | pinned commit          | Upstream would otherwise resolve `@latest`                                                                                                                         |
-| NDK         | `28.2.13676358` (r28c) | Ahead of the app's: r28 gives the 16 KiB alignment Play requires                                                                                                   |
+| Tool        | Version                | Note                                                             |
+| ----------- | ---------------------- | ---------------------------------------------------------------- |
+| Rust        | `1.98.1`               |                                                                  |
+| Arti client | `0.47.0`               |                                                                  |
+| cbindgen    | `0.29.4`               | Generates `arti.h`                                               |
+| Go          | `1.26.9`               |                                                                  |
+| IPtProxy    | `5.7.0`                | Release and commit, so a tag cannot move under us                |
+| gomobile    | pinned commit          | Upstream would otherwise resolve `@latest`                       |
+| NDK         | `28.2.13676358` (r28c) | Ahead of the app's: r28 gives the 16 KiB alignment Play requires |
 
 One value, several files. Each carries a comment saying so, and a mismatch fails
 a build rather than drifting quietly:
