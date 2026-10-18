@@ -137,6 +137,9 @@ export class NativeAudioCapture implements AudioCaptureBackend {
 // ended is dropped rather than reopening the speaker.
 export class NativeAudioPlayback implements AudioPlaybackBackend {
   private openBurst: string | null = null;
+  // The burst the speaker last refused. Its remaining batches are dropped, not
+  // retried; a later burst asks again.
+  private refusedBurst: string | null = null;
   // Whether audio should be heard at all right now. Asked every batch rather
   // than once per burst, so leaving the thread or backgrounding the app stops
   // the sound where it happens instead of at the end of the burst.
@@ -189,6 +192,7 @@ export class NativeAudioPlayback implements AudioPlaybackBackend {
   ): Promise<void> {
     const native = NativeAirhopVoice;
     if (!native || frames.length === 0) return;
+    if (burstIDHex === this.refusedBurst) return;
 
     // Not being watched: track the burst but make no sound. Audio starting on
     // its own from a screen the user is not on is the fastest way to make a
@@ -221,6 +225,7 @@ export class NativeAudioPlayback implements AudioPlaybackBackend {
       // The speaker is unavailable (a call, a route change). Give up on this
       // burst rather than retrying into a device that is not listening; the
       // finalized voice note still arrives and is playable.
+      this.refusedBurst = burstIDHex;
       this.openBurst = null;
     }
   }
