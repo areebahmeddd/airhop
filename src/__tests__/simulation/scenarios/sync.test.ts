@@ -26,12 +26,14 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
 import {
   fragmentPacket,
   MAX_BLE_FRAME,
 } from "@core/mesh/routing/fragment-manager";
 import { encodeGossipFilterPayload } from "@core/mesh/sync/gossip-sync";
+import { RESPONSE_WINDOW_MS } from "@core/mesh/sync/request-sync-manager";
 import {
   decodePacket,
   encodePacket,
@@ -47,6 +49,7 @@ import {
   encodeMeshPublicPayload,
   MESH_PUBLIC_CHANNEL,
 } from "@core/router/message-router";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { SimDevice } from "../harness/device";
 import { noCrashes } from "../harness/invariants";
 import { RadioFabric } from "../harness/radio-fabric";
@@ -67,25 +70,6 @@ afterEach(() => {
 afterAll(() => {
   jest.useRealTimers();
 });
-
-function base64ToBytes(b64: string): Uint8Array {
-  const bin = globalThis.atob(b64);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let s = "";
-  for (const b of bytes) s += String.fromCharCode(b);
-  return globalThis.btoa(s);
-}
-
-function hex(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
 
 // Everything a given phone puts on the air, decoded. The tap is the only
 // honest place to ask "what actually went out": a device's own state cannot
@@ -115,10 +99,7 @@ function signedPublicMessage(
   messageID: string,
   isRSR = false,
 ): Uint8Array {
-  const senderID = new Uint8Array(8);
-  for (let i = 0; i < 8; i++) {
-    senderID[i] = parseInt(author.peerID.slice(i * 2, i * 2 + 2), 16);
-  }
+  const senderID = hexToBytes(author.peerID);
   const packet: Packet = {
     type: channelPacketType(channel),
     // A sync reply is link-local, so one tagged IS_RSR travels at ttl 0.
@@ -258,7 +239,7 @@ test("S01 catching up after a partition does not re-flood the mesh", async () =>
   const rebroadcast = carolAir.packets.filter(
     (p) =>
       p.type === PacketType.CHANNEL_MSG &&
-      hex(p.senderID) === aliceSenderID &&
+      bytesToHex(p.senderID) === aliceSenderID &&
       !(p.isRSR === true && p.ttl === 0),
   );
   carolAir.stop();
@@ -309,12 +290,10 @@ test("S02 sync requests and their answers never leave the link", async () => {
     syncPackets.every((p) => p.ttl === 0),
     `ttls = [${syncPackets.map((p) => String(p.ttl)).join(",")}]`,
   );
-  // A request carrying someone else's senderID would mean we relayed theirs.
-  const ownID = devices[1].peerID;
-  s.check(
-    "the middle phone never forwarded a neighbour's sync request",
-    syncPackets.every((p) => hex(p.senderID) === ownID),
-  );
+  // Whether a request is relayed is S11's question: a neighbour's own request
+  // travels at ttl 0, which no flood router forwards, so only one injected
+  // with TTL headroom can tell a relay that refuses from one that never had
+  // the chance.
 
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
@@ -338,6 +317,14 @@ test("S03 an old packet is refused even when its signature is perfect", async ()
   }));
   const { radio, devices } = phones(s, ["alice", "bob", "carol", "mallory"]);
   const [alice, , carol, mallory] = devices;
+  let lastAskedMallory: number | null = null;
+  const stopAsks = radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== carol.id || linkID !== `link:${mallory.id}`) return;
+    if (
+      decodePacket(base64ToBytes(dataBase64))?.type === PacketType.REQUEST_SYNC
+    )
+      lastAskedMallory = s.world.now;
+  });
 
   // Everyone meets first, so carol holds alice's signing key. Without that,
   // both messages would be dropped for being unverifiable and the test would
@@ -365,6 +352,11 @@ test("S03 an old packet is refused even when its signature is perfect", async ()
     () => radio.isLinked("carol", "mallory"),
     30_000,
   );
+  // Carol's own requests are what make a reply from mallory exempt from the
+  // window, so the IS_RSR half below means something only while she has none
+  // open toward mallory. Her rounds stop here, and every request she made
+  // since launch is watched, so the premise is checked rather than assumed.
+  silenceSync(carol);
 
   const stale = "the meeting is at four";
   const fresh = "the meeting is at five";
@@ -409,7 +401,16 @@ test("S03 an old packet is refused even when its signature is perfect", async ()
 
   // And the one path that is allowed to carry old packets buys a stranger
   // nothing. IS_RSR is the sender's claim; the pending request is our own
-  // record, and carol never asked mallory for a sync of this.
+  // record, and carol has asked mallory nothing inside the response window.
+  const sinceAsked = (): number =>
+    lastAskedMallory === null ? Infinity : s.world.now - lastAskedMallory;
+  await waitFor(s.world, () => sinceAsked() > RESPONSE_WINDOW_MS, 40_000);
+  stopAsks();
+  s.check(
+    "carol holds no open request toward mallory",
+    sinceAsked() > RESPONSE_WINDOW_MS,
+    `last asked ${String(sinceAsked())}ms ago`,
+  );
   radio.injectTo(
     carol.id,
     mallory.id,
@@ -464,18 +465,19 @@ test("S04 a route planned by another node is followed, not flooded", async () =>
   );
   s.check("bob has two onward neighbours", linked);
 
-  const bobAir = watchAir(radio, bob.id);
+  // Which link each of bob's writes went down, beside what it was.
+  const bobWrites: { linkID: string; packet: Packet }[] = [];
+  const stopBob = radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== bob.id) return;
+    const packet = decodePacket(base64ToBytes(dataBase64));
+    if (packet !== null) bobWrites.push({ linkID, packet });
+  });
 
   // Alice -> [bob] -> carol. The route carries intermediate hops only; carol is
   // in the header, per SOURCE_ROUTING.md section 3.
-  const senderID = new Uint8Array(8);
-  const recipientID = new Uint8Array(8);
-  const hop = new Uint8Array(8);
-  for (let i = 0; i < 8; i++) {
-    senderID[i] = parseInt(alice.peerID.slice(i * 2, i * 2 + 2), 16);
-    recipientID[i] = parseInt(carol.peerID.slice(i * 2, i * 2 + 2), 16);
-    hop[i] = parseInt(bob.peerID.slice(i * 2, i * 2 + 2), 16);
-  }
+  const senderID = hexToBytes(alice.peerID);
+  const recipientID = hexToBytes(carol.peerID);
+  const hop = hexToBytes(bob.peerID);
   const marker = new Uint8Array([0x5e, 0xed, 0x01, 0x02, 0x03, 0x04]);
   const routedPacket: Packet = {
     type: PacketType.NOISE_ENCRYPTED,
@@ -491,14 +493,15 @@ test("S04 a route planned by another node is followed, not flooded", async () =>
   };
   radio.injectTo(bob.id, alice.id, bytesToBase64(encodePacket(routedPacket)));
   await s.world.advance(5_000);
-  bobAir.stop();
+  stopBob();
 
-  const forwarded = bobAir.packets.filter(
-    (p) =>
+  const forwardedWrites = bobWrites.filter(
+    ({ packet: p }) =>
       p.type === PacketType.NOISE_ENCRYPTED &&
       p.payload.length === marker.length &&
       p.payload.every((b, i) => b === marker[i]),
   );
+  const forwarded = forwardedWrites.map((w) => w.packet);
   s.check(
     "bob forwarded the routed packet",
     forwarded.length > 0,
@@ -508,6 +511,12 @@ test("S04 a route planned by another node is followed, not flooded", async () =>
     "bob forwarded it exactly once, not to every neighbour",
     forwarded.length === 1,
     `saw ${String(forwarded.length)} forwards; a flood would be 2 (carol and dave)`,
+  );
+  s.check(
+    "and down carol's link, the hop the route named",
+    forwardedWrites.length === 1 &&
+      forwardedWrites[0].linkID === `link:${carol.id}`,
+    `links=[${forwardedWrites.map((w) => w.linkID).join(",")}]`,
   );
   s.check(
     "the route survived the hop, so the next relay can follow it too",
@@ -794,6 +803,14 @@ test("S09 a bitchat transfer that outlasts the window still completes", async ()
     5_000,
   );
   s.check("the slow transfer is reassembled and shown", arrived);
+  // The control for the last check below: carol does pass alice's live
+  // traffic on to dave, so dave not seeing the replay is carol refusing it.
+  const daveGotIt = await waitForCoarse(
+    s.world,
+    () => dave.texts(channel).includes(text),
+    60_000,
+  );
+  s.check("and dave gets it through carol", daveGotIt);
 
   const air = watchAir(radio, carol.id);
   const staleAt = s.world.wallClock() - 6 * 60_000;
@@ -891,12 +908,8 @@ function syncRequest(opts: {
   signWith?: SimDevice;
   at: number;
 }): string {
-  const senderID = new Uint8Array(8);
-  const recipientID = new Uint8Array(8);
-  for (let i = 0; i < 8; i++) {
-    senderID[i] = parseInt(opts.claimed.peerID.slice(i * 2, i * 2 + 2), 16);
-    recipientID[i] = parseInt(opts.to.peerID.slice(i * 2, i * 2 + 2), 16);
-  }
+  const senderID = hexToBytes(opts.claimed.peerID);
+  const recipientID = hexToBytes(opts.to.peerID);
   const packet: Packet = {
     type: PacketType.REQUEST_SYNC,
     ttl: opts.ttl,
@@ -965,7 +978,7 @@ test("S11 a sync request is answered only when it is the link peer's own", async
     if (linkID === `link:${mallory.id}` && p.isRSR === true) answers++;
     if (
       p.type === PacketType.REQUEST_SYNC &&
-      hex(p.senderID) !== carol.peerID
+      bytesToHex(p.senderID) !== carol.peerID
     ) {
       relayed++;
     }
@@ -1074,7 +1087,8 @@ async function askedNeighbour(s: Scenario): Promise<{
 
 test("S12 a sync reply is taken only inside the window it would be served for", async () => {
   // bitchat-ios serves six hours of public history, so a reply that old is
-  // backfill. One from two days ago is a recording wearing the flag.
+  // backfill. One from just past it is a recording wearing the flag, and the
+  // pair either side of the line is what pins where the line is.
   const s = (scenario = new Scenario({
     id: "S12",
     title: "old IS_RSR replays against the message window",
@@ -1090,13 +1104,13 @@ test("S12 a sync reply is taken only inside the window it would be served for", 
     );
   };
 
-  reply("from two days ago", 2 * 24 * 60 * 60_000);
+  reply("from seven hours ago", 7 * 60 * 60_000);
   reply("from ten minutes ago", 10 * 60_000);
   reply("from five hours ago", 5 * 60 * 60_000);
   await s.world.advance(3_000);
   s.check(
-    "a two-day-old reply is refused",
-    !carol.texts(channel).includes("from two days ago"),
+    "a seven-hour-old reply is refused",
+    !carol.texts(channel).includes("from seven hours ago"),
   );
   s.check(
     "a ten-minute-old reply is backfilled",
@@ -1265,9 +1279,7 @@ test("S15 a flood of forged messages neither crowds out real history nor rides a
       type: PacketType.CHANNEL_MSG,
       ttl: 7,
       flags: Flags.SIGNED,
-      senderID: new Uint8Array(
-        alice.peerID.match(/../g)!.map((b) => parseInt(b, 16)),
-      ),
+      senderID: hexToBytes(alice.peerID),
       recipientID: new Uint8Array(8),
       timestamp: s.world.wallClock(),
       signature: new Uint8Array(64),

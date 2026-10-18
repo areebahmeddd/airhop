@@ -1,3 +1,11 @@
+// The reachability watch. A network that came back or changed nudges the mesh
+// and Tor once it settles, never on a loss or the first reading after launch.
+//
+// It also guards the wallet: the moment the user's own switches let it reach
+// its mints again, the reconcile pass runs unthrottled. Until an offline
+// receipt is swapped, whoever holds its token can spend it first, so waiting
+// for the next foreground leaves that window open.
+
 import type * as Network from "expo-network";
 
 const mockOnNetworkChanged = jest.fn();

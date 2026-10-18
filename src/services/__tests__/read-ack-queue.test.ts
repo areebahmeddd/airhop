@@ -7,7 +7,6 @@ describe("ReadAckQueue", () => {
   test("250 messages from one sender leave 200 owed, the newest", () => {
     const q = new ReadAckQueue(MAX_PER_CHANNEL);
     for (let i = 0; i < 250; i++) q.add("alice", `m${i}`);
-    expect(q.count("alice")).toBe(200);
     const sent = q.take("alice");
     expect(sent).toHaveLength(200);
     expect(sent[0]).toBe("m50");
@@ -36,7 +35,7 @@ describe("ReadAckQueue", () => {
     q.add("alice", "a");
     q.add("bob", "b");
     q.retain((key) => key === "bob");
-    expect(q.count("alice")).toBe(0);
-    expect(q.count("bob")).toBe(1);
+    expect(q.take("alice")).toEqual([]);
+    expect(q.take("bob")).toEqual(["b"]);
   });
 });

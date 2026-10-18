@@ -314,7 +314,6 @@ async function rig(
   const newPhone = phone("new");
   const evilPhone = phone("evil");
 
-  g.__moveSide = "old";
   const id = await oldPhone.identity.generateIdentity();
   await oldPhone.identity.saveIdentity(id);
   await oldPhone.keychain.writeSecret(
@@ -342,7 +341,6 @@ async function rig(
   );
 
   if (prepareNew !== undefined) {
-    g.__moveSide = "new";
     await prepareNew(newPhone);
   }
 

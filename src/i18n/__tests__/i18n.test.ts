@@ -11,13 +11,12 @@ import {
   getLanguage,
   initI18n,
   isShipped,
-  languageForTag,
   languageForTags,
   needsRelaunch,
+  PICKER_LANGUAGES,
   pluralTranslatorFor,
   refreshDeviceLanguage,
   resolvePreference,
-  SHIPPED_LANGUAGES,
   stripIsolates,
   t,
   tPlural,
@@ -90,25 +89,28 @@ describe("what ships", () => {
 });
 
 describe("which language is on screen", () => {
+  // Every language the picker offers as a finished catalog.
+  const SHIPPED = PICKER_LANGUAGES.filter(isShipped);
+
   it("follows an explicit preference, unless it crosses the direction boundary", () => {
     // The exception is the right-to-left policy: direction is fixed at process
     // start, so choosing Arabic from a left-to-right boot keeps rendering the
     // boot language until the next launch rather than putting Arabic prose in a
     // left-to-right frame. Everything sharing the boot direction switches now.
-    for (const code of SHIPPED_LANGUAGES) {
+    for (const code of SHIPPED) {
       useSettingsStore.setState({ language: code });
       expect(getLanguage()).toBe(needsRelaunch(code) ? DEFAULT_LANGUAGE : code);
     }
   });
 
   it("defers exactly the right-to-left languages and no others", () => {
-    const deferred = SHIPPED_LANGUAGES.filter(needsRelaunch);
-    expect(deferred).toEqual(SHIPPED_LANGUAGES.filter(isRTL));
+    const deferred = SHIPPED.filter(needsRelaunch);
+    expect(deferred).toEqual(SHIPPED.filter(isRTL));
   });
 
   it("resolves 'system' to something shipped", () => {
     useSettingsStore.setState({ language: "system" });
-    expect(SHIPPED_LANGUAGES).toContain(getLanguage());
+    expect(SHIPPED).toContain(getLanguage());
   });
 
   it("reports a deferred language rather than rendering it in the wrong frame", () => {
@@ -117,7 +119,7 @@ describe("which language is on screen", () => {
     // language's direction on trust there renders right-to-left prose into a
     // left-to-right frame and reports `needsRelaunch` as false, which is the one
     // combination with no way out and nothing on screen saying so.
-    for (const code of SHIPPED_LANGUAGES.filter(isRTL)) {
+    for (const code of SHIPPED.filter(isRTL)) {
       useSettingsStore.setState({ language: code });
       expect(needsRelaunch(code)).toBe(true);
       // Rendering a language whose direction matches the frame in force.
@@ -239,7 +241,7 @@ describe("device language", () => {
     ["pa-Arab-PK", "en"],
     ["", "en"],
   ])("resolves %s to %s", (tag, expected) => {
-    expect(languageForTag(tag)).toBe(expected);
+    expect(languageForTags([tag])).toBe(expected);
   });
 
   it.each([
@@ -258,12 +260,12 @@ describe("device language", () => {
   });
 
   it("never infers the pseudolocale, which is chosen and never detected", () => {
-    expect(languageForTag(PSEUDO_LANGUAGE)).toBe(DEFAULT_LANGUAGE);
+    expect(languageForTags([PSEUDO_LANGUAGE])).toBe(DEFAULT_LANGUAGE);
   });
 
   it("only ever resolves to a language the app knows", () => {
     for (const tag of ["pt-PT", "tl", "in", "zh-MO", "xx-YY", "qps-ploc"]) {
-      expect(LANGUAGE_ORDER).toContain(languageForTag(tag));
+      expect(LANGUAGE_ORDER).toContain(languageForTags([tag]));
     }
   });
 });

@@ -44,9 +44,11 @@ describe("presence transitions", () => {
     expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
   });
 
-  test("Away stops the whole mesh", () => {
+  test("Away stops the whole mesh, and the gateway that rode on it", () => {
+    useSettingsStore.getState().setGatewayEnabled(true);
     applyPresence("away", "someone");
     expect(mockStop).toHaveBeenCalled();
+    expect(useSettingsStore.getState().gatewayEnabled).toBe(false);
     expect(useMeshStateStore.getState().presenceStatus).toBe("away");
   });
 
@@ -74,6 +76,8 @@ describe("presence transitions", () => {
     applyPresence("invisible", "someone");
     applyPresence("away", "someone");
     applyPresence("invisible", "someone");
+    // Away took the whole mesh down, so Invisible has to start it again.
+    expect(mockStart).toHaveBeenCalledWith("someone");
     expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
     expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
   });

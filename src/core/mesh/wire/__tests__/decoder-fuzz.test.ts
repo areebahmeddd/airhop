@@ -258,7 +258,6 @@ const targets: Target[] = [
           peerID: bytesToHex(senderID),
         },
         `peer${String(int(1e4))}`,
-        Array.from({ length: int(4) }, () => bytes(8)),
         rnd() < 0.5 ? bytes(32) : undefined,
         int(1 << 16),
         rnd() < 0.3 ? "u4pru" : undefined,

@@ -1,9 +1,10 @@
 // The file-transfer TLV (bitchat's BitchatFilePacket): round trips, the MIME
-// allow-list and the size caps. That the bytes decode in both bitchat clients is
-// pinned in file-packet-bitchat-compat.test.ts.
+// allow-list, the size caps and the file names put on the wire. That the bytes
+// decode in both bitchat clients is pinned in file-packet-bitchat-compat.test.ts.
 import {
   decodeFilePacket,
   encodeFilePacket,
+  ensureFileExtension,
   isAllowedMime,
   MAX_FILE_BYTES,
   MAX_IMAGE_BYTES,
@@ -13,13 +14,14 @@ import {
   receivedFileName,
   resolveMimeType,
   typeFromMime,
+  wireFileName,
 } from "../file-packet";
 
 const PNG = new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3,
 ]);
 
-describe("bitchat-file-packet", () => {
+describe("file-packet", () => {
   describe("TLV encode/decode", () => {
     it("round-trips a file with all fields", () => {
       const p = {
@@ -248,5 +250,76 @@ describe("large payloads", () => {
     expect(decoded?.content.length).toBe(big.length);
     expect(decoded?.content[big.length - 1]).toBe(big[big.length - 1]);
     expect(decoded?.fileName).toBe("photo.png");
+  });
+});
+
+// The name decides whether a file can be used at all: the receiver writes it to
+// disk, and the photo library and the audio player read the type off the
+// extension rather than the MIME beside it. iOS rejects a save outright when
+// there is none (expo-media-library EmptyFileExtensionException).
+describe("wireFileName", () => {
+  it("generates bitchat's stable-ID shape when nothing was named", () => {
+    expect(wireFileName("image", undefined, "image/jpeg")).toMatch(
+      /^img_[0-9a-f-]{36}\.jpg$/,
+    );
+    expect(wireFileName("voice", undefined, "audio/mp4")).toMatch(
+      /^voice_[0-9a-f-]{36}\.m4a$/,
+    );
+  });
+
+  it("never returns a name without an extension", () => {
+    const cases: [Parameters<typeof wireFileName>[0], string][] = [
+      ["image", "image/jpeg"],
+      ["voice", "audio/mp4"],
+      ["video", "video/mp4"],
+      ["document", "application/pdf"],
+      ["document", "application/octet-stream"],
+    ];
+    for (const [kind, mime] of cases) {
+      for (const provided of [undefined, "", "   ", "Photo", "Voice note"]) {
+        expect(wireFileName(kind, provided, mime)).toMatch(/\.[a-z0-9]+$/);
+      }
+    }
+  });
+
+  it("keeps a name the user already knows the file by", () => {
+    expect(wireFileName("document", "quarterly.pdf", "application/pdf")).toBe(
+      "quarterly.pdf",
+    );
+  });
+
+  // The bytes decide the extension. A live-voice burst finalizes as ADTS AAC,
+  // so calling it .m4a to win bitchat's stable ID would promise a container
+  // that is not there.
+  it("does not rename a burst's AAC into an m4a", () => {
+    expect(wireFileName("voice", undefined, "audio/aac")).toMatch(
+      /^voice_[0-9a-f-]{36}\.aac$/,
+    );
+  });
+});
+
+describe("ensureFileExtension", () => {
+  it("adds one derived from the mime when there is none", () => {
+    expect(ensureFileExtension("Photo", "image/jpeg")).toBe("Photo.jpg");
+    expect(ensureFileExtension("clip", "audio/mp4")).toBe("clip.m4a");
+  });
+
+  it("leaves an existing extension alone", () => {
+    expect(ensureFileExtension("a.jpg", "image/jpeg")).toBe("a.jpg");
+    expect(ensureFileExtension("archive.tar.gz", "application/pdf")).toBe(
+      "archive.tar.gz",
+    );
+  });
+
+  it("treats a leading dot as a hidden file, not an extension", () => {
+    expect(ensureFileExtension(".secret", "application/pdf")).toBe(
+      ".secret.pdf",
+    );
+  });
+
+  it("falls back to .bin rather than leaving a file unopenable", () => {
+    expect(ensureFileExtension("blob", "application/octet-stream")).toBe(
+      "blob.bin",
+    );
   });
 });

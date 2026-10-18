@@ -1,5 +1,7 @@
-// Global chat search, focused on attachment filenames: sending a file should
-// make it findable by its exact name in a DM or a channel.
+// Global chat search: what text a message is searched by (attachment names
+// included, so a sent file is findable by its exact name), board notices, the
+// media and link filters, and snippets that stay readable across Unicode
+// normalization, case folding and surrogate pairs.
 
 import type { ChatMessage } from "@store/chat-store";
 import {
@@ -228,8 +230,8 @@ describe("snippets read as written", () => {
   it("finds a decomposed message from a composed query", () => {
     // Vietnamese and Korean have two encodings for nearly every syllable, and
     // which arrives depends on the sender's keyboard.
-    const composed = "café at noon";
-    const decomposed = "café at noon";
+    const composed = "caf\u00e9 at noon";
+    const decomposed = "cafe\u0301 at noon";
     const hits = searchMessages(composed.slice(0, 4), {
       "#city": [msg({ id: "a", text: decomposed })],
     });

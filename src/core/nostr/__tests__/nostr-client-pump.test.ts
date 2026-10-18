@@ -99,32 +99,35 @@ describe("the inbound pump", () => {
   it("spreads a burst of slow handlers across turns instead of running it as one", async () => {
     jest.useRealTimers();
     const client = new NostrClient();
-    const seen: string[] = [];
-    // Each handler burns ~3ms, so an 8ms slice fits a couple and a burst of
-    // twelve cannot be one turn's work however the slice lands.
-    client.subscribe([{ kinds: [1] }], (e) => {
-      const until = Date.now() + 3;
-      while (Date.now() < until) {
-        /* burn */
+    // On real timers its connection poll would outlive the test, failed or not.
+    try {
+      const seen: string[] = [];
+      // Each handler burns ~3ms, so an 8ms slice fits a couple and a burst of
+      // twelve cannot be one turn's work however the slice lands.
+      client.subscribe([{ kinds: [1] }], (e) => {
+        const until = Date.now() + 3;
+        while (Date.now() < until) {
+          // Spin.
+        }
+        seen.push(e.id);
+      });
+
+      for (let i = 0; i < 12; i++) emit(eventWithId(`e${i}`));
+      // Nothing yet: the socket callback returned without running any of it.
+      expect(seen).toHaveLength(0);
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      const afterFirstTurn = seen.length;
+      expect(afterFirstTurn).toBeGreaterThan(0);
+      expect(afterFirstTurn).toBeLessThan(12);
+
+      for (let i = 0; i < 20 && seen.length < 12; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 1));
       }
-      seen.push(e.id);
-    });
-
-    for (let i = 0; i < 12; i++) emit(eventWithId(`e${i}`));
-    // Nothing yet: the socket callback returned without running any of it.
-    expect(seen).toHaveLength(0);
-
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    const afterFirstTurn = seen.length;
-    expect(afterFirstTurn).toBeGreaterThan(0);
-    expect(afterFirstTurn).toBeLessThan(12);
-
-    for (let i = 0; i < 20 && seen.length < 12; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 1));
+      expect(seen).toHaveLength(12);
+    } finally {
+      client.close();
     }
-    expect(seen).toHaveLength(12);
-    // On real timers its connection poll would outlive the test.
-    client.close();
   });
 
   it("keeps going when a handler throws on attacker-supplied content", async () => {

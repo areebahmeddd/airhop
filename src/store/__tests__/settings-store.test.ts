@@ -1,5 +1,5 @@
-// The settings other code leans on: live voice, the custom relay list and relay
-// discovery, and media retention.
+// The settings other code leans on: live voice, the app lock, the custom relay
+// list and relay discovery, and media retention.
 //
 // Live voice is one switch for two directions: it gates streaming your holds
 // and playing other people's bursts. A user who turns it off should not have a
@@ -21,32 +21,26 @@ describe("liveVoiceEnabled", () => {
   it("defaults on, matching bitchat's PTTSettings", () => {
     // A walkie-talkie nobody can find is not a feature. bitchat ships this on
     // and so do we; turning it off is the deliberate act.
+    state().setLiveVoiceEnabled(false);
+    state().reset();
     expect(state().liveVoiceEnabled).toBe(true);
   });
+});
 
-  it("survives being flipped repeatedly", () => {
-    // Chaos case: someone toggling the switch on and off should end up in the
-    // state they left it in, with no accumulated effect either way.
-    for (let i = 0; i < 6; i++) {
-      state().setLiveVoiceEnabled(i % 2 === 0);
-    }
-    expect(state().liveVoiceEnabled).toBe(false);
-
-    state().setLiveVoiceEnabled(true);
-    expect(state().liveVoiceEnabled).toBe(true);
-  });
-
-  it("is independent of the other privacy toggles", () => {
-    // It shares a screen with Tor, the gateway and the bridge, but not a
-    // transport: live voice never leaves Bluetooth, so it stays usable when
-    // every internet-dependent switch is off.
-    state().setLiveVoiceEnabled(true);
-    state().setGatewayEnabled(false);
-    state().setBridgeEnabled(false);
-
-    expect(state().liveVoiceEnabled).toBe(true);
-    expect(state().gatewayEnabled).toBe(false);
-    expect(state().bridgeEnabled).toBe(false);
+// The app lock is opt-in, and a wipe leaves a first-run device: the next person
+// should not inherit a lock they never set, nor a delay they never chose.
+describe("app lock", () => {
+  it("is off by default, at an immediate delay, and reset by the panic wipe", () => {
+    state().reset();
+    expect(state().appLockEnabled).toBe(false);
+    expect(state().appLockDelaySeconds).toBe(0);
+    useSettingsStore.setState({
+      appLockEnabled: true,
+      appLockDelaySeconds: 300,
+    });
+    state().reset();
+    expect(state().appLockEnabled).toBe(false);
+    expect(state().appLockDelaySeconds).toBe(0);
   });
 });
 
@@ -218,12 +212,6 @@ describe("media retention", () => {
       expect(Number.isFinite(days)).toBe(true);
       expect(days).toBeGreaterThan(0);
     }
-  });
-
-  it("keeps a chosen window across other changes", () => {
-    useSettingsStore.getState().setMediaRetentionDays(30);
-    useSettingsStore.getState().setHideNotificationPreviews(false);
-    expect(state().mediaRetentionDays).toBe(30);
   });
 
   it("returns to the seven-day default on a panic wipe", () => {

@@ -44,6 +44,23 @@ describe("computeMeshBanners", () => {
     ]);
   });
 
+  // Away stopped the radios on purpose, so how the mesh would behave is not a
+  // useful thing to say about one that is not running.
+  it.each([
+    ["the background-limits advisory", { backgroundLimitsBrand: "Oppo" }],
+    ["the reduced-scan note", { powerSaving: true }],
+    ["the clock-skew banner", { clockSkewed: true }],
+    ["the WiFi fast-path note", { wifiFastPath: "unavailable" as const }],
+  ])("suppresses %s while Away", (_name, inputs) => {
+    expect(
+      computeMeshBanners({
+        ...HEALTHY,
+        presenceStatus: "away",
+        ...inputs,
+      }).map((b) => b.key),
+    ).toEqual(["paused"]);
+  });
+
   it("does NOT special-case Invisible (still scans and relays)", () => {
     const banners = computeMeshBanners({
       ...HEALTHY,
@@ -269,10 +286,7 @@ describe("computeMeshBanners", () => {
   // Aggressive OEM background management is advice, not a blocker: the mesh is
   // running fine right now, it just may not survive being backgrounded. So it
   // is a caution, it is dismissible, and it never suppresses anything else.
-  it("shows the background-limits advisory only when a brand is supplied", () => {
-    expect(computeMeshBanners(HEALTHY).map((b) => b.key)).not.toContain(
-      "background-limits",
-    );
+  it("shows the background-limits advisory when a brand is supplied", () => {
     const withBrand = computeMeshBanners({
       ...HEALTHY,
       backgroundLimitsBrand: "Xiaomi",
@@ -306,18 +320,6 @@ describe("computeMeshBanners", () => {
     expect(keys.indexOf("background-limits")).toBeLessThan(
       keys.indexOf("location"),
     );
-  });
-
-  it("stays silent about background limits while Away", () => {
-    // Away short-circuits everything: the mesh is stopped on purpose, so how it
-    // would behave in the background is not a useful thing to say.
-    expect(
-      computeMeshBanners({
-        ...HEALTHY,
-        presenceStatus: "away",
-        backgroundLimitsBrand: "Oppo",
-      }).map((b) => b.key),
-    ).toEqual(["paused"]);
   });
 
   // Blockers must never be dismissible: hiding "Bluetooth is off" would leave
@@ -355,9 +357,6 @@ describe("computeMeshBanners", () => {
   });
 
   it("says nothing about power when the scan is running normally", () => {
-    expect(computeMeshBanners(HEALTHY).map((b) => b.key)).not.toContain(
-      "power-saving",
-    );
     expect(
       computeMeshBanners({ ...HEALTHY, powerSaving: false }).map((b) => b.key),
     ).not.toContain("power-saving");
@@ -373,18 +372,6 @@ describe("computeMeshBanners", () => {
     }).map((b) => b.key);
     expect(keys).toContain("power-saving");
     expect(keys).toContain("internet-off");
-  });
-
-  it("stays quiet about power while Away", () => {
-    // Away stopped the radios on purpose. How hard they would have scanned is
-    // not a useful thing to say about a mesh that is not running.
-    expect(
-      computeMeshBanners({
-        ...HEALTHY,
-        presenceStatus: "away",
-        powerSaving: true,
-      }).map((b) => b.key),
-    ).toEqual(["paused"]);
   });
 
   it("ranks below the blockers, which are the reason to act", () => {
@@ -438,19 +425,8 @@ describe("clock skew banner", () => {
     expect(banners.some((b) => b.key === "clock-skew")).toBe(true);
   });
 
-  it("is absent by default, so a caller with no evidence says nothing", () => {
-    expect(computeMeshBanners(HEALTHY)).toEqual([]);
+  it("is absent when the clock is known good", () => {
     expect(computeMeshBanners({ ...HEALTHY, clockSkewed: false })).toEqual([]);
-  });
-
-  // Going Away stops the whole mesh, so nothing else is worth saying.
-  it("is suppressed while the user has deliberately paused", () => {
-    const banners = computeMeshBanners({
-      ...HEALTHY,
-      clockSkewed: true,
-      presenceStatus: "away",
-    });
-    expect(banners.map((b) => b.key)).toEqual(["paused"]);
   });
 });
 
@@ -509,22 +485,12 @@ describe("the WiFi fast-path note", () => {
       "internet-off",
     ]);
   });
-
-  it("is suppressed while the user has deliberately paused", () => {
-    const banners = computeMeshBanners({
-      ...HEALTHY,
-      wifiFastPath: "unavailable",
-      presenceStatus: "away",
-    });
-    expect(banners.map((b) => b.key)).toEqual(["paused"]);
-  });
 });
 
 // A panic wipe that did not commit. The only banner about data at rest rather
 // than about the mesh, and the only one that outranks Away.
 describe("the incomplete-wipe banner", () => {
-  it("is absent by default, so a caller with no evidence says nothing", () => {
-    expect(computeMeshBanners(HEALTHY)).toEqual([]);
+  it("is absent when the wipe committed", () => {
     expect(computeMeshBanners({ ...HEALTHY, wipeIncomplete: false })).toEqual(
       [],
     );

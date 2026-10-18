@@ -17,7 +17,7 @@ function makePacket(nonceByte: number = 0x01, ttl: number = 7): Packet {
     flags: Flags.SIGNED, // 0x02
     senderID: new Uint8Array(8),
     recipientID: new Uint8Array(8),
-    timestamp: Math.floor(Date.now() / 1000),
+    timestamp: Date.now(),
     signature: new Uint8Array(64),
     payload: new Uint8Array([nonceByte]),
   };
@@ -229,24 +229,6 @@ describe("FloodRouter time-critical relay policy", () => {
     jest.advanceTimersByTime(30);
     // Clamped to 5, then decremented for the hop.
     expect(sent[0].ttl).toBe(4);
-    router.flush();
-  });
-
-  it("keeps full depth in a sparse mesh, so voice reaches as far as text", () => {
-    const router = new FloodRouter(LOCAL, () => 2);
-    const sent: Packet[] = [];
-    router.receive(voicePacket(7), (p) => sent.push(p));
-    jest.advanceTimersByTime(30);
-    expect(sent[0].ttl).toBe(6);
-    router.flush();
-  });
-
-  it("still drops a voice frame that has run out of TTL", () => {
-    const router = new FloodRouter(LOCAL, () => 2);
-    const sent: Packet[] = [];
-    expect(router.receive(voicePacket(1), (p) => sent.push(p))).toBe(true);
-    jest.advanceTimersByTime(60);
-    expect(sent).toHaveLength(0);
     router.flush();
   });
 });

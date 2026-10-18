@@ -18,7 +18,6 @@ import {
   attachmentSummary,
   isDirectMessage,
   isReplayedRoomMessage,
-  messagePreview,
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
   notificationContentFor,
@@ -237,14 +236,6 @@ describe("attachment previews", () => {
     ).toContain("\u2068تقرير.pdf\u2069");
   });
 
-  it("prefers an attachment summary over empty text", () => {
-    expect(
-      messagePreview(
-        msg({ text: "", attachment: { type: "voice", uri: "x" } }),
-      ),
-    ).toBe("🎤 Voice note");
-  });
-
   // A lock screen is readable by anyone holding the phone, and a token is money
   // to whoever copies it.
   it("names an ecash token by its amount, never by the token", () => {
@@ -359,12 +350,19 @@ describe("notificationContentFor a mention", () => {
     expect(`${content.title} ${content.body}`).not.toContain("secret");
   });
 
-  it("leaves an ordinary channel message alone", () => {
+  it("leaves the same message alone when it is not a mention of the user", () => {
+    // The text above, flagged as no mention: the flag, not an "@", is what
+    // changes the form.
     expect(
-      notificationContentFor(msg({ channel: "#city", text: "hi" }), "#city"),
+      notificationContentFor(
+        msg({ channel: "#city", text: "@bob look at this" }),
+        "#city",
+        false,
+        false,
+      ),
     ).toEqual({
       title: "#city",
-      body: isolated("alice") + ": " + isolated("hi"),
+      body: isolated("alice") + ": " + isolated("@bob look at this"),
     });
   });
 

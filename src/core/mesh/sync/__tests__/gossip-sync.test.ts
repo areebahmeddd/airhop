@@ -190,6 +190,8 @@ describe("GossipSync class", () => {
     const pkt = request(gs, identity);
     expect(pkt.type).toBe(PacketType.REQUEST_SYNC);
     expect(pkt.flags & Flags.SIGNED).toBeTruthy();
+    const signingPubKey = ed25519.getPublicKey(identity.signingPrivKey);
+    expect(verifyPacket(pkt, signingPubKey)).toBe(true);
   });
 
   test("handleFilter returns packets the peer is missing", () => {

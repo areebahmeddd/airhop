@@ -72,6 +72,11 @@ it("pushes the settled reachable count, and only when it moves", () => {
 });
 
 it("repeats the shown count on leaving the screen, and only then", () => {
+  // Its own settled count of one, whatever the test above left behind.
+  usePeerStore.getState().clearAll();
+  addPeer("eeeeeeeeeeeeeeee");
+  jest.advanceTimersByTime(1_000);
+
   const before = mockSetCount.mock.calls.length;
   onAppState?.("inactive");
   onAppState?.("active");

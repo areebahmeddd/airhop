@@ -57,7 +57,6 @@ import {
 import { getMeshService } from "@services/mesh-service";
 import { panicWipe } from "@services/panic-wipe";
 import { applyPresence } from "@services/presence-service";
-import { primeTorRoutingOnStartup } from "@services/tor-routing";
 import {
   clearCondemnedIdentity,
   isIdentityCondemned,
@@ -87,9 +86,16 @@ installOfflineWebSocket();
 // is correct on a slow device and instant on a fast one.
 const REAL_GRANT_SETTLE_MS = 600;
 
+// Every field a scenario here can move, so one test's leftovers never decide
+// the next one's verdict.
 function resetStores(): void {
   useMeshStateStore.setState({
     bleBlocker: "starting",
+    blePermissionBlocked: false,
+    bleAdvertisingUnsupported: false,
+    powerSaving: false,
+    wifiFastPath: "unknown",
+    lanState: "off",
     locationGranted: true,
     nostrConnected: false,
     torActive: false,
@@ -99,7 +105,20 @@ function resetStores(): void {
   });
   // A start restores a kept Invisible, so Online has to be the saved choice too.
   useSettingsStore.getState().setStayInvisible(false);
+  useSettingsStore.getState().setBackgroundMeshEnabled(true);
   usePeerStore.getState().clearAll();
+}
+
+// A phone with working Wi-Fi Aware. Without one the shim answers as a phone
+// that has none, so a scenario only gets the fast path by asking for it.
+function installWorkingWifiAware(): void {
+  installNativeWifi({
+    startWiFi: async () => undefined,
+    stopWiFi: async () => undefined,
+    writeToWiFiLink: async () => undefined,
+    addListener: () => undefined,
+    removeListeners: () => undefined,
+  });
 }
 
 // The banner the Mesh tab would be showing right now, if any.
@@ -143,6 +162,7 @@ describe("cold start and permissions", () => {
     app?.teardown();
     app = null;
     installNativeBle(null);
+    installNativeWifi(null);
     jest.clearAllTimers();
     jest.useRealTimers();
   });
@@ -183,9 +203,19 @@ describe("cold start and permissions", () => {
     v.assert();
   });
 
+  // The return lands before the grant has reached the Bluetooth stack, so the
+  // resume's first start is refused and only the retry brings the radios up.
   test("S02 first install, BLE denied once, granted later in Settings", async () => {
-    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
-    const v = new Verdict("S02", "denied once, then granted in Settings", os);
+    const os = new DeviceOS({
+      platform: "android",
+      apiLevel: 34,
+      permissionSettleMs: REAL_GRANT_SETTLE_MS,
+    });
+    const v = new Verdict(
+      "S02",
+      "denied once, granted in Settings, back before the grant settles",
+      os,
+    );
     const native = androidDevice(os);
 
     app = new AppShell({ os, answer: () => "denied" });
@@ -296,39 +326,6 @@ describe("cold start and permissions", () => {
     v.assert();
   });
 
-  test("S05 permission granted in Settings while backgrounded", async () => {
-    const os = new DeviceOS({
-      platform: "android",
-      apiLevel: 34,
-      permissionSettleMs: REAL_GRANT_SETTLE_MS,
-    });
-    const v = new Verdict("S05", "granted while away, recovers on resume", os);
-    const native = androidDevice(os);
-
-    app = new AppShell({ os, answer: () => "denied" });
-    app.bootJsRuntime();
-    await app.startMeshWithPermissions();
-    await os.advance(100);
-    await app.setAppState("background");
-
-    for (const p of [
-      "android.permission.ACCESS_FINE_LOCATION",
-      "android.permission.BLUETOOTH_SCAN",
-      "android.permission.BLUETOOTH_ADVERTISE",
-      "android.permission.BLUETOOTH_CONNECT",
-    ] as const) {
-      os.setPermission(p, "granted");
-    }
-    await os.advance(3000);
-    await app.setAppState("active");
-    await os.advance(2000);
-
-    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
-    v.check("scanning recovered", native.scanning);
-    v.check("advertising recovered", native.advertising);
-    v.assert();
-  });
-
   test("S06 permission revoked in Settings, process killed, relaunch is clean", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
@@ -377,26 +374,13 @@ describe("cold start and permissions", () => {
     });
     const v = new Verdict("S07", "Bluetooth off at launch", os);
     const native = androidDevice(os);
-    // Nothing else to carry the mesh: a phone without Wi-Fi Aware, and LAN off
-    // by default. S07b is the same launch with Aware running.
-    installNativeWifi({
-      startWiFi: () =>
-        Promise.reject(
-          Object.assign(new Error("no Wi-Fi Aware"), {
-            code: "WIFI_AWARE_UNSUPPORTED",
-          }),
-        ),
-      stopWiFi: async () => undefined,
-      writeToWiFiLink: async () => undefined,
-      addListener: () => undefined,
-      removeListeners: () => undefined,
-    });
+    // Nothing else to carry the mesh: the shim's phone has no Wi-Fi Aware, and
+    // LAN is off by default.
 
     app = new AppShell({ os });
     app.bootJsRuntime();
     await app.startMeshWithPermissions();
     await os.advance(1000);
-    installNativeWifi(null);
 
     v.check("process survived", os.crashed === null, os.crashed ?? undefined);
     v.check(
@@ -437,9 +421,8 @@ describe("cold start and permissions", () => {
     v.check("the mesh runs on screen", native.scanning && native.advertising);
     v.check("with no background service", !os.foregroundServiceRunning);
 
-    // app.tsx forwards every AppState edge to the mesh.
+    // The shell forwards every AppState edge to the mesh, as app.tsx does.
     await app.setAppState("background");
-    getMeshService()?.setAppForeground(false);
     await os.advance(500);
     v.check(
       "leaving the screen stands the radios down",
@@ -447,34 +430,32 @@ describe("cold start and permissions", () => {
     );
 
     await app.setAppState("active");
-    getMeshService()?.setAppForeground(true);
     await os.advance(1000);
     v.check(
       "coming back brings them up",
       native.scanning && native.advertising,
     );
-
-    useSettingsStore.getState().setBackgroundMeshEnabled(true);
     v.assert();
   });
 
   // Wi-Fi Aware carries the mesh without Bluetooth, and dies with the process
-  // if nothing holds it up off screen.
-  test("S07b Bluetooth off with Wi-Fi Aware running keeps the mesh alive off screen", async () => {
-    const os = new DeviceOS({
-      platform: "android",
-      apiLevel: 34,
-      adapter: "off",
-    });
-    const v = new Verdict("S07b", "Bluetooth off, Wi-Fi Aware up", os);
-    androidDevice(os);
+  // if nothing holds it up off screen. Bluetooth is refused rather than
+  // switched off, because a switched-off adapter keeps the service up by
+  // itself (S07) and a refusal does not (S03): here only Wi-Fi can be the
+  // reason the service runs.
+  test("S07b Bluetooth refused with Wi-Fi Aware running keeps the mesh alive off screen", async () => {
+    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    const v = new Verdict("S07b", "Bluetooth denied, Wi-Fi Aware up", os);
+    const native = androidDevice(os);
+    installWorkingWifiAware();
 
-    app = new AppShell({ os });
+    app = new AppShell({ os, answer: () => "denied" });
     app.bootJsRuntime();
     await app.startMeshWithPermissions();
     await os.advance(1000);
 
     v.check("process survived", os.crashed === null, os.crashed ?? undefined);
+    v.check("Bluetooth is not running", !native.scanning, "precondition");
     v.check(
       "Wi-Fi Aware is carrying the mesh",
       useMeshStateStore.getState().wifiFastPath === "active",
@@ -490,7 +471,6 @@ describe("cold start and permissions", () => {
     getMeshService()?.retryRadios();
     await os.advance(1000);
     v.check("the preference still decides", !os.foregroundServiceRunning);
-    useSettingsStore.getState().setBackgroundMeshEnabled(true);
     v.assert();
   });
 
@@ -548,23 +528,7 @@ describe("cold start and permissions", () => {
     });
     const v = new Verdict("S09", "no Bluetooth radio on the device", os);
 
-    let constructed = true;
-    let constructionError: string | null = null;
-    try {
-      androidDevice(os);
-    } catch (e) {
-      constructed = false;
-      constructionError = (e as Error).message;
-    }
-    v.check(
-      "the app starts at all on a device with no Bluetooth",
-      constructed,
-      constructionError ?? undefined,
-    );
-    if (!constructed) {
-      v.assert();
-      return;
-    }
+    const native = androidDevice(os);
 
     app = new AppShell({ os });
     app.bootJsRuntime();
@@ -580,6 +544,11 @@ describe("cold start and permissions", () => {
     v.check(
       "and offers no action, since there is no radio to turn on",
       currentBlockerBanner()?.action === undefined,
+    );
+    v.check("nothing claims to scan", !native.scanning);
+    v.check(
+      "and no notification claims a mesh with no radio under it",
+      !os.foregroundServiceRunning,
     );
     v.assert();
   });
@@ -686,8 +655,8 @@ describe("cold start and permissions", () => {
     );
     v.check("advertising is not running", !native.advertising);
     v.check(
-      "and was attempted at most twice, not on a five-second loop",
-      native.advertiseAttempts <= 2,
+      "and was attempted exactly once, not on a five-second loop",
+      native.advertiseAttempts === 1,
       `startAdvertising called ${String(native.advertiseAttempts)} times in 60s`,
     );
     v.check(
@@ -834,8 +803,8 @@ describe("cold start and permissions", () => {
     try {
       app = new AppShell({ os });
       app.bootJsRuntime();
-      // In the app's order: before the mesh builds its first relay pool.
-      primeTorRoutingOnStartup();
+      // The shell primes Tor in the app's order: before the mesh builds its
+      // first relay pool.
       await app.startMeshWithPermissions();
       await os.advance(5000);
 
@@ -877,9 +846,9 @@ describe("cold start and permissions", () => {
     }
   });
 
-  test("S07i iOS cold launch with a perfectly healthy radio", async () => {
+  test("S17 iOS cold launch with a perfectly healthy radio", async () => {
     const os = new DeviceOS({ platform: "ios" });
-    const v = new Verdict("S07i", "iOS cold launch, Bluetooth healthy", os);
+    const v = new Verdict("S17", "iOS cold launch, Bluetooth healthy", os);
     const native = new IosBleModule(os);
     installNativeBle(native);
 
@@ -925,18 +894,21 @@ describe("cold start and permissions", () => {
     v.assert();
   });
 
-  // Away must mean invisible, and stay that way across a power cycle.
+  // Away must reach an advertising start that native latched while JS took it
+  // as refused.
   //
-  // Guards the invariant only. It does NOT reproduce the native intent-latch
-  // race behind the forced stops in the shutdown path, and passes with or
-  // without them: reaching that latch needs blockerFor to say "none" while the
-  // native start rejects, and with the adapter off the blocker branch returns
-  // before applyRadios is called at all.
-  test("S12i iOS stays invisible after Away, even when the start was refused", async () => {
-    const os = new DeviceOS({ platform: "ios", adapter: "off" });
+  // On iOS the first startAdvertising builds the CBPeripheralManager, which is
+  // not poweredOn for a moment, so that call is refused while the Bluetooth
+  // read already says all is well. JS records "not advertising"; native keeps
+  // the intent and acts on it once the manager comes up. Away inside that
+  // window sees no advertising to stop, so only the shutdown path's forced
+  // stops clear the latch. Without them the manager coming up announces a user
+  // who just chose to be invisible.
+  test("S20 iOS stays invisible after Away lands on a latched start", async () => {
+    const os = new DeviceOS({ platform: "ios" });
     const v = new Verdict(
-      "S12i",
-      "start refused with the radio off, then Away, then the radio returns",
+      "S20",
+      "Away inside the peripheral manager's start-up window, then a power cycle",
       os,
     );
     const native = new IosBleModule(os);
@@ -945,33 +917,34 @@ describe("cold start and permissions", () => {
     app = new AppShell({ os });
     app.bootJsRuntime();
     await app.startMeshWithPermissions();
-    await os.advance(2000);
 
-    v.check(
-      "nothing is advertising with the radio off",
-      !native.advertising,
-      "precondition",
-    );
+    // The first startAdvertising is the one that builds the manager.
+    const latched = (): boolean =>
+      os.trace.some((e) => e.kind === "CBPeripheralManager_CREATED");
+    for (let t = 0; t < 2000 && !latched(); t += 5) await os.advance(5);
+    v.check("a start was refused and latched", latched(), "precondition");
+    v.check("nothing is advertising yet", !native.advertising, "precondition");
 
-    // The user gives up and goes Away while the radio is still off.
     applyPresence("away", "tester");
     await os.advance(2000);
+    v.check(
+      "the manager coming up does NOT start advertising",
+      !native.advertising,
+      "Away means invisible; the latched intent from the refused start announced this device",
+    );
 
-    // Later, Bluetooth comes back on. Nobody asked for the mesh again.
+    // Later, a power cycle. Nobody asked for the mesh again.
+    os.setBluetooth(false);
+    await os.advance(600);
     os.setBluetooth(true);
     await os.advance(3000);
 
     v.check("process survived", os.crashed === null, os.crashed ?? undefined);
     v.check(
-      "the radio returning does NOT resurrect advertising",
+      "the radio returning does not resurrect advertising",
       !native.advertising,
-      "Away means invisible; a stale native intent latch must not announce this device",
     );
-    v.check(
-      "and does not resurrect scanning either",
-      !native.scanning,
-      "the same latch exists for the central role",
-    );
+    v.check("or scanning", !native.scanning);
     v.assert();
   });
 });
@@ -1086,11 +1059,19 @@ describe("launch identity: absent, unreadable, condemned", () => {
   // The launch waits on this answer, so a storage failure must still produce one.
   test("K13 a storage failure during the leftover check still answers", async () => {
     await storedIdentity();
-    const spy = jest.spyOn(mmkv, "getStorage").mockImplementation(() => {
-      throw new Error("storage unavailable");
+    // Only the install record fails. Failing every partition would also fail
+    // the condemned-identity check, which fails closed and deletes the
+    // identity, so the leftover check's own answer would never be read.
+    const real = mmkv.getStorage;
+    const spy = jest.spyOn(mmkv, "getStorage").mockImplementation((id) => {
+      if (id === "install-marker") throw new Error("storage unavailable");
+      return real(id);
     });
     try {
-      await expect(readLaunchIdentity()).resolves.toHaveProperty("kind");
+      // The identity is in the keychain and only the record beside it is
+      // unreachable, which must not cost the user their identity.
+      const found = await readLaunchIdentity();
+      expect(found.kind).toBe("present");
     } finally {
       spy.mockRestore();
     }

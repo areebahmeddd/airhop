@@ -24,9 +24,7 @@
 import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   channelPacketType,
-  decodeAirhopChannelPayload,
   decodeMeshPublicPayload,
-  encodeAirhopChannelPayload,
   encodeMeshPublicPayload,
   MESH_PUBLIC_CHANNEL,
 } from "../../../router/message-router";
@@ -305,13 +303,5 @@ describe("bitchat vector: public channel message payload", () => {
   // this only pins the value so a change here is deliberate.
   test("the Airhop channel type sits in the Airhop range", () => {
     expect(PacketType.CHANNEL_MSG_AIRHOP).toBe(0x51);
-  });
-
-  test("an Airhop frame round-trips with its channel and id intact", () => {
-    const encoded = encodeAirhopChannelPayload("#neighborhood", "hi", "abc123");
-    const decoded = decodeAirhopChannelPayload(encoded);
-    expect(decoded!.channel).toBe("#neighborhood");
-    expect(decoded!.text).toBe("hi");
-    expect(decoded!.msgId).toBe("abc123");
   });
 });

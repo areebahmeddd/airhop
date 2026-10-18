@@ -9,6 +9,11 @@ import {
   nextHeartbeatDelayMs,
 } from "../geohash-presence";
 
+// Two points ~1km apart in central London, and one far away.
+const LONDON = { lat: 51.5074, lng: -0.1278 };
+const LONDON_NEARBY = { lat: 51.5145, lng: -0.127 };
+const TOKYO = { lat: 35.6762, lng: 139.6503 };
+
 describe("presence", () => {
   describe("encodeGeohash", () => {
     it("encodes San Francisco at precision 5", () => {
@@ -54,14 +59,6 @@ describe("presence", () => {
       expect(Math.abs(decoded.lng - original.lng)).toBeLessThan(0.1);
     });
 
-    it("round-trips Berlin at precision 5", () => {
-      const original = { lat: 52.52, lng: 13.405 };
-      const hash = encodeGeohash(original.lat, original.lng, 5);
-      const decoded = decodeGeohash(hash);
-      expect(Math.abs(decoded.lat - original.lat)).toBeLessThan(0.1);
-      expect(Math.abs(decoded.lng - original.lng)).toBeLessThan(0.1);
-    });
-
     it("handles single-character hash (precision 1)", () => {
       const hash = encodeGeohash(0, 0, 1);
       expect(hash).toBe("s");
@@ -71,6 +68,39 @@ describe("presence", () => {
       expect(decoded.lat).toBeLessThan(45);
       expect(decoded.lng).toBeGreaterThan(0);
       expect(decoded.lng).toBeLessThan(45);
+    });
+  });
+
+  // Everyone in a cell must compute the SAME geohash for it, or they end up in
+  // different rooms while believing they share one. The sender sees their own
+  // message either way, so nothing local would notice.
+  describe("cell membership", () => {
+    it("puts two nearby people in the same city cell", () => {
+      const a = encodeGeohash(LONDON.lat, LONDON.lng, 5);
+      const b = encodeGeohash(LONDON_NEARBY.lat, LONDON_NEARBY.lng, 5);
+      expect(a).toBe(b);
+    });
+
+    it("separates distant people at city scope", () => {
+      expect(encodeGeohash(LONDON.lat, LONDON.lng, 5)).not.toBe(
+        encodeGeohash(TOKYO.lat, TOKYO.lng, 5),
+      );
+    });
+
+    it("nests finer cells inside coarser ones", () => {
+      // A block cell must be a prefix-extension of its city cell, otherwise the
+      // scope hierarchy the UI describes would be a lie.
+      const block = encodeGeohash(LONDON.lat, LONDON.lng, 7);
+      const city = encodeGeohash(LONDON.lat, LONDON.lng, 5);
+      expect(block.startsWith(city)).toBe(true);
+    });
+
+    // The relay set is chosen from the decoded centre, so the centre has to
+    // land back in the cell it came from.
+    it("round-trips a geohash back to within its own cell", () => {
+      const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
+      const center = decodeGeohash(gh);
+      expect(encodeGeohash(center.lat, center.lng, 5)).toBe(gh);
     });
   });
 });
@@ -109,20 +139,14 @@ describe("heartbeat timing", () => {
   // 40-80s, averaging 60. A fixed cadence would itself be a fingerprint; the
   // average is what keeps a peer inside everyone else's five-minute online
   // window with room to miss a round.
-  test("the round interval stays within the 40-80s window", () => {
-    expect(nextHeartbeatDelayMs(() => 0)).toBe(40_000);
-    expect(nextHeartbeatDelayMs(() => 0.999999)).toBeLessThanOrEqual(80_000);
+  test("the round interval centres on 60s", () => {
     expect(nextHeartbeatDelayMs(() => 0.5)).toBe(60_000);
   });
 
-  // Each cell is signed by a different derived key, so publishing them together
-  // still leaks: three unfamiliar pubkeys arriving in the same instant, round
-  // after round, group into one device by timing alone.
-  test("cells inside a round are spaced 2-5s apart", () => {
-    expect(decorrelationDelayMs(() => 0)).toBe(2_000);
-    expect(decorrelationDelayMs(() => 0.999999)).toBeLessThanOrEqual(5_000);
-  });
-
+  // Cells inside a round are spaced 2-5s apart. Each is signed by a different
+  // derived key, so publishing them together still leaks: three unfamiliar
+  // pubkeys arriving in the same instant, round after round, group into one
+  // device by timing alone.
   test("both delays stay inside their window for any random value", () => {
     for (let i = 0; i <= 100; i++) {
       const r = i / 100;

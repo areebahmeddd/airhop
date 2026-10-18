@@ -12,10 +12,13 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
 }));
 jest.mock("expo-file-system", () => ({}));
 jest.mock("expo-sharing", () => ({}));
-jest.mock("@services/mesh-service", () => ({ getMeshService: () => null }));
+jest.mock("../mesh-service", () => ({ getMeshService: () => null }));
 
+import { useChatStore } from "@store/chat-store";
+import { usePeerStore } from "@store/peer-store";
 import {
   buildDiagnosticsReport,
+  getDiagnosticsReport,
   type DiagnosticsSnapshot,
 } from "../diagnostics-export";
 
@@ -115,20 +118,35 @@ describe("buildDiagnosticsReport", () => {
     );
   });
 
-  // Nothing in the snapshot's shape can hold a message, a nickname or a key,
-  // which is what keeps the bundle safe to hand to a stranger. Pinned so a
-  // future field added for convenience is noticed.
-  it("has no field that could carry user content", () => {
-    const keys = new Set<string>();
-    const walk = (o: object): void => {
-      for (const [k, v] of Object.entries(o)) {
-        keys.add(k);
-        if (v !== null && typeof v === "object") walk(v);
-      }
-    };
-    walk(SNAPSHOT);
-    for (const k of ["text", "nickname", "name", "key", "peerID", "peers"]) {
-      expect(keys.has(k)).toBe(false);
+  // What keeps the bundle safe to hand to a stranger: whatever the stores
+  // hold, no name, peer ID or message reaches the report built from them.
+  it("leaves out nicknames, peer IDs and message text", async () => {
+    const peerID = "a1b2c3d4e5f60718";
+    const nickname = "marigold";
+    const text = "the meeting is at four";
+    usePeerStore.getState().upsertPeer({
+      peerID,
+      nickname,
+      lastSeenMs: Date.now(),
+      noisePubKeyHex: "00".repeat(32),
+    });
+    useChatStore.getState().addChannel("#bluetooth");
+    useChatStore.getState().addMessage({
+      id: "m1",
+      channel: "#bluetooth",
+      senderID: peerID,
+      senderNickname: nickname,
+      text,
+      timestampMs: Date.now(),
+      isMine: false,
+    });
+
+    const report = await getDiagnosticsReport();
+
+    // The seeded peer did reach the collector, as a count.
+    expect(report).toContain("Reachable peers: 1");
+    for (const secret of [peerID, nickname, text]) {
+      expect(report).not.toContain(secret);
     }
   });
 });

@@ -37,6 +37,7 @@ jest.mock("@bridge/NativeAirhopVoice", () => {
   return { __esModule: true, default: mod };
 });
 
+import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import { fragmentPacket } from "@core/mesh/routing/fragment-manager";
 import {
   encodeBurstData,
@@ -57,7 +58,7 @@ import {
 } from "@core/mesh/wire/packet-codec";
 import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
+import { bytesToHex, hexToBytes, randomBytes } from "@noble/hashes/utils.js";
 import { BitchatActor } from "../harness/bitchat-actor";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import {
@@ -70,38 +71,9 @@ import { media, sameBytes } from "../harness/media-fabric";
 import { RadioFabric } from "../harness/radio-fabric";
 import { Scenario, waitFor } from "../harness/scenario";
 
-const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-// The bridge carries base64, so an injected packet has to be encoded the way
-// the native module would encode it.
-function toBase64(bytes: Uint8Array): string {
-  let out = "";
-  for (let i = 0; i < bytes.length; i += 3) {
-    const b0 = bytes[i];
-    const b1 = bytes[i + 1];
-    const b2 = bytes[i + 2];
-    out += B64[b0 >> 2];
-    out += B64[((b0 & 0x03) << 4) | ((b1 ?? 0) >> 4)];
-    out += b1 === undefined ? "=" : B64[((b1 & 0x0f) << 2) | ((b2 ?? 0) >> 6)];
-    out += b2 === undefined ? "=" : B64[b2 & 0x3f];
-  }
-  return out;
-}
-
-function fromBase64(dataBase64: string): Uint8Array {
-  const bin = globalThis.atob(dataBase64);
-  const raw = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) raw[i] = bin.charCodeAt(i);
-  return raw;
-}
-
-function peerIdToBytes(hex: string): Uint8Array {
-  const out = new Uint8Array(8);
-  for (let i = 0; i < 8; i++) {
-    out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-  }
-  return out;
-}
+// mesh-service's cap on receiving cards shown at once. Internal to the service,
+// so restated here, and M14 fails if the two ever disagree.
+const MAX_INBOUND_CARDS = 3;
 
 // An attachment packet that CLAIMS to come from `claimedPeerID`.
 function forgeAttachment(opts: {
@@ -127,9 +99,9 @@ function forgeAttachment(opts: {
     flags:
       (directed ? Flags.HAS_RECIPIENT : 0) |
       (opts.signWith !== undefined ? Flags.SIGNED : 0),
-    senderID: peerIdToBytes(opts.claimedPeerID),
+    senderID: hexToBytes(opts.claimedPeerID),
     recipientID: directed
-      ? peerIdToBytes(opts.recipientPeerID!)
+      ? hexToBytes(opts.recipientPeerID!)
       : new Uint8Array(8),
     timestamp: opts.timestamp,
     signature: new Uint8Array(64),
@@ -138,7 +110,7 @@ function forgeAttachment(opts: {
   if (opts.signWith !== undefined) {
     packet.signature = signPacket(packet, opts.signWith);
   }
-  return toBase64(encodePacket(packet));
+  return bytesToBase64(encodePacket(packet));
 }
 
 let scenario: Scenario | null = null;
@@ -498,7 +470,7 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   let relayedAsAlice = 0;
   const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
     if (who !== bob.id) return;
-    const p = decodePacket(fromBase64(dataBase64));
+    const p = decodePacket(base64ToBytes(dataBase64));
     if (
       p !== null &&
       (p.type === PacketType.FILE_TRANSFER || p.type === PacketType.FRAGMENT) &&
@@ -723,7 +695,7 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
   let daveRelayed = 0;
   const unwatch = radio.tapWrites((fromID, _linkID, dataBase64) => {
     if (fromID !== dave.id) return;
-    const p = decodePacket(fromBase64(dataBase64));
+    const p = decodePacket(base64ToBytes(dataBase64));
     if (p?.type === PacketType.VOICE_FRAME) daveRelayed++;
   });
   for (const frame of captured) radio.injectTo(dave.id, alice.id, frame);
@@ -760,7 +732,7 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
       type: PacketType.VOICE_FRAME,
       ttl: 7,
       flags: Flags.SIGNED,
-      senderID: peerIdToBytes(alice.peerID),
+      senderID: hexToBytes(alice.peerID),
       recipientID: new Uint8Array(8),
       timestamp: s.world.wallClock(),
       signature: new Uint8Array(64),
@@ -768,7 +740,7 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
     };
     packet.signature = signPacket(packet, strangerKey);
     for (const f of fragmentPacket(packet, { peerID: alice.peerID })) {
-      radio.injectTo(bob.id, carol.id, toBase64(encodePacket(f)));
+      radio.injectTo(bob.id, carol.id, bytesToBase64(encodePacket(f)));
     }
   };
   const padded = randomBytes(600);
@@ -921,8 +893,8 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   // What this is really about: a DM attachment sent as a signed FILE_TRANSFER.
   // Signed means a relay cannot forge it; it does NOT mean a relay cannot read
   // it, so a private photo in that form is legible to every node it passes
-  // through. bitchat classifies that wire form as the legacy migration
-  // fallback and has scheduled its removal.
+  // through. A DM attachment therefore goes only sealed, and with no proof of
+  // the capability to open one, it does not go at all.
   //
   // The seal is gated on the recipient having proven capability bit 8 inside a
   // Noise session (payload 0x21), never on the bit it announced: an announce
@@ -970,8 +942,8 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   // treating "the text arrived" as a proxy for it. Bob receiving alice's
   // message proves alice's session works; it does NOT prove alice has yet
   // processed bob's 0x21 coming the other way, and that is what she needs.
-  // Sending in that window falls back to signed cleartext by design, which on
-  // a slower machine is what this scenario was accidentally measuring.
+  // A send in that window is refused, which would test the refusal (M15)
+  // rather than the seal.
   const sealable = await waitFor(
     s.world,
     () => alice.mesh?.canSealPrivateMedia(bob.peerID) === true,
@@ -988,7 +960,7 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   const onAir: Packet[] = [];
   const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
     if (who !== alice.id) return;
-    const p = decodePacket(fromBase64(dataBase64));
+    const p = decodePacket(base64ToBytes(dataBase64));
     if (p !== null) onAir.push(p);
   });
 
@@ -1053,11 +1025,10 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
 });
 
 test("M15 a first photo to a stranger waits for a session instead of going out in the clear", async () => {
-  // The seal needs a session, and the cleartext fallback is for a peer that has
-  // not proven it can read a sealed file. A stranger nobody has messaged yet
-  // has no session at all, so a photo as the first act in a conversation must
-  // wait for one rather than cross the air readable under a thread promising
-  // an encrypted one.
+  // The seal needs a session, and a stranger nobody has messaged yet has none.
+  // A photo as the first act in a conversation is refused and starts the
+  // handshake, so the retry goes sealed. That it never crosses the air in the
+  // clear is M09's check, which covers every DM attachment.
   const s = (scenario = new Scenario({
     id: "M15",
     title: "a photo before any text starts the handshake and is refused",
@@ -1074,13 +1045,6 @@ test("M15 a first photo to a stranger waits for a session instead of going out i
     30_000,
   );
   s.check("alice and bob hold a direct link", direct);
-
-  const onAir: Packet[] = [];
-  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
-    if (who !== alice.id) return;
-    const p = decodePacket(fromBase64(dataBase64));
-    if (p !== null) onAir.push(p);
-  });
 
   const aliceThread = `dm:${bob.peerID}`;
   const bobThread = `dm:${alice.peerID}`;
@@ -1111,22 +1075,7 @@ test("M15 a first photo to a stranger waits for a session instead of going out i
     () => bob.attachments(bobThread).length > 0,
     60_000,
   );
-  stopTap();
   s.check("the photo arrives", arrived);
-
-  // Fragment byte 12 is the inner packet type; see M09.
-  const cleartext = onAir.filter(
-    (p) =>
-      p.type === PacketType.FILE_TRANSFER ||
-      (p.type === PacketType.FRAGMENT &&
-        p.payload.length > 12 &&
-        p.payload[12] === PacketType.FILE_TRANSFER),
-  );
-  s.check(
-    "no part of it ever crossed the air as a cleartext file packet",
-    cleartext.length === 0,
-    `${String(cleartext.length)} cleartext file packet(s)`,
-  );
 
   s.expectNone("every frame fits a BLE write", noOversizedFrames(radio));
   s.expectNone("process health", noCrashes(devices));
@@ -1520,15 +1469,15 @@ test("M14 a receiving card appears only for a file that could be real, and never
       type: opts.type,
       ttl: 7,
       flags: opts.to !== undefined ? Flags.HAS_RECIPIENT : 0,
-      senderID: peerIdToBytes(opts.claimed),
+      senderID: hexToBytes(opts.claimed),
       recipientID:
-        opts.to !== undefined ? peerIdToBytes(opts.to) : new Uint8Array(8),
+        opts.to !== undefined ? hexToBytes(opts.to) : new Uint8Array(8),
       timestamp: s.world.wallClock(),
       signature: new Uint8Array(64),
       payload: randomBytes(opts.bytes),
     };
     const [first] = fragmentPacket(inner, { peerID: opts.claimed });
-    return toBase64(encodePacket(first));
+    return bytesToBase64(encodePacket(first));
   };
 
   // A file from an ID bob holds no key for could never verify.
@@ -1577,9 +1526,11 @@ test("M14 a receiving card appears only for a file that could be real, and never
     );
   }
   await s.world.advance(1_000);
+  // Exactly the cap: fewer would mean the streams were refused for some other
+  // reason and the cap was never reached.
   s.check(
-    "at most three cards at once",
-    cards().length <= 3,
+    `exactly ${String(MAX_INBOUND_CARDS)} cards at once`,
+    cards().length === MAX_INBOUND_CARDS,
     `${String(cards().length)} cards`,
   );
   s.check(

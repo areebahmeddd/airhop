@@ -1,3 +1,5 @@
+// The gossip sync packet store: oldest-first eviction under both its count
+// and its byte budget.
 import { Flags, PacketType, type Packet } from "../../wire/packet-codec";
 import { PacketStore } from "../packet-store";
 

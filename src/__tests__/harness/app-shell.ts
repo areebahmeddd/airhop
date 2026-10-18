@@ -1,17 +1,38 @@
-// A transcription of the parts of src/app/app.tsx that own the transport
-// lifecycle, driving the REAL mesh-service.
+// A transcription of the parts of src/app/app.tsx (and the boot task in
+// src/services/boot-start.ts) that own the transport lifecycle, driving the
+// REAL mesh-service.
 //
-// Navigation, chat and wallet are left out: none of them can lose a race between
-// a permission grant and a radio. Four paths are modelled, faithfully enough
-// that a defect here is a defect in the app:
+// A copy, not the production functions: they live in a component module that
+// cannot load without React Native's UI. So it can drift, and anything not
+// listed as modelled may already differ. What it models:
 //
-//   startMeshWithPermissions  request, record, start, then chain the location
-//                             and notification prompts
-//   mount                     reuse an existing mesh for the same identity,
-//                             still running its dependents once
-//   bootStart                 the headless boot task: checks only, no prompts
-//   AppState "active"         re-check permissions, retry the radios
+//   startMeshWithPermissions  ask, record the blocker, prime Tor, start, then
+//                             retryRadios and the dependents, in app.tsx's order
+//   mount                     the foreground effect's resume work on whatever
+//                             mesh exists, then the "boot" launch plan: reuse a
+//                             mesh for the same identity, still running its
+//                             dependents once
+//   bootStart                 the headless task's checks, start and off-screen
+//                             power, with no prompts
+//   setAppState               every AppState edge reaches setAppForeground
+//                             ("inactive" is not modelled); "active" re-checks
+//                             the radios
 //   meshStopRequested         applyPresence("away")
+//
+// What it does not model, so a scenario cannot speak for it:
+//
+//   - the permission primer and the settleOr deadlines on the permission
+//     check, the prompt and the primer: here the OS always answers
+//   - the identity read and planLaunch (the launch identity suite drives those
+//     directly); mount assumes the plan is "boot"
+//   - syncBootStart, and boot-start's autoStartOnBoot, backgroundMeshEnabled,
+//     wipe-marker and move-marker gates and its loadIdentity
+//   - Tor's foreground signal, the notification pipeline, the wallet and every
+//     other dependent: dependentsRuns counts the call, not its work
+//   - the blocked alert's copy: `alerts` records that one would be shown
+//
+// Moving the lifecycle out of app.tsx into a module both could import would
+// retire the copy; until then a change to that lifecycle needs one here.
 //
 // Alongside src/platform/ble-permissions.ts, whose fine-location requirement and
 // grant, deny and blocked handling are reproduced against the OS model.
@@ -37,6 +58,7 @@ import {
   applyPresence,
   applyStartupPresence,
 } from "@services/presence-service";
+import { primeTorRoutingOnStartup } from "@services/tor-routing";
 import type { AndroidPermission, DeviceOS } from "./os";
 
 // Deterministic identity: a scenario's trace should differ only because of the
@@ -78,11 +100,12 @@ export function hasBlePermissions(os: DeviceOS): boolean {
 }
 
 // `answer` stands in for the user tapping through the OS dialog. The OS model
-// applies the settle delay on the grant.
-export function ensureBlePermissions(
+// applies the settle delay on the grant. Async because the real one is: the
+// mesh start resumes on a later microtask than the request, never inline.
+export async function ensureBlePermissions(
   os: DeviceOS,
   answer: (p: AndroidPermission) => "granted" | "denied" | "blocked",
-): BlePermissionResult {
+): Promise<BlePermissionResult> {
   // Annotated, so a field that stops existing on the real type is a compile
   // error here rather than a stale property nothing reads. This object carried
   // `needsPreciseLocation` for a while after the real one dropped it, precisely
@@ -186,7 +209,7 @@ export class AppShell {
 
   // In the app's own order.
   async startMeshWithPermissions(): Promise<void> {
-    const perm = ensureBlePermissions(this.os, this.answer);
+    const perm = await ensureBlePermissions(this.os, this.answer);
     // Record WHY the mesh cannot run, not merely that it cannot.
     const setBlocker = useMeshStateStore.getState().setBleBlocker;
     useMeshStateStore.getState().setBlePermissionBlocked(perm.blockedForever);
@@ -200,9 +223,16 @@ export class AppShell {
     // The mesh still starts either way, so Nostr keeps working; the difference
     // is that the radio controller now knows it cannot bring BLE up, says so,
     // and retries when the facts change.
+    try {
+      primeTorRoutingOnStartup();
+    } catch {
+      // As in app.tsx: Tor is a preference, and must not stop the mesh.
+    }
     this.os.log("js", "initMeshService");
     initMeshService(this.identity, this.nickname);
     applyStartupPresence();
+    // The nudge for a grant that landed while the mesh was being built.
+    getMeshService()?.retryRadios();
     this.startMeshDependents();
     await Promise.resolve();
   }
@@ -219,6 +249,11 @@ export class AppShell {
   // A remount reuses an existing mesh for the same identity, and still owes
   // it the dependents a boot start could not run.
   async mount(): Promise<void> {
+    // The foreground effect, which runs on mount ahead of the identity read:
+    // a no-op on a cold start, and the resume work on a mesh that outlived the
+    // Activity.
+    getMeshService()?.retryRadios();
+    getMeshService()?.setAppForeground(this.os.appForeground);
     const existing = getMeshService();
     if (existing?.peerID !== this.identity.peerID) {
       await this.startMeshWithPermissions();
@@ -235,13 +270,23 @@ export class AppShell {
     if (!hasBlePermissions(this.os)) return;
     if (getMeshService()?.peerID === this.identity.peerID) return;
     this.os.log("js", "BOOT_START_MESH");
+    try {
+      primeTorRoutingOnStartup();
+    } catch {
+      // Tor is a preference, not a prerequisite.
+    }
     initMeshService(this.identity, this.nickname);
     applyStartupPresence();
+    // No screen, so the radios start at their off-screen power.
+    getMeshService()?.setAppForeground(false);
+    getMeshService()?.retryRadios();
   }
 
   async setAppState(next: "active" | "background"): Promise<void> {
     this.os.appForeground = next === "active";
     this.os.log("user", `APP_${next.toUpperCase()}`);
+    // Both edges: the power policy needs the leaving one as much as the return.
+    getMeshService()?.setAppForeground(next !== "background");
     if (next !== "active") return;
     // Unconditional: the controller reads the device itself, so the resume
     // handler does not have to guess whether anything changed.

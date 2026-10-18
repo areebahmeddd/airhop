@@ -43,8 +43,6 @@ import { TorWebSocket } from "./tor-websocket";
 // restored when Tor is turned off.
 const DirectWebSocket = WebSocket;
 
-let torActive = false;
-
 export interface TorRoutingResult {
   ok: boolean;
   // Why enabling failed, for the UI to explain:
@@ -55,14 +53,9 @@ export interface TorRoutingResult {
   reason?: "unavailable" | "timeout" | "no-bridges" | "error";
 }
 
-export function isTorRoutingActive(): boolean {
-  return torActive;
-}
-
-// Single writer for the active flag, mirrored into the mesh store so the Mesh
+// Single writer for the active flag. It lives in the mesh store, so the Mesh
 // banner reacts the instant Tor is toggled, or primed at startup.
 function setTorActive(active: boolean): void {
-  torActive = active;
   useMeshStateStore.getState().setTorActive(active);
 }
 

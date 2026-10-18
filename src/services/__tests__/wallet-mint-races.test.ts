@@ -14,10 +14,12 @@ import { useSettingsStore } from "@store/settings-store";
 import {
   accountKey,
   bootstrapWalletStorage,
+  isWalletStorageReady,
   useWalletStore,
   whenWalletHydrated,
   wipeWalletStorage,
 } from "@store/wallet-store";
+import { txFailureVerbatim } from "@utils/message-text";
 import {
   MintFabric,
   simInvoice,
@@ -27,57 +29,19 @@ import {
   addMint,
   claimLightningDeposit,
   createLightningDeposit,
+  failNutzapDelivery,
   initWalletService,
   lockProofsForNutzap,
   payLightningInvoice,
   prepareSend,
   quoteLightningWithdrawal,
   receiveToken,
+  reclaimSend,
   reconcile,
   refreshAccount,
   resetWalletService,
   restoreFromRecoveryPhrase,
 } from "../wallet-service";
-
-// Only the two accessors are replaced; see wallet-send-lifecycle for why.
-jest.mock("@core/crypto/keychain", () => {
-  const secrets = new Map<string, string>();
-  return {
-    ...jest.requireActual("@core/crypto/keychain"),
-    readSecret: jest.fn((item: string) => secrets.get(item) ?? null),
-    writeSecret: jest.fn((item: string, value: string) => {
-      secrets.set(item, value);
-    }),
-  };
-});
-
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    // Nothing is encrypted in the mock.
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn((id: string) => instances.delete(id)),
-  };
-});
 
 jest.setTimeout(60_000);
 
@@ -227,8 +191,12 @@ describe("swaps hold their inputs", () => {
     const token = await strangersToken(8);
     // Internet off: stored with no swap staged, so only a refresh swaps it.
     useSettingsStore.setState({ internetEnabled: false });
-    const stored = await receiveToken(token);
-    useSettingsStore.setState({ internetEnabled: true });
+    let stored;
+    try {
+      stored = await receiveToken(token);
+    } finally {
+      useSettingsStore.setState({ internetEnabled: true });
+    }
     expect(stored.outcome).toBe("stored");
 
     fabric.setConditions({ latencyMs: 40 });
@@ -509,6 +477,42 @@ describe("restoring a different phrase", () => {
   });
 });
 
+// A nutzap is final once locked: the coins are the recipient's whatever
+// happens to delivery. The lock leaves no reservation behind, so a reclaim,
+// which would credit coins they can spend, has nothing to release.
+describe("a nutzap, once locked to their key", () => {
+  async function locked(): Promise<string> {
+    await fund(16);
+    const { txId } = await lockProofsForNutzap({
+      amount: 8,
+      mintUrl: fabric.url,
+      unit: UNIT,
+      recipientPubkey: RECIPIENT_P2PK,
+    });
+    return txId;
+  }
+
+  it("cannot be reclaimed, because the money is already theirs", async () => {
+    const txId = await locked();
+
+    expect(reclaimSend(txId)).toBe(false);
+    expect(spendable()).toBe(8);
+    expect(reservedTotal()).toBe(0);
+  });
+
+  it("records a delivery failure without giving the money back", async () => {
+    const txId = await locked();
+
+    failNutzapDelivery(txId, txFailureVerbatim("no relay accepted the event"));
+
+    // A failed delivery says nothing about whether the recipient can spend
+    // the coins, so they stay out of reach.
+    expect(reclaimSend(txId)).toBe(false);
+    expect(spendable()).toBe(8);
+    expect(reservedTotal()).toBe(0);
+  });
+});
+
 // Last, because it tears the storage down.
 describe("a panic wipe during a mint round trip", () => {
   it("does not let the operation write the old wallet back", async () => {
@@ -529,11 +533,11 @@ describe("a panic wipe during a mint round trip", () => {
     expect(useWalletStore.getState().history).toEqual([]);
 
     // The wipe drops to onboarding in the same process, and the next identity
-    // unlocks the wallet again. That must read the new partition at once, not
-    // wait out the hydration timeout.
-    const started = Date.now();
+    // unlocks the wallet again. That must read the new partition, not wait out
+    // the hydration timeout: the timeout settles hydration as failed, so init
+    // reporting an open wallet proves a real read settled it first.
     expect(await initWalletService()).toBe(true);
-    expect(Date.now() - started).toBeLessThan(1_000);
+    expect(isWalletStorageReady()).toBe(true);
     expect(useWalletStore.getState().history).toEqual([]);
 
     await addMint(fabric.url);

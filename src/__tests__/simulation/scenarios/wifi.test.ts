@@ -394,7 +394,7 @@ test("W-F04 a photo too big for one BLE frame crosses WiFi in one piece", async 
   // write. The mesh engine composes it identically either way, which is the
   // property under test.
   // Real JPEG magic bytes. The transfer layer refuses a file whose declared
-  // MIME does not match its contents (tier-media M03), so a buffer of filler
+  // MIME does not match its contents (media.test.ts M03), so a buffer of filler
   // would be rejected before it ever reached a radio.
   const bytes = media.jpeg(64 * 1024);
   const accepted = a.sendAttachment(CHANNEL, bytes, {

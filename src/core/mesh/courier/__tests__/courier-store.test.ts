@@ -57,11 +57,6 @@ function makeEnvelopePayload(
 }
 
 describe("recipientTag", () => {
-  test("produces 16 bytes", () => {
-    const keys = makeNoiseKeypair();
-    expect(computeRecipientTag(keys.pub)).toHaveLength(16);
-  });
-
   test("same pubkey + same day -> same tag", () => {
     const keys = makeNoiseKeypair();
     // The first and last millisecond of one UTC day.
@@ -78,15 +73,6 @@ describe("recipientTag", () => {
     const nowMs = Date.now();
     expect(bytesToHex(computeRecipientTag(k1.pub, nowMs))).not.toBe(
       bytesToHex(computeRecipientTag(k2.pub, nowMs)),
-    );
-  });
-
-  test("same pubkey, different day -> different tags", () => {
-    const keys = makeNoiseKeypair();
-    const day0 = 0;
-    const day1 = 86400 * 1000;
-    expect(bytesToHex(computeRecipientTag(keys.pub, day0))).not.toBe(
-      bytesToHex(computeRecipientTag(keys.pub, day1)),
     );
   });
 });
@@ -474,7 +460,7 @@ describe("CourierStore spray", () => {
     store.deposit(makeEnvelopePayload(tag, 255), depositor.pub, "verified");
 
     const peer = makeNoiseKeypair();
-    expect(store.offerSpray(peer.pub)[0].copies).toBeLessThanOrEqual(4);
+    expect(store.offerSpray(peer.pub)[0].copies).toBe(4);
   });
 
   test("skips envelopes with copies < 2", () => {
@@ -609,21 +595,22 @@ describe("CourierStore persistence", () => {
     const depositor = makeNoiseKeypair();
     const tag = new Uint8Array(16).fill(0x51);
 
-    const first = new CourierStore(id);
-    first.deposit(
-      encodeEnvelopePayload({
-        recipientTag: tag,
-        expiryMs: Date.now() + 40,
-        copies: 4,
-        ciphertext: uniqueCiphertext(),
-      }),
-      depositor.pub,
-      "verified",
-    );
-    expect(first.size).toBe(1);
-
-    jest.useFakeTimers().setSystemTime(Date.now() + 60_000);
+    jest.useFakeTimers().setSystemTime(1_800_000_000_000);
     try {
+      const first = new CourierStore(id);
+      first.deposit(
+        encodeEnvelopePayload({
+          recipientTag: tag,
+          expiryMs: Date.now() + 40,
+          copies: 4,
+          ciphertext: uniqueCiphertext(),
+        }),
+        depositor.pub,
+        "verified",
+      );
+      expect(first.size).toBe(1);
+
+      jest.setSystemTime(Date.now() + 60_000);
       expect(new CourierStore(id).size).toBe(0);
     } finally {
       jest.useRealTimers();

@@ -33,8 +33,4 @@ export class ReadAckQueue {
       if (!keep(key)) this.pending.delete(key);
     }
   }
-
-  count(key: string): number {
-    return this.pending.get(key)?.size ?? 0;
-  }
 }

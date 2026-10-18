@@ -72,7 +72,6 @@ interface TransferState {
   // Driven off a wall clock rather than an event because the whole point is to
   // catch the absence of events (a peer that stopped sending). Idempotent.
   reconcile: () => void;
-  activeForChannel: (channel: string) => Transfer[];
   // In flight (active or stalled), in one direction or both.
   activeCount: (direction?: TransferDirection) => number;
   clearAll: () => void;
@@ -245,12 +244,6 @@ export const useTransferStore = create<TransferState>()((set, get) => ({
       delete next[id];
       return { transfers: next };
     });
-  },
-
-  activeForChannel(channel) {
-    return Object.values(get().transfers)
-      .filter((t) => t.channel === channel)
-      .sort((a, b) => a.startedAtMs - b.startedAtMs);
   },
 
   activeCount(direction) {

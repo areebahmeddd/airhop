@@ -1,7 +1,9 @@
 // The Android half of the Tor decision, where Airhop owns Arti too.
 //
-// A separate file from tor-routing-ios.test.ts because `Platform.OS` is read at
-// module import time, so one registry cannot hold both platforms. The model
+// A separate file from tor-routing-ios.test.ts because each pins its own
+// platform in the react-native mock, and the native modules differ with it
+// (no TorSocket here). `Platform.OS` is read per call, so nothing else forces
+// the split. The model
 // under test is the same on both: start the embedded client, point the app's
 // sockets at it, report honestly, fail closed. What this file exists to pin
 // down is the one place they still differ.
@@ -29,6 +31,9 @@ const mockAwaitTorReady = jest.fn<Promise<boolean>, [number]>();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
 const mockHoldRoute = jest.fn<Promise<void>, []>();
 const mockSetTorActive = jest.fn();
+// What the store holds, so a test reads the claim where the UI reads it. Not
+// reset between tests, like the store it stands in for.
+let mockTorActive = false;
 // Tracked, because a retry and the internet switch read it back to tell the
 // held state from a start in flight.
 let mockTorBootstrap: TorBootstrapPhase = "idle";
@@ -118,7 +123,13 @@ jest.mock("../mesh-service", () => ({
 jest.mock("@store/mesh-state-store", () => ({
   useMeshStateStore: {
     getState: () => ({
-      setTorActive: mockSetTorActive,
+      setTorActive: (active: boolean) => {
+        mockTorActive = active;
+        mockSetTorActive(active);
+      },
+      get torActive() {
+        return mockTorActive;
+      },
       setTorBootstrap: mockSetTorBootstrap,
       setNostrBlockedByTor: mockSetNostrBlockedByTor,
       get nostrBlockedByTor() {
@@ -157,10 +168,13 @@ jest.mock("@store/settings-store", () => ({
   },
 }));
 
-import type { TorBootstrapPhase } from "@store/mesh-state-store";
+import { SNOWFLAKE_BRIDGE_LINES } from "@data/bridges";
+import {
+  useMeshStateStore,
+  type TorBootstrapPhase,
+} from "@store/mesh-state-store";
 import {
   applyInternetAvailability,
-  isTorRoutingActive,
   isTorStartRecovered,
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
@@ -215,7 +229,7 @@ describe("enabling Tor on Android", () => {
     expect(mockStartTor).toHaveBeenCalledTimes(1);
     expect(mockSetTorEnabled).toHaveBeenCalledWith(true);
     expect(mockSetTorActive).toHaveBeenLastCalledWith(true);
-    expect(isTorRoutingActive()).toBe(true);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 
   test("rebuilds the Nostr transport so relays reconnect over Tor", async () => {
@@ -254,7 +268,7 @@ describe("enabling Tor on Android", () => {
     // reverting would put the user back on the clear net they just left.
     expect(mockStopTor).not.toHaveBeenCalled();
     expect(mockSetTorEnabled).not.toHaveBeenCalledWith(false);
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   test("a client that fails to start unwinds completely", async () => {
@@ -265,7 +279,7 @@ describe("enabling Tor on Android", () => {
     expect(result).toEqual({ ok: false, reason: "error" });
     expect(mockStopTor).toHaveBeenCalled();
     expect(mockSetTorEnabled).toHaveBeenLastCalledWith(false);
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   test("consent withdrawn during the bootstrap is not overridden", async () => {
@@ -280,7 +294,7 @@ describe("enabling Tor on Android", () => {
     const result = await setTorRouting(true);
 
     expect(result).toEqual({ ok: false, reason: "error" });
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   // A relay dialled before the circuit fails its first connect and is never
@@ -309,6 +323,9 @@ describe("enabling Tor on Android", () => {
     await setTorRouting(true);
 
     expect(mockNostrBlocked).toBe(false);
+    // That early report moved nothing, so it rebuilt nothing: one rebuild for
+    // the gate rising and one for it opening, as on a cold start.
+    expect(mockRestartNostr).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -323,7 +340,7 @@ describe("disabling Tor on Android", () => {
     expect(mockSetTorEnabled).toHaveBeenCalledWith(false);
     expect(mockSetTorActive).toHaveBeenLastCalledWith(false);
     expect(mockRestartNostr).toHaveBeenCalled();
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   test("lowers the preference before stopping the client", async () => {
@@ -397,7 +414,7 @@ describe("surviving a Tor client that kills the process", () => {
     expect(mockNostrBlocked).toBe(true);
     expect(mockHoldRoute).toHaveBeenCalledTimes(1);
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
     expect(isTorStartRecovered(true, true, "blocked")).toBe(true);
   });
 
@@ -471,7 +488,7 @@ describe("surviving a Tor client that kills the process", () => {
     expect(mockTorEnabled).toBe(true);
     expect(mockNostrBlocked).toBe(true);
     expect(mockHoldRoute).toHaveBeenCalled();
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
     // Still the held state, so the Try again button is still there.
     expect(
       isTorStartRecovered(
@@ -551,7 +568,7 @@ describe("startup priming on Android", () => {
     // here would assert it before a single circuit existed, and on a network
     // that blocks Tor it would stay green for the whole session.
     expect(mockSetTorActive).not.toHaveBeenCalledWith(true);
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   test("raises the claim only when Arti reports it is ready", () => {
@@ -576,7 +593,7 @@ describe("startup priming on Android", () => {
     await Promise.resolve();
 
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   test("holds the relay pool until Arti reports it is ready", () => {
@@ -713,7 +730,7 @@ describe("the master internet switch", () => {
     applyInternetAvailability(false);
 
     expect(mockStopTor).toHaveBeenCalledTimes(1);
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
     // Untouched: the user turned the internet off, not Tor.
     expect(mockSetTorEnabled).not.toHaveBeenCalled();
   });
@@ -784,21 +801,10 @@ describe("bridge modes", () => {
     expect(mockStartTor).toHaveBeenCalledWith("");
   });
 
-  test("snowflake starts with lines carrying the rendezvous and utls", async () => {
+  test("snowflake starts the client on the bundled snowflake lines", async () => {
     mockBridgeMode = "snowflake";
     await setTorRouting(true);
-
-    const lines = mockStartTor.mock.calls[0][0] as string;
-    expect(lines.split("\n")).toHaveLength(2);
-    for (const line of lines.split("\n")) {
-      expect(line.startsWith("snowflake ")).toBe(true);
-      // Dropping any of these leaves a connection that works but is easier to
-      // pick out, which is the whole point of the mode.
-      expect(line).toContain("url=");
-      expect(line).toContain("fronts=");
-      expect(line).toContain("ice=");
-      expect(line).toContain("utls-imitate=hellorandomizedalpn");
-    }
+    expect(mockStartTor).toHaveBeenCalledWith(SNOWFLAKE_BRIDGE_LINES);
   });
 
   test("custom passes the pasted lines through, trimmed", async () => {
@@ -876,7 +882,7 @@ describe("bridge modes", () => {
     expect(rebuiltWhileOff).not.toContain(true);
     expect(mockHoldRoute).toHaveBeenCalled();
     expect(mockTorBootstrap).toBe("blocked");
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
     // Nothing crashed, so the next launch starts again (and is refused the
     // same way) rather than offering a Try again for a crash.
     expect(mockTorStartPending).toBe(false);

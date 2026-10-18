@@ -109,11 +109,15 @@ React Native. A `@jest-environment` pragma would bypass it, so none is used.
 
 The test suite follows four principles:
 
-- **Never depend on the system clock.** Tests run under fake timers, and
-  anything requiring a timestamp receives it from the harness. This avoids
-  failures that only appear on slower CI machines.
-- **Always seed randomness.** Every simulation scenario uses a deterministic
-  PRNG seed so failures can be reproduced exactly.
+- **Never depend on the system clock.** A suite opts in to fake timers, and
+  pins the clock with `setSystemTime`, wherever time matters, and anything
+  requiring a timestamp receives it from the harness. This avoids failures that
+  only appear on slower CI machines.
+- **Always seed randomness.** Every simulation scenario takes a seed that fixes
+  its schedule: the radio's faults and timings, the app's own jitter and the
+  wall clock, so a failure re-runs on the same interleaving. Keys, nonces and
+  handshake ephemerals stay truly random, so the ciphertext differs between
+  runs.
 - **Assert invariants instead of execution order.** Distributed systems rarely
   have a single valid message sequence. Tests verify properties that must always
   hold regardless of scheduling.

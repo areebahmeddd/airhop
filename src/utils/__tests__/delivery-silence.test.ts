@@ -1,10 +1,10 @@
 // When a conversation is worth telling the user has gone unconfirmed.
 //
-// The case that produced this: a peer who panic-wiped is, by design, unlinkable
-// to whoever they came back as - so from the other side they are simply gone
-// forever, and every message keeps publishing to relays that accept it happily.
-// The bubble said "sent" and never moved. That is also what an uninstall, a lost
-// phone and a permanent silence look like, so one honest rule covers them all.
+// A peer who panic-wiped is, by design, unlinkable to whoever they come back
+// as, so from the other side they are gone for good while every message keeps
+// publishing to relays that accept it, and the bubble reads "sent" forever. An
+// uninstall, a lost phone and a permanent silence look the same, so one honest
+// rule covers them all.
 //
 // What must NOT happen is calling it failure. Gift wraps sit on relays and the
 // inbox asks for them with no lower time bound, so a peer returning after three

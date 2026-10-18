@@ -1,3 +1,5 @@
+// A translated sentence with rendered spans inside, filled the way t() is.
+
 import { fillRichText } from "../rich-text";
 
 describe("fillRichText", () => {

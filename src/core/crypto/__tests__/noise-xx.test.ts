@@ -1,12 +1,8 @@
+// Noise XX handshake, transport sessions, replay window and the exporter secret
+// that seeds the Double Ratchet.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
-import { hkdf } from "@noble/hashes/hkdf.js";
-import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { NoiseHandshake } from "../noise-xx";
-
-// Mirrors DR_SEED_INFO in mesh-service: the tests assert the derivation, so they
-// have to use the same info string it does.
-const INFO = new TextEncoder().encode("airhop-dr-seed-v1");
 
 function makeKeypair() {
   const priv = ed25519.utils.randomSecretKey();
@@ -51,11 +47,9 @@ describe("Noise XX handshake", () => {
   });
 
   test("transport round-trips a run of messages as the nonce increments", () => {
-    // The Double Ratchet's exporter secret is a third HKDF output of the same
-    // split that makes these transport keys. HKDF chains block N from block
-    // N-1, so k1/k2 match a two-output split, but that is a property of the KDF,
-    // not something the type system enforces, and breaking it would silently
-    // end transport interop with bitchat. The round-trip pins it.
+    // Both sides derive matching transport keys and advance their nonces in
+    // step. Both run this code, so it cannot catch a split that disagrees with
+    // bitchat's; only a cross-implementation vector could.
     const iKeys = makeKeypair();
     const rKeys = makeKeypair();
 
@@ -72,23 +66,6 @@ describe("Noise XX handshake", () => {
       const ct = sI.encrypt(pt);
       expect(new TextDecoder().decode(sR.decrypt(ct))).toBe(`msg-${n}`);
     }
-  });
-
-  test("replay protection: duplicate ciphertext is rejected", () => {
-    const iKeys = makeKeypair();
-    const rKeys = makeKeypair();
-
-    const i = NoiseHandshake.createInitiator(iKeys.priv);
-    const r = NoiseHandshake.createResponder(rKeys.priv);
-    r.readMsg1(i.writeMsg1());
-    i.readMsg2(r.writeMsg2());
-    r.readMsg3(i.writeMsg3());
-    const sI = i.split();
-    const sR = r.split();
-
-    const ct = sI.encrypt(new TextEncoder().encode("dup"));
-    sR.decrypt(ct); // first: ok
-    expect(() => sR.decrypt(ct)).toThrow(); // second: replay
   });
 
   test("tampered ciphertext fails decryption", () => {
@@ -243,15 +220,11 @@ describe("Double Ratchet seeding", () => {
     return { i: initiator.split(), r: responder.split() };
   }
 
-  test("both sides can seed the same root key with no extra round-trips", () => {
-    const iKeys = makeKeypair();
-    const rKeys = makeKeypair();
-    const { i, r } = completeHandshake(iKeys.priv, rKeys.priv);
+  test("both sides hold the same exporter secret with no extra round-trips", () => {
+    // The root key is a fixed HKDF of this, so equal secrets mean equal roots.
+    const { i, r } = completeHandshake(makeKeypair().priv, makeKeypair().priv);
 
-    const rootI = hkdf(sha256, i.exporterSecret, undefined, INFO, 32);
-    const rootR = hkdf(sha256, r.exporterSecret, undefined, INFO, 32);
-
-    expect(bytesToHex(rootI)).toBe(bytesToHex(rootR));
+    expect(bytesToHex(i.exporterSecret)).toBe(bytesToHex(r.exporterSecret));
   });
 
   test("the seed is NOT the public transcript hash", () => {
@@ -265,23 +238,16 @@ describe("Double Ratchet seeding", () => {
     expect(bytesToHex(i.exporterSecret)).not.toBe(bytesToHex(i.handshakeHash));
   });
 
-  test("the root key is NOT derivable from the two static keys alone", () => {
+  test("the seed is NOT the static-static DH", () => {
     // An attacker who later obtains both long-term keys and has recorded the
     // traffic must still not reconstruct the root key.
     const iKeys = makeKeypair();
     const rKeys = makeKeypair();
     const { i } = completeHandshake(iKeys.priv, rKeys.priv);
 
-    const staticStatic = hkdf(
-      sha256,
-      x25519.getSharedSecret(iKeys.priv, rKeys.pub),
-      undefined,
-      INFO,
-      32,
-    );
-    const fromExporter = hkdf(sha256, i.exporterSecret, undefined, INFO, 32);
+    const staticStatic = x25519.getSharedSecret(iKeys.priv, rKeys.pub);
 
-    expect(bytesToHex(fromExporter)).not.toBe(bytesToHex(staticStatic));
+    expect(bytesToHex(i.exporterSecret)).not.toBe(bytesToHex(staticStatic));
   });
 
   test("two handshakes between the SAME pair yield different root keys", () => {

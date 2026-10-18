@@ -1,6 +1,7 @@
 // The headless task Android runs after a reboot, with no Activity and no UI.
-// It may only ever start the identity the user still has, and has to bring up
-// what a running mesh owes the user with nobody looking: notifications.
+// It starts only when the user asked for it, only the identity the user still
+// has, and has to bring up what a running mesh owes the user with nobody
+// looking: notifications, and the media retention sweep.
 
 const mockRegisterHeadlessTask = jest.fn();
 const mockLoadIdentity = jest.fn();
@@ -21,6 +22,7 @@ const mockStartNotice = jest.fn();
 const mockSweepMedia = jest.fn();
 const mockApplyStartupPresence = jest.fn();
 let mockWipePending = false;
+let mockMoveMarker: string | null = null;
 let mockSettings = { autoStartOnBoot: true, backgroundMeshEnabled: true };
 
 jest.mock("react-native", () => ({
@@ -56,7 +58,7 @@ jest.mock("@services/tor-routing", () => ({
 jest.mock("@store/settings-store", () => ({
   useSettingsStore: { getState: () => mockSettings },
 }));
-jest.mock("../boot-sync", () => ({ syncAutoStartOnBoot: jest.fn() }));
+jest.mock("../boot-sync", () => ({ syncBootStart: jest.fn() }));
 jest.mock("../notification-pipeline", () => ({
   startNotificationPipeline: (nickname: () => string) =>
     mockStartPipeline(nickname),
@@ -75,6 +77,9 @@ jest.mock("../presence-service", () => ({
 }));
 jest.mock("../wipe-marker", () => ({
   isPanicWipePending: () => mockWipePending,
+}));
+jest.mock("../move-marker", () => ({
+  readMoveMarker: () => mockMoveMarker,
 }));
 
 import { registerBootStartTask } from "../boot-start";
@@ -103,6 +108,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockMesh = null;
   mockWipePending = false;
+  mockMoveMarker = null;
   mockSettings = { autoStartOnBoot: true, backgroundMeshEnabled: true };
   mockLoadIdentity.mockResolvedValue(IDENTITY);
   mockHasBlePermissions.mockResolvedValue(true);
@@ -120,6 +126,8 @@ describe("bootStartMesh", () => {
     expect(mockStartPipeline).toHaveBeenCalledTimes(1);
     expect(mockStartReachability).toHaveBeenCalledTimes(1);
     expect(mockStartNotice).toHaveBeenCalledTimes(1);
+    // A phone that is never opened still ages its attachments out.
+    expect(mockSweepMedia).toHaveBeenCalledTimes(1);
     // The mention check reads the name the mesh announces.
     const nickname = mockStartPipeline.mock.calls[0][0] as () => string;
     expect(nickname()).toBe(mockInitMeshService.mock.calls[0][1]);
@@ -158,6 +166,39 @@ describe("bootStartMesh", () => {
     expect(mockInitMeshService).not.toHaveBeenCalled();
     expect(mockPrimeTor).not.toHaveBeenCalled();
     expect(mockStartPipeline).not.toHaveBeenCalled();
+  });
+
+  test("starts nothing when start-on-boot is off", async () => {
+    mockSettings = { autoStartOnBoot: false, backgroundMeshEnabled: true };
+
+    await runBoot();
+
+    expect(mockLoadIdentity).not.toHaveBeenCalled();
+    expect(mockInitMeshService).not.toHaveBeenCalled();
+  });
+
+  // Without the background mesh the foreground service never stays up, so
+  // Android would kill the runtime moments after waking it.
+  test("starts nothing when the background mesh is off", async () => {
+    mockSettings = { autoStartOnBoot: true, backgroundMeshEnabled: false };
+
+    await runBoot();
+
+    expect(mockLoadIdentity).not.toHaveBeenCalled();
+    expect(mockInitMeshService).not.toHaveBeenCalled();
+  });
+
+  // A transfer the person has yet to resolve is theirs to answer in the app;
+  // only a send that never finished its stream moved nothing.
+  test("waits for the app when a transfer is unresolved", async () => {
+    mockMoveMarker = "receiving";
+    await runBoot();
+    expect(mockLoadIdentity).not.toHaveBeenCalled();
+    expect(mockInitMeshService).not.toHaveBeenCalled();
+
+    mockMoveMarker = "sending";
+    await runBoot();
+    expect(mockInitMeshService).toHaveBeenCalledTimes(1);
   });
 
   test("leaves a mesh already running for this identity alone", async () => {

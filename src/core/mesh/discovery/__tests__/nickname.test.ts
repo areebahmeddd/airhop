@@ -5,12 +5,12 @@ import {
   decodeAnnouncePayload,
   encodeAnnouncePayload,
 } from "../announce-manager";
-import { nicknameKey, normalizeNickname, sameNickname } from "../nickname";
+import { nicknameKey, normalizeNickname } from "../nickname";
 
 // "José" written the two ways a keyboard can produce it. These are different
 // byte sequences that render identically.
-const COMPOSED = "José"; // U+00E9 LATIN SMALL LETTER E WITH ACUTE
-const DECOMPOSED = "José"; // U+0065 + U+0301 COMBINING ACUTE ACCENT
+const COMPOSED = "Jos\u00e9"; // U+00E9 LATIN SMALL LETTER E WITH ACUTE
+const DECOMPOSED = "Jose\u0301"; // U+0065 + U+0301 COMBINING ACUTE ACCENT
 
 describe("normalizeNickname", () => {
   it("the two encodings of one name are not equal to begin with", () => {
@@ -33,12 +33,6 @@ describe("normalizeNickname", () => {
     expect(normalizeNickname("ana")).toBe("ana");
   });
 
-  it("sameNickname ignores encoding and case", () => {
-    expect(sameNickname(COMPOSED, DECOMPOSED)).toBe(true);
-    expect(sameNickname(COMPOSED, DECOMPOSED.toUpperCase())).toBe(true);
-    expect(sameNickname("ana", "anabelle")).toBe(false);
-  });
-
   it("nicknameKey is stable across encoding and case", () => {
     expect(nicknameKey(DECOMPOSED)).toBe(nicknameKey(COMPOSED.toUpperCase()));
   });
@@ -56,7 +50,6 @@ describe("announce nickname round-trip", () => {
     const payload = encodeAnnouncePayload(
       identity as never,
       nickname,
-      [],
       undefined,
       0,
     );
@@ -77,7 +70,6 @@ describe("announce nickname round-trip", () => {
     const payload = encodeAnnouncePayload(
       identity as never,
       DECOMPOSED,
-      [],
       undefined,
       0,
     );
@@ -93,7 +85,6 @@ describe("announce nickname round-trip", () => {
     const payload = encodeAnnouncePayload(
       identity as never,
       "\u{1f600}".repeat(32),
-      [],
       undefined,
       0,
     );
@@ -105,7 +96,6 @@ describe("announce nickname round-trip", () => {
     const payload = encodeAnnouncePayload(
       identity as never,
       "\u{1f600}".repeat(32),
-      [],
       undefined,
       0,
     );
@@ -125,7 +115,6 @@ describe("normalizeNickname strips what cannot be seen", () => {
     expect(normalizeNickname("\u2066Mom\u2069")).toBe("Mom");
     expect(normalizeNickname("Mo\u200Bm")).toBe("Mom");
     expect(normalizeNickname("Mom\u{E0061}\u{E007F}")).toBe("Mom");
-    expect(sameNickname("Mo\u200Bm", "mom")).toBe(true);
   });
 
   it("keeps an emoji joined by ZWJ in one piece", () => {

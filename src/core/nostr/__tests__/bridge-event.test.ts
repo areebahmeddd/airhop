@@ -33,10 +33,6 @@ describe("bridgeStableID", () => {
     expect(bridgeStableID("ab", 1, "x")).not.toBe(base);
     expect(bridgeStableID("aa", 2, "x")).not.toBe(base);
   });
-
-  test("is 32 hex chars", () => {
-    expect(bridgeStableID("aa", 1, "x")).toMatch(/^[0-9a-f]{32}$/);
-  });
 });
 
 describe("createBridgeMeshEvent", () => {

@@ -47,7 +47,7 @@ jest.mock("nostr-tools", () => {
   };
 });
 
-import { base64ToBytes } from "@core/encoding/base64";
+import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import {
   CarrierDirection,
   encodeNostrCarrier,
@@ -86,6 +86,14 @@ jest.setTimeout(240_000);
 const NOSTR_CARRIER = 0x28;
 // Geohash channel message, the thing a gateway publishes on someone's behalf.
 const KIND_GEOHASH_MESSAGE = 20000;
+
+// Whether some relay holds a kind-20000 note with exactly this text. Counting
+// publishes instead would pass on any event at all, a presence beacon included.
+function publishedText(relay: RelayFabric, text: string): boolean {
+  return relay
+    .eventsOfKind(KIND_GEOHASH_MESSAGE)
+    .some((e) => e.content === text);
+}
 
 // The types bitchat has no case for and relays uninterpreted. Anything else it
 // drops as unknown is a registry divergence, not an Airhop extension.
@@ -288,13 +296,19 @@ test("N02 turning the gateway off stops it carrying for anyone", async () => {
   relay.setOffline("stranded", true);
   for (const d of cast) d.launch();
 
-  await waitForCoarse(
-    s.world,
-    () => stranded.peers().includes(neighbour.peerID),
-    30_000,
+  s.check(
+    "the stranded phone found its neighbour",
+    await waitForCoarse(
+      s.world,
+      () => stranded.peers().includes(neighbour.peerID),
+      30_000,
+    ),
   );
   for (const d of cast) d.joinChannel(CELL_CHANNEL);
-  await cellsResolved(s, cast, CELL_CHANNEL);
+  s.check(
+    "both phones resolved the cell",
+    await cellsResolved(s, cast, CELL_CHANNEL),
+  );
 
   const eventsBefore = relay.eventsOfKind(KIND_GEOHASH_MESSAGE).length;
   stranded.send(CELL_CHANNEL, "should not leave the mesh");
@@ -694,7 +708,10 @@ test("N06 with the bridge off, the two groups stay separate", async () => {
   const { radio, devices } = twoIslands(s, relay, { bridge: false });
   const [, localA, , localB] = devices;
 
-  await waitForCoarse(s.world, () => radio.linkCount() === 2, 30_000);
+  s.check(
+    "both islands formed",
+    await waitForCoarse(s.world, () => radio.linkCount() === 2, 30_000),
+  );
   for (const d of devices) d.joinChannel(BRIDGE_CHANNEL);
   for (const d of devices) d.joinChannel(CELL_CHANNEL);
   await cellsResolved(s, devices, CELL_CHANNEL);
@@ -924,16 +941,25 @@ test("N09 both features under a hostile network and a moving crowd", async () =>
   for (const id of ["a1", "a2", "b1", "b2"]) relay.setOffline(id, true);
   for (const d of devices) d.launch();
 
-  await waitForCoarse(s.world, () => radio.linkCount() === 4, 40_000);
+  s.check(
+    "both islands formed",
+    await waitForCoarse(s.world, () => radio.linkCount() === 4, 40_000),
+  );
   for (const d of devices) {
     d.joinChannel(BRIDGE_CHANNEL);
     d.joinChannel(CELL_CHANNEL);
   }
-  await cellsResolved(s, devices, CELL_CHANNEL);
-  await waitForCoarse(
-    s.world,
-    () => a1.seesGateway() && b1.seesGateway(),
-    90_000,
+  s.check(
+    "every phone resolved the cell",
+    await cellsResolved(s, devices, CELL_CHANNEL),
+  );
+  s.check(
+    "and the phones with no signal see a gateway",
+    await waitForCoarse(
+      s.world,
+      () => a1.seesGateway() && b1.seesGateway(),
+      90_000,
+    ),
   );
   await settleIn(s, 20_000);
 
@@ -1055,6 +1081,16 @@ test("N09 both features under a hostile network and a moving crowd", async () =>
       .map((id) => `${id}=${relay.connectionCount(id)}`)
       .join(" "),
   );
+  // Every property above holds of a room where nothing rendered, so something
+  // has to have: a public-room message shown on a phone that did not write it.
+  const roomInbound = devices.map(
+    (d) => d.messages(BRIDGE_CHANNEL).filter((m) => !m.isMine).length,
+  );
+  s.check(
+    "the public room actually carried messages",
+    roomInbound.some((n) => n > 0),
+    `inbound per phone: ${roomInbound.join(",")}`,
+  );
   s.check(
     "the network was actually exercised",
     radio.packetsDelivered > 200,
@@ -1148,7 +1184,7 @@ test("N10 a bitchat phone relays gateway traffic it is not part of", async () =>
 
   const published = await waitForCoarse(
     s.world,
-    () => relay.publishCount > 0,
+    () => publishedText(relay, "sent from behind an iPhone"),
     60_000,
   );
   s.check(
@@ -1313,7 +1349,6 @@ test("N13 an Airhop gateway carries a bitchat phone's message to the internet", 
   );
   s.check("the gateway heard the bitchat phone's announce", known);
 
-  const before = relay.publishCount;
   // A signed geohash note, exactly as a bitchat phone composes one: kind 20000
   // with a `g` tag naming the cell it is destined for. The gateway's structural
   // gate checks both before publishing anything on a stranger's behalf.
@@ -1325,13 +1360,13 @@ test("N13 an Airhop gateway carries a bitchat phone's message to the internet", 
 
   const published = await waitForCoarse(
     s.world,
-    () => relay.publishCount > before,
+    () => publishedText(relay, "posted from bitchat with no signal"),
     60_000,
   );
   s.check(
     "the Airhop gateway published it on the bitchat phone's behalf",
     published,
-    `published=${relay.publishCount} before=${before}`,
+    `published=${relay.publishCount}`,
   );
   s.expectNone("process health", noCrashes([gateway]));
   s.assert(true);
@@ -1373,10 +1408,15 @@ test("N14 an Airhop gateway will not publish a deposit aimed at another cell", a
     ),
   );
   const cell = gateway.channelGeohash(CELL_CHANNEL) ?? "";
-  await waitForCoarse(
-    s.world,
-    () => gateway.peers().includes(phone.peerID),
-    30_000,
+  // An unheard depositor is refused for that alone, which would pass the
+  // check below without the cell rule ever being consulted.
+  s.check(
+    "the gateway heard the bitchat phone's announce",
+    await waitForCoarse(
+      s.world,
+      () => gateway.peers().includes(phone.peerID),
+      30_000,
+    ),
   );
 
   const before = relay.publishCount;
@@ -1504,9 +1544,7 @@ function bridgeDeposit(opts: {
   if (opts.signWith !== undefined) {
     packet.signature = signPacket(packet, opts.signWith);
   }
-  let binary = "";
-  for (const b of encodePacket(packet)) binary += String.fromCharCode(b);
-  return globalThis.btoa(binary);
+  return bytesToBase64(encodePacket(packet));
 }
 
 test("N15 a bridge ignores deposits whose sender it cannot verify", async () => {

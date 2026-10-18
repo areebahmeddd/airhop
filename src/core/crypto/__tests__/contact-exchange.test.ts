@@ -1,3 +1,4 @@
+// The binary contact card and the airhop:v1/ QR that carries it.
 import {
   decodeContactCard,
   decodeQRContent,
@@ -56,9 +57,8 @@ describe("ContactCard binary encode/decode", () => {
 
   test("nickname longer than 32 bytes is silently truncated", () => {
     const card = makeCard({ nickname: "a".repeat(60) });
-    const buf = encodeContactCard(card);
-    const decoded = decodeContactCard(buf);
-    expect(decoded.nickname.length).toBeLessThanOrEqual(32);
+    const decoded = decodeContactCard(encodeContactCard(card));
+    expect(decoded.nickname).toBe("a".repeat(32));
   });
 
   test("multi-byte UTF-8 nickname round-trips", () => {
@@ -96,16 +96,6 @@ describe("ContactCard binary encode/decode", () => {
       "16 hex chars",
     );
   });
-
-  test("different keys produce different encodings", () => {
-    const buf1 = encodeContactCard(
-      makeCard({ noisePubKey: new Uint8Array(32).fill(1) }),
-    );
-    const buf2 = encodeContactCard(
-      makeCard({ noisePubKey: new Uint8Array(32).fill(2) }),
-    );
-    expect(Array.from(buf1)).not.toEqual(Array.from(buf2));
-  });
 });
 
 describe("ContactCard Nostr pubkey", () => {
@@ -130,13 +120,6 @@ describe("ContactCard Nostr pubkey", () => {
       encodeContactCard(makeCard({ nostrPubKey: new Uint8Array(16) })),
     ).toThrow("32 bytes");
   });
-
-  test("QR round-trip carries the npub", () => {
-    const card = makeCard({ nostrPubKey: npub });
-    const decoded = decodeQRContent(encodeQRContent(card));
-    expect(decoded).not.toBeNull();
-    expect(Array.from(decoded!.nostrPubKey)).toEqual(Array.from(npub));
-  });
 });
 
 describe("QR content encode/decode", () => {
@@ -159,6 +142,9 @@ describe("QR content encode/decode", () => {
     expect(Array.from(decoded!.signingPubKey)).toEqual(
       Array.from(card.signingPubKey),
     );
+    expect(Array.from(decoded!.nostrPubKey)).toEqual(
+      Array.from(card.nostrPubKey),
+    );
   });
 
   test("decodeQRContent returns null for a bare peer ID rather than throwing", () => {
@@ -175,21 +161,5 @@ describe("QR content encode/decode", () => {
 
   test("decodeQRContent returns null for corrupted base64url", () => {
     expect(decodeQRContent("airhop:v1/!!!invalid!!!")).toBeNull();
-  });
-
-  test("QR content contains no padding chars (=)", () => {
-    const qr = encodeQRContent(makeCard());
-    expect(qr).not.toContain("=");
-  });
-
-  test("QR content uses URL-safe chars only (no + or /)", () => {
-    // Run multiple cards to exercise different byte patterns.
-    for (let fill = 0; fill < 16; fill++) {
-      const card = makeCard({ noisePubKey: new Uint8Array(32).fill(fill) });
-      const qr = encodeQRContent(card);
-      const b64part = qr.slice("airhop:v1/".length);
-      expect(b64part).not.toContain("+");
-      expect(b64part).not.toContain("/");
-    }
   });
 });

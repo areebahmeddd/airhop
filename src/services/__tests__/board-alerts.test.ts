@@ -106,12 +106,13 @@ describe("noteUrgentNotice", () => {
     const conjunct = "\u0915\u094D\u0937"; // क्ष
     noteUrgentNotice({
       ...notice("p1"),
-      content: "x".repeat(119) + conjunct + "y",
+      content: "x".repeat(118) + conjunct + "y",
     });
     jest.runAllTimers();
     const text = lines("#bluetooth")[0].systemVars?.content as string;
-    // The cut fell after the virama, which is backed off with nothing after.
-    expect(text).toBe("x".repeat(119) + "\u0915…");
+    // The 120th code point is the virama, so the cut ends on it; with nothing
+    // after it to join, it is backed off and the bare consonant stays.
+    expect(text).toBe("x".repeat(118) + "\u0915…");
   });
 
   // "Someone" stored in the row would stay in the language of the day it

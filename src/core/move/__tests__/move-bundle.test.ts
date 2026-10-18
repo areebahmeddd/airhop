@@ -1,3 +1,4 @@
+// Transfer bundles: reassembly across chunk boundaries, and what it refuses.
 import { BundleAssembler, buildOffer, chunksOf } from "../move-bundle";
 
 const enc = new TextEncoder();

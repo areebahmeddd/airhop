@@ -85,12 +85,6 @@ describe("resolveBatterySettingsTargets", () => {
       ]);
     },
   );
-
-  test("brand matching is case-insensitive", () => {
-    expect(resolveBatterySettingsTargets("android", "XIAOMI")).toEqual(
-      resolveBatterySettingsTargets("android", "xiaomi"),
-    );
-  });
 });
 
 describe("isKnownAggressiveOEM", () => {

@@ -26,6 +26,7 @@
 
 import type { Identity } from "@core/crypto/identity";
 import type { LinkRegistry } from "@core/mesh/links/link-registry";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import type { AndroidBleModule, RadioPort } from "../../harness/android-native";
 import type {
   LanNativeModule,
@@ -69,6 +70,8 @@ const P = {
   walletService: "@services/wallet-service",
   ecashTransfer: "@services/payment-router",
   reachability: "@services/reachability",
+  torRouting: "@services/tor-routing",
+  panicWipe: "@services/panic-wipe",
   voiceBridge: "@bridge/NativeAirhopVoice",
 } as const;
 
@@ -104,6 +107,9 @@ export interface DeviceSpec {
   // wants it has to say so, the same way a person would.
   lanEnabled?: boolean;
   liveVoiceEnabled?: boolean;
+  // Loads the real panic wipe into the sandbox. Opt-in because it pulls in the
+  // notification stack, which every phone that never wipes would pay to build.
+  wipeable?: boolean;
 }
 
 // A message as the UI would render it, flattened so it can be compared across
@@ -157,6 +163,14 @@ interface Inner {
   // What tells the wallet the network or its own switches let it reach the
   // mints again. The app starts it beside the wallet.
   startReachabilityWatch: () => void;
+  // The Tor toggle's whole path: the native client, the socket swap, the
+  // relay gate and the mesh rebuild, as the Tor screen drives it.
+  setTorRouting: (
+    enabled: boolean,
+  ) => Promise<{ ok: boolean; reason?: string }>;
+  // The real wipe, every partition and the keychain registry included. Null
+  // unless the spec asked for it.
+  panicWipe: (() => Promise<{ keysDestroyed: boolean }>) | null;
   // Installs a WiFi native module into THIS sandbox's copy of the bridge shim.
   // Captured inside the registry for the same reason everything else here is:
   // the shim holds a module-scope singleton, and each phone has its own copy.
@@ -312,7 +326,6 @@ interface MeshLike {
   peerAcceptsLocationPin: (peerID: string) => boolean;
   peerAcceptsRing: (peerID: string) => boolean;
   sendRing: (peerID: string) => string | null;
-  applyInternetEnabled: (enabled: boolean) => void;
   getIngressFaults: () => { count: number };
   [k: string]: unknown;
 }
@@ -516,11 +529,6 @@ export class SimDevice {
 
   setDiscoverable(enabled: boolean): void {
     this.mesh?.setDiscoverable(enabled);
-  }
-
-  setInternet(enabled: boolean): void {
-    call(this.inner.stores.settingsStore, "setInternetEnabled", enabled);
-    this.mesh?.applyInternetEnabled(enabled);
   }
 
   setSetting(key: string, value: unknown): void {
@@ -970,9 +978,14 @@ export class SimDevice {
   }
 
   // Notices this phone holds, newest first.
-  notices(
-    geohash = "",
-  ): { content: string; author: string; urgent: boolean }[] {
+  notices(geohash = ""): {
+    content: string;
+    author: string;
+    // Hex of the signing key the notice was verified under: who wrote it, as
+    // opposed to the nickname they gave.
+    authorKey: string;
+    urgent: boolean;
+  }[] {
     const posts = call(
       this.inner.stores.boardStore,
       "postsForGeohash",
@@ -983,11 +996,13 @@ export class SimDevice {
       posts as {
         content: string;
         authorNickname: string;
+        authorSigningKey: Uint8Array;
         flags: number;
       }[]
     ).map((p) => ({
       content: p.content,
       author: p.authorNickname,
+      authorKey: bytesToHex(p.authorSigningKey),
       urgent: (p.flags & 0x01) !== 0,
     }));
   }
@@ -1402,6 +1417,24 @@ export class SimDevice {
     call(this.inner.stores.meshStateStore, "setTorActive", active);
   }
 
+  // Flip the Tor switch on the Tor screen, and wait for its answer.
+  async setTorRouting(
+    enabled: boolean,
+  ): Promise<{ ok: boolean; reason?: string }> {
+    this.log("TOR_TOGGLE", String(enabled));
+    const result = await this.world.resolve(
+      this.inner.setTorRouting(enabled),
+      // Past the direct mode's 60s bootstrap deadline, so a client that never
+      // comes up is answered by the deadline rather than by this budget.
+      120_000,
+    );
+    this.log(
+      "TOR_TOGGLE_RESULT",
+      `${String(result.ok)} ${result.reason ?? ""}`,
+    );
+    return result;
+  }
+
   // ---- backup and recovery ----
 
   // Turn on the recovery phrase. Every coin minted or swapped after this uses
@@ -1611,20 +1644,26 @@ export class SimDevice {
 
   // ---- storage / wipe ----
 
-  // Triple-tap the logo. The real wipe also clears the Keychain, which is
-  // exercised by panic-wipe.test.ts; what matters to a scenario is that the
-  // mesh is destroyed with the identity it held and every store is emptied, so
-  // nothing survives into the next launch.
-  panicWipe(): void {
+  // Triple-tap the logo, as profile-screen.tsx answers it: the mesh goes
+  // first, so nothing live writes into the stores being cleared, then the real
+  // panic wipe runs inside this phone's own copy of the app.
+  async panicWipe(): Promise<{ keysDestroyed: boolean }> {
     this.log("PANIC_WIPE");
     this.stopNutzapWatcher?.();
     this.stopNutzapWatcher = null;
-    this.inner.mesh.destroyMeshService();
-    for (const name of Object.keys(this.inner.stores)) {
-      call(this.inner.stores[name], "clearAll");
+    const wipe = this.inner.panicWipe;
+    if (wipe === null) {
+      throw new Error(`${this.id} was built without wipeable: true`);
     }
+    this.inner.mesh.destroyMeshService();
     this.launched = false;
     this.inner.native.radioPort?.radiosChanged();
+    const result = await this.world.resolve(wipe());
+    this.log(
+      "PANIC_WIPE_DONE",
+      `keysDestroyed=${String(result.keysDestroyed)}`,
+    );
+    return result;
   }
 }
 
@@ -1812,6 +1851,27 @@ function buildSandbox(
     const { startReachabilityWatch } = require(P.reachability) as {
       startReachabilityWatch: () => void;
     };
+    const { setTorRouting } = require(P.torRouting) as Pick<
+      Inner,
+      "setTorRouting"
+    >;
+    // Under this phone's frame: expo-notifications subscribes at import, and a
+    // listener filed outside any device would hear every phone's events.
+    // The global fetch is put back afterwards: something in that import graph
+    // installs its own, which would shadow a mint fabric installed before this
+    // phone was built and send every wallet call nowhere.
+    let panicWipe: Inner["panicWipe"] = null;
+    if (spec.wipeable === true) {
+      const fetchBefore = globalThis.fetch;
+      eventRouter().runAs(spec.id, () => {
+        panicWipe = (
+          require(P.panicWipe) as {
+            panicWipe: () => Promise<{ keysDestroyed: boolean }>;
+          }
+        ).panicWipe;
+      });
+      globalThis.fetch = fetchBefore;
+    }
     const emitter = (require("react-native") as { DeviceEventEmitter: object })
       .DeviceEventEmitter;
     const selectAccounts =
@@ -1839,6 +1899,8 @@ function buildSandbox(
       wallet,
       pay,
       startReachabilityWatch,
+      setTorRouting,
+      panicWipe,
       installWifi,
       installLan,
       selectAccounts,

@@ -68,18 +68,6 @@ beforeEach(() => {
   });
 });
 
-describe("settings", () => {
-  it("is off by default, at an immediate delay, and reset by the panic wipe", () => {
-    useSettingsStore.getState().reset();
-    expect(useSettingsStore.getState().appLockEnabled).toBe(false);
-    expect(useSettingsStore.getState().appLockDelaySeconds).toBe(0);
-    setLock(true, 300);
-    useSettingsStore.getState().reset();
-    expect(useSettingsStore.getState().appLockEnabled).toBe(false);
-    expect(useSettingsStore.getState().appLockDelaySeconds).toBe(0);
-  });
-});
-
 describe("while off", () => {
   it("never covers, locks or asks", async () => {
     noteBackground(at(0));

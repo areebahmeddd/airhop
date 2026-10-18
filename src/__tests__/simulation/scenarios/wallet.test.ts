@@ -296,7 +296,7 @@ test("W03 the same token cannot be redeemed twice", async () => {
   );
   s.check(
     "the mint refused the second attempt rather than signing it",
-    mint.doubleSpendRefusals >= 1,
+    mint.doubleSpendRefusals === 1,
     `refusals=${mint.doubleSpendRefusals}`,
   );
   s.check(
@@ -426,7 +426,7 @@ test("W23 a reclaim is final at the mint, or says the recipient got there first"
   s.check("offline, the reclaim waits", deferred === "deferred", deferred);
   s.check(
     "with the coins back but unconfirmed",
-    alice.unverifiedBalance() > 0,
+    alice.unverifiedBalance() === 16,
     alice.walletDebug(),
   );
   mint.setConditions({ offline: false });
@@ -461,13 +461,16 @@ test("W05 a mint that dies mid-swap does not destroy the input proofs", async ()
   // The mint accepts the swap, marks the inputs spent, then times out.
   mint.setConditions({ swapVanishes: true });
   await bob.receiveToken(token ?? "");
-  // The swap did not complete, so bob cannot know the proofs are still good.
-  // Storing them as UNVERIFIED is the honest outcome and the one the design
-  // asks for; what must never happen is presenting them as confirmed money.
+  // The swap did not complete, so bob holds nothing from it yet: no balance,
+  // verified or not, and one swap kept on disk to replay, which is how the
+  // value comes back (W17). What must never happen is credit for money the
+  // mint may never sign for.
   s.check(
-    "nothing bob holds is claimed as verified",
-    bob.unverifiedBalance() === bob.balance(),
-    `bob balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
+    "bob is credited nothing, and keeps the swap to replay",
+    bob.balance() === 0 &&
+      bob.unverifiedBalance() === 0 &&
+      bob.pendingSwapPreviews() === 1,
+    `bob balance=${bob.balance()} unverified=${bob.unverifiedBalance()} previews=${bob.pendingSwapPreviews()}`,
   );
   // Burned at the mint with no signatures sent back, which is what makes this
   // the nasty case rather than an ordinary refusal.
@@ -886,7 +889,7 @@ test("W10 a wiped phone gets its money back from twelve words", async () => {
   }));
   const mint = new MintFabric(s.world);
   mint.install();
-  const { devices } = room(s, [android("alice", 11)]);
+  const { devices } = room(s, [{ ...android("alice", 11), wipeable: true }]);
   const [alice] = devices;
   await alice.walletReady();
   await alice.addMint(mint.url);
@@ -908,7 +911,7 @@ test("W10 a wiped phone gets its money back from twelve words", async () => {
   );
 
   // Losing the phone. Keys, proofs, history, everything.
-  alice.panicWipe();
+  await alice.panicWipe();
   alice.launch();
   await alice.walletReady();
   s.check(
@@ -1693,8 +1696,23 @@ test("W16 a balance the mint has already spent does not linger", async () => {
 
   // Spend half of them behind the wallet's back, which is exactly what the mint
   // sees after a swap whose response was lost.
+  const amounts = new Map(
+    Object.values(
+      alice.store("walletStore").getState().proofs as Record<
+        string,
+        { secret: string; amount: number }[]
+      >,
+    )
+      .flat()
+      .map((p) => [p.secret, p.amount]),
+  );
   const secrets = alice.secrets();
   const stolen = secrets.slice(0, Math.floor(secrets.length / 2));
+  const survivors = secrets.slice(stolen.length);
+  const surviving = survivors.reduce(
+    (sum, x) => sum + (amounts.get(x) ?? 0),
+    0,
+  );
   for (const secret of stolen) mint.markSpent(secret);
   s.check(
     "the wallet has not noticed and still reports the full balance",
@@ -1704,15 +1722,19 @@ test("W16 a balance the mint has already spent does not linger", async () => {
 
   await alice.reconcile();
 
+  // Exactly the survivors, by secret: dropping one honest proof too many, or
+  // keeping one spent proof, would both pass a bound on the total.
+  const held = [...alice.secrets()].sort();
   s.check(
-    "reconcile drops what the mint says is gone",
-    alice.balance() < 500,
-    `balance=${alice.balance()}`,
+    "reconcile drops exactly what the mint says is gone",
+    held.length === survivors.length &&
+      held.every((x, i) => x === [...survivors].sort()[i]),
+    `held ${String(held.length)} proofs, expected ${String(survivors.length)}`,
   );
   s.check(
     "and keeps everything the mint still honours",
-    alice.balance() > 0,
-    `balance=${alice.balance()}`,
+    alice.balance() === surviving,
+    `balance=${alice.balance()} expected=${String(surviving)}`,
   );
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
@@ -1800,12 +1822,16 @@ test("W17 a swap whose answer never came back is replayed, not written off", asy
     `balance=${bob.balance()} previews=${bob.pendingSwapPreviews()}`,
   );
 
+  // Counted across the reconcile alone: the library's own retries during the
+  // outage were cache hits too.
+  const hitsBefore = mint.cacheHits;
+  const swapsBefore = mint.swapCount;
   await bob.reconcile();
 
   s.check(
     "the replay was answered from the mint's cache, not processed again",
-    mint.cacheHits > 0,
-    `cacheHits=${mint.cacheHits}`,
+    mint.cacheHits - hitsBefore === 1 && mint.swapCount === swapsBefore,
+    `cacheHits=${mint.cacheHits - hitsBefore} swaps=${mint.swapCount - swapsBefore} during the reconcile`,
   );
   s.check(
     "the money came back, and as proofs the mint has confirmed",
@@ -1870,8 +1896,8 @@ test("W20 a mint that charges input fees is paid what it asks, and no more", asy
 
   const quote = await alice.sendQuote(100);
   s.check(
-    "the quote says the mint will take a fee",
-    (quote?.fee ?? 0) > 0,
+    "the quote says the mint will take its fee, one sat at 100 ppk",
+    quote?.fee === 1,
     `fee=${String(quote?.fee)}`,
   );
   s.check(
@@ -1925,9 +1951,11 @@ test("W20 a mint that charges input fees is paid what it asks, and no more", asy
     withdrawn?.paid === 64,
     `paid=${String(withdrawn?.paid)}`,
   );
+  // Two sat: this melt spends between eleven and twenty inputs, which NUT-02
+  // rounds up to two at 100 ppk.
   s.check(
     "the mint charged for the melt's own inputs too",
-    mint.feesCollected > feesBefore,
+    mint.feesCollected - feesBefore === 2,
     `fees=${mint.feesCollected} was ${feesBefore}`,
   );
   // 64 left over Lightning, 1 went to the route, and the rest of what the mint

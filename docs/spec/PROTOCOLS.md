@@ -1017,7 +1017,7 @@ PrivateMessagePacket = 0x00 || len(messageID) || messageID
 **messageID and content are each capped at 255 bytes** (UTF-8 bytes, not
 characters) on all three implementations, and all three return nothing rather
 than truncating. A message too long to encode has no courier representation
-anywhere and stays in the sender's outbox instead. `courier-plaintext.test.ts`
+anywhere and stays in the sender's outbox instead. `noise-payload.test.ts`
 pins these bytes.
 
 The message ID is what makes the rest work. Spray-and-wait puts several copies

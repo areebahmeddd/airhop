@@ -32,49 +32,6 @@ import {
   resetWalletService,
 } from "../wallet-service";
 
-// The map lives in the factory: the store reads the keychain while the imports
-// above are still loading, before any module-scope `const` here exists.
-jest.mock("@core/crypto/keychain", () => {
-  const secrets = new Map<string, string>();
-  return {
-    ...jest.requireActual("@core/crypto/keychain"),
-    readSecret: jest.fn((item: string) =>
-      Promise.resolve(secrets.get(item) ?? null),
-    ),
-    writeSecret: jest.fn((item: string, value: string) => {
-      secrets.set(item, value);
-      return Promise.resolve();
-    }),
-  };
-});
-
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn(() => true),
-  };
-});
-
 jest.setTimeout(60_000);
 
 const UNIT = "sat";

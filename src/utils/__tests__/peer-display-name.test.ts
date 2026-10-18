@@ -72,24 +72,30 @@ describe("resolveDisplayName", () => {
   });
 
   // A Nostr correspondent has no peer ID to derive from, so it must not fall
-  // through to the generated-username path and invent an unrelated name.
-  it("names a Nostr pseudonym without a generated username", () => {
-    const nostrID = `nostr_${"ed".repeat(32)}`;
+  // through to the generated-username path and invent an unrelated name. With
+  // no channel name carried in, it reads the way the cell chat names it.
+  it("names a Nostr pseudonym anon#last4, not a generated username", () => {
+    const nostrID = `nostr_${"ab".repeat(31)}0c08`;
     const name = resolveDisplayName(nostrID);
     expect(name).not.toBe(peerIDToUsername(nostrID));
-    expect(name.length).toBeGreaterThan(0);
+    expect(name).toBe("anon#0c08");
   });
 });
 
 describe("resolvePeerOwnName", () => {
   // The one screen that must show who the peer says they are, so renaming
   // somebody never hides their own name from the person who renamed them.
-  it("ignores the local label and reports the announced name", () => {
+  it("ignores the local label, and the card name outranks the announce", () => {
     announce("otter");
     addContact({ nickname: "otter-card", localNickname: "Sam from the roof" });
     expect(resolvePeerOwnName(PEER)).toBe("otter-card");
     // And the two disagree on purpose: that is the whole point of the pair.
     expect(resolveDisplayName(PEER)).toBe("Sam from the roof");
+  });
+
+  it("reports the announced name when there is no card", () => {
+    announce("otter");
+    expect(resolvePeerOwnName(PEER)).toBe("otter");
   });
 
   it("falls back to the generated username like the other path", () => {

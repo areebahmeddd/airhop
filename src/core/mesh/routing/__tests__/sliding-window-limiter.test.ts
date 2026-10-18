@@ -1,3 +1,5 @@
+// The per-key sliding-window rate limit, and the sweep that keeps keys taken
+// off the air from accumulating.
 import { SlidingWindowLimiter } from "../sliding-window-limiter";
 
 describe("SlidingWindowLimiter", () => {

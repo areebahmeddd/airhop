@@ -11,7 +11,6 @@ import { useChatStore } from "@store/chat-store";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
 import { GeohashChannelService } from "../geohash-channel-service";
 
-jest.mock("expo-location", () => ({}));
 jest.mock("../location-service", () => ({
   getCoarseLocation: async () => null,
 }));

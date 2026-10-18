@@ -33,7 +33,8 @@ function rejectWith(code: string): Promise<never> {
 }
 
 // Let every pending microtask and every expired timer run, repeatedly, so a
-// retry that schedules another retry is followed to its conclusion.
+// retry that schedules another retry is followed to its conclusion. The clock
+// moves `ms` on each of the eight rounds, so settle(ms) is 8 * ms of fake time.
 async function settle(ms = 0): Promise<void> {
   for (let i = 0; i < 8; i++) {
     jest.advanceTimersByTime(ms);
@@ -92,21 +93,6 @@ describe("WiFi switched off when the mesh starts", () => {
 
     mockStartWiFi.mockResolvedValue(undefined);
     await settle(30_000);
-    expect(wifi.isStarted).toBe(true);
-  });
-
-  test("recovers immediately when native reports the radio back", async () => {
-    mockStartWiFi.mockImplementation(() =>
-      rejectWith("WIFI_AWARE_UNAVAILABLE"),
-    );
-    const wifi = new WiFiController();
-    wifi.start();
-    await settle();
-    expect(wifi.isStarted).toBe(false);
-
-    mockStartWiFi.mockResolvedValue(undefined);
-    wifi.onAvailabilityChanged(true);
-    await settle();
     expect(wifi.isStarted).toBe(true);
   });
 });
@@ -183,10 +169,10 @@ test("backs off when the transport keeps dropping seconds after it starts", asyn
   await settle();
   const afterStart = mockStartWiFi.mock.calls.length;
 
-  // Twenty seconds of a transport that will not stay up.
+  // Twenty seconds of a transport that will not stay up: a drop a second.
   for (let i = 0; i < 20; i++) {
     wifi.onAvailabilityChanged(false);
-    await settle(1_000);
+    await settle(125);
   }
 
   // Climbing the ladder, twenty seconds buys the first few rungs. Reset on

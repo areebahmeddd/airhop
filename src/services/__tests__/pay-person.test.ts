@@ -9,15 +9,6 @@
 //   2. Once proofs are locked to the recipient, no other rail is tried: they
 //      are already theirs, so a fallback would pay twice.
 
-jest.mock("@bridge/NativeAirhopBLE", () => ({
-  __esModule: true,
-  default: {},
-}));
-jest.mock("@bridge/NativeAirhopWiFi", () => ({
-  __esModule: true,
-  default: {},
-}));
-
 jest.mock("../wallet-service", () => ({
   __esModule: true,
   WalletError: class WalletError extends Error {
@@ -34,12 +25,9 @@ jest.mock("../wallet-service", () => ({
   publishLockedNutzap: jest.fn(),
   failNutzapDelivery: jest.fn(),
   failSend: jest.fn(),
-  reclaimSend: jest.fn(),
-  // The real rule: whole days past a day old.
-  staleFeeDays: (ageMs?: number) =>
-    ageMs !== undefined && ageMs >= 86_400_000
-      ? Math.floor(ageMs / 86_400_000)
-      : null,
+  staleFeeDays:
+    jest.requireActual<typeof import("../wallet-service")>("../wallet-service")
+      .staleFeeDays,
 }));
 
 jest.mock("../mesh-service", () => ({

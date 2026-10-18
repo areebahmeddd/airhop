@@ -2,7 +2,7 @@
 // No network: pure crypto using @noble and nostr-tools.
 
 import { ed25519 } from "@noble/curves/ed25519.js";
-import { hexToBytes } from "@noble/hashes/utils.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import type { Event } from "nostr-tools";
 import { finalizeEvent, generateSecretKey, getPublicKey } from "nostr-tools";
 import { bitchatNip44Encrypt } from "../bitchat-nip44";
@@ -137,12 +137,12 @@ describe("rumor timestamp window", () => {
     const sender = makePair();
     const recipient = makePair();
     const { event } = wrapDm("timestamped", sender.priv, recipient.pub);
-    const realNow = Date.now;
-    Date.now = () => realNow() + offsetSec * 1000;
+    jest.useFakeTimers();
     try {
+      jest.setSystemTime(Date.now() + offsetSec * 1000);
       unwrapDm(event, recipient.priv, lookback);
     } finally {
-      Date.now = realNow;
+      jest.useRealTimers();
     }
   }
 
@@ -152,10 +152,24 @@ describe("rumor timestamp window", () => {
     expect(() => unwrapWithClockOffset(10 * 60, 3600)).not.toThrow();
   });
 
+  // The harmful direction: a future-dated message pins itself to the bottom of
+  // the conversation and stays there. The wrap is dated now, inside its own
+  // window, so only the rumor's check can refuse it.
   it("rejects a rumor dated well into the future", () => {
-    // The harmful direction: a future-dated message pins itself to the bottom
-    // of the conversation and stays there.
-    expect(() => unwrapWithClockOffset(-60 * 60, 3600)).toThrow();
+    const sender = makePair();
+    const recipient = makePair();
+    const now = Math.floor(Date.now() / 1000);
+    const rumor = {
+      kind: 14,
+      pubkey: sender.pub,
+      created_at: now + 3600,
+      tags: [],
+      content: "hi",
+    };
+    const wrap = wrapRumor(rumor, sender, recipient.pub, now);
+    expect(() => unwrapDm(wrap, recipient.priv, 3600)).toThrow(
+      "Rumor timestamp outside the plausible window",
+    );
   });
 
   it("rejects a rumor older than the subscription lookback", () => {
@@ -303,13 +317,12 @@ describe("deriveNostrPrivKey", () => {
     expect(nostrPriv.length).toBe(32);
   });
 
-  it("is deterministic for the same input", () => {
-    const edPriv = ed25519.utils.randomSecretKey();
-
-    const k1 = deriveNostrPrivKey(edPriv);
-    const k2 = deriveNostrPrivKey(edPriv);
-
-    expect(k1).toEqual(k2);
+  // Pinned from the current implementation: a change here moves every user to
+  // a new Nostr identity.
+  it("gives a pinned key for a fixed input", () => {
+    expect(bytesToHex(deriveNostrPrivKey(new Uint8Array(32).fill(1)))).toBe(
+      "6958e6a1db95283e89e23214f13980575bdd90d4c0fa23c491c6c44fe0ba0cde",
+    );
   });
 
   it("produces different keys for different inputs", () => {

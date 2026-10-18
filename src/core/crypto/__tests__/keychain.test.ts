@@ -4,16 +4,18 @@
 
 import * as SecureStore from "expo-secure-store";
 import {
-  deleteSecret,
   KEYCHAIN_ITEMS,
   readSecret,
   wipeAllSecrets,
   writeSecret,
+  writeSecretSync,
   type KeychainItem,
 } from "../keychain";
 
 const mock = SecureStore as unknown as {
   __reset: () => void;
+  setItemAsync: jest.Mock;
+  setItem: jest.Mock;
   deleteItemAsync: jest.Mock;
 };
 
@@ -47,21 +49,30 @@ describe("item names", () => {
   });
 });
 
-describe("round trip", () => {
-  it("reads back what was written", async () => {
+// The accessibility class decides whether a BLE relaunch on a locked phone can
+// load the identity, and whether the secret rides along in a backup. The
+// default class gets both wrong, so every write has to name this one.
+describe("accessibility class", () => {
+  const OPTIONS = {
+    keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+  };
+
+  it("is set on an async write", async () => {
     await writeSecret(KEYCHAIN_ITEMS.identity, "value");
-    expect(await readSecret(KEYCHAIN_ITEMS.identity)).toBe("value");
+    expect(mock.setItemAsync).toHaveBeenCalledWith(
+      KEYCHAIN_ITEMS.identity,
+      "value",
+      OPTIONS,
+    );
   });
 
-  it("reports an absent item as null rather than empty string", async () => {
-    // loadIdentity reads null as "first launch".
-    expect(await readSecret(KEYCHAIN_ITEMS.identity)).toBeNull();
-  });
-
-  it("removes a deleted item", async () => {
-    await writeSecret(KEYCHAIN_ITEMS.walletP2pkKey, "abc");
-    await deleteSecret(KEYCHAIN_ITEMS.walletP2pkKey);
-    expect(await readSecret(KEYCHAIN_ITEMS.walletP2pkKey)).toBeNull();
+  it("is set on a sync write", () => {
+    writeSecretSync(KEYCHAIN_ITEMS.localPrekeys, "value");
+    expect(mock.setItem).toHaveBeenCalledWith(
+      KEYCHAIN_ITEMS.localPrekeys,
+      "value",
+      OPTIONS,
+    );
   });
 });
 

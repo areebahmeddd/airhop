@@ -5,15 +5,6 @@
 // refusal adding a mint can fix: any other error, or a mint already held, must
 // reach the caller untouched.
 
-jest.mock("@bridge/NativeAirhopBLE", () => ({
-  __esModule: true,
-  default: {},
-}));
-jest.mock("@bridge/NativeAirhopWiFi", () => ({
-  __esModule: true,
-  default: {},
-}));
-
 jest.mock("../wallet-service", () => ({
   __esModule: true,
   WalletError: class WalletError extends Error {

@@ -1,9 +1,12 @@
+// The chat row a public message's Bluetooth and Nostr copies share.
 import { sharedRowID } from "../shared-row-id";
 
 describe("sharedRowID", () => {
+  // Pinned from the current implementation: both copies, on every build, have
+  // to land on this exact row.
   it("collapses the two copies of one message", () => {
     expect(sharedRowID("m-1", "the gate is open")).toBe(
-      sharedRowID("m-1", "the gate is open"),
+      "ch-28a3cb71b70aecb7128d26151a48b998",
     );
   });
 

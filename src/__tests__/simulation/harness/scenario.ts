@@ -7,7 +7,10 @@
 // away on the first mismatch.
 //
 // Every scenario also prints its seed. A red soak run is only useful if it can
-// be re-run identically, and this is where that promise is kept.
+// be re-run, and the seed fixes its schedule: every fabric draw, the app's own
+// jitter and the wall clock (see world.ts). Keys, nonces and handshake
+// ephemerals stay truly random, so a re-run repeats the schedule with
+// different ciphertext.
 
 import type { SimDevice } from "./device";
 import type { Finding } from "./invariants";

@@ -1,33 +1,18 @@
-// Geohash channels: which cell a channel means, and which relays serve it.
+// Geohash channels: which channels are location channels and at what
+// precision, what a typed geohash is accepted as, where the presence heartbeat
+// goes and when, and how a flood in a cell is limited.
 //
-// Two properties decide whether location channels work at all:
-//
-//  1. Everyone in a cell must compute the SAME geohash for a channel, or they
-//     end up in different rooms while believing they share one.
-//  2. Everyone must converge on the SAME relay set for that cell, or messages
-//     get published to relays nobody is subscribed to and vanish silently.
-//
-// Both failures are invisible in local testing, since the sender sees their own
-// message fine, so they're pinned here.
+// The cell maths and relay selection underneath live in core and are pinned by
+// geohash-presence.test.ts and geo-relay.test.ts.
 
-import { GeoRelayDirectory } from "@core/nostr/geo-relay";
-import {
-  decodeGeohash,
-  encodeGeohash,
-  KIND_PRESENCE,
-} from "@core/nostr/geohash-presence";
+import { KIND_PRESENCE } from "@core/nostr/geohash-presence";
 import type { NostrClient } from "@core/nostr/nostr-client";
-import { GEO_RELAYS } from "@data/relays";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { useChatStore } from "@store/chat-store";
 import { useSettingsStore } from "@store/settings-store";
-import {
-  geohashChannel,
-  isManualGeoChannel,
-  manualGeohashOf,
-} from "@utils/channel-key";
 import type { Event } from "nostr-tools";
 import {
+  GEO_CHANNEL_PRECISION,
   GeohashChannelService,
   geohashLevelName,
   isGeoChannel,
@@ -35,21 +20,13 @@ import {
   normalizeGeohash,
 } from "../geohash-channel-service";
 
-jest.mock("expo-location", () => ({}));
-
 // Fixed, so the heartbeat tests resolve #city to one known cell. The "mock"
 // prefix lets the hoisted factory below close over it.
 const mockCoords = { lat: 51.5074, lng: -0.1278 };
 
 jest.mock("../location-service", () => ({
   getCoarseLocation: () => Promise.resolve(mockCoords),
-  clearLocationCache: () => undefined,
 }));
-
-// Two points ~1km apart in central London, and one far away.
-const LONDON = { lat: 51.5074, lng: -0.1278 };
-const LONDON_NEARBY = { lat: 51.5145, lng: -0.127 };
-const TOKYO = { lat: 35.6762, lng: 139.6503 };
 
 describe("which channels are geo channels", () => {
   it("never bridges #bluetooth", () => {
@@ -65,24 +42,21 @@ describe("which channels are geo channels", () => {
 
   it("treats a teleported cell as a geo channel", () => {
     expect(isGeoChannel("geohash:tdr1k")).toBe(true);
-    expect(isManualGeoChannel("geohash:tdr1k")).toBe(true);
-    // A named location channel is not a manual/teleported one.
-    expect(isManualGeoChannel("#city")).toBe(false);
+  });
+
+  // Character counts read off a real bitchat-ios handset in Bengaluru, which
+  // showed #tdr1kyp, #tdr1ky, #tdr1k, #tdr1 and #td for its five channels. A
+  // mismatch puts the two apps in different cells and they silently never meet.
+  it("maps each channel to the precision bitchat uses", () => {
+    expect(GEO_CHANNEL_PRECISION["#block"]).toBe("tdr1kyp".length);
+    expect(GEO_CHANNEL_PRECISION["#neighborhood"]).toBe("tdr1ky".length);
+    expect(GEO_CHANNEL_PRECISION["#city"]).toBe("tdr1k".length);
+    expect(GEO_CHANNEL_PRECISION["#province"]).toBe("tdr1".length);
+    expect(GEO_CHANNEL_PRECISION["#region"]).toBe("td".length);
   });
 });
 
-describe("teleport: manual geohash channels", () => {
-  it("round-trips a geohash through the channel key", () => {
-    const channel = geohashChannel("tdr1k");
-    expect(channel).toBe("geohash:tdr1k");
-    expect(manualGeohashOf(channel)).toBe("tdr1k");
-  });
-
-  it("returns null geohash for a non-manual channel", () => {
-    expect(manualGeohashOf("#city")).toBeNull();
-    expect(manualGeohashOf("group:abcd")).toBeNull();
-  });
-
+describe("teleport: typed geohashes", () => {
   it("normalises user input the way bitchat does", () => {
     // Lowercase, drop a leading #, discard out-of-alphabet chars, cap at 12.
     expect(normalizeGeohash("#TDR1K")).toBe("tdr1k");
@@ -120,97 +94,6 @@ describe("teleport: manual geohash channels", () => {
   });
 });
 
-describe("cell membership", () => {
-  it("puts two nearby people in the same city cell", () => {
-    const a = encodeGeohash(LONDON.lat, LONDON.lng, 5);
-    const b = encodeGeohash(LONDON_NEARBY.lat, LONDON_NEARBY.lng, 5);
-    expect(a).toBe(b);
-  });
-
-  it("separates distant people at city scope", () => {
-    expect(encodeGeohash(LONDON.lat, LONDON.lng, 5)).not.toBe(
-      encodeGeohash(TOKYO.lat, TOKYO.lng, 5),
-    );
-  });
-
-  it("nests finer cells inside coarser ones", () => {
-    // A block cell must be a prefix-extension of its city cell, otherwise the
-    // scope hierarchy the UI describes would be a lie.
-    const block = encodeGeohash(LONDON.lat, LONDON.lng, 7);
-    const city = encodeGeohash(LONDON.lat, LONDON.lng, 5);
-    expect(block.startsWith(city)).toBe(true);
-  });
-
-  it("round-trips a geohash back to within its own cell", () => {
-    const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
-    const center = decodeGeohash(gh);
-    expect(encodeGeohash(center.lat, center.lng, 5)).toBe(gh);
-  });
-});
-
-describe("relay selection determinism", () => {
-  function directory() {
-    const d = new GeoRelayDirectory();
-    d.loadEntries(GEO_RELAYS);
-    return d;
-  }
-
-  it("loads the generated relay table", () => {
-    expect(directory().size).toBeGreaterThan(100);
-  });
-
-  it("returns the same relays for the same cell every time", () => {
-    const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
-    const a = directory().closestRelaysToGeohash(gh, decodeGeohash, 5);
-    const b = directory().closestRelaysToGeohash(gh, decodeGeohash, 5);
-    expect(a).toEqual(b);
-    expect(a).toHaveLength(5);
-  });
-
-  it("gives two people in one cell an identical relay set", () => {
-    // The load-bearing interop property. Both users decode the CELL CENTRE,
-    // not their own position, so their relay sets must match exactly.
-    const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
-    const ghOther = encodeGeohash(LONDON_NEARBY.lat, LONDON_NEARBY.lng, 5);
-    expect(ghOther).toBe(gh); // same cell, precondition
-
-    expect(directory().closestRelaysToGeohash(gh, decodeGeohash, 5)).toEqual(
-      directory().closestRelaysToGeohash(ghOther, decodeGeohash, 5),
-    );
-  });
-
-  it("breaks distance ties deterministically by URL", () => {
-    const d = new GeoRelayDirectory();
-    // Same coordinates: pure tie. Insertion order is deliberately reversed
-    // from sort order to prove ordering isn't accidental.
-    d.loadEntries([
-      { url: "wss://zzz.example", lat: 10, lng: 10 },
-      { url: "wss://aaa.example", lat: 10, lng: 10 },
-      { url: "wss://mmm.example", lat: 10, lng: 10 },
-    ]);
-    expect(d.nearestRelays(10, 10, 3)).toEqual([
-      "wss://aaa.example",
-      "wss://mmm.example",
-      "wss://zzz.example",
-    ]);
-  });
-
-  it("gives different cells different relay sets", () => {
-    const d = directory();
-    const london = d.closestRelaysToGeohash(
-      encodeGeohash(LONDON.lat, LONDON.lng, 5),
-      decodeGeohash,
-      5,
-    );
-    const tokyo = d.closestRelaysToGeohash(
-      encodeGeohash(TOKYO.lat, TOKYO.lng, 5),
-      decodeGeohash,
-      5,
-    );
-    expect(london).not.toEqual(tokyo);
-  });
-});
-
 // Presence is read from the cell's relays by everyone in the cell, bitchat-ios
 // included. A heartbeat on the default DM relays is never counted, and tells
 // those relays which cell this cell's key is in.
@@ -220,6 +103,7 @@ describe("presence heartbeat relays", () => {
 
   interface Published {
     kind: number;
+    tags: string[][];
     relays: string[] | undefined;
   }
 
@@ -227,7 +111,7 @@ describe("presence heartbeat relays", () => {
     const client = {
       subscribe: () => ({ close: () => undefined }),
       publish: async (event: Event, relays?: string[]) => {
-        published.push({ kind: event.kind, relays });
+        published.push({ kind: event.kind, tags: event.tags, relays });
         return { relay: "", ok: true };
       },
     } as unknown as NostrClient;
@@ -258,6 +142,7 @@ describe("presence heartbeat relays", () => {
     expect(cell).not.toBeNull();
     const heartbeats = published.filter((p) => p.kind === KIND_PRESENCE);
     expect(heartbeats).toHaveLength(1);
+    expect(heartbeats[0].tags).toEqual([["g", cell]]);
     expect(heartbeats[0].relays).toEqual(
       service.relaysForGeohash(cell as string),
     );

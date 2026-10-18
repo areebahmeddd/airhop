@@ -41,46 +41,17 @@ function makeClient(overrides?: Partial<NostrClient>): NostrClient {
 const nostrPrivKey = generateSecretKey();
 
 describe("publishCourierDrop", () => {
-  it("calls client.publish once", async () => {
+  it("publishes one kind 1401 event tagged with the recipient tag", async () => {
     const client = makeClient();
     const envelope = makeEnvelope();
 
     await publishCourierDrop(envelope, client);
 
     expect(client.publish).toHaveBeenCalledTimes(1);
-  });
-
-  it("publishes a kind 1401 event", async () => {
-    let published: Event | null = null;
-    const client = makeClient({
-      publish: jest.fn().mockImplementation((event: Event) => {
-        published = event;
-        return Promise.resolve({ relay: "wss://mock", accepted: true });
-      }),
-    });
-    const envelope = makeEnvelope();
-
-    await publishCourierDrop(envelope, client);
-
-    expect(published).not.toBeNull();
-    expect(published!.kind).toBe(1401);
-  });
-
-  it("event has the correct x tag (recipient tag hex)", async () => {
-    let published: Event | null = null;
-    const client = makeClient({
-      publish: jest.fn().mockImplementation((event: Event) => {
-        published = event;
-        return Promise.resolve({ relay: "wss://mock", accepted: true });
-      }),
-    });
-    const envelope = makeEnvelope();
-
-    await publishCourierDrop(envelope, client);
-
-    const xTag = published!.tags.find(([t]) => t === "x");
-    expect(xTag).toBeDefined();
-    expect(xTag![1]).toBe(bytesToHex(envelope.recipientTag));
+    const published = (client.publish as jest.Mock).mock.calls[0][0] as Event;
+    expect(published.kind).toBe(1401);
+    const xTag = published.tags.find(([t]) => t === "x");
+    expect(xTag?.[1]).toBe(bytesToHex(envelope.recipientTag));
   });
 
   it("event has an expiration tag within range of the envelope expiry", async () => {
@@ -140,61 +111,16 @@ describe("subscribeCourierDrops", () => {
     expect(client.subscribe).not.toHaveBeenCalled();
     expect(() => close()).not.toThrow();
   });
-
-  it("calls onEnvelope when a valid event arrives", () => {
-    let capturedCb: ((event: Event) => void) | null = null;
-    const client = makeClient({
-      subscribe: jest
-        .fn()
-        .mockImplementation((_filters: unknown, cb: (event: Event) => void) => {
-          capturedCb = cb;
-          return { close: jest.fn() };
-        }),
-    });
-
-    const recipientTag = crypto.getRandomValues(new Uint8Array(16));
-    const expiryFuture = Math.floor(Date.now() / 1000) + 3600;
-    const b64Content = bytesToBase64(
-      encodeEnvelopePayload(
-        makeEnvelope({
-          recipientTag,
-          ciphertext: new Uint8Array([1, 2, 3, 4]),
-        }),
-      ),
-    );
-
-    // Build a minimal valid kind 1401 event.
-    const event = finalizeEvent(
-      {
-        kind: 1401,
-        created_at: Math.floor(Date.now() / 1000),
-        tags: [
-          ["x", bytesToHex(recipientTag)],
-          ["expiration", expiryFuture.toString()],
-        ],
-        content: b64Content,
-      },
-      nostrPrivKey,
-    );
-
-    const received: SealedEnvelope[] = [];
-    subscribeCourierDrops([recipientTag], client, (env) => received.push(env));
-
-    // Fire the mock event.
-    capturedCb!(event);
-
-    expect(received).toHaveLength(1);
-    expect(bytesToHex(received[0].recipientTag)).toBe(bytesToHex(recipientTag));
-  });
 });
 
 // The content is the whole envelope TLV, as bitchat-ios writes and reads it
 // (CourierEnvelope), so what one side publishes the other opens intact,
-// prekey ID included.
+// prekey ID included. The one field the receive path overrides is copies: a
+// drop pulled from a relay is never sprayed on.
 describe("round trip", () => {
   it("receives exactly the envelope that was published", async () => {
     const client = makeClient();
-    const envelope = makeEnvelope({ prekeyID: 7 });
+    const envelope = makeEnvelope({ prekeyID: 7, copies: 3 });
     await publishCourierDrop(envelope, client);
     const published = (client.publish as jest.Mock).mock.calls[0][0] as Event;
 
@@ -216,6 +142,7 @@ describe("round trip", () => {
       bytesToHex(envelope.ciphertext),
     );
     expect(received[0].prekeyID).toBe(7);
+    expect(received[0].copies).toBe(1);
   });
 
   it("drops an envelope whose own tag disagrees with the x tag", () => {

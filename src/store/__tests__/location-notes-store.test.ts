@@ -101,8 +101,11 @@ describe("bridged-copy suppression", () => {
 describe("matchesBridged", () => {
   it("treats a blank nickname and 'anon' as the same author", () => {
     expect(
-      matchesBridged(fingerprintOf(note({ nickname: undefined })), note()),
-    ).toBe(false);
+      matchesBridged(
+        { ...fingerprintOf(note()), nickname: "anon" },
+        note({ nickname: "" }),
+      ),
+    ).toBe(true);
     expect(
       matchesBridged(
         { ...fingerprintOf(note()), nickname: "anon" },

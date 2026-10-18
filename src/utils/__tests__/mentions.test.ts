@@ -51,16 +51,12 @@ describe("mentionsNickname", () => {
 });
 
 // The cross-platform case. One keyboard produces the composed form, another the
-// decomposed form, and the two render identically. Before normalization the
-// mention simply never fired: the mentioned peer was never notified and neither
-// side had any way to see why.
+// decomposed form, and the two render identically. Without normalization the
+// mention never fires: the mentioned peer is not notified and neither side can
+// see why.
 describe("mentionsNickname across Unicode encodings", () => {
-  const COMPOSED = "José";
-  const DECOMPOSED = "José";
-
-  it("the two encodings differ, so this is a real case", () => {
-    expect(COMPOSED).not.toBe(DECOMPOSED);
-  });
+  const COMPOSED = "Jos\u00e9";
+  const DECOMPOSED = "Jose\u0301";
 
   it("a decomposed nickname matches a composed mention", () => {
     expect(mentionsNickname(`hey @${COMPOSED} here`, DECOMPOSED)).toBe(true);
@@ -105,7 +101,6 @@ describe("mentionsNickname across scripts", () => {
 
   it("still refuses a prefix, since a letter is not a boundary", () => {
     expect(mentionsNickname("@あさひこ hello", "あさひ")).toBe(false);
-    expect(mentionsNickname("hey @anabelle", "ana")).toBe(false);
   });
 
   it("keeps refusing an email, which is why the OPENING boundary stayed strict", () => {

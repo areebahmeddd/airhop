@@ -32,6 +32,7 @@ jest.mock("@bridge/NativeAirhopVoice", () => {
   return { __esModule: true, default: mod };
 });
 
+import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import { ANNOUNCE_TTL } from "@core/mesh/discovery/announce-manager";
 import {
   encodeBoardWire,
@@ -179,9 +180,11 @@ test("R02 a relay never appears as a peer", async () => {
 
   await waitFor(s.world, () => alice.peers().includes(bob.peerID), 60_000);
 
+  // Exactly bob: the relay must add nobody to the list, not merely not add
+  // its own label.
   s.check(
-    "alice found bob through the relay",
-    alice.peers().includes(bob.peerID),
+    "alice found bob through the relay, and nobody else",
+    alice.peers().length === 1 && alice.peers()[0] === bob.peerID,
     `peers=[${alice.peers().join(", ")}]`,
   );
   // The relay's fabric label is not a peer ID and must never be treated as one.
@@ -289,13 +292,21 @@ test("R04 relays in a loop do not trade a packet forever", async () => {
   alice.joinChannel(CHANNEL);
   bob.joinChannel(CHANNEL);
 
-  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 90_000);
+  s.check(
+    "bob learned alice around the ring",
+    await waitFor(s.world, () => bob.peers().includes(alice.peerID), 90_000),
+  );
 
+  // Delivered first, or a ring that carried nothing would pass every check
+  // below on empty air.
   alice.send(CHANNEL, "ring test");
-  await waitFor(
-    s.world,
-    () => bob.texts(CHANNEL).includes("ring test"),
-    90_000,
+  s.check(
+    "the message crossed the ring",
+    await waitFor(
+      s.world,
+      () => bob.texts(CHANNEL).includes("ring test"),
+      90_000,
+    ),
   );
 
   // Well past delivery, so anything circulating has time to show itself.
@@ -383,26 +394,13 @@ test("R05 a private message survives a relay it cannot read", async () => {
 
 // ---- What an Airhop phone refuses to forward ----
 
-function toBase64(bytes: Uint8Array): string {
-  let s = "";
-  for (const b of bytes) s += String.fromCharCode(b);
-  return globalThis.btoa(s);
-}
-
-function fromBase64(b64: string): Uint8Array {
-  const bin = globalThis.atob(b64);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
 // Everything one phone puts on the air, decoded. What a phone chose to relay
 // shows only here; its own state cannot say.
 function watchAir(radio: RadioFabric, fromID: string): Packet[] {
   const packets: Packet[] = [];
   radio.tapWrites((who, _linkID, dataBase64) => {
     if (who !== fromID) return;
-    const p = decodePacket(fromBase64(dataBase64));
+    const p = decodePacket(base64ToBytes(dataBase64));
     if (p !== null) packets.push(p);
   });
   return packets;
@@ -427,7 +425,7 @@ function broadcastAs(
     payload,
   };
   packet.signature = signPacket(packet, signer.identity.signingPrivKey);
-  return toBase64(encodePacket(packet));
+  return bytesToBase64(encodePacket(packet));
 }
 
 function boardPost(

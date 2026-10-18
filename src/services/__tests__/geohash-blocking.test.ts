@@ -31,7 +31,6 @@ import { useLocationNotesStore } from "@store/location-notes-store";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
 import { GeohashChannelService } from "../geohash-channel-service";
 
-jest.mock("expo-location", () => ({}));
 jest.mock("../location-service", () => ({
   getCoarseLocation: async () => null,
 }));
@@ -133,18 +132,7 @@ beforeEach(() => {
 });
 
 describe("a blocked person in a location channel", () => {
-  it("cannot post into the channel over the relay subscription", async () => {
-    const h = await harness();
-    const muted = stranger();
-    block(muted);
-
-    h.emitChannelEvent(channelEvent(muted, "you can still hear me"));
-
-    expect(messagesIn(CHANNEL)).toEqual([]);
-    expect(h.service.participantsFor(CHANNEL)).toEqual([]);
-  });
-
-  it("still lets everyone else post (the control)", async () => {
+  it("cannot post into the channel over the relay subscription, while everyone else still can", async () => {
     const h = await harness();
     const muted = stranger();
     const other = stranger();
@@ -153,9 +141,8 @@ describe("a blocked person in a location channel", () => {
     h.emitChannelEvent(channelEvent(muted, "blocked"));
     h.emitChannelEvent(channelEvent(other, "allowed"));
 
-    // Only the unblocked message renders, and only its author is counted. A
-    // count that included the blocked person would be the #1637 bug: the row
-    // is hidden but the headcount still says somebody is there.
+    // Only the unblocked message renders, and only its author is counted: a
+    // hidden row must not still leave the headcount saying somebody is there.
     expect(messagesIn(CHANNEL)).toEqual(["allowed"]);
     const people = h.service.participantsFor(CHANNEL);
     expect(people.map((p) => p.pubkey)).toEqual([other.pubKeyHex]);
@@ -176,27 +163,28 @@ describe("a blocked person in a location channel", () => {
     expect(messagesIn(CHANNEL)).toEqual(["ferried too"]);
   });
 
-  it("cannot open a geo DM thread", async () => {
+  it("cannot open a geo DM thread, while everyone else still can", async () => {
     const h = await harness();
     const muted = stranger();
+    const other = stranger();
     block(muted);
 
     // Addressed to this device's own per-cell identity, so the wrap really
     // opens and the block is what stops it, not a failed decrypt.
-    const inbox = h.inbox;
-    const envelope = encodeBitchatDmEnvelope(
-      "0011223344556677",
-      null,
-      "m-1",
-      "let me back in",
-    )!;
-    h.emitDmEvent(wrapDm(envelope, muted.privKey, inbox.pubKeyHex).event);
+    const dmFrom = (from: GeohashIdentity, id: string, text: string) =>
+      wrapDm(
+        encodeBitchatDmEnvelope("0011223344556677", null, id, text)!,
+        from.privKey,
+        h.inbox.pubKeyHex,
+      ).event;
+    h.emitDmEvent(dmFrom(muted, "m-1", "let me back in"));
+    h.emitDmEvent(dmFrom(other, "m-2", "hello"));
 
     // No thread created, so the block cannot be undone by the blocked party
     // simply messaging again.
-    expect(useChatStore.getState().channels).not.toContain(
-      `dm:nostr_${muted.pubKeyHex}`,
-    );
+    const channels = useChatStore.getState().channels;
+    expect(channels).not.toContain(`dm:nostr_${muted.pubKeyHex}`);
+    expect(channels).toContain(`dm:nostr_${other.pubKeyHex}`);
   });
 
   it("disappears from the participant list the moment they are blocked", async () => {

@@ -25,33 +25,6 @@ jest.mock("@core/crypto/keychain", () => ({
   writeSecret: jest.fn(),
 }));
 
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn(() => true),
-  };
-});
-
 const PHRASE_ITEM = KEYCHAIN_ITEMS.walletRecoveryPhrase;
 const KNOWN =
   "legal winner thank year wave sausage worth useful legal winner thank yellow";

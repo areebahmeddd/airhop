@@ -9,7 +9,6 @@ const store = new Map();
 const getItemAsync = jest.fn();
 const setItemAsync = jest.fn();
 const deleteItemAsync = jest.fn();
-const isAvailableAsync = jest.fn();
 const getItem = jest.fn();
 const setItem = jest.fn();
 
@@ -21,7 +20,6 @@ function installDefaults() {
   deleteItemAsync.mockImplementation(async (key) => {
     store.delete(key);
   });
-  isAvailableAsync.mockImplementation(async () => true);
   getItem.mockImplementation((key) => store.get(key) ?? null);
   setItem.mockImplementation((key, value) => {
     store.set(key, value);
@@ -34,13 +32,12 @@ module.exports = {
   getItemAsync,
   setItemAsync,
   deleteItemAsync,
-  isAvailableAsync,
   // Synchronous variants, for parity with the real module's surface.
   getItem,
   setItem,
   // keychain.ts reads one of these at module scope, so they must exist or
   // importing it throws before any test runs. Values match the real module,
-  // ordered by value; nothing asserts on them.
+  // ordered by value, so keychain.test.ts can assert the one writes pass.
   WHEN_UNLOCKED: 0,
   AFTER_FIRST_UNLOCK: 1,
   AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 2,
@@ -54,7 +51,6 @@ module.exports = {
       getItemAsync,
       setItemAsync,
       deleteItemAsync,
-      isAvailableAsync,
       getItem,
       setItem,
     ]) {

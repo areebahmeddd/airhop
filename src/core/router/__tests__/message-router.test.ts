@@ -16,12 +16,9 @@ import {
 } from "../../mesh/wire/noise-payload";
 import { Flags, PacketType, type Packet } from "../../mesh/wire/packet-codec";
 import {
-  channelPacketType,
   decodeAirhopChannelPayload,
   decodeMeshPublicPayload,
   encodeAirhopChannelPayload,
-  encodeMeshPublicPayload,
-  MESH_PUBLIC_CHANNEL,
   MessageRouter,
   newMessageId,
   PeerRegistry,
@@ -53,22 +50,6 @@ function makePeerNoiseSession() {
 }
 
 describe("public message payloads", () => {
-  test("the mesh room goes out under bitchat's type, everything else under ours", () => {
-    expect(channelPacketType(MESH_PUBLIC_CHANNEL)).toBe(PacketType.CHANNEL_MSG);
-    expect(channelPacketType("#neighborhood")).toBe(
-      PacketType.CHANNEL_MSG_AIRHOP,
-    );
-  });
-
-  // #bluetooth is bitchat's mesh room. It carries no ID on the wire because
-  // bitchat has nowhere to put one; both implementations derive the same
-  // content-stable one instead, which is what onChannelMsg keys it on.
-  test("the mesh room's payload is the text and nothing else", () => {
-    const encoded = encodeMeshPublicPayload("hello world");
-    expect(encoded).toEqual(new TextEncoder().encode("hello world"));
-    expect(decodeMeshPublicPayload(encoded)).toBe("hello world");
-  });
-
   test("a named channel round-trips its channel, text and id", () => {
     const encoded = encodeAirhopChannelPayload(
       "#general",
@@ -97,6 +78,11 @@ describe("public message payloads", () => {
     const decoded = decodeAirhopChannelPayload(encoded);
     expect(decoded!.channel).toBe("");
     expect(decoded!.text).toBe("");
+  });
+
+  test("returns null when the id length overruns the payload", () => {
+    // chLen=1, channel="#", idLen=200 with no data following.
+    expect(decodeAirhopChannelPayload(new Uint8Array([1, 35, 200]))).toBeNull();
   });
 });
 
@@ -225,12 +211,14 @@ describe("PeerRegistry", () => {
   const BRIDGE = 1 << 7;
   test("firstReachableBridge finds a peer advertising the bridge bit", () => {
     const r = new PeerRegistry();
-    addPeer(r, "aabb", GATEWAY); // gateway only, not a bridge
+    // Direct, so it outranks ccdd in any lookup it is eligible for.
+    addPeer(r, "aabb", GATEWAY, true); // gateway only, not a bridge
     addPeer(r, "ccdd", BRIDGE | GATEWAY); // a bridge gateway
     expect(r.hasReachableBridge()).toBe(true);
+    // The gateway-only peer is passed over as a bridge, yet still ranks first
+    // as a gateway.
     expect(r.firstReachableBridge()?.peerID).toBe("ccdd");
-    // A gateway-only peer is not a bridge and vice versa.
-    expect(r.firstReachableGateway()?.peerID).toBeDefined();
+    expect(r.firstReachableGateway()?.peerID).toBe("aabb");
   });
 
   test("bridge and gateway bits are independent", () => {
@@ -283,6 +271,49 @@ describe("PeerRegistry", () => {
     });
     r.markIndirect("aabb");
     expect(r.get("aabb")?.isDirect).toBe(false);
+  });
+
+  test("setNostrPubkey stores the key and is retrievable", () => {
+    const registry = new PeerRegistry();
+    const peerID = "1122334455667788";
+    registry.update({
+      peerID,
+      noisePubKey: new Uint8Array(32),
+      signingPubKey: new Uint8Array(32),
+      nickname: "eve",
+    });
+
+    registry.setNostrPubkey(peerID, "c".repeat(64));
+
+    expect(registry.get(peerID)?.nostrPubkey).toBe("c".repeat(64));
+  });
+
+  test("update() preserves nostrPubkey across BLE re-announces", () => {
+    // BLE ANNOUNCE packets do not carry a nostrPubkey field, so update() is
+    // called without one. The previously learned nostrPubkey must survive.
+    const registry = new PeerRegistry();
+    const peerID = "aabbccdd11223344";
+
+    registry.update({
+      peerID,
+      noisePubKey: new Uint8Array(32),
+      signingPubKey: new Uint8Array(32),
+      nickname: "frank",
+    });
+    registry.setNostrPubkey(peerID, "d".repeat(64));
+
+    // Simulate a second ANNOUNCE with no nostrPubkey field.
+    registry.update({
+      peerID,
+      noisePubKey: new Uint8Array(32),
+      signingPubKey: new Uint8Array(32),
+      nickname: "frank-v2",
+    });
+
+    // nostrPubkey must still be present.
+    expect(registry.get(peerID)?.nostrPubkey).toBe("d".repeat(64));
+    // Nickname should be updated to reflect the new announce.
+    expect(registry.get(peerID)?.nickname).toBe("frank-v2");
   });
 });
 
@@ -646,49 +677,6 @@ describe("MessageRouter", () => {
     expect(nostrSent).toHaveLength(0);
   });
 
-  test("setNostrPubkey stores the key and is retrievable", () => {
-    const registry = new PeerRegistry();
-    const peerID = "1122334455667788";
-    registry.update({
-      peerID,
-      noisePubKey: new Uint8Array(32),
-      signingPubKey: new Uint8Array(32),
-      nickname: "eve",
-    });
-
-    registry.setNostrPubkey(peerID, "c".repeat(64));
-
-    expect(registry.get(peerID)?.nostrPubkey).toBe("c".repeat(64));
-  });
-
-  test("update() preserves nostrPubkey across BLE re-announces", () => {
-    // BLE ANNOUNCE packets do not carry a nostrPubkey field, so update() is
-    // called without one. The previously learned nostrPubkey must survive.
-    const registry = new PeerRegistry();
-    const peerID = "aabbccdd11223344";
-
-    registry.update({
-      peerID,
-      noisePubKey: new Uint8Array(32),
-      signingPubKey: new Uint8Array(32),
-      nickname: "frank",
-    });
-    registry.setNostrPubkey(peerID, "d".repeat(64));
-
-    // Simulate a second ANNOUNCE with no nostrPubkey field.
-    registry.update({
-      peerID,
-      noisePubKey: new Uint8Array(32),
-      signingPubKey: new Uint8Array(32),
-      nickname: "frank-v2",
-    });
-
-    // nostrPubkey must still be present.
-    expect(registry.get(peerID)?.nostrPubkey).toBe("d".repeat(64));
-    // Nickname should be updated to reflect the new announce.
-    expect(registry.get(peerID)?.nickname).toBe("frank-v2");
-  });
-
   test("direct transport is skipped entirely when no Noise session exists", () => {
     // Without a session the router cannot encrypt a DM for any direct transport.
     const identity = makeIdentity();
@@ -741,11 +729,6 @@ describe("message ID (cross-transport dedupe)", () => {
     // duplicate packet.
     const ids = new Set(Array.from({ length: 200 }, () => newMessageId()));
     expect(ids.size).toBe(200);
-  });
-
-  test("returns null when the id length overruns the payload", () => {
-    // chLen=1, channel="#", idLen=200 with no data following.
-    expect(decodeAirhopChannelPayload(new Uint8Array([1, 35, 200]))).toBeNull();
   });
 });
 
@@ -863,27 +846,33 @@ describe("PeerRegistry: authenticated peer state", () => {
   // include a key an announce merely pinned, and must outlive reachability.
   test("provenSigningKey answers only for a proof, and past the TTL", () => {
     jest.useFakeTimers();
-    const r = withAnnouncedPeer();
-    expect(r.provenSigningKey(PEER)).toBeUndefined();
-    r.setAuthenticatedState(PEER, PROVEN_KEY, 0);
-    jest.advanceTimersByTime(10 * 60_000);
-    expect(r.get(PEER)).toBeUndefined();
-    expect(Array.from(r.provenSigningKey(PEER)!)).toEqual(
-      Array.from(PROVEN_KEY),
-    );
-    jest.useRealTimers();
+    try {
+      const r = withAnnouncedPeer();
+      expect(r.provenSigningKey(PEER)).toBeUndefined();
+      r.setAuthenticatedState(PEER, PROVEN_KEY, 0);
+      jest.advanceTimersByTime(10 * 60_000);
+      expect(r.get(PEER)).toBeUndefined();
+      expect(Array.from(r.provenSigningKey(PEER)!)).toEqual(
+        Array.from(PROVEN_KEY),
+      );
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   // Courier mail is sealed to this key for a peer who has left, which is
   // exactly when get() stops answering.
   test("noiseKeyFor outlives reachability", () => {
     jest.useFakeTimers();
-    const r = withAnnouncedPeer();
-    jest.advanceTimersByTime(10 * 60_000);
-    expect(r.get(PEER)).toBeUndefined();
-    expect(r.noiseKeyFor(PEER)).toEqual(new Uint8Array(32));
-    expect(r.noiseKeyFor("ffffffffffffffff")).toBeUndefined();
-    jest.useRealTimers();
+    try {
+      const r = withAnnouncedPeer();
+      jest.advanceTimersByTime(10 * 60_000);
+      expect(r.get(PEER)).toBeUndefined();
+      expect(r.noiseKeyFor(PEER)).toEqual(new Uint8Array(32));
+      expect(r.noiseKeyFor("ffffffffffffffff")).toBeUndefined();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });
 

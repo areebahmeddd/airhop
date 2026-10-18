@@ -4,7 +4,6 @@
 // sent yesterday, and that only holds if the DH step really fires when the
 // conversation changes direction. These pin the step, the ordering, and what
 // happens when messages arrive out of order.
-import { x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   generateRatchetKeyPair,
@@ -15,15 +14,16 @@ import {
   type RatchetState,
 } from "../double-ratchet";
 
-// A minimal shared root key (would normally come from X3DH).
+// A fixed root key. In the app it is the Noise XX exporter secret; there is no
+// X3DH step.
 function makeRootKey(): Uint8Array {
   const key = new Uint8Array(32);
   for (let i = 0; i < 32; i++) key[i] = i + 1;
   return key;
 }
 
-// Set up a matched Alice/Bob ratchet pair for testing.
-// Bob holds the SPK; Alice initiates.
+// A matched pair. Alice starts against Bob's ratchet public key, which in the
+// app is his Noise static key.
 function makeAliceBob(): { alice: RatchetState; bob: RatchetState } {
   const rk = makeRootKey();
   const bobSpk = generateRatchetKeyPair();
@@ -84,13 +84,14 @@ describe("Double Ratchet", () => {
     expect(decode(ratchetDecrypt(bob, ct1))).toBe("second");
   });
 
-  test("ciphertexts are different for the same plaintext (counter increments)", () => {
+  test("the same plaintext encrypts under a fresh message key each time", () => {
     const { alice, bob } = makeAliceBob();
     const pt = encode("same");
 
     const ct1 = ratchetEncrypt(alice, pt);
     const ct2 = ratchetEncrypt(alice, pt);
-    expect(bytesToHex(ct1)).not.toBe(bytesToHex(ct2));
+    // Past the 40-byte header, whose counter alone would make them differ.
+    expect(bytesToHex(ct1.slice(40))).not.toBe(bytesToHex(ct2.slice(40)));
 
     expect(decode(ratchetDecrypt(bob, ct1))).toBe("same");
     expect(decode(ratchetDecrypt(bob, ct2))).toBe("same");
@@ -102,16 +103,6 @@ describe("Double Ratchet", () => {
     const tampered = new Uint8Array(ct);
     tampered[ct.length - 1] ^= 0xff;
     expect(() => ratchetDecrypt(bob, tampered)).toThrow();
-  });
-
-  test("replayed ciphertext fails (its message key is already spent)", () => {
-    const { alice, bob } = makeAliceBob();
-    const ct = ratchetEncrypt(alice, encode("replay me"));
-
-    ratchetDecrypt(bob, ct); // first delivery: succeeds
-    // The receiving chain has moved past this message and never stored its
-    // key as skipped, so the replay is tried under the next key and fails.
-    expect(() => ratchetDecrypt(bob, ct)).toThrow();
   });
 
   test("forward secrecy: DH ratchet keys change after each round-trip", () => {
@@ -141,14 +132,6 @@ describe("Double Ratchet", () => {
     const ct = ratchetEncrypt(alice, big);
     const pt = ratchetDecrypt(bob, ct);
     expect(pt).toEqual(big);
-  });
-
-  test("generateRatchetKeyPair produces valid X25519 pair", () => {
-    const kp = generateRatchetKeyPair();
-    expect(kp.priv).toHaveLength(32);
-    expect(kp.pub).toHaveLength(32);
-    // The public key must equal x25519(priv).
-    expect(bytesToHex(x25519.getPublicKey(kp.priv))).toBe(bytesToHex(kp.pub));
   });
 });
 

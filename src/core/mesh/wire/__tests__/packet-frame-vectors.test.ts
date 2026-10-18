@@ -362,69 +362,29 @@ describe("ANNOUNCE TLV encoding", () => {
     expect(Array.from(decoded!.signingPubKey)).toEqual(Array.from(signingPub));
   });
 
-  test("nickname longer than 32 chars is truncated to 32", () => {
-    const long = "x".repeat(60);
-    const payload = encodeAnnouncePayload(identity, long);
-    const decoded = decodeAnnouncePayload(payload, new Uint8Array(8));
-    expect(decoded!.nickname.length).toBeLessThanOrEqual(32);
-  });
-
-  test("encodeAnnouncePayload includes TLV 0x04 when neighborIDs provided", () => {
-    const neighbor = new Uint8Array(8).fill(0xcc);
-    const payload = encodeAnnouncePayload(identity, "dave", [neighbor]);
-    const tlvs = parseTLVs(payload);
-    expect(tlvs.has(0x04)).toBe(true);
-    // TLV 0x04 is 8 bytes per neighbor
-    expect(tlvs.get(0x04)!.length).toBe(8);
-    expect(Array.from(tlvs.get(0x04)!)).toEqual(Array.from(neighbor));
-  });
-
-  test("encodeAnnouncePayload caps neighbor TLV at 10 entries", () => {
-    const neighbors = Array.from({ length: 15 }, (_, i) =>
-      new Uint8Array(8).fill(i),
-    );
-    const payload = encodeAnnouncePayload(identity, "eve", neighbors);
-    const tlvs = parseTLVs(payload);
-    expect(tlvs.has(0x04)).toBe(true);
-    expect(tlvs.get(0x04)!.length).toBe(10 * 8);
-  });
-
-  test("encodeAnnouncePayload omits TLV 0x04 when no neighbors", () => {
-    const payload = encodeAnnouncePayload(identity, "frank", []);
+  test("encodeAnnouncePayload never writes TLV 0x04", () => {
+    const payload = encodeAnnouncePayload(identity, "frank");
     const tlvs = parseTLVs(payload);
     expect(tlvs.has(0x04)).toBe(false);
   });
 
-  test("AnnounceManager.buildPacket includes neighbor TLV when provided", () => {
-    const mgr = new AnnounceManager();
-    const neighbor = new Uint8Array(8).fill(0xdd);
-    const packet = mgr.buildPacket(identity, "grace", [neighbor]);
-    const tlvs = parseTLVs(packet.payload);
-    expect(tlvs.has(0x04)).toBe(true);
-    expect(tlvs.get(0x04)!.length).toBe(8);
-  });
-
-  test("AnnounceManager.buildPacket omits TLV 0x04 when called without neighbors", () => {
+  test("AnnounceManager.buildPacket never writes TLV 0x04", () => {
     const mgr = new AnnounceManager();
     const packet = mgr.buildPacket(identity, "henry");
     const tlvs = parseTLVs(packet.payload);
     expect(tlvs.has(0x04)).toBe(false);
   });
 
-  test("AnnounceManager.start passes getNeighborIDs result into each announce", () => {
-    const mgr = new AnnounceManager();
-    const neighbor = new Uint8Array(8).fill(0xee);
-    const sent: ReturnType<typeof mgr.buildPacket>[] = [];
-    mgr.start(
-      identity,
-      "iris",
-      (p) => sent.push(p),
-      () => [neighbor],
+  test("a bitchat peer's TLV 0x04 is skipped without losing the keys", () => {
+    const payload = encodeAnnouncePayload(identity, "iris");
+    const neighbors = [0x04, 16, ...new Uint8Array(16).fill(0xee)];
+    const decoded = decodeAnnouncePayload(
+      new Uint8Array([...payload, ...neighbors]),
+      new Uint8Array(8),
     );
-    mgr.stop();
-    expect(sent.length).toBeGreaterThan(0);
-    const tlvs = parseTLVs(sent[0].payload);
-    expect(tlvs.has(0x04)).toBe(true);
+    expect(decoded).not.toBeNull();
+    expect(decoded!.nickname).toBe("iris");
+    expect(Array.from(decoded!.noisePubKey)).toEqual(Array.from(noisePub));
   });
 });
 

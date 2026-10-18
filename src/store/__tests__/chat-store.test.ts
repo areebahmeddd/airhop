@@ -1,6 +1,7 @@
 // The chat store: message ordering and dedupe, delivery status, channel
-// membership and keys, merges, unread counts and the persistence window. Uses
-// the in-memory MMKV mock: no native module required.
+// membership and keys, merges, unread counts, the persistence window and the
+// contact-card exchange. Uses the in-memory MMKV mock: no native module
+// required.
 
 import { useActivityStore } from "../activity-store";
 import {
@@ -325,15 +326,6 @@ describe("joinPrivateChannel", () => {
     expect(state().channelKeys["#secret"]).toBe("k");
     expect(state().messages["#secret"] ?? []).toHaveLength(0);
   });
-
-  it("migrates the key and reach when the channel is renamed", () => {
-    state().joinPrivateChannel("#old", "k", true);
-    expect(state().renameChannel("#old", "new")).toBe(true);
-    expect(state().channelKeys["#new"]).toBe("k");
-    expect(state().channelReach["#new"]).toBe("ble+nostr");
-    expect(state().channelKeys["#old"]).toBeUndefined();
-    expect(state().channelReach["#old"]).toBeUndefined();
-  });
 });
 
 describe("removeMessage", () => {
@@ -373,43 +365,6 @@ describe("toggleMuteChannel", () => {
     state().toggleMuteChannel("dm:aaa");
     state().clearAll();
     expect(state().mutedChannels).toEqual(["#city", "#province", "#region"]);
-  });
-});
-
-describe("renameChannel", () => {
-  it("reports success and migrates messages", () => {
-    state().addChannel("#old");
-    state().addMessage(makeMessage({ id: "m1", channel: "#old" }));
-
-    expect(state().renameChannel("#old", "new")).toBe(true);
-    expect(state().channels).toContain("#new");
-    expect(state().channels).not.toContain("#old");
-    expect(state().messages["#new"]).toHaveLength(1);
-    expect(state().messages["#new"][0].channel).toBe("#new");
-  });
-
-  it("refuses a rename onto an existing channel and leaves both intact", () => {
-    // A silent no-op would let the caller carry on and overwrite the target
-    // channel's description with the source's.
-    state().addChannel("#foo");
-    state().addChannel("#bar");
-    state().setChannelDescription("#bar", "bar's own description");
-
-    expect(state().renameChannel("#foo", "bar")).toBe(false);
-    expect(state().channels).toEqual(expect.arrayContaining(["#foo", "#bar"]));
-    expect(state().channelDescriptions["#bar"]).toBe("bar's own description");
-  });
-
-  it("refuses a no-op rename to the same name", () => {
-    state().addChannel("#same");
-    expect(state().renameChannel("#same", "same")).toBe(false);
-  });
-
-  it("moves lastThread with the rename so restore doesn't break", () => {
-    state().addChannel("#old");
-    state().setLastThread("#old");
-    state().renameChannel("#old", "new");
-    expect(state().lastThread).toBe("#new");
   });
 });
 
@@ -755,6 +710,12 @@ describe("mergeChannel and what points at the thread", () => {
     expect(useActivityStore.getState().entries[0].channel).toBe(MESH);
   });
 
+  // Identity for anything never merged, so the same call is safe on every
+  // ordinary DM.
+  it("leaves an unmerged conversation exactly where it is", () => {
+    expect(useChatStore.getState().resolveChannel(NOSTR)).toBe(NOSTR);
+  });
+
   // Two merges in a row must not leave an alias pointing at another alias.
   it("collapses a chained merge to one hop", () => {
     const s = useChatStore.getState();
@@ -963,5 +924,81 @@ describe("mergeChannel carries per-thread settings", () => {
     useChatStore.setState({ clearedAt: { [NOSTR]: 500, [MESH]: 1000 } });
     state().mergeChannel(NOSTR, MESH);
     expect(state().clearedAt[MESH]).toBe(1000);
+  });
+});
+
+// The exchange only counts when both cards have crossed.
+//
+// Merging is what moves replies off the pseudonymous per-cell rail onto the
+// durable one, and the durable inbox files a message by the Nostr key it came
+// from. Until the other side holds our card they cannot know that key is us, so
+// crossing over early lands our messages in a second, unattributed thread on
+// their side: the exact split this feature exists to heal.
+//
+// Both halves are recorded here, and the merge decision reads them from here.
+describe("the contact-card exchange state", () => {
+  const PEER_CELL_KEY = "dd".repeat(32);
+  const THEIR_PEER_ID = "1122334455667788";
+
+  it("records each half independently", () => {
+    const chat = useChatStore.getState();
+    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
+    expect(useChatStore.getState().geoCardExchange[PEER_CELL_KEY]).toEqual({
+      sentMine: true,
+    });
+
+    chat.noteGeoCardExchange(PEER_CELL_KEY, { theirPeerID: THEIR_PEER_ID });
+    // Merged, not replaced: recording one half must never forget the other,
+    // whichever order they arrive in.
+    expect(useChatStore.getState().geoCardExchange[PEER_CELL_KEY]).toEqual({
+      sentMine: true,
+      theirPeerID: THEIR_PEER_ID,
+    });
+  });
+
+  it("records the halves the other way round just as well", () => {
+    const chat = useChatStore.getState();
+    chat.noteGeoCardExchange(PEER_CELL_KEY, { theirPeerID: THEIR_PEER_ID });
+    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
+    expect(useChatStore.getState().geoCardExchange[PEER_CELL_KEY]).toEqual({
+      sentMine: true,
+      theirPeerID: THEIR_PEER_ID,
+    });
+  });
+
+  // Completing the exchange takes the bookkeeping AND the cell with it: once the
+  // conversation is durable, where we happened to meet is a location breadcrumb
+  // with nothing left to do.
+  it("drops the cell binding along with the bookkeeping when it completes", () => {
+    const chat = useChatStore.getState();
+    chat.setGeoDmCell(PEER_CELL_KEY, "u4pruy");
+    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
+
+    chat.clearGeoCardExchange(PEER_CELL_KEY);
+
+    const after = useChatStore.getState();
+    expect(after.geoCardExchange[PEER_CELL_KEY]).toBeUndefined();
+    expect(after.geoDmCells[PEER_CELL_KEY]).toBeUndefined();
+  });
+
+  // A half-finished exchange is exactly the state that must not survive a
+  // delete, since the conversation it belongs to is gone.
+  it("is dropped when the conversation is deleted", () => {
+    const chat = useChatStore.getState();
+    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
+    chat.removeChannel(`dm:nostr_${PEER_CELL_KEY}`);
+    expect(
+      useChatStore.getState().geoCardExchange[PEER_CELL_KEY],
+    ).toBeUndefined();
+  });
+
+  it("is destroyed with everything else on a wipe", () => {
+    useChatStore
+      .getState()
+      .noteGeoCardExchange(PEER_CELL_KEY, { theirPeerID: THEIR_PEER_ID });
+    useChatStore.getState().clearAll();
+    expect(
+      useChatStore.getState().geoCardExchange[PEER_CELL_KEY],
+    ).toBeUndefined();
   });
 });

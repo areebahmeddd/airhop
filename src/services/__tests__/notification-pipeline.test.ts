@@ -230,6 +230,17 @@ describe("startNotificationPipeline", () => {
     expect(mockSetBadge).toHaveBeenCalledWith(3);
   });
 
+  test("hands a change in nearby peers to the service, counted both sides", () => {
+    startNotificationPipeline(() => "alice");
+
+    for (const fn of mockPeerSubs) {
+      fn({ peers: { a: {}, b: {} } }, { peers: { a: {} } });
+    }
+
+    expect(mockHandleNearby).toHaveBeenCalledTimes(1);
+    expect(mockHandleNearby).toHaveBeenCalledWith(2, 1);
+  });
+
   test("a ring with the app in the background reaches the tray", () => {
     startNotificationPipeline(() => "alice");
     const ring = {

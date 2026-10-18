@@ -61,7 +61,8 @@ describe("battery bands", () => {
   });
 
   test("a phone wobbling on a threshold does not oscillate", () => {
-    // Charging noise around 20% is the realistic case: a naive threshold would
+    // A discharging phone's gauge wobbling around 20% is the realistic case
+    // (plugged in, charging decides the mode instead): a naive threshold would
     // flip band on every reading, and every flip restarts the scan.
     const policy = new PowerPolicy();
     policy.next({ ...FOREGROUND, batteryPercent: 25 });
@@ -192,7 +193,7 @@ describe("PowerPolicy", () => {
     expect(policy.next(FOREGROUND)).toBe("balanced");
   });
 
-  test("never oscillates across a long realistic discharge", () => {
+  test("a pocketed discharge steps down once, at critical, and never back up", () => {
     // A day in a pocket: 100% down to 2%, backgrounded, one reading per
     // percent. A correct policy changes mode exactly twice (into power-saver at
     // the start, then into ultra-low-power once critical) and never goes back

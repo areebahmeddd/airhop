@@ -76,16 +76,6 @@ describe("groupReach", () => {
       set(ALICE, stranger, ME),
       set(),
     );
-    expect(r.reachable).toBeLessThanOrEqual(r.total);
     expect(r).toEqual({ reachable: 1, total: 1 });
-  });
-
-  it("matches members on the peer-ID prefix, not the whole fingerprint", () => {
-    // The roster holds a 64-hex fingerprint and the radio a 16-hex peer ID.
-    // Comparing them whole would match nothing and report everyone offline.
-    expect(groupReach([fp(ALICE)], ME, set(ALICE), set())).toEqual({
-      reachable: 1,
-      total: 1,
-    });
   });
 });

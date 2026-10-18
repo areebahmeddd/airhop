@@ -53,21 +53,6 @@ describe("upsertPeer", () => {
 });
 
 describe("updateRssi", () => {
-  it("does not refresh lastSeenMs", () => {
-    // RSSI is polled off the GATT link every 5s. If that counted as liveness a
-    // peer whose ANNOUNCE timer died would be pinned "just seen" forever and
-    // evictStale could never remove it, a permanent ghost on the Mesh tab.
-    const stale = Date.now() - 50_000;
-    state().upsertPeer(makePeer({ lastSeenMs: stale }));
-    // upsertPeer stamps its own lastSeenMs, so re-read the stored value.
-    const before = state().getPeer("aabbccdd00112233")?.lastSeenMs;
-
-    state().updateRssi("aabbccdd00112233", -60);
-
-    expect(state().getPeer("aabbccdd00112233")?.lastSeenMs).toBe(before);
-    expect(state().getPeer("aabbccdd00112233")?.rssi).toBe(-60);
-  });
-
   it("is a no-op for an unknown peer", () => {
     // A signal reading alone does not tell us who the peer is.
     state().updateRssi("ffffffffffffffff", -60);
@@ -75,8 +60,9 @@ describe("updateRssi", () => {
   });
 
   it("leaves a peer evictable once its announces stop, despite RSSI polls", () => {
-    // The real ghost-peer scenario: the GATT link stays up (so RSSI keeps
-    // polling every 5s) but the peer stops announcing. It must still age out.
+    // The ghost-peer scenario: the GATT link stays up (so RSSI keeps polling
+    // every 5s) but the peer stops announcing. If a reading counted as
+    // liveness, evictStale could never remove it.
     jest.useFakeTimers();
     try {
       jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));
@@ -85,6 +71,7 @@ describe("updateRssi", () => {
       // 90s later, past the 60s reachable TTL, with only RSSI polls between.
       jest.setSystemTime(new Date("2026-01-01T00:01:30Z"));
       state().updateRssi("aabbccdd00112233", -60);
+      expect(state().getPeer("aabbccdd00112233")?.rssi).toBe(-60);
       state().evictStale();
 
       expect(state().getPeer("aabbccdd00112233")).toBeUndefined();

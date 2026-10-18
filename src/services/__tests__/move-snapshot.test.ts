@@ -1,3 +1,8 @@
+// What a device transfer carries: the old phone's snapshot, what it leaves
+// behind, and the new phone installing it in an order a crash cannot leave half
+// set up, refusing an identity or a section it was not promised. The session
+// around it is move-session.test.ts.
+//
 // Imports come first in source; Babel hoists jest.mock() calls above them.
 import { generateIdentity, saveIdentity } from "@core/crypto/identity";
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";

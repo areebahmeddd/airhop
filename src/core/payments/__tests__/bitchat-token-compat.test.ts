@@ -4,9 +4,10 @@
 // `findNutzapTarget` falls through to the token rail for its users. Its
 // `/pay <token>` sends the bare token as the message body, exactly as
 // `deliverTokenToPeer` does, and bitchat decodes it only far enough to draw a
-// chip (amount, unit, mint host, memo). So the contract is the token encoding. bitchat's own strict CBOR reader (definite
-// lengths, bounded depth, `/pay` needs a positive amount) must be able to walk
-// whatever cashu-ts emits, or payments become silent blobs there.
+// chip (amount, unit, mint host, memo). So the contract is the token encoding.
+// bitchat's own strict CBOR reader (definite lengths, bounded depth, `/pay`
+// needs a positive amount) must be able to walk whatever cashu-ts emits, or
+// payments become silent blobs there.
 //
 // `decodeLikeBitchat` is a literal port of `CashuTokenDecoder.decodeV4` and its
 // `CBORReader`, kept diffable against the Swift. A failure here means Airhop
@@ -132,6 +133,39 @@ function base64UrlDecode(input: string): Uint8Array | null {
   return out;
 }
 
+const MAX_AMOUNT = 2_100_000_000_000_000;
+
+// The display sanitizers. Swift counts graphemes where these count UTF-16 units
+// or code points; the two agree on the ASCII every case here uses.
+function sanitizedHost(mint: string): string | null {
+  if (mint.length > 512) return null;
+  let host: string;
+  try {
+    // Swift's URL.host carries no port; WHATWG's `host` does, `hostname` not.
+    host = new URL(mint).hostname;
+  } catch {
+    return null;
+  }
+  return host.length === 0 ? null : host.toLowerCase().slice(0, 48);
+}
+
+function sanitizedUnit(unit: string): string | null {
+  // CharacterSet.alphanumerics is the L, M and N categories.
+  if (unit.length === 0 || unit.length > 12) return null;
+  return /^[\p{L}\p{M}\p{N}]+$/u.test(unit) ? unit : null;
+}
+
+function sanitizedMemo(memo: string): string | null {
+  if (memo.length > 512) return null;
+  // controlCharacters (Cc, Cf) and newlines (Cc plus Zl, Zp) out, then spaces
+  // and tabs trimmed.
+  const cleaned = memo
+    .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, "")
+    .replace(/^[\p{Zs}\t]+|[\p{Zs}\t]+$/gu, "");
+  if (cleaned.length === 0) return null;
+  return Array.from(cleaned).slice(0, 80).join("");
+}
+
 interface Chip {
   version: string;
   amount: number | null;
@@ -164,15 +198,11 @@ function decodeLikeBitchat(raw: string): Chip | null {
   for (const [key, value] of root.v) {
     if (key.k !== "text") continue;
     if (key.v === "m" && value.k === "text") {
-      try {
-        mintHost = new URL(value.v).host.toLowerCase() || null;
-      } catch {
-        mintHost = null;
-      }
+      mintHost = sanitizedHost(value.v);
     } else if (key.v === "u" && value.k === "text") {
-      unit = value.v;
+      unit = sanitizedUnit(value.v);
     } else if (key.v === "d" && value.k === "text") {
-      memo = value.v;
+      memo = sanitizedMemo(value.v);
     } else if (key.v === "t" && value.k === "array") {
       for (const group of value.v) {
         if (group.k !== "map") continue;
@@ -181,10 +211,11 @@ function decodeLikeBitchat(raw: string): Chip | null {
           for (const p of gv.v) {
             if (p.k !== "map") continue;
             for (const [pk, pv] of p.v) {
-              if (pk.k === "text" && pk.v === "a" && pv.k === "uint") {
-                total += pv.v;
-                sawAmount = true;
-              }
+              if (pk.k !== "text" || pk.v !== "a" || pv.k !== "uint") continue;
+              if (pv.v <= 0 || pv.v > MAX_AMOUNT) continue;
+              total += pv.v;
+              if (total > MAX_AMOUNT) return null;
+              sawAmount = true;
             }
           }
         }

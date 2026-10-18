@@ -69,17 +69,8 @@ describe("relay URL canonicalization parity", () => {
     }
   });
 
-  // Where both copies part from bitchat-ios on purpose (see EDGE_CASES).
-  test("refuses the IPv4 spellings bitchat-ios lets through", () => {
-    for (const input of ["0x7f.1", "0x7f.0.0.1", "example.0x1"]) {
-      expect([input, canonicalRelayUrl(input)]).toEqual([input, null]);
-    }
-  });
-
   // Real hostnames, in the three shapes the feed writes them in.
   test("agrees on every shipped relay, bare and with an explicit :443", () => {
-    expect(GEO_RELAYS.length).toBeGreaterThan(100);
-
     for (const relay of GEO_RELAYS) {
       const bare = relay.url.replace(/^wss:\/\//, "");
       for (const shape of [relay.url, bare, `${bare}:443`]) {

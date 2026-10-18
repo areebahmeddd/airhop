@@ -192,6 +192,9 @@ describe("parseNutzap", () => {
     expect(
       parseNutzap(event({ tags: [proofTag(-5), ["u", MINT]] })),
     ).toBeNull();
+    expect(
+      parseNutzap(event({ tags: [proofTag(1.5), ["u", MINT]] })),
+    ).toBeNull();
   });
 
   it("keeps the first u tag only, so a second cannot redirect redemption", () => {

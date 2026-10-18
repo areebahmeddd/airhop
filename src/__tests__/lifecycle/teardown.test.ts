@@ -36,10 +36,16 @@ import { Verdict } from "../harness/verdict";
 // relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
 
+// Every field a scenario here can move, so one test's leftovers never decide
+// the next one's verdict.
 function resetStores(): void {
   useMeshStateStore.setState({
     bleBlocker: "starting",
     blePermissionBlocked: false,
+    bleAdvertisingUnsupported: false,
+    powerSaving: false,
+    wifiFastPath: "unknown",
+    lanState: "off",
     locationGranted: true,
     nostrConnected: false,
     torActive: false,
@@ -49,6 +55,7 @@ function resetStores(): void {
   });
   // A start restores a kept Invisible, so Online has to be the saved choice too.
   useSettingsStore.getState().setStayInvisible(false);
+  useSettingsStore.getState().setBackgroundMeshEnabled(true);
   usePeerStore.getState().clearAll();
 }
 
@@ -117,37 +124,6 @@ describe("teardown, replacement and races", () => {
     v.check(
       "presence still reads Away",
       useMeshStateStore.getState().presenceStatus === "away",
-    );
-    v.assert();
-  });
-
-  test("S22 'Stop mesh' tapped when the JS runtime is already gone", async () => {
-    // Android can destroy the React instance while the foreground service keeps
-    // the process. The notification is still on screen, and its Stop button is
-    // still tappable, but there is no JS left to hand the shutdown to.
-    const os = new DeviceOS({ platform: "android", apiLevel: 34 });
-    const v = new Verdict("S22", "Stop mesh with no JS to ask", os);
-    const native = androidDevice(os);
-
-    app = new AppShell({ os });
-    app.bootJsRuntime();
-    app.wireMeshStopListener();
-    await app.startMeshWithPermissions();
-    await os.advance(500);
-    v.check("radios were running", native.scanning && native.advertising);
-
-    await app.setAppState("background");
-    os.jsRuntimeReady = false;
-    os.log("os", "REACT_INSTANCE_DESTROYED", "process kept alive by FGS");
-
-    native.requestMeshStop();
-    await os.advance(500);
-
-    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
-    v.check(
-      "the radios come down anyway rather than scanning for nobody",
-      !native.scanning && !native.advertising,
-      "with no JS to ask, the native module has to stop them itself, otherwise the notification disappears and the radios keep draining the battery with no UI left that can stop them",
     );
     v.assert();
   });

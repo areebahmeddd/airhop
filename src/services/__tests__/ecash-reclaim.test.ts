@@ -10,7 +10,7 @@
 // These tests pin that invariant, and the DM's own state alongside it, since a
 // bubble stuck on "Sending" is what the user sees go wrong.
 
-// ecash-transfer pulls in mesh-service, which resolves the native BLE and Wi-Fi
+// payment-router pulls in mesh-service, which resolves the native BLE and Wi-Fi
 // TurboModules at import time. Nothing here starts the mesh, so bare stubs are
 // enough to get the module graph to load under Node.
 jest.mock("@bridge/NativeAirhopBLE", () => ({

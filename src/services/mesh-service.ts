@@ -962,7 +962,6 @@ export class MeshService {
       this.identity,
       nickname,
       sendFn,
-      undefined,
       hexToBytes(this.nostrPubKeyHex),
       () => this.links.size(),
       // Advertise the gateway capability while the user has it enabled, so
@@ -1343,7 +1342,6 @@ export class MeshService {
           const pkt = this.announceManager.buildPacket(
             this.identity,
             this.nickname,
-            [],
             hexToBytes(this.nostrPubKeyHex),
             this.localCapabilities(),
             this.bridgeService?.advertisedBridgeGeohash(),
@@ -1405,7 +1403,6 @@ export class MeshService {
           const pkt = this.announceManager.buildPacket(
             this.identity,
             this.nickname,
-            [],
             hexToBytes(this.nostrPubKeyHex),
             this.localCapabilities(),
             this.bridgeService?.advertisedBridgeGeohash(),
@@ -5114,7 +5111,6 @@ export class MeshService {
     const packet = this.announceManager.buildPacket(
       this.identity,
       this.nickname,
-      [],
       hexToBytes(this.nostrPubKeyHex),
       // Capabilities and the bridge cell, exactly as the periodic announce
       // carries them.

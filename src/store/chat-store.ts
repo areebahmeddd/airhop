@@ -126,8 +126,6 @@ interface ChatState {
   lastThread: string;
   // Unread count per channel, cleared when the thread is opened
   unreadCounts: Record<string, number>;
-  // User-written descriptions for custom channels (persisted via MMKV).
-  channelDescriptions: Record<string, string>;
   // No per-channel transport or visibility setting: one the send path does not
   // enforce, and one implying encryption at that, is worse than none. A channel
   // is private only by holding a key (channelKeys below).
@@ -219,9 +217,6 @@ interface ChatState {
     overNostr: boolean,
   ) => string;
   removeChannel: (channel: string) => void;
-  // Returns false if the rename was rejected (name unchanged, or already taken)
-  // so callers don't apply follow-up edits to the wrong channel.
-  renameChannel: (oldName: string, newName: string) => boolean;
   togglePinChannel: (channel: string) => void;
   // Muting a conversation stops it raising notifications and keeps its unread
   // out of the aggregate badges (tab, segments, sections). The per-row unread
@@ -289,7 +284,6 @@ interface ChatState {
   setActiveChannel: (channel: string) => void;
   markChannelRead: (channel: string) => void;
   setLastThread: (channel: string) => void;
-  setChannelDescription: (channel: string, description: string) => void;
   clearAll: () => void;
 }
 
@@ -478,7 +472,6 @@ export const useChatStore = create<ChatState>()(
       activeChannel: "",
       lastThread: "",
       unreadCounts: {},
-      channelDescriptions: {},
       pinnedChannels: [],
       mutedChannels: DEFAULT_MUTED_CHANNELS,
       channelKeys: {},
@@ -753,8 +746,6 @@ export const useChatStore = create<ChatState>()(
           delete messages[channel];
           const unreadCounts = { ...state.unreadCounts };
           delete unreadCounts[channel];
-          const channelDescriptions = { ...state.channelDescriptions };
-          delete channelDescriptions[channel];
           const pinnedChannels = state.pinnedChannels.filter(
             (c) => c !== channel,
           );
@@ -786,7 +777,6 @@ export const useChatStore = create<ChatState>()(
             channels,
             messages,
             unreadCounts,
-            channelDescriptions,
             pinnedChannels,
             mutedChannels,
             channelKeys,
@@ -798,80 +788,6 @@ export const useChatStore = create<ChatState>()(
             clearedAt: markCleared(state.clearedAt, channel),
           };
         });
-      },
-
-      renameChannel(oldName: string, newName: string) {
-        // Normalise: ensure exactly one leading #.
-        const clean = "#" + newName.replace(/^#+/, "");
-        // Decide OUTSIDE set() so the result can be reported. Silently no-opping
-        // on a collision lets the caller carry on as if it worked: renaming #foo
-        // onto an existing #bar leaves #foo untouched and overwrites #bar's
-        // description with #foo's drafts.
-        if (clean === oldName || get().channels.includes(clean)) return false;
-
-        set((state) => {
-          const channels = state.channels.map((c) =>
-            c === oldName ? clean : c,
-          );
-          const messages = { ...state.messages };
-          if (messages[oldName]) {
-            messages[clean] = messages[oldName].map((m) => ({
-              ...m,
-              channel: clean,
-            }));
-            delete messages[oldName];
-          }
-          const unreadCounts = { ...state.unreadCounts };
-          if (unreadCounts[oldName] !== undefined) {
-            unreadCounts[clean] = unreadCounts[oldName];
-            delete unreadCounts[oldName];
-          }
-          const channelDescriptions = { ...state.channelDescriptions };
-          if (channelDescriptions[oldName] !== undefined) {
-            channelDescriptions[clean] = channelDescriptions[oldName];
-            delete channelDescriptions[oldName];
-          }
-          const pinnedChannels = state.pinnedChannels.includes(oldName)
-            ? state.pinnedChannels.map((c) => (c === oldName ? clean : c))
-            : state.pinnedChannels;
-          const mutedChannels = state.mutedChannels.includes(oldName)
-            ? state.mutedChannels.map((c) => (c === oldName ? clean : c))
-            : state.mutedChannels;
-          // The encryption key and reach MUST follow the rename: the name is a
-          // local label, the key is the channel's real identity. Dropping it
-          // would silently turn a private channel keyless (unable to decrypt its
-          // own traffic) and lose its Bluetooth+Internet reach.
-          const channelKeys = { ...state.channelKeys };
-          if (channelKeys[oldName] !== undefined) {
-            channelKeys[clean] = channelKeys[oldName];
-            delete channelKeys[oldName];
-          }
-          const channelReach = { ...state.channelReach };
-          if (channelReach[oldName] !== undefined) {
-            channelReach[clean] = channelReach[oldName];
-            delete channelReach[oldName];
-          }
-          const activeChannel =
-            state.activeChannel === oldName ? clean : state.activeChannel;
-          // lastThread must follow the rename too, otherwise an app restart
-          // tries to reopen a channel key that no longer exists and lands the
-          // user on an empty thread.
-          const lastThread =
-            state.lastThread === oldName ? clean : state.lastThread;
-          return {
-            channels,
-            messages,
-            unreadCounts,
-            channelDescriptions,
-            pinnedChannels,
-            mutedChannels,
-            channelKeys,
-            channelReach,
-            activeChannel,
-            lastThread,
-          };
-        });
-        return true;
       },
 
       togglePinChannel(channel: string) {
@@ -995,14 +911,6 @@ export const useChatStore = create<ChatState>()(
             (clearedTo === undefined || clearedFrom > clearedTo)
               ? { ...state.clearedAt, [to]: clearedFrom }
               : state.clearedAt;
-          const channelDescriptions = { ...state.channelDescriptions };
-          if (
-            channelDescriptions[from] !== undefined &&
-            channelDescriptions[to] === undefined
-          ) {
-            channelDescriptions[to] = channelDescriptions[from];
-          }
-          delete channelDescriptions[from];
           const followed = {
             channelRedirects: redirectsAfterMerge(state.channelRedirects),
             activeChannel:
@@ -1011,7 +919,6 @@ export const useChatStore = create<ChatState>()(
             mutedChannels: carryFlag(state.mutedChannels),
             pinnedChannels: carryFlag(state.pinnedChannels),
             clearedAt,
-            channelDescriptions,
           };
           const source = state.messages[from];
           if (source === undefined || source.length === 0) {
@@ -1073,15 +980,6 @@ export const useChatStore = create<ChatState>()(
         set({ lastThread: channel });
       },
 
-      setChannelDescription(channel: string, description: string) {
-        set((state) => ({
-          channelDescriptions: {
-            ...state.channelDescriptions,
-            [channel]: description,
-          },
-        }));
-      },
-
       clearAll() {
         set({
           channels: DEFAULT_CHANNELS,
@@ -1089,7 +987,6 @@ export const useChatStore = create<ChatState>()(
           activeChannel: "",
           lastThread: "",
           unreadCounts: {},
-          channelDescriptions: {},
           pinnedChannels: [],
           mutedChannels: DEFAULT_MUTED_CHANNELS,
           channelKeys: {},
@@ -1113,7 +1010,6 @@ export const useChatStore = create<ChatState>()(
         messages: state.messages,
         lastThread: state.lastThread,
         unreadCounts: state.unreadCounts,
-        channelDescriptions: state.channelDescriptions,
         pinnedChannels: state.pinnedChannels,
         mutedChannels: state.mutedChannels,
         channelKeys: state.channelKeys,

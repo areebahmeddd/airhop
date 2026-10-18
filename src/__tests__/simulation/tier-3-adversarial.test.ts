@@ -28,7 +28,7 @@ import {
 } from "@core/crypto/contact-exchange";
 import type { Identity } from "@core/crypto/identity";
 import { NoiseHandshake } from "@core/crypto/noise-xx";
-import { base64ToBytes } from "@core/encoding/base64";
+import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import {
   ANNOUNCE_TTL,
   encodeAnnouncePayload,
@@ -37,6 +37,8 @@ import {
   openChannelMessage,
   sealChannelMessage,
 } from "@core/mesh/rooms/channel-crypto";
+import { Deduplicator } from "@core/mesh/routing/deduplicator";
+import { HandshakeRateLimiter } from "@core/mesh/routing/handshake-rate-limiter";
 import { encodeFilePacket } from "@core/mesh/wire/file-packet";
 import {
   decodePacket,
@@ -83,30 +85,24 @@ afterAll(() => {
   jest.useRealTimers();
 });
 
-function peerIdToBytes(hex: string): Uint8Array {
-  const out = new Uint8Array(8);
-  for (let i = 0; i < 8; i++) {
-    out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+// Hostile bytes prove a refusal only if they reached the victim. The radio
+// refuses an injection over a link that is not up, and a scenario that ignored
+// that would pass with the attacker never having spoken. Only a miss is
+// recorded, so a flood of five hundred does not bury the report.
+function inject(
+  s: Scenario,
+  radio: RadioFabric,
+  victimID: string,
+  viaID: string,
+  frame: string,
+): void {
+  if (!radio.injectTo(victimID, viaID, frame)) {
+    s.check(
+      `hostile bytes reached ${victimID} via ${viaID}`,
+      false,
+      "no link to write over",
+    );
   }
-  return out;
-}
-
-const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-// The bridge carries base64, so an injected packet has to be encoded the same
-// way the native module would encode it.
-function toBase64(bytes: Uint8Array): string {
-  let out = "";
-  for (let i = 0; i < bytes.length; i += 3) {
-    const b0 = bytes[i];
-    const b1 = bytes[i + 1];
-    const b2 = bytes[i + 2];
-    out += B64[b0 >> 2];
-    out += B64[((b0 & 0x03) << 4) | ((b1 ?? 0) >> 4)];
-    out += b1 === undefined ? "=" : B64[((b1 & 0x0f) << 2) | ((b2 ?? 0) >> 6)];
-    out += b2 === undefined ? "=" : B64[b2 & 0x3f];
-  }
-  return out;
 }
 
 function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
@@ -131,7 +127,7 @@ function forgePublicMessage(opts: {
     type: channelPacketType(opts.channel),
     ttl: 7,
     flags: opts.signWith !== undefined ? Flags.SIGNED : 0,
-    senderID: peerIdToBytes(opts.claimedPeerID),
+    senderID: hexToBytes(opts.claimedPeerID),
     recipientID: new Uint8Array(8),
     timestamp: opts.timestamp,
     signature: new Uint8Array(64),
@@ -147,7 +143,7 @@ function forgePublicMessage(opts: {
   if (opts.signWith !== undefined) {
     packet.signature = signPacket(packet, opts.signWith);
   }
-  return toBase64(encodePacket(packet));
+  return bytesToBase64(encodePacket(packet));
 }
 
 // An ANNOUNCE that claims `claimedPeerID`, carrying whatever key material the
@@ -169,14 +165,13 @@ function forgeAnnounce(opts: {
       signingPubKey: opts.signingPubKey,
     } as Identity,
     opts.nickname,
-    [],
     opts.nostrPubKey,
   );
   const packet: Packet = {
     type: PacketType.ANNOUNCE,
     ttl: ANNOUNCE_TTL,
     flags: opts.signWith !== undefined ? Flags.SIGNED : 0,
-    senderID: peerIdToBytes(opts.claimedPeerID),
+    senderID: hexToBytes(opts.claimedPeerID),
     recipientID: new Uint8Array(8),
     timestamp: opts.timestamp,
     signature: new Uint8Array(64),
@@ -185,7 +180,7 @@ function forgeAnnounce(opts: {
   if (opts.signWith !== undefined) {
     packet.signature = signPacket(packet, opts.signWith);
   }
-  return toBase64(encodePacket(packet));
+  return bytesToBase64(encodePacket(packet));
 }
 
 test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () => {
@@ -247,7 +242,9 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   // Verification must not run only `if (SIGNED)`: clearing the flag would let
   // the sender opt out of being checked and write their keys to the registry
   // unchallenged.
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgeAnnounce({
@@ -264,7 +261,9 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   // key (so the peer ID derivation checks out), mallory's signing key, signed
   // by mallory. Both the derivation check and the signature check PASS. Only
   // the pin refuses it.
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgeAnnounce({
@@ -280,7 +279,9 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
 
   // Attack 3: sender mismatch, claiming alice's ID while carrying mallory's
   // own noise key. Rejected because the ID does not derive from the key.
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgeAnnounce({
@@ -296,7 +297,9 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
 
   // If any of the three had landed, this message would render as alice: it is
   // signed with the key the attacker tried to bind to her ID.
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgePublicMessage({
@@ -382,7 +385,9 @@ test("C10 an announce claiming someone else's Nostr key cannot take their thread
     queuedFor(aliceKey) === 1,
   );
 
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgeAnnounce({
@@ -396,6 +401,20 @@ test("C10 an announce claiming someone else's Nostr key cannot take their thread
     }),
   );
   await s.world.advance(2000);
+
+  // The control: bob took the announce in, and holds the npub mallory claimed
+  // as hers. Refusing the packet outright would pass every check below without
+  // the claim ever having been weighed.
+  const claimed = (
+    bob.mesh as unknown as {
+      registry: { nostrPubkeyFor: (peerID: string) => string | undefined };
+    }
+  ).registry.nostrPubkeyFor(mallory.peerID);
+  s.check(
+    "bob ingested the announce carrying alice's npub",
+    claimed === alice.nostrPubkey,
+    `registry npub for mallory = ${String(claimed)}`,
+  );
 
   const redirects = chat.getState().channelRedirects as Record<string, string>;
   s.check(
@@ -505,7 +524,9 @@ test("C01 a message claiming a trusted peer's ID is refused unless it is signed 
   // A check of `if (SIGNED && haveKey) verify` would let clearing the
   // signature flag skip verification entirely, and the message would render
   // as alice.
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgePublicMessage({
@@ -523,7 +544,9 @@ test("C01 a message claiming a trusted peer's ID is refused unless it is signed 
   );
 
   // Attack 2: signed, but with mallory's own key rather than alice's.
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgePublicMessage({
@@ -543,7 +566,9 @@ test("C01 a message claiming a trusted peer's ID is refused unless it is signed 
 
   // Attack 3: a peer nobody has ever heard announce. There is no key to check
   // against, which must read as a failed check rather than a skipped one.
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgePublicMessage({
@@ -601,7 +626,9 @@ test("C02 the strict signature rule still lets genuine traffic through", async (
     ),
   );
 
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     alice.id,
     forgePublicMessage({
@@ -623,7 +650,9 @@ test("C02 the strict signature rule still lets genuine traffic through", async (
   // Signed and within the decode cap, but past a v1 frame's 65,535 bytes: no
   // client composes one, so it is shown to nobody, as bitchat-ios drops it.
   const oversized = "x".repeat(0x10000);
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     alice.id,
     forgePublicMessage({
@@ -704,14 +733,14 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
     type: PacketType.LEAVE,
     ttl: 3,
     flags: Flags.SIGNED,
-    senderID: peerIdToBytes(alice.peerID),
+    senderID: hexToBytes(alice.peerID),
     recipientID: new Uint8Array(8),
     timestamp: s.world.wallClock(),
     signature: new Uint8Array(64),
     payload: new Uint8Array(0),
   };
   forged.signature = signPacket(forged, mallory.identity.signingPrivKey);
-  radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(forged)));
+  inject(s, radio, bob.id, mallory.id, bytesToBase64(encodePacket(forged)));
   await s.world.advance(5_000);
 
   s.check(
@@ -815,21 +844,25 @@ test("C09b a genuine old LEAVE dressed as a sync reply is refused", async () => 
       type,
       ttl: 0,
       flags: Flags.SIGNED,
-      senderID: peerIdToBytes(alice.peerID),
+      senderID: hexToBytes(alice.peerID),
       recipientID: new Uint8Array(8),
       timestamp: at,
       signature: new Uint8Array(64),
       payload,
     };
     packet.signature = signPacket(packet, alice.identity.signingPrivKey);
-    return toBase64(encodePacket({ ...packet, isRSR: true }));
+    return bytesToBase64(encodePacket({ ...packet, isRSR: true }));
   };
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     recorded(PacketType.LEAVE, new Uint8Array(0)),
   );
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     recorded(
@@ -860,13 +893,13 @@ function forgeHandshake(opts: {
   payload: Uint8Array;
   timestamp: number;
 }): string {
-  return toBase64(
+  return bytesToBase64(
     encodePacket({
       type: PacketType.NOISE_HANDSHAKE,
       ttl: 7,
       flags: Flags.HAS_RECIPIENT,
-      senderID: peerIdToBytes(opts.claimedPeerID),
-      recipientID: peerIdToBytes(opts.toPeerID),
+      senderID: hexToBytes(opts.claimedPeerID),
+      recipientID: hexToBytes(opts.toPeerID),
       timestamp: opts.timestamp,
       signature: new Uint8Array(64),
       payload: opts.payload,
@@ -876,6 +909,15 @@ function forgeHandshake(opts: {
 
 function decodeWrite(dataBase64: string): Packet | null {
   return decodePacket(base64ToBytes(dataBase64));
+}
+
+// How many inbound msg1 a minute the limiter lets through, read off the limiter
+// itself so the scenario follows the constant rather than restating it.
+function inboundInitiationBudget(): number {
+  const limiter = new HandshakeRateLimiter();
+  let n = 0;
+  while (limiter.allowInboundInitiation(`budget-${String(n)}`, 0)) n++;
+  return n;
 }
 
 function pendingHandshakes(device: SimDevice): Map<string, unknown> {
@@ -936,7 +978,9 @@ test("C12 a msg1 flood under random IDs stays bounded and first contact still co
   const floodStart = s.world.now;
   for (let i = 0; i < 500; i++) {
     const id = bytesToHex(sha256(Uint8Array.of(i >> 8, i & 0xff))).slice(0, 16);
-    radio.injectTo(
+    inject(
+      s,
+      radio,
       bob.id,
       mallory.id,
       forgeHandshake({
@@ -951,14 +995,17 @@ test("C12 a msg1 flood under random IDs stays bounded and first contact still co
     if (i % 50 === 49) await s.world.advance(1000);
   }
 
+  // Exactly the budget, not at most it: fewer would mean the flood was refused
+  // for some other reason, or never arrived, and the bound went untested.
+  const budget = inboundInitiationBudget();
   s.check(
-    "bob answered at most 30 forged openings in the minute",
-    msg2Targets.size <= 30,
+    `bob answered exactly ${String(budget)} forged openings in the minute`,
+    msg2Targets.size === budget,
     `msg2 sent to ${String(msg2Targets.size)} peers`,
   );
   s.check(
-    "and holds no more handshakes than he answered",
-    pendingHandshakes(bob).size <= 30,
+    "and holds exactly the handshakes he answered",
+    pendingHandshakes(bob).size === budget,
     `pending = ${String(pendingHandshakes(bob).size)}`,
   );
 
@@ -987,7 +1034,7 @@ test("C12 a msg1 flood under random IDs stays bounded and first contact still co
   );
   s.check(
     "expired handshakes do not accumulate",
-    pendingHandshakes(bob).size <= 31,
+    pendingHandshakes(bob).size <= budget + 1,
     `pending = ${String(pendingHandshakes(bob).size)}`,
   );
 
@@ -1044,7 +1091,9 @@ test("C13 a forged msg2 does not cost the genuine handshake", async () => {
     forged++;
     setTimeout(() => {
       for (const payload of [msg2, garbled]) {
-        radio.injectTo(
+        inject(
+          s,
+          radio,
           bob.id,
           mallory.id,
           forgeHandshake({
@@ -1107,17 +1156,27 @@ test("C13b a forged msg1 under a peer's ID displaces its live attempt, and the D
   for (const d of cast) d.launch();
   await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
 
-  let displaced = false;
+  // Every msg2 bob writes toward alice's ID, by its bytes: one answer floods
+  // down several links, so a second distinct answer is a second handshake.
+  const answers: string[] = [];
+  let answeredBeforeInjection: number | null = null;
+  let attemptBefore: unknown = null;
   const stop = radio.tapWrites((fromID, _link, data) => {
-    if (fromID !== bob.id || displaced) return;
+    if (fromID !== bob.id) return;
     const p = decodeWrite(data);
     if (p?.type !== PacketType.NOISE_HANDSHAKE || p.payload.length !== 96)
       return;
+    if (bytesToHex(p.recipientID) !== alice.peerID) return;
+    answers.push(bytesToHex(p.payload));
+    if (answers.length > 1) return;
     // Bob has just answered alice's msg1. Before her msg3 lands, a fresh
-    // opening in her name replaces the attempt it belongs to.
-    displaced = true;
+    // opening in her name arrives for the attempt it belongs to.
     setTimeout(() => {
-      radio.injectTo(
+      answeredBeforeInjection = answers.length;
+      attemptBefore = pendingHandshakes(bob).get(alice.peerID) ?? null;
+      inject(
+        s,
+        radio,
         bob.id,
         mallory.id,
         forgeHandshake({
@@ -1135,7 +1194,23 @@ test("C13b a forged msg1 under a peer's ID displaces its live attempt, and the D
   alice.send(`dm:${bob.peerID}`, "delayed, not lost");
   await s.world.advance(3_000);
   stop();
-  s.check("the forged opening displaced bob's responder attempt", displaced);
+  // Causal, not "the injection ran": bob held a live attempt for alice when
+  // the forgery arrived, and answered the forgery with a new one of his own.
+  // Alice's next msg1 comes only after her 30s handshake timeout, so a second
+  // answer inside these three seconds is the forged opening's.
+  const genuine = answers[0];
+  const reanswered =
+    answeredBeforeInjection !== null &&
+    answers.slice(answeredBeforeInjection).some((hex) => hex !== genuine);
+  s.check(
+    "bob held alice's responder attempt when the forgery arrived",
+    attemptBefore !== null,
+  );
+  s.check(
+    "and answered the forged opening, so the attempt was replaced",
+    reanswered,
+    `distinct msg2 toward alice: ${String(new Set(answers).size)}`,
+  );
   const landed = await waitFor(
     s.world,
     () => bob.texts(`dm:${alice.peerID}`).includes("delayed, not lost"),
@@ -1191,17 +1266,17 @@ function forgeSigned(opts: {
     flags:
       Flags.SIGNED |
       (opts.recipientPeerID !== undefined ? Flags.HAS_RECIPIENT : 0),
-    senderID: peerIdToBytes(opts.claimedPeerID),
+    senderID: hexToBytes(opts.claimedPeerID),
     recipientID:
       opts.recipientPeerID !== undefined
-        ? peerIdToBytes(opts.recipientPeerID)
+        ? hexToBytes(opts.recipientPeerID)
         : new Uint8Array(8),
     timestamp: opts.timestamp,
     signature: new Uint8Array(64),
     payload: opts.payload,
   };
   packet.signature = signPacket(packet, opts.signWith);
-  return toBase64(encodePacket(packet));
+  return bytesToBase64(encodePacket(packet));
 }
 
 test("C14 after a restart, whoever announces first as a saved contact speaks for nobody", async () => {
@@ -1272,10 +1347,10 @@ test("C14 after a restart, whoever announces first as a saved contact speaks for
   await waitFor(s.world, () => radio.isLinked("bob", "mallory"), 30_000);
   await s.world.advance(2_000);
 
-  const inject = (frame: string): void => {
-    radio.injectTo(bob.id, mallory.id, frame);
+  const fromMallory = (frame: string): void => {
+    inject(s, radio, bob.id, mallory.id, frame);
   };
-  inject(
+  fromMallory(
     forgeAnnounce({
       claimedPeerID: alice.peerID,
       noisePubKey: alice.identity.noiseStaticPubKey,
@@ -1288,7 +1363,7 @@ test("C14 after a restart, whoever announces first as a saved contact speaks for
   );
   await s.world.advance(1_000);
   const now = (): number => s.world.wallClock();
-  inject(
+  fromMallory(
     forgePublicMessage({
       claimedPeerID: alice.peerID,
       channel,
@@ -1297,7 +1372,7 @@ test("C14 after a restart, whoever announces first as a saved contact speaks for
       signWith: mallory.identity.signingPrivKey,
     }),
   );
-  inject(
+  fromMallory(
     forgeSigned({
       type: PacketType.FILE_TRANSFER,
       claimedPeerID: alice.peerID,
@@ -1319,7 +1394,7 @@ test("C14 after a restart, whoever announces first as a saved contact speaks for
     },
     mallory.identity.signingPrivKey,
   );
-  inject(
+  fromMallory(
     forgeSigned({
       type: PacketType.PREKEY_BUNDLE,
       claimedPeerID: alice.peerID,
@@ -1378,7 +1453,7 @@ test("C14 after a restart, whoever announces first as a saved contact speaks for
     ).registry.sessionFor(alice.peerID) === undefined,
   );
 
-  inject(
+  fromMallory(
     forgeSigned({
       type: PacketType.LEAVE,
       claimedPeerID: alice.peerID,
@@ -1624,16 +1699,23 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
   await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
 
   alice.send(`dm:${bob.peerID}`, "one");
-  await waitFor(
-    s.world,
-    () => bob.texts(`dm:${alice.peerID}`).includes("one"),
-    20_000,
+  s.check(
+    "alice's first DM arrives",
+    await waitFor(
+      s.world,
+      () => bob.texts(`dm:${alice.peerID}`).includes("one"),
+      20_000,
+    ),
   );
   bob.send(`dm:${alice.peerID}`, "two");
-  await waitFor(
-    s.world,
-    () => alice.texts(`dm:${bob.peerID}`).includes("two"),
-    20_000,
+  // Both directions, so each side holds a ratchet the forgery could step.
+  s.check(
+    "and bob's reply arrives",
+    await waitFor(
+      s.world,
+      () => alice.texts(`dm:${bob.peerID}`).includes("two"),
+      20_000,
+    ),
   );
 
   // A fresh ratchet key in the header, as a forger would pick, once unsigned
@@ -1645,14 +1727,16 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
     type: PacketType.DR_ENCRYPTED,
     ttl: 7,
     flags: Flags.HAS_RECIPIENT,
-    senderID: peerIdToBytes(alice.peerID),
-    recipientID: peerIdToBytes(bob.peerID),
+    senderID: hexToBytes(alice.peerID),
+    recipientID: hexToBytes(bob.peerID),
     timestamp: s.world.wallClock(),
     signature: new Uint8Array(64),
     payload: forged,
   };
-  radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(unsigned)));
-  radio.injectTo(
+  inject(s, radio, bob.id, mallory.id, bytesToBase64(encodePacket(unsigned)));
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     forgeSigned({
@@ -1756,23 +1840,39 @@ test("C11b a genuine ratchet packet replayed past dedup does not evict the sessi
     ).registry.sessionFor(alice.peerID);
   const before = sessionFor();
 
-  // 1000 packets bob has never seen push the capture out of his dedup. ttl 0
-  // and an unknown recipient, so none is relayed or shown.
-  for (let i = 0; i < 1000; i++) {
+  // As many packets as the deduplicator holds, all new to bob, push the
+  // capture out of it. ttl 0 and an unknown recipient, so none is relayed or
+  // shown.
+  const filler = dedupCapacity();
+  for (let i = 0; i < filler; i++) {
     const filler: Packet = {
       type: PacketType.NOISE_ENCRYPTED,
       ttl: 0,
       flags: Flags.HAS_RECIPIENT,
-      senderID: peerIdToBytes(mallory.peerID),
-      recipientID: peerIdToBytes("00000000000000aa"),
+      senderID: hexToBytes(mallory.peerID),
+      recipientID: hexToBytes("00000000000000aa"),
       timestamp: s.world.wallClock() + i,
       signature: new Uint8Array(64),
       payload: new Uint8Array(16),
     };
-    radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(filler)));
+    inject(s, radio, bob.id, mallory.id, bytesToBase64(encodePacket(filler)));
   }
-  for (const frame of captured) radio.injectTo(bob.id, mallory.id, frame);
+  // The control: the replay got past dedup and reached the ratchet, which is
+  // the only place it could cost the session anything. Still in dedup, it
+  // would be dropped first and the session check below would pass for nothing.
+  const ratchetSaw = jest.spyOn(
+    bob.mesh as unknown as { onDREncrypted: (packet: unknown) => void },
+    "onDREncrypted",
+  );
+  for (const frame of captured) inject(s, radio, bob.id, mallory.id, frame);
   await s.world.advance(1_000);
+  const reached = ratchetSaw.mock.calls.length;
+  ratchetSaw.mockRestore();
+  s.check(
+    "the replay reached the ratchet",
+    reached === captured.length,
+    `${String(reached)} of ${String(captured.length)} replayed frames`,
+  );
 
   s.check("bob still holds the same session", sessionFor() === before);
   const sentAt = s.world.now;
@@ -1794,6 +1894,22 @@ test("C11b a genuine ratchet packet replayed past dedup does not evict the sessi
   s.expectNone("process health", noCrashes(cast));
   s.assert();
 });
+
+// How many packet IDs a deduplicator holds before it evicts the oldest, read
+// off the class so the replay below tracks the constant rather than restating
+// it.
+function dedupCapacity(): number {
+  const dedup = new Deduplicator();
+  const id = (n: number): Uint8Array => {
+    const out = new Uint8Array(16);
+    new DataView(out.buffer).setUint32(0, n);
+    return out;
+  };
+  dedup.add(id(0));
+  let held = 1;
+  while (dedup.has(id(0))) dedup.add(id(held++));
+  return held - 1;
+}
 
 // Three phones in radio range of each other, the first two about to be
 // attacked by the third, with every link up and every announce heard.
@@ -1869,7 +1985,9 @@ test("F10 a private-room member cannot write in another member's name", async ()
       signWith: mallory.identity.signingPrivKey,
     });
 
-  radio.injectTo(
+  inject(
+    s,
+    radio,
     bob.id,
     mallory.id,
     sealed(alice.peerID, "f10", "alice: pay me"),
@@ -1885,7 +2003,9 @@ test("F10 a private-room member cannot write in another member's name", async ()
     const opened = openChannelMessage(keyB64, p.payload);
     if (opened === null) return;
     copied = true;
-    radio.injectTo(
+    inject(
+      s,
+      radio,
       bob.id,
       mallory.id,
       sealed(mallory.peerID, opened.msgId, "mallory's version"),
@@ -1938,7 +2058,9 @@ test("C16 a copied message ID cannot displace a room message", async () => {
     const decoded = decodeAirhopChannelPayload(p.payload);
     if (decoded === null) return;
     copied = true;
-    radio.injectTo(
+    inject(
+      s,
+      radio,
       bob.id,
       mallory.id,
       forgeSigned({

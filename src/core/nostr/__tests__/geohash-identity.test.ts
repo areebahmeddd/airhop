@@ -5,6 +5,7 @@
 // must be tied to the user's main Nostr key. These tests pin that, plus the
 // determinism that gives a user a stable pseudonym within one channel.
 
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { getPublicKey } from "nostr-tools";
 import {
   deriveGeohashIdentity,
@@ -16,9 +17,11 @@ const SIGNING_KEY = new Uint8Array(32).fill(7);
 const OTHER_SIGNING_KEY = new Uint8Array(32).fill(9);
 
 describe("deriveGeohashSeed", () => {
-  it("is deterministic for one identity", () => {
-    expect(deriveGeohashSeed(SIGNING_KEY)).toEqual(
-      deriveGeohashSeed(SIGNING_KEY),
+  // Pinned from the current implementation: a change here gives every user a
+  // new pseudonym in every channel.
+  it("gives a pinned seed for a fixed identity", () => {
+    expect(bytesToHex(deriveGeohashSeed(SIGNING_KEY))).toBe(
+      "217e3a4719a1659d67f161937244c501eff5aef705765f3bf30897385ac52c43",
     );
   });
 
@@ -47,7 +50,7 @@ describe("deriveGeohashIdentity", () => {
 
   it("is stable for the same geohash (stable pseudonym in a channel)", () => {
     expect(deriveGeohashIdentity(seed, "u4pruy").pubKeyHex).toBe(
-      deriveGeohashIdentity(seed, "u4pruy").pubKeyHex,
+      "5d7281a30a808d1ee92af695d97ffd7b16d1a8f8c56e2c71f978391b9d742e0f",
     );
   });
 

@@ -11,15 +11,6 @@
 // Covered here rather than in the simulator, where `Platform.OS` is one global
 // shared by every simulated phone.
 
-jest.mock("@bridge/NativeAirhopBLE", () => ({
-  __esModule: true,
-  default: {},
-}));
-jest.mock("@bridge/NativeAirhopWiFi", () => ({
-  __esModule: true,
-  default: {},
-}));
-
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import { Platform } from "react-native";

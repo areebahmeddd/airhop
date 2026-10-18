@@ -597,12 +597,6 @@ export function buildToken(
 
 // ---- Fees ----
 
-// NUT-02. The mint rounds up, so must we, or swaps underpay by one sat.
-export function inputFeeFor(inputCount: number, feePpk: number): number {
-  if (feePpk <= 0 || inputCount <= 0) return 0;
-  return Math.ceil((inputCount * feePpk) / 1000);
-}
-
 // What the recipient pays to swap `proofs`: for an honest "they receive N",
 // and for how much to over-send when the sender covers it.
 export function feeForProofs(

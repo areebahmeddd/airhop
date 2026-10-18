@@ -14,9 +14,6 @@ import {
   parseAccountKey,
   resetWalletStorage,
   selectAccounts,
-  selectBalanceForUnit,
-  selectSecrets,
-  selectUnits,
   useWalletStore,
   walletStorageByteSize,
   type StoredProof,
@@ -45,6 +42,14 @@ function makeProof(amount: number, secret?: string): StoredProof {
 
 function state() {
   return useWalletStore.getState();
+}
+
+// The spendable balance in one unit across every mint, read through the
+// accounts the wallet screen lists.
+function balance(unit: string): number {
+  return selectAccounts(state())
+    .filter((account) => account.unit === unit)
+    .reduce((total, account) => total + account.balance, 0);
 }
 
 function tx(overrides: Partial<WalletTx> = {}): WalletTx {
@@ -110,16 +115,15 @@ describe("addProofs", () => {
     // reservation still holds those proofs against the pending send.
     const result = state().addProofs(MINT, "sat", [proof]);
     expect(result).toEqual({ added: 0, duplicates: 1 });
-    expect(selectBalanceForUnit(state(), "sat")).toBe(0);
+    expect(balance("sat")).toBe(0);
   });
 
   it("never merges units from the same mint", () => {
     state().addProofs(MINT, "sat", [makeProof(100)]);
     state().addProofs(MINT, "usd", [makeProof(5)]);
 
-    expect(selectBalanceForUnit(state(), "sat")).toBe(100);
-    expect(selectBalanceForUnit(state(), "usd")).toBe(5);
-    expect(selectUnits(state())).toEqual(["sat", "usd"]);
+    expect(balance("sat")).toBe(100);
+    expect(balance("usd")).toBe(5);
   });
 
   it("is a no-op for an empty array", () => {
@@ -165,7 +169,7 @@ describe("reservations", () => {
     state().addProofs(MINT, "sat", [proof, makeProof(32)]);
     state().reserveProofs("tx-1", MINT, "sat", [proof]);
 
-    expect(selectBalanceForUnit(state(), "sat")).toBe(32);
+    expect(balance("sat")).toBe(32);
     const account = selectAccounts(state()).find((a) => a.unit === "sat");
     expect(account?.reserved).toBe(64);
     expect(state().reserved["tx-1"].proofs).toHaveLength(1);
@@ -178,7 +182,7 @@ describe("reservations", () => {
 
     const restored = state().releaseReserved("tx-1");
     expect(restored).toHaveLength(1);
-    expect(selectBalanceForUnit(state(), "sat")).toBe(64);
+    expect(balance("sat")).toBe(64);
     expect(state().reserved["tx-1"]).toBeUndefined();
   });
 
@@ -192,7 +196,7 @@ describe("reservations", () => {
     });
 
     state().releaseReserved("tx-1");
-    expect(selectBalanceForUnit(state(), "sat")).toBe(64);
+    expect(balance("sat")).toBe(64);
   });
 
   it("drops a reservation for good once delivery is confirmed", () => {
@@ -202,7 +206,7 @@ describe("reservations", () => {
     state().dropReserved("tx-1");
 
     expect(state().reserved["tx-1"]).toBeUndefined();
-    expect(selectBalanceForUnit(state(), "sat")).toBe(0);
+    expect(balance("sat")).toBe(0);
   });
 
   it("returns null when releasing an unknown reservation", () => {
@@ -220,7 +224,7 @@ describe("reservations", () => {
     expect(state().reserveProofs("tx-b", MINT, "sat", [proof])).toBe(false);
 
     expect(state().reserved["tx-b"]).toBeUndefined();
-    expect(selectBalanceForUnit(state(), "sat")).toBe(0);
+    expect(balance("sat")).toBe(0);
   });
 
   it("reserves all or nothing when only part of the set is still available", () => {
@@ -235,7 +239,7 @@ describe("reservations", () => {
       false,
     );
     expect(state().reserved["tx-b"]).toBeUndefined();
-    expect(selectBalanceForUnit(state(), "sat")).toBe(8);
+    expect(balance("sat")).toBe(8);
   });
 
   it("is idempotent, so a retry cannot reserve twice under one id", () => {
@@ -262,11 +266,11 @@ describe("reservations", () => {
 
     expect(state().reserved["tx-a"].proofs).toEqual([first]);
     // The 8 was never taken, so it is still spendable and nothing vanished.
-    expect(selectBalanceForUnit(state(), "sat")).toBe(8);
+    expect(balance("sat")).toBe(8);
   });
 });
 
-// ---- removeProofs / replaceProofs ----
+// ---- removeProofs ----
 
 describe("removeProofs", () => {
   it("removes by secret and leaves the rest", () => {
@@ -288,27 +292,23 @@ describe("removeProofs", () => {
   });
 });
 
-describe("replaceProofs", () => {
-  it("swaps the whole account list", () => {
-    state().addProofs(MINT, "sat", [makeProof(32), makeProof(64)]);
-    state().replaceProofs(MINT, "sat", [makeProof(128)]);
-
-    const list = state().proofs[accountKey(MINT, "sat")];
-    expect(list).toHaveLength(1);
-    expect(list[0].amount).toBe(128);
-  });
-});
-
 // ---- Mints ----
 
 describe("mints", () => {
   it("keeps addedAtMs stable across patches", () => {
-    state().addMint(MINT, { name: "First" });
-    const first = state().mints[MINT].addedAtMs;
-    state().addMint(MINT, { name: "Renamed" });
+    // The clock moves between the two calls, so a second add that rewrote the
+    // timestamp would show here.
+    jest.useFakeTimers({ now: 1_700_000_000_000 });
+    try {
+      state().addMint(MINT, { name: "First" });
+      jest.setSystemTime(1_700_000_060_000);
+      state().addMint(MINT, { name: "Renamed" });
 
-    expect(state().mints[MINT].addedAtMs).toBe(first);
-    expect(state().mints[MINT].name).toBe("Renamed");
+      expect(state().mints[MINT].addedAtMs).toBe(1_700_000_000_000);
+      expect(state().mints[MINT].name).toBe("Renamed");
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("removing a mint deletes every account it holds", () => {
@@ -435,17 +435,22 @@ describe("persistence", () => {
 // ---- Selectors ----
 
 describe("selectors", () => {
-  it("sums a unit across mints but never across units", () => {
+  it("keeps each mint and unit its own account, never summed across units", () => {
     state().addProofs(MINT, "sat", [makeProof(100), makeProof(50)]);
     state().addProofs(OTHER, "sat", [makeProof(200)]);
     state().addProofs(OTHER, "usd", [makeProof(7)]);
 
-    expect(selectBalanceForUnit(state(), "sat")).toBe(350);
-    expect(selectBalanceForUnit(state(), "usd")).toBe(7);
+    expect(
+      selectAccounts(state()).map((account) => [account.key, account.balance]),
+    ).toEqual([
+      [accountKey(OTHER, "sat"), 200],
+      [accountKey(MINT, "sat"), 150],
+      [accountKey(OTHER, "usd"), 7],
+    ]);
   });
 
   it("returns 0 for an empty store", () => {
-    expect(selectBalanceForUnit(state(), "sat")).toBe(0);
+    expect(balance("sat")).toBe(0);
     expect(selectAccounts(state())).toEqual([]);
   });
 
@@ -458,17 +463,6 @@ describe("selectors", () => {
       unit: "sat",
       balance: 0,
     });
-  });
-
-  it("selectSecrets returns the account's secrets", () => {
-    state().addProofs(MINT, "sat", [
-      makeProof(10, "alpha"),
-      makeProof(20, "beta"),
-    ]);
-    const secrets = selectSecrets(state(), accountKey(MINT, "sat"));
-    expect(secrets.has("alpha")).toBe(true);
-    expect(secrets.has("gamma")).toBe(false);
-    expect(selectSecrets(state(), accountKey(OTHER, "sat")).size).toBe(0);
   });
 });
 
