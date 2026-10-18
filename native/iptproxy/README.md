@@ -65,7 +65,7 @@ The `git add` is not optional on a first build. `verify-vendored.js` hashes trac
 
 1. Move `IPTPROXY_VERSION` and `IPTPROXY_COMMIT` in `TOOLCHAIN.env` together, and `DNSTT_COMMIT` if their submodule moved.
 2. Check `GOMOBILE_VERSION` against the `golang.org/x/mobile` line in their `go.mod`. The build fails loudly if it drifts.
-3. Rebuild both platforms, re-record the hashes, and update the entries in [`src/data/licenses.ts`](../../src/data/licenses.ts).
+3. Rebuild both platforms, re-record the hashes, and update the entries in [`src/data/licenses.ts`](../../src/data/licenses.ts) and `s.version` in [`ios/IPtProxy.podspec`](../../ios/IPtProxy.podspec), which Sync Native Lockfiles carries into `Podfile.lock`.
 4. Read their changelog for renames in the binding surface. The build checks the names the app binds, but not a behaviour change.
 5. Run govulncheck over what the build compiles, once by hand rather than in CI, since it fetches a tool and a database. After `fetch-sources.sh`, in `.native-build/iptproxy-src/iptproxy/IPtProxy.go`, install it for the host first (`go run` would build it for Android and fail to start), then scan each target with the Go version `TOOLCHAIN.env` pins:
 
