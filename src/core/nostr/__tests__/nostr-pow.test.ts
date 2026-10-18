@@ -23,7 +23,8 @@ function signedWithPow(content: string, tags: string[][]) {
     tags,
     content,
   };
-  const nonce = mineNonceTag(fields);
+  // A clock that never moves, so a loaded runner cannot run the budget out.
+  const nonce = mineNonceTag(fields, POW_TARGET_BITS, () => 0);
   expect(nonce).not.toBeNull();
   return finalizeEvent(
     {
@@ -77,7 +78,11 @@ describe("mineNonceTag", () => {
       content: "x",
     };
     const tag = mineNonceTag(fields, 256, clock);
-    expect(tag === null || Number(tag[2]) < 32).toBe(true);
+    if (tag === null) return;
+    expect(Number(tag[2])).toBeLessThan(32);
+    // Whatever it settled on, the ID meets it.
+    const id = getEventHash({ ...fields, tags: [tag] });
+    expect(validatedDifficulty(id, [tag])).toBe(Number(tag[2]));
   });
 });
 

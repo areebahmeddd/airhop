@@ -14,7 +14,9 @@ export const POW_BYPASS_BITS = 8;
 // About 256 hashes on average. bitchat-ios allows 2s, off the main thread.
 const MINING_BUDGET_MS = 200;
 const FALLBACK_BUDGET_MS = 30;
-const CHECK_EVERY = 64;
+// Each hash covers the whole event, up to about 6 KB, so reading the clock
+// costs little beside it and a tight check keeps the cap firm.
+const CHECK_EVERY = 16;
 
 const NONCE_HEX_LENGTH = 16;
 
