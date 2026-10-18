@@ -100,7 +100,7 @@
       <data android:scheme="https"/>
     </intent>
   </queries>
-  <!-- enableOnBackInvokedCallback stays false. React Native 0.86's
+  <!-- enableOnBackInvokedCallback stays false. React Native's
        ReactActivity registers its OnBackPressedCallback only on API 36+ with
        targetSdk 36+, where the platform enforces predictive back regardless.
        Below that, true would route back through OnBackPressedDispatcher,

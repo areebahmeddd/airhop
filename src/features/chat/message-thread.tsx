@@ -185,9 +185,14 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type StyleProp,
+  type TextInputInstance,
   type ViewStyle,
 } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import {
+  GestureDetector,
+  usePanGesture,
+  type PanGestureConfig,
+} from "react-native-gesture-handler";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -1672,7 +1677,7 @@ export default function MessageThread({
   }, [channel, draft]);
   // Focused when something else drafts into the composer, so the text is not
   // left behind a closed keyboard.
-  const composerRef = useRef<TextInput>(null);
+  const composerRef = useRef<TextInputInstance>(null);
 
   // @-mention suggestions. Who can be tagged depends on the thread: a group's
   // roster, a location cell's active participants, or a channel's nearby peers.
@@ -3463,7 +3468,7 @@ export default function MessageThread({
         `${CACHE_FILE_PREFIX}${String(Date.now())}_${wireName}`,
       );
       file.create({ overwrite: true, intermediates: true });
-      file.write(bytes);
+      await file.write(bytes);
       sendAttachmentMessage(
         "voice",
         file.uri,
@@ -3710,8 +3715,9 @@ export default function MessageThread({
   }
 
   // The handlers are re-declared every render (they close over the channel and
-  // the send path), and a gesture rebuilt mid-hold would drop the finger already
-  // on it. The gesture is built once and reaches them through this.
+  // the send path). The gesture config is built once, so the recording timer's
+  // renders never reconfigure the native handler under a finger holding it, and
+  // it reaches them through this.
   const talkRef = useRef({
     start: handleTalkStart,
     end: handleTalkEnd,
@@ -3769,64 +3775,68 @@ export default function MessageThread({
   // The callbacks are worklets, so the button tracks the finger on the UI thread
   // and crosses to JS three times per hold. During a live burst the JS thread is
   // packetizing and signing audio frames several times a second, and a drag
-  // paced by it would stutter in exactly the case this serves.
-  const talkGesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .minDistance(0)
-        // A cancel takes the finger off the button immediately; the hold has to
-        // survive that.
-        .shouldCancelWhenOutside(false)
-        .onBegin(() => {
-          cancelSlide.value = 0;
-          cancelArmedShared.value = false;
-          lockedShared.value = false;
-          lockAvailableShared.value = false;
-          scheduleOnRN(beginTalk);
-        })
-        .onUpdate((e) => {
-          // Locked: the finger no longer steers anything. The bar's own X and
-          // Send are the way out from here.
-          if (lockedShared.value) return;
-          // Lift to lock, but only on a hold that is recording a note and only
-          // while it is not already sliding toward cancel. Checking the slide
-          // is what keeps a diagonal drag from doing both.
-          if (
-            lockAvailableShared.value &&
-            cancelSlide.value === 0 &&
-            -e.translationY >= LOCK_SLIDE_DISTANCE
-          ) {
-            lockedShared.value = true;
-            cancelSlide.value = withTiming(0, { duration: Duration.base });
-            scheduleOnRN(lockTalk);
-            return;
-          }
-          // Toward the start of the row, whichever side that is under RTL.
-          const travel = isRTLLayout ? e.translationX : -e.translationX;
-          const slid = Math.min(Math.max(travel, 0), CANCEL_SLIDE_DISTANCE);
-          cancelSlide.value = slid;
-          // Arming takes the full distance, disarming needs most of the way
-          // back. See CANCEL_SLIDE_DISARM.
-          const nextArmed = cancelArmedShared.value
-            ? slid > CANCEL_SLIDE_DISARM
-            : slid >= CANCEL_SLIDE_DISTANCE;
-          if (nextArmed === cancelArmedShared.value) return;
-          cancelArmedShared.value = nextArmed;
-          scheduleOnRN(reportCancelArmed, nextArmed);
-        })
-        .onFinalize(() => {
-          // A locked hold has already handed the recording to the bar, so
-          // lifting is not a release: ending it here is what would send a note
-          // the user has not finished.
-          if (lockedShared.value) {
-            lockedShared.value = false;
-            return;
-          }
-          const cancelled = cancelArmedShared.value;
-          cancelArmedShared.value = false;
+  // paced by it would stutter in exactly the case this serves. A memoized
+  // config is not workletized automatically, hence the directives.
+  const talkConfig = useMemo<PanGestureConfig>(
+    () => ({
+      minDistance: 0,
+      // A cancel takes the finger off the button immediately; the hold has to
+      // survive that.
+      shouldCancelWhenOutside: false,
+      onBegin: () => {
+        "worklet";
+        cancelSlide.value = 0;
+        cancelArmedShared.value = false;
+        lockedShared.value = false;
+        lockAvailableShared.value = false;
+        scheduleOnRN(beginTalk);
+      },
+      onUpdate: (e) => {
+        "worklet";
+        // Locked: the finger no longer steers anything. The bar's own X and
+        // Send are the way out from here.
+        if (lockedShared.value) return;
+        // Lift to lock, but only on a hold that is recording a note and only
+        // while it is not already sliding toward cancel. Checking the slide
+        // is what keeps a diagonal drag from doing both.
+        if (
+          lockAvailableShared.value &&
+          cancelSlide.value === 0 &&
+          -e.translationY >= LOCK_SLIDE_DISTANCE
+        ) {
+          lockedShared.value = true;
           cancelSlide.value = withTiming(0, { duration: Duration.base });
-          scheduleOnRN(finishTalk, cancelled);
-        }),
+          scheduleOnRN(lockTalk);
+          return;
+        }
+        // Toward the start of the row, whichever side that is under RTL.
+        const travel = isRTLLayout ? e.translationX : -e.translationX;
+        const slid = Math.min(Math.max(travel, 0), CANCEL_SLIDE_DISTANCE);
+        cancelSlide.value = slid;
+        // Arming takes the full distance, disarming needs most of the way
+        // back. See CANCEL_SLIDE_DISARM.
+        const nextArmed = cancelArmedShared.value
+          ? slid > CANCEL_SLIDE_DISARM
+          : slid >= CANCEL_SLIDE_DISTANCE;
+        if (nextArmed === cancelArmedShared.value) return;
+        cancelArmedShared.value = nextArmed;
+        scheduleOnRN(reportCancelArmed, nextArmed);
+      },
+      onFinalize: () => {
+        "worklet";
+        // A locked hold has already handed the recording to the bar, so
+        // lifting is not a release: ending it here is what would send a note
+        // the user has not finished.
+        if (lockedShared.value) {
+          lockedShared.value = false;
+          return;
+        }
+        const cancelled = cancelArmedShared.value;
+        cancelArmedShared.value = false;
+        cancelSlide.value = withTiming(0, { duration: Duration.base });
+        scheduleOnRN(finishTalk, cancelled);
+      },
+    }),
     [
       cancelSlide,
       cancelArmedShared,
@@ -3838,6 +3848,7 @@ export default function MessageThread({
       finishTalk,
     ],
   );
+  const talkGesture = usePanGesture(talkConfig);
 
   // The button follows the finger, so the slide reads as dragging the recording
   // away rather than as missing the button. It also shrinks, which is the same

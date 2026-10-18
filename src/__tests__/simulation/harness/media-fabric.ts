@@ -46,7 +46,7 @@ export function createExpoFileSystemMock(): unknown {
       if (!disk.has(this.uri)) disk.set(this.uri, { bytes: new Uint8Array(0) });
     }
 
-    write(data: Uint8Array | string): void {
+    writeSync(data: Uint8Array | string): void {
       const bytes =
         typeof data === "string"
           ? Uint8Array.from(data, (c) => c.charCodeAt(0))

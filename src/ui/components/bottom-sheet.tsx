@@ -20,13 +20,13 @@
 // Callers keep their own `sheetStyle`, so converting a sheet is a matter of
 // deleting its Modal/overlay/handle boilerplate, not restyling it.
 //
-// The two rules disabled below model plain React values, where writing to
-// something an effect or a callback captured is a real bug. Reanimated's shared
-// values are the opposite: a `.value` write is the entire mechanism, it runs on
-// the UI thread, and it deliberately does not go through React. There is no way
-// to drive a finger-following drag without one, so the rules are off for this
-// file only - every other file in the app keeps them.
-/* eslint-disable react-hooks/immutability, react-hooks/refs */
+// The rule disabled below models plain React values, where writing to something
+// an effect or a callback captured is a real bug. Reanimated's shared values are
+// the opposite: a `.value` write is the entire mechanism, it runs on the UI
+// thread, and it deliberately does not go through React. There is no way to
+// drive a finger-following drag without one, so the rule is off for this file
+// only, and every other file in the app keeps it.
+/* eslint-disable react-hooks/immutability */
 
 import { useT } from "@i18n";
 import { crossedThreshold } from "@platform/haptics";
@@ -42,9 +42,9 @@ import {
   type ViewStyle,
 } from "react-native";
 import {
-  Gesture,
   GestureDetector,
   GestureHandlerRootView,
+  usePanGesture,
 } from "react-native-gesture-handler";
 import Animated, {
   Easing,
@@ -337,20 +337,20 @@ export default function BottomSheet({
     translateY.value = withSpring(0, OPEN_SPRING);
   }
 
-  // Rebuilt each render rather than memoized: a sheet renders a handful of
-  // times in its life, and memoizing it would mean mutating shared values from
-  // inside a memo closure, which the compiler rules (rightly) disallow for
-  // ordinary values.
-  const pan = Gesture.Pan()
+  // Inline rather than memoized: a sheet renders a handful of times in its life,
+  // and memoizing would mean mutating shared values from inside a memo closure,
+  // which the compiler rules (rightly) disallow for ordinary values. Inline also
+  // lets the worklets plugin workletize the callbacks.
+  const pan = usePanGesture({
     // Downward only, and only past a deliberate 10pt: taps on the rows inside
     // the sheet must still register as taps.
-    .activeOffsetY(10)
-    .failOffsetX([-24, 24])
-    .onStart(() => {
+    activeOffsetY: 10,
+    failOffsetX: [-24, 24],
+    onActivate: () => {
       dragStart.value = translateY.value;
       pastThreshold.value = false;
-    })
-    .onUpdate((e) => {
+    },
+    onUpdate: (e) => {
       // Clamped at 0: the sheet is anchored to the bottom, so pulling up has
       // nowhere to go and rubber-banding there would just look loose.
       translateY.value = Math.max(0, dragStart.value + e.translationY);
@@ -362,15 +362,16 @@ export default function BottomSheet({
         pastThreshold.value = past;
         if (past) scheduleOnRN(crossedThreshold);
       }
-    })
-    .onEnd((e) => {
+    },
+    onDeactivate: (e) => {
       const far = translateY.value > sheetHeight.value * DISMISS_DISTANCE_RATIO;
       if (far || e.velocityY > DISMISS_VELOCITY) {
         scheduleOnRN(dismiss);
       } else {
         translateY.value = withSpring(0, OPEN_SPRING);
       }
-    });
+    },
+  });
 
   const sheetAnim = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],

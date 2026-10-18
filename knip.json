@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreDependencies": ["expo-updates", "react-test-renderer"],
+  "ignoreDependencies": ["expo-updates", "expo-system-ui"],
   "ignoreExportsUsedInFile": true,
   "workspaces": {
     ".": {

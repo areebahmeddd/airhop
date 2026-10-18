@@ -71,6 +71,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type ScrollViewInstance,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import ConnectivityGroup from "./connectivity-group";
@@ -315,7 +316,7 @@ export default function ProfileScreen({
   // unmounts the hub's list and loses its scroll position. Remember it on the way
   // out and restore it when the sub-screen pops. Restored from
   // `onContentSizeChange` because the `contentOffset` prop is iOS-only.
-  const rootScrollRef = useRef<ScrollView>(null);
+  const rootScrollRef = useRef<ScrollViewInstance>(null);
   const rootScrollY = useRef(0);
   const restoreRootScroll = useRef(false);
 
@@ -586,7 +587,7 @@ export default function ProfileScreen({
       );
       if (file.exists) file.delete();
       file.create();
-      file.write(base64, { encoding: "base64" });
+      await file.write(base64, { encoding: "base64" });
       return file.uri;
     } catch {
       return null;

@@ -7,7 +7,5 @@ module.exports = function (api) {
     // used, and that wrapper owns `style`, which breaks the standard
     // `style={({ pressed }) => ...}` callback form.
     presets: ["babel-preset-expo"],
-    // reanimated/plugin must stay last, as its docs require.
-    plugins: ["react-native-reanimated/plugin"],
   };
 };

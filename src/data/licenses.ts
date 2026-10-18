@@ -79,11 +79,6 @@ const CATALOG: {
         repo: "https://github.com/expo/expo/tree/main/packages/expo-audio",
       },
       {
-        name: "expo-build-properties",
-        license: "MIT",
-        repo: "https://github.com/expo/expo/tree/main/packages/expo-build-properties",
-      },
-      {
         name: "expo-camera",
         license: "MIT",
         repo: "https://github.com/expo/expo/tree/main/packages/expo-camera",

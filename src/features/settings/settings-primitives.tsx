@@ -41,7 +41,9 @@ import {
   Switch,
   Text,
   View,
+  type ScrollViewInstance,
   type ScrollViewProps,
+  type ViewInstance,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { SettingId } from "./settings-index";
@@ -85,7 +87,9 @@ export function useSharedStyles() {
 // row is wanted and holds it across the screen change, while the scroll view
 // that has to move belongs to the screen the result lands on.
 const HighlightContext = createContext<SettingId | null>(null);
-const RevealContext = createContext<((node: View) => void) | null>(null);
+const RevealContext = createContext<((node: ViewInstance) => void) | null>(
+  null,
+);
 
 // Long enough to find after the scroll settles, short enough not to read as a
 // selection.
@@ -122,16 +126,16 @@ export function SettingsHighlightProvider({
 // so passing one would be silently ignored. Every other ScrollView prop
 // passes through, which is how the hub keeps its scroll-position bookkeeping.
 export const SettingsScroll = React.forwardRef<
-  ScrollView,
+  ScrollViewInstance,
   Omit<ScrollViewProps, "contentContainerStyle"> & {
     children: React.ReactNode;
   }
 >(function SettingsScroll({ children, ...scrollProps }, forwardedRef) {
   const styles = useSharedStyles();
-  const scrollRef = useRef<ScrollView>(null);
-  const contentRef = useRef<View>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const contentRef = useRef<ViewInstance>(null);
 
-  const reveal = useCallback((node: View) => {
+  const reveal = useCallback((node: ViewInstance) => {
     const content = contentRef.current;
     if (content === null) return;
     // Against the content view, not the window: scrollTo wants an offset into
@@ -175,13 +179,13 @@ export const SettingsScroll = React.forwardRef<
 // Wire one row up to the highlight. Exported as the escape hatch for rows built
 // by hand rather than from SettingRow (the panic-wipe row).
 export function useSettingHighlight(id: SettingId | undefined): {
-  ref: React.RefObject<View | null>;
+  ref: React.RefObject<ViewInstance | null>;
   active: boolean;
   onLayout: () => void;
 } {
   const highlighted = useContext(HighlightContext);
   const reveal = useContext(RevealContext);
-  const ref = useRef<View>(null);
+  const ref = useRef<ViewInstance>(null);
   const active = id !== undefined && id === highlighted;
 
   // From onLayout, not an effect: a measure taken before native layout comes

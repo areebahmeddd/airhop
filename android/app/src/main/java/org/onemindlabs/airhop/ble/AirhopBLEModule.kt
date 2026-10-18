@@ -17,6 +17,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattConnectionSettings
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattServerCallback
@@ -1694,16 +1695,15 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                         centralPeerIDs.add(advertisedPeerID)
                         linkToAdvertisedPeerID[linkID] = advertisedPeerID
                     }
-                    // TRANSPORT_LE forces a BLE (not BR/EDR) connection; omitting it
-                    // is a common source of spurious GATT status 133 failures.
-                    val gatt =
-                        device.connectGatt(
-                            reactContext,
-                            false,
-                            gattClientCallback,
-                            BluetoothDevice.TRANSPORT_LE,
-                        )
-                    centralLinks[linkID] = gatt
+                    val gatt = connectLE(device)
+                    if (gatt != null) {
+                        centralLinks[linkID] = gatt
+                    } else if (advertisedPeerID != null) {
+                        // Null while the adapter turns off: free the peer for
+                        // the next scan.
+                        centralPeerIDs.remove(advertisedPeerID)
+                        linkToAdvertisedPeerID.remove(linkID)
+                    }
                 } catch (e: SecurityException) {
                     Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
                 }
@@ -1908,6 +1908,32 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
             }
+        }
+
+    // TRANSPORT_LE forces a BLE (not BR/EDR) connection; omitting it is a
+    // common source of spurious GATT status 133 failures. On API 37 every
+    // setting is explicit: this module negotiates MTU itself, and callbacks
+    // stay on the binder thread the older overload used.
+    private fun connectLE(device: BluetoothDevice): BluetoothGatt? =
+        if (Build.VERSION.SDK_INT >= 37) {
+            device.connectGatt(
+                BluetoothGattConnectionSettings.Builder()
+                    .setTransport(BluetoothDevice.TRANSPORT_LE)
+                    .setAutoConnectEnabled(false)
+                    .setAutomaticMtuEnabled(false)
+                    .setOpportunisticEnabled(false)
+                    .build(),
+                Runnable::run,
+                gattClientCallback,
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            device.connectGatt(
+                reactContext,
+                false,
+                gattClientCallback,
+                BluetoothDevice.TRANSPORT_LE,
+            )
         }
 
     private val gattClientCallback =

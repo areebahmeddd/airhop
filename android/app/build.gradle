@@ -36,27 +36,27 @@ def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBu
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
-    ndkVersion rootProject.ext.ndkVersion
+    ndkVersion = rootProject.ext.ndkVersion
 
-    buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk rootProject.ext.compileSdkVersion
+    buildToolsVersion = rootProject.ext.buildToolsVersion
+    compileSdk = rootProject.ext.compileSdkVersion
 
-    namespace 'org.onemindlabs.airhop'
+    namespace = 'org.onemindlabs.airhop'
     defaultConfig {
-        applicationId 'org.onemindlabs.airhop'
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode computedVersionCode
-        versionName expoVersion
+        applicationId = 'org.onemindlabs.airhop'
+        minSdk = rootProject.ext.minSdkVersion
+        targetSdk = rootProject.ext.targetSdkVersion
+        versionCode = computedVersionCode
+        versionName = expoVersion
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile = file('debug.keystore')
+            storePassword = 'android'
+            keyAlias = 'androiddebugkey'
+            keyPassword = 'android'
         }
         // The release key comes from four environment variables a developer
         // can export to sign locally. Unset, this stays empty and the release
@@ -65,16 +65,16 @@ android {
         release {
             def ksFile = System.getenv("ANDROID_KEYSTORE_FILE")
             if (ksFile) {
-                storeFile file(ksFile)
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                storeFile = file(ksFile)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
             }
         }
     }
     buildTypes {
         debug {
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
         }
         release {
             // The release workflow passes -Pairhop.unsignedRelease=true and
@@ -83,9 +83,9 @@ android {
             // signingConfig applies and the build comes out unsigned.
             def unsignedRelease = (findProperty('airhop.unsignedRelease') ?: 'false').toBoolean()
             if (System.getenv("ANDROID_KEYSTORE_FILE")) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             } else if (!unsignedRelease) {
-                signingConfig signingConfigs.debug
+                signingConfig = signingConfigs.debug
             }
             // No `ndk { abiFilters }` here, on purpose. The React Native plugin
             // puts `reactNativeArchitectures` into defaultConfig's filters and
@@ -98,21 +98,21 @@ android {
             // -PreactNativeArchitectures=arm64-v8a,armeabi-v7a. A release
             // built locally without that flag is correct, just larger.
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
-            shrinkResources enableShrinkResources.toBoolean()
-            minifyEnabled enableMinifyInReleaseBuilds
+            shrinkResources = enableShrinkResources.toBoolean()
+            minifyEnabled = enableMinifyInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
-            crunchPngs enablePngCrunchInRelease.toBoolean()
+            crunchPngs = enablePngCrunchInRelease.toBoolean()
         }
     }
     packaging {
         jniLibs {
             def enableLegacyPackaging = findProperty('expo.useLegacyPackaging') ?: 'false'
-            useLegacyPackaging enableLegacyPackaging.toBoolean()
+            useLegacyPackaging = enableLegacyPackaging.toBoolean()
         }
     }
     androidResources {
-        ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
+        ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
     }
 }
 
@@ -126,7 +126,7 @@ android {
     if (options.length > 0) {
         println "android.packagingOptions.$prop += $options ($options.length)"
         options.each {
-            android.packagingOptions[prop] += it
+            android.packaging[prop] += it
         }
     }
 }

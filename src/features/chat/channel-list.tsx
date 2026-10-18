@@ -715,7 +715,7 @@ export default function ChannelList({
         ListEmptyComponent={
           filtering ? (
             <EmptyState icon="filter" title={T("chat.filter.none")} />
-          ) : null
+          ) : undefined
         }
         contentContainerStyle={styles.list}
       />

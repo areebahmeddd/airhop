@@ -68,7 +68,7 @@ jest.mock("expo-file-system", () => {
         lastModified: Date.now(),
       });
     }
-    write(bytes: Uint8Array): void {
+    writeSync(bytes: Uint8Array): void {
       if (globalThis.__writeFails) throw new Error("ENOSPC");
       globalThis.__cache.set(this.name, {
         bytes,

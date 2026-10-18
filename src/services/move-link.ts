@@ -22,7 +22,7 @@ export class MoveDialError extends Error {
 }
 
 export function isMoveLinkAvailable(): boolean {
-  return NativeAirhopLAN !== null;
+  return NativeAirhopLAN != null;
 }
 
 export function subscribeMoveLink(
@@ -61,14 +61,14 @@ export async function startMoveListener(): Promise<{
   port: number;
   hosts: string[];
 }> {
-  if (NativeAirhopLAN === null) throw new Error("move-link-unavailable");
+  if (NativeAirhopLAN == null) throw new Error("move-link-unavailable");
   return NativeAirhopLAN.startMoveListener();
 }
 
 // Empty when unreadable, which refuses every address: failing to "not on the
 // same network" is the safe answer.
 export async function localSubnets(): Promise<LocalSubnet[]> {
-  if (NativeAirhopLAN === null) return [];
+  if (NativeAirhopLAN == null) return [];
   return NativeAirhopLAN.localSubnets().catch(() => []);
 }
 
@@ -77,7 +77,7 @@ export async function stopMoveLink(): Promise<void> {
 }
 
 export async function dialMove(host: string, port: number): Promise<string> {
-  if (NativeAirhopLAN === null) throw new MoveDialError("unreachable");
+  if (NativeAirhopLAN == null) throw new MoveDialError("unreachable");
   try {
     return await NativeAirhopLAN.dialMove(host, port);
   } catch (error) {
@@ -94,7 +94,7 @@ export async function writeMove(
   connectionID: string,
   bytes: Uint8Array,
 ): Promise<void> {
-  if (NativeAirhopLAN === null) throw new Error("move-link-unavailable");
+  if (NativeAirhopLAN == null) throw new Error("move-link-unavailable");
   await NativeAirhopLAN.writeMove(connectionID, bytesToBase64(bytes));
 }
 

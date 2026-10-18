@@ -142,7 +142,7 @@ jobs:
 
       - name: Run Android unit tests
         working-directory: android
-        run: ./gradlew :app:testReleaseUnitTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
 
       # Verify native libraries meet Android 15's 16 KB page alignment
       # requirement to avoid Play Store upload failures.

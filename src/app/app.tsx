@@ -190,13 +190,14 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
+  type TextInputInstance,
 } from "react-native";
 import {
-  Gesture,
   GestureDetector,
   GestureHandlerRootView,
+  usePanGesture,
+  type PanGestureConfig,
 } from "react-native-gesture-handler";
 import {
   initialWindowMetrics,
@@ -825,7 +826,7 @@ function AppContent(): React.JSX.Element {
   const activeFilter = chatSubTab === "channels" ? channelFilter : dmFilter;
   const [chatView, setChatView] = useState<ChatView>({ kind: "list" });
   const [searchQuery, setSearchQuery] = useState("");
-  const searchInputRef = useRef<TextInput>(null);
+  const searchInputRef = useRef<TextInputInstance>(null);
   // Which message a search result should scroll a thread to on open.
   const [messageTarget, setMessageTarget] = useState<MessageTarget | null>(
     null,
@@ -1372,7 +1373,7 @@ function AppContent(): React.JSX.Element {
       const prefill = joinSheetPrefill(url);
       if (prefill !== null) setPendingJoinLink(prefill);
     };
-    void Linking.getInitialURL().then(handle);
+    void Linking.getInitialURL().then((url) => handle(url ?? null));
     const sub = Linking.addEventListener("url", ({ url }) => handle(url));
     return () => sub.remove();
   }, [appReady, onboardingStep]);
@@ -1521,11 +1522,20 @@ function AppContent(): React.JSX.Element {
   // it only activates once the gesture is clearly more horizontal than vertical,
   // and per-row Swipeable actions (channel/DM list) still win since they
   // activate on a much smaller offset than the 60px threshold below.
-  const swipeGesture = useMemo(() => {
-    const pan = Gesture.Pan()
-      .activeOffsetX([-20, 20])
-      .failOffsetY([-15, 15])
-      .onEnd((event) => {
+  //
+  // Memoized so the native handler is reconfigured only when these change. A
+  // memoized config is not workletized automatically, hence the directive.
+  const swipeConfig = useMemo<PanGestureConfig>(
+    () => ({
+      activeOffsetX: [-20, 20],
+      failOffsetY: [-15, 15],
+      hitSlop: canGoBackInTab
+        ? isRTLLayout
+          ? { right: 0, width: EDGE_BACK_ZONE }
+          : { left: 0, width: EDGE_BACK_ZONE }
+        : undefined,
+      onDeactivate: (event) => {
+        "worklet";
         const passedThreshold =
           Math.abs(event.translationX) > 60 || Math.abs(event.velocityX) > 600;
         if (!passedThreshold) return;
@@ -1542,14 +1552,11 @@ function AppContent(): React.JSX.Element {
           ? TABS[currentIndex + 1]
           : TABS[currentIndex - 1];
         if (target) scheduleOnRN(navigateToTab, target.id, true);
-      });
-    if (!canGoBackInTab) return pan;
-    return pan.hitSlop(
-      isRTLLayout
-        ? { right: 0, width: EDGE_BACK_ZONE }
-        : { left: 0, width: EDGE_BACK_ZONE },
-    );
-  }, [tab, canGoBackInTab, goBackInTab, navigateToTab]);
+      },
+    }),
+    [tab, canGoBackInTab, goBackInTab, navigateToTab],
+  );
+  const swipeGesture = usePanGesture(swipeConfig);
 
   // ---- Render ----
 

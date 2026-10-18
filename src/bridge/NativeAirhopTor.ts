@@ -88,7 +88,10 @@ export interface Spec extends TurboModule {
 // Payload of the native TorStatusChanged event.
 export type TorStatusChangedEvent = TorStatus;
 
-let emitter: NativeEventEmitter | null = null;
+// Event name to listener arguments, so addListener types the payload.
+type TorEvents = { TorStatusChanged: [TorStatusChangedEvent] };
+
+let emitter: NativeEventEmitter<TorEvents> | null = null;
 
 // Subscribe to Arti's bootstrap status. Returns null wherever the module is
 // absent, which is any build the native library was not packaged into. Without
@@ -99,7 +102,7 @@ export function subscribeTorStatus(
   const native = NativeModules.AirhopTorModule as
     ConstructorParameters<typeof NativeEventEmitter>[0] | undefined;
   if (native == null) return null;
-  emitter ??= new NativeEventEmitter(native);
+  emitter ??= new NativeEventEmitter<TorEvents>(native);
   return emitter.addListener("TorStatusChanged", listener);
 }
 

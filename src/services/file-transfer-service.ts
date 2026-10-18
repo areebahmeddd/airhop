@@ -1098,7 +1098,10 @@ export class FileTransferService {
     try {
       enforceIncomingQuota(fp.content.length);
       file.create({ overwrite: true, intermediates: true });
-      file.write(fp.content);
+      // Sync on purpose: from the duplicate and joined-room checks above to
+      // the store below must not yield, or a retry arriving meanwhile is
+      // stored twice and concurrent arrivals overrun the quota.
+      file.writeSync(fp.content);
     } catch {
       // Half a file would count toward Storage until the age sweep.
       try {

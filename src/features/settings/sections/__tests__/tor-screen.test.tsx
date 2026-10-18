@@ -5,8 +5,8 @@
 import { t } from "@i18n";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
+import { render, screen } from "@testing-library/react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { act, create, type ReactTestRenderer } from "react-test-renderer";
 import TorScreen from "../tor-screen";
 
 // The first render loads the icon font and the whole settings tree, which can
@@ -27,8 +27,6 @@ const METRICS = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-let screen: ReactTestRenderer | null = null;
-
 beforeEach(() => {
   useSettingsStore.setState({
     internetEnabled: true,
@@ -39,39 +37,30 @@ beforeEach(() => {
   useMeshStateStore.setState({ torActive: false, torBootstrap: "idle" });
 });
 
-afterEach(() => {
-  act(() => screen?.unmount());
-  screen = null;
-});
-
-async function render(): Promise<ReactTestRenderer> {
-  await act(async () => {
-    screen = create(
-      <SafeAreaProvider initialMetrics={METRICS}>
-        <TorScreen onBack={() => {}} />
-      </SafeAreaProvider>,
-    );
-  });
-  return screen as unknown as ReactTestRenderer;
-}
-
-function shows(r: ReactTestRenderer, text: string): boolean {
-  return JSON.stringify(r.toJSON()).includes(JSON.stringify(text).slice(1, -1));
+async function renderScreen(): Promise<void> {
+  await render(
+    <SafeAreaProvider initialMetrics={METRICS}>
+      <TorScreen onBack={() => {}} />
+    </SafeAreaProvider>,
+  );
 }
 
 describe("the status row", () => {
   it("says the internet is off rather than that Tor is starting", async () => {
     useSettingsStore.setState({ internetEnabled: false });
-    const r = await render();
+    await renderScreen();
 
-    expect(shows(r, t("settings.conn.internet_off"))).toBe(true);
-    expect(shows(r, t("mesh.banner.tor_starting"))).toBe(false);
+    expect(screen.getByText(t("settings.conn.internet_off"))).toBeOnTheScreen();
+    // A substring match, so the line cannot hide inside a longer one.
+    expect(
+      screen.queryByText(t("mesh.banner.tor_starting"), { exact: false }),
+    ).not.toBeOnTheScreen();
   });
 
   it("says Tor is starting while a bootstrap runs", async () => {
     useMeshStateStore.setState({ torBootstrap: "starting" });
-    const r = await render();
+    await renderScreen();
 
-    expect(shows(r, t("mesh.banner.tor_starting"))).toBe(true);
+    expect(screen.getByText(t("mesh.banner.tor_starting"))).toBeOnTheScreen();
   });
 });
