@@ -5,17 +5,24 @@
   "workspaces": {
     ".": {
       "entry": [
-        "App.tsx",
+        "App.tsx!",
         "src/**/__tests__/**/*.{ts,tsx}",
         "src/**/__benchmarks__/**/*.bench.ts",
-        "scripts/*.js",
-        "press/build.mjs",
-        "press/tools/*.mjs"
+        "scripts/*.js!",
+        "press/build.mjs!",
+        "press/tools/*.mjs!"
       ],
-      "project": ["src/**/*.{ts,tsx,js}", "scripts/**/*.js", "press/**/*.mjs"]
+      "project": [
+        "src/**/*.{ts,tsx,js}!",
+        "scripts/**/*.js!",
+        "press/**/*.mjs!"
+      ]
     },
     "press/film": {
-      "project": ["**/*.mjs"],
+      "entry": [
+        "scripts/{build,hyperframes,narrate,render,score,score-trailer}.mjs!"
+      ],
+      "project": ["**/*.mjs!"],
       "ignoreBinaries": ["ffmpeg"],
       "ignoreDependencies": ["gsap", "@hyperframes/core", "feather-icons"]
     }

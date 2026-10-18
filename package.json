@@ -34,7 +34,7 @@
     "i18n:native": "node scripts/i18n-check-native.js",
     "verify:vendored": "node scripts/verify-vendored.js",
     "verify:invisibles": "node scripts/check-invisibles.js",
-    "deadcode": "knip --no-progress",
+    "deadcode": "knip --no-progress && knip --production --no-progress",
     "benchmark": "jest --runInBand --testMatch \"**/__benchmarks__/**/*.bench.ts\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\"",
