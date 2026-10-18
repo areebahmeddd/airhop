@@ -360,4 +360,36 @@ describe("location channel flood limit", () => {
     expect(useChatStore.getState().messages["#city"]).toHaveLength(25);
     service.stop();
   });
+
+  it("keeps a history replay that lands after a slow connect", async () => {
+    jest.useFakeTimers();
+    try {
+      const subs: Subscription[] = [];
+      const service = newService(subs);
+      await service.refresh();
+      const room = subs.find((s) => s.kinds.includes(20000));
+      // Relays still connecting over Tor, well past the grace.
+      jest.setSystemTime(Date.now() + 30_000);
+
+      for (let i = 0; i < 20; i++) room!.onEvent(chat(i));
+      expect(useChatStore.getState().messages["#city"]).toHaveLength(20);
+      service.stop();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("limits a flood ferried by a gateway carrier", async () => {
+    const subs: Subscription[] = [];
+    const service = newService(subs);
+    await service.refresh();
+    const geohash = service.geohashFor("#city");
+    expect(geohash).not.toBeNull();
+
+    for (let i = 0; i < 20; i++) {
+      service.ingestCarriedEvent({ ...chat(i), tags: [["g", geohash!]] });
+    }
+    expect(useChatStore.getState().messages["#city"]).toHaveLength(5);
+    service.stop();
+  });
 });

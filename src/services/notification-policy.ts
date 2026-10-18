@@ -131,7 +131,8 @@ export function shouldSystemNotify(p: {
 }
 
 // Older public-room messages are replayed history (relay lookback, mesh sync),
-// not news. Same window as the notice bell.
+// not news. The notice bell and board badges use the same window, so a
+// subscription's replay or a gossip backfill rings none of them.
 export const ROOM_REPLAY_WINDOW_MS = 5 * 60 * 1000;
 
 // Public rooms only: a late DM, group or private channel message is still news.

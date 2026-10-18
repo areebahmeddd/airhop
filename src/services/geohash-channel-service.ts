@@ -77,6 +77,7 @@ import { truncateToUtf8Bytes } from "@utils/utf8-budget";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
 import { noteUrgentNotice } from "./board-alerts";
 import { getCoarseLocation, type Coords } from "./location-service";
+import { ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
 
 import {
   geohashChannel,
@@ -194,11 +195,6 @@ const MAX_INBOUND_MESSAGE_BYTES = 2000 * 3;
 // Cap on the flood-limit pause for a join's history replay, if EOSE never
 // comes.
 const BACKFILL_GRACE_MS = 10_000;
-
-// A bridged note only counts as "new" for the notification bell if it arrived
-// within this window, so a subscription's history replay does not flood it.
-// Mirrors NOTICE_BELL_WINDOW_MS in mesh-service (the BLE board path).
-const NOTICE_BELL_WINDOW_MS = 5 * 60 * 1000;
 
 // Nostr tag carrying the sender's chosen display name. Nostr events identify
 // the author only by pubkey, so without this every geohash message would show
@@ -798,11 +794,26 @@ export class GeohashChannelService {
       this.isTeleportEvent(event),
     );
     const sharedId = event.tags.find(([t]) => t === TAG_MESSAGE_ID)?.[1];
+    const id =
+      sharedId !== undefined && sharedId.length > 0
+        ? sharedRowID(sharedId, event.content)
+        : `geo-${event.id}`;
+    // Flood-limited like the relay path, as in bitchat-ios: the carrier is
+    // unsigned, so anyone in radio range can ferry fresh self-signed events at
+    // any rate.
+    if (
+      !hasStoredMessage(channel, id) &&
+      !this.publicLimiter.allow(
+        `nostr:${event.pubkey}`,
+        publicContentKey(event.content),
+        validatedDifficulty(event.id, event.tags),
+        Date.now(),
+      )
+    ) {
+      return;
+    }
     useChatStore.getState().addMessage({
-      id:
-        sharedId !== undefined && sharedId.length > 0
-          ? sharedRowID(sharedId, event.content)
-          : `geo-${event.id}`,
+      id,
       channel,
       senderID: `nostr_${event.pubkey}`,
       senderNickname: nickname,
@@ -1075,8 +1086,10 @@ export class GeohashChannelService {
 
   private subscribeChannel(channel: string, geohash: string): void {
     const selfPubkey = this.identityFor(geohash).pubKeyHex;
-    // A join replays an hour of history at once, which is not a flood.
-    let backfillUntilMs = Date.now() + BACKFILL_GRACE_MS;
+    // A join replays an hour of history at once, which is not a flood. The
+    // grace starts at the first event, not the subscribe, since relays can
+    // take longer than it to connect (Tor, a cold start).
+    let backfillUntilMs: number | null = null;
 
     const close = this.presenceFor(geohash).subscribeChannel(
       geohash,
@@ -1125,6 +1138,7 @@ export class GeohashChannelService {
             : `geo-${event.id}`;
 
         const nowMs = Date.now();
+        backfillUntilMs ??= nowMs + BACKFILL_GRACE_MS;
         if (
           nowMs >= backfillUntilMs &&
           !hasStoredMessage(channel, id) &&
@@ -1347,7 +1361,7 @@ export class GeohashChannelService {
     });
     // Log a live note on the bell + the room's board badge. Own notes are
     // already filtered above; the recency gate skips replayed history.
-    if (Date.now() - createdAtMs <= NOTICE_BELL_WINDOW_MS) {
+    if (Date.now() - createdAtMs <= ROOM_REPLAY_WINDOW_MS) {
       const channel =
         this.namedChannelForGeohash(geohash) ?? geohashChannel(geohash);
       if (isUrgent) {

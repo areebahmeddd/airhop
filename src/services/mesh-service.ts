@@ -277,7 +277,7 @@ import {
   type GeoParticipant,
 } from "./geohash-channel-service";
 import { LANController, newInstanceName } from "./lan-controller";
-import { ringVerdict } from "./notification-policy";
+import { ringVerdict, ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
 import { RadioController } from "./radio-controller";
@@ -306,12 +306,6 @@ const OUTBOX_SWEEP_INTERVAL_MS = 45_000;
 // event-driven now, and events arrive in bursts: a foreground round trip alone
 // raises several.
 const OUTBOX_RETRY_MIN_INTERVAL_MS = 10_000;
-
-// A board notice only counts as "new" for the notification bell if it was
-// created within this window. It keeps a channel's history replay on subscribe,
-// and a gossip backfill of old-but-unexpired posts, from flooding the bell with
-// notices the user has effectively already had the chance to see.
-const NOTICE_BELL_WINDOW_MS = 5 * 60 * 1000;
 
 // Where a channel message actually went. `meshLinks === 0 && !nostr` means it
 // reached nobody. The UI must say so rather than render a normal sent bubble.
@@ -4945,7 +4939,8 @@ export class MeshService {
     ) {
       return;
     }
-    if (Date.now() - post.createdAt > NOTICE_BELL_WINDOW_MS) return;
+    // A board notice is "new" for the bell only within the replay window.
+    if (Date.now() - post.createdAt > ROOM_REPLAY_WINDOW_MS) return;
     const channel = this.channelForNoticeGeohash(post.geohash);
     if (isUrgent(post)) {
       noteUrgentNotice({
@@ -7131,7 +7126,22 @@ export class MeshService {
       this.nostrClient,
       this.identity.signingPrivKey,
       {
-        injectMessage: (msg) =>
+        // Blocked and flood-limited like a radio copy, as in bitchat-ios, under
+        // the sender key the location rooms use. Bridge events carry no NIP-13
+        // work.
+        injectMessage: (msg) => {
+          if (useBlockedStore.getState().isBlocked(msg.senderKey)) return;
+          if (
+            !hasStoredMessage(BRIDGE_CHANNEL, msg.id) &&
+            !this.publicLimiter.allow(
+              msg.senderKey.replace(/^nostr_/, "nostr:"),
+              publicContentKey(msg.text),
+              0,
+              Date.now(),
+            )
+          ) {
+            return;
+          }
           useChatStore.getState().addMessage({
             id: msg.id,
             channel: BRIDGE_CHANNEL,
@@ -7141,7 +7151,8 @@ export class MeshService {
             timestampMs: msg.timestampMs,
             isMine: false,
             viaBridge: true,
-          }),
+          });
+        },
         firstReachableBridge: () => this.registry.firstReachableBridge(),
         advertisedBridgeCell: () =>
           this.registry.firstReachableBridge()?.bridgeGeohash,

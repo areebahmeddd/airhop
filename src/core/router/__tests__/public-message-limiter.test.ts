@@ -44,10 +44,13 @@ describe("PublicMessageLimiter", () => {
 
   it("stays bounded under a flood of fresh keys", () => {
     const limiter = new PublicMessageLimiter();
-    for (let i = 0; i < 5000; i++) limiter.allow(`nostr:${i}`, `t${i}`, 0, i);
-    // A sender seen long ago was evicted and starts with a full bucket again,
+    for (let i = 0; i < 5; i++) limiter.allow("nostr:victim", `m${i}`, 0, 0);
+    expect(limiter.allow("nostr:victim", "m5", 0, 0)).toBe(false);
+    // All at one instant, so no bucket refills: only eviction can free it.
+    for (let i = 0; i < 2000; i++) limiter.allow(`nostr:${i}`, `t${i}`, 0, 0);
+    // The oldest sender was evicted and starts with a full bucket again,
     // rather than the table growing without limit.
-    expect(limiter.allow("nostr:0", "fresh", 0, 5000)).toBe(true);
+    expect(limiter.allow("nostr:victim", "again", 0, 0)).toBe(true);
   });
 });
 
