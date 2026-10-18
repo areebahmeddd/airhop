@@ -215,7 +215,7 @@ npm run ios
 1. Install [Android Studio](https://developer.android.com/studio) from the official site, which also installs the Android SDK and base build tools
 2. Open Android Studio at least once and let the setup wizard install any additional required components when prompted
 3. Click the gear icon and open **Settings**, then go to **Languages & Frameworks** then **Android SDK**
-4. On the **SDK Platforms** tab, tick **API 34**, **API 35**, and **API 36**, then click **Apply** to download them, since a fresh install does not include them
+4. On the **SDK Platforms** tab, tick **API 36**, then click **Apply** to download it, since a fresh install does not include it
 5. On the **SDK Tools** tab, confirm **Android SDK Build-Tools**, **Android SDK Platform-Tools**, and **Android Emulator** are installed
 6. Copy the SDK path shown at the top of the **Android SDK** page into an `ANDROID_HOME` environment variable, or into `android/local.properties` as `sdk.dir=<path>`, since Gradle looks there for it
 7. Open the virtual device manager: **More Actions** then **Virtual Device Manager** from the Welcome screen, or **View** then **Tool Windows** then **Device Manager** if a project is already open

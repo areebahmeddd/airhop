@@ -457,7 +457,6 @@ export function decodeGcsFilter(
   return values;
 }
 
-// Check whether a h64 value is contained in a decoded filter set.
 // An h64 into [1, M), as bitchat-ios GCSFilter.mapHash. The encoder and the
 // lookup must agree: a bucket of 0 is stored as 1.
 function mapToRange(h64: bigint, modulo: bigint): bigint {
@@ -465,6 +464,7 @@ function mapToRange(h64: bigint, modulo: bigint): bigint {
   return x === 0n ? 1n : x;
 }
 
+// Check whether a h64 value is contained in a decoded filter set.
 function filterContains(sortedValues: bigint[], candidate: bigint): boolean {
   let lo = 0;
   let hi = sortedValues.length - 1;

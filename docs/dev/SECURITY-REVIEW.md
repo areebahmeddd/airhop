@@ -711,7 +711,7 @@ Medium · Fixed (D15). Android builds unsigned with no secrets; a separate job t
 
 #### SUP-4 · Tor transports and toolchain
 
-Medium · Fixed. IPtProxy 5.5.1 carried Snowflake's pion/stun, pion/dtls and x/text versions with Go panic advisories that a malicious Snowflake proxy could reach, and a Go panic ends the whole process, mesh included. The build raised them within the same major version with plain `go get` (stun 3.1.7, dtls 3.1.9, x/text 0.42.0; D16), and govulncheck went from three reachable to none. IPtProxy 5.7.0 (Snowflake v2.15.1) requires the fixed versions itself, so the raise and its build step are removed; govulncheck over it finds none reachable. Rust 1.98.1 (a vtable miscompilation fix) and rustls 0.23.45. The binaries are rebuilt ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)). Moving to pion/stun v4 is impossible without Snowflake changing its import paths, and a `replace` is ruled out.
+Medium · Fixed. IPtProxy 5.5.1 carried Snowflake's pion/stun, pion/dtls and x/text versions with Go panic advisories that a malicious Snowflake proxy could reach, and a Go panic ends the whole process, mesh included. The build raised them within the same major version with plain `go get` (stun 3.1.7, dtls 3.1.9, x/text 0.42.0; D16), and govulncheck went from three reachable to none. IPtProxy 5.7.0 (Snowflake v2.15.1) requires stun 3.1.6, dtls 3.1.5 and x/text 0.42.0 itself: below the raised stun and dtls, but past the versions the advisories fixed, so the raise and its build step are removed; govulncheck over it finds none reachable. A later pion advisory before an IPtProxy tag carries its fix brings the D16 raise back. Rust 1.98.1 (a vtable miscompilation fix) and rustls 0.23.45. The binaries are rebuilt ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)). Moving to pion/stun v4 is impossible without Snowflake changing its import paths, and a `replace` is ruled out.
 
 #### SUP-5 · Signing secrets repo-wide; no release Environment gate
 
@@ -892,5 +892,4 @@ For the record only, bitchat-android: the 256-fragment cap (permissionlesstech/b
 - SUP-14 dashboard items: DNSSEC (Cloudflare, then the DS record at Namecheap), a CAA record, NEL off, Bot Fight Mode off. HSTS preload only as an organisation-wide decision.
 - Immutable releases (needs draft-then-publish), and a strict landing `style-src` alongside other landing work.
 - bitchat-ios's 30-day rotation of unconsumed prekeys.
-- The next Arti release, in a later cycle.
 - File the upstream notes in section 8.
