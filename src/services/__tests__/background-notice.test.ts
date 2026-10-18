@@ -1,5 +1,7 @@
 // The notice follows the reachable count: once per settled burst, never for
-// an unchanged count, and on the recount when peers expire silently.
+// an unchanged count, and on the recount when peers expire silently. Leaving
+// the screen repeats it, so native can post a notice that went up while
+// notifications were not yet allowed.
 
 const mockSetCount = jest.fn<Promise<void>, [number]>(() => Promise.resolve());
 
@@ -11,7 +13,7 @@ jest.mock("@bridge/NativeAirhopBLE", () => ({
 }));
 
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
-import { Platform } from "react-native";
+import { AppState, Platform, type AppStateStatus } from "react-native";
 import { startBackgroundNotice } from "../background-notice";
 
 function addPeer(peerID: string): void {
@@ -23,7 +25,15 @@ function addPeer(peerID: string): void {
   });
 }
 
+let onAppState: ((state: AppStateStatus) => void) | undefined;
+
 beforeAll(() => {
+  jest
+    .spyOn(AppState, "addEventListener")
+    .mockImplementation((_type, listener) => {
+      onAppState = listener;
+      return { remove: () => undefined };
+    });
   jest.useFakeTimers({ now: 1_800_000_000_000 });
   jest.replaceProperty(Platform, "OS", "android");
   usePeerStore.getState().clearAll();
@@ -59,4 +69,15 @@ it("pushes the settled reachable count, and only when it moves", () => {
   addPeer("dddddddddddddddd");
   jest.advanceTimersByTime(1_000);
   expect(mockSetCount.mock.calls.filter(([n]) => n === 1)).toHaveLength(1);
+});
+
+it("repeats the shown count on leaving the screen, and only then", () => {
+  const before = mockSetCount.mock.calls.length;
+  onAppState?.("inactive");
+  onAppState?.("active");
+  expect(mockSetCount).toHaveBeenCalledTimes(before);
+
+  onAppState?.("background");
+  expect(mockSetCount).toHaveBeenCalledTimes(before + 1);
+  expect(mockSetCount).toHaveBeenLastCalledWith(1);
 });

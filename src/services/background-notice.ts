@@ -8,7 +8,7 @@
 
 import AirhopBLE from "@bridge/NativeAirhopBLE";
 import { countReachablePeers, usePeerStore } from "@store/peer-store";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 
 // Android drops notification updates posted faster than this, possibly the
 // last of a burst, so a busy room pushes only its settled count.
@@ -46,6 +46,14 @@ export function startBackgroundNotice(): void {
     }, COALESCE_MS);
   });
   setInterval(push, RECOUNT_MS);
+  // Repeated on every trip to the background, changed or not, so native can
+  // post a notice that went up before notifications were allowed, as on a
+  // first launch.
+  AppState.addEventListener("change", (next) => {
+    if (next === "background" && shown >= 0) {
+      AirhopBLE.setBackgroundPeerCount(shown).catch(() => {});
+    }
+  });
   push();
 }
 

@@ -24,6 +24,7 @@ import android.os.IBinder
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import org.onemindlabs.airhop.MainActivity
@@ -74,8 +75,11 @@ class AirhopForegroundService : Service() {
             )
             synchronized(lock) {
                 running = this
-                // A count that arrived while this one was being posted.
-                if (peerCount != shown) repost()
+                hiddenAtPost = !NotificationManagerCompat.from(this).areNotificationsEnabled()
+                // A count that arrived while this one was being posted. Posted
+                // directly: Android lists a foreground notice as active only
+                // after a moment, and one this new cannot have been swiped away.
+                if (peerCount != shown) post()
             }
         } catch (e: Exception) {
             if (
@@ -120,12 +124,29 @@ class AirhopForegroundService : Service() {
         super.onDestroy()
     }
 
-    // Under lock. Skipped once the person swiped the notice away (Android 14+),
-    // which a new count must not undo.
-    private fun repost() {
+    // A first launch starts the mesh before asking for notification
+    // permission, and Android keeps a notice posted without it hidden even once
+    // it is granted. Under lock, as are post() and repost().
+    private var hiddenAtPost = false
+
+    private fun post() {
+        getSystemService(NotificationManager::class.java)
+            .notify(NOTIFICATION_ID, buildNotification(peerCount))
+    }
+
+    // A notice the person swiped away (Android 14+) stays away. One hidden only
+    // for want of permission is posted again once it is granted.
+    private fun repost(changed: Boolean) {
+        if (hiddenAtPost) {
+            if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) return
+            hiddenAtPost = false
+            post()
+            return
+        }
+        if (!changed) return
         val manager = getSystemService(NotificationManager::class.java)
         if (manager.activeNotifications.none { it.id == NOTIFICATION_ID }) return
-        manager.notify(NOTIFICATION_ID, buildNotification(peerCount))
+        post()
     }
 
     // A notice posted after stopForeground would outlive the service, ongoing
@@ -195,9 +216,9 @@ class AirhopForegroundService : Service() {
         // notice.
         fun setPeerCount(count: Int) {
             synchronized(lock) {
-                if (count == peerCount) return
+                val changed = count != peerCount
                 peerCount = count
-                running?.repost()
+                running?.repost(changed)
             }
         }
 
