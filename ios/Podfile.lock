@@ -133,7 +133,7 @@ PODS:
   - hermes-engine (260318099.0.4):
     - hermes-engine/Pre-built (= 260318099.0.4)
   - hermes-engine/Pre-built (260318099.0.4)
-  - IPtProxy (5.5.1)
+  - IPtProxy (5.7.0)
   - MMKVCore (2.4.0)
   - NitroMmkv (4.3.2):
     - hermes-engine
@@ -2703,7 +2703,7 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: a1158910bb7e300b9e3d2f1e2d433f817ec1a4b5
-  IPtProxy: 7a21aaa88722bfa4d95c30ea43a32db15fbc5a18
+  IPtProxy: 675171dbf3670c9a77a37bcf7f06f7a29b096e92
   MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
   NitroMmkv: 1cbda910413acda474751ac9b2522a6d466f74ad
   NitroModules: c32f969b7c536e0b6b401a9dfdb35bb4eba071ef
