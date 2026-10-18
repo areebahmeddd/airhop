@@ -867,3 +867,37 @@ describe("GossipSync: one request per round", () => {
     }
   });
 });
+
+describe("GossipSync: a neighbour just met", () => {
+  test("is asked every round at once, each registered before it is sent", () => {
+    jest.useFakeTimers();
+    try {
+      const gs = new GossipSync();
+      const events: string[] = [];
+      const types: (number | undefined)[] = [];
+      gs.start(makeIdentity(), {
+        sendToPeer: (peerID, pkt) => {
+          events.push(`send ${peerID}`);
+          types.push(decodeGossipFilterPayload(pkt.payload)?.types);
+        },
+        getPeers: () => [],
+        onRequest: (peerID) => events.push(`register ${peerID}`),
+      });
+
+      gs.requestNow(PEER);
+      expect(events).toEqual([
+        `register ${PEER}`,
+        `send ${PEER}`,
+        `register ${PEER}`,
+        `send ${PEER}`,
+      ]);
+      expect(types).toEqual([MESSAGE_ROUND, BOARD_ROUND]);
+
+      gs.stop();
+      gs.requestNow(PEER);
+      expect(events).toHaveLength(4);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});

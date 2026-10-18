@@ -1391,3 +1391,129 @@ test("S16 history a newcomer cannot verify is offered once, not every round", as
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("S17 a phone meeting a holder gets the history within seconds, not on the next tick", async () => {
+  // A request goes a second after a neighbour's first link binds, as on
+  // bitchat-ios. Left to the 15 s tick, which restarts with every launch, a
+  // phone that keeps relaunching would never catch up.
+  const s = (scenario = new Scenario({
+    id: "S17",
+    title: "history arrives on meeting",
+    seed: 170,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "carol"]);
+  const [alice, bob, carol] = devices;
+  radio.setTopology([["alice", "bob"]]);
+  alice.launch();
+  bob.launch();
+  const channel = "#bluetooth";
+  alice.joinChannel(channel);
+  bob.joinChannel(channel);
+  const linked = await waitForCoarse(
+    s.world,
+    () => bob.peers().includes(alice.peerID),
+    30_000,
+  );
+  s.check("alice and bob met", linked);
+  const text = "water at the north gate";
+  alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => bob.texts(channel).includes(text),
+    20_000,
+  );
+  s.check("bob holds alice's message", bobHeard);
+
+  s.world.say(
+    "TOPOLOGY_CHANGE",
+    "alice leaves; carol opens the app beside bob",
+  );
+  radio.setTopology([["bob", "carol"]]);
+  carol.launch();
+  carol.joinChannel(channel);
+  const met = await waitFor(
+    s.world,
+    () => carol.peers().includes(bob.peerID),
+    10_000,
+  );
+  s.check("carol met bob", met);
+  const caughtUp = await waitFor(
+    s.world,
+    () => carol.texts(channel).includes(text),
+    5_000,
+  );
+  s.check(
+    "carol has alice's message well before her first sync tick",
+    caughtUp,
+    `carol thread = [${carol.texts(channel).join(" | ")}]`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S18 an author that relaunched can serve its own message again", async () => {
+  // The sync store lives in memory, so a relaunch empties it. A sync reply
+  // carrying the author's own message is carried again, as on bitchat-ios,
+  // or the author's filter would claim it while it could never serve it.
+  const s = (scenario = new Scenario({
+    id: "S18",
+    title: "own history after a relaunch",
+    seed: 180,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "dave"]);
+  const [alice, bob, dave] = devices;
+  radio.setTopology([["alice", "bob"]]);
+  alice.launch();
+  bob.launch();
+  const channel = "#bluetooth";
+  alice.joinChannel(channel);
+  bob.joinChannel(channel);
+  const linked = await waitForCoarse(
+    s.world,
+    () => bob.peers().includes(alice.peerID),
+    30_000,
+  );
+  s.check("alice and bob met", linked);
+  const text = "meet at the library steps";
+  alice.send(channel, text);
+  const bobHeard = await waitFor(
+    s.world,
+    () => bob.texts(channel).includes(text),
+    20_000,
+  );
+  s.check("bob holds alice's message", bobHeard);
+
+  s.world.say("USER", "alice's phone relaunches beside bob");
+  alice.relaunch();
+  await waitForCoarse(
+    s.world,
+    () => alice.peers().includes(bob.peerID),
+    30_000,
+  );
+  // Two sync rounds for the reply to land.
+  await s.world.advance(35_000);
+  s.check(
+    "alice still shows her message once",
+    alice.texts(channel).filter((t) => t === text).length === 1,
+    `alice thread = [${alice.texts(channel).join(" | ")}]`,
+  );
+
+  s.world.say("TOPOLOGY_CHANGE", "bob leaves; dave opens the app beside alice");
+  radio.setTopology([["alice", "dave"]]);
+  dave.launch();
+  dave.joinChannel(channel);
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => dave.texts(channel).includes(text),
+    40_000,
+  );
+  s.check(
+    "dave got the message from alice herself",
+    caughtUp,
+    `dave thread = [${dave.texts(channel).join(" | ")}]`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});

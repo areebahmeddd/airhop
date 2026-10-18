@@ -307,6 +307,9 @@ const OUTBOX_SWEEP_INTERVAL_MS = 45_000;
 // raises several.
 const OUTBOX_RETRY_MIN_INTERVAL_MS = 10_000;
 
+// bitchat-ios scheduleInitialSyncToPeer's delay for a new direct peer.
+const INITIAL_SYNC_DELAY_MS = 1_000;
+
 // Where a channel message actually went. `meshLinks === 0 && !nostr` means it
 // reached nobody. The UI must say so rather than render a normal sent bubble.
 export interface ChannelSendResult {
@@ -601,6 +604,11 @@ export class MeshService {
   private outboxSweepTimer: ReturnType<typeof setInterval> | null = null;
   private lastOutboxRetryMs = 0;
   private outboxRetryTimer: ReturnType<typeof setTimeout> | null = null;
+  // A sync request owed to a neighbour just met, by peer.
+  private readonly initialSyncTimers = new Map<
+    string,
+    ReturnType<typeof setTimeout>
+  >();
 
   // Every link this device holds, over every radio, and the one place that
   // writes bytes to one.
@@ -3641,9 +3649,11 @@ export class MeshService {
     this.gossip.track(packet);
 
     if (isDirectAnnounce) {
+      const newNeighbour = !this.links.directPeers().includes(peerID);
       // The binding is what lets a send prefer the higher-throughput radio for
       // attachments and DR messages.
       this.links.bind(linkID, peerID);
+      if (newNeighbour) this.scheduleInitialSync(peerID);
       // Direct standing follows the LINK, not the announce that revealed it.
       // Inferred from packet.ttl alone it would depend on which announce
       // happened to arrive first, so a genuine neighbour could be recorded as
@@ -4323,6 +4333,20 @@ export class MeshService {
   // against the key knownSigningKey holds for that peer counts. No signature or
   // no known key fails, as in bitchat-ios; relaying is separate, since a node
   // forwards bytes it cannot yet check.
+  // A second after a peer's first link binds, as bitchat-ios: long enough for
+  // our announce-back to bind us on their side, which a request needs before
+  // it is answered.
+  private scheduleInitialSync(peerID: string): void {
+    if (this.initialSyncTimers.has(peerID)) return;
+    const timer = setTimeout(() => {
+      this.initialSyncTimers.delete(peerID);
+      if (this.links.directPeers().includes(peerID)) {
+        this.gossip.requestNow(peerID);
+      }
+    }, INITIAL_SYNC_DELAY_MS);
+    this.initialSyncTimers.set(peerID, timer);
+  }
+
   private senderIsAuthentic(packet: Packet, senderID: string): boolean {
     if ((packet.flags & Flags.SIGNED) === 0) return false;
     const key = this.knownSigningKey(senderID);
@@ -4420,8 +4444,19 @@ export class MeshService {
   ): void {
     const senderID = bytesToHex(packet.senderID);
 
-    // Drop our own messages echoed back (shouldn't happen, but guard anyway).
-    if (senderID === this.identity.peerID) return;
+    // Our own message, never a second row. A sync reply is carried again, so a
+    // phone that relaunched can still serve what it wrote, as bitchat-ios
+    // accepts its own replays.
+    if (senderID === this.identity.peerID) {
+      if (
+        packet.isRSR === true &&
+        (packet.flags & Flags.SIGNED) !== 0 &&
+        verifyPacket(packet, this.identity.signingPubKey)
+      ) {
+        this.gossip.track(packet);
+      }
+      return;
+    }
     if (!this.senderIsAuthentic(packet, senderID)) return;
     // Carried for sync once verified, and before the joined-room check, so a
     // room this user never joined still backfills for those who did. As
@@ -7505,6 +7540,8 @@ export class MeshService {
 
     this.announceManager.stop();
     this.gossip.stop();
+    for (const timer of this.initialSyncTimers.values()) clearTimeout(timer);
+    this.initialSyncTimers.clear();
     if (this.outboxRetryTimer !== null) {
       clearTimeout(this.outboxRetryTimer);
       this.outboxRetryTimer = null;
