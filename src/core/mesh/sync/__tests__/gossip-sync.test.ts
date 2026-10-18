@@ -8,7 +8,9 @@
 // these pin the bytes as much as the behaviour: a filter this app builds must
 // be readable by an app it was not compiled with.
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { sha256 } from "@noble/hashes/sha2.js";
 import {
+  computePacketId,
   decodePacket,
   encodePacket,
   Flags,
@@ -743,6 +745,34 @@ describe("GossipSync: replies not kept", () => {
     const later = Date.now() + 31_000;
     gs.prune(later);
     expect(advertised(later)).toBe(0);
+  });
+});
+
+// The encoder stores a bucket of 0 as 1, as bitchat-ios does, so the lookup
+// has to map it the same way or a held packet reads as missing.
+describe("GossipSync: a packet in bucket 0", () => {
+  const identity = makeIdentity();
+
+  test("is found in the filter that holds it", () => {
+    // A lone packet's filter has M = 2^7, so its bucket is h64 mod 128.
+    let packet: Packet | undefined;
+    for (let i = 0; packet === undefined && i < 10_000; i++) {
+      const candidate = makePacket(
+        PacketType.CHANNEL_MSG,
+        0,
+        new Uint8Array([i & 0xff, i >> 8]),
+      );
+      const hash = sha256(computePacketId(candidate));
+      if ((hash[7] & 0x7f) === 0) packet = candidate;
+    }
+    expect(packet).toBeDefined();
+
+    const requester = new GossipSync();
+    const responder = new GossipSync();
+    requester.track(packet!);
+    responder.track(packet!);
+    const filter = requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND);
+    expect(responder.handleFilter(filter)).toHaveLength(0);
   });
 });
 

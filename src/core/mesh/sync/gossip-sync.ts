@@ -333,10 +333,7 @@ export function buildGcsFilter(
     // Map each h64 to [1, M), sort, and drop duplicates (normalizeMappedValues).
     const mapped = h64s
       .slice(0, count)
-      .map((v) => {
-        const x = v % modulo;
-        return x === 0n ? 1n : x;
-      })
+      .map((v) => mapToRange(v, modulo))
       .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
     const sorted: bigint[] = [];
@@ -461,6 +458,13 @@ export function decodeGcsFilter(
 }
 
 // Check whether a h64 value is contained in a decoded filter set.
+// An h64 into [1, M), as bitchat-ios GCSFilter.mapHash. The encoder and the
+// lookup must agree: a bucket of 0 is stored as 1.
+function mapToRange(h64: bigint, modulo: bigint): bigint {
+  const x = h64 % modulo;
+  return x === 0n ? 1n : x;
+}
+
 function filterContains(sortedValues: bigint[], candidate: bigint): boolean {
   let lo = 0;
   let hi = sortedValues.length - 1;
@@ -872,7 +876,7 @@ export class GossipSync {
       const h64 = packetIdToH64(id);
       const inPeerFilter = filterContains(
         decodedFilter,
-        h64 % BigInt(params.m),
+        mapToRange(h64, BigInt(params.m)),
       );
       if (!inPeerFilter) {
         missing.push({ ...packet, ttl: SYNC_TTL, isRSR: true });
