@@ -5,10 +5,19 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## What's New
 
-- fix(i18n): linguistic review across 35 languages and RTL, plural and device-language fixes (#78) (by @Areeb Ahmed) (#78) [978b782]
-- release: v1.0.9 (security findings from claude opus 5.5) (#74) (by @Areeb Ahmed) (#74) [4749185]
-- feat(identity): transfer to a new phone (#72) (by @Areeb Ahmed) (#72) [d695f3c]
-- feat(wallet): redesign the wallet screen (#70) (by @Areeb Ahmed) (#70) [a289c36]
+- feat: upgrade to Expo SDK 58 and React Native 0.88 (#85) (by @areebahmeddd) [75cd869]
+- fix: improve voice, chat, wallet and background reliability; add an optional app lock (#84) (by @areebahmeddd) [792c580]
+- refactor: improve test cov + other updates (by @areebahmeddd) [9f22732]
+- fix: rendering of text in message thread and notifications (by @areebahmeddd) [0693d0e]
+
+**Full changelog:** [v1.0.9..v1.0.10](https://github.com/areebahmeddd/airhop/compare/v1.0.9..v1.0.10)
+
+## What's New
+
+- fix(i18n): linguistic review across 35 languages and RTL, plural and device-language fixes (#78) (by @areebahmeddd) [978b782]
+- release: v1.0.9 (security findings from claude opus 5.5) (#74) (by @areebahmeddd) [4749185]
+- feat(identity): transfer to a new phone (#72) (by @areebahmeddd) [d695f3c]
+- feat(wallet): redesign the wallet screen (#70) (by @areebahmeddd) [a289c36]
 - docs: bring architecture, glossary, progress and landing up to date (by @areebahmeddd) [4fd6c81]
 - chore(i18n): add and prune strings for this change in all 35 locales (by @areebahmeddd) [1945a17]
 - fix(app): keep notifications alive off screen, honour the OS and the wipe (by @areebahmeddd) [f28120c]
@@ -16,8 +25,8 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - fix(chat): make groups, forwards, voice and media behave as they claim (by @areebahmeddd) [0cba17c]
 - fix(nostr): keep geohash DMs unlinkable, dedupe replays, fix channel identities (by @areebahmeddd) [db1c56d]
 - fix(mesh): cap payloads per type, fragment everything over a Bluetooth frame (by @areebahmeddd) [460cf76]
-- fix(nostr): reconnect relays when the network returns, and hold the pool behind Tor (#69) (by @Areeb Ahmed) (#69) [0d256af]
-- fix: contain ingress faults and fuzz every wire decoder (#68) (by @Areeb Ahmed) (#68) [f5bc8c8]
+- fix(nostr): reconnect relays when the network returns, and hold the pool behind Tor (#69) (by @areebahmeddd) [0d256af]
+- fix: contain ingress faults and fuzz every wire decoder (#68) (by @areebahmeddd) [f5bc8c8]
 - refactor: cleanup kotlin and swift code (by @areebahmeddd) [29a8b2b]
 
 **Full changelog:** [v1.0.8..v1.0.9](https://github.com/areebahmeddd/airhop/compare/v1.0.8..v1.0.9)
@@ -81,10 +90,10 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - chore: update deps (by @areebahmeddd) [28f6d89]
 - chore(arti): update to arti-client 0.46 and pin the transport toolchain (by @areebahmeddd) [d3114a5]
 - fix: mesh communication for mDNS transport (by @areebahmeddd) [692acdb]
-- feat: embedded Tor via Arti on iOS and Android (#54) (by @Areeb Ahmed) (#54) [3790036]
+- feat: embedded Tor via Arti on iOS and Android (#54) (by @areebahmeddd) [3790036]
 - ci: add the Arti build workflow (by @areebahmeddd) [12ceb0a]
 - refactor: documentation and code structure for clarity and consistency (by @areebahmeddd) [8961ccf]
-- feat: LAN transport over mDNS and TCP (#53) (by @Areeb Ahmed) (#53) [6a9f1b2]
+- feat: LAN transport over mDNS and TCP (#53) (by @areebahmeddd) [6a9f1b2]
 - refactor: update progress docs and versioning (by @areebahmeddd) [87c97c8]
 
 **Full changelog:** [v1.0.3..v1.0.4](https://github.com/areebahmeddd/airhop/compare/v1.0.3..v1.0.4)
@@ -96,7 +105,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - feat: add AirhopAppModule for process-level operations and RTL support (by @areebahmeddd) [27f9fc0]
 - refactor: mesh service to utilize LinkRegistry for managing links across radios (by @areebahmeddd) [1dee3ed]
 - feat: update Bonjour service name for LAN transport and add usage description (by @areebahmeddd) [1a1c646]
-- feat(ios): Wi-Fi Aware fast path (#51) (by @Areeb Ahmed) (#51) [99b000f]
+- feat(ios): Wi-Fi Aware fast path (#51) (by @areebahmeddd) [99b000f]
 - refactor: update button styles and clean up file transfer service logic (by @areebahmeddd) [7169da2]
 - feat: add CHANGE_NETWORK_STATE permission for WiFi Aware functionality (by @areebahmeddd) [96d5c25]
 - feat: enhance file transfer pacing and add WiFi peer link check (by @areebahmeddd) [cb1fe43]
@@ -112,7 +121,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 - fix(wifi): wait for the responder before requesting the Aware data path (by @areebahmeddd) [a497193]
 - refactor: remove unused landing project configuration (by @areebahmeddd) [59b2cb9]
 - fix: revert breaking deps (by @areebahmeddd) [6e25a01]
-- release: v1.0.2 (#48) (by @Areeb Ahmed) (#48) [c6efeb6]
+- release: v1.0.2 (#48) (by @areebahmeddd) [c6efeb6]
 - feat: add unseen peers tracking and update Mesh screen behavior (by @areebahmeddd) [cb5fb41]
 - feat: implement panic wipe functionality with progress indication (by @areebahmeddd) [c04c5dd]
 - chore: fix stale docs (by @areebahmeddd) [5f9fa9d]
@@ -164,7 +173,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 ## What's New
 
 - feat: enhance contact management and display names (#10) (by @areebahmeddd) [a66e515]
-- feat: implement internationalization (i18n) support with language management and translation functionality (#23) (by @Areeb Ahmed) (#23) [c516e64]
+- feat: implement internationalization (i18n) support with language management and translation functionality (#23) (by @areebahmeddd) [c516e64]
 - feat: add LanguagePicker and ThemeToggle components (by @areebahmeddd) [d55c98d]
 - feat: enhance audio capture and playback with loudness level tracking (by @areebahmeddd) [6bcebfd]
 
@@ -224,7 +233,7 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 ## What's New
 
 - feat(landing): add architecture diagrams for airhop (by @areebahmeddd) [f323a58]
-- feat(wallet): rebuild Cashu ecash end to end, with Lightning and recovery (#7) (by @Areeb Ahmed) (#7) [aaaa15a]
+- feat(wallet): rebuild Cashu ecash end to end, with Lightning and recovery (#7) (by @areebahmeddd) [aaaa15a]
 - fix: major bug fixes after testing locally with friends [ see description ] (by @areebahmeddd) [c88a6fa]
 - feat(FAQ): enhance FAQ section with detailed encryption and payment information (by @areebahmeddd) [012f367]
 - feat: update UI elements and improve user experience across various screens (by @areebahmeddd) [34a68ad]
