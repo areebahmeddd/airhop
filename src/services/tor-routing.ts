@@ -263,7 +263,8 @@ export async function setTorBridgeMode(
   return enableTorRouting(true);
 }
 
-// `restarting` is a bridge change, for the refusal below.
+// `restarting` is a bridge change, which a refused start leaves held rather
+// than unwound to the clear net (see the catch below).
 async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
   if (NativeAirhopTor == null) {
     return { ok: false, reason: "unavailable" };
@@ -452,9 +453,9 @@ function startTorFromPreference(): void {
 
 // The held state, for a start that crashed or has no bridge lines to use.
 // Applied rather than written, like the start above, so a pool built before
-// this ran is torn down. On Android the HTTP stack is held on a proxy nothing listens on, so `fetch` fails too; iOS
-// proxies only the Nostr socket, and its wallet and update check already
-// refuse while Tor is on.
+// this ran is torn down. On Android the HTTP stack is held on a proxy nothing
+// listens on, so `fetch` fails too; iOS proxies only the Nostr socket, and its
+// wallet and update check already refuse while Tor is on.
 function holdAfterFailedStart(): void {
   setNostrBlocked(true);
   setTorActive(false);

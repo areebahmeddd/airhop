@@ -25,6 +25,20 @@ jest.setTimeout(30_000);
 // The screen reaches it only through tor-routing, and it needs the BLE module.
 jest.mock("@services/mesh-service", () => ({ getMeshService: () => null }));
 
+// Every value the switch was drawn with, so a disabled frame that the next
+// render covers up is still seen.
+const mockSwitchDisabled: boolean[] = [];
+jest.mock("../../settings-primitives", () => {
+  const actual = jest.requireActual("../../settings-primitives");
+  return {
+    ...actual,
+    SettingSwitch: (props: { disabled?: boolean }) => {
+      mockSwitchDisabled.push(props.disabled === true);
+      return actual.SettingSwitch(props);
+    },
+  };
+});
+
 // Reanimated has no native half under jest, so the sheet is its contents while
 // open and nothing while closed.
 jest.mock("@ui/components/bottom-sheet", () => ({
@@ -52,6 +66,7 @@ beforeEach(() => {
     torStartPending: false,
   });
   useMeshStateStore.setState({ torActive: false, torBootstrap: "idle" });
+  mockSwitchDisabled.length = 0;
 });
 
 async function renderScreen(): Promise<void> {
@@ -122,8 +137,9 @@ describe("the connection section", () => {
       );
 
     expect(useSettingsStore.getState().torBridgeMode).toBe("snowflake");
-    // Saved for the next turn on, not started now.
+    // Saved for the next turn on, not started now, and with no dimmed frame.
     expect(useSettingsStore.getState().torEnabled).toBe(false);
+    expect(mockSwitchDisabled).not.toContain(true);
   });
 
   it("offers the custom editor with Tor off once Custom is picked", async () => {

@@ -3,10 +3,9 @@
 // A separate file from tor-routing-ios.test.ts because each pins its own
 // platform in the react-native mock, and the native modules differ with it
 // (no TorSocket here). `Platform.OS` is read per call, so nothing else forces
-// the split. The model
-// under test is the same on both: start the embedded client, point the app's
-// sockets at it, report honestly, fail closed. What this file exists to pin
-// down is the one place they still differ.
+// the split. The model under test is the same on both: start the embedded
+// client, point the app's sockets at it, report honestly, fail closed. What
+// this file exists to pin down is the one place they still differ.
 //
 // **Android installs no WebSocket shim.** iOS swaps nostr-tools' WebSocket for
 // TorWebSocket, because React Native's own cannot speak SOCKS5. Android needs no
