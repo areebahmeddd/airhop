@@ -1,6 +1,7 @@
 // Licenses sub-screen: every third-party package this app ships with, its
-// license, and a tap to open its repository. The data is snapshotted from each
-// package's own package.json into src/data/licenses.ts. Each group opens with a one-line note on what those packages are for.
+// license, and a tap to open its repository. The catalog is src/data/licenses.ts,
+// which reads each version from this repo's package.json. Each group opens with
+// a one-line note on what those packages are for.
 
 import { THIRD_PARTY_LICENSES } from "@data/licenses";
 import { upperCase, useT } from "@i18n";

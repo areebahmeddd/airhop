@@ -249,7 +249,7 @@ const CATALOG: {
     packages: [
       {
         name: "@cashu/cashu-ts",
-        license: "MIT",
+        license: "MIT OR Apache-2.0",
         repo: "https://github.com/cashubtc/cashu-ts",
       },
       {
