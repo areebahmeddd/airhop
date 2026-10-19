@@ -828,6 +828,8 @@ export const strings: Strings = {
     "Erlaube der Person, dein Telefon klingeln zu lassen, um deine Aufmerksamkeit zu bekommen, selbst wenn diese Unterhaltung stummgeschaltet ist. Lautlos-Modus und Nicht stören gelten weiterhin.",
   "chat.contact.allow_ring_needs_keys":
     "Für diesen Kontakt gibt es noch keine Schlüssel. Schreibe der Person oder scanne ihren Code, damit sie bei dir klingeln darf.",
+  "chat.contact.allow_ring_master_off":
+    "Niemand kann dein Telefon klingeln lassen, bis du in den Einstellungen {setting} einschaltest.",
   "chat.contact.ring_action": "Klingeln",
   "chat.contact.ringing": "Klingelt…",
   "chat.contact.ring_hint_nearby":
@@ -961,7 +963,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Erlauben",
   "mesh.banner.action.resume": "Fortsetzen",
   "mesh.banner.action.fix": "Beheben",
-  "mesh.banner.hint.resume": "Schaltet Bluetooth-Senden und -Suchen wieder ein",
+  "mesh.banner.hint.resume": "Startet das Mesh wieder",
   "mesh.banner.hint.enable_bluetooth":
     "Bittet Android, Bluetooth einzuschalten",
   "mesh.banner.hint.location_settings":
@@ -1832,8 +1834,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "Optionale Funktionen, Senden rückgängig, Medien, Zurücksetzen",
   "settings.section.privacy": "Privatsphäre & Sicherheit",
-  "settings.section.privacy_desc":
-    "Forward Secrecy, signierte Pakete, blockierte Peers",
+  "settings.section.privacy_desc": "App-Sperre, Mitteilungen, blockierte Peers",
   "settings.section.network": "Netzwerk & Relays",
   "settings.section.network_desc":
     "Internet-Rückfallebene, Nostr-Relays, bitchat-Kompatibilität",
@@ -1955,10 +1956,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Hält Verläufe am längsten lesbar und belegt am meisten Speicher.",
   "settings.general.reset_desc":
-    "Setzt jede Einstellung auf ihren Standard zurück und lässt Identität, Nachrichten, Kontakte und Wallet unberührt",
+    "Setzt Einstellungen auf ihren Standard zurück und lässt Identität, Nachrichten, Kontakte und Wallet unberührt",
   "settings.general.reset_title": "Einstellungen zurücksetzen?",
   "settings.general.reset_body":
-    "Jede Einstellung geht auf ihren Standard zurück: Erscheinungsbild, Senden rückgängig und Verbindungen (Internet, Tor, Gateway, Brücke, Relays). Deine Identität, Nachrichten, Kontakte und Wallet bleiben unberührt.",
+    "Einstellungen gehen auf ihren Standard zurück, darunter Erscheinungsbild, Sprache, Mitteilungen, Senden rückgängig und Verbindungen (Internet, Tor, Gateway, Brücke, Relays). App-Sperre, Aufbewahrungsdauer für Medien und dein Status bleiben, wie du sie eingestellt hast. Deine Identität, Nachrichten, Kontakte und Wallet bleiben unberührt.",
   "settings.general.reset_confirm": "Zurücksetzen",
 
   // ---- Settings: privacy and security ----
@@ -2007,7 +2008,7 @@ export const strings: Strings = {
     "Über Nostr-Relays weitermachen, wenn Mesh-Peers außer Reichweite sind",
   "settings.network.internet_off_title": "Das Internet abschalten?",
   "settings.network.internet_off_body":
-    "Airhop läuft dann nur über Bluetooth. Es kontaktiert kein Nostr-Relay mehr, und Tor, das Internet-Gateway und die Mesh-Brücke schalten sich alle ab. Bluetooth-Chat in der Nähe funktioniert weiter.",
+    "Airhop läuft dann nur über Bluetooth. Es kontaktiert kein Nostr-Relay mehr, und Tor, das Internet-Gateway und die Mesh-Brücke pausieren, bis das Internet wieder an ist. Bluetooth-Chat in der Nähe funktioniert weiter.",
   "settings.network.turn_off": "Abschalten",
   "settings.network.discovery": "Geo-Relay-Erkennung",
   "settings.network.discovery_desc":
@@ -2095,7 +2096,7 @@ export const strings: Strings = {
     "Mit Menschen in der Nähe sprechen wie mit einem Funkgerät",
   "settings.conn.live_voice_on_title": "Live-Sprache einschalten?",
   "settings.conn.live_voice_on_body":
-    "Wenn du das Mikrofon hältst, geht deine Stimme beim Sprechen an alle in Bluetooth-Reichweite, und ihre Stimme wird auf deinem Telefon abgespielt. Nichts wird aufgezeichnet.",
+    "Wenn du das Mikrofon hältst, geht deine Stimme beim Sprechen an alle in Bluetooth-Reichweite, und ihre Stimme wird auf deinem Telefon abgespielt. Wenn du loslässt, wird dasselbe Audio zusätzlich als Sprachnotiz gesendet.",
   "settings.conn.live_voice_off_title": "Live-Sprache ausschalten?",
   "settings.conn.live_voice_off_body":
     "Das Mikrofon zu halten nimmt dann stattdessen eine Sprachnotiz auf. Sie geht raus, wenn du loslässt, und niemand hört sie, bis sie abgespielt wird.",
@@ -2117,6 +2118,8 @@ export const strings: Strings = {
     "Tor konnte nicht gestartet werden. Versuche es gleich noch einmal.",
   "settings.tor.status": "Tor-Status",
   "settings.tor.connection": "Verbindung",
+  "settings.tor.connection_off_note":
+    "Wird verwendet, wenn du Tor einschaltest.",
   "settings.tor.mode_off": "Direkt",
   "settings.tor.mode_off_desc":
     "Verbindet direkt mit Tor. Am schnellsten, aber wer dieses Netzwerk beobachtet, sieht, dass du Tor nutzt.",
@@ -2147,7 +2150,7 @@ export const strings: Strings = {
     "Leihe deine Verbindung einem Telefon in der Nähe ohne Internet, damit es die Standortkanäle trotzdem erreicht",
   "settings.conn.gateway_on_title": "Das Internet-Gateway einschalten?",
   "settings.conn.gateway_on_body":
-    "Telefone in der Nähe ohne eigene Verbindung senden und empfangen Nachrichten aus Standortkanälen über deine. Das nutzt deine mobilen Daten und deinen Akku, und ihre Nachrichten bleiben Ende-zu-Ende verschlüsselt, du kannst also nicht lesen, was durchläuft.",
+    "Telefone in der Nähe ohne eigene Verbindung senden und empfangen Nachrichten aus Standortkanälen über deine. Das nutzt deine mobilen Daten und deinen Akku. Diese Nachrichten sind öffentliche, von ihren Verfassern signierte Beiträge, du kannst also lesen, aber nicht ändern, was durchläuft.",
   "settings.conn.gateway_off_title": "Das Internet-Gateway ausschalten?",
   "settings.conn.gateway_off_body":
     "Telefone in der Nähe ohne Internet erreichen die Standortkanäle dann nicht mehr über deins. Deine eigenen Nachrichten sind nicht betroffen.",
@@ -2156,10 +2159,10 @@ export const strings: Strings = {
     "Verbinde den öffentlichen #bluetooth-Chat dieses Gebiets über das Internet mit einer anderen Bluetooth-Menge außer Reichweite",
   "settings.conn.bridge_on_title": "Die Mesh-Brücke einschalten?",
   "settings.conn.bridge_on_body":
-    "Deine öffentlichen #bluetooth-Nachrichten werden über das Internet in deinem Viertel veröffentlicht, sodass Menschen außerhalb der Bluetooth-Reichweite sie lesen können. Private Nachrichten werden nie gebrückt, und „nur in der Nähe“ hält jede einzelne Nachricht lokal.",
+    "Deine öffentlichen #bluetooth-Nachrichten werden über das Internet in deinem Viertel veröffentlicht, sodass Menschen außerhalb der Bluetooth-Reichweite sie lesen können. Dein Telefon trägt außerdem gebrückte Nachrichten für Telefone in der Nähe über deine Daten. Private Nachrichten werden nie gebrückt, und „nur in der Nähe“ hält jede einzelne Nachricht lokal.",
   "settings.conn.bridge_off_title": "Die Mesh-Brücke ausschalten?",
   "settings.conn.bridge_off_body":
-    "Deine öffentlichen #bluetooth-Nachrichten bleiben wieder in Bluetooth-Reichweite, und Nachrichten aus der gebrückten Menge kommen hier nicht mehr an.",
+    "Deine öffentlichen #bluetooth-Nachrichten bleiben wieder in Bluetooth-Reichweite, und dein Telefon trägt keine gebrückten Nachrichten mehr für andere. Nachrichten, die eine Brücke in der Nähe per Bluetooth bringt, erscheinen hier weiterhin.",
   "settings.conn.bridge_needs_location": "Die Mesh-Brücke braucht den Standort",
   "settings.conn.bridge_needs_location_desc":
     "Sie ermittelt dein Viertel aus einer Standortbestimmung. Erlaube den Standort, um zu brücken.",
@@ -2196,7 +2199,7 @@ export const strings: Strings = {
   "settings.permissions.system": "System",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Netzwerknutzung",
+  "settings.storage.mesh_traffic": "Mesh-Datenverkehr",
   "settings.storage.storage_usage": "Speichernutzung",
   "settings.storage.storage_usage_desc":
     "Nachrichten, Ecash und zwischengespeicherte Anhänge",
@@ -2277,7 +2280,8 @@ export const strings: Strings = {
   "settings.status.away": "Abwesend",
   "settings.status.away_desc": "Mesh pausiert, sucht und sendet nicht",
   "settings.status.invisible": "Unsichtbar",
-  "settings.status.invisible_desc": "Sucht, ist aber nicht auffindbar",
+  "settings.status.invisible_desc":
+    "Für Bluetooth-Suchen unsichtbar, für Telefone, mit denen du dich verbindest, weiterhin sichtbar",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Status auf {value} setzen",
   "settings.status.edit": "Status bearbeiten",

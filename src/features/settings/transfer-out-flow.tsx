@@ -43,6 +43,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  AppState,
   Linking,
   Platform,
   Pressable,
@@ -92,7 +93,7 @@ export default function TransferOutFlow({
   const T = useT();
   const shared = useSharedStyles();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [history, setHistory] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [stage, setStage] = useState<Stage>({ kind: "scan" });
@@ -105,7 +106,27 @@ export default function TransferOutFlow({
   // One answer to "Did the transfer finish?", however fast the taps.
   const resolved = useRef(false);
 
-  useEffect(() => () => cancelHandoff.current?.(), []);
+  // Unmounting mid-transfer (a link or a notification switching tabs, Android
+  // recreating the Activity) is the Cancel nobody could tap: left running, the
+  // sender holds the link with no screen to report to. Before the stream ends
+  // this leaves the phone as it was; after, cancel does nothing.
+  useEffect(
+    () => () => {
+      cancelHandoff.current?.();
+      senderRef.current?.cancel();
+    },
+    [],
+  );
+
+  // The hook reads the camera grant once, at mount. A grant made in Settings
+  // while the camera-off panel waits would otherwise keep that panel up.
+  useEffect(() => {
+    if (!modalOpen) return;
+    const sub = AppState.addEventListener("change", (next) => {
+      if (next === "active") void getPermission().catch(() => undefined);
+    });
+    return () => sub.remove();
+  }, [modalOpen, getPermission]);
 
   // iOS only: the one platform with a local network prompt.
   const connecting = stage.kind === "run" && stage.state.phase === "connecting";
@@ -146,9 +167,16 @@ export default function TransferOutFlow({
     onClose();
     cancelHandoff.current = afterSheetsClose(() => {
       setModalOpen(true);
-      if (!permission?.granted && permission?.canAskAgain !== false) {
-        void requestPermission();
-      }
+      // Read again rather than trusted from mount, for the same reason as the
+      // foreground re-read above.
+      void getPermission()
+        .then((current) => {
+          if (!current.granted && current.canAskAgain) {
+            return requestPermission();
+          }
+          return current;
+        })
+        .catch(() => undefined);
     });
   }
 
@@ -258,7 +286,7 @@ export default function TransferOutFlow({
             icon="key"
             label={T("settings.transfer.identity")}
             description={T("settings.transfer.identity_desc")}
-            control={<LockedOn label={T("settings.transfer.identity")} />}
+            control={<LockedOn />}
           />
           <GroupDivider />
           <SettingRow
@@ -270,11 +298,7 @@ export default function TransferOutFlow({
                 : "settings.transfer.chats_without",
             )}
             control={
-              <SettingSwitch
-                value={history}
-                onValueChange={setHistory}
-                accessibilityLabel={T("settings.transfer.chats")}
-              />
+              <SettingSwitch value={history} onValueChange={setHistory} />
             }
           />
           <GroupDivider />
@@ -282,7 +306,7 @@ export default function TransferOutFlow({
             icon="credit-card"
             label={T("settings.transfer.wallet")}
             description={T("settings.transfer.wallet_desc")}
-            control={<LockedOn label={T("settings.transfer.wallet")} />}
+            control={<LockedOn />}
           />
         </View>
         <View style={styles.note}>
@@ -635,8 +659,8 @@ export default function TransferOutFlow({
 
 // The rows that always move wear the same switch, on and dimmed, so the list
 // reads as one set of choices with two already made.
-function LockedOn({ label }: { label: string }): React.JSX.Element {
-  return <SettingSwitch value disabled accessibilityLabel={label} />;
+function LockedOn(): React.JSX.Element {
+  return <SettingSwitch value disabled />;
 }
 
 // Over a live camera image, whatever the theme. The contact scanners' values.

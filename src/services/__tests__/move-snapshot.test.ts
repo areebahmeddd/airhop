@@ -7,6 +7,7 @@
 import { generateIdentity, saveIdentity } from "@core/crypto/identity";
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
 import { getStorage } from "@store/mmkv";
+import { useSettingsStore } from "@store/settings-store";
 import * as SecureStore from "expo-secure-store";
 import { readMoveMarker } from "../move-marker";
 import {
@@ -90,6 +91,7 @@ async function oldPhone() {
         stayInvisible: true,
         permissionPrimerSeen: true,
         autoStartOnBoot: true,
+        backgroundMeshEnabled: false,
       },
       1,
     ),
@@ -153,6 +155,8 @@ describe("transfer snapshot", () => {
     expect(state.stayInvisible).toBe(true);
     expect(state).not.toHaveProperty("permissionPrimerSeen");
     expect(state).not.toHaveProperty("autoStartOnBoot");
+    // An iPhone has no row to undo an Android phone's choice.
+    expect(state).not.toHaveProperty("backgroundMeshEnabled");
   });
 });
 
@@ -173,6 +177,21 @@ describe("transfer apply", () => {
       "contacts",
     );
     expect(getStorage("prekey-store").getString("local")).toBeUndefined();
+  });
+
+  it("writes this phone's own device settings back beside what arrived", async () => {
+    const identity = await oldPhone();
+    const sections = asMap(await snapshotForMove(true));
+    freshPhone();
+    useSettingsStore.setState({ backgroundMeshEnabled: false });
+
+    await applyMove(sections, identity.noiseStaticPubKey);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // On disk, so a relaunch before the next settings write keeps them.
+    const settings = stateOf("settings-store", "settings-store");
+    expect(settings.theme).toBe("dark");
+    expect(settings.backgroundMeshEnabled).toBe(false);
   });
 
   it("clears a condemned identity's flag once the moved one is written over it", async () => {

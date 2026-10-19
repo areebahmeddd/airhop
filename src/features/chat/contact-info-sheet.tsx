@@ -21,6 +21,7 @@ import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { useRingStore } from "@store/ring-store";
+import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
@@ -271,6 +272,9 @@ export default function ContactInfoSheet({
   }
 
   // Ring, receiver side: a revocable per-contact grant, see Contact.allowRing.
+  // The Privacy & security master switch refuses every ring over it, and the
+  // grant's row says so rather than promise a ring that will be refused.
+  const ringAlertsEnabled = useSettingsStore((s) => s.ringAlertsEnabled);
   function handleAllowRingChange(allow: boolean): void {
     if (peerID !== null)
       useContactsStore.getState().setAllowRing(peerID, allow);
@@ -517,9 +521,13 @@ export default function ContactInfoSheet({
                     icon="bell"
                     label={T("chat.contact.allow_ring")}
                     description={
-                      renameable
-                        ? T("chat.contact.allow_ring_desc")
-                        : T("chat.contact.allow_ring_needs_keys")
+                      !renameable
+                        ? T("chat.contact.allow_ring_needs_keys")
+                        : ringAlertsEnabled
+                          ? T("chat.contact.allow_ring_desc")
+                          : T("chat.contact.allow_ring_master_off", {
+                              setting: T("settings.security.ring_alerts"),
+                            })
                     }
                     control={
                       <SettingSwitch

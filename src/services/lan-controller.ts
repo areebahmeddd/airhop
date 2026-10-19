@@ -350,13 +350,21 @@ export class LANController {
       return;
     }
 
+    // Ahead of the off branch: a pause (Away, or off screen with background
+    // running off) reported as "off" would still stand once it ended, an
+    // enabled switch over a transport that can never start. Nothing needs
+    // releasing, since only a failed start sets the latch.
+    if (this.unsupported) {
+      this.report("unsupported");
+      return;
+    }
+
     if (!this.wanted) {
       if (this.started) await this.releaseNative();
       this.report("off");
       return;
     }
 
-    if (this.unsupported) return;
     if (this.started && this.renewPending) await this.releaseNative();
     this.renewPending = false;
     if (this.started) return;

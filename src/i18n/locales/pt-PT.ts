@@ -817,6 +817,8 @@ export const strings: Strings = {
     "Permite que esta pessoa faça o teu telemóvel tocar para chamar a tua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não incomodar continuam a aplicar-se.",
   "chat.contact.allow_ring_needs_keys":
     "Ainda não há chaves deste contacto. Escreve à pessoa, ou lê o código dela, para lhe permitires tocar-te.",
+  "chat.contact.allow_ring_master_off":
+    "Ninguém pode fazer o teu telemóvel tocar até ligares {setting} nas Definições.",
   "chat.contact.ring_action": "Tocar",
   "chat.contact.ringing": "A tocar…",
   "chat.contact.ring_hint_nearby":
@@ -955,7 +957,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Permitir",
   "mesh.banner.action.resume": "Retomar",
   "mesh.banner.action.fix": "Resolver",
-  "mesh.banner.hint.resume": "Liga de novo o anúncio e a procura por Bluetooth",
+  "mesh.banner.hint.resume": "Inicia a malha de novo",
   "mesh.banner.hint.enable_bluetooth": "Pede ao Android para ligar o Bluetooth",
   "mesh.banner.hint.location_settings":
     "Abre as definições de localização do sistema",
@@ -1817,7 +1819,7 @@ export const strings: Strings = {
     "Funcionalidades opcionais, anular o envio, multimédia, reposição",
   "settings.section.privacy": "Privacidade e segurança",
   "settings.section.privacy_desc":
-    "Sigilo persistente, pacotes assinados, pares bloqueados",
+    "Bloqueio do Airhop, notificações, pares bloqueados",
   "settings.section.network": "Rede e relays",
   "settings.section.network_desc":
     "Recurso à Internet, relays Nostr, compatibilidade com o bitchat",
@@ -1940,10 +1942,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantém as conversas legíveis mais tempo, e ocupa mais disco.",
   "settings.general.reset_desc":
-    "Repõe todas as preferências nos valores originais, deixando intactos a tua identidade, mensagens, contactos e carteira",
+    "Repõe as preferências nos valores originais, deixando intactos a tua identidade, mensagens, contactos e carteira",
   "settings.general.reset_title": "Repor as definições?",
   "settings.general.reset_body":
-    "Todas as preferências voltam ao original: aspeto, anular o envio, e a ligação (Internet, Tor, ponte de Internet, ponte de malha, relays). A tua identidade, mensagens, contactos e carteira ficam intactos.",
+    "As preferências voltam ao original, incluindo o aspeto, o idioma, as notificações, anular o envio, e a ligação (Internet, Tor, ponte de Internet, ponte de malha, relays). O bloqueio do Airhop, o tempo que a multimédia é guardada e o teu estado ficam como os definiste. A tua identidade, mensagens, contactos e carteira ficam intactos.",
   "settings.general.reset_confirm": "Repor",
 
   // ---- Settings: privacy and security ----
@@ -1993,7 +1995,7 @@ export const strings: Strings = {
     "Continua pelos relays Nostr quando os pares da malha estão fora de alcance",
   "settings.network.internet_off_title": "Desligar a Internet?",
   "settings.network.internet_off_body":
-    "O Airhop vai funcionar só com Bluetooth. Deixa de contactar qualquer relay Nostr, e o Tor, a ponte de Internet e a ponte de malha desligam-se todos. A conversa por Bluetooth por perto continua a funcionar.",
+    "O Airhop vai funcionar só com Bluetooth. Deixa de contactar qualquer relay Nostr, e o Tor, a ponte de Internet e a ponte de malha ficam em pausa até a Internet voltar. A conversa por Bluetooth por perto continua a funcionar.",
   "settings.network.turn_off": "Desligar",
   "settings.network.discovery": "Descoberta de relays por localização",
   "settings.network.discovery_desc":
@@ -2080,7 +2082,7 @@ export const strings: Strings = {
     "Fala com quem está por perto como num walkie-talkie",
   "settings.conn.live_voice_on_title": "Ligar a voz em direto?",
   "settings.conn.live_voice_on_body":
-    "Manter o microfone premido envia a tua voz a toda a gente dentro do alcance do Bluetooth à medida que falas, e a voz deles toca no teu telemóvel. Nada é gravado.",
+    "Manter o microfone premido envia a tua voz a toda a gente dentro do alcance do Bluetooth à medida que falas, e a voz deles toca no teu telemóvel. Quando largas, o mesmo áudio também é enviado como nota de voz.",
   "settings.conn.live_voice_off_title": "Desligar a voz em direto?",
   "settings.conn.live_voice_off_body":
     "Manter o microfone premido grava antes uma nota de voz. Ela sai quando largares, e ninguém a ouve até a reproduzir.",
@@ -2102,6 +2104,7 @@ export const strings: Strings = {
     "Não foi possível iniciar o Tor. Tenta de novo daqui a pouco.",
   "settings.tor.status": "Estado do Tor",
   "settings.tor.connection": "Ligação",
+  "settings.tor.connection_off_note": "Usada quando ligares o Tor.",
   "settings.tor.mode_off": "Direta",
   "settings.tor.mode_off_desc":
     "Liga diretamente ao Tor. O mais rápido, mas quem observa esta rede vê que usas o Tor.",
@@ -2133,7 +2136,7 @@ export const strings: Strings = {
     "Empresta a tua ligação a um telemóvel offline por perto para que ele ainda alcance os canais de localização",
   "settings.conn.gateway_on_title": "Ligar a ponte de Internet?",
   "settings.conn.gateway_on_body":
-    "Os telemóveis por perto sem ligação própria vão enviar e receber mensagens dos canais de localização pela tua. Usa os teus dados móveis e a tua bateria, e as mensagens deles continuam encriptadas ponta a ponta, por isso não consegues ler o que passa.",
+    "Os telemóveis por perto sem ligação própria vão enviar e receber mensagens dos canais de localização pela tua. Usa os teus dados móveis e a tua bateria. Essas mensagens são publicações públicas assinadas pelos autores, por isso consegues ler o que passa, mas não alterá-lo.",
   "settings.conn.gateway_off_title": "Desligar a ponte de Internet?",
   "settings.conn.gateway_off_body":
     "Os telemóveis offline por perto deixam de alcançar os canais de localização pela tua ligação. As tuas próprias mensagens não são afetadas.",
@@ -2142,10 +2145,10 @@ export const strings: Strings = {
     "Liga a conversa pública #bluetooth desta área a outro grupo de Bluetooth fora de alcance, pela Internet",
   "settings.conn.bridge_on_title": "Ligar a ponte de malha?",
   "settings.conn.bridge_on_body":
-    "As tuas mensagens públicas em #bluetooth vão ser publicadas no teu bairro pela Internet, para que quem está além do alcance do Bluetooth as possa ler. As mensagens privadas nunca passam pela ponte, e “só por perto” mantém qualquer mensagem local.",
+    "As tuas mensagens públicas em #bluetooth vão ser publicadas no teu bairro pela Internet, para que quem está além do alcance do Bluetooth as possa ler. O teu telemóvel também vai levar as mensagens da ponte dos telemóveis por perto com os teus dados. As mensagens privadas nunca passam pela ponte, e “só por perto” mantém qualquer mensagem local.",
   "settings.conn.bridge_off_title": "Desligar a ponte de malha?",
   "settings.conn.bridge_off_body":
-    "As tuas mensagens públicas em #bluetooth voltam a ficar dentro do alcance do Bluetooth, e as mensagens do grupo do outro lado deixam de chegar aqui.",
+    "As tuas mensagens públicas em #bluetooth voltam a ficar dentro do alcance do Bluetooth, e o teu telemóvel deixa de levar mensagens da ponte para os outros. As mensagens que uma ponte por perto traz por Bluetooth continuam a aparecer aqui.",
   "settings.conn.bridge_needs_location":
     "A ponte de malha precisa da localização",
   "settings.conn.bridge_needs_location_desc":
@@ -2183,7 +2186,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Sistema",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Utilização da rede",
+  "settings.storage.mesh_traffic": "Tráfego da malha",
   "settings.storage.storage_usage": "Utilização do armazenamento",
   "settings.storage.storage_usage_desc": "Mensagens, ecash e anexos em cache",
   "settings.storage.session_usage":
@@ -2263,7 +2266,8 @@ export const strings: Strings = {
   "settings.status.away": "Ausente",
   "settings.status.away_desc": "Malha em pausa, sem procurar nem anunciar",
   "settings.status.invisible": "Invisível",
-  "settings.status.invisible_desc": "A procurar, mas escondido da descoberta",
+  "settings.status.invisible_desc":
+    "Oculto às procuras por Bluetooth, ainda visível para os telemóveis a que te ligas",
   "settings.status.title": "Estado",
   "settings.status.set_a11y": "Definir o estado para {value}",
   "settings.status.edit": "Editar o estado",

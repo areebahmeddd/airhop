@@ -31,7 +31,7 @@ import {
 } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
-import BottomSheet from "@ui/components/bottom-sheet";
+import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
 import UpperText from "@ui/components/upper-text";
 import { MONO_FONT_ORDER, MONO_FONTS } from "@ui/fonts";
@@ -1135,7 +1135,8 @@ export default function ProfileScreen({
               ]}
               onPress={() => {
                 setShowPeerIDModal(false);
-                setShowQRModal(true);
+                // iOS drops a sheet presented while another still slides out.
+                afterSheetsClose(() => setShowQRModal(true));
               }}
               accessibilityRole="button"
               accessibilityLabel={T("settings.qr.show")}

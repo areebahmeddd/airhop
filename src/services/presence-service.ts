@@ -24,8 +24,9 @@ import { getMeshService } from "./mesh-service";
 // The three states, and what each actually does to the radios:
 //   online     advertise + scan. Findable and reachable.
 //   away       everything stops. The only state that takes the mesh down.
-//   invisible  scan + relay, but stop advertising. You see others; they don't
-//              see you.
+//   invisible  scan + relay, but stop advertising over Bluetooth. Nobody
+//              finds you by scanning, but a phone you connect to sees your
+//              announce, and LAN and Wi-Fi Aware keep publishing.
 export function applyPresence(next: PresenceStatus, nickname: string): void {
   const current = useMeshStateStore.getState().presenceStatus;
   const mesh = getMeshService();
@@ -66,6 +67,14 @@ export function applyPresence(next: PresenceStatus, nickname: string): void {
     useSettingsStore.getState().setStayInvisible(next === "invisible");
   }
   useMeshStateStore.getState().setPresenceStatus(next);
+}
+
+// The Mesh banner's Resume after Away: back to the visibility Away paused, as a
+// relaunch would be. Online here would turn advertising on and clear a kept
+// Invisible, making the phone findable again without anyone choosing it.
+export function resumePresence(nickname: string): void {
+  const invisible = useSettingsStore.getState().stayInvisible;
+  applyPresence(invisible ? "invisible" : "online", nickname);
 }
 
 // Put a freshly started mesh in the presence that outlives a launch: Invisible

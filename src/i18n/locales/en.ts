@@ -838,6 +838,8 @@ export const strings = {
     "Let them ring your phone to get your attention, even if this conversation is muted. Silent mode and Do Not Disturb still apply.",
   "chat.contact.allow_ring_needs_keys":
     "No keys for this contact yet. Message them, or scan their code, to let them ring you.",
+  "chat.contact.allow_ring_master_off":
+    "Nobody can ring your phone until you turn on {setting} in Settings.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringing…",
   "chat.contact.ring_hint_nearby": "Ring works only while they are nearby",
@@ -964,7 +966,7 @@ export const strings = {
   "mesh.banner.action.allow": "Allow",
   "mesh.banner.action.resume": "Resume",
   "mesh.banner.action.fix": "Fix",
-  "mesh.banner.hint.resume": "Turns Bluetooth advertising and scanning back on",
+  "mesh.banner.hint.resume": "Starts the mesh again",
   "mesh.banner.hint.enable_bluetooth": "Asks Android to switch Bluetooth on",
   "mesh.banner.hint.location_settings": "Opens the system location settings",
   "mesh.banner.hint.app_settings":
@@ -1793,8 +1795,7 @@ export const strings = {
   "settings.section.general": "General",
   "settings.section.general_desc": "Optional features, undo send, media, reset",
   "settings.section.privacy": "Privacy & security",
-  "settings.section.privacy_desc":
-    "Forward secrecy, signed packets, blocked peers",
+  "settings.section.privacy_desc": "App lock, notifications, blocked peers",
   "settings.section.network": "Network & relays",
   "settings.section.network_desc":
     "Internet fallback, Nostr relays, bitchat compatibility",
@@ -1910,10 +1911,10 @@ export const strings = {
   "settings.general.retention_30_desc":
     "Keeps threads readable longest, and keeps the most on disk.",
   "settings.general.reset_desc":
-    "Puts every preference back to its default, leaving your identity, messages, contacts and wallet untouched",
+    "Puts preferences back to their defaults, leaving your identity, messages, contacts and wallet untouched",
   "settings.general.reset_title": "Reset settings?",
   "settings.general.reset_body":
-    "Every preference goes back to its default: appearance, undo send, and connectivity (internet, Tor, gateway, bridge, relays). Your identity, messages, contacts, and wallet are untouched.",
+    "Preferences go back to their defaults, including appearance, language, notifications, undo send, and connectivity (internet, Tor, gateway, bridge, relays). App lock, how long media is kept, and your status stay as set. Your identity, messages, contacts, and wallet are untouched.",
   "settings.general.reset_confirm": "Reset",
 
   // ---- Settings: privacy and security ----
@@ -1961,7 +1962,7 @@ export const strings = {
     "Continue over Nostr relays when mesh peers are out of range",
   "settings.network.internet_off_title": "Turn off the internet?",
   "settings.network.internet_off_body":
-    "Airhop will run on Bluetooth only. It stops contacting any Nostr relay, and Tor, the internet gateway, and the mesh bridge all turn off. Nearby Bluetooth chat keeps working.",
+    "Airhop will run on Bluetooth only. It stops contacting any Nostr relay, and Tor, the internet gateway, and the mesh bridge pause until the internet is back on. Nearby Bluetooth chat keeps working.",
   "settings.network.turn_off": "Turn off",
   "settings.network.discovery": "Geo-relay discovery",
   "settings.network.discovery_desc":
@@ -2041,7 +2042,7 @@ export const strings = {
   "settings.conn.live_voice_desc": "Talk to nearby people like a walkie-talkie",
   "settings.conn.live_voice_on_title": "Turn on live voice?",
   "settings.conn.live_voice_on_body":
-    "Holding the mic sends your voice to everyone in Bluetooth range as you speak, and their voice plays on your phone. Nothing is recorded.",
+    "Holding the mic sends your voice to everyone in Bluetooth range as you speak, and their voice plays on your phone. When you let go, the same audio is also sent as a voice note.",
   "settings.conn.live_voice_off_title": "Turn off live voice?",
   "settings.conn.live_voice_off_body":
     "Holding the mic records a voice note instead. It sends when you let go, and nobody hears it until they play it.",
@@ -2061,6 +2062,7 @@ export const strings = {
   "settings.conn.tor_failed": "Could not start Tor. Try again in a moment.",
   "settings.tor.status": "Tor status",
   "settings.tor.connection": "Connection",
+  "settings.tor.connection_off_note": "Used when you turn Tor on.",
   "settings.tor.mode_off": "Direct",
   "settings.tor.mode_off_desc":
     "Connects straight to Tor. Fastest, but anyone watching this network can see that you use Tor.",
@@ -2090,7 +2092,7 @@ export const strings = {
     "Lend your connection to a nearby offline phone so it can still reach the location channels",
   "settings.conn.gateway_on_title": "Turn on the internet gateway?",
   "settings.conn.gateway_on_body":
-    "Nearby phones with no connection of their own will send and receive location-channel messages through yours. It uses your mobile data and battery, and their messages stay encrypted end to end, so you cannot read what passes through.",
+    "Nearby phones with no connection of their own will send and receive location-channel messages through yours. It uses your mobile data and battery. Those messages are public posts signed by their authors, so you can read but not change what passes through.",
   "settings.conn.gateway_off_title": "Turn off the internet gateway?",
   "settings.conn.gateway_off_body":
     "Nearby offline phones stop reaching the location channels through yours. Your own messages are unaffected.",
@@ -2099,10 +2101,10 @@ export const strings = {
     "Link this area’s public #bluetooth chat with another out-of-range Bluetooth crowd over the internet",
   "settings.conn.bridge_on_title": "Turn on the mesh bridge?",
   "settings.conn.bridge_on_body":
-    "Your public #bluetooth messages will be published to your neighborhood over the internet, so people beyond Bluetooth range can read them. Private messages are never bridged, and “nearby only” keeps any single message local.",
+    "Your public #bluetooth messages will be published to your neighborhood over the internet, so people beyond Bluetooth range can read them. Your phone also carries nearby phones’ bridged messages over your data. Private messages are never bridged, and “nearby only” keeps any single message local.",
   "settings.conn.bridge_off_title": "Turn off the mesh bridge?",
   "settings.conn.bridge_off_body":
-    "Your public #bluetooth messages stay in Bluetooth range again, and messages from the bridged crowd stop arriving here.",
+    "Your public #bluetooth messages stay in Bluetooth range again, and your phone stops carrying bridged messages for others. Messages a nearby bridge carries over Bluetooth still appear here.",
   "settings.conn.bridge_needs_location": "Mesh bridge needs location",
   "settings.conn.bridge_needs_location_desc":
     "It finds your neighborhood from a location fix. Grant location to start bridging.",
@@ -2139,7 +2141,7 @@ export const strings = {
   "settings.permissions.system": "System",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Network usage",
+  "settings.storage.mesh_traffic": "Mesh traffic",
   "settings.storage.storage_usage": "Storage usage",
   "settings.storage.storage_usage_desc":
     "Messages, ecash, and cached attachments",
@@ -2219,7 +2221,8 @@ export const strings = {
   "settings.status.away": "Away",
   "settings.status.away_desc": "Mesh paused, not scanning or advertising",
   "settings.status.invisible": "Invisible",
-  "settings.status.invisible_desc": "Scanning, but hidden from discovery",
+  "settings.status.invisible_desc":
+    "Hidden from Bluetooth scans, still seen by phones you connect to",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Set status to {value}",
   "settings.status.edit": "Edit status",

@@ -31,6 +31,7 @@ import { AppState, Platform } from "react-native";
 import { isReplayedRoomMessage } from "./notification-policy";
 import {
   configureNotifications,
+  dismissPreviewNotifications,
   endAllRingAlerts,
   handleInboundMessage,
   handleNearbyPeers,
@@ -171,9 +172,14 @@ export function startNotificationPipeline(nickname: () => string): void {
     void setAppBadgeCount(next);
   });
 
-  const stopRingSetting = useSettingsStore.subscribe((state, prev) => {
+  // Watched rather than left to the switch, so every writer moves the tray:
+  // Reset settings hides previews again too.
+  const stopNotificationSettings = useSettingsStore.subscribe((state, prev) => {
     if (prev.ringAlertsEnabled && !state.ringAlertsEnabled) {
       void endAllRingAlerts();
+    }
+    if (!prev.hideNotificationPreviews && state.hideNotificationPreviews) {
+      void dismissPreviewNotifications();
     }
   });
 
@@ -188,7 +194,7 @@ export function startNotificationPipeline(nickname: () => string): void {
     stopPeers,
     stopRings,
     stopBadge,
-    stopRingSetting,
+    stopNotificationSettings,
   ];
 }
 

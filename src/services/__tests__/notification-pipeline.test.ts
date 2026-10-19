@@ -13,6 +13,7 @@ const mockSetBadge = jest.fn();
 const mockSetAppActive = jest.fn();
 const mockConfigure = jest.fn();
 const mockEndAllRings = jest.fn();
+const mockDismissPreviews = jest.fn();
 let mockReading = false;
 let mockAppActive = false;
 
@@ -84,6 +85,7 @@ jest.mock("@utils/message-text", () => ({
 }));
 jest.mock("../notification-service", () => ({
   configureNotifications: () => mockConfigure(),
+  dismissPreviewNotifications: () => mockDismissPreviews(),
   endAllRingAlerts: () => mockEndAllRings(),
   handleInboundMessage: (...args: unknown[]) => mockHandleInbound(...args),
   handleNearbyPeers: (...args: unknown[]) => mockHandleNearby(...args),
@@ -267,6 +269,19 @@ describe("startNotificationPipeline", () => {
     expect(mockEndAllRings).toHaveBeenCalledTimes(1);
     useSettingsStore.setState({ ringAlertsEnabled: false });
     expect(mockEndAllRings).toHaveBeenCalledTimes(1);
+  });
+
+  // Reset settings hides previews again without the switch, and the tray
+  // still holds cards rendered with the sender and the text.
+  test("hiding previews by any writer clears the delivered ones", () => {
+    useSettingsStore.setState({ hideNotificationPreviews: false });
+    startNotificationPipeline(() => "alice");
+
+    useSettingsStore.getState().reset();
+    expect(mockDismissPreviews).toHaveBeenCalledTimes(1);
+    useSettingsStore.setState({ hideNotificationPreviews: true });
+    useSettingsStore.setState({ hideNotificationPreviews: false });
+    expect(mockDismissPreviews).toHaveBeenCalledTimes(1);
   });
 
   test("configures channels and the handler, for a start with no screen", () => {

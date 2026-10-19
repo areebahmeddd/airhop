@@ -102,6 +102,7 @@ import { startReclaimFollow } from "@services/payment-router";
 import {
   applyPresence,
   applyStartupPresence,
+  resumePresence,
 } from "@services/presence-service";
 import { startReachabilityWatch } from "@services/reachability";
 import {
@@ -592,7 +593,7 @@ async function handleBannerAction(
 ): Promise<void> {
   switch (kind) {
     case "resume":
-      applyPresence("online", nickname);
+      resumePresence(nickname);
       return;
 
     case "enable-bluetooth": {
@@ -1197,13 +1198,15 @@ function AppContent(): React.JSX.Element {
         const store = useMeshStateStore.getState();
         const changed = store.locationGranted !== granted;
         store.setLocationGranted(granted);
-        // Re-resolve the location channels when the answer actually moved.
+        // Re-resolve the location channels and the bridge when the answer
+        // actually moved, in either direction.
         //
         // Leaving for system Settings and coming back is the main way a location
-        // grant changes, so this edge is when the geohash channels have most
-        // likely just become available. Gated on the change so an ordinary
-        // resume does not re-subscribe every cell.
-        if (changed && granted) getMeshService()?.refreshGeoChannels();
+        // grant changes. A grant opens the named channels; a revoke has to
+        // close them and take the bridge off its cell, which nothing else does
+        // while iOS keeps the process alive across it. Gated on the change so
+        // an ordinary resume does not re-subscribe every cell.
+        if (changed) getMeshService()?.refreshGeoChannels();
       });
       // Re-check the radios unconditionally.
       //

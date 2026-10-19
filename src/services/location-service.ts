@@ -81,9 +81,20 @@ export async function locationPermissionState(): Promise<{
 // Current coarse position, or null if unavailable/denied.
 // Served from a short cache so several callers on one screen don't each
 // trigger a separate fix.
+//
+// The permission is checked before the cache, and a denial drops it: a fix
+// taken while allowed is still a position, and serving it after the grant was
+// revoked would keep the location channels and the bridge on that cell for up
+// to REFRESH_MS. iOS keeps the process alive across a revoke, so this is
+// reachable there.
 export async function getCoarseLocation(
   forceRefresh = false,
 ): Promise<Coords | null> {
+  if (!(await hasLocationPermission())) {
+    cached = null;
+    return null;
+  }
+
   if (
     !forceRefresh &&
     cached !== null &&
@@ -91,8 +102,6 @@ export async function getCoarseLocation(
   ) {
     return cached.coords;
   }
-
-  if (!(await hasLocationPermission())) return null;
 
   try {
     const position = await Location.getLastKnownPositionAsync();

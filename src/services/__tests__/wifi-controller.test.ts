@@ -214,6 +214,38 @@ describe("stopping", () => {
     expect(wifi.isStarted).toBe(false);
   });
 
+  test("going Away stops claiming the fast path runs, and coming back says so again", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+    wifi.start();
+    await settle();
+
+    wifi.stop();
+    await settle();
+    expect(seen).toEqual(["active", "off"]);
+
+    wifi.start();
+    await settle();
+    expect(seen).toEqual(["active", "off", "active"]);
+  });
+
+  test("going Away leaves hardware that never had it reading unsupported", async () => {
+    mockStartWiFi.mockImplementation(() =>
+      rejectWith("WIFI_AWARE_UNSUPPORTED"),
+    );
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+    wifi.start();
+    await settle();
+
+    wifi.stop();
+    wifi.start();
+    await settle(60_000);
+
+    expect(seen).toEqual(["unsupported"]);
+  });
+
   test("going Away mid-attach releases the session native did open", async () => {
     // The attach is in flight when the user chooses Away. Native completes it
     // regardless, so the handle exists and something has to hand it back;
@@ -573,6 +605,31 @@ describe("a transport that keeps dying right after it starts", () => {
     wifi.onAvailabilityChanged(true);
     wifi.refresh();
     await settle(60_000);
+    expect(mockStartWiFi).toHaveBeenCalledTimes(attempts);
+  });
+
+  test("still says so after Away and back, without attaching again", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+
+    wifi.start();
+    await settle();
+    jest.advanceTimersByTime(20_000);
+    wifi.onAvailabilityChanged(false, "session");
+    await settle();
+    await shortRun(wifi);
+    await shortRun(wifi);
+    expect(seen.at(-1)).toBe("unstable");
+    const attempts = mockStartWiFi.mock.calls.length;
+
+    wifi.stop();
+    await settle();
+    wifi.start();
+    await settle(60_000);
+
+    expect(seen.at(-1)).toBe("unstable");
+    expect(seen).not.toContain("off");
     expect(mockStartWiFi).toHaveBeenCalledTimes(attempts);
   });
 

@@ -811,6 +811,8 @@ export const strings: Strings = {
     "Låt dem få din telefon att ringa för att få din uppmärksamhet, även om konversationen är tystad. Tyst läge och Stör ej gäller fortfarande.",
   "chat.contact.allow_ring_needs_keys":
     "Inga nycklar för den här kontakten än. Skriv till dem, eller skanna deras kod, för att låta dem ringa dig.",
+  "chat.contact.allow_ring_master_off":
+    "Ingen kan få din telefon att ringa förrän du slår på {setting} i Inställningar.",
   "chat.contact.ring_action": "Ring",
   "chat.contact.ringing": "Ringer…",
   "chat.contact.ring_hint_nearby":
@@ -941,7 +943,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Tillåt",
   "mesh.banner.action.resume": "Återuppta",
   "mesh.banner.action.fix": "Åtgärda",
-  "mesh.banner.hint.resume": "Slår på Bluetooth-annonsering och -skanning igen",
+  "mesh.banner.hint.resume": "Startar meshen igen",
   "mesh.banner.hint.enable_bluetooth": "Ber Android slå på Bluetooth",
   "mesh.banner.hint.location_settings": "Öppnar systemets platsinställningar",
   "mesh.banner.hint.app_settings":
@@ -1782,8 +1784,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "Valfria funktioner, ångra sändning, media, återställning",
   "settings.section.privacy": "Integritet och säkerhet",
-  "settings.section.privacy_desc":
-    "Forward secrecy, signerade paket, blockerade peers",
+  "settings.section.privacy_desc": "Applås, aviseringar, blockerade peers",
   "settings.section.network": "Nätverk och reläer",
   "settings.section.network_desc":
     "Internet som reserv, Nostr-reläer, bitchat-kompatibilitet",
@@ -1904,10 +1905,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Håller trådarna läsbara längst, och tar mest plats på disken.",
   "settings.general.reset_desc":
-    "Sätter tillbaka varje inställning till sitt standardvärde, medan identitet, meddelanden, kontakter och plånbok lämnas orörda",
+    "Sätter tillbaka inställningar till sina standardvärden, medan identitet, meddelanden, kontakter och plånbok lämnas orörda",
   "settings.general.reset_title": "Återställa inställningarna?",
   "settings.general.reset_body":
-    "Varje inställning går tillbaka till sitt standardvärde: utseende, ångra sändning och uppkoppling (internet, Tor, gateway, brygga, reläer). Din identitet, dina meddelanden, dina kontakter och din plånbok är orörda.",
+    "Inställningar går tillbaka till sina standardvärden, bland annat utseende, språk, aviseringar, ångra sändning och uppkoppling (internet, Tor, gateway, brygga, reläer). Applås, hur länge media sparas och din status förblir som du har ställt in dem. Din identitet, dina meddelanden, dina kontakter och din plånbok är orörda.",
   "settings.general.reset_confirm": "Återställ",
 
   // ---- Settings: privacy and security ----
@@ -1955,7 +1956,7 @@ export const strings: Strings = {
     "Fortsätt över Nostr-reläer när meshpeers är utom räckhåll",
   "settings.network.internet_off_title": "Stänga av internet?",
   "settings.network.internet_off_body":
-    "Airhop kör bara på Bluetooth. Appen slutar kontakta alla Nostr-reläer, och Tor, internetgatewayen och meshbryggan stängs av. Bluetooth-chatt i närheten fungerar som vanligt.",
+    "Airhop kör bara på Bluetooth. Appen slutar kontakta alla Nostr-reläer, och Tor, internetgatewayen och meshbryggan pausas tills internet är på igen. Bluetooth-chatt i närheten fungerar som vanligt.",
   "settings.network.turn_off": "Stäng av",
   "settings.network.discovery": "Geo-reläsökning",
   "settings.network.discovery_desc":
@@ -2038,7 +2039,7 @@ export const strings: Strings = {
     "Prata med folk i närheten som med en walkie-talkie",
   "settings.conn.live_voice_on_title": "Slå på direktröst?",
   "settings.conn.live_voice_on_body":
-    "Att hålla in mikrofonen skickar din röst till alla inom Bluetooth-räckhåll medan du talar, och deras röst spelas upp i din telefon. Inget spelas in.",
+    "Att hålla in mikrofonen skickar din röst till alla inom Bluetooth-räckhåll medan du talar, och deras röst spelas upp i din telefon. När du släpper skickas samma ljud också som ett röstmeddelande.",
   "settings.conn.live_voice_off_title": "Stänga av direktröst?",
   "settings.conn.live_voice_off_body":
     "Att hålla in mikrofonen spelar in ett röstmeddelande i stället. Det skickas när du släpper, och ingen hör det förrän de spelar upp det.",
@@ -2060,6 +2061,7 @@ export const strings: Strings = {
     "Det gick inte att starta Tor. Försök igen om en stund.",
   "settings.tor.status": "Tor-status",
   "settings.tor.connection": "Anslutning",
+  "settings.tor.connection_off_note": "Används när du slår på Tor.",
   "settings.tor.mode_off": "Direkt",
   "settings.tor.mode_off_desc":
     "Ansluter direkt till Tor. Snabbast, men den som bevakar nätverket ser att du använder Tor.",
@@ -2089,7 +2091,7 @@ export const strings: Strings = {
     "Låna ut din uppkoppling till en offline-telefon i närheten så att den ändå når platskanalerna",
   "settings.conn.gateway_on_title": "Slå på internetgatewayen?",
   "settings.conn.gateway_on_body":
-    "Telefoner i närheten utan egen uppkoppling skickar och tar emot platskanalsmeddelanden genom din. Det använder din mobildata och ditt batteri, och deras meddelanden förblir krypterade hela vägen, så du kan inte läsa det som passerar.",
+    "Telefoner i närheten utan egen uppkoppling skickar och tar emot platskanalsmeddelanden genom din. Det använder din mobildata och ditt batteri. De meddelandena är öppna inlägg signerade av sina författare, så du kan läsa det som passerar men inte ändra det.",
   "settings.conn.gateway_off_title": "Stänga av internetgatewayen?",
   "settings.conn.gateway_off_body":
     "Offline-telefoner i närheten slutar nå platskanalerna genom din. Dina egna meddelanden påverkas inte.",
@@ -2098,10 +2100,10 @@ export const strings: Strings = {
     "Länka det här områdets öppna #bluetooth-chatt med en annan Bluetooth-skara utom räckhåll över internet",
   "settings.conn.bridge_on_title": "Slå på meshbryggan?",
   "settings.conn.bridge_on_body":
-    "Dina öppna #bluetooth-meddelanden publiceras till din stadsdel över internet, så folk bortom Bluetooth-räckhåll kan läsa dem. Privata meddelanden bryggas aldrig, och ”endast i närheten” håller ett enskilt meddelande lokalt.",
+    "Dina öppna #bluetooth-meddelanden publiceras till din stadsdel över internet, så folk bortom Bluetooth-räckhåll kan läsa dem. Din telefon bär också bryggade meddelanden åt telefoner i närheten med din data. Privata meddelanden bryggas aldrig, och ”endast i närheten” håller ett enskilt meddelande lokalt.",
   "settings.conn.bridge_off_title": "Stänga av meshbryggan?",
   "settings.conn.bridge_off_body":
-    "Dina öppna #bluetooth-meddelanden stannar inom Bluetooth-räckhåll igen, och meddelanden från den bryggade skaran slutar komma fram hit.",
+    "Dina öppna #bluetooth-meddelanden stannar inom Bluetooth-räckhåll igen, och din telefon slutar bära bryggade meddelanden åt andra. Meddelanden som en brygga i närheten för fram över Bluetooth visas fortfarande här.",
   "settings.conn.bridge_needs_location": "Meshbryggan behöver plats",
   "settings.conn.bridge_needs_location_desc":
     "Den hittar din stadsdel utifrån en platsbestämning. Ge platsbehörighet för att börja brygga.",
@@ -2138,7 +2140,7 @@ export const strings: Strings = {
   "settings.permissions.system": "System",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Nätverksanvändning",
+  "settings.storage.mesh_traffic": "Meshtrafik",
   "settings.storage.storage_usage": "Lagringsanvändning",
   "settings.storage.storage_usage_desc":
     "Meddelanden, ecash och cachade bilagor",
@@ -2218,7 +2220,8 @@ export const strings: Strings = {
   "settings.status.away": "Borta",
   "settings.status.away_desc": "Meshen pausad, skannar eller annonserar inte",
   "settings.status.invisible": "Osynlig",
-  "settings.status.invisible_desc": "Skannar, men syns inte för andra",
+  "settings.status.invisible_desc":
+    "Dold för Bluetooth-skanningar, syns fortfarande för telefoner du ansluter till",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Ställ in statusen på {value}",
   "settings.status.edit": "Ändra status",

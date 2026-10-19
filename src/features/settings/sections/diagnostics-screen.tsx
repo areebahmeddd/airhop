@@ -29,7 +29,7 @@ import {
 import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
-import BottomSheet from "@ui/components/bottom-sheet";
+import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import { FontFamily, FontSize, Spacing, useThemeColors } from "@ui/theme";
@@ -121,15 +121,18 @@ export default function DiagnosticsScreen({
   // is still collecting is dropped rather than opening two share sheets. A ref,
   // not state: two taps in one tick both read state as false.
   const sharingRef = useRef(false);
-  async function handleShare(): Promise<void> {
+  // The OS sheet waits for this one to slide out: iOS drops a presentation over
+  // a sheet still leaving, and its promise then never settles, which would hold
+  // the ref and leave Share dead for the rest of the screen's life.
+  function handleShare(): void {
     setShowShareSheet(false);
     if (sharingRef.current) return;
     sharingRef.current = true;
-    try {
-      await shareDiagnostics();
-    } finally {
-      sharingRef.current = false;
-    }
+    afterSheetsClose(() => {
+      void shareDiagnostics().finally(() => {
+        sharingRef.current = false;
+      });
+    });
   }
 
   const nearby = [...peers.values()]
@@ -354,7 +357,7 @@ export default function DiagnosticsScreen({
               styles.sheetBtnPrimary,
               pressed && styles.sheetBtnPrimaryPressed,
             ]}
-            onPress={() => void handleShare()}
+            onPress={handleShare}
             accessibilityRole="button"
             accessibilityLabel={T("common.share")}
           >

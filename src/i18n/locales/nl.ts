@@ -817,6 +817,8 @@ export const strings: Strings = {
     "Laat ze je telefoon laten rinkelen om je aandacht te trekken, zelfs als dit gesprek gedempt is. Stille modus en Niet storen blijven gelden.",
   "chat.contact.allow_ring_needs_keys":
     "Nog geen sleutels voor dit contact. Schrijf ze, of scan hun code, om ze bij je te laten aanbellen.",
+  "chat.contact.allow_ring_master_off":
+    "Niemand kan je telefoon laten rinkelen tot je {setting} aanzet in Instellingen.",
   "chat.contact.ring_action": "Bellen",
   "chat.contact.ringing": "Belt…",
   "chat.contact.ring_hint_nearby":
@@ -950,7 +952,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Toestaan",
   "mesh.banner.action.resume": "Hervatten",
   "mesh.banner.action.fix": "Oplossen",
-  "mesh.banner.hint.resume": "Zet Bluetooth-adverteren en -scannen weer aan",
+  "mesh.banner.hint.resume": "Start de mesh opnieuw",
   "mesh.banner.hint.enable_bluetooth":
     "Vraagt Android om Bluetooth aan te zetten",
   "mesh.banner.hint.location_settings":
@@ -1807,7 +1809,7 @@ export const strings: Strings = {
     "Optionele functies, verzenden ongedaan maken, media, resetten",
   "settings.section.privacy": "Privacy en beveiliging",
   "settings.section.privacy_desc":
-    "Forward secrecy, ondertekende pakketten, geblokkeerde peers",
+    "Airhop-vergrendeling, meldingen, geblokkeerde peers",
   "settings.section.network": "Netwerk en relays",
   "settings.section.network_desc":
     "Terugval op internet, Nostr-relays, bitchat-compatibiliteit",
@@ -1929,10 +1931,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Houdt gesprekken het langst leesbaar, en neemt de meeste ruimte in.",
   "settings.general.reset_desc":
-    "Zet elke voorkeur terug op de standaard en laat je identiteit, berichten, contacten en portemonnee met rust",
+    "Zet voorkeuren terug op de standaard en laat je identiteit, berichten, contacten en portemonnee met rust",
   "settings.general.reset_title": "Instellingen resetten?",
   "settings.general.reset_body":
-    "Elke voorkeur gaat terug naar de standaard: weergave, verzenden ongedaan maken en connectiviteit (internet, Tor, gateway, brug, relays). Je identiteit, berichten, contacten en portemonnee blijven ongemoeid.",
+    "Voorkeuren gaan terug naar de standaard, waaronder weergave, taal, meldingen, verzenden ongedaan maken en connectiviteit (internet, Tor, gateway, brug, relays). Airhop-vergrendeling, hoe lang media bewaard blijven en je status blijven zoals je ze hebt ingesteld. Je identiteit, berichten, contacten en portemonnee blijven ongemoeid.",
   "settings.general.reset_confirm": "Resetten",
 
   // ---- Settings: privacy and security ----
@@ -1982,7 +1984,7 @@ export const strings: Strings = {
     "Ga door via Nostr-relays als meshpeers buiten bereik zijn",
   "settings.network.internet_off_title": "Internet uitzetten?",
   "settings.network.internet_off_body":
-    "Airhop draait dan alleen op Bluetooth. Het neemt geen contact meer op met Nostr-relays, en Tor, de internetgateway en de meshbrug gaan allemaal uit. Bluetooth-chat in de buurt blijft werken.",
+    "Airhop draait dan alleen op Bluetooth. Het neemt geen contact meer op met Nostr-relays, en Tor, de internetgateway en de meshbrug pauzeren tot het internet weer aan staat. Bluetooth-chat in de buurt blijft werken.",
   "settings.network.turn_off": "Uitzetten",
   "settings.network.discovery": "Geo-relays zoeken",
   "settings.network.discovery_desc":
@@ -2065,7 +2067,7 @@ export const strings: Strings = {
     "Praat met mensen in de buurt als met een portofoon",
   "settings.conn.live_voice_on_title": "Live spraak aanzetten?",
   "settings.conn.live_voice_on_body":
-    "Als je de microfoon ingedrukt houdt, gaat je stem terwijl je praat naar iedereen binnen Bluetooth-bereik, en die van hen komt uit jouw telefoon. Er wordt niets opgenomen.",
+    "Als je de microfoon ingedrukt houdt, gaat je stem terwijl je praat naar iedereen binnen Bluetooth-bereik, en die van hen komt uit jouw telefoon. Als je loslaat, wordt hetzelfde geluid ook als spraakbericht verstuurd.",
   "settings.conn.live_voice_off_title": "Live spraak uitzetten?",
   "settings.conn.live_voice_off_body":
     "De microfoon ingedrukt houden neemt dan een spraakbericht op. Het gaat weg als je loslaat, en niemand hoort het tot ze het afspelen.",
@@ -2086,6 +2088,7 @@ export const strings: Strings = {
     "Tor kon niet worden gestart. Probeer het zo opnieuw.",
   "settings.tor.status": "Tor-status",
   "settings.tor.connection": "Verbinding",
+  "settings.tor.connection_off_note": "Wordt gebruikt zodra je Tor aanzet.",
   "settings.tor.mode_off": "Direct",
   "settings.tor.mode_off_desc":
     "Verbindt rechtstreeks met Tor. Het snelst, maar wie dit netwerk bekijkt ziet dat je Tor gebruikt.",
@@ -2116,7 +2119,7 @@ export const strings: Strings = {
     "Leen je verbinding uit aan een telefoon in de buurt zonder net, zodat die de locatiekanalen toch bereikt",
   "settings.conn.gateway_on_title": "Internetgateway aanzetten?",
   "settings.conn.gateway_on_body":
-    "Telefoons in de buurt zonder eigen verbinding sturen en ontvangen berichten van locatiekanalen via die van jou. Dat kost je mobiele data en je batterij, en hun berichten blijven end-to-end versleuteld, dus je kunt niet lezen wat er langskomt.",
+    "Telefoons in de buurt zonder eigen verbinding sturen en ontvangen berichten van locatiekanalen via die van jou. Dat kost je mobiele data en je batterij. Die berichten zijn openbare posts, ondertekend door hun schrijvers, dus je kunt lezen wat er langskomt, maar het niet veranderen.",
   "settings.conn.gateway_off_title": "Internetgateway uitzetten?",
   "settings.conn.gateway_off_body":
     "Telefoons in de buurt zonder net bereiken de locatiekanalen niet meer via die van jou. Je eigen berichten veranderen niet.",
@@ -2125,10 +2128,10 @@ export const strings: Strings = {
     "Koppel de openbare #bluetooth-chat van dit gebied via internet aan een andere Bluetooth-groep buiten bereik",
   "settings.conn.bridge_on_title": "Meshbrug aanzetten?",
   "settings.conn.bridge_on_body":
-    "Je openbare #bluetooth-berichten worden via internet in je buurt gepubliceerd, zodat mensen buiten Bluetooth-bereik ze kunnen lezen. Privéberichten gaan nooit over de brug, en “alleen dichtbij” houdt een los bericht lokaal.",
+    "Je openbare #bluetooth-berichten worden via internet in je buurt gepubliceerd, zodat mensen buiten Bluetooth-bereik ze kunnen lezen. Je telefoon brengt met jouw data ook gekoppelde berichten over voor telefoons in de buurt. Privéberichten gaan nooit over de brug, en “alleen dichtbij” houdt een los bericht lokaal.",
   "settings.conn.bridge_off_title": "Meshbrug uitzetten?",
   "settings.conn.bridge_off_body":
-    "Je openbare #bluetooth-berichten blijven weer binnen Bluetooth-bereik, en die van de gekoppelde groep komen hier niet meer aan.",
+    "Je openbare #bluetooth-berichten blijven weer binnen Bluetooth-bereik, en je telefoon brengt geen gekoppelde berichten meer over voor anderen. Berichten die een brug in de buurt via Bluetooth brengt, verschijnen hier nog steeds.",
   "settings.conn.bridge_needs_location": "De meshbrug heeft locatie nodig",
   "settings.conn.bridge_needs_location_desc":
     "Hij vindt je buurt aan de hand van een locatiemeting. Geef locatietoestemming om te gaan koppelen.",
@@ -2165,7 +2168,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Systeem",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Netwerkgebruik",
+  "settings.storage.mesh_traffic": "Meshverkeer",
   "settings.storage.storage_usage": "Opslaggebruik",
   "settings.storage.storage_usage_desc":
     "Berichten, ecash en bijlagen in de cache",
@@ -2246,7 +2249,8 @@ export const strings: Strings = {
   "settings.status.away": "Afwezig",
   "settings.status.away_desc": "Mesh gepauzeerd, scant niet en adverteert niet",
   "settings.status.invisible": "Onzichtbaar",
-  "settings.status.invisible_desc": "Scant wel, maar is verborgen voor anderen",
+  "settings.status.invisible_desc":
+    "Verborgen voor Bluetooth-scans, nog steeds zichtbaar voor telefoons waarmee je verbinding maakt",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Status op {value} zetten",
   "settings.status.edit": "Status bewerken",

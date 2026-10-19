@@ -12,7 +12,7 @@ import {
 } from "@platform/device-auth";
 import { useAppLockStore, type LockClock } from "@store/app-lock-store";
 import { useSettingsStore } from "@store/settings-store";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 
 // Wall time keeps counting while the phone sleeps, which the monotonic clock
 // does not on iOS; the monotonic clock cannot be wound back from Settings,
@@ -27,6 +27,14 @@ export function awayMs(from: LockClock, to: LockClock): number {
   const mono = to.monoMs - from.monoMs;
   if (wall < 0 || mono < 0) return Number.POSITIVE_INFINITY;
   return Math.max(wall, mono);
+}
+
+// Whether a prompt on screen explains the app reading as away. Only Android's
+// pauses the activity, which arrives as "background"; iOS's leaves the app
+// "inactive". A background on iOS is the user leaving even mid-prompt, and
+// leaving during another prompt (the recovery phrase's) must still lock.
+function promptPausedApp(): boolean {
+  return Platform.OS === "android" && isDeviceAuthInFlight();
 }
 
 function engage(): void {
@@ -51,7 +59,7 @@ function release(): void {
 export function noteBackground(clock: LockClock = systemClock()): void {
   const { appLockEnabled, appLockDelaySeconds } = useSettingsStore.getState();
   // A system prompt pausing the activity is not the user leaving.
-  if (!appLockEnabled || isDeviceAuthInFlight()) return;
+  if (!appLockEnabled || promptPausedApp()) return;
   if (useAppLockStore.getState().phase !== "open") return;
   // Locked while away rather than on return, so nothing shows in between.
   if (appLockDelaySeconds === 0) {
@@ -63,7 +71,7 @@ export function noteBackground(clock: LockClock = systemClock()): void {
 
 // Back from the background (see watchAppLock for what counts).
 export function noteForeground(clock: LockClock = systemClock()): void {
-  if (isDeviceAuthInFlight()) return;
+  if (promptPausedApp()) return;
   const { appLockEnabled, appLockDelaySeconds } = useSettingsStore.getState();
   const lock = useAppLockStore.getState();
   if (!appLockEnabled) {
@@ -141,7 +149,7 @@ export function watchAppLock(): () => void {
   let away = false;
   const appState = AppState.addEventListener("change", (next) => {
     if (next === "background") {
-      if (isDeviceAuthInFlight()) return;
+      if (promptPausedApp()) return;
       away = true;
       noteBackground();
     } else if (next === "active" && away) {

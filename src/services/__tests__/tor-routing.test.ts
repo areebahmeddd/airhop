@@ -912,6 +912,24 @@ describe("bridge modes", () => {
     );
     expect(mockStartTor).not.toHaveBeenCalled();
   });
+
+  // The Tor screen still offers transports with the internet switched off, and
+  // the internet switch is what stopped Arti.
+  test("changing mode with the internet off persists without starting anything", async () => {
+    mockTorEnabled = true;
+    mockInternetEnabled = false;
+
+    const result = await setTorBridgeMode("snowflake");
+
+    expect(result).toEqual({ ok: true });
+    expect(mockSetTorBridgeMode).toHaveBeenCalledWith("snowflake");
+    expect(mockStartTor).not.toHaveBeenCalled();
+    expect(mockTorEnabled).toBe(true);
+
+    applyInternetAvailability(true);
+
+    expect(mockStartTor).toHaveBeenCalledWith(SNOWFLAKE_BRIDGE_LINES);
+  });
 });
 
 describe("a bridge mode with nothing to apply", () => {

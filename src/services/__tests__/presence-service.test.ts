@@ -26,7 +26,11 @@ jest.mock("../mesh-service", () => ({
 
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
-import { applyPresence, applyStartupPresence } from "../presence-service";
+import {
+  applyPresence,
+  applyStartupPresence,
+  resumePresence,
+} from "../presence-service";
 
 beforeEach(() => {
   mockStart.mockReset();
@@ -67,6 +71,26 @@ describe("presence transitions", () => {
     // Restarting alone is not enough: the mesh would scan and relay while the
     // controller still held the Invisible choice, advertising to nobody while
     // reporting itself Online.
+    expect(mockStart).toHaveBeenCalledWith("someone");
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
+  });
+
+  // The banner's Resume, and the route back from the notification's "Stop
+  // mesh". Online there would advertise and clear the kept Invisible.
+  test("Resume after Invisible then Away comes back Invisible", () => {
+    applyPresence("invisible", "someone");
+    applyPresence("away", "someone");
+    resumePresence("someone");
+    expect(mockStart).toHaveBeenCalledWith("someone");
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+    expect(useSettingsStore.getState().stayInvisible).toBe(true);
+  });
+
+  test("Resume after Online then Away comes back Online", () => {
+    applyPresence("away", "someone");
+    resumePresence("someone");
     expect(mockStart).toHaveBeenCalledWith("someone");
     expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
     expect(useMeshStateStore.getState().presenceStatus).toBe("online");

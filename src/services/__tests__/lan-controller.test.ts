@@ -283,6 +283,27 @@ describe("failures", () => {
     expect(lan.isUnsupported).toBe(true);
   });
 
+  test("still says unsupported after a pause, so the switch stays explained", async () => {
+    mockStartLAN.mockImplementation(() => rejectWith("LAN_UNSUPPORTED"));
+    const seen: string[] = [];
+    const lan = new LANController(
+      () => SELF,
+      (s) => seen.push(s),
+    );
+    lan.start();
+    lan.setEnabled(true);
+    await settle();
+
+    // Away and back, as the Network screen sees it.
+    lan.stop();
+    await settle();
+    lan.start();
+    await settle(60_000);
+
+    expect(seen[seen.length - 1]).toBe("unsupported");
+    expect(mockStartLAN).toHaveBeenCalledTimes(1);
+  });
+
   test("keeps trying while the network is merely missing", async () => {
     mockStartLAN.mockImplementation(() => rejectWith("LAN_UNAVAILABLE"));
     const lan = running();

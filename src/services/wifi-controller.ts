@@ -84,6 +84,9 @@ export class WiFiController {
   }
 
   private desiredRunning = false;
+  // Stopped after a start (Away). Before the first start there is no reading
+  // to retract, though the prefs applied ahead of it already run a pass.
+  private stopped = false;
   // The user's switch. Flipping it on is what clears `unstable` short of a
   // relaunch, since it is the one signal that carries intent.
   private enabled = true;
@@ -120,6 +123,7 @@ export class WiFiController {
 
   start(): void {
     this.desiredRunning = true;
+    this.stopped = false;
     this.attempt = 0;
     void this.reconcile();
   }
@@ -148,6 +152,7 @@ export class WiFiController {
 
   stop(): void {
     this.desiredRunning = false;
+    this.stopped = true;
     this.generation += 1;
     this.clearTimer();
     void this.reconcile();
@@ -257,8 +262,8 @@ export class WiFiController {
 
   private async reconcileOnce(): Promise<void> {
     const generation = this.generation;
-    // No module: every iOS build, and Android below API 29 where the package
-    // does not register one.
+    // No module: Android below API 29, where the package does not register one.
+    // iOS registers it everywhere and rejects below iOS 26 instead.
     if (NativeAirhopWiFi === null || NativeAirhopWiFi === undefined) {
       this.unsupported = true;
       this.report("unsupported");
@@ -266,8 +271,13 @@ export class WiFiController {
     }
 
     if (!this.desiredRunning) {
-      if (!this.started) return;
-      await this.releaseNative();
+      if (this.started) await this.releaseNative();
+      // A stopped mesh is not running the fast path, whatever was last said,
+      // or the Network screen reads "Running" through Away. The latches stand:
+      // neither clears with a restart, and no later pass re-reports them.
+      if (this.stopped && !this.unsupported && !this.unstable) {
+        this.report("off");
+      }
       return;
     }
 

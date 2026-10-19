@@ -253,6 +253,10 @@ export async function setTorBridgeMode(
   if (customLines !== undefined) settings.setTorBridgeLines(customLines);
 
   if (!settings.torEnabled) return { ok: true };
+  // Persisted only, for the reason primeTorRoutingOnStartup is gated: the
+  // internet switch stops Arti on purpose, and a restart here would bootstrap
+  // it for nobody. Turning the internet on starts it on the new choice.
+  if (!settings.internetEnabled) return { ok: true };
   if (needsBridgeLines() && bridgeLinesForStart() === "") return { ok: true };
 
   await disableTorRouting(true);

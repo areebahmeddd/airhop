@@ -9,7 +9,6 @@ import { t, useT, type TranslationKey } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { disableAppLock, enableAppLock } from "@services/app-lock";
 import { openBackgroundNoticeSettings } from "@services/background-notice";
-import { dismissPreviewNotifications } from "@services/notification-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import {
@@ -192,12 +191,11 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
               control={
                 <SettingSwitch
                   value={hideNotificationPreviews}
-                  onValueChange={(v) => {
-                    useSettingsStore.getState().setHideNotificationPreviews(v);
-                    // What is already in the tray was rendered with the
-                    // preview, and stays on the lock screen until cleared.
-                    if (v) void dismissPreviewNotifications();
-                  }}
+                  // Turning it on also clears what the tray already shows,
+                  // in notification-pipeline.
+                  onValueChange={(v) =>
+                    useSettingsStore.getState().setHideNotificationPreviews(v)
+                  }
                 />
               }
             />

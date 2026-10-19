@@ -209,6 +209,11 @@ export function useSettingHighlight(id: SettingId | undefined): {
 
 // ---- SettingRow: leading icon, label/description, trailing control ----
 
+// The label of the row a control sits in. The row itself is not focusable, so
+// a screen reader lands on its switch alone, and without the row's name the
+// switch would announce only "switch, on".
+const RowLabelContext = createContext<string | undefined>(undefined);
+
 export interface SettingRowProps {
   // Set on a row settings search can name; also its highlight target.
   id?: SettingId;
@@ -251,7 +256,13 @@ export function SettingRow({
           <Text style={styles.settingDescription}>{description}</Text>
         ) : null}
       </View>
-      {control ? <View style={styles.settingControl}>{control}</View> : null}
+      {control ? (
+        <View style={styles.settingControl}>
+          <RowLabelContext.Provider value={label}>
+            {control}
+          </RowLabelContext.Provider>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -336,11 +347,17 @@ export function SettingLinkRow({
 // A disabled switch is dimmed rather than recolored, so it still reads as on
 // or off at a glance. RN greys the control inconsistently across platforms,
 // so the opacity is set here.
+// It is named after its row unless told otherwise. Disabled goes into the
+// accessibility state on both platforms: RN's Switch puts it there on Android
+// only and leaves iOS to the native control.
 export function SettingSwitch({
   style,
+  accessibilityLabel,
+  accessibilityState,
   ...props
 }: React.ComponentProps<typeof Switch>): React.JSX.Element {
   const Colors = useThemeColors();
+  const rowLabel = useContext(RowLabelContext);
   return (
     <Switch
       trackColor={{ false: Colors.borderStrong, true: Colors.online }}
@@ -348,6 +365,11 @@ export function SettingSwitch({
       ios_backgroundColor={Colors.borderStrong}
       style={[props.disabled === true && { opacity: DISABLED_OPACITY }, style]}
       {...props}
+      accessibilityLabel={accessibilityLabel ?? rowLabel}
+      accessibilityState={{
+        ...accessibilityState,
+        disabled: props.disabled === true,
+      }}
     />
   );
 }

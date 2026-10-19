@@ -80,3 +80,18 @@ describe("sweepMediaIfDue", () => {
     expect(() => sweepMediaIfDue(T0)).not.toThrow();
   });
 });
+
+describe("sweepMediaNow", () => {
+  test("sweeps inside the interval, with the window as it now stands", () => {
+    const { sweepMediaIfDue, sweepMediaNow } = load();
+    mockDays = 30;
+    sweepMediaIfDue(T0);
+    mockDays = 7;
+
+    sweepMediaNow(T0 + HOUR);
+
+    expect(mockSweep).toHaveBeenLastCalledWith(T0 + HOUR, 7 * DAY);
+    // And the interval restarts from it, like any other sweep.
+    expect(sweepMediaIfDue(T0 + 2 * HOUR)).toBe(false);
+  });
+});

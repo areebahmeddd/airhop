@@ -817,6 +817,8 @@ export const strings: Strings = {
     "Deixe que façam seu telefone tocar para chamar sua atenção, mesmo que esta conversa esteja silenciada. O modo silencioso e o Não perturbe continuam valendo.",
   "chat.contact.allow_ring_needs_keys":
     "Ainda não há chaves deste contato. Escreva para a pessoa, ou escaneie o código dela, para permitir que ela chame você.",
+  "chat.contact.allow_ring_master_off":
+    "Ninguém pode fazer seu telefone tocar até você ativar {setting} em Configurações.",
   "chat.contact.ring_action": "Chamar",
   "chat.contact.ringing": "Chamando…",
   "chat.contact.ring_hint_nearby":
@@ -954,8 +956,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Permitir",
   "mesh.banner.action.resume": "Retomar",
   "mesh.banner.action.fix": "Resolver",
-  "mesh.banner.hint.resume":
-    "Liga de novo o anúncio e a varredura de Bluetooth",
+  "mesh.banner.hint.resume": "Inicia a malha de novo",
   "mesh.banner.hint.enable_bluetooth": "Pede ao Android para ligar o Bluetooth",
   "mesh.banner.hint.location_settings":
     "Abre as configurações de localização do sistema",
@@ -1812,7 +1813,7 @@ export const strings: Strings = {
     "Recursos opcionais, desfazer envio, mídia, redefinição",
   "settings.section.privacy": "Privacidade e segurança",
   "settings.section.privacy_desc":
-    "Sigilo futuro, pacotes assinados, pares bloqueados",
+    "Bloqueio do Airhop, notificações, pares bloqueados",
   "settings.section.network": "Rede e relays",
   "settings.section.network_desc":
     "Alternativa por internet, relays Nostr, compatibilidade com bitchat",
@@ -1935,10 +1936,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantém as conversas legíveis por mais tempo e ocupa mais disco.",
   "settings.general.reset_desc":
-    "Devolve cada preferência ao padrão, sem mexer na sua identidade, mensagens, contatos e carteira",
+    "Devolve as preferências ao padrão, sem mexer na sua identidade, mensagens, contatos e carteira",
   "settings.general.reset_title": "Redefinir as configurações?",
   "settings.general.reset_body":
-    "Cada preferência volta ao padrão: aparência, desfazer envio e conectividade (internet, Tor, ponte de internet, ponte de malha, relays). Sua identidade, mensagens, contatos e carteira ficam intactos.",
+    "As preferências voltam ao padrão, incluindo aparência, idioma, notificações, desfazer envio e conectividade (internet, Tor, ponte de internet, ponte de malha, relays). O bloqueio do Airhop, por quanto tempo a mídia é guardada e seu status ficam como estão. Sua identidade, mensagens, contatos e carteira ficam intactos.",
   "settings.general.reset_confirm": "Redefinir",
 
   // ---- Settings: privacy and security ----
@@ -1987,7 +1988,7 @@ export const strings: Strings = {
     "Continue pelos relays Nostr quando os pares da malha estiverem fora de alcance",
   "settings.network.internet_off_title": "Desligar a internet?",
   "settings.network.internet_off_body":
-    "O Airhop vai funcionar só por Bluetooth. Ele para de contatar qualquer relay Nostr, e o Tor, a ponte de internet e a ponte de malha se desligam. A conversa por Bluetooth por perto continua funcionando.",
+    "O Airhop vai funcionar só por Bluetooth. Ele para de contatar qualquer relay Nostr, e o Tor, a ponte de internet e a ponte de malha ficam pausados até a internet voltar. A conversa por Bluetooth por perto continua funcionando.",
   "settings.network.turn_off": "Desligar",
   "settings.network.discovery": "Descoberta geográfica de relays",
   "settings.network.discovery_desc":
@@ -2073,7 +2074,7 @@ export const strings: Strings = {
     "Fale com quem está por perto como num walkie-talkie",
   "settings.conn.live_voice_on_title": "Ligar a voz ao vivo?",
   "settings.conn.live_voice_on_body":
-    "Segurando o microfone, sua voz vai para todo mundo dentro do alcance do Bluetooth enquanto você fala, e a deles sai no seu celular. Nada é gravado.",
+    "Segurando o microfone, sua voz vai para todo mundo dentro do alcance do Bluetooth enquanto você fala, e a deles sai no seu celular. Quando você solta, o mesmo áudio também é enviado como nota de voz.",
   "settings.conn.live_voice_off_title": "Desligar a voz ao vivo?",
   "settings.conn.live_voice_off_body":
     "Segurar o microfone passa a gravar uma nota de voz. Ela sai quando você solta, e ninguém ouve até tocar.",
@@ -2095,6 +2096,7 @@ export const strings: Strings = {
     "Não foi possível iniciar o Tor. Tente de novo em instantes.",
   "settings.tor.status": "Status do Tor",
   "settings.tor.connection": "Conexão",
+  "settings.tor.connection_off_note": "Usada quando você ligar o Tor.",
   "settings.tor.mode_off": "Direta",
   "settings.tor.mode_off_desc":
     "Conecta direto ao Tor. O mais rápido, mas quem observa esta rede vê que você usa Tor.",
@@ -2125,7 +2127,7 @@ export const strings: Strings = {
     "Empreste sua conexão a um celular por perto sem rede para que ele ainda alcance os canais de localização",
   "settings.conn.gateway_on_title": "Ligar a ponte de internet?",
   "settings.conn.gateway_on_body":
-    "Celulares por perto sem conexão própria vão enviar e receber mensagens dos canais de localização pela sua. Isso usa seus dados móveis e sua bateria, e as mensagens deles continuam criptografadas de ponta a ponta, então você não consegue ler o que passa.",
+    "Celulares por perto sem conexão própria vão enviar e receber mensagens dos canais de localização pela sua. Isso usa seus dados móveis e sua bateria. Essas mensagens são publicações públicas assinadas pelos autores, então você consegue ler o que passa, mas não alterar.",
   "settings.conn.gateway_off_title": "Desligar a ponte de internet?",
   "settings.conn.gateway_off_body":
     "Celulares por perto sem rede deixam de alcançar os canais de localização pela sua. Suas próprias mensagens não são afetadas.",
@@ -2134,10 +2136,10 @@ export const strings: Strings = {
     "Conecte a conversa pública #bluetooth desta área a outro grupo de Bluetooth fora de alcance, pela internet",
   "settings.conn.bridge_on_title": "Ligar a ponte de malha?",
   "settings.conn.bridge_on_body":
-    "Suas mensagens públicas no #bluetooth serão publicadas no seu bairro pela internet, para que pessoas fora do alcance do Bluetooth possam ler. Mensagens privadas nunca cruzam a ponte, e “só por perto” mantém qualquer mensagem específica na área.",
+    "Suas mensagens públicas no #bluetooth serão publicadas no seu bairro pela internet, para que pessoas fora do alcance do Bluetooth possam ler. Seu celular também vai levar as mensagens da ponte dos celulares por perto usando seus dados. Mensagens privadas nunca cruzam a ponte, e “só por perto” mantém qualquer mensagem específica na área.",
   "settings.conn.bridge_off_title": "Desligar a ponte de malha?",
   "settings.conn.bridge_off_body":
-    "Suas mensagens públicas no #bluetooth voltam a ficar dentro do alcance do Bluetooth, e as do grupo conectado param de chegar aqui.",
+    "Suas mensagens públicas no #bluetooth voltam a ficar dentro do alcance do Bluetooth, e seu celular para de levar mensagens da ponte para os outros. As mensagens que uma ponte por perto traz pelo Bluetooth continuam aparecendo aqui.",
   "settings.conn.bridge_needs_location":
     "A ponte de malha precisa da localização",
   "settings.conn.bridge_needs_location_desc":
@@ -2175,7 +2177,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Sistema",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Uso de rede",
+  "settings.storage.mesh_traffic": "Tráfego da malha",
   "settings.storage.storage_usage": "Uso de armazenamento",
   "settings.storage.storage_usage_desc": "Mensagens, ecash e anexos em cache",
   "settings.storage.session_usage":
@@ -2255,7 +2257,8 @@ export const strings: Strings = {
   "settings.status.away": "Ausente",
   "settings.status.away_desc": "Malha pausada, sem varredura nem anúncio",
   "settings.status.invisible": "Invisível",
-  "settings.status.invisible_desc": "Varrendo, mas escondido da descoberta",
+  "settings.status.invisible_desc":
+    "Oculto nas varreduras de Bluetooth, ainda visível para os celulares a que você se conecta",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Definir o status como {value}",
   "settings.status.edit": "Editar o status",
