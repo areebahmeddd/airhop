@@ -113,14 +113,14 @@ export default function TransferOutFlow({
   // sender holds the link with no screen to report to. Before the stream ends
   // this leaves the phone as it was; after, cancel does nothing and the sender
   // runs on to its outcome.
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    unmounted.current = false;
+    return () => {
       unmounted.current = true;
       cancelHandoff.current?.();
       senderRef.current?.cancel();
-    },
-    [],
-  );
+    };
+  }, []);
 
   // The hook reads the camera grant once, at mount. A grant made in Settings
   // while the camera-off panel waits would otherwise keep that panel up.
