@@ -10,7 +10,7 @@ import Foundation
 
 enum LongWrite {
   // The largest frame this app puts on the radio, mirroring MAX_BLE_FRAME in
-  // core/mesh/fragment-manager.ts, and the ATT ceiling on an attribute value.
+  // core/mesh/routing/fragment-manager.ts, and the ATT ceiling on an attribute value.
   static let maxFrame = 512
 
   enum Outcome<Key: Hashable>: Equatable {

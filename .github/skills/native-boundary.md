@@ -13,16 +13,16 @@ What Swift and Kotlin may do, what they must leave to TypeScript, and the shape 
 
 ## Key Files
 
-| Path                                                          | Holds                                                                                                  |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `src/bridge/Native*.ts`                                       | The hand-maintained contracts, one per module                                                          |
-| `ios/Airhop/`                                                 | Swift modules                                                                                          |
-| `android/app/src/main/java/org/onemindlabs/airhop/`           | Kotlin modules, by radio: `ble/`, `wifi/`, `lan/`, `tor/`, `voice/`, `app/`, `service/`, `transport/`  |
-| `native/arti/`, `native/iptproxy/`                            | Embedded Tor client (Rust) and pluggable transports (Go)                                               |
-| `src/core/mesh/links/link-registry.ts`                        | Which peer is on which link                                                                            |
-| `android/app/src/test/`, `ios/Tests/`                         | Native unit tests: framing, Aware dial rules, long writes, LAN interface filter, voice playback bursts |
-| `bitchat/ios/bitchat/Services/BLE/`                           | Reference iOS BLE implementation                                                                       |
-| `bitchat/android/app/src/main/java/com/bitchat/android/mesh/` | Reference Android BLE implementation                                                                   |
+| Path                                                          | Holds                                                                                                                                            |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/bridge/Native*.ts`                                       | The hand-maintained contracts, one per module                                                                                                    |
+| `ios/Airhop/`                                                 | Swift modules                                                                                                                                    |
+| `android/app/src/main/java/org/onemindlabs/airhop/`           | Kotlin modules, by radio: `ble/`, `wifi/`, `lan/`, `tor/`, `voice/`, `app/`, `service/`, `transport/`                                            |
+| `native/arti/`, `native/iptproxy/`                            | Embedded Tor client (Rust) and pluggable transports (Go)                                                                                         |
+| `src/core/mesh/links/link-registry.ts`                        | Which peer is on which link                                                                                                                      |
+| `android/app/src/test/`, `ios/Tests/`                         | Native unit tests: framing, Aware dial rules, long writes, LAN interface filter, voice playback bursts, Tor proxy, Tor status, bridge transports |
+| `bitchat/ios/bitchat/Services/BLE/`                           | Reference iOS BLE implementation                                                                                                                 |
+| `bitchat/android/app/src/main/java/com/bitchat/android/mesh/` | Reference Android BLE implementation                                                                                                             |
 
 ## The Rule
 
@@ -35,7 +35,7 @@ Native does **not**:
 - encrypt, decrypt or sign;
 - decide whom to dial. LAN native reports mDNS names and opens the sockets it is told to (`lan-controller.ts`, `lan-dial-policy.ts`); `AirhopLANModule.localSubnets` reports interface addresses and judges nothing, and `isOnLocalSubnet` in `src/core/move/local-subnet.ts` decides whether a transfer code's address may be dialled.
 
-The one exception is Arti (`native/arti/`): a Tor client owns a SOCKS5 listener and its own lifecycle. It still knows nothing about packets, routing or encryption, and both platforms compile the same crate.
+The exceptions are `native/arti/` and `native/iptproxy/`: a Tor client and its pluggable transports, each owning a SOCKS5 listener and its own lifecycle. They still know nothing about packets, routing or encryption, and both platforms build the same sources.
 
 ## Contract Conventions
 
@@ -43,8 +43,8 @@ The one exception is Arti (`native/arti/`): a Tor client owns a SOCKS5 listener 
 - **Bytes cross as base64 strings.** Encode before calling, decode on receipt.
 - **Stream framing** on Wi-Fi Aware and LAN is `[u32 BE length][bytes]`, applied by native, byte-identical on both. BLE writes are single ATT values, 512 bytes at most; fragmentation happens in TypeScript.
 - **Refuse, never pretend.** A start that cannot run rejects with a `code` the caller branches on (`RADIO_OFF`, `PERMISSION_DENIED`, `UNSUPPORTED`, `LAN_UNAVAILABLE` and so on), rather than resolving and leaving a dead radio behind a UI that believes it runs.
-- **Optional modules** use `TurboModuleRegistry.get` and callers optional-chain: a missing module is an answer (unsupported), not a crash. Only `AirhopBLE` is `getEnforcing`.
-- **Events** go through `NativeEventEmitter`, named `<Module>.<event>`, and every spec carries `addListener` / `removeListeners`.
+- **Optional modules** use `TurboModuleRegistry.get` and callers optional-chain: a missing module is an answer (unsupported), not a crash. Only `AirhopBLE` is `getEnforcing`. `NativeAirhopTorSocket.ts` is the exception: a classic `RCTEventEmitter` read from `NativeModules`, so callers gate on `isTorSocketNativeAvailable()`.
+- **Events** go through `NativeEventEmitter`, named `<Module>.<event>`, except the Tor modules' `TorStatusChanged` and `TorSocketEvent`. Only a spec whose module emits carries `addListener` / `removeListeners`.
 - **`linkID` is opaque**, assigned by native, and names a connection, not a peer. TypeScript binds a peer to a link when that peer announces directly on it, and `LinkRegistry.peerOf` attributes later traffic. A packet's `senderID` is plaintext and forgeable, so it never decides who is on the far end.
 
 ## Modules
@@ -62,7 +62,7 @@ TurboModule specs are named `Native<Name>.ts` in `src/bridge/`, Codegen's conven
 | `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | iOS       | WebSocket over Arti's SOCKS5; Android proxies OkHttp instead                                  |
 | `NativeAirhopApp.ts`         | `"AirhopApp"`         | Both      | Recent log on both; restart, boot start, APK share and ring alert on Android, rejected on iOS |
 
-`AirhopForegroundService` (Kotlin) has no spec; `setBackgroundServiceEnabled` on the BLE module drives it.
+`AirhopForegroundService`, `AirhopBootReceiver` and `AirhopBootService` (Kotlin) have no spec: `setBackgroundServiceEnabled` on the BLE module drives the first, and `setAutoStartOnBoot` on the App module the start after a reboot.
 
 ## BLE Contract
 

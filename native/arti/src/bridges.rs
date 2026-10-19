@@ -233,10 +233,11 @@ mod test {
     }
 
     /// `=` inside a value is not escaped, so a query string must not be counted
-    /// as if it were. Snowflake URLs carry them.
+    /// as if it were. Snowflake URLs carry them. Sized to fit only when they are
+    /// not counted: 469 bytes as encoded, 579 if each `=` took an escape.
     #[test]
     fn equals_signs_in_a_value_are_not_counted_as_escaped() {
-        let value = format!("https://example.invalid/?{}", "a=b&".repeat(60));
+        let value = format!("https://example.invalid/?{}", "a=b&".repeat(110));
         let line = format!("snowflake 192.0.2.3:80 {FINGERPRINT} url={value}");
         let mut b = builder();
         assert_eq!(apply(&mut b, &line, ports()), Ok(true));
@@ -244,14 +245,15 @@ mod test {
 
     #[test]
     fn a_published_snowflake_line_fits() {
-        // The shape bridges.torproject.org hands out, which is the closest real
-        // input to the SOCKS limit.
-        let line = "snowflake 192.0.2.3:80 0123456789ABCDEF0123456789ABCDEF01234567 \
-            fingerprint=0123456789ABCDEF0123456789ABCDEF01234567 \
+        // The line the app bundles (src/data/bridges.ts, from Moat), which is
+        // the closest real input to the SOCKS limit.
+        let line = "snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 \
+            fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 \
             url=https://1098762253.rsc.cdn77.org/ \
-            fronts=www.cdn77.com,www.phpmyadmin.net \
-            ice=stun:stun.l.google.com:19302,stun:stun.antisip.com:3478,\
-stun:stun.bluesip.net:3478,stun:stun.dus.net:3478,stun:stun.epygi.com:3478 \
+            fronts=app.datapacket.com,www.datapacket.com \
+            ice=stun:stun.epygi.com:3478,stun:stun.uls.co.za:3478,stun:stun.voipgate.com:3478,\
+stun:stun.mixvoip.com:3478,stun:stun.telnyx.com:3478,stun:stun.hot-chilli.net:3478,\
+stun:stun.fitauto.ru:3478,stun:stun.m-online.net:3478 \
             utls-imitate=hellorandomizedalpn";
         let mut b = builder();
         assert_eq!(apply(&mut b, line, ports()), Ok(true));

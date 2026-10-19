@@ -26,6 +26,7 @@ import okhttp3.Route
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -104,6 +105,15 @@ class AirhopTorProxyTest {
         assertEquals(listOf(Proxy.NO_PROXY), select("http://10.0.2.2:8081/index.bundle"))
         AirhopTorProxy.hold()
         assertEquals(listOf(Proxy.NO_PROXY), select("ws://10.0.2.2:8081/message"))
+    }
+
+    // Only the dev server's own port is exempt: anything else on that machine
+    // is ordinary web traffic.
+    @Test
+    fun otherPortsOnTheDevHostAreRouted() {
+        AirhopTorProxy.route(39050)
+        assertEquals(socks(39050), select("http://10.0.2.2:9000/"))
+        assertEquals(socks(39050), select("http://10.0.2.2/"))
     }
 
     // Held traffic goes to a proxy nothing can listen on, so it fails rather
@@ -239,6 +249,14 @@ class AirhopTorProxyTest {
         assertTrue(chain.proceeded)
     }
 
+    @Test
+    fun guardIsIdleWhenNotRouted() {
+        AirhopTorProxy.route(null)
+        val chain = FakeChain(request("https://mint.example/"), connectionVia(Proxy.NO_PROXY))
+        AirhopTorProxy.routeGuard.intercept(chain)
+        assertTrue(chain.proceeded)
+    }
+
     // ---- User-Agent ----
 
     @Test
@@ -250,15 +268,7 @@ class AirhopTorProxyTest {
                 .build()
         val chain = FakeChain(named, null)
         AirhopTorProxy.genericUserAgent.intercept(chain)
-        assertEquals(null, chain.sent?.header("User-Agent"))
+        assertNull(chain.sent?.header("User-Agent"))
         assertEquals("https://mint.example/", chain.sent?.url.toString())
-    }
-
-    @Test
-    fun guardIsIdleWhenNotRouted() {
-        AirhopTorProxy.route(null)
-        val chain = FakeChain(request("https://mint.example/"), connectionVia(Proxy.NO_PROXY))
-        AirhopTorProxy.routeGuard.intercept(chain)
-        assertTrue(chain.proceeded)
     }
 }
