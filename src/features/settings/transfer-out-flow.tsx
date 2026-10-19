@@ -105,13 +105,17 @@ export default function TransferOutFlow({
   const authInFlight = useRef(false);
   // One answer to "Did the transfer finish?", however fast the taps.
   const resolved = useRef(false);
+  // The sender can reach its outcome after this screen is gone.
+  const unmounted = useRef(false);
 
   // Unmounting mid-transfer (a link or a notification switching tabs, Android
   // recreating the Activity) is the Cancel nobody could tap: left running, the
   // sender holds the link with no screen to report to. Before the stream ends
-  // this leaves the phone as it was; after, cancel does nothing.
+  // this leaves the phone as it was; after, cancel does nothing and the sender
+  // runs on to its outcome.
   useEffect(
     () => () => {
+      unmounted.current = true;
       cancelHandoff.current?.();
       senderRef.current?.cancel();
     },
@@ -201,6 +205,21 @@ export default function TransferOutFlow({
     const sender = new MoveSender(invite, history, {
       onChange: (state) => {
         if (senderRef.current !== sender) return;
+        // With no screen to ask or report on: an erase still puts the shell
+        // back to first run, and an unconfirmed end keeps this phone, as the
+        // next launch would, rather than leave the mesh down until then.
+        if (unmounted.current) {
+          if (resolved.current) return;
+          if (state.phase === "done") {
+            resolved.current = true;
+            onErased(state.keysDestroyed);
+          } else if (state.phase === "unconfirmed") {
+            resolved.current = true;
+            clearMoveMarker();
+            onResumeMesh();
+          }
+          return;
+        }
         if (state.phase === "failed" || state.phase === "unconfirmed") {
           rejected();
         } else if (state.phase === "done") {

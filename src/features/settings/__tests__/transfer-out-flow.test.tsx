@@ -1,6 +1,7 @@
 // The old phone's transfer screen around the sender: what happens to a
-// transfer when the screen goes away under it, and whether a camera grant made
-// in Settings is noticed without leaving the tab.
+// transfer when the screen goes away under it, including an erase that lands
+// after, and whether a camera grant made in Settings is noticed without leaving
+// the tab.
 
 import { t } from "@i18n";
 import { act, render, screen, userEvent } from "@testing-library/react-native";
@@ -74,8 +75,16 @@ jest.mock("@core/move/move-invite", () => ({
 }));
 
 const mockCancel = jest.fn();
+let mockSenderChange: ((state: unknown) => void) | null = null;
 jest.mock("@services/move-sender", () => ({
   MoveSender: class {
+    constructor(
+      _invite: unknown,
+      _history: boolean,
+      hooks: { onChange: (state: unknown) => void },
+    ) {
+      mockSenderChange = hooks.onChange;
+    }
     connect(): Promise<void> {
       return Promise.resolve();
     }
@@ -121,6 +130,7 @@ beforeEach(() => {
   mockGetPermission.mockClear();
   mockRequestPermission.mockClear();
   mockOnScanned = null;
+  mockSenderChange = null;
   appStateListener = null;
   jest
     .spyOn(AppState, "addEventListener")
@@ -136,14 +146,20 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-async function renderFlow(): Promise<ReturnType<typeof render>> {
+async function renderFlow({
+  onErased = () => {},
+  onResumeMesh = () => {},
+}: {
+  onErased?: (keysDestroyed: boolean) => void;
+  onResumeMesh?: () => void;
+} = {}): Promise<ReturnType<typeof render>> {
   return render(
     <SafeAreaProvider initialMetrics={METRICS}>
       <TransferOutFlow
         visible
         onClose={() => {}}
-        onResumeMesh={() => {}}
-        onErased={() => {}}
+        onResumeMesh={onResumeMesh}
+        onErased={onErased}
       />
     </SafeAreaProvider>,
   );
@@ -169,6 +185,44 @@ describe("leaving the screen mid-transfer", () => {
 
     await view.unmount();
     expect(mockCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("still hands an erase that lands afterwards to the shell, once", async () => {
+    mockStoredPermission = GRANTED;
+    mockHookPermission = GRANTED;
+    const onErased = jest.fn();
+    const view = await renderFlow({ onErased });
+    await pressContinue();
+    await act(async () => {
+      mockOnScanned?.({ data: "move-code" });
+    });
+    // Past the end of the stream, where cancel no longer stops the sender.
+    await view.unmount();
+
+    mockSenderChange?.({ phase: "erasing" });
+    mockSenderChange?.({ phase: "done", keysDestroyed: true });
+    mockSenderChange?.({ phase: "done", keysDestroyed: true });
+
+    expect(onErased).toHaveBeenCalledTimes(1);
+    expect(onErased).toHaveBeenCalledWith(true);
+  });
+
+  it("keeps this phone on an unconfirmed end, as the next launch would", async () => {
+    mockStoredPermission = GRANTED;
+    mockHookPermission = GRANTED;
+    const onErased = jest.fn();
+    const onResumeMesh = jest.fn();
+    const view = await renderFlow({ onErased, onResumeMesh });
+    await pressContinue();
+    await act(async () => {
+      mockOnScanned?.({ data: "move-code" });
+    });
+    await view.unmount();
+
+    mockSenderChange?.({ phase: "unconfirmed" });
+
+    expect(onResumeMesh).toHaveBeenCalledTimes(1);
+    expect(onErased).not.toHaveBeenCalled();
   });
 });
 
