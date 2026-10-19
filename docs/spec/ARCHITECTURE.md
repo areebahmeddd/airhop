@@ -592,7 +592,13 @@ Both are off by default, both are bitchat-ios's designs, and both ride the
   own room. Mesh-only phones reach the rendezvous through a nearby bridge. Both
   copies of a message key the same timeline row on a content-derived ID, and the
   signed radio copy replaces a bridged one when it arrives, because the ID the
-  bridged row carries is an unsigned hint.
+  bridged row carries is an unsigned hint. The bridge signs under its own
+  derived key, never the phone's `#neighborhood` one, and listens to the cells
+  around its own so two crowds astride a cell edge still meet. Receiving bridged
+  messages is passive and needs neither the toggle nor the internet. With
+  several bridges on one island, each holds a remote message for a random
+  moment before sending it onto the mesh, and stands down if another got there
+  first.
 
 Private traffic never takes either path. DMs, groups, private channels and media
 stay on the radios, or go to relays sealed from this phone's own connection.
@@ -1093,8 +1099,9 @@ The Status picker in Profile sets how findable the phone is:
 
 Invisible is about who can see this phone, so it is persisted and carried by a
 transfer: a relaunch or a start on boot must not quietly make the phone
-findable again. Away is a pause for the session. Reset settings leaves the
-status alone, since it is set in the picker rather than among the preferences.
+findable again. Away is a pause for the session, and the Mesh banner's Resume
+comes back in the kept visibility. Reset settings leaves the status alone,
+since it is set in the picker rather than among the preferences.
 
 ### Tor
 
@@ -1240,11 +1247,16 @@ default, in Privacy & security) closes that gap. Decisions live in
 - **Locked from the first frame**, and after the chosen time away: immediately
   (default), or 1, 5 or 30 minutes. Away is the larger of wall time and the
   monotonic clock, so sleep counts and a wound-back clock does not dodge it.
-  With a delay the screen is covered on leaving. A system prompt is not leaving.
+  With a delay the screen is covered on leaving. An Android system prompt
+  pausing the app is not leaving; iOS prompts never background it, so there a
+  background mid-prompt still locks.
 - **Above everything.** Every Modal is `AppModal` and stands down while the
   lock asks. Back leaves the app; screen readers cannot reach beneath.
 - **Nobody reads behind it.** Receipts, marking read, live voice and the Mesh
   and Wallet "seen" states wait, and messages notify as if the app were away.
+- **Reset settings leaves it on**, with its delay, as it leaves the media
+  retention window, and its confirm says so: dropping either would lower a
+  protection or delete media unasked. The panic wipe resets both.
 
 The app-switcher snapshot stays blank either way (iOS cover, Android recents).
 

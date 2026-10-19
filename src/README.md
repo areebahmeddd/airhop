@@ -135,7 +135,7 @@ The test suite follows four principles:
 | `core/nostr/`    | Gift-wrap, geohash identity, relay discovery, bitchat interoperability | Live network calls (`NostrClient` mocked) |
 | `core/payments/` | Cashu BDHKE, DLEQ, proof selection, Nutzap, seed handling              | Mint connectivity                         |
 | `core/router/`   | Peer registry and transport selection                                  | Native transports                         |
-| `i18n/`          | Translation catalog completeness                                       | None                                      |
+| `i18n/`          | Catalog completeness, plural rules, right-to-left layout helpers       | None                                      |
 | `services/`      | Per-service behaviour: payments, geohash channels, transfers, policy   | Physical radios (simulated)               |
 | `store/`         | State transitions and persistence shape                                | MMKV persistence (mocked)                 |
 | `platform/`      | OEM battery-settings URI resolution, device-owner authentication       | OS dialogs                                |

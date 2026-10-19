@@ -117,7 +117,7 @@ Airhop chooses a transport per message. Bluetooth is the only one that needs no 
 | Carries           | Channel messages, DMs, files, ecash                                | Everything Bluetooth carries            | DMs and files, when a link exists | DMs and geohash channel messages | Sealed text envelopes, up to 16 KiB each |
 | Needs internet    | No                                                                 | No, but everyone must be on one network | No                                | Yes                              | No                                       |
 | iPhone to Android | Yes                                                                | Yes                                     | No                                | Yes                              | Yes                                      |
-| Range             | ~10-30 m indoors, up to ~100 m line of sight, extended by each hop | Wherever the network reaches            | ~30 m                             | Global                           | Wherever the carrier walks               |
+| Range             | ~30-50 m indoors, up to ~100 m line of sight, extended by each hop | Wherever the network reaches            | ~30 m                             | Global                           | Wherever the carrier walks               |
 | Max hops          | 7                                                                  | 1                                       | 1                                 | 1                                | 1 carrier, but unbounded in time         |
 | Speed             | ~18 KiB/s to one peer, ~15 KiB/s to a channel                      | Network speed, with no radio pacing     | Link speed, with no radio pacing  | Not used for files               | Not used for files                       |
 | Latency per hop   | 10-220 ms (randomized to avoid collisions)                         | Network round trip                      | n/a                               | Relay round trip; more over Tor  | Whenever the carrier meets the recipient |
@@ -135,14 +135,14 @@ Notes on the numbers:
 
 Timing intervals:
 
-| Behaviour                  | Interval           | Why                                                                 |
-| -------------------------- | ------------------ | ------------------------------------------------------------------- |
-| Presence broadcast         | 4 s alone, 15-30 s | Fast while alone so devices meet quickly, then backs off            |
-| Gossip sync                | 15 s               | Lets a peer returning from out of range catch up on missed messages |
-| Direct peer timeout        | 45 s               | Handles unreported link drops beyond broadcast                      |
-| Mesh peer timeout          | 60 s               | Relayed peers get longer, since multi-hop packets arrive late       |
-| Geohash presence heartbeat | 40-80 s            | Randomized so a fixed interval cannot fingerprint the sender        |
-| Geohash participant window | 5 min              | Covers several heartbeats, so a missed round does not drop the peer |
+| Behaviour                  | Interval                     | Why                                                                 |
+| -------------------------- | ---------------------------- | ------------------------------------------------------------------- |
+| Presence broadcast         | 4 s alone, 15-30 s           | Fast while alone so devices meet quickly, then backs off            |
+| Gossip sync                | 1 s on a new link, then 15 s | Lets a peer returning from out of range catch up on missed messages |
+| Direct peer timeout        | 45 s                         | Handles unreported link drops beyond broadcast                      |
+| Mesh peer timeout          | 60 s                         | Relayed peers get longer, since multi-hop packets arrive late       |
+| Geohash presence heartbeat | 40-80 s                      | Randomized so a fixed interval cannot fingerprint the sender        |
+| Geohash participant window | 5 min                        | Covers several heartbeats, so a missed round does not drop the peer |
 
 ## How Airhop Compares
 
@@ -195,7 +195,7 @@ npm install
 
 > The first `npm run ios` builds the native app from scratch and can take several minutes. Later runs are much faster.
 
-> Requires a physical iPhone for BLE mesh testing (the iOS Simulator does not support Bluetooth) and supports iOS 16.0 or later.
+> Requires a physical iPhone for BLE mesh testing (the iOS Simulator does not support Bluetooth) and supports iOS 16.4 or later.
 
 > Changing a native dependency also changes `ios/Podfile.lock`, which pins exact pod versions. Regenerate it with `bundle exec pod install --project-directory=ios` in the same commit.
 
