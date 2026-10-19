@@ -65,6 +65,7 @@ import {
   type NutzapInfo,
   type ReceivedNutzap,
 } from "@core/payments/nutzap";
+import type { StoredProof } from "@core/payments/stored-proof";
 import {
   rebuildSwapPreview,
   serializeSwapPreview,
@@ -95,7 +96,6 @@ import {
   useWalletStore,
   whenWalletHydrated,
   type StoredMint,
-  type StoredProof,
   type WalletTx,
 } from "@store/wallet-store";
 import {
@@ -2613,10 +2613,12 @@ async function restoreSwapOutputs(
 ): Promise<SendResponse> {
   const outputs = swapPreviewOutputs(preview);
   const keepCount = swapPreviewKeepCount(preview);
+  // Each output names its keyset; `SwapPreview.keysetId` goes in cashu-ts 5.
+  const keysetIds = [...new Set(outputs.map((o) => o.blindedMessage.id))];
   // Keys first: an inactive keyset arrives without them, and failing after the
   // restore would read as "no NUT-09" and discard the outputs.
   try {
-    await wallet.ensureOperableKeysets([preview.keysetId]);
+    await wallet.ensureOperableKeysets(keysetIds);
   } catch (err) {
     if (isMintSilent(err)) {
       throw new WalletError("offline", { key: "wallet.svc.keyset_unknown" });
@@ -2631,7 +2633,6 @@ async function restoreSwapOutputs(
   const indexByBlinded = new Map(
     outputs.map((output, index) => [output.blindedMessage.B_, index]),
   );
-  const keyset = wallet.getKeyset(preview.keysetId);
   const keep: Proof[] = [];
   const send: Proof[] = [];
   response.outputs.forEach((output, position) => {
@@ -2640,6 +2641,7 @@ async function restoreSwapOutputs(
     if (index === undefined || signature === undefined) return;
     const target = outputs[index];
     if (target === undefined) return;
+    const keyset = wallet.getKeyset(target.blindedMessage.id);
     // `swapPreviewOutputs` lays keeps out first; the rest may be locked to
     // the recipient and must not be credited.
     if (index < keepCount) keep.push(target.toProof(signature, keyset));

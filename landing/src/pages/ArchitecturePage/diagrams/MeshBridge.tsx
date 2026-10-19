@@ -45,7 +45,7 @@ export function MeshBridge() {
       />
       <text x={16} y={244} fontFamily={MONO} fontSize={10} fill={MUTED}>
         Off by default. Each island publishes its public #bluetooth chat to the shared neighborhood
-        cell and subscribes to the same cell,
+        cell and listens to it and the 8 around it,
       </text>
       <text x={16} y={262} fontFamily={MONO} fontSize={10} fill={MUTED}>
         signed by an unlinkable per-cell key. A mesh-only phone rides through a bridge peer. DMs

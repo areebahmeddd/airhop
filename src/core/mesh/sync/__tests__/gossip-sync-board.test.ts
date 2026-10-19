@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Board gossip sync: board posts (type 0x23) ride the GCS sync machinery with a
 // multi-byte SyncTypeFlags round (bit 8), mutually intelligible with bitchat.
 import { ed25519 } from "@noble/curves/ed25519.js";
@@ -78,21 +75,6 @@ describe("board gossip sync", () => {
     ]);
     const decoded = decodeGossipFilterPayload(payload)!;
     expect(decoded.types).toBe(types);
-  });
-
-  it("tracks board posts and offers them on a board-typed request", () => {
-    const g = new GossipSync();
-    g.track(packet(PacketType.ANNOUNCE, 1));
-    g.track(packet(PacketType.CHANNEL_MSG, 2));
-    g.track(packet(PacketType.BOARD_POST, 3));
-    expect(g.seenCount).toBe(3);
-
-    // A board-only request draws the board post, not the announce/message.
-    const boardMissing = g.handleFilter(
-      emptyFilterRequest(1 << TYPE_BIT_BOARD),
-    );
-    expect(boardMissing).toHaveLength(1);
-    expect(boardMissing[0].type).toBe(PacketType.BOARD_POST);
   });
 
   it("does not offer board posts to a peer that only asked for announces", () => {

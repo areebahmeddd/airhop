@@ -4,4 +4,7 @@
   <string name="mesh_notification_title">Airhop 網狀網路運行中</string>
   <string name="mesh_notification_text">正在探索並中繼附近的訊息</string>
   <string name="mesh_notification_stop">停止網狀網路</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="other">範圍內有 %1$s 個節點</item>
+  </plurals>
 </resources>

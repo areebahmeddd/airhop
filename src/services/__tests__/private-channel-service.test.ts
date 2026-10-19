@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A private room is its key, never its name. Two rooms that share a label, one
 // left and one joined later, must never share a Nostr author.
 

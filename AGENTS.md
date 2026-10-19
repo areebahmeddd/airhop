@@ -133,7 +133,7 @@ Two kinds of files are pinned and checked in CI. Both fail the build rather than
 
 - `tsc --strict` passes with zero errors.
 - No `any` in `src/core/` or `src/bridge/`.
-- Named exports only in `src/core/`. A `src/bridge/` spec default-exports its module, per React Native's spec convention, and names everything else.
+- Named exports only in `src/core/`. A `src/bridge/` spec default-exports its module, per React Native's spec convention, and names everything else. The exception is `NativeAirhopTorSocket.ts`, a classic module that exports `AirhopTorSocketNative` by name.
 - File naming: `kebab-case.ts`. The one exception is `src/bridge/Native*.ts`, which keeps React Native's spec naming. A file's name and its primary export agree (`alert-modal.tsx` exports `AlertModal`).
 - Module specifiers: leaving your top-level `src/` layer means a path alias (`@core/mesh/wire/packet-codec`); staying inside the layer stays relative (`./message-bubble`, `../shared`). Aliases are declared in `tsconfig.json` and mirrored in `package.json` for Jest.
 - Write escape sequences, never the literal byte. A regex holding a raw backspace instead of `\b` matches nothing and makes git treat the file as binary, so it is unenforced and unreviewable at once. CI runs `npm run verify:invisibles` over control characters, bidirectional overrides and zero-width characters.
@@ -158,7 +158,7 @@ Comments here are dense on purpose. The bar for keeping one is that it says some
 - **Explain why, not what.** Justify a magic number, name a platform quirk, state an invariant. A comment restating the signature below it is noise.
 - **No history.** A file is not a changelog. Keep the rule a war story justified and drop the story; the commit message is where it belongs.
 - **File headers stay** on every non-trivial module: one sentence on what it is, then only what a reader needs to change it safely. Length tracks load-bearing content, not the file's age.
-- **`//` everywhere**, headers and members alike. The only block comments are tool pragmas a line comment is invisible to: `/** @jest-environment node */`, and knip's `@public` (an intentionally unused export) and `@alias` (an intentional duplicate export) tags.
+- **`//` everywhere**, headers and members alike. The only block comments are `{/* */}` inside JSX, which has no line comment, and tool pragmas a line comment is invisible to: knip's `@public` (an export the app never uses, such as one only a test reads, since `deadcode` also runs `knip --production`) and `@alias` (an intentional duplicate export) tags. Tests take their environment from the jest config, never a `@jest-environment` pragma.
 - **Section banners** (`// ---- Name ----`) belong only in a long file or a flat data table, where they are the only navigation.
 - **Style blocks**: justify a number, a touch target or a platform quirk, or say nothing.
 - **Describe the system, not the authors.** The exception is protocol code, where "we" means _this node_ rather than the peer, a distinction the prose needs.

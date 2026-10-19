@@ -12,6 +12,7 @@ import CoreBluetooth
 import Foundation
 import OSLog
 import React
+import UIKit
 
 // MARK: - Constants
 
@@ -65,6 +66,17 @@ final class AirhopBLEModule: RCTEventEmitter {
   // only ones that can actually carry a write. Retained-but-not-ready links
   // live in centralLinks without appearing here.
   private var readyCentralLinks: Set<String> = []
+  // CoreBluetooth never times out a connect, so a peer that leaves mid-dial
+  // would hold a slot until Bluetooth restarts. bitchat-ios allows 8s.
+  private static let centralReadyTimeoutSec: TimeInterval = 10
+  private var centralAttempts: [String: UInt64] = [:]
+  private var nextCentralAttempt: UInt64 = 0
+  // Off screen a dial is never expired: iOS completes a pending connect when
+  // the peer comes back and wakes the app, which is how the mesh reconnects in
+  // a pocket. Dials whose deadline passed meanwhile are cancelled on return to
+  // the foreground, as bitchat-ios's BLERadioController does. Both on `queue`.
+  private var appActive = true
+  private var overdueDials: Set<String> = []
   // linkID -> CBCentral (peripheral role connections from remote centrals)
   private var peripheralLinks: [String: CBCentral] = [:]
 
@@ -132,6 +144,24 @@ final class AirhopBLEModule: RCTEventEmitter {
 
   // MARK: RCTEventEmitter
 
+  override init() {
+    super.init()
+    let center = NotificationCenter.default
+    center.addObserver(
+      self, selector: #selector(appDidBecomeActive),
+      name: UIApplication.didBecomeActiveNotification, object: nil)
+    center.addObserver(
+      self, selector: #selector(appDidEnterBackground),
+      name: UIApplication.didEnterBackgroundNotification, object: nil)
+    // A Bluetooth relaunch builds this module in the background, before either
+    // notification. Read on main, as UIKit requires; later notifications queue
+    // behind it, so the order holds.
+    DispatchQueue.main.async { [weak self] in
+      let active = UIApplication.shared.applicationState == .active
+      self?.queue.async { self?.appActive = active }
+    }
+  }
+
   override static func requiresMainQueueSetup() -> Bool { false }
 
   override func supportedEvents() -> [String]! {
@@ -142,6 +172,31 @@ final class AirhopBLEModule: RCTEventEmitter {
       BLEEvent.rssiUpdated,
       BLEEvent.adapterStateChanged,
     ]
+  }
+
+  // MARK: App state
+
+  @objc private func appDidBecomeActive() {
+    queue.async { [weak self] in
+      guard let self else { return }
+      self.appActive = true
+      // A connect whose didConnect is still queued is left to it.
+      for linkID in self.overdueDials where self.centralLinks[linkID]?.state != .connected {
+        self.expireDial(linkID)
+      }
+      self.overdueDials.removeAll()
+      // A scan without duplicates reports each peer once, so a peer whose dial
+      // was cancelled is found again only by a fresh scan, as in bitchat-ios.
+      if self.actuallyScanning, self.centralManager?.state == .poweredOn {
+        self.centralManager?.stopScan()
+        self.actuallyScanning = false
+        self.applyState()
+      }
+    }
+  }
+
+  @objc private func appDidEnterBackground() {
+    queue.async { [weak self] in self?.appActive = false }
   }
 
   // MARK: Peripheral (advertising)
@@ -155,8 +210,8 @@ final class AirhopBLEModule: RCTEventEmitter {
   // error, and abandoned the old one mid-connection.
   private func ensureCentralManager() -> CBCentralManager {
     if let existing = centralManager { return existing }
-    // Adopt the manager the app delegate built on a restoration launch
-    // rather than constructing a second against the same restore identifier.
+    // Adopt the manager the app delegate built at launch rather than
+    // constructing a second against the same restore identifier.
     if let restored = AirhopBLERestoration.shared.takeCentral() {
       restored.delegate = self
       centralManager = restored
@@ -165,6 +220,13 @@ final class AirhopBLEModule: RCTEventEmitter {
       for peripheral in AirhopBLERestoration.shared.takeRestoredPeripherals() {
         peripheral.delegate = self
         centralLinks[centralLinkID(for: peripheral)] = peripheral
+      }
+      // Its poweredOn went to AirhopBLERestoration. Replayed so restored links
+      // are rediscovered and JS hears the radio; the handler is idempotent if
+      // the real callback is still queued. The peripheral needs no replay: its
+      // poweredOn only resets what a power cycle discards.
+      if restored.state == .poweredOn {
+        centralManagerDidUpdateState(restored)
       }
       return restored
     }
@@ -278,8 +340,7 @@ final class AirhopBLEModule: RCTEventEmitter {
     // .advertisementData(), whose entire body is the service UUID under the
     // comment "No Local Name for privacy." Matching it costs the ability to
     // dedup an iPhone before connecting to it, which is a cost bitchat
-    // already accepts and which the link reaper covers: a duplicate under a
-    // rotated address is reclaimed by the 15s first-traffic deadline.
+    // already accepts: the mesh tolerates one peer on two links.
     //
     // The localName parameter stays on the bridge method. Android still
     // uses it, and the two platforms keep one signature.
@@ -531,6 +592,24 @@ final class AirhopBLEModule: RCTEventEmitter {
     resolve(nil)
   }
 
+  // Android-only, like the service: iOS has no background notice.
+  @objc
+  func setBackgroundPeerCount(
+    _ count: Double,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(nil)
+  }
+
+  @objc
+  func openBackgroundNoticeSettings(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(false)
+  }
+
   // MARK: I/O
 
   @objc
@@ -664,6 +743,11 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
       for peripheral in centralLinks.values where peripheral.state == .connected {
         peripheral.discoverServices([BLEConst.serviceUUID])
       }
+      // Restored links, pending connects included, get deadlines too.
+      for (linkID, peripheral) in centralLinks
+      where !readyCentralLinks.contains(linkID) && centralAttempts[linkID] == nil {
+        armCentralDeadline(linkID, dialing: peripheral.state != .connected)
+      }
       applyState()
 
     case .poweredOff:
@@ -714,6 +798,8 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     }
     centralLinks.removeAll()
     readyCentralLinks.removeAll()
+    centralAttempts.removeAll()
+    overdueDials.removeAll()
     for timer in rssiTimers.values { timer.cancel() }
     rssiTimers.removeAll()
   }
@@ -737,6 +823,39 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     peripheral.delegate = self
     centralLinks[linkID] = peripheral
     central.connect(peripheral, options: nil)
+    armCentralDeadline(linkID, dialing: true)
+  }
+
+  // Armed at the dial and again at connect, so a peer that connects but never
+  // subscribes is freed too. The attempt number stops a stale deadline.
+  private func armCentralDeadline(_ linkID: String, dialing: Bool) {
+    nextCentralAttempt &+= 1
+    let attempt = nextCentralAttempt
+    centralAttempts[linkID] = attempt
+    queue.asyncAfter(deadline: .now() + Self.centralReadyTimeoutSec) { [weak self] in
+      guard let self, self.centralAttempts[linkID] == attempt else { return }
+      guard let peripheral = self.centralLinks[linkID] else { return }
+      // A woken app can see an overdue dial deadline and its connect at once.
+      // didConnect re-arms.
+      if dialing && peripheral.state == .connected { return }
+      if dialing && !self.appActive {
+        self.overdueDials.insert(linkID)
+        return
+      }
+      self.expireDial(linkID)
+    }
+  }
+
+  // Frees a link that never became ready, leaving it to rediscovery.
+  private func expireDial(_ linkID: String) {
+    guard let peripheral = centralLinks[linkID], !readyCentralLinks.contains(linkID) else { return }
+    centralAttempts.removeValue(forKey: linkID)
+    AirhopLog.ble.notice("BLE link timed out before ready (central)")
+    centralManager?.cancelPeripheralConnection(peripheral)
+    // A cancelled pending connect may never call back.
+    centralLinks.removeValue(forKey: linkID)
+    rssiTimers[linkID]?.cancel()
+    rssiTimers.removeValue(forKey: linkID)
   }
 
   func centralManager(
@@ -746,6 +865,8 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     AirhopLog.ble.notice("BLE link up (central)")
     let linkID = centralLinkID(for: peripheral)
     centralLinks[linkID] = peripheral
+    overdueDials.remove(linkID)
+    armCentralDeadline(linkID, dialing: false)
     // linkConnected is deliberately NOT emitted here: the characteristic is
     // not discovered yet, so any write JS makes in response would fail. It
     // is emitted from didUpdateNotificationStateFor once the link can
@@ -778,6 +899,8 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     let linkID = centralLinkID(for: peripheral)
     centralLinks.removeValue(forKey: linkID)
     readyCentralLinks.remove(linkID)
+    centralAttempts.removeValue(forKey: linkID)
+    overdueDials.remove(linkID)
   }
 
   func centralManager(
@@ -789,6 +912,8 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     let linkID = centralLinkID(for: peripheral)
     centralLinks.removeValue(forKey: linkID)
     readyCentralLinks.remove(linkID)
+    centralAttempts.removeValue(forKey: linkID)
+    overdueDials.remove(linkID)
     rssiTimers[linkID]?.cancel()
     rssiTimers.removeValue(forKey: linkID)
     sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
@@ -856,6 +981,7 @@ extension AirhopBLEModule: CBPeripheralDelegate {
 
     guard !readyCentralLinks.contains(linkID) else { return }
     readyCentralLinks.insert(linkID)
+    centralAttempts.removeValue(forKey: linkID)
     sendEvent(
       withName: BLEEvent.linkConnected,
       body: ["linkID": linkID, "role": "central", "rssi": -99])
@@ -1082,12 +1208,11 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
 // call from JS, by which point the restoration callback has been delivered to
 // nobody.
 //
-// Constructing them at launch unconditionally is not an option either, since
-// allocating a CBCentralManager raises the iOS Bluetooth prompt and every new
-// user would meet it on the splash screen. So the app delegate calls prepare()
-// only when launchOptions carries a Bluetooth restoration key, which happens
-// only for an app that already had a live session and therefore already has the
-// permission. First run never takes the branch.
+// The scene life cycle leaves launchOptions nil, so nothing at launch says
+// whether this is such a relaunch. The app delegate therefore calls prepare()
+// on every launch once Bluetooth is authorized (never before, since allocating
+// a manager raises the permission prompt), and willRestoreState is the signal:
+// iOS delivers it only to a relaunch that has state to hand back.
 //
 // Everything here runs on AirhopBLEQueue.shared, so the handover needs no
 // locking: prepare() is enqueued from didFinishLaunching and the take* calls
@@ -1099,14 +1224,18 @@ final class AirhopBLERestoration: NSObject {
   private var peripheral: CBPeripheralManager?
   private var restoredPeripherals: [CBPeripheral] = []
   private var restoredCharacteristic: CBMutableCharacteristic?
+  private var onRestore: (@MainActor () -> Void)?
 
   // Deliberately no private init: NSObject is required for the CoreBluetooth
   // delegate protocols, and narrowing an inherited initializer's access is
   // not portable across Swift versions. Nothing else constructs this type.
 
-  // Called from the app delegate, only on a restoration launch.
-  func prepare() {
+  // Called from the app delegate at launch. `onRestore` runs on the main
+  // thread when iOS hands back state, so a relaunch can start what consumes it.
+  // The options match the module's own managers, which these stand in for.
+  func prepare(onRestore: @escaping @MainActor () -> Void) {
     AirhopBLEQueue.shared.async {
+      self.onRestore = onRestore
       if self.central == nil {
         self.central = CBCentralManager(
           delegate: self,
@@ -1128,6 +1257,11 @@ final class AirhopBLERestoration: NSObject {
         )
       }
     }
+  }
+
+  private func notifyRestored() {
+    guard let onRestore else { return }
+    Task { @MainActor in onRestore() }
   }
 
   // Hand ownership to the module and clear it here, so a second module (a dev
@@ -1165,6 +1299,7 @@ extension AirhopBLERestoration: CBCentralManagerDelegate {
     _ central: CBCentralManager,
     willRestoreState dict: [String: Any]
   ) {
+    notifyRestored()
     guard
       let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey]
         as? [CBPeripheral]
@@ -1182,6 +1317,7 @@ extension AirhopBLERestoration: CBPeripheralManagerDelegate {
     _ peripheral: CBPeripheralManager,
     willRestoreState dict: [String: Any]
   ) {
+    notifyRestored()
     guard
       let services = dict[CBPeripheralManagerRestoredStateServicesKey]
         as? [CBMutableService]

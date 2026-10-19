@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Aktibo ang mesh ng Airhop</string>
   <string name="mesh_notification_text">Naghahanap at nagpapasa ng mga mensaheng malapit</string>
   <string name="mesh_notification_stop">Ihinto ang mesh</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s peer ang nasa saklaw</item>
+    <item quantity="other">%1$s peer ang nasa saklaw</item>
+  </plurals>
 </resources>

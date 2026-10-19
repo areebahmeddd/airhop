@@ -57,6 +57,7 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { watchAppLock } from "@services/app-lock";
 import { setAudioForPlayback } from "@services/audio-session";
+import { startBackgroundNotice } from "@services/background-notice";
 import { registerBootStartTask, syncBootStart } from "@services/boot-start";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
@@ -101,6 +102,7 @@ import { startReclaimFollow } from "@services/payment-router";
 import {
   applyPresence,
   applyStartupPresence,
+  resumePresence,
 } from "@services/presence-service";
 import { startReachabilityWatch } from "@services/reachability";
 import {
@@ -190,13 +192,14 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
+  type TextInputInstance,
 } from "react-native";
 import {
-  Gesture,
   GestureDetector,
   GestureHandlerRootView,
+  usePanGesture,
+  type PanGestureConfig,
 } from "react-native-gesture-handler";
 import {
   initialWindowMetrics,
@@ -446,6 +449,7 @@ function startMeshDependents(): void {
   // a boot start may already have started it for this mesh.
   const nickname = peerIDToUsername(mesh.peerID);
   startNotificationPipeline(() => nickname);
+  startBackgroundNotice();
 
   // A network coming back nudges relays, Tor, queued mail and the wallet.
   startReachabilityWatch();
@@ -589,7 +593,7 @@ async function handleBannerAction(
 ): Promise<void> {
   switch (kind) {
     case "resume":
-      applyPresence("online", nickname);
+      resumePresence(nickname);
       return;
 
     case "enable-bluetooth": {
@@ -825,7 +829,7 @@ function AppContent(): React.JSX.Element {
   const activeFilter = chatSubTab === "channels" ? channelFilter : dmFilter;
   const [chatView, setChatView] = useState<ChatView>({ kind: "list" });
   const [searchQuery, setSearchQuery] = useState("");
-  const searchInputRef = useRef<TextInput>(null);
+  const searchInputRef = useRef<TextInputInstance>(null);
   // Which message a search result should scroll a thread to on open.
   const [messageTarget, setMessageTarget] = useState<MessageTarget | null>(
     null,
@@ -1194,13 +1198,15 @@ function AppContent(): React.JSX.Element {
         const store = useMeshStateStore.getState();
         const changed = store.locationGranted !== granted;
         store.setLocationGranted(granted);
-        // Re-resolve the location channels when the answer actually moved.
+        // Re-resolve the location channels and the bridge when the answer
+        // actually moved, in either direction.
         //
         // Leaving for system Settings and coming back is the main way a location
-        // grant changes, so this edge is when the geohash channels have most
-        // likely just become available. Gated on the change so an ordinary
-        // resume does not re-subscribe every cell.
-        if (changed && granted) getMeshService()?.refreshGeoChannels();
+        // grant changes. A grant opens the named channels; a revoke has to
+        // close them and take the bridge off its cell, which nothing else does
+        // while iOS keeps the process alive across it. Gated on the change so
+        // an ordinary resume does not re-subscribe every cell.
+        if (changed) getMeshService()?.refreshGeoChannels();
       });
       // Re-check the radios unconditionally.
       //
@@ -1372,7 +1378,7 @@ function AppContent(): React.JSX.Element {
       const prefill = joinSheetPrefill(url);
       if (prefill !== null) setPendingJoinLink(prefill);
     };
-    void Linking.getInitialURL().then(handle);
+    void Linking.getInitialURL().then((url) => handle(url ?? null));
     const sub = Linking.addEventListener("url", ({ url }) => handle(url));
     return () => sub.remove();
   }, [appReady, onboardingStep]);
@@ -1521,11 +1527,20 @@ function AppContent(): React.JSX.Element {
   // it only activates once the gesture is clearly more horizontal than vertical,
   // and per-row Swipeable actions (channel/DM list) still win since they
   // activate on a much smaller offset than the 60px threshold below.
-  const swipeGesture = useMemo(() => {
-    const pan = Gesture.Pan()
-      .activeOffsetX([-20, 20])
-      .failOffsetY([-15, 15])
-      .onEnd((event) => {
+  //
+  // Memoized so the native handler is reconfigured only when these change. A
+  // memoized config is not workletized automatically, hence the directive.
+  const swipeConfig = useMemo<PanGestureConfig>(
+    () => ({
+      activeOffsetX: [-20, 20],
+      failOffsetY: [-15, 15],
+      hitSlop: canGoBackInTab
+        ? isRTLLayout
+          ? { right: 0, width: EDGE_BACK_ZONE }
+          : { left: 0, width: EDGE_BACK_ZONE }
+        : undefined,
+      onDeactivate: (event) => {
+        "worklet";
         const passedThreshold =
           Math.abs(event.translationX) > 60 || Math.abs(event.velocityX) > 600;
         if (!passedThreshold) return;
@@ -1542,14 +1557,11 @@ function AppContent(): React.JSX.Element {
           ? TABS[currentIndex + 1]
           : TABS[currentIndex - 1];
         if (target) scheduleOnRN(navigateToTab, target.id, true);
-      });
-    if (!canGoBackInTab) return pan;
-    return pan.hitSlop(
-      isRTLLayout
-        ? { right: 0, width: EDGE_BACK_ZONE }
-        : { left: 0, width: EDGE_BACK_ZONE },
-    );
-  }, [tab, canGoBackInTab, goBackInTab, navigateToTab]);
+      },
+    }),
+    [tab, canGoBackInTab, goBackInTab, navigateToTab],
+  );
+  const swipeGesture = usePanGesture(swipeConfig);
 
   // ---- Render ----
 

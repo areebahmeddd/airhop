@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Mesh ya Airhop inaendelea</string>
   <string name="mesh_notification_text">Kugundua na kupitisha ujumbe ulio karibu</string>
   <string name="mesh_notification_stop">Simamisha mesh</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">peer %1$s yuko ndani ya masafa</item>
+    <item quantity="other">peer %1$s wako ndani ya masafa</item>
+  </plurals>
 </resources>

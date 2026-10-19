@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The panic wipe: what it destroys, in what order, and how it behaves when a
 // step fails or the process dies partway.
 //
@@ -126,6 +123,7 @@ beforeEach(() => {
   deleteMMKV.mockClear();
   (wipeCacheDirectory as jest.Mock).mockClear();
   (wipeCacheDirectory as jest.Mock).mockResolvedValue(undefined);
+  (dismissAllNotifications as jest.Mock).mockClear();
   mockClearKeys.mockResolvedValue(undefined);
   // The mock MMKV keeps one instance per id for the whole file, so the marker
   // outlives a test the way it outlives a process. Each case starts from "no
@@ -165,7 +163,9 @@ describe("panicWipe", () => {
     // Two handles over one file do not share its cached meta info, so clearing
     // through one and writing through the other segfaults the process. Nothing
     // in JS catches that, so the wipe dies partway and the marker replays it.
-    mmkvMock.__mockOpened.length = 0;
+    // Partitions the stores opened at import count too: reopening one of
+    // those during the wipe is the same second handle.
+    const openedBefore = mmkvMock.__mockOpened.length;
 
     await panicWipe();
 
@@ -173,7 +173,10 @@ describe("panicWipe", () => {
     for (const id of mmkvMock.__mockOpened) {
       counts.set(id, (counts.get(id) ?? 0) + 1);
     }
-    expect([...counts.entries()].filter(([, n]) => n > 1)).toEqual([]);
+    const reopened = mmkvMock.__mockOpened
+      .slice(openedBefore)
+      .filter((id) => (counts.get(id) ?? 0) > 1);
+    expect(reopened).toEqual([]);
   });
 
   test("clears keys before MMKV (order: secure first)", async () => {

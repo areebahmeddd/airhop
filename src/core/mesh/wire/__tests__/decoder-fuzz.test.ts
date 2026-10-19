@@ -1,4 +1,3 @@
-/** @jest-environment node */
 // Every decoder that runs on unauthenticated bytes returns a value or null for
 // any input and never throws. The mesh-service ingress catches a throw, but a
 // decoder that throws is still a parser bug, and this is where it is found.
@@ -259,7 +258,6 @@ const targets: Target[] = [
           peerID: bytesToHex(senderID),
         },
         `peer${String(int(1e4))}`,
-        Array.from({ length: int(4) }, () => bytes(8)),
         rnd() < 0.5 ? bytes(32) : undefined,
         int(1 << 16),
         rnd() < 0.3 ? "u4pru" : undefined,

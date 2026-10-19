@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The ring wire formats. Small on purpose, so the tests are mostly about what
 // the decoder refuses: these bytes come from the far end.
 

@@ -133,7 +133,7 @@ export default function Footer() {
           <div className="space-y-3 lg:col-span-4">
             <Link
               to="/"
-              className="inline-flex items-center gap-3 select-none"
+              className="inline-flex min-h-7 items-center gap-3 select-none"
               aria-label={T("nav.home")}
             >
               <PixelBird className="text-ink h-4 w-auto" />
@@ -164,14 +164,14 @@ export default function Footer() {
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-secondary hover:text-ink inline-flex min-h-7 items-center text-[13px] leading-normal transition-colors duration-150"
+                          className="text-secondary hover:text-ink inline-flex min-h-7 min-w-7 items-center text-[13px] leading-normal transition-colors duration-150"
                         >
                           {T(link.labelKey)}
                         </a>
                       ) : (
                         <Link
                           to={link.href}
-                          className="text-secondary hover:text-ink inline-flex min-h-7 items-center text-[13px] leading-normal transition-colors duration-150"
+                          className="text-secondary hover:text-ink inline-flex min-h-7 min-w-7 items-center text-[13px] leading-normal transition-colors duration-150"
                         >
                           {T(link.labelKey)}
                         </Link>

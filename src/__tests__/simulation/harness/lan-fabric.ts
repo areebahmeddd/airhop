@@ -269,12 +269,12 @@ export class LanFabric {
 
     // A whole frame in one piece, on a later tick so nothing in the app can
     // depend on a synchronous write.
-    setTimeout(() => {
+    this.world.carry(1, () => {
       if (this.disposed) return;
       to.emit("AirhopLAN.packetReceived", {
         linkID: handleFor(fromID),
         dataBase64,
       });
-    }, 1);
+    });
   }
 }

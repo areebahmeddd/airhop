@@ -1,462 +1,97 @@
-/**
- * @jest-environment node
- */
-// Attachment retention, and the cache clears beside it. Without the sweep only
-// the panic wipe deletes media, and a photo outlives the conversation it
-// belonged to by months. These pin what gets deleted, and more importantly what
-// does not.
+// When the retention sweep runs. What it deletes is
+// file-transfer-service-retention.test.ts; this pins that a process kept alive
+// for weeks still enforces the window, without listing the cache directory on
+// every app switch.
 
-interface FakeFile {
-  name: string;
-  size: number;
-  lastModified: number | null;
-  creationTime: number | null;
-  deleted: boolean;
-  delete: () => void;
-}
+const mockSweep = jest.fn<number, [number, number]>(() => 0);
+let mockDays = 7;
 
-// The state the mocked filesystem reads. Declared on globalThis because
-// jest.mock factories are hoisted above every module-scope binding in this
-// file, so a plain `const` would still be in its temporal dead zone when the
-// factory runs.
-declare global {
-  var __disk: FakeFile[];
-  var __dirExists: boolean;
-  // iOS tmp, which the pickers also write to.
-  var __tmp: FakeFile[];
-  // Files opened by URI rather than listed.
-  var __byUri: Set<string>;
-}
-globalThis.__disk = [];
-globalThis.__dirExists = true;
-globalThis.__tmp = [];
-globalThis.__byUri = new Set();
+jest.mock("../file-transfer-service", () => ({
+  sweepExpiredAttachments: (now: number, maxAgeMs: number) =>
+    mockSweep(now, maxAgeMs),
+}));
 
-jest.mock("expo-file-system", () => {
-  // `instanceof FileSystem.File` is how the sweep tells a file from a
-  // directory, so the fakes must be real instances of the mocked class.
-  class MockFile {
-    private readonly uri: string;
-    constructor(uri: string) {
-      this.uri = uri;
-    }
-    get exists(): boolean {
-      return globalThis.__byUri.has(this.uri);
-    }
-    delete(): void {
-      globalThis.__byUri.delete(this.uri);
-    }
-  }
-  class MockDirectory {
-    private readonly tmp: boolean;
-    constructor(...path: unknown[]) {
-      this.tmp = path[path.length - 1] === "tmp";
-    }
-    get exists(): boolean {
-      return this.tmp || globalThis.__dirExists;
-    }
-    list(): unknown[] {
-      return (this.tmp ? globalThis.__tmp : globalThis.__disk).filter(
-        (f) => !f.deleted,
-      );
-    }
-  }
-  return {
-    File: MockFile,
-    Directory: MockDirectory,
-    Paths: {
-      cache: { uri: "file:///app/Library/Caches/" },
-      document: { parentDirectory: "/app" },
-    },
-  };
-});
+jest.mock("@store/settings-store", () => ({
+  useSettingsStore: {
+    getState: () => ({ mediaRetentionDays: mockDays }),
+  },
+}));
 
-import * as FileSystem from "expo-file-system";
-import { Platform } from "react-native";
-import {
-  clearAttachmentCache,
-  discardPickerCopy,
-  getAttachmentCacheBytes,
-  INCOMING_FILE_PREFIX,
-  MEDIA_MAX_AGE_MS,
-  sweepExpiredAttachments,
-  wipeCacheDirectory,
-} from "../file-transfer-service";
+const HOUR = 60 * 60 * 1000;
+const DAY = 24 * HOUR;
+const T0 = 1_800_000_000_000;
 
-function setPlatform(os: "ios" | "android"): void {
-  Object.defineProperty(Platform, "OS", { value: os, configurable: true });
-}
-
-const NOW = 1_800_000_000_000;
-const DAY = 24 * 60 * 60 * 1000;
-
-function put(opts: {
-  name: string;
-  ageMs?: number;
-  size?: number;
-  lastModified?: number | null;
-  creationTime?: number | null;
-}): FakeFile {
-  const file = Object.assign(Object.create(FileSystem.File.prototype), {
-    name: opts.name,
-    size: opts.size ?? 1000,
-    lastModified:
-      opts.lastModified !== undefined
-        ? opts.lastModified
-        : NOW - (opts.ageMs ?? 0),
-    creationTime: opts.creationTime ?? null,
-    deleted: false,
-  }) as FakeFile;
-  file.delete = (): void => {
-    file.deleted = true;
-  };
-  globalThis.__disk.push(file);
-  return file;
-}
-
-// A subdirectory in the cache root, the shape of the image decode cache and the
-// pickers' temp copies.
-function putDir(name: string, children: FakeFile[]): FakeFile {
-  const dir = Object.assign(Object.create(FileSystem.Directory.prototype), {
-    name,
-    size: 0,
-    lastModified: NOW,
-    creationTime: null,
-    deleted: false,
-    list: () => children.filter((c) => !c.deleted),
-  }) as FakeFile;
-  dir.delete = (): void => {
-    dir.deleted = true;
-  };
-  globalThis.__disk.push(dir);
-  return dir;
-}
-
-// Moves a file made by put() or putDir() from the cache root into iOS tmp.
-function inTmp<T extends FakeFile>(entry: T): T {
-  globalThis.__disk = globalThis.__disk.filter((f) => f !== entry);
-  globalThis.__tmp.push(entry);
-  return entry;
+// Fresh module state per case: the throttle is module scope, like a process.
+function load(): typeof import("../media-retention") {
+  let mod!: typeof import("../media-retention");
+  jest.isolateModules(() => {
+    mod = jest.requireActual("../media-retention");
+  });
+  return mod;
 }
 
 beforeEach(() => {
-  globalThis.__disk = [];
-  globalThis.__dirExists = true;
-  globalThis.__tmp = [];
-  setPlatform("ios");
+  mockSweep.mockClear();
+  mockSweep.mockImplementation(() => 0);
+  mockDays = 7;
 });
 
-describe("sweepExpiredAttachments", () => {
-  it("deletes an attachment past the retention window", () => {
-    const old = put({ name: "airhop_old.jpg", ageMs: 8 * DAY, size: 4096 });
-    const freed = sweepExpiredAttachments(NOW);
-    expect(old.deleted).toBe(true);
-    expect(freed).toBe(4096);
+describe("sweepMediaIfDue", () => {
+  test("the first call in a process always sweeps, with the chosen window", () => {
+    const { sweepMediaIfDue } = load();
+    mockDays = 14;
+
+    expect(sweepMediaIfDue(T0)).toBe(true);
+
+    expect(mockSweep).toHaveBeenCalledWith(T0, 14 * DAY);
   });
 
-  it("keeps one inside the window", () => {
-    const fresh = put({ name: "airhop_fresh.jpg", ageMs: 6 * DAY });
-    expect(sweepExpiredAttachments(NOW)).toBe(0);
-    expect(fresh.deleted).toBe(false);
+  test("a return inside the interval does not sweep again", () => {
+    const { sweepMediaIfDue, SWEEP_INTERVAL_MS } = load();
+    sweepMediaIfDue(T0);
+
+    expect(sweepMediaIfDue(T0 + HOUR)).toBe(false);
+    expect(sweepMediaIfDue(T0 + SWEEP_INTERVAL_MS - 1)).toBe(false);
+    expect(mockSweep).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps a file exactly at the boundary", () => {
-    const edge = put({ name: "airhop_edge.jpg", ageMs: MEDIA_MAX_AGE_MS });
-    sweepExpiredAttachments(NOW);
-    expect(edge.deleted).toBe(false);
+  test("a return past the interval sweeps, so a long-lived process keeps the window", () => {
+    const { sweepMediaIfDue, SWEEP_INTERVAL_MS } = load();
+    sweepMediaIfDue(T0);
+
+    expect(sweepMediaIfDue(T0 + SWEEP_INTERVAL_MS)).toBe(true);
+    expect(sweepMediaIfDue(T0 + 21 * DAY)).toBe(true);
+    expect(mockSweep).toHaveBeenCalledTimes(3);
   });
 
-  // The cache directory is shared with the rest of the app and the OS. Only
-  // files Airhop wrote carry the prefix, and nothing else may be touched.
-  it("never touches a file without the Airhop prefix", () => {
-    const foreign = put({ name: "someone_elses.jpg", ageMs: 400 * DAY });
-    sweepExpiredAttachments(NOW);
-    expect(foreign.deleted).toBe(false);
+  test("a clock that moved backwards counts as due", () => {
+    const { sweepMediaIfDue } = load();
+    sweepMediaIfDue(T0);
+
+    expect(sweepMediaIfDue(T0 - DAY)).toBe(true);
   });
 
-  // Android has no creationTime below API 26. Deleting user content because a
-  // timestamp is missing is the worse of the two failures.
-  it("keeps a file whose age cannot be read", () => {
-    const unknown = put({
-      name: "airhop_unknown.jpg",
-      lastModified: null,
-      creationTime: null,
+  test("an unreadable cache directory does not throw out of a resume", () => {
+    const { sweepMediaIfDue } = load();
+    mockSweep.mockImplementation(() => {
+      throw new Error("ENOSPC");
     });
-    sweepExpiredAttachments(NOW);
-    expect(unknown.deleted).toBe(false);
-  });
 
-  it("falls back to creationTime when lastModified is missing", () => {
-    const old = put({
-      name: "airhop_c.jpg",
-      lastModified: null,
-      creationTime: NOW - 30 * DAY,
-    });
-    sweepExpiredAttachments(NOW);
-    expect(old.deleted).toBe(true);
-  });
-
-  // A clock that jumped backwards makes every file look like it is from the
-  // future. That must not read as "expired".
-  it("keeps a file stamped in the future", () => {
-    const future = put({ name: "airhop_future.jpg", ageMs: -30 * DAY });
-    sweepExpiredAttachments(NOW);
-    expect(future.deleted).toBe(false);
-  });
-
-  it("sweeps sent and received media alike", () => {
-    const received = put({
-      name: `${INCOMING_FILE_PREFIX}1_photo.jpg`,
-      ageMs: 10 * DAY,
-    });
-    const sent = put({ name: "airhop_out.jpg", ageMs: 10 * DAY });
-    sweepExpiredAttachments(NOW);
-    expect([received.deleted, sent.deleted]).toEqual([true, true]);
-  });
-
-  it("survives a missing cache directory", () => {
-    globalThis.__dirExists = false;
-    expect(sweepExpiredAttachments(NOW)).toBe(0);
-  });
-
-  it("a failed delete does not stop the rest of the sweep", () => {
-    const locked = put({ name: "airhop_locked.jpg", ageMs: 10 * DAY });
-    locked.delete = (): never => {
-      throw new Error("EBUSY");
-    };
-    const other = put({ name: "airhop_other.jpg", ageMs: 10 * DAY, size: 77 });
-    const freed = sweepExpiredAttachments(NOW);
-    expect(other.deleted).toBe(true);
-    // Only what was actually removed is counted as freed.
-    expect(freed).toBe(77);
-  });
-
-  it("honours a caller-supplied window", () => {
-    const file = put({ name: "airhop_x.jpg", ageMs: 2 * DAY });
-    sweepExpiredAttachments(NOW, 1 * DAY);
-    expect(file.deleted).toBe(true);
-  });
-
-  // The sweep runs at launch and every delete is a synchronous native call, so
-  // it is bounded. The bound is not a silent truncation: it runs again next
-  // launch, and nothing older is being created behind it.
-  it("bounds how much it deletes in one pass, and finishes on the next", () => {
-    for (let i = 0; i < 250; i++) {
-      put({ name: `airhop_${String(i)}.jpg`, ageMs: 30 * DAY, size: 10 });
-    }
-    sweepExpiredAttachments(NOW);
-    const leftAfterFirst = globalThis.__disk.filter((f) => !f.deleted).length;
-    expect(leftAfterFirst).toBeGreaterThan(0);
-    expect(leftAfterFirst).toBeLessThan(250);
-
-    // Second launch clears the remainder.
-    sweepExpiredAttachments(NOW);
-    expect(globalThis.__disk.every((f) => f.deleted)).toBe(true);
-  });
-
-  // iOS leaves a recorded video's original and the system's copy of a picked
-  // document under tmp, where no prefix applies.
-  it("on iOS, ages out the pickers' leftovers in tmp and its Inbox", () => {
-    const capture = inTmp(put({ name: "capture.MOV", ageMs: 10 * DAY }));
-    const fresh = inTmp(put({ name: "recent.MOV", ageMs: 1 * DAY }));
-    const document = put({ name: "report.pdf", ageMs: 10 * DAY });
-    globalThis.__disk = globalThis.__disk.filter((f) => f !== document);
-    inTmp(putDir("org.onemindlabs.airhop-Inbox", [document]));
-
-    sweepExpiredAttachments(NOW);
-
-    expect(capture.deleted).toBe(true);
-    expect(document.deleted).toBe(true);
-    expect(fresh.deleted).toBe(false);
-  });
-
-  // Other libraries keep work in flight under tmp; only the top level and the
-  // Inbox are the pickers'.
-  it("on iOS, never walks any other directory in tmp", () => {
-    const busy = put({ name: "upload.part", ageMs: 10 * DAY });
-    globalThis.__disk = globalThis.__disk.filter((f) => f !== busy);
-    const other = inTmp(putDir("com.somelib.uploads", [busy]));
-    sweepExpiredAttachments(NOW);
-    expect(busy.deleted).toBe(false);
-    expect(other.deleted).toBe(false);
-  });
-
-  it("leaves tmp alone on Android", () => {
-    setPlatform("android");
-    const stray = inTmp(put({ name: "capture.mp4", ageMs: 10 * DAY }));
-    sweepExpiredAttachments(NOW);
-    expect(stray.deleted).toBe(false);
-  });
-
-  // A move keeps the source's modification time, so a document picked on iOS
-  // arrives in the cache carrying the date it was written, not the date it was
-  // sent. Its adoption time is in its name.
-  it("ages an adopted file from when it was adopted, not its source's date", () => {
-    const sent = put({
-      name: `airhop_${String(NOW - 1 * DAY)}_1_report.pdf`,
-      lastModified: NOW - 400 * DAY,
-    });
-    const stale = put({
-      name: `airhop_${String(NOW - 10 * DAY)}_2_old.pdf`,
-      lastModified: NOW,
-    });
-    sweepExpiredAttachments(NOW);
-    expect(sent.deleted).toBe(false);
-    expect(stale.deleted).toBe(true);
+    expect(() => sweepMediaIfDue(T0)).not.toThrow();
   });
 });
 
-// Clear promises media "removed from this device, sent and received alike",
-// so it takes the iOS copies retention and the wipe take, and Storage counts
-// them.
-describe("clearAttachmentCache", () => {
-  it("on iOS, counts and removes the pickers' leftovers in tmp and its Inbox", () => {
-    const ours = put({ name: "airhop_photo.jpg", size: 100 });
-    const capture = inTmp(put({ name: "capture.MOV", size: 20 }));
-    const document = put({ name: "report.pdf", size: 3 });
-    globalThis.__disk = globalThis.__disk.filter((f) => f !== document);
-    inTmp(putDir("org.onemindlabs.airhop-Inbox", [document]));
-    const busy = put({ name: "upload.part", size: 5 });
-    globalThis.__disk = globalThis.__disk.filter((f) => f !== busy);
-    inTmp(putDir("com.somelib.uploads", [busy]));
+describe("sweepMediaNow", () => {
+  test("sweeps inside the interval, with the window as it now stands", () => {
+    const { sweepMediaIfDue, sweepMediaNow } = load();
+    mockDays = 30;
+    sweepMediaIfDue(T0);
+    mockDays = 7;
 
-    expect(getAttachmentCacheBytes()).toBe(123);
-    expect(clearAttachmentCache()).toBe(123);
-    expect([ours.deleted, capture.deleted, document.deleted]).toEqual([
-      true,
-      true,
-      true,
-    ]);
-    expect(busy.deleted).toBe(false);
-  });
+    sweepMediaNow(T0 + HOUR);
 
-  it("leaves tmp alone on Android", () => {
-    setPlatform("android");
-    const stray = inTmp(put({ name: "capture.mp4", size: 20 }));
-    expect(getAttachmentCacheBytes()).toBe(0);
-    clearAttachmentCache();
-    expect(stray.deleted).toBe(false);
-  });
-});
-
-describe("discardPickerCopy", () => {
-  it("deletes a picker's copy under the cache", () => {
-    const uri = "file:///app/Library/Caches/DocumentPicker/report.pdf";
-    globalThis.__byUri.add(uri);
-    discardPickerCopy(uri);
-    expect(globalThis.__byUri.has(uri)).toBe(false);
-  });
-
-  it("never deletes a file outside the cache", () => {
-    const uri = "file:///app/Documents/keep.pdf";
-    globalThis.__byUri.add(uri);
-    discardPickerCopy(uri);
-    expect(globalThis.__byUri.has(uri)).toBe(true);
-  });
-});
-
-describe("wipeCacheDirectory", () => {
-  // "Nothing survives" includes the copies iOS keeps outside the cache.
-  it("on iOS, empties tmp as well, fresh files included", async () => {
-    const capture = inTmp(put({ name: "capture.MOV" }));
-    const document = put({ name: "report.pdf" });
-    globalThis.__disk = globalThis.__disk.filter((f) => f !== document);
-    const inbox = inTmp(putDir("org.onemindlabs.airhop-Inbox", [document]));
-
-    await wipeCacheDirectory();
-
-    expect([capture.deleted, document.deleted, inbox.deleted]).toEqual([
-      true,
-      true,
-      true,
-    ]);
-  });
-
-  it("leaves tmp alone on Android, where the pickers never use it", async () => {
-    setPlatform("android");
-    const stray = inTmp(put({ name: "other.bin" }));
-    await wipeCacheDirectory();
-    expect(stray.deleted).toBe(false);
-  });
-
-  it("empties the whole directory, whatever a file is called", () => {
-    // A wipe takes everything under the cache, prefixed or not: sent documents,
-    // in-budget images and the saved QR card carry no prefix.
-    const ours = put({ name: "airhop_photo.jpg" });
-    const theirs = put({ name: "IMG_4021.HEIC" });
-    const qr = put({ name: "airhop-qr-a1b2c3d4.png" });
-
-    return wipeCacheDirectory().then(() => {
-      expect([ours.deleted, theirs.deleted, qr.deleted]).toEqual([
-        true,
-        true,
-        true,
-      ]);
-    });
-  });
-
-  it("walks into a subdirectory instead of handing it to one opaque delete", async () => {
-    // A directory of thousands of files deleted as one call is one synchronous
-    // operation with nowhere to yield inside it.
-    const inner = [{ name: "a.bin" }, { name: "b.bin" }, { name: "c.bin" }].map(
-      (f) => put(f),
-    );
-    // Nested files are reachable only through the directory, not the root.
-    globalThis.__disk = globalThis.__disk.filter((f) => !inner.includes(f));
-    const dir = putDir("image_manager_disk_cache", inner);
-
-    await wipeCacheDirectory();
-
-    expect(inner.every((f) => f.deleted)).toBe(true);
-    expect(dir.deleted).toBe(true);
-  });
-
-  it("hands the thread back rather than holding it for the whole walk", async () => {
-    // Enough entries to cross a batch boundary, then check the work is
-    // genuinely unfinished at the point the thread comes back.
-    for (let i = 0; i < 40; i++) put({ name: `f${String(i)}.bin` });
-
-    const wipe = wipeCacheDirectory();
-    expect(globalThis.__disk.some((f) => !f.deleted)).toBe(true);
-
-    await wipe;
-    expect(globalThis.__disk.every((f) => f.deleted)).toBe(true);
-  });
-
-  it("keeps going when one entry refuses to be deleted", async () => {
-    const locked = put({ name: "locked.bin" });
-    locked.delete = (): void => {
-      throw new Error("in use");
-    };
-    const after = put({ name: "after.bin" });
-
-    await wipeCacheDirectory();
-
-    expect(locked.deleted).toBe(false);
-    expect(after.deleted).toBe(true);
-  });
-
-  it("still removes a subtree deeper than it will walk", async () => {
-    // Past WIPE_MAX_DEPTH one delete takes the rest. The walk stops YIELDING
-    // inside that subtree, not destroying it.
-    const buried = put({ name: "buried.bin" });
-    globalThis.__disk = globalThis.__disk.filter((f) => f !== buried);
-    let node = putDir("d0", [buried]);
-    globalThis.__disk = globalThis.__disk.filter((f) => f !== node);
-    for (let depth = 1; depth <= 10; depth++) {
-      const parent = putDir(`d${String(depth)}`, [node]);
-      globalThis.__disk = globalThis.__disk.filter((f) => f !== parent);
-      node = parent;
-    }
-    globalThis.__disk.push(node);
-
-    await wipeCacheDirectory();
-
-    expect(node.deleted).toBe(true);
-  });
-
-  it("does nothing when there is no cache directory", async () => {
-    globalThis.__dirExists = false;
-    await expect(wipeCacheDirectory()).resolves.toBeUndefined();
+    expect(mockSweep).toHaveBeenLastCalledWith(T0 + HOUR, 7 * DAY);
+    // And the interval restarts from it, like any other sweep.
+    expect(sweepMediaIfDue(T0 + 2 * HOUR)).toBe(false);
   });
 });

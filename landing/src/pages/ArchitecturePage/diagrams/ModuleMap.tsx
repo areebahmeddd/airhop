@@ -3,7 +3,10 @@ import { Arrow, FILL, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
 export function ModuleMap() {
   const layers = [
     { label: "src/ui", sub: "shared components, theme tokens. Renders, decides nothing." },
-    { label: "src/features", sub: "chat · discovery · wallet · contacts · settings · onboarding" },
+    {
+      label: "src/features",
+      sub: "chat · discovery · wallet · contacts · settings · onboarding · lock",
+    },
     {
       label: "src/store",
       sub: "Zustand slices persisted to MMKV. wallet-store is AES-256 encrypted.",
@@ -14,7 +17,7 @@ export function ModuleMap() {
     },
     {
       label: "src/core",
-      sub: "crypto · mesh · nostr · payments · router. Pure TypeScript, no native imports.",
+      sub: "crypto · mesh · nostr · payments · router · move. Pure TypeScript, no native imports.",
     },
     { label: "src/bridge", sub: "TurboModule specs. The only place native and TypeScript meet." },
     {

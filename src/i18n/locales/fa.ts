@@ -798,6 +798,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "اجازهٔ هشدار زنگ",
   "chat.contact.allow_ring_desc":
     "به آن‌ها اجازه دهید برای جلب توجه شما، حتی اگر این گفتگو بی‌صدا باشد، تلفن‌تان را به صدا درآورند. حالت بی‌صدا و مزاحم نشوید همچنان اعمال می‌شوند.",
+  "chat.contact.allow_ring_needs_keys":
+    "هنوز کلیدی برای این مخاطب نیست. به آن‌ها پیام بدهید، یا کدشان را بپویید، تا بتوانند برایتان زنگ بزنند.",
+  "chat.contact.allow_ring_master_off":
+    "تا {setting} را در تنظیمات روشن نکنید، هیچ‌کس نمی‌تواند تلفن‌تان را به صدا درآورد.",
   "chat.contact.ring_action": "زنگ زدن",
   "chat.contact.ringing": "در حال زنگ زدن…",
   "chat.contact.ring_hint_nearby":
@@ -928,7 +932,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "اجازه بده",
   "mesh.banner.action.resume": "از سر بگیر",
   "mesh.banner.action.fix": "درست کن",
-  "mesh.banner.hint.resume": "پخش و پویش بلوتوث را دوباره روشن می‌کند",
+  "mesh.banner.hint.resume": "مش را دوباره راه‌اندازی می‌کند",
   "mesh.banner.hint.enable_bluetooth": "از Android می‌خواهد بلوتوث را روشن کند",
   "mesh.banner.hint.location_settings":
     "تنظیمات موقعیت مکانی سیستم را باز می‌کند",
@@ -1730,9 +1734,11 @@ export const strings: Strings = {
     "هنوز کلیدی برای این مخاطب نیست. به آن‌ها پیام بدهید، یا وقتی دیدارشان کردید کدشان را بپویید.",
   "contacts.verify.compare_title": "این‌ها را برای هم بخوانید",
   "contacts.verify.compare_body":
-    "{name} همان شش واژه را می‌بیند. اگر یکی بودند، هر دو می‌دانید کلیدها واقعی‌اند.",
+    "{name} همان شش واژه را در Airhop می‌بیند. اگر یکی بودند، هر دو می‌دانید کلیدها واقعی‌اند. bitchat چنین واژه‌هایی نشان نمی‌دهد، پس به‌جای آن کدشان را بپویید.",
   "contacts.verify.codes_match": "این‌ها یکی هستند",
   "contacts.verify.codes_differ": "یکی نیستند",
+  "contacts.verify.codes_differ_body":
+    "شاید کلیدهای این گوشی مال {name} نباشند. پیش از اعتماد به این گفتگو، کدشان را حضوری بپویید.",
   "contacts.verify.compared_body":
     "شما و {name} یک کد را تأیید کردید. این مخاطب تأیید شد.",
 
@@ -1767,8 +1773,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "قابلیت‌های اختیاری، لغو ارسال، رسانه، بازنشانی",
   "settings.section.privacy": "حریم خصوصی و امنیت",
-  "settings.section.privacy_desc":
-    "رازداری پیش‌رو، بسته‌های امضاشده، همتاهای مسدود",
+  "settings.section.privacy_desc": "قفل Airhop، اعلان‌ها، همتاهای مسدود",
   "settings.section.network": "شبکه و رله‌ها",
   "settings.section.network_desc":
     "اینترنت جایگزین، رله‌های Nostr، سازگاری با bitchat",
@@ -1889,10 +1894,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "گفتگوها را بیش از همه خواندنی نگه می‌دارد و بیشترین فضا را هم می‌گیرد.",
   "settings.general.reset_desc":
-    "هر ترجیحی را به حالت پیش‌فرض بازمی‌گرداند و هویت، پیام‌ها، مخاطبان و کیف پول شما را دست‌نخورده می‌گذارد",
+    "ترجیحات را به حالت پیش‌فرض بازمی‌گرداند و هویت، پیام‌ها، مخاطبان و کیف پول شما را دست‌نخورده می‌گذارد",
   "settings.general.reset_title": "تنظیمات بازنشانی شود؟",
   "settings.general.reset_body":
-    "هر ترجیحی به پیش‌فرض بازمی‌گردد: ظاهر، لغو ارسال، و اتصال (اینترنت، Tor، دروازه، پل، رله‌ها). هویت، پیام‌ها، مخاطبان و کیف پول شما دست‌نخورده می‌مانند.",
+    "ترجیحات به پیش‌فرض بازمی‌گردند، از جمله ظاهر، زبان، اعلان‌ها، لغو ارسال، و اتصال (اینترنت، Tor، دروازه، پل، رله‌ها). قفل Airhop، مدت نگهداری رسانه، و وضعیت شما همان‌طور که تنظیم کرده‌اید می‌مانند. هویت، پیام‌ها، مخاطبان و کیف پول شما دست‌نخورده می‌مانند.",
   "settings.general.reset_confirm": "بازنشانی",
 
   // ---- Settings: privacy and security ----
@@ -1907,6 +1912,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "هشدارهای زنگ",
   "settings.security.ring_alerts_desc":
     "کلید اصلی زنگ. خاموش کردن آن هر زنگی را فوراً رد می‌کند، صرف‌نظر از اجازه‌ای که به هر مخاطب داده‌اید.",
+  "settings.security.background_notice": "اعلان پس‌زمینه",
+  "settings.security.background_notice_desc":
+    "بی‌صدا یا پنهانش کن. هشدارهای پیام روشن می‌مانند.",
   "settings.security.no_blocked": "همتای مسدودی نیست",
   "settings.security.no_blocked_desc":
     "همتاهای مسدود نمی‌توانند به شما پیام بدهند و در زبانهٔ مش نمایان نمی‌شوند",
@@ -1937,7 +1945,7 @@ export const strings: Strings = {
     "وقتی همتاهای مش بیرون از محدوده‌اند، از راه رله‌های Nostr ادامه بده",
   "settings.network.internet_off_title": "اینترنت خاموش شود؟",
   "settings.network.internet_off_body":
-    "Airhop فقط روی بلوتوث کار خواهد کرد. تماس با هر رلهٔ Nostr قطع می‌شود، و Tor و دروازهٔ اینترنت و پل مش همگی خاموش می‌شوند. گفتگوی بلوتوثی نزدیک به کار خود ادامه می‌دهد.",
+    "Airhop فقط روی بلوتوث کار خواهد کرد. تماس با هر رلهٔ Nostr قطع می‌شود، و Tor و دروازهٔ اینترنت و پل مش تا روشن شدن دوبارهٔ اینترنت متوقف می‌مانند. گفتگوی بلوتوثی نزدیک به کار خود ادامه می‌دهد.",
   "settings.network.turn_off": "خاموش کن",
   "settings.network.discovery": "کشف رلهٔ جغرافیایی",
   "settings.network.discovery_desc":
@@ -2019,7 +2027,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "مانند بی‌سیم با آدم‌های نزدیک حرف بزنید",
   "settings.conn.live_voice_on_title": "صدای زنده روشن شود؟",
   "settings.conn.live_voice_on_body":
-    "با نگه داشتن میکروفون، صدای شما همان‌طور که حرف می‌زنید به همهٔ کسانی که در محدودهٔ بلوتوث‌اند می‌رسد، و صدای آن‌ها هم روی گوشی شما پخش می‌شود. هیچ چیزی ضبط نمی‌شود.",
+    "با نگه داشتن میکروفون، صدای شما همان‌طور که حرف می‌زنید به همهٔ کسانی که در محدودهٔ بلوتوث‌اند می‌رسد، و صدای آن‌ها هم روی گوشی شما پخش می‌شود. وقتی رهایش کنید، همان صدا به‌صورت پیام صوتی هم فرستاده می‌شود.",
   "settings.conn.live_voice_off_title": "صدای زنده خاموش شود؟",
   "settings.conn.live_voice_off_body":
     "نگه داشتن میکروفون به جایش یک پیام صوتی ضبط می‌کند. با رها کردن فرستاده می‌شود، و تا کسی پخشش نکند نمی‌شنود.",
@@ -2068,7 +2076,7 @@ export const strings: Strings = {
     "اتصال خود را به گوشی برون‌خطی نزدیک قرض بدهید تا آن هم بتواند به کانال‌های موقعیت برسد",
   "settings.conn.gateway_on_title": "دروازهٔ اینترنت روشن شود؟",
   "settings.conn.gateway_on_body":
-    "گوشی‌های نزدیک که اتصال خودشان را ندارند، پیام‌های کانال موقعیت را از راه شما می‌فرستند و می‌گیرند. این کار از دادهٔ همراه و باتری شما مصرف می‌کند، و پیام‌هایشان سرتاسر رمزگذاری‌شده می‌ماند، پس شما نمی‌توانید آنچه را می‌گذرد بخوانید.",
+    "گوشی‌های نزدیک که اتصال خودشان را ندارند، پیام‌های کانال موقعیت را از راه شما می‌فرستند و می‌گیرند. این کار از دادهٔ همراه و باتری شما مصرف می‌کند. این پیام‌ها پست‌های عمومی‌اند که نویسندگانشان امضا کرده‌اند، پس آنچه را می‌گذرد می‌توانید بخوانید اما نمی‌توانید تغییر دهید.",
   "settings.conn.gateway_off_title": "دروازهٔ اینترنت خاموش شود؟",
   "settings.conn.gateway_off_body":
     "گوشی‌های برون‌خط نزدیک دیگر از راه شما به کانال‌های موقعیت نمی‌رسند. پیام‌های خودتان بی‌تأثیر می‌مانند.",
@@ -2077,10 +2085,10 @@ export const strings: Strings = {
     "گفتگوی عمومی #bluetooth این منطقه را از راه اینترنت به جمع بلوتوثی دیگری بیرون از محدوده پیوند بده",
   "settings.conn.bridge_on_title": "پل مش روشن شود؟",
   "settings.conn.bridge_on_body":
-    "پیام‌های عمومی #bluetooth شما از راه اینترنت در محلهٔ شما منتشر می‌شوند، تا کسانی بیرون از محدودهٔ بلوتوث هم بتوانند بخوانند. پیام‌های خصوصی هرگز از پل نمی‌گذرند، و «فقط نزدیک» هر پیام مشخصی را محلی نگه می‌دارد.",
+    "پیام‌های عمومی #bluetooth شما از راه اینترنت در محلهٔ شما منتشر می‌شوند، تا کسانی بیرون از محدودهٔ بلوتوث هم بتوانند بخوانند. گوشی شما پیام‌های پل‌خوردهٔ گوشی‌های نزدیک را هم با دادهٔ شما می‌رساند. پیام‌های خصوصی هرگز از پل نمی‌گذرند، و «فقط نزدیک» هر پیام مشخصی را محلی نگه می‌دارد.",
   "settings.conn.bridge_off_title": "پل مش خاموش شود؟",
   "settings.conn.bridge_off_body":
-    "پیام‌های عمومی #bluetooth شما دوباره در محدودهٔ بلوتوث می‌مانند، و پیام‌های آن جمعِ پل‌خورده دیگر به اینجا نمی‌رسند.",
+    "پیام‌های عمومی #bluetooth شما دوباره در محدودهٔ بلوتوث می‌مانند، و گوشی شما دیگر پیام‌های پل‌خورده را برای دیگران نمی‌رساند. پیام‌هایی که یک پل نزدیک از راه بلوتوث می‌آورد همچنان اینجا نشان داده می‌شوند.",
   "settings.conn.bridge_needs_location": "پل مش به موقعیت مکانی نیاز دارد",
   "settings.conn.bridge_needs_location_desc":
     "محلهٔ شما را از روی یک تثبیت موقعیت پیدا می‌کند. برای آغاز پل‌زدن به موقعیت مکانی اجازه بدهید.",
@@ -2117,7 +2125,7 @@ export const strings: Strings = {
   "settings.permissions.system": "سیستم",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "مصرف شبکه",
+  "settings.storage.mesh_traffic": "ترافیک مش",
   "settings.storage.storage_usage": "مصرف حافظه",
   "settings.storage.storage_usage_desc": "پیام‌ها، ecash و پیوست‌های ذخیره‌شده",
   "settings.storage.session_usage":
@@ -2197,7 +2205,8 @@ export const strings: Strings = {
   "settings.status.away": "دور",
   "settings.status.away_desc": "مش متوقف، نه پویش نه پخش",
   "settings.status.invisible": "نامرئی",
-  "settings.status.invisible_desc": "در حال پویش، اما پنهان از کشف",
+  "settings.status.invisible_desc":
+    "پنهان از پویش‌های بلوتوث، ولی گوشی‌هایی که به آن‌ها وصل می‌شوید همچنان شما را می‌بینند",
   "settings.status.title": "وضعیت",
   "settings.status.set_a11y": "وضعیت روی {value} تنظیم شود",
   "settings.status.edit": "ویرایش وضعیت",

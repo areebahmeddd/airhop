@@ -46,7 +46,7 @@ export function createExpoFileSystemMock(): unknown {
       if (!disk.has(this.uri)) disk.set(this.uri, { bytes: new Uint8Array(0) });
     }
 
-    write(data: Uint8Array | string): void {
+    writeSync(data: Uint8Array | string): void {
       const bytes =
         typeof data === "string"
           ? Uint8Array.from(data, (c) => c.charCodeAt(0))
@@ -112,20 +112,12 @@ export const media = {
   jpeg(bytes = 40_000): Uint8Array {
     return withHeader([0xff, 0xd8, 0xff, 0xe0], bytes);
   },
-  png(bytes = 40_000): Uint8Array {
-    return withHeader([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], bytes);
-  },
   pdf(bytes = 20_000): Uint8Array {
     return withHeader([0x25, 0x50, 0x44, 0x46, 0x2d], bytes);
   },
   // An ADTS-framed AAC file, which is what a recorded voice note is.
   voiceNote(bytes = 30_000): Uint8Array {
     return withHeader([0xff, 0xf1, 0x50, 0x80], bytes);
-  },
-  // Anything at all: resolves to application/octet-stream, which is always
-  // accepted and renders as a document.
-  blob(bytes = 5_000): Uint8Array {
-    return withHeader([0x00], bytes);
   },
 };
 

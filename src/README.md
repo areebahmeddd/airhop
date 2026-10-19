@@ -80,7 +80,7 @@ npm test
 npm run test:watch
 
 # Run one area
-npm test -- --testPathPattern=src/core
+npm test -- src/core
 
 # Run with coverage
 npm run coverage
@@ -101,18 +101,23 @@ Suites that exercise the whole app rather than one module live under
 | `lifecycle/`  | Cold start, mid-session transport changes, teardown            |
 | `simulation/` | The multi-device simulator, its world model, and its scenarios |
 
-All tests under `src/core/` run with `@jest-environment node`, so they execute
-without React Native.
+Every suite runs in the Node environment the jest config names
+(`__tests__/harness/node-environment.js`), so `src/core/` tests execute without
+React Native. A `@jest-environment` pragma would bypass it, so none is used.
 
 ### Testing philosophy
 
 The test suite follows four principles:
 
-- **Never depend on the system clock.** Tests run under fake timers, and
-  anything requiring a timestamp receives it from the harness. This avoids
-  failures that only appear on slower CI machines.
-- **Always seed randomness.** Every simulation scenario uses a deterministic
-  PRNG seed so failures can be reproduced exactly.
+- **Never depend on the system clock.** A suite opts in to fake timers, and
+  pins the clock with `setSystemTime`, wherever time matters, and anything
+  requiring a timestamp receives it from the harness. This avoids failures that
+  only appear on slower CI machines.
+- **Always seed randomness.** Every simulation scenario takes a seed that fixes
+  its schedule: the radio's faults and timings, the app's own jitter and the
+  wall clock, so a failure re-runs on the same interleaving. Keys, nonces and
+  handshake ephemerals stay truly random, so the ciphertext differs between
+  runs.
 - **Assert invariants instead of execution order.** Distributed systems rarely
   have a single valid message sequence. Tests verify properties that must always
   hold regardless of scheduling.
@@ -130,7 +135,7 @@ The test suite follows four principles:
 | `core/nostr/`    | Gift-wrap, geohash identity, relay discovery, bitchat interoperability | Live network calls (`NostrClient` mocked) |
 | `core/payments/` | Cashu BDHKE, DLEQ, proof selection, Nutzap, seed handling              | Mint connectivity                         |
 | `core/router/`   | Peer registry and transport selection                                  | Native transports                         |
-| `i18n/`          | Translation catalog completeness                                       | None                                      |
+| `i18n/`          | Catalog completeness, plural rules, right-to-left layout helpers       | None                                      |
 | `services/`      | Per-service behaviour: payments, geohash channels, transfers, policy   | Physical radios (simulated)               |
 | `store/`         | State transitions and persistence shape                                | MMKV persistence (mocked)                 |
 | `platform/`      | OEM battery-settings URI resolution, device-owner authentication       | OS dialogs                                |

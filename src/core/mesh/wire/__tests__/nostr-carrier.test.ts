@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // NostrCarrier wire codec (0x28), byte-compatible with bitchat.
 import {
   CARRIER_MAX_EVENT_JSON_BYTES,

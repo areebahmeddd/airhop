@@ -6,10 +6,9 @@
 import { t } from "@i18n";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
-import PrimaryButton from "@ui/components/primary-button";
+import { render, screen, userEvent } from "@testing-library/react-native";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { act, create, type ReactTestRenderer } from "react-test-renderer";
 import VersionScreen, { updateNetworkBlock } from "../version-screen";
 
 // The first render loads the icon font and the whole settings tree, which can
@@ -54,8 +53,6 @@ const METRICS = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-let screen: ReactTestRenderer | null = null;
-
 beforeEach(() => {
   fetchMock.mockReset();
   mockCreateDownloadTask.mockReset();
@@ -66,31 +63,21 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  act(() => screen?.unmount());
-  screen = null;
   jest.restoreAllMocks();
 });
 
-async function render(): Promise<ReactTestRenderer> {
-  await act(async () => {
-    screen = create(
-      <SafeAreaProvider initialMetrics={METRICS}>
-        <VersionScreen onBack={() => {}} />
-      </SafeAreaProvider>,
-    );
-  });
-  return screen as unknown as ReactTestRenderer;
+async function renderScreen(): Promise<void> {
+  await render(
+    <SafeAreaProvider initialMetrics={METRICS}>
+      <VersionScreen onBack={() => {}} />
+    </SafeAreaProvider>,
+  );
 }
 
-async function tapButton(r: ReactTestRenderer): Promise<void> {
-  await act(async () => {
-    r.root.findByType(PrimaryButton).props.onPress();
-    await Promise.resolve();
-  });
-}
-
-function shows(r: ReactTestRenderer, text: string): boolean {
-  return JSON.stringify(r.toJSON()).includes(JSON.stringify(text).slice(1, -1));
+// Case-sensitive substring match: a rich-text sentence splits around its
+// nodes, so a catalog fragment is only ever part of a Text's content.
+function containing(text: string): RegExp {
+  return new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
 }
 
 const internetOffLine = (): string =>
@@ -100,26 +87,35 @@ const internetOffLine = (): string =>
 
 describe("with the internet off", () => {
   it("does not ask GitHub, and says why", async () => {
+    const user = userEvent.setup();
     useSettingsStore.setState({ internetEnabled: false });
-    const r = await render();
+    await renderScreen();
 
-    await tapButton(r);
+    await user.press(
+      screen.getByRole("button", { name: t("settings.version.check") }),
+    );
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(shows(r, internetOffLine())).toBe(true);
+    expect(screen.getByText(internetOffLine())).toBeOnTheScreen();
   });
 
   it("does not download an update found before the internet went off", async () => {
+    const user = userEvent.setup();
     fetchMock.mockResolvedValue(NEWER_RELEASE);
-    const r = await render();
-    await tapButton(r);
+    await renderScreen();
+    await user.press(
+      screen.getByRole("button", { name: t("settings.version.check") }),
+    );
+    const updateButton = await screen.findByRole("button", {
+      name: t("settings.version.update_to_a11y", { version: "99.0.0" }),
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     useSettingsStore.setState({ internetEnabled: false });
-    await tapButton(r);
+    await user.press(updateButton);
 
     expect(mockCreateDownloadTask).not.toHaveBeenCalled();
-    expect(shows(r, internetOffLine())).toBe(true);
+    expect(screen.getByText(internetOffLine())).toBeOnTheScreen();
   });
 });
 
@@ -127,15 +123,15 @@ describe("with the internet off", () => {
 // name wherever their language puts them.
 describe("the credit line", () => {
   it("renders the catalog sentence around the heart and the author", async () => {
-    const r = await render();
+    await renderScreen();
 
     for (const part of t("settings.version.credit").split(/\{\w+\}/)) {
-      if (part.trim() !== "") expect(shows(r, part)).toBe(true);
+      if (part.trim() !== "") {
+        expect(screen.getByText(containing(part))).toBeOnTheScreen();
+      }
     }
     expect(
-      r.root.findAll(
-        (n) => n.props.accessibilityLabel === t("settings.version.heart_a11y"),
-      ).length,
+      screen.getAllByLabelText(t("settings.version.heart_a11y")).length,
     ).toBeGreaterThan(0);
   });
 });

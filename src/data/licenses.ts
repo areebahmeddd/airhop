@@ -79,11 +79,6 @@ const CATALOG: {
         repo: "https://github.com/expo/expo/tree/main/packages/expo-audio",
       },
       {
-        name: "expo-build-properties",
-        license: "MIT",
-        repo: "https://github.com/expo/expo/tree/main/packages/expo-build-properties",
-      },
-      {
         name: "expo-camera",
         license: "MIT",
         repo: "https://github.com/expo/expo/tree/main/packages/expo-camera",
@@ -254,7 +249,7 @@ const CATALOG: {
     packages: [
       {
         name: "@cashu/cashu-ts",
-        license: "MIT",
+        license: "MIT OR Apache-2.0",
         repo: "https://github.com/cashubtc/cashu-ts",
       },
       {
@@ -330,13 +325,13 @@ const CATALOG: {
     packages: [
       {
         name: "arti",
-        version: "0.46.0",
+        version: "0.47.0",
         license: "MIT OR Apache-2.0",
         repo: "https://gitlab.torproject.org/tpo/core/arti",
       },
       {
         name: "IPtProxy",
-        version: "5.5.1",
+        version: "5.7.0",
         license: "MIT",
         repo: "https://github.com/tladesignz/IPtProxy",
       },

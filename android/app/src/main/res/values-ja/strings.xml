@@ -4,4 +4,7 @@
   <string name="mesh_notification_title">Airhopのメッシュが稼働中</string>
   <string name="mesh_notification_text">近くのメッセージを見つけて中継しています</string>
   <string name="mesh_notification_stop">メッシュを停止</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="other">圏内に%1$s台のピア</item>
+  </plurals>
 </resources>

@@ -20,6 +20,7 @@ import {
   ensureBlePermissions,
   hasBlePermissions,
 } from "@platform/ble-permissions";
+import type { PermissionLike } from "@platform/permissions";
 import type { FeatherIconName } from "@react-native-vector-icons/feather/static";
 import {
   locationPermissionState,
@@ -29,6 +30,7 @@ import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { HIT_SLOP } from "@ui/theme";
 import { Camera } from "expo-camera";
+import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import * as Notifications from "expo-notifications";
 import React, { useCallback, useEffect, useState } from "react";
@@ -134,9 +136,27 @@ const PERMISSIONS: PermMeta[] = [
 
 // Turn an Expo permission response into our three real states. `canAskAgain`
 // is the only thing that separates "not yet" from "not ever without Settings".
-function toState(p: { granted: boolean; canAskAgain: boolean }): PermState {
+function toState(p: PermissionLike): PermState {
   if (p.granted) return "granted";
   return p.canAskAgain ? "askable" : "blocked";
+}
+
+// Photos is two grants on iOS and on Android 12 and below: reading the library,
+// which sending from it asks for (expo-image-picker), and adding to it, which
+// saving asks for (expo-media-library, write-only). The row names both uses, so
+// it is granted only when both are, and askable while either can still be
+// asked. On Android 13+ neither needs anything, since the system photo picker
+// and MediaStore inserts are permissionless there.
+function photoGrants(): Promise<[PermissionLike, PermissionLike]> {
+  return Promise.all([
+    ImagePicker.getMediaLibraryPermissionsAsync(),
+    MediaLibrary.getPermissionsAsync(true),
+  ]);
+}
+
+function combinedState(states: PermState[]): PermState {
+  if (states.every((s) => s === "granted")) return "granted";
+  return states.includes("askable") ? "askable" : "blocked";
 }
 
 export default function PermissionsScreen({
@@ -185,7 +205,7 @@ export default function PermissionsScreen({
         read(async () => toState(await locationPermissionState())),
         read(async () => toState(await Notifications.getPermissionsAsync())),
         read(async () => toState(await Camera.getCameraPermissionsAsync())),
-        read(async () => toState(await MediaLibrary.getPermissionsAsync(true))),
+        read(async () => combinedState((await photoGrants()).map(toState))),
         read(async () => toState(await Camera.getMicrophonePermissionsAsync())),
       ]);
 
@@ -267,9 +287,18 @@ export default function PermissionsScreen({
         case "camera":
           await Camera.requestCameraPermissionsAsync();
           break;
-        case "photos":
-          await MediaLibrary.requestPermissionsAsync(true);
+        case "photos": {
+          // Each grant still open, one after the other. Reading first: it is
+          // what sending needs, and the larger of the two.
+          const [library, save] = await photoGrants();
+          if (!library.granted && library.canAskAgain) {
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+          }
+          if (!save.granted && save.canAskAgain) {
+            await MediaLibrary.requestPermissionsAsync(true);
+          }
           break;
+        }
         case "microphone":
           await Camera.requestMicrophonePermissionsAsync();
           break;
@@ -312,7 +341,8 @@ export default function PermissionsScreen({
             ? void request(key)
             : void Linking.openSettings().catch(() => undefined)
         }
-        accessibilityLabel={
+        // Named by its row; what a flip does differs by state, so it is the hint.
+        accessibilityHint={
           state === "askable"
             ? T("settings.permissions.allow")
             : T("settings.permissions.open_settings")

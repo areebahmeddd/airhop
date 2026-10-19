@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Airhops mesh är aktiv</string>
   <string name="mesh_notification_text">Hittar och vidarebefordrar meddelanden i närheten</string>
   <string name="mesh_notification_stop">Stoppa meshen</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s peer inom räckhåll</item>
+    <item quantity="other">%1$s peers inom räckhåll</item>
+  </plurals>
 </resources>

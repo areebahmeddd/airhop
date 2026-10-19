@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A card handed over in a location DM must prove the person it names sent it,
 // in this conversation, or a forwarded copy would pass for them.
 import { ed25519 } from "@noble/curves/ed25519.js";

@@ -4,4 +4,7 @@
   <string name="mesh_notification_title">Airhop 网状网络运行中</string>
   <string name="mesh_notification_text">正在发现并中继附近的消息</string>
   <string name="mesh_notification_stop">停止网状网络</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="other">范围内有 %1$s 个节点</item>
+  </plurals>
 </resources>

@@ -1,6 +1,5 @@
-/**
- * @jest-environment node
- */
+// The OS owner check: what each lock level and prompt outcome resolves to.
+
 import { confirmDeviceOwner, isDeviceAuthInFlight } from "../device-auth";
 
 const mockLevel = jest.fn();

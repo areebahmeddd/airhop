@@ -1,4 +1,3 @@
-/** @jest-environment node */
 // The rule: a row Airhop wrote is re-rendered in the language the reader has
 // chosen, and a row a person wrote is never touched.
 //

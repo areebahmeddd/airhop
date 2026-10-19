@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Ring, end to end: the grant, the proof, the ring, and every answer. The
 // grant is made after the first message throughout, since that is the order
 // people use, and the proof that lights the button must follow it (#60).
@@ -77,9 +74,9 @@ async function acquainted(
   return { alice, bob, radio };
 }
 
-test("R01 a grant made after the first message lights the button on the other phone", async () => {
+test("RG01 a grant made after the first message lights the button on the other phone", async () => {
   const s = (scenario = new Scenario({
-    id: "R01",
+    id: "RG01",
     title: "message first, grant second, as the instructions say",
   }));
   const { alice, bob } = await acquainted(s);
@@ -120,9 +117,9 @@ test("R01 a grant made after the first message lights the button on the other ph
   s.assert();
 });
 
-test("R02 the master switch hides a granted Ring and restores it", async () => {
+test("RG02 the master switch hides a granted Ring and restores it", async () => {
   const s = (scenario = new Scenario({
-    id: "R02",
+    id: "RG02",
     title: "master switch off then on over a live grant",
   }));
   const { alice, bob } = await acquainted(s);
@@ -149,9 +146,9 @@ test("R02 the master switch hides a granted Ring and restores it", async () => {
   s.assert();
 });
 
-test("R03 a ring lands, and opening the thread answers it", async () => {
+test("RG03 a ring lands, and opening the thread answers it", async () => {
   const s = (scenario = new Scenario({
-    id: "R03",
+    id: "RG03",
     title: "ring, bell row, ack on open",
   }));
   const { alice, bob } = await acquainted(s);
@@ -180,9 +177,9 @@ test("R03 a ring lands, and opening the thread answers it", async () => {
   s.assert();
 });
 
-test("R04 a refused ring is answered with the reason, never left ringing", async () => {
+test("RG04 a refused ring is answered with the reason, never left ringing", async () => {
   const s = (scenario = new Scenario({
-    id: "R04",
+    id: "RG04",
     title: "grant revoked between proof and ring; then the cooldown",
   }));
   const { alice, bob } = await acquainted(s);
@@ -230,9 +227,9 @@ test("R04 a refused ring is answered with the reason, never left ringing", async
   s.assert();
 });
 
-test("R05 a saved contact walking into range is proven before anyone types", async () => {
+test("RG05 a saved contact walking into range is proven before anyone types", async () => {
   const s = (scenario = new Scenario({
-    id: "R05",
+    id: "RG05",
     title: "both relaunch; the grant shows up with no message sent",
   }));
   const { alice, bob } = await acquainted(s);
@@ -252,9 +249,9 @@ test("R05 a saved contact walking into range is proven before anyone types", asy
   s.assert();
 });
 
-test("R06 a grant made while the other phone is out of earshot is told when it returns", async () => {
+test("RG06 a grant made while the other phone is out of earshot is told when it returns", async () => {
   const s = (scenario = new Scenario({
-    id: "R06",
+    id: "RG06",
     title: "link down past the reachability window, grant flips, link back",
   }));
   const { alice, bob, radio } = await acquainted(s);
@@ -306,9 +303,9 @@ test("R06 a grant made while the other phone is out of earshot is told when it r
   s.assert();
 });
 
-test("R07 ring, answer, ring again; snooze, ring again, snooze over, ring again", async () => {
+test("RG07 ring, answer, ring again; snooze, ring again, snooze over, ring again", async () => {
   const s = (scenario = new Scenario({
-    id: "R07",
+    id: "RG07",
     title: "the repeat cycles a doorbell goes through in a day",
   }));
   const { alice, bob } = await acquainted(s);
@@ -363,11 +360,11 @@ test("R07 ring, answer, ring again; snooze, ring again, snooze over, ring again"
   s.assert();
 });
 
-test("R08 a ring or a pin with no link at all is refused, not reported sent", async () => {
+test("RG08 a ring or a pin with no link at all is refused, not reported sent", async () => {
   // An ordinary drop keeps the session, and the router counts a peer as
   // reachable for a minute after their last announce. Neither is a link.
   const s = (scenario = new Scenario({
-    id: "R08",
+    id: "RG08",
     title: "link down inside the reachability window, then ring and pin",
   }));
   const { alice, bob, radio } = await acquainted(s);

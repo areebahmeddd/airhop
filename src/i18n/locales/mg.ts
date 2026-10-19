@@ -823,6 +823,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Avelao ny fampandrenesana antso",
   "chat.contact.allow_ring_desc":
     "Avelao izy hampandeha ny finday hisintona ny sainao, na dia mangina aza ity resaka ity. Mbola manan-kery ny fomba mangina sy ny Aza manelingelina.",
+  "chat.contact.allow_ring_needs_keys":
+    "Mbola tsy misy lakile ho an'ity fifandraisana ity. Manorata aminy, na alaivo sary ny kaodiny, mba hahafahany maneno anao.",
+  "chat.contact.allow_ring_master_off":
+    "Tsy misy afaka mampaneno ny findainao raha tsy alefanao ao amin'ny Fikirana ny {setting}.",
   "chat.contact.ring_action": "Antsoy",
   "chat.contact.ringing": "Miantso…",
   "chat.contact.ring_hint_nearby":
@@ -965,8 +969,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Avelao",
   "mesh.banner.action.resume": "Tohizo",
   "mesh.banner.action.fix": "Amboary",
-  "mesh.banner.hint.resume":
-    "Mandefa indray ny fanambarana sy ny fikarohana Bluetooth",
+  "mesh.banner.hint.resume": "Manomboka indray ny harato",
   "mesh.banner.hint.enable_bluetooth":
     "Mangataka amin'ny Android handefa ny Bluetooth",
   "mesh.banner.hint.location_settings":
@@ -1799,9 +1802,11 @@ export const strings: Strings = {
     "Mbola tsy misy lakile ho an'ity fifandraisana ity. Manorata aminy, na alaivo sary ny kaodiny rehefa mihaona ianareo.",
   "contacts.verify.compare_title": "Vakio amin'ny tsirairay ireto",
   "contacts.verify.compare_body":
-    "Mahita ireo teny enina mitovy i {name}. Raha mifanaraka izy ireo dia samy mahafantatra ianareo fa marina ny lakile.",
+    "Mahita ireo teny enina mitovy ao amin'ny Airhop i {name}. Raha mifanaraka izy ireo dia samy mahafantatra ianareo fa marina ny lakile. Tsy mampiseho teny toy izany ny bitchat, ka alaivo sary ny kaodiny kosa.",
   "contacts.verify.codes_match": "Mifanaraka",
   "contacts.verify.codes_differ": "Tsy mifanaraka",
+  "contacts.verify.codes_differ_body":
+    "Mety tsy an'i {name} ny lakile ao amin'ity finday ity. Alaivo sary mivantana ny kaodiny alohan'ny hitokisanao ity resaka ity.",
   "contacts.verify.compared_body":
     "Nanamafy kaody mitovy ianao sy i {name}. Voamarina ity fifandraisana ity.",
 
@@ -1839,7 +1844,7 @@ export const strings: Strings = {
     "Fiasa safidy, fanafoanana fandefasana, media, famerenana",
   "settings.section.privacy": "Fiainana manokana sy fiarovana",
   "settings.section.privacy_desc":
-    "Tsiambaratelo mandroso, fonosana voasonia, teboka voasakana",
+    "Hidin'ny Airhop, fampandrenesana, teboka voasakana",
   "settings.section.network": "Tambajotra sy mpanelanelana",
   "settings.section.network_desc":
     "Fialana amin'ny Internet, mpanelanelana Nostr, fifanarahana amin'ny bitchat",
@@ -1964,10 +1969,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mitazona ny resaka ho vakiana ela indrindra, ary mitana kapila be indrindra.",
   "settings.general.reset_desc":
-    "Mamerina ny safidy rehetra amin'ny laoniny, fa tsy mikasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao",
+    "Mamerina ny safidy amin'ny laoniny, fa tsy mikasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao",
   "settings.general.reset_title": "Averina ny fandrindrana?",
   "settings.general.reset_body":
-    "Miverina amin'ny laoniny ny safidy rehetra: endrika, fanafoanana fandefasana, ary ny fifandraisana (Internet, Tor, vavahady, tetezana, mpanelanelana). Tsy voakasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao.",
+    "Miverina amin'ny laoniny ny safidy, ao anatin'izany ny endrika, ny fiteny, ny fampandrenesana, ny fanafoanana fandefasana, ary ny fifandraisana (Internet, Tor, vavahady, tetezana, mpanelanelana). Mijanona araka ny nametrahanao azy ny hidin'ny Airhop, ny faharetan'ny fitehirizana media, ary ny toe-javatrao. Tsy voakasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao.",
   "settings.general.reset_confirm": "Avereno",
 
   // ---- Settings: privacy and security ----
@@ -1984,6 +1989,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Fampandrenesana antso",
   "settings.security.ring_alerts_desc":
     "Bokotra lehibe ho an'ny Antso. Ny famonoana azy dia mandà ny antso rehetra avy hatrany, na inona na inona nomenao alalana ho an'ny olona tsirairay.",
+  "settings.security.background_notice": "Fampandrenesana any aoriana",
+  "settings.security.background_notice_desc":
+    "Ampangino na afeno. Mbola mandeha ny fampandrenesana hafatra.",
   "settings.security.no_blocked": "Tsy misy teboka voasakana",
   "settings.security.no_blocked_desc":
     "Tsy afaka manoratra aminao ny teboka voasakana ary tsy miseho amin'ny takelaka Harato",
@@ -2015,7 +2023,7 @@ export const strings: Strings = {
     "Manohy amin'ny mpanelanelana Nostr rehefa lavitra ny fetra ny teboka amin'ny harato",
   "settings.network.internet_off_title": "Hovonoina ny Internet?",
   "settings.network.internet_off_body":
-    "Bluetooth ihany no handehanan'ny Airhop. Mitsahatra tsy mifandray amin'ny mpanelanelana Nostr izy, ary vonoina daholo ny Tor, ny vavahady Internet ary ny tetezan'ny harato. Mbola mandeha ny resaka Bluetooth akaiky.",
+    "Bluetooth ihany no handehanan'ny Airhop. Mitsahatra tsy mifandray amin'ny mpanelanelana Nostr izy, ary miato ny Tor, ny vavahady Internet ary ny tetezan'ny harato mandra-piverin'ny Internet. Mbola mandeha ny resaka Bluetooth akaiky.",
   "settings.network.turn_off": "Vonoy",
   "settings.network.discovery": "Fitadiavana mpanelanelana araka ny toerana",
   "settings.network.discovery_desc":
@@ -2107,7 +2115,7 @@ export const strings: Strings = {
     "Miresaha amin'ny olona akaiky toy ny amin'ny radiô",
   "settings.conn.live_voice_on_title": "Alefa ny feo mivantana?",
   "settings.conn.live_voice_on_body":
-    "Ny fihazonana ny mikrô dia mandefa ny feonao amin'ny olona rehetra ao anatin'ny fetran'ny Bluetooth raha vao miteny ianao, ary maneno eo amin'ny findinao ny feony. Tsy misy voarakitra.",
+    "Ny fihazonana ny mikrô dia mandefa ny feonao amin'ny olona rehetra ao anatin'ny fetran'ny Bluetooth raha vao miteny ianao, ary maneno eo amin'ny findinao ny feony. Rehefa avelanao ny mikrô, dia alefa ho naoty feo koa io feo io ihany.",
   "settings.conn.live_voice_off_title": "Vonoina ny feo mivantana?",
   "settings.conn.live_voice_off_body":
     "Ny fihazonana ny mikrô dia mandrakitra naoty feo kosa. Alefa izy rehefa avelanao, ary tsy misy mandre azy raha tsy mampandeha azy.",
@@ -2161,7 +2169,7 @@ export const strings: Strings = {
     "Ampindramo ny fifandraisanao amin'ny findy akaiky tsy misy Internet mba hahatratrarany ny fantsonan-toerana",
   "settings.conn.gateway_on_title": "Alefa ny vavahady Internet?",
   "settings.conn.gateway_on_body":
-    "Ny findy akaiky tsy manana fifandraisana manokana dia handefa sy handray hafatra amin'ny fantsonan-toerana amin'ny alalanao. Mampiasa ny angonao finday sy ny bateriaonao izany, ary mijanona voafono tanteraka ny hafatr'izy ireo, ka tsy vakinao izay mandalo.",
+    "Ny findy akaiky tsy manana fifandraisana manokana dia handefa sy handray hafatra amin'ny fantsonan-toerana amin'ny alalanao. Mampiasa ny angonao finday sy ny bateriaonao izany. Lahatsoratra ho an'ny daholobe nosoniavin'ny mpanoratra azy ireo hafatra ireo, ka azonao vakiana izay mandalo nefa tsy azonao ovaina.",
   "settings.conn.gateway_off_title": "Vonoina ny vavahady Internet?",
   "settings.conn.gateway_off_body":
     "Tsy hahatratra ny fantsonan-toerana amin'ny alalanao intsony ny findy akaiky tsy misy Internet. Tsy voakasika ny hafatrao manokana.",
@@ -2170,10 +2178,10 @@ export const strings: Strings = {
     "Ampifandraiso amin'ny vondrona Bluetooth hafa lavitra ny fetra amin'ny Internet ny resaka #bluetooth ho an'ny daholobe amin'ity faritra ity",
   "settings.conn.bridge_on_title": "Alefa ny tetezan'ny harato?",
   "settings.conn.bridge_on_body":
-    "Havoaka any amin'ny fokontaninao amin'ny Internet ny hafatrao #bluetooth ho an'ny daholobe, ka ho vakin'ny olona ivelan'ny fetran'ny Bluetooth. Tsy mandalo tetezana mihitsy ny hafatra manokana, ary ny “akaiky ihany” dia mitazona ny hafatra tsirairay eo an-toerana.",
+    "Havoaka any amin'ny fokontaninao amin'ny Internet ny hafatrao #bluetooth ho an'ny daholobe, ka ho vakin'ny olona ivelan'ny fetran'ny Bluetooth. Hitondra ihany koa ny hafatra mandalo tetezana ho an'ny findy akaiky amin'ny angonao ny findinao. Tsy mandalo tetezana mihitsy ny hafatra manokana, ary ny “akaiky ihany” dia mitazona ny hafatra tsirairay eo an-toerana.",
   "settings.conn.bridge_off_title": "Vonoina ny tetezan'ny harato?",
   "settings.conn.bridge_off_body":
-    "Miverina mijanona ao anatin'ny fetran'ny Bluetooth ny hafatrao #bluetooth ho an'ny daholobe, ary mitsahatra tsy ho tonga eto ny hafatra avy amin'ny vondrona ampitan'ny tetezana.",
+    "Miverina mijanona ao anatin'ny fetran'ny Bluetooth ny hafatrao #bluetooth ho an'ny daholobe, ary mitsahatra tsy mitondra hafatra mandalo tetezana ho an'ny hafa intsony ny findinao. Mbola miseho eto ihany ny hafatra entin'ny tetezana akaiky amin'ny Bluetooth.",
   "settings.conn.bridge_needs_location": "Mila toerana ny tetezan'ny harato",
   "settings.conn.bridge_needs_location_desc":
     "Mahita ny fokontaninao avy amin'ny toerana izy. Avelao ny toerana mba hanombohana ny tetezana.",
@@ -2210,7 +2218,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Rafitra",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Fampiasana tambajotra",
+  "settings.storage.mesh_traffic": "Fifamoivoizan'ny harato",
   "settings.storage.storage_usage": "Fampiasana fitahirizana",
   "settings.storage.storage_usage_desc":
     "Hafatra, ecash ary fanampiny voatahiry vonjimaika",
@@ -2291,7 +2299,8 @@ export const strings: Strings = {
   "settings.status.away": "Lasa",
   "settings.status.away_desc": "Miato ny harato, tsy mikaroka na manambara",
   "settings.status.invisible": "Tsy hita",
-  "settings.status.invisible_desc": "Mikaroka, fa miafina tsy ho hita",
+  "settings.status.invisible_desc":
+    "Miafina amin'ny fikarohana Bluetooth, mbola hitan'ny findy ifandraisanao",
   "settings.status.title": "Toe-javatra",
   "settings.status.set_a11y": "Ataovy {value} ny toe-javatra",
   "settings.status.edit": "Ovay ny toe-javatra",

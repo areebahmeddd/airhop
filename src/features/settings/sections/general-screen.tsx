@@ -21,6 +21,7 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { syncAutoStartOnBoot } from "@services/boot-sync";
+import { sweepMediaNow } from "@services/media-retention";
 import { getMeshService } from "@services/mesh-service";
 import { setTorRouting } from "@services/tor-routing";
 import { showAlert } from "@store/alert-store";
@@ -124,6 +125,21 @@ const RETENTION_DESCRIPTION: Record<MediaRetentionDays, TranslationKey> = {
   30: "settings.general.retention_30_desc",
 };
 
+// What Reset settings leaves alone, as its confirm says.
+//   stayInvisible        status belongs to the Profile picker, and the running
+//                        mesh keeps it, so the next launch has to as well.
+//   appLockEnabled/Delay a protection the owner confirmed with their device
+//                        lock. Dropping it silently would leave the next person
+//                        to pick up the phone an open app.
+//   mediaRetentionDays   the default is the shortest window, so resetting it
+//                        could only delete media at the next sweep.
+const KEPT_BY_RESET = [
+  "stayInvisible",
+  "appLockEnabled",
+  "appLockDelaySeconds",
+  "mediaRetentionDays",
+] as const;
+
 // The unshipped features. Each row states what it will do rather than linking
 // out or staying silent about it, so the answer to "can Airhop do X" is on a
 // screen instead of only in a changelog.
@@ -175,11 +191,8 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
     // was actually on, to avoid a needless Nostr restart); the now-default
     // internet-on state is (re)applied so the transport matches. Gateway and
     // bridge react to their own settings via MeshService subscriptions.
-    const { torEnabled: torWasOn, stayInvisible } = useSettingsStore.getState();
-    useSettingsStore.getState().reset();
-    // Status belongs to the Profile picker, not to the preferences this resets,
-    // and the running mesh keeps it, so the next launch has to as well.
-    useSettingsStore.getState().setStayInvisible(stayInvisible);
+    const torWasOn = useSettingsStore.getState().torEnabled;
+    useSettingsStore.getState().reset(KEPT_BY_RESET);
     if (torWasOn) void setTorRouting(false);
     getMeshService()?.applyInternetEnabled(true);
     // Lives outside this store; AirhopBootReceiver reads it with no JS up.
@@ -361,6 +374,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                     setShowUndoSheet(false);
                   }}
                   accessibilityRole="button"
+                  accessibilityState={{ selected }}
                   accessibilityLabel={T("settings.general.undo_a11y", {
                     value: T(opt.labelKey),
                   })}
@@ -409,7 +423,9 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                     pressed && styles.rowPressed,
                   ]}
                   onPress={() => {
+                    const shorter = days < mediaRetentionDays;
                     useSettingsStore.getState().setMediaRetentionDays(days);
+                    if (shorter) sweepMediaNow();
                     setShowRetentionSheet(false);
                   }}
                   accessibilityRole="button"
@@ -468,6 +484,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                     setShowQualitySheet(false);
                   }}
                   accessibilityRole="button"
+                  accessibilityState={{ selected }}
                   accessibilityLabel={T("settings.general.quality_a11y", {
                     value: T(meta.labelKey),
                   })}

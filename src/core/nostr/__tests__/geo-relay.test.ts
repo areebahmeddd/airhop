@@ -1,6 +1,7 @@
-// The Nostr geo-relay directory, and the relay URL validation custom relays go
-// through.
+// The Nostr geo-relay directory, how deterministically it picks a cell's
+// relays, and the relay URL validation custom relays go through.
 
+import { GEO_RELAYS } from "@data/relays";
 import {
   DEFAULT_DM_RELAYS,
   GeoRelayDirectory,
@@ -10,6 +11,7 @@ import {
   relayDisplayHost,
   validateRelayUrl,
 } from "../geo-relay";
+import { decodeGeohash, encodeGeohash } from "../geohash-presence";
 
 describe("validateRelayUrl", () => {
   test("accepts a bare host and normalizes to wss://", () => {
@@ -324,5 +326,76 @@ describe("geo-relay", () => {
       expect(dir.size).toBe(1);
       expect(dir.nearestRelays(10, 20, 5)).toEqual(["wss://relay.test.com"]);
     });
+  });
+});
+
+// Everyone in a cell must converge on the SAME relay set for it, or messages get
+// published to relays nobody is subscribed to and vanish silently. The sender
+// sees their own message fine, so nothing local would notice.
+describe("relay selection determinism", () => {
+  // Two points ~1km apart in central London, and one far away.
+  const LONDON = { lat: 51.5074, lng: -0.1278 };
+  const LONDON_NEARBY = { lat: 51.5145, lng: -0.127 };
+  const TOKYO = { lat: 35.6762, lng: 139.6503 };
+
+  function directory() {
+    const d = new GeoRelayDirectory();
+    d.loadEntries(GEO_RELAYS);
+    return d;
+  }
+
+  it("loads the generated relay table", () => {
+    expect(directory().size).toBeGreaterThan(100);
+  });
+
+  it("returns the same relays for the same cell every time", () => {
+    const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
+    const a = directory().closestRelaysToGeohash(gh, decodeGeohash, 5);
+    const b = directory().closestRelaysToGeohash(gh, decodeGeohash, 5);
+    expect(a).toEqual(b);
+    expect(a).toHaveLength(5);
+  });
+
+  it("gives two people in one cell an identical relay set", () => {
+    // The load-bearing interop property. Both users decode the CELL CENTRE,
+    // not their own position, so their relay sets must match exactly.
+    const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
+    const ghOther = encodeGeohash(LONDON_NEARBY.lat, LONDON_NEARBY.lng, 5);
+    expect(ghOther).toBe(gh); // same cell, precondition
+
+    expect(directory().closestRelaysToGeohash(gh, decodeGeohash, 5)).toEqual(
+      directory().closestRelaysToGeohash(ghOther, decodeGeohash, 5),
+    );
+  });
+
+  it("breaks distance ties deterministically by URL", () => {
+    const d = new GeoRelayDirectory();
+    // Same coordinates: pure tie. Insertion order is deliberately reversed
+    // from sort order to prove ordering isn't accidental.
+    d.loadEntries([
+      { url: "wss://zzz.example", lat: 10, lng: 10 },
+      { url: "wss://aaa.example", lat: 10, lng: 10 },
+      { url: "wss://mmm.example", lat: 10, lng: 10 },
+    ]);
+    expect(d.nearestRelays(10, 10, 3)).toEqual([
+      "wss://aaa.example",
+      "wss://mmm.example",
+      "wss://zzz.example",
+    ]);
+  });
+
+  it("gives different cells different relay sets", () => {
+    const d = directory();
+    const london = d.closestRelaysToGeohash(
+      encodeGeohash(LONDON.lat, LONDON.lng, 5),
+      decodeGeohash,
+      5,
+    );
+    const tokyo = d.closestRelaysToGeohash(
+      encodeGeohash(TOKYO.lat, TOKYO.lng, 5),
+      decodeGeohash,
+      5,
+    );
+    expect(london).not.toEqual(tokyo);
   });
 });

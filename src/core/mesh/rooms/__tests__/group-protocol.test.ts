@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Private group wire + crypto (0x25 messages, creator-signed state over Noise).
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import {
@@ -47,6 +44,13 @@ describe("group roster", () => {
     expect(decoded).toHaveLength(2);
     expect(decoded[0].nickname).toBe("alice");
     expect(decoded[1].fingerprint).toBe(b.fingerprint);
+  });
+
+  it("cuts an over-long name between characters, never inside an emoji", () => {
+    // 61 bytes leave 3: too few for the emoji, room for a lone surrogate.
+    const long = member(`${"a".repeat(61)}\u{1F985}tail`).member;
+    const decoded = decodeRoster(encodeRoster([long])!)!;
+    expect(decoded[0].nickname).toBe("a".repeat(61));
   });
 });
 
@@ -206,19 +210,6 @@ describe("groupStateAction", () => {
     ).toBe("remove");
   });
 
-  // The regression. A group ID rides in the clear on every group message, so
-  // anyone who has seen one can craft this. If it returns "remove", the
-  // victim's own client destroys its group key and drops the room - a silent
-  // eviction that needs no group key and shows the victim nothing.
-  test("an attacker naming themselves creator cannot evict us", () => {
-    expect(
-      groupStateAction(state(ATTACKER, [ATTACKER]), {
-        heldCreatorFingerprint: CREATOR,
-        myFingerprint: ME,
-      }),
-    ).toBe("reject");
-  });
-
   test("an attacker naming themselves creator cannot replace the roster", () => {
     expect(
       groupStateAction(state(ATTACKER, [ATTACKER, ME]), {
@@ -261,6 +252,11 @@ describe("groupStateAction", () => {
     ).toBe("reject");
   });
 
+  // A group ID rides in the clear on every group message, so anyone who has
+  // seen one can craft the hostile state below, naming themselves creator. Were
+  // it to return "remove" against the held creator, the victim's own client
+  // would destroy its group key and drop the room: a silent eviction that needs
+  // no group key and shows the victim nothing.
   test("the creator check runs before the roster check", () => {
     // Same input differing only in the held creator. If the roster check ran
     // first, both of these would come back "remove".

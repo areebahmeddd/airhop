@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Drafts outlive a thread's remount but nothing else: an empty save removes
 // one, the cap drops the stalest, and a wipe leaves none.
 

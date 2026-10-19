@@ -4,4 +4,7 @@
   <string name="mesh_notification_title">Airhop မက်ရှ် လည်ပတ်နေသည်</string>
   <string name="mesh_notification_text">အနီးအနားက စာများကို ရှာဖွေပြီး ဆက်လက်ပို့နေသည်</string>
   <string name="mesh_notification_stop">မက်ရှ်ကို ရပ်ရန်</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="other">အကွာအဝေးအတွင်း လုပ်ဖော်ကိုင်ဖက် %1$s ဦး</item>
+  </plurals>
 </resources>

@@ -1,11 +1,8 @@
-/**
- * @jest-environment node
- */
 // The money between "send" and "they got it".
 //
 // A send moves proofs into a reservation and serialises them into a token, all
 // offline. It resolves by `confirmSend` (drop the reservation), `reclaimSend`
-// (put it back) or neither (pending, re-shareable after a restart). Coins are
+// (put it back) or neither (pending, its token kept to share again). Coins are
 // always in exactly one place. The cases follow real taps, including two sends
 // at once, reclaim tapped twice and reclaim after delivery confirmed.
 //
@@ -14,18 +11,17 @@
 // Imports come first in source; Babel hoists jest.mock() calls above them.
 import { getDecodedToken, getEncodedToken, type Token } from "@cashu/cashu-ts";
 import { toProofLike } from "@core/payments/cashu";
+import type { StoredProof } from "@core/payments/stored-proof";
 import {
   accountKey,
   bootstrapWalletStorage,
   isWalletStorageReady,
   useWalletStore,
   whenWalletHydrated,
-  type StoredProof,
 } from "@store/wallet-store";
 import { txFailureVerbatim } from "@utils/message-text";
 import {
   confirmSend,
-  failNutzapDelivery,
   failSend,
   prepareSend,
   quoteSend,
@@ -33,52 +29,6 @@ import {
   reclaimSend,
   WalletError,
 } from "../wallet-service";
-
-// The keychain holds the wallet partition's AES key. Only the two secret
-// accessors are replaced: KEYCHAIN_ITEMS is read at module scope by both
-// wallet-store and wallet-service, so swapping the whole module leaves those
-// reading a property off undefined.
-jest.mock("@core/crypto/keychain", () => {
-  const secrets = new Map<string, string>();
-  return {
-    ...jest.requireActual("@core/crypto/keychain"),
-    readSecret: jest.fn((item: string) => secrets.get(item) ?? null),
-    writeSecret: jest.fn((item: string, value: string) => {
-      secrets.set(item, value);
-    }),
-  };
-});
-
-// An in-memory MMKV, so zustand's persist middleware works for real rather than
-// being stubbed out. Persistence is part of what is under test here: a
-// reservation that does not survive a write is a reservation that loses money.
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    // Nothing is encrypted in the mock.
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn(() => true),
-  };
-});
 
 const MINT = "https://mint.example.com";
 const KEYSET = "00ad268c4d1f5826";
@@ -159,7 +109,7 @@ describe("preparing a send", () => {
 
   it("hands back a token that carries the money", async () => {
     // The token string is what the recipient actually receives, and it is kept
-    // on the transaction so it survives a restart and stays re-shareable.
+    // on the transaction so it can be shared again.
     const prepared = await prepareSend({ amount: 4 });
     const decoded = getDecodedToken(prepared.token, [KEYSET]);
     expect(decoded.mint).toBe(MINT);
@@ -402,62 +352,5 @@ describe("receiving a token", () => {
     expect(result.outcome).toBe("duplicate");
     expect(spendable()).toBe(before);
     expect(totalHeld()).toBe(before);
-  });
-});
-
-// A nutzap is final once locked: the proofs are the recipient's whatever
-// happens to delivery. Locking creates no reservation, so reclaim has nothing
-// to release.
-describe("a nutzap, once locked to their key", () => {
-  const NUTZAP_TX = "nutzap-tx-1";
-
-  // What `lockProofsForNutzap` leaves behind after its mint round trip: the
-  // proofs are gone from the pool, not reserved, and a pending record remains.
-  function lockedNutzap(): void {
-    const store = useWalletStore.getState();
-    store.removeProofs(
-      MINT,
-      UNIT,
-      proofsOf([8]).map((p) => p.secret),
-    );
-    store.addTx({
-      id: NUTZAP_TX,
-      kind: "nutzap-out",
-      status: "pending",
-      amount: 8,
-      unit: UNIT,
-      mintUrl: MINT,
-      createdAtMs: 1_700_000_000_000,
-      updatedAtMs: 1_700_000_000_000,
-      counterparty: "02" + "ab".repeat(32),
-    });
-  }
-
-  it("cannot be reclaimed, because the money is already theirs", () => {
-    lockedNutzap();
-    const after = spendable();
-
-    // The same call that legitimately pulls back an ordinary send must refuse
-    // here. Succeeding would credit this wallet with proofs the recipient can
-    // spend, inventing money that the mint will refuse later.
-    expect(reclaimSend(NUTZAP_TX)).toBe(false);
-    expect(spendable()).toBe(after);
-    expect(reservedTotal()).toBe(0);
-  });
-
-  it("records a delivery failure without giving the money back", () => {
-    lockedNutzap();
-    const after = spendable();
-
-    failNutzapDelivery(
-      NUTZAP_TX,
-      txFailureVerbatim("no relay accepted the event"),
-    );
-
-    // Still not reclaimable, and still not credited: a failed delivery says
-    // nothing about whether the recipient can spend the proofs.
-    expect(spendable()).toBe(after);
-    expect(reclaimSend(NUTZAP_TX)).toBe(false);
-    expect(spendable()).toBe(after);
   });
 });

@@ -813,6 +813,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Çağrı uyarılarına izin ver",
   "chat.contact.allow_ring_desc":
     "Bu konuşma sessize alınmış olsa bile, dikkatini çekmek için telefonunu çalmalarına izin ver. Sessiz mod ve Rahatsız Etmeyin yine de geçerlidir.",
+  "chat.contact.allow_ring_needs_keys":
+    "Bu kişi için henüz anahtar yok. Seni çağırmasına izin vermek için onlara yaz ya da kodlarını tara.",
+  "chat.contact.allow_ring_master_off":
+    "Ayarlar'da {setting} seçeneğini açana kadar kimse telefonunu çaldıramaz.",
   "chat.contact.ring_action": "Çağır",
   "chat.contact.ringing": "Çalıyor…",
   "chat.contact.ring_hint_nearby": "Çaldırma yalnızca yakındayken çalışır",
@@ -942,7 +946,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "İzin ver",
   "mesh.banner.action.resume": "Sürdür",
   "mesh.banner.action.fix": "Düzelt",
-  "mesh.banner.hint.resume": "Bluetooth yayınını ve taramasını yeniden açar",
+  "mesh.banner.hint.resume": "Mesh'i yeniden başlatır",
   "mesh.banner.hint.enable_bluetooth": "Android'den Bluetooth'u açmasını ister",
   "mesh.banner.hint.location_settings": "Sistemin konum ayarlarını açar",
   "mesh.banner.hint.app_settings": "Airhop izinlerini sistem ayarlarında açar",
@@ -1746,9 +1750,11 @@ export const strings: Strings = {
     "Bu kişi için henüz anahtar yok. Onlara yaz ya da buluştuğunuzda kodlarını tara.",
   "contacts.verify.compare_title": "Bunları birbirinize okuyun",
   "contacts.verify.compare_body":
-    "{name} de aynı altı kelimeyi görüyor. Uyuşuyorsa ikiniz de anahtarların gerçek olduğunu bilirsiniz.",
+    "{name} de Airhop'ta aynı altı kelimeyi görüyor. Uyuşuyorsa ikiniz de anahtarların gerçek olduğunu bilirsiniz. bitchat böyle kelimeler göstermez, bu yüzden onun yerine kodlarını tara.",
   "contacts.verify.codes_match": "Bunlar uyuşuyor",
   "contacts.verify.codes_differ": "Uyuşmuyorlar",
+  "contacts.verify.codes_differ_body":
+    "Bu telefondaki anahtarlar {name} kişisine ait olmayabilir. Bu sohbete güvenmeden önce kodlarını yüz yüze tara.",
   "contacts.verify.compared_body":
     "Sen ve {name} aynı kodu doğruladınız. Bu kişi doğrulandı.",
 
@@ -1784,7 +1790,7 @@ export const strings: Strings = {
     "İsteğe bağlı özellikler, göndermeyi geri alma, medya, sıfırlama",
   "settings.section.privacy": "Gizlilik ve güvenlik",
   "settings.section.privacy_desc":
-    "Forward secrecy, imzalı paketler, engellenen eşler",
+    "Airhop kilidi, bildirimler, engellenen eşler",
   "settings.section.network": "Ağ ve aktarıcılar",
   "settings.section.network_desc":
     "İnternet yedeği, Nostr aktarıcıları, bitchat uyumluluğu",
@@ -1903,10 +1909,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Konuşmaları en uzun süre okunabilir tutar ve diskte en çok yer kaplar.",
   "settings.general.reset_desc":
-    "Her tercihi varsayılanına döndürür; kimliğine, mesajlarına, kişilerine ve cüzdanına dokunmaz",
+    "Tercihleri varsayılanlarına döndürür; kimliğine, mesajlarına, kişilerine ve cüzdanına dokunmaz",
   "settings.general.reset_title": "Ayarlar sıfırlansın mı?",
   "settings.general.reset_body":
-    "Her tercih varsayılanına döner: görünüm, göndermeyi geri alma ve bağlantı (internet, Tor, geçit, köprü, aktarıcılar). Kimliğin, mesajların, kişilerin ve cüzdanın dokunulmadan kalır.",
+    "Görünüm, dil, bildirimler, göndermeyi geri alma ve bağlantı (internet, Tor, geçit, köprü, aktarıcılar) dahil tercihler varsayılanlarına döner. Airhop kilidi, medyanın ne kadar saklanacağı ve durumun ayarladığın gibi kalır. Kimliğin, mesajların, kişilerin ve cüzdanın dokunulmadan kalır.",
   "settings.general.reset_confirm": "Sıfırla",
 
   // ---- Settings: privacy and security ----
@@ -1921,6 +1927,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Çağrı uyarıları",
   "settings.security.ring_alerts_desc":
     "Çağrı için ana anahtar. Kapatmak, tek tek kişilere ne izin vermiş olursan ol, her çağrıyı anında reddeder.",
+  "settings.security.background_notice": "Arka plan bildirimi",
+  "settings.security.background_notice_desc":
+    "Sessize al ya da gizle. Mesaj uyarıları açık kalır.",
   "settings.security.no_blocked": "Engellenen eş yok",
   "settings.security.no_blocked_desc":
     "Engellenen eşler sana yazamaz ve Mesh sekmesinde görünemez",
@@ -1951,7 +1960,7 @@ export const strings: Strings = {
     "Mesh eşleri menzil dışındayken Nostr aktarıcıları üzerinden devam et",
   "settings.network.internet_off_title": "İnternet kapatılsın mı?",
   "settings.network.internet_off_body":
-    "Airhop yalnızca Bluetooth üzerinde çalışacak. Hiçbir Nostr aktarıcısıyla iletişim kurmayı bırakır; Tor, internet geçidi ve mesh köprüsü kapanır. Yakındaki Bluetooth sohbeti çalışmayı sürdürür.",
+    "Airhop yalnızca Bluetooth üzerinde çalışacak. Hiçbir Nostr aktarıcısıyla iletişim kurmayı bırakır; Tor, internet geçidi ve mesh köprüsü internet yeniden açılana kadar duraklar. Yakındaki Bluetooth sohbeti çalışmayı sürdürür.",
   "settings.network.turn_off": "Kapat",
   "settings.network.discovery": "Coğrafi aktarıcı keşfi",
   "settings.network.discovery_desc":
@@ -2035,7 +2044,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "Yakındaki insanlarla telsiz gibi konuş",
   "settings.conn.live_voice_on_title": "Canlı ses açılsın mı?",
   "settings.conn.live_voice_on_body":
-    "Mikrofonu basılı tutmak, sen konuştukça sesini Bluetooth menzilindeki herkese gönderir ve onların sesi senin telefonunda çalar. Hiçbir şey kaydedilmez.",
+    "Mikrofonu basılı tutmak, sen konuştukça sesini Bluetooth menzilindeki herkese gönderir ve onların sesi senin telefonunda çalar. Bıraktığında aynı ses sesli not olarak da gönderilir.",
   "settings.conn.live_voice_off_title": "Canlı ses kapatılsın mı?",
   "settings.conn.live_voice_off_body":
     "Mikrofonu basılı tutmak bunun yerine sesli not kaydeder. Bıraktığında gönderilir ve oynatana kadar kimse duymaz.",
@@ -2086,7 +2095,7 @@ export const strings: Strings = {
     "Bağlantını yakındaki çevrimdışı bir telefona ödünç ver, böylece konum kanallarına yine de ulaşabilsin",
   "settings.conn.gateway_on_title": "İnternet geçidi açılsın mı?",
   "settings.conn.gateway_on_body":
-    "Kendi bağlantısı olmayan yakındaki telefonlar konum kanalı mesajlarını seninki üzerinden gönderip alacak. Bu senin mobil verini ve pilini kullanır; mesajları uçtan uca şifreli kalır, dolayısıyla üzerinden geçeni okuyamazsın.",
+    "Kendi bağlantısı olmayan yakındaki telefonlar konum kanalı mesajlarını seninki üzerinden gönderip alacak. Bu senin mobil verini ve pilini kullanır. Bu mesajlar yazarlarınca imzalanmış herkese açık gönderilerdir; üzerinden geçeni okuyabilirsin ama değiştiremezsin.",
   "settings.conn.gateway_off_title": "İnternet geçidi kapatılsın mı?",
   "settings.conn.gateway_off_body":
     "Yakındaki çevrimdışı telefonlar konum kanallarına seninki üzerinden ulaşmayı bırakır. Kendi mesajların etkilenmez.",
@@ -2095,10 +2104,10 @@ export const strings: Strings = {
     "Bu alanın herkese açık #bluetooth sohbetini, menzil dışındaki başka bir Bluetooth kalabalığıyla internet üzerinden birleştir",
   "settings.conn.bridge_on_title": "Mesh köprüsü açılsın mı?",
   "settings.conn.bridge_on_body":
-    "Herkese açık #bluetooth mesajların internet üzerinden mahallene yayımlanacak, böylece Bluetooth menzilinin ötesindekiler de okuyabilecek. Özel mesajlar asla köprülenmez ve “yalnızca yakında” tek bir mesajı yerel tutar.",
+    "Herkese açık #bluetooth mesajların internet üzerinden mahallene yayımlanacak, böylece Bluetooth menzilinin ötesindekiler de okuyabilecek. Telefonun ayrıca yakındaki telefonların köprülenen mesajlarını kendi verinle taşıyacak. Özel mesajlar asla köprülenmez ve “yalnızca yakında” tek bir mesajı yerel tutar.",
   "settings.conn.bridge_off_title": "Mesh köprüsü kapatılsın mı?",
   "settings.conn.bridge_off_body":
-    "Herkese açık #bluetooth mesajların yeniden Bluetooth menzilinde kalır ve köprülenen kalabalıktan gelen mesajlar buraya ulaşmayı bırakır.",
+    "Herkese açık #bluetooth mesajların yeniden Bluetooth menzilinde kalır ve telefonun başkaları için köprülenen mesajları taşımayı bırakır. Yakındaki bir köprünün Bluetooth ile getirdiği mesajlar burada görünmeye devam eder.",
   "settings.conn.bridge_needs_location": "Mesh köprüsü konum gerektiriyor",
   "settings.conn.bridge_needs_location_desc":
     "Mahalleni bir konum tespitinden bulur. Köprülemeyi başlatmak için konum izni ver.",
@@ -2135,7 +2144,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Sistem",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Ağ kullanımı",
+  "settings.storage.mesh_traffic": "Mesh trafiği",
   "settings.storage.storage_usage": "Depolama kullanımı",
   "settings.storage.storage_usage_desc":
     "Mesajlar, ecash ve önbellekteki ekler",
@@ -2216,7 +2225,8 @@ export const strings: Strings = {
   "settings.status.away": "Uzakta",
   "settings.status.away_desc": "Mesh duraklatıldı, tarama ve yayın yok",
   "settings.status.invisible": "Görünmez",
-  "settings.status.invisible_desc": "Tarıyor ama keşiften gizli",
+  "settings.status.invisible_desc":
+    "Bluetooth taramalarında gizli, bağlandığın telefonlar seni hâlâ görür",
   "settings.status.title": "Durum",
   "settings.status.set_a11y": "Durumu {value} yap",
   "settings.status.edit": "Durumu düzenle",

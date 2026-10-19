@@ -178,13 +178,13 @@ export class WifiFabric {
     // path is that a payload BLE would have to fragment into hundreds of writes
     // crosses in a single one. Still delivered on a later tick, so nothing in
     // the app can depend on a synchronous write.
-    setTimeout(() => {
+    this.world.carry(1, () => {
       if (this.disposed) return;
       to.emit("AirhopWiFi.packetReceived", {
         linkID: handleFor(fromID),
         dataBase64,
       });
-    }, 1);
+    });
   }
 }
 

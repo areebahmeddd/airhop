@@ -1,6 +1,4 @@
-/**
- * @jest-environment node
- */
+// Which transfer-code addresses count as this phone's own network.
 import { isOnLocalSubnet, type LocalSubnet } from "../local-subnet";
 
 const WIFI: LocalSubnet = { address: "192.168.1.30", prefixLength: 24 };

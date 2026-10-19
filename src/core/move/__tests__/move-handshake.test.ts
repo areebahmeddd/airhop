@@ -1,6 +1,4 @@
-/**
- * @jest-environment node
- */
+// The transfer handshake: the session it opens, and the phones it refuses.
 import { x25519 } from "@noble/curves/ed25519.js";
 import { MoveHandshake } from "../move-handshake";
 

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A small GIF or PNG goes out untouched, and only when its bytes are what its
 // declared type says: the receiver checks the magic bytes and drops a
 // mismatch. Every JPEG and WebP is re-encoded, which is what strips EXIF.

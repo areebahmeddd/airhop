@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">የAirhop ሜሽ በሥራ ላይ ነው</string>
   <string name="mesh_notification_text">በአቅራቢያ ያሉ መልእክቶችን ማግኘትና ማስተላለፍ</string>
   <string name="mesh_notification_stop">ሜሹን አቁም</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s አቻ በክልል ውስጥ</item>
+    <item quantity="other">%1$s አቻዎች በክልል ውስጥ</item>
+  </plurals>
 </resources>

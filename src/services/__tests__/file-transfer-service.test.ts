@@ -1,14 +1,13 @@
-/**
- * @jest-environment node
- */
-// Outbound pacing tests for FileTransferService.
+// FileTransferService: how a file is paced onto the radio, the
+// BitchatFilePacket it sends, and what the receive path writes to the cache.
+// Retention and the cache clears are file-transfer-service-retention.test.ts.
 //
-// These exist because the failure they guard against is invisible on one
-// device: dispatching every fragment in a tight loop "works" locally (the
-// callbacks all fire) and only fails on the far side of a real radio, where the
-// transport silently drops everything past its queue depth and the transfer
-// never reassembles. The assertions below are therefore about WHEN packets are
-// handed to the transport, not just that they are.
+// Pacing is the half whose failure is invisible on one device: dispatching
+// every fragment in a tight loop "works" locally (the callbacks all fire) and
+// only fails on the far side of a real radio, where the transport silently
+// drops everything past its queue depth and the transfer never reassembles. So
+// those assertions are about WHEN packets are handed to the transport, not just
+// that they are.
 
 import {
   decodeFilePacket,
@@ -24,7 +23,6 @@ import {
   enforceIncomingQuota,
   FileTransferService,
   INCOMING_FILE_PREFIX,
-  INCOMING_QUOTA_BYTES,
 } from "../file-transfer-service";
 
 // The service only touches expo-file-system on the RECEIVE path: one flat
@@ -68,7 +66,7 @@ jest.mock("expo-file-system", () => {
         lastModified: Date.now(),
       });
     }
-    write(bytes: Uint8Array): void {
+    writeSync(bytes: Uint8Array): void {
       if (globalThis.__writeFails) throw new Error("ENOSPC");
       globalThis.__cache.set(this.name, {
         bytes,
@@ -420,15 +418,7 @@ describe("radio backpressure", () => {
     await tick(1, 60);
 
     // Cancel while a refused fragment is on its way back to the queue.
-    const id = Object.keys(
-      (
-        jest.requireActual("@store/transfer-store") as {
-          useTransferStore: {
-            getState: () => { transfers: Record<string, unknown> };
-          };
-        }
-      ).useTransferStore.getState().transfers,
-    )[0];
+    const [id] = Object.keys(useTransferStore.getState().transfers);
     service.cancel(id);
     await tick(3, 60);
 
@@ -869,6 +859,8 @@ describe("receiving a file", () => {
     expect(globalThis.__cache.size).toBe(0);
   });
 
+  // The eviction order. That it runs before a received file is written is
+  // simulation scenario M13 (scenarios/media.test.ts), end to end.
   describe("the 100 MiB quota on received media", () => {
     const MiB = 1024 * 1024;
 
@@ -903,21 +895,6 @@ describe("receiving a file", () => {
       expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_dated.jpg`)).toBe(
         true,
       );
-    });
-
-    it("is enforced before a received file is written", async () => {
-      useChatStore.getState().addChannel("#bluetooth");
-      put(
-        `${INCOMING_FILE_PREFIX}1_old.jpg`,
-        INCOMING_QUOTA_BYTES - JPEG.length + 1,
-        1,
-      );
-      makeService().service.onFileTransfer(broadcast(photo()));
-      await settle();
-      expect(globalThis.__cache.has(`${INCOMING_FILE_PREFIX}1_old.jpg`)).toBe(
-        false,
-      );
-      expect(globalThis.__cache.size).toBe(1);
     });
   });
 });

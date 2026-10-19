@@ -8,4 +8,8 @@
   <string name="mesh_notification_title">Airhop mesh active</string>
   <string name="mesh_notification_text">Discovering and relaying nearby messages</string>
   <string name="mesh_notification_stop">Stop mesh</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s peer in range</item>
+    <item quantity="other">%1$s peers in range</item>
+  </plurals>
 </resources>

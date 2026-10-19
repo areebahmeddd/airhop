@@ -60,7 +60,7 @@ export type SettingId =
   | "bitchat"
   | "wifi-aware"
   | "lan"
-  | "network-usage"
+  | "mesh-traffic"
   | "storage-usage"
   | "cache"
   | "perm-bluetooth"
@@ -421,11 +421,11 @@ export const SETTINGS_INDEX = [
 
   // ---- Storage & data ----
   {
-    key: "network-usage",
-    labelKey: "settings.storage.network_usage",
+    key: "mesh-traffic",
+    labelKey: "settings.storage.mesh_traffic",
     sectionKey: "settings.section.storage",
     icon: "activity",
-    target: { kind: "row", view: "storage", id: "network-usage" },
+    target: { kind: "row", view: "storage", id: "mesh-traffic" },
   },
   {
     key: "storage-usage",

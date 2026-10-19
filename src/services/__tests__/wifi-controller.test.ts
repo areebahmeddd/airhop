@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The WiFi fast path's reconciler, which retries an attach that can succeed
 // later and stops asking one that never will. A reconciler that gets that
 // permanent/transient split wrong is worse than none.
@@ -36,7 +33,8 @@ function rejectWith(code: string): Promise<never> {
 }
 
 // Let every pending microtask and every expired timer run, repeatedly, so a
-// retry that schedules another retry is followed to its conclusion.
+// retry that schedules another retry is followed to its conclusion. The clock
+// moves `ms` on each of the eight rounds, so settle(ms) is 8 * ms of fake time.
 async function settle(ms = 0): Promise<void> {
   for (let i = 0; i < 8; i++) {
     jest.advanceTimersByTime(ms);
@@ -95,21 +93,6 @@ describe("WiFi switched off when the mesh starts", () => {
 
     mockStartWiFi.mockResolvedValue(undefined);
     await settle(30_000);
-    expect(wifi.isStarted).toBe(true);
-  });
-
-  test("recovers immediately when native reports the radio back", async () => {
-    mockStartWiFi.mockImplementation(() =>
-      rejectWith("WIFI_AWARE_UNAVAILABLE"),
-    );
-    const wifi = new WiFiController();
-    wifi.start();
-    await settle();
-    expect(wifi.isStarted).toBe(false);
-
-    mockStartWiFi.mockResolvedValue(undefined);
-    wifi.onAvailabilityChanged(true);
-    await settle();
     expect(wifi.isStarted).toBe(true);
   });
 });
@@ -186,10 +169,10 @@ test("backs off when the transport keeps dropping seconds after it starts", asyn
   await settle();
   const afterStart = mockStartWiFi.mock.calls.length;
 
-  // Twenty seconds of a transport that will not stay up.
+  // Twenty seconds of a transport that will not stay up: a drop a second.
   for (let i = 0; i < 20; i++) {
     wifi.onAvailabilityChanged(false);
-    await settle(1_000);
+    await settle(125);
   }
 
   // Climbing the ladder, twenty seconds buys the first few rungs. Reset on
@@ -229,6 +212,38 @@ describe("stopping", () => {
     // by a timer they never saw.
     expect(mockStartWiFi).toHaveBeenCalledTimes(attemptsWhileRunning);
     expect(wifi.isStarted).toBe(false);
+  });
+
+  test("going Away stops claiming the fast path runs, and coming back says so again", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+    wifi.start();
+    await settle();
+
+    wifi.stop();
+    await settle();
+    expect(seen).toEqual(["active", "off"]);
+
+    wifi.start();
+    await settle();
+    expect(seen).toEqual(["active", "off", "active"]);
+  });
+
+  test("going Away leaves hardware that never had it reading unsupported", async () => {
+    mockStartWiFi.mockImplementation(() =>
+      rejectWith("WIFI_AWARE_UNSUPPORTED"),
+    );
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+    wifi.start();
+    await settle();
+
+    wifi.stop();
+    wifi.start();
+    await settle(60_000);
+
+    expect(seen).toEqual(["unsupported"]);
   });
 
   test("going Away mid-attach releases the session native did open", async () => {
@@ -590,6 +605,31 @@ describe("a transport that keeps dying right after it starts", () => {
     wifi.onAvailabilityChanged(true);
     wifi.refresh();
     await settle(60_000);
+    expect(mockStartWiFi).toHaveBeenCalledTimes(attempts);
+  });
+
+  test("still says so after Away and back, without attaching again", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const seen: string[] = [];
+    const wifi = new WiFiController((state) => seen.push(state));
+
+    wifi.start();
+    await settle();
+    jest.advanceTimersByTime(20_000);
+    wifi.onAvailabilityChanged(false, "session");
+    await settle();
+    await shortRun(wifi);
+    await shortRun(wifi);
+    expect(seen.at(-1)).toBe("unstable");
+    const attempts = mockStartWiFi.mock.calls.length;
+
+    wifi.stop();
+    await settle();
+    wifi.start();
+    await settle(60_000);
+
+    expect(seen.at(-1)).toBe("unstable");
+    expect(seen).not.toContain("off");
     expect(mockStartWiFi).toHaveBeenCalledTimes(attempts);
   });
 

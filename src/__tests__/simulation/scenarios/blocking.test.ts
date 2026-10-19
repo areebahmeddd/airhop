@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Blocking over the internet path, across real phones and a real relay pool.
 //
 // On the mesh a block is one check at one chokepoint. Over Nostr the sender is
@@ -82,9 +79,9 @@ function heardAnywhere(device: SimDevice, text: string): boolean {
     .some((m) => m.text === text);
 }
 
-test("B01 a blocked peer cannot switch to Nostr to get through", async () => {
+test("BL01 a blocked peer cannot switch to Nostr to get through", async () => {
   const s = (scenario = new Scenario({
-    id: "B01",
+    id: "BL01",
     title: "a mesh block follows the peer onto Nostr",
     seed: 811,
   }));
@@ -121,28 +118,31 @@ test("B01 a blocked peer cannot switch to Nostr to get through", async () => {
   s.check("the control message arrives over Nostr", control);
 
   block(alice, bob.peerID);
-  bob.sendDm(alice.peerID, "after the block");
+  // Through the composer, so bob's own row exists to carry a status. The
+  // service call above writes none, and a receipt check against a missing row
+  // passes whatever the receipt said.
+  bob.send(`dm:${alice.peerID}`, "after the block");
   await s.world.advance(20_000);
   s.check(
     "nothing from the blocked peer lands anywhere",
     !heardAnywhere(alice, "after the block"),
   );
-  const status = bob
+  const row = bob
     .messages(`dm:${alice.peerID}`)
-    .find((m) => m.text === "after the block")?.status;
+    .find((m) => m.text === "after the block");
   s.check(
     "and no delivery receipt tells them it arrived",
-    status !== "delivered" && status !== "read",
-    `status=${String(status)}`,
+    row !== undefined && row.status !== "delivered" && row.status !== "read",
+    `status=${String(row?.status)}`,
   );
 
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
 
-test("B02 a blocked Nostr-only thread stays blocked", async () => {
+test("BL02 a blocked Nostr-only thread stays blocked", async () => {
   const s = (scenario = new Scenario({
-    id: "B02",
+    id: "BL02",
     title: "blocking a stranger who only ever wrote over Nostr",
     seed: 812,
   }));
@@ -193,12 +193,12 @@ test("B02 a blocked Nostr-only thread stays blocked", async () => {
   s.assert(true);
 });
 
-test("B03 unblocking a peer on the mesh hears them again", async () => {
+test("BL03 unblocking a peer on the mesh hears them again", async () => {
   // The block drops the ratchet, so the Noise session has to go with it. Kept,
   // it is a session with no ratchet bound to it, where every DM and receipt
   // from them is dropped without a word until one side restarts.
   const s = (scenario = new Scenario({
-    id: "B03",
+    id: "BL03",
     title: "block, unblock, and talk again over Bluetooth",
     seed: 813,
   }));
@@ -249,13 +249,13 @@ test("B03 unblocking a peer on the mesh hears them again", async () => {
   s.assert(true);
 });
 
-test("B04 couriered mail from a blocked peer still spends its one-time key", async () => {
+test("BL04 couriered mail from a blocked peer still spends its one-time key", async () => {
   // The prekey an envelope opened under is burned before anything else is
   // decided. Dropping a blocked sender's mail first would leave the key live,
   // so a carrier that kept the ciphertext could have it opened after any later
   // seizure of the phone, which is what the one-time key exists to prevent.
   const s = (scenario = new Scenario({
-    id: "B04",
+    id: "BL04",
     title: "a blocked sender's courier envelope is dropped and its key burned",
     seed: 814,
   }));
@@ -291,9 +291,18 @@ test("B04 couriered mail from a blocked peer still spends its one-time key", asy
   const bag = (carrier.mesh as unknown as Carried).courier;
   await waitForCoarse(s.world, () => bag.size > 0, 30_000);
   const prekeyID = bag.envelopes[0]?.prekeyID;
+  const liveKeys = (): number[] | undefined =>
+    (
+      bob.mesh as unknown as {
+        localPrekeys: { state: { prekeys: { id: number }[] } | null };
+      }
+    ).localPrekeys.state?.prekeys.map((p) => p.id);
+  // Live before the handover, so its absence afterwards is the burn and not a
+  // key that was never bob's to spend.
   s.check(
-    "it was sealed to one of bob's one-time keys",
-    prekeyID !== undefined,
+    "it was sealed to one of bob's live one-time keys",
+    prekeyID !== undefined && (liveKeys() ?? []).includes(prekeyID),
+    `prekey=${String(prekeyID)} live=[${String(liveKeys())}]`,
   );
 
   radio.setTopology([
@@ -308,11 +317,7 @@ test("B04 couriered mail from a blocked peer still spends its one-time key", asy
     "nothing from the blocked peer lands",
     !heardAnywhere(bob, "from behind the block"),
   );
-  const live = (
-    bob.mesh as unknown as {
-      localPrekeys: { state: { prekeys: { id: number }[] } | null };
-    }
-  ).localPrekeys.state?.prekeys.map((p) => p.id);
+  const live = liveKeys();
   s.check(
     "the key it opened under is no longer live",
     live !== undefined && prekeyID !== undefined && !live.includes(prekeyID),

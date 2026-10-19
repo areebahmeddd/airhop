@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Airhop-ის მეში აქტიურია</string>
   <string name="mesh_notification_text">პოულობს და გადასცემს ახლომდებარე შეტყობინებებს</string>
   <string name="mesh_notification_stop">მეშის გაჩერება</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s კვანძი მიღწევადია</item>
+    <item quantity="other">%1$s კვანძი მიღწევადია</item>
+  </plurals>
 </resources>

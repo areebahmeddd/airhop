@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Checks every hand-written rule in `plurals.ts` against CLDR itself.
 //
 // Node ships full ICU, so `Intl.PluralRules` here IS the data a polyfill would

@@ -762,6 +762,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "允許響鈴提醒",
   "chat.contact.allow_ring_desc":
     "讓對方響鈴提醒你，即使此對話已靜音。靜音模式和勿擾模式仍然生效。",
+  "chat.contact.allow_ring_needs_keys":
+    "這位聯絡人還沒有金鑰。傳則訊息給對方，或者掃描對方的 QR 碼，就能允許對方向你響鈴。",
+  "chat.contact.allow_ring_master_off":
+    "在設定中開啟{setting}之前，任何人都無法讓你的手機響鈴。",
   "chat.contact.ring_action": "響鈴",
   "chat.contact.ringing": "響鈴中…",
   "chat.contact.ring_hint_nearby": "響鈴僅在對方在附近時可用",
@@ -882,7 +886,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "允許",
   "mesh.banner.action.resume": "恢復",
   "mesh.banner.action.fix": "修正",
-  "mesh.banner.hint.resume": "重新開啟藍牙廣播和掃描",
+  "mesh.banner.hint.resume": "重新啟動網狀網路",
   "mesh.banner.hint.enable_bluetooth": "請 Android 打開藍牙",
   "mesh.banner.hint.location_settings": "開啟系統定位設定",
   "mesh.banner.hint.app_settings": "在系統設定中開啟 Airhop 的權限",
@@ -1636,9 +1640,11 @@ export const strings: Strings = {
     "這位聯絡人還沒有金鑰。傳則訊息給對方，或者見面時掃一下對方的代碼。",
   "contacts.verify.compare_title": "把這些念給彼此聽",
   "contacts.verify.compare_body":
-    "{name} 看到的是同樣的六個字。如果對得上，你們雙方就都知道這些金鑰是真的。",
+    "{name} 在 Airhop 上看到的是同樣的六個字。如果對得上，你們雙方就都知道這些金鑰是真的。bitchat 不顯示這樣的字，所以請改為掃描對方的 QR 碼。",
   "contacts.verify.codes_match": "對得上",
   "contacts.verify.codes_differ": "對不上",
+  "contacts.verify.codes_differ_body":
+    "這支手機上的金鑰可能不屬於 {name}。在信任這段聊天之前，請當面掃描對方的 QR 碼。",
   "contacts.verify.compared_body":
     "你和 {name} 確認了同一段代碼。這位聯絡人已驗證。",
 
@@ -1672,7 +1678,7 @@ export const strings: Strings = {
   "settings.section.general": "一般",
   "settings.section.general_desc": "選用功能、收回傳送、媒體、重設",
   "settings.section.privacy": "隱私與安全",
-  "settings.section.privacy_desc": "前向保密、簽章封包、已封鎖的節點",
+  "settings.section.privacy_desc": "鎖定 Airhop、通知、已封鎖的節點",
   "settings.section.network": "網路與中繼",
   "settings.section.network_desc": "網路備援、Nostr 中繼、bitchat 相容",
   "settings.section.permissions": "權限",
@@ -1784,10 +1790,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "對話讀得到的時間最長，佔用的磁碟也最多。",
   "settings.general.reset_desc":
-    "把每一項偏好設定回復為預設值，你的身分、訊息、聯絡人和錢包都不受影響",
+    "把偏好設定回復為預設值，你的身分、訊息、聯絡人和錢包都不受影響",
   "settings.general.reset_title": "重設設定？",
   "settings.general.reset_body":
-    "每一項偏好設定都會回復預設：外觀、收回傳送，以及連線相關項目（網路、Tor、閘道、橋接、中繼）。你的身分、訊息、聯絡人和錢包不受影響。",
+    "偏好設定會回復預設，包括外觀、語言、通知、收回傳送，以及連線相關項目（網路、Tor、閘道、橋接、中繼）。鎖定 Airhop、媒體保留時間和你的狀態維持原樣。你的身分、訊息、聯絡人和錢包不受影響。",
   "settings.general.reset_confirm": "重設",
 
   // ---- Settings: privacy and security ----
@@ -1801,6 +1807,8 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "響鈴提醒",
   "settings.security.ring_alerts_desc":
     "響鈴的總開關。關閉後將拒絕所有響鈴，無論你允許了哪些聯絡人。",
+  "settings.security.background_notice": "背景通知",
+  "settings.security.background_notice_desc": "可靜音或隱藏，訊息提醒不受影響",
   "settings.security.no_blocked": "沒有被封鎖的節點",
   "settings.security.no_blocked_desc":
     "被封鎖的節點不能傳訊息給你，也不會出現在網狀網路分頁",
@@ -1830,7 +1838,7 @@ export const strings: Strings = {
     "當網狀網路節點不在範圍內時，改由 Nostr 中繼接手",
   "settings.network.internet_off_title": "要關閉網路嗎？",
   "settings.network.internet_off_body":
-    "Airhop 將只走藍牙。它會停止聯絡任何 Nostr 中繼，Tor、網路閘道和網狀網路橋接也都會關閉。附近的藍牙聊天照常可用。",
+    "Airhop 將只走藍牙。它會停止聯絡任何 Nostr 中繼，Tor、網路閘道和網狀網路橋接會暫停，直到網路重新開啟。附近的藍牙聊天照常可用。",
   "settings.network.turn_off": "關閉",
   "settings.network.discovery": "地理中繼探索",
   "settings.network.discovery_desc":
@@ -1907,7 +1915,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "像對講機一樣和附近的人說話",
   "settings.conn.live_voice_on_title": "要開啟即時語音嗎？",
   "settings.conn.live_voice_on_body":
-    "按住麥克風時，你說的話會邊說邊送給藍牙範圍內的每個人，他們的聲音也會在你手機上播放。什麼都不會被錄下來。",
+    "按住麥克風時，你說的話會邊說邊送給藍牙範圍內的每個人，他們的聲音也會在你手機上播放。放開後，同一段語音還會作為語音留言送出。",
   "settings.conn.live_voice_off_title": "要關閉即時語音嗎？",
   "settings.conn.live_voice_off_body":
     "按住麥克風會改成錄一則語音留言。放開後才送出，別人不點開就聽不到。",
@@ -1955,7 +1963,7 @@ export const strings: Strings = {
     "把你的連線借給附近離線的手機，讓它仍然連得上位置頻道",
   "settings.conn.gateway_on_title": "要開啟網路閘道嗎？",
   "settings.conn.gateway_on_body":
-    "附近沒有自己連線的手機，會透過你的連線收發位置頻道訊息。這會用到你的行動數據和電量，而他們的訊息始終端對端加密，所以你讀不到經過的內容。",
+    "附近沒有自己連線的手機，會透過你的連線收發位置頻道訊息。這會用到你的行動數據和電量。這些訊息是作者簽署的公開貼文，所以你讀得到經過的內容，但無法改動。",
   "settings.conn.gateway_off_title": "要關閉網路閘道嗎？",
   "settings.conn.gateway_off_body":
     "附近離線的手機將不再透過你的連線存取位置頻道。你自己的訊息不受影響。",
@@ -1964,10 +1972,10 @@ export const strings: Strings = {
     "透過網路，把這片區域的公開 #bluetooth 聊天和另一群超出藍牙範圍的人連起來",
   "settings.conn.bridge_on_title": "要開啟網狀網路橋接嗎？",
   "settings.conn.bridge_on_body":
-    "你在公開 #bluetooth 裡的訊息會透過網路發布到你所在的鄰里，所以藍牙範圍外的人也讀得到。私密訊息永遠不會被橋接，而「僅限附近」能讓某一則訊息留在本地。",
+    "你在公開 #bluetooth 裡的訊息會透過網路發布到你所在的鄰里，所以藍牙範圍外的人也讀得到。你的手機還會用你的行動數據，為附近的手機轉送橋接訊息。私密訊息永遠不會被橋接，而「僅限附近」能讓某一則訊息留在本地。",
   "settings.conn.bridge_off_title": "要關閉網狀網路橋接嗎？",
   "settings.conn.bridge_off_body":
-    "你在公開 #bluetooth 裡的訊息又只留在藍牙範圍內，橋接那一端的訊息也不會再傳到這裡。",
+    "你在公開 #bluetooth 裡的訊息又只留在藍牙範圍內，你的手機也不再為別人轉送橋接訊息。附近的橋接裝置透過藍牙帶來的訊息仍會顯示在這裡。",
   "settings.conn.bridge_needs_location": "網狀網路橋接需要定位",
   "settings.conn.bridge_needs_location_desc":
     "它靠一次定位來確定你所在的鄰里。授予定位權限即可開始橋接。",
@@ -2003,7 +2011,7 @@ export const strings: Strings = {
   "settings.permissions.system": "系統",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "網路用量",
+  "settings.storage.mesh_traffic": "網狀網流量",
   "settings.storage.storage_usage": "儲存用量",
   "settings.storage.storage_usage_desc": "訊息、ecash 和快取的附件",
   "settings.storage.session_usage":
@@ -2081,7 +2089,7 @@ export const strings: Strings = {
   "settings.status.away": "離開",
   "settings.status.away_desc": "網狀網路已暫停，不掃描也不廣播",
   "settings.status.invisible": "隱形",
-  "settings.status.invisible_desc": "正在掃描，但不會被發現",
+  "settings.status.invisible_desc": "藍牙掃描時看不到，你連線的手機仍看得到你",
   "settings.status.title": "狀態",
   "settings.status.set_a11y": "把狀態設為 {value}",
   "settings.status.edit": "編輯狀態",

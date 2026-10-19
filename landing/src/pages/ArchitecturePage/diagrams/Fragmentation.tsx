@@ -45,8 +45,8 @@ export function Fragmentation() {
         ONE FRAGMENT EVERY 25 ms
       </text>
       <text x={16} y={210} fontFamily={MONO} fontSize={10} fill={MUTED}>
-        The 25 ms pacing is not a throttle for politeness. Without it the radio drops fragments and
-        the transfer never completes.
+        The 25 ms pacing (30 ms in a room) is not a throttle for politeness. Without it the radio
+        drops fragments and the transfer never completes.
       </text>
       <text x={16} y={230} fontFamily={MONO} fontSize={10} fill={MUTED}>
         467 payload bytes every 25 ms is where the ~18 KiB/s figure comes from, so 1 MiB takes 56

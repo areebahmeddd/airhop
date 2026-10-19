@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The seam between the platform-agnostic PTT stack and the native audio module.
 //
 // What matters here is the fallback behaviour: every one of these paths is a
@@ -154,7 +151,12 @@ describe("NativeAudioPlayback", () => {
       playback.playFrames("aa", 0x01, frame()),
     ).resolves.toBeUndefined();
 
-    // Reset, so the next burst is free to try again rather than being stuck.
+    // The rest of that burst is dropped, not retried batch by batch.
+    await playback.playFrames("aa", 0x01, frame());
+    expect(native.startPlayback).toHaveBeenCalledTimes(1);
+    expect(native.enqueueFrames).toHaveBeenCalledTimes(1);
+
+    // The next burst is free to try again rather than being stuck.
     await playback.playFrames("cc", 0x01, frame());
     expect(native.startPlayback).toHaveBeenCalledTimes(2);
   });

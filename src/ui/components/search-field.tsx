@@ -6,7 +6,14 @@
 
 import { Feather } from "@react-native-vector-icons/feather/static";
 import React, { useMemo } from "react";
-import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+  type TextInputInstance,
+} from "react-native";
 import {
   FontSize,
   hitSlopFor,
@@ -27,7 +34,7 @@ interface Props {
   accessibilityLabel: string;
   clearAccessibilityLabel: string;
   onFocus?: () => void;
-  inputRef?: React.RefObject<TextInput | null>;
+  inputRef?: React.RefObject<TextInputInstance | null>;
   autoFocus?: boolean;
 }
 

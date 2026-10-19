@@ -800,6 +800,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "রিং সতর্কতার অনুমতি দিন",
   "chat.contact.allow_ring_desc":
     "এই কথোপকথন নিঃশব্দ থাকলেও তাদের আপনার ফোন রিং করে মনোযোগ আকর্ষণ করতে দিন। নীরব মোড ও বিরক্ত করবেন না তবুও প্রযোজ্য।",
+  "chat.contact.allow_ring_needs_keys":
+    "এই পরিচিতির জন্য এখনো কোনো কী নেই। আপনাকে রিং করার অনুমতি দিতে তাদের বার্তা পাঠান, বা তাদের কোড স্ক্যান করুন।",
+  "chat.contact.allow_ring_master_off":
+    "সেটিংসে {setting} চালু না করা পর্যন্ত কেউ আপনার ফোন রিং করাতে পারবে না।",
   "chat.contact.ring_action": "রিং করুন",
   "chat.contact.ringing": "রিং হচ্ছে…",
   "chat.contact.ring_hint_nearby": "রিং কেবল তারা কাছে থাকলেই কাজ করে",
@@ -928,7 +932,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "অনুমতি দিন",
   "mesh.banner.action.resume": "চালান",
   "mesh.banner.action.fix": "ঠিক করুন",
-  "mesh.banner.hint.resume": "ব্লুটুথের সম্প্রচার ও খোঁজা আবার চালু করে",
+  "mesh.banner.hint.resume": "মেশ আবার চালু করে",
   "mesh.banner.hint.enable_bluetooth": "Android-কে ব্লুটুথ চালু করতে বলে",
   "mesh.banner.hint.location_settings": "সিস্টেমের অবস্থান সেটিংস খোলে",
   "mesh.banner.hint.app_settings": "সিস্টেম সেটিংসে Airhop-এর অনুমতিগুলো খোলে",
@@ -1723,9 +1727,11 @@ export const strings: Strings = {
     "এই পরিচিতির জন্য এখনো কোনো কী নেই। তাদের বার্তা পাঠান, বা দেখা হলে তাদের কোড স্ক্যান করুন।",
   "contacts.verify.compare_title": "এগুলো একে অপরকে পড়ে শোনান",
   "contacts.verify.compare_body":
-    "{name} একই ছয়টি শব্দ দেখছেন। মিলে গেলে আপনারা দুজনেই জানবেন কী-গুলো আসল।",
+    "{name} Airhop-এ একই ছয়টি শব্দ দেখছেন। মিলে গেলে আপনারা দুজনেই জানবেন কী-গুলো আসল। bitchat এমন কোনো শব্দ দেখায় না, তাই বরং তাদের কোড স্ক্যান করুন।",
   "contacts.verify.codes_match": "এগুলো মেলে",
   "contacts.verify.codes_differ": "এগুলো মেলে না",
+  "contacts.verify.codes_differ_body":
+    "এই ফোনের কী-গুলো হয়তো {name}-এর নয়। এই চ্যাটে ভরসা করার আগে সামনাসামনি তাদের কোড স্ক্যান করুন।",
   "contacts.verify.compared_body":
     "আপনি ও {name} একই কোড নিশ্চিত করেছেন। এই পরিচিতি যাচাই করা হয়েছে।",
 
@@ -1760,8 +1766,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "ঐচ্ছিক সুবিধা, পাঠানো ফেরানো, মিডিয়া, রিসেট",
   "settings.section.privacy": "গোপনীয়তা ও নিরাপত্তা",
-  "settings.section.privacy_desc":
-    "ফরোয়ার্ড সিক্রেসি, সই করা প্যাকেট, ব্লক করা পিয়ার",
+  "settings.section.privacy_desc": "Airhop লক, বিজ্ঞপ্তি, ব্লক করা পিয়ার",
   "settings.section.network": "নেটওয়ার্ক ও রিলে",
   "settings.section.network_desc":
     "ইন্টারনেট বিকল্প, Nostr রিলে, bitchat সামঞ্জস্য",
@@ -1880,10 +1885,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "কথোপকথন সবচেয়ে বেশিদিন পড়া যায়, আর ডিস্কেও সবচেয়ে বেশি জমে।",
   "settings.general.reset_desc":
-    "প্রতিটি পছন্দ তার আদি অবস্থায় ফেরায়, আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত রেখে",
+    "পছন্দগুলো তাদের আদি অবস্থায় ফেরায়, আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত রেখে",
   "settings.general.reset_title": "সেটিংস রিসেট করবেন?",
   "settings.general.reset_body":
-    "প্রতিটি পছন্দ আদি অবস্থায় ফেরে: চেহারা, পাঠানো ফেরানো, আর সংযোগ (ইন্টারনেট, Tor, গেটওয়ে, সেতু, রিলে)। আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত থাকে।",
+    "পছন্দগুলো আদি অবস্থায় ফেরে, যার মধ্যে আছে চেহারা, ভাষা, বিজ্ঞপ্তি, পাঠানো ফেরানো, আর সংযোগ (ইন্টারনেট, Tor, গেটওয়ে, সেতু, রিলে)। Airhop লক, মিডিয়া কতদিন রাখা হয়, আর আপনার অবস্থা যেমন ঠিক করেছেন তেমনই থাকে। আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত থাকে।",
   "settings.general.reset_confirm": "রিসেট",
 
   // ---- Settings: privacy and security ----
@@ -1899,6 +1904,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "রিং সতর্কতা",
   "settings.security.ring_alerts_desc":
     "রিং-এর প্রধান সুইচ। বন্ধ করলে আপনি পৃথক পরিচিতিদের যা অনুমতি দিয়েছেন তা নির্বিশেষে প্রতিটি রিং সঙ্গে সঙ্গে প্রত্যাখ্যান করে।",
+  "settings.security.background_notice": "পেছনের বিজ্ঞপ্তি",
+  "settings.security.background_notice_desc":
+    "নীরব করুন বা লুকান। বার্তার সতর্কতা চালু থাকবে।",
   "settings.security.no_blocked": "কোনো পিয়ার ব্লক করা নেই",
   "settings.security.no_blocked_desc":
     "ব্লক করা পিয়ার আপনাকে বার্তা পাঠাতে পারে না বা মেশ ট্যাবে দেখা যায় না",
@@ -1929,7 +1937,7 @@ export const strings: Strings = {
     "মেশের পিয়ার নাগালের বাইরে গেলে Nostr রিলে দিয়ে চালিয়ে যান",
   "settings.network.internet_off_title": "ইন্টারনেট বন্ধ করবেন?",
   "settings.network.internet_off_body":
-    "Airhop কেবল ব্লুটুথে চলবে। এটি কোনো Nostr রিলের সঙ্গে যোগাযোগ থামায়, আর Tor, ইন্টারনেট গেটওয়ে ও মেশ সেতু সবই বন্ধ হয়। কাছের ব্লুটুথ চ্যাট চলতেই থাকে।",
+    "Airhop কেবল ব্লুটুথে চলবে। এটি কোনো Nostr রিলের সঙ্গে যোগাযোগ থামায়, আর ইন্টারনেট আবার চালু না হওয়া পর্যন্ত Tor, ইন্টারনেট গেটওয়ে ও মেশ সেতু থেমে থাকে। কাছের ব্লুটুথ চ্যাট চলতেই থাকে।",
   "settings.network.turn_off": "বন্ধ করুন",
   "settings.network.discovery": "ভৌগোলিক রিলে খোঁজা",
   "settings.network.discovery_desc":
@@ -2011,7 +2019,7 @@ export const strings: Strings = {
     "ওয়াকি-টকির মতো কাছের লোকদের সঙ্গে কথা বলুন",
   "settings.conn.live_voice_on_title": "সরাসরি কথা চালু করবেন?",
   "settings.conn.live_voice_on_body":
-    "মাইক ধরে রাখলে আপনি বলার সঙ্গে সঙ্গেই আপনার গলা ব্লুটুথের নাগালের সবার কাছে যায়, আর তাদের গলা আপনার ফোনে বাজে। কিছুই রেকর্ড হয় না।",
+    "মাইক ধরে রাখলে আপনি বলার সঙ্গে সঙ্গেই আপনার গলা ব্লুটুথের নাগালের সবার কাছে যায়, আর তাদের গলা আপনার ফোনে বাজে। ছেড়ে দিলে একই অডিও ভয়েস নোট হিসেবেও পাঠানো হয়।",
   "settings.conn.live_voice_off_title": "সরাসরি কথা বন্ধ করবেন?",
   "settings.conn.live_voice_off_body":
     "মাইক ধরে রাখলে বরং একটি ভয়েস নোট রেকর্ড হয়। ছেড়ে দিলে সেটি যায়, আর কেউ না চালানো পর্যন্ত শোনে না।",
@@ -2061,7 +2069,7 @@ export const strings: Strings = {
     "কাছের অফলাইন ফোনকে আপনার সংযোগ ধার দিন যাতে সেটি তবুও অবস্থান চ্যানেলে পৌঁছাতে পারে",
   "settings.conn.gateway_on_title": "ইন্টারনেট গেটওয়ে চালু করবেন?",
   "settings.conn.gateway_on_body":
-    "নিজের সংযোগ নেই এমন কাছের ফোনগুলো আপনার সংযোগ দিয়ে অবস্থান চ্যানেলের বার্তা পাঠাবে ও নেবে। এতে আপনার মোবাইল ডেটা ও ব্যাটারি খরচ হয়, আর তাদের বার্তা প্রান্ত থেকে প্রান্ত এনক্রিপ্ট করাই থাকে, তাই যা যায় তা আপনি পড়তে পারেন না।",
+    "নিজের সংযোগ নেই এমন কাছের ফোনগুলো আপনার সংযোগ দিয়ে অবস্থান চ্যানেলের বার্তা পাঠাবে ও নেবে। এতে আপনার মোবাইল ডেটা ও ব্যাটারি খরচ হয়। এই বার্তাগুলো লেখকদের স্বাক্ষর করা প্রকাশ্য পোস্ট, তাই যা যায় তা আপনি পড়তে পারেন, কিন্তু বদলাতে পারেন না।",
   "settings.conn.gateway_off_title": "ইন্টারনেট গেটওয়ে বন্ধ করবেন?",
   "settings.conn.gateway_off_body":
     "কাছের অফলাইন ফোনগুলো আর আপনার সংযোগ দিয়ে অবস্থান চ্যানেলে পৌঁছাবে না। আপনার নিজের বার্তায় কিছু বদলায় না।",
@@ -2070,10 +2078,10 @@ export const strings: Strings = {
     "ইন্টারনেট দিয়ে এই এলাকার প্রকাশ্য #bluetooth চ্যাটকে নাগালের বাইরের আরেক ব্লুটুথ দলের সঙ্গে জুড়ুন",
   "settings.conn.bridge_on_title": "মেশ সেতু চালু করবেন?",
   "settings.conn.bridge_on_body":
-    "আপনার প্রকাশ্য #bluetooth বার্তা ইন্টারনেট দিয়ে আপনার আশপাশে প্রকাশিত হবে, তাই ব্লুটুথের নাগালের বাইরের লোকেরাও পড়তে পারবে। ব্যক্তিগত বার্তা কখনোই সেতু পেরোয় না, আর “কেবল কাছে” যেকোনো একটি বার্তাকে এখানেই রাখে।",
+    "আপনার প্রকাশ্য #bluetooth বার্তা ইন্টারনেট দিয়ে আপনার আশপাশে প্রকাশিত হবে, তাই ব্লুটুথের নাগালের বাইরের লোকেরাও পড়তে পারবে। আপনার ফোন আপনার ডেটা দিয়ে কাছের ফোনগুলোর সেতু-পেরোনো বার্তাও বহন করবে। ব্যক্তিগত বার্তা কখনোই সেতু পেরোয় না, আর “কেবল কাছে” যেকোনো একটি বার্তাকে এখানেই রাখে।",
   "settings.conn.bridge_off_title": "মেশ সেতু বন্ধ করবেন?",
   "settings.conn.bridge_off_body":
-    "আপনার প্রকাশ্য #bluetooth বার্তা আবার ব্লুটুথের নাগালেই থাকে, আর সেতুর ওপারের দলের বার্তা এখানে আসা বন্ধ হয়।",
+    "আপনার প্রকাশ্য #bluetooth বার্তা আবার ব্লুটুথের নাগালেই থাকে, আর আপনার ফোন অন্যদের জন্য সেতু-পেরোনো বার্তা বহন করা বন্ধ করে। কাছের কোনো সেতু ব্লুটুথে যে বার্তা নিয়ে আসে, তা তবু এখানে দেখা যায়।",
   "settings.conn.bridge_needs_location": "মেশ সেতুতে অবস্থান লাগে",
   "settings.conn.bridge_needs_location_desc":
     "একটি অবস্থান নিয়ে এটি আপনার আশপাশ বের করে। সেতু বাঁধা শুরু করতে অবস্থানের অনুমতি দিন।",
@@ -2109,7 +2117,7 @@ export const strings: Strings = {
   "settings.permissions.system": "সিস্টেম",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "নেটওয়ার্ক ব্যবহার",
+  "settings.storage.mesh_traffic": "মেশ ট্রাফিক",
   "settings.storage.storage_usage": "সংরক্ষণ ব্যবহার",
   "settings.storage.storage_usage_desc": "বার্তা, ecash ও জমা রাখা সংযুক্তি",
   "settings.storage.session_usage": "এই দফা · {sent} পাঠানো, {received} পাওয়া",
@@ -2186,7 +2194,8 @@ export const strings: Strings = {
   "settings.status.away": "দূরে",
   "settings.status.away_desc": "মেশ থেমে আছে, খোঁজা বা সম্প্রচার কিছুই নয়",
   "settings.status.invisible": "অদৃশ্য",
-  "settings.status.invisible_desc": "খুঁজছে, কিন্তু নিজে ধরা পড়ছে না",
+  "settings.status.invisible_desc":
+    "ব্লুটুথ খোঁজায় লুকানো, আপনি যেসব ফোনের সঙ্গে যুক্ত হন সেগুলো এখনও আপনাকে দেখতে পায়",
   "settings.status.title": "অবস্থা",
   "settings.status.set_a11y": "অবস্থা {value} করুন",
   "settings.status.edit": "অবস্থা বদলান",

@@ -102,7 +102,7 @@ Common Region, Proximity, Similarity.
 A group's hairline insets to where the **label** starts, never to the row's padding. Inset to the padding it slices the icon column; inset to the label the column reads as a clean channel. UIKit's `separatorInset` and Material's divider keyline agree.
 
 ```ts
-const ROW_LABEL_INSET = ICON_WIDTH + Spacing.base + Spacing.sm; // derived, not typed
+const ROW_LABEL_INSET = SETTING_ICON_WIDTH + Spacing.base + Spacing.sm; // derived, not typed
 ```
 
 Things that are the same object must match in **every** property. Three badges at the same size with three different line heights are three objects to the eye.

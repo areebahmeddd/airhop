@@ -397,6 +397,9 @@ export default function DmList({
               entering={FadeIn.duration(Duration.base)}
             >
               <ReanimatedSwipeable
+                // The actions render beneath the row, which must be opaque to hide
+                // them at rest.
+                childrenContainerStyle={styles.swipeRow}
                 ref={(ref) => {
                   if (ref) swipeableRefs.set(item, ref);
                   else swipeableRefs.delete(item);
@@ -713,6 +716,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     swipeActions: {
       flexDirection: "row",
       height: "100%",
+    },
+    swipeRow: {
+      backgroundColor: Colors.bg,
     },
     swipeAction: {
       width: 72,

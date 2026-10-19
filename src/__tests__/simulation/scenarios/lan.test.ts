@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The LAN transport, end to end through the real mesh engine.
 //
 // What makes this worth simulating rather than unit testing: mDNS reveals every

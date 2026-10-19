@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'IPtProxy'
-  s.version          = '5.5.1'
+  s.version          = '5.7.0'
   s.summary          = "Airhop's pluggable transports"
   s.description      = <<~DESC
     Binary xcframework wrapping Lyrebird (obfs4) and Snowflake as a library.

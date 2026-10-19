@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Capitals in the reading language, the job `textTransform` does with the
 // wrong locale on both platforms.
 

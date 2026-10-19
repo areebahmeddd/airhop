@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The emote row has no sender name, so what qualifies for it is a security
 // boundary, not a formatting choice.
 

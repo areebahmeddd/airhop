@@ -1,6 +1,5 @@
-/**
- * @jest-environment node
- */
+// The owner check in front of the recovery phrase, one prompt at a time.
+
 import { confirmOwnerForPhrase } from "../phrase-access";
 
 const mockConfirm = jest.fn();

@@ -796,6 +796,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "벨 알림 허용",
   "chat.contact.allow_ring_desc":
     "대화가 음소거되어 있어도 상대방이 휴대폰을 울릴 수 있도록 허용합니다. 무음 모드와 방해 금지는 그대로 적용됩니다.",
+  "chat.contact.allow_ring_needs_keys":
+    "이 연락처의 키가 아직 없습니다. 벨을 울리도록 허용하려면 메시지를 보내거나 코드를 스캔하세요.",
+  "chat.contact.allow_ring_master_off":
+    "설정에서 {setting}을(를) 켜기 전까지는 아무도 휴대폰을 울릴 수 없습니다.",
   "chat.contact.ring_action": "벨 울리기",
   "chat.contact.ringing": "벨을 울리는 중…",
   "chat.contact.ring_hint_nearby":
@@ -926,7 +930,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "허용",
   "mesh.banner.action.resume": "재개",
   "mesh.banner.action.fix": "해결",
-  "mesh.banner.hint.resume": "블루투스 광고와 스캔을 다시 켭니다",
+  "mesh.banner.hint.resume": "메시를 다시 시작합니다",
   "mesh.banner.hint.enable_bluetooth":
     "Android에 블루투스를 켜달라고 요청합니다",
   "mesh.banner.hint.location_settings": "시스템 위치 설정을 엽니다",
@@ -1720,9 +1724,11 @@ export const strings: Strings = {
     "이 연락처의 키가 아직 없습니다. 메시지를 보내거나, 만났을 때 코드를 스캔하세요.",
   "contacts.verify.compare_title": "서로에게 읽어주세요",
   "contacts.verify.compare_body":
-    "{name}에게도 같은 여섯 단어가 보입니다. 일치한다면 두 사람 모두 키가 진짜임을 알 수 있습니다.",
+    "{name}의 Airhop에도 같은 여섯 단어가 보입니다. 일치한다면 두 사람 모두 키가 진짜임을 알 수 있습니다. bitchat에는 이런 단어가 없으니 대신 코드를 스캔하세요.",
   "contacts.verify.codes_match": "일치합니다",
   "contacts.verify.codes_differ": "일치하지 않습니다",
+  "contacts.verify.codes_differ_body":
+    "이 휴대폰의 키가 {name}의 것이 아닐 수 있습니다. 이 채팅을 믿기 전에 직접 만나 코드를 스캔하세요.",
   "contacts.verify.compared_body":
     "{name}과(와) 같은 코드를 확인했습니다. 이 연락처는 확인되었습니다.",
 
@@ -1756,7 +1762,7 @@ export const strings: Strings = {
   "settings.section.general": "일반",
   "settings.section.general_desc": "선택 기능, 보내기 취소, 미디어, 초기화",
   "settings.section.privacy": "개인정보 및 보안",
-  "settings.section.privacy_desc": "순방향 비밀성, 서명된 패킷, 차단된 피어",
+  "settings.section.privacy_desc": "Airhop 잠금, 알림, 차단된 피어",
   "settings.section.network": "네트워크 및 릴레이",
   "settings.section.network_desc":
     "인터넷 대체 경로, Nostr 릴레이, bitchat 호환성",
@@ -1871,10 +1877,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "대화를 가장 오래 읽을 수 있게 해주며, 저장 공간도 가장 많이 씁니다.",
   "settings.general.reset_desc":
-    "신원, 메시지, 연락처, 지갑은 그대로 둔 채 모든 환경설정을 기본값으로 되돌립니다",
+    "신원, 메시지, 연락처, 지갑은 그대로 둔 채 환경설정을 기본값으로 되돌립니다",
   "settings.general.reset_title": "설정을 초기화할까요?",
   "settings.general.reset_body":
-    "화면, 보내기 취소, 연결(인터넷, Tor, 게이트웨이, 브리지, 릴레이) 등 모든 환경설정이 기본값으로 돌아갑니다. 신원, 메시지, 연락처, 지갑은 그대로 유지됩니다.",
+    "화면, 언어, 알림, 보내기 취소, 연결(인터넷, Tor, 게이트웨이, 브리지, 릴레이)을 포함한 환경설정이 기본값으로 돌아갑니다. Airhop 잠금, 미디어 보관 기간, 상태는 설정한 그대로 유지됩니다. 신원, 메시지, 연락처, 지갑은 그대로 유지됩니다.",
   "settings.general.reset_confirm": "초기화",
 
   // ---- Settings: privacy and security ----
@@ -1889,6 +1895,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "벨 알림",
   "settings.security.ring_alerts_desc":
     "벨 알림의 마스터 스위치입니다. 끄면 개별 연락처에 부여한 권한과 관계없이 모든 벨 알림을 거부합니다.",
+  "settings.security.background_notice": "백그라운드 알림",
+  "settings.security.background_notice_desc":
+    "조용히 하거나 숨길 수 있습니다. 메시지 알림은 그대로 켜져 있습니다.",
   "settings.security.no_blocked": "차단된 피어 없음",
   "settings.security.no_blocked_desc":
     "차단된 피어는 메시지를 보낼 수 없고 메시 탭에도 나타나지 않습니다",
@@ -1919,7 +1928,7 @@ export const strings: Strings = {
     "메시 피어가 범위를 벗어나면 Nostr 릴레이로 계속 이어갑니다",
   "settings.network.internet_off_title": "인터넷을 끌까요?",
   "settings.network.internet_off_body":
-    "Airhop이 블루투스로만 작동합니다. Nostr 릴레이와의 연결을 모두 중단하고, Tor와 인터넷 게이트웨이, 메시 브리지가 모두 꺼집니다. 근처 블루투스 채팅은 계속 작동합니다.",
+    "Airhop이 블루투스로만 작동합니다. Nostr 릴레이와의 연결을 모두 중단하고, Tor와 인터넷 게이트웨이, 메시 브리지는 인터넷이 다시 켜질 때까지 일시 중지됩니다. 근처 블루투스 채팅은 계속 작동합니다.",
   "settings.network.turn_off": "끄기",
   "settings.network.discovery": "지오 릴레이 탐색",
   "settings.network.discovery_desc":
@@ -2000,7 +2009,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "근처 사람들과 무전기처럼 대화하기",
   "settings.conn.live_voice_on_title": "실시간 음성을 켤까요?",
   "settings.conn.live_voice_on_body":
-    "마이크를 누르고 있으면 말하는 즉시 블루투스 범위 안의 모두에게 목소리가 전달되고, 상대방의 목소리도 내 휴대폰에서 재생됩니다. 아무것도 녹음되지 않습니다.",
+    "마이크를 누르고 있으면 말하는 즉시 블루투스 범위 안의 모두에게 목소리가 전달되고, 상대방의 목소리도 내 휴대폰에서 재생됩니다. 손을 떼면 같은 음성이 음성 메모로도 전송됩니다.",
   "settings.conn.live_voice_off_title": "실시간 음성을 끌까요?",
   "settings.conn.live_voice_off_body":
     "마이크를 누르고 있으면 대신 음성 메모가 녹음됩니다. 손을 떼면 전송되고, 상대가 재생하기 전까지는 아무도 듣지 못합니다.",
@@ -2051,7 +2060,7 @@ export const strings: Strings = {
     "근처의 오프라인 휴대폰에 내 연결을 빌려주어 위치 채널에 닿을 수 있게 합니다",
   "settings.conn.gateway_on_title": "인터넷 게이트웨이를 켤까요?",
   "settings.conn.gateway_on_body":
-    "자체 연결이 없는 근처 휴대폰들이 내 연결을 통해 위치 채널 메시지를 주고받습니다. 내 모바일 데이터와 배터리를 사용하며, 그들의 메시지는 종단 간 암호화된 상태라 지나가는 내용을 읽을 수 없습니다.",
+    "자체 연결이 없는 근처 휴대폰들이 내 연결을 통해 위치 채널 메시지를 주고받습니다. 내 모바일 데이터와 배터리를 사용합니다. 이 메시지들은 작성자가 서명한 공개 게시물이라, 지나가는 내용을 읽을 수는 있지만 바꿀 수는 없습니다.",
   "settings.conn.gateway_off_title": "인터넷 게이트웨이를 끌까요?",
   "settings.conn.gateway_off_body":
     "근처의 오프라인 휴대폰들이 내 연결을 통해 위치 채널에 닿지 못하게 됩니다. 내 메시지에는 영향이 없습니다.",
@@ -2060,10 +2069,10 @@ export const strings: Strings = {
     "이 지역의 공개 #bluetooth 채팅을 인터넷으로 범위 밖의 다른 블루투스 무리와 연결합니다",
   "settings.conn.bridge_on_title": "메시 브리지를 켤까요?",
   "settings.conn.bridge_on_body":
-    "공개 #bluetooth 메시지가 인터넷을 통해 내 동네에 게시되어, 블루투스 범위 밖의 사람들도 읽을 수 있게 됩니다. 비공개 메시지는 절대 브리지되지 않으며, “근처만”을 쓰면 해당 메시지 하나는 지역에 머무릅니다.",
+    "공개 #bluetooth 메시지가 인터넷을 통해 내 동네에 게시되어, 블루투스 범위 밖의 사람들도 읽을 수 있게 됩니다. 내 휴대폰은 내 데이터로 근처 휴대폰들의 브리지된 메시지도 전달합니다. 비공개 메시지는 절대 브리지되지 않으며, “근처만”을 쓰면 해당 메시지 하나는 지역에 머무릅니다.",
   "settings.conn.bridge_off_title": "메시 브리지를 끌까요?",
   "settings.conn.bridge_off_body":
-    "공개 #bluetooth 메시지가 다시 블루투스 범위 안에만 머물고, 브리지된 무리의 메시지도 더 이상 도착하지 않습니다.",
+    "공개 #bluetooth 메시지가 다시 블루투스 범위 안에만 머물고, 내 휴대폰은 더 이상 다른 사람의 브리지된 메시지를 전달하지 않습니다. 근처 브리지가 블루투스로 전해 주는 메시지는 계속 여기에 표시됩니다.",
   "settings.conn.bridge_needs_location": "메시 브리지에는 위치가 필요합니다",
   "settings.conn.bridge_needs_location_desc":
     "위치 측정으로 내 동네를 찾습니다. 브리지를 시작하려면 위치 권한을 허용하세요.",
@@ -2099,7 +2108,7 @@ export const strings: Strings = {
   "settings.permissions.system": "시스템",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "네트워크 사용량",
+  "settings.storage.mesh_traffic": "메시 트래픽",
   "settings.storage.storage_usage": "저장 공간 사용량",
   "settings.storage.storage_usage_desc": "메시지, ecash, 캐시된 첨부 파일",
   "settings.storage.session_usage": "이번 세션 · 보냄 {sent}, 받음 {received}",
@@ -2176,7 +2185,8 @@ export const strings: Strings = {
   "settings.status.away": "자리 비움",
   "settings.status.away_desc": "메시 일시 중지, 스캔도 광고도 하지 않음",
   "settings.status.invisible": "보이지 않음",
-  "settings.status.invisible_desc": "스캔은 하지만 발견되지 않음",
+  "settings.status.invisible_desc":
+    "블루투스 스캔에는 숨겨지고, 연결한 휴대폰에는 계속 보임",
   "settings.status.title": "상태",
   "settings.status.set_a11y": "상태를 {value}(으)로 설정",
   "settings.status.edit": "상태 편집",

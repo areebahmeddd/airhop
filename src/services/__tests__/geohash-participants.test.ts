@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Who spoke in a cell belongs to that cell. Leaving it forgets them, so the
 // map holds the cells in use, not every cell visited in a session.
 
@@ -14,7 +11,6 @@ import { useChatStore } from "@store/chat-store";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
 import { GeohashChannelService } from "../geohash-channel-service";
 
-jest.mock("expo-location", () => ({}));
 jest.mock("../location-service", () => ({
   getCoarseLocation: async () => null,
 }));

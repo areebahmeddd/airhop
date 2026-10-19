@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Characters that change how text reads without being seen. Every one below is
 // written as an escape: the literal would be invisible in review, and CI
 // refuses it (npm run verify:invisibles).

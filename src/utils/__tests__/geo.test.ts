@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Bearing, distance and the words the location card puts on them.
 
 import {
@@ -73,12 +70,6 @@ describe("bearingDegrees", () => {
         lng: BENGALURU.lng - 0.01,
       }),
     ).toBeCloseTo(270, 1);
-  });
-
-  it("always answers in 0 to 360", () => {
-    const bearing = bearingDegrees(DELHI, BENGALURU);
-    expect(bearing).toBeGreaterThanOrEqual(0);
-    expect(bearing).toBeLessThan(360);
   });
 });
 

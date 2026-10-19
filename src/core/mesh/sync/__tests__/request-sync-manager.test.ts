@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Which sync responses are answers to something we asked.
 //
 // Accepting an unsolicited response would let any peer push state into this

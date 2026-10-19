@@ -801,6 +801,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "گھنٹی الرٹس کی اجازت دیں",
   "chat.contact.allow_ring_desc":
     "انہیں اپنی توجہ حاصل کرنے کے لیے آپ کا فون بجانے دیں، چاہے یہ گفتگو خاموش ہو۔ خاموش موڈ اور ڈسٹرب نہ کریں پھر بھی لاگو رہتے ہیں۔",
+  "chat.contact.allow_ring_needs_keys":
+    "اس رابطے کی ابھی کوئی کلید نہیں۔ انہیں گھنٹی بجانے کی اجازت دینے کے لیے پیغام بھیجیں، یا ان کا کوڈ اسکین کریں۔",
+  "chat.contact.allow_ring_master_off":
+    "جب تک آپ ترتیبات میں {setting} آن نہیں کرتے، کوئی آپ کا فون نہیں بجا سکتا۔",
   "chat.contact.ring_action": "گھنٹی بجائیں",
   "chat.contact.ringing": "گھنٹی بج رہی ہے…",
   "chat.contact.ring_hint_nearby":
@@ -933,7 +937,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "اجازت دیں",
   "mesh.banner.action.resume": "جاری رکھیں",
   "mesh.banner.action.fix": "درست کریں",
-  "mesh.banner.hint.resume": "بلوٹوتھ کی تشہیر اور تلاش دوبارہ چالو کرتا ہے",
+  "mesh.banner.hint.resume": "میش دوبارہ شروع کرتا ہے",
   "mesh.banner.hint.enable_bluetooth":
     "Android سے بلوٹوتھ چالو کرنے کو کہتا ہے",
   "mesh.banner.hint.location_settings": "نظام کی مقام ترتیبات کھولتا ہے",
@@ -1728,9 +1732,11 @@ export const strings: Strings = {
     "اس رابطے کی ابھی کوئی کلید نہیں۔ انہیں پیغام بھیجیں، یا ملاقات پر ان کا کوڈ اسکین کریں۔",
   "contacts.verify.compare_title": "یہ ایک دوسرے کو پڑھ کر سنائیں",
   "contacts.verify.compare_body":
-    "{name} کو وہی چھ الفاظ دکھائی دیتے ہیں۔ اگر وہ میل کھائیں تو آپ دونوں کو معلوم ہو جائے گا کہ کلیدیں اصلی ہیں۔",
+    "{name} کو Airhop میں وہی چھ الفاظ دکھائی دیتے ہیں۔ اگر وہ میل کھائیں تو آپ دونوں کو معلوم ہو جائے گا کہ کلیدیں اصلی ہیں۔ bitchat ایسے الفاظ نہیں دکھاتا، اس لیے اس کے بجائے ان کا کوڈ اسکین کریں۔",
   "contacts.verify.codes_match": "یہ میل کھاتے ہیں",
   "contacts.verify.codes_differ": "یہ میل نہیں کھاتے",
+  "contacts.verify.codes_differ_body":
+    "ہو سکتا ہے اس فون پر موجود کلیدیں {name} کی نہ ہوں۔ اس چیٹ پر بھروسا کرنے سے پہلے روبرو ان کا کوڈ اسکین کریں۔",
   "contacts.verify.compared_body":
     "آپ اور {name} نے وہی کوڈ تصدیق کیا۔ یہ رابطہ تصدیق شدہ ہے۔",
 
@@ -1765,8 +1771,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "اختیاری خصوصیات، بھیجنا واپس لینا، میڈیا، دوبارہ ترتیب",
   "settings.section.privacy": "رازداری اور تحفظ",
-  "settings.section.privacy_desc":
-    "Forward secrecy، دستخط شدہ پیکٹ، مسدود پیئرز",
+  "settings.section.privacy_desc": "Airhop لاک، اطلاعات، مسدود پیئرز",
   "settings.section.network": "نیٹ ورک اور ریلے",
   "settings.section.network_desc":
     "انٹرنیٹ کا متبادل، Nostr ریلے، bitchat سے ہم آہنگی",
@@ -1886,10 +1891,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "گفتگو کو سب سے دیر تک پڑھنے کے قابل رکھتا ہے، اور ڈسک پر سب سے زیادہ جگہ لیتا ہے۔",
   "settings.general.reset_desc":
-    "ہر ترجیح کو اس کی طے شدہ حالت پر لوٹاتا ہے، آپ کی شناخت، پیغامات، رابطوں اور بٹوے کو چھوئے بغیر",
+    "ترجیحات کو ان کی طے شدہ حالت پر لوٹاتا ہے، آپ کی شناخت، پیغامات، رابطوں اور بٹوے کو چھوئے بغیر",
   "settings.general.reset_title": "ترتیبات دوبارہ ترتیب دیں؟",
   "settings.general.reset_body":
-    "ہر ترجیح اپنی طے شدہ حالت پر لوٹ جاتی ہے: ظاہری شکل، بھیجنا واپس لینا، اور رابطہ کاری (انٹرنیٹ، Tor، گیٹ وے، پل، ریلے)۔ آپ کی شناخت، پیغامات، رابطے اور بٹوہ اچھوتے رہتے ہیں۔",
+    "ترجیحات اپنی طے شدہ حالت پر لوٹ جاتی ہیں، جن میں ظاہری شکل، زبان، اطلاعات، بھیجنا واپس لینا، اور رابطہ کاری (انٹرنیٹ، Tor، گیٹ وے، پل، ریلے) شامل ہیں۔ Airhop لاک، میڈیا کتنی دیر رکھا جائے، اور آپ کی حالت ویسے ہی رہتے ہیں جیسے آپ نے طے کیے۔ آپ کی شناخت، پیغامات، رابطے اور بٹوہ اچھوتے رہتے ہیں۔",
   "settings.general.reset_confirm": "دوبارہ ترتیب دیں",
 
   // ---- Settings: privacy and security ----
@@ -1904,6 +1909,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "گھنٹی الرٹس",
   "settings.security.ring_alerts_desc":
     "گھنٹی کے لیے مرکزی سوئچ۔ بند کرنے سے ہر گھنٹی فوراً مسترد ہو جاتی ہے، چاہے آپ نے انفرادی رابطوں کو جو بھی اجازت دی ہو۔",
+  "settings.security.background_notice": "پس منظر کی اطلاع",
+  "settings.security.background_notice_desc":
+    "اسے خاموش کریں یا چھپائیں۔ پیغام کی اطلاعات چالو رہیں گی۔",
   "settings.security.no_blocked": "کوئی مسدود پیئر نہیں",
   "settings.security.no_blocked_desc":
     "مسدود پیئرز آپ کو پیغام نہیں بھیج سکتے اور نہ ہی میش ٹیب میں نظر آتے ہیں",
@@ -1934,7 +1942,7 @@ export const strings: Strings = {
     "جب میش کے پیئرز حدود سے باہر ہوں تو Nostr ریلے کے ذریعے جاری رکھیں",
   "settings.network.internet_off_title": "انٹرنیٹ بند کریں؟",
   "settings.network.internet_off_body":
-    "Airhop صرف بلوٹوتھ پر چلے گا۔ وہ کسی بھی Nostr ریلے سے رابطہ بند کر دے گا، اور Tor، انٹرنیٹ گیٹ وے اور میش پل سب بند ہو جائیں گے۔ قریبی بلوٹوتھ چیٹ کام کرتی رہے گی۔",
+    "Airhop صرف بلوٹوتھ پر چلے گا۔ وہ کسی بھی Nostr ریلے سے رابطہ بند کر دے گا، اور انٹرنیٹ دوبارہ چالو ہونے تک Tor، انٹرنیٹ گیٹ وے اور میش پل موقوف رہیں گے۔ قریبی بلوٹوتھ چیٹ کام کرتی رہے گی۔",
   "settings.network.turn_off": "بند کریں",
   "settings.network.discovery": "جیو ریلے کی دریافت",
   "settings.network.discovery_desc":
@@ -2016,7 +2024,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "قریبی لوگوں سے واکی ٹاکی کی طرح بات کریں",
   "settings.conn.live_voice_on_title": "براہ راست آواز چالو کریں؟",
   "settings.conn.live_voice_on_body":
-    "مائیک دبائے رکھنے سے آپ کی آواز بولتے ہی بلوٹوتھ کی حدود میں موجود سب تک جاتی ہے، اور ان کی آواز آپ کے فون پر بجتی ہے۔ کچھ بھی ریکارڈ نہیں ہوتا۔",
+    "مائیک دبائے رکھنے سے آپ کی آواز بولتے ہی بلوٹوتھ کی حدود میں موجود سب تک جاتی ہے، اور ان کی آواز آپ کے فون پر بجتی ہے۔ چھوڑنے پر وہی آڈیو صوتی نوٹ کے طور پر بھی بھیجا جاتا ہے۔",
   "settings.conn.live_voice_off_title": "براہ راست آواز بند کریں؟",
   "settings.conn.live_voice_off_body":
     "مائیک دبائے رکھنے سے اس کے بجائے صوتی نوٹ ریکارڈ ہوتا ہے۔ چھوڑنے پر وہ بھیج دیا جاتا ہے، اور جب تک کوئی اسے چلا نہ لے، سنتا کوئی نہیں۔",
@@ -2066,7 +2074,7 @@ export const strings: Strings = {
     "اپنا تعلق قریبی آف لائن فون کو ادھار دیں تاکہ وہ پھر بھی مقامی چینلوں تک پہنچ سکے",
   "settings.conn.gateway_on_title": "انٹرنیٹ گیٹ وے چالو کریں؟",
   "settings.conn.gateway_on_body":
-    "قریبی وہ فون جن کا اپنا تعلق نہیں، مقامی چینل کے پیغام آپ کے تعلق سے بھیجیں اور وصول کریں گے۔ اس میں آپ کا موبائل ڈیٹا اور بیٹری خرچ ہوتی ہے، اور ان کے پیغام سرے سے سرے تک خفیہ رہتے ہیں، اس لیے جو گزرتا ہے آپ اسے پڑھ نہیں سکتے۔",
+    "قریبی وہ فون جن کا اپنا تعلق نہیں، مقامی چینل کے پیغام آپ کے تعلق سے بھیجیں اور وصول کریں گے۔ اس میں آپ کا موبائل ڈیٹا اور بیٹری خرچ ہوتی ہے۔ یہ پیغام اپنے لکھنے والوں کے دستخط شدہ عوامی پوسٹ ہیں، اس لیے جو گزرتا ہے آپ اسے پڑھ سکتے ہیں، مگر بدل نہیں سکتے۔",
   "settings.conn.gateway_off_title": "انٹرنیٹ گیٹ وے بند کریں؟",
   "settings.conn.gateway_off_body":
     "قریبی آف لائن فون آپ کے تعلق سے مقامی چینلوں تک پہنچنا بند کر دیں گے۔ آپ کے اپنے پیغام متاثر نہیں ہوتے۔",
@@ -2075,10 +2083,10 @@ export const strings: Strings = {
     "اس علاقے کی عوامی #bluetooth چیٹ کو انٹرنیٹ کے ذریعے حدود سے باہر کسی دوسرے بلوٹوتھ مجمعے سے جوڑیں",
   "settings.conn.bridge_on_title": "میش پل چالو کریں؟",
   "settings.conn.bridge_on_body":
-    "آپ کے عوامی #bluetooth پیغام انٹرنیٹ کے ذریعے آپ کے محلے میں شائع ہوں گے، تاکہ بلوٹوتھ کی حدود سے باہر کے لوگ انہیں پڑھ سکیں۔ نجی پیغام کبھی پل سے نہیں گزرتے، اور ”صرف قریب“ کسی ایک پیغام کو مقامی رکھتا ہے۔",
+    "آپ کے عوامی #bluetooth پیغام انٹرنیٹ کے ذریعے آپ کے محلے میں شائع ہوں گے، تاکہ بلوٹوتھ کی حدود سے باہر کے لوگ انہیں پڑھ سکیں۔ آپ کا فون آپ کے ڈیٹا سے قریبی فونوں کے پل سے گزرنے والے پیغام بھی پہنچائے گا۔ نجی پیغام کبھی پل سے نہیں گزرتے، اور ”صرف قریب“ کسی ایک پیغام کو مقامی رکھتا ہے۔",
   "settings.conn.bridge_off_title": "میش پل بند کریں؟",
   "settings.conn.bridge_off_body":
-    "آپ کے عوامی #bluetooth پیغام دوبارہ بلوٹوتھ کی حدود میں رہیں گے، اور پل کے پار والے مجمعے کے پیغام یہاں آنا بند ہو جائیں گے۔",
+    "آپ کے عوامی #bluetooth پیغام دوبارہ بلوٹوتھ کی حدود میں رہیں گے، اور آپ کا فون دوسروں کے لیے پل سے گزرنے والے پیغام پہنچانا بند کر دے گا۔ قریبی کوئی پل بلوٹوتھ پر جو پیغام لاتا ہے، وہ پھر بھی یہاں نظر آئیں گے۔",
   "settings.conn.bridge_needs_location": "میش پل کو مقام درکار ہے",
   "settings.conn.bridge_needs_location_desc":
     "وہ آپ کا محلہ مقام کی پیمائش سے معلوم کرتا ہے۔ پل بنانا شروع کرنے کے لیے مقام کی اجازت دیں۔",
@@ -2115,7 +2123,7 @@ export const strings: Strings = {
   "settings.permissions.system": "نظام",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "نیٹ ورک کا استعمال",
+  "settings.storage.mesh_traffic": "میش ٹریفک",
   "settings.storage.storage_usage": "ذخیرے کا استعمال",
   "settings.storage.storage_usage_desc":
     "پیغامات، ecash، اور کیش میں موجود منسلکات",
@@ -2195,7 +2203,8 @@ export const strings: Strings = {
   "settings.status.away": "غیر حاضر",
   "settings.status.away_desc": "میش موقوف، نہ تلاش نہ تشہیر",
   "settings.status.invisible": "پوشیدہ",
-  "settings.status.invisible_desc": "تلاش کر رہا ہے، مگر دریافت سے چھپا ہوا",
+  "settings.status.invisible_desc":
+    "بلوٹوتھ تلاش سے چھپا ہوا، جن فونز سے آپ جڑتے ہیں وہ اب بھی آپ کو دیکھتے ہیں",
   "settings.status.title": "حالت",
   "settings.status.set_a11y": "حالت {value} کریں",
   "settings.status.edit": "حالت بدلیں",

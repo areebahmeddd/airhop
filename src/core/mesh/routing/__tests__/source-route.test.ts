@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Following a source route: the relay half of bitchat's v2 routing extension.
 // Airhop follows routes and never originates them; see source-route.ts for why.
 import { Flags, PacketType, type Packet } from "../../wire/packet-codec";
@@ -19,8 +16,8 @@ function bytes(peerIDHex: string): Uint8Array {
   return out;
 }
 
-// Alice -> [route] -> Dave, per SOURCE_ROUTING.md section 3: the route carries
-// intermediate hops only, never the sender or the recipient.
+// Alice -> [route] -> Dave. bitchat's routing extension lists intermediate hops
+// only: the sender and the recipient are never in the route.
 function routed(route: string[], recipient = DAVE, version = 2): Packet {
   return {
     type: PacketType.NOISE_ENCRYPTED,

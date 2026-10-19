@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Airhop میش فعال ہے</string>
   <string name="mesh_notification_text">قریبی پیغامات تلاش اور آگے منتقل کیے جا رہے ہیں</string>
   <string name="mesh_notification_stop">میش روکیں</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s پیئر حدود میں</item>
+    <item quantity="other">%1$s پیئرز حدود میں</item>
+  </plurals>
 </resources>

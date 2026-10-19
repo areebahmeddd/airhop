@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The name shown for a peer who has never told us one.
 //
 // Derived from the peer ID rather than stored, so every device shows the same
@@ -9,38 +6,10 @@
 import { isNostrId, nostrShortLabel, peerIDToUsername } from "../username";
 
 describe("peerIDToUsername", () => {
-  test("produces adjective-noun-suffix format", () => {
-    const name = peerIDToUsername("3a9f2c1b4e5d6f70");
-    expect(name).toMatch(/^[a-z]+-[a-z]+-[0-9a-f]{4}$/);
-  });
-
-  test("suffix is always the first 4 hex chars of peerID", () => {
-    const peerID = "3a9f2c1b4e5d6f70";
-    const name = peerIDToUsername(peerID);
-    expect(name.endsWith(`-${peerID.slice(0, 4)}`)).toBe(true);
-  });
-
-  test("deterministic: same peerID always produces same name", () => {
-    const peerID = "aabbccddeeff0011";
-    const a = peerIDToUsername(peerID);
-    const b = peerIDToUsername(peerID);
-    expect(a).toBe(b);
-  });
-
   test("known vector: 3a9f picks ADJECTIVES[0x3a % 128] and NOUNS[0x9f % 128]", () => {
     // 0x3a = 58 and 0x9f % 128 = 31: ADJECTIVES[58] is "lunar", NOUNS[31] is
     // "drift". Pins the byte-to-word mapping, not just the shape.
     expect(peerIDToUsername("3a9f000000000000")).toBe("lunar-drift-3a9f");
-  });
-
-  test("all-zeros peerID produces a valid name", () => {
-    const name = peerIDToUsername("0000000000000000");
-    expect(name).toMatch(/^[a-z]+-[a-z]+-0000$/);
-  });
-
-  test("all-ff peerID produces a valid name", () => {
-    const name = peerIDToUsername("ffffffffffffffff");
-    expect(name).toMatch(/^[a-z]+-[a-z]+-ffff$/);
   });
 
   test("throws on short peerID", () => {

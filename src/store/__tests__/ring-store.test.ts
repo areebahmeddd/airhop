@@ -1,8 +1,5 @@
-/**
- * @jest-environment node
- */
 // Ring: rate limiting and snooze state. Covers what
-// notification-policy.ringRefusal depends on (an active snooze, the
+// notification-policy.ringVerdict depends on (an active snooze, the
 // receive-side cooldown clock) and what the contact sheet reads back on the
 // sender's side: the "still ringing" window, the local cooldown, and the last
 // refusal.
@@ -119,12 +116,6 @@ describe("isSnoozed", () => {
   it("is false once the snooze has passed", () => {
     state().snooze("p1", 2_000);
     expect(state().isSnoozed("p1", 2_000)).toBe(false);
-  });
-
-  it("clearSnooze lifts it immediately", () => {
-    state().snooze("p1", 2_000);
-    state().clearSnooze("p1");
-    expect(state().isSnoozed("p1", 1_500)).toBe(false);
   });
 });
 

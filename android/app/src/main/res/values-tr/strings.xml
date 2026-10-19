@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Airhop mesh\'i etkin</string>
   <string name="mesh_notification_text">Yakındaki mesajlar bulunuyor ve aktarılıyor</string>
   <string name="mesh_notification_stop">Mesh\'i durdur</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">menzilde %1$s eş</item>
+    <item quantity="other">menzilde %1$s eş</item>
+  </plurals>
 </resources>

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The search index is hand-written, so this is what stops it drifting from the
 // screens it describes. A renamed row or a mistargeted entry both fail silently
 // at runtime, so both are checked here by reading the screens' source.

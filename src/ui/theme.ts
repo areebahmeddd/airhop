@@ -403,7 +403,7 @@ export type ResolvedTheme = "light" | "dark";
 // which mode is active. "system" is the absence of a choice, resolved here.
 function resolveTheme(
   preference: ThemePreference,
-  systemScheme: ColorSchemeName,
+  systemScheme: ColorSchemeName | null,
 ): ResolvedTheme {
   return preference === "system"
     ? systemScheme === "dark"

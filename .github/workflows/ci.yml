@@ -142,7 +142,7 @@ jobs:
 
       - name: Run Android unit tests
         working-directory: android
-        run: ./gradlew :app:testReleaseUnitTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
 
       # Verify native libraries meet Android 15's 16 KB page alignment
       # requirement to avoid Play Store upload failures.
@@ -184,7 +184,7 @@ jobs:
           done
 
           if [ "${CHECKED}" -eq 0 ]; then
-            echo "::error::No 64-bit native libraries found to check. The ABI filters in app/build.gradle have changed."
+            echo "::error::No 64-bit native libraries found to check. The -PreactNativeArchitectures set passed to the build has changed."
             exit 1
           fi
 

@@ -333,10 +333,7 @@ export function buildGcsFilter(
     // Map each h64 to [1, M), sort, and drop duplicates (normalizeMappedValues).
     const mapped = h64s
       .slice(0, count)
-      .map((v) => {
-        const x = v % modulo;
-        return x === 0n ? 1n : x;
-      })
+      .map((v) => mapToRange(v, modulo))
       .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
     const sorted: bigint[] = [];
@@ -458,6 +455,13 @@ export function decodeGcsFilter(
   }
 
   return values;
+}
+
+// An h64 into [1, M), as bitchat-ios GCSFilter.mapHash. The encoder and the
+// lookup must agree: a bucket of 0 is stored as 1.
+function mapToRange(h64: bigint, modulo: bigint): bigint {
+  const x = h64 % modulo;
+  return x === 0n ? 1n : x;
 }
 
 // Check whether a h64 value is contained in a decoded filter set.
@@ -626,6 +630,11 @@ export class GossipSync {
   // Sync replies we were handed and did not keep, by packet ID. See noteReply.
   private readonly declined = new Map<string, FilterEntry>();
   private timer: ReturnType<typeof setInterval> | null = null;
+  // Set while started, for requests made between ticks.
+  private session: {
+    identity: GossipSyncIdentity;
+    wiring: GossipSyncWiring;
+  } | null = null;
   // Not a deduplicator: a peer asks every 15s and gets an answer. This only
   // caps one asking far faster, since each answer costs a store scan and a
   // burst of writes on a shared radio.
@@ -639,6 +648,7 @@ export class GossipSync {
   // drew back would be taken as a reply.
   start(identity: GossipSyncIdentity, wiring: GossipSyncWiring): void {
     if (this.timer !== null) this.stop();
+    this.session = { identity, wiring };
     let tick = 0;
     this.timer = setInterval(() => {
       const now = Date.now();
@@ -647,19 +657,7 @@ export class GossipSync {
       const peers = wiring.getPeers();
       for (const round of SYNC_ROUNDS) {
         if (tick % round.everyTicks !== 0) continue;
-        for (const peerID of peers) {
-          const pkt = this.buildFilterPacket(
-            identity,
-            peerID,
-            round.types,
-            now,
-          );
-          // Registered BEFORE the send: on a fast link the response can
-          // outrun our own continuation, and a response that lands before its
-          // registration looks exactly like an unsolicited one.
-          wiring.onRequest(peerID);
-          wiring.sendToPeer(peerID, pkt);
-        }
+        for (const peerID of peers) this.request(peerID, round.types, now);
       }
       tick++;
     }, SYNC_INTERVAL_MS);
@@ -670,6 +668,27 @@ export class GossipSync {
       clearInterval(this.timer);
       this.timer = null;
     }
+    this.session = null;
+  }
+
+  // Every round at once to one peer, for a neighbour just met, as bitchat-ios
+  // scheduleInitialSyncToPeer. Waiting for the tick leaves a phone that keeps
+  // relaunching with no history, and a holder that relaunches loses it for
+  // good. Two requests, well inside the eight a responder answers.
+  requestNow(peerID: string): void {
+    const now = Date.now();
+    for (const round of SYNC_ROUNDS) this.request(peerID, round.types, now);
+  }
+
+  private request(peerID: string, types: number, now: number): void {
+    if (this.session === null) return;
+    const { identity, wiring } = this.session;
+    const pkt = this.buildFilterPacket(identity, peerID, types, now);
+    // Registered BEFORE the send: on a fast link the response can outrun our
+    // own continuation, and a response that lands before its registration
+    // looks exactly like an unsolicited one.
+    wiring.onRequest(peerID);
+    wiring.sendToPeer(peerID, pkt);
   }
 
   // Drop candidates past their per-type window, and response budgets nobody
@@ -872,7 +891,7 @@ export class GossipSync {
       const h64 = packetIdToH64(id);
       const inPeerFilter = filterContains(
         decodedFilter,
-        h64 % BigInt(params.m),
+        mapToRange(h64, BigInt(params.m)),
       );
       if (!inPeerFilter) {
         missing.push({ ...packet, ttl: SYNC_TTL, isRSR: true });

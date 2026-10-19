@@ -1,3 +1,5 @@
+// The cap on ID sets fed from relays and the air: oldest added goes first.
+
 import { BoundedIdSet } from "../bounded-id-set";
 
 describe("BoundedIdSet", () => {

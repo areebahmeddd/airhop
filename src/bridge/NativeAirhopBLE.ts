@@ -95,6 +95,13 @@ export interface Spec extends TurboModule {
   // from UIBackgroundModes.
   setBackgroundServiceEnabled(enabled: boolean): Promise<void>;
 
+  // The reachable peer count on Android's background notice. No-op on iOS,
+  // which shows no notice.
+  setBackgroundPeerCount(count: number): Promise<void>;
+
+  // The notice's system settings page, to quiet or hide it. False on iOS.
+  openBackgroundNoticeSettings(): Promise<boolean>;
+
   // Required by the NativeEventEmitter contract.
   addListener(eventName: string): void;
   removeListeners(count: number): void;

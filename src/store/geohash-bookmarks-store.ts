@@ -16,7 +16,6 @@ import { getStorage } from "./mmkv";
 interface GeohashBookmarksState {
   // Geohash cells, newest first.
   bookmarks: string[];
-  isBookmarked: (geohash: string) => boolean;
   toggle: (geohash: string) => void;
   remove: (geohash: string) => void;
   clearAll: () => void;
@@ -34,12 +33,8 @@ const mmkvStorage = {
 
 export const useGeohashBookmarksStore = create<GeohashBookmarksState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       bookmarks: [],
-
-      isBookmarked(geohash: string) {
-        return get().bookmarks.includes(geohash);
-      },
 
       toggle(geohash: string) {
         set((state) =>

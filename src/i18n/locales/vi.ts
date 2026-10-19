@@ -807,6 +807,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Cho phép cảnh báo chuông",
   "chat.contact.allow_ring_desc":
     "Cho phép họ làm điện thoại của bạn đổ chuông để thu hút sự chú ý, ngay cả khi cuộc trò chuyện này đang tắt tiếng. Chế độ im lặng và Không làm phiền vẫn được áp dụng.",
+  "chat.contact.allow_ring_needs_keys":
+    "Chưa có khóa cho liên hệ này. Hãy nhắn tin cho họ, hoặc quét mã của họ, để cho phép họ gọi chuông bạn.",
+  "chat.contact.allow_ring_master_off":
+    "Không ai có thể làm điện thoại của bạn đổ chuông cho đến khi bạn bật {setting} trong Cài đặt.",
   "chat.contact.ring_action": "Gọi chuông",
   "chat.contact.ringing": "Đang gọi chuông…",
   "chat.contact.ring_hint_nearby": "Gọi chuông chỉ hoạt động khi họ ở gần",
@@ -940,7 +944,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Cho phép",
   "mesh.banner.action.resume": "Tiếp tục",
   "mesh.banner.action.fix": "Sửa",
-  "mesh.banner.hint.resume": "Bật lại việc phát và quét Bluetooth",
+  "mesh.banner.hint.resume": "Khởi động lại mạng lưới",
   "mesh.banner.hint.enable_bluetooth": "Yêu cầu Android bật Bluetooth",
   "mesh.banner.hint.location_settings": "Mở phần cài đặt vị trí của hệ thống",
   "mesh.banner.hint.app_settings":
@@ -1743,9 +1747,11 @@ export const strings: Strings = {
     "Chưa có khóa cho liên hệ này. Hãy nhắn tin cho họ, hoặc quét mã của họ khi gặp mặt.",
   "contacts.verify.compare_title": "Hãy đọc những từ này cho nhau nghe",
   "contacts.verify.compare_body":
-    "{name} thấy đúng sáu từ đó. Nếu chúng khớp, cả hai bạn đều biết các khóa là thật.",
+    "{name} thấy đúng sáu từ đó trên Airhop. Nếu chúng khớp, cả hai bạn đều biết các khóa là thật. bitchat không hiển thị những từ này, nên hãy quét mã của họ.",
   "contacts.verify.codes_match": "Chúng khớp",
   "contacts.verify.codes_differ": "Chúng không khớp",
+  "contacts.verify.codes_differ_body":
+    "Các khóa trên điện thoại này có thể không phải của {name}. Hãy quét mã của họ trực tiếp trước khi tin cuộc trò chuyện này.",
   "contacts.verify.compared_body":
     "Bạn và {name} đã xác nhận cùng một mã. Liên hệ này đã được xác minh.",
 
@@ -1780,8 +1786,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "Tính năng tùy chọn, hoàn tác gửi, phương tiện, đặt lại",
   "settings.section.privacy": "Riêng tư và bảo mật",
-  "settings.section.privacy_desc":
-    "Bí mật chuyển tiếp, gói tin đã ký, nút mạng bị chặn",
+  "settings.section.privacy_desc": "Khóa Airhop, thông báo, nút mạng bị chặn",
   "settings.section.network": "Mạng và bộ chuyển tiếp",
   "settings.section.network_desc":
     "Dự phòng Internet, bộ chuyển tiếp Nostr, tương thích bitchat",
@@ -1901,10 +1906,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Giữ cuộc trò chuyện đọc được lâu nhất, và cũng chiếm đĩa nhiều nhất.",
   "settings.general.reset_desc":
-    "Đưa mọi tùy chọn về mặc định, còn danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn",
+    "Đưa các tùy chọn về mặc định, còn danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn",
   "settings.general.reset_title": "Đặt lại cài đặt?",
   "settings.general.reset_body":
-    "Mọi tùy chọn quay về mặc định: giao diện, hoàn tác gửi, và kết nối (Internet, Tor, cổng kết nối, cầu nối, bộ chuyển tiếp). Danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn.",
+    "Các tùy chọn quay về mặc định, gồm giao diện, ngôn ngữ, thông báo, hoàn tác gửi, và kết nối (Internet, Tor, cổng kết nối, cầu nối, bộ chuyển tiếp). Khóa Airhop, thời gian giữ phương tiện và trạng thái của bạn vẫn giữ như đã đặt. Danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn.",
   "settings.general.reset_confirm": "Đặt lại",
 
   // ---- Settings: privacy and security ----
@@ -1920,6 +1925,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Cảnh báo chuông",
   "settings.security.ring_alerts_desc":
     "Công tắc chính cho tính năng Chuông. Tắt sẽ từ chối mọi cuộc gọi chuông ngay lập tức, bất kể bạn đã cấp quyền gì cho từng liên hệ.",
+  "settings.security.background_notice": "Thông báo chạy nền",
+  "settings.security.background_notice_desc":
+    "Tắt tiếng hoặc ẩn đi. Thông báo tin nhắn vẫn bật.",
   "settings.security.no_blocked": "Không có nút mạng nào bị chặn",
   "settings.security.no_blocked_desc":
     "Nút mạng bị chặn không nhắn tin cho bạn được và không hiện trên thẻ Mạng lưới",
@@ -1950,7 +1958,7 @@ export const strings: Strings = {
     "Tiếp tục qua các bộ chuyển tiếp Nostr khi nút mạng lưới ở ngoài tầm",
   "settings.network.internet_off_title": "Tắt Internet?",
   "settings.network.internet_off_body":
-    "Airhop sẽ chỉ chạy trên Bluetooth. Nó ngừng liên hệ với mọi bộ chuyển tiếp Nostr, còn Tor, cổng kết nối Internet và cầu nối mạng lưới đều tắt theo. Trò chuyện Bluetooth ở gần vẫn chạy.",
+    "Airhop sẽ chỉ chạy trên Bluetooth. Nó ngừng liên hệ với mọi bộ chuyển tiếp Nostr, còn Tor, cổng kết nối Internet và cầu nối mạng lưới tạm dừng cho đến khi Internet bật lại. Trò chuyện Bluetooth ở gần vẫn chạy.",
   "settings.network.turn_off": "Tắt",
   "settings.network.discovery": "Tự tìm bộ chuyển tiếp theo vị trí",
   "settings.network.discovery_desc":
@@ -2036,7 +2044,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "Nói chuyện với người ở gần như dùng bộ đàm",
   "settings.conn.live_voice_on_title": "Bật thoại trực tiếp?",
   "settings.conn.live_voice_on_body":
-    "Giữ micrô sẽ truyền giọng bạn tới mọi người trong tầm Bluetooth ngay khi bạn nói, và giọng họ phát trên điện thoại của bạn. Không có gì được ghi lại.",
+    "Giữ micrô sẽ truyền giọng bạn tới mọi người trong tầm Bluetooth ngay khi bạn nói, và giọng họ phát trên điện thoại của bạn. Khi bạn thả tay, chính đoạn âm thanh đó cũng được gửi dưới dạng tin nhắn thoại.",
   "settings.conn.live_voice_off_title": "Tắt thoại trực tiếp?",
   "settings.conn.live_voice_off_body":
     "Thay vào đó, giữ micrô sẽ ghi một tin nhắn thoại. Nó gửi khi bạn thả tay, và không ai nghe được cho tới khi họ bấm phát.",
@@ -2085,7 +2093,7 @@ export const strings: Strings = {
     "Cho một chiếc điện thoại ngoại tuyến ở gần mượn kết nối của bạn để nó vẫn tới được các kênh vị trí",
   "settings.conn.gateway_on_title": "Bật cổng kết nối Internet?",
   "settings.conn.gateway_on_body":
-    "Những điện thoại ở gần không có kết nối riêng sẽ gửi và nhận tin nhắn kênh vị trí qua kết nối của bạn. Việc này dùng dữ liệu di động và pin của bạn, còn tin nhắn của họ vẫn được mã hóa đầu cuối, nên bạn không đọc được thứ đi qua.",
+    "Những điện thoại ở gần không có kết nối riêng sẽ gửi và nhận tin nhắn kênh vị trí qua kết nối của bạn. Việc này dùng dữ liệu di động và pin của bạn. Những tin nhắn đó là bài đăng công khai do chính tác giả ký, nên bạn đọc được thứ đi qua nhưng không thay đổi được.",
   "settings.conn.gateway_off_title": "Tắt cổng kết nối Internet?",
   "settings.conn.gateway_off_body":
     "Những điện thoại ngoại tuyến ở gần thôi không tới được các kênh vị trí qua kết nối của bạn nữa. Tin nhắn của chính bạn không bị ảnh hưởng.",
@@ -2094,10 +2102,10 @@ export const strings: Strings = {
     "Nối cuộc trò chuyện #bluetooth công khai của khu vực này với một nhóm Bluetooth khác ngoài tầm, qua Internet",
   "settings.conn.bridge_on_title": "Bật cầu nối mạng lưới?",
   "settings.conn.bridge_on_body":
-    "Tin nhắn #bluetooth công khai của bạn sẽ được đăng ra khu dân cư của bạn qua Internet, nên người ngoài tầm Bluetooth cũng đọc được. Tin nhắn riêng tư không bao giờ được bắc cầu, và “chỉ ở gần” giữ riêng từng tin nhắn ở lại tại chỗ.",
+    "Tin nhắn #bluetooth công khai của bạn sẽ được đăng ra khu dân cư của bạn qua Internet, nên người ngoài tầm Bluetooth cũng đọc được. Điện thoại của bạn cũng sẽ chuyển tin nhắn bắc cầu cho các điện thoại ở gần bằng dữ liệu của bạn. Tin nhắn riêng tư không bao giờ được bắc cầu, và “chỉ ở gần” giữ riêng từng tin nhắn ở lại tại chỗ.",
   "settings.conn.bridge_off_title": "Tắt cầu nối mạng lưới?",
   "settings.conn.bridge_off_body":
-    "Tin nhắn #bluetooth công khai của bạn lại ở trong tầm Bluetooth, và tin nhắn từ nhóm bên kia cầu thôi không tới đây nữa.",
+    "Tin nhắn #bluetooth công khai của bạn lại ở trong tầm Bluetooth, và điện thoại của bạn thôi chuyển tin nhắn bắc cầu cho người khác. Tin nhắn mà một cầu nối ở gần mang tới qua Bluetooth vẫn hiện ở đây.",
   "settings.conn.bridge_needs_location": "Cầu nối mạng lưới cần vị trí",
   "settings.conn.bridge_needs_location_desc":
     "Nó tìm ra khu dân cư của bạn từ một lần định vị. Hãy cấp quyền vị trí để bắt đầu bắc cầu.",
@@ -2133,7 +2141,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Hệ thống",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Mức dùng mạng",
+  "settings.storage.mesh_traffic": "Lưu lượng mạng lưới",
   "settings.storage.storage_usage": "Mức dùng bộ nhớ",
   "settings.storage.storage_usage_desc":
     "Tin nhắn, ecash và tệp đính kèm lưu đệm",
@@ -2213,7 +2221,8 @@ export const strings: Strings = {
   "settings.status.away": "Vắng mặt",
   "settings.status.away_desc": "Mạng lưới tạm dừng, không quét cũng không phát",
   "settings.status.invisible": "Ẩn",
-  "settings.status.invisible_desc": "Vẫn quét, nhưng không để bị tìm thấy",
+  "settings.status.invisible_desc":
+    "Ẩn khỏi các lượt quét Bluetooth, các điện thoại bạn kết nối vẫn thấy bạn",
   "settings.status.title": "Trạng thái",
   "settings.status.set_a11y": "Đặt trạng thái thành {value}",
   "settings.status.edit": "Sửa trạng thái",

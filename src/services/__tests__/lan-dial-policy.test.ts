@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The rule that stops mDNS turning a room into a full mesh.
 //
 // The properties asserted below are what the rest of the mesh depends on, so
@@ -9,7 +6,7 @@
 // carries more links than the cap allows.
 import { dialTargets, MAX_LAN_LINKS } from "../lan-dial-policy";
 
-// Peer IDs are 16 lowercase hex characters, all the same length, so a plain
+// Stand-ins for mDNS instance names: fixed-width lowercase hex, so a plain
 // string sort is the numeric one.
 function room(count: number): string[] {
   return Array.from({ length: count }, (_, i) =>
@@ -58,7 +55,7 @@ describe("dialTargets", () => {
     expect(dialTargets("bbbb", ["aaaa"])).toEqual([]);
   });
 
-  it("ignores our own ID appearing in the discovered list", () => {
+  it("ignores our own instance name appearing in the discovered list", () => {
     expect(dialTargets("aaaa", ["aaaa", "bbbb"])).toEqual(["bbbb"]);
   });
 

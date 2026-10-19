@@ -4,4 +4,9 @@
   <string name="mesh_notification_title">Maillage Airhop actif</string>
   <string name="mesh_notification_text">Découverte et relais des messages proches</string>
   <string name="mesh_notification_stop">Arrêter le maillage</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s pair à portée</item>
+    <item quantity="many">%1$s pairs à portée</item>
+    <item quantity="other">%1$s pairs à portée</item>
+  </plurals>
 </resources>

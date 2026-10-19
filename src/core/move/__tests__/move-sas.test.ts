@@ -1,6 +1,4 @@
-/**
- * @jest-environment node
- */
+// The matching words both phones show before a transfer starts.
 import { x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { MoveHandshake } from "../move-handshake";

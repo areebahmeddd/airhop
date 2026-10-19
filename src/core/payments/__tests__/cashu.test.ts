@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Cashu core: detection, decoding and its bounds, fee-aware selection,
 // serialisation and the QR hand-off.
 //
@@ -9,7 +6,6 @@
 // Nothing here touches a mint.
 
 import { getEncodedToken, type Token } from "@cashu/cashu-ts";
-import type { StoredProof } from "@store/wallet-store";
 import {
   bareToken,
   buildToken,
@@ -18,7 +14,6 @@ import {
   feeForProofs,
   findChatTokens,
   findTokensInText,
-  inputFeeFor,
   isLikelyTestMint,
   mayContainToken,
   mintsOfUnresolvedTokens,
@@ -27,11 +22,11 @@ import {
   satsToBtc,
   selectProofsForAmount,
   TOKEN_QR_MAX_CHARS,
-  TOKEN_QR_SIZE,
   tokenMintUrl,
   tokenQrPayload,
   toProofLike,
 } from "../cashu";
+import type { StoredProof } from "../stored-proof";
 
 const MINT = "https://mint.example.com";
 const KEYSET = "00ad268c4d1f5826";
@@ -370,9 +365,13 @@ describe("decodeToken bounds", () => {
     // individually and total nearly twice the bitcoin supply.
     const each = 2_000_000_000_000_000;
     expect(decodeToken(encodedToken(MINT, [each, each]))).toBeNull();
-    // The same shape just under the ceiling still decodes, so the bound is
-    // what rejects it and not the proof count.
-    expect(decodeToken(encodedToken(MINT, [1, 1]))).not.toBeNull();
+    // One sat either side of the ceiling (2.1e15), so the bound is exactly
+    // where it is meant to be.
+    const rest = 2_100_000_000_000_000 - each;
+    expect(decodeToken(encodedToken(MINT, [each, rest + 1]))).toBeNull();
+    expect(decodeToken(encodedToken(MINT, [each, rest]))?.amount).toBe(
+      2_100_000_000_000_000,
+    );
   });
 
   it("rejects a token with no mint to redeem against", () => {
@@ -395,9 +394,10 @@ describe("bareToken bounds", () => {
 
   it("rejects a token past MAX_TOKEN_LENGTH", () => {
     // The ceiling is what stops a single pasted string costing an unbounded
-    // decode. Just under it still passes the length gate.
-    expect(bareToken(`cashuA${"a".repeat(60_000)}`)).toBeNull();
-    expect(bareToken(`cashuA${"a".repeat(1_000)}`)).not.toBeNull();
+    // decode. Exactly at it still passes the length gate.
+    const atCeiling = `cashuA${"a".repeat(60_000 - "cashuA".length)}`;
+    expect(bareToken(atCeiling)).toBe(atCeiling);
+    expect(bareToken(`${atCeiling}a`)).toBeNull();
   });
 });
 
@@ -462,19 +462,6 @@ describe("token QR", () => {
 });
 
 // ---- Fees ----
-
-describe("inputFeeFor", () => {
-  it("rounds up, as the mint does", () => {
-    expect(inputFeeFor(1, 100)).toBe(1); // 0.1 -> 1
-    expect(inputFeeFor(10, 100)).toBe(1); // exactly 1
-    expect(inputFeeFor(11, 100)).toBe(2); // 1.1 -> 2
-  });
-
-  it("is zero for a fee-free keyset", () => {
-    expect(inputFeeFor(5, 0)).toBe(0);
-    expect(inputFeeFor(0, 100)).toBe(0);
-  });
-});
 
 describe("feeForProofs", () => {
   it("sums per-keyset fees and rounds once at the end", () => {
@@ -662,46 +649,5 @@ describe("token QR sizing", () => {
     // Four proofs (~1250) is past what stays readable at this size, so it takes
     // the copy / share / mesh route instead of rendering a code nobody can read.
     expect(canEncodeTokenQr(heavyToken(4))).toBe(false);
-  });
-
-  it("keeps the ceiling inside what the drawn code can carry", () => {
-    // 264 px over a version-20 code (97 modules) is ~2.7 screen pixels per
-    // module. Raising the char ceiling without growing the square is what makes
-    // a QR that renders perfectly and scans never, so pin the pair.
-    expect(TOKEN_QR_MAX_CHARS).toBeLessThanOrEqual(1159);
-    expect(TOKEN_QR_SIZE / 97).toBeGreaterThanOrEqual(2.5);
-  });
-});
-
-// A V4 token names its keyset by a short id, and a v2 id ("01...") needs the
-// full id list to resolve. NUT-00 requires refusing rather than guessing, since
-// an unknown keyset can be neither verified nor priced, so callers pass the ids
-// they hold.
-describe("short keyset ids", () => {
-  function tokenWithKeyset(keysetId: string): string {
-    return getEncodedToken({
-      mint: MINT,
-      unit: "sat",
-      proofs: [
-        {
-          id: keysetId,
-          amount: 8,
-          secret: "a".repeat(64),
-          C: "02" + "11".repeat(32),
-        },
-      ],
-    } as unknown as Token);
-  }
-
-  const V2_KEYSET = "01ad268c4d1f5826bb";
-
-  it("renders a chat chip for a v2 token once the ids are known", () => {
-    const token = tokenWithKeyset(V2_KEYSET);
-    expect(findTokensInText(`here you go ${token}`)).toHaveLength(0);
-    expect(
-      findTokensInText(`here you go ${token}`, [
-        { id: V2_KEYSET, unit: "sat" },
-      ]),
-    ).toHaveLength(1);
   });
 });

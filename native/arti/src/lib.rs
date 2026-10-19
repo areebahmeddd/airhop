@@ -619,35 +619,33 @@ mod test {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
-    /// Both platform decoders read this layout by hand; nothing else pins it.
+    /// Both platform decoders read this layout by hand, so the words are written
+    /// out rather than rebuilt from the constants, which would pass with any bit
+    /// moved. `ArtiStatusTest.kt` decodes the same two words. Each sets a
+    /// different subset of flags, so two flags swapped cannot cancel out.
     #[test]
-    fn every_status_field_survives_packing() {
+    fn every_status_field_lands_on_its_documented_bit() {
         let _serial = test_lock();
         update_status(|s| {
             *s = Status {
                 running: true,
                 ready: true,
                 progress: 100,
-                blocked: true,
-                summary: String::new(),
-                bridged: true,
+                ..Status::default()
             };
         });
-        let packed = packed_status();
-        assert_eq!(
-            packed & AIRHOP_TOR_STATUS_RUNNING,
-            AIRHOP_TOR_STATUS_RUNNING
-        );
-        assert_eq!(packed & AIRHOP_TOR_STATUS_READY, AIRHOP_TOR_STATUS_READY);
-        assert_eq!(
-            packed & AIRHOP_TOR_STATUS_BLOCKED,
-            AIRHOP_TOR_STATUS_BLOCKED
-        );
-        assert_eq!(
-            packed & AIRHOP_TOR_STATUS_BRIDGED,
-            AIRHOP_TOR_STATUS_BRIDGED
-        );
-        assert_eq!((packed >> AIRHOP_TOR_STATUS_PROGRESS_SHIFT) & 0xFF, 100);
+        assert_eq!(packed_status(), 0x6403);
+
+        update_status(|s| {
+            *s = Status {
+                running: true,
+                blocked: true,
+                bridged: true,
+                progress: 30,
+                ..Status::default()
+            };
+        });
+        assert_eq!(packed_status(), 0x1E0D);
 
         update_status(|s| *s = Status::default());
         assert_eq!(

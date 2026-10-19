@@ -34,16 +34,6 @@ export function normalizeNickname(nickname: string): string {
   }).trim();
 }
 
-// Whether two nicknames name the same person, ignoring encoding and case.
-//
-// Case folding uses toLowerCase() on the normalized form, matching the
-// case-insensitive matching the mention helpers already do.
-export function sameNickname(a: string, b: string): boolean {
-  return (
-    normalizeNickname(a).toLowerCase() === normalizeNickname(b).toLowerCase()
-  );
-}
-
 // The key to compare or de-duplicate a nickname by. Use this rather than
 // calling toLowerCase() on a raw string: the whole point is that a raw string
 // may be in either encoding.

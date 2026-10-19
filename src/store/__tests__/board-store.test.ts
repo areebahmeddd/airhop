@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Board store: quota, expiry, tombstones, persistence.
 import {
   newPostID,

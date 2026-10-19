@@ -818,6 +818,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Consenti gli squilli",
   "chat.contact.allow_ring_desc":
     "Consenti a questa persona di far squillare il tuo telefono per attirare la tua attenzione, anche se questa conversazione è silenziata. La modalità silenziosa e Non disturbare restano valide.",
+  "chat.contact.allow_ring_needs_keys":
+    "Non ci sono ancora chiavi per questo contatto. Scrivigli, oppure scansiona il suo codice, per consentirgli di farti squillare.",
+  "chat.contact.allow_ring_master_off":
+    "Nessuno può far squillare il tuo telefono finché non attivi {setting} nelle Impostazioni.",
   "chat.contact.ring_action": "Squilla",
   "chat.contact.ringing": "Squillo in corso…",
   "chat.contact.ring_hint_nearby":
@@ -956,7 +960,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Consenti",
   "mesh.banner.action.resume": "Riprendi",
   "mesh.banner.action.fix": "Risolvi",
-  "mesh.banner.hint.resume": "Riattiva l’annuncio e la scansione Bluetooth",
+  "mesh.banner.hint.resume": "Riavvia la mesh",
   "mesh.banner.hint.enable_bluetooth":
     "Chiede ad Android di attivare il Bluetooth",
   "mesh.banner.hint.location_settings":
@@ -1777,9 +1781,11 @@ export const strings: Strings = {
     "Non ci sono ancora chiavi per questo contatto. Scrivi loro, oppure scansiona il loro codice quando vi incontrate.",
   "contacts.verify.compare_title": "Leggete questi a vicenda",
   "contacts.verify.compare_body":
-    "{name} vede le stesse sei parole. Se corrispondono, entrambi sapete che le chiavi sono autentiche.",
+    "{name} vede le stesse sei parole su Airhop. Se corrispondono, entrambi sapete che le chiavi sono autentiche. bitchat non mostra queste parole, quindi scansiona il suo codice.",
   "contacts.verify.codes_match": "Corrispondono",
   "contacts.verify.codes_differ": "Non corrispondono",
+  "contacts.verify.codes_differ_body":
+    "Le chiavi su questo telefono potrebbero non essere di {name}. Scansiona il suo codice di persona prima di fidarti di questa chat.",
   "contacts.verify.compared_body":
     "Tu e {name} avete confermato lo stesso codice. Questo contatto è verificato.",
 
@@ -1816,8 +1822,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "Funzioni opzionali, annulla invio, media, ripristino",
   "settings.section.privacy": "Privacy e sicurezza",
-  "settings.section.privacy_desc":
-    "Forward secrecy, pacchetti firmati, peer bloccati",
+  "settings.section.privacy_desc": "Blocco di Airhop, notifiche, peer bloccati",
   "settings.section.network": "Rete e relay",
   "settings.section.network_desc":
     "Ripiego su internet, relay Nostr, compatibilità con bitchat",
@@ -1942,10 +1947,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantiene le conversazioni leggibili più a lungo e occupa più spazio.",
   "settings.general.reset_desc":
-    "Riporta ogni preferenza al valore predefinito, lasciando intatti identità, messaggi, contatti e portafoglio",
+    "Riporta le preferenze ai valori predefiniti, lasciando intatti identità, messaggi, contatti e portafoglio",
   "settings.general.reset_title": "Ripristinare le impostazioni?",
   "settings.general.reset_body":
-    "Ogni preferenza torna al valore predefinito: aspetto, annulla invio e connettività (internet, Tor, gateway, ponte, relay). Identità, messaggi, contatti e portafoglio restano intatti.",
+    "Le preferenze tornano ai valori predefiniti, compresi aspetto, lingua, notifiche, annulla invio e connettività (internet, Tor, gateway, ponte, relay). Il blocco di Airhop, la durata di conservazione dei media e il tuo stato restano come li hai impostati. Identità, messaggi, contatti e portafoglio restano intatti.",
   "settings.general.reset_confirm": "Ripristina",
 
   // ---- Settings: privacy and security ----
@@ -1961,6 +1966,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Avvisi di squillo",
   "settings.security.ring_alerts_desc":
     "Interruttore principale degli squilli. Disattivarlo rifiuta ogni squillo all’istante, indipendentemente da ciò che hai concesso ai singoli contatti.",
+  "settings.security.background_notice": "Notifica in background",
+  "settings.security.background_notice_desc":
+    "Silenziala o nascondila. Gli avvisi dei messaggi restano attivi.",
   "settings.security.no_blocked": "Nessun peer bloccato",
   "settings.security.no_blocked_desc":
     "I peer bloccati non possono scriverti e non compaiono nella scheda Mesh",
@@ -1992,7 +2000,7 @@ export const strings: Strings = {
     "Prosegui tramite i relay Nostr quando i peer della mesh sono fuori portata",
   "settings.network.internet_off_title": "Disattivare internet?",
   "settings.network.internet_off_body":
-    "Airhop funzionerà solo via Bluetooth. Smetterà di contattare qualsiasi relay Nostr, e Tor, il gateway internet e il ponte mesh si spegneranno tutti. La chat Bluetooth nelle vicinanze continua a funzionare.",
+    "Airhop funzionerà solo via Bluetooth. Smetterà di contattare qualsiasi relay Nostr, e Tor, il gateway internet e il ponte mesh resteranno in pausa finché internet non torna attivo. La chat Bluetooth nelle vicinanze continua a funzionare.",
   "settings.network.turn_off": "Disattiva",
   "settings.network.discovery": "Ricerca geografica dei relay",
   "settings.network.discovery_desc":
@@ -2079,7 +2087,7 @@ export const strings: Strings = {
     "Parla con chi è vicino come con un walkie-talkie",
   "settings.conn.live_voice_on_title": "Attivare la voce in diretta?",
   "settings.conn.live_voice_on_body":
-    "Tenendo premuto il microfono, la tua voce raggiunge tutti quelli nel raggio del Bluetooth mentre parli, e la loro esce dal tuo telefono. Non viene registrato nulla.",
+    "Tenendo premuto il microfono, la tua voce raggiunge tutti quelli nel raggio del Bluetooth mentre parli, e la loro esce dal tuo telefono. Quando lo rilasci, lo stesso audio viene inviato anche come nota vocale.",
   "settings.conn.live_voice_off_title": "Disattivare la voce in diretta?",
   "settings.conn.live_voice_off_body":
     "Tenere premuto il microfono registrerà invece una nota vocale. Parte quando lasci, e nessuno la sente finché non la riproduce.",
@@ -2131,7 +2139,7 @@ export const strings: Strings = {
     "Presta la tua connessione a un telefono vicino senza rete perché possa comunque raggiungere i canali di posizione",
   "settings.conn.gateway_on_title": "Attivare il gateway internet?",
   "settings.conn.gateway_on_body":
-    "I telefoni vicini senza una connessione propria invieranno e riceveranno i messaggi dei canali di posizione tramite la tua. Consuma i tuoi dati mobili e la tua batteria, e i loro messaggi restano cifrati da un capo all’altro, quindi non puoi leggere ciò che passa.",
+    "I telefoni vicini senza una connessione propria invieranno e riceveranno i messaggi dei canali di posizione tramite la tua. Consuma i tuoi dati mobili e la tua batteria. Quei messaggi sono post pubblici firmati dai loro autori, quindi puoi leggere ciò che passa ma non modificarlo.",
   "settings.conn.gateway_off_title": "Disattivare il gateway internet?",
   "settings.conn.gateway_off_body":
     "I telefoni vicini senza rete smetteranno di raggiungere i canali di posizione tramite la tua. I tuoi messaggi non sono toccati.",
@@ -2140,10 +2148,10 @@ export const strings: Strings = {
     "Collega la chat pubblica #bluetooth di questa zona con un altro gruppo Bluetooth fuori portata tramite internet",
   "settings.conn.bridge_on_title": "Attivare il ponte mesh?",
   "settings.conn.bridge_on_body":
-    "I tuoi messaggi pubblici su #bluetooth verranno pubblicati nel tuo quartiere tramite internet, così potranno leggerli anche persone fuori dal raggio del Bluetooth. I messaggi privati non passano mai dal ponte, e «solo vicino» mantiene locale un singolo messaggio.",
+    "I tuoi messaggi pubblici su #bluetooth verranno pubblicati nel tuo quartiere tramite internet, così potranno leggerli anche persone fuori dal raggio del Bluetooth. Il tuo telefono porterà anche i messaggi collegati dei telefoni vicini con i tuoi dati. I messaggi privati non passano mai dal ponte, e «solo vicino» mantiene locale un singolo messaggio.",
   "settings.conn.bridge_off_title": "Disattivare il ponte mesh?",
   "settings.conn.bridge_off_body":
-    "I tuoi messaggi pubblici su #bluetooth restano di nuovo nel raggio del Bluetooth, e quelli del gruppo collegato smettono di arrivare qui.",
+    "I tuoi messaggi pubblici su #bluetooth restano di nuovo nel raggio del Bluetooth, e il tuo telefono smette di portare i messaggi collegati per gli altri. I messaggi che un ponte vicino porta via Bluetooth continuano a comparire qui.",
   "settings.conn.bridge_needs_location": "Il ponte mesh richiede la posizione",
   "settings.conn.bridge_needs_location_desc":
     "Individua il tuo quartiere da una rilevazione di posizione. Concedi la posizione per iniziare a collegare.",
@@ -2180,7 +2188,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Sistema",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Utilizzo della rete",
+  "settings.storage.mesh_traffic": "Traffico mesh",
   "settings.storage.storage_usage": "Utilizzo dell’archiviazione",
   "settings.storage.storage_usage_desc": "Messaggi, ecash e allegati in cache",
   "settings.storage.session_usage":
@@ -2261,7 +2269,8 @@ export const strings: Strings = {
   "settings.status.away": "Assente",
   "settings.status.away_desc": "Mesh in pausa, senza scansione né annuncio",
   "settings.status.invisible": "Invisibile",
-  "settings.status.invisible_desc": "In scansione, ma nascosto alla ricerca",
+  "settings.status.invisible_desc":
+    "Nascosto alle scansioni Bluetooth, ancora visibile ai telefoni a cui ti colleghi",
   "settings.status.title": "Stato",
   "settings.status.set_a11y": "Imposta lo stato su {value}",
   "settings.status.edit": "Modifica lo stato",

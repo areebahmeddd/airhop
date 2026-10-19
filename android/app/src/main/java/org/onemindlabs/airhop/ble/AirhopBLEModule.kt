@@ -17,6 +17,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattConnectionSettings
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattServerCallback
@@ -242,6 +243,11 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // link maps: linkID -> connection object
     // Peripheral-role links are remote devices that connected to our GATT server.
     private val peripheralLinks = ConcurrentHashMap<String, BluetoothDevice>()
+    // A central can rewrite its CCCD at will, so a link is announced once per
+    // connection (each announce resends our ANNOUNCE and prekeys) and a
+    // disable only pauses notifying.
+    private val notifyingLinks: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    private val announcedLinks: MutableSet<String> = ConcurrentHashMap.newKeySet()
     // Central-role links are GATT clients we connected to as central.
     private val centralLinks = ConcurrentHashMap<String, BluetoothGatt>()
     // Negotiated ATT MTU per central link. A write without response cannot
@@ -440,6 +446,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 it.disconnect()
                 it.close()
             }
+            notifyingLinks.remove(linkID)
+            announcedLinks.remove(linkID)
             peripheralLinks.remove(linkID)?.let { device ->
                 gattServer?.cancelConnection(device)
             }
@@ -853,6 +861,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
         centralLinks.clear()
         peripheralLinks.clear()
+        notifyingLinks.clear()
+        announcedLinks.clear()
         centralPeerIDs.clear()
         linkToAdvertisedPeerID.clear()
         preparedWrites.clear()
@@ -1094,6 +1104,24 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    // Kept while the service is down, so a later start opens on the current count.
+    @ReactMethod
+    fun setBackgroundPeerCount(count: Int, promise: Promise) {
+        AirhopForegroundService.setPeerCount(count)
+        promise.resolve(null)
+    }
+
+    @ReactMethod
+    fun openBackgroundNoticeSettings(promise: Promise) {
+        try {
+            AirhopForegroundService.openChannelSettings(reactContext)
+            promise.resolve(true)
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not open notification settings: ${e.message}")
+            promise.resolve(false)
+        }
+    }
+
     // Periodic RSSI polling. onReadRemoteRssi only fires in response to an
     // explicit readRemoteRssi() call, so without this poller the rssiUpdated
     // event could never be emitted and signal strength stayed unavailable to
@@ -1252,6 +1280,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 )
             }
             peripheralLinks.clear()
+            notifyingLinks.clear()
+            announcedLinks.clear()
             // Half-written long writes go with their links.
             preparedWrites.clear()
             // Deliberately does NOT touch the foreground service. This is also
@@ -1402,6 +1432,10 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
 
         // Peripheral role: notify all subscribed centrals or a specific device
         peripheralLinks[linkID]?.let { device ->
+            if (!notifyingLinks.contains(linkID)) {
+                promise.reject("NOT_SUBSCRIBED", "Central on $linkID has notifications off")
+                return
+            }
             val char = characteristic
             if (char == null) {
                 promise.reject("NOT_READY", "GATT server not initialized")
@@ -1679,16 +1713,15 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                         centralPeerIDs.add(advertisedPeerID)
                         linkToAdvertisedPeerID[linkID] = advertisedPeerID
                     }
-                    // TRANSPORT_LE forces a BLE (not BR/EDR) connection; omitting it
-                    // is a common source of spurious GATT status 133 failures.
-                    val gatt =
-                        device.connectGatt(
-                            reactContext,
-                            false,
-                            gattClientCallback,
-                            BluetoothDevice.TRANSPORT_LE,
-                        )
-                    centralLinks[linkID] = gatt
+                    val gatt = connectLE(device)
+                    if (gatt != null) {
+                        centralLinks[linkID] = gatt
+                    } else if (advertisedPeerID != null) {
+                        // Null while the adapter turns off: free the peer for
+                        // the next scan.
+                        centralPeerIDs.remove(advertisedPeerID)
+                        linkToAdvertisedPeerID.remove(linkID)
+                    }
                 } catch (e: SecurityException) {
                     Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
                 }
@@ -1738,6 +1771,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                     noteLinkOpened(linkID)
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     peripheralLinks.remove(linkID)
+                    notifyingLinks.remove(linkID)
+                    announcedLinks.remove(linkID)
                     // A long write abandoned mid-transaction. Dropped, or the next
                     // connection from the same MAC resumes into a half-written frame.
                     preparedWrites.remove(linkID)
@@ -1867,27 +1902,56 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 offset: Int,
                 value: ByteArray,
             ) {
-                // A CCCD write whose first byte is 0x01 = ENABLE_NOTIFICATION_VALUE.
-                // Only now is it safe to notify this central, so surface the link.
-                if (
-                    descriptor.uuid == CCCD_UUID && value.isNotEmpty() && value[0].toInt() == 0x01
-                ) {
-                    val linkID = "p:${device.address}"
-                    if (peripheralLinks.containsKey(linkID)) {
-                        emitEvent(
-                            EVT_LINK_CONNECTED,
-                            WritableNativeMap().apply {
-                                putString("linkID", linkID)
-                                putString("role", "peripheral")
-                                putInt("rssi", -99)
-                            },
-                        )
+                // 0x01 enables notifications, so only now can the link carry
+                // traffic. All zeroes disables them.
+                val linkID = "p:${device.address}"
+                if (descriptor.uuid == CCCD_UUID && peripheralLinks.containsKey(linkID)) {
+                    if (value.isNotEmpty() && value[0].toInt() == 0x01) {
+                        notifyingLinks.add(linkID)
+                        if (announcedLinks.add(linkID)) {
+                            emitEvent(
+                                EVT_LINK_CONNECTED,
+                                WritableNativeMap().apply {
+                                    putString("linkID", linkID)
+                                    putString("role", "peripheral")
+                                    putInt("rssi", -99)
+                                },
+                            )
+                        }
+                    } else if (value.isNotEmpty() && value.all { it.toInt() == 0 }) {
+                        notifyingLinks.remove(linkID)
                     }
                 }
                 if (responseNeeded) {
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
             }
+        }
+
+    // TRANSPORT_LE forces a BLE (not BR/EDR) connection; omitting it is a
+    // common source of spurious GATT status 133 failures. On API 37 every
+    // setting is explicit: this module negotiates MTU itself, and callbacks
+    // stay on the binder thread the older overload used.
+    private fun connectLE(device: BluetoothDevice): BluetoothGatt? =
+        if (Build.VERSION.SDK_INT >= 37) {
+            device.connectGatt(
+                BluetoothGattConnectionSettings.Builder()
+                    .setTransport(BluetoothDevice.TRANSPORT_LE)
+                    .setAutoConnectEnabled(false)
+                    .setAutomaticMtuEnabled(false)
+                    .setOpportunisticEnabled(false)
+                    .build(),
+                Runnable::run,
+                gattClientCallback,
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            device.connectGatt(
+                reactContext,
+                false,
+                gattClientCallback,
+                BluetoothDevice.TRANSPORT_LE,
+            )
         }
 
     private val gattClientCallback =

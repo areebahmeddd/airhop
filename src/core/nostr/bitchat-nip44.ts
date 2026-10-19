@@ -44,11 +44,6 @@ export function normalizeSecretKeyEvenY(priv: Uint8Array): Uint8Array {
   );
 }
 
-// The x-only (32-byte) public key for a secret key, normalized to even-Y.
-export function xOnlyPublicKey(priv: Uint8Array): Uint8Array {
-  return secp256k1.getPublicKey(normalizeSecretKeyEvenY(priv), true).slice(1);
-}
-
 function conversationKey(
   priv: Uint8Array,
   peerXOnly: Uint8Array,

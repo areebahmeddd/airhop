@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The overlay's queue: one ring at a time, the rest waiting behind it with
 // their own windows, and every way one leaves.
 

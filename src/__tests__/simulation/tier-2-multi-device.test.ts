@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tier B: more than two people, more than one transport, nothing simple.
 //
 // Tier A proves the app works. This tier proves it works when the room is
@@ -25,7 +22,7 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
-import { base64ToBytes } from "@core/encoding/base64";
+import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import {
   ANNOUNCE_TTL,
   encodeAnnouncePayload,
@@ -199,19 +196,44 @@ test("B02 a lossy, jittery, duplicating radio still converges", async () => {
     jitterMs: 60,
   });
   for (const d of devices) d.launch();
-  await waitFor(s.world, () => radio.linkCount() > 0, 20_000);
+  // Everyone has to know everyone first. A public message is shown only by a
+  // phone holding its author's key, so speaking before the announces land
+  // would be dropped for that reason and the radio would never be tested.
+  const met = await waitForCoarse(
+    s.world,
+    () => devices.every((d) => d.peerCount() === devices.length - 1),
+    60_000,
+  );
+  s.check(
+    "every phone learned every other before anyone spoke",
+    met,
+    `peer counts: ${devices.map((d) => d.peerCount()).join(",")}`,
+  );
 
   const channel = "#bluetooth";
   for (const d of devices) d.joinChannel(channel);
   devices[0].send(channel, "lossy hello");
   devices[3].send(channel, "lossy reply");
 
-  await s.world.settle(30_000);
+  // A flood on a 20%-loss radio can miss a phone, and gossip sync is what
+  // makes up for it, one round every 15s. Two rounds and more, so a phone the
+  // flood missed has been asked at least twice.
+  await advanceFor(s.world, 35_000);
+  await waitForCoarse(
+    s.world,
+    () => convergence(devices, channel).length === 0,
+    30_000,
+  );
 
-  // Loss is real: this scenario does NOT assert everyone got everything, which
-  // a 20%-loss radio cannot guarantee without retransmission. What it asserts
-  // is the thing that must hold regardless: nobody saw anything twice, and
-  // nobody saw anything forged.
+  s.expectNone("convergence", convergence(devices, channel));
+  const received = devices.map(
+    (d) => d.messages(channel).filter((m) => !m.isMine).length,
+  );
+  s.check(
+    "every phone holds both messages, less its own",
+    received.every((n, i) => n === (i === 0 || i === 3 ? 1 : 2)),
+    `inbound per phone: ${received.join(",")}`,
+  );
   s.expectNone("exactly once", exactlyOnce(devices));
   s.expectNone("no duplicate text", noDuplicateText(devices, channel));
   s.expectNone("no forged senders", noForgedSenders(devices));
@@ -451,21 +473,35 @@ test("B06 twenty-five phones in one room converge on one channel", async () => {
   s.expectNone("unread coherent", unreadCoherent(devices));
   s.expectNone("process health", noCrashes(devices));
 
+  s.expectNone("convergence", convergence(devices, channel));
+  const shouters = new Set([0, 5, 11, 17, 23]);
   const received = devices.map(
     (d) => d.messages(channel).filter((m) => !m.isMine).length,
   );
-  const worst = Math.min(...received);
   s.check(
-    "every phone received the messages it did not send",
-    worst >= 4,
-    `worst device holds ${worst} of 5 (spread: ${received.join(",")})`,
+    "every phone holds all five shouts, less its own",
+    received.every((n, i) => n === (shouters.has(i) ? 4 : 5)),
+    `inbound per phone: ${received.join(",")}`,
   );
-  // A crowd is capped at six central links per phone, so this is a genuine
-  // multi-hop mesh rather than 300 direct connections no controller could hold.
+  // A crowd is capped at six central links per phone, so the room cannot be a
+  // full graph, and the proof that it was a mesh is a shout that reached
+  // someone its author held no link to. That copy had to be relayed.
+  const byPeer = new Map(devices.map((d) => [d.peerID, d]));
+  const relayed = devices.flatMap((d) =>
+    d
+      .messages(channel)
+      .filter((m) => !m.isMine)
+      .flatMap((m) => {
+        const author = byPeer.get(m.senderID);
+        return author !== undefined && !radio.isLinked(author.id, d.id)
+          ? [`${author.id}->${d.id}`]
+          : [];
+      }),
+  );
   s.check(
-    "the crowd formed a real mesh rather than a full graph",
-    radio.linkCount() > 0 && radio.linkCount() < (25 * 24) / 2,
-    `${radio.linkCount()} links across 25 phones, airtime: ${radio.airtimeReport()}`,
+    "a shout crossed at least one relay to reach someone",
+    relayed.length > 0,
+    `${String(relayed.length)} relayed deliveries (e.g. ${relayed.slice(0, 3).join(" ")}), ${radio.linkCount()} links, airtime: ${radio.airtimeReport()}`,
   );
   s.assert(true);
 });
@@ -493,30 +529,33 @@ test("B07 a crowd forming does not drown itself in control traffic", async () =>
   // twelve phones forming a room would put thousands of prekey bundles and
   // announces on the air inside half a second.
   //
-  // The numbers below are ceilings with headroom, not targets. They are here to
-  // fail loudly if control traffic goes quadratic.
+  // The numbers below are ceilings at about twice what this seed carries
+  // (2,061 packets: 1,018 announces, 1,043 prekey bundles), not targets. They
+  // are here to fail loudly if control traffic goes quadratic, and tight
+  // enough that doubling it does too. Re-measure if the seed or the room
+  // changes.
   s.check(
     "the room settled rather than growing without bound",
-    total < 12_000,
+    total < 4_500,
     `${total} packets carried, ${radio.airtimeReport()}`,
   );
   s.check(
     "prekey bundles did not dominate the air",
-    prekey < 5_000,
+    prekey < 2_500,
     `PREKEY_BUNDLE=${prekey}`,
   );
   s.check(
     "announces did not dominate the air",
-    announce < 5_000,
+    announce < 2_500,
     `ANNOUNCE=${announce}`,
   );
-  // The radio fabric enforces the central-link cap itself, so the useful check
-  // here is that a room formed at all: with no links the ceilings above pass on
-  // empty air.
+  // With no room the ceilings above pass on empty air, so the room has to
+  // have formed: nearly everyone heard nearly everyone, over a crowd's worth of
+  // links (this seed forms 51 and every phone hears all eleven others).
   s.check(
     "the room actually formed, so the ceilings measured real traffic",
-    radio.linkCount() > 0,
-    `links=${radio.linkCount()}`,
+    radio.linkCount() >= 45 && devices.every((d) => d.peerCount() >= 10),
+    `links=${radio.linkCount()} peers=${devices.map((d) => d.peerCount()).join(",")}`,
   );
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
@@ -603,8 +642,7 @@ test("B08b a rehandshake with a peer whose last announce is past the TTL ends on
   let aged = false;
   const stop = radio.tapWrites((who, _link, data) => {
     if (who !== bob.id || aged) return;
-    const bin = globalThis.atob(data);
-    const raw = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+    const raw = base64ToBytes(data);
     if (raw[1] !== PacketType.NOISE_HANDSHAKE) return;
     const registry = (
       bob.mesh as unknown as {
@@ -849,11 +887,9 @@ test("B10 a frame that lands after its link closed does not bring the peer back"
     recipientID: new Uint8Array(8),
     timestamp: s.world.wallClock(),
     signature: new Uint8Array(64),
-    payload: encodeAnnouncePayload(bob.identity, "bob", []),
+    payload: encodeAnnouncePayload(bob.identity, "bob"),
   };
   announce.signature = signPacket(announce, bob.identity.signingPrivKey);
-  let bin = "";
-  for (const b of encodePacket(announce)) bin += String.fromCharCode(b);
   const emitter = alice.eventEmitter as {
     emit: (event: string, body: unknown) => void;
   };
@@ -861,7 +897,7 @@ test("B10 a frame that lands after its link closed does not bring the peer back"
   eventRouter().runAs(alice.id, () => {
     emitter.emit("AirhopBLE.packetReceived", {
       linkID: heldLinks[0],
-      dataBase64: globalThis.btoa(bin),
+      dataBase64: bytesToBase64(encodePacket(announce)),
     });
   });
   await s.world.advance(1_000);

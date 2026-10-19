@@ -8,9 +8,11 @@
 // Wrapped because the cache directory may be unreadable on a device with no
 // storage left, and a failed sweep must not stop the app from opening.
 //
-// The window is read at each sweep rather than subscribed to, so shortening it
-// takes effect on the next one. Lengthening it cannot bring anything back,
-// since the files are already gone.
+// The window is read at each sweep rather than subscribed to. Shortening it in
+// General sweeps at once (sweepMediaNow): someone choosing a week because the
+// phone itself is the risk should not keep a month of media for up to another
+// half day. Lengthening it cannot bring anything back, since the files are already
+// gone.
 
 import { useSettingsStore } from "@store/settings-store";
 import { sweepExpiredAttachments } from "./file-transfer-service";
@@ -42,4 +44,11 @@ export function sweepMediaIfDue(nowMs: number = Date.now()): boolean {
     // Unreadable cache directory. Retried on the next due sweep.
   }
   return true;
+}
+
+// Sweep now, whatever the throttle says, for a window that just got shorter.
+// Restarts the interval, since this is a full sweep like any other.
+export function sweepMediaNow(nowMs: number = Date.now()): void {
+  lastSweepAtMs = null;
+  sweepMediaIfDue(nowMs);
 }

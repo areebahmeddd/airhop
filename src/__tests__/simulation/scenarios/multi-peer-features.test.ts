@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The features that only mean anything with more than two phones in the room.
 //
 // Store-and-forward, private groups and the bulletin board all have unit tests
@@ -32,14 +29,48 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   };
   return { __esModule: true, default: shim.wifiBridge };
 });
+// A Tor client that starts and never finishes bootstrapping, which is what a
+// network that filters Tor looks like from the app: no error to react to, only
+// a deadline that passes. Every way the real one can fail to carry traffic
+// (an ABI it was not packaged for, a blocked network, a stalled bootstrap)
+// reaches the app as this.
+jest.mock("@bridge/NativeAirhopTor", () => {
+  const stalled = {
+    isReady: false,
+    isStarting: true,
+    port: 0,
+    progress: 5,
+    bootstrapSummary: "connecting to a relay",
+  };
+  return {
+    __esModule: true,
+    default: {
+      startTor: async () => undefined,
+      stopTor: async () => undefined,
+      wipeTorState: async () => undefined,
+      holdRoute: async () => undefined,
+      setAppForeground: async () => undefined,
+      getTorStatus: async () => stalled,
+      awaitTorReady: (timeoutSeconds: number) =>
+        new Promise<boolean>((resolve) =>
+          setTimeout(() => resolve(false), timeoutSeconds * 1000),
+        ),
+      addListener: () => undefined,
+      removeListeners: () => undefined,
+    },
+    subscribeTorStatus: () => null,
+  };
+});
 
 import { base64ToBytes } from "@core/encoding/base64";
+import { NoisePayloadType } from "@core/mesh/wire/noise-payload";
 import { decodePacket, PacketType } from "@core/mesh/wire/packet-codec";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import { exactlyOnce, noCrashes, noForgedSenders } from "../harness/invariants";
 import { RadioFabric } from "../harness/radio-fabric";
 import { RelayFabric } from "../harness/relay-fabric";
-import { Scenario, waitForCoarse } from "../harness/scenario";
+import { advanceFor, Scenario, waitForCoarse } from "../harness/scenario";
 
 jest.setTimeout(180_000);
 
@@ -58,6 +89,17 @@ afterEach(() => {
 afterAll(() => {
   jest.useRealTimers();
 });
+
+// Whether `needle` occurs anywhere in `haystack`.
+function contains(haystack: Uint8Array, needle: Uint8Array): boolean {
+  outer: for (let i = 0; i + needle.length <= haystack.length; i++) {
+    for (let j = 0; j < needle.length; j++) {
+      if (haystack[i + j] !== needle[j]) continue outer;
+    }
+    return true;
+  }
+  return false;
+}
 
 const android = (id: string, seedByte: number): DeviceSpec => ({
   id,
@@ -209,13 +251,18 @@ test("F02 a bulletin notice outlives the conversation and reaches a latecomer", 
       .map((n) => n.content)
       .join(" | ")}]`,
   );
+  // The key is the attribution, since a nickname is anybody's to claim.
+  const aliceKey = bytesToHex(alice.identity.signingPubKey);
   s.check(
     "and it is attributed to its author",
-    latecomer.notices().every((n) => n.author.length > 0),
+    latecomer.notices().length > 0 &&
+      latecomer
+        .notices()
+        .every((n) => n.authorKey === aliceKey && n.author === alice.nickname),
     `authors=[${latecomer
       .notices()
-      .map((n) => n.author)
-      .join(",")}]`,
+      .map((n) => `${n.author}:${n.authorKey.slice(0, 8)}`)
+      .join(",")}] alice=${aliceKey.slice(0, 8)}`,
   );
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
@@ -236,100 +283,99 @@ test("F03 a message for someone out of range is carried by a third phone", async
   s.track(...cast);
   for (const d of cast) d.launch();
 
-  // Everyone meets first, so alice knows bob's static key (a courier envelope
-  // is sealed to it) and the carrier knows both.
+  // Everyone meets first, so alice holds bob's static key and prekeys (a
+  // courier envelope is sealed to them) and the carrier knows both.
   await waitForCoarse(
     s.world,
     () => cast.every((d) => d.peerCount() === 2),
     30_000,
   );
+  await s.world.advance(10_000);
   s.check("everyone met at least once", alice.peers().includes(bob.peerID));
 
-  // Bob leaves. Alice writes to him anyway.
+  // Every frame the carrier is party to, either way. What a carrier can read
+  // is exactly what crossed its radio, so this is the whole of its view.
+  const text = "meet me at the north gate";
+  const plaintext = new TextEncoder().encode(text);
+  const carrierAir: { from: string; bytes: Uint8Array }[] = [];
+  const stopTap = radio.tapWrites((who, linkID, dataBase64) => {
+    if (who !== carrier.id && linkID !== `link:${carrier.id}`) return;
+    carrierAir.push({ from: who, bytes: base64ToBytes(dataBase64) });
+  });
+
+  // Bob leaves, past the registry's minute, so he is gone rather than quiet
+  // and the DM goes to the carrier instead of flooding a room he is not in.
   radio.setIsolated("bob", true);
   await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
+  await s.world.advance(90_000);
 
-  const status = alice.send(`dm:${bob.peerID}`, "meet me at the north gate");
-  // Alice still has the carrier as a neighbour, so the DM is FLOODED at TTL 7
-  // and reported "sent". That is honest about what happened (it left the
-  // device), but it is not a delivery receipt, and bob is not within those
-  // seven hops. What must not happen is the message being forgotten on the
-  // strength of that optimism.
+  const status = alice.send(`dm:${bob.peerID}`, text);
+  s.check("alice handed it to a carrier", status === "carried", status);
+
+  const bag = (carrier.mesh as unknown as { courier: { size: number } })
+    .courier;
+  const held = await waitForCoarse(s.world, () => bag.size > 0, 60_000);
   s.check(
-    "a flooded DM is not silently dropped from the retry queue",
-    alice.outboxSize() > 0,
-    `status=${status}, outbox holds ${alice.outboxSize()}`,
+    "the carrier holds a sealed envelope",
+    held,
+    `size=${String(bag.size)}`,
   );
 
-  // The carrier must not be able to read what it is holding for somebody else.
-  await s.world.settle(20_000);
+  // Alice goes too, so the only route left to bob is the carrier walking up.
+  radio.setTopology([["carrier", "bob"]]);
+  const delivered = await waitForCoarse(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes(text),
+    180_000,
+  );
+  stopTap();
+  s.check(
+    "bob gets it from the carrier, with alice nowhere near",
+    delivered && !radio.isLinked("alice", "bob"),
+    `bob thread=[${bob.texts(`dm:${alice.peerID}`).join(" | ")}]`,
+  );
+  s.check(
+    "and the carrier let go of it",
+    bag.size === 0,
+    `size=${String(bag.size)}`,
+  );
+
+  // The positive control for the check below: the envelope did cross the
+  // carrier's radio both ways, so its silence on the plaintext means something.
+  const envelopeFrames = (from: string): number =>
+    carrierAir.filter(({ from: who, bytes }) => {
+      if (who !== from) return false;
+      const p = decodePacket(bytes);
+      if (p === null) return false;
+      return (
+        p.type === PacketType.COURIER_ENV ||
+        (p.type === PacketType.FRAGMENT &&
+          p.payload[12] === PacketType.COURIER_ENV)
+      );
+    }).length;
+  s.check(
+    "the envelope reached the carrier and left it",
+    envelopeFrames(alice.id) > 0 && envelopeFrames(carrier.id) > 0,
+    `in=${String(envelopeFrames(alice.id))} out=${String(envelopeFrames(carrier.id))}`,
+  );
+  // Searched in the frame as sent and in its payload once inflated, since a
+  // compressed packet would hide plaintext from a search of the raw bytes.
+  const readable = carrierAir.filter(({ bytes }) => {
+    const payload = decodePacket(bytes)?.payload;
+    return (
+      contains(bytes, plaintext) ||
+      (payload !== undefined && contains(payload, plaintext))
+    );
+  });
+  s.check(
+    "no frame the carrier received or sent carries the text",
+    readable.length === 0,
+    `${String(readable.length)} of ${String(carrierAir.length)} frames`,
+  );
   const carrierSawIt = Object.values(carrier.allMessages())
     .flat()
     .some((m) => m.text.includes("north gate"));
-  s.check(
-    "the carrier cannot read the mail it is carrying",
-    !carrierSawIt,
-    `carrier threads=${JSON.stringify(
-      Object.fromEntries(
-        Object.entries(carrier.allMessages()).map(([k, v]) => [k, v.length]),
-      ),
-    )}`,
-  );
-
-  // Bob walks back into the room.
-  radio.setIsolated("bob", false);
-  // Allow several retry cycles.
-  //
-  // The guarantee is "delivered while both are present", not "delivered within
-  // n seconds". Getting there can take a couple of minutes of mesh time: a
-  // handshake started while bob was unreachable is only abandoned after 30s,
-  // the outbox sweep runs every 45s, and a message that overtook msg3 waits for
-  // the sweep after that. Asserting a tighter window would be asserting an
-  // immediacy the design never promised, and would make this scenario flaky
-  // rather than wrong.
-  const delivered = await waitForCoarse(
-    s.world,
-    () => bob.texts(`dm:${alice.peerID}`).includes("meet me at the north gate"),
-    240_000,
-  );
-
-  // The acceptance test for first-contact delivery.
-  //
-  // Two faults would make this message disappear for good: reporting "sent"
-  // while the text lives only in an in-memory handshake slot a 30s reaper can
-  // discard, and releasing queued traffic on session completion BEFORE msg3
-  // reaches the far side, where nobody can decrypt it and it is dropped with
-  // nothing to say so.
-  //
-  // What is asserted is the invariant, not the latency: the message is either
-  // delivered, or still queued and owed. It is never silently gone. Delivery
-  // itself can take a couple of minutes of mesh time (a handshake started
-  // while the peer was unreachable is only abandoned after 30s, and the outbox
-  // sweep runs every 45s), so pinning a deadline here would be asserting an
-  // immediacy the design never promised.
-  const stillOwed = alice.outboxSize() > 0;
-  s.check(
-    "the message is either delivered or still owed, never silently lost",
-    delivered || stillOwed,
-    `delivered=${String(delivered)}, alice outbox=${alice.outboxSize()}, bob thread=[${bob
-      .texts(`dm:${alice.peerID}`)
-      .join(" | ")}]`,
-  );
-
-  // And when it does land, the queue clears on the recipient's acknowledgement
-  // rather than on the sender's optimism.
-  if (delivered) {
-    const acknowledged = await waitForCoarse(
-      s.world,
-      () => alice.outboxSize() === 0,
-      60_000,
-    );
-    s.check(
-      "a delivered message is acknowledged and leaves the queue",
-      acknowledged,
-      `outbox holds ${alice.outboxSize()}`,
-    );
-  }
+  s.check("and nothing the carrier shows has it either", !carrierSawIt);
 
   s.expectNone("exactly once", exactlyOnce(cast));
   s.expectNone("no forged senders", noForgedSenders(cast));
@@ -337,7 +383,7 @@ test("F03 a message for someone out of range is carried by a third phone", async
   s.assert(true);
 });
 
-test("F04 Tor refuses to turn on rather than quietly using the clear net", async () => {
+test("F04 Tor that cannot connect holds the relays rather than using the clear net", async () => {
   const s = (scenario = new Scenario({
     id: "F04",
     title: "a Tor client that cannot bootstrap must fail closed",
@@ -353,38 +399,61 @@ test("F04 Tor refuses to turn on rather than quietly using the clear net", async
   radio.add(phone);
   s.track(phone);
   phone.launch();
-  await waitForCoarse(
+  const online = await waitForCoarse(
     s.world,
     () => relay.connectionCount("phone") > 0,
     20_000,
   );
-
+  // The control: without it a phone that never reached a relay would pass every
+  // check below.
   s.check(
     "the phone is on the internet to begin with",
-    relay.connectionCount("phone") > 0,
+    online,
     `${relay.connectionCount("phone")} relay connections`,
   );
 
-  // The harness has no Tor client, which stands in for every way the real one
-  // can fail to carry traffic: an ABI the library was not packaged for, a
-  // network that blocks Tor, a bootstrap that never lands. The app cannot tell
-  // those apart from the outside and must not have to.
-  phone.setSetting("torEnabled", true);
-  await s.world.advance(5_000);
-
-  // The security property is that Tor never reports ON into the clear net.
-  // Either the claim stays down, or it is genuinely routing: never "on" while
-  // traffic goes out unprotected.
-  const torActive = phone.meshState().torActive === true;
+  // The Tor screen's switch, through the real routing service: the native
+  // start, the socket swap, the relay gate and the mesh rebuild.
+  const result = await phone.setTorRouting(true);
   s.check(
-    "Tor did not report itself active without a working proxy",
-    !torActive,
-    `torActive=${String(torActive)}`,
+    "the switch reports that Tor could not connect",
+    !result.ok && result.reason === "timeout",
+    `ok=${String(result.ok)} reason=${String(result.reason)}`,
+  );
+  const settings = phone.store("settingsStore").getState();
+  s.check(
+    "Tor is still what the user asked for, so nothing went back to direct",
+    settings.torEnabled === true,
+    `torEnabled=${String(settings.torEnabled)}`,
+  );
+
+  // The security property: a Tor the user asked for and cannot have is
+  // neither claimed nor quietly replaced by the clear net.
+  const state = phone.meshState();
+  s.check(
+    "Tor did not report itself active without a circuit",
+    state.torActive !== true,
+    `torActive=${String(state.torActive)}`,
   );
   s.check(
-    "and the app kept working rather than wedging",
-    relay.connectionCount("phone") > 0,
-    `${relay.connectionCount("phone")} relay connections after the attempt`,
+    "the relay pool is held behind the gate",
+    state.nostrBlockedByTor === true,
+    `nostrBlockedByTor=${String(state.nostrBlockedByTor)}`,
+  );
+  s.check(
+    "and no relay connection is left open on the clear net",
+    relay.connectionCount("phone") === 0,
+    `${relay.connectionCount("phone")} relay connections`,
+  );
+
+  // Held, not merely slow to reconnect: a reconnect timer or a transport
+  // rebuild that went direct would show up here.
+  await advanceFor(s.world, 60_000);
+  s.check(
+    "nor does one reopen while Tor stays down",
+    relay.connectionCount("phone") === 0 &&
+      phone.meshState().nostrBlockedByTor === true,
+    `${relay.connectionCount("phone")} relay connections after another minute`,
   );
   s.expectNone("process health", noCrashes([phone]));
   s.assert(true);
@@ -429,6 +498,20 @@ test("F07 a group you left stays left through the creator's next rotation", asyn
   (bob.store("groupStore").getState().leave as (groupIDHex: string) => void)(
     groupID,
   );
+  // The rotation has to actually reach bob for his leave to be tested: a
+  // creator that skipped him would pass the check below for nothing.
+  const router = (
+    alice.mesh as unknown as {
+      router: {
+        sendNoisePayload: (
+          peerID: string,
+          type: number,
+          bytes: Uint8Array,
+        ) => boolean;
+      };
+    }
+  ).router;
+  const sends = jest.spyOn(router, "sendNoisePayload");
   const added = (
     alice.mesh as unknown as {
       addGroupMembers: (id: string, peers: string[]) => boolean;
@@ -444,6 +527,18 @@ test("F07 a group you left stays left through the creator's next rotation", asyn
   // A four-member roster is larger than one Bluetooth frame, so this also
   // proves the state was split rather than written whole and dropped.
   s.check("the rotation went out", rotated);
+  const towardBob = sends.mock.calls
+    .map((call, i) => ({ call, sent: sends.mock.results[i]?.value }))
+    .filter(
+      ({ call: [peer, type] }) =>
+        peer === bob.peerID && type === NoisePayloadType.GROUP_KEY_UPDATE,
+    );
+  sends.mockRestore();
+  s.check(
+    "and was written toward bob, who had left",
+    towardBob.length > 0 && towardBob.every(({ sent }) => sent === true),
+    `key updates toward bob=${String(towardBob.length)}`,
+  );
   s.check(
     "nothing was written past the Bluetooth frame",
     radio.framesOversized === 0,
@@ -656,12 +751,12 @@ test("F09 carried mail is not flooded at peers heard only through relays", async
   s.assert(true);
 });
 
-test("F10 mail written with nobody in range goes to the first carrier that arrives", async () => {
+test("F13 mail written with nobody in range goes to the first carrier that arrives", async () => {
   // Alice writes to bob, who left long ago, while nobody else is around, so
   // there is no carrier to seal it to. A carrier walking up later is a
   // delivery opportunity for every recipient alice owes, not only for itself.
   const s = (scenario = new Scenario({
-    id: "F10",
+    id: "F13",
     title: "a carrier that arrives late still takes the mail",
     seed: 610,
   }));

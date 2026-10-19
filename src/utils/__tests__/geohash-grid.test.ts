@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A wrong neighbour walks the user somewhere they did not point at, and the
 // cases that break neighbour maths are exactly the ones nobody tests by hand:
 // the poles and the date line. Values below are checked against the published
@@ -70,6 +67,58 @@ describe("geohashNeighbours", () => {
     expect(at("NE")).toBe("b");
     expect(at("E")).toBe("8");
     expect(at("SE")).toBe("2");
+  });
+
+  // Read off the published base32 grid by hand: odd-length cells end in a
+  // character from the 8-wide, 4-tall layout, even-length ones in the 4-wide,
+  // 8-tall one.
+  const byDirection = (gh: string): Record<string, string> =>
+    Object.fromEntries(
+      geohashNeighbours(gh).map((n) => [n.direction, n.geohash]),
+    );
+
+  it("matches the published neighbours of an odd-length cell", () => {
+    expect(byDirection("dqcjq")).toEqual({
+      N: "dqcjw",
+      NE: "dqcjx",
+      E: "dqcjr",
+      SE: "dqcjp",
+      S: "dqcjn",
+      SW: "dqcjj",
+      W: "dqcjm",
+      NW: "dqcjt",
+    });
+  });
+
+  it("matches the published neighbours of a bridge rendezvous cell", () => {
+    // Precision 6, the bridge's cell size, wholly inside its parent.
+    expect(byDirection("tdr1v9")).toEqual({
+      N: "tdr1vd",
+      NE: "tdr1vf",
+      E: "tdr1vc",
+      SE: "tdr1vb",
+      S: "tdr1v8",
+      SW: "tdr1v2",
+      W: "tdr1v3",
+      NW: "tdr1v6",
+    });
+  });
+
+  it("carries across the parent cell's edge", () => {
+    // "tdr1vb" is the bottom-right character of its parent, so its east and
+    // south neighbours live under different parents ("tdr1y", "tdr1t").
+    const n = byDirection("tdr1vb");
+    expect(n.E).toBe("tdr1y0");
+    expect(n.S).toBe("tdr1tz");
+    expect(n.SE).toBe("tdr1wp");
+    expect(n.N).toBe("tdr1vc");
+  });
+
+  it("has no northern row at the pole for a fine cell either", () => {
+    const n = byDirection("zzzzzz");
+    expect(Object.keys(n).sort()).toEqual(["E", "S", "SE", "SW", "W"]);
+    // East of the top-right corner of the world is the top-left one.
+    expect(n.E).toBe("bpbpbp");
   });
 
   it("drops the neighbour that would be past the pole", () => {

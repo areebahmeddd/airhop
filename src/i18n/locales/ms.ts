@@ -811,6 +811,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Benarkan makluman dering",
   "chat.contact.allow_ring_desc":
     "Benarkan mereka membuat telefon anda berdering untuk menarik perhatian anda, walaupun perbualan ini disenyapkan. Mod senyap dan Jangan Ganggu masih terpakai.",
+  "chat.contact.allow_ring_needs_keys":
+    "Belum ada kunci untuk kenalan ini. Hantar mesej kepada mereka, atau imbas kod mereka, untuk membenarkan mereka mendering anda.",
+  "chat.contact.allow_ring_master_off":
+    "Tiada sesiapa boleh membuat telefon anda berdering sehingga anda menghidupkan {setting} dalam Tetapan.",
   "chat.contact.ring_action": "Dering",
   "chat.contact.ringing": "Sedang berdering…",
   "chat.contact.ring_hint_nearby":
@@ -949,8 +953,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Benarkan",
   "mesh.banner.action.resume": "Sambung semula",
   "mesh.banner.action.fix": "Betulkan",
-  "mesh.banner.hint.resume":
-    "Menghidupkan semula pengiklanan dan pengimbasan Bluetooth",
+  "mesh.banner.hint.resume": "Menghidupkan semula mesh",
   "mesh.banner.hint.enable_bluetooth": "Meminta Android menghidupkan Bluetooth",
   "mesh.banner.hint.location_settings": "Membuka tetapan lokasi sistem",
   "mesh.banner.hint.app_settings":
@@ -1764,9 +1767,11 @@ export const strings: Strings = {
     "Belum ada kunci untuk kenalan ini. Hantar mesej kepada mereka, atau imbas kod mereka apabila anda bertemu.",
   "contacts.verify.compare_title": "Bacakan ini kepada satu sama lain",
   "contacts.verify.compare_body":
-    "{name} melihat enam perkataan yang sama. Kalau ia sepadan, anda berdua tahu kuncinya tulen.",
+    "{name} melihat enam perkataan yang sama dalam Airhop. Kalau ia sepadan, anda berdua tahu kuncinya tulen. bitchat tidak menunjukkan perkataan begini, jadi imbas kod mereka sahaja.",
   "contacts.verify.codes_match": "Ia sepadan",
   "contacts.verify.codes_differ": "Ia tidak sepadan",
+  "contacts.verify.codes_differ_body":
+    "Kunci pada telefon ini mungkin bukan milik {name}. Imbas kod mereka secara bersemuka sebelum anda mempercayai sembang ini.",
   "contacts.verify.compared_body":
     "Anda dan {name} mengesahkan kod yang sama. Kenalan ini telah disahkan.",
 
@@ -1802,8 +1807,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "Ciri pilihan, batalkan hantaran, media, tetap semula",
   "settings.section.privacy": "Privasi dan keselamatan",
-  "settings.section.privacy_desc":
-    "Forward secrecy, paket bertandatangan, rakan disekat",
+  "settings.section.privacy_desc": "Kunci Airhop, pemberitahuan, rakan disekat",
   "settings.section.network": "Rangkaian dan geganti",
   "settings.section.network_desc":
     "Sandaran internet, geganti Nostr, keserasian bitchat",
@@ -1927,10 +1931,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mengekalkan perbualan boleh dibaca paling lama, dan paling banyak memakan ruang cakera.",
   "settings.general.reset_desc":
-    "Mengembalikan setiap keutamaan kepada nilai lalainya, tanpa menyentuh identiti, mesej, kenalan dan dompet anda",
+    "Mengembalikan keutamaan kepada nilai lalainya, tanpa menyentuh identiti, mesej, kenalan dan dompet anda",
   "settings.general.reset_title": "Tetap semula tetapan?",
   "settings.general.reset_body":
-    "Setiap keutamaan kembali kepada nilai lalainya: penampilan, batalkan hantaran, dan sambungan (internet, Tor, get, jambatan, geganti). Identiti, mesej, kenalan dan dompet anda tidak disentuh.",
+    "Keutamaan kembali kepada nilai lalainya, termasuk penampilan, bahasa, pemberitahuan, batalkan hantaran, dan sambungan (internet, Tor, get, jambatan, geganti). Kunci Airhop, tempoh media disimpan, dan status anda kekal seperti yang ditetapkan. Identiti, mesej, kenalan dan dompet anda tidak disentuh.",
   "settings.general.reset_confirm": "Tetap semula",
 
   // ---- Settings: privacy and security ----
@@ -1946,6 +1950,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Makluman dering",
   "settings.security.ring_alerts_desc":
     "Suis induk untuk Dering. Mematikannya menolak semua dering serta-merta, tanpa mengira kebenaran yang anda beri kepada kenalan individu.",
+  "settings.security.background_notice": "Pemberitahuan latar belakang",
+  "settings.security.background_notice_desc":
+    "Senyapkan atau sembunyikan. Amaran mesej kekal aktif.",
   "settings.security.no_blocked": "Tiada rakan disekat",
   "settings.security.no_blocked_desc":
     "Rakan yang disekat tidak boleh menghantar mesej kepada anda atau muncul dalam tab Mesh",
@@ -1976,7 +1983,7 @@ export const strings: Strings = {
     "Teruskan melalui geganti Nostr apabila rakan mesh berada di luar jangkauan",
   "settings.network.internet_off_title": "Matikan internet?",
   "settings.network.internet_off_body":
-    "Airhop akan berjalan pada Bluetooth sahaja. Ia berhenti menghubungi mana-mana geganti Nostr, dan Tor, get internet serta jambatan mesh semuanya dimatikan. Sembang Bluetooth berdekatan terus berfungsi.",
+    "Airhop akan berjalan pada Bluetooth sahaja. Ia berhenti menghubungi mana-mana geganti Nostr, dan Tor, get internet serta jambatan mesh dijeda sehingga internet dihidupkan semula. Sembang Bluetooth berdekatan terus berfungsi.",
   "settings.network.turn_off": "Matikan",
   "settings.network.discovery": "Penemuan geo-geganti",
   "settings.network.discovery_desc":
@@ -2061,7 +2068,7 @@ export const strings: Strings = {
     "Bercakap dengan orang berdekatan seperti walkie-talkie",
   "settings.conn.live_voice_on_title": "Hidupkan suara langsung?",
   "settings.conn.live_voice_on_body":
-    "Menahan mikrofon menghantar suara anda kepada semua orang dalam jangkauan Bluetooth sambil anda bercakap, dan suara mereka dimainkan pada telefon anda. Tiada apa-apa dirakam.",
+    "Menahan mikrofon menghantar suara anda kepada semua orang dalam jangkauan Bluetooth sambil anda bercakap, dan suara mereka dimainkan pada telefon anda. Apabila anda melepaskannya, audio yang sama turut dihantar sebagai nota suara.",
   "settings.conn.live_voice_off_title": "Matikan suara langsung?",
   "settings.conn.live_voice_off_body":
     "Menahan mikrofon akan merakam nota suara sebaliknya. Ia dihantar apabila anda lepaskan, dan tiada siapa mendengarnya sehingga mereka memainkannya.",
@@ -2114,7 +2121,7 @@ export const strings: Strings = {
     "Pinjamkan sambungan anda kepada telefon luar talian berdekatan supaya ia tetap boleh mencapai saluran lokasi",
   "settings.conn.gateway_on_title": "Hidupkan get internet?",
   "settings.conn.gateway_on_body":
-    "Telefon berdekatan yang tiada sambungan sendiri akan menghantar dan menerima mesej saluran lokasi melalui sambungan anda. Ia menggunakan data mudah alih dan bateri anda, dan mesej mereka kekal disulitkan hujung ke hujung, jadi anda tidak boleh membaca apa yang melaluinya.",
+    "Telefon berdekatan yang tiada sambungan sendiri akan menghantar dan menerima mesej saluran lokasi melalui sambungan anda. Ia menggunakan data mudah alih dan bateri anda. Mesej itu ialah hantaran awam yang ditandatangani oleh penulisnya, jadi anda boleh membaca apa yang melaluinya tetapi tidak boleh mengubahnya.",
   "settings.conn.gateway_off_title": "Matikan get internet?",
   "settings.conn.gateway_off_body":
     "Telefon luar talian berdekatan berhenti mencapai saluran lokasi melalui sambungan anda. Mesej anda sendiri tidak terjejas.",
@@ -2123,10 +2130,10 @@ export const strings: Strings = {
     "Sambungkan sembang awam #bluetooth kawasan ini dengan kumpulan Bluetooth lain di luar jangkauan melalui internet",
   "settings.conn.bridge_on_title": "Hidupkan jambatan mesh?",
   "settings.conn.bridge_on_body":
-    "Mesej awam #bluetooth anda akan diterbitkan ke kejiranan anda melalui internet, jadi orang di luar jangkauan Bluetooth boleh membacanya. Mesej peribadi tidak pernah dijambatani, dan “berdekatan sahaja” mengekalkan satu mesej tertentu di tempatan.",
+    "Mesej awam #bluetooth anda akan diterbitkan ke kejiranan anda melalui internet, jadi orang di luar jangkauan Bluetooth boleh membacanya. Telefon anda juga membawa mesej yang dijambatani untuk telefon berdekatan menggunakan data anda. Mesej peribadi tidak pernah dijambatani, dan “berdekatan sahaja” mengekalkan satu mesej tertentu di tempatan.",
   "settings.conn.bridge_off_title": "Matikan jambatan mesh?",
   "settings.conn.bridge_off_body":
-    "Mesej awam #bluetooth anda kembali kekal dalam jangkauan Bluetooth, dan mesej daripada kumpulan seberang berhenti sampai ke sini.",
+    "Mesej awam #bluetooth anda kembali kekal dalam jangkauan Bluetooth, dan telefon anda berhenti membawa mesej yang dijambatani untuk orang lain. Mesej yang dibawa oleh jambatan berdekatan melalui Bluetooth masih muncul di sini.",
   "settings.conn.bridge_needs_location": "Jambatan mesh memerlukan lokasi",
   "settings.conn.bridge_needs_location_desc":
     "Ia mencari kejiranan anda daripada penetapan kedudukan. Berikan kebenaran lokasi untuk mula menjambatani.",
@@ -2163,7 +2170,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Sistem",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Penggunaan rangkaian",
+  "settings.storage.mesh_traffic": "Trafik mesh",
   "settings.storage.storage_usage": "Penggunaan storan",
   "settings.storage.storage_usage_desc":
     "Mesej, ecash dan lampiran dalam cache",
@@ -2244,7 +2251,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Mesh dijeda, tidak mengimbas atau mengiklan",
   "settings.status.invisible": "Halimunan",
   "settings.status.invisible_desc":
-    "Mengimbas, tetapi tersembunyi daripada penemuan",
+    "Tersembunyi daripada imbasan Bluetooth, masih dilihat oleh telefon yang anda sambungkan",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Tetapkan status kepada {value}",
   "settings.status.edit": "Ubah status",

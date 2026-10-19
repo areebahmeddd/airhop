@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // AuthenticatedPeerStatePacket (Noise payload 0x21): the identity proof that
 // travels inside a completed session. See peer-state-packet.ts for why it is
 // the difference between a peer saying something and a peer proving it.

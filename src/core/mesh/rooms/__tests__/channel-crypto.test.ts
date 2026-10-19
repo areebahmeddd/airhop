@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Private-channel encryption: only a key-holder can read a message, a wrong key
 // never throws (so trial-decryption is safe), the content round-trips exactly,
 // and every member derives the same unlinkable Nostr identity from the key.

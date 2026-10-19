@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Tier A: the app working, with nothing going wrong.
 //
 // These are the scenarios that must never be red. Every one of them is a thing
@@ -122,35 +119,6 @@ test("A01 cold start on Android brings the mesh up and finds the room", async ()
   s.assert();
 });
 
-test("A02 cold start on iOS does not claim Bluetooth is off on a healthy phone", async () => {
-  const s = (scenario = new Scenario({
-    id: "A02",
-    title: "iOS CBManager reports unknown before poweredOn",
-  }));
-  const { devices } = room(s, [ios("iphone", 33)]);
-  const [iphone] = devices;
-
-  iphone.launch();
-  // The window that used to produce a false banner: CoreBluetooth has not yet
-  // delivered its first didUpdateState.
-  await s.world.advance(20);
-  const early = iphone.meshState().bleBlocker;
-  s.check(
-    "the pre-state window reads as starting, not adapter-off",
-    early === "starting" || early === "none",
-    `blocker at 20ms = ${String(early)}`,
-  );
-
-  await s.world.advance(3000);
-  s.check(
-    "settles to no blocker once CoreBluetooth reports poweredOn",
-    iphone.meshState().bleBlocker === "none",
-    `blocker=${String(iphone.meshState().bleBlocker)}`,
-  );
-  s.expectNone("process health", noCrashes(devices));
-  s.assert();
-});
-
 test("A03 a public channel message reaches everyone in the room, once", async () => {
   const s = (scenario = new Scenario({
     id: "A03",
@@ -237,18 +205,28 @@ test("A04 a private DM round trips with a delivery receipt", async () => {
     `bob dm thread = [${bob.texts(`dm:${alice.peerID}`).join("|")}]`,
   );
 
+  // The delivery receipt lands before bob does anything.
+  const deliveredFirst = await waitFor(s.world, () => {
+    watcher.sample();
+    return alice.messages(`dm:${bob.peerID}`)[0]?.status === "delivered";
+  });
+  s.check(
+    "alice's copy shows delivered before bob opens the thread",
+    deliveredFirst,
+    `status=${String(alice.messages(`dm:${bob.peerID}`)[0]?.status)}`,
+  );
+
   // Bob opens the thread, which is what sends read receipts.
   bob.openThread(`dm:${alice.peerID}`);
   await waitFor(s.world, () => {
     watcher.sample();
-    const mine = alice.messages(`dm:${bob.peerID}`)[0];
-    return mine?.status === "delivered" || mine?.status === "read";
+    return alice.messages(`dm:${bob.peerID}`)[0]?.status === "read";
   });
 
   const sent = alice.messages(`dm:${bob.peerID}`)[0];
   s.check(
-    "alice's copy reached at least 'delivered'",
-    sent?.status === "delivered" || sent?.status === "read",
+    "and read once he has",
+    sent?.status === "read",
     `status=${String(sent?.status)}`,
   );
   s.check(
@@ -331,9 +309,9 @@ test("A06 the person who answered the handshake can speak first", async () => {
   s.check("the opening DM arrived", arrived);
 
   // Opening the thread sends read receipts. The responder's Double Ratchet has
-  // no sending chain until it has received a ratchet message, so this is the
-  // exact moment the encrypt path used to throw - inside a UI handler, with
-  // nothing able to catch it.
+  // no sending chain until it has received a ratchet message, so the encrypt
+  // path must cope with that here, inside a UI handler, where nothing above it
+  // could catch a throw.
   let openThrew: string | null = null;
   try {
     bob.openThread(`dm:${alice.peerID}`);

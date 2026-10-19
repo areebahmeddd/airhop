@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Chaos: the world is actively hostile, and the schedule is chosen by a seed.
 //
 // The scenarios above this file each describe one failure. These describe a
@@ -35,6 +32,7 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { bytesToBase64 } from "@core/encoding/base64";
 import {
   encodePacket,
   Flags,
@@ -44,7 +42,7 @@ import {
 } from "@core/mesh/wire/packet-codec";
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { bytesToHex } from "@noble/hashes/utils.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { SimDevice, type DeviceSpec } from "./harness/device";
 import {
   badgeMatchesThreads,
@@ -56,7 +54,12 @@ import {
   unreadCoherent,
 } from "./harness/invariants";
 import { RadioFabric } from "./harness/radio-fabric";
-import { Scenario, waitFor, waitForCoarse } from "./harness/scenario";
+import {
+  advanceFor,
+  Scenario,
+  waitFor,
+  waitForCoarse,
+} from "./harness/scenario";
 import { WifiFabric } from "./harness/wifi-fabric";
 
 jest.setTimeout(180_000);
@@ -95,25 +98,10 @@ function room(
   return { radio, devices };
 }
 
-const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-function toBase64(bytes: Uint8Array): string {
-  let out = "";
-  for (let i = 0; i < bytes.length; i += 3) {
-    const b0 = bytes[i];
-    const b1 = bytes[i + 1];
-    const b2 = bytes[i + 2];
-    out += B64[b0 >> 2];
-    out += B64[((b0 & 0x03) << 4) | ((b1 ?? 0) >> 4)];
-    out += b1 === undefined ? "=" : B64[((b1 & 0x0f) << 2) | ((b2 ?? 0) >> 6)];
-    out += b2 === undefined ? "=" : B64[b2 & 0x3f];
-  }
-  return out;
-}
-
 test("C03 replaying captured packets does not duplicate anything", async () => {
   const s = (scenario = new Scenario({
     id: "C03",
-    title: "an attacker records the air and plays it back 200 times",
+    title: "an attacker records the air and plays it back",
     seed: 777,
   }));
   const radio = new RadioFabric(s.world);
@@ -136,10 +124,15 @@ test("C03 replaying captured packets does not duplicate anything", async () => {
   });
 
   alice.send(channel, "the message worth replaying");
-  await waitFor(
-    s.world,
-    () => bob.texts(channel).includes("the message worth replaying"),
-    20_000,
+  // The original has to land, or "nothing was added" would be measured
+  // against a thread that never had it.
+  s.check(
+    "the original arrived once",
+    await waitFor(
+      s.world,
+      () => bob.texts(channel).includes("the message worth replaying"),
+      20_000,
+    ),
   );
   originalWrite();
 
@@ -150,16 +143,20 @@ test("C03 replaying captured packets does not duplicate anything", async () => {
     `${captured.length} frames`,
   );
 
-  // Play it all back, many times over.
-  for (let round = 0; round < 200; round++) {
+  // Play it all back, several times over. Every copy after the first is the
+  // same packet ID to the deduplicator, so a few rounds test as much as many.
+  const rounds = 5;
+  let missed = 0;
+  for (let round = 0; round < rounds; round++) {
     for (const frame of captured) {
-      radio.injectTo(bob.id, mallory.id, frame);
+      if (!radio.injectTo(bob.id, mallory.id, frame)) missed++;
     }
   }
+  s.check("every replayed frame reached bob", missed === 0, `missed=${missed}`);
   await s.world.settle(20_000);
 
   s.check(
-    "replaying 200 rounds added nothing to the thread",
+    `replaying ${String(rounds)} rounds added nothing to the thread`,
     bob.messages(channel).length === beforeCount,
     `before=${beforeCount} after=${bob.messages(channel).length}`,
   );
@@ -174,7 +171,7 @@ test("C03 replaying captured packets does not duplicate anything", async () => {
 test("C04 a Sybil flood of fake peers does not evict the real ones", async () => {
   const s = (scenario = new Scenario({
     id: "C04",
-    title: "500 invented peer IDs announce themselves at once",
+    title: "250 invented peer IDs announce themselves at once",
     seed: 909,
   }));
   const radio = new RadioFabric(s.world);
@@ -218,7 +215,11 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
   // derived from it, a correctly signed announce. Nothing about any one of them
   // is detectably wrong - which is exactly what makes a Sybil flood a resource
   // problem rather than a signature problem.
-  for (let i = 0; i < 500; i++) {
+  // Past the 200-peer cap, by enough to show the cap rather than the flood is
+  // what stops the list.
+  const fakes = 250;
+  let missed = 0;
+  for (let i = 0; i < fakes; i++) {
     const signingPriv = sha256(
       new TextEncoder().encode(`sybil-sign-${String(i)}`),
     );
@@ -244,10 +245,7 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
     payload[o++] = 32;
     payload.set(signingPub, o);
 
-    const senderID = new Uint8Array(8);
-    for (let k = 0; k < 8; k++) {
-      senderID[k] = parseInt(peerID.slice(k * 2, k * 2 + 2), 16);
-    }
+    const senderID = hexToBytes(peerID);
     const packet: Packet = {
       type: PacketType.ANNOUNCE,
       ttl: 7,
@@ -259,8 +257,12 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
       payload,
     };
     packet.signature = signPacket(packet, signingPriv);
-    radio.injectTo(bob.id, mallory.id, toBase64(encodePacket(packet)));
+    if (
+      !radio.injectTo(bob.id, mallory.id, bytesToBase64(encodePacket(packet)))
+    )
+      missed++;
   }
+  s.check("every fake announce reached bob", missed === 0, `missed=${missed}`);
   await s.world.settle(30_000);
 
   s.check(
@@ -268,14 +270,21 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
     bob.peers().includes(alice.peerID),
     `bob knows ${bob.peerCount()} peers; alice=${alice.peerID} present=${String(bob.peers().includes(alice.peerID))}`,
   );
-  // Boundedness is the property, not any particular number. 500 fakes must not
-  // produce 500 entries: the list is capped, and the only things allowed above
+  // Boundedness is the property, not any particular number. 250 fakes must not
+  // produce 250 entries: the list is capped, and the only things allowed above
   // the cap are peers we hold an actual BLE link to, which cannot be invented.
+  // The floor is the control: a list that never filled to the cap would mean
+  // the fakes were refused for some other reason and the cap went untested.
   const directNeighbours = 2;
+  s.check(
+    "the flood filled the list to its cap",
+    bob.peerCount() >= 200,
+    `bob holds ${bob.peerCount()} peers`,
+  );
   s.check(
     "the peer list is bounded rather than growing with the flood",
     bob.peerCount() <= 200 + directNeighbours,
-    `bob holds ${bob.peerCount()} peers after 500 fakes announced (cap 200 + ${directNeighbours} direct)`,
+    `bob holds ${bob.peerCount()} peers after ${String(fakes)} fakes announced (cap 200 + ${directNeighbours} direct)`,
   );
   s.check(
     "the real message is still in the thread",
@@ -327,6 +336,19 @@ test("C05 a phone killed mid-conversation comes back consistent", async () => {
     `bob thread=[${bob.texts(channel).join(" | ")}]`,
   );
 
+  // Nobody re-sends what bob missed: alice holds it, and gossip sync is what
+  // has to bring it back to him.
+  const recovered = await waitForCoarse(
+    s.world,
+    () => bob.texts(channel).includes("while bob was dead"),
+    60_000,
+  );
+  s.check(
+    "what was said while bob was dead reaches him through gossip",
+    recovered,
+    `bob thread=[${bob.texts(channel).join(" | ")}]`,
+  );
+
   // And the conversation continues.
   alice.send(channel, "after bob came back");
   const resumed = await waitForCoarse(
@@ -354,7 +376,7 @@ test("C06 a panic wipe leaves nothing behind and the room carries on", async () 
     seed: 5150,
   }));
   const { radio, devices } = room(s, [
-    android("alice", 11),
+    { ...android("alice", 11), wipeable: true },
     android("bob", 22),
     android("carol", 33),
   ]);
@@ -366,7 +388,13 @@ test("C06 a panic wipe leaves nothing behind and the room carries on", async () 
     30_000,
   );
   for (const d of devices) d.joinChannel(channel);
+  // Everything a person accumulates, so the wipe has something of each kind
+  // to destroy: a public thread, a private one written to her and still
+  // unread, a contact (writing to someone saves them) and a room of her own.
+  const customChannel = "#forget-me";
+  alice.joinChannel(customChannel);
   alice.send(channel, "something to forget");
+  alice.send(`dm:${carol.peerID}`, "a contact to forget");
   bob.send(`dm:${alice.peerID}`, "a private thing to forget");
   await s.world.settle(20_000);
 
@@ -375,14 +403,36 @@ test("C06 a panic wipe leaves nothing behind and the room carries on", async () 
     bob.bleLinkCount() === 2,
     `bobServiceLinks=${bob.bleLinkCount()} radioLinks=${radio.linkCount()}`,
   );
+  // Each of these is the precondition for one check after the wipe. Without
+  // them a wipe that destroyed nothing would pass against a phone that held
+  // nothing.
+  const inboundDm = alice
+    .messages(`dm:${bob.peerID}`)
+    .some((m) => !m.isMine && m.text === "a private thing to forget");
   s.check(
-    "alice has something worth wiping",
-    alice.messages(channel).length > 0,
-    `${alice.messages(channel).length} public messages held`,
+    "alice holds a private message written to her",
+    inboundDm,
+    `dm thread=[${alice.texts(`dm:${bob.peerID}`).join(" | ")}]`,
+  );
+  s.check(
+    "which she has not read",
+    alice.unread(`dm:${bob.peerID}`) > 0 && alice.totalUnread() > 0,
+    `unread=${alice.unread(`dm:${bob.peerID}`)} badge=${alice.totalUnread()}`,
+  );
+  s.check(
+    "alice has a saved contact",
+    alice.contacts().includes(carol.peerID),
+    `contacts=[${alice.contacts().join(",")}]`,
+  );
+  s.check(
+    "and a channel of her own",
+    alice.channels().includes(customChannel),
+    `channels=[${alice.channels().join(",")}]`,
   );
 
-  alice.panicWipe();
+  const wiped = await alice.panicWipe();
   await s.world.advance(2_000);
+  s.check("the keychain gave up every key", wiped.keysDestroyed);
 
   s.check(
     "every message is gone",
@@ -409,7 +459,11 @@ test("C06 a panic wipe leaves nothing behind and the room carries on", async () 
     alice.channels().every((c) => defaults.has(c)),
     `channels=[${alice.channels().join(",")}]`,
   );
-  s.check("no contact remains", alice.contacts().length === 0);
+  s.check(
+    "no contact remains",
+    alice.contacts().length === 0,
+    `contacts=[${alice.contacts().join(",")}]`,
+  );
   s.check(
     "the badge is clear",
     alice.totalUnread() === 0,
@@ -445,7 +499,7 @@ test("C07 seeded soak: eight phones, hundreds of random events", async () => {
   );
   // WiFi runs alongside Bluetooth for the whole soak.
   //
-  // Every scenario in tier-wifi is deterministic and small: two or three phones,
+  // Every scenario in wifi.test.ts is deterministic and small: two or three phones,
   // a link brought up or torn down at a moment the test chose. None of that
   // answers what happens when WiFi flaps in a crowded room while people
   // background their phones and the Bluetooth radio is already degraded. The
@@ -574,6 +628,9 @@ test("C07 seeded soak: eight phones, hundreds of random events", async () => {
     d.foreground();
   }
   await s.world.settle(60_000, 1_000);
+  // Then two gossip rounds and more, so whatever the flood missed during the
+  // churn has been asked for and served.
+  await advanceFor(s.world, 35_000);
   watcher.sample();
 
   // No outcome is asserted. Only properties.
@@ -589,8 +646,8 @@ test("C07 seeded soak: eight phones, hundreds of random events", async () => {
     (d) => d.messages(channel).filter((m) => !m.isMine).length,
   );
   s.check(
-    "the mesh was actually carrying traffic, not silently dead",
-    Math.max(...delivered) > 0,
+    "every phone was carrying traffic, not one silently dead",
+    delivered.every((n) => n > 0),
     `per-device inbound: ${delivered.join(",")} across ${sentTexts.length} public sends`,
   );
   s.check(

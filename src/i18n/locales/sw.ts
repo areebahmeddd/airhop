@@ -816,6 +816,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Ruhusu arifa za kengele",
   "chat.contact.allow_ring_desc":
     "Waruhusu kupigisha simu yako kengele ili kuvuta usikivu wako, hata kama mazungumzo haya yamenyamazishwa. Hali ya kimya na Usinisumbue bado zinatumika.",
+  "chat.contact.allow_ring_needs_keys":
+    "Bado hakuna funguo za anwani hii. Mtumie ujumbe, au changanua msimbo wake, ili kumruhusu akupigie kengele.",
+  "chat.contact.allow_ring_master_off":
+    "Hakuna anayeweza kupigisha simu yako kengele hadi uwashe {setting} kwenye Mipangilio.",
   "chat.contact.ring_action": "Piga kengele",
   "chat.contact.ringing": "Inapiga kengele…",
   "chat.contact.ring_hint_nearby": "Kengele hufanya kazi tu wakiwa karibu",
@@ -948,8 +952,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Ruhusu",
   "mesh.banner.action.resume": "Endelea",
   "mesh.banner.action.fix": "Rekebisha",
-  "mesh.banner.hint.resume":
-    "Huwasha tena utangazaji na uchanganuzi wa Bluetooth",
+  "mesh.banner.hint.resume": "Huanzisha mesh tena",
   "mesh.banner.hint.enable_bluetooth": "Huiomba Android iwashe Bluetooth",
   "mesh.banner.hint.location_settings":
     "Hufungua mipangilio ya mahali ya mfumo",
@@ -1771,9 +1774,11 @@ export const strings: Strings = {
     "Bado hakuna funguo za anwani hii. Watumie ujumbe, au changanua msimbo wao mtakapokutana.",
   "contacts.verify.compare_title": "Someni haya kwa kila mmoja",
   "contacts.verify.compare_body":
-    "{name} anaona maneno sita yaleyale. Yakilingana, nyote wawili mnajua funguo ni halisi.",
+    "{name} anaona maneno sita yaleyale kwenye Airhop. Yakilingana, nyote wawili mnajua funguo ni halisi. bitchat haionyeshi maneno kama haya, kwa hivyo changanua msimbo wake badala yake.",
   "contacts.verify.codes_match": "Yanalingana",
   "contacts.verify.codes_differ": "Hayalingani",
+  "contacts.verify.codes_differ_body":
+    "Huenda funguo kwenye simu hii si za {name}. Changanua msimbo wake ana kwa ana kabla ya kuamini gumzo hili.",
   "contacts.verify.compared_body":
     "Wewe na {name} mmethibitisha msimbo uleule. Anwani hii imethibitishwa.",
 
@@ -1809,8 +1814,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "Vipengele vya hiari, tendua kutuma, midia, weka upya",
   "settings.section.privacy": "Faragha na usalama",
-  "settings.section.privacy_desc":
-    "Forward secrecy, pakiti zilizotiwa saini, peer waliozuiwa",
+  "settings.section.privacy_desc": "Kufuli ya Airhop, arifa, peer waliozuiwa",
   "settings.section.network": "Mtandao na relay",
   "settings.section.network_desc":
     "Akiba ya intaneti, relay za Nostr, uoanifu na bitchat",
@@ -1934,10 +1938,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Huweka mazungumzo yakisomeka kwa muda mrefu zaidi, na huchukua nafasi kubwa zaidi kwenye diski.",
   "settings.general.reset_desc":
-    "Hurudisha kila upendeleo kwenye hali yake ya kawaida, bila kugusa utambulisho, jumbe, anwani na pochi yako",
+    "Hurudisha mapendeleo kwenye hali zake za kawaida, bila kugusa utambulisho, jumbe, anwani na pochi yako",
   "settings.general.reset_title": "Uweke upya mipangilio?",
   "settings.general.reset_body":
-    "Kila upendeleo hurudi kwenye hali yake ya kawaida: muonekano, tendua kutuma, na muunganisho (intaneti, Tor, lango, daraja, relay). Utambulisho, jumbe, anwani na pochi yako hazitaguswa.",
+    "Mapendeleo hurudi kwenye hali zake za kawaida, ikiwemo muonekano, lugha, arifa, tendua kutuma, na muunganisho (intaneti, Tor, lango, daraja, relay). Kufuli ya Airhop, muda wa kuhifadhi midia, na hali yako hubaki kama ulivyoweka. Utambulisho, jumbe, anwani na pochi yako hazitaguswa.",
   "settings.general.reset_confirm": "Weka upya",
 
   // ---- Settings: privacy and security ----
@@ -1953,6 +1957,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Arifa za kengele",
   "settings.security.ring_alerts_desc":
     "Kitufe kikuu cha Kengele. Kuzima kunakataa kila kengele mara moja, bila kujali ulichowaruhusu watu binafsi.",
+  "settings.security.background_notice": "Arifa ya chinichini",
+  "settings.security.background_notice_desc":
+    "Inyamazishe au ifiche. Arifa za ujumbe zinaendelea.",
   "settings.security.no_blocked": "Hakuna peer aliyezuiwa",
   "settings.security.no_blocked_desc":
     "Peer waliozuiwa hawawezi kukutumia ujumbe wala kuonekana kwenye kichupo cha Mesh",
@@ -1983,7 +1990,7 @@ export const strings: Strings = {
     "Endelea kupitia relay za Nostr wakati peer wa mesh wako nje ya masafa",
   "settings.network.internet_off_title": "Uzime intaneti?",
   "settings.network.internet_off_body":
-    "Airhop itafanya kazi kwa Bluetooth pekee. Itaacha kuwasiliana na relay yoyote ya Nostr, na Tor, lango la intaneti, na daraja la mesh vyote vitazimwa. Gumzo la Bluetooth la karibu litaendelea kufanya kazi.",
+    "Airhop itafanya kazi kwa Bluetooth pekee. Itaacha kuwasiliana na relay yoyote ya Nostr, na Tor, lango la intaneti, na daraja la mesh vitasitishwa hadi intaneti iwashwe tena. Gumzo la Bluetooth la karibu litaendelea kufanya kazi.",
   "settings.network.turn_off": "Zima",
   "settings.network.discovery": "Ugunduzi wa geo-relay",
   "settings.network.discovery_desc":
@@ -2068,7 +2075,7 @@ export const strings: Strings = {
     "Zungumza na watu walio karibu kama redio ya mkononi",
   "settings.conn.live_voice_on_title": "Uwashe sauti ya moja kwa moja?",
   "settings.conn.live_voice_on_body":
-    "Kushikilia maikrofoni hutuma sauti yako kwa kila mtu aliye ndani ya masafa ya Bluetooth unapozungumza, na sauti yao husikika kwenye simu yako. Hakuna kinachorekodiwa.",
+    "Kushikilia maikrofoni hutuma sauti yako kwa kila mtu aliye ndani ya masafa ya Bluetooth unapozungumza, na sauti yao husikika kwenye simu yako. Ukiiachilia, sauti hiyo hiyo pia hutumwa kama noti ya sauti.",
   "settings.conn.live_voice_off_title": "Uzime sauti ya moja kwa moja?",
   "settings.conn.live_voice_off_body":
     "Kushikilia maikrofoni hurekodi noti ya sauti badala yake. Hutumwa ukiachia, na hakuna anayeisikia hadi waichezeshe.",
@@ -2120,7 +2127,7 @@ export const strings: Strings = {
     "Azima muunganisho wako kwa simu iliyo karibu isiyo na mtandao ili bado iweze kufikia vituo vya mahali",
   "settings.conn.gateway_on_title": "Uwashe lango la intaneti?",
   "settings.conn.gateway_on_body":
-    "Simu zilizo karibu zisizo na muunganisho wake zitatuma na kupokea jumbe za vituo vya mahali kupitia wako. Hutumia data yako ya simu na betri, na jumbe zao hubaki zikiwa zimesimbwa mwanzo hadi mwisho, kwa hivyo huwezi kusoma kinachopita.",
+    "Simu zilizo karibu zisizo na muunganisho wake zitatuma na kupokea jumbe za vituo vya mahali kupitia wako. Hutumia data yako ya simu na betri. Jumbe hizo ni machapisho ya umma yaliyotiwa sahihi na waandishi wake, kwa hivyo unaweza kusoma kinachopita lakini huwezi kukibadilisha.",
   "settings.conn.gateway_off_title": "Uzime lango la intaneti?",
   "settings.conn.gateway_off_body":
     "Simu zilizo karibu zisizo na mtandao zitaacha kufikia vituo vya mahali kupitia wako. Jumbe zako mwenyewe haziathiriki.",
@@ -2129,10 +2136,10 @@ export const strings: Strings = {
     "Unganisha gumzo la umma la #bluetooth la eneo hili na kundi jingine la Bluetooth lililo nje ya masafa kupitia intaneti",
   "settings.conn.bridge_on_title": "Uwashe daraja la mesh?",
   "settings.conn.bridge_on_body":
-    "Jumbe zako za umma za #bluetooth zitachapishwa kwenye mtaa wako kupitia intaneti, kwa hivyo watu walio nje ya masafa ya Bluetooth wataweza kuzisoma. Jumbe za faragha hazivushwi kamwe, na “karibu pekee” huweka ujumbe wowote mmoja hapa hapa.",
+    "Jumbe zako za umma za #bluetooth zitachapishwa kwenye mtaa wako kupitia intaneti, kwa hivyo watu walio nje ya masafa ya Bluetooth wataweza kuzisoma. Simu yako pia itabeba jumbe zilizovushwa kwa ajili ya simu zilizo karibu kwa kutumia data yako. Jumbe za faragha hazivushwi kamwe, na “karibu pekee” huweka ujumbe wowote mmoja hapa hapa.",
   "settings.conn.bridge_off_title": "Uzime daraja la mesh?",
   "settings.conn.bridge_off_body":
-    "Jumbe zako za umma za #bluetooth zitabaki tena ndani ya masafa ya Bluetooth, na jumbe kutoka kundi la ng'ambo zitaacha kufika hapa.",
+    "Jumbe zako za umma za #bluetooth zitabaki tena ndani ya masafa ya Bluetooth, na simu yako itaacha kubeba jumbe zilizovushwa kwa ajili ya wengine. Jumbe ambazo daraja lililo karibu huleta kupitia Bluetooth bado zitaonekana hapa.",
   "settings.conn.bridge_needs_location": "Daraja la mesh linahitaji mahali",
   "settings.conn.bridge_needs_location_desc":
     "Hutafuta mtaa wako kutokana na usomaji wa mahali. Toa ruhusa ya mahali ili kuanza kuvusha.",
@@ -2169,7 +2176,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Mfumo",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Matumizi ya mtandao",
+  "settings.storage.mesh_traffic": "Trafiki ya mesh",
   "settings.storage.storage_usage": "Matumizi ya hifadhi",
   "settings.storage.storage_usage_desc":
     "Jumbe, ecash, na viambatisho vilivyoko kwenye akiba",
@@ -2252,7 +2259,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Mesh imesitishwa, haichanganui wala haitangazi",
   "settings.status.invisible": "Hataonekana",
   "settings.status.invisible_desc":
-    "Anachanganua, lakini amefichwa asigunduliwe",
+    "Amefichwa kwenye uchanganuzi wa Bluetooth, bado anaonekana na simu unazounganisha nazo",
   "settings.status.title": "Hali",
   "settings.status.set_a11y": "Weka hali kuwa {value}",
   "settings.status.edit": "Hariri hali",

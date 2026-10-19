@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A filter keeps exactly the conversations it names.
 
 import { channelMatches, dmMatches } from "../chat-filter";

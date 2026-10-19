@@ -8,7 +8,6 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { MAX_BLE_FRAME } from "../../routing/fragment-manager";
 import { encodePacket, type Packet } from "../../wire/packet-codec";
 import {
-  BurstFlags,
   decodeBurstPacket,
   encodeBurstCanceled,
   encodeBurstData,
@@ -18,6 +17,7 @@ import {
   MIN_BURST_KEEP_MS,
   VoiceCaptureSession,
   VoiceCodec,
+  type VoiceCaptureConfig,
 } from "../voice-capture";
 
 function makeBurstID(seed: number): Uint8Array {
@@ -37,18 +37,36 @@ function hold(feed: (f: Uint8Array) => void, frames = KEEPABLE_FRAMES): void {
   for (let i = 0; i < frames; i++) feed(frame(i + 1));
 }
 
-describe("VoiceCodec constants", () => {
-  it("AAC_LC_16KHZ_MONO = 0x01 (matches VoiceBurstCodec.aacLC16kMono)", () => {
-    expect(VoiceCodec.AAC_LC_16KHZ_MONO).toBe(0x01);
-  });
-});
-
-describe("BurstFlags constants", () => {
-  it("DATA = 0x00", () => expect(BurstFlags.DATA).toBe(0x00));
-  it("START = 0x01", () => expect(BurstFlags.START).toBe(0x01));
-  it("END = 0x02", () => expect(BurstFlags.END).toBe(0x02));
-  it("CANCELED = 0x04", () => expect(BurstFlags.CANCELED).toBe(0x04));
-});
+// A session over a scripted microphone: `feed` hands it a frame the way the
+// encoder would, and `packets` collects what it broadcasts. `config` overrides
+// the outbound side and `stopCapture` the native stop.
+function makeSession(
+  config: Partial<VoiceCaptureConfig> = {},
+  stopCapture: () => Promise<void> = () => Promise.resolve(),
+): {
+  packets: Packet[];
+  session: VoiceCaptureSession;
+  feed: (f: Uint8Array) => void;
+} {
+  const packets: Packet[] = [];
+  let onFrame: ((f: Uint8Array) => void) | null = null;
+  const session = new VoiceCaptureSession(
+    {
+      senderPeerID: "aabbccdd00112233",
+      signingPrivKey: ed25519.utils.randomSecretKey(),
+      onPacket: (p) => packets.push(p),
+      ...config,
+    },
+    {
+      startCapture: (cb) => {
+        onFrame = cb;
+        return Promise.resolve();
+      },
+      stopCapture,
+    },
+  );
+  return { packets, session, feed: (f) => onFrame?.(f) };
+}
 
 describe("encodeBurstStart / decodeBurstPacket (START)", () => {
   const id = makeBurstID(0xaa);
@@ -151,37 +169,10 @@ describe("packetizer budget", () => {
   // The 210-byte content budget exists so a voice packet never enters the
   // fragment scheduler, which caps concurrent transfers and would starve file
   // sends while someone talks.
-  function collect(): { packets: Packet[]; session: VoiceCaptureSession } {
-    const packets: Packet[] = [];
-    let onFrame: ((f: Uint8Array) => void) | null = null;
-    const session = new VoiceCaptureSession(
-      {
-        senderPeerID: "aabbccdd00112233",
-        signingPrivKey: ed25519.utils.randomSecretKey(),
-        onPacket: (p) => packets.push(p),
-      },
-      {
-        startCapture: (cb) => {
-          onFrame = cb;
-          return Promise.resolve();
-        },
-        stopCapture: () => Promise.resolve(),
-      },
-    );
-    return {
-      packets,
-      session: Object.assign(session, {
-        feed: (f: Uint8Array) => onFrame?.(f),
-      }),
-    };
-  }
-
   it("never emits a payload that would need fragmentation", async () => {
-    const { packets, session } = collect();
+    const { packets, session, feed } = makeSession();
     await session.startPtt();
-    hold((f) =>
-      (session as unknown as { feed: (x: Uint8Array) => void }).feed(f),
-    );
+    hold(feed);
     await session.stopPtt();
 
     for (const packet of packets) {
@@ -204,11 +195,9 @@ describe("packetizer budget", () => {
   // can land exactly on MAX_BLE_FRAME, where a "fits in one frame" assertion
   // passes with the padding back. Comparing a frame to itself cannot drift.
   it("never emits a FRAME that would need fragmentation", async () => {
-    const { packets, session } = collect();
+    const { packets, session, feed } = makeSession();
     await session.startPtt();
-    hold((f) =>
-      (session as unknown as { feed: (x: Uint8Array) => void }).feed(f),
-    );
+    hold(feed);
     await session.stopPtt();
 
     expect(packets.length).toBeGreaterThan(2); // START + data + END
@@ -220,12 +209,10 @@ describe("packetizer budget", () => {
   });
 
   it("drops a frame too large to ever fit its own packet", async () => {
-    const { packets, session } = collect();
+    const { packets, session, feed } = makeSession();
     await session.startPtt();
     const before = packets.length;
-    (session as unknown as { feed: (f: Uint8Array) => void }).feed(
-      new Uint8Array(400).fill(9),
-    );
+    feed(new Uint8Array(400).fill(9));
     await session.stopPtt();
     // START and END only: the oversize frame produced no data packet, rather
     // than an oversize one that would have been fragmented.
@@ -237,37 +224,13 @@ describe("packetizer budget", () => {
 describe("DM burst scoping", () => {
   // A DM burst is sealed to one peer. It must never also go out as a broadcast,
   // or audio meant for one person is heard by everyone in range.
-  function dmSession(send: (payload: Uint8Array) => void) {
-    const broadcast: Packet[] = [];
-    let onFrame: ((f: Uint8Array) => void) | null = null;
-    const session = new VoiceCaptureSession(
-      {
-        senderPeerID: "aabbccdd00112233",
-        signingPrivKey: ed25519.utils.randomSecretKey(),
-        onPacket: (p) => broadcast.push(p),
-        onDmPayload: send,
-      },
-      {
-        startCapture: (cb) => {
-          onFrame = cb;
-          return Promise.resolve();
-        },
-        stopCapture: () => Promise.resolve(),
-      },
-    );
-    return {
-      broadcast,
-      session,
-      feed: (f: Uint8Array) => onFrame?.(f),
-    };
-  }
-
   it("never broadcasts a DM burst", async () => {
     const sealed: Uint8Array[] = [];
-    const { broadcast, session, feed } = dmSession((p) => {
-      sealed.push(p);
-      return true;
-    });
+    const {
+      packets: broadcast,
+      session,
+      feed,
+    } = makeSession({ onDmPayload: (p) => sealed.push(p) });
 
     await session.startPtt();
     hold(feed);
@@ -280,9 +243,8 @@ describe("DM burst scoping", () => {
 
   it("sends the same burst bytes a public burst would", async () => {
     const sealed: Uint8Array[] = [];
-    const { session, feed } = dmSession((p) => {
-      sealed.push(p);
-      return true;
+    const { session, feed } = makeSession({
+      onDmPayload: (p) => sealed.push(p),
     });
 
     await session.startPtt();
@@ -305,8 +267,10 @@ describe("DM burst scoping", () => {
   it("still retracts after the session went away mid-talk", async () => {
     let alive = true;
     const sealed: Uint8Array[] = [];
-    const { session, feed } = dmSession((p) => {
-      if (alive) sealed.push(p);
+    const { session, feed } = makeSession({
+      onDmPayload: (p) => {
+        if (alive) sealed.push(p);
+      },
     });
 
     await session.startPtt();
@@ -328,42 +292,6 @@ describe("DM burst scoping", () => {
 // button, and it has to survive everything that can stop the microphone without
 // them: a Noise session dropping, the last peer in range walking off.
 describe("burst close is the talker's decision", () => {
-  function collect(): {
-    packets: Packet[];
-    session: VoiceCaptureSession & { feed: (f: Uint8Array) => void };
-    stops: number;
-  } {
-    const packets: Packet[] = [];
-    let onFrame: ((f: Uint8Array) => void) | null = null;
-    const counter = { stops: 0 };
-    const session = new VoiceCaptureSession(
-      {
-        senderPeerID: "aabbccdd00112233",
-        signingPrivKey: ed25519.utils.randomSecretKey(),
-        onPacket: (p) => packets.push(p),
-      },
-      {
-        startCapture: (cb) => {
-          onFrame = cb;
-          return Promise.resolve();
-        },
-        stopCapture: () => {
-          counter.stops++;
-          return Promise.resolve();
-        },
-      },
-    );
-    return {
-      packets,
-      get stops() {
-        return counter.stops;
-      },
-      session: Object.assign(session, {
-        feed: (f: Uint8Array) => onFrame?.(f),
-      }),
-    };
-  }
-
   const kinds = (packets: Packet[]) =>
     packets.map((p) => decodeBurstPacket(p.payload)?.kind);
 
@@ -373,26 +301,12 @@ describe("burst close is the talker's decision", () => {
   // sentence and is told nothing.
   it("keeps recording through a burst whose frames cannot be sent", async () => {
     const packets: Uint8Array[] = [];
-    let onFrame: ((f: Uint8Array) => void) | null = null;
     let reachable = true;
-    const session = new VoiceCaptureSession(
-      {
-        senderPeerID: "aabbccdd00112233",
-        signingPrivKey: ed25519.utils.randomSecretKey(),
-        onPacket: () => undefined,
-        onDmPayload: (payload) => {
-          if (reachable) packets.push(payload);
-        },
+    const { session, feed } = makeSession({
+      onDmPayload: (payload) => {
+        if (reachable) packets.push(payload);
       },
-      {
-        startCapture: (cb) => {
-          onFrame = cb;
-          return Promise.resolve();
-        },
-        stopCapture: () => Promise.resolve(),
-      },
-    );
-    const feed = (f: Uint8Array): void => onFrame?.(f);
+    });
 
     await session.startPtt();
     hold(feed);
@@ -414,9 +328,9 @@ describe("burst close is the talker's decision", () => {
   });
 
   it("closes a burst exactly once", async () => {
-    const { packets, session } = collect();
+    const { packets, session, feed } = makeSession();
     await session.startPtt();
-    hold(session.feed);
+    hold(feed);
     await session.stopPtt();
     await session.stopPtt();
     await session.cancelPtt();
@@ -426,7 +340,7 @@ describe("burst close is the talker's decision", () => {
   });
 
   it("does not retract a burst that was never started", async () => {
-    const { packets, session } = collect();
+    const { packets, session } = makeSession();
     await session.cancelPtt();
     expect(packets).toHaveLength(0);
   });
@@ -439,9 +353,9 @@ describe("burst close is the talker's decision", () => {
   // of audio as a voice note, in a conversation where the person who pressed the
   // button sees no message at all.
   it("retracts a hold too short to be a message", async () => {
-    const { packets, session } = collect();
+    const { packets, session, feed } = makeSession();
     await session.startPtt();
-    hold(session.feed, 2); // 128 ms
+    hold(feed, 2); // 128 ms
     await session.stopPtt();
 
     expect(kinds(packets)).toContain("canceled");
@@ -457,43 +371,25 @@ describe("burst close is the talker's decision", () => {
     const TAIL_FRAMES = 3;
 
     // Native's stop: emits what the encoder still held, then resolves.
-    function flushingSession(packets: Packet[]): {
-      session: VoiceCaptureSession;
-      feed: (f: Uint8Array) => void;
+    function flushingSession(): ReturnType<typeof makeSession> & {
       releaseStop: () => void;
     } {
-      let onFrame: ((f: Uint8Array) => void) | null = null;
       let releaseStop = (): void => undefined;
-      const session = new VoiceCaptureSession(
-        {
-          senderPeerID: "aabbccdd00112233",
-          signingPrivKey: ed25519.utils.randomSecretKey(),
-          onPacket: (p) => packets.push(p),
-        },
-        {
-          startCapture: (cb) => {
-            onFrame = cb;
-            return Promise.resolve();
-          },
-          stopCapture: () =>
-            new Promise<void>((resolve) => {
-              releaseStop = () => {
-                hold((f) => onFrame?.(f), TAIL_FRAMES);
-                resolve();
-              };
-            }),
-        },
+      const made = makeSession(
+        {},
+        () =>
+          new Promise<void>((resolve) => {
+            releaseStop = () => {
+              hold(made.feed, TAIL_FRAMES);
+              resolve();
+            };
+          }),
       );
-      return {
-        session,
-        feed: (f) => onFrame?.(f),
-        releaseStop: () => releaseStop(),
-      };
+      return { ...made, releaseStop: () => releaseStop() };
     }
 
     it("is kept by a release, ahead of END", async () => {
-      const packets: Packet[] = [];
-      const { session, feed, releaseStop } = flushingSession(packets);
+      const { packets, session, feed, releaseStop } = flushingSession();
       await session.startPtt();
       hold(feed);
       const stopping = session.stopPtt();
@@ -507,8 +403,7 @@ describe("burst close is the talker's decision", () => {
     });
 
     it("is dropped by a cancel", async () => {
-      const packets: Packet[] = [];
-      const { session, feed, releaseStop } = flushingSession(packets);
+      const { packets, session, feed, releaseStop } = flushingSession();
       await session.startPtt();
       hold(feed);
       const cancelling = session.cancelPtt();
@@ -520,8 +415,7 @@ describe("burst close is the talker's decision", () => {
     });
 
     it("stays in its own burst when the next press lands mid-flush", async () => {
-      const packets: Packet[] = [];
-      const { session, feed, releaseStop } = flushingSession(packets);
+      const { session, feed, releaseStop } = flushingSession();
       await session.startPtt();
       hold(feed);
       const first = session.burstIDHex;
@@ -537,9 +431,9 @@ describe("burst close is the talker's decision", () => {
   });
 
   it("keeps a hold that just clears the minimum", async () => {
-    const { packets, session } = collect();
+    const { packets, session, feed } = makeSession();
     await session.startPtt();
-    hold(session.feed, Math.ceil(MIN_BURST_KEEP_MS / 64));
+    hold(feed, Math.ceil(MIN_BURST_KEEP_MS / 64));
     await session.stopPtt();
 
     expect(kinds(packets)).toContain("end");
@@ -559,36 +453,12 @@ describe("CANCELED is repeated", () => {
     jest.useRealTimers();
   });
 
-  function collect(): {
-    packets: Packet[];
-    session: VoiceCaptureSession;
-    speak: () => void;
-  } {
-    const packets: Packet[] = [];
-    let feed: (f: Uint8Array) => void = () => undefined;
-    const session = new VoiceCaptureSession(
-      {
-        senderPeerID: "aabbccdd00112233",
-        signingPrivKey: ed25519.utils.randomSecretKey(),
-        onPacket: (p) => packets.push(p),
-      },
-      {
-        startCapture: (onFrame) => {
-          feed = onFrame;
-          return Promise.resolve();
-        },
-        stopCapture: () => Promise.resolve(),
-      },
-    );
+  it("sends the same retraction three times inside half a second", async () => {
+    const { packets, session, feed } = makeSession();
+    await session.startPtt();
     // Enough audio for the burst to have been announced. A retraction only
     // exists for a burst somebody was told about; see the empty-burst case.
-    return { packets, session, speak: () => hold(feed) };
-  }
-
-  it("sends the same retraction three times inside half a second", async () => {
-    const { packets, session, speak } = collect();
-    await session.startPtt();
-    speak();
+    hold(feed);
     await session.cancelPtt();
 
     const canceled = () =>
@@ -609,12 +479,12 @@ describe("CANCELED is repeated", () => {
   });
 
   it("gives each copy its own timestamp, so none is a stale replay", async () => {
-    const { packets, session, speak } = collect();
+    const { packets, session, feed } = makeSession();
     const now = jest.spyOn(Date, "now");
     try {
       now.mockReturnValue(5_000_000);
       await session.startPtt();
-      speak();
+      hold(feed);
       await session.cancelPtt();
       now.mockReturnValue(5_000_400);
       jest.advanceTimersByTime(500);
@@ -639,7 +509,7 @@ describe("CANCELED is repeated", () => {
   // holding the input), so the burst has to stay unannounced until it has
   // something to say.
   it("says nothing at all for a hold that captured no audio", async () => {
-    const { packets, session } = collect();
+    const { packets, session } = makeSession();
     await session.startPtt();
     await session.stopPtt();
     jest.advanceTimersByTime(500);
@@ -647,7 +517,7 @@ describe("CANCELED is repeated", () => {
   });
 
   it("says nothing at all for a cancel that captured no audio", async () => {
-    const { packets, session } = collect();
+    const { packets, session } = makeSession();
     await session.startPtt();
     await session.cancelPtt();
     jest.advanceTimersByTime(500);
@@ -659,9 +529,9 @@ describe("CANCELED is repeated", () => {
   // the codec, and the guess is only right because 0x01 is the only value the
   // format defines today.
   it("announces the burst before any audio in it", async () => {
-    const { packets, session, speak } = collect();
+    const { packets, session, feed } = makeSession();
     await session.startPtt();
-    speak();
+    hold(feed);
     await session.stopPtt();
 
     const kinds = packets.map((p) => decodeBurstPacket(p.payload)?.kind);
@@ -673,17 +543,7 @@ describe("CANCELED is repeated", () => {
 
 describe("burstIDHex", () => {
   it("is the 16 lowercase hex characters bitchat matches a voice note on", async () => {
-    const session = new VoiceCaptureSession(
-      {
-        senderPeerID: "aabbccdd00112233",
-        signingPrivKey: ed25519.utils.randomSecretKey(),
-        onPacket: () => undefined,
-      },
-      {
-        startCapture: () => Promise.resolve(),
-        stopCapture: () => Promise.resolve(),
-      },
-    );
+    const { session } = makeSession();
     await session.startPtt();
     // `voice_<burstIDHex>.aac` is the name the finalized note travels under, and
     // both bitchat clients take the 16 characters after `voice_` and require
@@ -734,49 +594,21 @@ describe("framesToAdtsFile", () => {
 // and stops encoding, so the gesture still belongs to the user and releasing
 // still ends the burst properly.
 describe("burst duration ceiling", () => {
-  function collect(): {
-    packets: Packet[];
-    session: VoiceCaptureSession & { feed: (f: Uint8Array) => void };
-  } {
-    const packets: Packet[] = [];
-    let onFrame: ((f: Uint8Array) => void) | null = null;
-    const session = new VoiceCaptureSession(
-      {
-        senderPeerID: "aabbccdd00112233",
-        signingPrivKey: ed25519.utils.randomSecretKey(),
-        onPacket: (p) => packets.push(p),
-      },
-      {
-        startCapture: (cb) => {
-          onFrame = cb;
-          return Promise.resolve();
-        },
-        stopCapture: () => Promise.resolve(),
-      },
-    );
-    return {
-      packets,
-      session: Object.assign(session, {
-        feed: (f: Uint8Array) => onFrame?.(f),
-      }),
-    };
-  }
-
   it("stops emitting once the burst passes two minutes", async () => {
     const now = jest.spyOn(Date, "now");
     try {
       now.mockReturnValue(1_000_000);
-      const { packets, session } = collect();
+      const { packets, session, feed } = makeSession();
       await session.startPtt();
 
       // Well inside the ceiling: these are carried.
-      hold(session.feed);
+      hold(feed);
       const during = packets.length;
       expect(during).toBeGreaterThan(1); // START plus at least one DATA
 
       // Two minutes and a second later, the mic is still held.
       now.mockReturnValue(1_000_000 + 121_000);
-      hold(session.feed);
+      hold(feed);
 
       expect(packets.length).toBe(during);
     } finally {
@@ -788,12 +620,12 @@ describe("burst duration ceiling", () => {
     const now = jest.spyOn(Date, "now");
     try {
       now.mockReturnValue(2_000_000);
-      const { packets, session } = collect();
+      const { packets, session, feed } = makeSession();
       await session.startPtt();
-      hold(session.feed);
+      hold(feed);
 
       now.mockReturnValue(2_000_000 + 121_000);
-      hold(session.feed);
+      hold(feed);
       await session.stopPtt();
 
       // The END is what tells every listener the burst is over; suppressing

@@ -54,14 +54,19 @@ import {
   nextHeartbeatDelayMs,
   TAG_MESSAGE_ID,
 } from "@core/nostr/geohash-presence";
-import { unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
+import { giftWrapSince, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import type { NostrClient } from "@core/nostr/nostr-client";
+import { validatedDifficulty } from "@core/nostr/nostr-pow";
 import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
 import { sharedRowID } from "@core/nostr/shared-row-id";
+import {
+  publicContentKey,
+  PublicMessageLimiter,
+} from "@core/router/public-message-limiter";
 import { t } from "@i18n";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
-import { useChatStore } from "@store/chat-store";
+import { hasStoredMessage, useChatStore } from "@store/chat-store";
 import { useLocationNotesStore } from "@store/location-notes-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
@@ -72,6 +77,7 @@ import { truncateToUtf8Bytes } from "@utils/utf8-budget";
 import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
 import { noteUrgentNotice } from "./board-alerts";
 import { getCoarseLocation, type Coords } from "./location-service";
+import { ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
 
 import {
   geohashChannel,
@@ -165,8 +171,7 @@ export function geohashLevelName(gh: string): string {
   return t("mesh.level.building");
 }
 
-// How far back a per-cell DM inbox looks on (re)subscribe. Matches bitchat's
-// TransportConfig.nostrDMSubscribeLookbackSeconds (24 h).
+// Max age of a per-cell DM, as bitchat's nostrDMSubscribeLookbackSeconds.
 const GEO_DM_LOOKBACK_SECONDS = 24 * 60 * 60;
 
 // How long a sender stays listed as present in a channel after their last post.
@@ -187,10 +192,9 @@ const PARTICIPANT_TTL_MS = 5 * 60 * 1000;
 // the limit is likelier buggy than hostile.
 const MAX_INBOUND_MESSAGE_BYTES = 2000 * 3;
 
-// A bridged note only counts as "new" for the notification bell if it arrived
-// within this window, so a subscription's history replay does not flood it.
-// Mirrors NOTICE_BELL_WINDOW_MS in mesh-service (the BLE board path).
-const NOTICE_BELL_WINDOW_MS = 5 * 60 * 1000;
+// Cap on the flood-limit pause for a join's history replay, if EOSE never
+// comes.
+const BACKFILL_GRACE_MS = 10_000;
 
 // Nostr tag carrying the sender's chosen display name. Nostr events identify
 // the author only by pubkey, so without this every geohash message would show
@@ -312,15 +316,20 @@ export class GeohashChannelService {
   // and in an internet-only build.
   private readonly gateway?: GatewayHooks;
 
+  // Shared with the mesh room: one budget per text across transports.
+  private readonly publicLimiter: PublicMessageLimiter;
+
   constructor(
     client: NostrClient,
     signingPrivKey: Uint8Array,
     nickname: string,
     gateway?: GatewayHooks,
+    publicLimiter: PublicMessageLimiter = new PublicMessageLimiter(),
   ) {
     this.client = client;
     this.nickname = nickname;
     this.gateway = gateway;
+    this.publicLimiter = publicLimiter;
     this.geohashSeed = deriveGeohashSeed(signingPrivKey);
     // Load the vendored relay directory synchronously. It is kept current by a
     // weekly CI sync from bitchat's reviewed list (see geo-relay-source.ts); we
@@ -389,8 +398,11 @@ export class GeohashChannelService {
     // started as a side effect of a cell changing. Leaving every location
     // channel would otherwise leave a heartbeat timer running forever with
     // nothing to announce into.
-    if (this.broadcastableCells().length > 0) this.startPresenceHeartbeat();
-    else this.stopPresenceHeartbeat();
+    if (this.foreground && this.broadcastableCells().length > 0) {
+      this.startPresenceHeartbeat();
+    } else {
+      this.stopPresenceHeartbeat();
+    }
 
     // Every subscribe and unsubscribe above has landed, so this is the one place
     // the answer is settled. Publishing per-channel instead would flap through
@@ -588,6 +600,17 @@ export class GeohashChannelService {
   //     the same instant, round after round, group by timing alone.
   private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // Presence only while on screen, as bitchat-ios. Position is re-read only on
+  // refresh, so a pocketed phone would keep claiming a cell it left.
+  private foreground = true;
+
+  setForeground(foreground: boolean): void {
+    if (this.foreground === foreground) return;
+    this.foreground = foreground;
+    if (foreground) void this.refresh();
+    else this.stopPresenceHeartbeat();
+  }
+
   // Spacing inside a round. A plain promise timer rather than a scheduler,
   // because the round is a sequence rather than a set of independent jobs.
   private static wait(ms: number): Promise<void> {
@@ -771,11 +794,26 @@ export class GeohashChannelService {
       this.isTeleportEvent(event),
     );
     const sharedId = event.tags.find(([t]) => t === TAG_MESSAGE_ID)?.[1];
+    const id =
+      sharedId !== undefined && sharedId.length > 0
+        ? sharedRowID(sharedId, event.content)
+        : `geo-${event.id}`;
+    // Flood-limited like the relay path, as in bitchat-ios: the carrier is
+    // unsigned, so anyone in radio range can ferry fresh self-signed events at
+    // any rate.
+    if (
+      !hasStoredMessage(channel, id) &&
+      !this.publicLimiter.allow(
+        `nostr:${event.pubkey}`,
+        publicContentKey(event.content),
+        validatedDifficulty(event.id, event.tags),
+        Date.now(),
+      )
+    ) {
+      return;
+    }
     useChatStore.getState().addMessage({
-      id:
-        sharedId !== undefined && sharedId.length > 0
-          ? sharedRowID(sharedId, event.content)
-          : `geo-${event.id}`,
+      id,
       channel,
       senderID: `nostr_${event.pubkey}`,
       senderNickname: nickname,
@@ -1048,6 +1086,10 @@ export class GeohashChannelService {
 
   private subscribeChannel(channel: string, geohash: string): void {
     const selfPubkey = this.identityFor(geohash).pubKeyHex;
+    // A join replays an hour of history at once, which is not a flood. The
+    // grace starts at the first event, not the subscribe, since relays can
+    // take longer than it to connect (Tor, a cold start).
+    let backfillUntilMs: number | null = null;
 
     const close = this.presenceFor(geohash).subscribeChannel(
       geohash,
@@ -1090,12 +1132,28 @@ export class GeohashChannelService {
         // the message twice, apparently from two different people. Falls back
         // to the Nostr event id, which still dedupes copies from several relays.
         const sharedId = event.tags.find(([t]) => t === TAG_MESSAGE_ID)?.[1];
+        const id =
+          sharedId !== undefined && sharedId.length > 0
+            ? sharedRowID(sharedId, event.content)
+            : `geo-${event.id}`;
+
+        const nowMs = Date.now();
+        backfillUntilMs ??= nowMs + BACKFILL_GRACE_MS;
+        if (
+          nowMs >= backfillUntilMs &&
+          !hasStoredMessage(channel, id) &&
+          !this.publicLimiter.allow(
+            `nostr:${event.pubkey}`,
+            publicContentKey(event.content),
+            validatedDifficulty(event.id, event.tags),
+            nowMs,
+          )
+        ) {
+          return;
+        }
 
         useChatStore.getState().addMessage({
-          id:
-            sharedId !== undefined && sharedId.length > 0
-              ? sharedRowID(sharedId, event.content)
-              : `geo-${event.id}`,
+          id,
           channel,
           senderID: `nostr_${event.pubkey}`,
           senderNickname: nickname,
@@ -1109,6 +1167,9 @@ export class GeohashChannelService {
         });
       },
       this.relaysForGeohash(geohash),
+      () => {
+        backfillUntilMs = 0;
+      },
     );
     this.subscriptions.set(channel, close);
 
@@ -1121,7 +1182,7 @@ export class GeohashChannelService {
         {
           kinds: [1059],
           "#p": [identity.pubKeyHex],
-          since: Math.floor(Date.now() / 1000) - GEO_DM_LOOKBACK_SECONDS,
+          since: giftWrapSince(GEO_DM_LOOKBACK_SECONDS),
         },
       ],
       (event) => this.handleGeoDm(event, geohash),
@@ -1300,7 +1361,7 @@ export class GeohashChannelService {
     });
     // Log a live note on the bell + the room's board badge. Own notes are
     // already filtered above; the recency gate skips replayed history.
-    if (Date.now() - createdAtMs <= NOTICE_BELL_WINDOW_MS) {
+    if (Date.now() - createdAtMs <= ROOM_REPLAY_WINDOW_MS) {
       const channel =
         this.namedChannelForGeohash(geohash) ?? geohashChannel(geohash);
       if (isUrgent) {

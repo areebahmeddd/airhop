@@ -103,6 +103,30 @@ function nostrKeyFromNpub(npub: string): Uint8Array | undefined {
   }
 }
 
+// The query as URLComponents.queryItems reads it (RFC 3986): split on '&', then
+// on the first '=', and percent-decode each side. Not form decoding, which reads
+// '+' as a space: bitchat builds the QR with queryItems, which leaves '+' literal,
+// so a nickname holding one would arrive changed and fail the signature. A pair
+// with no '=' has no value, and the first occurrence of a name wins, both as on
+// their side. Null on a malformed escape.
+function parseQuery(query: string): Map<string, string | null> | null {
+  const out = new Map<string, string | null>();
+  for (const pair of query.split("&")) {
+    if (pair.length === 0) continue;
+    const eq = pair.indexOf("=");
+    let name: string;
+    let value: string | null;
+    try {
+      name = decodeURIComponent(eq < 0 ? pair : pair.slice(0, eq));
+      value = eq < 0 ? null : decodeURIComponent(pair.slice(eq + 1));
+    } catch {
+      return null;
+    }
+    if (!out.has(name)) out.set(name, value);
+  }
+  return out;
+}
+
 // Parse and verify. Returns null when this is not a bitchat verification QR at
 // all, so the caller can carry on trying other formats.
 export function parseBitchatVerifyQr(
@@ -112,25 +136,22 @@ export function parseBitchatVerifyQr(
   const trimmed = raw.trim();
   if (!/^bitchat:\/\/verify\b/i.test(trimmed)) return null;
 
-  let params: URLSearchParams;
-  try {
-    // The scheme is not hierarchical to every URL parser, so the query is taken
-    // directly rather than through a host/path parse that may not survive it.
-    const q = trimmed.indexOf("?");
-    if (q < 0) return { ok: false, reason: "tampered" };
-    params = new URLSearchParams(trimmed.slice(q + 1));
-  } catch {
-    return { ok: false, reason: "tampered" };
-  }
+  // The scheme is not hierarchical to every URL parser, so the query is taken
+  // directly rather than through a host/path parse that may not survive it.
+  const q = trimmed.indexOf("?");
+  if (q < 0) return { ok: false, reason: "tampered" };
+  const params = parseQuery(trimmed.slice(q + 1));
+  if (params === null) return { ok: false, reason: "tampered" };
 
-  const v = params.get("v");
-  const noise = params.get("noise");
-  const sign = params.get("sign");
-  const nick = params.get("nick");
-  const ts = params.get("ts");
-  const nonce = params.get("nonce");
-  const sig = params.get("sig");
-  const npub = params.get("npub") ?? "";
+  const field = (name: string): string | null => params.get(name) ?? null;
+  const v = field("v");
+  const noise = field("noise");
+  const sign = field("sign");
+  const nick = field("nick");
+  const ts = field("ts");
+  const nonce = field("nonce");
+  const sig = field("sig");
+  const npub = field("npub") ?? "";
   if (
     v === null ||
     noise === null ||

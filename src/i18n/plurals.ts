@@ -144,9 +144,12 @@ const RULES = {
 // against `Intl.PluralRules` under Node's ICU instead. Deriving it would make
 // the two agree by construction, so a rule with a branch that never fires would
 // shrink its own expected set rather than fail.
-//
-// `catalog.test.ts` then holds every locale to this list, which is what stops a
-// Russian catalog shipping only `one` and `other`.
+/**
+ * @public `catalog.test.ts` holds every locale to this list, which is what
+ * stops a Russian catalog shipping only `one` and `other`, and
+ * `scripts/i18n-build-locale.js` reads it by name. The app never imports it:
+ * selection runs on the rules above.
+ */
 export const PLURAL_CATEGORIES: Record<string, PluralCategory[]> = {
   am: ["one", "other"],
   ar: ["zero", "one", "two", "few", "many", "other"],

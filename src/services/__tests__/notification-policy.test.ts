@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Notification policy: the pure rules for whether and how to notify.
 //
 // These decide when a message pulls the user out of whatever they are doing, so
@@ -20,13 +17,14 @@ import { RING_COOLDOWN_MS, RING_STALENESS_MS } from "@store/ring-store";
 import {
   attachmentSummary,
   isDirectMessage,
-  messagePreview,
+  isReplayedRoomMessage,
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
   notificationContentFor,
   paymentNotificationContent,
   ringNotificationContent,
   ringVerdict,
+  ROOM_REPLAY_WINDOW_MS,
   shouldHapticPing,
   shouldNotifyNearby,
   shouldSystemNotify,
@@ -238,14 +236,6 @@ describe("attachment previews", () => {
     ).toContain("\u2068تقرير.pdf\u2069");
   });
 
-  it("prefers an attachment summary over empty text", () => {
-    expect(
-      messagePreview(
-        msg({ text: "", attachment: { type: "voice", uri: "x" } }),
-      ),
-    ).toBe("🎤 Voice note");
-  });
-
   // A lock screen is readable by anyone holding the phone, and a token is money
   // to whoever copies it.
   it("names an ecash token by its amount, never by the token", () => {
@@ -360,12 +350,19 @@ describe("notificationContentFor a mention", () => {
     expect(`${content.title} ${content.body}`).not.toContain("secret");
   });
 
-  it("leaves an ordinary channel message alone", () => {
+  it("leaves the same message alone when it is not a mention of the user", () => {
+    // The text above, flagged as no mention: the flag, not an "@", is what
+    // changes the form.
     expect(
-      notificationContentFor(msg({ channel: "#city", text: "hi" }), "#city"),
+      notificationContentFor(
+        msg({ channel: "#city", text: "@bob look at this" }),
+        "#city",
+        false,
+        false,
+      ),
     ).toEqual({
       title: "#city",
-      body: isolated("alice") + ": " + isolated("hi"),
+      body: isolated("alice") + ": " + isolated("@bob look at this"),
     });
   });
 
@@ -455,5 +452,31 @@ describe("ringNotificationContent", () => {
     const content = ringNotificationContent("alice", true);
     expect(content.title).not.toContain("alice");
     expect(content.body).not.toContain("alice");
+  });
+});
+
+describe("isReplayedRoomMessage", () => {
+  const nowMs = 1_700_000_000_000;
+  const old = nowMs - ROOM_REPLAY_WINDOW_MS - 1;
+  const replayed = (
+    channel: string,
+    timestampMs = old,
+    hasChannelKey = false,
+  ) => isReplayedRoomMessage({ channel, timestampMs, hasChannelKey, nowMs });
+
+  it("treats old messages in public rooms as replayed", () => {
+    expect(replayed("#bluetooth")).toBe(true);
+    expect(replayed("#city")).toBe(true);
+    expect(replayed("geohash:u4pruy")).toBe(true);
+  });
+
+  it("lets a recent public message through", () => {
+    expect(replayed("#city", nowMs - 1000)).toBe(false);
+  });
+
+  it("never holds back late private mail", () => {
+    expect(replayed("dm:0123456789abcdef")).toBe(false);
+    expect(replayed("group:abc")).toBe(false);
+    expect(replayed("#secret", old, true)).toBe(false);
   });
 });

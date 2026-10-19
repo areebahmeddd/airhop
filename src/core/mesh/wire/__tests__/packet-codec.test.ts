@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Wire-format tests for the bitchat-compatible binary codec. These lock in
 // byte-level behavior that must match bitchat-ios and bitchat-android: v1 + v2 headers,
 // PKCS#7 padding, raw-DEFLATE compression, and signing over the padded encoding.
@@ -64,12 +61,6 @@ describe("packet-codec", () => {
       expect(isBroadcast(decoded!)).toBe(false);
     });
 
-    it("emits v2 by default and reads the version back", () => {
-      const encoded = encodePacket(makePacket());
-      expect(encoded[0]).toBe(2);
-      expect(decodePacket(encoded)!.version).toBe(2);
-    });
-
     it("round-trips a v1 packet (bitchat's broadcast header)", () => {
       const p = makePacket({ version: 1 });
       const encoded = encodePacket(p);
@@ -77,16 +68,6 @@ describe("packet-codec", () => {
       const decoded = decodePacket(encoded);
       expect(decoded!.version).toBe(1);
       expect(new TextDecoder().decode(decoded!.payload)).toBe("hello");
-    });
-
-    it("type at [1], ttl at [2], flags at [11]", () => {
-      const encoded = encodePacket(
-        makePacket({ type: PacketType.CHANNEL_MSG, ttl: 5, flags: 0 }),
-      );
-      expect(encoded[1]).toBe(PacketType.CHANNEL_MSG);
-      expect(encoded[2]).toBe(5);
-      // Broadcast, unsigned, uncompressed -> flags byte is 0.
-      expect(encoded[11]).toBe(0);
     });
 
     it("pads a Noise frame to a PKCS#7 block size", () => {
@@ -104,9 +85,9 @@ describe("packet-codec", () => {
       expect(Array.from(encoded.slice(24, 28))).toEqual([
         0xde, 0xad, 0xbe, 0xef,
       ]);
-      expect(new TextDecoder().decode(decodePacket(encoded)!.payload)).toBe(
-        new TextDecoder().decode(new Uint8Array([0xde, 0xad, 0xbe, 0xef])),
-      );
+      expect(Array.from(decodePacket(encoded)!.payload)).toEqual([
+        0xde, 0xad, 0xbe, 0xef,
+      ]);
     });
 
     it("does not pad a public frame", () => {
@@ -202,12 +183,28 @@ describe("packet-codec", () => {
       expect(verifyPacket(tampered, pub)).toBe(false);
     });
 
-    it("stays valid after a TTL decrement (relay-safe)", () => {
+    it("stays valid after being tagged as a solicited sync response (isRSR)", () => {
       const priv = ed25519.utils.randomSecretKey();
       const pub = ed25519.getPublicKey(priv);
-      const p = makePacket({ ttl: 7 });
+      const p = makePacket();
       p.signature = signPacket(p, priv);
-      expect(verifyPacket({ ...p, ttl: 6 }, pub)).toBe(true);
+      expect(verifyPacket({ ...p, isRSR: true }, pub)).toBe(true);
+    });
+
+    it("fails for the wrong public key", () => {
+      const priv = ed25519.utils.randomSecretKey();
+      const wrong = ed25519.getPublicKey(ed25519.utils.randomSecretKey());
+      const p = makePacket();
+      p.signature = signPacket(p, priv);
+      expect(verifyPacket(p, wrong)).toBe(false);
+    });
+
+    it("fails when the SIGNED flag is not set", () => {
+      const priv = ed25519.utils.randomSecretKey();
+      const pub = ed25519.getPublicKey(priv);
+      const p = makePacket({ flags: 0 });
+      p.signature = signPacket(p, priv);
+      expect(verifyPacket(p, pub)).toBe(false);
     });
   });
 
@@ -398,30 +395,6 @@ describe("packet-codec", () => {
         Array.from(compress(payload)!),
       );
     });
-
-    it("stays valid after being tagged as a solicited sync response (isRSR)", () => {
-      const priv = ed25519.utils.randomSecretKey();
-      const pub = ed25519.getPublicKey(priv);
-      const p = makePacket();
-      p.signature = signPacket(p, priv);
-      expect(verifyPacket({ ...p, isRSR: true }, pub)).toBe(true);
-    });
-
-    it("fails for the wrong public key", () => {
-      const priv = ed25519.utils.randomSecretKey();
-      const wrong = ed25519.getPublicKey(ed25519.utils.randomSecretKey());
-      const p = makePacket();
-      p.signature = signPacket(p, priv);
-      expect(verifyPacket(p, wrong)).toBe(false);
-    });
-
-    it("fails when the SIGNED flag is not set", () => {
-      const priv = ed25519.utils.randomSecretKey();
-      const pub = ed25519.getPublicKey(priv);
-      const p = makePacket({ flags: 0 });
-      p.signature = signPacket(p, priv);
-      expect(verifyPacket(p, pub)).toBe(false);
-    });
   });
 
   describe("broadcast and unicast helpers", () => {
@@ -504,9 +477,10 @@ describe("packet-codec", () => {
   });
 
   describe("malformed frames decode to null rather than throwing", () => {
-    // decodePacket is fed arbitrary bytes off the radio and has no try/catch
-    // around it in mesh-service, so a throw here does not stay here: it escapes
-    // into the native packetReceived listener. Returning null is the contract.
+    // decodePacket is fed arbitrary bytes off the radio. mesh-service's ingress
+    // guard catches a throw, but only to count it as a fault: the frame is lost
+    // either way and a malformed packet reads as a bug in Airhop. Returning null
+    // is the contract.
     it("a COMPRESSED frame whose length field runs off the end returns null", () => {
       // 24 bytes exactly: v2 header (16, payloadLength being a 4-byte BE field
       // at offset 12) + senderID (8), with COMPRESSED set and HAS_RECIPIENT

@@ -831,6 +831,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Payagan ang mga alerto ng tawag",
   "chat.contact.allow_ring_desc":
     "Hayaan silang patunugin ang iyong telepono para makuha ang atensyon mo, kahit naka-mute ang usapang ito. Nananatiling epektibo ang silent mode at Huwag Istorbohin.",
+  "chat.contact.allow_ring_needs_keys":
+    "Wala pang susi para sa contact na ito. Mag-mensahe sa kanila, o i-scan ang code nila, para payagan silang tawagan ka.",
+  "chat.contact.allow_ring_master_off":
+    "Walang makakapagpatunog ng iyong telepono hangga't hindi mo ini-on ang {setting} sa Settings.",
   "chat.contact.ring_action": "Tumawag",
   "chat.contact.ringing": "Tumatawag…",
   "chat.contact.ring_hint_nearby":
@@ -973,8 +977,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Payagan",
   "mesh.banner.action.resume": "Ipagpatuloy",
   "mesh.banner.action.fix": "Ayusin",
-  "mesh.banner.hint.resume":
-    "Muling ino-on ang pag-advertise at pag-scan ng Bluetooth",
+  "mesh.banner.hint.resume": "Muling sinisimulan ang mesh",
   "mesh.banner.hint.enable_bluetooth":
     "Hinihiling sa Android na i-on ang Bluetooth",
   "mesh.banner.hint.location_settings":
@@ -1801,9 +1804,11 @@ export const strings: Strings = {
     "Wala pang susi para sa contact na ito. Mag-mensahe sa kanila, o i-scan ang code nila kapag nagkita kayo.",
   "contacts.verify.compare_title": "Basahin ninyo ito sa isa't isa",
   "contacts.verify.compare_body":
-    "Pareho ang anim na salitang nakikita ni {name}. Kung tugma ang mga ito, alam ninyong dalawa na tunay ang mga susi.",
+    "Pareho ang anim na salitang nakikita ni {name} sa Airhop. Kung tugma ang mga ito, alam ninyong dalawa na tunay ang mga susi. Walang ganitong mga salita sa bitchat, kaya i-scan na lang ang code nila.",
   "contacts.verify.codes_match": "Tugma ang mga ito",
   "contacts.verify.codes_differ": "Hindi tugma ang mga ito",
+  "contacts.verify.codes_differ_body":
+    "Maaaring hindi kay {name} ang mga susi sa phone na ito. I-scan nang personal ang code nila bago mo pagkatiwalaan ang chat na ito.",
   "contacts.verify.compared_body":
     "Kinumpirma ninyo ni {name} ang parehong code. Na-verify ang contact na ito.",
 
@@ -1840,7 +1845,7 @@ export const strings: Strings = {
     "Mga opsyonal na feature, i-undo ang pagpapadala, media, i-reset",
   "settings.section.privacy": "Privacy at seguridad",
   "settings.section.privacy_desc":
-    "Forward secrecy, nilagdaang packet, mga naka-block na peer",
+    "Lock ng Airhop, mga abiso, mga naka-block na peer",
   "settings.section.network": "Network at mga relay",
   "settings.section.network_desc":
     "Fallback sa internet, mga relay ng Nostr, pagkatugma sa bitchat",
@@ -1964,10 +1969,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Pinakamatagal na nananatiling mababasa ang mga usapan, at pinakamalaki ang kinakain sa disk.",
   "settings.general.reset_desc":
-    "Ibinabalik ang bawat kagustuhan sa default nito, nang hindi ginagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet",
+    "Ibinabalik ang mga kagustuhan sa kanilang default, nang hindi ginagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet",
   "settings.general.reset_title": "I-reset ang mga setting?",
   "settings.general.reset_body":
-    "Babalik sa default ang bawat kagustuhan: anyo, pag-undo ng pagpapadala, at koneksyon (internet, Tor, gateway, bridge, mga relay). Hindi magagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet.",
+    "Babalik sa default ang mga kagustuhan, kasama ang anyo, wika, mga abiso, pag-undo ng pagpapadala, at koneksyon (internet, Tor, gateway, bridge, mga relay). Mananatili gaya ng itinakda mo ang lock ng Airhop, kung gaano katagal itinatago ang media, at ang iyong status. Hindi magagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet.",
   "settings.general.reset_confirm": "I-reset",
 
   // ---- Settings: privacy and security ----
@@ -1983,6 +1988,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Mga alerto ng tawag",
   "settings.security.ring_alerts_desc":
     "Master switch para sa Tawag. Ang pag-off ay tatanggi sa lahat ng tawag nang sabay-sabay, kahit ano pa ang ibinigay mong pahintulot sa bawat kontak.",
+  "settings.security.background_notice": "Notification sa background",
+  "settings.security.background_notice_desc":
+    "Patahimikin o itago ito. Mananatiling bukas ang mga alerto sa mensahe.",
   "settings.security.no_blocked": "Walang naka-block na peer",
   "settings.security.no_blocked_desc":
     "Hindi ka mame-mensahe ng mga naka-block na peer at hindi sila lilitaw sa tab na Mesh",
@@ -2013,7 +2021,7 @@ export const strings: Strings = {
     "Magpatuloy sa mga relay ng Nostr kapag wala sa saklaw ang mga peer sa mesh",
   "settings.network.internet_off_title": "I-off ang internet?",
   "settings.network.internet_off_body":
-    "Sa Bluetooth lang tatakbo ang Airhop. Titigil itong kontakin ang anumang relay ng Nostr, at mao-off ang Tor, ang internet gateway at ang mesh bridge. Patuloy na gagana ang chat sa Bluetooth sa malapit.",
+    "Sa Bluetooth lang tatakbo ang Airhop. Titigil itong kontakin ang anumang relay ng Nostr, at mapo-pause ang Tor, ang internet gateway at ang mesh bridge hanggang sa bumalik ang internet. Patuloy na gagana ang chat sa Bluetooth sa malapit.",
   "settings.network.turn_off": "I-off",
   "settings.network.discovery": "Pagtuklas ng geo-relay",
   "settings.network.discovery_desc":
@@ -2101,7 +2109,7 @@ export const strings: Strings = {
     "Makipag-usap sa mga taong malapit na parang walkie-talkie",
   "settings.conn.live_voice_on_title": "I-on ang live na boses?",
   "settings.conn.live_voice_on_body":
-    "Kapag pinindot nang matagal ang mikropono, ipinapadala ang boses mo sa lahat ng nasa saklaw ng Bluetooth habang nagsasalita ka, at tumutugtog sa telepono mo ang boses nila. Walang naire-record.",
+    "Kapag pinindot nang matagal ang mikropono, ipinapadala ang boses mo sa lahat ng nasa saklaw ng Bluetooth habang nagsasalita ka, at tumutugtog sa telepono mo ang boses nila. Kapag binitawan mo ito, ipinapadala rin ang parehong audio bilang voice note.",
   "settings.conn.live_voice_off_title": "I-off ang live na boses?",
   "settings.conn.live_voice_off_body":
     "Kapag pinindot nang matagal ang mikropono, voice note ang nire-record. Naipapadala ito kapag binitawan mo, at walang makakarinig nito hangga't hindi nila ito pinapatugtog.",
@@ -2151,7 +2159,7 @@ export const strings: Strings = {
     "Ipahiram ang koneksyon mo sa isang offline na teleponong malapit para maabot pa rin nito ang mga channel ng lokasyon",
   "settings.conn.gateway_on_title": "I-on ang internet gateway?",
   "settings.conn.gateway_on_body":
-    "Magpapadala at tatanggap ng mensahe sa channel ng lokasyon ang mga teleponong malapit na walang sariling koneksyon sa pamamagitan ng iyo. Gumagamit ito ng mobile data at baterya mo, at nananatiling naka-encrypt nang dulo-sa-dulo ang mga mensahe nila, kaya hindi mo mababasa ang dumadaan.",
+    "Magpapadala at tatanggap ng mensahe sa channel ng lokasyon ang mga teleponong malapit na walang sariling koneksyon sa pamamagitan ng iyo. Gumagamit ito ng mobile data at baterya mo. Mga pampublikong post ang mga mensaheng iyon na pinirmahan ng mga sumulat, kaya mababasa mo ang dumadaan pero hindi mo ito mababago.",
   "settings.conn.gateway_off_title": "I-off ang internet gateway?",
   "settings.conn.gateway_off_body":
     "Titigil ang mga offline na teleponong malapit sa pag-abot sa mga channel ng lokasyon sa pamamagitan ng iyo. Hindi apektado ang sarili mong mga mensahe.",
@@ -2160,10 +2168,10 @@ export const strings: Strings = {
     "Iugnay ang pampublikong chat na #bluetooth ng lugar na ito sa ibang pangkat na wala sa saklaw ng Bluetooth sa pamamagitan ng internet",
   "settings.conn.bridge_on_title": "I-on ang mesh bridge?",
   "settings.conn.bridge_on_body":
-    "Ilalathala ang pampubliko mong mga mensaheng #bluetooth sa barangay mo sa pamamagitan ng internet, kaya mababasa ito ng mga taong lampas sa saklaw ng Bluetooth. Hindi kailanman itinutulay ang mga pribadong mensahe, at pinananatiling lokal ng “malapit lang” ang isang partikular na mensahe.",
+    "Ilalathala ang pampubliko mong mga mensaheng #bluetooth sa barangay mo sa pamamagitan ng internet, kaya mababasa ito ng mga taong lampas sa saklaw ng Bluetooth. Dadalhin din ng telepono mo ang mga itinulay na mensahe ng mga teleponong malapit gamit ang data mo. Hindi kailanman itinutulay ang mga pribadong mensahe, at pinananatiling lokal ng “malapit lang” ang isang partikular na mensahe.",
   "settings.conn.bridge_off_title": "I-off ang mesh bridge?",
   "settings.conn.bridge_off_body":
-    "Mananatiling muli sa saklaw ng Bluetooth ang pampubliko mong mga mensaheng #bluetooth, at titigil sa pagdating dito ang mga mensahe mula sa pangkat sa kabila.",
+    "Mananatiling muli sa saklaw ng Bluetooth ang pampubliko mong mga mensaheng #bluetooth, at titigil ang telepono mo sa pagdadala ng mga itinulay na mensahe para sa iba. Lalabas pa rin dito ang mga mensaheng dala ng isang tulay na malapit sa pamamagitan ng Bluetooth.",
   "settings.conn.bridge_needs_location": "Kailangan ng lokasyon ng mesh bridge",
   "settings.conn.bridge_needs_location_desc":
     "Hinahanap nito ang barangay mo mula sa isang pagtukoy ng lokasyon. Magbigay ng lokasyon para magsimulang magtulay.",
@@ -2200,7 +2208,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Sistema",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Paggamit ng network",
+  "settings.storage.mesh_traffic": "Trapiko ng mesh",
   "settings.storage.storage_usage": "Paggamit ng imbakan",
   "settings.storage.storage_usage_desc":
     "Mga mensahe, ecash, at naka-cache na attachment",
@@ -2282,7 +2290,8 @@ export const strings: Strings = {
   "settings.status.away_desc":
     "Naka-pause ang mesh, hindi nag-i-scan o nag-a-advertise",
   "settings.status.invisible": "Hindi nakikita",
-  "settings.status.invisible_desc": "Nag-i-scan, pero nakatago sa pagtuklas",
+  "settings.status.invisible_desc":
+    "Nakatago sa mga Bluetooth scan, nakikita pa rin ng mga teleponong kinokonektahan mo",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Itakda ang status sa {value}",
   "settings.status.edit": "Baguhin ang status",

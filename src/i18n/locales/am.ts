@@ -759,6 +759,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "የደወል ማንቂያዎችን ፍቀድ",
   "chat.contact.allow_ring_desc":
     "ይህ ውይይት ጸጥ ቢደረግም እንኳ ትኩረትህን ለመሳብ ስልክህ እንዲደውል ፍቀድላቸው። የጸጥታ ሁነታ እና አትረብሽ አሁንም ይሠራሉ።",
+  "chat.contact.allow_ring_needs_keys":
+    "ለዚህ እውቂያ ገና ቁልፎች የሉም። እንዲደውሉልህ ለመፍቀድ መልእክት ላክላቸው ወይም ኮዳቸውን ቃኝ።",
+  "chat.contact.allow_ring_master_off":
+    "በቅንብሮች ውስጥ {setting}ን እስክታበራ ድረስ ማንም ስልክህን ሊያስደውል አይችልም።",
   "chat.contact.ring_action": "ደውል",
   "chat.contact.ringing": "እየደወለ ነው…",
   "chat.contact.ring_hint_nearby": "ደወል የሚሠራው እነሱ በአቅራቢያ ሲሆኑ ብቻ ነው",
@@ -879,7 +883,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "ፍቀድ",
   "mesh.banner.action.resume": "ቀጥል",
   "mesh.banner.action.fix": "አስተካክል",
-  "mesh.banner.hint.resume": "የብሉቱዝ ማስታወቂያንና ማሰስን እንደገና ያበራል",
+  "mesh.banner.hint.resume": "ሜሹን እንደገና ያስጀምራል",
   "mesh.banner.hint.enable_bluetooth": "Android ብሉቱዝን እንዲያበራ ይጠይቃል",
   "mesh.banner.hint.location_settings": "የስርዓቱን የአካባቢ ቅንብሮች ይከፍታል",
   "mesh.banner.hint.app_settings": "የAirhop ፈቃዶችን በስርዓት ቅንብሮች ውስጥ ይከፍታል",
@@ -1631,9 +1635,11 @@ export const strings: Strings = {
     "ለዚህ እውቂያ ገና ቁልፎች የሉም። መልእክት ላክላቸው፣ ወይም ስትገናኙ ኮዳቸውን ቃኝ።",
   "contacts.verify.compare_title": "እነዚህን ለየራሳችሁ አንብቡ",
   "contacts.verify.compare_body":
-    "{name} ተመሳሳዮቹን ስድስት ቃላት ያያል። ከተዛመዱ ሁለታችሁም ቁልፎቹ እውነተኛ መሆናቸውን ታውቃላችሁ።",
+    "{name} በAirhop ላይ ተመሳሳዮቹን ስድስት ቃላት ያያል። ከተዛመዱ ሁለታችሁም ቁልፎቹ እውነተኛ መሆናቸውን ታውቃላችሁ። bitchat እንደዚህ ያሉ ቃላት አያሳይም፤ ስለዚህ በምትኩ ኮዳቸውን ቃኝ።",
   "contacts.verify.codes_match": "እነዚህ ይዛመዳሉ",
   "contacts.verify.codes_differ": "አይዛመዱም",
+  "contacts.verify.codes_differ_body":
+    "በዚህ ስልክ ያሉት ቁልፎች የ{name} ላይሆኑ ይችላሉ። ይህን ውይይት ከማመንህ በፊት ኮዳቸውን በአካል ቃኝ።",
   "contacts.verify.compared_body":
     "አንተና {name} አንድ አይነት ኮድ አረጋግጣችኋል። ይህ እውቂያ ተረጋግጧል።",
 
@@ -1667,7 +1673,7 @@ export const strings: Strings = {
   "settings.section.general": "አጠቃላይ",
   "settings.section.general_desc": "አማራጭ ባህሪያት፣ መላክን መመለስ፣ ሚዲያ፣ ዳግም ማስጀመር",
   "settings.section.privacy": "ግላዊነትና ደህንነት",
-  "settings.section.privacy_desc": "ወደፊት ሚስጥራዊነት፣ የተፈረሙ ጥቅሎች፣ የታገዱ አቻዎች",
+  "settings.section.privacy_desc": "የAirhop ቁልፍ፣ ማሳወቂያዎች፣ የታገዱ አቻዎች",
   "settings.section.network": "አውታረ መረብና አስተላላፊዎች",
   "settings.section.network_desc":
     "የኢንተርኔት አማራጭ፣ የNostr አስተላላፊዎች፣ ከbitchat ጋር ተኳሃኝነት",
@@ -1781,10 +1787,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "ውይይቶችን ረዥሙን ጊዜ ሊነበቡ የሚችሉ ያደርጋቸዋል፤ በዲስክ ላይም በጣም ብዙ ይይዛል።",
   "settings.general.reset_desc":
-    "ማንነትህን፣ መልእክቶችህን፣ እውቂያዎችህንና ቦርሳህን ሳይነካ እያንዳንዱን ምርጫ ወደ ነባሪው ይመልሳል",
+    "ማንነትህን፣ መልእክቶችህን፣ እውቂያዎችህንና ቦርሳህን ሳይነካ ምርጫዎችን ወደ ነባሪያቸው ይመልሳል",
   "settings.general.reset_title": "ቅንብሮች ዳግም ይጀመሩ?",
   "settings.general.reset_body":
-    "እያንዳንዱ ምርጫ ወደ ነባሪው ይመለሳል፦ መልክ፣ መላክን መመለስ፣ እና ግንኙነት (ኢንተርኔት፣ Tor፣ መተላለፊያ፣ ድልድይ፣ አስተላላፊዎች)። ማንነትህ፣ መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ አይነኩም።",
+    "መልክን፣ ቋንቋን፣ ማሳወቂያዎችን፣ መላክን መመለስን፣ እና ግንኙነትን (ኢንተርኔት፣ Tor፣ መተላለፊያ፣ ድልድይ፣ አስተላላፊዎች) ጨምሮ ምርጫዎች ወደ ነባሪያቸው ይመለሳሉ። የAirhop ቁልፍ፣ ሚዲያ የሚቆይበት ጊዜና ሁኔታህ እንዳስቀመጥካቸው ይቆያሉ። ማንነትህ፣ መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ አይነኩም።",
   "settings.general.reset_confirm": "ዳግም አስጀምር",
 
   // ---- Settings: privacy and security ----
@@ -1799,6 +1805,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "የደወል ማንቂያዎች",
   "settings.security.ring_alerts_desc":
     "ለደወል ዋና መቀየሪያ። ማጥፋት ለእያንዳንዱ እውቂያ የፈቀድከውን ሳይለይ ሁሉንም ጥሪ በአንድ ጊዜ ውድቅ ያደርጋል።",
+  "settings.security.background_notice": "የጀርባ ማሳወቂያ",
+  "settings.security.background_notice_desc":
+    "ጸጥ አድርግ ወይም ደብቅ። የመልእክት ማንቂያዎች እንደበሩ ይቆያሉ።",
   "settings.security.no_blocked": "የታገደ አቻ የለም",
   "settings.security.no_blocked_desc":
     "የታገዱ አቻዎች መልእክት ሊልኩልህ አይችሉም፤ በሜሽ ትር ላይም አይታዩም",
@@ -1829,7 +1838,7 @@ export const strings: Strings = {
     "የሜሽ አቻዎች ከክልል ውጭ ሲሆኑ በNostr አስተላላፊዎች በኩል ቀጥል",
   "settings.network.internet_off_title": "ኢንተርኔት ይጥፋ?",
   "settings.network.internet_off_body":
-    "Airhop በብሉቱዝ ብቻ ይሠራል። ማንኛውንም የNostr አስተላላፊ ማግኘት ያቆማል፤ Tor፣ የኢንተርኔት መተላለፊያና የሜሽ ድልድይ ሁሉም ይጠፋሉ። በአቅራቢያ ያለው የብሉቱዝ ውይይት መሥራቱን ይቀጥላል።",
+    "Airhop በብሉቱዝ ብቻ ይሠራል። ማንኛውንም የNostr አስተላላፊ ማግኘት ያቆማል፤ Tor፣ የኢንተርኔት መተላለፊያና የሜሽ ድልድይ ኢንተርኔት እስኪመለስ ድረስ ይቆማሉ። በአቅራቢያ ያለው የብሉቱዝ ውይይት መሥራቱን ይቀጥላል።",
   "settings.network.turn_off": "አጥፋ",
   "settings.network.discovery": "የጂኦ አስተላላፊ ፍለጋ",
   "settings.network.discovery_desc":
@@ -1905,7 +1914,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "በአቅራቢያ ካሉ ሰዎች ጋር እንደ ዋኪ-ቶኪ ተነጋገር",
   "settings.conn.live_voice_on_title": "ቀጥታ ድምፅ ይብራ?",
   "settings.conn.live_voice_on_body":
-    "ማይኩን ተጭነህ ስትይዝ ድምፅህ እየተናገርክ ሳለ በብሉቱዝ ክልል ውስጥ ላሉ ሁሉ ይላካል፤ የእነሱም ድምፅ በስልክህ ላይ ይሰማል። ምንም አይቀዳም።",
+    "ማይኩን ተጭነህ ስትይዝ ድምፅህ እየተናገርክ ሳለ በብሉቱዝ ክልል ውስጥ ላሉ ሁሉ ይላካል፤ የእነሱም ድምፅ በስልክህ ላይ ይሰማል። ስትለቀው ያው ድምፅ እንደ ድምፅ መልእክትም ይላካል።",
   "settings.conn.live_voice_off_title": "ቀጥታ ድምፅ ይጥፋ?",
   "settings.conn.live_voice_off_body":
     "ማይኩን ተጭነህ ስትይዝ በምትኩ የድምፅ መልእክት ይቀዳል። ስትለቀው ይላካል፤ እስኪያጫውቱትም ማንም አይሰማውም።",
@@ -1953,7 +1962,7 @@ export const strings: Strings = {
     "በአቅራቢያ ላለ ከመስመር ውጭ ስልክ ግንኙነትህን አበድር፤ የአካባቢ ሰርጦችን መድረስ እንዲችል",
   "settings.conn.gateway_on_title": "የኢንተርኔት መተላለፊያ ይብራ?",
   "settings.conn.gateway_on_body":
-    "የራሳቸው ግንኙነት የሌላቸው በአቅራቢያ ያሉ ስልኮች የአካባቢ-ሰርጥ መልእክቶችን በአንተ በኩል ይልካሉ፤ ይቀበላሉም። ይህ የሞባይል ዳታህንና ባትሪህን ይጠቀማል፤ መልእክቶቻቸው ከጫፍ እስከ ጫፍ የተመሰጠሩ ስለሆኑ የሚያልፈውን ማንበብ አትችልም።",
+    "የራሳቸው ግንኙነት የሌላቸው በአቅራቢያ ያሉ ስልኮች የአካባቢ-ሰርጥ መልእክቶችን በአንተ በኩል ይልካሉ፤ ይቀበላሉም። ይህ የሞባይል ዳታህንና ባትሪህን ይጠቀማል። እነዚህ መልእክቶች በጸሐፊዎቻቸው የተፈረሙ ይፋዊ ልጥፎች ናቸው፤ ስለዚህ የሚያልፈውን ማንበብ ትችላለህ፤ መለወጥ ግን አትችልም።",
   "settings.conn.gateway_off_title": "የኢንተርኔት መተላለፊያ ይጥፋ?",
   "settings.conn.gateway_off_body":
     "በአቅራቢያ ያሉ ከመስመር ውጭ ስልኮች በአንተ በኩል የአካባቢ ሰርጦችን መድረሳቸውን ያቆማሉ። የራስህ መልእክቶች አይነኩም።",
@@ -1962,10 +1971,10 @@ export const strings: Strings = {
     "የዚህን አካባቢ ይፋዊ #bluetooth ውይይት በኢንተርኔት በኩል ከክልል ውጭ ካለ ሌላ የብሉቱዝ ስብስብ ጋር አገናኝ",
   "settings.conn.bridge_on_title": "የሜሽ ድልድይ ይብራ?",
   "settings.conn.bridge_on_body":
-    "ይፋዊ የ#bluetooth መልእክቶችህ በኢንተርኔት በኩል ወደ ሰፈርህ ይሰራጫሉ፤ ስለዚህ ከብሉቱዝ ክልል ውጭ ያሉ ሰዎችም ሊያነቧቸው ይችላሉ። የግል መልእክቶች ፈጽሞ በድልድይ አይሻገሩም፤ “በአቅራቢያ ብቻ” ደግሞ ማንኛውንም ነጠላ መልእክት በአካባቢው ያቆየዋል።",
+    "ይፋዊ የ#bluetooth መልእክቶችህ በኢንተርኔት በኩል ወደ ሰፈርህ ይሰራጫሉ፤ ስለዚህ ከብሉቱዝ ክልል ውጭ ያሉ ሰዎችም ሊያነቧቸው ይችላሉ። ስልክህ በአቅራቢያ ላሉ ስልኮችም በድልድይ የሚሻገሩ መልእክቶችን በዳታህ ያደርሳል። የግል መልእክቶች ፈጽሞ በድልድይ አይሻገሩም፤ “በአቅራቢያ ብቻ” ደግሞ ማንኛውንም ነጠላ መልእክት በአካባቢው ያቆየዋል።",
   "settings.conn.bridge_off_title": "የሜሽ ድልድይ ይጥፋ?",
   "settings.conn.bridge_off_body":
-    "ይፋዊ የ#bluetooth መልእክቶችህ እንደገና በብሉቱዝ ክልል ውስጥ ይቀራሉ፤ ከድልድዩ ማዶ ካለው ስብስብም መልእክቶች መምጣታቸውን ያቆማሉ።",
+    "ይፋዊ የ#bluetooth መልእክቶችህ እንደገና በብሉቱዝ ክልል ውስጥ ይቀራሉ፤ ስልክህም ለሌሎች በድልድይ የሚሻገሩ መልእክቶችን ማድረስ ያቆማል። በአቅራቢያ ያለ ድልድይ በብሉቱዝ የሚያመጣቸው መልእክቶች ግን አሁንም እዚህ ይታያሉ።",
   "settings.conn.bridge_needs_location": "የሜሽ ድልድይ አካባቢ ይፈልጋል",
   "settings.conn.bridge_needs_location_desc":
     "ሰፈርህን ከአካባቢ ንባብ ያገኘዋል። ድልድዩን ለመጀመር የአካባቢ ፈቃድ ስጥ።",
@@ -2001,7 +2010,7 @@ export const strings: Strings = {
   "settings.permissions.system": "ስርዓት",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "የአውታረ መረብ አጠቃቀም",
+  "settings.storage.mesh_traffic": "የሜሽ ትራፊክ",
   "settings.storage.storage_usage": "የማከማቻ አጠቃቀም",
   "settings.storage.storage_usage_desc": "መልእክቶች፣ ecash እና የተቀመጡ አባሪዎች",
   "settings.storage.session_usage": "ይህ ክፍለ ጊዜ · {sent} ተልኳል፣ {received} ደርሷል",
@@ -2078,7 +2087,8 @@ export const strings: Strings = {
   "settings.status.away": "ራቅ ብሏል",
   "settings.status.away_desc": "ሜሽ ቆሟል፤ አያስስም አያስታውቅም",
   "settings.status.invisible": "የማይታይ",
-  "settings.status.invisible_desc": "እያሰሰ፣ ግን ከፍለጋ ተደብቋል",
+  "settings.status.invisible_desc":
+    "ከብሉቱዝ አሰሳ የተሰወረ፤ የምትገናኛቸው ስልኮች ግን አሁንም ያዩሃል",
   "settings.status.title": "ሁኔታ",
   "settings.status.set_a11y": "ሁኔታን ወደ {value} አዘጋጅ",
   "settings.status.edit": "ሁኔታን አርትዕ",

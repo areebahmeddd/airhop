@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The seen-set that stops a flooded packet circulating forever.
 //
 // Every phone rebroadcasts what it has not seen, so without this a packet in a
@@ -93,9 +90,15 @@ describe("Deduplicator", () => {
   });
 
   describe("expiry", () => {
-    it("has() returns false and removes an expired entry", () => {
+    beforeEach(() => {
       jest.useFakeTimers();
+    });
 
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it("has() returns false and removes an expired entry", () => {
       dedup.add(packetId(0x01));
       expect(dedup.has(packetId(0x01))).toBe(true);
 
@@ -103,13 +106,9 @@ describe("Deduplicator", () => {
       jest.advanceTimersByTime(5 * 60 * 1000 + 1);
 
       expect(dedup.has(packetId(0x01))).toBe(false);
-
-      jest.useRealTimers();
     });
 
     it("purgeExpired() removes entries older than 5 minutes", () => {
-      jest.useFakeTimers();
-
       dedup.add(packetId(0x01));
       dedup.add(packetId(0x02));
 
@@ -117,13 +116,9 @@ describe("Deduplicator", () => {
 
       dedup.purgeExpired();
       expect(dedup.size).toBe(0);
-
-      jest.useRealTimers();
     });
 
     it("fresh entries survive purgeExpired()", () => {
-      jest.useFakeTimers();
-
       dedup.add(packetId(0x01));
       jest.advanceTimersByTime(1000); // 1 second only
       dedup.add(packetId(0x02));
@@ -131,8 +126,6 @@ describe("Deduplicator", () => {
       dedup.purgeExpired();
       // Neither is expired yet
       expect(dedup.size).toBe(2);
-
-      jest.useRealTimers();
     });
   });
 });

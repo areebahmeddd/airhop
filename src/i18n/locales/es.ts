@@ -816,6 +816,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Permitir alertas de llamada",
   "chat.contact.allow_ring_desc":
     "Permite que esta persona haga sonar tu teléfono para llamar tu atención, incluso si esta conversación está silenciada. El modo silencio y No molestar siguen aplicándose.",
+  "chat.contact.allow_ring_needs_keys":
+    "Todavía no hay claves de este contacto. Escríbele o escanea su código para permitir que te llame.",
+  "chat.contact.allow_ring_master_off":
+    "Nadie puede hacer sonar tu teléfono hasta que actives {setting} en Ajustes.",
   "chat.contact.ring_action": "Llamar",
   "chat.contact.ringing": "Llamando…",
   "chat.contact.ring_hint_nearby":
@@ -953,8 +957,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Permitir",
   "mesh.banner.action.resume": "Reanudar",
   "mesh.banner.action.fix": "Arreglar",
-  "mesh.banner.hint.resume":
-    "Vuelve a activar el anuncio y la búsqueda por Bluetooth",
+  "mesh.banner.hint.resume": "Vuelve a iniciar la malla",
   "mesh.banner.hint.enable_bluetooth": "Pide a Android que active el Bluetooth",
   "mesh.banner.hint.location_settings":
     "Abre los ajustes de ubicación del sistema",
@@ -1776,9 +1779,11 @@ export const strings: Strings = {
     "Todavía no hay claves de este contacto. Escríbele o escanea su código cuando se vean.",
   "contacts.verify.compare_title": "Léanse esto en voz alta",
   "contacts.verify.compare_body":
-    "{name} ve las mismas seis palabras. Si coinciden, ambos saben que las claves son auténticas.",
+    "{name} ve las mismas seis palabras en Airhop. Si coinciden, ambos saben que las claves son auténticas. bitchat no muestra estas palabras, así que escanea su código.",
   "contacts.verify.codes_match": "Coinciden",
   "contacts.verify.codes_differ": "No coinciden",
+  "contacts.verify.codes_differ_body":
+    "Puede que las claves de este teléfono no sean de {name}. Escanea su código en persona antes de confiar en este chat.",
   "contacts.verify.compared_body":
     "{name} y tú han confirmado el mismo código. Este contacto está verificado.",
 
@@ -1815,7 +1820,7 @@ export const strings: Strings = {
     "Funciones opcionales, deshacer el envío, medios, restablecer",
   "settings.section.privacy": "Privacidad y seguridad",
   "settings.section.privacy_desc":
-    "Secreto hacia delante, paquetes firmados, pares bloqueados",
+    "Bloqueo de Airhop, notificaciones, pares bloqueados",
   "settings.section.network": "Red y relés",
   "settings.section.network_desc":
     "Respaldo por internet, relés de Nostr, compatibilidad con bitchat",
@@ -1937,10 +1942,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantiene las conversaciones legibles más tiempo y ocupa más disco.",
   "settings.general.reset_desc":
-    "Devuelve cada preferencia a su valor por defecto y deja intactos tu identidad, tus mensajes, tus contactos y tu cartera",
+    "Devuelve las preferencias a su valor por defecto y deja intactos tu identidad, tus mensajes, tus contactos y tu cartera",
   "settings.general.reset_title": "¿Restablecer los ajustes?",
   "settings.general.reset_body":
-    "Cada preferencia vuelve a su valor por defecto: apariencia, deshacer el envío y conectividad (internet, Tor, pasarela, puente, relés). Tu identidad, tus mensajes, tus contactos y tu cartera quedan intactos.",
+    "Las preferencias vuelven a sus valores por defecto, incluidos la apariencia, el idioma, las notificaciones, deshacer el envío y la conectividad (internet, Tor, pasarela, puente, relés). El bloqueo de Airhop, el tiempo que se conservan los medios y tu estado se quedan como los tengas. Tu identidad, tus mensajes, tus contactos y tu cartera quedan intactos.",
   "settings.general.reset_confirm": "Restablecer",
 
   // ---- Settings: privacy and security ----
@@ -1957,6 +1962,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Alertas de llamada",
   "settings.security.ring_alerts_desc":
     "Interruptor principal de Llamada. Desactivarlo rechaza todas las llamadas de inmediato, sin importar lo que hayas concedido a cada contacto.",
+  "settings.security.background_notice": "Notificación en segundo plano",
+  "settings.security.background_notice_desc":
+    "Silénciala u ocúltala. Los avisos de mensajes siguen activos.",
   "settings.security.no_blocked": "No hay pares bloqueados",
   "settings.security.no_blocked_desc":
     "Los pares bloqueados no pueden escribirte ni aparecen en la pestaña Malla",
@@ -1988,7 +1996,7 @@ export const strings: Strings = {
     "Continúa por los relés de Nostr cuando los pares de la malla quedan fuera de alcance",
   "settings.network.internet_off_title": "¿Desactivar internet?",
   "settings.network.internet_off_body":
-    "Airhop funcionará solo por Bluetooth. Dejará de contactar con los relés de Nostr, y Tor, la pasarela de internet y el puente de malla se apagarán. El chat cercano por Bluetooth sigue funcionando.",
+    "Airhop funcionará solo por Bluetooth. Dejará de contactar con los relés de Nostr, y Tor, la pasarela de internet y el puente de malla quedarán en pausa hasta que vuelva internet. El chat cercano por Bluetooth sigue funcionando.",
   "settings.network.turn_off": "Desactivar",
   "settings.network.discovery": "Descubrimiento geográfico de relés",
   "settings.network.discovery_desc":
@@ -2071,7 +2079,7 @@ export const strings: Strings = {
     "Habla con quien esté cerca como con un walkie-talkie",
   "settings.conn.live_voice_on_title": "¿Activar la voz en directo?",
   "settings.conn.live_voice_on_body":
-    "Al mantener pulsado el micrófono, tu voz llega a todos los que estén al alcance del Bluetooth según hablas, y la suya suena en tu teléfono. No se graba nada.",
+    "Al mantener pulsado el micrófono, tu voz llega a todos los que estén al alcance del Bluetooth según hablas, y la suya suena en tu teléfono. Al soltarlo, el mismo audio también se envía como nota de voz.",
   "settings.conn.live_voice_off_title": "¿Desactivar la voz en directo?",
   "settings.conn.live_voice_off_body":
     "Mantener pulsado el micrófono grabará una nota de voz. Se envía al soltar, y nadie la oye hasta que la reproduce.",
@@ -2123,7 +2131,7 @@ export const strings: Strings = {
     "Presta tu conexión a un teléfono cercano sin acceso para que pueda llegar a los canales de ubicación",
   "settings.conn.gateway_on_title": "¿Activar la pasarela de internet?",
   "settings.conn.gateway_on_body":
-    "Los teléfonos cercanos sin conexión propia enviarán y recibirán mensajes de los canales de ubicación a través de la tuya. Usa tus datos móviles y tu batería, y sus mensajes van cifrados de extremo a extremo, así que no puedes leer lo que pasa por ahí.",
+    "Los teléfonos cercanos sin conexión propia enviarán y recibirán mensajes de los canales de ubicación a través de la tuya. Usa tus datos móviles y tu batería. Esos mensajes son publicaciones públicas firmadas por sus autores, así que puedes leer lo que pasa por ahí, pero no cambiarlo.",
   "settings.conn.gateway_off_title": "¿Desactivar la pasarela de internet?",
   "settings.conn.gateway_off_body":
     "Los teléfonos cercanos sin conexión dejarán de llegar a los canales de ubicación a través de la tuya. Tus mensajes no se ven afectados.",
@@ -2132,10 +2140,10 @@ export const strings: Strings = {
     "Enlaza el chat público #bluetooth de esta zona con otro grupo Bluetooth fuera de alcance a través de internet",
   "settings.conn.bridge_on_title": "¿Activar el puente de malla?",
   "settings.conn.bridge_on_body":
-    "Tus mensajes públicos de #bluetooth se publicarán en tu barrio por internet, para que puedan leerlos personas fuera del alcance del Bluetooth. Los mensajes privados nunca cruzan el puente, y «solo cerca» mantiene local cualquier mensaje concreto.",
+    "Tus mensajes públicos de #bluetooth se publicarán en tu barrio por internet, para que puedan leerlos personas fuera del alcance del Bluetooth. Tu teléfono también llevará los mensajes enlazados de los teléfonos cercanos usando tus datos. Los mensajes privados nunca cruzan el puente, y «solo cerca» mantiene local cualquier mensaje concreto.",
   "settings.conn.bridge_off_title": "¿Desactivar el puente de malla?",
   "settings.conn.bridge_off_body":
-    "Tus mensajes públicos de #bluetooth vuelven a quedarse al alcance del Bluetooth, y los del grupo enlazado dejan de llegar aquí.",
+    "Tus mensajes públicos de #bluetooth vuelven a quedarse al alcance del Bluetooth, y tu teléfono deja de llevar mensajes enlazados para otros. Los mensajes que un puente cercano trae por Bluetooth siguen apareciendo aquí.",
   "settings.conn.bridge_needs_location":
     "El puente de malla necesita la ubicación",
   "settings.conn.bridge_needs_location_desc":
@@ -2173,7 +2181,7 @@ export const strings: Strings = {
   "settings.permissions.system": "Sistema",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Uso de red",
+  "settings.storage.mesh_traffic": "Tráfico de la malla",
   "settings.storage.storage_usage": "Uso de almacenamiento",
   "settings.storage.storage_usage_desc": "Mensajes, ecash y adjuntos en caché",
   "settings.storage.session_usage":
@@ -2253,7 +2261,8 @@ export const strings: Strings = {
   "settings.status.away": "Ausente",
   "settings.status.away_desc": "Malla en pausa, sin buscar ni anunciarse",
   "settings.status.invisible": "Invisible",
-  "settings.status.invisible_desc": "Buscando, pero oculto al descubrimiento",
+  "settings.status.invisible_desc":
+    "Oculto a las búsquedas por Bluetooth, aún visible para los teléfonos a los que te conectas",
   "settings.status.title": "Estado",
   "settings.status.set_a11y": "Poner el estado en {value}",
   "settings.status.edit": "Editar el estado",

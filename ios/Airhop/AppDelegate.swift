@@ -1,13 +1,19 @@
+import CoreBluetooth
 internal import Expo
 import React
 import ReactAppDependencyProvider
 
 @main
-class AppDelegate: ExpoAppDelegate {
+class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {
+  // Created by SceneDelegate, which mirrors it here.
   var window: UIWindow?
 
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
+
+  // React Native started for a Bluetooth relaunch, before any scene, waiting
+  // for SceneDelegate to put it on screen.
+  private var sceneLessRootView: UIView?
 
   public override func application(
     _ application: UIApplication,
@@ -24,28 +30,13 @@ class AppDelegate: ExpoAppDelegate {
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
-    #if os(iOS) || os(tvOS)
-      window = UIWindow(frame: UIScreen.main.bounds)
-      factory.startReactNative(
-        withModuleName: "main",
-        in: window,
-        launchOptions: launchOptions)
-    #endif
-
     #if os(iOS)
-      // Bluetooth state restoration, only on a restoration launch.
-      //
-      // iOS expects the manager with the matching restore identifier to exist
-      // before this method returns, which React Native cannot do: the BLE module
-      // is built by the bridge and its managers later still. Creating them here
-      // unconditionally would raise the Bluetooth prompt on the splash screen, so
-      // this is gated on the launch keys, which are present only when iOS is
-      // waking us for BLE and therefore only when the permission already exists.
-      // See AirhopBLERestoration in AirhopBLEModule.swift.
-      if launchOptions?[.bluetoothCentrals] != nil
-        || launchOptions?[.bluetoothPeripherals] != nil
-      {
-        AirhopBLERestoration.shared.prepare()
+      // Bluetooth state restoration, once permission exists: a manager raises
+      // the prompt otherwise. See AirhopBLERestoration in AirhopBLEModule.swift.
+      if CBManager.authorization == .allowedAlways {
+        AirhopBLERestoration.shared.prepare { [weak self] in
+          self?.startReactNativeWithoutScene()
+        }
       }
     #endif
 
@@ -88,60 +79,28 @@ class AppDelegate: ExpoAppDelegate {
     }
   }
 
-  // What the app switcher shows in place of the conversation.
-  private var privacyCover: UIView?
-
-  // Cover the window before iOS photographs it for the app switcher.
-  //
-  // Backgrounding, never `willResignActive`: a permission prompt, a share sheet
-  // and Control Center all resign active with the app still on screen, and
-  // covering there dimmed the app behind every onboarding prompt. iOS takes the
-  // snapshot after this returns, so there is no gap to be caught in.
-  //
-  // App-delegate lifecycle, which UIKit calls only while there is no scene
-  // manifest. Adopting UIScene moves this to sceneDidEnterBackground.
-  public override func applicationDidEnterBackground(_ application: UIApplication) {
-    super.applicationDidEnterBackground(application)
-    guard privacyCover == nil, let window = window else { return }
-    // The launch storyboard, so the switcher shows what opening the app shows:
-    // the mark on the system background, in the current appearance. No second
-    // asset, and nothing to keep in step with the theme.
+  // The mesh starts when the root component mounts, and iOS may relaunch for
+  // Bluetooth without connecting a scene, so React Native starts here in a view
+  // no window holds yet. The first scene adopts it rather than mounting the app
+  // a second time. A scene already up owns the start instead.
+  private func startReactNativeWithoutScene() {
     guard
-      let cover = UIStoryboard(name: "SplashScreen", bundle: nil)
-        .instantiateInitialViewController()?.view
+      sceneLessRootView == nil,
+      UIApplication.shared.connectedScenes.isEmpty,
+      let factory = reactNativeFactory
     else { return }
-    cover.frame = window.bounds
-    cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-    window.addSubview(cover)
-    privacyCover = cover
+    sceneLessRootView = factory.rootViewFactory.view(
+      withModuleName: reactNativeFactoryModuleName,
+      initialProperties: nil,
+      launchOptions: nil,
+      bundleConfiguration: factory.bundleConfiguration,
+      devMenuConfiguration: factory.devMenuConfiguration ?? RCTDevMenuConfiguration.default())
   }
 
-  public override func applicationWillEnterForeground(_ application: UIApplication) {
-    super.applicationWillEnterForeground(application)
-    privacyCover?.removeFromSuperview()
-    privacyCover = nil
-  }
-
-  // Linking API
-  public override func application(
-    _ app: UIApplication,
-    open url: URL,
-    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-  ) -> Bool {
-    return super.application(app, open: url, options: options)
-      || RCTLinkingManager.application(app, open: url, options: options)
-  }
-
-  // Universal Links
-  public override func application(
-    _ application: UIApplication,
-    continue userActivity: NSUserActivity,
-    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
-  ) -> Bool {
-    let result = RCTLinkingManager.application(
-      application, continue: userActivity, restorationHandler: restorationHandler)
-    return super.application(
-      application, continue: userActivity, restorationHandler: restorationHandler) || result
+  // Hands the scene-less view to the first scene, at most once.
+  func takeSceneLessRootView() -> UIView? {
+    defer { sceneLessRootView = nil }
+    return sceneLessRootView
   }
 }
 

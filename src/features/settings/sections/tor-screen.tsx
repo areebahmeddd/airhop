@@ -1,9 +1,9 @@
 // Tor sub-screen: whether internet traffic is onion routed, and how it reaches
 // the network.
 //
-// A screen rather than a switch: Tor carries a second choice that only matters
-// once it is on, and a row that both toggles and drills in is two controls in
-// one place. The row on the hub shows the current state, so the answer is
+// A screen rather than a switch: Tor carries a second choice, how it reaches
+// the network, and a row that both toggles and drills in is two controls in one
+// place. The row on the hub shows the current state, so the answer is
 // visible without opening this.
 //
 // The toggle asks for confirmation. Turning Tor on is a real change in what this
@@ -117,6 +117,8 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
     // Ahead of the ordinary states: this one the user did not choose, and a
     // bare "blocked" would not say what happened or what to do.
     if (recovered) return T("settings.tor.recovered");
+    // A switch's position is a control, not a readout, and this row is where
+    // every other state is put in words.
     if (!torEnabled) return T("common.off");
     // The internet switch stops Arti on purpose, which is neither starting nor
     // blocked.
@@ -169,12 +171,19 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
 
   // Changing this while Tor runs restarts the client, because bridges are fixed
   // when it is built. The status row says so while it happens rather than
-  // pretending the switch was instant.
+  // pretending the switch was instant. With no client running the choice is
+  // only saved, so it skips the guard, which would dim every control for a
+  // frame on each tap.
+  function applyMode(mode: TorBridgeMode, lines?: string): void {
+    const change = (): Promise<TorRoutingResult> =>
+      setTorBridgeMode(mode, lines);
+    if (torEnabled && internetEnabled) void run(change);
+    else void change().then(report);
+  }
+
   function chooseMode(mode: TorBridgeMode): void {
     if (mode === bridgeMode) return;
-    void run(() =>
-      setTorBridgeMode(mode, mode === "custom" ? draftLines : undefined),
-    );
+    applyMode(mode, mode === "custom" ? draftLines : undefined);
   }
 
   const hasUnappliedLines = draftLines.trim() !== storedLines.trim();
@@ -183,7 +192,7 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
   // otherwise drop the circuit and rebuild it for nothing.
   function applyCustomLines(): void {
     if (!hasUnappliedLines) return;
-    void run(() => setTorBridgeMode("custom", draftLines));
+    applyMode("custom", draftLines);
   }
 
   const confirmAction = pendingOn
@@ -229,8 +238,9 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
           )}
         </View>
 
-        {/* Shown with Tor off too: choosing how to connect comes before
-            connecting, and a mode that cannot start is fixed here. */}
+        {/* Usable with Tor off too: the first connection uses this choice,
+            and on a censored network a Direct attempt already gives Tor use
+            away. */}
         <View style={styles.section}>
           <UpperText style={styles.sectionTitle}>
             {T("settings.tor.connection")}

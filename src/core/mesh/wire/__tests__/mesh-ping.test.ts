@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Mesh ping/pong payload: byte-compatible with bitchat MeshPingPayload.
 import {
   decodeMeshPing,

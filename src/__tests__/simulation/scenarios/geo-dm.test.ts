@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Location-channel DMs across a real relay pool.
 //
 // A geohash DM goes out from the per-cell identity, never from the phone's

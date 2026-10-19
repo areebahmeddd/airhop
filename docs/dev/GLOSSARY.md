@@ -46,7 +46,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[BLE (Bluetooth Low Energy)](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy)**: Low-power, short-range Bluetooth, and Airhop's primary offline transport. Every phone is a GATT Central and a GATT Peripheral at once.
 
-**[DEFLATE (raw)](https://datatracker.ietf.org/doc/html/rfc1951)**: Lossless compression applied to packet payloads so more fits in a 512-byte BLE write. `packet-compression.ts` uses pako's `deflateRaw` / `inflateRaw`, matching bitchat's headerless zlib stream.
+**[DEFLATE (raw)](https://datatracker.ietf.org/doc/html/rfc1951)**: Lossless compression applied to packet payloads so more fits in a 512-byte BLE write. `packet-compression.ts` uses pako's `deflateRaw` and a raw `Inflate` stream, matching bitchat's headerless zlib stream.
 
 **[GATT (Generic Attribute Profile)](https://www.bluetooth.com/specifications/specs/)**: The client-server protocol on top of BLE. A Central scans and connects; a Peripheral advertises and accepts connections. Running both roles on one phone is what makes a mesh.
 

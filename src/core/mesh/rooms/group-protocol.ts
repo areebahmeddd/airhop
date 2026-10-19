@@ -128,10 +128,15 @@ export function groupFingerprint(noiseStaticPubKey: Uint8Array): string {
 
 // ---- roster ----
 
+// By code point, so a cut never splits a surrogate pair.
 function truncatedNickname(nickname: string): Uint8Array {
-  let n = nickname;
-  while (enc.encode(n).length > MAX_NICKNAME_BYTES) n = n.slice(0, -1);
-  return enc.encode(n);
+  const codePoints = [...nickname];
+  let bytes = enc.encode(nickname);
+  while (bytes.length > MAX_NICKNAME_BYTES) {
+    codePoints.pop();
+    bytes = enc.encode(codePoints.join(""));
+  }
+  return bytes;
 }
 
 export function encodeRoster(members: GroupMember[]): Uint8Array | null {

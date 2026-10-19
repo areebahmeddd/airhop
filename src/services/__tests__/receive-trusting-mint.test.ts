@@ -1,21 +1,9 @@
-/**
- * @jest-environment node
- */
 // Receiving a token from a mint this wallet has never used.
 //
 // The wallet never enrols a mint on a token's say-so, so a stranger cannot make
 // it hold an unvetted mint's paper. It asks instead, and only for the one
 // refusal adding a mint can fix: any other error, or a mint already held, must
 // reach the caller untouched.
-
-jest.mock("@bridge/NativeAirhopBLE", () => ({
-  __esModule: true,
-  default: {},
-}));
-jest.mock("@bridge/NativeAirhopWiFi", () => ({
-  __esModule: true,
-  default: {},
-}));
 
 jest.mock("../wallet-service", () => ({
   __esModule: true,

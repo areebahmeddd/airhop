@@ -1,6 +1,4 @@
-/**
- * @jest-environment node
- */
+// The new phone's transfer QR: encoding, bounds, and telling it from a card.
 import { encodeQRContent } from "../../crypto/contact-exchange";
 import {
   decodeMoveInvite,

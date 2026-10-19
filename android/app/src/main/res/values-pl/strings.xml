@@ -4,4 +4,10 @@
   <string name="mesh_notification_title">Sieć mesh aplikacji Airhop działa</string>
   <string name="mesh_notification_text">Wykrywanie i przekazywanie wiadomości w okolicy</string>
   <string name="mesh_notification_stop">Zatrzymaj mesh</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s peer w zasięgu</item>
+    <item quantity="few">%1$s peery w zasięgu</item>
+    <item quantity="many">%1$s peerów w zasięgu</item>
+    <item quantity="other">%1$s peera w zasięgu</item>
+  </plurals>
 </resources>

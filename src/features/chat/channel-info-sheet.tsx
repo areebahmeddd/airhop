@@ -54,6 +54,7 @@ import {
   Text,
   TextInput,
   View,
+  type ScrollViewInstance,
 } from "react-native";
 
 import { confirmLeaveConversation } from "./leave-conversation";
@@ -159,7 +160,7 @@ export default function ChannelInfoSheet({
   // the fold. Riding to the end of the scroll puts the field and the list it
   // filters back in view, which is where someone who just tapped Search is
   // looking. Deferred a frame so the layout has already shrunk.
-  const bodyRef = useRef<ScrollView>(null);
+  const bodyRef = useRef<ScrollViewInstance>(null);
   useEffect(() => {
     if (!searching) return;
     const id = setTimeout(

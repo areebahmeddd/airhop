@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Prekey bundle wire format + signing (0x24), byte-compatible with bitchat.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import {

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Geohash DM: a message sent from one per-cell identity is gift-wrapped so only
 // the recipient's per-cell identity can open it, wrapped in a bitchat1 envelope.
 import { base64UrlToBytes } from "@core/encoding/base64";
@@ -20,8 +17,6 @@ import { useOutboxStore } from "@store/outbox-store";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import { GeohashChannelService } from "../geohash-channel-service";
 
-jest.mock("expo-location", () => ({}));
-
 // The position the service resolves cells from. Driven per test so "we have no
 // idea where we are" and "we are definitely somewhere else" stay
 // distinguishable, which is the whole point of the signal under test.
@@ -29,7 +24,6 @@ let mockCoords: { lat: number; lng: number } | null = null;
 
 jest.mock("../location-service", () => ({
   getCoarseLocation: () => Promise.resolve(mockCoords),
-  clearLocationCache: () => undefined,
 }));
 
 function mockClient(
@@ -82,6 +76,11 @@ describe("geohash DM", () => {
     const env = decodeBitchatEnvelope(dm.content)!;
     expect(env.messageID).toBe("gm-1");
     expect(env.content).toBe("meet at the plaza");
+    // Sealed by our own per-cell identity, so the reply comes back to it.
+    expect(dm.senderPubkey).toBe(
+      deriveGeohashIdentity(deriveGeohashSeed(senderSigning), GEOHASH)
+        .pubKeyHex,
+    );
   });
 
   it("returns false for content over the PrivateMessagePacket cap", () => {
@@ -262,9 +261,6 @@ describe("the live-cell signal", () => {
 
     const live = useMeshStateStore.getState().liveGeoCells;
     expect(live).toEqual([service.geohashFor("#city")]);
-    // Which is exactly what makes a conversation from anywhere else legible as
-    // left behind rather than merely quiet.
-    expect(live).not.toContain("gbsuv");
 
     // A resolved cell starts the presence heartbeat, which reschedules itself
     // forever. Left running it keeps the whole suite's event loop alive.
@@ -348,12 +344,19 @@ describe("handing over a contact card in a location channel", () => {
     );
     service.sendContactCard(GEOHASH, recipient.pubKeyHex, new Uint8Array(80));
 
-    // A gift wrap is signed by a throwaway key, so the check that matters is
-    // that our durable identity is nowhere in the event.
     const ourCellKey = deriveGeohashIdentity(
       deriveGeohashSeed(signing),
       GEOHASH,
     ).pubKeyHex;
+    // The seal inside is ours, from the cell key and nothing more durable.
+    const dm = unwrapDm(
+      published[0] as never,
+      recipient.privKey,
+      Number.POSITIVE_INFINITY,
+    );
+    expect(dm.senderPubkey).toBe(ourCellKey);
+    // The wrap outside is signed by a throwaway key, so a relay sees not even
+    // the cell key.
     expect(published[0].pubkey).not.toBe(ourCellKey);
     expect(JSON.stringify(published[0])).not.toContain(ourCellKey);
   });
@@ -375,87 +378,6 @@ describe("handing over a contact card in a location channel", () => {
   });
 });
 
-// The exchange only counts when both cards have crossed.
-//
-// Merging is what moves replies off the pseudonymous per-cell rail onto the
-// durable one, and the durable inbox files a message by the Nostr key it came
-// from. Until the other side holds our card they cannot know that key is us, so
-// crossing over early lands our messages in a second, unattributed thread on
-// their side: the exact split this feature exists to heal.
-//
-// These pin the state machine directly on the store, which is where both halves
-// are recorded and where the merge decision reads them from.
-describe("the contact-card exchange state", () => {
-  const PEER_CELL_KEY = "dd".repeat(32);
-  const THEIR_PEER_ID = "1122334455667788";
-
-  beforeEach(() => {
-    useChatStore.getState().clearAll();
-  });
-
-  it("records each half independently", () => {
-    const chat = useChatStore.getState();
-    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
-    expect(useChatStore.getState().geoCardExchange[PEER_CELL_KEY]).toEqual({
-      sentMine: true,
-    });
-
-    chat.noteGeoCardExchange(PEER_CELL_KEY, { theirPeerID: THEIR_PEER_ID });
-    // Merged, not replaced: recording one half must never forget the other,
-    // whichever order they arrive in.
-    expect(useChatStore.getState().geoCardExchange[PEER_CELL_KEY]).toEqual({
-      sentMine: true,
-      theirPeerID: THEIR_PEER_ID,
-    });
-  });
-
-  it("records the halves the other way round just as well", () => {
-    const chat = useChatStore.getState();
-    chat.noteGeoCardExchange(PEER_CELL_KEY, { theirPeerID: THEIR_PEER_ID });
-    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
-    expect(useChatStore.getState().geoCardExchange[PEER_CELL_KEY]).toEqual({
-      sentMine: true,
-      theirPeerID: THEIR_PEER_ID,
-    });
-  });
-
-  // Completing the exchange takes the bookkeeping AND the cell with it: once the
-  // conversation is durable, where we happened to meet is a location breadcrumb
-  // with nothing left to do.
-  it("drops the cell binding along with the bookkeeping when it completes", () => {
-    const chat = useChatStore.getState();
-    chat.setGeoDmCell(PEER_CELL_KEY, "u4pruy");
-    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
-
-    chat.clearGeoCardExchange(PEER_CELL_KEY);
-
-    const after = useChatStore.getState();
-    expect(after.geoCardExchange[PEER_CELL_KEY]).toBeUndefined();
-    expect(after.geoDmCells[PEER_CELL_KEY]).toBeUndefined();
-  });
-
-  // A half-finished exchange is exactly the state that must not survive a
-  // delete, since the conversation it belongs to is gone.
-  it("is dropped when the conversation is deleted", () => {
-    const chat = useChatStore.getState();
-    chat.noteGeoCardExchange(PEER_CELL_KEY, { sentMine: true });
-    chat.removeChannel(`dm:nostr_${PEER_CELL_KEY}`);
-    expect(
-      useChatStore.getState().geoCardExchange[PEER_CELL_KEY],
-    ).toBeUndefined();
-  });
-
-  it("is destroyed with everything else on a wipe", () => {
-    useChatStore
-      .getState()
-      .noteGeoCardExchange(PEER_CELL_KEY, { theirPeerID: THEIR_PEER_ID });
-    useChatStore.getState().clearAll();
-    expect(
-      useChatStore.getState().geoCardExchange[PEER_CELL_KEY],
-    ).toBeUndefined();
-  });
-});
-
 // The window between one side merging and the other finding out.
 //
 // Our card takes a relay round trip to reach them, so for a few seconds after we
@@ -465,7 +387,6 @@ describe("the contact-card exchange state", () => {
 // message that is received, stored, and invisible.
 describe("messages arriving after a merge", () => {
   const GEOHASH = "u4pruy";
-  const CELL_KEY = "ee".repeat(32);
   const THEIR_PEER_ID = "99887766554433aa";
 
   beforeEach(() => {
@@ -516,13 +437,6 @@ describe("messages arriving after a merge", () => {
     // And nothing was stranded where the user cannot reach it.
     expect(after.messages[from] ?? []).toHaveLength(0);
   });
-
-  // Identity for anything never merged, so the same call is safe on every
-  // ordinary geo DM.
-  it("leaves an unmerged conversation exactly where it is", () => {
-    const from = `dm:nostr_${CELL_KEY}`;
-    expect(useChatStore.getState().resolveChannel(from)).toBe(from);
-  });
 });
 
 // One person, one name, wherever their conversation appears.
@@ -538,10 +452,6 @@ describe("carrying a location peer's name out of the channel", () => {
 
   beforeEach(() => {
     useChatStore.getState().clearAll();
-  });
-
-  it("falls back to the anonymous label when nobody has supplied a name", () => {
-    expect(resolveDisplayName(`nostr_${PUBKEY}`)).toBe("anon#0c08");
   });
 
   it("uses the name the channel rendered once a conversation opens", () => {

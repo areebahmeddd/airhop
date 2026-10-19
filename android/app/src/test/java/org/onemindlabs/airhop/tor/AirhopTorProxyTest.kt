@@ -26,6 +26,7 @@ import okhttp3.Route
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -106,6 +107,15 @@ class AirhopTorProxyTest {
         assertEquals(listOf(Proxy.NO_PROXY), select("ws://10.0.2.2:8081/message"))
     }
 
+    // Only the dev server's own port is exempt: anything else on that machine
+    // is ordinary web traffic.
+    @Test
+    fun otherPortsOnTheDevHostAreRouted() {
+        AirhopTorProxy.route(39050)
+        assertEquals(socks(39050), select("http://10.0.2.2:9000/"))
+        assertEquals(socks(39050), select("http://10.0.2.2/"))
+    }
+
     // Held traffic goes to a proxy nothing can listen on, so it fails rather
     // than going direct.
     @Test
@@ -131,6 +141,7 @@ class AirhopTorProxyTest {
         assertSame(a.connectionPool, b.connectionPool)
         assertSame(AirhopTorProxy.selector, a.proxySelector)
         assertTrue(a.networkInterceptors.contains(AirhopTorProxy.routeGuard))
+        assertTrue(a.interceptors.contains(AirhopTorProxy.genericUserAgent))
     }
 
     // ---- Route guard ----
@@ -150,11 +161,13 @@ class AirhopTorProxyTest {
     private class FakeChain(private val request: Request, private val connection: Connection?) :
         Interceptor.Chain {
         var proceeded = false
+        var sent: Request? = null
 
         override fun request(): Request = request
 
         override fun proceed(request: Request): Response {
             proceeded = true
+            sent = request
             return Response.Builder()
                 .request(request)
                 .protocol(Protocol.HTTP_1_1)
@@ -242,5 +255,20 @@ class AirhopTorProxyTest {
         val chain = FakeChain(request("https://mint.example/"), connectionVia(Proxy.NO_PROXY))
         AirhopTorProxy.routeGuard.intercept(chain)
         assertTrue(chain.proceeded)
+    }
+
+    // ---- User-Agent ----
+
+    @Test
+    fun dropsTheAppNamingUserAgent() {
+        val named =
+            Request.Builder()
+                .url("https://mint.example/")
+                .header("User-Agent", "Airhop/1.0.0")
+                .build()
+        val chain = FakeChain(named, null)
+        AirhopTorProxy.genericUserAgent.intercept(chain)
+        assertNull(chain.sent?.header("User-Agent"))
+        assertEquals("https://mint.example/", chain.sent?.url.toString())
     }
 }

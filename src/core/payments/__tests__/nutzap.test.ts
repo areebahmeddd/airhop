@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // NIP-61 nutzap tests: event shapes and hostile-input parsing.
 //
 // Nutzap events are public, unauthenticated apart from their signature, and
@@ -194,6 +191,9 @@ describe("parseNutzap", () => {
     expect(parseNutzap(event({ tags: [proofTag(0), ["u", MINT]] }))).toBeNull();
     expect(
       parseNutzap(event({ tags: [proofTag(-5), ["u", MINT]] })),
+    ).toBeNull();
+    expect(
+      parseNutzap(event({ tags: [proofTag(1.5), ["u", MINT]] })),
     ).toBeNull();
   });
 

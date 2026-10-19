@@ -14,7 +14,7 @@ import NativeAirhopWiFiPairing, {
 import { t } from "@i18n";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import type { useThemeColors } from "@ui/theme";
-import { DeviceEventEmitter, type EmitterSubscription } from "react-native";
+import { DeviceEventEmitter, type EventSubscription } from "react-native";
 
 // The palette object a screen holds, named the way settings-primitives does.
 type ThemeColors = ReturnType<typeof useThemeColors>;
@@ -83,7 +83,7 @@ function palette(colors: ThemeColors): PairingColors {
 export class WiFiPairingWatcher {
   constructor(private readonly onCount: (count: number) => void) {}
 
-  private sub: EmitterSubscription | null = null;
+  private sub: EventSubscription | null = null;
   private started = false;
 
   start(): void {

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The location pin wire format: fixed 19 bytes, integer microdegrees, and a
 // decoder that refuses rather than clamps. The refusal is the part that
 // matters, since these bytes are chosen by the far end.
