@@ -141,6 +141,7 @@ import {
   CarrierDirection,
   decodeNostrCarrier,
   encodeNostrCarrier,
+  isValidCarrierGeohash,
 } from "@core/mesh/wire/nostr-carrier";
 import {
   BROADCAST_ID,
@@ -247,6 +248,7 @@ import { usePeerStore } from "@store/peer-store";
 import { notifyInboundRing, useRingStore } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
 import { useTransferStore } from "@store/transfer-store";
+import { BoundedIdSet } from "@utils/bounded-id-set";
 import { geohashChannel, isManualGeoChannel } from "@utils/channel-key";
 import { inboundText } from "@utils/emote";
 import { BRIDGE_CHANNEL, canSendMedia } from "@utils/media-policy";
@@ -488,6 +490,12 @@ export const UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR = 10;
 // the bag and crowd everyone else out.
 export const MAX_QUEUED_UPLINKS = 20;
 export const MAX_QUEUED_UPLINKS_PER_DEPOSITOR = 5;
+// Event IDs each gateway loop-prevention set remembers, as bitchat-ios
+// GatewayService.Limits.maxTrackedEventIDs. The sets only have to outlast the
+// 15-minute freshness window at the downlink budget (450 events), and relay
+// and radio ingress both fill them, so unbounded they are memory anyone can
+// spend.
+export const GATEWAY_ID_SET_CAP = 512;
 
 // Trim a nickname to the board's 64-byte cap (bitchat BoardWireConstants), by
 // UTF-8 length rather than character count so multibyte names cannot overflow.
@@ -530,7 +538,10 @@ export class MeshService {
   private geoChannels: GeohashChannelService | null = null;
   private privateChannels: PrivateChannelService | null = null;
   // Mesh bridge: stitches public #bluetooth chat across mesh islands over Nostr.
-  private bridgeService: BridgeService | null = null;
+  // One for the life of the service, whatever the transport does: receiving a
+  // bridged message over the radio needs no internet, and its loop caches must
+  // outlive a relay-pool rebuild. buildNostrTransport hands it each new pool.
+  private readonly bridgeService: BridgeService;
   // Broadcast a packet over every connected BLE link. Captured from the
   // constructor's broadcastFn so board posts reach the mesh like any broadcast.
   private broadcastPacket!: (packet: Packet) => void;
@@ -553,13 +564,13 @@ export class MeshService {
   // sender is untrusted).
   private readonly lastPongAtByLink = new Map<string, number>();
   // Nostr event ids seen via gateway carriers, to break rebroadcast loops and
-  // drop duplicate ferries. Insertion-ordered; capped.
-  private readonly seenCarrierEventIDs = new Set<string>();
+  // drop duplicate ferries.
+  private readonly seenCarrierEventIDs = new BoundedIdSet(GATEWAY_ID_SET_CAP);
   // Gateway loop prevention, mirroring bitchat GatewayService's ID sets:
   //   publishedEventIDs  - events we (as a gateway) published to relays on a
   //                        mesh peer's behalf; never rebroadcast their relay echo.
   //   rebroadcastEventIDs - relay events we already ferried to the mesh; ferry once.
-  private readonly publishedEventIDs = new Set<string>();
+  private readonly publishedEventIDs = new BoundedIdSet(GATEWAY_ID_SET_CAP);
   // Deposits accepted while the relays were down, waiting for a connection.
   // Without this a mesh-only peer that hands its message to a gateway during a
   // momentary outage loses it silently: the deposit is directed, so no other
@@ -569,7 +580,7 @@ export class MeshService {
     geohash: string;
     event: NostrEvent;
   }[] = [];
-  private readonly rebroadcastEventIDs = new Set<string>();
+  private readonly rebroadcastEventIDs = new BoundedIdSet(GATEWAY_ID_SET_CAP);
   // Sliding 60s window of downlink-rebroadcast timestamps, bounding BLE airtime.
   private downlinkSendTimes: number[] = [];
   // Per-depositor sliding 60s windows of uplink deposits, so one mesh peer
@@ -757,9 +768,9 @@ export class MeshService {
     this.wifi.setPairedCount(count),
   );
 
-  // Cumulative bytes received over every radio this session, for the Storage &
-  // Data screen's Network Usage row. Resets when the app restarts. The sent
-  // half is counted by the link registry, which owns every write.
+  // Cumulative bytes received over every mesh link this session, for the
+  // Storage & Data screen's Mesh traffic row. Resets when the app restarts.
+  // The sent half is counted by the link registry, which owns every write.
   private bytesReceived = 0;
 
   getByteCounters(): { sent: number; received: number } {
@@ -927,6 +938,8 @@ export class MeshService {
       nostrSendFn,
       () => this.links.degree(),
     );
+
+    this.bridgeService = this.createBridgeService();
   }
 
   // The identity this instance was built for. Lets a caller tell "the mesh
@@ -979,10 +992,10 @@ export class MeshService {
       // the next announce (announceNow below also pushes it out immediately).
       () => this.localCapabilities(),
       // The rendezvous cell we serve (ANNOUNCE TLV 0x06), only while bridging.
-      () => this.bridgeService?.advertisedBridgeGeohash(),
+      () => this.bridgeService.advertisedBridgeGeohash(),
     );
-    // Re-announce immediately whenever the gateway or bridge toggle flips, so
-    // nearby peers learn the capability change without waiting a full cycle.
+    // Re-announce immediately whenever the gateway toggle flips, so nearby
+    // peers learn the capability change without waiting a full cycle.
     this.gatewayUnsub?.();
     this.gatewayUnsub = useSettingsStore.subscribe((state, prev) => {
       if (state.gatewayEnabled === prev.gatewayEnabled) return;
@@ -995,10 +1008,11 @@ export class MeshService {
       this.announceManager.announceNow();
     });
     this.bridgeUnsub?.();
+    // The bridge re-announces itself whenever its cell comes or goes, which is
+    // what a toggle changes about the announce.
     this.bridgeUnsub = useSettingsStore.subscribe((state, prev) => {
       if (state.bridgeEnabled !== prev.bridgeEnabled) {
-        this.bridgeService?.setEnabled(state.bridgeEnabled);
-        this.announceManager.announceNow();
+        this.bridgeService.setEnabled(state.bridgeEnabled);
       }
     });
     // The per-contact grant is watched in the contacts subscription below.
@@ -1043,7 +1057,7 @@ export class MeshService {
         return;
       }
       this.geoChannels?.applyRelayChange();
-      this.bridgeService?.applyRelayChange();
+      this.bridgeService.applyRelayChange();
     });
 
     // Turning live voice off has to take effect now, not at the end of whatever
@@ -1308,9 +1322,8 @@ export class MeshService {
       // The fast path became unusable, or usable again.
       //
       // Android reports both edges, off the framework's WiFi Aware state
-      // broadcast, so turning WiFi back on recovers immediately. iOS registers
-      // no WiFi module, so this never fires there and the controller latches
-      // "unsupported" on its first pass.
+      // broadcast, so turning WiFi back on recovers immediately. iOS reports
+      // only the falling edge, and the controller's retry ladder recovers it.
       DeviceEventEmitter.addListener(
         "AirhopWiFi.availabilityChanged",
         ({
@@ -1352,7 +1365,7 @@ export class MeshService {
             this.nickname,
             hexToBytes(this.nostrPubKeyHex),
             this.localCapabilities(),
-            this.bridgeService?.advertisedBridgeGeohash(),
+            this.bridgeService.advertisedBridgeGeohash(),
           );
           this.links
             .send(linkID, bytesToBase64(encodePacket(pkt)))
@@ -1413,7 +1426,7 @@ export class MeshService {
             this.nickname,
             hexToBytes(this.nostrPubKeyHex),
             this.localCapabilities(),
-            this.bridgeService?.advertisedBridgeGeohash(),
+            this.bridgeService.advertisedBridgeGeohash(),
           );
           this.links
             .send(linkID, bytesToBase64(encodePacket(pkt)))
@@ -2729,7 +2742,7 @@ export class MeshService {
         ? Capability.gateway
         : 0;
     const bridge =
-      this.bridgeService?.advertisedBridgeGeohash() !== undefined
+      this.bridgeService.advertisedBridgeGeohash() !== undefined
         ? Capability.bridge
         : 0;
     // "I accept a ring from you", true of exactly the contacts holding the
@@ -4328,11 +4341,6 @@ export class MeshService {
     void this.links.broadcast(bytesToBase64(encodePacket(packet)));
   }
 
-  // Whether a broadcast really came from the peer it names. `senderID` is a
-  // plaintext header anyone in range can set, so only an Ed25519 signature
-  // against the key knownSigningKey holds for that peer counts. No signature or
-  // no known key fails, as in bitchat-ios; relaying is separate, since a node
-  // forwards bytes it cannot yet check.
   // A second after a peer's first link binds, as bitchat-ios: long enough for
   // our announce-back to bind us on their side, which a request needs before
   // it is answered.
@@ -4347,6 +4355,11 @@ export class MeshService {
     this.initialSyncTimers.set(peerID, timer);
   }
 
+  // Whether a broadcast really came from the peer it names. `senderID` is a
+  // plaintext header anyone in range can set, so only an Ed25519 signature
+  // against the key knownSigningKey holds for that peer counts. No signature or
+  // no known key fails, as in bitchat-ios; relaying is separate, since a node
+  // forwards bytes it cannot yet check.
   private senderIsAuthentic(packet: Packet, senderID: string): boolean {
     if ((packet.flags & Flags.SIGNED) === 0) return false;
     const key = this.knownSigningKey(senderID);
@@ -4414,7 +4427,7 @@ export class MeshService {
     // collapse to one bubble in either arrival order, and tell the bridge the
     // message is already on the radio so it never re-bridges it (loop rule 3).
     this.acceptPublicMessage(packet, BRIDGE_CHANNEL, text, (senderID) => {
-      this.bridgeService?.noteRadioMessage(senderID, packet.timestamp, text);
+      this.bridgeService.noteRadioMessage(senderID, packet.timestamp, text);
       return `mesh-${bridgeStableID(senderID, packet.timestamp, text)}`;
     });
   }
@@ -4653,7 +4666,7 @@ export class MeshService {
     // relay reaches the other islands, so it is reach like any other publish.
     const bridged =
       channel === BRIDGE_CHANNEL
-        ? this.bridgeService?.bridgeOutgoing(
+        ? this.bridgeService.bridgeOutgoing(
             text,
             this.identity.peerID,
             timestampMs,
@@ -5163,7 +5176,7 @@ export class MeshService {
       // and a bridge crossing has already stamped its dedup sets before it
       // discovers there is no bridge, so it can never cross afterwards.
       this.localCapabilities(),
-      this.bridgeService?.advertisedBridgeGeohash(),
+      this.bridgeService.advertisedBridgeGeohash(),
     );
     this.greetingAnnounce = { packet, builtAtMs: now };
     return packet;
@@ -5793,22 +5806,29 @@ export class MeshService {
   private onNostrCarrier(packet: Packet): void {
     const carrier = decodeNostrCarrier(packet.payload);
     if (carrier === null) return;
+    // A cell that is not a geohash names nowhere anything could be published
+    // or rendered, in either direction, so it goes before any parse or
+    // signature check (bitchat-ios structurallyValidEvent).
+    if (!isValidCarrierGeohash(carrier.geohash)) return;
     // Bridge carriers belong to the BridgeService, which does its own event
     // verification, dedup and per-depositor rate limiting. A deposit asks this
     // phone to publish from its own connection and is budgeted by who made
     // it, so it has to be addressed to us and signed by the peer it names, as
     // bitchat-ios requires of every directed carrier; otherwise a rotating
-    // forged sender ID gets a fresh budget each time. fromBridge broadcasts
-    // are unsigned by design and stay accepted as they are.
+    // forged sender ID gets a fresh budget each time. That packet check is
+    // skipped when the bridge would refuse the deposit anyway. fromBridge
+    // broadcasts are unsigned by design and stay accepted as they are, with
+    // the bridge on or off.
     if (carrier.direction === CarrierDirection.TO_BRIDGE) {
       const senderID = bytesToHex(packet.senderID);
       if (bytesToHex(packet.recipientID) !== this.identity.peerID) return;
+      if (!this.bridgeService.acceptsDeposits()) return;
       if (!this.senderIsAuthentic(packet, senderID)) return;
-      this.bridgeService?.handleMeshCarrier(carrier, senderID, true);
+      this.bridgeService.handleMeshCarrier(carrier, senderID, true);
       return;
     }
     if (carrier.direction === CarrierDirection.FROM_BRIDGE) {
-      this.bridgeService?.handleMeshCarrier(
+      this.bridgeService.handleMeshCarrier(
         carrier,
         bytesToHex(packet.senderID),
         bytesToHex(packet.recipientID) === this.identity.peerID,
@@ -5860,15 +5880,17 @@ export class MeshService {
       );
       if (!inCell) return;
       if (!verifyEvent(event)) return;
-      this.rememberEventID(this.seenCarrierEventIDs, event.id);
+      this.seenCarrierEventIDs.add(event.id);
       this.geoChannels?.ingestCarriedEvent(event);
       return;
     }
 
     // Uplink: publish on the sender's behalf, but only if we are a gateway and
-    // the carrier is directed at us.
+    // the carrier is directed at us. The same two switches the capability bit
+    // reads: with the internet off a deposit has no connection to go out on,
+    // and holding it would publish it whenever the user next turned it on.
     if (bytesToHex(packet.recipientID) !== this.identity.peerID) return;
-    if (!useSettingsStore.getState().gatewayEnabled) return;
+    if (!this.gatewayAcceptsDeposits()) return;
 
     // Structural gate, mirroring bitchat GatewayService.structurallyValidEvent:
     // only ever publish a fresh geohash-channel note whose own #g tag matches the
@@ -5903,7 +5925,7 @@ export class MeshService {
     if (!this.allowUplinkDeposit(depositor)) return;
 
     if (!verifyEvent(event)) return;
-    this.rememberEventID(this.seenCarrierEventIDs, event.id);
+    this.seenCarrierEventIDs.add(event.id);
 
     // No connection right now: hold it rather than dropping it. The deposit was
     // directed at us, so nobody else is carrying a copy.
@@ -5915,7 +5937,7 @@ export class MeshService {
     // Record it as ours before publishing: when our own relay subscription
     // echoes it back, the downlink rebroadcaster must not push it onto the mesh
     // again (the originating peer and its neighbours already hold the BLE copy).
-    this.rememberEventID(this.publishedEventIDs, event.id);
+    this.publishedEventIDs.add(event.id);
     this.geoChannels?.publishCarriedEvent(event, carrier.geohash);
   }
 
@@ -5944,16 +5966,27 @@ export class MeshService {
   // pool reports a connection, matching bitchat's `flushQueuedUplinks` on the
   // same trigger. Events that went out by another route in the meantime are
   // skipped rather than published twice.
+  //
+  // An entry that went stale in the bag is dropped, not published: receivers
+  // refuse a carried event past the freshness window, so it would reach nobody.
   flushQueuedUplinks(): void {
-    if (!useSettingsStore.getState().gatewayEnabled) return;
+    if (!this.gatewayAcceptsDeposits()) return;
     if (!this.relaysConnected || this.queuedUplinks.length === 0) return;
     const queued = this.queuedUplinks;
     this.queuedUplinks = [];
     for (const item of queued) {
       if (this.publishedEventIDs.has(item.event.id)) continue;
-      this.rememberEventID(this.publishedEventIDs, item.event.id);
+      if (!this.isFreshCarrierEvent(item.event)) continue;
+      this.publishedEventIDs.add(item.event.id);
       this.geoChannels?.publishCarriedEvent(item.event, item.geohash);
     }
+  }
+
+  // Whether this phone carries deposits for its neighbours: the gateway
+  // toggle, and the internet switch the toggle depends on.
+  private gatewayAcceptsDeposits(): boolean {
+    const { gatewayEnabled, internetEnabled } = useSettingsStore.getState();
+    return gatewayEnabled && internetEnabled;
   }
 
   // Consume a per-depositor token from a 60s sliding window. Returns false when
@@ -6041,7 +6074,7 @@ export class MeshService {
     this.broadcastCarrier(payload);
     // Mark only after an actual send, so an over-budget drop above is never
     // recorded as rebroadcast.
-    this.rememberEventID(this.rebroadcastEventIDs, event.id);
+    this.rebroadcastEventIDs.add(event.id);
     this.downlinkSendTimes.push(now);
   }
 
@@ -6052,7 +6085,7 @@ export class MeshService {
     );
   }
 
-  // Insertion-ordered, capped id set (drop-oldest), matching seenCarrierEventIDs.
+  // Insertion-ordered, capped id set (drop-oldest).
   private rememberEventID(set: Set<string>, id: string): void {
     set.add(id);
     if (set.size > MAX_REMEMBERED_IDS) {
@@ -6145,10 +6178,12 @@ export class MeshService {
     });
   }
 
-  // Re-resolve position and re-subscribe geo channels. Called on pull-to-refresh
-  // and after the user joins a new location channel.
+  // Re-resolve position and re-subscribe geo channels and the bridge's
+  // rendezvous cell. Called on pull-to-refresh, after the user joins a new
+  // location channel, and after a location grant.
   refreshGeoChannels(): void {
     void this.geoChannels?.refresh();
+    void this.bridgeService.refresh();
   }
 
   // Cancel an in-flight attachment transfer (sending or receiving) by its id.
@@ -7059,10 +7094,10 @@ export class MeshService {
   }
 
   // Pull-to-refresh hook: drop stale peers, re-check the radios, and re-resolve
-  // the geohash channels (picks up a moved location cell and re-subscribes).
-  // Safe to call repeatedly: the radio controller only issues calls that change
-  // something, the Nostr relay pool auto-reconnects, and geoChannels.refresh
-  // only re-subscribes cells that actually changed.
+  // the geohash channels and the bridge cell (picks up a moved location cell
+  // and re-subscribes). Safe to call repeatedly: the radio controller only
+  // issues calls that change something, the Nostr relay pool auto-reconnects,
+  // and both refreshes only re-subscribe cells that actually changed.
   refresh(): void {
     usePeerStore.getState().evictStale();
     this.radio.refresh();
@@ -7072,7 +7107,7 @@ export class MeshService {
     // Settings app while Airhop was suspended, where the change event had no
     // running listener to reach.
     void this.wifiPairing.refresh();
-    void this.geoChannels?.refresh();
+    this.refreshGeoChannels();
   }
 
   // Build (or rebuild) the Nostr transport: the relay pool plus the geohash and
@@ -7094,7 +7129,7 @@ export class MeshService {
           // seconds. The connect path below re-announces for the other edge.
           this.announceManager.announceNow();
           // And the bridge banner, whose "active" depends on live relays.
-          this.bridgeService?.onRelayConnectivityChanged();
+          this.bridgeService.onRelayConnectivityChanged();
           return;
         }
         // Anything a mesh-only peer handed us while we were offline goes out
@@ -7109,12 +7144,12 @@ export class MeshService {
         // duplicate by message id.
         this.retryQueuedOverInternet();
         // Relays coming up while bridging turns us into a serving bridge (we can
-        // now publish + advertise a cell): refresh presence/subscription and push
-        // a fresh announce so mesh-only peers discover us.
-        if (this.bridgeService !== null) {
-          void this.bridgeService.refresh();
-          this.announceManager.announceNow();
-        }
+        // now publish + advertise a cell): publish the deposits held through the
+        // outage, refresh presence/subscription and push a fresh announce so
+        // mesh-only peers discover us.
+        this.bridgeService.flushQueuedUplinks();
+        void this.bridgeService.refresh();
+        this.announceManager.announceNow();
       },
     });
 
@@ -7149,56 +7184,64 @@ export class MeshService {
     );
     this.privateChannels.refresh();
 
-    // Mesh bridge: stitches public #bluetooth chat across mesh islands over a
-    // geohash-cell rendezvous. Reuses the shared Nostr client and per-cell
-    // geohash identities; carriers ride the same 0x28 packet as the gateway.
-    // Inert until the user enables it.
-    this.bridgeService = new BridgeService(
-      this.nostrClient,
-      this.identity.signingPrivKey,
-      {
-        // Blocked and flood-limited like a radio copy, as in bitchat-ios, under
-        // the sender key the location rooms use. Bridge events carry no NIP-13
-        // work.
-        injectMessage: (msg) => {
-          if (useBlockedStore.getState().isBlocked(msg.senderKey)) return;
-          if (
-            !hasStoredMessage(BRIDGE_CHANNEL, msg.id) &&
-            !this.publicLimiter.allow(
-              msg.senderKey.replace(/^nostr_/, "nostr:"),
-              publicContentKey(msg.text),
-              0,
-              Date.now(),
-            )
-          ) {
-            return;
-          }
-          useChatStore.getState().addMessage({
-            id: msg.id,
-            channel: BRIDGE_CHANNEL,
-            senderID: msg.senderKey,
-            senderNickname: msg.nickname,
-            text: msg.text,
-            timestampMs: msg.timestampMs,
-            isMine: false,
-            viaBridge: true,
-          });
-        },
-        firstReachableBridge: () => this.registry.firstReachableBridge(),
-        advertisedBridgeCell: () =>
-          this.registry.firstReachableBridge()?.bridgeGeohash,
-        sendCarrierToBridge: (payload, peerID) =>
-          this.sendDirectedCarrier(payload, peerID),
-        broadcastCarrierFromBridge: (payload) => this.broadcastCarrier(payload),
-        relaysConnected: () => this.nostrClient?.isConnected ?? false,
-        nickname: () => this.nickname,
-        onStatus: (status) =>
-          useMeshStateStore
-            .getState()
-            .setBridgeState(status.active, status.peopleAcross),
-      },
-    );
+    // The mesh bridge rides this pool too. Handing it over rather than building
+    // a new one keeps its loop caches, participants and parked deposits across
+    // the rebuild. Inert until the user enables it.
+    this.bridgeService.attachClient(this.nostrClient);
     this.bridgeService.setEnabled(useSettingsStore.getState().bridgeEnabled);
+  }
+
+  // The mesh bridge: stitches public #bluetooth chat across mesh islands over a
+  // geohash-cell rendezvous, with carriers on the same 0x28 packet as the
+  // gateway. Built once, in the constructor; see the field.
+  private createBridgeService(): BridgeService {
+    return new BridgeService(this.identity.signingPrivKey, {
+      // Held to the radio copy's rules, as in bitchat-ios: only into a room
+      // the user has joined, blocked, and flood-limited under the sender key
+      // the location rooms use. Bridge events carry no NIP-13 work.
+      injectMessage: (msg) => {
+        if (!useChatStore.getState().channels.includes(BRIDGE_CHANNEL)) {
+          return;
+        }
+        if (useBlockedStore.getState().isBlocked(msg.senderKey)) return;
+        if (
+          !hasStoredMessage(BRIDGE_CHANNEL, msg.id) &&
+          !this.publicLimiter.allow(
+            msg.senderKey.replace(/^nostr_/, "nostr:"),
+            publicContentKey(msg.text),
+            0,
+            Date.now(),
+          )
+        ) {
+          return;
+        }
+        useChatStore.getState().addMessage({
+          id: msg.id,
+          channel: BRIDGE_CHANNEL,
+          senderID: msg.senderKey,
+          senderNickname: msg.nickname,
+          text: msg.text,
+          timestampMs: msg.timestampMs,
+          isMine: false,
+          viaBridge: true,
+        });
+      },
+      firstReachableBridge: () => this.registry.firstReachableBridge(),
+      advertisedBridgeCell: () =>
+        this.registry.firstReachableBridge()?.bridgeGeohash,
+      sendCarrierToBridge: (payload, peerID) =>
+        this.sendDirectedCarrier(payload, peerID),
+      broadcastCarrierFromBridge: (payload) => this.broadcastCarrier(payload),
+      relaysConnected: () => this.nostrClient?.isConnected ?? false,
+      nickname: () => this.nickname,
+      onStatus: (status) =>
+        useMeshStateStore
+          .getState()
+          .setBridgeState(status.active, status.peopleAcross),
+      // As bitchat-ios does on onActiveCellChanged: mesh-only neighbours
+      // compose for the cell they last heard, so a new one goes out now.
+      onActiveCellChanged: () => this.announceManager.announceNow(),
+    });
   }
 
   // Wrap an encoded carrier payload in a directed, signed NOSTR_CARRIER packet
@@ -7447,8 +7490,9 @@ export class MeshService {
     this.geoChannels = null;
     this.privateChannels?.stop();
     this.privateChannels = null;
-    this.bridgeService?.stop();
-    this.bridgeService = null;
+    // Detached, not stopped: the bridge keeps its caches and parked deposits
+    // for the pool that replaces this one.
+    this.bridgeService.attachClient(null);
     this.nostrClient?.close();
     this.nostrClient = null;
     useMeshStateStore.getState().setNostrConnected(false);
@@ -7483,6 +7527,7 @@ export class MeshService {
       // messages held against an internet connection the user has just switched
       // off, and they must not be published when it comes back.
       this.queuedUplinks.length = 0;
+      this.bridgeService.dropQueuedUplinks();
     }
     // The gateway capability we advertise depends on internet being on, so push
     // a fresh announce now rather than waiting for the next cycle.
@@ -7605,8 +7650,7 @@ export class MeshService {
     // presence heartbeat, announcing this device's cell over a mesh the user
     // switched off.
     this.geoChannels = null;
-    this.bridgeService?.stop();
-    this.bridgeService = null;
+    this.bridgeService.stop();
     // Resolve any outstanding pings as unreachable and drop their timers.
     for (const [nonce, pending] of this.pendingPings) {
       clearTimeout(pending.timer);

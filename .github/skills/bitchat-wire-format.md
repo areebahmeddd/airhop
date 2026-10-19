@@ -127,16 +127,16 @@ Location cells travel under `0x51`, where both bitchat clients see an unknown ty
 
 `[type u8][length u8][value]`. Tags `0x01` to `0x06` are bitchat's.
 
-| Tag    | Field           | Size           | Notes                                                                                |
-| ------ | --------------- | -------------- | ------------------------------------------------------------------------------------ |
-| `0x01` | nickname        | up to 32 bytes | UTF-8, NFC-canonicalized, cut on a character boundary                                |
-| `0x02` | Noise pub key   | 32 bytes       | X25519 static key; `senderID` must derive from it                                    |
-| `0x03` | signing pub key | 32 bytes       | Ed25519                                                                              |
-| `0x04` | neighbor IDs    | up to 80 bytes | Decoded, never emitted: it hands a passive listener the room's adjacency graph       |
-| `0x05` | capabilities    | 1 to 4 bytes   | Minimal little-endian bitfield; omitted when zero                                    |
-| `0x06` | bridge geohash  | up to 12 bytes | Rendezvous cell a bridge gateway serves                                              |
-| `0x07` | Nostr pub key   | 32 bytes       | Airhop only, x-only secp256k1. A claim, not a proof: see `bindNostrPubkey`           |
-| `0xB1` | Bitle role      | 1 byte         | Read, never written. Bit 0 marks a dedicated relay; cosmetic only, since self-signed |
+| Tag    | Field           | Size           | Notes                                                                                         |
+| ------ | --------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| `0x01` | nickname        | up to 32 bytes | UTF-8, NFC-canonicalized, cut on a character boundary                                         |
+| `0x02` | Noise pub key   | 32 bytes       | X25519 static key; `senderID` must derive from it                                             |
+| `0x03` | signing pub key | 32 bytes       | Ed25519                                                                                       |
+| `0x04` | neighbor IDs    | up to 80 bytes | Skipped on decode, never written: it would hand a passive listener the room's adjacency graph |
+| `0x05` | capabilities    | 1 to 4 bytes   | Minimal little-endian bitfield; omitted when zero                                             |
+| `0x06` | bridge geohash  | up to 12 bytes | Rendezvous cell a bridge gateway serves                                                       |
+| `0x07` | Nostr pub key   | 32 bytes       | Airhop only, x-only secp256k1. A claim, not a proof: see `bindNostrPubkey`                    |
+| `0xB1` | Bitle role      | 1 byte         | Read, never written. Bit 0 marks a dedicated relay; cosmetic only, since self-signed          |
 
 Receive rules: signature mandatory, and `senderID` must derive from the `0x02` key. Freshness is the ingress rule every packet meets (within 2 minutes of our clock, unless a solicited sync reply; see [`mesh-routing.md`](mesh-routing.md)), and the announce handler also refuses one more than 15 minutes off (`isAnnounceFresh`).
 

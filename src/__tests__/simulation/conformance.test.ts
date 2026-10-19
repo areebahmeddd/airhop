@@ -58,12 +58,20 @@ import {
   CELL_PRECISION as BRIDGE_CELL_PRECISION,
   DOWNLINK_EVENTS_PER_MINUTE as BRIDGE_DOWNLINK_PER_MINUTE,
   ID_SET_CAP as BRIDGE_ID_SET_CAP,
+  INBOUND_EVENTS_PER_MINUTE as BRIDGE_INBOUND_PER_MINUTE,
+  INBOUND_EVENTS_PER_MINUTE_PER_SIGNER as BRIDGE_INBOUND_PER_SIGNER,
   MAX_EVENT_AGE_SECONDS as BRIDGE_MAX_EVENT_AGE_SECONDS,
+  MAX_PARTICIPANTS as BRIDGE_MAX_PARTICIPANTS,
+  MAX_PENDING_DOWNLINKS as BRIDGE_MAX_PENDING_DOWNLINKS,
+  MAX_QUEUED_UPLINKS as BRIDGE_MAX_QUEUED,
+  MAX_QUEUED_UPLINKS_PER_DEPOSITOR as BRIDGE_MAX_QUEUED_PER_DEPOSITOR,
   PARTICIPANT_TTL_MS as BRIDGE_PARTICIPANT_TTL_MS,
+  SIGNATURE_CHECKS_PER_MINUTE as BRIDGE_SIGNATURE_CHECKS_PER_MINUTE,
   UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR as BRIDGE_UPLINK_PER_DEPOSITOR,
 } from "@services/bridge-service";
 import {
   DOWNLINK_EVENTS_PER_MINUTE as GATEWAY_DOWNLINK_PER_MINUTE,
+  GATEWAY_ID_SET_CAP,
   CARRIER_MAX_EVENT_AGE_SECONDS as GATEWAY_MAX_EVENT_AGE_SECONDS,
   MAX_QUEUED_UPLINKS as GATEWAY_MAX_QUEUED,
   MAX_QUEUED_UPLINKS_PER_DEPOSITOR as GATEWAY_MAX_QUEUED_PER_DEPOSITOR,
@@ -670,7 +678,58 @@ testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
       swift: "maxTrackedEventIDs",
       ours: BRIDGE_ID_SET_CAP,
     },
+    {
+      name: "bridge queued uplinks, total",
+      source: bridgeSwift,
+      swift: "maxQueuedUplinks",
+      ours: BRIDGE_MAX_QUEUED,
+    },
+    {
+      name: "bridge queued uplinks, per depositor",
+      source: bridgeSwift,
+      swift: "maxQueuedUplinksPerDepositor",
+      ours: BRIDGE_MAX_QUEUED_PER_DEPOSITOR,
+    },
+    {
+      name: "bridge pending downlinks",
+      source: bridgeSwift,
+      swift: "maxPendingDownlinks",
+      ours: BRIDGE_MAX_PENDING_DOWNLINKS,
+    },
+    // Relay ingress bounds, held equal both ways: looser than bitchat's, a
+    // rotating-key flood costs an Airhop bridge more than a bitchat one;
+    // tighter, the two disagree about a busy room.
+    {
+      name: "bridge accepted events per minute",
+      source: bridgeSwift,
+      swift: "inboundEventsPerMinute",
+      ours: BRIDGE_INBOUND_PER_MINUTE,
+    },
+    {
+      name: "bridge accepted events per signer per minute",
+      source: bridgeSwift,
+      swift: "inboundEventsPerMinutePerSigner",
+      ours: BRIDGE_INBOUND_PER_SIGNER,
+    },
+    {
+      name: "bridge signature checks per minute",
+      source: bridgeSwift,
+      swift: "signatureVerificationAttemptsPerMinute",
+      ours: BRIDGE_SIGNATURE_CHECKS_PER_MINUTE,
+    },
+    {
+      name: "bridge participants held",
+      source: bridgeSwift,
+      swift: "maxParticipants",
+      ours: BRIDGE_MAX_PARTICIPANTS,
+    },
     // Gateway
+    {
+      name: "gateway loop-cache capacity",
+      source: gatewaySwift,
+      swift: "maxTrackedEventIDs",
+      ours: GATEWAY_ID_SET_CAP,
+    },
     {
       name: "gateway downlink budget per minute",
       source: gatewaySwift,

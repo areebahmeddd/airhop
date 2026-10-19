@@ -783,7 +783,7 @@ Info · Fixed. Stale lines on LAN, sync TTL, the REQUEST_SYNC relay, prekey floo
 | D18 | SUP-14       | Delete `landing/Dockerfile`                                                                                                                                                                                                                                                                  |
 | D19 | Share texts  | `chat.thread.invite_body` and `settings.qr.share_body` keep their em dash. [`df8aeac`](https://github.com/areebahmeddd/airhop/commit/df8aeac) removed it; the owner restored it in all 35 catalogs (uncommitted in the working tree). A deliberate exception to the copy rule, not a finding |
 
-Standing decisions: the gitignored release keystore stays where it is; `"private": true` is not added to `package.json`; bridge-list freshness and the `sync-bridges.yml` push permission are the owner's; dependency upgrades are done by hand, not by Dependabot.
+Standing decisions: the gitignored release keystore stays where it is; `"private": true` is not added to `package.json`; bridge-list freshness is the owner's; dependency upgrades are done by hand, not by Dependabot.
 
 ## 6. Limitations and accepted risks
 

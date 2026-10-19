@@ -30,6 +30,22 @@ export enum CarrierDirection {
 export const CARRIER_MAX_EVENT_JSON_BYTES = 16 * 1024;
 export const CARRIER_MAX_GEOHASH_LENGTH = 12;
 
+// The geohash base32 alphabet (no a, i, l or o).
+const GEOHASH_CHARS = /^[0-9b-hjkmnp-z]+$/;
+
+// Whether a carrier's cell is a real geohash: 1 to 12 base32 characters, as
+// bitchat-ios GatewayService.isValidGeohash requires. The codec only bounds the
+// byte length, so a receiver applies this before parsing the event, let alone
+// checking its signature. Not enforced in decode, which stays as permissive as
+// the wire format.
+export function isValidCarrierGeohash(geohash: string): boolean {
+  return (
+    geohash.length >= 1 &&
+    geohash.length <= CARRIER_MAX_GEOHASH_LENGTH &&
+    GEOHASH_CHARS.test(geohash)
+  );
+}
+
 export interface NostrCarrierPacket {
   direction: CarrierDirection;
   geohash: string;

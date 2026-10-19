@@ -50,6 +50,7 @@ jest.mock("nostr-tools", () => {
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import {
   CarrierDirection,
+  decodeNostrCarrier,
   encodeNostrCarrier,
 } from "@core/mesh/wire/nostr-carrier";
 import {
@@ -61,6 +62,7 @@ import {
   type Packet,
 } from "@core/mesh/wire/packet-codec";
 import { createBridgeMeshEvent } from "@core/nostr/bridge-event";
+import { encodeGeohash } from "@core/nostr/geohash-presence";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { finalizeEvent, generateSecretKey } from "nostr-tools";
 import { BitchatActor } from "../harness/bitchat-actor";
@@ -1773,5 +1775,467 @@ test("N19 a location post no relay accepts settles as reaching nobody", async ()
     JSON.stringify(acceptedSettled),
   );
   s.expectNone("process health", noCrashes([lone]));
+  s.assert(true);
+});
+
+// ---- The bridge's serving duty, and what reaches a phone without it ----
+
+// The rendezvous cell a bridging phone is serving, once it is online with one.
+function servedCell(d: SimDevice): string | undefined {
+  return (
+    d.mesh as unknown as {
+      bridgeService: { advertisedBridgeGeohash: () => string | undefined };
+    }
+  ).bridgeService.advertisedBridgeGeohash();
+}
+
+// A message from a far island, published to the rendezvous by someone none of
+// these phones can hear. Built here rather than by a third island of phones,
+// so the only thing that can bring it onto this island's radio is a bridge.
+function farIslandMessage(cell: string, content: string) {
+  return createBridgeMeshEvent({
+    content,
+    cell,
+    privKey: generateSecretKey(),
+    nickname: "far",
+    meshSenderID: "f0f0f0f0f0f0f0f0",
+    meshTimestampMs: Date.now(),
+  });
+}
+
+// Every fromBridge downlink of one event put on the air, as `sender@timestamp`.
+// A downlink is one originated packet; the copies the flood relays keep its
+// sender and timestamp, and the copies one phone writes down each of its links
+// do too, so this counts sends rather than writes.
+function downlinksOf(
+  radio: RadioFabric,
+  eventID: string,
+): { sends: Set<string>; stop: () => void } {
+  const sends = new Set<string>();
+  const stop = radio.tapWrites((_who, _linkID, dataBase64) => {
+    const p = decodePacket(base64ToBytes(dataBase64));
+    if (p?.type !== PacketType.NOSTR_CARRIER) return;
+    const carrier = decodeNostrCarrier(p.payload);
+    if (carrier?.direction !== CarrierDirection.FROM_BRIDGE) return;
+    const event = JSON.parse(new TextDecoder().decode(carrier.eventJSON)) as {
+      id: string;
+    };
+    if (event.id === eventID) {
+      sends.add(`${bytesToHex(p.senderID)}@${String(p.timestamp)}`);
+    }
+  });
+  return { sends, stop };
+}
+
+test("N20 two bridges on one island carry a remote message onto the radio once", async () => {
+  // Every bridging phone with signal hears the same relay event at about the
+  // same moment. Sending at once means each of them spends airtime on it.
+  const s = (scenario = new Scenario({
+    id: "N20",
+    title: "the downlink holdoff: the second bridge stands down",
+    seed: 730,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const bridgeA = SimDevice.create(
+    s.world,
+    { ...android("bridgeA", 11), bridgeEnabled: true },
+    relay,
+  );
+  const bridgeB = SimDevice.create(
+    s.world,
+    { ...android("bridgeB", 22), bridgeEnabled: true },
+    relay,
+  );
+  const local = SimDevice.create(
+    s.world,
+    { ...android("local", 33), bridgeEnabled: true },
+    relay,
+  );
+  const cast = [bridgeA, bridgeB, local];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  relay.setOffline("local", true);
+  for (const d of cast) d.launch();
+
+  await waitForCoarse(s.world, () => radio.linkCount() === 3, 30_000);
+  for (const d of cast) d.joinChannel(BRIDGE_CHANNEL);
+  s.check(
+    "both bridges are online with a rendezvous cell",
+    await waitForCoarse(
+      s.world,
+      () =>
+        servedCell(bridgeA) !== undefined && servedCell(bridgeB) !== undefined,
+      90_000,
+    ),
+  );
+
+  const text = "from an island nobody here can hear";
+  const event = farIslandMessage(servedCell(bridgeA) ?? "", text);
+  const downlinks = downlinksOf(radio, event.id);
+  relay.inject(event);
+  const arrived = await waitForCoarse(
+    s.world,
+    () => local.texts(BRIDGE_CHANNEL).includes(text),
+    30_000,
+  );
+  await advanceFor(s.world, 10_000);
+  downlinks.stop();
+
+  s.check("the phone with no signal received it", arrived);
+  s.check(
+    "and exactly one bridge carried it onto the radio",
+    downlinks.sends.size === 1,
+    `downlinks: ${[...downlinks.sends].join(", ")}`,
+  );
+  s.expectNone("exactly once", exactlyOnce(cast));
+  s.expectNone("no duplicate text", noDuplicateText(cast, BRIDGE_CHANNEL));
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N21 a phone with the bridge off still sees what a bridge carries to it", async () => {
+  // Hearing a carrier is passive and tells nobody anything, so it does not
+  // wait on a switch: two phones side by side should not disagree about what
+  // the room said (bitchat-ios behaves the same way).
+  const s = (scenario = new Scenario({
+    id: "N21",
+    title: "radio reception of bridged messages is not gated on the toggles",
+    seed: 731,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const bridge = SimDevice.create(
+    s.world,
+    { ...android("bridge", 11), bridgeEnabled: true },
+    relay,
+  );
+  // Bridge off, and no signal.
+  const quiet = SimDevice.create(s.world, android("quiet", 22), relay);
+  // Bridge off, and the internet switch off as well.
+  const unplugged = SimDevice.create(
+    s.world,
+    { ...android("unplugged", 33), internetEnabled: false },
+    relay,
+  );
+  const cast = [bridge, quiet, unplugged];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  relay.setOffline("quiet", true);
+  for (const d of cast) d.launch();
+
+  await waitForCoarse(s.world, () => radio.linkCount() === 3, 30_000);
+  for (const d of cast) d.joinChannel(BRIDGE_CHANNEL);
+  s.check(
+    "the bridge is online with a rendezvous cell",
+    await waitForCoarse(
+      s.world,
+      () => servedCell(bridge) !== undefined,
+      90_000,
+    ),
+  );
+
+  const text = "the far island says hello";
+  relay.inject(farIslandMessage(servedCell(bridge) ?? "", text));
+  const seen = await waitForCoarse(
+    s.world,
+    () =>
+      quiet.texts(BRIDGE_CHANNEL).includes(text) &&
+      unplugged.texts(BRIDGE_CHANNEL).includes(text),
+    30_000,
+  );
+  s.check(
+    "both phones with the bridge off received it",
+    seen,
+    `quiet=[${quiet.texts(BRIDGE_CHANNEL).join(" | ")}] unplugged=[${unplugged
+      .texts(BRIDGE_CHANNEL)
+      .join(" | ")}]`,
+  );
+  s.check(
+    "and show it as having come over the bridge",
+    [quiet, unplugged].every((d) =>
+      d
+        .messages(BRIDGE_CHANNEL)
+        .some((m) => m.text === text && m.viaBridge === true),
+    ),
+  );
+  s.check(
+    "the phone with the internet off opened no relay connection",
+    relay.connectionCount("unplugged") === 0,
+  );
+  s.expectNone("exactly once", exactlyOnce(cast));
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N22 a deposit made while the bridge's relays are down goes out when they return", async () => {
+  const s = (scenario = new Scenario({
+    id: "N22",
+    title: "the bridge holds a deposit through an outage",
+    seed: 732,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const bridge = SimDevice.create(
+    s.world,
+    { ...android("bridge", 11), bridgeEnabled: true },
+    relay,
+  );
+  const local = SimDevice.create(
+    s.world,
+    { ...android("local", 22), bridgeEnabled: true },
+    relay,
+  );
+  const cast = [bridge, local];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  relay.setOffline("local", true);
+  for (const d of cast) d.launch();
+
+  for (const d of cast) {
+    d.joinChannel(BRIDGE_CHANNEL);
+    d.joinChannel(CELL_CHANNEL);
+  }
+  await cellsResolved(s, cast, CELL_CHANNEL);
+  s.check(
+    "the phone with no signal sees the bridge",
+    await waitForCoarse(s.world, () => local.seesBridge(), 90_000),
+  );
+
+  // The bridge's sockets die, and the deposit lands before its withdrawal
+  // announce can.
+  const text = "posted as the bridge lost signal";
+  relay.setOffline("bridge", true);
+  local.send(BRIDGE_CHANNEL, text);
+  await advanceFor(s.world, 5_000);
+  const published = (): boolean =>
+    relay.eventsOfKind(20000).some((e) => e.content === text);
+  s.check("nothing reached the relays during the outage", !published());
+
+  relay.setOffline("bridge", false);
+  s.check(
+    "the held deposit was published once the bridge's relays were back",
+    await waitForCoarse(s.world, published, 120_000),
+    "it was published into a dead pool and lost",
+  );
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N23 a gateway with the internet switched off refuses deposits", async () => {
+  // With the switch off there is no connection to carry anything on. Holding
+  // the deposit instead would publish someone else's message whenever the
+  // owner next turned the internet on, possibly much later.
+  const s = (scenario = new Scenario({
+    id: "N23",
+    title: "the internet switch gates the gateway's uplink",
+    seed: 733,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const gateway = SimDevice.create(
+    s.world,
+    { ...android("gateway", 11), gatewayEnabled: true, internetEnabled: false },
+    relay,
+  );
+  radio.add(gateway);
+  locations().place(gateway.id, PLACES.bengaluru);
+  const phone = new BitchatActor(s.world, {
+    id: "phone",
+    platform: "ios",
+    seedByte: 223,
+  });
+  radio.add(phone);
+  s.track(gateway);
+  gateway.launch();
+  phone.launch();
+  s.check(
+    "the gateway heard the bitchat phone's announce",
+    await waitForCoarse(
+      s.world,
+      () => gateway.peers().includes(phone.peerID),
+      30_000,
+    ),
+  );
+
+  // The #city cell, worked out here because a phone with the internet off
+  // has no location channels to ask.
+  const cell = encodeGeohash(PLACES.bengaluru.lat, PLACES.bengaluru.lng, 5);
+  const refused = "deposited while the internet was off";
+  phone.depositWithGateway(
+    gateway.peerID,
+    cell,
+    signedGeohashNote(cell, refused),
+  );
+  await advanceFor(s.world, 5_000);
+
+  gateway.setSetting("internetEnabled", true);
+  gateway.joinChannel(CELL_CHANNEL);
+  s.check(
+    "the gateway came online",
+    await waitForCoarse(
+      s.world,
+      () => relay.connectionCount("gateway") > 0,
+      60_000,
+    ),
+  );
+  await advanceFor(s.world, 20_000);
+  s.check(
+    "the deposit made with the internet off was never published",
+    !publishedText(relay, refused),
+  );
+
+  // The control: the same path with the internet on publishes.
+  const carried = "deposited once the internet was on";
+  phone.depositWithGateway(
+    gateway.peerID,
+    cell,
+    signedGeohashNote(cell, carried),
+  );
+  s.check(
+    "a deposit made with the internet on is published",
+    await waitForCoarse(s.world, () => publishedText(relay, carried), 30_000),
+  );
+  s.expectNone("process health", noCrashes([gateway]));
+  s.assert(true);
+});
+
+test("N24 a relay-pool rebuild does not make a bridge carry the backlog again", async () => {
+  // A network handoff or a Tor toggle rebuilds the pool, and the new
+  // subscription replays fifteen minutes of the rendezvous. Everything in it
+  // was already handled, and the island already heard it.
+  const s = (scenario = new Scenario({
+    id: "N24",
+    title: "the bridge's loop caches survive restartNostr",
+    seed: 734,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const bridge = SimDevice.create(
+    s.world,
+    { ...android("bridge", 11), bridgeEnabled: true },
+    relay,
+  );
+  const local = SimDevice.create(
+    s.world,
+    { ...android("local", 22), bridgeEnabled: true },
+    relay,
+  );
+  const cast = [bridge, local];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  relay.setOffline("local", true);
+  for (const d of cast) d.launch();
+
+  await waitForCoarse(s.world, () => radio.linkCount() === 1, 30_000);
+  for (const d of cast) d.joinChannel(BRIDGE_CHANNEL);
+  s.check(
+    "the bridge is online with a rendezvous cell",
+    await waitForCoarse(
+      s.world,
+      () => servedCell(bridge) !== undefined,
+      90_000,
+    ),
+  );
+
+  const text = "said once, before the handoff";
+  const event = farIslandMessage(servedCell(bridge) ?? "", text);
+  const downlinks = downlinksOf(radio, event.id);
+  relay.inject(event);
+  await waitForCoarse(
+    s.world,
+    () => local.texts(BRIDGE_CHANNEL).includes(text),
+    30_000,
+  );
+  await advanceFor(s.world, 5_000);
+  s.check(
+    "the bridge carried it down once",
+    downlinks.sends.size === 1,
+    `${String(downlinks.sends.size)} downlinks`,
+  );
+
+  (bridge.mesh as unknown as { restartNostr: () => void }).restartNostr();
+  s.check(
+    "the rebuilt pool came back with the cell",
+    await waitForCoarse(
+      s.world,
+      () => servedCell(bridge) !== undefined,
+      90_000,
+    ),
+  );
+  await advanceFor(s.world, 20_000);
+  downlinks.stop();
+  s.check(
+    "and it did not carry the replayed copy down again",
+    downlinks.sends.size === 1,
+    `downlinks: ${[...downlinks.sends].join(", ")}`,
+  );
+  s.expectNone("exactly once", exactlyOnce(cast));
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N25 a deposit held past the freshness window is dropped, not published", async () => {
+  // Every receiver refuses a carried event older than fifteen minutes, so
+  // publishing one after a long outage reaches nobody and only spends the
+  // gateway's connection.
+  const s = (scenario = new Scenario({
+    id: "N25",
+    title: "the gateway's held deposits expire with the window",
+    seed: 735,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const gateway = SimDevice.create(
+    s.world,
+    { ...android("gateway", 11), gatewayEnabled: true },
+    relay,
+  );
+  const stranded = SimDevice.create(s.world, android("stranded", 22), relay);
+  const cast = [gateway, stranded];
+  for (const d of cast) {
+    radio.add(d);
+    locations().place(d.id, PLACES.bengaluru);
+  }
+  s.track(...cast);
+  relay.setOffline("stranded", true);
+  for (const d of cast) d.launch();
+
+  await waitForCoarse(s.world, () => stranded.peerCount() === 1, 40_000);
+  for (const d of cast) d.joinChannel(CELL_CHANNEL);
+  await cellsResolved(s, cast, CELL_CHANNEL);
+  s.check(
+    "the stranded phone sees the gateway",
+    await waitForCoarse(s.world, () => stranded.seesGateway(), 60_000),
+  );
+
+  const text = "held through a long outage";
+  relay.setOffline("gateway", true);
+  stranded.send(CELL_CHANNEL, text);
+  await advanceFor(s.world, 16 * 60_000);
+  relay.setOffline("gateway", false);
+  s.check(
+    "the gateway came back online",
+    await waitForCoarse(
+      s.world,
+      () => relay.connectionCount("gateway") > 0,
+      120_000,
+    ),
+  );
+  await advanceFor(s.world, 20_000);
+  s.check("the stale deposit was not published", !publishedText(relay, text));
+  s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });

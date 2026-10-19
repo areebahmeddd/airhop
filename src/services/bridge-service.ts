@@ -7,22 +7,40 @@
 // share one public chat. Mesh-only peers (no internet) reach the rendezvous
 // through a nearby bridge peer via toBridge/fromBridge carriers.
 //
-// This mirrors bitchat BridgeService's design (rendezvous events, three loop
-// caches, per-role rate limits) but leans on Airhop infrastructure and keeps the
-// dedup simple: both the radio copy and the bridged copy key the timeline row on
-// the same content-derived stable ID, so duplicates collapse in either arrival
+// This mirrors bitchat-ios BridgeService's design (rendezvous events, the loop
+// caches, per-role rate limits, a jittered downlink) but keeps the dedup
+// simple: both the radio copy and the bridged copy key the timeline row on the
+// same content-derived stable ID, so duplicates collapse in either arrival
 // order without bitchat's alias-removal bookkeeping. The radio copy still wins
 // the row, as in bitchat: the chat store replaces a bridged row when the signed
 // radio copy arrives, since the hint the bridged row is keyed on is unsigned.
 //
-// Scope note: the rendezvous covers the device's own geohash-6 cell only.
-// Boundary-neighbor coverage (subscribing to adjacent cells) is a future
-// refinement; two islands in the same ~1.2 km cell meet today.
+// Two halves, with different consent:
+//   - Receiving fromBridge carriers over the radio is passive and leaks
+//     nothing, so it runs whatever the toggle and the internet switch say, as
+//     in bitchat-ios: two phones side by side should not disagree about what
+//     the room said.
+//   - Everything that touches the network (subscribing, which tells relays the
+//     cell; publishing; accepting deposits; carrying remote messages onto the
+//     radio) needs the toggle AND a Nostr client, which exists only while the
+//     internet switch is on.
+//
+// One instance lives as long as its MeshService, and the Nostr client under it
+// is swapped on every transport rebuild (a network handoff, a Tor toggle). The
+// loop caches and the participants outlive the swap: fresh ones after each
+// rebuild would let the new subscription's backfill re-inject, re-downlink and
+// re-publish what the previous one already handled.
+//
+// The subscription covers the own precision-6 cell and its eight neighbours,
+// so two islands either side of a cell edge still meet. Publishes go to the
+// own cell only, which is symmetric: each side's ring includes the other's
+// cell.
 
 import { SlidingWindowLimiter } from "@core/mesh/routing/sliding-window-limiter";
 import {
   CarrierDirection,
   encodeNostrCarrier,
+  isValidCarrierGeohash,
   type NostrCarrierPacket,
 } from "@core/mesh/wire/nostr-carrier";
 import {
@@ -30,6 +48,7 @@ import {
   createBridgeMeshEvent,
   createBridgePresenceEvent,
   parseBridgeEvent,
+  type ParsedBridgeEvent,
 } from "@core/nostr/bridge-event";
 import {
   GEO_RELAY_COUNT,
@@ -47,6 +66,7 @@ import { decodeGeohash, encodeGeohash } from "@core/nostr/geohash-presence";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { useSettingsStore } from "@store/settings-store";
 import { BoundedIdSet } from "@utils/bounded-id-set";
+import { geohashNeighbours } from "@utils/geohash-grid";
 import { verifyEvent, type Event as NostrEvent } from "nostr-tools";
 import { getCoarseLocation } from "./location-service";
 
@@ -60,15 +80,55 @@ const RELAY_COUNT = GEO_RELAY_COUNT;
 export const MAX_EVENT_AGE_SECONDS = 15 * 60;
 // A rendezvous participant counts toward "across the bridge" for this long.
 export const PARTICIPANT_TTL_MS = 10 * 60 * 1000;
+// People the "across the bridge" count can hold. Relay ingress is adversarial,
+// and a valid signature proves control of one key, not of a person: without a
+// cap, rotating keys would grow the count (and the map) without limit.
+export const MAX_PARTICIPANTS = 128;
 // Airtime budget for downlink rebroadcasts (per rolling minute).
 export const DOWNLINK_EVENTS_PER_MINUTE = 20;
+// Downlinks waiting for their holdoff or for budget. Drop-oldest past this:
+// fresher chat is worth more, and an event dropped here is not yet marked
+// rebroadcast, so a relay redelivery can still carry it.
+export const MAX_PENDING_DOWNLINKS = 30;
+// Holdoff before a downlink goes out. Every online bridger on an island hears
+// the same relay event at about the same moment, so sending at once means each
+// of them puts it on the radio. The spread lets the first carrier's broadcast
+// reach the others, which then stand down (bitchat-ios uses 0.2 to 1.5 s).
+export const DOWNLINK_HOLDOFF_MIN_MS = 200;
+export const DOWNLINK_HOLDOFF_MAX_MS = 1_500;
 // Uplink deposits accepted per depositor per rolling minute.
 export const UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR = 10;
+// Deposits held while no relay is live, bounded in total and per depositor so
+// one peer cannot fill the bag (bitchat-ios BridgeService.Limits).
+export const MAX_QUEUED_UPLINKS = 20;
+export const MAX_QUEUED_UPLINKS_PER_DEPOSITOR = 5;
+// Accepted rendezvous events per rolling minute, in total and per signer.
+// Bounds the work and state relay or carrier ingress can cost, independently
+// of the downlink airtime budget.
+export const INBOUND_EVENTS_PER_MINUTE = 600;
+export const INBOUND_EVENTS_PER_MINUTE_PER_SIGNER = 120;
+// Schnorr checks per rolling minute, valid or not. Spent before the signer is
+// known, so invalid events (which never reach the accepted-event limits above)
+// cannot force unbounded verification either.
+export const SIGNATURE_CHECKS_PER_MINUTE = 720;
 // Minimum spacing between our own presence heartbeats.
 const PRESENCE_MIN_INTERVAL_MS = 30_000;
+// Maintenance tick while bridging: presence, participant pruning, and a cell
+// re-resolve that recovers a launch which raced the location permission.
+const PRESENCE_INTERVAL_MS = 4 * 60 * 1000;
 // Event and radio-copy IDs each loop-prevention set remembers, as bitchat-ios
 // (BridgeService.Limits.maxTrackedEventIDs).
 export const ID_SET_CAP = 512;
+// Prefix that separates the rendezvous identity from the location-channel
+// identity for the same cell. Without it the bridge would sign with the user's
+// #neighborhood key, and its events, which carry the durable mesh peer ID in
+// the `m` tag, would tie that pseudonym to the peer ID. Same label as
+// bitchat-ios deriveIdentity(forBridgeRendezvous:).
+const RENDEZVOUS_IDENTITY_PREFIX = "bridge|";
+
+// The key every accepted-event count is held under. One limiter instance is the
+// total; the per-signer one keys by pubkey.
+const ALL = "all";
 
 // A remote-island message to render into the local #bluetooth timeline.
 export interface BridgeInboundMessage {
@@ -105,29 +165,68 @@ export interface BridgeHooks {
   nickname(): string;
   // Report status changes so the banner/header can react.
   onStatus(status: BridgeStatus): void;
+  // The rendezvous cell changed, including to or from none. The cell rides in
+  // every ANNOUNCE (TLV 0x06), so a mesh-only neighbour learns it only from the
+  // next one, and waiting a full cycle leaves it composing for the wrong cell.
+  onActiveCellChanged(): void;
+}
+
+interface QueuedUplink {
+  depositor: string;
+  cell: string;
+  event: NostrEvent;
+}
+
+interface PendingDownlink {
+  event: NostrEvent;
+  cell: string;
+  radioHint: string | undefined;
 }
 
 export class BridgeService {
   private readonly relayDirectory = new GeoRelayDirectory();
   private readonly seed: Uint8Array;
+  // The relay pool for the current transport, or null while the internet is
+  // off or the transport is being rebuilt. Every network action checks it.
+  private client: NostrClient | null = null;
   private enabled = false;
   private activeCell: string | null = null;
+  // The own cell plus its neighbour ring: what the subscription asks for, and
+  // the only cells an inbound event may be signed for.
+  private subscribedCells: ReadonlySet<string> = new Set();
   private subscription: { close: () => void } | null = null;
-  private subscribedCell: string | null = null;
   private readonly identityCache = new Map<string, GeohashIdentity>();
 
-  // Loop prevention (mirrors the gateway's three caches).
+  // Loop prevention, as bitchat-ios BridgeService's caches.
   private readonly publishedEventIDs = new BoundedIdSet(ID_SET_CAP); // our own published events
   private readonly receivedEventIDs = new BoundedIdSet(ID_SET_CAP); // acted-on once
   private readonly rebroadcastEventIDs = new BoundedIdSet(ID_SET_CAP); // ferried to mesh once
   private readonly seenRadioStableIDs = new BoundedIdSet(ID_SET_CAP); // radio copies present
+  // Events heard as a fromBridge broadcast. Never published or rebroadcast: the
+  // island already has them, and a second bridge echoing them doubles airtime.
+  private readonly meshBroadcastEventIDs = new BoundedIdSet(ID_SET_CAP);
 
   // Rate limiting.
   private readonly uplinkDeposits = new SlidingWindowLimiter(
     UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR,
     60_000,
   );
+  private readonly inboundTotal = new SlidingWindowLimiter(
+    INBOUND_EVENTS_PER_MINUTE,
+    60_000,
+  );
+  private readonly inboundPerSigner = new SlidingWindowLimiter(
+    INBOUND_EVENTS_PER_MINUTE_PER_SIGNER,
+    60_000,
+  );
+  private readonly signatureChecks = new SlidingWindowLimiter(
+    SIGNATURE_CHECKS_PER_MINUTE,
+    60_000,
+  );
   private downlinkSendTimes: number[] = [];
+  private pendingDownlinks: PendingDownlink[] = [];
+  private downlinkTimer: ReturnType<typeof setTimeout> | null = null;
+  private queuedUplinks: QueuedUplink[] = [];
 
   // "People across the bridge" accounting.
   private readonly participants = new Map<string, number>(); // pubkey -> lastSeenMs
@@ -135,7 +234,6 @@ export class BridgeService {
   private lastPresenceAtMs = 0;
 
   constructor(
-    private readonly client: NostrClient,
     signingPrivKey: Uint8Array,
     private readonly hooks: BridgeHooks,
   ) {
@@ -149,26 +247,52 @@ export class BridgeService {
     if (enabled === this.enabled) return;
     this.enabled = enabled;
     if (enabled) {
-      void this.refresh();
-      this.armPresenceTimer();
-    } else {
-      this.teardown();
+      this.startNetwork();
+      return;
+    }
+    // Consent withdrawn: other people's parked deposits and the downlinks we
+    // owed the island go with it, as does everyone counted across.
+    this.closeNetwork();
+    this.setActiveCell(null);
+    this.queuedUplinks = [];
+    this.participants.clear();
+    this.uplinkDeposits.reset();
+    this.inboundTotal.reset();
+    this.inboundPerSigner.reset();
+    this.emitStatus();
+  }
+
+  // Swap the relay pool under the bridge. Null closes the subscription and
+  // stops every timer but keeps the cell, the caches, the participants and
+  // any parked deposits, so a rebuild picks up where the last pool left off.
+  attachClient(client: NostrClient | null): void {
+    if (client === this.client) return;
+    this.closeNetwork();
+    this.client = client;
+    if (client === null) {
+      this.emitStatus();
+      return;
+    }
+    if (this.enabled) {
+      // The cell is unchanged, so refresh() would not resubscribe it.
+      if (this.activeCell !== null) this.openSubscription();
+      this.startNetwork();
     }
   }
 
   // Resolve the rendezvous cell and (re)open its subscription. Safe to call
   // repeatedly; only re-subscribes when the cell changes.
   async refresh(): Promise<void> {
-    if (!this.enabled) return;
+    if (!this.networkAllowed()) return;
     const cell = await this.resolveCell();
     // Re-check after the await: resolveCell() can take seconds on a cold GPS
     // fix, and the user (or a Tor rebuild) may have disabled the bridge in that
     // window. Without this, teardown would run and then this stale call would
     // re-open a relay subscription while disabled, leaking it for the session.
-    if (!this.enabled) return;
+    if (!this.networkAllowed()) return;
     if (cell !== this.activeCell) {
-      this.activeCell = cell;
       this.resubscribe(cell);
+      this.setActiveCell(cell);
     }
     this.emitStatus();
     this.publishPresence();
@@ -181,10 +305,62 @@ export class BridgeService {
   // and presence rate limit with it. The cell here is the same, so clearing them
   // would blink the "across the bridge" count to zero for nothing.
   applyRelayChange(): void {
-    const cell = this.subscribedCell;
-    if (!this.enabled || cell === null) return;
+    if (!this.networkAllowed() || this.activeCell === null) return;
+    this.openSubscription();
+  }
+
+  // Mesh stopped (Away, a panic wipe). Everything transient goes; the loop
+  // caches stay, since a return to Online replays the same relay backlog.
+  stop(): void {
+    this.closeNetwork();
+    this.client = null;
+    this.setActiveCell(null);
+    this.queuedUplinks = [];
+    this.participants.clear();
+    this.emitStatus();
+  }
+
+  // Internet switched off: deposits were accepted on the promise of putting
+  // them on the internet, and must not be published if it comes back later.
+  dropQueuedUplinks(): void {
+    this.queuedUplinks = [];
+  }
+
+  private networkAllowed(): boolean {
+    return this.enabled && this.client !== null;
+  }
+
+  private startNetwork(): void {
+    if (!this.networkAllowed()) return;
+    void this.refresh();
+    this.armPresenceTimer();
+    this.flushQueuedUplinks();
+  }
+
+  // Close the subscription and cancel every timer that would act on the
+  // network. State is left for the caller to decide about.
+  private closeNetwork(): void {
     this.subscription?.close();
-    this.subscription = this.openCellSubscription(cell);
+    this.subscription = null;
+    if (this.presenceTimer !== null) {
+      clearTimeout(this.presenceTimer);
+      this.presenceTimer = null;
+    }
+    if (this.downlinkTimer !== null) {
+      clearTimeout(this.downlinkTimer);
+      this.downlinkTimer = null;
+    }
+    this.pendingDownlinks = [];
+  }
+
+  private setActiveCell(cell: string | null): void {
+    if (cell === this.activeCell) return;
+    this.activeCell = cell;
+    this.subscribedCells =
+      cell === null
+        ? new Set()
+        : new Set([cell, ...geohashNeighbours(cell).map((n) => n.geohash)]);
+    this.hooks.onActiveCellChanged();
   }
 
   private async resolveCell(): Promise<string | null> {
@@ -195,7 +371,7 @@ export class BridgeService {
     // No location of our own: fall back to a cell a nearby bridge advertises,
     // so a mesh-only peer can still deposit into the right rendezvous.
     const advertised = this.hooks.advertisedBridgeCell();
-    return advertised !== undefined && advertised.length > 0
+    return advertised !== undefined && isValidCarrierGeohash(advertised)
       ? advertised.slice(0, CELL_PRECISION)
       : null;
   }
@@ -203,7 +379,6 @@ export class BridgeService {
   private resubscribe(cell: string | null): void {
     this.subscription?.close();
     this.subscription = null;
-    this.subscribedCell = null;
     // Everyone counted "across" was across the OLD cell. Carrying them into the
     // new one would inflate the banner with people the user has just walked
     // away from, for as long as their ten-minute presence TTL has left to run.
@@ -212,19 +387,26 @@ export class BridgeService {
     // than waiting out the rate limit from the previous one, which leaves the
     // device in a cell nobody there can see it in for up to half a minute.
     this.lastPresenceAtMs = 0;
+    // Downlinks held for the old ring are no longer this island's business.
+    this.pendingDownlinks = [];
     if (cell === null) return;
-    this.subscribedCell = cell;
-    this.subscription = this.openCellSubscription(cell);
+    this.openSubscription(cell);
   }
 
-  // Shared by the cell-change and relay-change paths, which differ only in what
-  // they tear down first. The relay set is read as the socket opens.
-  private openCellSubscription(cell: string): { close: () => void } {
-    return this.client.subscribe(
+  // Shared by the cell-change, relay-change and client-swap paths. The relay
+  // set is read as the socket opens, for the own cell: the neighbours are a
+  // kilometre away, so their nearest relays are the same ones.
+  private openSubscription(cell = this.activeCell): void {
+    this.subscription?.close();
+    this.subscription = null;
+    const client = this.client;
+    if (client === null || cell === null) return;
+    const cells = [cell, ...geohashNeighbours(cell).map((n) => n.geohash)];
+    this.subscription = client.subscribe(
       [
         {
           kinds: [20000, 20001],
-          "#r": [cell],
+          "#r": cells,
           since: Math.floor(Date.now() / 1000) - MAX_EVENT_AGE_SECONDS,
         },
       ],
@@ -234,34 +416,23 @@ export class BridgeService {
     );
   }
 
-  private teardown(): void {
-    this.subscription?.close();
-    this.subscription = null;
-    this.subscribedCell = null;
-    this.activeCell = null;
-    this.participants.clear();
-    if (this.presenceTimer !== null) {
-      clearTimeout(this.presenceTimer);
-      this.presenceTimer = null;
-    }
-    this.emitStatus();
-  }
-
-  stop(): void {
-    this.teardown();
-  }
-
   // The cell we advertise to mesh-only peers (ANNOUNCE TLV 0x06). Only when we
   // can actually serve: bridging, online, and with a known cell.
   advertisedBridgeGeohash(): string | undefined {
     if (
-      this.enabled &&
+      this.networkAllowed() &&
       this.hooks.relaysConnected() &&
       this.activeCell !== null
     ) {
       return this.activeCell;
     }
     return undefined;
+  }
+
+  // Whether a toBridge deposit could be acted on at all, so the caller can skip
+  // authenticating one we would drop anyway.
+  acceptsDeposits(): boolean {
+    return this.networkAllowed();
   }
 
   // ---- Outgoing (sender role) ----
@@ -271,15 +442,17 @@ export class BridgeService {
   // timestamp so the bridged copy and the radio copy derive the same stable ID.
   //
   // When it went to live relays, returns whether one accepted it. Otherwise
-  // undefined: bridging off, nearby-only, no cell, or offline, where the only
-  // carrier is a bridge peer, a radio neighbour the caller already counts.
+  // undefined: bridging off, internet off, nearby-only, no cell, or offline,
+  // where the only carrier is a bridge peer, a radio neighbour the caller
+  // already counts.
   bridgeOutgoing(
     content: string,
     senderPeerID: string,
     timestampMs: number,
     nearbyOnly: boolean,
   ): Promise<boolean> | undefined {
-    if (!this.enabled || nearbyOnly) return undefined;
+    const client = this.client;
+    if (!this.enabled || client === null || nearbyOnly) return undefined;
     const cell = this.activeCell;
     if (cell === null || content.length === 0) return undefined;
     const identity = this.identityFor(cell);
@@ -298,7 +471,7 @@ export class BridgeService {
       bridgeStableID(senderPeerID, timestampMs, content),
     );
     if (this.hooks.relaysConnected()) {
-      return this.client.publish(event, this.relaysForCell(cell)).then(
+      return client.publish(event, this.relaysForCell(cell)).then(
         () => true,
         () => false,
       );
@@ -318,12 +491,12 @@ export class BridgeService {
 
   // Record a public #bluetooth radio message so a bridged copy of the same
   // message (same origin sender/timestamp/content) is not rendered twice.
+  // Unconditional, because receiving bridged copies is.
   noteRadioMessage(
     senderIDHex: string,
     timestampMs: number,
     content: string,
   ): void {
-    if (!this.enabled) return;
     this.seenRadioStableIDs.add(
       bridgeStableID(senderIDHex, timestampMs, content),
     );
@@ -332,61 +505,122 @@ export class BridgeService {
   // ---- Subscription ingress (internet role) ----
 
   private handleRendezvousEvent(event: NostrEvent): void {
-    if (!this.enabled) return;
+    if (!this.networkAllowed()) return;
     if (typeof event.id !== "string") return;
-    // Only events for our subscribed cell, trusting the event's own signed r tag.
-    const parsed = parseBridgeEvent(event);
-    if (parsed === null || parsed.cell !== this.subscribedCell) return;
+    // Only events for our ring, trusting the event's own signed r tag. Read
+    // before anything else, since it costs nothing.
+    const cell = rendezvousCell(event);
+    if (cell === undefined || !this.subscribedCells.has(cell)) return;
     // Skip our own events (both this-session cache and deterministic pubkey
     // self-recognition, so a relay backfill after a restart is still ours).
     if (this.publishedEventIDs.has(event.id)) return;
-    if (this.isOwnEvent(event, parsed.cell)) {
+    if (this.isOwnEvent(event, cell)) {
       this.publishedEventIDs.add(event.id);
       return;
     }
-    if (!verifyEvent(event)) return;
+    if (!this.isFresh(event)) return;
     if (this.receivedEventIDs.has(event.id)) return;
+    const parsed = parseBridgeEvent(event);
+    if (parsed === null || parsed.cell !== cell) return;
+    if (!this.verify(event)) return;
+    if (!this.allowInbound(event.pubkey)) return;
     this.receivedEventIDs.add(event.id);
 
     if (parsed.kind === "presence") {
       this.recordParticipant(event.pubkey);
       return;
     }
-
-    const isLocalRadioCopy =
-      parsed.radioMessageIDHint !== undefined &&
-      this.seenRadioStableIDs.has(parsed.radioMessageIDHint);
-    if (!isLocalRadioCopy) {
-      this.injectRemote(event, parsed.content, parsed.nickname);
-      this.recordParticipant(event.pubkey);
-      this.maybeRebroadcast(event, parsed.cell);
-    }
+    if (this.isLocalRadioCopy(parsed.radioMessageIDHint)) return;
+    this.injectRemote(event, parsed);
+    this.queueDownlink(event, cell, parsed.radioMessageIDHint);
   }
 
   // Serving duty: carry a remote island's message onto the radio for mesh-only
-  // peers, within the airtime budget. Local-origin events are never rebroadcast
-  // (they are already on this island's radio).
-  private maybeRebroadcast(event: NostrEvent, cell: string): void {
+  // peers, after a holdoff and within the airtime budget. Local-origin events
+  // are never rebroadcast (they are already on this island's radio).
+  private queueDownlink(
+    event: NostrEvent,
+    cell: string,
+    radioHint: string | undefined,
+  ): void {
     if (
+      this.meshBroadcastEventIDs.has(event.id) ||
       this.rebroadcastEventIDs.has(event.id) ||
-      this.publishedEventIDs.has(event.id)
+      this.publishedEventIDs.has(event.id) ||
+      this.pendingDownlinks.some((p) => p.event.id === event.id)
     ) {
+      return;
+    }
+    this.pendingDownlinks.push({ event, cell, radioHint });
+    if (this.pendingDownlinks.length > MAX_PENDING_DOWNLINKS) {
+      this.pendingDownlinks.splice(
+        0,
+        this.pendingDownlinks.length - MAX_PENDING_DOWNLINKS,
+      );
+    }
+    this.scheduleDownlinkDrain(true);
+  }
+
+  private scheduleDownlinkDrain(holdoff: boolean): void {
+    if (this.pendingDownlinks.length === 0 || this.downlinkTimer !== null) {
+      return;
+    }
+    let delay: number;
+    if (holdoff) {
+      // Jitter, not a secret: Math.random is enough to spread carriers apart.
+      delay =
+        DOWNLINK_HOLDOFF_MIN_MS +
+        Math.random() * (DOWNLINK_HOLDOFF_MAX_MS - DOWNLINK_HOLDOFF_MIN_MS);
+    } else {
+      // Budget spent: wait until the oldest send in the window ages out.
+      const oldest = Math.min(...this.downlinkSendTimes, Date.now());
+      delay = Math.max(50, 60_000 - (Date.now() - oldest));
+    }
+    this.downlinkTimer = setTimeout(() => {
+      this.downlinkTimer = null;
+      this.drainDownlinks();
+    }, delay);
+  }
+
+  private drainDownlinks(): void {
+    if (!this.networkAllowed()) {
+      this.pendingDownlinks = [];
       return;
     }
     const now = Date.now();
     this.downlinkSendTimes = this.downlinkSendTimes.filter(
       (t) => now - t < 60_000,
     );
-    if (this.downlinkSendTimes.length >= DOWNLINK_EVENTS_PER_MINUTE) return;
-    const payload = this.encodeCarrier(
-      CarrierDirection.FROM_BRIDGE,
-      cell,
-      event,
-    );
-    if (payload === null) return;
-    this.hooks.broadcastCarrierFromBridge(payload);
-    this.rebroadcastEventIDs.add(event.id);
-    this.downlinkSendTimes.push(now);
+    while (
+      this.pendingDownlinks.length > 0 &&
+      this.downlinkSendTimes.length < DOWNLINK_EVENTS_PER_MINUTE
+    ) {
+      const item = this.pendingDownlinks.shift();
+      if (item === undefined) break;
+      const { event, cell, radioHint } = item;
+      if (!this.isFresh(event)) continue;
+      // Rechecked at send time: during the holdoff another bridge may have put
+      // it on the radio, or the signed radio copy may have arrived.
+      if (
+        this.meshBroadcastEventIDs.has(event.id) ||
+        this.rebroadcastEventIDs.has(event.id) ||
+        this.isLocalRadioCopy(radioHint)
+      ) {
+        continue;
+      }
+      const payload = this.encodeCarrier(
+        CarrierDirection.FROM_BRIDGE,
+        cell,
+        event,
+      );
+      if (payload === null) continue;
+      this.hooks.broadcastCarrierFromBridge(payload);
+      // Marked after the send, so an event dropped from a full queue stays
+      // retryable on a relay redelivery.
+      this.rebroadcastEventIDs.add(event.id);
+      this.downlinkSendTimes.push(now);
+    }
+    this.scheduleDownlinkDrain(false);
   }
 
   // ---- Mesh carrier ingress (both roles) ----
@@ -396,7 +630,18 @@ export class BridgeService {
     fromPeerID: string,
     directedToUs: boolean,
   ): void {
-    if (!this.enabled) return;
+    // Cheap structural gate first, on both directions, before the event JSON
+    // is even parsed.
+    if (!isValidCarrierGeohash(carrier.geohash)) return;
+    if (carrier.direction === CarrierDirection.TO_BRIDGE) {
+      // A broadcast toBridge is malformed, and a deposit is a request to use
+      // our connection, which needs the toggle and the internet.
+      if (!directedToUs || !this.networkAllowed()) return;
+    } else if (carrier.direction === CarrierDirection.FROM_BRIDGE) {
+      if (directedToUs) return; // a directed fromBridge is malformed
+    } else {
+      return;
+    }
     let event: NostrEvent;
     try {
       event = JSON.parse(
@@ -411,15 +656,14 @@ export class BridgeService {
     // cheap gates first, in bitchat-ios's order (BridgeService
     // handleUplinkDeposit, handleDownlinkBroadcast).
     if (carrier.direction === CarrierDirection.TO_BRIDGE) {
-      if (!directedToUs) return; // a broadcast toBridge is malformed
       this.handleUplinkDeposit(carrier, event, fromPeerID);
-    } else if (carrier.direction === CarrierDirection.FROM_BRIDGE) {
-      if (directedToUs) return; // a directed fromBridge is malformed
+    } else {
       this.handleDownlink(carrier, event);
     }
   }
 
-  // Gateway role: publish a mesh-only peer's deposit to the rendezvous relays.
+  // Gateway role: publish a mesh-only peer's deposit to the rendezvous relays,
+  // or hold it until one is live.
   private handleUplinkDeposit(
     carrier: NostrCarrierPacket,
     event: NostrEvent,
@@ -429,37 +673,87 @@ export class BridgeService {
     if (parsed === null || parsed.kind !== "message") return;
     if (parsed.cell !== carrier.geohash) return; // r tag must match the carrier
     if (!this.isFresh(event)) return;
-    if (this.publishedEventIDs.has(event.id)) return;
+    if (
+      this.meshBroadcastEventIDs.has(event.id) ||
+      this.publishedEventIDs.has(event.id) ||
+      this.queuedUplinks.some((q) => q.event.id === event.id)
+    ) {
+      return;
+    }
     if (!this.allowUplinkDeposit(depositor)) return;
-    if (!verifyEvent(event)) return;
-    this.publishedEventIDs.add(event.id);
-    void this.client
-      .publish(event, this.relaysForCell(carrier.geohash))
-      .catch(() => {});
+    if (!this.verify(event)) return;
+    if (this.hooks.relaysConnected()) {
+      this.publish(event, carrier.geohash);
+    } else {
+      // Directed at us, so nobody else holds a copy to carry.
+      this.enqueueUplink({ depositor, cell: carrier.geohash, event });
+    }
   }
 
-  // Mesh-only receiver role: a bridge gateway broadcast a remote message to us.
+  private enqueueUplink(item: QueuedUplink): void {
+    const fromDepositor = this.queuedUplinks.filter(
+      (q) => q.depositor === item.depositor,
+    ).length;
+    if (fromDepositor >= MAX_QUEUED_UPLINKS_PER_DEPOSITOR) return;
+    if (this.queuedUplinks.length >= MAX_QUEUED_UPLINKS) {
+      this.queuedUplinks.shift();
+    }
+    this.queuedUplinks.push(item);
+  }
+
+  // Publish everything held while no relay was live. Stale entries are
+  // dropped: every receiver would refuse them, and relays may too.
+  flushQueuedUplinks(): void {
+    if (!this.networkAllowed() || !this.hooks.relaysConnected()) return;
+    if (this.queuedUplinks.length === 0) return;
+    const queued = this.queuedUplinks;
+    this.queuedUplinks = [];
+    for (const item of queued) {
+      if (this.publishedEventIDs.has(item.event.id)) continue;
+      if (!this.isFresh(item.event)) continue;
+      this.publish(item.event, item.cell);
+    }
+  }
+
+  private publish(event: NostrEvent, cell: string): void {
+    const client = this.client;
+    if (client === null) return;
+    this.publishedEventIDs.add(event.id);
+    void client.publish(event, this.relaysForCell(cell)).catch(() => {});
+  }
+
+  // Receiver role: a bridge on this island carried a remote message onto the
+  // radio. Not gated on the toggle or the internet (see the header).
   private handleDownlink(carrier: NostrCarrierPacket, event: NostrEvent): void {
+    if (this.meshBroadcastEventIDs.has(event.id)) return;
     const parsed = parseBridgeEvent(event);
     if (parsed === null || parsed.kind !== "message") return;
     if (parsed.cell !== carrier.geohash) return;
     if (!this.isFresh(event)) return;
+    if (this.publishedEventIDs.has(event.id)) return;
+    if (!this.verify(event)) return;
+    // Our own message, carried back by a bridge that heard it from a relay:
+    // after a restart the published-ID cache is empty, but the derived key is
+    // still ours. Checked after the signature, because deriving the key for a
+    // cell the carrier names costs a scalar multiplication too, and the
+    // signature check is the one that is budgeted.
+    if (this.isOwnEvent(event, carrier.geohash)) return;
+    // Marked once verified, so a forged copy cannot poison the cache, and even
+    // when the relay copy won the race: a downlink of our own still waiting
+    // out its holdoff reads this and stands down.
+    this.meshBroadcastEventIDs.add(event.id);
     if (this.receivedEventIDs.has(event.id)) return;
-    // Recorded only once verified, so a forged copy cannot poison the cache.
-    if (!verifyEvent(event)) return;
+    if (!this.allowInbound(event.pubkey)) return;
     this.receivedEventIDs.add(event.id);
-    const isLocalRadioCopy =
-      parsed.radioMessageIDHint !== undefined &&
-      this.seenRadioStableIDs.has(parsed.radioMessageIDHint);
-    if (isLocalRadioCopy) return;
-    this.injectRemote(event, parsed.content, parsed.nickname);
-    this.recordParticipant(event.pubkey);
+    if (this.isLocalRadioCopy(parsed.radioMessageIDHint)) return;
+    this.injectRemote(event, parsed);
   }
 
   // ---- Presence + participants ----
 
   private publishPresence(): void {
-    if (!this.enabled || this.activeCell === null) return;
+    const client = this.client;
+    if (!this.enabled || client === null || this.activeCell === null) return;
     if (!this.hooks.relaysConnected()) return;
     const now = Date.now();
     if (now - this.lastPresenceAtMs < PRESENCE_MIN_INTERVAL_MS) return;
@@ -467,7 +761,7 @@ export class BridgeService {
     const identity = this.identityFor(this.activeCell);
     const event = createBridgePresenceEvent(this.activeCell, identity.privKey);
     this.publishedEventIDs.add(event.id);
-    void this.client
+    void client
       .publish(event, this.relaysForCell(this.activeCell))
       .catch(() => {});
   }
@@ -476,7 +770,7 @@ export class BridgeService {
     if (this.presenceTimer !== null) return;
     const tick = (): void => {
       this.presenceTimer = null;
-      if (!this.enabled) return;
+      if (!this.networkAllowed()) return;
       this.pruneParticipants();
       this.publishPresence();
       // Recover a launch that raced the location permission, and migrate cells
@@ -484,10 +778,21 @@ export class BridgeService {
       void this.refresh();
       this.armPresenceTimer();
     };
-    this.presenceTimer = setTimeout(tick, 4 * 60 * 1000);
+    this.presenceTimer = setTimeout(tick, PRESENCE_INTERVAL_MS);
   }
 
   private recordParticipant(pubkey: string): void {
+    this.pruneParticipants();
+    if (
+      !this.participants.has(pubkey) &&
+      this.participants.size >= MAX_PARTICIPANTS
+    ) {
+      // The least recently seen goes. A Map iterates in insertion order and
+      // every sighting re-inserts below, so the first key is that one.
+      const oldest = this.participants.keys().next().value;
+      if (oldest !== undefined) this.participants.delete(oldest);
+    }
+    this.participants.delete(pubkey);
     this.participants.set(pubkey, Date.now());
     this.emitStatus();
   }
@@ -506,43 +811,47 @@ export class BridgeService {
 
   // ---- Helpers ----
 
-  private injectRemote(
-    event: NostrEvent,
-    content: string,
-    nickname: string | undefined,
-  ): void {
-    if (content.length === 0) return;
+  private injectRemote(event: NostrEvent, parsed: ParsedBridgeEvent): void {
+    if (parsed.content.length === 0) return;
     const parsedTs = Math.min(event.created_at, Math.floor(Date.now() / 1000));
     this.hooks.injectMessage({
       // Key on the content-stable radio ID when present so a later radio copy
       // (or a copy from another gateway) collapses onto the same row; else fall
       // back to the event id.
-      id: this.timelineID(event),
+      id:
+        parsed.radioMessageIDHint !== undefined
+          ? `mesh-${parsed.radioMessageIDHint}`
+          : `bridge-${event.id}`,
       senderKey: `nostr_${event.pubkey}`,
-      nickname: geohashDisplayName(event.pubkey, nickname),
-      text: content,
+      nickname: geohashDisplayName(event.pubkey, parsed.nickname),
+      text: parsed.content,
       timestampMs: parsedTs * 1000,
     });
+    this.recordParticipant(event.pubkey);
   }
 
-  private timelineID(event: NostrEvent): string {
-    const parsed = parseBridgeEvent(event);
-    if (parsed?.radioMessageIDHint !== undefined) {
-      return `mesh-${parsed.radioMessageIDHint}`;
-    }
-    return `bridge-${event.id}`;
+  private isLocalRadioCopy(hint: string | undefined): boolean {
+    return hint !== undefined && this.seenRadioStableIDs.has(hint);
   }
 
   private isOwnEvent(event: NostrEvent, cell: string): boolean {
     return event.pubkey === this.identityFor(cell).pubKeyHex;
   }
 
+  // The rendezvous identity for a cell: deterministic, so our own events are
+  // still recognised after a restart, and never the location-channel key.
+  //
+  // Only the ring's identities are cached. A fromBridge carrier names any cell
+  // it likes, so caching those would be memory anyone in radio range could
+  // spend.
   private identityFor(cell: string): GeohashIdentity {
-    let identity = this.identityCache.get(cell);
-    if (identity === undefined) {
-      identity = deriveGeohashIdentity(this.seed, cell);
-      this.identityCache.set(cell, identity);
-    }
+    const cached = this.identityCache.get(cell);
+    if (cached !== undefined) return cached;
+    const identity = deriveGeohashIdentity(
+      this.seed,
+      RENDEZVOUS_IDENTITY_PREFIX + cell,
+    );
+    if (this.subscribedCells.has(cell)) this.identityCache.set(cell, identity);
     return identity;
   }
 
@@ -579,6 +888,26 @@ export class BridgeService {
     );
   }
 
+  private verify(event: NostrEvent): boolean {
+    if (!this.signatureChecks.tryAcquire(ALL, Date.now())) return false;
+    return verifyEvent(event);
+  }
+
+  // Counted only once the event is verified, so a forger cannot spend a
+  // genuine signer's budget.
+  private allowInbound(signer: string): boolean {
+    const now = Date.now();
+    if (
+      !this.inboundTotal.allows(ALL, now) ||
+      !this.inboundPerSigner.allows(signer, now)
+    ) {
+      return false;
+    }
+    this.inboundTotal.record(ALL, now);
+    this.inboundPerSigner.record(signer, now);
+    return true;
+  }
+
   private allowUplinkDeposit(depositor: string): boolean {
     return this.uplinkDeposits.tryAcquire(depositor, Date.now());
   }
@@ -600,12 +929,20 @@ export class BridgeService {
       // so a phone with the toggle on and every relay down never tells its
       // owner it is bridging islands. A status indicator that over-claims is
       // the failure the banner layer exists to prevent.
-      active:
-        this.enabled &&
-        this.activeCell !== null &&
-        this.hooks.relaysConnected(),
+      active: this.advertisedBridgeGeohash() !== undefined,
       cell: this.activeCell ?? undefined,
       peopleAcross: this.peopleAcross(),
     });
   }
+}
+
+// The cell an event names in its signed `r` tag, read without the rest of the
+// parse (which hashes the content).
+function rendezvousCell(event: NostrEvent): string | undefined {
+  if (!Array.isArray(event.tags)) return undefined;
+  const tag = event.tags.find(
+    (t) => Array.isArray(t) && t.length >= 2 && t[0] === "r",
+  );
+  const cell = tag?.[1];
+  return typeof cell === "string" && cell.length > 0 ? cell : undefined;
 }
