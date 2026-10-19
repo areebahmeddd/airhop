@@ -5,6 +5,15 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ## What's New
 
+- feat: upgrade to Expo SDK 58 and React Native 0.88 (#85) (by @Areeb Ahmed) (#85) [25633e8]
+- fix: improve voice, chat, wallet and background reliability; add an optional app lock (#84) (by @Areeb Ahmed) (#84) [792c580]
+- refactor: improve test cov + other updates (by @areebahmeddd) [9f22732]
+- fix: rendering of text in message thread and notifications (by @areebahmeddd) [0693d0e]
+
+**Full changelog:** [v1.0.9..v1.0.10](https://github.com/areebahmeddd/airhop/compare/v1.0.9..v1.0.10)
+
+## What's New
+
 - fix(i18n): linguistic review across 35 languages and RTL, plural and device-language fixes (#78) (by @Areeb Ahmed) (#78) [978b782]
 - release: v1.0.9 (security findings from claude opus 5.5) (#74) (by @Areeb Ahmed) (#74) [4749185]
 - feat(identity): transfer to a new phone (#72) (by @Areeb Ahmed) (#72) [d695f3c]
