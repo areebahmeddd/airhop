@@ -22,13 +22,10 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
   default: {},
 }));
 
+import type { StoredProof } from "@core/payments/stored-proof";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useOutboxStore } from "@store/outbox-store";
-import {
-  useWalletStore,
-  type StoredProof,
-  type WalletTx,
-} from "@store/wallet-store";
+import { useWalletStore, type WalletTx } from "@store/wallet-store";
 import { reclaimTokenSend, startReclaimFollow } from "../payment-router";
 
 const MINT = "https://mint.example.com";

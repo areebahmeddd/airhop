@@ -28,8 +28,8 @@ import {
   type ProofLike,
   type Token,
 } from "@cashu/cashu-ts";
-import type { StoredProof } from "@store/wallet-store";
 import { stripInvisibles } from "@utils/strip-invisibles";
+import type { StoredProof } from "./stored-proof";
 
 // ---- Constants ----
 

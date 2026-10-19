@@ -13,8 +13,8 @@
 // `CBORReader`, kept diffable against the Swift. A failure here means Airhop
 // and bitchat have diverged on payments, with no error on either side.
 
-import type { StoredProof } from "@store/wallet-store";
 import { buildToken } from "../cashu";
+import type { StoredProof } from "../stored-proof";
 
 const MINT = "https://mint.airhop.example";
 

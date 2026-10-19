@@ -6,6 +6,7 @@
 //
 // Uses the in-memory MMKV mock, so no native module and no network.
 
+import type { StoredProof } from "@core/payments/stored-proof";
 import * as mmkv from "react-native-mmkv";
 import {
   accountKey,
@@ -16,7 +17,6 @@ import {
   selectAccounts,
   useWalletStore,
   walletStorageByteSize,
-  type StoredProof,
   type WalletTx,
 } from "../wallet-store";
 

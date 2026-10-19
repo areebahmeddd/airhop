@@ -6,7 +6,6 @@
 // Nothing here touches a mint.
 
 import { getEncodedToken, type Token } from "@cashu/cashu-ts";
-import type { StoredProof } from "@store/wallet-store";
 import {
   bareToken,
   buildToken,
@@ -27,6 +26,7 @@ import {
   tokenQrPayload,
   toProofLike,
 } from "../cashu";
+import type { StoredProof } from "../stored-proof";
 
 const MINT = "https://mint.example.com";
 const KEYSET = "00ad268c4d1f5826";

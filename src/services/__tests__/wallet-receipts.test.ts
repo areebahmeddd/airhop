@@ -8,6 +8,7 @@
 // every input it is handed.
 
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
+import type { StoredProof } from "@core/payments/stored-proof";
 import { t } from "@i18n";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
@@ -18,7 +19,6 @@ import {
   keysetRefsOf,
   useWalletStore,
   whenWalletHydrated,
-  type StoredProof,
 } from "@store/wallet-store";
 import { MintFabric } from "../../__tests__/simulation/harness/mint-fabric";
 import { World } from "../../__tests__/simulation/harness/world";

@@ -5,9 +5,9 @@
 // acts on it. A token this wallet built must also scan back unchanged: that is
 // the Wallet tab's own share-and-scan loop.
 
-import type { StoredProof } from "@store/wallet-store";
 import { buildToken } from "../cashu";
 import { bareInvoice, classifyScan, readScan } from "../scan";
+import type { StoredProof } from "../stored-proof";
 
 const MINT = "https://mint.airhop.example";
 

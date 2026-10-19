@@ -65,6 +65,7 @@ import {
   type NutzapInfo,
   type ReceivedNutzap,
 } from "@core/payments/nutzap";
+import type { StoredProof } from "@core/payments/stored-proof";
 import {
   rebuildSwapPreview,
   serializeSwapPreview,
@@ -95,7 +96,6 @@ import {
   useWalletStore,
   whenWalletHydrated,
   type StoredMint,
-  type StoredProof,
   type WalletTx,
 } from "@store/wallet-store";
 import {

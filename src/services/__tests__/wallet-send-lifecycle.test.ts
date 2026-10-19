@@ -11,13 +11,13 @@
 // Imports come first in source; Babel hoists jest.mock() calls above them.
 import { getDecodedToken, getEncodedToken, type Token } from "@cashu/cashu-ts";
 import { toProofLike } from "@core/payments/cashu";
+import type { StoredProof } from "@core/payments/stored-proof";
 import {
   accountKey,
   bootstrapWalletStorage,
   isWalletStorageReady,
   useWalletStore,
   whenWalletHydrated,
-  type StoredProof,
 } from "@store/wallet-store";
 import { txFailureVerbatim } from "@utils/message-text";
 import {
