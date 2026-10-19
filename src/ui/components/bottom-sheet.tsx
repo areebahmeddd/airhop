@@ -1,31 +1,10 @@
-// The one bottom sheet in the app.
+// The one bottom sheet in the app. It owns what must not differ between sheets:
+// a scrim that tracks the sheet's position, a real drag that dismisses on a
+// long pull or a fast flick, keyboard avoidance, back and scrim dismissal, and
+// one sheet at a time through afterSheetsClose. Callers keep their `sheetStyle`.
 //
-// Every sheet in the app goes through this one: channel info, contact info, the
-// attach picker, the wallet's send and receive panels. A hand-rolled Modal per
-// sheet drifts in behaviour and usually ships a grab handle that ignores the
-// finger, and an affordance that does nothing reads as broken.
-//
-// This owns the parts that must never differ between sheets:
-//
-//   * the scrim, whose opacity tracks the sheet's position so a half-dragged
-//     sheet shows a half-lit backdrop rather than a full one,
-//   * a real drag: the sheet follows your finger and dismisses on either a long
-//     enough pull or a fast enough flick, springing back otherwise,
-//   * keyboard avoidance, since a sheet with a text field in it is the single
-//     most common place for the keyboard to swallow the thing you're typing in,
-//   * back-button / backdrop-tap dismissal, and the slide-out animation that
-//     goes with them,
-//   * one sheet at a time, through afterSheetsClose.
-//
-// Callers keep their own `sheetStyle`, so converting a sheet is a matter of
-// deleting its Modal/overlay/handle boilerplate, not restyling it.
-//
-// The rule disabled below models plain React values, where writing to something
-// an effect or a callback captured is a real bug. Reanimated's shared values are
-// the opposite: a `.value` write is the entire mechanism, it runs on the UI
-// thread, and it deliberately does not go through React. There is no way to
-// drive a finger-following drag without one, so the rule is off for this file
-// only, and every other file in the app keeps it.
+// Off for this file only: Reanimated's shared values are written from
+// callbacks by design, which the rule would flag as a mutation bug.
 /* eslint-disable react-hooks/immutability */
 
 import { useT } from "@i18n";
@@ -60,60 +39,36 @@ import { useKeyboardHeight } from "../hooks/use-keyboard";
 import { Duration, Radius, Spacing, useThemeColors } from "../theme";
 import AppModal from "./app-modal";
 
-// Pull further than this share of the sheet's own height and letting go
-// dismisses instead of springing back. A third is the familiar iOS/Material
-// threshold: far enough that a stray drag doesn't close anything, near enough
-// that a deliberate pull never feels like it was ignored.
+// A pull past a third of the sheet's height, or a flick faster than this
+// (points per second), dismisses; the usual iOS and Material thresholds.
 const DISMISS_DISTANCE_RATIO = 0.33;
-// ...or flick faster than this (points/second), whichever happens first, so a
-// quick flick from the top of the sheet closes it without a full-height drag.
 const DISMISS_VELOCITY = 900;
+// Minimum drag, so taps on rows inside the sheet stay taps. The scrim uses the
+// same distance: a press there that travels further is a slide, not a tap.
+const DRAG_SLOP = 10;
 
-// Crisp, barely-bouncy settle. Sheets are utilitarian here; an overshoot that
-// reads as playful on a photo app reads as sloppy on a messenger.
 const OPEN_SPRING = { damping: 26, stiffness: 280, mass: 0.9 } as const;
 const CLOSE_TIMING = {
   duration: Duration.slow,
   easing: Easing.out(Easing.cubic),
 } as const;
 
-// How long after a slide-out should have finished before the sheet unmounts
-// itself regardless of what the animation reported.
-//
-// The Modal must not be unmounted only from withTiming's completion callback,
-// which runs on the UI thread. That thread stops producing frames the moment the
-// activity is paused, and a paused activity is the single most common thing to
-// happen immediately after a sheet closes: the permission primer's Continue
-// button resolves startMeshWithPermissions, which opens the OS permission
-// dialog on the next tick. The animation was left mid-flight, the callback
-// never fired with `finished: true`, and `mounted` stayed true forever.
-//
-// A React Native Modal is its own window and captures every touch in it, so
-// what the user was left holding was the whole app behind a scrim that ate
-// every tap: an unresponsive tab bar under a grey sheet, indistinguishable
-// from a hang. It survived returning to the app, because nothing re-drove the
-// animation.
-//
-// A JS timer still fires once the activity resumes, even if a dialog paused it
-// in between, which is exactly why the backstop lives here rather than in
-// another animation callback. The grace is generous because beating the
-// animation would cut a healthy close short.
+// Unmounts the sheet even if the slide-out never reports finishing. The
+// animation callback runs on the UI thread, which stops while the activity is
+// paused (an OS permission dialog opened as a sheet closes), and a Modal left
+// mounted is a transparent window that swallows every touch.
 const CLOSE_FALLBACK_MS = CLOSE_TIMING.duration + 200;
 
-// Sheets on screen, each from open until slid out, and the handoffs waiting on
-// the last of them.
 let sheetsOnScreen = 0;
 let waitingForClose: (() => void)[] = [];
 let flushQueued = false;
 
-// A frame past the last close, so the platform has removed that Modal before
-// the next one presents.
+// One frame past the last close, so the platform has removed that Modal first.
 function queueFlush(): void {
   if (flushQueued) return;
   flushQueued = true;
   requestAnimationFrame(() => {
     flushQueued = false;
-    // A sheet opened in that frame; its own close flushes instead.
     if (sheetsOnScreen > 0) return;
     const due = waitingForClose;
     waitingForClose = [];
@@ -121,9 +76,8 @@ function queueFlush(): void {
   });
 }
 
-// Runs `open` once no sheet is on screen, at once if none is. iOS drops a modal
-// presented over one still sliding out, and a busy UI thread stretches the
-// slide past any fixed delay. Returns a cancel.
+// Runs `open` once no sheet is on screen. iOS drops a modal presented over one
+// still sliding out. Returns a cancel.
 export function afterSheetsClose(open: () => void): () => void {
   if (sheetsOnScreen === 0 && waitingForClose.length === 0) {
     open();
@@ -137,22 +91,15 @@ export function afterSheetsClose(open: () => void): () => void {
 
 interface Props {
   visible: boolean;
-  // Called once the sheet has finished sliding out, never mid-animation, so a
-  // parent that unmounts on close doesn't cut the animation short. Only fired
-  // for dismissals the sheet itself initiated (drag, backdrop, back button):
-  // when the parent flips `visible` to false it already knows.
+  // After the slide-out, and only for a dismissal the sheet made (drag, scrim,
+  // back). A parent that set `visible` to false already knows.
   onClose: () => void;
   children: React.ReactNode;
-  // The caller's existing sheet style (background, padding, radius, maxHeight).
   // Applied over the shared base, so anything it sets wins.
   sheetStyle?: StyleProp<ViewStyle>;
-  // Set on sheets whose body scrolls. The drag then lives on the grab handle
-  // alone, so a downward swipe inside a list scrolls the list instead of
-  // fighting it for the gesture.
+  // For sheets whose body scrolls: the drag moves to the handle alone.
   scrollable?: boolean;
-  // Override the scrim colour. Only for sheets that review media, where the
-  // standard scrim isn't dark enough to stop the screen behind competing with
-  // the photo being previewed.
+  // For media review sheets, which need a darker scrim.
   scrimColor?: string;
 }
 
@@ -169,15 +116,11 @@ export default function BottomSheet({
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const { height: screenHeight } = useWindowDimensions();
   const keyboardHeight = useKeyboardHeight();
-  // Read here rather than relied on from a SafeAreaView: the sheet renders
-  // inside a Modal, which is a separate view hierarchy that inherits none of
-  // the root provider's padding. See the note where this is applied.
+  // A Modal inherits none of the root SafeAreaProvider's padding.
   const insets = useSafeAreaInsets();
 
-  // Kept mounted across the slide-out so the exit animation can play even when
-  // the parent flips `visible` to false.
+  // Stays mounted through the slide-out after `visible` goes false.
   const [mounted, setMounted] = useState(visible);
-  // Counted until slid out, which is what afterSheetsClose waits on.
   useEffect(() => {
     if (!mounted) return;
     sheetsOnScreen += 1;
@@ -187,56 +130,27 @@ export default function BottomSheet({
     };
   }, [mounted]);
 
-  // Distance the sheet sits below its resting position: 0 is fully open.
+  // 0 is fully open.
   const translateY = useSharedValue(screenHeight);
-  // Measured on layout; the scrim's opacity and the dismiss threshold are both
-  // expressed relative to it.
   const sheetHeight = useSharedValue(screenHeight);
   const dragStart = useSharedValue(0);
-  // Past the dismiss threshold, so the crossing is felt exactly once. A shared
-  // value because the gesture worklet reads and writes it on the UI thread.
+  // So the threshold haptic fires once per crossing.
   const pastThreshold = useSharedValue(false);
 
-  // Whether the open animation has already run for this presentation. The sheet
-  // can't animate in until layout has told us how tall it is.
   const openedRef = useRef(false);
-  // Who started the current slide-out. A dismissal the user performed (drag,
-  // backdrop, back button) has to tell the parent; one the parent asked for
-  // does not, and telling it again would re-run an onClose that often resets
-  // state.
   const userDismissedRef = useRef(false);
-  // The unmount backstop described at CLOSE_FALLBACK_MS.
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // How many times the parent has asked for this sheet to be on screen: once on
-  // mount if it mounts open, then once per false -> true edge of `visible`.
+  // Counts each request to show the sheet. A slide-out completes only the
+  // presentation it began in, so a sheet reopened mid-close stays open. Not a
+  // test of `visible`, which callers that mount the sheet conditionally keep
+  // true for its whole life.
   const presentation = useRef(0);
-  // The presentation a slide-out belongs to. finishClose completes only the
-  // presentation it was started for, so a sheet asked for again mid-close is
-  // left alone rather than torn down by the previous close.
-  //
-  // Not a plain "is `visible` still true?" test, which is correct only for
-  // callers that DRIVE the prop. Every caller that mounts the sheet conditionally
-  // passes a constant `visible` instead (channel info, the message action sheet,
-  // the add-members picker, the token scanner) and there
-  // the prop is true for the sheet's entire life. So a dismissal the user
-  // performed (backdrop tap, drag, system back) found `visible` still true,
-  // returned early, and never ran setMounted(false) or onClose().
-  //
-  // The sheet slid off screen and the scrim faded out, so it looked closed. What
-  // was actually left behind was a transparent Modal - its own window, covering
-  // the app, capturing every touch - so the tab bar and everything under it went
-  // dead with nothing on screen to explain why. Comparing presentations instead
-  // asks the question that was always meant: "has the parent asked for me AGAIN
-  // since this close began?", which a constant `visible` correctly answers no.
   const closingPresentation = useRef(-1);
-  // Whether this presentation has already been closed out, so the slower of the
-  // animation callback and the timer does nothing.
+  // Whichever of the animation callback and the timer arrives second is a no-op.
   const closedRef = useRef(false);
-  // True from the moment a slide-out starts until the sheet unmounts. The
-  // contents keep rendering while they fly away, and without this a row tapped
-  // during those 300ms still fires its action - so a backdrop tap could close
-  // the sheet and then a second tap on the same spot could hit whatever was
-  // underneath the finger. A closing sheet accepts no more input.
+  const scrimPressStart = useRef<{ x: number; y: number } | null>(null);
+  // A sliding-out sheet takes no input, so a second tap cannot hit a row or
+  // whatever is underneath.
   const [closing, setClosing] = useState(false);
 
   function clearCloseTimer(): void {
@@ -248,27 +162,19 @@ export default function BottomSheet({
 
   function finishClose(): void {
     clearCloseTimer();
-    // Asked for again while the slide-out was in flight. The effect below has
-    // already sprung the sheet back up, so completing the close would unmount a
-    // sheet the parent is currently asking for.
     if (presentation.current !== closingPresentation.current) return;
-    // Whichever of the animation callback and the backstop timer arrives
-    // second must not run onClose a second time: several callers reset state
-    // in it, and a few of them are not idempotent.
     if (closedRef.current) return;
     closedRef.current = true;
     openedRef.current = false;
     translateY.value = screenHeight;
     setMounted(false);
     setClosing(false);
+    // Several callers reset state in onClose, so it runs once.
     if (userDismissedRef.current) onClose();
   }
 
-  // Slide out, then hand control back to the parent.
   function slideOut(byUser: boolean): void {
-    // Already on the way out: a second backdrop tap or back press mid-close must
-    // not restart the animation from where it has got to, which reads as the
-    // sheet stuttering.
+    // A second dismissal mid-close would restart the animation and stutter.
     if (closingPresentation.current === presentation.current) return;
     userDismissedRef.current = byUser;
     closingPresentation.current = presentation.current;
@@ -277,57 +183,48 @@ export default function BottomSheet({
     translateY.value = withTiming(sheetHeight.value, CLOSE_TIMING, (done) => {
       if (done) scheduleOnRN(finishClose);
     });
-    // Unmount on a JS timer whichever way the animation goes. finishClose is
-    // idempotent, so whichever of the two arrives first wins and the other is a
-    // no-op.
     clearCloseTimer();
     closeTimer.current = setTimeout(finishClose, CLOSE_FALLBACK_MS);
   }
 
-  // Every dismissal the user performs - drag, backdrop tap, system back.
   function dismiss(): void {
     slideOut(true);
   }
 
+  // Closes on a tap only. The scrim is a full-screen Pressable, which fires on
+  // release however far the finger slid, even onto the sheet. A press with no
+  // coordinates (a screen reader) reads as NaN and closes.
+  function handleScrimPress(x: number, y: number): void {
+    const start = scrimPressStart.current;
+    scrimPressStart.current = null;
+    const travelled = start === null ? 0 : Math.hypot(x - start.x, y - start.y);
+    if (!(travelled > DRAG_SLOP)) dismiss();
+  }
+
   useEffect(() => {
     if (visible) {
-      // A pending slide-out is now stale, and its backstop must not fire into
-      // the presentation this open is starting.
       clearCloseTimer();
       closedRef.current = false;
-      // A new presentation, which is what tells a slide-out still in flight
-      // that it is closing something the parent has since asked for again.
       presentation.current += 1;
-      // Mounting in response to the parent opening us, and cancelling any
-      // "on the way out" left by the close this open interrupted. Not derived
-      // state: the unmount is deferred until the slide-out finishes, so neither
-      // can be the same value as `visible`.
+      // Not derived state: the unmount waits for the slide-out.
       /* eslint-disable react-hooks/set-state-in-effect */
       setMounted(true);
       setClosing(false);
       /* eslint-enable react-hooks/set-state-in-effect */
-      // Reopened while still sliding out (a sheet closed and immediately shown
-      // again). Layout won't fire a second time, so nothing else would bring it
-      // back up; springing here also cancels the pending slide-out, whose
-      // completion callback then sees `finished: false` and leaves us alone.
+      // Reopened mid-close: layout will not fire again, so spring back here,
+      // which also cancels the pending slide-out.
       if (openedRef.current) translateY.value = withSpring(0, OPEN_SPRING);
     } else if (mounted) {
-      // Parent closed us (an action row was tapped, say) rather than the user
-      // dragging: play the same slide-out so both paths look identical.
       slideOut(false);
     }
-    // `mounted` and `slideOut` are deliberately not dependencies: reacting to
-    // either would re-run this on the render the branches above cause.
+    // Reacting to `mounted` would re-run this on the render it causes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
-  // A sheet torn down by its parent mid-close must not leave a timer holding a
-  // handle to this component.
   useEffect(() => clearCloseTimer, []);
 
-  // First real layout: drop the sheet to just below the screen edge and spring
-  // it up. Measuring first is what keeps the travel distance equal to the
-  // sheet's own height, so a short sheet doesn't fly in from the far bottom.
+  // Opens from the sheet's own height once measured, so a short sheet does not
+  // fly in from the bottom of the screen.
   function handleLayout(height: number): void {
     if (height <= 0) return;
     sheetHeight.value = height;
@@ -337,25 +234,17 @@ export default function BottomSheet({
     translateY.value = withSpring(0, OPEN_SPRING);
   }
 
-  // Inline rather than memoized: a sheet renders a handful of times in its life,
-  // and memoizing would mean mutating shared values from inside a memo closure,
-  // which the compiler rules (rightly) disallow for ordinary values. Inline also
-  // lets the worklets plugin workletize the callbacks.
   const pan = usePanGesture({
-    // Downward only, and only past a deliberate 10pt: taps on the rows inside
-    // the sheet must still register as taps.
-    activeOffsetY: 10,
+    activeOffsetY: DRAG_SLOP,
     failOffsetX: [-24, 24],
     onActivate: () => {
       dragStart.value = translateY.value;
       pastThreshold.value = false;
     },
     onUpdate: (e) => {
-      // Clamped at 0: the sheet is anchored to the bottom, so pulling up has
-      // nowhere to go and rubber-banding there would just look loose.
+      // Anchored to the bottom, so an upward pull goes nowhere.
       translateY.value = Math.max(0, dragStart.value + e.translationY);
-      // The threshold is invisible: the scrim fades continuously and says
-      // nothing about where the line is, so the tick is what marks it.
+      // The scrim fades continuously, so a haptic marks the dismiss line.
       const past =
         translateY.value > sheetHeight.value * DISMISS_DISTANCE_RATIO;
       if (past !== pastThreshold.value) {
@@ -377,8 +266,6 @@ export default function BottomSheet({
     transform: [{ translateY: translateY.value }],
   }));
 
-  // Scrim fades in step with the sheet, so the backdrop always reads as
-  // attached to it rather than as a separate layer that snaps on and off.
   const scrimAnim = useAnimatedStyle(() => ({
     opacity: interpolate(
       translateY.value,
@@ -395,8 +282,8 @@ export default function BottomSheet({
       style={[styles.sheet, sheetStyle, sheetAnim]}
       onLayout={(e) => handleLayout(e.nativeEvent.layout.height)}
     >
-      {/* On a scrolling sheet the handle is the only drag surface, so it gets a
-          padded hit area of its own rather than being a 4pt-tall target. */}
+      {/* On a scrolling sheet the handle is the only drag surface, so it gets
+          a padded hit area. */}
       {scrollable ? (
         <GestureDetector gesture={pan}>
           <View style={styles.grabZone}>
@@ -414,35 +301,21 @@ export default function BottomSheet({
     <AppModal
       visible
       transparent
-      // The slide is ours: RN's would fight the drag translation.
+      // The slide is ours; the Modal's own would fight the drag.
       animationType="none"
       onRequestClose={dismiss}
     >
-      {/* A Modal is its own view hierarchy, outside the root provider in
-          App.tsx, so gesture handler needs a root of its own in here or the
-          drag never receives touches on Android. */}
+      {/* A Modal is outside the app's gesture root, so the drag needs its own
+          or Android never delivers it touches. */}
       <GestureHandlerRootView style={styles.flexFill}>
-        {/* Lifting the whole stack by the keyboard height keeps each sheet's own
-            layout intact - it just has less room to lay out in - which is what
-            makes a text field inside a sheet stay visible with no per-sheet
-            plumbing.
-
-            The bottom inset is the same idea for the navigation bar. A Modal is
-            its own view hierarchy and inherits none of the root
-            SafeAreaProvider padding. Gesture navigation hid this; on
-            three-button navigation the 48dp bar covered the author-note sheet's
-            OK button, where the system consumes the touch.
-
-            max, not sum: the keyboard covers the navigation bar, so adding the
-            two would leave a nav-bar-high gap above the keyboard. */}
+        {/* Padding by the keyboard keeps a text field in any sheet visible.
+            The larger of the two, not the sum: the keyboard covers the
+            navigation bar. */}
         <View
           style={[
             styles.root,
             { paddingBottom: Math.max(keyboardHeight, insets.bottom) },
           ]}
-          // See `closing`: the sheet is still on screen while it slides away,
-          // and a row tapped in that window would run an action for a sheet the
-          // user has already dismissed.
           pointerEvents={closing ? "none" : "auto"}
         >
           <Animated.View
@@ -456,7 +329,15 @@ export default function BottomSheet({
           />
           <Pressable
             style={StyleSheet.absoluteFill}
-            onPress={dismiss}
+            onPressIn={(e) => {
+              scrimPressStart.current = {
+                x: e.nativeEvent.pageX,
+                y: e.nativeEvent.pageY,
+              };
+            }}
+            onPress={(e) =>
+              handleScrimPress(e.nativeEvent.pageX, e.nativeEvent.pageY)
+            }
             accessibilityRole="button"
             accessibilityLabel={T("common.close")}
           />

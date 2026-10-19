@@ -50,7 +50,7 @@ jobs:
 
           source_commit=$(git ls-remote --refs "$SOURCE_REPOSITORY" refs/heads/main | awk 'NR == 1 { print $1 }')
           if [[ ! "$source_commit" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error::Could not resolve an immutable upstream commit"
+            echo "::error::Could not resolve an immutable upstream commit."
             exit 1
           fi
 
@@ -203,7 +203,7 @@ jobs:
           last=$(gh api "repos/${SOURCE_OWNER_REPO}/commits?path=${SOURCE_PATH}&per_page=1" \
             --jq '.[0].commit.committer.date // empty')
           if [[ -z "$last" ]]; then
-            echo "::warning::Could not read the upstream commit history for $SOURCE_PATH"
+            echo "::warning::Could not read the upstream commit history for $SOURCE_PATH."
             exit 0
           fi
 
@@ -212,5 +212,5 @@ jobs:
           echo "Upstream [$SOURCE_PATH]($history_url) last changed $age_days day(s) ago ($last)." >> "$GITHUB_STEP_SUMMARY"
 
           if (( age_days > STALE_AFTER_DAYS )); then
-            echo "::warning::Upstream has not changed for $age_days days. Check $history_url"
+            echo "::warning::Upstream has not changed for $age_days days. Check $history_url."
           fi

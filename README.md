@@ -188,14 +188,14 @@ npm install
 
 1. Install [Xcode](https://developer.apple.com/xcode) from the Mac App Store, which also installs the iOS Simulator and base build tools
 2. Open Xcode at least once and let it install any additional required components when prompted
-3. Go to **Xcode** then **Settings** then **Locations**, and select the most recent version in the **Command Line Tools** dropdown
-4. Go to **Xcode** then **Settings** then **Platforms**, click the **+** icon, and add an **iOS** runtime if one is not already installed
-5. Run `bundle install` from the project root, which installs the CocoaPods version `Gemfile.lock` pins (CI refuses a `Podfile.lock` written by any other), then `bundle exec pod install --project-directory=ios` to install the iOS native dependencies.
-6. Launch a simulator from the device dropdown, then run `npm run ios`
+3. Go to **Xcode** then **Settings** then **Locations**, and select **Xcode 27** in the **Command Line Tools** dropdown
+4. Go to **Xcode** then **Settings** then **Components**, and install the **iOS 27** platform if it is not already installed
+5. Run `bundle install` from the project root to get the CocoaPods version `Gemfile.lock` pins, then `bundle exec pod install --project-directory=ios`
+6. Launch an **iPhone 17 Pro** simulator from the device dropdown, then run `npm run ios`
 
 > The first `npm run ios` builds the native app from scratch and can take several minutes. Later runs are much faster.
 
-> Requires a physical iPhone for BLE mesh testing (the iOS Simulator does not support Bluetooth) and supports iOS 16.4 or later.
+> Requires a physical iPhone for BLE mesh testing (the iOS Simulator does not support Bluetooth) and supports iOS 16.0 or later.
 
 > Changing a native dependency also changes `ios/Podfile.lock`, which pins exact pod versions. Regenerate it with `bundle exec pod install --project-directory=ios` in the same commit.
 
@@ -215,11 +215,11 @@ npm run ios
 1. Install [Android Studio](https://developer.android.com/studio) from the official site, which also installs the Android SDK and base build tools
 2. Open Android Studio at least once and let the setup wizard install any additional required components when prompted
 3. Click the gear icon and open **Settings**, then go to **Languages & Frameworks** then **Android SDK**
-4. On the **SDK Platforms** tab, tick **API 36**, then click **Apply** to download it, since a fresh install does not include it
+4. On the **SDK Platforms** tab, tick **Android 17.0 (API 37.0)**, then click **Apply**
 5. On the **SDK Tools** tab, confirm **Android SDK Build-Tools**, **Android SDK Platform-Tools**, and **Android Emulator** are installed
 6. Copy the SDK path shown at the top of the **Android SDK** page into an `ANDROID_HOME` environment variable, or into `android/local.properties` as `sdk.dir=<path>`, since Gradle looks there for it
 7. Open the virtual device manager: **More Actions** then **Virtual Device Manager** from the Welcome screen, or **View** then **Tool Windows** then **Device Manager** if a project is already open
-8. Click **Create Device**, choose a **Pixel 9 Pro** profile, select one of the API levels just installed, then click **Finish**
+8. Click **Create Device**, choose a **Pixel 10 Pro** profile, select one of the API levels just installed, then click **Finish**
 9. Launch the emulator from the device list, then run `npm run android`
 
 > The first `npm run android` builds the native app from scratch and can take several minutes. Later runs are much faster.

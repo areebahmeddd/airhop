@@ -366,7 +366,6 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                 <Pressable
                   style={({ pressed }) => [
                     styles.optionRowGrouped,
-                    selected && styles.optionRowGroupedSelected,
                     pressed && styles.rowPressed,
                   ]}
                   onPress={() => {
@@ -419,7 +418,6 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                 <Pressable
                   style={({ pressed }) => [
                     styles.optionRowGrouped,
-                    selected && styles.optionRowGroupedSelected,
                     pressed && styles.rowPressed,
                   ]}
                   onPress={() => {
@@ -476,7 +474,6 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                 <Pressable
                   style={({ pressed }) => [
                     styles.optionRowGrouped,
-                    selected && styles.optionRowGroupedSelected,
                     pressed && styles.rowPressed,
                   ]}
                   onPress={() => {

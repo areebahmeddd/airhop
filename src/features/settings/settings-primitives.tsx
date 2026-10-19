@@ -645,9 +645,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingVertical: Spacing.md,
       minHeight: 60,
     },
-    optionRowGroupedSelected: {
-      backgroundColor: Colors.surfaceRaised,
-    },
     optionList: {
       width: "100%",
       gap: Spacing.sm,

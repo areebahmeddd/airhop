@@ -1166,7 +1166,6 @@ export default function ProfileScreen({
                   <Pressable
                     style={({ pressed }) => [
                       styles.optionRowGrouped,
-                      selected && styles.optionRowGroupedSelected,
                       pressed && shared.rowPressed,
                     ]}
                     onPress={() => handleSelectStatus(key)}
@@ -1237,7 +1236,6 @@ export default function ProfileScreen({
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
-                        selected && styles.optionRowGroupedSelected,
                         pressed && shared.rowPressed,
                       ]}
                       onPress={() => {
@@ -1290,7 +1288,6 @@ export default function ProfileScreen({
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
-                        selected && styles.optionRowGroupedSelected,
                         pressed && shared.rowPressed,
                       ]}
                       onPress={() => {
@@ -1359,7 +1356,6 @@ export default function ProfileScreen({
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
-                        selected && styles.optionRowGroupedSelected,
                         !shipped && styles.languageRowSoon,
                         pressed && shared.rowPressed,
                       ]}
@@ -1569,9 +1565,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingHorizontal: Spacing.base,
       paddingVertical: Spacing.md,
       minHeight: 60,
-    },
-    optionRowGroupedSelected: {
-      backgroundColor: Colors.surfaceRaised,
     },
     optionIconGrouped: {
       width: 24,

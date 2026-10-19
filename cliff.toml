@@ -8,7 +8,14 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 body = """
 ## What's New
 
-{% for commit in commits %}{% if commit.author.name is not containing("[bot]") %}- {{ commit.message | split(pat="\n") | first | trim }} (by @{{ commit.author.name }}){% if commit.github.pr_number %} (#{{ commit.github.pr_number }}){% endif %} [{{ commit.id | truncate(length=7, end="") }}]
+{% for commit in commits %}{% if commit.author.name is not containing("[bot]") %}\
+{% set subject = commit.message | split(pat="\n") | first | trim %}\
+{% if commit.remote.username %}{% set handle = commit.remote.username %}\
+{% elif commit.author.email is ending_with("@users.noreply.github.com") %}{% set handle = commit.author.email | split(pat="@") | first | split(pat="+") | last %}\
+{% else %}{% set handle = commit.author.name %}{% endif %}\
+- {{ subject }} (by @{{ handle }})\
+{% if commit.remote.pr_number and subject is not containing("(#" ~ commit.remote.pr_number ~ ")") %} (#{{ commit.remote.pr_number }}){% endif %} \
+[{{ commit.id | truncate(length=7, end="") }}]
 {% endif %}{% endfor %}
 {% if previous.version %}**Full changelog:** [{{ previous.version }}..{{ version }}](https://github.com/areebahmeddd/airhop/compare/{{ previous.version }}..{{ version }})
 {% endif %}

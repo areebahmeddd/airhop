@@ -78,13 +78,16 @@ jobs:
           <details>
           <summary><strong>Verify this download</strong></summary>
 
-          The APK is signed with the Airhop release key (package \`org.onemindlabs.airhop\`). This workflow refuses to publish an APK signed by anything else, so the check below should print exactly one signer, with the certificate SHA-256 digest \`${ANDROID_SIGNING_CERT_SHA256}\`:
+          The APK is signed with the Airhop release key (package \`org.onemindlabs.airhop\`). Check the signature with \`apksigner\` from the Android SDK build tools:
 
           \`\`\`
           apksigner verify --print-certs airhop.apk
           \`\`\`
 
-          It also carries SLSA build provenance. This checks it was built by this repository's release workflow from tag ${TAG}, on a GitHub-hosted runner:
+          It should list exactly one signer, with this certificate SHA-256 digest:
+          \`${ANDROID_SIGNING_CERT_SHA256}\`
+
+          The APK also carries SLSA build provenance. This confirms it was built by this repository's release workflow from tag ${TAG}, on a GitHub-hosted runner:
 
           \`\`\`
           gh attestation verify airhop.apk --repo ${GITHUB_REPOSITORY} \\
@@ -92,21 +95,21 @@ jobs:
             --source-ref refs/tags/${TAG} --deny-self-hosted-runners
           \`\`\`
 
-          The same provenance is attached as \`airhop.apk.intoto.jsonl\` for offline checks.
+          For offline checks, the same provenance is attached as \`airhop.apk.intoto.jsonl\`.
 
           </details>
 
           <details>
           <summary><strong>Verify the source</strong></summary>
 
-          \`airhop-${TAG}-sources.sha256\` lists the SHA-256 of every tracked file in this release.
+          \`airhop-${TAG}-sources.sha256\` lists the SHA-256 of every tracked file in this release:
 
           \`\`\`
           sha256sum -c airhop-${TAG}-sources.sha256
           git checkout ${TAG} && git status --porcelain
           \`\`\`
 
-          The second command must print nothing. Hashes prove the listed files are unmodified; only an empty status proves no extra file was added, and the build compiles whatever is present.
+          The first command checks that no listed file was changed. The second must print nothing, which confirms no extra file was added (the build compiles whatever is present).
 
           </details>
           EOF

@@ -256,7 +256,6 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
                   <Pressable
                     style={({ pressed }) => [
                       styles.optionRowGrouped,
-                      selected && styles.optionRowGroupedSelected,
                       pressed && styles.rowPressed,
                     ]}
                     onPress={() => value !== null && chooseMode(value)}

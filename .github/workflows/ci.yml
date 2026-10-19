@@ -144,9 +144,9 @@ jobs:
         working-directory: android
         run: ./gradlew :app:testDebugUnitTest --no-daemon
 
-      # Verify native libraries meet Android 15's 16 KB page alignment
+      # Verify native libraries meet Android 15's 16 KiB page alignment
       # requirement to avoid Play Store upload failures.
-      - name: Check 16 KB page alignment
+      - name: Check 16 KiB page alignment
         run: |
           set -euo pipefail
           APK=android/app/build/outputs/apk/release/app-release.apk
@@ -162,7 +162,7 @@ jobs:
           FAILED=0
           CHECKED=0
 
-          # Only 64-bit ABIs require 16 KB page alignment.
+          # Only 64-bit ABIs require 16 KiB page alignment.
           for ABI in arm64-v8a x86_64; do
             [ -d "${WORK}/lib/${ABI}" ] || continue
             for SO in "${WORK}/lib/${ABI}"/*.so; do
@@ -177,7 +177,7 @@ jobs:
               if [ "${BAD}" -eq 0 ]; then
                 echo "  ok    ${ABI}/$(basename "${SO}")"
               else
-                echo "  FAIL  ${ABI}/$(basename "${SO}") has a LOAD segment aligned below 16 KB"
+                echo "  FAIL  ${ABI}/$(basename "${SO}") has a LOAD segment aligned below 16 KiB"
                 FAILED=1
               fi
             done
@@ -189,11 +189,11 @@ jobs:
           fi
 
           if [ "${FAILED}" -ne 0 ]; then
-            echo "::error::One or more native libraries are not 16 KB aligned. Google Play will reject this bundle."
+            echo "::error::One or more native libraries are not 16 KiB aligned. Google Play will reject this bundle."
             exit 1
           fi
 
-          echo "All ${CHECKED} 64-bit native libraries are 16 KB aligned."
+          echo "All ${CHECKED} 64-bit native libraries are 16 KiB aligned."
 
   # Build the production iOS app on every change to catch native and
   # release-only build issues before a tagged release.
