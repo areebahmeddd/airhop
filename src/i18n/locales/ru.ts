@@ -2080,7 +2080,6 @@ export const strings: Strings = {
     "Не удалось запустить Tor. Повторите попытку через мгновение.",
   "settings.tor.status": "Состояние Tor",
   "settings.tor.connection": "Подключение",
-  "settings.tor.connection_off_note": "Используется, когда вы включаете Tor.",
   "settings.tor.mode_off": "Напрямую",
   "settings.tor.mode_off_desc":
     "Подключается прямо к Tor. Быстрее всего, но любой наблюдающий за этой сетью увидит, что вы используете Tor.",

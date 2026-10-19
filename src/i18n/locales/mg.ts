@@ -2137,8 +2137,6 @@ export const strings: Strings = {
     "Tsy afaka nanomboka ny Tor. Andramo indray afaka kelikely.",
   "settings.tor.status": "Toetran'ny Tor",
   "settings.tor.connection": "Fifandraisana",
-  "settings.tor.connection_off_note":
-    "Ampiasaina rehefa mampandeha ny Tor ianao.",
   "settings.tor.mode_off": "Mivantana",
   "settings.tor.mode_off_desc":
     "Mifandray mivantana amin'ny Tor. Haingana indrindra, saingy hitan'izay manara-maso ity tambajotra ity fa mampiasa Tor ianao.",

@@ -2088,7 +2088,6 @@ export const strings: Strings = {
     "Tor kon niet worden gestart. Probeer het zo opnieuw.",
   "settings.tor.status": "Tor-status",
   "settings.tor.connection": "Verbinding",
-  "settings.tor.connection_off_note": "Wordt gebruikt zodra je Tor aanzet.",
   "settings.tor.mode_off": "Direct",
   "settings.tor.mode_off_desc":
     "Verbindt rechtstreeks met Tor. Het snelst, maar wie dit netwerk bekijkt ziet dat je Tor gebruikt.",

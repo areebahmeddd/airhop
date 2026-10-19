@@ -2062,7 +2062,6 @@ export const strings = {
   "settings.conn.tor_failed": "Could not start Tor. Try again in a moment.",
   "settings.tor.status": "Tor status",
   "settings.tor.connection": "Connection",
-  "settings.tor.connection_off_note": "Used when you turn Tor on.",
   "settings.tor.mode_off": "Direct",
   "settings.tor.mode_off_desc":
     "Connects straight to Tor. Fastest, but anyone watching this network can see that you use Tor.",

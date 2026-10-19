@@ -117,9 +117,8 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
     // Ahead of the ordinary states: this one the user did not choose, and a
     // bare "blocked" would not say what happened or what to do.
     if (recovered) return T("settings.tor.recovered");
-    // Said rather than hidden with the section below. A switch's position is
-    // a control, not a readout, and this row is where every other state is
-    // put in words, so it keeps its place.
+    // A switch's position is a control, not a readout, and this row is where
+    // every other state is put in words.
     if (!torEnabled) return T("common.off");
     // The internet switch stops Arti on purpose, which is neither starting nor
     // blocked.
@@ -232,20 +231,13 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
           )}
         </View>
 
-        {/* Shown with Tor off too: the first connection uses this choice,
+        {/* Usable with Tor off too: the first connection uses this choice,
             and on a censored network a Direct attempt already gives Tor use
             away. */}
         <View style={styles.section}>
           <UpperText style={styles.sectionTitle}>
             {T("settings.tor.connection")}
           </UpperText>
-          {!torEnabled && (
-            <Text
-              style={[styles.settingDescription, { marginBottom: Spacing.sm }]}
-            >
-              {T("settings.tor.connection_off_note")}
-            </Text>
-          )}
           <View style={styles.optionGroup}>
             {MODES.map((mode, i) => {
               const value = mode.value;

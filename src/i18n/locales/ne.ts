@@ -2037,7 +2037,6 @@ export const strings: Strings = {
     "Tor सुरु गर्न सकिएन। केही बेरपछि फेरि प्रयास गर्नुहोस्।",
   "settings.tor.status": "Tor स्थिति",
   "settings.tor.connection": "जडान",
-  "settings.tor.connection_off_note": "तपाईंले Tor खोल्दा यो प्रयोग हुन्छ।",
   "settings.tor.mode_off": "सिधा",
   "settings.tor.mode_off_desc":
     "सिधै Tor मा जोडिन्छ। सबैभन्दा छिटो, तर यो नेटवर्क हेर्ने जो कोहीले तपाईंले Tor चलाएको देख्न सक्छ।",

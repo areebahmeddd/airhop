@@ -2064,7 +2064,6 @@ export const strings: Strings = {
     "Không thể khởi động Tor. Hãy thử lại sau giây lát.",
   "settings.tor.status": "Trạng thái Tor",
   "settings.tor.connection": "Kết nối",
-  "settings.tor.connection_off_note": "Được dùng khi bạn bật Tor.",
   "settings.tor.mode_off": "Trực tiếp",
   "settings.tor.mode_off_desc":
     "Kết nối thẳng tới Tor. Nhanh nhất, nhưng ai theo dõi mạng này đều thấy bạn dùng Tor.",

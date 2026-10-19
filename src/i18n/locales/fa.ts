@@ -2047,7 +2047,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "Tor شروع نشد. کمی بعد دوباره تلاش کنید.",
   "settings.tor.status": "وضعیت Tor",
   "settings.tor.connection": "اتصال",
-  "settings.tor.connection_off_note": "وقتی Tor را روشن کنید به کار می‌رود.",
   "settings.tor.mode_off": "مستقیم",
   "settings.tor.mode_off_desc":
     "مستقیم به Tor وصل می‌شود. سریع‌ترین، اما هر کسی که این شبکه را می‌بیند متوجه می‌شود از Tor استفاده می‌کنید.",

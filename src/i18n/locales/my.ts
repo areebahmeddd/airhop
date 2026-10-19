@@ -2119,7 +2119,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "Tor ကို စတင်၍မရပါ။ ခဏနေ ထပ်စမ်းပါ။",
   "settings.tor.status": "Tor အခြေအနေ",
   "settings.tor.connection": "ချိတ်ဆက်မှု",
-  "settings.tor.connection_off_note": "Tor ကို ဖွင့်သည့်အခါ အသုံးပြုမည်။",
   "settings.tor.mode_off": "တိုက်ရိုက်",
   "settings.tor.mode_off_desc":
     "Tor သို့ တိုက်ရိုက်ချိတ်ဆက်သည်။ အမြန်ဆုံးဖြစ်သော်လည်း ဤကွန်ရက်ကို စောင့်ကြည့်သူများ သင် Tor သုံးနေကြောင်း မြင်နိုင်သည်။",

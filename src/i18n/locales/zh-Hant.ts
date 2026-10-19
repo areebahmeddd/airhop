@@ -1934,7 +1934,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "無法啟動 Tor。請稍後再試。",
   "settings.tor.status": "Tor 狀態",
   "settings.tor.connection": "連線方式",
-  "settings.tor.connection_off_note": "開啟 Tor 時使用。",
   "settings.tor.mode_off": "直連",
   "settings.tor.mode_off_desc":
     "直接連線 Tor。最快，但監看這個網路的人能看出你正在使用 Tor。",

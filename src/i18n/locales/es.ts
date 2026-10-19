@@ -2101,7 +2101,6 @@ export const strings: Strings = {
     "No se pudo iniciar Tor. Inténtalo de nuevo en un momento.",
   "settings.tor.status": "Estado de Tor",
   "settings.tor.connection": "Conexión",
-  "settings.tor.connection_off_note": "Se usa cuando activas Tor.",
   "settings.tor.mode_off": "Directa",
   "settings.tor.mode_off_desc":
     "Se conecta directo a Tor. Lo más rápido, pero quien vigile esta red verá que usas Tor.",

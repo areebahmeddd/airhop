@@ -2065,7 +2065,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "Tor başlatılamadı. Birazdan yeniden dene.",
   "settings.tor.status": "Tor durumu",
   "settings.tor.connection": "Bağlantı",
-  "settings.tor.connection_off_note": "Tor'u açtığında kullanılır.",
   "settings.tor.mode_off": "Doğrudan",
   "settings.tor.mode_off_desc":
     "Doğrudan Tor'a bağlanır. En hızlısı, ancak bu ağı izleyen herkes Tor kullandığını görür.",

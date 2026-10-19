@@ -2045,8 +2045,6 @@ export const strings: Strings = {
     "Tor شروع نہیں ہو سکا۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔",
   "settings.tor.status": "Tor کی صورتحال",
   "settings.tor.connection": "کنکشن",
-  "settings.tor.connection_off_note":
-    "جب آپ Tor چالو کریں تو یہ استعمال ہوتا ہے۔",
   "settings.tor.mode_off": "براہِ راست",
   "settings.tor.mode_off_desc":
     "براہِ راست Tor سے جڑتا ہے۔ سب سے تیز، مگر اس نیٹ ورک کو دیکھنے والا کوئی بھی جان سکتا ہے کہ آپ Tor استعمال کر رہے ہیں۔",

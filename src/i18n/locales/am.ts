@@ -1933,7 +1933,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "Tor ማስጀመር አልተቻለም። ከጥቂት ጊዜ በኋላ እንደገና ሞክር።",
   "settings.tor.status": "የTor ሁኔታ",
   "settings.tor.connection": "ግንኙነት",
-  "settings.tor.connection_off_note": "Torን ስታበራ ጥቅም ላይ ይውላል።",
   "settings.tor.mode_off": "ቀጥታ",
   "settings.tor.mode_off_desc":
     "በቀጥታ ወደ Tor ይገናኛል። በጣም ፈጣን፣ ነገር ግን ይህን አውታረ መረብ የሚከታተል ማንኛውም ሰው Tor እንደምትጠቀም ማየት ይችላል።",

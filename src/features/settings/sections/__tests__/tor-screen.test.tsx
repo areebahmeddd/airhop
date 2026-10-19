@@ -114,9 +114,6 @@ describe("the connection section", () => {
     await renderScreen();
 
     expect(connectionTitle()).toBeOnTheScreen();
-    expect(
-      screen.getByText(t("settings.tor.connection_off_note")),
-    ).toBeOnTheScreen();
 
     await userEvent
       .setup()
@@ -136,7 +133,7 @@ describe("the connection section", () => {
     expect(customEditor()).toBeOnTheScreen();
   });
 
-  it("is shown while Tor is connected, without the off note", async () => {
+  it("is shown while Tor is connected", async () => {
     useMeshStateStore.setState({ torActive: true });
     await renderScreen();
 
@@ -144,9 +141,6 @@ describe("the connection section", () => {
     expect(
       screen.getByText(t("settings.tor.mode_snowflake")),
     ).toBeOnTheScreen();
-    expect(
-      screen.queryByText(t("settings.tor.connection_off_note")),
-    ).not.toBeOnTheScreen();
   });
 
   // Each of these is a moment to change transport, so none may hide it.

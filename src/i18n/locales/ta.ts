@@ -2142,7 +2142,6 @@ export const strings: Strings = {
     "Tor ஐத் தொடங்க முடியவில்லை. சிறிது நேரத்தில் மீண்டும் முயற்சிக்கவும்.",
   "settings.tor.status": "Tor நிலை",
   "settings.tor.connection": "இணைப்பு",
-  "settings.tor.connection_off_note": "Tor ஐ இயக்கும்போது பயன்படுத்தப்படும்.",
   "settings.tor.mode_off": "நேரடி",
   "settings.tor.mode_off_desc":
     "Tor உடன் நேரடியாக இணைக்கிறது. மிக வேகமானது, ஆனால் இந்த நெட்வொர்க்கைக் கவனிப்பவர் நீங்கள் Tor பயன்படுத்துவதைப் பார்க்க முடியும்.",

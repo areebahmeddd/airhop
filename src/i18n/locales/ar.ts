@@ -1993,7 +1993,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "تعذّر بدء Tor. أعد المحاولة بعد قليل.",
   "settings.tor.status": "حالة Tor",
   "settings.tor.connection": "الاتصال",
-  "settings.tor.connection_off_note": "يُستخدم عند تفعيل Tor.",
   "settings.tor.mode_off": "مباشر",
   "settings.tor.mode_off_desc":
     "يتصل بـ Tor مباشرة. الأسرع، لكن يمكن لأي مراقب لهذه الشبكة أن يرى أنك تستخدم Tor.",

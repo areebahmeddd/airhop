@@ -2097,7 +2097,6 @@ export const strings: Strings = {
     "Imeshindwa kuanzisha Tor. Jaribu tena baada ya muda mfupi.",
   "settings.tor.status": "Hali ya Tor",
   "settings.tor.connection": "Muunganisho",
-  "settings.tor.connection_off_note": "Hutumika unapowasha Tor.",
   "settings.tor.mode_off": "Moja kwa moja",
   "settings.tor.mode_off_desc":
     "Huunganisha moja kwa moja na Tor. Haraka zaidi, lakini yeyote anayefuatilia mtandao huu ataona unatumia Tor.",

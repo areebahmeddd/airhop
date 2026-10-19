@@ -2031,7 +2031,6 @@ export const strings: Strings = {
     "Tor를 시작할 수 없습니다. 잠시 후 다시 시도하세요.",
   "settings.tor.status": "Tor 상태",
   "settings.tor.connection": "연결 방식",
-  "settings.tor.connection_off_note": "Tor를 켜면 사용됩니다.",
   "settings.tor.mode_off": "직접",
   "settings.tor.mode_off_desc":
     "Tor에 바로 연결합니다. 가장 빠르지만 이 네트워크를 지켜보는 쪽에서 Tor 사용 사실을 알 수 있습니다.",

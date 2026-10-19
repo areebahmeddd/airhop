@@ -2071,7 +2071,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "Tor ვერ გაეშვა. სცადე ხელახლა ცოტა ხანში.",
   "settings.tor.status": "Tor-ის სტატუსი",
   "settings.tor.connection": "კავშირი",
-  "settings.tor.connection_off_note": "გამოიყენება, როცა Tor-ს ჩართავ.",
   "settings.tor.mode_off": "პირდაპირი",
   "settings.tor.mode_off_desc":
     "პირდაპირ უკავშირდება Tor-ს. ყველაზე სწრაფი, თუმცა ამ ქსელის დამკვირვებელი დაინახავს, რომ Tor-ს იყენებ.",

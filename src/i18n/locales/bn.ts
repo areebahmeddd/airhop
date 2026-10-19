@@ -2040,7 +2040,6 @@ export const strings: Strings = {
     "Tor চালু করা যায়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
   "settings.tor.status": "Tor স্ট্যাটাস",
   "settings.tor.connection": "সংযোগ",
-  "settings.tor.connection_off_note": "আপনি Tor চালু করলে এটি ব্যবহার হয়।",
   "settings.tor.mode_off": "সরাসরি",
   "settings.tor.mode_off_desc":
     "সরাসরি Tor-এ যুক্ত হয়। সবচেয়ে দ্রুত, তবে এই নেটওয়ার্ক যে দেখছে সে বুঝতে পারবে আপনি Tor ব্যবহার করছেন।",

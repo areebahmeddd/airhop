@@ -2130,7 +2130,6 @@ export const strings: Strings = {
     "Hindi masimulan ang Tor. Subukan ulit maya-maya.",
   "settings.tor.status": "Katayuan ng Tor",
   "settings.tor.connection": "Koneksyon",
-  "settings.tor.connection_off_note": "Gagamitin ito kapag in-on mo ang Tor.",
   "settings.tor.mode_off": "Direkta",
   "settings.tor.mode_off_desc":
     "Direktang kumokonekta sa Tor. Pinakamabilis, pero makikita ng sinumang nagmamasid sa network na gumagamit ka ng Tor.",

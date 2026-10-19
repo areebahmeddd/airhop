@@ -2062,7 +2062,6 @@ export const strings: Strings = {
     "Torを開始できませんでした。しばらくしてからもう一度お試しください。",
   "settings.tor.status": "Torの状態",
   "settings.tor.connection": "接続方法",
-  "settings.tor.connection_off_note": "Torをオンにしたときに使われます。",
   "settings.tor.mode_off": "直接",
   "settings.tor.mode_off_desc":
     "Torに直接接続します。最速ですが、このネットワークを見ている人にはTorの利用がわかります。",

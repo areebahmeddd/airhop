@@ -2008,7 +2008,6 @@ export const strings: Strings = {
   "settings.conn.tor_failed": "เริ่ม Tor ไม่สำเร็จ ลองอีกครั้งในอีกสักครู่",
   "settings.tor.status": "สถานะ Tor",
   "settings.tor.connection": "การเชื่อมต่อ",
-  "settings.tor.connection_off_note": "ใช้เมื่อคุณเปิด Tor",
   "settings.tor.mode_off": "ตรง",
   "settings.tor.mode_off_desc":
     "เชื่อมต่อกับ Tor โดยตรง เร็วที่สุด แต่ผู้ที่เฝ้าดูเครือข่ายนี้จะเห็นว่าคุณใช้ Tor",

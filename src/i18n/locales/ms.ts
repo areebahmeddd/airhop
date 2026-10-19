@@ -2090,8 +2090,6 @@ export const strings: Strings = {
     "Tor tidak dapat dimulakan. Cuba lagi sebentar lagi.",
   "settings.tor.status": "Status Tor",
   "settings.tor.connection": "Sambungan",
-  "settings.tor.connection_off_note":
-    "Digunakan apabila anda menghidupkan Tor.",
   "settings.tor.mode_off": "Terus",
   "settings.tor.mode_off_desc":
     "Menyambung terus ke Tor. Paling laju, tetapi sesiapa yang memerhati rangkaian ini nampak anda menggunakan Tor.",

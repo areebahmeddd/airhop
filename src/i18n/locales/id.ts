@@ -2086,7 +2086,6 @@ export const strings: Strings = {
     "Tor tidak dapat dimulai. Coba lagi sebentar lagi.",
   "settings.tor.status": "Status Tor",
   "settings.tor.connection": "Koneksi",
-  "settings.tor.connection_off_note": "Dipakai saat kamu menyalakan Tor.",
   "settings.tor.mode_off": "Langsung",
   "settings.tor.mode_off_desc":
     "Terhubung langsung ke Tor. Tercepat, tetapi siapa pun yang mengawasi jaringan ini bisa melihat kamu memakai Tor.",
