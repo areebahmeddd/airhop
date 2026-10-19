@@ -6,7 +6,7 @@ Airhop is MIT-licensed and has no accounts, no ads, no telemetry, and no company
 
 ## Key facts
 
-- Bluetooth mesh: works with no internet, no router and no extra hardware; messages relay up to 7 hops, roughly 10 to 100 m per hop
+- Bluetooth mesh: works with no internet, no router and no extra hardware; messages relay up to 7 hops, roughly 30 to 50 m per hop
 - End-to-end encryption: Noise XX handshake with X25519 and ChaCha20-Poly1305, plus Double Ratchet forward secrecy
 - No accounts: identity is an Ed25519 key pair generated on the device and stored in the iOS Keychain or Android Keystore
 - Offline payments: Cashu ecash tokens sent device to device over Bluetooth with neither phone online

@@ -136,11 +136,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Can I block someone?",
         a: (
           <>
-            Yes. Open the direct conversation from your chat list and pick Block contact. Everything
-            from that peer is then dropped at a single point before it can reach any chat: channel
-            messages, direct messages, files, and anything arriving over Nostr. They also stop
-            appearing on your Mesh tab. The block is saved, so it survives restarting the app, and
-            you can lift it later under Settings then Security.
+            Yes. Long-press or swipe the conversation in your Direct list and pick Block contact.
+            Everything from that peer is then dropped at a single point before it can reach any
+            chat: channel messages, direct messages, files, and anything arriving over Nostr. They
+            also stop appearing on your Mesh tab. The block is saved, so it survives restarting the
+            app, and you can lift it later under Settings, Privacy &amp; security.
             <br />
             <br />
             <strong>Blocking is one-sided and local to your phone</strong>, so it hides them from
@@ -207,10 +207,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Can Airhop work over Wi-Fi instead of Bluetooth?",
         a: (
           <>
-            Yes. Turn on <strong>Local network</strong> in Settings, Network, and phones on the same
-            Wi-Fi find each other and carry the whole mesh between them, iPhone and Android alike.
-            No internet is involved, so a phone hotspot works with no service at all, and a file
-            moves in about a second instead of the minute Bluetooth takes.
+            Yes. Turn on <strong>Local network</strong> in Settings, Network &amp; relays, and
+            phones on the same Wi-Fi find each other and carry the whole mesh between them, iPhone
+            and Android alike. No internet is involved, so a phone hotspot works with no service at
+            all, and a file moves in about a second instead of the minute Bluetooth takes. It runs
+            while Airhop is open, and in the background Bluetooth carries on alone.
             <br />
             <br />
             Wi-Fi here means the network, not the internet behind it. The router only has to let two
@@ -258,7 +259,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "How far can messages travel?",
-        a: "Each hop covers roughly 10 to 30 meters indoors and up to 100 in the open, and a message is allowed 7 of them, so it can cross a few hundred meters before it stops. The more people around you have Airhop, the further it reaches, because every one of their phones is another relay. Messages held for someone who is not around have no range limit at all: your phone keeps a text message for up to a week until a path to that person exists, and another phone can carry a sealed copy for up to a day until it meets them. That applies to text. An attachment is not carried this way and needs a live link at the moment you send it.",
+        a: "Each hop covers roughly 30 to 50 meters indoors and further in the open, and a message is allowed 7 of them, so it can cross about 350 meters before it stops. The more people around you have Airhop, the further it reaches, because every one of their phones is another relay. Messages held for someone who is not around have no range limit at all: your phone keeps a text message for up to a week until a path to that person exists, and another phone can carry a sealed copy for up to a day until it meets them. That applies to text. An attachment is not carried this way and needs a live link at the moment you send it.",
       },
       {
         q: "What media can I send?",
@@ -436,7 +437,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             accepts only secure public relays, so put yours behind a domain with TLS (a reverse
             proxy like Caddy, or a Cloudflare Tunnel) and reach it at wss://your-relay.example.com.
             Plain ws://, IP addresses, and local names are rejected, the same bar other Nostr
-            clients and bitchat use. Then add the URL under Network &amp; Relays → Custom relays.
+            clients and bitchat use. Then add the URL under Network &amp; relays → Custom relays.
             Custom relays carry location channels and the mesh bridge; DMs and private channels
             always use the built-in message relays.
           </>
@@ -600,14 +601,15 @@ export const FAQ_SECTIONS: FaqSection[] = [
           <>
             No. Your identity is your private key, and everything you post is Ed25519-signed. Every
             phone checks the signature against your key before showing or acting on anything, so a
-            forged packet claiming to be from you is dropped. Display names are derived
-            deterministically from your public key and cannot be registered or squatted by anyone
-            else. Noise XX mutual authentication prevents man-in-the-middle attacks on direct
-            message sessions.
+            forged packet claiming to be from you is dropped. Airhop names come from your public
+            key, so no Airhop user can take yours. A bitchat user can pick any nickname, so public
+            messages show a short suffix from the sender's ID to tell look-alikes apart. Noise XX
+            mutual authentication prevents man-in-the-middle attacks on direct message sessions.
             <br />
             <br />
-            For contacts you want to fully trust, QR code verification pins their key fingerprint to
-            a human name, the same model Signal uses with safety numbers.
+            For contacts you want to fully trust, scan their QR code in person, or compare six
+            safety words over a call. Either marks them verified, the same model Signal uses with
+            safety numbers.
           </>
         ),
       },
@@ -629,8 +631,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <strong>Message history is different.</strong> It sits in the app's own storage,
             protected by the operating system sandbox and whole-device encryption rather than a
             separate app-level cipher, so somebody holding your unlocked phone can read your chats
-            the way they could read any other app's. Delete a conversation at any time, or empty
-            everything with panic wipe.
+            the way they could read any other app's, unless you turn on Lock Airhop in Settings,
+            Privacy &amp; security, which asks for your screen lock to open the app. Delete a
+            conversation at any time, or empty everything with panic wipe.
             <br />
             <br />
             The wallet is stricter still, because coins are bearer instruments: its storage is a
@@ -640,7 +643,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             <br />
             None of it goes into an iCloud or Google backup, because Airhop excludes its data from
-            both, and panic wipe destroys the lot in a few seconds.
+            both, and panic wipe destroys the lot in under a second.
           </>
         ),
       },
@@ -657,9 +660,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             The limits are deliberately small. At most 40 envelopes at a time, none larger than 16
             KiB, and every one is discarded after 24 hours whether or not it was ever delivered. How
-            much any one person can leave with you depends on whether you have verified them. It
-            costs you a little storage, and it is the reason the network keeps working when people
-            are not in the same place at the same time.
+            much any one person can leave with you depends on whether they are one of your contacts.
+            It costs you a little storage, and it is the reason the network keeps working when
+            people are not in the same place at the same time.
           </>
         ),
       },
@@ -719,9 +722,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "What is panic wipe?",
         a: (
           <>
-            The Panic wipe row in Profile destroys every identity key, all message data, the wallet,
-            cached media and Tor state in a few seconds. One tap asks you to confirm; three quick
-            taps skip the question, for a situation where you need the app emptied right now.{" "}
+            The Panic wipe row on the You tab destroys every identity key, all message data, the
+            wallet, cached media and Tor state in under a second. One tap asks you to confirm; three
+            quick taps skip the question, for a situation where you need the app emptied right now.{" "}
             <strong>This cannot be undone.</strong>
             <br />
             <br />
@@ -774,7 +777,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             background Bluetooth by itself. That is where almost all of a day's saving comes from,
             and none of it changes how the mesh works: messages still arrive, people are still
             found, the radio just looks less often.{" "}
-            <strong>If you want it to stop entirely, set your status to Away in Profile:</strong>{" "}
+            <strong>
+              If you want it to stop entirely, set your status to Away on the You tab:
+            </strong>{" "}
             that stops scanning and announcing, and nothing runs until you set it back or restart
             the app.
           </>
@@ -796,18 +801,19 @@ export const FAQ_SECTIONS: FaqSection[] = [
         ),
       },
       {
-        q: "Why is there a notification I cannot dismiss?",
-        a: "On Android, that notification is what keeps the mesh alive after you leave the app. Without it the system would suspend Airhop within minutes and you would stop receiving anything. It has a Stop mesh button that shuts the radios down cleanly and takes the notification with it; reopening the app then shows the mesh paused, with a Resume button. iPhones have no equivalent notification, because iOS keeps Bluetooth apps alive differently.",
+        q: "Why is there a notification that stays up?",
+        a: "On Android, that notification is what keeps the mesh alive after you leave the app. Without it the system would suspend Airhop within minutes and you would stop receiving anything. It has a Stop mesh button that shuts the radios down cleanly and takes the notification with it; reopening the app then shows the mesh paused, with a Resume button. To quiet or hide it, use Background notification in Settings, Privacy & security, and message alerts stay on. On Android 14 and later you can also swipe it away. iPhones have no equivalent notification, because iOS keeps Bluetooth apps alive differently.",
       },
       {
         q: "Why does a messenger ask for my location?",
         a: (
           <>
-            Android ties Bluetooth scanning to the location permission at the system level, so any
-            app that looks for nearby devices has to ask for it, whether or not it cares where you
-            are. Airhop does not read your position for the mesh. The one place it genuinely uses
-            location is the optional location channels, which need a rough area to work out which
-            cell you are in, and you can decline that and still use everything else.{" "}
+            Android 11 and older tie Bluetooth scanning to the location permission at the system
+            level, so on those phones any app that looks for nearby devices has to ask for it,
+            whether or not it cares where you are. From Android 12 the mesh needs no location at
+            all. Airhop does not read your position for the mesh. It uses location only for the
+            optional location channels and the mesh bridge, which need a rough area to work out
+            which cell you are in, and you can decline that and still use everything else.{" "}
             <strong>
               Nothing about your position is ever sent to us, because there is no server to send it
               to.
@@ -995,7 +1001,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         a: (
           <>
             Show the payment as a QR code and let them scan it. Every send screen offers one, and a
-            payment you have already made can be shown again from its Pending card.
+            payment you have already made can be shown again from its row in Activity.
             <br />
             <br />
             <strong>
@@ -1057,9 +1063,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
           <>
             Nothing is lost. Building a token does not delete your coins, it{" "}
             <strong>reserves</strong> them: they leave your spendable balance so you cannot spend
-            them twice, and sit under Pending until you mark them as received or reclaim them.
-            Closing the app, a crash, or a Bluetooth message that never routes all leave the money
-            recoverable.
+            them twice, and sit in Activity as pending until you mark them as received or reclaim
+            them. Closing the app, a crash, or a Bluetooth message that never routes all leave the
+            money recoverable.
             <br />
             <br />
             One caveat the app also states before you tap: if the recipient already has the token

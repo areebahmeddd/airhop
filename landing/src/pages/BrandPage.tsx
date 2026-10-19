@@ -58,7 +58,7 @@ const FACTS = [
   { k: "Category", v: "Messaging" },
   { k: "Platforms", v: "iOS 16.0 and later, Android 10.0 and later" },
   { k: "Price", v: "Free. No ads, no subscriptions, no in-app purchases" },
-  { k: "Licence", v: "MIT" },
+  { k: "License", v: "MIT" },
   { k: "Maintainer", v: "Areeb Ahmed, independent" },
   { k: "Site", v: SITE_URL.replace("https://", "") },
   { k: "Source", v: REPO_URL.replace("https://", "") },

@@ -64,7 +64,7 @@ const strings: Strings = {
   "home.about.link.mesh": "harato Bluetooth Low Energy",
   "home.about.link.wire_protocol": "fitsipiky ny fampitana",
   "home.about.body.built":
-    "Rindranasa misokatra ho an'ny iOS sy Android ny Airhop, natao ho an'ny hafatra manokana teboka mankamin'ny teboka amin'ny {mesh}. Naorina ambonin'ny fototry ny {bitchat} izy, mampiasa indray ny {wire_protocol} sy ny lamina fiarovany, avy eo manitatra izany amin'ny fandoavam-bola {ecash} tsy misy Internet sy ny AI tsy misy Internet. Mandeha tsy misy Internet mihitsy izy, ary mifampita ho azy amin'ny fitaovana akaiky ny hafatra (10 ka hatramin'ny 30 metatra eo ho eo isaky ny dingana ao anaty trano, lavitra kokoa any ivelany), hatramin'ny dingana 7.",
+    "Rindranasa misokatra ho an'ny iOS sy Android ny Airhop, natao ho an'ny hafatra manokana teboka mankamin'ny teboka amin'ny {mesh}. Naorina ambonin'ny fototry ny {bitchat} izy, mampiasa indray ny {wire_protocol} sy ny lamina fiarovany, avy eo manitatra izany amin'ny fandoavam-bola {ecash} tsy misy Internet sy ny AI tsy misy Internet. Mandeha tsy misy Internet mihitsy izy, ary mifampita ho azy amin'ny fitaovana akaiky ny hafatra (30 ka hatramin'ny 50 metatra eo ho eo isaky ny dingana ao anaty trano, lavitra kokoa any ivelany), hatramin'ny dingana 7.",
   "home.about.body.identity":
     "Mpiara-dakile {ed25519} noforonina teo amin'ny fitaovanao ary tehirizina ao amin'ny {ios_keychain} na {android_keystore} no maha-ianao anao. Tsy misy kaonty, tsy misy fisoratana anarana, ary tsy misy mikasika mpizara na dia iray aza, ka azo ampiasaina ho rindranasa vonjimaika tsy mamela na inona na inona mitondra any aminao rehefa voafafa.",
   "home.about.body.crypto":
