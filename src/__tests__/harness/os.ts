@@ -81,6 +81,23 @@ export class ForegroundServiceStartNotAllowedException extends Error {
   }
 }
 
+// The install-time permissions that satisfy the connectedDevice foreground
+// service type on Android 14 (see startForegroundService).
+const CONNECTED_DEVICE_MANIFEST_PERMISSIONS: readonly string[] = [
+  "android.permission.CHANGE_NETWORK_STATE",
+  "android.permission.CHANGE_WIFI_STATE",
+  "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+  "android.permission.NFC",
+  "android.permission.TRANSMIT_IR",
+];
+
+// Of those, the ones Airhop's manifest declares.
+const AIRHOP_MANIFEST_PERMISSIONS: readonly string[] = [
+  "android.permission.CHANGE_NETWORK_STATE",
+  "android.permission.CHANGE_WIFI_STATE",
+  "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+];
+
 export interface DeviceOptions {
   platform: Platform;
   // Android API level. 31+ gates the BLUETOOTH_* runtime permissions; 33+ adds
@@ -98,6 +115,10 @@ export interface DeviceOptions {
   // peripheral one, so they scan and relay but can never be discovered.
   canAdvertise?: boolean;
   hasWifiAware?: boolean;
+  // Install-time permissions the manifest declares. Only the ones a
+  // foreground service type's prerequisite reads are modelled; the default is
+  // what android/app/src/main/AndroidManifest.xml declares of them.
+  manifestPermissions?: readonly string[];
   // Multi-device simulation only. A device in a world does not own the clock:
   // the world advances one set of fake timers for everybody, so each device has
   // to read the time rather than count it. Left unset, the device keeps its own
@@ -122,6 +143,7 @@ export class DeviceOS {
   readonly canAdvertise: boolean;
   readonly hasWifiAware: boolean;
   readonly permissionSettleMs: number;
+  readonly manifestPermissions: readonly string[];
 
   adapter: AdapterState;
   locationServicesEnabled: boolean;
@@ -158,6 +180,8 @@ export class DeviceOS {
     this.canAdvertise = opts.canAdvertise ?? true;
     this.hasWifiAware = opts.hasWifiAware ?? false;
     this.permissionSettleMs = opts.permissionSettleMs ?? 0;
+    this.manifestPermissions =
+      opts.manifestPermissions ?? AIRHOP_MANIFEST_PERMISSIONS;
     this.adapter = opts.adapter ?? "on";
     this.locationServicesEnabled = opts.locationServicesEnabled ?? true;
     this.clock = opts.clock;
@@ -230,10 +254,18 @@ export class DeviceOS {
       if (this.runAs !== undefined) this.runAs(fn);
       else fn();
     } catch (e) {
-      const err = e as Error;
-      this.crashed = `${err.name}: ${err.message} (on ${name} thread)`;
-      this.log("os", "PROCESS_CRASH", this.crashed);
+      this.recordCrash(e, name);
     }
+  }
+
+  // The first crash is the one that killed the process; anything after it ran
+  // in a process that no longer exists. The stack goes into the trace because
+  // the verdict is useless without knowing which listener threw.
+  recordCrash(e: unknown, thread: string): void {
+    if (this.crashed !== null) return;
+    const err = e instanceof Error ? e : new Error(String(e));
+    this.crashed = `${err.name}: ${err.message} (on ${thread} thread)`;
+    this.log("os", "PROCESS_CRASH", `${this.crashed}\n${err.stack ?? ""}`);
   }
 
   setPermission(p: AndroidPermission, state: PermissionState): void {
@@ -318,16 +350,30 @@ export class DeviceOS {
     if (this.apiLevel >= 31 && !this.appForeground) {
       throw new ForegroundServiceStartNotAllowedException();
     }
-    // Android 14 checks that the app holds a permission matching the declared
-    // service type at the moment startForeground runs.
+    // Android 14 checks the connectedDevice type's runtime prerequisite when
+    // startForeground runs. Any one of these satisfies it: a manifest
+    // declaration of CHANGE_NETWORK_STATE, CHANGE_WIFI_STATE,
+    // CHANGE_WIFI_MULTICAST_STATE, NFC or TRANSMIT_IR; a granted BLUETOOTH_*
+    // or UWB_RANGING runtime permission; or a USB permission request.
+    // https://developer.android.com/develop/background-work/services/fgs/service-types#connected-device
+    // The manifest grant is install-time and cannot be revoked, so on Airhop's
+    // manifest this never throws; a device built with `manifestPermissions: []`
+    // falls back to the Bluetooth grant, which the system checks as the app's
+    // grant rather than the Bluetooth stack's.
     if (this.apiLevel >= 34) {
-      const anyBt =
-        this.enforced.has("android.permission.BLUETOOTH_CONNECT") ||
-        this.enforced.has("android.permission.BLUETOOTH_SCAN") ||
-        this.enforced.has("android.permission.BLUETOOTH_ADVERTISE");
-      if (!anyBt) {
+      const byManifest = this.manifestPermissions.some((p) =>
+        CONNECTED_DEVICE_MANIFEST_PERMISSIONS.includes(p),
+      );
+      const byRuntime = (
+        [
+          "android.permission.BLUETOOTH_CONNECT",
+          "android.permission.BLUETOOTH_SCAN",
+          "android.permission.BLUETOOTH_ADVERTISE",
+        ] as const
+      ).some((p) => this.checkPermission(p) === "granted");
+      if (!byManifest && !byRuntime) {
         throw new SecurityException(
-          "FOREGROUND_SERVICE_CONNECTED_DEVICE requires a Bluetooth permission",
+          "FOREGROUND_SERVICE_CONNECTED_DEVICE prerequisite (manifest network permission or a Bluetooth grant)",
         );
       }
     }

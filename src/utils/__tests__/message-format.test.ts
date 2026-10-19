@@ -1,3 +1,5 @@
+// Inline formatting: where a delimiter opens and closes, and what strips.
+
 import { stripFormatting, tokenizeFormatting } from "../message-format";
 
 describe("tokenizeFormatting", () => {

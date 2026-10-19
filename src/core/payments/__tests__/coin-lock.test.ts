@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // `coinLock`: whether a coin handed to us is ours to spend. A coin locked
 // (NUT-11) to another key is worth nothing to this wallet however genuine its
 // signature, so it must never be stored as balance; one locked to our key is

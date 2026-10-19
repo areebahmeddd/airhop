@@ -806,6 +806,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "呼び出しを許可",
   "chat.contact.allow_ring_desc":
     "会話がミュートでも、相手があなたの電話を鳴らせるようにします。マナーモードと集中モードはそのまま適用されます。",
+  "chat.contact.allow_ring_needs_keys":
+    "この連絡先の鍵はまだありません。呼び出しを許可するには、メッセージを送るかコードを読み取ってください。",
+  "chat.contact.allow_ring_master_off":
+    "設定で{setting}をオンにするまで、誰もあなたの電話を鳴らせません。",
   "chat.contact.ring_action": "呼び出す",
   "chat.contact.ringing": "呼び出し中…",
   "chat.contact.ring_hint_nearby": "呼び出しは相手が近くにいる間だけ使えます",
@@ -944,7 +948,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "許可",
   "mesh.banner.action.resume": "再開",
   "mesh.banner.action.fix": "修正",
-  "mesh.banner.hint.resume": "Bluetoothの発信とスキャンを再開します",
+  "mesh.banner.hint.resume": "メッシュを再開します",
   "mesh.banner.hint.enable_bluetooth":
     "AndroidにBluetoothをオンにするよう求めます",
   "mesh.banner.hint.location_settings": "システムの位置情報設定を開きます",
@@ -1747,9 +1751,11 @@ export const strings: Strings = {
     "この連絡先の鍵はまだありません。メッセージを送るか、会ったときにコードを読み取ってください。",
   "contacts.verify.compare_title": "お互いに読み上げてください",
   "contacts.verify.compare_body":
-    "{name}にも同じ6語が表示されています。一致すれば、鍵が本物だとお互いに確認できます。",
+    "{name}のAirhopにも同じ6語が表示されています。一致すれば、鍵が本物だとお互いに確認できます。bitchatにはこの言葉がないため、代わりにコードを読み取ってください。",
   "contacts.verify.codes_match": "一致します",
   "contacts.verify.codes_differ": "一致しません",
+  "contacts.verify.codes_differ_body":
+    "この端末の鍵は{name}のものではないかもしれません。このチャットを信頼する前に、直接会ってコードを読み取ってください。",
   "contacts.verify.compared_body":
     "あなたと{name}が同じコードを確認しました。この連絡先は検証済みです。",
 
@@ -1784,8 +1790,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "任意の機能、送信の取り消し、メディア、リセット",
   "settings.section.privacy": "プライバシーとセキュリティ",
-  "settings.section.privacy_desc":
-    "前方秘匿性、署名付きパケット、ブロックしたピア",
+  "settings.section.privacy_desc": "Airhopのロック、通知、ブロックしたピア",
   "settings.section.network": "ネットワークとリレー",
   "settings.section.network_desc":
     "インターネットへの切り替え、Nostrリレー、bitchatとの互換性",
@@ -1902,10 +1907,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "会話を最も長く読める状態に保ち、その分ディスクも使います。",
   "settings.general.reset_desc":
-    "識別情報、メッセージ、連絡先、ウォレットはそのままに、すべての設定を初期値へ戻します",
+    "識別情報、メッセージ、連絡先、ウォレットはそのままに、設定を初期値へ戻します",
   "settings.general.reset_title": "設定をリセットしますか",
   "settings.general.reset_body":
-    "すべての設定が初期値に戻ります。外観、送信の取り消し、接続まわり（インターネット、Tor、ゲートウェイ、ブリッジ、リレー）が対象です。識別情報、メッセージ、連絡先、ウォレットはそのままです。",
+    "外観、言語、通知、送信の取り消し、接続まわり（インターネット、Tor、ゲートウェイ、ブリッジ、リレー）を含め、設定が初期値に戻ります。Airhopのロック、メディアの保存期間、ステータスは設定したままです。識別情報、メッセージ、連絡先、ウォレットはそのままです。",
   "settings.general.reset_confirm": "リセット",
 
   // ---- Settings: privacy and security ----
@@ -1921,6 +1926,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "呼び出しアラート",
   "settings.security.ring_alerts_desc":
     "呼び出し機能のマスタースイッチです。オフにすると、個々の連絡先への許可に関わらずすべての呼び出しを拒否します。",
+  "settings.security.background_notice": "バックグラウンド通知",
+  "settings.security.background_notice_desc":
+    "目立たなくしたり非表示にしたりできます。メッセージ通知はそのまま届きます。",
   "settings.security.no_blocked": "ブロックしたピアはいません",
   "settings.security.no_blocked_desc":
     "ブロックしたピアはメッセージを送れず、メッシュタブにも表示されません",
@@ -1952,7 +1960,7 @@ export const strings: Strings = {
     "メッシュのピアが圏外のとき、Nostrリレー経由で続けます",
   "settings.network.internet_off_title": "インターネットをオフにしますか",
   "settings.network.internet_off_body":
-    "AirhopはBluetoothのみで動きます。Nostrリレーへの接続をやめ、Tor、インターネットゲートウェイ、メッシュブリッジもすべてオフになります。近くとのBluetoothチャットは引き続き使えます。",
+    "AirhopはBluetoothのみで動きます。Nostrリレーへの接続をやめ、Tor、インターネットゲートウェイ、メッシュブリッジはインターネットが戻るまで一時停止します。近くとのBluetoothチャットは引き続き使えます。",
   "settings.network.turn_off": "オフにする",
   "settings.network.discovery": "ジオリレーの自動検出",
   "settings.network.discovery_desc":
@@ -2033,7 +2041,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "トランシーバーのように近くの人と話します",
   "settings.conn.live_voice_on_title": "ライブ通話をオンにしますか",
   "settings.conn.live_voice_on_body":
-    "マイクを押している間、話す声がBluetooth圏内の全員に届き、相手の声もこの端末で再生されます。録音はされません。",
+    "マイクを押している間、話す声がBluetooth圏内の全員に届き、相手の声もこの端末で再生されます。指を離すと、同じ音声がボイスメモとしても送信されます。",
   "settings.conn.live_voice_off_title": "ライブ通話をオフにしますか",
   "settings.conn.live_voice_off_body":
     "マイクを押すと、代わりにボイスメモを録音します。指を離すと送信され、相手が再生するまで誰にも聞かれません。",
@@ -2084,7 +2092,7 @@ export const strings: Strings = {
   "settings.conn.gateway_on_title":
     "インターネットゲートウェイをオンにしますか",
   "settings.conn.gateway_on_body":
-    "自分の接続を持たない近くの端末が、あなたの接続を通して位置チャンネルのメッセージを送受信します。あなたのモバイル通信とバッテリーを使いますが、相手のメッセージはエンドツーエンドで暗号化されたままなので、通る内容を読むことはできません。",
+    "自分の接続を持たない近くの端末が、あなたの接続を通して位置チャンネルのメッセージを送受信します。あなたのモバイル通信とバッテリーを使います。これらのメッセージは投稿者が署名した公開投稿なので、通る内容を読むことはできますが、変更はできません。",
   "settings.conn.gateway_off_title":
     "インターネットゲートウェイをオフにしますか",
   "settings.conn.gateway_off_body":
@@ -2094,10 +2102,10 @@ export const strings: Strings = {
     "このエリアの公開#bluetoothチャットを、インターネット経由で圏外の別のBluetoothの集まりとつなぎます",
   "settings.conn.bridge_on_title": "メッシュブリッジをオンにしますか",
   "settings.conn.bridge_on_body":
-    "あなたの公開#bluetoothメッセージがインターネット経由で近隣に公開され、Bluetooth圏外の人も読めるようになります。プライベートメッセージが橋渡しされることはなく、「近くのみ」にすればそのメッセージだけをローカルに留められます。",
+    "あなたの公開#bluetoothメッセージがインターネット経由で近隣に公開され、Bluetooth圏外の人も読めるようになります。あなたの端末は、近くの端末の橋渡しメッセージもあなたの通信で運びます。プライベートメッセージが橋渡しされることはなく、「近くのみ」にすればそのメッセージだけをローカルに留められます。",
   "settings.conn.bridge_off_title": "メッシュブリッジをオフにしますか",
   "settings.conn.bridge_off_body":
-    "あなたの公開#bluetoothメッセージは再びBluetooth圏内に留まり、橋渡し先からのメッセージもここには届かなくなります。",
+    "あなたの公開#bluetoothメッセージは再びBluetooth圏内に留まり、あなたの端末はほかの人の橋渡しメッセージを運ばなくなります。近くの橋渡し端末がBluetoothで届けるメッセージは、引き続きここに表示されます。",
   "settings.conn.bridge_needs_location":
     "メッシュブリッジには位置情報が必要です",
   "settings.conn.bridge_needs_location_desc":
@@ -2134,7 +2142,7 @@ export const strings: Strings = {
   "settings.permissions.system": "システム",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "通信量",
+  "settings.storage.mesh_traffic": "メッシュ通信量",
   "settings.storage.storage_usage": "ストレージ使用量",
   "settings.storage.storage_usage_desc":
     "メッセージ、ecash、キャッシュした添付",
@@ -2214,7 +2222,8 @@ export const strings: Strings = {
   "settings.status.away_desc":
     "メッシュは一時停止中で、スキャンも発信もしません",
   "settings.status.invisible": "非表示",
-  "settings.status.invisible_desc": "スキャンはしますが、発見はされません",
+  "settings.status.invisible_desc":
+    "Bluetoothのスキャンでは見つからず、接続した端末からは引き続き見えます",
   "settings.status.title": "ステータス",
   "settings.status.set_a11y": "ステータスを{value}に設定",
   "settings.status.edit": "ステータスを編集",

@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "rangkaian mesh Bluetooth Low Energy",
   "home.about.link.wire_protocol": "protokol penghantaran",
   "home.about.body.built":
-    "Airhop ialah aplikasi sumber terbuka untuk iOS dan Android bagi pemesejan peribadi antara peranti melalui {mesh}. Ia dibina atas asas {bitchat}, menggunakan semula {wire_protocol} dan model keselamatannya, kemudian meluaskannya dengan pembayaran {ecash} luar talian dan AI luar talian. Ia berfungsi tanpa sebarang sambungan internet, dan mesej dihantar secara automatik melalui peranti berdekatan (kira-kira 10 hingga 30 meter setiap lompatan di dalam bangunan, lebih jauh di kawasan lapang), sehingga 7 lompatan.",
+    "Airhop ialah aplikasi sumber terbuka untuk iOS dan Android bagi pemesejan peribadi antara peranti melalui {mesh}. Ia dibina atas asas {bitchat}, menggunakan semula {wire_protocol} dan model keselamatannya, kemudian meluaskannya dengan pembayaran {ecash} luar talian dan AI luar talian. Ia berfungsi tanpa sebarang sambungan internet, dan mesej dihantar secara automatik melalui peranti berdekatan (kira-kira 30 hingga 50 meter setiap lompatan di dalam bangunan, lebih jauh di kawasan lapang), sehingga 7 lompatan.",
   "home.about.body.identity":
     "Identiti anda ialah pasangan kunci {ed25519} yang dijana pada peranti anda dan disimpan dalam {ios_keychain} atau {android_keystore}. Tiada akaun, tiada pendaftaran, dan tiada apa-apa yang menyentuh mana-mana pelayan, iaitu ia boleh digunakan sebagai aplikasi sekali guna yang tidak meninggalkan apa-apa yang menjejaki anda selepas dipadamkan.",
   "home.about.body.crypto":
     "Setiap sesi menggunakan protokol {noise} untuk jabat tangan yang disahkan. Mesej yang disimpan menggunakan algoritma {ratchet}, iaitu walaupun peranti anda dikompromi kemudian, mesej lama anda kekal tidak boleh dibaca. Pemadaman kecemasan memusnahkan semua kunci dan mesej dalam masa kurang satu saat.",
   "home.about.body.internet":
-    "Apabila anda dan kenalan anda berada di luar jangkauan Bluetooth, geganti {nostr} bertindak sebagai jambatan melalui internet, menggunakan mesej terus yang dibalut mengikut format {nip17}, jadi rangkaian mesh meluas ke seluruh dunia setiap kali anda berdua dalam talian. Sokongan {tor} tersedia pada iOS dan Android, melalui {arti}, dengan jambatan {obfs4} dan {snowflake} untuk rangkaian yang menyekat Tor.",
+    "Apabila anda dan kenalan anda berada di luar jangkauan Bluetooth, geganti {nostr} bertindak sebagai jambatan melalui internet, menggunakan mesej terus yang dibalut mengikut format {nip17}, jadi rangkaian mesh meluas ke seluruh dunia setiap kali anda berdua dalam talian. Sokongan {tor} tersedia pada iOS dan Android, melalui {arti}, dengan jambatan {obfs4}, {snowflake} dan {webtunnel} untuk rangkaian yang menyekat Tor.",
   "home.about.optional.title": "Airhop mempunyai ciri pilihan yang boleh anda hidupkan:",
   "home.about.optional.payments.label": "Pembayaran luar talian:",
   "home.about.optional.payments.body":

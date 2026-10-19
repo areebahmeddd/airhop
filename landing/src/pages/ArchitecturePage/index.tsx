@@ -309,7 +309,11 @@ export default function ArchitecturePage() {
                 head={["Layer", "What lives there", "Native?"]}
                 rows={[
                   ["src/ui/", "shared components and theme tokens", "No"],
-                  ["src/features/", "chat, discovery, wallet, contacts, settings", "No"],
+                  [
+                    "src/features/",
+                    "chat, discovery, wallet, contacts, settings, onboarding, lock",
+                    "No",
+                  ],
                   ["src/store/", "Zustand slices persisted to MMKV", "No"],
                   ["src/services/", "mesh-service, wallet-service, payment-router", "No"],
                   ["src/core/", "crypto, mesh, nostr, payments, router, move", "No"],
@@ -337,8 +341,9 @@ export default function ArchitecturePage() {
                       mesh-service.ts
                     </TextLink>{" "}
                     walks for every direct message. Each tier is tried in order and the first one
-                    that can carry the message wins. Whatever happens, the message also waits in the
-                    outbox for up to a week until a delivery receipt clears it.
+                    that can carry the message wins. A message sent over the mesh or left with
+                    couriers also waits in the outbox for up to a week, until a delivery receipt
+                    clears it.
                   </>
                 }
               >
@@ -357,7 +362,7 @@ export default function ArchitecturePage() {
                   [
                     "Direct",
                     "45 seconds",
-                    "Derived from the 30 second announce interval, so a peer that is still there cannot expire between two announces. Matches bitchat's retention window.",
+                    "1.5 times the longest announce gap of 30 seconds, so a peer that is still there cannot expire between two announces. Close to bitchat's retention window.",
                   ],
                   [
                     "Mesh",
@@ -556,7 +561,7 @@ export default function ArchitecturePage() {
                   [
                     "BIP-39",
                     "Twelve words that encode a seed",
-                    "The recovery phrase. Created when the wallet is first set up so every coin is derived from it; backup counts as on once you have viewed the words and proved you wrote them down",
+                    "The recovery phrase. Created when the wallet is first set up so every coin is derived from it; backup counts as on once you have viewed the words, and as safe once you prove you wrote them down",
                   ],
                   [
                     "bolt11",
@@ -656,15 +661,22 @@ export default function ArchitecturePage() {
               lede="Five ways a message can move. Bluetooth is the default because it needs nothing: no internet, no router, no setup. The others each cover a case Bluetooth cannot."
             >
               <Table
-                head={["", "BLE mesh", "LAN (mDNS)", "Wi-Fi Aware", "Nostr relays", "Courier"]}
+                head={[
+                  "",
+                  "BLE mesh",
+                  "LAN (mDNS + TCP)",
+                  "Wi-Fi Aware",
+                  "Nostr relays",
+                  "Courier",
+                ]}
                 rows={[
                   [
                     "Carries",
                     "Everything, including live voice",
                     "Everything BLE carries",
                     "Everything BLE carries, same platform only",
-                    "DMs, location channels",
-                    "Sealed text envelopes",
+                    "DMs and location channels",
+                    "Sealed text envelopes, up to 16 KiB each",
                   ],
                   [
                     "Needs internet",
@@ -677,16 +689,23 @@ export default function ArchitecturePage() {
                   ["iPhone to Android", "Yes", "Yes", "No", "Yes", "Yes"],
                   [
                     "Range",
-                    "10 to 100 m per hop",
+                    "30 to 50 m indoors, up to 100 m line of sight, per hop",
                     "Wherever the network reaches",
                     "~30 m",
                     "Global",
                     "Wherever the carrier walks",
                   ],
-                  ["Max hops", "7", "1", "1", "1", "4 carriers per round, 24 h per copy"],
+                  [
+                    "Max hops",
+                    "7",
+                    "7, shared with Bluetooth",
+                    "7, shared with Bluetooth",
+                    "1",
+                    "4 carriers per round, 24 h per copy",
+                  ],
                   [
                     "Speed",
-                    "~18 KiB/s",
+                    "~18 KiB/s to one peer, ~15 KiB/s to a channel",
                     "Network speed, no radio pacing",
                     "Link speed, no radio pacing",
                     "Not used for files",
@@ -694,7 +713,7 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Latency per hop",
-                    "10 to 220 ms, randomized",
+                    "10 to 220 ms, randomized to avoid collisions",
                     "Network round trip",
                     "n/a",
                     "Relay round trip, more over Tor",
@@ -853,7 +872,7 @@ export default function ArchitecturePage() {
                 rows={[
                   [
                     "Sync interval",
-                    "15 seconds, board posts every 60",
+                    "1 s after a new link, then every 15 s, board posts every 60",
                     "Sent to direct neighbors only, one request per kind",
                   ],
                   ["Message window", "6 hours", "How far back a returning peer catches up"],
@@ -970,7 +989,7 @@ export default function ArchitecturePage() {
                     "4 s alone, then 15 to 30 s",
                     "Fast while alone so devices meet quickly, then it backs off",
                   ],
-                  ["Gossip sync", "15 s", "Lets a returning peer catch up"],
+                  ["Gossip sync", "1 s on a new link, then 15 s", "Lets a returning peer catch up"],
                   ["Direct peer timeout", "45 s", "Handles unreported link drops beyond broadcast"],
                   ["Mesh peer timeout", "60 s", "Relayed peers get longer, packets arrive late"],
                   ["Geohash heartbeat", "40 to 80 s, randomized", "Avoids lockstep announcements"],
@@ -1003,7 +1022,7 @@ export default function ArchitecturePage() {
                 the Profile screen, one tap asks for confirmation and three quick taps skip it. It
                 deletes every Keychain and Keystore entry, clears every MMKV partition, empties the
                 cache directory (and tmp on iOS), deletes Tor's state and clears delivered
-                notifications, in a few seconds. The wallet file is emptied and its key destroyed,
+                notifications, in under a second. The wallet file is emptied and its key destroyed,
                 so what stays on disk cannot be read. Two things are beyond its reach: photos saved
                 to the gallery, and Wi-Fi Aware pairings in the iPhone's own list.
               </p>
@@ -1116,7 +1135,7 @@ export default function ArchitecturePage() {
               id="attachments"
               eyebrow="The system · 10"
               title="Attachments"
-              lede="A photo taken on a modern phone runs to several MiB. Airhop sends it at 256 KiB or less, and the mesh moves it at about 18 KiB/s. Something has to give, and it should not be the send button."
+              lede="A photo taken on a modern phone runs to several MB. Airhop sends it at 256 KiB or less, and the mesh moves it at about 18 KiB/s. Something has to give, and it should not be the send button."
             >
               <p>
                 Every attachment is <strong className="text-ink">one packet</strong>, not a stream
@@ -1130,7 +1149,7 @@ export default function ArchitecturePage() {
               <Table
                 head={["", "Photo", "Voice note", "Video", "Anything else"]}
                 rows={[
-                  ["Cap", "256 KiB", "512 KiB", "1 MiB", "1 MiB"],
+                  ["Cap", "512 KiB, fitted to 256 KiB", "512 KiB", "1 MiB", "1 MiB"],
                   ["Resized first", "Yes", "No", "No", "No"],
                   ["Sent as", "JPEG, or GIF and PNG as they are", "AAC", "MP4 or MOV", "As-is"],
                 ]}
@@ -1311,7 +1330,7 @@ export default function ArchitecturePage() {
                   ["13", "Seal, signed by you, encrypted to them"],
                   ["1059", "Gift wrap, signed by a throwaway key"],
                   ["20000", "Location channel message, and a mesh bridge copy"],
-                  ["20001", "Location channel presence heartbeat"],
+                  ["20001", "Location channel and mesh bridge presence heartbeat"],
                   ["20002", "Private channel message, sealed with the channel key"],
                   ["1", "Location note, public, with or without an expiry"],
                   [
@@ -1352,7 +1371,8 @@ export default function ArchitecturePage() {
                 peer's public geohash traffic to Nostr and carries the channel back over Bluetooth,
                 riding packet type <C>0x28</C> and verified against each event's own Schnorr
                 signature first. It only ever touches public location chat, never a private message,
-                which it could not read anyway. Off by default: it spends your data and battery on a
+                which it could not read anyway. It runs only while your internet switch is on, and
+                going Away turns it off. Off by default: it spends your data and battery on a
                 neighbor's behalf.
               </p>
 
@@ -1365,12 +1385,14 @@ export default function ArchitecturePage() {
                 Bluetooth crowds that are out of radio range of each other. Turn it on and your
                 public <C>#bluetooth</C> messages get a second, signed copy published to a
                 rendezvous for your ~1.2 km neighborhood, tagged with a distinct <C>r</C> so it
-                never mixes with the location channels. Another crowd in the same cell, also
-                bridging, sees them, marked with a network glyph. No phone becomes a server: every
-                bridging device signs with an unlinkable per-cell key, duplicates collapse on a
-                content-derived ID whether they arrive by radio or relay, and a per-message{" "}
-                <C>nearby only</C> switch keeps any single message off the internet. Off by default,
-                public channel only, never DMs.
+                never mixes with the location channels. A bridging phone listens to that cell and
+                the 8 around it, so a crowd astride a cell edge still meets, and every phone in
+                range of it sees the other crowd's messages, marked with a network glyph, even with
+                its own bridge switch off. No phone becomes a server: every bridging device signs
+                with an unlinkable per-cell key, duplicates collapse on a content-derived ID whether
+                they arrive by radio or relay, and a per-message <C>nearby only</C> switch keeps any
+                single message off the internet. Publishing pauses while your internet switch is
+                off. Off by default, public channel only, never DMs.
               </p>
             </Section>
 
@@ -1437,24 +1459,24 @@ export default function ArchitecturePage() {
                 rows={[
                   ["Direct", "Your address, from the relay", "Nothing. The default"],
                   [
-                    "Snowflake",
-                    "That you use Tor, behind a volunteer proxy found through a broker, so there is no address list to enumerate or block",
-                    "Slowest to connect, and needs WebRTC to get through",
-                  ],
-                  [
                     "obfs4",
                     "That you use Tor, behind a stream of uniformly random bytes with no protocol structure to recognise",
                     "Its bridge lines are public, so a determined censor blocks them",
                   ],
                   [
-                    "Custom bridges",
-                    "The same as obfs4, using lines the built-in list does not carry",
-                    "You fetch them yourself, and they are only as good as their source",
+                    "Snowflake",
+                    "That you use Tor, behind a volunteer proxy found through a broker, so there is no address list to enumerate or block",
+                    "Slowest to connect, and needs WebRTC to get through",
                   ],
                   [
                     "WebTunnel",
                     "That you use Tor, behind traffic shaped like an ordinary visit to a real HTTPS website",
                     "Fewer bridges exist, since each needs a real website in front of it",
+                  ],
+                  [
+                    "Custom bridges",
+                    "The same as obfs4, using lines the built-in list does not carry",
+                    "You fetch them yourself, and they are only as good as their source",
                   ],
                 ]}
               />
@@ -1465,23 +1487,23 @@ export default function ArchitecturePage() {
                   obfs4
                 </TextLink>{" "}
                 makes the connection look like nothing at all, a stream with no structure to match
-                against.{" "}
+                against. <TextLink href="https://snowflake.torproject.org">Snowflake</TextLink>{" "}
+                sidesteps the question instead: there is no fixed address to block in the first
+                place.{" "}
                 <TextLink href="https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel">
-                  webtunnel
+                  WebTunnel
                 </TextLink>{" "}
                 makes it look like something entirely ordinary, which is harder for a censor to act
-                on because blocking it means blocking real websites.{" "}
-                <TextLink href="https://snowflake.torproject.org">Snowflake</TextLink> sidesteps the
-                question instead: there is no fixed address to block in the first place.
+                on because blocking it means blocking real websites.
               </p>
 
               <p>
-                Snowflake and obfs4 are ordinary programs upstream, and Arti would normally run
-                whichever one you chose as a child process. iOS forbids an app spawning an
-                executable, so Airhop compiles both in and reaches them over loopback instead: each
-                listens on a port the library picks, and Arti dials it as an unmanaged transport.
-                One design that holds on both platforms, instead of a child process on Android and
-                something else on the phone that cannot have one.
+                obfs4, Snowflake and WebTunnel are ordinary programs upstream, and Arti would
+                normally run whichever one you chose as a child process. iOS forbids an app spawning
+                an executable, so Airhop compiles all three in and reaches them over loopback
+                instead: each listens on a port the library picks, and Arti dials it as an unmanaged
+                transport. One design that holds on both platforms, instead of a child process on
+                Android and something else on the phone that cannot have one.
               </p>
 
               <p>
@@ -1645,25 +1667,13 @@ export default function ArchitecturePage() {
                 ]}
               />
 
-              <Note label="What a plugin is not allowed to do">
-                <strong className="text-ink">Mesh traffic is never exposed to a plugin.</strong> A
-                plugin sees only content you have explicitly marked as shareable, it cannot read
-                private keys, and it cannot contact the network on your behalf without a
-                confirmation for that specific action. Enabling one does not change the wire format,
-                the mesh, or any encryption described above.
+              <Note label="What it will never do">
+                <strong className="text-ink">It shares only your own message or board post,</strong>{" "}
+                with a preview and a confirmation each time. Never other people's messages, never
+                media, and no contact matching between Airhop and either network. Nothing changes
+                for anyone who never connects an account, and the wire format, the mesh and the
+                encryption stay as described above.
               </Note>
-
-              <p>
-                One integration stays out of the core.{" "}
-                <TextLink href="https://en.wikipedia.org/wiki/Unified_Payments_Interface">
-                  UPI
-                </TextLink>
-                , India's payment rail, settles bank to bank with full KYC linkage visible to NPCI,
-                which is structurally incompatible with everything on this page. It exists as an
-                opt-in plugin for people who want to pay in rupees while online, gated behind a
-                disclosure that says exactly that, and it never touches the offline path. Cashu
-                remains the payment system Airhop is built around.
-              </p>
 
               <h3 className="text-ink pt-2 text-base font-bold">
                 Everything that is off until you turn it on

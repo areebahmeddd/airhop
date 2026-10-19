@@ -64,13 +64,13 @@ const strings: Strings = {
   "home.about.link.mesh": "harato Bluetooth Low Energy",
   "home.about.link.wire_protocol": "fitsipiky ny fampitana",
   "home.about.body.built":
-    "Rindranasa misokatra ho an'ny iOS sy Android ny Airhop, natao ho an'ny hafatra manokana teboka mankamin'ny teboka amin'ny {mesh}. Naorina ambonin'ny fototry ny {bitchat} izy, mampiasa indray ny {wire_protocol} sy ny lamina fiarovany, avy eo manitatra izany amin'ny fandoavam-bola {ecash} tsy misy Internet sy ny AI tsy misy Internet. Mandeha tsy misy Internet mihitsy izy, ary mifampita ho azy amin'ny fitaovana akaiky ny hafatra (10 ka hatramin'ny 30 metatra eo ho eo isaky ny dingana ao anaty trano, lavitra kokoa any ivelany), hatramin'ny dingana 7.",
+    "Rindranasa misokatra ho an'ny iOS sy Android ny Airhop, natao ho an'ny hafatra manokana teboka mankamin'ny teboka amin'ny {mesh}. Naorina ambonin'ny fototry ny {bitchat} izy, mampiasa indray ny {wire_protocol} sy ny lamina fiarovany, avy eo manitatra izany amin'ny fandoavam-bola {ecash} tsy misy Internet sy ny AI tsy misy Internet. Mandeha tsy misy Internet mihitsy izy, ary mifampita ho azy amin'ny fitaovana akaiky ny hafatra (30 ka hatramin'ny 50 metatra eo ho eo isaky ny dingana ao anaty trano, lavitra kokoa any ivelany), hatramin'ny dingana 7.",
   "home.about.body.identity":
     "Mpiara-dakile {ed25519} noforonina teo amin'ny fitaovanao ary tehirizina ao amin'ny {ios_keychain} na {android_keystore} no maha-ianao anao. Tsy misy kaonty, tsy misy fisoratana anarana, ary tsy misy mikasika mpizara na dia iray aza, ka azo ampiasaina ho rindranasa vonjimaika tsy mamela na inona na inona mitondra any aminao rehefa voafafa.",
   "home.about.body.crypto":
     "Mampiasa ny fitsipika {noise} ho an'ny fifampifankahafantarana voamarina ny fivoriana tsirairay. Ny hafatra voatahiry dia mampiasa ny algoritma {ratchet}, ka na dia lasan'olona aza ny fitaovanao any aoriana, dia mijanona tsy voavaky ny hafatrao taloha. Mandrava ny lakile sy ny hafatra rehetra latsaky ny segondra iray ny famafana maika.",
   "home.about.body.internet":
-    "Rehefa lavitra ny fetran'ny Bluetooth ianao sy ny fifandraisanao, dia manjary tetezana amin'ny Internet ny mpanelanelana {nostr}, mampiasa hafatra mivantana voafono araka ny endrika {nip17}, ka miitatra manerantany ny harato rehefa samy an-tserasera ianareo. Misy ny fanohanana ny {tor} amin'ny iOS sy Android, amin'ny {arti}, misy tetezana {obfs4} sy {snowflake} ho an’ny tambajotra manakana ny Tor.",
+    "Rehefa lavitra ny fetran'ny Bluetooth ianao sy ny fifandraisanao, dia manjary tetezana amin'ny Internet ny mpanelanelana {nostr}, mampiasa hafatra mivantana voafono araka ny endrika {nip17}, ka miitatra manerantany ny harato rehefa samy an-tserasera ianareo. Misy ny fanohanana ny {tor} amin'ny iOS sy Android, amin'ny {arti}, misy tetezana {obfs4}, {snowflake} sy {webtunnel} ho an’ny tambajotra manakana ny Tor.",
   "home.about.optional.title": "Manana fiasa safidy azonao alefa ny Airhop:",
   "home.about.optional.payments.label": "Fandoavam-bola tsy misy Internet:",
   "home.about.optional.payments.body":

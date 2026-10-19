@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import expo.modules.ReactActivityDelegateWrapper
 
@@ -34,22 +33,11 @@ class MainActivity : ReactActivity() {
      */
     override fun getMainComponentName(): String = "main"
 
-    /**
-     * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
-     * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
-     */
-    override fun createReactActivityDelegate(): ReactActivityDelegate {
-        return ReactActivityDelegateWrapper(
+    override fun createReactActivityDelegate(): ReactActivityDelegate =
+        ReactActivityDelegateWrapper(
             this,
-            BuildConfig.IS_NEW_ARCHITECTURE_ENABLED,
-            object :
-                DefaultReactActivityDelegate(
-                    this,
-                    mainComponentName,
-                    fabricEnabled,
-                ) {},
+            object : DefaultReactActivityDelegate(this, mainComponentName) {},
         )
-    }
 
     /**
      * Align the back button behavior with Android S where moving root activities to background

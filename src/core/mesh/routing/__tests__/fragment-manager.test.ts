@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Splitting a packet across BLE frames and putting it back together.
 //
 // A radio frame is small and a message is not, so anything larger travels in

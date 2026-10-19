@@ -1107,13 +1107,17 @@ function init() {
     gsap.set([attach, sendSheet], { yPercent: 105 });
     hidden(alert, { scale: 0.94 });
 
-    // Plus, then Send ecash. The camera sits on the lower half of the phone,
-    // where the sheets are.
+    // The paperclip, then Send ecash. The camera sits on the lower half of the
+    // phone, where the sheets are.
     const desk = { x: 960, y: 760 };
-    tap(key(sa, "plus"), T.plus);
-    tl.to(scrim, { autoAlpha: 1, duration: 0.25, ease: "none" }, T.plus + 0.05);
-    sheetUp(attach, T.plus + 0.08);
-    focus("ph-wa", desk, { x: 960, y: 600 }, 1.42, T.plus + 0.1, 0.85);
+    tap(key(sa, "paperclip"), T.paperclip);
+    tl.to(
+      scrim,
+      { autoAlpha: 1, duration: 0.25, ease: "none" },
+      T.paperclip + 0.05,
+    );
+    sheetUp(attach, T.paperclip + 0.08);
+    focus("ph-wa", desk, { x: 960, y: 600 }, 1.42, T.paperclip + 0.1, 0.85);
     tap(key(sa, "ecash-row"), T.ecashRow, { cam: "ph-wa" });
     sheetDown(attach, T.ecashRow + 0.12);
     sheetUp(sendSheet, T.ecashRow + 0.36);

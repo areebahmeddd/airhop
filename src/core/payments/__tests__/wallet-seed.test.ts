@@ -1,10 +1,8 @@
-/**
- * @jest-environment node
- */
 // Recovery phrase tests. A phrase accepted but wrong is worse than one
 // rejected, since the user believes they have a backup, so most cases cover
 // rejection. Above all, the same phrase must always derive the same seed.
 
+import { bytesToHex } from "@noble/hashes/utils.js";
 import * as SecureStore from "expo-secure-store";
 import { KEYCHAIN_ITEMS } from "../../crypto/keychain";
 import {
@@ -104,11 +102,13 @@ describe("unknownWordsIn", () => {
 });
 
 describe("recoveryPhraseToSeed", () => {
-  it("is deterministic, which is the whole point", () => {
-    const a = recoveryPhraseToSeed(KNOWN);
-    const b = recoveryPhraseToSeed(KNOWN);
-    expect(Array.from(a)).toEqual(Array.from(b));
-    expect(a).toHaveLength(64);
+  // The BIP-39 seed with an empty passphrase. Any other answer and a restored
+  // phrase opens an empty wallet.
+  it("gives the standard seed for a known phrase", () => {
+    expect(bytesToHex(recoveryPhraseToSeed(KNOWN))).toBe(
+      "878386efb78845b3355bd15ea4d39ef97d179cb712b77d5c12b6be415fffeffe" +
+        "5f377ba02bf3f8544ab800b955e51fbff09828f682052a20faa6addbbddfb096",
+    );
   });
 
   it("ignores formatting differences in the same phrase", () => {

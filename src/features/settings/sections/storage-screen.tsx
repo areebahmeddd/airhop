@@ -44,6 +44,8 @@ function readStorageStats() {
     MMKV_STORE_IDS.reduce((sum, id) => sum + getStorage(id).byteSize, 0) +
     walletStorageByteSize();
   const cacheBytes = getAttachmentCacheBytes();
+  // Mesh links only (Bluetooth, Wi-Fi Aware, LAN). Nostr, Tor and mint
+  // traffic is not counted, which is why the row says mesh.
   const network = getMeshService()?.getByteCounters() ?? {
     sent: 0,
     received: 0,
@@ -97,9 +99,9 @@ export default function StorageScreen({ onBack }: Props): React.JSX.Element {
         <View style={styles.section}>
           <View style={styles.settingsGroup}>
             <SettingRow
-              id="network-usage"
+              id="mesh-traffic"
               icon="activity"
-              label={T("settings.storage.network_usage")}
+              label={T("settings.storage.mesh_traffic")}
               description={T("settings.storage.session_usage", {
                 sent: formatBytes(stats.network.sent),
                 received: formatBytes(stats.network.received),

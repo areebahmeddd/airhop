@@ -48,7 +48,6 @@ interface RingState {
   ) => void;
   recordReceived: (peerID: string, nowMs: number) => void;
   snooze: (peerID: string, untilMs: number) => void;
-  clearSnooze: (peerID: string) => void;
   // For the panic wipe. The "ring-store" MMKV partition is cleared
   // separately (panic-wipe.ts MMKV_STORE_IDS); this only resets live state.
   clearAll: () => void;
@@ -107,13 +106,6 @@ export const useRingStore = create<RingState>()(
         set((s) => ({
           snoozedUntilMs: { ...s.snoozedUntilMs, [peerID]: untilMs },
         }));
-      },
-      clearSnooze(peerID) {
-        set((s) => {
-          const next = { ...s.snoozedUntilMs };
-          delete next[peerID];
-          return { snoozedUntilMs: next };
-        });
       },
 
       isSending(peerID, nowMs) {

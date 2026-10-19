@@ -4,4 +4,9 @@
   <string name="mesh_notification_title">Malha do Airhop ativa</string>
   <string name="mesh_notification_text">Descobrindo e retransmitindo mensagens próximas</string>
   <string name="mesh_notification_stop">Parar a malha</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s par ao alcance</item>
+    <item quantity="many">%1$s pares ao alcance</item>
+    <item quantity="other">%1$s pares ao alcance</item>
+  </plurals>
 </resources>

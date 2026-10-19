@@ -92,10 +92,9 @@
 	<array>
 		<string>_airhop-lan-v1._tcp</string>
 	</array>
-	<!-- Camera, microphone, photo library and location. Every usage string below
-	     is also declared in app.json. This file is hand-maintained rather than
-	     regenerated, so adding a permission to app.json alone changes nothing
-	     here: add it in both places.
+	<!-- Camera, microphone, photo library and location. This file is
+	     hand-maintained, never regenerated from app.json, so a new permission
+	     is added here.
 
 	     These are not optional. Without them iOS does not deny the request - it
 	     terminates the process the moment AVCaptureDevice or AVAudioSession is
@@ -126,6 +125,23 @@
 		<string>Feather.ttf</string>
 		<string>MaterialDesignIcons.ttf</string>
 	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>
@@ -141,7 +157,7 @@
 	<false/>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDefault</string>
-	<!-- Portrait only, matching app.json and the Android activity. -->
+	<!-- Portrait only, matching the Android activity. -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Raw-DEFLATE payload compression, at parity with bitchat's CompressionUtil.
 import { deflateRaw } from "pako";
 import {

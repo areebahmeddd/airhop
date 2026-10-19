@@ -13,7 +13,7 @@
 //
 //   * iOS reports the keyboard's frame in screen coordinates. Its height runs
 //     to the very bottom of the screen and therefore covers the home indicator.
-//   * Android reports `imeInsets.bottom - barInsets.bottom` (RN 0.86,
+//   * Android reports `imeInsets.bottom - barInsets.bottom` (React Native's
 //     ReactRootView.checkForKeyboardEvents): the IME height measured from the
 //     TOP OF THE NAVIGATION BAR, with the system inset already taken out.
 //

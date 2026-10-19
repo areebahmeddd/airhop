@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Refreshing an account swaps each offline receipt on its own. A receipt is
 // the unit of refusal, as in CDK and Nutshell: a stranger's forged token can
 // cost only itself, never block the honest receipts beside it or every later
@@ -11,6 +8,7 @@
 // every input it is handed.
 
 import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
+import type { StoredProof } from "@core/payments/stored-proof";
 import { t } from "@i18n";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
@@ -21,7 +19,6 @@ import {
   keysetRefsOf,
   useWalletStore,
   whenWalletHydrated,
-  type StoredProof,
 } from "@store/wallet-store";
 import { MintFabric } from "../../__tests__/simulation/harness/mint-fabric";
 import { World } from "../../__tests__/simulation/harness/world";
@@ -38,47 +35,6 @@ import {
   resetWalletService,
   settleReclaim,
 } from "../wallet-service";
-
-jest.mock("@core/crypto/keychain", () => {
-  const secrets = new Map<string, string>();
-  return {
-    ...jest.requireActual("@core/crypto/keychain"),
-    readSecret: jest.fn((item: string) =>
-      Promise.resolve(secrets.get(item) ?? null),
-    ),
-    writeSecret: jest.fn((item: string, value: string) => {
-      secrets.set(item, value);
-      return Promise.resolve();
-    }),
-  };
-});
-
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn(() => true),
-  };
-});
 
 jest.setTimeout(60_000);
 

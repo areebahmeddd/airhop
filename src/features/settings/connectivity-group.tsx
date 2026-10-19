@@ -1,29 +1,31 @@
-// The connectivity toggles: live voice, Tor, the internet gateway, and the
-// mesh bridge. These sat inside Privacy & Security, one drill-in away, which
-// buried the four switches people actually reach for. They live on the settings
-// hub itself, so the whole group is one scroll from opening Settings.
+// The connectivity rows on the settings hub: background running and start on
+// boot (Android), live voice, the mesh bridge, the internet gateway, the link
+// to Tor, and with Tor on iOS the mint opt-in. On the hub rather than a
+// drill-in, so the switches people actually reach for are one scroll from
+// opening Settings.
 //
-// It stays its own component rather than being inlined into the hub: the Tor
-// toggle owns an async start, all four toggles share a confirm sheet, and none
-// of that belongs in a screen whose job is navigation.
+// Its own component rather than inlined into the hub: the toggles share a
+// confirm sheet, and none of that belongs in a screen whose job is navigation.
 //
-// Every one of the four confirms in both directions, through the same sheet,
-// so the same gesture on four adjacent rows does one thing. Each of these
-// changes what your phone does with
-// other people's radios, data, or voices, and the direction you are moving in
-// is exactly what the sheet spells out: what turning it on costs, or what you
-// lose by turning it off.
+// The five toggles above Tor confirm in both directions, through the same
+// sheet, so the same gesture on adjacent rows does one thing. Each changes
+// what the phone does with other people's radios, data, or voices, and the
+// sheet spells out the direction being moved in: what turning it on costs, or
+// what turning it off loses.
 
 import { useT, type TranslationKey } from "@i18n";
 import { syncBootStart } from "@services/boot-sync";
-import { requestLocationPermission } from "@services/location-service";
+import {
+  locationPermissionState,
+  requestLocationPermission,
+} from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import { HIT_SLOP, useThemeColors } from "@ui/theme";
 import React, { useState } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Linking, Platform, Pressable, Text, View } from "react-native";
 import {
   GroupDivider,
   SettingLinkRow,
@@ -211,7 +213,15 @@ export default function ConnectivityGroup({
   }
 
   async function grantLocation(): Promise<void> {
-    const granted = await requestLocationPermission();
+    // A refusal the OS will not ask about again (iOS after the first "Don't
+    // Allow") makes the request a silent no-op, so Grant would do nothing.
+    // Settings is the only place left to change it; the resume re-reads it.
+    const current = await locationPermissionState();
+    if (!current.granted && !current.canAskAgain) {
+      void Linking.openSettings().catch(() => undefined);
+      return;
+    }
+    const granted = current.granted || (await requestLocationPermission());
     useMeshStateStore.getState().setLocationGranted(granted);
     if (!granted) return;
     // Act on the grant, do not just record it.
@@ -219,8 +229,9 @@ export default function ConnectivityGroup({
     // This row exists because the bridge needs a location cell, and recording
     // the grant without re-resolving anything left the bridge inert until a
     // pull-to-refresh or a relaunch: the user granted exactly what was asked for
-    // and nothing happened. refreshGeoChannels re-resolves the cell, which is
-    // also what the bridge reads.
+    // and nothing happened. refreshGeoChannels re-resolves the location
+    // channels and the bridge's rendezvous cell, and the bridge re-announces
+    // once it has one so mesh-only neighbours learn it.
     //
     // retryRadios matters on Android 11 and below, where the mesh's own
     // permission IS location, so this grant can unblock the radios too.

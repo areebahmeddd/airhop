@@ -231,7 +231,7 @@ export async function shareDiagnostics(): Promise<boolean> {
     );
     if (file.exists) file.delete();
     file.create();
-    file.write(report);
+    await file.write(report);
     await Sharing.shareAsync(file.uri, {
       mimeType: "text/plain",
       dialogTitle: t("settings.diag.share"),

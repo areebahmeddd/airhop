@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Prekey stores, and the forward-secret courier seal/open path they enable.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";

@@ -115,17 +115,6 @@ export const CATALOGS: Partial<Record<LanguageCode, Locale>> = {
     : {}),
 };
 
-// The languages a user can choose, in display order.
-export const SHIPPED_LANGUAGES: LanguageCode[] = (
-  Object.keys(CATALOGS) as LanguageCode[]
-).sort((a, b) =>
-  a === DEFAULT_LANGUAGE
-    ? -1
-    : b === DEFAULT_LANGUAGE
-      ? 1
-      : LANGUAGES[a].englishName.localeCompare(LANGUAGES[b].englishName, "en"),
-);
-
 export const PICKER_LANGUAGES: LanguageCode[] = __DEV__
   ? [...LANGUAGE_ORDER, PSEUDO_LANGUAGE]
   : LANGUAGE_ORDER;
@@ -150,14 +139,6 @@ const LANGUAGE_ALIASES: Record<string, LanguageCode> = {
   tl: "fil",
   in: "id",
 };
-
-// Which language an OS tag means. Pure and exported so the branches are testable
-// against real device tags, not the runner's locale. The answer is a
-// language Airhop knows, not necessarily one it has translated:
-// `resolvePreference` applies the shipping gate afterwards.
-export function languageForTag(tag: string): LanguageCode {
-  return matchTag(tag) ?? DEFAULT_LANGUAGE;
-}
 
 // The first of the phone's preferred languages that ships, the way both OSes
 // pick a resource. A Catalan reader with Spanish second gets Spanish, not
@@ -575,4 +556,4 @@ export function pluralTranslatorFor(code: LanguageCode): PluralTranslator {
 }
 
 // The picker's data, re-exported so a screen imports it alongside `useT`.
-export { LANGUAGE_ORDER, LANGUAGES } from "./languages";
+export { LANGUAGES } from "./languages";

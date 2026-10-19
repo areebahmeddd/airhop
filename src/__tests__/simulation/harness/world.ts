@@ -13,6 +13,14 @@
 // never explained by one device's log; it is explained by seeing device B's
 // scan start three milliseconds after device A's advertise stopped. So every
 // device writes into one ordered trace tagged with who it was.
+//
+// A world also pins the two inputs a schedule depends on that nothing above
+// would otherwise fix: the wall clock starts at SIM_EPOCH_MS, and Math.random
+// (the announce and relay jitter) draws from the seed. What stays random is the
+// CSPRNG behind keys, nonces and handshake ephemerals, which no harness may
+// replace, so two runs of one seed share a schedule but not their ciphertext.
+// Anything keyed on ciphertext (a packet ID, a gossip filter's false positive)
+// can still differ between them.
 
 import type { TraceEvent } from "../../harness/os";
 import { eventRouter } from "./event-router";
@@ -20,6 +28,20 @@ import { Prng } from "./prng";
 
 export interface WorldEvent extends TraceEvent {
   who: string;
+}
+
+// The wall clock every world starts at. Fixed so a timestamp in a trace means
+// the same thing on every run; any instant would do, so long as it never moves.
+export const SIM_EPOCH_MS = Date.UTC(2026, 0, 1);
+
+// Modern fake timers hang their clock off the patched setTimeout. Checked
+// rather than assumed, because a fabric self-test builds a world under real
+// timers, where setting the system time is an error.
+function fakeTimersInstalled(): boolean {
+  return (
+    typeof (globalThis.setTimeout as unknown as { clock?: unknown }).clock ===
+    "object"
+  );
 }
 
 export interface WorldOptions {
@@ -37,11 +59,24 @@ export class World {
   private nowMs = 0;
   // Things that must be torn down when the scenario ends, newest first.
   private readonly closers: (() => void)[] = [];
+  // Frames a fabric has put on a medium and not yet handed over, and how many
+  // it has ever scheduled. settle() reads both: a frame in the air is the
+  // network still talking, though it writes no trace line until it lands.
+  private inFlight = 0;
+  private carried = 0;
+  private readonly randomSpy: jest.SpyInstance<number, []>;
 
   constructor(opts: WorldOptions = {}) {
     this.seed = opts.seed ?? 1;
     this.name = opts.name ?? "world";
     this.rng = new Prng(this.seed);
+    if (fakeTimersInstalled()) jest.setSystemTime(SIM_EPOCH_MS);
+    // A sub-stream of its own, so a scenario drawing from `rng` does not shift
+    // every jitter the app draws, and the other way round.
+    const jitter = this.rng.fork("math-random");
+    this.randomSpy = jest
+      .spyOn(Math, "random")
+      .mockImplementation(() => jitter.float());
   }
 
   get now(): number {
@@ -82,6 +117,18 @@ export class World {
     this.closers.push(fn);
   }
 
+  // Hand a frame to the far side after `delayMs`, the way every fabric
+  // delivers. Counted here so settle() cannot call a network quiet while a
+  // frame is still crossing it.
+  carry(delayMs: number, deliver: () => void): void {
+    this.inFlight++;
+    this.carried++;
+    setTimeout(() => {
+      this.inFlight--;
+      deliver();
+    }, delayMs);
+  }
+
   // Step forward, flushing microtasks between steps so promise continuations
   // (every native call is a Promise) land in a realistic order relative to
   // timers rather than all at once at the end.
@@ -105,11 +152,13 @@ export class World {
 
   // Advance until nothing is left to do, or the budget runs out.
   //
-  // "Quiet" is deliberately defined as no new trace lines rather than no
-  // pending timers: Airhop always has pending timers (announce, gossip, outbox
-  // sweep), so waiting for an empty timer queue would never return. What we
-  // actually want is "the network has stopped saying anything new", which is
-  // what convergence checks need.
+  // "Quiet" is deliberately defined as no new trace lines and no frame on any
+  // medium, rather than no pending timers: Airhop always has pending timers
+  // (announce, gossip, outbox sweep), so waiting for an empty timer queue would
+  // never return. What we actually want is "the network has stopped saying
+  // anything new", which is what convergence checks need. Frames count because
+  // a delivery writes no trace line: a relay hop or a sync answer would
+  // otherwise land after settle() had already called the room converged.
   // The step here is coarser than a precise advance() on purpose. Settling is
   // about draining a network that has already been set in motion, not about
   // observing a race, and jest.advanceTimersByTime runs every timer due inside
@@ -120,16 +169,22 @@ export class World {
   async settle(budgetMs = 30_000, quietMs = 500): Promise<void> {
     let quietFor = 0;
     let lastCount = this.events.length;
+    let lastCarried = this.carried;
     let spent = 0;
     while (spent < budgetMs) {
       await this.advance(50, 25);
       spent += 50;
-      if (this.events.length === lastCount) {
+      const silent =
+        this.events.length === lastCount &&
+        this.carried === lastCarried &&
+        this.inFlight === 0;
+      if (silent) {
         quietFor += 50;
         if (quietFor >= quietMs) return;
       } else {
         quietFor = 0;
         lastCount = this.events.length;
+        lastCarried = this.carried;
       }
     }
   }
@@ -208,6 +263,7 @@ export class World {
       }
     }
     this.closers.length = 0;
+    this.randomSpy.mockRestore();
     // The event router is process-wide by necessity (see event-router.ts), so
     // it outlives this world. Clear it, or the next scenario inherits these
     // phones' subscriptions under the same device ids.

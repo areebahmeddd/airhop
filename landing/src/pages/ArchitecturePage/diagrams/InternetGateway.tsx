@@ -59,7 +59,7 @@ export function InternetGateway() {
         fill={MUTED}
         letterSpacing="0.14em"
       >
-        TOR
+        INTERNET
       </text>
       <Box x={560} y={92} w={160} h={72} label="Nostr relays" sub="chosen by distance" />
       <line x1={724} y1={128} x2={766} y2={128} stroke={LINE} markerEnd="url(#gw-arrow)" />

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The app lock's whole contract, driven without a real prompt: locked from a
 // cold start, locked again on leaving, opened only by the phone's own screen
 // lock, never by a prompt answered for an earlier lock, and inert while off.
@@ -31,6 +28,7 @@ jest.mock("@platform/device-auth", () => ({
 
 import { useAppLockStore } from "@store/app-lock-store";
 import { useSettingsStore } from "@store/settings-store";
+import { Platform } from "react-native";
 import {
   awayMs,
   disableAppLock,
@@ -61,6 +59,7 @@ function setLock(enabled: boolean, delay: 0 | 60 | 300 | 1800 = 0): void {
 beforeEach(() => {
   mockConfirm.mockReset();
   mockInFlight = false;
+  Platform.OS = "android";
   setLock(false);
   useAppLockStore.setState({
     phase: "open",
@@ -68,18 +67,6 @@ beforeEach(() => {
     promptedGeneration: 0,
     authenticating: false,
     coveredAt: null,
-  });
-});
-
-describe("settings", () => {
-  it("is off by default, at an immediate delay, and reset by the panic wipe", () => {
-    useSettingsStore.getState().reset();
-    expect(useSettingsStore.getState().appLockEnabled).toBe(false);
-    expect(useSettingsStore.getState().appLockDelaySeconds).toBe(0);
-    setLock(true, 300);
-    useSettingsStore.getState().reset();
-    expect(useSettingsStore.getState().appLockEnabled).toBe(false);
-    expect(useSettingsStore.getState().appLockDelaySeconds).toBe(0);
   });
 });
 
@@ -122,6 +109,28 @@ describe("locking", () => {
     mockInFlight = true;
     noteBackground(at(0));
     expect(phase()).toBe("open");
+  });
+
+  // iOS's prompt leaves the app inactive, never backgrounded, so a background
+  // while one is up (the recovery phrase's, say) is the person walking away.
+  it("locks on leaving mid-prompt on iOS", () => {
+    Platform.OS = "ios";
+    const stop = watchAppLock();
+    setLock(true, 0);
+    mockInFlight = true;
+    for (const fn of mockAppStateSubs) fn("background");
+    stop();
+    expect(phase()).toBe("locked");
+  });
+
+  it("covers on leaving mid-prompt on iOS, and asks past the delay", () => {
+    Platform.OS = "ios";
+    setLock(true, 60);
+    mockInFlight = true;
+    noteBackground(at(0));
+    expect(phase()).toBe("covered");
+    noteForeground(at(120));
+    expect(phase()).toBe("locked");
   });
 
   it("stands down the moment it is turned off", () => {

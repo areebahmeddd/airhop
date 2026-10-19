@@ -65,8 +65,8 @@ export function GossipSync() {
       </text>
 
       <text x={16} y={262} fontFamily={MONO} fontSize={10} fill={MUTED}>
-        Runs every 15 seconds, and covers the last 6 hours of messages. Never relayed, so it stays a
-        conversation between neighbors.
+        Runs 1 second after a new link, then every 15 seconds, and covers the last 6 hours of
+        messages. Never relayed, so it stays a conversation between neighbors.
       </text>
     </svg>
   );

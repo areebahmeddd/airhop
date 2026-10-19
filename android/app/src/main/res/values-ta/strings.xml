@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Airhop மெஷ் இயங்குகிறது</string>
   <string name="mesh_notification_text">அருகிலுள்ள செய்திகளைக் கண்டறிந்து அனுப்புகிறது</string>
   <string name="mesh_notification_stop">மெஷை நிறுத்து</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">வரம்பில் %1$s பியர்</item>
+    <item quantity="other">வரம்பில் %1$s பியர்கள்</item>
+  </plurals>
 </resources>

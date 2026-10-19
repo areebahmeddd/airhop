@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What a conversation is called, in the two places that ask.
 //
 // `conversationDisplayName` feeds search rows, which carry their own hash icon,

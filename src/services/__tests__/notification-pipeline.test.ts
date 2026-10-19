@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The module-level listeners that raise notifications with or without a
 // screen. Every path that brings a mesh up starts them, so a second start must
 // not double every banner, and the panic wipe must be able to silence them.
@@ -16,6 +13,7 @@ const mockSetBadge = jest.fn();
 const mockSetAppActive = jest.fn();
 const mockConfigure = jest.fn();
 const mockEndAllRings = jest.fn();
+const mockDismissPreviews = jest.fn();
 let mockReading = false;
 let mockAppActive = false;
 
@@ -28,6 +26,7 @@ let mockChat = {
   mutedChannels: [] as string[],
   unreadCounts: {} as Record<string, number>,
   activeChannel: "",
+  channelKeys: {} as Record<string, string>,
 };
 const mockRecord = jest.fn();
 const mockShowRing = jest.fn();
@@ -86,6 +85,7 @@ jest.mock("@utils/message-text", () => ({
 }));
 jest.mock("../notification-service", () => ({
   configureNotifications: () => mockConfigure(),
+  dismissPreviewNotifications: () => mockDismissPreviews(),
   endAllRingAlerts: () => mockEndAllRings(),
   handleInboundMessage: (...args: unknown[]) => mockHandleInbound(...args),
   handleNearbyPeers: (...args: unknown[]) => mockHandleNearby(...args),
@@ -110,7 +110,7 @@ function message(over: Partial<ChatMessage> = {}): ChatMessage {
     senderID: "b0b0b0b0b0b0b0b0",
     senderNickname: "bob",
     text: "hello",
-    timestampMs: 1,
+    timestampMs: Date.now(),
     isMine: false,
     isSystem: false,
     ...over,
@@ -124,7 +124,12 @@ function arrive(msg: ChatMessage): void {
 beforeEach(() => {
   stopNotificationPipeline();
   jest.clearAllMocks();
-  mockChat = { mutedChannels: [], unreadCounts: {}, activeChannel: "" };
+  mockChat = {
+    mutedChannels: [],
+    unreadCounts: {},
+    activeChannel: "",
+    channelKeys: {},
+  };
   mockReading = false;
   mockAppActive = false;
   useSettingsStore.setState({ ringAlertsEnabled: true });
@@ -178,6 +183,19 @@ describe("startNotificationPipeline", () => {
     expect(mockHandleInbound.mock.calls[0][2]).toBe(true);
   });
 
+  test("replayed room history is not news, even when it names the user", () => {
+    startNotificationPipeline(() => "alice");
+    const hourAgo = Date.now() - 60 * 60 * 1000;
+
+    arrive(message({ text: "@alice hi", timestampMs: hourAgo }));
+    expect(mockHandleInbound).not.toHaveBeenCalled();
+    expect(mockRecord).not.toHaveBeenCalled();
+
+    // Late private mail still is.
+    arrive(message({ id: "m2", channel: "dm:x", timestampMs: hourAgo }));
+    expect(mockHandleInbound).toHaveBeenCalledTimes(1);
+  });
+
   test("reads the mute list and the open thread when a message arrives", () => {
     startNotificationPipeline(() => "alice");
     mockChat = { ...mockChat, activeChannel: "#mesh" };
@@ -214,6 +232,17 @@ describe("startNotificationPipeline", () => {
     expect(mockSetBadge).toHaveBeenCalledWith(3);
   });
 
+  test("hands a change in nearby peers to the service, counted both sides", () => {
+    startNotificationPipeline(() => "alice");
+
+    for (const fn of mockPeerSubs) {
+      fn({ peers: { a: {}, b: {} } }, { peers: { a: {} } });
+    }
+
+    expect(mockHandleNearby).toHaveBeenCalledTimes(1);
+    expect(mockHandleNearby).toHaveBeenCalledWith(2, 1);
+  });
+
   test("a ring with the app in the background reaches the tray", () => {
     startNotificationPipeline(() => "alice");
     const ring = {
@@ -240,6 +269,19 @@ describe("startNotificationPipeline", () => {
     expect(mockEndAllRings).toHaveBeenCalledTimes(1);
     useSettingsStore.setState({ ringAlertsEnabled: false });
     expect(mockEndAllRings).toHaveBeenCalledTimes(1);
+  });
+
+  // Reset settings hides previews again without the switch, and the tray
+  // still holds cards rendered with the sender and the text.
+  test("hiding previews by any writer clears the delivered ones", () => {
+    useSettingsStore.setState({ hideNotificationPreviews: false });
+    startNotificationPipeline(() => "alice");
+
+    useSettingsStore.getState().reset();
+    expect(mockDismissPreviews).toHaveBeenCalledTimes(1);
+    useSettingsStore.setState({ hideNotificationPreviews: true });
+    useSettingsStore.setState({ hideNotificationPreviews: false });
+    expect(mockDismissPreviews).toHaveBeenCalledTimes(1);
   });
 
   test("configures channels and the handler, for a start with no screen", () => {

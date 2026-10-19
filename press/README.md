@@ -65,7 +65,7 @@ out/
     └── youtube-thumbnail-1280x720.png
 ```
 
-Apple scales the 6.9in size down to smaller iPhones, so one iOS set covers every device. `supportsTablet` is `false` in `app.json`, so there are no iPad sizes. Ship one theme: light is the default.
+Apple scales the 6.9in size down to smaller iPhones, so one iOS set covers every device. The Xcode project targets iPhone only (`TARGETED_DEVICE_FAMILY = 1`), so there are no iPad sizes. Ship one theme: light is the default.
 
 ## Film
 

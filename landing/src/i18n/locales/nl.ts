@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "Bluetooth Low Energy-mesh",
   "home.about.link.wire_protocol": "wire-protocol",
   "home.about.body.built":
-    "Airhop is een opensource-app voor iOS en Android voor privé peer-to-peer berichten via {mesh}. De app is gebouwd op de basis van {bitchat}, hergebruikt het {wire_protocol} en het beveiligingsmodel, en breidt beide uit met offline {ecash}-betalingen en offline AI. Het werkt zonder enige internetverbinding en berichten worden automatisch doorgestuurd via apparaten in de buurt (ongeveer 10 tot 30 meter per hop binnen, verder in de open lucht), tot 7 hops.",
+    "Airhop is een opensource-app voor iOS en Android voor privé peer-to-peer berichten via {mesh}. De app is gebouwd op de basis van {bitchat}, hergebruikt het {wire_protocol} en het beveiligingsmodel, en breidt beide uit met offline {ecash}-betalingen en offline AI. Het werkt zonder enige internetverbinding en berichten worden automatisch doorgestuurd via apparaten in de buurt (ongeveer 30 tot 50 meter per hop binnen, verder in de open lucht), tot 7 hops.",
   "home.about.body.identity":
     "Je identiteit is een {ed25519}-sleutelpaar dat op je apparaat wordt aangemaakt en bewaard in {ios_keychain} of {android_keystore}. Er zijn geen accounts, geen registraties en niets dat een server raakt, oftewel je kunt de app als wegwerp-app gebruiken die na verwijdering niets achterlaat dat naar jou leidt.",
   "home.about.body.crypto":
     "Elke sessie gebruikt het {noise}-protocol voor een geauthenticeerde handshake. Opgeslagen berichten gebruiken het {ratchet}-algoritme, oftewel zelfs als je apparaat later gecompromitteerd raakt, blijven je oude berichten onleesbaar. Noodwissen vernietigt alle sleutels en berichten in minder dan een seconde.",
   "home.about.body.internet":
-    "Als jij en een contact buiten Bluetooth-bereik zijn, dienen {nostr}-relays als brug via internet, met directe berichten ingepakt volgens {nip17}, zodat de mesh wereldwijd reikt zodra jullie allebei online zijn. Ondersteuning voor {tor} is er op iOS en Android, via {arti}, met {obfs4}- en {snowflake}-bridges voor netwerken die Tor blokkeren.",
+    "Als jij en een contact buiten Bluetooth-bereik zijn, dienen {nostr}-relays als brug via internet, met directe berichten ingepakt volgens {nip17}, zodat de mesh wereldwijd reikt zodra jullie allebei online zijn. Ondersteuning voor {tor} is er op iOS en Android, via {arti}, met {obfs4}-, {snowflake}- en {webtunnel}-bridges voor netwerken die Tor blokkeren.",
   "home.about.optional.title": "Airhop heeft optionele functies die je kunt inschakelen:",
   "home.about.optional.payments.label": "Offline betalingen:",
   "home.about.optional.payments.body":

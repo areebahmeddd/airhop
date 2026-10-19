@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Media policy: media rides BLE only, so it is offered only where it can
 // actually deliver. This mirrors bitchat's canSendMediaInCurrentContext, so the
 // two apps agree on what a channel can carry. The boundaries are load-bearing

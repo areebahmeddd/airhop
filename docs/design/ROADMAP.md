@@ -20,7 +20,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** Routes internet traffic through Tor, with no bridges and no pluggable transports. The first hop is a publicly listed relay, so a network that blocks Tor blocks bitchat's internet half outright, and deep packet inspection sees Tor in use.
 
-**Airhop:** The same embedded Arti, plus obfs4 and Snowflake compiled into the app. A bridge is an unlisted entry point and the transport in front of it disguises the connection, so Tor keeps working where it is blocked and stops being visible where it is watched. Bridges are off by default, since they cost speed and only earn it on such a network. Built-in bridge lines are synced from the Tor Project rather than frozen at release.
+**Airhop:** The same embedded Arti, plus obfs4, Snowflake and WebTunnel compiled into the app. A bridge is an unlisted entry point and the transport in front of it disguises the connection, so Tor keeps working where it is blocked and stops being visible where it is watched. Bridges are off by default, since they cost speed and only earn it on such a network. Built-in bridge lines are synced from the Tor Project rather than frozen at release.
 
 ### Gap 4: Per-Message Forward Secrecy
 

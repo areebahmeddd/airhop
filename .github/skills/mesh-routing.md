@@ -112,8 +112,8 @@ Two deliberate differences from bitchat-ios: its chunk is 469 bytes from a small
 
 The 6 h window is bitchat-ios's `syncPublicMessageMaxAgeSeconds`, which `BLEService` passes over `GossipSyncManager`'s 900 s default. Copy constants from where they are applied, not from a config default.
 
-- **Rounds** (`SYNC_ROUNDS`), as bitchat-ios: announces, public, named-channel and group messages every 15 s; board posts alone every 60 s. Each round has its own 400-byte filter and since-cursor.
-- **Stores.** Only accepted packets are stored, one store per kind (public messages 1000 and 8 MiB, group messages 200 and 4 MiB, board posts 200, the latest announce per peer), so one kind cannot evict another and a forgery is never served. A sync reply this node refused is advertised in its filters, so peers stop offering it, but never served.
+- **Rounds** (`SYNC_ROUNDS`), as bitchat-ios: announces, public, named-channel and group messages every 15 s; board posts alone every 60 s. Each round has its own 400-byte filter and since-cursor. A peer's first direct link also gets every round 1 s after it binds (`requestNow`, as bitchat-ios `scheduleInitialSyncToPeer`), since the tick restarts with each launch and a phone that keeps relaunching would otherwise never catch up.
+- **Stores.** Only accepted packets are stored, one store per kind (public messages 1000 and 8 MiB, group messages 200 and 4 MiB, board posts 200, the latest announce per peer), so one kind cannot evict another and a forgery is never served. A sync reply this node refused is advertised in its filters, so peers stop offering it, but never served. A signed sync reply carrying our own packet is tracked again, so an author that relaunched can serve it, and is never shown as a second row.
 - **Never synced:** prekey bundles, DMs, voice, files.
 - **Filter.** A Golomb-Coded Set, not a bloom filter; the false-positive formula differs.
 

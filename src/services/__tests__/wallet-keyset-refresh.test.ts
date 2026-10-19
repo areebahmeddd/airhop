@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A token signed under a keyset this wallet has not fetched yet.
 //
 // A `cashuB` token carries a v2 keyset id as its first 8 bytes, which only the
@@ -28,45 +25,6 @@ import {
   resetWalletService,
 } from "../wallet-service";
 
-jest.mock("@core/crypto/keychain", () => {
-  const secrets = new Map<string, string>();
-  return {
-    ...jest.requireActual("@core/crypto/keychain"),
-    readSecret: jest.fn((item: string) => secrets.get(item) ?? null),
-    writeSecret: jest.fn((item: string, value: string) => {
-      secrets.set(item, value);
-    }),
-  };
-});
-
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    // Nothing is encrypted in the mock.
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn((id: string) => instances.delete(id)),
-  };
-});
-
 jest.setTimeout(60_000);
 
 const UNIT = "sat";
@@ -87,8 +45,8 @@ async function tokenFrom(fabric: MintFabric, sats: number): Promise<string> {
   } as unknown as Token);
 }
 
-// What a rotation leaves behind: the mint is held, its keyset list is not.
-function forgetCachedKeysets(url: string): void {
+// The stored keyset list emptied, with the wallet service left as it is.
+function emptyKeysetCache(url: string): void {
   const mints = useWalletStore.getState().mints;
   const record = mints[url];
   const cache = record.keysetCache as { keysets: unknown[] };
@@ -98,6 +56,11 @@ function forgetCachedKeysets(url: string): void {
       [url]: { ...record, keysetCache: { ...cache, keysets: [] } },
     },
   });
+}
+
+// What a rotation leaves behind: the mint is held, its keyset list is not.
+function forgetCachedKeysets(url: string): void {
+  emptyKeysetCache(url);
   // Drop the in-memory Wallet too, so nothing answers from it.
   resetWalletService();
 }
@@ -200,6 +163,10 @@ describe("a token under a keyset the wallet has not fetched", () => {
     const fetch = jest.spyOn(globalThis, "fetch");
 
     await fetchKeysetsForTokenText(text);
+    // Unreadable again, so only the per-mint throttle stands between the
+    // second render and a second fetch.
+    emptyKeysetCache(held.url);
+    expect(readable(text.split(" ")[0]!)).toBe(false);
     await fetchKeysetsForTokenText(text);
 
     const keysetFetches = fetch.mock.calls.filter(([input]) =>

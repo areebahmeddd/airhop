@@ -14,11 +14,9 @@ Where the build stands: what exists and how it is verified, what is in flight, a
 
 **Blocked:**
 
-| Item                                                        | Waiting on                                                          |
-| ----------------------------------------------------------- | ------------------------------------------------------------------- |
-| Mark copied recovery phrases and tokens sensitive (Android) | `expo-clipboard` 58, which ships with Expo SDK 58 (still a preview) |
-| Collapse the per-relay Nostr subscriptions into one         | A nostr-tools release carrying #560                                 |
-| Drop the Go dependency raise in the pluggable transports    | An IPtProxy release that carries it                                 |
+| Item                                                | Waiting on                          |
+| --------------------------------------------------- | ----------------------------------- |
+| Collapse the per-relay Nostr subscriptions into one | A nostr-tools release carrying #560 |
 
 **Known gaps, accepted:**
 
@@ -62,7 +60,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] `src/core/nostr/geohash-presence.ts`: kind 20001 heartbeats every 40 to 80 s, never finer than precision 5
 - [x] `src/core/nostr/courier-relay.ts`: Nostr courier drops (kind 1401, NIP-40 expiry)
 - [x] Arti embedded on both platforms from one Rust crate (`native/arti/`) behind `AirhopTorModule` (`src/bridge/NativeAirhopTor.ts`): lifecycle, real bootstrap progress, dormancy, per-destination circuit isolation, and a SOCKS5 listener on 39050. Android installs the proxy into React Native's OkHttp client so `fetch` is covered too; iOS adds a WebSocket shim, which is the only thing the two platforms do differently
-- [x] Bridges and pluggable transports: obfs4 and Snowflake compiled in from `native/iptproxy/`, reached over loopback because iOS forbids the child processes Arti would otherwise manage. Built-in bridge lines are synced from the Tor Project; off by default
+- [x] Bridges and pluggable transports: obfs4, Snowflake and WebTunnel compiled in from `native/iptproxy/`, reached over loopback because iOS forbids the child processes Arti would otherwise manage. Built-in bridge lines are synced from the Tor Project; off by default
 - [x] Reproducible native builds: `native/arti/build-in-container.sh` pins Rust, the NDK and a Debian snapshot; `build-apple.sh` produces the xcframework; both verify exported symbols, and Android also verifies 16 KiB page alignment and that no build-machine path survived
 - [x] `src/services/tor-routing.ts`: the single toggle and startup choke point. Every relay connection is dialled through the proxy, so Tor fails closed
 - [x] Push-to-talk: `voice-capture.ts` and `voice-player.ts` (AAC-LC 16 kHz mono, 350 ms jitter buffer), with `AirhopVoiceModule` streaming mic and speaker off the JS thread. `VOICE_FRAME` (`0x29`) is relayed in the mesh, and DM bursts ride `NoisePayloadType.VOICE_FRAME` (`0x08`). Hold-to-talk UI with a live HUD, a floor-courtesy hint and autoplay gating

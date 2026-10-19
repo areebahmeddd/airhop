@@ -164,15 +164,23 @@ export class AndroidBleModule implements BleNativeModule {
   // A hasActiveReactInstance() guard AND a try/catch. Callers run on threads
   // the OS owns (the main thread for the BroadcastReceiver, binder threads for
   // the GATT callbacks), so an uncaught throw here is process death.
+  //
+  // The Kotlin catch only reaches the native half of the emit, getJSModule
+  // failing with no instance, which the runtime check stands for here. The
+  // listener runs later on the JS thread, out of Kotlin's reach, and a throw
+  // there is a fatal JS exception that a release build turns into a crash. So a
+  // listener that throws kills the modelled process rather than vanishing,
+  // which is what lets every "process survived" verdict fail.
   private emitEvent(name: string, body: Record<string, unknown>): void {
+    if (this.os.crashed !== null) return;
     if (!this.os.jsRuntimeReady) {
       this.os.log("native", "EVENT_DROPPED_NO_JS", name);
       return;
     }
     try {
       DeviceEventEmitter.emit(name, body);
-    } catch {
-      this.os.log("native", "EVENT_DROPPED_THREW", name);
+    } catch (e) {
+      this.os.recordCrash(e, `js (${name})`);
     }
   }
 

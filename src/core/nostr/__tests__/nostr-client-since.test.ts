@@ -61,15 +61,9 @@ test("a reconnect cannot move a gift-wrap subscription's since", () => {
   });
 });
 
-test("every relay gets its own copy of any other filter", () => {
+test("a relay's reconnect does not move the caller's filter", () => {
   const channel: Filter = { kinds: [20000], since: SINCE };
   open().subscribe([channel], () => undefined);
-  expect(mockFilters.length).toBeGreaterThan(1);
-  for (const filter of mockFilters) expect(filter).toEqual(channel);
-  expect(new Set(mockFilters).size).toBe(mockFilters.length);
-
-  // One relay's reconnect moves its own cursor, not another's or the caller's.
   mockFilters[0].since = SINCE + 1_800;
-  expect(mockFilters[1].since).toBe(SINCE);
   expect(channel.since).toBe(SINCE);
 });

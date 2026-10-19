@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Changing the relay preferences has to move a live subscription, not just the
 // next publish.
 //
@@ -15,15 +12,12 @@ import { useChatStore } from "@store/chat-store";
 import { useSettingsStore } from "@store/settings-store";
 import { GeohashChannelService } from "../geohash-channel-service";
 
-jest.mock("expo-location", () => ({}));
-
 // Fixed, so the only thing moving between runs is the relay list. The "mock"
 // prefix is what lets the hoisted module factory below close over it.
 const mockCoords = { lat: 51.5074, lng: -0.1278 };
 
 jest.mock("../location-service", () => ({
   getCoarseLocation: () => Promise.resolve(mockCoords),
-  clearLocationCache: () => undefined,
 }));
 
 const CUSTOM = "wss://pinned.example.com";
@@ -127,16 +121,24 @@ describe("applyRelayChange", () => {
     service.stop();
   });
 
-  it("does nothing when no cell is subscribed", () => {
+  it("does nothing once the cell has been left", async () => {
     // Turning a relay on and off from Settings, with no location channel
-    // joined, must not open a subscription that nothing will ever close.
-    useChatStore.setState({ channels: [] });
+    // joined any more, must not open a subscription that nothing will ever
+    // close.
     const opened: OpenedSubscription[] = [];
     const service = newService(opened);
+    await service.refresh();
+    expect(cellScoped(opened)).not.toHaveLength(0);
+
+    useChatStore.setState({ channels: [] });
+    await service.refresh();
+    expect(cellScoped(opened).every((s) => s.closed)).toBe(true);
+    const before = opened.length;
 
     useSettingsStore.getState().addCustomRelay(CUSTOM);
     service.applyRelayChange();
 
-    expect(opened).toHaveLength(0);
+    expect(opened).toHaveLength(before);
+    service.stop();
   });
 });

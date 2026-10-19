@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A promise that never settles is the failure this exists for, and it is the
 // one no amount of try/catch catches. These cases pin the three properties the
 // launch path depends on: a healthy promise is untouched, a silent one yields

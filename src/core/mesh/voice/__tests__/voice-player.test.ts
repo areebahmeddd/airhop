@@ -42,7 +42,7 @@ function makeStartPacket(seed: number): Packet {
     flags: Flags.SIGNED,
     senderID: new Uint8Array(8),
     recipientID: new Uint8Array(8),
-    timestamp: Math.floor(Date.now() / 1000),
+    timestamp: Date.now(),
     signature: new Uint8Array(64),
     payload: encodeBurstStart(burstID(seed), VoiceCodec.AAC_LC_16KHZ_MONO),
   };
@@ -55,7 +55,7 @@ function makeCanceledPacket(seed: number): Packet {
     flags: Flags.SIGNED,
     senderID: new Uint8Array(8),
     recipientID: new Uint8Array(8),
-    timestamp: Math.floor(Date.now() / 1000),
+    timestamp: Date.now(),
     signature: new Uint8Array(64),
     payload: encodeBurstCanceled(burstID(seed), 9),
   };
@@ -68,7 +68,7 @@ function makeEndPacket(seed: number, seq: number): Packet {
     flags: Flags.SIGNED,
     senderID: new Uint8Array(8),
     recipientID: new Uint8Array(8),
-    timestamp: Math.floor(Date.now() / 1000),
+    timestamp: Date.now(),
     signature: new Uint8Array(64),
     payload: encodeBurstEnd(burstID(seed), seq, seq - 1, (seq - 1) * 64),
   };
@@ -82,7 +82,7 @@ function makeDataPacket(seed: number, seq: number, data?: Uint8Array): Packet {
     flags: Flags.SIGNED,
     senderID: new Uint8Array(8),
     recipientID: new Uint8Array(8),
-    timestamp: Math.floor(Date.now() / 1000),
+    timestamp: Date.now(),
     signature: new Uint8Array(64),
     payload: encodeBurstData(burstID(seed), seq, frames),
   };

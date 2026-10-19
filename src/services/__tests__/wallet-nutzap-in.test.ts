@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Incoming NIP-61 nutzaps. Any Nostr key can publish a kind 9321 naming us,
 // so everything checkable offline is checked before a row is written or the
 // mint is asked, a refusal is final (the event is never tried again), and
@@ -31,47 +28,6 @@ import {
   resetWalletService,
   startNutzapWatcher,
 } from "../wallet-service";
-
-jest.mock("@core/crypto/keychain", () => {
-  const secrets = new Map<string, string>();
-  return {
-    ...jest.requireActual("@core/crypto/keychain"),
-    readSecret: jest.fn((item: string) =>
-      Promise.resolve(secrets.get(item) ?? null),
-    ),
-    writeSecret: jest.fn((item: string, value: string) => {
-      secrets.set(item, value);
-      return Promise.resolve();
-    }),
-  };
-});
-
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn(() => true),
-  };
-});
 
 jest.setTimeout(60_000);
 
@@ -221,7 +177,10 @@ describe("a genuine nutzap", () => {
 
     expect(held()).toBe(24);
     expect(settled(withWitness.id) && settled(stripped.id)).toBe(true);
-    expect(nutzapRows().every((t) => t.status === "completed")).toBe(true);
+    expect(nutzapRows().map((t) => t.status)).toEqual([
+      "completed",
+      "completed",
+    ]);
   });
 
   it("is asked for only from the mints we hold", () => {

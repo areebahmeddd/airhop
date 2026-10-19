@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A wallet opened while the keychain is locked. iOS relaunches the app in the
 // background before first unlock, the wallet's file key cannot be read, and
 // the same process later carries on once the person unlocks. The wallet must
@@ -29,33 +26,6 @@ jest.mock("@core/crypto/keychain", () => {
       mockSecrets.set(item, value);
       return Promise.resolve();
     }),
-  };
-});
-
-jest.mock("react-native-mmkv", () => {
-  class MockMMKV {
-    private store = new Map<string, string>();
-    getString(key: string): string | undefined {
-      return this.store.get(key);
-    }
-    set(key: string, value: string): void {
-      this.store.set(key, value);
-    }
-    remove(key: string): void {
-      this.store.delete(key);
-    }
-    encrypt(): void {}
-    clearAll(): void {
-      this.store.clear();
-    }
-  }
-  const instances = new Map<string, MockMMKV>();
-  return {
-    createMMKV: ({ id = "default" }: { id?: string } = {}) => {
-      if (!instances.has(id)) instances.set(id, new MockMMKV());
-      return instances.get(id)!;
-    },
-    deleteMMKV: jest.fn(() => true),
   };
 });
 

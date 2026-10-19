@@ -89,6 +89,11 @@ function Internet() {
         </TextLink>
       ),
       snowflake: <TextLink href="https://snowflake.torproject.org">Snowflake</TextLink>,
+      webtunnel: (
+        <TextLink href="https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel">
+          WebTunnel
+        </TextLink>
+      ),
     }),
     [],
   );

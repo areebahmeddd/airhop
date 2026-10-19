@@ -1,23 +1,21 @@
-/**
- * @jest-environment node
- */
 // Round-trip + structural tests for bitchat's nip44-v2 Nostr DM encryption.
 // Full byte-parity with a real bitchat ciphertext needs a captured vector; these
-// lock in the scheme's shape and self-consistency.
-import { secp256k1 } from "@noble/curves/secp256k1.js";
+// lock in the scheme's shape and self-consistency. Peers are addressed by their
+// BIP-340 x-only key, the one a Nostr event carries, so a raw scalar that lands
+// on odd Y still has to round-trip.
+import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import {
   bitchatNip44Decrypt,
   bitchatNip44Encrypt,
   normalizeSecretKeyEvenY,
-  xOnlyPublicKey,
 } from "../bitchat-nip44";
 
 describe("bitchat-nostr-crypto", () => {
   it("round-trips a message between sender and recipient", () => {
     const senderPriv = secp256k1.utils.randomSecretKey();
     const recipPriv = secp256k1.utils.randomSecretKey();
-    const senderX = xOnlyPublicKey(senderPriv);
-    const recipX = xOnlyPublicKey(recipPriv);
+    const senderX = schnorr.getPublicKey(senderPriv);
+    const recipX = schnorr.getPublicKey(recipPriv);
 
     const ct = bitchatNip44Encrypt("hello bitchat", recipX, senderPriv);
     expect(ct.startsWith("v2:")).toBe(true);
@@ -29,14 +27,14 @@ describe("bitchat-nostr-crypto", () => {
     const a = secp256k1.utils.randomSecretKey();
     const b = secp256k1.utils.randomSecretKey();
     const msg = "café ☕ 日本語 " + "x".repeat(500);
-    const ct = bitchatNip44Encrypt(msg, xOnlyPublicKey(b), a);
-    expect(bitchatNip44Decrypt(ct, xOnlyPublicKey(a), b)).toBe(msg);
+    const ct = bitchatNip44Encrypt(msg, schnorr.getPublicKey(b), a);
+    expect(bitchatNip44Decrypt(ct, schnorr.getPublicKey(a), b)).toBe(msg);
   });
 
   it("produces a fresh nonce each time (different ciphertexts)", () => {
     const a = secp256k1.utils.randomSecretKey();
     const b = secp256k1.utils.randomSecretKey();
-    const bx = xOnlyPublicKey(b);
+    const bx = schnorr.getPublicKey(b);
     expect(bitchatNip44Encrypt("same", bx, a)).not.toBe(
       bitchatNip44Encrypt("same", bx, a),
     );
@@ -46,13 +44,15 @@ describe("bitchat-nostr-crypto", () => {
     const a = secp256k1.utils.randomSecretKey();
     const b = secp256k1.utils.randomSecretKey();
     const wrong = secp256k1.utils.randomSecretKey();
-    const ct = bitchatNip44Encrypt("secret", xOnlyPublicKey(b), a);
-    expect(bitchatNip44Decrypt(ct, xOnlyPublicKey(a), wrong)).toBeNull();
+    const ct = bitchatNip44Encrypt("secret", schnorr.getPublicKey(b), a);
+    expect(bitchatNip44Decrypt(ct, schnorr.getPublicKey(a), wrong)).toBeNull();
   });
 
   it("returns null for a non-v2 ciphertext", () => {
     const b = secp256k1.utils.randomSecretKey();
-    expect(bitchatNip44Decrypt("garbage", xOnlyPublicKey(b), b)).toBeNull();
+    expect(
+      bitchatNip44Decrypt("garbage", schnorr.getPublicKey(b), b),
+    ).toBeNull();
   });
 
   it("normalizeSecretKeyEvenY yields an even-Y public key", () => {

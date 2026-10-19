@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Safety numbers. These properties are what the feature rests on, so they are
 // pinned rather than assumed.
 
@@ -96,8 +93,11 @@ describe("safetyNumberIndices", () => {
     expect(safetyNumberIndices(digest).slice(0, 3)).toEqual([127, 0, 127]);
   });
 
-  it("is deterministic", () => {
-    const digest = safetyNumber(alice, bob);
-    expect(safetyNumberIndices(digest)).toEqual(safetyNumberIndices(digest));
+  // Pinned from the current implementation: a change to the hash, the key
+  // order or the bit reading moves every word.
+  it("gives a pinned answer for fixed keys", () => {
+    expect(safetyNumberIndices(safetyNumber(alice, bob))).toEqual([
+      52, 123, 112, 98, 116, 127,
+    ]);
   });
 });

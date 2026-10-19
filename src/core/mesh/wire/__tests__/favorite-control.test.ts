@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // bitchat's favourite notice travels as private-message text, so anything this
 // misses lands in a thread as a bubble reading "[FAVORITED]:npub1...".
 

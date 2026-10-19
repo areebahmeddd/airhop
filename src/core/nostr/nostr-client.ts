@@ -236,9 +236,8 @@ export class NostrClient {
     const alreadyHaveEvent = (id: string): boolean => delivered.has(id);
     // EOSE queues behind the events it terminates rather than jumping them, and
     // fires once every relay has finished its backfill (a relay that fails to
-    // connect counts as finished). Nothing passes an onEose today, but "the
-    // backfill is complete" arriving before the backfill would be a genuinely
-    // confusing thing to leave lying around for whoever wires the first one up.
+    // connect counts as finished). The location rooms' flood limit spares a
+    // replay until EOSE, so it must not arrive ahead of the events it ends.
     let backfilling = targets.length * filters.length;
     const oneose =
       onEose === undefined

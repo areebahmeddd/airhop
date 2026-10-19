@@ -8,7 +8,7 @@ export function FloodPropagation() {
     { x: 440, y: 150, ttl: "5", label: "", sub: "" },
     { x: 630, y: 80, ttl: "4", label: "", sub: "" },
     { x: 630, y: 220, ttl: "4", label: "", sub: "" },
-    { x: 820, y: 150, ttl: "", label: "them", sub: "arrives with 4 unspent" },
+    { x: 820, y: 150, ttl: "", label: "them", sub: "arrives with 3 hops to spare" },
   ];
   const edges = [
     { a: 0, b: 1, dup: false },

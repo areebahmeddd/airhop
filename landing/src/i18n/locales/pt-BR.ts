@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "rede mesh Bluetooth Low Energy",
   "home.about.link.wire_protocol": "protocolo de transmissão",
   "home.about.body.built":
-    "O Airhop é um app de código aberto para iOS e Android de mensagens privadas ponto a ponto sobre {mesh}. Ele é construído sobre a base do {bitchat}, reaproveitando seu {wire_protocol} e seu modelo de segurança, e estendendo tudo com pagamentos {ecash} offline e IA offline. Funciona com zero conectividade de internet, e as mensagens são retransmitidas automaticamente entre dispositivos próximos (cerca de 10 a 30 metros por salto em ambientes fechados, mais em campo aberto), por até 7 saltos.",
+    "O Airhop é um app de código aberto para iOS e Android de mensagens privadas ponto a ponto sobre {mesh}. Ele é construído sobre a base do {bitchat}, reaproveitando seu {wire_protocol} e seu modelo de segurança, e estendendo tudo com pagamentos {ecash} offline e IA offline. Funciona com zero conectividade de internet, e as mensagens são retransmitidas automaticamente entre dispositivos próximos (cerca de 30 a 50 metros por salto em ambientes fechados, mais em campo aberto), por até 7 saltos.",
   "home.about.body.identity":
     "Sua identidade é um par de chaves {ed25519} gerado no seu dispositivo e guardado no {ios_keychain} ou no {android_keystore}. Não há contas, nem cadastros, nem nada que toque um servidor, ou seja, dá para usar como app descartável que não deixa nada ligando de volta a você depois de excluído.",
   "home.about.body.crypto":
     "Cada sessão usa o protocolo {noise} para um handshake autenticado. As mensagens armazenadas usam o algoritmo {ratchet}, ou seja, mesmo que seu dispositivo seja comprometido depois, suas mensagens antigas continuam ilegíveis. A limpeza de pânico destrói todas as chaves e mensagens em menos de um segundo.",
   "home.about.body.internet":
-    "Quando você e um contato estão fora do alcance do Bluetooth, os relays do {nostr} servem de ponte pela internet, usando mensagens diretas embrulhadas no formato {nip17}, então a rede mesh se estende globalmente sempre que vocês dois estiverem on-line. O suporte a {tor} está disponível no iOS e no Android, via {arti}, com bridges {obfs4} e {snowflake} para redes que bloqueiam o Tor.",
+    "Quando você e um contato estão fora do alcance do Bluetooth, os relays do {nostr} servem de ponte pela internet, usando mensagens diretas embrulhadas no formato {nip17}, então a rede mesh se estende globalmente sempre que vocês dois estiverem on-line. O suporte a {tor} está disponível no iOS e no Android, via {arti}, com bridges {obfs4}, {snowflake} e {webtunnel} para redes que bloqueiam o Tor.",
   "home.about.optional.title": "O Airhop tem recursos opcionais que você pode ativar:",
   "home.about.optional.payments.label": "Pagamentos offline:",
   "home.about.optional.payments.body":

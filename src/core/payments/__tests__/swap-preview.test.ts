@@ -1,14 +1,11 @@
-/**
- * @jest-environment node
- */
 // A persisted swap preview must replay byte for byte.
 //
 // The mint keys its NUT-19 cache on the request body, so a replay that differs
 // by one byte is a fresh spend of inputs already taken, which fails and loses
-// the money. Pinned here: input key order (`JSON.stringify` follows insertion
-// order, so rebuilding an input field by field changes the body; the module
-// keeps inputs as an opaque round trip for this), and the whole request,
-// replayed against a real mint.
+// the money. Pinned by replaying the whole request against a real mint, which
+// also catches input key order (`JSON.stringify` follows insertion order, so
+// rebuilding an input field by field changes the body; the module keeps inputs
+// as an opaque round trip for this).
 
 import {
   Amount,
@@ -94,29 +91,6 @@ describe("swap preview round trip", () => {
     expect(swapPreviewOutputs(rebuilt)).toHaveLength(3);
     expect(swapPreviewOutputs(rebuilt)[2]?.blindedMessage.B_).toBe(
       original.sendOutputs[0]?.blindedMessage.B_,
-    );
-  });
-
-  it("preserves the field order of an input, not merely its values", () => {
-    // The order cashu-ts happens to use is not the order anybody would write
-    // out by hand, which is the point: rebuilding these field by field would
-    // pass every value assertion above and still miss the mint's cache.
-    const odd = normalizeProofAmounts([
-      {
-        id: KEYSET_ID,
-        amount: 8,
-        C: "02".padEnd(66, "a"),
-        secret: "b".repeat(64),
-      },
-    ]);
-    const rebuilt = rebuildSwapPreview(
-      throughStorage({ ...fakePreview(), inputs: odd }),
-    );
-
-    expect(rebuilt).not.toBeNull();
-    if (rebuilt === null) return;
-    expect(Object.keys(rebuilt.inputs[0] ?? {})).toEqual(
-      Object.keys(odd[0] ?? {}),
     );
   });
 

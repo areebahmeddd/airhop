@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What an airhop:// link joins. A private invite must never land in the public
 // room of the same name, where the user would talk in the clear, and a refused
 // contact card has to say why.
@@ -13,9 +10,8 @@ jest.mock("../mesh-service", () => ({
 }));
 
 import { encodeQRContent } from "@core/crypto/contact-exchange";
+import { peerIDFromNoiseKey } from "@core/crypto/peer-id";
 import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
-import { sha256 } from "@noble/hashes/sha2.js";
-import { bytesToHex } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { applyAirhopLink } from "../link-router";
@@ -59,7 +55,7 @@ test("a link without a key joins the public room", () => {
 
 test("a card naming a different key from the one held is refused as a conflict", () => {
   const noisePubKey = new Uint8Array(32).fill(3);
-  const peerID = bytesToHex(sha256(noisePubKey)).slice(0, 16);
+  const peerID = peerIDFromNoiseKey(noisePubKey);
   const card = encodeQRContent({
     peerID,
     noisePubKey,

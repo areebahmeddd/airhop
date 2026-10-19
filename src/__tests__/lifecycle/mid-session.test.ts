@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What happens to a running app when the world changes under it: radios
 // toggled, conversations in flight, the app put away and reopened, and a link
 // handed over by another app.
@@ -19,7 +16,18 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
   },
 }));
 
+import type { Identity } from "@core/crypto/identity";
+import { bytesToBase64 } from "@core/encoding/base64";
+import { encodeAnnouncePayload } from "@core/mesh/discovery/announce-manager";
 import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
+import {
+  encodePacket,
+  Flags,
+  PacketType,
+  signPacket,
+  type Packet,
+} from "@core/mesh/wire/packet-codec";
+import { hexToBytes } from "@noble/hashes/utils.js";
 import { applyAirhopLink, joinSheetPrefill } from "@services/link-router";
 import { getMeshService } from "@services/mesh-service";
 import { applyPresence } from "@services/presence-service";
@@ -30,7 +38,7 @@ import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
 import { channelInviteLink, parseAirhopLink } from "@utils/deep-link";
 import { AndroidBleModule } from "../harness/android-native";
-import { AppShell } from "../harness/app-shell";
+import { AppShell, makeIdentity } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
 import { IosBleModule } from "../harness/ios-native";
 import { installOfflineWebSocket } from "../harness/offline-socket";
@@ -41,9 +49,16 @@ import { Verdict } from "../harness/verdict";
 // relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
 
+// Every field a scenario here can move, so one test's leftovers never decide
+// the next one's verdict.
 function resetStores(): void {
   useMeshStateStore.setState({
     bleBlocker: "starting",
+    blePermissionBlocked: false,
+    bleAdvertisingUnsupported: false,
+    powerSaving: false,
+    wifiFastPath: "unknown",
+    lanState: "off",
     locationGranted: true,
     nostrConnected: false,
     torActive: false,
@@ -53,8 +68,31 @@ function resetStores(): void {
   });
   // A start restores a kept Invisible, so Online has to be the saved choice too.
   useSettingsStore.getState().setStayInvisible(false);
+  useSettingsStore.getState().setBackgroundMeshEnabled(true);
   usePeerStore.getState().clearAll();
   useOutboxStore.setState({ pending: [] });
+}
+
+// A signed ANNOUNCE from `peer`, as a neighbour sends one the moment a link
+// comes up. Without it the mesh has never heard of anyone on the link, and a
+// scenario about losing a peer has no peer to lose.
+function announceFrom(peer: Identity, nickname: string): string {
+  const packet: Packet = {
+    type: PacketType.ANNOUNCE,
+    ttl: 7,
+    flags: Flags.SIGNED,
+    senderID: hexToBytes(peer.peerID),
+    recipientID: new Uint8Array(8),
+    timestamp: Date.now(),
+    signature: new Uint8Array(64),
+    payload: encodeAnnouncePayload(peer, nickname),
+  };
+  packet.signature = signPacket(packet, peer.signingPrivKey);
+  return bytesToBase64(encodePacket(packet));
+}
+
+function isDirectPeer(peerID: string): boolean {
+  return usePeerStore.getState().peers.get(peerID)?.isDirect === true;
 }
 
 // Bring an Android device up to a healthy, running mesh.
@@ -194,10 +232,10 @@ describe("mid-session radio chaos and lifecycle", () => {
     v.assert();
   });
 
-  test("S13 Bluetooth flipped five times in two seconds", async () => {
+  test("S16 Bluetooth flipped five times in two seconds", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
-      "S13",
+      "S16",
       "impatient user flips the switch repeatedly",
       os,
     );
@@ -235,16 +273,29 @@ describe("mid-session radio chaos and lifecycle", () => {
     app = started.app;
     const native = started.native;
 
-    native.simulatePeerConnect("c:AA:BB:CC:DD:EE:01");
+    const friend = makeIdentity(33);
+    const linkID = "c:AA:BB:CC:DD:EE:01";
+    native.simulatePeerConnect(linkID);
+    await os.advance(100);
+    native.fabricDeliver(linkID, announceFrom(friend, "friend"));
     await os.advance(200);
+    v.check(
+      "the friend is a direct neighbour before the outage",
+      isDirectPeer(friend.peerID),
+      "precondition: without a known peer the outage changes nothing",
+    );
 
     const mesh = getMeshService();
-    const peer = "1122334455667788";
-
     os.setBluetooth(false);
     await os.advance(400);
+    v.check(
+      "the outage took the friend's link with it",
+      !isDirectPeer(friend.peerID),
+      "a link map that still holds the dead link routes the DM into it",
+    );
 
-    const result = mesh?.sendDm(peer, "are you still there?");
+    const text = "are you still there?";
+    const result = mesh?.sendDm(friend.peerID, text);
     await os.advance(500);
 
     v.check("process survived", os.crashed === null, os.crashed ?? undefined);
@@ -253,12 +304,15 @@ describe("mid-session radio chaos and lifecycle", () => {
       result !== "sent",
       `sendDm returned ${String(result)}`,
     );
+    const held = useOutboxStore
+      .getState()
+      .pending.filter(
+        (m) => m.recipientPeerID === friend.peerID && m.text === text,
+      );
     v.check(
-      "the message is held for retry rather than dropped",
-      result === "queued" ||
-        result === "needs-courier" ||
-        useOutboxStore.getState().pending.length > 0,
-      `outbox holds ${useOutboxStore.getState().pending.length} message(s)`,
+      "this message is held for retry rather than dropped",
+      held.length === 1,
+      `outbox holds ${held.length} copy(ies) of it`,
     );
     v.assert();
   });
@@ -274,20 +328,30 @@ describe("mid-session radio chaos and lifecycle", () => {
     app = started.app;
     const native = started.native;
 
-    native.simulatePeerConnect("c:AA:BB:CC:DD:EE:01");
-    native.simulatePeerConnect("c:AA:BB:CC:DD:EE:02");
+    const friends = [makeIdentity(33), makeIdentity(45)];
+    friends.forEach((friend, i) => {
+      const linkID = `c:AA:BB:CC:DD:EE:0${i + 1}`;
+      native.simulatePeerConnect(linkID);
+      native.fabricDeliver(linkID, announceFrom(friend, `friend${i + 1}`));
+    });
     await os.advance(200);
+    v.check(
+      "both friends are direct neighbours before the outage",
+      friends.every((f) => isDirectPeer(f.peerID)),
+      "precondition: without known peers the outage changes nothing",
+    );
 
     os.setBluetooth(false);
     await os.advance(500);
     os.setBluetooth(true);
     await os.advance(3000);
 
+    const stillDirect = friends.filter((f) => isDirectPeer(f.peerID));
     v.check("process survived", os.crashed === null, os.crashed ?? undefined);
     v.check(
-      "the peer list does not still show peers from before the outage",
-      usePeerStore.getState().peers.size === 0,
-      `${usePeerStore.getState().peers.size} peer(s) still listed`,
+      "nobody is still shown as in range over a link the outage killed",
+      stillDirect.length === 0,
+      `${stillDirect.length} peer(s) still shown as direct`,
     );
     v.check("radios are back", native.scanning && native.advertising);
     v.assert();
@@ -424,36 +488,6 @@ describe("mid-session radio chaos and lifecycle", () => {
       "stale links from before the outage were retired",
       native.staleLinkCount() === 0,
       `${native.staleLinkCount()} link(s) still in centralLinks referencing a dead manager; JS was never told, so writes to them are silently discarded by CoreBluetooth`,
-    );
-    v.assert();
-  });
-
-  test("S21i iOS: CoreBluetooth managers must not be reallocated forever", async () => {
-    const os = new DeviceOS({ platform: "ios" });
-    const v = new Verdict(
-      "S21i",
-      "an idle, perfectly healthy iPhone left alone for ten seconds",
-      os,
-    );
-    const native = new IosBleModule(os);
-    installNativeBle(native);
-    app = new AppShell({ os });
-    app.bootJsRuntime();
-    await app.startMeshWithPermissions();
-
-    // Nothing happens. Nobody touches the phone.
-    await os.advance(10_000);
-
-    v.check("process survived", os.crashed === null, os.crashed ?? undefined);
-    v.check(
-      "a quiet device allocates a bounded number of CBCentralManagers",
-      native.centralManagersCreated <= 2,
-      `${native.centralManagersCreated} created in 10s. If every centralManagerDidUpdateState emits adapterStateChanged, mesh-service treats it as a radio change and schedules retryRadios, whose startScanning constructs ANOTHER CBCentralManager, which fires didUpdateState again: a loop every ADAPTER_SETTLE_MS for as long as the app is open`,
-    );
-    v.check(
-      "a quiet device allocates a bounded number of CBPeripheralManagers",
-      native.peripheralManagersCreated <= 2,
-      `${native.peripheralManagersCreated} created in 10s, each reusing the same CBPeripheralManagerOptionRestoreIdentifierKey`,
     );
     v.assert();
   });

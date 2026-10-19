@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Structural integrity of every translation catalog: what a type cannot cover.
 // `tsc` already guarantees key completeness, so none of this re-checks that.
 //

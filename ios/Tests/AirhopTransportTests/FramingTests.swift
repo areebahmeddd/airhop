@@ -42,11 +42,12 @@ final class FramingTests: XCTestCase {
     XCTAssertNil(Framing.length(Data([0, 0, 0, 1, 0])))
   }
 
-  // A prefix read out of the middle of a frame, as `Data` slices keep their
-  // parent's indices.
+  // A prefix sliced out of the middle of a stream, as `Data` slices keep their
+  // parent's indices: the second frame's prefix starts at index 7, not 0.
   func testSliceIndicesDoNotMatter() {
-    let frame = Framing.encode(Data([1, 2, 3]))
-    let sliced = frame[frame.startIndex..<frame.startIndex + 4]
-    XCTAssertEqual(Framing.length(sliced), 3)
+    let stream = Framing.encode(Data([1, 2, 3])) + Framing.encode(Data([4, 5]))
+    let sliced = stream[7..<11]
+    XCTAssertEqual(sliced.startIndex, 7)
+    XCTAssertEqual(Framing.length(sliced), 2)
   }
 }

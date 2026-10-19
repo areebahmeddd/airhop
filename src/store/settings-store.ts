@@ -156,8 +156,10 @@ interface SettingsState {
   setBitcoinUnit: (unit: BitcoinUnit) => void;
   markPermissionPrimerSeen: () => void;
   markBackgroundLimitsAcknowledged: () => void;
-  // Restore first-run defaults. Used by the panic wipe.
-  reset: () => void;
+  // Restore first-run defaults. The panic wipe passes nothing; Reset settings
+  // passes what it leaves alone, applied in the same write so no subscriber
+  // sees a kept value flip off and back.
+  reset: (keep?: readonly (keyof typeof DEFAULTS)[]) => void;
 }
 
 const DEFAULTS = {
@@ -197,9 +199,13 @@ const DEFAULTS = {
 } satisfies Partial<SettingsState>;
 
 // Settings about this install rather than the person, left behind by a
-// transfer: native state, and what this OS has been asked.
+// transfer: native state, what this OS has been asked, and how this phone may
+// spend its battery. Background running is among them because iOS has no row
+// for it, so an Android phone's "off" carried to an iPhone could never be
+// turned back on.
 export const DEVICE_SETTINGS = [
   "frameLanguage",
+  "backgroundMeshEnabled",
   "autoStartOnBoot",
   "torStartPending",
   "permissionPrimerSeen",
@@ -345,11 +351,14 @@ export const useSettingsStore = create<SettingsState>()(
       markBackgroundLimitsAcknowledged() {
         set({ backgroundLimitsAcknowledged: true });
       },
-      reset() {
+      reset(keep = []) {
         // `frameLanguage` is carried through, not defaulted: it describes a
         // native flag a wipe cannot clear, so losing the record would leave the
         // next launch unable to name the direction it woke up in.
-        set({ ...DEFAULTS, frameLanguage: get().frameLanguage });
+        const current = get();
+        const kept: Partial<SettingsState> = {};
+        for (const key of keep) Object.assign(kept, { [key]: current[key] });
+        set({ ...DEFAULTS, frameLanguage: current.frameLanguage, ...kept });
       },
     }),
     {

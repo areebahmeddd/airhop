@@ -49,7 +49,10 @@ export function isTorSocketNativeAvailable(): boolean {
 
 export const AirhopTorSocketNative = nativeModule;
 
-let emitter: NativeEventEmitter | null = null;
+// Event name to listener arguments, so addListener types the payload.
+type TorSocketEvents = { TorSocketEvent: [TorSocketEvent] };
+
+let emitter: NativeEventEmitter<TorSocketEvents> | null = null;
 
 // Only call when isTorSocketNativeAvailable() is true; the emitter needs the
 // native module.
@@ -57,7 +60,7 @@ export function subscribeTorSocket(
   listener: (event: TorSocketEvent) => void,
 ): EventSubscription {
   if (emitter === null) {
-    emitter = new NativeEventEmitter(
+    emitter = new NativeEventEmitter<TorSocketEvents>(
       NativeModules.AirhopTorSocket as unknown as ConstructorParameters<
         typeof NativeEventEmitter
       >[0],

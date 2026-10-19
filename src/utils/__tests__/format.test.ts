@@ -1,4 +1,4 @@
-/** @jest-environment node */
+// Display formatters, in the app's language rather than the device's.
 
 import type { TokenInfo } from "@core/payments/cashu";
 import { initI18n, stripIsolates } from "@i18n";
@@ -195,10 +195,9 @@ describe("formatDuration", () => {
 
 // ---- Money ----
 //
-// These moved here from core/payments/cashu.ts, which cannot hold a formatter:
-// it is the protocol layer and imports no display code, so it had no way to ask
-// what language the app is in and was calling a bare `toLocaleString()`, which
-// asks the device instead.
+// Formatted here rather than in core/payments: the protocol layer imports no
+// display code, so it cannot know the app's language, and a bare
+// `toLocaleString()` asks the device instead.
 
 describe("formatAmount", () => {
   it("renders sats as a grouped integer in the app's language", () => {
@@ -252,12 +251,6 @@ describe("formatAmount", () => {
     }
   });
 
-  it("summarises a fiat token in major units", () => {
-    expect(formatTokenSummary({ amount: 250, unit: "usd" } as TokenInfo)).toBe(
-      "2.50 USD",
-    );
-  });
-
   it("shows an empty wallet as 0, not 0.00000000", () => {
     expect(formatAmount(0, "sat", "btc").value).toBe("0");
   });
@@ -276,6 +269,10 @@ describe("formatTokenSummary", () => {
 
   it("groups a large amount", () => {
     expect(formatTokenSummary(info(21_500, "sat"))).toBe("21,500 sat");
+  });
+
+  it("summarises a fiat token in major units", () => {
+    expect(formatTokenSummary(info(250, "usd"))).toBe("2.50 USD");
   });
 });
 

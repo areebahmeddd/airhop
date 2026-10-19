@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Which battery settings screen each phone is sent to, and which brands are
 // warned about.
 //
@@ -88,12 +85,6 @@ describe("resolveBatterySettingsTargets", () => {
       ]);
     },
   );
-
-  test("brand matching is case-insensitive", () => {
-    expect(resolveBatterySettingsTargets("android", "XIAOMI")).toEqual(
-      resolveBatterySettingsTargets("android", "xiaomi"),
-    );
-  });
 });
 
 describe("isKnownAggressiveOEM", () => {

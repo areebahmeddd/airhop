@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The courier wire format, checked against two published vector files.
 //
 // `courier-test-vectors.json` is ours, so another implementation can be written

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Throughput of the operations that run on every packet on the hot path.
 //
 // Run with `npm run benchmark`. This prints a report and always passes: it is
@@ -17,6 +14,7 @@
 // A change in those RATIOS is the signal. The absolute numbers are only
 // meaningful against another run on the same hardware.
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { formatNumber } from "@utils/format";
 import {
   decodePacket,
   encodePacket,
@@ -65,9 +63,11 @@ describe("protocol throughput", () => {
     const encoded = encodePacket(base);
     const decoded = decodePacket(encoded)!;
 
-    // 4 KB of repetitive text, which is what an attachment caption or a board
+    // 4 KiB of repetitive text, which is what an attachment caption or a board
     // post looks like to the compressor.
-    const compressible = new TextEncoder().encode("airhop ".repeat(600));
+    const compressible = new TextEncoder()
+      .encode("airhop ".repeat(600))
+      .slice(0, 4096);
     const compressed = compress(compressible)!;
 
     const results = [
@@ -75,17 +75,16 @@ describe("protocol throughput", () => {
       bench("decodePacket", () => void decodePacket(encoded)),
       bench("signPacket", () => void signPacket(base, priv)),
       bench("verifyPacket", () => void verifyPacket(decoded, pub)),
-      bench("compress 4KB", () => void compress(compressible)),
+      bench("compress 4 KiB", () => void compress(compressible)),
       bench(
-        "decompress 4KB",
+        "decompress 4 KiB",
         () => void decompress(compressed, compressible.length),
       ),
     ];
 
     const width = Math.max(...results.map((r) => r.name.length));
     const lines = results.map(
-      (r) =>
-        `  ${r.name.padEnd(width)}  ${r.opsPerSec.toLocaleString()} ops/sec`,
+      (r) => `  ${r.name.padEnd(width)}  ${formatNumber(r.opsPerSec)} ops/sec`,
     );
     console.log(
       `\nprotocol throughput (${ITERATIONS} iterations each)\n${lines.join("\n")}\n`,

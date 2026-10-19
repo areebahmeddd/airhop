@@ -40,7 +40,7 @@
 
 Airhop is an iOS + Android app (macOS and Windows coming soon) for private, offline-first peer-to-peer communication over [Bluetooth mesh](https://en.wikipedia.org/wiki/Mesh_networking) networks, with [Nostr](https://nostr.org) internet bridging and [Cashu](https://cashu.space) [ecash](https://en.wikipedia.org/wiki/Ecash) payments. **Our mission is to make censorship-resistant communication available to anyone: during natural disasters, internet blackouts, mass protests, or any situation where networks are unavailable, surveilled, or shut down.**
 
-I built this at a 24-hour hackathon (July 2026) during my final year of undergrad, on top of the foundation of [bitchat](https://bitchat.free). It uses the same [BLE wire protocol](docs/spec/PROTOCOLS.md) and [service UUIDs](docs/spec/PROTOCOLS.md#1-ble-identifiers), meaning Airhop-installed devices can automatically discover and join the same mesh as nearby bitchat-installed devices, relay messages, and exchange DMs with zero setup. It also extends the protocol with [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) forward secrecy, offline ecash payments, and offline AI (not present in bitchat _at the time_). [Project Trailer](https://youtube.com/watch?v=6gnkkEt1uqY) / [Project Demo](https://youtube.com/watch?v=78kaIALZhKM)
+I built this at a 24-hour hackathon (July 2026) during my final year of undergrad, on top of the foundation of [bitchat](https://bitchat.free). It uses the same [BLE wire protocol](docs/spec/PROTOCOLS.md) and [service UUIDs](docs/spec/PROTOCOLS.md#1-ble-identifiers), meaning Airhop-installed devices can automatically discover and join the same mesh as nearby bitchat-installed devices, relay messages, and exchange DMs with zero setup. It also extends the protocol with [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) forward secrecy, offline ecash payments, and offline AI (not present in bitchat _at the time_). [ [Project Trailer](https://youtube.com/watch?v=6gnkkEt1uqY) / [Project Demo](https://youtube.com/watch?v=78kaIALZhKM) ]
 
 > [!NOTE]
 > Airhop is an independent side project built and maintained by [Areeb Ahmed](https://github.com/areebahmeddd) in his free time. It is not backed by any company or organization, not affiliated with or endorsed by permissionlesstech or the bitchat project, and not an impersonation of any existing app or service.
@@ -80,7 +80,7 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 | 🌐 **Internet**   | Internet fallback         | DMs and channels keep flowing over Nostr relays when a user moves out of Bluetooth range                                                     |
 |                   | Geo-relay discovery       | Discover location-based channels across 300+ distributed Nostr relays                                                                        |
 |                   | Internet gateway          | Lend your connection to a nearby offline phone so it can still reach the location (geohash) channels                                         |
-|                   | Tor integration           | Route Nostr traffic through Tor, with obfs4 and Snowflake bridges where Tor itself is blocked                                                |
+|                   | Tor integration           | Route Nostr traffic through Tor, with obfs4, Snowflake and WebTunnel bridges where Tor itself is blocked                                     |
 
 ## Optional Features
 
@@ -98,12 +98,12 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 
 | Layer                   | Technology                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Application Framework   | [React Native](https://reactnative.dev) 0.86, [Expo](https://expo.dev) SDK 57 (bare workflow)                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Application Framework   | [React Native](https://reactnative.dev) 0.88, [Expo](https://expo.dev) SDK 58 (bare workflow)                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Network Transport       | [Bluetooth LE](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) mesh (all platforms), LAN over [mDNS](https://en.wikipedia.org/wiki/Multicast_DNS) + TCP, [Wi-Fi Aware](https://wi-fi.org/discover-wi-fi/wi-fi-aware) (Android and iPhone, same platform only), [Nostr](https://github.com/nostr-protocol/nostr) relay bridge, chosen per message                                                                                                                                                                                                                   |
 | Cryptographic Protocols | [Noise XX](https://noiseprotocol.org/noise.html) handshake, [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) algorithm                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Cryptographic Library   | [`@noble/curves`](https://github.com/paulmillr/noble-curves), [`@noble/ciphers`](https://github.com/paulmillr/noble-ciphers), [`@noble/hashes`](https://github.com/paulmillr/noble-hashes) ([Cure53](https://cure53.de) audited)                                                                                                                                                                                                                                                                                                                                       |
 | Identity & Signatures   | [Ed25519](https://ed25519.cr.yp.to) scheme                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Network Privacy         | [Arti](https://gitlab.torproject.org/tpo/core/arti) [Tor](https://www.torproject.org) client, bundled on iOS and Android, with [obfs4](https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/obfs4) and [Snowflake](https://snowflake.torproject.org) bridges                                                                                                                                                                                                                                                                                         |
+| Network Privacy         | [Arti](https://gitlab.torproject.org/tpo/core/arti) [Tor](https://www.torproject.org) client, bundled on iOS and Android, with [obfs4](https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/obfs4), [Snowflake](https://snowflake.torproject.org) and [WebTunnel](https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel) bridges                                                                                                                                                                                          |
 | Payment System          | [Cashu](https://cashu.space) [ecash](https://en.wikipedia.org/wiki/Ecash) via [`@cashu/cashu-ts`](https://github.com/cashubtc/cashu-ts): offline transfer, [NUT-12](https://github.com/cashubtc/nuts/blob/main/12.md) DLEQ verification, [NUT-13](https://github.com/cashubtc/nuts/blob/main/13.md) recovery phrase, [NUT-04](https://github.com/cashubtc/nuts/blob/main/04.md) and [NUT-05](https://github.com/cashubtc/nuts/blob/main/05.md) [Lightning](https://lightning.network), plus [NIP-61](https://github.com/nostr-protocol/nips/blob/master/61.md) Nutzaps |
 | State Management        | [Zustand](https://github.com/pmndrs/zustand) store, [MMKV](https://github.com/mrousavy/react-native-mmkv) storage                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Key Storage             | [iOS Keychain](https://developer.apple.com/documentation/security/storing-keys-in-the-keychain), [Android Keystore](https://developer.android.com/privacy-and-security/keystore)                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -112,15 +112,15 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 
 Airhop chooses a transport per message. Bluetooth is the only one that needs no internet and no network at all, which is why it is the default. The others are used when they are available, and courier is what runs when none of them are.
 
-|                   | Bluetooth LE mesh                                                  | LAN (mDNS + TCP)                        | Wi-Fi Aware                       | Nostr relays                     | Courier (store-and-forward)              |
-| ----------------- | ------------------------------------------------------------------ | --------------------------------------- | --------------------------------- | -------------------------------- | ---------------------------------------- |
-| Carries           | Channel messages, DMs, files, ecash                                | Everything Bluetooth carries            | DMs and files, when a link exists | DMs and geohash channel messages | Sealed text envelopes, up to 16 KiB each |
-| Needs internet    | No                                                                 | No, but everyone must be on one network | No                                | Yes                              | No                                       |
-| iPhone to Android | Yes                                                                | Yes                                     | No                                | Yes                              | Yes                                      |
-| Range             | ~10-30 m indoors, up to ~100 m line of sight, extended by each hop | Wherever the network reaches            | ~30 m                             | Global                           | Wherever the carrier walks               |
-| Max hops          | 7                                                                  | 1                                       | 1                                 | 1                                | 1 carrier, but unbounded in time         |
-| Speed             | ~18 KiB/s to one peer, ~15 KiB/s to a channel                      | Network speed, with no radio pacing     | Link speed, with no radio pacing  | Not used for files               | Not used for files                       |
-| Latency per hop   | 10-220 ms (randomized to avoid collisions)                         | Network round trip                      | n/a                               | Relay round trip; more over Tor  | Whenever the carrier meets the recipient |
+|                   | BLE mesh                                               | LAN (mDNS + TCP)                        | Wi-Fi Aware                                | Nostr relays                    | Courier                                  |
+| ----------------- | ------------------------------------------------------ | --------------------------------------- | ------------------------------------------ | ------------------------------- | ---------------------------------------- |
+| Carries           | Everything, including live voice                       | Everything BLE carries                  | Everything BLE carries, same platform only | DMs and location channels       | Sealed text envelopes, up to 16 KiB each |
+| Needs internet    | No                                                     | No, but everyone must be on one network | No                                         | Yes                             | No                                       |
+| iPhone to Android | Yes                                                    | Yes                                     | No                                         | Yes                             | Yes                                      |
+| Range             | 30 to 50 m indoors, up to 100 m line of sight, per hop | Wherever the network reaches            | ~30 m                                      | Global                          | Wherever the carrier walks               |
+| Max hops          | 7                                                      | 7, shared with Bluetooth                | 7, shared with Bluetooth                   | 1                               | 4 carriers per round, 24 h per copy      |
+| Speed             | ~18 KiB/s to one peer, ~15 KiB/s to a channel          | Network speed, no radio pacing          | Link speed, no radio pacing                | Not used for files              | Not used for files                       |
+| Latency per hop   | 10 to 220 ms, randomized to avoid collisions           | Network round trip                      | n/a                                        | Relay round trip, more over Tor | Whenever the carrier meets the recipient |
 
 Notes on the numbers:
 
@@ -135,14 +135,14 @@ Notes on the numbers:
 
 Timing intervals:
 
-| Behaviour                  | Interval           | Why                                                                 |
-| -------------------------- | ------------------ | ------------------------------------------------------------------- |
-| Presence broadcast         | 4 s alone, 15-30 s | Fast while alone so devices meet quickly, then backs off            |
-| Gossip sync                | 15 s               | Lets a peer returning from out of range catch up on missed messages |
-| Direct peer timeout        | 45 s               | Handles unreported link drops beyond broadcast                      |
-| Mesh peer timeout          | 60 s               | Relayed peers get longer, since multi-hop packets arrive late       |
-| Geohash presence heartbeat | 40-80 s            | Randomized so a fixed interval cannot fingerprint the sender        |
-| Geohash participant window | 5 min              | Covers several heartbeats, so a missed round does not drop the peer |
+| Behaviour                  | Interval                     | Why                                                                 |
+| -------------------------- | ---------------------------- | ------------------------------------------------------------------- |
+| Presence broadcast         | 4 s alone, 15-30 s           | Fast while alone so devices meet quickly, then backs off            |
+| Gossip sync                | 1 s on a new link, then 15 s | Lets a peer returning from out of range catch up on missed messages |
+| Direct peer timeout        | 45 s                         | Handles unreported link drops beyond broadcast                      |
+| Mesh peer timeout          | 60 s                         | Relayed peers get longer, since multi-hop packets arrive late       |
+| Geohash presence heartbeat | 40-80 s                      | Randomized so a fixed interval cannot fingerprint the sender        |
+| Geohash participant window | 5 min                        | Covers several heartbeats, so a missed round does not drop the peer |
 
 ## How Airhop Compares
 
@@ -188,10 +188,10 @@ npm install
 
 1. Install [Xcode](https://developer.apple.com/xcode) from the Mac App Store, which also installs the iOS Simulator and base build tools
 2. Open Xcode at least once and let it install any additional required components when prompted
-3. Go to **Xcode** then **Settings** then **Locations**, and select the most recent version in the **Command Line Tools** dropdown
-4. Go to **Xcode** then **Settings** then **Platforms**, click the **+** icon, and add an **iOS** runtime if one is not already installed
-5. Run `bundle install` from the project root, which installs the CocoaPods version `Gemfile.lock` pins (CI refuses a `Podfile.lock` written by any other), then `bundle exec pod install --project-directory=ios` to install the iOS native dependencies.
-6. Launch a simulator from the device dropdown, then run `npm run ios`
+3. Go to **Xcode** then **Settings** then **Locations**, and select **Xcode 27** in the **Command Line Tools** dropdown
+4. Go to **Xcode** then **Settings** then **Components**, and install the **iOS 27** platform if it is not already installed
+5. Run `bundle install` from the project root to get the CocoaPods version `Gemfile.lock` pins, then `bundle exec pod install --project-directory=ios`
+6. Launch an **iPhone 17 Pro** simulator from the device dropdown, then run `npm run ios`
 
 > The first `npm run ios` builds the native app from scratch and can take several minutes. Later runs are much faster.
 
@@ -215,11 +215,11 @@ npm run ios
 1. Install [Android Studio](https://developer.android.com/studio) from the official site, which also installs the Android SDK and base build tools
 2. Open Android Studio at least once and let the setup wizard install any additional required components when prompted
 3. Click the gear icon and open **Settings**, then go to **Languages & Frameworks** then **Android SDK**
-4. On the **SDK Platforms** tab, tick **API 34**, **API 35**, and **API 36**, then click **Apply** to download them, since a fresh install does not include them
+4. On the **SDK Platforms** tab, tick **Android 17.0 (API 37.0)**, then click **Apply**
 5. On the **SDK Tools** tab, confirm **Android SDK Build-Tools**, **Android SDK Platform-Tools**, and **Android Emulator** are installed
 6. Copy the SDK path shown at the top of the **Android SDK** page into an `ANDROID_HOME` environment variable, or into `android/local.properties` as `sdk.dir=<path>`, since Gradle looks there for it
 7. Open the virtual device manager: **More Actions** then **Virtual Device Manager** from the Welcome screen, or **View** then **Tool Windows** then **Device Manager** if a project is already open
-8. Click **Create Device**, choose a **Pixel 9 Pro** profile, select one of the API levels just installed, then click **Finish**
+8. Click **Create Device**, choose a **Pixel 10 Pro** profile, select one of the API levels just installed, then click **Finish**
 9. Launch the emulator from the device list, then run `npm run android`
 
 > The first `npm run android` builds the native app from scratch and can take several minutes. Later runs are much faster.

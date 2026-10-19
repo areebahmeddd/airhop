@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Airhop मेश सक्रिय छ</string>
   <string name="mesh_notification_text">नजिकका सन्देश पत्ता लगाउँदै र पठाउँदै</string>
   <string name="mesh_notification_stop">मेश रोक्नुहोस्</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">दायरामा %1$s पियर</item>
+    <item quantity="other">दायरामा %1$s पियर</item>
+  </plurals>
 </resources>

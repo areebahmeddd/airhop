@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Presence is the one setting that starts and stops radios, and it is reachable
 // from three places: the Status picker, the Mesh banner's Resume button, and
 // "Stop mesh" on the Android notification. What matters is that the mesh ends up
@@ -29,7 +26,11 @@ jest.mock("../mesh-service", () => ({
 
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
-import { applyPresence, applyStartupPresence } from "../presence-service";
+import {
+  applyPresence,
+  applyStartupPresence,
+  resumePresence,
+} from "../presence-service";
 
 beforeEach(() => {
   mockStart.mockReset();
@@ -47,9 +48,11 @@ describe("presence transitions", () => {
     expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
   });
 
-  test("Away stops the whole mesh", () => {
+  test("Away stops the whole mesh, and the gateway that rode on it", () => {
+    useSettingsStore.getState().setGatewayEnabled(true);
     applyPresence("away", "someone");
     expect(mockStop).toHaveBeenCalled();
+    expect(useSettingsStore.getState().gatewayEnabled).toBe(false);
     expect(useMeshStateStore.getState().presenceStatus).toBe("away");
   });
 
@@ -73,10 +76,32 @@ describe("presence transitions", () => {
     expect(useMeshStateStore.getState().presenceStatus).toBe("online");
   });
 
+  // The banner's Resume, and the route back from the notification's "Stop
+  // mesh". Online there would advertise and clear the kept Invisible.
+  test("Resume after Invisible then Away comes back Invisible", () => {
+    applyPresence("invisible", "someone");
+    applyPresence("away", "someone");
+    resumePresence("someone");
+    expect(mockStart).toHaveBeenCalledWith("someone");
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
+    expect(useSettingsStore.getState().stayInvisible).toBe(true);
+  });
+
+  test("Resume after Online then Away comes back Online", () => {
+    applyPresence("away", "someone");
+    resumePresence("someone");
+    expect(mockStart).toHaveBeenCalledWith("someone");
+    expect(mockSetDiscoverable).toHaveBeenLastCalledWith(true);
+    expect(useMeshStateStore.getState().presenceStatus).toBe("online");
+  });
+
   test("Invisible survives Away and back", () => {
     applyPresence("invisible", "someone");
     applyPresence("away", "someone");
     applyPresence("invisible", "someone");
+    // Away took the whole mesh down, so Invisible has to start it again.
+    expect(mockStart).toHaveBeenCalledWith("someone");
     expect(mockSetDiscoverable).toHaveBeenLastCalledWith(false);
     expect(useMeshStateStore.getState().presenceStatus).toBe("invisible");
   });

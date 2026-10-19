@@ -1,16 +1,12 @@
-/**
- * @jest-environment node
- *
- * Capability advertisement in the ANNOUNCE packet (TLV 0x05). The byte layout
- * must match bitchat PeerCapabilities.encoded() exactly, so a bitchat gateway
- * reads our advertisement and we read its. See PeerCapabilities.swift.
- */
-// Whether a presence announce is fresh enough to trust.
+// The ANNOUNCE packet beyond its keys: the freshness window, the capability
+// bits (TLV 0x05), the bridge rendezvous cell (TLV 0x06), Bitle's relay role
+// (TLV 0xB1), and telling our own echo from this identity on another phone.
 //
-// Phone clocks disagree, so the window has to be generous in both directions,
-// and it is also the only thing stopping a captured announce being replayed
-// later to fake a presence. Too tight breaks honest peers; too loose accepts
-// the replay.
+// The freshness window is the only thing stopping a captured announce being
+// replayed later to fake a presence, and phone clocks disagree, so it has to be
+// generous in both directions without being loose. The capability bytes must
+// match bitchat's PeerCapabilities encoding exactly, so a bitchat gateway reads
+// our advertisement and we read its.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
@@ -154,7 +150,6 @@ describe("ANNOUNCE capabilities TLV", () => {
     const payload = encodeAnnouncePayload(
       id,
       "alice",
-      [],
       undefined,
       Capability.gateway,
     );
@@ -167,7 +162,7 @@ describe("ANNOUNCE capabilities TLV", () => {
 
   test("gateway-off announce omits the capabilities TLV", () => {
     const id = makeIdentity();
-    const withCap = encodeAnnouncePayload(id, "alice", [], undefined, 0);
+    const withCap = encodeAnnouncePayload(id, "alice", undefined, 0);
     const decoded = decodeAnnouncePayload(withCap, new Uint8Array(8));
     expect(decoded?.capabilities).toBe(0);
     // Absent entirely, not merely decoding to zero: a peer with no bits has to
@@ -180,7 +175,6 @@ describe("ANNOUNCE capabilities TLV", () => {
     const payload = encodeAnnouncePayload(
       id,
       "bob",
-      [],
       undefined,
       Capability.gateway | Capability.groups,
     );
@@ -193,7 +187,7 @@ describe("ANNOUNCE capabilities TLV", () => {
   test("buildPacket signs an announce whose capabilities survive validation", () => {
     const id = makeIdentity();
     const mgr = new AnnounceManager();
-    const pkt = mgr.buildPacket(id, "carol", [], undefined, Capability.gateway);
+    const pkt = mgr.buildPacket(id, "carol", undefined, Capability.gateway);
     const info = mgr.validateAndParse(pkt);
     expect(info).not.toBeNull();
     expect(info!.capabilities & Capability.gateway).toBe(Capability.gateway);
@@ -206,13 +200,12 @@ describe("ANNOUNCE bridge geohash TLV (0x06)", () => {
     const payload = encodeAnnouncePayload(
       id,
       "dave",
-      [],
       undefined,
       Capability.bridge,
       "u4pruy",
     );
     // TLV on the wire: type 0x06, len 0x06, "u4pruy" = 75 34 70 72 75 79.
-    expect(bytesToHex(payload)).toContain("0606753470727579");
+    expect(bytesToHex(readTlv(payload, 0x06)!)).toBe("753470727579");
     const info = decodeAnnouncePayload(payload, new Uint8Array(8));
     expect(info?.bridgeGeohash).toBe("u4pruy");
     expect(info!.capabilities & Capability.bridge).toBe(Capability.bridge);
@@ -220,14 +213,7 @@ describe("ANNOUNCE bridge geohash TLV (0x06)", () => {
 
   test("omits the TLV when no cell is set (non-bridging peer)", () => {
     const id = makeIdentity();
-    const payload = encodeAnnouncePayload(
-      id,
-      "eve",
-      [],
-      undefined,
-      0,
-      undefined,
-    );
+    const payload = encodeAnnouncePayload(id, "eve", undefined, 0, undefined);
     const info = decodeAnnouncePayload(payload, new Uint8Array(8));
     expect(info?.bridgeGeohash).toBeUndefined();
   });
@@ -238,7 +224,6 @@ describe("ANNOUNCE bridge geohash TLV (0x06)", () => {
     const pkt = mgr.buildPacket(
       id,
       "frank",
-      [],
       undefined,
       Capability.bridge | Capability.gateway,
       "9q8yyk",
@@ -326,7 +311,6 @@ describe("Bitle role TLV (0xB1)", () => {
     const payload = encodeAnnouncePayload(
       id,
       "heidi",
-      [],
       undefined,
       Capability.gateway,
       "u4pruy",

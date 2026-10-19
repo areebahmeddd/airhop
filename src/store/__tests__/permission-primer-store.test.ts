@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The primer sits directly in front of BLE startup: startMeshWithPermissions
 // awaits it before requesting anything. That makes "never hangs" the property
 // that actually matters here: a promise left unresolved would hold the radios

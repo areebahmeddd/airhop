@@ -785,6 +785,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "السماح بتنبيهات الرنين",
   "chat.contact.allow_ring_desc":
     "اسمح لهم بجعل هاتفك يرن للفت انتباهك، حتى لو كانت هذه المحادثة صامتة. يبقى الوضع الصامت وعدم الإزعاج ساريين.",
+  "chat.contact.allow_ring_needs_keys":
+    "لا مفاتيح لجهة الاتصال هذه بعد. راسلهم، أو امسح رمزهم، لتسمح لهم بالرنين لك.",
+  "chat.contact.allow_ring_master_off":
+    "لا يمكن لأحد أن يجعل هاتفك يرن حتى تشغّل {setting} من الإعدادات.",
   "chat.contact.ring_action": "رنّ",
   "chat.contact.ringing": "يرنّ…",
   "chat.contact.ring_hint_nearby": "يعمل الرنين فقط عندما يكونون قريبين",
@@ -909,7 +913,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "السماح",
   "mesh.banner.action.resume": "استئناف",
   "mesh.banner.action.fix": "إصلاح",
-  "mesh.banner.hint.resume": "يعيد تفعيل البث والبحث عبر البلوتوث",
+  "mesh.banner.hint.resume": "يعيد تشغيل الشبكة",
   "mesh.banner.hint.enable_bluetooth": "يطلب من Android تشغيل البلوتوث",
   "mesh.banner.hint.location_settings": "يفتح إعدادات الموقع في النظام",
   "mesh.banner.hint.app_settings": "يفتح أذونات Airhop في إعدادات النظام",
@@ -1684,9 +1688,11 @@ export const strings: Strings = {
     "لا مفاتيح لجهة الاتصال هذه بعد. راسلهم، أو امسح رمزهم عند اللقاء.",
   "contacts.verify.compare_title": "اقرآ هذه لبعضكما",
   "contacts.verify.compare_body":
-    "يرى {name} الكلمات الست نفسها. إن تطابقت، فكلاكما يعلم أن المفاتيح حقيقية.",
+    "يرى {name} الكلمات الست نفسها على Airhop. إن تطابقت، فكلاكما يعلم أن المفاتيح حقيقية. لا يعرض bitchat كلمات كهذه، فامسح رمزهم بدلًا من ذلك.",
   "contacts.verify.codes_match": "متطابقة",
   "contacts.verify.codes_differ": "غير متطابقة",
+  "contacts.verify.codes_differ_body":
+    "قد لا تكون المفاتيح على هذا الهاتف لـ {name}. امسح رمزهم وجهًا لوجه قبل أن تثق بهذه المحادثة.",
   "contacts.verify.compared_body":
     "أكدت أنت و{name} الرمز نفسه. جهة الاتصال هذه موثّقة.",
 
@@ -1721,8 +1727,7 @@ export const strings: Strings = {
   "settings.section.general_desc":
     "ميزات اختيارية، التراجع عن الإرسال، الوسائط، إعادة الضبط",
   "settings.section.privacy": "الخصوصية والأمان",
-  "settings.section.privacy_desc":
-    "السرية المستقبلية، الحزم الموقّعة، النظراء المحظورون",
+  "settings.section.privacy_desc": "قفل Airhop، الإشعارات، النظراء المحظورون",
   "settings.section.network": "الشبكة والمُرحِّلات",
   "settings.section.network_desc":
     "الرجوع إلى الإنترنت، مُرحِّلات Nostr، التوافق مع bitchat",
@@ -1839,10 +1844,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "يبقي المحادثات مقروءة أطول مدة، ويشغل أكبر مساحة.",
   "settings.general.reset_desc":
-    "يعيد كل تفضيل إلى قيمته الافتراضية، مع ترك هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس",
+    "يعيد التفضيلات إلى قيمها الافتراضية، مع ترك هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس",
   "settings.general.reset_title": "إعادة ضبط الإعدادات؟",
   "settings.general.reset_body":
-    "يعود كل تفضيل إلى قيمته الافتراضية: المظهر، والتراجع عن الإرسال، والاتصال (الإنترنت، Tor، البوابة، الجسر، المُرحِّلات). هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس.",
+    "تعود التفضيلات إلى قيمها الافتراضية، بما فيها المظهر، واللغة، والإشعارات، والتراجع عن الإرسال، والاتصال (الإنترنت، Tor، البوابة، الجسر، المُرحِّلات). أما قفل Airhop، ومدة الاحتفاظ بالوسائط، وحالتك فتبقى كما ضبطتها. هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس.",
   "settings.general.reset_confirm": "إعادة الضبط",
 
   // ---- Settings: privacy and security ----
@@ -1857,6 +1862,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "تنبيهات الرنين",
   "settings.security.ring_alerts_desc":
     "مفتاح رئيسي لميزة الرنين. إيقافه يرفض كل رنين على الفور، بغض النظر عمّا منحته لكل جهة اتصال على حدة.",
+  "settings.security.background_notice": "إشعار الخلفية",
+  "settings.security.background_notice_desc":
+    "اجعله صامتًا أو أخفِه. تبقى تنبيهات الرسائل مفعّلة.",
   "settings.security.no_blocked": "لا نظراء محظورون",
   "settings.security.no_blocked_desc":
     "النظراء المحظورون لا يستطيعون مراسلتك ولا يظهرون في تبويب الشبكة",
@@ -1886,7 +1894,7 @@ export const strings: Strings = {
     "تابع عبر مُرحِّلات Nostr عندما يكون نظراء الشبكة خارج النطاق",
   "settings.network.internet_off_title": "تعطيل الإنترنت؟",
   "settings.network.internet_off_body":
-    "سيعمل Airhop على البلوتوث فقط. سيتوقف عن الاتصال بأي مُرحِّل Nostr، وسيتعطل Tor وبوابة الإنترنت وجسر الشبكة جميعًا. تبقى محادثة البلوتوث القريبة تعمل.",
+    "سيعمل Airhop على البلوتوث فقط. سيتوقف عن الاتصال بأي مُرحِّل Nostr، ويتوقف Tor وبوابة الإنترنت وجسر الشبكة مؤقتًا حتى يعود الإنترنت. تبقى محادثة البلوتوث القريبة تعمل.",
   "settings.network.turn_off": "تعطيل",
   "settings.network.discovery": "اكتشاف المُرحِّلات الجغرافية",
   "settings.network.discovery_desc":
@@ -1966,7 +1974,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "تحدث إلى من هم بالجوار كجهاز لاسلكي",
   "settings.conn.live_voice_on_title": "تفعيل الصوت المباشر؟",
   "settings.conn.live_voice_on_body":
-    "الضغط المستمر على الميكروفون يرسل صوتك إلى كل من هم ضمن نطاق البلوتوث وأنت تتكلم، ويُشغَّل صوتهم على هاتفك. ولا يُسجَّل شيء.",
+    "الضغط المستمر على الميكروفون يرسل صوتك إلى كل من هم ضمن نطاق البلوتوث وأنت تتكلم، ويُشغَّل صوتهم على هاتفك. وعندما تُفلته، يُرسَل الصوت نفسه أيضًا كملاحظة صوتية.",
   "settings.conn.live_voice_off_title": "تعطيل الصوت المباشر؟",
   "settings.conn.live_voice_off_body":
     "الضغط المستمر على الميكروفون يسجّل ملاحظة صوتية بدلًا من ذلك. تُرسل عندما تفلت، ولا يسمعها أحد حتى يشغّلها.",
@@ -2014,7 +2022,7 @@ export const strings: Strings = {
     "أعِر اتصالك لهاتف قريب دون إنترنت ليتمكن من الوصول إلى قنوات الموقع",
   "settings.conn.gateway_on_title": "تفعيل بوابة الإنترنت؟",
   "settings.conn.gateway_on_body":
-    "ستُرسل الهواتف القريبة التي لا اتصال لها رسائل قنوات الموقع وتستقبلها عبر اتصالك. يستهلك ذلك بياناتك وبطاريتك، وتبقى رسائلهم مشفّرة من طرف إلى طرف، فلا تستطيع قراءة ما يمر.",
+    "ستُرسل الهواتف القريبة التي لا اتصال لها رسائل قنوات الموقع وتستقبلها عبر اتصالك. يستهلك ذلك بياناتك وبطاريتك. هذه الرسائل منشورات عامة موقَّعة من أصحابها، فيمكنك قراءة ما يمر لكن لا يمكنك تغييره.",
   "settings.conn.gateway_off_title": "تعطيل بوابة الإنترنت؟",
   "settings.conn.gateway_off_body":
     "تتوقف الهواتف القريبة غير المتصلة عن الوصول إلى قنوات الموقع عبر هاتفك. ورسائلك أنت لا تتأثر.",
@@ -2023,10 +2031,10 @@ export const strings: Strings = {
     "اربط محادثة #bluetooth العامة لهذه المنطقة بحشد بلوتوث آخر خارج النطاق عبر الإنترنت",
   "settings.conn.bridge_on_title": "تفعيل جسر الشبكة؟",
   "settings.conn.bridge_on_body":
-    "ستُنشر رسائل #bluetooth العامة الخاصة بك إلى منطقتك عبر الإنترنت، فيتمكن من هم خارج نطاق البلوتوث من قراءتها. الرسائل الخاصة لا تُجسَّر أبدًا، و«بالجوار فقط» تُبقي أي رسالة بعينها محلية.",
+    "ستُنشر رسائل #bluetooth العامة الخاصة بك إلى منطقتك عبر الإنترنت، فيتمكن من هم خارج نطاق البلوتوث من قراءتها. وينقل هاتفك أيضًا الرسائل المجسّرة للهواتف القريبة عبر بياناتك. الرسائل الخاصة لا تُجسَّر أبدًا، و«بالجوار فقط» تُبقي أي رسالة بعينها محلية.",
   "settings.conn.bridge_off_title": "تعطيل جسر الشبكة؟",
   "settings.conn.bridge_off_body":
-    "تعود رسائل #bluetooth العامة الخاصة بك إلى نطاق البلوتوث، وتتوقف رسائل الحشد المجسّر عن الوصول إلى هنا.",
+    "تعود رسائل #bluetooth العامة الخاصة بك إلى نطاق البلوتوث، ويتوقف هاتفك عن نقل الرسائل المجسّرة للآخرين. أما الرسائل التي يحملها جسر قريب عبر البلوتوث فتظل تظهر هنا.",
   "settings.conn.bridge_needs_location": "يحتاج جسر الشبكة إلى الموقع",
   "settings.conn.bridge_needs_location_desc":
     "يحدد منطقتك من قراءة موقع. امنح إذن الموقع لبدء التجسير.",
@@ -2062,7 +2070,7 @@ export const strings: Strings = {
   "settings.permissions.system": "النظام",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "استهلاك الشبكة",
+  "settings.storage.mesh_traffic": "حركة بيانات الشبكة",
   "settings.storage.storage_usage": "استهلاك التخزين",
   "settings.storage.storage_usage_desc":
     "الرسائل والنقد الإلكتروني والمرفقات المخزّنة مؤقتًا",
@@ -2142,7 +2150,8 @@ export const strings: Strings = {
   "settings.status.away": "غائب",
   "settings.status.away_desc": "الشبكة متوقفة، لا بحث ولا بث",
   "settings.status.invisible": "خفي",
-  "settings.status.invisible_desc": "يبحث، لكنه مخفي عن الاكتشاف",
+  "settings.status.invisible_desc":
+    "مخفي عن البحث عبر البلوتوث، ولا تزال الهواتف التي تتصل بها تراك",
   "settings.status.title": "الحالة",
   "settings.status.set_a11y": "ضبط الحالة على {value}",
   "settings.status.edit": "تعديل الحالة",

@@ -217,20 +217,14 @@ export function bubble({ text, mine, time, ticks = ["delivered"], key, card }) {
   </div>`;
 }
 
-// Plus, the field, and a mic, which the send arrow replaces once there is a
-// `draft`. `raised` lifts it clear of the part of a store panel that bleeds
-// off the canvas.
-export function composer({ raised = false, draft } = {}) {
-  const field = draft
-    ? `<span class="c-draft">${draft}</span>`
-    : '<span class="c-placeholder" data-layout-allow-overlap>Message…</span>';
-  const action = draft
-    ? `<span class="c-send">${icon("arrow-up", 18, "var(--textInverse)")}</span>`
-    : `<span class="c-mic">${icon("mic", 22, "var(--textMuted)")}</span>`;
+// Attach, the field, voice and send, every action at once. `raised` lifts it
+// clear of the part of a store panel that bleeds off the canvas.
+export function composer({ raised = false } = {}) {
   return `<div class="composer${raised ? " composer-raised" : ""}">
-    <span class="c-plus" data-key="plus">${icon("plus", 20, "var(--textPrimary)")}</span>
-    <span class="c-input">${field}</span>
-    ${action}
+    <span class="c-icon" data-key="paperclip">${icon("paperclip", 20, "var(--textMuted)")}</span>
+    <span class="c-input"><span class="c-placeholder" data-layout-allow-overlap>Message…</span></span>
+    <span class="c-icon">${icon("mic", 20, "var(--textMuted)")}</span>
+    <span class="c-send">${icon("send", 17, "var(--textInverse)")}</span>
   </div><div class="home-indicator"></div>`;
 }
 
@@ -261,7 +255,7 @@ function threadScreen(platform, options = {}) {
     ...options,
     header: threadHeader(peer),
     body,
-    footer: composer({ raised: true, draft: "on my way" }),
+    footer: composer({ raised: true }),
   });
 }
 
@@ -686,14 +680,11 @@ export const SCREEN_CSS = `
 .b-tick{position:absolute;left:0;top:0}
 .composer{flex:none;display:flex;align-items:center;gap:10px;padding:8px 12px 34px;
   background:var(--bg);border-top:1px solid var(--border)}
-.c-plus{width:36px;height:36px;border-radius:999px;background:var(--surfaceRaised);flex:none;
-  display:flex;align-items:center;justify-content:center}
 .c-input{flex:1;background:var(--surfaceRaised);border-radius:20px;padding:10px 14px;font-size:15px;
   line-height:20px;min-height:40px}
 .c-placeholder{color:var(--textMuted)}
-.c-draft{color:var(--textPrimary)}
-.c-mic{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center}
-.c-send{width:40px;height:40px;flex:none;border-radius:999px;background:var(--accent);
+.c-icon{display:flex;flex:none}
+.c-send{width:36px;height:36px;flex:none;border-radius:999px;background:var(--accent);
   display:flex;align-items:center;justify-content:center}
 /* The bottom 46pt of a store panel fall in its bleed, off the canvas. Chrome
    that has to stay visible sits above that line. */

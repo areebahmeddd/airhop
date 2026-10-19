@@ -43,8 +43,6 @@ import { TorWebSocket } from "./tor-websocket";
 // restored when Tor is turned off.
 const DirectWebSocket = WebSocket;
 
-let torActive = false;
-
 export interface TorRoutingResult {
   ok: boolean;
   // Why enabling failed, for the UI to explain:
@@ -55,14 +53,9 @@ export interface TorRoutingResult {
   reason?: "unavailable" | "timeout" | "no-bridges" | "error";
 }
 
-export function isTorRoutingActive(): boolean {
-  return torActive;
-}
-
-// Single writer for the active flag, mirrored into the mesh store so the Mesh
+// Single writer for the active flag. It lives in the mesh store, so the Mesh
 // banner reacts the instant Tor is toggled, or primed at startup.
 function setTorActive(active: boolean): void {
-  torActive = active;
   useMeshStateStore.getState().setTorActive(active);
 }
 
@@ -260,13 +253,18 @@ export async function setTorBridgeMode(
   if (customLines !== undefined) settings.setTorBridgeLines(customLines);
 
   if (!settings.torEnabled) return { ok: true };
+  // Persisted only, for the reason primeTorRoutingOnStartup is gated: the
+  // internet switch stops Arti on purpose, and a restart here would bootstrap
+  // it for nobody. Turning the internet on starts it on the new choice.
+  if (!settings.internetEnabled) return { ok: true };
   if (needsBridgeLines() && bridgeLinesForStart() === "") return { ok: true };
 
   await disableTorRouting(true);
   return enableTorRouting(true);
 }
 
-// `restarting` is a bridge change, for the refusal below.
+// `restarting` is a bridge change, which a refused start leaves held rather
+// than unwound to the clear net (see the catch below).
 async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
   if (NativeAirhopTor == null) {
     return { ok: false, reason: "unavailable" };
@@ -455,9 +453,9 @@ function startTorFromPreference(): void {
 
 // The held state, for a start that crashed or has no bridge lines to use.
 // Applied rather than written, like the start above, so a pool built before
-// this ran is torn down. On Android the HTTP stack is held on a proxy nothing listens on, so `fetch` fails too; iOS
-// proxies only the Nostr socket, and its wallet and update check already
-// refuse while Tor is on.
+// this ran is torn down. On Android the HTTP stack is held on a proxy nothing
+// listens on, so `fetch` fails too; iOS proxies only the Nostr socket, and its
+// wallet and update check already refuse while Tor is on.
 function holdAfterFailedStart(): void {
   setNostrBlocked(true);
   setTorActive(false);

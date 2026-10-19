@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Geohash bookmarks: the saved cells a user can reopen from the "Go to a place"
 // sheet. Small store, but the properties that matter are that toggling is
 // idempotent per cell, newest saves come first, and a wipe leaves nothing.
@@ -16,18 +13,15 @@ function state() {
 }
 
 describe("geohash bookmarks", () => {
-  it("starts empty and reports unknown cells as not bookmarked", () => {
+  it("starts empty", () => {
     expect(state().bookmarks).toEqual([]);
-    expect(state().isBookmarked("tdr1k")).toBe(false);
   });
 
   it("toggles a cell on and off", () => {
     state().toggle("tdr1k");
-    expect(state().isBookmarked("tdr1k")).toBe(true);
     expect(state().bookmarks).toEqual(["tdr1k"]);
 
     state().toggle("tdr1k");
-    expect(state().isBookmarked("tdr1k")).toBe(false);
     expect(state().bookmarks).toEqual([]);
   });
 
@@ -50,7 +44,6 @@ describe("geohash bookmarks", () => {
     state().toggle("tdr1k");
     state().remove("td");
     expect(state().bookmarks).toEqual(["tdr1k"]);
-    expect(state().isBookmarked("td")).toBe(false);
   });
 
   it("clears everything on wipe", () => {

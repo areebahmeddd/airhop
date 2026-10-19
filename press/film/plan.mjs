@@ -330,7 +330,7 @@ export function buildPlan(vo) {
   T.money = L.w1;
   T.moneyOut = w(2.75);
   T.phoneA = w(2.75);
-  T.plus = w(4.5);
+  T.paperclip = w(4.5);
   T.ecashRow = w(6);
   T.digits = [w(7.5), w(8), w(8.5)];
   T.memo = w(9);
@@ -450,7 +450,7 @@ export function buildPlan(vo) {
   T.switchOn.forEach((t) => cue("click", t, 0.9));
   cue("impact-bass-1", T.money, 0.8);
   cue("whoosh-short", T.phoneA, 0.5);
-  taps([T.plus, T.ecashRow, T.sheetSend, T.confirm, T.claim], 0.9);
+  taps([T.paperclip, T.ecashRow, T.sheetSend, T.confirm, T.claim], 0.9);
   T.digits.forEach((t) => cue("key-press", t, 0.9));
   cue("typing", T.memo, 0.5);
   cue("pop", T.tokenOut, 0.8);

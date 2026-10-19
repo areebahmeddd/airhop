@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // When the wallet refuses to talk to a mint.
 //
 // The Internet switch closes the gate on both platforms. Tor closes it on iOS
@@ -13,15 +10,6 @@
 //
 // Covered here rather than in the simulator, where `Platform.OS` is one global
 // shared by every simulated phone.
-
-jest.mock("@bridge/NativeAirhopBLE", () => ({
-  __esModule: true,
-  default: {},
-}));
-jest.mock("@bridge/NativeAirhopWiFi", () => ({
-  __esModule: true,
-  default: {},
-}));
 
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";

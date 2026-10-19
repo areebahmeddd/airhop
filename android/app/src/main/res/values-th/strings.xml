@@ -4,4 +4,7 @@
   <string name="mesh_notification_title">เมชของ Airhop กำลังทำงาน</string>
   <string name="mesh_notification_text">กำลังค้นหาและส่งต่อข้อความใกล้เคียง</string>
   <string name="mesh_notification_stop">หยุดเมช</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="other">อยู่ในระยะ %1$s เครื่อง</item>
+  </plurals>
 </resources>

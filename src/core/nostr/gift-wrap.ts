@@ -134,12 +134,28 @@ function randomizedTimestamp(): number {
 // it. Matches the skew bitchat tolerates on the same field.
 const RUMOR_CLOCK_SKEW_SECONDS = 15 * 60;
 
+// NIP-17 lets a sender backdate the wrap two days; bitchat-android uses 22 h.
+const WRAP_BACKDATE_SECONDS = 2 * 24 * 60 * 60;
+
+const WRAP_FUTURE_SECONDS = TIMESTAMP_JITTER_SECONDS + RUMOR_CLOCK_SKEW_SECONDS;
+
+// The relay `since` for rumors up to `lookbackSeconds` old. Pass the same
+// lookback to unwrapDm.
+export function giftWrapSince(lookbackSeconds: number): number {
+  return Math.floor(
+    Date.now() / 1000 -
+      lookbackSeconds -
+      WRAP_BACKDATE_SECONDS -
+      RUMOR_CLOCK_SKEW_SECONDS,
+  );
+}
+
 // Decrypt and authenticate a received kind 1059 gift wrap.
 // Throws on any authentication or decryption failure so callers can drop the
 // event without inspecting error details.
 //
 // `lookbackSeconds` bounds how old the inner rumor may claim to be, and must
-// match the `since` the caller subscribed with. Pass Infinity when the
+// match the giftWrapSince the caller subscribed with. Pass Infinity when the
 // subscription has no `since`: a relay may then legitimately hold a message from
 // while the recipient was away, and rejecting it would lose real mail.
 export function unwrapDm(
@@ -149,6 +165,16 @@ export function unwrapDm(
 ): DecryptedDm {
   if (giftWrap.kind !== KIND_GIFT_WRAP) {
     throw new Error("Not a gift wrap event");
+  }
+
+  // The subscription's window, checked before two rounds of ECDH.
+  const wrapAgeSec = Date.now() / 1000 - giftWrap.created_at;
+  if (
+    !(wrapAgeSec >= -WRAP_FUTURE_SECONDS) ||
+    wrapAgeSec >
+      lookbackSeconds + WRAP_BACKDATE_SECONDS + RUMOR_CLOCK_SKEW_SECONDS
+  ) {
+    throw new Error("Gift wrap timestamp outside the plausible window");
   }
 
   // Step 1: Unwrap the gift wrap with the recipient key and the ephemeral sender
@@ -203,10 +229,8 @@ export function unwrapDm(
   // history where it is never seen. Neither breaks the crypto above; both let
   // someone choose where their message lands in your timeline.
   //
-  // The window mirrors what the subscription already guarantees: no older than
-  // the lookback we asked the relay for, and no further ahead than ordinary
-  // clock skew. Same shape as the bridge and carrier paths, and as bitchat's
-  // own check on this field.
+  // The exact lookback, unlike the wrap window, so a rewrapped envelope cannot
+  // revive an old message. Same check as bitchat's.
   const nowSec = Date.now() / 1000;
   const tooOld =
     rumor.created_at < nowSec - lookbackSeconds - RUMOR_CLOCK_SKEW_SECONDS;

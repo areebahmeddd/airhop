@@ -562,7 +562,7 @@ half each person is playing.
 - 300+ public relays from the georelays dataset, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
 - A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its five nearest, plus up to five the user adds. DMs use a pool of well-known relays, at most five
 - NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
-- Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
+- Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
 - A publish goes to every relay in its set and counts as sent on the first acceptance, so no single relay is load-bearing
 - Each relay is subscribed and queried on its own, and an event ID counts as seen only once its signature has verified. nostr-tools records the ID first, so across relays one hostile relay's forged copy would hide the genuine event every other relay delivers
 - nostr-tools retries a relay that drops, but never one whose first connect fails, so a pool is built only when it has a route: with Tor on, it waits for the circuit
@@ -592,7 +592,13 @@ Both are off by default, both are bitchat-ios's designs, and both ride the
   own room. Mesh-only phones reach the rendezvous through a nearby bridge. Both
   copies of a message key the same timeline row on a content-derived ID, and the
   signed radio copy replaces a bridged one when it arrives, because the ID the
-  bridged row carries is an unsigned hint.
+  bridged row carries is an unsigned hint. The bridge signs under its own
+  derived key, never the phone's `#neighborhood` one, and listens to the cells
+  around its own so two crowds astride a cell edge still meet. Receiving bridged
+  messages is passive and needs neither the toggle nor the internet. With
+  several bridges on one island, each holds a remote message for a random
+  moment before sending it onto the mesh, and stands down if another got there
+  first.
 
 Private traffic never takes either path. DMs, groups, private channels and media
 stay on the radios, or go to relays sealed from this phone's own connection.
@@ -1093,8 +1099,9 @@ The Status picker in Profile sets how findable the phone is:
 
 Invisible is about who can see this phone, so it is persisted and carried by a
 transfer: a relaunch or a start on boot must not quietly make the phone
-findable again. Away is a pause for the session. Reset settings leaves the
-status alone, since it is set in the picker rather than among the preferences.
+findable again. Away is a pause for the session, and the Mesh banner's Resume
+comes back in the kept visibility. Reset settings leaves the status alone,
+since it is set in the picker rather than among the preferences.
 
 ### Tor
 
@@ -1123,7 +1130,9 @@ Arti, which refuses local addresses, all three would break. Anything else, and
 web traffic while Tor is off, gets the system's own answer, so a proxy the user
 set for their Wi-Fi still applies. The clients React Native builds share one
 connection pool, and a change of route empties it and refuses a request riding
-a connection opened before the change. System services such as the geocoder run
+a connection opened before the change. The same factory drops React
+Native's `AppName/versionName` User-Agent for OkHttp's generic one, so no server
+can tell Airhop's releases apart. System services such as the geocoder run
 in another process and are outside any app proxy, so no place name is looked up
 while the internet is off or Tor is on or wanted, on either platform.
 
@@ -1189,15 +1198,16 @@ entry point, and the transport in front of it disguises the connection.
 | Connection | What it hides                             | Cost                                   |
 | ---------- | ----------------------------------------- | -------------------------------------- |
 | Direct     | The IP, from the relay                    | None. The default                      |
+| obfs4      | That Tor is in use, as random bytes       | Public lines, some networks block them |
 | Snowflake  | That Tor is in use, with no list to block | Slowest to connect                     |
-| Bridge     | That Tor is in use, over obfs4            | Public lines, some networks block them |
+| WebTunnel  | That Tor is in use, as an HTTPS visit     | Fewer bridges exist                    |
 | Custom     | The same, from lines you supply           | You fetch them yourself                |
 
 Bridges stay off by default: one is slower than a direct connection and only
 earns that cost on a network that blocks or watches for Tor.
 
-obfs4 and Snowflake are Go, and Arti would normally run them as the child
-processes iOS forbids, so they are compiled into the app
+obfs4, Snowflake and WebTunnel are Go, and Arti would normally run them as the
+child processes iOS forbids, so they are compiled into the app
 ([`native/iptproxy`](../../native/iptproxy)) and reached over loopback as
 unmanaged transports. Built-in lines are synced from the Tor Project by
 `.github/workflows/sync-bridges.yml`, because a list frozen at release time goes
@@ -1238,11 +1248,16 @@ default, in Privacy & security) closes that gap. Decisions live in
 - **Locked from the first frame**, and after the chosen time away: immediately
   (default), or 1, 5 or 30 minutes. Away is the larger of wall time and the
   monotonic clock, so sleep counts and a wound-back clock does not dodge it.
-  With a delay the screen is covered on leaving. A system prompt is not leaving.
+  With a delay the screen is covered on leaving. An Android system prompt
+  pausing the app is not leaving; iOS prompts never background it, so there a
+  background mid-prompt still locks.
 - **Above everything.** Every Modal is `AppModal` and stands down while the
   lock asks. Back leaves the app; screen readers cannot reach beneath.
 - **Nobody reads behind it.** Receipts, marking read, live voice and the Mesh
   and Wallet "seen" states wait, and messages notify as if the app were away.
+- **Reset settings leaves it on**, with its delay, as it leaves the media
+  retention window, and its confirm says so: dropping either would lower a
+  protection or delete media unasked. The panic wipe resets both.
 
 The app-switcher snapshot stays blank either way (iOS cover, Android recents).
 
@@ -1451,25 +1466,25 @@ Text is identical everywhere because it is compiled in. Three things are not:
 Anything that compiles to JS lives in `src/`. Anything that touches hardware
 lives in `android/` or `ios/`.
 
-| Path               | Holds                                                                             |
-| ------------------ | --------------------------------------------------------------------------------- |
-| `android/`         | Kotlin native modules and the foreground service that keeps the mesh alive        |
-| `ios/`             | Swift native modules, on CoreBluetooth and Network framework                      |
-| `native/arti/`     | The embedded Tor client in Rust, and the pinned build that produces it            |
-| `native/iptproxy/` | The obfs4 and Snowflake transports in Go, and the pinned build that produces them |
-| `src/app/`         | The root component and the four-tab state machine                                 |
-| `src/bridge/`      | Native module specs, the only place native and TypeScript meet                    |
-| `src/core/`        | The protocol in pure TypeScript: crypto, mesh, nostr, payments, routing, move     |
-| `src/services/`    | Long-lived runtime wiring, chiefly the mesh service that owns the radios          |
-| `src/features/`    | Screens and screen-level logic                                                    |
-| `src/store/`       | Zustand state with MMKV persistence                                               |
-| `src/ui/`          | Shared components, hooks, and theme tokens                                        |
-| `src/platform/`    | Thin wrappers over OS APIs: permissions, haptics, battery settings                |
-| `src/utils/`       | Stateless helpers, free of side effects                                           |
-| `src/i18n/`        | Translation runtime, plural rules and every bundled catalog                       |
-| `src/data/`        | Generated tables: the relay directory and the built-in Tor bridge lines           |
-| `src/__tests__/`   | Whole-app suites: the device harness, lifecycle, and the simulator                |
-| `assets/data/`     | The relay list the directory is generated from, refreshed by CI                   |
+| Path               | Holds                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| `android/`         | Kotlin native modules and the foreground service that keeps the mesh alive                   |
+| `ios/`             | Swift native modules, on CoreBluetooth and Network framework                                 |
+| `native/arti/`     | The embedded Tor client in Rust, and the pinned build that produces it                       |
+| `native/iptproxy/` | The obfs4, Snowflake and WebTunnel transports in Go, and the pinned build that produces them |
+| `src/app/`         | The root component and the four-tab state machine                                            |
+| `src/bridge/`      | Native module specs, the only place native and TypeScript meet                               |
+| `src/core/`        | The protocol in pure TypeScript: crypto, mesh, nostr, payments, routing, move                |
+| `src/services/`    | Long-lived runtime wiring, chiefly the mesh service that owns the radios                     |
+| `src/features/`    | Screens and screen-level logic                                                               |
+| `src/store/`       | Zustand state with MMKV persistence                                                          |
+| `src/ui/`          | Shared components, hooks, and theme tokens                                                   |
+| `src/platform/`    | Thin wrappers over OS APIs: permissions, haptics, battery settings                           |
+| `src/utils/`       | Stateless helpers, free of side effects                                                      |
+| `src/i18n/`        | Translation runtime, plural rules and every bundled catalog                                  |
+| `src/data/`        | Generated tables: the relay directory and the built-in Tor bridge lines                      |
+| `src/__tests__/`   | Whole-app suites: the device harness, lifecycle, and the simulator                           |
+| `assets/data/`     | The relay list the directory is generated from, refreshed by CI                              |
 
 ### System overview
 
@@ -1507,7 +1522,7 @@ lives in `android/` or `ios/`.
 │  AirhopLANModule   Network framework / NsdManager (mDNS)                 │
 │  AirhopWiFiModule  Wi-Fi Aware (Android API 29+, iOS 26+)                │
 │  AirhopVoiceModule AAC capture and playback                              │
-│  AirhopTorModule   Arti (Rust) with obfs4 and Snowflake (Go)             │
+│  AirhopTorModule   Arti (Rust), obfs4, Snowflake, WebTunnel (Go)         │
 │  AirhopAppModule   restart, boot start, ring alert, APK share            │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1576,12 +1591,17 @@ Android:
 | Tool                  | Version         | Pinned in                                    | Ours to bump                 |
 | --------------------- | --------------- | -------------------------------------------- | ---------------------------- |
 | JDK (Temurin)         | `21`            | `setup-android/action.yml`                   | Yes, within what AGP accepts |
-| Gradle                | `9.3.1`         | `android/gradle/wrapper/`, checksum included | Yes                          |
-| Kotlin                | `2.1.20`        | React Native's `libs.versions.toml`          | No                           |
-| Android Gradle plugin | `8.12.0`        | React Native's catalog                       | No                           |
+| Gradle                | `9.4.1`         | `android/gradle/wrapper/`, checksum included | Yes                          |
+| Kotlin                | `2.2.0`         | React Native's `libs.versions.toml`          | No                           |
+| Android Gradle plugin | `9.2.1`         | React Native's catalog                       | No                           |
 | NDK                   | `27.1.12297006` | `setup-android/action.yml`                   | No, matches React Native     |
 | `minSdk`              | `26`            | `android/gradle.properties`                  | Yes                          |
 | `compileSdk`          | Expo's          | the `expo-root-project` plugin               | No, bump Expo                |
+
+AGP 9's built-in Kotlin and new DSL are switched off in
+`android/gradle.properties` while the app and several native dependencies still
+apply the Kotlin plugin and use the legacy variant API. AGP 10 removes both
+switches, so that bump is a migration.
 
 Apple:
 
@@ -1594,15 +1614,15 @@ Apple:
 
 The Tor client and its transports, all in `native/arti/TOOLCHAIN.env`:
 
-| Tool        | Version                | Note                                                                                                                                                               |
-| ----------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rust        | `1.98.1`               |                                                                                                                                                                    |
-| Arti client | `0.46.0`               |                                                                                                                                                                    |
-| cbindgen    | `0.29.4`               | Generates `arti.h`                                                                                                                                                 |
-| Go          | `1.26.8`               |                                                                                                                                                                    |
-| IPtProxy    | `5.5.1`                | Release and commit, so a tag cannot move under us. Built with same-major raises of pion/stun, pion/dtls and x/text (`IPTPROXY_GO_RAISES`) until a tag carries them |
-| gomobile    | pinned commit          | Upstream would otherwise resolve `@latest`                                                                                                                         |
-| NDK         | `28.2.13676358` (r28c) | Ahead of the app's: r28 gives the 16 KiB alignment Play requires                                                                                                   |
+| Tool        | Version         | Note                                              |
+| ----------- | --------------- | ------------------------------------------------- |
+| Rust        | `1.98.1`        |                                                   |
+| Arti client | `0.47.0`        |                                                   |
+| cbindgen    | `0.29.4`        | Generates `arti.h`                                |
+| Go          | `1.26.9`        |                                                   |
+| IPtProxy    | `5.7.0`         | Release and commit, so a tag cannot move under us |
+| gomobile    | pinned commit   | Upstream would otherwise resolve `@latest`        |
+| NDK         | `28.2.13676358` | r28 aligns to the 16 KiB Play requires            |
 
 One value, several files. Each carries a comment saying so, and a mismatch fails
 a build rather than drifting quietly:
@@ -1613,7 +1633,7 @@ a build rather than drifting quietly:
 - **Rust**: `TOOLCHAIN.env`, `native/arti/rust-toolchain.toml`,
   `native/arti/Dockerfile` (base image tag and digest).
 - **Arti client**: `TOOLCHAIN.env`, `native/arti/Cargo.toml`.
-- **NDK (app)**: `setup-android/action.yml`, React Native's `ndkVersion`.
+- **NDK**: `setup-android/action.yml`, React Native's `ndkVersion`.
 
 Changing anything under `native/` means rebuilding the committed binaries and
 re-recording their hashes in the same commit (`node scripts/verify-vendored.js
@@ -1648,7 +1668,7 @@ the same surface. Bytes cross base64-encoded, the only representation both
 runtimes agree on safely. The full per-module contract is in
 [`.github/skills/native-boundary.md`](../../.github/skills/native-boundary.md).
 
-`src/bridge/NativeAirhopBLE.ts` is the largest, at ten methods:
+`src/bridge/NativeAirhopBLE.ts` is the largest, at twelve methods:
 
 1. `startAdvertising` / `stopAdvertising`: GATT Peripheral
 2. `startScanning` / `stopScanning`: GATT Central
@@ -1657,6 +1677,7 @@ runtimes agree on safely. The full per-module contract is in
 5. `setPowerMode`: how hard to run the radios
 6. `requestEnableBluetooth` / `openLocationSettings`: one-tap fixes for the Mesh banner
 7. `setBackgroundServiceEnabled`: hold the process up, independent of advertising
+8. `setBackgroundPeerCount` / `openBackgroundNoticeSettings`: the reachable count on that service's notice, and its system settings page
 
 Nothing about Tor is asked of it. `AirhopTorModule` owns that and answers
 directly; a radio module reporting on Tor would be a boundary violation.
@@ -1697,6 +1718,12 @@ design exists to prevent.
 | Android  | `FOREGROUND_SERVICE_CONNECTED_DEVICE`               | Required for that service on Android 14+           |
 | Android  | `neverForLocation` on `BLUETOOTH_SCAN`              | Delivers scan results without a location grant     |
 
+Under the iOS scene life cycle launch options are always nil, so the app
+delegate creates the restorable managers on every launch once Bluetooth is
+authorized, and `willRestoreState` marks a Bluetooth relaunch. iOS may relaunch
+without a scene, so that signal starts React Native in a view no window holds
+yet, which the scene adopts when the person opens the app.
+
 React Native pauses JS timers on Android once no Activity is resumed, unless
 a headless JS task is running. The mesh is timer-driven (announces, relay
 jitter, gossip sync, the throttled chat write, Nostr's inbound queue), so
@@ -1712,6 +1739,13 @@ Aware withdrawn by doze or battery saver), since only a living process can
 resume. A refused permission or missing hardware releases it. The
 `connectedDevice` type is granted against `CHANGE_WIFI_STATE` too, so it starts
 with Bluetooth refused.
+
+Its notice shows how many peers are in range
+(`src/services/background-notice.ts`), pushed once a burst settles, since
+Android drops faster updates, and re-posted only while it still shows: one
+swiped away on Android 14+ stays away until the service next starts. It has a
+channel of its own, so Settings opens that channel's system page to quiet or
+hide it while message alerts carry on.
 
 With background running off, leaving the screen stands down Bluetooth, Wi-Fi
 Aware and LAN, which would otherwise advertise a frozen phone. Auto-start is

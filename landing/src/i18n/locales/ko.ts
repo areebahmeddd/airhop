@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "Bluetooth Low Energy 메시",
   "home.about.link.wire_protocol": "전송 프로토콜",
   "home.about.body.built":
-    "Airhop은 {mesh}를 통해 기기 간에 사적으로 메시지를 주고받기 위한 iOS·Android용 오픈소스 앱입니다. {bitchat}의 기반 위에 세워졌고, 그 {wire_protocol}과 보안 모델을 다시 사용한 뒤 오프라인 {ecash} 결제와 오프라인 AI로 확장했습니다. 인터넷 연결이 전혀 없어도 작동하며, 메시지는 주변 기기를 거쳐 자동으로 전달됩니다 (실내에서는 홉당 대략 10~30미터, 야외에서는 더 멀리). 최대 7홉입니다.",
+    "Airhop은 {mesh}를 통해 기기 간에 사적으로 메시지를 주고받기 위한 iOS·Android용 오픈소스 앱입니다. {bitchat}의 기반 위에 세워졌고, 그 {wire_protocol}과 보안 모델을 다시 사용한 뒤 오프라인 {ecash} 결제와 오프라인 AI로 확장했습니다. 인터넷 연결이 전혀 없어도 작동하며, 메시지는 주변 기기를 거쳐 자동으로 전달됩니다 (실내에서는 홉당 대략 30~50미터, 야외에서는 더 멀리). 최대 7홉입니다.",
   "home.about.body.identity":
     "당신의 신원은 기기에서 생성되어 {ios_keychain} 또는 {android_keystore}에 저장되는 {ed25519} 키 쌍입니다. 계정도 가입도 없고 서버에 닿는 것도 없습니다. 즉 삭제하면 당신으로 이어지는 흔적이 남지 않는 일회용 앱처럼 쓸 수 있습니다.",
   "home.about.body.crypto":
     "모든 세션은 인증된 핸드셰이크에 {noise} 프로토콜을 사용합니다. 저장된 메시지는 {ratchet} 알고리즘을 사용하므로, 나중에 기기가 침해되더라도 지난 메시지는 읽을 수 없는 상태로 남습니다. 긴급 삭제는 모든 키와 메시지를 1초 안에 파기합니다.",
   "home.about.body.internet":
-    "당신과 상대가 Bluetooth 범위를 벗어나면 {nostr} 릴레이가 인터넷을 통한 다리 역할을 하며, {nip17} 형식으로 감싼 다이렉트 메시지를 사용합니다. 그래서 둘 다 온라인이면 메시는 전 세계로 넓어집니다. {tor} 지원은 iOS와 Android 모두에서 {arti}로 제공되며, Tor를 차단하는 네트워크를 위한 {obfs4}와 {snowflake} 브리지도 있습니다.",
+    "당신과 상대가 Bluetooth 범위를 벗어나면 {nostr} 릴레이가 인터넷을 통한 다리 역할을 하며, {nip17} 형식으로 감싼 다이렉트 메시지를 사용합니다. 그래서 둘 다 온라인이면 메시는 전 세계로 넓어집니다. {tor} 지원은 iOS와 Android 모두에서 {arti}로 제공되며, Tor를 차단하는 네트워크를 위한 {obfs4}, {snowflake}와 {webtunnel} 브리지도 있습니다.",
   "home.about.optional.title": "Airhop에는 직접 켤 수 있는 선택 기능이 있습니다:",
   "home.about.optional.payments.label": "오프라인 결제:",
   "home.about.optional.payments.body":

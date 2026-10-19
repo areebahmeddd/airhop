@@ -4,4 +4,10 @@
   <string name="mesh_notification_title">Mesh Airhop працює</string>
   <string name="mesh_notification_text">Пошук і передавання повідомлень поблизу</string>
   <string name="mesh_notification_stop">Зупинити mesh</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s пір у радіусі</item>
+    <item quantity="few">%1$s піри у радіусі</item>
+    <item quantity="many">%1$s пірів у радіусі</item>
+    <item quantity="other">%1$s піра у радіусі</item>
+  </plurals>
 </resources>

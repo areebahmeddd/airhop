@@ -762,6 +762,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "允许响铃提醒",
   "chat.contact.allow_ring_desc":
     "让对方响铃提醒你，即使此对话已静音。静音模式和勿扰模式仍然生效。",
+  "chat.contact.allow_ring_needs_keys":
+    "这位联系人还没有密钥。给对方发条消息，或者扫描对方的二维码，就能允许对方向你响铃。",
+  "chat.contact.allow_ring_master_off":
+    "在设置中打开{setting}之前，任何人都无法让你的手机响铃。",
   "chat.contact.ring_action": "响铃",
   "chat.contact.ringing": "响铃中…",
   "chat.contact.ring_hint_nearby": "响铃仅在对方在附近时可用",
@@ -882,7 +886,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "允许",
   "mesh.banner.action.resume": "恢复",
   "mesh.banner.action.fix": "修复",
-  "mesh.banner.hint.resume": "重新开启蓝牙广播和扫描",
+  "mesh.banner.hint.resume": "重新启动网状网络",
   "mesh.banner.hint.enable_bluetooth": "请求 Android 打开蓝牙",
   "mesh.banner.hint.location_settings": "打开系统定位设置",
   "mesh.banner.hint.app_settings": "在系统设置中打开 Airhop 的权限",
@@ -1634,9 +1638,11 @@ export const strings: Strings = {
     "这位联系人还没有密钥。给对方发条消息，或者见面时扫一下对方的代码。",
   "contacts.verify.compare_title": "把这些念给彼此听",
   "contacts.verify.compare_body":
-    "{name} 看到的是同样的六个词。如果对得上，你们双方就都知道这些密钥是真的。",
+    "{name} 在 Airhop 上看到的是同样的六个词。如果对得上，你们双方就都知道这些密钥是真的。bitchat 不显示这样的词，所以请改为扫描对方的二维码。",
   "contacts.verify.codes_match": "对得上",
   "contacts.verify.codes_differ": "对不上",
+  "contacts.verify.codes_differ_body":
+    "这部手机上的密钥可能不属于 {name}。在信任这段聊天之前，请当面扫描对方的二维码。",
   "contacts.verify.compared_body":
     "你和 {name} 确认了同一段代码。这位联系人已验证。",
 
@@ -1670,7 +1676,7 @@ export const strings: Strings = {
   "settings.section.general": "通用",
   "settings.section.general_desc": "可选功能、撤回发送、媒体、重置",
   "settings.section.privacy": "隐私与安全",
-  "settings.section.privacy_desc": "前向保密、签名数据包、已屏蔽的节点",
+  "settings.section.privacy_desc": "锁定 Airhop、通知、已屏蔽的节点",
   "settings.section.network": "网络与中继",
   "settings.section.network_desc": "互联网回退、Nostr 中继、bitchat 兼容",
   "settings.section.permissions": "权限",
@@ -1781,10 +1787,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "对话可读的时间最长，占用的磁盘也最多。",
   "settings.general.reset_desc":
-    "把每一项偏好设置恢复为默认值，你的身份、消息、联系人和钱包都不受影响",
+    "把偏好设置恢复为默认值，你的身份、消息、联系人和钱包都不受影响",
   "settings.general.reset_title": "重置设置？",
   "settings.general.reset_body":
-    "每一项偏好设置都会恢复默认：外观、撤回发送，以及连接相关项（互联网、Tor、网关、桥接、中继）。你的身份、消息、联系人和钱包不受影响。",
+    "偏好设置会恢复默认，包括外观、语言、通知、撤回发送，以及连接相关项（互联网、Tor、网关、桥接、中继）。锁定 Airhop、媒体保留时长和你的状态保持原样。你的身份、消息、联系人和钱包不受影响。",
   "settings.general.reset_confirm": "重置",
 
   // ---- Settings: privacy and security ----
@@ -1798,6 +1804,8 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "响铃提醒",
   "settings.security.ring_alerts_desc":
     "响铃的总开关。关闭后将拒绝所有响铃，无论你允许了哪些联系人。",
+  "settings.security.background_notice": "后台通知",
+  "settings.security.background_notice_desc": "可静音或隐藏，消息提醒不受影响",
   "settings.security.no_blocked": "没有被屏蔽的节点",
   "settings.security.no_blocked_desc":
     "被屏蔽的节点不能给你发消息，也不会出现在网状网络标签页",
@@ -1827,7 +1835,7 @@ export const strings: Strings = {
     "当网状网络节点不在范围内时，改由 Nostr 中继继续",
   "settings.network.internet_off_title": "关闭互联网？",
   "settings.network.internet_off_body":
-    "Airhop 将只走蓝牙。它会停止联系任何 Nostr 中继，Tor、互联网网关和网状网络桥接也都会关闭。附近的蓝牙聊天照常可用。",
+    "Airhop 将只走蓝牙。它会停止联系任何 Nostr 中继，Tor、互联网网关和网状网络桥接会暂停，直到互联网重新开启。附近的蓝牙聊天照常可用。",
   "settings.network.turn_off": "关闭",
   "settings.network.discovery": "地理中继发现",
   "settings.network.discovery_desc":
@@ -1904,7 +1912,7 @@ export const strings: Strings = {
   "settings.conn.live_voice_desc": "像对讲机一样和附近的人说话",
   "settings.conn.live_voice_on_title": "开启实时语音？",
   "settings.conn.live_voice_on_body":
-    "按住麦克风时，你说的话会边说边发给蓝牙范围内的每个人，他们的声音也会在你手机上播放。什么都不会被录下来。",
+    "按住麦克风时，你说的话会边说边发给蓝牙范围内的每个人，他们的声音也会在你手机上播放。松开后，同一段语音还会作为语音留言发出。",
   "settings.conn.live_voice_off_title": "关闭实时语音？",
   "settings.conn.live_voice_off_body":
     "按住麦克风会改为录一条语音留言。松手后才发出，别人不点开就听不到。",
@@ -1952,7 +1960,7 @@ export const strings: Strings = {
     "把你的连接借给附近离线的手机，让它仍然能连上位置频道",
   "settings.conn.gateway_on_title": "开启互联网网关？",
   "settings.conn.gateway_on_body":
-    "附近没有自己连接的手机，会通过你的连接收发位置频道消息。这会用到你的移动数据和电量，而他们的消息始终端到端加密，所以你读不到经过的内容。",
+    "附近没有自己连接的手机，会通过你的连接收发位置频道消息。这会用到你的移动数据和电量。这些消息是作者签名的公开帖子，所以你能读到经过的内容，但无法改动。",
   "settings.conn.gateway_off_title": "关闭互联网网关？",
   "settings.conn.gateway_off_body":
     "附近离线的手机将不再通过你的连接访问位置频道。你自己的消息不受影响。",
@@ -1961,10 +1969,10 @@ export const strings: Strings = {
     "通过互联网，把这片区域的公开 #bluetooth 聊天和另一群超出蓝牙范围的人连起来",
   "settings.conn.bridge_on_title": "开启网状网络桥接？",
   "settings.conn.bridge_on_body":
-    "你在公开 #bluetooth 里的消息会通过互联网发布到你所在的社区，所以蓝牙范围之外的人也能读到。私密消息永远不会被桥接，而“仅限附近”能让某一条消息留在本地。",
+    "你在公开 #bluetooth 里的消息会通过互联网发布到你所在的社区，所以蓝牙范围之外的人也能读到。你的手机还会用你的流量，为附近的手机转运桥接消息。私密消息永远不会被桥接，而“仅限附近”能让某一条消息留在本地。",
   "settings.conn.bridge_off_title": "关闭网状网络桥接？",
   "settings.conn.bridge_off_body":
-    "你在公开 #bluetooth 里的消息又只留在蓝牙范围内，桥接那一头的消息也不会再传到这里。",
+    "你在公开 #bluetooth 里的消息又只留在蓝牙范围内，你的手机也不再为别人转运桥接消息。附近的桥接设备通过蓝牙带来的消息仍会显示在这里。",
   "settings.conn.bridge_needs_location": "网状网络桥接需要定位",
   "settings.conn.bridge_needs_location_desc":
     "它靠一次定位来确定你所在的社区。授予定位权限即可开始桥接。",
@@ -2000,7 +2008,7 @@ export const strings: Strings = {
   "settings.permissions.system": "系统",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "网络用量",
+  "settings.storage.mesh_traffic": "网状网流量",
   "settings.storage.storage_usage": "存储用量",
   "settings.storage.storage_usage_desc": "消息、ecash 和缓存的附件",
   "settings.storage.session_usage": "本次会话 · 发送 {sent}，接收 {received}",
@@ -2077,7 +2085,7 @@ export const strings: Strings = {
   "settings.status.away": "离开",
   "settings.status.away_desc": "网状网络已暂停，不扫描也不广播",
   "settings.status.invisible": "隐身",
-  "settings.status.invisible_desc": "正在扫描，但不会被发现",
+  "settings.status.invisible_desc": "蓝牙扫描时不可见，你连接的手机仍能看到你",
   "settings.status.title": "状态",
   "settings.status.set_a11y": "把状态设为 {value}",
   "settings.status.edit": "编辑状态",

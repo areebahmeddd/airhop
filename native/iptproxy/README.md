@@ -1,6 +1,6 @@
 # Airhop's pluggable transports
 
-[IPtProxy](https://github.com/tladesignz/IPtProxy), built from source and compiled twice: an `.aar` loaded by the Android app and an `.xcframework` linked into the iOS app. It packages [Lyrebird](https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird) (which provides obfs4) and [Snowflake](https://snowflake.torproject.org) as a library rather than the executables they normally are.
+[IPtProxy](https://github.com/tladesignz/IPtProxy), built from source and compiled twice: an `.aar` loaded by the Android app and an `.xcframework` linked into the iOS app. It packages obfs4, Snowflake and WebTunnel as a library rather than the executables they normally are: obfs4 and WebTunnel come from [Lyrebird](https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird), Snowflake from [its own project](https://snowflake.torproject.org).
 
 The app gets local SOCKS5 listeners on ports the library chooses, and hands those ports to the Tor client in [`native/arti`](../arti), which dials them to reach a bridge.
 
@@ -55,8 +55,6 @@ The `git add` is not optional on a first build. `verify-vendored.js` hashes trac
 
 **Pinned by commit, and gomobile taken from `go.mod`.** Upstream resolves dnstt by a name that moves and gomobile with `@latest`, so the same script run twice can produce different binaries. An unversioned `go install` resolves through IPtProxy's own module instead, where their `tool` directive already pins it.
 
-**Dependency raises, not a fork.** When the pinned tag carries a Go advisory the app can reach and upstream has not tagged a fix, the build scripts raise that module within its major version with `go get` before binding (`IPTPROXY_GO_RAISES` in `TOOLCHAIN.env`). Minimum version selection and sum.golang.org keep that reproducible. A `replace` or a patched copy would not be.
-
 **Three ABIs and two slices.** Upstream builds android/386 and a macOS slice as well. Airhop packages neither.
 
 **dnstt is built but unused.** It is compiled in and there is no build tag to leave it out. Excluding it would mean forking, which costs more than the bytes do.
@@ -67,16 +65,17 @@ The `git add` is not optional on a first build. `verify-vendored.js` hashes trac
 
 1. Move `IPTPROXY_VERSION` and `IPTPROXY_COMMIT` in `TOOLCHAIN.env` together, and `DNSTT_COMMIT` if their submodule moved.
 2. Check `GOMOBILE_VERSION` against the `golang.org/x/mobile` line in their `go.mod`. The build fails loudly if it drifts.
-3. Rebuild both platforms, re-record the hashes, and update the entries in [`src/data/licenses.ts`](../../src/data/licenses.ts).
+3. Rebuild both platforms, re-record the hashes, and update the entries in [`src/data/licenses.ts`](../../src/data/licenses.ts) and `s.version` in [`ios/IPtProxy.podspec`](../../ios/IPtProxy.podspec), which Sync Native Lockfiles carries into `Podfile.lock`.
 4. Read their changelog for renames in the binding surface. The build checks the names the app binds, but not a behaviour change.
-5. Run govulncheck over what the build compiles, once by hand rather than in CI, since it fetches a tool and a database. After `fetch-sources.sh`, in `.native-build/iptproxy-src/iptproxy/IPtProxy.go`:
+5. Run govulncheck over what the build compiles, once by hand rather than in CI, since it fetches a tool and a database. After `fetch-sources.sh`, in `.native-build/iptproxy-src/iptproxy/IPtProxy.go`, install it for the host first (`go run` would build it for Android and fail to start), then scan each target with the Go version `TOOLCHAIN.env` pins:
 
    ```bash
-   GOTOOLCHAIN=local GOOS=android GOARCH=arm64 CGO_ENABLED=0 \
-     go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 -tags netcgo ./...
+   GOBIN="$PWD/../../go-tools" go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+   GOOS=android GOARCH=arm64 CGO_ENABLED=0 ../../go-tools/govulncheck -tags netcgo ./...
+   GOOS=ios GOARCH=arm64 CGO_ENABLED=0 ../../go-tools/govulncheck ./...
    ```
 
-   A reachable finding the tag still carries goes into `IPTPROXY_GO_RAISES` as a same-major `module@version`, and upstream gets an issue. Run it again in a scratch copy after `go get $IPTPROXY_GO_RAISES` to confirm the raise clears it, and drop any raise the new tag already requires.
+   A reachable finding goes upstream as an issue, and the update waits for a tag that carries the fix.
 
 Run the container build twice from clean and confirm `SHA256SUMS.android` does not move. If it does, something unpinned leaked into the build.
 
@@ -84,5 +83,6 @@ Run the container build twice from clean and confirm `SHA256SUMS.android` does n
 
 - [IPtProxy](https://github.com/tladesignz/IPtProxy)
 - [Snowflake](https://snowflake.torproject.org)
+- [WebTunnel](https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel)
 - [Pluggable transport specification](https://spec.torproject.org/pt-spec/)
 - [Arti bridge configuration](https://tpo.pages.torproject.net/core/doc/rust/arti_client/config/struct.BridgeConfigBuilder.html)

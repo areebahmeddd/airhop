@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "mesh Bluetooth Low Energy",
   "home.about.link.wire_protocol": "protocole de transmission",
   "home.about.body.built":
-    "Airhop est une application open source pour iOS et Android dédiée à la messagerie privée de pair à pair sur {mesh}. Elle repose sur les fondations de {bitchat}, en réutilisant son {wire_protocol} et son modèle de sécurité, puis en y ajoutant les paiements {ecash} hors ligne et une IA hors ligne. Elle fonctionne sans aucune connexion internet, et les messages sont relayés automatiquement entre les appareils proches (environ 10 à 30 mètres par saut à l'intérieur, davantage en plein air), jusqu'à 7 sauts.",
+    "Airhop est une application open source pour iOS et Android dédiée à la messagerie privée de pair à pair sur {mesh}. Elle repose sur les fondations de {bitchat}, en réutilisant son {wire_protocol} et son modèle de sécurité, puis en y ajoutant les paiements {ecash} hors ligne et une IA hors ligne. Elle fonctionne sans aucune connexion internet, et les messages sont relayés automatiquement entre les appareils proches (environ 30 à 50 mètres par saut à l'intérieur, davantage en plein air), jusqu'à 7 sauts.",
   "home.about.body.identity":
     "Votre identité est une paire de clés {ed25519} générée sur votre appareil et conservée dans {ios_keychain} ou {android_keystore}. Il n'y a ni compte, ni inscription, ni rien qui touche un serveur, autrement dit l'application peut servir d'application jetable qui ne laisse aucune trace remontant jusqu'à vous une fois supprimée.",
   "home.about.body.crypto":
     "Chaque session utilise le protocole {noise} pour une poignée de main authentifiée. Les messages stockés utilisent l'algorithme {ratchet}, autrement dit même si votre appareil est compromis plus tard, vos anciens messages restent illisibles. L'effacement d'urgence détruit toutes les clés et tous les messages en moins d'une seconde.",
   "home.about.body.internet":
-    "Quand vous et votre contact êtes hors de portée du Bluetooth, les relais {nostr} servent de pont par internet, avec des messages privés emballés au format {nip17}, de sorte que le mesh s'étend au monde entier dès que vous êtes tous les deux en ligne. La prise en charge de {tor} est disponible sur iOS et Android, via {arti}, avec des bridges {obfs4} et {snowflake} pour les réseaux qui bloquent Tor.",
+    "Quand vous et votre contact êtes hors de portée du Bluetooth, les relais {nostr} servent de pont par internet, avec des messages privés emballés au format {nip17}, de sorte que le mesh s'étend au monde entier dès que vous êtes tous les deux en ligne. La prise en charge de {tor} est disponible sur iOS et Android, via {arti}, avec des bridges {obfs4}, {snowflake} et {webtunnel} pour les réseaux qui bloquent Tor.",
   "home.about.optional.title":
     "Airhop propose des fonctionnalités facultatives que vous pouvez activer :",
   "home.about.optional.payments.label": "Paiements hors ligne :",

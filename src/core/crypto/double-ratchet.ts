@@ -144,10 +144,10 @@ export interface RatchetState {
 }
 
 // Initialize the ratchet as the SENDER (Alice):
-//   - rk:    the shared root key (32 bytes), from the Noise handshake transcript
+//   - rk:    the shared root key (32 bytes), from the Noise session's exporter secret
 //   - dhPub: the key Bob's ratchet starts on, which is his Noise static public
 //            key. Alice cannot know a fresh ephemeral of Bob's without another
-//            round-trip, and the transcript-derived root key is what keeps this
+//            round-trip, and the exporter-derived root key is what keeps this
 //            chain secret despite that key being long-lived.
 //
 // Alice performs the first DH ratchet step immediately so she can send.

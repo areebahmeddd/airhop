@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Group states owed to a member not reachable yet, and which of them are kept.
 
 import {

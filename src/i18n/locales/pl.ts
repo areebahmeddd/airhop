@@ -818,6 +818,10 @@ export const strings: Strings = {
   "chat.contact.allow_ring": "Zezwól na alerty dzwonienia",
   "chat.contact.allow_ring_desc":
     "Pozwól im sprawić, by twój telefon zadzwonił, aby zwrócić twoją uwagę, nawet jeśli ta rozmowa jest wyciszona. Tryb cichy i Nie przeszkadzać nadal obowiązują.",
+  "chat.contact.allow_ring_needs_keys":
+    "Brak jeszcze kluczy do tego kontaktu. Napisz do nich albo zeskanuj ich kod, aby pozwolić im do ciebie dzwonić.",
+  "chat.contact.allow_ring_master_off":
+    "Nikt nie może sprawić, by twój telefon zadzwonił, dopóki nie włączysz {setting} w Ustawieniach.",
   "chat.contact.ring_action": "Zadzwoń",
   "chat.contact.ringing": "Dzwoni…",
   "chat.contact.ring_hint_nearby":
@@ -952,8 +956,7 @@ export const strings: Strings = {
   "mesh.banner.action.allow": "Zezwól",
   "mesh.banner.action.resume": "Wznów",
   "mesh.banner.action.fix": "Napraw",
-  "mesh.banner.hint.resume":
-    "Ponownie włącza rozgłaszanie i skanowanie Bluetooth",
+  "mesh.banner.hint.resume": "Ponownie uruchamia sieć mesh",
   "mesh.banner.hint.enable_bluetooth": "Prosi Androida o włączenie Bluetooth",
   "mesh.banner.hint.location_settings":
     "Otwiera systemowe ustawienia lokalizacji",
@@ -1761,9 +1764,11 @@ export const strings: Strings = {
     "Brak jeszcze kluczy do tego kontaktu. Napisz do nich albo zeskanuj ich kod, gdy się spotkacie.",
   "contacts.verify.compare_title": "Odczytajcie to sobie nawzajem",
   "contacts.verify.compare_body":
-    "{name} widzi te same sześć słów. Jeśli się zgadzają, oboje wiecie, że klucze są prawdziwe.",
+    "{name} widzi w Airhop te same sześć słów. Jeśli się zgadzają, oboje wiecie, że klucze są prawdziwe. bitchat nie pokazuje takich słów, więc zamiast tego zeskanuj ich kod.",
   "contacts.verify.codes_match": "Zgadzają się",
   "contacts.verify.codes_differ": "Nie zgadzają się",
+  "contacts.verify.codes_differ_body":
+    "Klucze na tym telefonie mogą nie należeć do {name}. Zeskanuj ich kod osobiście, zanim zaufasz tej rozmowie.",
   "contacts.verify.compared_body":
     "Ty i {name} potwierdziliście ten sam kod. Ten kontakt jest zweryfikowany.",
 
@@ -1800,7 +1805,7 @@ export const strings: Strings = {
     "Funkcje opcjonalne, cofanie wysyłki, multimedia, reset",
   "settings.section.privacy": "Prywatność i bezpieczeństwo",
   "settings.section.privacy_desc":
-    "Forward secrecy, podpisane pakiety, zablokowani peerzy",
+    "Blokada Airhop, powiadomienia, zablokowani peerzy",
   "settings.section.network": "Sieć i przekaźniki",
   "settings.section.network_desc":
     "Internet zapasowo, przekaźniki Nostr, zgodność z bitchat",
@@ -1921,10 +1926,10 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Najdłużej utrzymuje wątki czytelnymi i najwięcej trzyma na dysku.",
   "settings.general.reset_desc":
-    "Przywraca każdemu ustawieniu wartość domyślną, nie ruszając tożsamości, wiadomości, kontaktów ani portfela",
+    "Przywraca ustawieniom wartości domyślne, nie ruszając tożsamości, wiadomości, kontaktów ani portfela",
   "settings.general.reset_title": "Zresetować ustawienia?",
   "settings.general.reset_body":
-    "Każde ustawienie wraca do wartości domyślnej: wygląd, cofanie wysyłki i łączność (internet, Tor, brama, most, przekaźniki). Twoja tożsamość, wiadomości, kontakty i portfel pozostają nietknięte.",
+    "Ustawienia wracają do wartości domyślnych, w tym wygląd, język, powiadomienia, cofanie wysyłki i łączność (internet, Tor, brama, most, przekaźniki). Blokada Airhop, czas przechowywania multimediów i twój status pozostają bez zmian. Twoja tożsamość, wiadomości, kontakty i portfel pozostają nietknięte.",
   "settings.general.reset_confirm": "Zresetuj",
 
   // ---- Settings: privacy and security ----
@@ -1940,6 +1945,9 @@ export const strings: Strings = {
   "settings.security.ring_alerts": "Alerty dzwonienia",
   "settings.security.ring_alerts_desc":
     "Główny przełącznik dzwonienia. Wyłączenie odrzuca natychmiast każde dzwonienie, niezależnie od tego, na co zezwoliłeś poszczególnym kontaktom.",
+  "settings.security.background_notice": "Powiadomienie w tle",
+  "settings.security.background_notice_desc":
+    "Wycisz je lub ukryj. Alerty o wiadomościach pozostaną włączone.",
   "settings.security.no_blocked": "Brak zablokowanych peerów",
   "settings.security.no_blocked_desc":
     "Zablokowani peerzy nie mogą do ciebie pisać ani pojawiać się w zakładce Mesh",
@@ -1970,7 +1978,7 @@ export const strings: Strings = {
     "Kontynuuj przez przekaźniki Nostr, gdy peerzy w sieci mesh są poza zasięgiem",
   "settings.network.internet_off_title": "Wyłączyć internet?",
   "settings.network.internet_off_body":
-    "Airhop będzie działać wyłącznie na Bluetooth. Przestaje kontaktować się z jakimkolwiek przekaźnikiem Nostr, a Tor, brama internetowa i most mesh wyłączają się. Czat przez Bluetooth w pobliżu działa dalej.",
+    "Airhop będzie działać wyłącznie na Bluetooth. Przestaje kontaktować się z jakimkolwiek przekaźnikiem Nostr, a Tor, brama internetowa i most mesh wstrzymują działanie, dopóki internet nie zostanie ponownie włączony. Czat przez Bluetooth w pobliżu działa dalej.",
   "settings.network.turn_off": "Wyłącz",
   "settings.network.discovery": "Wykrywanie geoprzekaźników",
   "settings.network.discovery_desc":
@@ -2056,7 +2064,7 @@ export const strings: Strings = {
     "Rozmawiaj z ludźmi w pobliżu jak przez krótkofalówkę",
   "settings.conn.live_voice_on_title": "Włączyć głos na żywo?",
   "settings.conn.live_voice_on_body":
-    "Przytrzymanie mikrofonu wysyła twój głos do wszystkich w zasięgu Bluetooth na bieżąco, a ich głos odtwarza się w twoim telefonie. Nic nie jest nagrywane.",
+    "Przytrzymanie mikrofonu wysyła twój głos do wszystkich w zasięgu Bluetooth na bieżąco, a ich głos odtwarza się w twoim telefonie. Gdy go puścisz, to samo nagranie zostanie też wysłane jako notatka głosowa.",
   "settings.conn.live_voice_off_title": "Wyłączyć głos na żywo?",
   "settings.conn.live_voice_off_body":
     "Przytrzymanie mikrofonu nagrywa zamiast tego notatkę głosową. Wysyła się po puszczeniu i nikt jej nie usłyszy, dopóki jej nie odtworzy.",
@@ -2107,7 +2115,7 @@ export const strings: Strings = {
     "Użycz swojego połączenia telefonowi bez internetu w pobliżu, żeby wciąż sięgał kanałów lokalizacyjnych",
   "settings.conn.gateway_on_title": "Włączyć bramę internetową?",
   "settings.conn.gateway_on_body":
-    "Telefony w pobliżu bez własnego połączenia będą wysyłać i odbierać wiadomości z kanałów lokalizacyjnych przez twoje. Zużywa to twój transfer i baterię, a ich wiadomości pozostają zaszyfrowane na całej trasie, więc nie odczytasz tego, co przez ciebie przechodzi.",
+    "Telefony w pobliżu bez własnego połączenia będą wysyłać i odbierać wiadomości z kanałów lokalizacyjnych przez twoje. Zużywa to twój transfer i baterię. Te wiadomości to publiczne wpisy podpisane przez ich autorów, więc możesz czytać to, co przez ciebie przechodzi, ale nie możesz tego zmienić.",
   "settings.conn.gateway_off_title": "Wyłączyć bramę internetową?",
   "settings.conn.gateway_off_body":
     "Telefony bez internetu w pobliżu przestaną sięgać kanałów lokalizacyjnych przez twoje. Twoje własne wiadomości pozostają bez zmian.",
@@ -2116,10 +2124,10 @@ export const strings: Strings = {
     "Połącz publiczny czat #bluetooth tej okolicy z inną grupą poza zasięgiem Bluetooth przez internet",
   "settings.conn.bridge_on_title": "Włączyć most mesh?",
   "settings.conn.bridge_on_body":
-    "Twoje publiczne wiadomości #bluetooth będą publikowane w twojej dzielnicy przez internet, więc ludzie poza zasięgiem Bluetooth będą mogli je czytać. Wiadomości prywatne nigdy nie idą przez most, a „tylko w pobliżu” zatrzymuje pojedynczą wiadomość lokalnie.",
+    "Twoje publiczne wiadomości #bluetooth będą publikowane w twojej dzielnicy przez internet, więc ludzie poza zasięgiem Bluetooth będą mogli je czytać. Twój telefon będzie też przenosić wiadomości z mostu dla telefonów w pobliżu, korzystając z twojego transferu. Wiadomości prywatne nigdy nie idą przez most, a „tylko w pobliżu” zatrzymuje pojedynczą wiadomość lokalnie.",
   "settings.conn.bridge_off_title": "Wyłączyć most mesh?",
   "settings.conn.bridge_off_body":
-    "Twoje publiczne wiadomości #bluetooth znów zostają w zasięgu Bluetooth, a wiadomości z drugiej strony mostu przestają tu docierać.",
+    "Twoje publiczne wiadomości #bluetooth znów zostają w zasięgu Bluetooth, a twój telefon przestaje przenosić wiadomości z mostu dla innych. Wiadomości, które most w pobliżu przynosi przez Bluetooth, nadal będą się tu pojawiać.",
   "settings.conn.bridge_needs_location": "Most mesh potrzebuje lokalizacji",
   "settings.conn.bridge_needs_location_desc":
     "Znajduje twoją dzielnicę na podstawie ustalenia pozycji. Przyznaj lokalizację, żeby zacząć mostkowanie.",
@@ -2156,7 +2164,7 @@ export const strings: Strings = {
   "settings.permissions.system": "System",
 
   // ---- Settings: storage and data ----
-  "settings.storage.network_usage": "Zużycie sieci",
+  "settings.storage.mesh_traffic": "Ruch w sieci mesh",
   "settings.storage.storage_usage": "Zużycie pamięci",
   "settings.storage.storage_usage_desc":
     "Wiadomości, ecash i załączniki w pamięci podręcznej",
@@ -2238,7 +2246,8 @@ export const strings: Strings = {
   "settings.status.away_desc":
     "Sieć mesh wstrzymana, brak skanowania i rozgłaszania",
   "settings.status.invisible": "Niewidoczny",
-  "settings.status.invisible_desc": "Skanuje, ale ukryty przed wykrywaniem",
+  "settings.status.invisible_desc":
+    "Ukryty przed skanowaniem Bluetooth, nadal widoczny dla telefonów, z którymi się łączysz",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Ustaw status na {value}",
   "settings.status.edit": "Zmień status",

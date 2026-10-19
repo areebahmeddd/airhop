@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // bitchat's stable private-media ID. The vectors are the contract: a mismatch
 // by one byte means no photo or voice note ever shows delivered between the
 // two apps, in either direction.

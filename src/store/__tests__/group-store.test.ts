@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Group store: persistence, epoch replacement, and the two-party state->message
 // flow (creator signs state, member ingests it and opens a sealed message).
 import {

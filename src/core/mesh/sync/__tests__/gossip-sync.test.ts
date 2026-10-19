@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The filter two phones exchange to work out what each is missing.
 //
 // A Golomb-coded set is compact enough to gossip over BLE, which is the only
@@ -8,7 +5,9 @@
 // these pin the bytes as much as the behaviour: a filter this app builds must
 // be readable by an app it was not compiled with.
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { sha256 } from "@noble/hashes/sha2.js";
 import {
+  computePacketId,
   decodePacket,
   encodePacket,
   Flags,
@@ -191,6 +190,8 @@ describe("GossipSync class", () => {
     const pkt = request(gs, identity);
     expect(pkt.type).toBe(PacketType.REQUEST_SYNC);
     expect(pkt.flags & Flags.SIGNED).toBeTruthy();
+    const signingPubKey = ed25519.getPublicKey(identity.signingPrivKey);
+    expect(verifyPacket(pkt, signingPubKey)).toBe(true);
   });
 
   test("handleFilter returns packets the peer is missing", () => {
@@ -746,6 +747,34 @@ describe("GossipSync: replies not kept", () => {
   });
 });
 
+// The encoder stores a bucket of 0 as 1, as bitchat-ios does, so the lookup
+// has to map it the same way or a held packet reads as missing.
+describe("GossipSync: a packet in bucket 0", () => {
+  const identity = makeIdentity();
+
+  test("is found in the filter that holds it", () => {
+    // A lone packet's filter has M = 2^7, so its bucket is h64 mod 128.
+    let packet: Packet | undefined;
+    for (let i = 0; packet === undefined && i < 10_000; i++) {
+      const candidate = makePacket(
+        PacketType.CHANNEL_MSG,
+        0,
+        new Uint8Array([i & 0xff, i >> 8]),
+      );
+      const hash = sha256(computePacketId(candidate));
+      if ((hash[7] & 0x7f) === 0) packet = candidate;
+    }
+    expect(packet).toBeDefined();
+
+    const requester = new GossipSync();
+    const responder = new GossipSync();
+    requester.track(packet!);
+    responder.track(packet!);
+    const filter = requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND);
+    expect(responder.handleFilter(filter)).toHaveLength(0);
+  });
+});
+
 // bitchat-ios sends one request per due schedule. In one union filter a busy
 // room's messages push an older board post behind the since-cursor, and it is
 // never offered again.
@@ -833,6 +862,40 @@ describe("GossipSync: one request per round", () => {
       jest.advanceTimersByTime(15_000);
       expect(sent.filter((t) => t === BOARD_ROUND)).toHaveLength(2);
       gs.stop();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+describe("GossipSync: a neighbour just met", () => {
+  test("is asked every round at once, each registered before it is sent", () => {
+    jest.useFakeTimers();
+    try {
+      const gs = new GossipSync();
+      const events: string[] = [];
+      const types: (number | undefined)[] = [];
+      gs.start(makeIdentity(), {
+        sendToPeer: (peerID, pkt) => {
+          events.push(`send ${peerID}`);
+          types.push(decodeGossipFilterPayload(pkt.payload)?.types);
+        },
+        getPeers: () => [],
+        onRequest: (peerID) => events.push(`register ${peerID}`),
+      });
+
+      gs.requestNow(PEER);
+      expect(events).toEqual([
+        `register ${PEER}`,
+        `send ${PEER}`,
+        `register ${PEER}`,
+        `send ${PEER}`,
+      ]);
+      expect(types).toEqual([MESSAGE_ROUND, BOARD_ROUND]);
+
+      gs.stop();
+      gs.requestNow(PEER);
+      expect(events).toHaveLength(4);
     } finally {
       jest.useRealTimers();
     }

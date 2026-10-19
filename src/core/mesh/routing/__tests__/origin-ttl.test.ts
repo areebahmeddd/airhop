@@ -1,6 +1,5 @@
-/**
- * @jest-environment node
- */
+// The TTL an authored packet leaves with, drawn so it cannot be told apart
+// from one a relay at the same degree passed on.
 import { PacketType } from "../../wire/packet-codec";
 import { originTtl } from "../origin-ttl";
 

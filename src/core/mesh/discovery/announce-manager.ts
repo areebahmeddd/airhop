@@ -9,7 +9,7 @@
 //   0x01  nickname           (UTF-8, up to 32 bytes)
 //   0x02  Noise static pub   (32 bytes X25519)
 //   0x03  Ed25519 signing pub (32 bytes)
-//   0x04  neighbor IDs       (optional, up to 10 x 8 bytes)
+//   0x04  neighbor IDs       (bitchat; skipped, never written)
 //   0x05  capabilities       (bitchat bitfield)
 //   0x06  bridge cell        (bitchat; decoded, ignored)
 //   0x07  Nostr secp256k1 pub (32 bytes X-only, Airhop extension, ignored by bitchat)
@@ -86,7 +86,6 @@ export function isAnnounceFresh(
 const TLV_NICKNAME = 0x01;
 const TLV_NOISE_PUB = 0x02;
 const TLV_SIGNING_PUB = 0x03;
-const TLV_NEIGHBORS = 0x04;
 const TLV_CAPABILITIES = 0x05; // bitchat capabilities bitfield (little-endian)
 const TLV_BRIDGE_GEOHASH = 0x06; // bitchat bridge cell (decoded, ignored)
 const TLV_NOSTR_PUB = 0x07; // Airhop extension: secp256k1 X-only Nostr pubkey
@@ -179,7 +178,6 @@ export interface AnnounceInfo {
   nickname: string;
   noisePubKey: Uint8Array; // 32 bytes X25519
   signingPubKey: Uint8Array; // 32 bytes Ed25519
-  neighborIDs: Uint8Array[]; // up to 10 x 8 bytes
   nostrPubKey?: Uint8Array; // 32 bytes secp256k1 X-only (Airhop extension)
   capabilities: number; // bitchat capability bits (TLV 0x05); 0 when absent
   bridgeGeohash?: string; // rendezvous cell a bridge peer advertises (TLV 0x06)
@@ -231,10 +229,11 @@ function fitNickname(nickname: string): Uint8Array {
   return bytes;
 }
 
+// Never writes TLV 0x04 (neighbour IDs): the list would hand any passive
+// listener the local adjacency graph.
 export function encodeAnnouncePayload(
   identity: Identity,
   nickname: string,
-  neighborIDs: readonly Uint8Array[] = [],
   nostrPubKey?: Uint8Array,
   capabilities = 0,
   bridgeGeohash?: string,
@@ -245,15 +244,6 @@ export function encodeAnnouncePayload(
   writeTlv(buf, TLV_NICKNAME, nicknameBytes);
   writeTlv(buf, TLV_NOISE_PUB, identity.noiseStaticPubKey);
   writeTlv(buf, TLV_SIGNING_PUB, identity.signingPubKey);
-
-  if (neighborIDs.length > 0) {
-    const capped = neighborIDs.slice(0, 10);
-    const neighborBytes = new Uint8Array(capped.length * 8);
-    for (let i = 0; i < capped.length; i++) {
-      neighborBytes.set(capped[i].slice(0, 8), i * 8);
-    }
-    writeTlv(buf, TLV_NEIGHBORS, neighborBytes);
-  }
 
   // Only advertise capabilities when we have some: a peer with no bits looks
   // like an old client (no TLV), matching bitchat's nil-when-absent semantics.
@@ -288,7 +278,6 @@ export function decodeAnnouncePayload(
   let capabilities = 0;
   let bridgeGeohash: string | undefined;
   let isInfrastructure = false;
-  const neighborIDs: Uint8Array[] = [];
 
   while (offset + 2 <= payload.length) {
     const type = payload[offset];
@@ -311,11 +300,6 @@ export function decodeAnnouncePayload(
         break;
       case TLV_SIGNING_PUB:
         if (value.length === 32) signingPubKey = value;
-        break;
-      case TLV_NEIGHBORS:
-        for (let i = 0; i + 8 <= value.length; i += 8) {
-          neighborIDs.push(value.slice(i, i + 8));
-        }
         break;
       case TLV_CAPABILITIES:
         capabilities = decodeCapabilities(value);
@@ -342,7 +326,6 @@ export function decodeAnnouncePayload(
     nickname,
     noisePubKey,
     signingPubKey,
-    neighborIDs,
     nostrPubKey,
     capabilities,
     bridgeGeohash,
@@ -360,15 +343,13 @@ export class AnnounceManager {
   // window only; ingress refuses anything older.
   private readonly stamped: number[] = [];
 
-  // Build and return a signed ANNOUNCE packet ready to send.
-  // neighborIDs (each 8 bytes) fill TLV 0x04; Airhop always passes none, since
-  // the list hands a passive listener the local adjacency graph.
+  // Build and return a signed ANNOUNCE packet ready to send. TLV 0x04 is never
+  // written (see encodeAnnouncePayload).
   // Pass nostrPubKey (32 bytes secp256k1 X-only) to include TLV 0x07 for Nostr DMs.
   // Pass capabilities (bitchat capability bits) to include TLV 0x05.
   buildPacket(
     identity: Identity,
     nickname: string,
-    neighborIDs: readonly Uint8Array[] = [],
     nostrPubKey?: Uint8Array,
     capabilities = 0,
     bridgeGeohash?: string,
@@ -376,7 +357,6 @@ export class AnnounceManager {
     const payload = encodeAnnouncePayload(
       identity,
       nickname,
-      [...neighborIDs],
       nostrPubKey,
       capabilities,
       bridgeGeohash,
@@ -413,8 +393,6 @@ export class AnnounceManager {
   // jittered 15-30s once at least one link is up. Pass getLinkCount so the
   // manager can tell which state it is in on each tick.
   //
-  // getNeighborIDs fills TLV 0x04 on each tick; Airhop passes none (see
-  // buildPacket).
   // Pass nostrPubKey to include TLV 0x07 (constant for the session lifetime).
   // Pass getCapabilities to include TLV 0x05; it is read on every tick so a
   // toggled capability (e.g. the internet gateway) rides the next announce.
@@ -422,7 +400,6 @@ export class AnnounceManager {
     identity: Identity,
     nickname: string,
     send: SendPacketFn,
-    getNeighborIDs?: () => readonly Uint8Array[],
     nostrPubKey?: Uint8Array,
     getLinkCount?: () => number,
     getCapabilities?: () => number,
@@ -434,14 +411,12 @@ export class AnnounceManager {
       // No link, so nothing is built or signed: a phone alone spends most of
       // its day on the isolated tick, and a new link is announced to on connect.
       if (getLinkCount !== undefined && getLinkCount() === 0) return;
-      const neighbors = getNeighborIDs?.() ?? [];
       const capabilities = getCapabilities?.() ?? 0;
       const bridgeGeohash = getBridgeGeohash?.();
       send(
         this.buildPacket(
           identity,
           nickname,
-          neighbors,
           nostrPubKey,
           capabilities,
           bridgeGeohash,

@@ -14,9 +14,10 @@
 //                       they trust. The app witnesses nothing, the human does.
 //                       Imports nothing, so it grants no re-pinning power
 //
-// Both earn the same shield, and differ only in what else they may do.
+// Both earn the same shield, and differ only in what else they may do. The
+// scan reads a bitchat user's verification QR too; the words exist only
+// between two Airhop phones.
 
-import { decodeQRContent } from "@core/crypto/contact-exchange";
 import { peerFingerprint, safetyNumber } from "@core/crypto/fingerprint";
 import { useT } from "@i18n";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
@@ -42,6 +43,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import React, { useMemo, useRef, useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { readContactCode } from "./read-contact-code";
 
 interface Props {
   visible: boolean;
@@ -54,11 +56,11 @@ interface Props {
 
 // Every session starts at `choose`, so neither method is the default and a tap
 // meaning "how do I verify somebody" does not open a camera.
-type Stage = "choose" | "camera" | "compare";
+type Stage = "choose" | "camera" | "compare" | "differ";
 
 // Outcome of a single scan. `match` has already written the verified contact by
 // the time it is set, so the sheet behind us is updated the moment we land here.
-type Outcome = "match" | "mismatch" | "tampered";
+type Outcome = "match" | "mismatch" | "tampered" | "expired";
 
 export default function VerifyContactScreen({
   visible,
@@ -133,9 +135,15 @@ export default function VerifyContactScreen({
 
   function handleScanned(data: string): void {
     if (scannedRef.current) return;
-    const card = decodeQRContent(data.trim());
-    if (!card) return; // Not an Airhop card, keep scanning silently.
+    const code = readContactCode(data);
+    if (code === null) return; // Not a contact code, keep scanning silently.
     scannedRef.current = true;
+    if (typeof code === "string") {
+      rejected();
+      setOutcome(code);
+      return;
+    }
+    const card = code;
 
     // Guard 1: the code must belong to THIS contact, not just any Airhop user.
     if (card.peerID.toLowerCase() !== peerID.toLowerCase()) {
@@ -305,7 +313,7 @@ export default function VerifyContactScreen({
                   // words are the same next time, so a retry would only invite
                   // tapping until it passed.
                   rejected();
-                  setStage("choose");
+                  setStage("differ");
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.codes_differ")}
@@ -313,6 +321,37 @@ export default function VerifyContactScreen({
                 <Text style={styles.secondaryText}>
                   {T("contacts.verify.codes_differ")}
                 </Text>
+              </Pressable>
+            </View>
+          )}
+
+          {stage === "differ" && (
+            <View style={styles.resultCard}>
+              <View style={[styles.resultIcon, styles.iconWarn]}>
+                <Feather name="alert-triangle" size={26} color="#FFFFFF" />
+              </View>
+              <Text style={styles.resultTitle}>
+                {T("contacts.verify.failed")}
+              </Text>
+              <Text style={styles.resultBody}>
+                {T("contacts.verify.codes_differ_body", { name })}
+              </Text>
+              <Pressable
+                style={styles.primaryBtn}
+                onPress={handleChooseCamera}
+                accessibilityRole="button"
+                accessibilityLabel={T("contacts.verify.method_scan")}
+              >
+                <Text style={styles.primaryBtnText}>
+                  {T("contacts.verify.method_scan")}
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel={T("common.close")}
+              >
+                <Text style={styles.secondaryText}>{T("common.close")}</Text>
               </Pressable>
             </View>
           )}
@@ -447,7 +486,7 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {outcome === "tampered" && (
+          {(outcome === "tampered" || outcome === "expired") && (
             <View style={styles.resultCard}>
               <View style={[styles.resultIcon, styles.iconWarn]}>
                 <Feather name="alert-triangle" size={26} color="#FFFFFF" />
@@ -456,7 +495,9 @@ export default function VerifyContactScreen({
                 {T("contacts.verify.failed")}
               </Text>
               <Text style={styles.resultBody}>
-                {T("contacts.verify.tampered_body")}
+                {outcome === "expired"
+                  ? T("contacts.scan.bitchat_expired")
+                  : T("contacts.verify.tampered_body")}
               </Text>
               <Pressable
                 style={styles.primaryBtn}

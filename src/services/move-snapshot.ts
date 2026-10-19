@@ -112,7 +112,14 @@ const PARTITIONS: Record<StoreId, MovedPartition | null> = {
       }),
     // A direction change applies on the next launch: `@i18n` pins it when the
     // rehydrated language lands, and the shell's notice says so.
-    reload: () => void useSettingsStore.persist.rehydrate(),
+    //
+    // Written back once merged: what arrived lacks the device settings, and
+    // rehydrating only keeps this phone's in memory, so a relaunch before the
+    // next settings write would put them back to their defaults.
+    reload: () =>
+      void useSettingsStore.persist
+        .rehydrate()
+        ?.then(() => useSettingsStore.setState({})),
   },
   // Public and gossiped: the mesh brings it back.
   "board-store": null,

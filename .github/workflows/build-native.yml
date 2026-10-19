@@ -165,14 +165,14 @@ jobs:
 
           for abi in arm64-v8a armeabi-v7a x86_64; do
             lib="android/app/src/main/jniLibs/$abi/libarti_airhop.so"
-            [ -s "$lib" ] || { echo "::error::missing $lib"; exit 1; }
+            [ -s "$lib" ] || { echo "::error::Missing $lib."; exit 1; }
           done
-          [ -s android/app/libs/IPtProxy.aar ] || { echo '::error::missing IPtProxy.aar'; exit 1; }
+          [ -s android/app/libs/IPtProxy.aar ] || { echo '::error::Missing IPtProxy.aar.'; exit 1; }
           slices=$(find ios/Frameworks/arti.xcframework -name '*.a' | wc -l)
-          [ "$slices" -eq 2 ] || { echo "::error::expected 2 arti slices, found $slices"; exit 1; }
+          [ "$slices" -eq 2 ] || { echo "::error::Expected 2 arti slices, found $slices."; exit 1; }
           # gomobile emits a framework bundle rather than a bare archive.
           slices=$(find ios/Frameworks/IPtProxy.xcframework -name 'IPtProxy.framework' | wc -l)
-          [ "$slices" -eq 2 ] || { echo "::error::expected 2 IPtProxy slices, found $slices"; exit 1; }
+          [ "$slices" -eq 2 ] || { echo "::error::Expected 2 IPtProxy slices, found $slices."; exit 1; }
 
       - name: Record hashes
         run: |

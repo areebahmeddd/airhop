@@ -1,8 +1,9 @@
 // Reading bitchat's verification QR.
 //
 // The fixtures are built the way bitchat builds them (canonical bytes signed
-// with the Ed25519 key the QR names), so a change to either side's field order
-// or length prefixing shows up here as a signature that no longer verifies.
+// with the Ed25519 key the QR names, the query escaped as URLComponents escapes
+// queryItems), so a change to either side's field order, length prefixing or
+// query decoding shows up here as a signature that no longer verifies.
 
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -35,6 +36,14 @@ function canonical(f: Record<string, string>): Uint8Array {
   return new Uint8Array(out);
 }
 
+// URLComponents.queryItems escaping: everything encodeURIComponent escapes, but
+// '+' stays literal. It escapes a few characters fewer than that too ('/', '?',
+// ':', '@'), which decode to the same string either way.
+function queryEscape(s: string): string {
+  return encodeURIComponent(s).replace(/%2B/g, "+");
+}
+
+// bitchat's item order, with npub present only when it has one.
 function makeQr(over: Partial<Record<string, string>> = {}): string {
   const f: Record<string, string> = {
     v: "1",
@@ -47,8 +56,18 @@ function makeQr(over: Partial<Record<string, string>> = {}): string {
     ...over,
   };
   const sig = bytesToHex(ed25519.sign(canonical(f), SIGN_PRIV));
-  const q = new URLSearchParams({ ...f, sig });
-  return `bitchat://verify?${q.toString()}`;
+  const items: [string, string][] = [
+    ["v", f.v as string],
+    ["noise", f.noise as string],
+    ["sign", f.sign as string],
+    ["nick", f.nick as string],
+    ["ts", f.ts as string],
+    ["nonce", f.nonce as string],
+    ["sig", sig],
+  ];
+  if (f.npub) items.push(["npub", f.npub]);
+  const q = items.map(([k, v]) => `${k}=${queryEscape(v)}`).join("&");
+  return `bitchat://verify?${q}`;
 }
 
 describe("parseBitchatVerifyQr", () => {
@@ -89,6 +108,24 @@ describe("parseBitchatVerifyQr", () => {
     );
     if (out?.ok !== true) throw new Error("expected ok");
     expect(out.card.nickname).toBe("Mom (verified)");
+  });
+
+  // bitchat leaves '+' unescaped, so form decoding would read it as a space and
+  // the signature would no longer cover the nickname.
+  it("keeps a literal '+' in the nickname apart from an escaped space", () => {
+    const qr = makeQr({ nick: "a+b c" });
+    expect(qr).toContain("nick=a+b%20c");
+    const out = parseBitchatVerifyQr(qr, NOW);
+    if (out?.ok !== true) throw new Error("expected ok");
+    expect(out.card.nickname).toBe("a+b c");
+  });
+
+  it("refuses a malformed percent escape rather than throwing", () => {
+    const qr = makeQr().replace("nick=neverdie", "nick=never%E0%A4die");
+    expect(parseBitchatVerifyQr(qr, NOW)).toEqual({
+      ok: false,
+      reason: "tampered",
+    });
   });
 
   // A bitchat user with no Nostr identity is a real user, not a broken code.

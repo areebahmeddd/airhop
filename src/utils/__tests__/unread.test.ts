@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Aggregate unread counting, muted-aware.
 
 import { sumUnread } from "../unread";

@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The LAN transport differs from the other two in a way worth pinning down: it
 // does not run because the mesh is running, it runs because somebody asked for
 // it. Publishing an mDNS record tells everyone on the network, and whoever runs
@@ -40,7 +37,8 @@ function rejectWith(code: string): Promise<never> {
 }
 
 // Let every pending microtask and every expired timer run, repeatedly, so a
-// retry that schedules another retry is followed to its conclusion.
+// retry that schedules another retry is followed to its conclusion. The clock
+// moves `ms` on each of the eight rounds, so settle(ms) is 8 * ms of fake time.
 async function settle(ms = 0): Promise<void> {
   for (let i = 0; i < 8; i++) {
     jest.advanceTimersByTime(ms);
@@ -49,7 +47,8 @@ async function settle(ms = 0): Promise<void> {
   }
 }
 
-// Long enough to clear the discovery settle window.
+// 4.8 s in all, past the 500 ms discovery settle window and short of the 15 s
+// dial review.
 const SETTLED = 600;
 
 function running(): LANController {
@@ -119,6 +118,7 @@ describe("consent", () => {
     lan.stop();
     await settle();
 
+    expect(mockStopLAN).toHaveBeenCalled();
     expect(lan.isStarted).toBe(false);
   });
 });
@@ -193,7 +193,7 @@ describe("dialling", () => {
     expect(mockConnectToPeer).toHaveBeenCalledWith("9000000000000000");
   });
 
-  test("never dials the same peer twice", async () => {
+  test("a repeated discovery of a known peer dials nothing new", async () => {
     const lan = running();
     await settle();
 
@@ -214,9 +214,8 @@ describe("dialling", () => {
     await settle(SETTLED);
     expect(mockConnectToPeer).toHaveBeenCalledTimes(1);
 
-    lan.onPeerLost("9000000000000000");
-    discover(lan, ["9000000000000000"]);
-    await settle(SETTLED);
+    // The peer never leaves mDNS; only the review comes round again (16 s).
+    await settle(2_000);
 
     expect(mockConnectToPeer).toHaveBeenCalledTimes(2);
   });
@@ -232,8 +231,8 @@ describe("dialling", () => {
     await settle(SETTLED);
     expect(mockConnectToPeer).toHaveBeenCalledTimes(1);
 
-    // No discovery change at all: just time passing.
-    await settle(16_000);
+    // No discovery change at all: just time passing, 16 s of it.
+    await settle(2_000);
 
     expect(mockConnectToPeer.mock.calls.length).toBeGreaterThan(1);
   });
@@ -282,6 +281,27 @@ describe("failures", () => {
 
     expect(mockStartLAN).toHaveBeenCalledTimes(1);
     expect(lan.isUnsupported).toBe(true);
+  });
+
+  test("still says unsupported after a pause, so the switch stays explained", async () => {
+    mockStartLAN.mockImplementation(() => rejectWith("LAN_UNSUPPORTED"));
+    const seen: string[] = [];
+    const lan = new LANController(
+      () => SELF,
+      (s) => seen.push(s),
+    );
+    lan.start();
+    lan.setEnabled(true);
+    await settle();
+
+    // Away and back, as the Network screen sees it.
+    lan.stop();
+    await settle();
+    lan.start();
+    await settle(60_000);
+
+    expect(seen[seen.length - 1]).toBe("unsupported");
+    expect(mockStartLAN).toHaveBeenCalledTimes(1);
   });
 
   test("keeps trying while the network is merely missing", async () => {

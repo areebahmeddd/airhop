@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The simulated mint has to agree with the real world about hash_to_curve.
 //
 // A fake mint that is merely self-consistent is worse than no fake mint: every

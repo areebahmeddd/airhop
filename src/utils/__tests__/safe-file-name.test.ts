@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // A received name becomes a path segment on this phone and the name another app
 // shows when the file is shared on, so it must stay one segment and stay
 // readable in its own script.

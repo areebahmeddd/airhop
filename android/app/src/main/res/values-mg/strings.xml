@@ -4,4 +4,8 @@
   <string name="mesh_notification_title">Mandeha ny haraton\'ny Airhop</string>
   <string name="mesh_notification_text">Mitady sy mampita ny hafatra akaiky</string>
   <string name="mesh_notification_stop">Ajanony ny harato</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">teboka %1$s ao anatin\'ny fetra</item>
+    <item quantity="other">teboka %1$s ao anatin\'ny fetra</item>
+  </plurals>
 </resources>

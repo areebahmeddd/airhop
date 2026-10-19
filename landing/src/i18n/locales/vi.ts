@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "mạng mesh Bluetooth Low Energy",
   "home.about.link.wire_protocol": "giao thức truyền",
   "home.about.body.built":
-    "Airhop là ứng dụng mã nguồn mở cho iOS và Android, dùng để nhắn tin riêng tư ngang hàng qua {mesh}. Ứng dụng được xây trên nền tảng của {bitchat}, tái sử dụng {wire_protocol} và mô hình bảo mật của nó, rồi mở rộng thêm thanh toán {ecash} ngoại tuyến và AI ngoại tuyến. Nó hoạt động khi hoàn toàn không có internet, và tin nhắn được chuyển tiếp tự động giữa các thiết bị ở gần (khoảng 10 đến 30 mét mỗi chặng trong nhà, xa hơn ở ngoài trời), tối đa 7 chặng.",
+    "Airhop là ứng dụng mã nguồn mở cho iOS và Android, dùng để nhắn tin riêng tư ngang hàng qua {mesh}. Ứng dụng được xây trên nền tảng của {bitchat}, tái sử dụng {wire_protocol} và mô hình bảo mật của nó, rồi mở rộng thêm thanh toán {ecash} ngoại tuyến và AI ngoại tuyến. Nó hoạt động khi hoàn toàn không có internet, và tin nhắn được chuyển tiếp tự động giữa các thiết bị ở gần (khoảng 30 đến 50 mét mỗi chặng trong nhà, xa hơn ở ngoài trời), tối đa 7 chặng.",
   "home.about.body.identity":
     "Danh tính của bạn là một cặp khóa {ed25519} được tạo trên thiết bị của bạn và lưu trong {ios_keychain} hoặc {android_keystore}. Không có tài khoản, không đăng ký, và không có gì chạm tới máy chủ nào, tức là có thể dùng như một ứng dụng dùng một lần, sau khi xóa không để lại gì dẫn ngược về bạn.",
   "home.about.body.crypto":
     "Mỗi phiên dùng giao thức {noise} cho bước bắt tay có xác thực. Tin nhắn đã lưu dùng thuật toán {ratchet}, tức là ngay cả khi thiết bị của bạn bị xâm nhập về sau, những tin nhắn cũ vẫn không đọc được. Xóa khẩn cấp hủy mọi khóa và tin nhắn trong chưa đầy một giây.",
   "home.about.body.internet":
-    "Khi bạn và người liên hệ ở ngoài tầm Bluetooth, các relay {nostr} đóng vai trò cầu nối qua internet, dùng tin nhắn trực tiếp được bọc theo định dạng {nip17}, nhờ vậy mạng mesh vươn ra toàn cầu mỗi khi cả hai đều trực tuyến. Hỗ trợ {tor} có trên cả iOS và Android, qua {arti}, kèm bridge {obfs4} và {snowflake} cho những mạng chặn Tor.",
+    "Khi bạn và người liên hệ ở ngoài tầm Bluetooth, các relay {nostr} đóng vai trò cầu nối qua internet, dùng tin nhắn trực tiếp được bọc theo định dạng {nip17}, nhờ vậy mạng mesh vươn ra toàn cầu mỗi khi cả hai đều trực tuyến. Hỗ trợ {tor} có trên cả iOS và Android, qua {arti}, kèm bridge {obfs4}, {snowflake} và {webtunnel} cho những mạng chặn Tor.",
   "home.about.optional.title": "Airhop có những tính năng tùy chọn mà bạn có thể bật:",
   "home.about.optional.payments.label": "Thanh toán ngoại tuyến:",
   "home.about.optional.payments.body":

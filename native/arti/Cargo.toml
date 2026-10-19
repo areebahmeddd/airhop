@@ -24,7 +24,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 #
 # The version is duplicated from ARTI_CLIENT_VERSION in TOOLCHAIN.env because
 # cargo cannot read it from there. Nowhere else restates it.
-arti-client = { version = "0.46", default-features = false, features = [
+arti-client = { version = "0.47", default-features = false, features = [
     "tokio",
     "rustls",
     "compression",
@@ -34,7 +34,7 @@ arti-client = { version = "0.46", default-features = false, features = [
     "vanguards",
     "static-sqlite",
 ] }
-tor-rtcompat = { version = "0.46", default-features = false, features = [
+tor-rtcompat = { version = "0.47", default-features = false, features = [
     "tokio",
     "rustls",
 ] }

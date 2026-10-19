@@ -44,12 +44,6 @@ class LocationRegistry {
     this.byDevice.set(deviceID, { coords, granted });
   }
 
-  // Location permission refused, which must degrade the named channels rather
-  // than break the app.
-  deny(deviceID: string): void {
-    this.byDevice.set(deviceID, { coords: null, granted: false });
-  }
-
   forDevice(deviceID: string | null): DeviceLocation {
     if (deviceID === null) return { coords: null, granted: false };
     return this.byDevice.get(deviceID) ?? { coords: null, granted: false };

@@ -28,8 +28,10 @@ import { messagePreviewEntry } from "@utils/message-preview";
 import { systemPreview } from "@utils/message-text";
 import { sumUnread } from "@utils/unread";
 import { AppState, Platform } from "react-native";
+import { isReplayedRoomMessage } from "./notification-policy";
 import {
   configureNotifications,
+  dismissPreviewNotifications,
   endAllRingAlerts,
   handleInboundMessage,
   handleNearbyPeers,
@@ -69,6 +71,17 @@ export function startNotificationPipeline(nickname: () => string): void {
 
   const stopMessages = subscribeInboundMessages((msg) => {
     const chat = useChatStore.getState();
+    // Replayed room history is not news, not even a mention.
+    if (
+      isReplayedRoomMessage({
+        channel: msg.channel,
+        timestampMs: msg.timestampMs,
+        hasChannelKey: chat.channelKeys[msg.channel] !== undefined,
+        nowMs: Date.now(),
+      })
+    ) {
+      return;
+    }
     const isMuted = chat.mutedChannels.includes(msg.channel);
     // Being @-mentioned overrides mute, the way every major chat app treats a
     // mention: even a muted channel pings and logs a bell entry when it is you
@@ -159,9 +172,14 @@ export function startNotificationPipeline(nickname: () => string): void {
     void setAppBadgeCount(next);
   });
 
-  const stopRingSetting = useSettingsStore.subscribe((state, prev) => {
+  // Watched rather than left to the switch, so every writer moves the tray:
+  // Reset settings hides previews again too.
+  const stopNotificationSettings = useSettingsStore.subscribe((state, prev) => {
     if (prev.ringAlertsEnabled && !state.ringAlertsEnabled) {
       void endAllRingAlerts();
+    }
+    if (!prev.hideNotificationPreviews && state.hideNotificationPreviews) {
+      void dismissPreviewNotifications();
     }
   });
 
@@ -176,7 +194,7 @@ export function startNotificationPipeline(nickname: () => string): void {
     stopPeers,
     stopRings,
     stopBadge,
-    stopRingSetting,
+    stopNotificationSettings,
   ];
 }
 

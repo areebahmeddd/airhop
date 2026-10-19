@@ -19,7 +19,7 @@ const SECTIONS: LegalSection[] = [
           "No project-operated accounts or messaging servers.",
           "No analytics, advertising, telemetry, or tracking of any kind.",
           "No sale of user data.",
-          "Your identity is a cryptographic key pair that never leaves your device.",
+          "Your identity is a cryptographic key pair kept only on your device.",
           "All source code is [open source](https://github.com/areebahmeddd/airhop). The storage, networking, and cryptography described here can be verified in the code.",
         ],
       },
@@ -31,15 +31,15 @@ const SECTIONS: LegalSection[] = [
       "Airhop stores data only on your device. None of it is transmitted to us.",
       {
         bullets: [
-          "**Identity keys.** An Ed25519 signing key and a Noise static key are generated locally on first launch and stored in your device's secure storage (iOS Keychain or Android Keystore). A Nostr key and a separate identity for each location cell you use are derived from that signing key rather than stored separately. One-time prekeys, which let someone leave you a protected message while you are away, are random keys kept in the same secure storage. Your public keys are shared with peers you communicate with. **Private keys never leave your device**, except when you move Airhop to a new phone of your own, which sends them directly between the two phones over your local network, encrypted, after your phone confirms it is you.",
+          "**Identity keys.** An Ed25519 signing key and a Noise static key are generated locally when you set up the app and stored in your device's secure storage (iOS Keychain or Android Keystore). A Nostr key and a separate identity for each location cell you use are derived from that signing key rather than stored separately. One-time prekeys, which let someone leave you a protected message while you are away, are random keys kept in the same secure storage. Your public keys are shared with peers you communicate with. **Private keys never leave your device**, except when you move Airhop to a new phone of your own, which sends them directly between the two phones over your local network, encrypted, after your phone confirms it is you.",
           "**Display name and preferences.** Your generated display name and app settings are stored locally.",
-          "**Message history.** Conversations are stored locally on your device and are never sent to us. They are protected by the operating system's app sandbox and whole-device encryption, not by a separate app-level cipher, so a person with access to an unlocked device can read them. Delete a conversation at any time, or wipe everything instantly with panic wipe.",
+          "**Message history.** Conversations are stored locally on your device and are never sent to us. They are protected by the operating system's app sandbox and whole-device encryption, not by a separate app-level cipher, so a person with access to an unlocked device can read them. Delete a conversation at any time, or wipe everything with panic wipe.",
           "**Private group state.** Group names, member lists, and the current group key are stored locally so you can keep reading the group. They are removed by panic wipe or by removing the app.",
-          "**Bulletin board notices.** Signed public notices, and the deletion markers that retract them, persist until the author's chosen expiry, at most seven days. These are public to the mesh or area they were posted to, not private messages.",
-          "**Media attachments.** Photos, videos, voice notes, and files you send or receive are written to the app's cache so they stay viewable. They are deleted automatically once they pass the retention window set in General (seven days by default), and also by panic wipe, by clearing the cache in settings, or by removing the app.",
+          "**Bulletin board notices.** Signed public notices, and the deletion markers that retract them, persist until the author's chosen expiry, at most seven days. These are public to the mesh or area they were posted to, not private messages. A note left in a location channel with no expiry goes only to Nostr relays, which keep it under their own policies.",
+          "**Media attachments.** Photos, videos, voice notes, and files you send or receive are written to the app's cache so they stay viewable. They are deleted automatically once they pass the retention window set in General (seven days by default), and also by panic wipe, by clearing the cache in settings, or by removing the app. Received files share a 100 MiB budget, and the oldest are removed first once it is full.",
           "**Queued outgoing messages.** A private message that has not yet been delivered stays in a local queue on your device so it can be sent once the recipient is reachable again. It is **dropped after seven days** if it never goes through.",
           "**Courier envelopes.** If your device acts as a mesh courier for another user, it may hold an opaque end-to-end encrypted envelope for up to 24 hours. **The courier cannot read the contents.**",
-          "**Ecash wallet.** Cashu tokens are bearer instruments, so they are kept in a separate file encrypted with AES-256 under a key held in your device's secure storage. The same file holds the mints you added, their public keys, and your transaction history (amounts, timestamps, and the mint involved). If a recovery phrase is set up, the twelve words live in secure storage alongside your identity keys, never in the wallet file. **No payment backend is involved and none of this is transmitted to us.**",
+          "**Ecash wallet.** Cashu tokens are bearer instruments, so they are kept in a separate file encrypted with AES-256 under a key held in your device's secure storage. The same file holds the mints you added, their public keys, and your transaction history (amounts, timestamps, and the mint involved). The wallet's twelve-word recovery phrase is created when the wallet is first set up and lives in secure storage alongside your identity keys, never in the wallet file. **No payment backend is involved and none of this is transmitted to us.**",
         ],
       },
     ],
@@ -68,7 +68,7 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Local network (optional)",
     paragraphs: [
-      "Airhop can carry the mesh over a WiFi network you are already joined to, which is the only way an iPhone and an Android phone reach each other without Bluetooth. Finding other devices uses mDNS, the same mechanism a printer uses to appear on a network.",
+      "Airhop can carry the mesh over a Wi-Fi network you are already joined to, which is the only way an iPhone and an Android phone reach each other without Bluetooth. Finding other devices uses mDNS, the same mechanism a printer uses to appear on a network.",
       "**An mDNS announcement is readable by every device on that network, and by whoever runs it.** Network equipment commonly logs it, so on a workplace, campus, hotel or venue network this can tell the operator that a device there is running Airhop, with a timestamp. Bluetooth reaches only as far as the radio does and is not recorded by infrastructure.",
       "What the announcement contains is deliberately empty of history: **a random name, generated fresh each time the transport starts.** It is never your peer ID or any other lasting identifier, so records from two different networks cannot be matched to show the same phone was on both. Your identity is proven only after a connection is made, inside the same encryption every other transport uses.",
       "Message contents are unaffected: they stay end-to-end encrypted exactly as over Bluetooth. What the network operator can observe is that connections exist, when, and roughly how much data moves, in the way any network operator can. Local network is off by default and stays off until you turn it on.",
@@ -80,7 +80,7 @@ const SECTIONS: LegalSection[] = [
       "When Airhop uses the internet, it connects to public or user-selected Nostr relays to extend conversations beyond Bluetooth range.",
       {
         bullets: [
-          "**Private messages.** Fallback messages use NIP-17 gift wraps. Relay operators can observe event timestamps and network metadata, but not message content.",
+          "**Private messages.** Fallback messages use NIP-17 gift wraps. Relay operators can observe event timestamps and network metadata, but not message content. Delivery and read receipts go the same way, gift wrapped, when the person who sent the message is out of Bluetooth range.",
           "**Public channel messages.** These include a channel identifier, timestamp, and your public key.",
           "**Third-party relays.** Nostr relays are operated by third parties whose retention and privacy practices are outside this project's control.",
         ],
@@ -93,7 +93,7 @@ const SECTIONS: LegalSection[] = [
       "Location channels let you talk to people in the same area. Location permission is optional and only requested when you use them.",
       {
         bullets: [
-          "**Exact coordinates never leave your device** and are never stored. Your position is truncated to a grid cell, and the smallest cell we ever publish is roughly 150 meters across.",
+          "**Exact coordinates never leave your device** and are never stored. Your position is truncated to a grid cell, and the smallest cell we ever publish is roughly 150 meters across. The one exception is a location pin you choose to send in a direct message, which carries your real coordinates, encrypted to that person.",
           "A cell still reveals an approximate area to peers and relays. A finer cell reveals a smaller area.",
           "Each cell uses a separate identity derived on your device, so your activity in one area cannot be linked to another, or to your main identity.",
           "Revoking location permission stops the app resolving your cell. Location channels then fall back to Bluetooth range only.",
@@ -110,7 +110,7 @@ const SECTIONS: LegalSection[] = [
         bullets: [
           "**What a mint can see.** Your IP address, the amounts you deposit and withdraw, and when. Mints are third parties whose retention and privacy practices are outside this project's control.",
           "**What a mint cannot see.** Who you are, who you paid, or which coins you deposited became which coins you spent. Cashu signs tokens blindly, so that link is severed by the maths rather than by policy.",
-          "**Tor.** On Android, Tor covers mint traffic along with everything else. On iOS, Tor only wraps Nostr connections, so **mint requests are blocked while Tor is on** unless you opt in beside the Tor switch in Settings. Mesh payments are unaffected either way.",
+          '**Tor.** On Android, Tor covers mint traffic along with the app\'s other web requests. On iOS, Tor only wraps Nostr connections, so **mint requests are blocked while Tor is on** unless you turn on "Allow mint traffic over clear net" in Settings. Mesh payments are unaffected either way.',
           "**Nutzaps are public.** A NIP-61 nutzap is an unencrypted Nostr event. The ecash is locked to the recipient so nobody else can spend it, but relays and observers can see that one public key paid another, and the amount. The encrypted-message fallback does not have this property.",
           "**Recovery phrase.** Created automatically when the wallet is first set up, so coins can be recovered from the start. It is stored only in your device's secure storage, is never transmitted, is never shown to a mint, and is displayed only after Face ID, a fingerprint or your passcode confirms it is you. Anyone who obtains it can spend your balance.",
         ],
@@ -120,7 +120,8 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Tor routing (optional)",
     paragraphs: [
-      "Airhop can route its internet traffic through Tor, using Arti built into the app. There is nothing separate to install. With Tor on, **relay operators cannot see your IP address.** Coverage differs by platform: on Android, Tor covers every connection the app makes. On iOS, it covers only the Nostr connections. Tor is off by default.",
+      "Airhop can route its internet traffic through Tor, using Arti built into the app. There is nothing separate to install. With Tor on, **relay operators cannot see your IP address.** Coverage differs by platform: on Android, Tor covers every web request the app makes, including mints and downloads. On iOS, it covers only the Nostr connections. Tor is off by default.",
+      "Place names for location channels come from your phone's own geocoding service, which no app can route through Tor, so none are looked up while Tor is on or the internet switch is off. Tor also fails closed: if it cannot start, or a bridge you chose is refused, Airhop holds its internet traffic and tells you, rather than falling back to a direct connection.",
       "Tor hides your address from the relay, but not the fact that you are using Tor. On a direct connection the first hop goes to a publicly listed relay, so whoever runs your network can see Tor in use, and may block it. Bridges close that. A bridge is an unlisted entry point, and obfs4 or Snowflake sits in front of it so the connection looks like random noise or ordinary web traffic rather than Tor. Both are built into the app, and bridges are off by default.",
       "A bridge replaces the public relay your connection would normally start from, so it sees your address instead of that relay. Snowflake adds a volunteer's browser in front of the bridge, which sees the same. Neither can read what you send. **This project operates no bridge and no volunteer proxy**, and the built-in bridge addresses come from the Tor Project.",
     ],
@@ -159,7 +160,7 @@ const SECTIONS: LegalSection[] = [
     paragraphs: [
       {
         bullets: [
-          "**Undelivered private messages:** until acknowledged, or 24 hours, whichever comes first.",
+          "**Undelivered private messages:** until delivered, or seven days, whichever comes first.",
           "**Courier envelopes carried for others:** until handed over, or 24 hours.",
           "**Public bulletin-board notices:** until the author's chosen expiry, at most seven days.",
           "**Media attachments:** deleted automatically after the window you choose in General (7 days by default, or 14 or 30). There is no keep-forever option. Also removed by clearing the cache, a panic wipe, or removing the app.",
@@ -175,9 +176,9 @@ const SECTIONS: LegalSection[] = [
     paragraphs: [
       {
         bullets: [
-          "**Panic wipe.** Instantly erase all local keys, messages, queued mail, and app data from the Profile screen.",
+          "**Panic wipe.** Erase all local keys, messages, queued mail, cached media, Tor state, notifications, and app data from the Profile screen. Photos you saved to your gallery belong to your phone's photo library and stay there, and on iPhone a Wi-Fi Aware pairing stays in the system's own list until you remove it in the Settings app.",
           "**Feature controls.** Tor routing, the mesh bridge, and the internet gateway can each be turned on or off in settings, and location channels left unjoined. Anything already published to a relay cannot be recalled.",
-          "**Wallet.** Remove a mint at any time from the Wallet tab. Removing one deletes the coins held there from this device, so withdraw or send them first. A panic wipe destroys the wallet file and its encryption key together.",
+          "**Wallet.** Remove a mint at any time from the Wallet tab. Removing one deletes the coins held there from this device, so withdraw or send them first. A panic wipe destroys the wallet file, its encryption key, and the recovery phrase together.",
           "**System permissions.** Bluetooth, location, microphone, camera, photo library, and notification access can each be revoked in your device settings at any time. Camera access is used to scan QR codes and to take photos or videos you choose to send.",
         ],
       },
@@ -207,7 +208,7 @@ export default function PrivacyScreen({ onBack }: Props): React.JSX.Element {
   return (
     <LegalDocScreen
       title="Privacy Policy"
-      lastUpdated="September 1, 2026"
+      lastUpdated="October 19, 2026"
       sections={SECTIONS}
       onBack={onBack}
     />

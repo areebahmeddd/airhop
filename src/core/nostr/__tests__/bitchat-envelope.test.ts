@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Round-trip tests for the "bitchat1:" Nostr DM envelope.
 import { NoisePayloadType } from "../../mesh/wire/noise-payload";
 import {

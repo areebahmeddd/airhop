@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "mesh Bluetooth Low Energy",
   "home.about.link.wire_protocol": "protokol transmisi",
   "home.about.body.built":
-    "Airhop adalah aplikasi sumber terbuka untuk iOS dan Android untuk perpesanan privat antarperangkat lewat {mesh}. Aplikasi ini dibangun di atas fondasi {bitchat}, memakai ulang {wire_protocol} dan model keamanannya, lalu memperluasnya dengan pembayaran {ecash} luring dan AI luring. Aplikasi ini bekerja tanpa koneksi internet sama sekali, dan pesan diteruskan otomatis melalui perangkat di sekitar (sekitar 10 sampai 30 meter per lompatan di dalam ruangan, lebih jauh di ruang terbuka), hingga 7 lompatan.",
+    "Airhop adalah aplikasi sumber terbuka untuk iOS dan Android untuk perpesanan privat antarperangkat lewat {mesh}. Aplikasi ini dibangun di atas fondasi {bitchat}, memakai ulang {wire_protocol} dan model keamanannya, lalu memperluasnya dengan pembayaran {ecash} luring dan AI luring. Aplikasi ini bekerja tanpa koneksi internet sama sekali, dan pesan diteruskan otomatis melalui perangkat di sekitar (sekitar 30 sampai 50 meter per lompatan di dalam ruangan, lebih jauh di ruang terbuka), hingga 7 lompatan.",
   "home.about.body.identity":
     "Identitas Anda adalah pasangan kunci {ed25519} yang dibuat di perangkat Anda dan disimpan di {ios_keychain} atau {android_keystore}. Tidak ada akun, tidak ada pendaftaran, dan tidak ada yang menyentuh server mana pun, artinya aplikasi ini bisa dipakai sebagai aplikasi sekali pakai yang tidak meninggalkan apa pun yang mengarah kembali ke Anda setelah dihapus.",
   "home.about.body.crypto":
     "Setiap sesi memakai protokol {noise} untuk handshake terautentikasi. Pesan yang tersimpan memakai algoritme {ratchet}, artinya sekalipun perangkat Anda diretas di kemudian hari, pesan lama Anda tetap tidak terbaca. Hapus darurat memusnahkan semua kunci dan pesan dalam waktu kurang dari satu detik.",
   "home.about.body.internet":
-    "Ketika Anda dan kontak berada di luar jangkauan Bluetooth, relai {nostr} berfungsi sebagai jembatan lewat internet, memakai pesan langsung terbungkus berformat {nip17}, sehingga mesh meluas ke seluruh dunia selama kalian berdua daring. Dukungan {tor} tersedia di iOS dan Android, lewat {arti}, dengan bridge {obfs4} dan {snowflake} untuk jaringan yang memblokir Tor.",
+    "Ketika Anda dan kontak berada di luar jangkauan Bluetooth, relai {nostr} berfungsi sebagai jembatan lewat internet, memakai pesan langsung terbungkus berformat {nip17}, sehingga mesh meluas ke seluruh dunia selama kalian berdua daring. Dukungan {tor} tersedia di iOS dan Android, lewat {arti}, dengan bridge {obfs4}, {snowflake}, dan {webtunnel} untuk jaringan yang memblokir Tor.",
   "home.about.optional.title": "Airhop punya fitur opsional yang bisa Anda aktifkan:",
   "home.about.optional.payments.label": "Pembayaran luring:",
   "home.about.optional.payments.body":

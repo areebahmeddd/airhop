@@ -31,7 +31,7 @@ import {
 } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
-import BottomSheet from "@ui/components/bottom-sheet";
+import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
 import UpperText from "@ui/components/upper-text";
 import { MONO_FONT_ORDER, MONO_FONTS } from "@ui/fonts";
@@ -71,6 +71,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type ScrollViewInstance,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import ConnectivityGroup from "./connectivity-group";
@@ -315,7 +316,7 @@ export default function ProfileScreen({
   // unmounts the hub's list and loses its scroll position. Remember it on the way
   // out and restore it when the sub-screen pops. Restored from
   // `onContentSizeChange` because the `contentOffset` prop is iOS-only.
-  const rootScrollRef = useRef<ScrollView>(null);
+  const rootScrollRef = useRef<ScrollViewInstance>(null);
   const rootScrollY = useRef(0);
   const restoreRootScroll = useRef(false);
 
@@ -586,7 +587,7 @@ export default function ProfileScreen({
       );
       if (file.exists) file.delete();
       file.create();
-      file.write(base64, { encoding: "base64" });
+      await file.write(base64, { encoding: "base64" });
       return file.uri;
     } catch {
       return null;
@@ -1134,7 +1135,8 @@ export default function ProfileScreen({
               ]}
               onPress={() => {
                 setShowPeerIDModal(false);
-                setShowQRModal(true);
+                // iOS drops a sheet presented while another still slides out.
+                afterSheetsClose(() => setShowQRModal(true));
               }}
               accessibilityRole="button"
               accessibilityLabel={T("settings.qr.show")}
@@ -1164,7 +1166,6 @@ export default function ProfileScreen({
                   <Pressable
                     style={({ pressed }) => [
                       styles.optionRowGrouped,
-                      selected && styles.optionRowGroupedSelected,
                       pressed && shared.rowPressed,
                     ]}
                     onPress={() => handleSelectStatus(key)}
@@ -1235,7 +1236,6 @@ export default function ProfileScreen({
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
-                        selected && styles.optionRowGroupedSelected,
                         pressed && shared.rowPressed,
                       ]}
                       onPress={() => {
@@ -1288,7 +1288,6 @@ export default function ProfileScreen({
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
-                        selected && styles.optionRowGroupedSelected,
                         pressed && shared.rowPressed,
                       ]}
                       onPress={() => {
@@ -1357,7 +1356,6 @@ export default function ProfileScreen({
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
-                        selected && styles.optionRowGroupedSelected,
                         !shipped && styles.languageRowSoon,
                         pressed && shared.rowPressed,
                       ]}
@@ -1567,9 +1565,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingHorizontal: Spacing.base,
       paddingVertical: Spacing.md,
       minHeight: 60,
-    },
-    optionRowGroupedSelected: {
-      backgroundColor: Colors.surfaceRaised,
     },
     optionIconGrouped: {
       width: 24,

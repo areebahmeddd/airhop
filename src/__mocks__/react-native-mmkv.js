@@ -3,9 +3,6 @@
 // The real module is a JSI native module that cannot run in node, so without
 // this no store module (wallet-store, chat-store and the rest) is testable.
 
-// Shared across instances so a test can assert on clearAll wherever it happened.
-const clearAllSpy = jest.fn();
-
 class MMKVInstance {
   constructor() {
     this._store = new Map();
@@ -14,11 +11,6 @@ class MMKVInstance {
   getString(key) {
     const v = this._store.get(key);
     return typeof v === "string" ? v : undefined;
-  }
-
-  getNumber(key) {
-    const v = this._store.get(key);
-    return typeof v === "number" ? v : undefined;
   }
 
   getBoolean(key) {
@@ -39,10 +31,6 @@ class MMKVInstance {
     this._store.delete(key);
   }
 
-  contains(key) {
-    return this._store.has(key);
-  }
-
   getAllKeys() {
     return Array.from(this._store.keys());
   }
@@ -52,7 +40,6 @@ class MMKVInstance {
 
   clearAll() {
     this._store.clear();
-    clearAllSpy();
   }
 }
 
@@ -72,18 +59,7 @@ function deleteMMKV(id) {
   return instanceCache.delete(id);
 }
 
-function existsMMKV(id) {
-  return instanceCache.has(id);
-}
-
-function __resetAll() {
-  instanceCache.clear();
-}
-
 module.exports = {
   createMMKV,
   deleteMMKV,
-  existsMMKV,
-  __resetAll,
-  __mockClearAll: clearAllSpy,
 };

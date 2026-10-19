@@ -1,6 +1,4 @@
-/**
- * @jest-environment node
- */
+// The transfer messages inside the Noise session, and what decoding refuses.
 import {
   canReadVersion,
   decodeMoveMessage,

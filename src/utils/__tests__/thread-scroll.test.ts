@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // What a message list does when its content size changes.
 
 import { resolveLandingSettle, resolveThreadScroll } from "../thread-scroll";

@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "Bluetooth Low Energy mesh ağı",
   "home.about.link.wire_protocol": "iletim protokolü",
   "home.about.body.built":
-    "Airhop, {mesh} üzerinden özel eşler arası mesajlaşma için iOS ve Android'e yönelik açık kaynaklı bir uygulamadır. {bitchat} temeli üzerine kurulmuştur; onun {wire_protocol} ve güvenlik modelini yeniden kullanır, ardından bunları çevrimdışı {ecash} ödemeleri ve çevrimdışı yapay zekâ ile genişletir. Hiçbir internet bağlantısı olmadan çalışır ve mesajlar yakındaki cihazlar arasında otomatik olarak iletilir (iç mekânda sekme başına yaklaşık 10 ila 30 metre, açık alanda daha fazla), 7 sekmeye kadar.",
+    "Airhop, {mesh} üzerinden özel eşler arası mesajlaşma için iOS ve Android'e yönelik açık kaynaklı bir uygulamadır. {bitchat} temeli üzerine kurulmuştur; onun {wire_protocol} ve güvenlik modelini yeniden kullanır, ardından bunları çevrimdışı {ecash} ödemeleri ve çevrimdışı yapay zekâ ile genişletir. Hiçbir internet bağlantısı olmadan çalışır ve mesajlar yakındaki cihazlar arasında otomatik olarak iletilir (iç mekânda sekme başına yaklaşık 30 ila 50 metre, açık alanda daha fazla), 7 sekmeye kadar.",
   "home.about.body.identity":
     "Kimliğiniz, cihazınızda üretilen ve {ios_keychain} ya da {android_keystore} içinde saklanan bir {ed25519} anahtar çiftidir. Hesap yok, kayıt yok ve herhangi bir sunucuya dokunan hiçbir şey yok; yani silindikten sonra size geri götürecek hiçbir iz bırakmayan tek kullanımlık bir uygulama olarak kullanılabilir.",
   "home.about.body.crypto":
     "Her oturum, kimliği doğrulanmış bir el sıkışma için {noise} protokolünü kullanır. Saklanan mesajlar {ratchet} algoritmasını kullanır; yani cihazınız daha sonra ele geçirilse bile geçmiş mesajlarınız okunamaz kalır. Acil silme, tüm anahtarları ve mesajları bir saniyeden kısa sürede yok eder.",
   "home.about.body.internet":
-    "Siz ve bir kişiniz Bluetooth menzilinin dışındayken {nostr} röleleri internet üzerinden köprü görevi görür; {nip17} biçiminde paketlenmiş doğrudan mesajlar kullanılır, böylece ikiniz de çevrimiçi olduğunuzda mesh ağı dünya geneline uzanır. {tor} desteği hem iOS'ta hem de Android'de {arti} ile mevcuttur; Tor’u engelleyen ağlar için {obfs4} ve {snowflake} köprüleri de var.",
+    "Siz ve bir kişiniz Bluetooth menzilinin dışındayken {nostr} röleleri internet üzerinden köprü görevi görür; {nip17} biçiminde paketlenmiş doğrudan mesajlar kullanılır, böylece ikiniz de çevrimiçi olduğunuzda mesh ağı dünya geneline uzanır. {tor} desteği hem iOS'ta hem de Android'de {arti} ile mevcuttur; Tor’u engelleyen ağlar için {obfs4}, {snowflake} ve {webtunnel} köprüleri de var.",
   "home.about.optional.title": "Airhop'ta açabileceğiniz isteğe bağlı özellikler var:",
   "home.about.optional.payments.label": "Çevrimdışı ödemeler:",
   "home.about.optional.payments.body":

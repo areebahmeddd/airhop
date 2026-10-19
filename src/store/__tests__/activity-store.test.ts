@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Activity feed store: the bell-screen history of inbound messages.
 
 import { useActivityStore, type ActivityEntry } from "../activity-store";

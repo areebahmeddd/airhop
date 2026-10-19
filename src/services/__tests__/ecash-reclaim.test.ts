@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Reclaiming an ecash send has to cancel every copy of it, not just move proofs.
 //
 // A token send is three things at once: reserved proofs in the wallet, a message
@@ -13,7 +10,7 @@
 // These tests pin that invariant, and the DM's own state alongside it, since a
 // bubble stuck on "Sending" is what the user sees go wrong.
 
-// ecash-transfer pulls in mesh-service, which resolves the native BLE and Wi-Fi
+// payment-router pulls in mesh-service, which resolves the native BLE and Wi-Fi
 // TurboModules at import time. Nothing here starts the mesh, so bare stubs are
 // enough to get the module graph to load under Node.
 jest.mock("@bridge/NativeAirhopBLE", () => ({
@@ -25,13 +22,10 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
   default: {},
 }));
 
+import type { StoredProof } from "@core/payments/stored-proof";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useOutboxStore } from "@store/outbox-store";
-import {
-  useWalletStore,
-  type StoredProof,
-  type WalletTx,
-} from "@store/wallet-store";
+import { useWalletStore, type WalletTx } from "@store/wallet-store";
 import { reclaimTokenSend, startReclaimFollow } from "../payment-router";
 
 const MINT = "https://mint.example.com";

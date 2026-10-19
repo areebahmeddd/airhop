@@ -50,7 +50,10 @@ function wifiStatusText(state: WifiFastPath): string {
       return t("settings.network.wifi_unstable");
     case "unsupported":
       return t("settings.diag.wifi_unsupported");
+    // Only reachable with the switch on while the mesh is stopped (Away), so
+    // it reads as the LAN row beside it does.
     case "off":
+      return t("common.off");
     case "unknown":
       return t("settings.diag.wifi_unknown");
   }
@@ -98,6 +101,7 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
   const pairedCount = useMeshStateStore((s) => s.wifiPairedCount);
   const lanState = useMeshStateStore((s) => s.lanState);
   const lanEnabled = useSettingsStore((s) => s.lanTransportEnabled);
+  const lanSupported = lanState !== "unsupported";
   const setLanEnabled = useSettingsStore((s) => s.setLanTransportEnabled);
   const wifiFastPath = useMeshStateStore((s) => s.wifiFastPath);
   const wifiAwareEnabled = useSettingsStore((s) => s.wifiAwareEnabled);
@@ -488,7 +492,9 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
                 />
               }
             />
-            {wifiAwareEnabled && wifiSupported && (
+            {/* Shown when unsupported too, as the reason the switch above
+                is disabled. */}
+            {(wifiAwareEnabled || !wifiSupported) && (
               <>
                 <GroupDivider />
                 <SettingRow
@@ -506,13 +512,13 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
               description={T("settings.network.lan_desc")}
               control={
                 <SettingSwitch
-                  value={lanEnabled}
+                  value={lanEnabled && lanSupported}
                   onValueChange={setLanEnabled}
-                  disabled={lanState === "unsupported"}
+                  disabled={!lanSupported}
                 />
               }
             />
-            {lanEnabled && (
+            {(lanEnabled || !lanSupported) && (
               <>
                 <GroupDivider />
                 <SettingRow
@@ -522,7 +528,7 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
                 />
               </>
             )}
-            {lanEnabled && Platform.OS === "ios" && (
+            {lanEnabled && lanSupported && Platform.OS === "ios" && (
               <>
                 <GroupDivider />
                 <SettingRow

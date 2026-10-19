@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // One identity on two phones: the state a device transfer exists to prevent,
 // and the safety net for when it happens anyway (the person kept using the old
 // phone after the new one had everything). Two phones built from the same seed

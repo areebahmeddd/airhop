@@ -6,12 +6,12 @@ Airhop is MIT-licensed and has no accounts, no ads, no telemetry, and no company
 
 ## Key facts
 
-- Bluetooth mesh: works with no internet, no router and no extra hardware; messages relay up to 7 hops, roughly 10 to 100 m per hop
+- Bluetooth mesh: works with no internet, no router and no extra hardware; messages relay up to 7 hops, roughly 30 to 50 m per hop
 - End-to-end encryption: Noise XX handshake with X25519 and ChaCha20-Poly1305, plus Double Ratchet forward secrecy
 - No accounts: identity is an Ed25519 key pair generated on the device and stored in the iOS Keychain or Android Keystore
 - Offline payments: Cashu ecash tokens sent device to device over Bluetooth with neither phone online
 - Offline AI: an on-device assistant that answers questions with zero network calls
-- Tor integration: Arti embedded on iOS and Android, with obfs4 and Snowflake bridges for networks that block Tor, so relays never see your IP
+- Tor integration: Arti embedded on iOS and Android, with obfs4, Snowflake and WebTunnel bridges for networks that block Tor, so relays never see your IP
 - bitchat compatible: Airhop and bitchat devices join the same mesh with no configuration
 - Panic wipe: triple-tap destroys every key and message in under one second
 - Platforms: iOS 16.0 and later, Android 10.0 and later; macOS and Windows planned

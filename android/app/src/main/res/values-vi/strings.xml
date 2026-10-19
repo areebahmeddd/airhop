@@ -4,4 +4,7 @@
   <string name="mesh_notification_title">Mạng lưới Airhop đang chạy</string>
   <string name="mesh_notification_text">Đang tìm và chuyển tiếp tin nhắn ở gần</string>
   <string name="mesh_notification_stop">Dừng mạng lưới</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="other">%1$s nút mạng trong tầm</item>
+  </plurals>
 </resources>

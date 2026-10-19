@@ -4,4 +4,9 @@
   <string name="mesh_notification_title">Mesh di Airhop attiva</string>
   <string name="mesh_notification_text">Scoperta e inoltro dei messaggi vicini</string>
   <string name="mesh_notification_stop">Ferma la mesh</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="one">%1$s peer nel raggio</item>
+    <item quantity="many">%1$s peer nel raggio</item>
+    <item quantity="other">%1$s peer nel raggio</item>
+  </plurals>
 </resources>

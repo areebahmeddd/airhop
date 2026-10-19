@@ -21,6 +21,7 @@ import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { useRingStore } from "@store/ring-store";
+import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
@@ -271,6 +272,9 @@ export default function ContactInfoSheet({
   }
 
   // Ring, receiver side: a revocable per-contact grant, see Contact.allowRing.
+  // The Privacy & security master switch refuses every ring over it, and the
+  // grant's row says so rather than promise a ring that will be refused.
+  const ringAlertsEnabled = useSettingsStore((s) => s.ringAlertsEnabled);
   function handleAllowRingChange(allow: boolean): void {
     if (peerID !== null)
       useContactsStore.getState().setAllowRing(peerID, allow);
@@ -509,19 +513,27 @@ export default function ContactInfoSheet({
                   </React.Fragment>
                 ))}
               </View>
-              {/* A permission, not a fact, so it's kept apart from infoCard's
-                  static rows. Offered only with real keys for this person
-                  (renameable is the same hasKeys gate setAllowRing enforces). */}
-              {renameable && (
+              {/* Needs real keys (renameable is setAllowRing's hasKeys gate).
+                  A keyless peer sees it disabled, pointing at Verify. */}
+              {(renameable || canVerify) && (
                 <View style={styles.infoCard}>
                   <SettingRow
                     icon="bell"
                     label={T("chat.contact.allow_ring")}
-                    description={T("chat.contact.allow_ring_desc")}
+                    description={
+                      !renameable
+                        ? T("chat.contact.allow_ring_needs_keys")
+                        : ringAlertsEnabled
+                          ? T("chat.contact.allow_ring_desc")
+                          : T("chat.contact.allow_ring_master_off", {
+                              setting: T("settings.security.ring_alerts"),
+                            })
+                    }
                     control={
                       <SettingSwitch
                         value={contact?.allowRing === true}
                         onValueChange={handleAllowRingChange}
+                        disabled={!renameable}
                       />
                     }
                   />

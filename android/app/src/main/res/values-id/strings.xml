@@ -4,4 +4,7 @@
   <string name="mesh_notification_title">Mesh Airhop aktif</string>
   <string name="mesh_notification_text">Menemukan dan meneruskan pesan terdekat</string>
   <string name="mesh_notification_stop">Hentikan mesh</string>
+  <plurals name="mesh_notification_peers">
+    <item quantity="other">%1$s rekan dalam jangkauan</item>
+  </plurals>
 </resources>

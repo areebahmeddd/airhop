@@ -28,7 +28,6 @@ interface ChannelMembersState {
 
   // Record proof that this peer holds the channel key. Idempotent.
   noteMember: (channel: string, peerID: string, nickname: string) => void;
-  membersFor: (channel: string) => ChannelMember[];
   clearChannel: (channel: string) => void;
   clearAll: () => void;
 }
@@ -39,12 +38,15 @@ export const useChannelMembersStore = create<ChannelMembersState>(
 
     noteMember(channel, peerID, nickname) {
       const existing = get().byChannel[channel] ?? [];
-      const prior = existing.find((m) => m.peerID === peerID);
-      // Skip the write when nothing changed, so a busy channel does not
-      // re-render every subscriber on each message.
-      const now = Date.now();
-      if (prior?.nickname === nickname && prior.lastSeenMs === now) return;
+      // Skip the write when nothing a reader sees would change, so a busy
+      // channel does not re-render every subscriber on each message. Readers
+      // see the names and their order, never lastSeenMs itself, and a member
+      // already at the head is newer than everyone else: refreshing their stamp
+      // moves no one, and every later note still lands ahead of it.
+      const head = existing[0];
+      if (head?.peerID === peerID && head.nickname === nickname) return;
 
+      const now = Date.now();
       const next = [
         { peerID, nickname, lastSeenMs: now },
         ...existing.filter((m) => m.peerID !== peerID),
@@ -52,10 +54,6 @@ export const useChannelMembersStore = create<ChannelMembersState>(
         .sort((a, b) => b.lastSeenMs - a.lastSeenMs)
         .slice(0, MAX_MEMBERS_PER_CHANNEL);
       set((state) => ({ byChannel: { ...state.byChannel, [channel]: next } }));
-    },
-
-    membersFor(channel) {
-      return get().byChannel[channel] ?? [];
     },
 
     clearChannel(channel) {

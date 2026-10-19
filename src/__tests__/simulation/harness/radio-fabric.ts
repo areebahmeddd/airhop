@@ -409,9 +409,6 @@ export class RadioFabric {
     for (const link of this.links.values()) {
       if (link.a === deviceID) n++;
     }
-    for (const [, pending] of this.pendingDiscovery) {
-      void pending;
-    }
     return n;
   }
 
@@ -543,13 +540,10 @@ export class RadioFabric {
     linkID: string,
     dataBase64: string,
   ): void {
-    setTimeout(
-      () => {
-        if (this.disposed) return;
-        to.native.fabricDeliver(linkID, dataBase64);
-      },
-      Math.max(1, delay),
-    );
+    this.world.carry(Math.max(1, delay), () => {
+      if (this.disposed) return;
+      to.native.fabricDeliver(linkID, dataBase64);
+    });
   }
 
   // Flip one byte of the base64. The decoder must reject the result; the app

@@ -1,33 +1,18 @@
-/**
- * @jest-environment node
- */
 // Byte budgets for captions and forwards. Both are wire lengths in UTF-8 bytes,
 // so every case here is one where counting UTF-16 units gives the wrong answer.
 
 import { MAX_CAPTION_BYTES } from "@core/mesh/wire/file-packet";
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
-import { utf8ByteLength } from "@utils/utf8-budget";
 import { clampCaption, forwardTextFits } from "../compose-budget";
 
+// utf8-budget.test.ts covers the cut itself; this pins that the caption is
+// held to the caption field's budget.
 describe("clampCaption", () => {
-  it("leaves a caption inside the budget alone", () => {
-    const caption = "a".repeat(MAX_CAPTION_BYTES);
-    expect(clampCaption(caption)).toBe(caption);
-  });
-
-  it("cuts by bytes, not UTF-16 units", () => {
-    // 200 emoji are 400 UTF-16 units, which `maxLength={512}` admitted, and
-    // 800 bytes, which the encoder drops without a word.
-    const caption = "😀".repeat(200);
-    const clamped = clampCaption(caption);
-    expect(utf8ByteLength(clamped)).toBeLessThanOrEqual(MAX_CAPTION_BYTES);
+  it("cuts to the caption budget in bytes, not UTF-16 units", () => {
+    // 200 emoji are 400 UTF-16 units, which `maxLength` would count, and 800
+    // bytes, which the encoder drops without a word.
+    const clamped = clampCaption("😀".repeat(200));
     expect(clamped).toBe("😀".repeat(MAX_CAPTION_BYTES / 4));
-  });
-
-  it("never leaves half a surrogate pair", () => {
-    const clamped = clampCaption("a" + "😀".repeat(200));
-    expect(clamped.endsWith("\uD83D")).toBe(false);
-    expect(utf8ByteLength(clamped)).toBeLessThanOrEqual(MAX_CAPTION_BYTES);
   });
 });
 

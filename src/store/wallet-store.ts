@@ -26,6 +26,7 @@
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "@core/crypto/keychain";
 import { bytesToBase64 } from "@core/encoding/base64";
 import { NUTZAP_LOOKBACK_S } from "@core/payments/nutzap";
+import type { StoredProof } from "@core/payments/stored-proof";
 import type { CatalogKey, TranslationVars } from "@i18n";
 import { createMMKV, deleteMMKV } from "react-native-mmkv";
 import { create } from "zustand";
@@ -46,34 +47,6 @@ const ENCRYPTION_KEY_BYTES = 24;
 const ACCOUNT_SEP = "|";
 
 // ---- Types ----
-
-export interface SerializedDleq {
-  e: string;
-  s: string;
-  r?: string;
-}
-
-// `amount` is a plain number in the account's unit (`Amount` is not JSON).
-export interface StoredProof {
-  id: string; // Keyset ID
-  amount: number;
-  secret: string;
-  C: string; // Unblinded signature from the mint
-  dleq?: SerializedDleq; // NUT-12 discrete-log-equality witness, when present
-  witness?: string; // NUT-11 P2PK / NUT-14 HTLC witness, when present
-  // True only for outputs the mint signed for us (a swap, mint or melt): the
-  // sender holds no copy. A state check is not enough; NUT-07 calls a coin it
-  // has never seen unspent.
-  verified?: boolean;
-  // Secret derived from the recovery phrase, so restorable. Received proofs
-  // carry the sender's secrets until swapped.
-  derived?: boolean;
-  receivedAtMs?: number;
-  // Unverified only: the transaction that brought the coin in (an offline
-  // receive, or a reclaimed send). A refresh swaps each receipt on its own,
-  // so a mint refusing one token's coins cannot block the others.
-  receiptTxId?: string;
-}
 
 export type TxKind =
   | "send" // outgoing ecash token (BLE, QR, share sheet)
@@ -214,7 +187,6 @@ interface WalletState {
     proofs: StoredProof[],
   ) => { added: number; duplicates: number };
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
-  replaceProofs: (mintUrl: string, unit: string, proofs: StoredProof[]) => void;
   // For coins someone else may also hold, such as a reclaimed token: the next
   // refresh swaps them, as receipt `receiptTxId`, which makes them ours alone.
   markUnverified: (
@@ -641,31 +613,6 @@ export function selectAccounts(
     .sort((a, b) => b.balance - a.balance || a.key.localeCompare(b.key));
 }
 
-// Across every mint, one unit only.
-export function selectBalanceForUnit(
-  state: Pick<WalletData, "proofs">,
-  unit: string,
-): number {
-  return Object.entries(state.proofs).reduce(
-    (total, [key, proofs]) =>
-      parseAccountKey(key).unit === unit ? total + sum(proofs) : total,
-    0,
-  );
-}
-
-export function selectUnits(
-  state: Pick<WalletData, "proofs" | "reserved">,
-): string[] {
-  const units = new Set<string>();
-  for (const [key, proofs] of Object.entries(state.proofs)) {
-    if (proofs.length > 0) units.add(parseAccountKey(key).unit);
-  }
-  for (const res of Object.values(state.reserved)) {
-    units.add(parseAccountKey(res.account).unit);
-  }
-  return [...units].sort();
-}
-
 // Every cached keyset with its unit, flat (cashu-ts matches by id). A V4 token
 // carries SHORT keyset ids, and a v2 one ("01" prefix) cannot be decoded
 // without the full id: cashu-ts throws rather than guessing, as NUT-00
@@ -695,13 +642,6 @@ export function selectKeysetRefs(
   state: WalletState,
 ): { id: string; unit: string }[] {
   return keysetRefsOf(state.mints);
-}
-
-export function selectSecrets(
-  state: Pick<WalletData, "proofs">,
-  key: string,
-): Set<string> {
-  return new Set((state.proofs[key] ?? []).map((p) => p.secret));
 }
 
 // ---- Store ----
@@ -807,11 +747,6 @@ export const useWalletStore = create<WalletState>()(
             },
           };
         });
-      },
-
-      replaceProofs(mintUrl, unit, proofs) {
-        const key = accountKey(mintUrl, unit);
-        set((state) => ({ proofs: { ...state.proofs, [key]: proofs } }));
       },
 
       // Nothing to mark skips the write, which would persist an unchanged store.

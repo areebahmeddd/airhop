@@ -1,11 +1,7 @@
-/**
- * @jest-environment node
- */
-// A refused attachment used to leave no trace at all: the sender's bubble said
-// "sent", the recipient saw nothing, and the two were indistinguishable from a
-// file that was never sent. Saying so is the fix, but the saying itself is a
-// surface anyone in radio range can reach, so the throttle around it is as
-// load-bearing as the message.
+// A refused attachment that leaves no trace is indistinguishable from a file
+// that was never sent, so the receiver says so. That notice is a surface anyone
+// in radio range can reach, so the throttle around it is as load-bearing as the
+// message.
 
 import { t } from "@i18n";
 import {
@@ -90,6 +86,9 @@ describe("AttachmentFailureNotifier", () => {
     // The most recent sender is still throttled, which is the property that
     // matters: eviction cannot be used to escape the interval on demand.
     expect(n.shouldNotify("peer-499", 499)).toBe(false);
+    // The oldest was evicted, so it reads as a first failure even though its
+    // own interval has not passed. A map that grew would still throttle it.
+    expect(n.shouldNotify("peer-0", 500)).toBe(true);
   });
 
   it("forgets everything on reset", () => {

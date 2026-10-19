@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // The first thing the simulation has to prove: two phones, one air, and they
 // find each other on their own. Everything else in this directory depends on
 // this working, so it is kept small and read as the harness's own unit test.
@@ -149,7 +146,7 @@ describe("simulation harness", () => {
     // them, so no phone's service may believe it holds more than two.
     expect(radio.linkCount()).toBe(3);
     for (const d of [a, b, c]) {
-      if (d.bleLinkCount() > 2) {
+      if (d.bleLinkCount() !== 2) {
         throw new Error(
           `${d.id} believes it holds ${d.bleLinkCount()} links out of 3 in the world; ` +
             `it is only party to 2. service=[${d.bleLinkIDs().join(",")}] ` +

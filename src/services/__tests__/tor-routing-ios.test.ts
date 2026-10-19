@@ -1,7 +1,9 @@
 // The iOS half of the Tor decision, where Airhop owns Arti.
 //
-// A separate file from tor-routing.test.ts because `Platform.OS` is read at
-// module import time, so one registry cannot hold both platforms.
+// A separate file from tor-routing.test.ts because each pins its own platform
+// in the react-native mock, and the native modules differ with it (the
+// TorSocket module is present here). `Platform.OS` is read per call, so nothing
+// else forces the split.
 //
 // The gap these cover: `enableTorRouting` awaits `awaitTorReady` before it
 // claims anything, so a user toggling Tor on gets an honest answer. But
@@ -28,6 +30,9 @@ const mockStartTor = jest.fn<Promise<void>, [string]>();
 const mockStopTor = jest.fn<Promise<void>, []>();
 const mockAwaitTorReady = jest.fn<Promise<boolean>, [number]>();
 const mockSetTorActive = jest.fn();
+// What the store holds, so a test reads the claim where the UI reads it. Not
+// reset between tests, like the store it stands in for.
+let mockTorActive = false;
 // Tracked, because a retry and the internet switch read it back to tell the
 // held state from a start in flight.
 let mockTorBootstrap: TorBootstrapPhase = "idle";
@@ -118,7 +123,13 @@ jest.mock("../mesh-service", () => ({
 jest.mock("@store/mesh-state-store", () => ({
   useMeshStateStore: {
     getState: () => ({
-      setTorActive: mockSetTorActive,
+      setTorActive: (active: boolean) => {
+        mockTorActive = active;
+        mockSetTorActive(active);
+      },
+      get torActive() {
+        return mockTorActive;
+      },
       setTorBootstrap: mockSetTorBootstrap,
       setNostrBlockedByTor: mockSetNostrBlockedByTor,
       get nostrBlockedByTor() {
@@ -157,14 +168,23 @@ jest.mock("@store/settings-store", () => ({
   },
 }));
 
-import type { TorBootstrapPhase } from "@store/mesh-state-store";
 import {
-  isTorRoutingActive,
+  useMeshStateStore,
+  type TorBootstrapPhase,
+} from "@store/mesh-state-store";
+import { useWebSocketImplementation } from "nostr-tools/pool";
+import {
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
   revalidateTorRouting,
   setTorRouting,
 } from "../tor-routing";
+import { TorWebSocket } from "../tor-websocket";
+
+// The socket factory nostr-tools dials relays through. The direct one is the
+// runtime's own WebSocket, which tor-routing captures before any swap.
+const socketFactory = jest.mocked(useWebSocketImplementation);
+const DIRECT_SOCKET = globalThis.WebSocket;
 
 function status(over: Partial<{ isReady: boolean; isStarting: boolean }> = {}) {
   return {
@@ -187,6 +207,10 @@ beforeEach(async () => {
   mockInternetEnabled = true;
   mockStartTor.mockResolvedValue(undefined);
   mockStopTor.mockResolvedValue(undefined);
+  // Reset, not just cleared: an implementation one case scripts (a rejection,
+  // a timeout) would otherwise answer the next case's bootstrap.
+  mockAwaitTorReady.mockReset();
+  mockAwaitTorReady.mockResolvedValue(true);
   mockGetTorStatus.mockResolvedValue(status({ isReady: true }));
   // Land every test on a known-off baseline.
   await setTorRouting(false);
@@ -208,7 +232,17 @@ describe("enabling Tor on iOS", () => {
     expect(result.ok).toBe(true);
     expect(mockStartTor).toHaveBeenCalled();
     expect(mockAwaitTorReady).toHaveBeenCalled();
-    expect(isTorRoutingActive()).toBe(true);
+    expect(socketFactory).toHaveBeenLastCalledWith(TorWebSocket);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
+  });
+
+  it("puts the direct socket back when Tor is turned off", async () => {
+    await setTorRouting(true);
+    expect(socketFactory).toHaveBeenLastCalledWith(TorWebSocket);
+
+    await setTorRouting(false);
+
+    expect(socketFactory).toHaveBeenLastCalledWith(DIRECT_SOCKET);
   });
 
   it("stays fail-closed, and keeps Arti, when the bootstrap times out", async () => {
@@ -223,7 +257,7 @@ describe("enabling Tor on iOS", () => {
     expect(result).toEqual({ ok: false, reason: "timeout" });
     expect(mockStopTor).not.toHaveBeenCalled();
     // Claiming Tor here would be the whole failure this path exists to avoid.
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   it("falls back to the direct socket when Arti throws", async () => {
@@ -232,7 +266,8 @@ describe("enabling Tor on iOS", () => {
     const result = await setTorRouting(true);
 
     expect(result).toEqual({ ok: false, reason: "error" });
-    expect(isTorRoutingActive()).toBe(false);
+    expect(socketFactory).toHaveBeenLastCalledWith(DIRECT_SOCKET);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 });
 
@@ -249,7 +284,7 @@ describe("revalidating on iOS", () => {
 
     await revalidateTorRouting();
 
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
     expect(mockSetTorActive).toHaveBeenCalledWith(false);
   });
 
@@ -260,7 +295,7 @@ describe("revalidating on iOS", () => {
 
     await revalidateTorRouting();
 
-    expect(isTorRoutingActive()).toBe(true);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 
   it("leaves a healthy circuit alone", async () => {
@@ -269,7 +304,7 @@ describe("revalidating on iOS", () => {
 
     await revalidateTorRouting();
 
-    expect(isTorRoutingActive()).toBe(true);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 
   it("treats a native error as not routing rather than as fine", async () => {
@@ -278,7 +313,7 @@ describe("revalidating on iOS", () => {
 
     await revalidateTorRouting();
 
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   it("keeps the saved preference when the circuit is gone", async () => {
@@ -354,7 +389,7 @@ describe("surviving a Tor client that kills the process", () => {
     expect(mockNostrBlocked).toBe(true);
     expect(mockHoldRoute).toHaveBeenCalledTimes(1);
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   test("turning Tor on again really tries again", async () => {
@@ -391,6 +426,7 @@ describe("startup priming on iOS", () => {
     // fails closed rather than leaking to clear net.
     expect(mockStartTor).toHaveBeenCalled();
     expect(mockSetTorBootstrap).toHaveBeenCalledWith("starting");
+    expect(socketFactory).toHaveBeenLastCalledWith(TorWebSocket);
   });
 
   it("does not claim Tor before a circuit exists", async () => {
@@ -403,7 +439,7 @@ describe("startup priming on iOS", () => {
     // here would assert it before a single circuit has formed, which is true
     // within seconds on a good network and never true at all on one that blocks
     // Tor, where the banner would sit green for the whole session.
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   it("claims Tor the moment Arti reports ready", async () => {
@@ -414,7 +450,7 @@ describe("startup priming on iOS", () => {
     emitStatus({ isReady: true });
 
     // The first instant the claim is actually true.
-    expect(isTorRoutingActive()).toBe(true);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 });
 
@@ -439,7 +475,7 @@ describe("bootstrap reporting on iOS", () => {
     emitStatus({ isReady: false, isStarting: false });
 
     expect(mockSetTorBootstrap).toHaveBeenCalledWith("blocked");
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
   it("claims Tor the moment a late circuit comes up", async () => {
@@ -447,14 +483,14 @@ describe("bootstrap reporting on iOS", () => {
     primeTorRoutingOnStartup();
     await Promise.resolve();
     emitStatus({ isReady: false, isStarting: false });
-    expect(isTorRoutingActive()).toBe(false);
+    expect(useMeshStateStore.getState().torActive).toBe(false);
 
     // Bootstrap recovered on its own, which is the common case after a network
     // change. The banner should go back to the real Tor claim without the user
     // touching anything.
     emitStatus({ isReady: true });
 
-    expect(isTorRoutingActive()).toBe(true);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("idle");
   });
 
@@ -516,7 +552,7 @@ describe("app lifecycle on iOS", () => {
   it("does not stand the claim down while a resume restart is forming", async () => {
     mockAwaitTorReady.mockResolvedValue(true);
     await setTorRouting(true);
-    expect(isTorRoutingActive()).toBe(true);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
 
     notifyTorAppForeground(true);
     mockGetTorStatus.mockResolvedValue(
@@ -524,7 +560,7 @@ describe("app lifecycle on iOS", () => {
     );
     await revalidateTorRouting();
 
-    expect(isTorRoutingActive()).toBe(true);
+    expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 
   // An older native binary without the method must not take the resume down

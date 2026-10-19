@@ -14,6 +14,7 @@
 // degrades geohash channels rather than breaking the app.
 
 import { MAX_USEFUL_ACCURACY_M } from "@core/mesh/wire/location-pin";
+import { withTimeout } from "@utils/with-timeout";
 import * as Location from "expo-location";
 
 export interface Coords {
@@ -24,6 +25,9 @@ export interface Coords {
 // Re-check position at most this often. Geohash cells are large, so polling
 // harder would just drain battery for no behavioural change.
 const REFRESH_MS = 5 * 60 * 1000;
+
+// A live fix that never comes would stall every geohash channel.
+const COARSE_FIX_TIMEOUT_MS = 15_000;
 
 let cached: { coords: Coords; atMs: number } | null = null;
 
@@ -77,9 +81,20 @@ export async function locationPermissionState(): Promise<{
 // Current coarse position, or null if unavailable/denied.
 // Served from a short cache so several callers on one screen don't each
 // trigger a separate fix.
+//
+// The permission is checked before the cache, and a denial drops it: a fix
+// taken while allowed is still a position, and serving it after the grant was
+// revoked would keep the location channels and the bridge on that cell for up
+// to REFRESH_MS. iOS keeps the process alive across a revoke, so this is
+// reachable there.
 export async function getCoarseLocation(
   forceRefresh = false,
 ): Promise<Coords | null> {
+  if (!(await hasLocationPermission())) {
+    cached = null;
+    return null;
+  }
+
   if (
     !forceRefresh &&
     cached !== null &&
@@ -88,17 +103,19 @@ export async function getCoarseLocation(
     return cached.coords;
   }
 
-  if (!(await hasLocationPermission())) return null;
-
   try {
     const position = await Location.getLastKnownPositionAsync();
     // A last-known fix is instant and plenty accurate for a geohash cell;
     // only pay for a live fix when there's nothing cached on the device.
     const resolved =
       position ??
-      (await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      }));
+      (await withTimeout<Location.LocationObject | null>(
+        Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        }),
+        COARSE_FIX_TIMEOUT_MS,
+        null,
+      ));
     if (!resolved) return null;
 
     const coords: Coords = {
@@ -141,7 +158,6 @@ function pinnable(position: Location.LocationObject | null): boolean {
 // coarse to point at anything.
 export async function getPinLocation(): Promise<PinFix | null> {
   if (!(await hasLocationPermission())) return null;
-  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const lastKnown = await Location.getLastKnownPositionAsync({
       maxAge: PIN_MAX_AGE_MS,
@@ -149,14 +165,13 @@ export async function getPinLocation(): Promise<PinFix | null> {
     // A coarse cached fix (a cell tower's) is worth one live attempt.
     const position = pinnable(lastKnown)
       ? lastKnown
-      : await Promise.race([
+      : await withTimeout<Location.LocationObject | null>(
           Location.getCurrentPositionAsync({
             accuracy: Location.Accuracy.Balanced,
           }),
-          new Promise<null>((resolve) => {
-            timer = setTimeout(() => resolve(null), PIN_FIX_TIMEOUT_MS);
-          }),
-        ]);
+          PIN_FIX_TIMEOUT_MS,
+          null,
+        );
     if (position === null || !pinnable(position)) return null;
     return {
       lat: position.coords.latitude,
@@ -166,8 +181,6 @@ export async function getPinLocation(): Promise<PinFix | null> {
     };
   } catch {
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
 

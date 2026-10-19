@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "Bluetooth Low Energy 網狀網路",
   "home.about.link.wire_protocol": "傳輸協定",
   "home.about.body.built":
-    "Airhop 是一款給 iOS 與 Android 的開源應用程式，透過 {mesh} 提供私密的點對點通訊。它建立在 {bitchat} 的基礎之上，沿用其 {wire_protocol} 與安全模型，並在此之上加入離線 {ecash} 支付與離線 AI。它在完全沒有網路的情況下也能運作，訊息會在附近的裝置之間自動轉送（室內每跳約 10 到 30 公尺，空曠處更遠），最多 7 跳。",
+    "Airhop 是一款給 iOS 與 Android 的開源應用程式，透過 {mesh} 提供私密的點對點通訊。它建立在 {bitchat} 的基礎之上，沿用其 {wire_protocol} 與安全模型，並在此之上加入離線 {ecash} 支付與離線 AI。它在完全沒有網路的情況下也能運作，訊息會在附近的裝置之間自動轉送（室內每跳約 30 到 50 公尺，空曠處更遠），最多 7 跳。",
   "home.about.body.identity":
     "你的身分是一組在本機產生的 {ed25519} 金鑰，保存在 {ios_keychain} 或 {android_keystore} 之中。沒有帳號，沒有註冊，也沒有任何東西會接觸伺服器，也就是說它可以當作一次性應用程式使用，刪除後不會留下任何指向你的線索。",
   "home.about.body.crypto":
     "每個工作階段都使用 {noise} 協定完成經過驗證的交握。已儲存的訊息使用 {ratchet} 演算法，也就是說即使你的裝置日後遭到入侵，過去的訊息依然無法解讀。緊急抹除會在一秒內銷毀所有金鑰與訊息。",
   "home.about.body.internet":
-    "當你和聯絡人都超出 Bluetooth 範圍時，{nostr} 中繼會作為透過網際網路的橋樑，使用 {nip17} 形式包裝的私訊，因此只要你們雙方都在線上，網狀網路就能延伸到全世界。{tor} 支援在 iOS 與 Android 上皆可使用，透過 {arti} 實作，並為封鎖 Tor 的網路提供 {obfs4} 與 {snowflake} 橋接。",
+    "當你和聯絡人都超出 Bluetooth 範圍時，{nostr} 中繼會作為透過網際網路的橋樑，使用 {nip17} 形式包裝的私訊，因此只要你們雙方都在線上，網狀網路就能延伸到全世界。{tor} 支援在 iOS 與 Android 上皆可使用，透過 {arti} 實作，並為封鎖 Tor 的網路提供 {obfs4}、{snowflake} 與 {webtunnel} 橋接。",
   "home.about.optional.title": "Airhop 提供了一些可以自行開啟的功能：",
   "home.about.optional.payments.label": "離線支付：",
   "home.about.optional.payments.body": "使用 {cashu} 協定在網狀網路上收付款項（僅限 Bitcoin）。",

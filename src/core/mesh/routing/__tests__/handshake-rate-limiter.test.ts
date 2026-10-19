@@ -1,6 +1,5 @@
-/**
- * @jest-environment node
- */
+// The Noise handshake throttle (CRY-5): bitchat-ios's per-peer and global
+// budgets, and which messages the global one counts.
 import { HandshakeRateLimiter } from "../handshake-rate-limiter";
 
 describe("HandshakeRateLimiter", () => {

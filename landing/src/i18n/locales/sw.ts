@@ -63,13 +63,13 @@ const strings: Strings = {
   "home.about.link.mesh": "mesh ya Bluetooth Low Energy",
   "home.about.link.wire_protocol": "itifaki ya upitishaji",
   "home.about.body.built":
-    "Airhop ni programu ya chanzo huria kwa iOS na Android kwa ujumbe wa faragha kati ya vifaa moja kwa moja kupitia {mesh}. Imejengwa juu ya msingi wa {bitchat}, ikitumia tena {wire_protocol} na muundo wake wa usalama, kisha ikiviongeza kwa malipo ya {ecash} nje ya mtandao na AI nje ya mtandao. Inafanya kazi bila muunganisho wowote wa intaneti, na ujumbe hupitishwa kiotomatiki kati ya vifaa vilivyo karibu (takriban mita 10 hadi 30 kwa kila hatua ndani ya jengo, zaidi nje), hadi hatua 7.",
+    "Airhop ni programu ya chanzo huria kwa iOS na Android kwa ujumbe wa faragha kati ya vifaa moja kwa moja kupitia {mesh}. Imejengwa juu ya msingi wa {bitchat}, ikitumia tena {wire_protocol} na muundo wake wa usalama, kisha ikiviongeza kwa malipo ya {ecash} nje ya mtandao na AI nje ya mtandao. Inafanya kazi bila muunganisho wowote wa intaneti, na ujumbe hupitishwa kiotomatiki kati ya vifaa vilivyo karibu (takriban mita 30 hadi 50 kwa kila hatua ndani ya jengo, zaidi nje), hadi hatua 7.",
   "home.about.body.identity":
     "Utambulisho wako ni jozi ya funguo za {ed25519} inayotengenezwa kwenye kifaa chako na kuhifadhiwa katika {ios_keychain} au {android_keystore}. Hakuna akaunti, hakuna usajili, wala kitu chochote kinachogusa seva, yaani inaweza kutumika kama programu ya matumizi ya mara moja isiyoacha chochote kinachokuelekea baada ya kufutwa.",
   "home.about.body.crypto":
     "Kila kipindi hutumia itifaki ya {noise} kwa uthibitishaji wa awali. Ujumbe uliohifadhiwa hutumia algoriti ya {ratchet}, yaani hata kama kifaa chako kitavamiwa baadaye, ujumbe wako wa zamani hubaki usiosomeka. Ufutaji wa dharura huharibu funguo na ujumbe wote kwa chini ya sekunde moja.",
   "home.about.body.internet":
-    "Wewe na mwenzako mkiwa nje ya masafa ya Bluetooth, vipeperushi vya {nostr} hufanya kazi kama daraja kupitia intaneti, vikitumia ujumbe wa moja kwa moja uliofungashwa kwa muundo wa {nip17}, hivyo mesh hufika dunia nzima kila mnapokuwa mtandaoni nyote wawili. Msaada wa {tor} upo kwenye iOS na Android, kupitia {arti}, na madaraja ya {obfs4} na {snowflake} kwa mitandao inayozuia Tor.",
+    "Wewe na mwenzako mkiwa nje ya masafa ya Bluetooth, vipeperushi vya {nostr} hufanya kazi kama daraja kupitia intaneti, vikitumia ujumbe wa moja kwa moja uliofungashwa kwa muundo wa {nip17}, hivyo mesh hufika dunia nzima kila mnapokuwa mtandaoni nyote wawili. Msaada wa {tor} upo kwenye iOS na Android, kupitia {arti}, na madaraja ya {obfs4}, {snowflake} na {webtunnel} kwa mitandao inayozuia Tor.",
   "home.about.optional.title": "Airhop ina vipengele vya hiari unavyoweza kuwasha:",
   "home.about.optional.payments.label": "Malipo nje ya mtandao:",
   "home.about.optional.payments.body":

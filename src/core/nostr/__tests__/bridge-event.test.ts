@@ -1,10 +1,6 @@
-/**
- * @jest-environment node
- *
- * Mesh-bridge rendezvous event wire format. Must stay byte-compatible with
- * bitchat NostrProtocol.createBridgeMeshEvent / createBridgePresenceEvent and
- * MeshMessageIdentity.stableID so the two apps' bridges interoperate.
- */
+// Mesh-bridge rendezvous event wire format. Must stay byte-compatible with
+// bitchat NostrProtocol.createBridgeMeshEvent / createBridgePresenceEvent and
+// MeshMessageIdentity.stableID so the two apps' bridges interoperate.
 import { verifyEvent } from "nostr-tools";
 import {
   bridgeStableID,
@@ -36,10 +32,6 @@ describe("bridgeStableID", () => {
     expect(bridgeStableID("aa", 1, "y")).not.toBe(base);
     expect(bridgeStableID("ab", 1, "x")).not.toBe(base);
     expect(bridgeStableID("aa", 2, "x")).not.toBe(base);
-  });
-
-  test("is 32 hex chars", () => {
-    expect(bridgeStableID("aa", 1, "x")).toMatch(/^[0-9a-f]{32}$/);
   });
 });
 

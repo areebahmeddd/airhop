@@ -13,7 +13,7 @@ import { Platform } from "react-native";
 
 // Whether anything audible or tactile started.
 export async function startRingAlert(durationMs: number): Promise<boolean> {
-  if (Platform.OS !== "android" || NativeAirhopApp === null) return false;
+  if (Platform.OS !== "android" || NativeAirhopApp == null) return false;
   try {
     return await NativeAirhopApp.startRingAlert(durationMs);
   } catch {
@@ -23,7 +23,7 @@ export async function startRingAlert(durationMs: number): Promise<boolean> {
 
 // Safe when nothing is ringing, and on iOS, where there is nothing to stop.
 export async function stopRingAlert(): Promise<void> {
-  if (Platform.OS !== "android" || NativeAirhopApp === null) return;
+  if (Platform.OS !== "android" || NativeAirhopApp == null) return;
   try {
     await NativeAirhopApp.stopRingAlert();
   } catch {

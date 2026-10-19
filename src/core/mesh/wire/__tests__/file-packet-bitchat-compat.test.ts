@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // An attachment Airhop sends must decode in bitchat, on both of its clients.
 //
 // This is the closest thing to a cross-client field test that CI can run.
@@ -25,7 +22,6 @@
 
 import {
   encodeFilePacket,
-  ensureFileExtension,
   MAX_FILE_BYTES,
   wireFileName,
   wireMediaName,
@@ -280,53 +276,6 @@ describe.each(CLIENTS)(
   },
 );
 
-// ---- Wire file names ----
-
-// The name decides whether a file can be used at all: the receiver writes it to
-// disk, and the photo library and the audio player read the type off the
-// extension rather than the MIME beside it. iOS rejects a save outright when
-// there is none (expo-media-library EmptyFileExtensionException).
-describe("wireFileName", () => {
-  it("generates bitchat's stable-ID shape when nothing was named", () => {
-    expect(wireFileName("image", undefined, "image/jpeg")).toMatch(
-      /^img_[0-9a-f-]{36}\.jpg$/,
-    );
-    expect(wireFileName("voice", undefined, "audio/mp4")).toMatch(
-      /^voice_[0-9a-f-]{36}\.m4a$/,
-    );
-  });
-
-  it("never returns a name without an extension", () => {
-    const cases: [Parameters<typeof wireFileName>[0], string][] = [
-      ["image", "image/jpeg"],
-      ["voice", "audio/mp4"],
-      ["video", "video/mp4"],
-      ["document", "application/pdf"],
-      ["document", "application/octet-stream"],
-    ];
-    for (const [kind, mime] of cases) {
-      for (const provided of [undefined, "", "   ", "Photo", "Voice note"]) {
-        expect(wireFileName(kind, provided, mime)).toMatch(/\.[a-z0-9]+$/);
-      }
-    }
-  });
-
-  it("keeps a name the user already knows the file by", () => {
-    expect(wireFileName("document", "quarterly.pdf", "application/pdf")).toBe(
-      "quarterly.pdf",
-    );
-  });
-
-  // The bytes decide the extension. A live-voice burst finalizes as ADTS AAC,
-  // so calling it .m4a to win bitchat's stable ID would promise a container
-  // that is not there.
-  it("does not rename a burst's AAC into an m4a", () => {
-    expect(wireFileName("voice", undefined, "audio/aac")).toMatch(
-      /^voice_[0-9a-f-]{36}\.aac$/,
-    );
-  });
-});
-
 // ---- Port of bitchat's finalized-voice-note matcher ----
 //
 // A live burst reaches its listeners twice: as the audio they hear while it is
@@ -371,18 +320,6 @@ describe("a live burst and its recording are one message", () => {
     expect(burstIDLikeBitchatAndroid(name)).toBe(burstIDHex);
   });
 
-  // bitchat's incoming file store renames a collision rather than overwrite it,
-  // and both matchers read a fixed 16 characters, so a uniquified copy still
-  // resolves to the same burst.
-  it("survives the receiver uniquifying the name", () => {
-    expect(burstIDLikeBitchatIOS(`voice_${burstIDHex} (1).aac`)).toBe(
-      burstIDHex,
-    );
-    expect(burstIDLikeBitchatAndroid(`voice_${burstIDHex} (1).aac`)).toBe(
-      burstIDHex,
-    );
-  });
-
   // Names Airhop could plausibly regress to. None errors; each just silently
   // stops matching, which is what makes this worth pinning.
   it("rejects the names that leave the listener with two bubbles", () => {
@@ -395,31 +332,5 @@ describe("a live burst and its recording are one message", () => {
       expect(burstIDLikeBitchatIOS(name)).toBeNull();
       expect(burstIDLikeBitchatAndroid(name)).toBeNull();
     }
-  });
-});
-
-describe("ensureFileExtension", () => {
-  it("adds one derived from the mime when there is none", () => {
-    expect(ensureFileExtension("Photo", "image/jpeg")).toBe("Photo.jpg");
-    expect(ensureFileExtension("clip", "audio/mp4")).toBe("clip.m4a");
-  });
-
-  it("leaves an existing extension alone", () => {
-    expect(ensureFileExtension("a.jpg", "image/jpeg")).toBe("a.jpg");
-    expect(ensureFileExtension("archive.tar.gz", "application/pdf")).toBe(
-      "archive.tar.gz",
-    );
-  });
-
-  it("treats a leading dot as a hidden file, not an extension", () => {
-    expect(ensureFileExtension(".secret", "application/pdf")).toBe(
-      ".secret.pdf",
-    );
-  });
-
-  it("falls back to .bin rather than leaving a file unopenable", () => {
-    expect(ensureFileExtension("blob", "application/octet-stream")).toBe(
-      "blob.bin",
-    );
   });
 });

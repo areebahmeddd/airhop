@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 // Transfer-progress store.
 //
 // The store drives the progress card the user watches during a multi-minute
@@ -9,7 +6,6 @@
 
 import {
   transferEtaSec,
-  transferSpeedBps,
   useTransferStore,
   type Transfer,
 } from "../transfer-store";
@@ -99,38 +95,14 @@ describe("begin / advance / finish", () => {
   });
 });
 
-describe("activeForChannel", () => {
-  it("returns only this channel's transfers, oldest first", () => {
-    state().begin({
-      id: "a",
-      direction: "send",
-      channel: "#test",
-      peerLabel: "",
-      type: "image",
-      name: "a",
-      totalBytes: 10,
-      startedAtMs: 100,
-    });
-    state().begin({
-      id: "b",
-      direction: "receive",
-      channel: "dm:aa",
-      peerLabel: "",
-      type: "image",
-      name: "b",
-      totalBytes: 10,
-      startedAtMs: 50,
-    });
-    expect(
-      state()
-        .activeForChannel("#test")
-        .map((t) => t.id),
-    ).toEqual(["a"]);
-    expect(
-      state()
-        .activeForChannel("dm:aa")
-        .map((t) => t.id),
-    ).toEqual(["b"]);
+// The thread filters `transfers` by channel itself, so each record must keep
+// the channel it began in.
+describe("transfers by channel", () => {
+  it("keeps each transfer's channel on its record", () => {
+    begin("a", 10, "#test");
+    begin("b", 10, "dm:aa");
+    expect(state().transfers["a"].channel).toBe("#test");
+    expect(state().transfers["b"].channel).toBe("dm:aa");
   });
 });
 
@@ -152,10 +124,6 @@ describe("speed and ETA", () => {
       ...overrides,
     };
   }
-
-  it("reports the stored smoothed speed", () => {
-    expect(transferSpeedBps(make({ speedBps: 250 }))).toBe(250);
-  });
 
   it("estimates remaining time from the current speed", () => {
     // 250 B/s, 500 bytes left => 2 seconds.
