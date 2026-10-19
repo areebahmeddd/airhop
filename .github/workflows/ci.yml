@@ -184,7 +184,7 @@ jobs:
           done
 
           if [ "${CHECKED}" -eq 0 ]; then
-            echo "::error::No 64-bit native libraries found to check. The ABI filters in app/build.gradle have changed."
+            echo "::error::No 64-bit native libraries found to check. The -PreactNativeArchitectures set passed to the build has changed."
             exit 1
           fi
 
