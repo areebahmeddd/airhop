@@ -102,30 +102,3 @@ cp press/out/graphics/icon-512.png landing/public/brand/airhop-mark-512.png
 ```
 
 `--fastlane` writes the light sets, numbered from 1 in panel order, where Zapstore reads the Android one and `fastlane ios metadata` uploads the iOS one.
-
-## Listing
-
-The listing copy lives in [`fastlane/metadata/`](../fastlane/README.md), one file per field. Brand rules are at [airhop.1mindlabs.org/brand](https://airhop.1mindlabs.org/brand), with downloads in `landing/public/brand/`.
-
-### App Store Connect
-
-- [ ] Screenshots, name, subtitle, keywords and description are pushed by the release workflow. Promotional text is set by hand
-- [ ] App Privacy: no data collected, no tracking
-- [ ] Export compliance: non-exempt encryption, open source implementation, so the standard exemption applies
-- [ ] Review notes: a Bluetooth mesh needs two physical devices. A reviewer on one sees an empty Mesh tab
-
-### Play Console
-
-- [ ] `out/screenshots/android/light/*`, `feature-graphic.png` and `icon-512.png`
-- [ ] Title, short description, full description
-- [ ] Data safety: no data collected, no data shared, encrypted in transit
-- [ ] Declare nearby-devices and location, and why. Android requires location for Bluetooth scanning; it is not used to locate anyone
-
-### Zapstore
-
-- [ ] Nothing to upload: it reads `fastlane/metadata/android/en-US` from a tagged release
-
-### Social
-
-- [ ] `out/social/light/github-social-1280x640.png` into repo Settings, Social preview
-- [ ] Profile headers on X and LinkedIn from `out/social/light/`
