@@ -39,8 +39,8 @@ Each image is an HTML page screenshot by headless Chrome at 2x. The pages stay i
 | 01  | Mesh, radar           | Works when the network doesn't    |
 | 02  | Direct message thread | Nobody in the middle can read it  |
 | 03  | Chats, channels       | A room for wherever you are       |
-| 04  | You                   | No sign up. No phone number.      |
-| 05  | Wallet                | Send money with no signal         |
+| 04  | Wallet                | Send money with no signal         |
+| 05  | You                   | No sign up. No phone number.      |
 | 06  | Globe                 | Bluetooth ends. The mesh doesn't. |
 
 Plus `00-brand`, a centred title card for social and press. The stores get the six panels.
@@ -93,7 +93,7 @@ The store sets and the landing site carry copies.
 node press/build.mjs --fastlane=./fastlane
 
 for theme in light dark; do
-  for panel in 01-offline-mesh 02-encrypted 03-channels 04-no-accounts 05-payments; do
+  for panel in 01-offline-mesh 02-encrypted 03-channels 04-payments 05-no-accounts; do
     cp press/out/screenshots/ios/$theme/$panel.png landing/public/screens/$panel-$theme.png
   done
 done

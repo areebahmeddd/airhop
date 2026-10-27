@@ -24,16 +24,16 @@ export const PANELS = [
     sub: "Public channels scoped to your block, your city or your region. Bridged over the internet when there is one.",
   },
   {
-    id: "04-no-accounts",
-    screen: "profile",
-    headline: ["No sign up.", "No phone number."],
-    sub: "Your identity is a key made on this phone and kept on it. Nothing registers anywhere.",
-  },
-  {
-    id: "05-payments",
+    id: "04-payments",
     screen: "wallet",
     headline: ["Send money", "with no signal"],
     sub: "Hand ecash to the person beside you over Bluetooth. Top up and cash out over Lightning later.",
+  },
+  {
+    id: "05-no-accounts",
+    screen: "profile",
+    headline: ["No sign up.", "No phone number."],
+    sub: "Your identity is a key made on this phone and kept on it. Nothing registers anywhere.",
   },
   // No device on this one. Range is the obvious question after five screens of
   // Bluetooth, and the answer is a map.
