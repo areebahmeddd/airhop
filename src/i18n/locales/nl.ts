@@ -337,6 +337,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Die cel kon niet worden geopend. Probeer het zo nog eens.",
   "chat.jump.title": "Naar een plek",
+  "chat.jump.globe": "Kiezen op de wereldbol",
+  "chat.jump.globe_note": "Draai naar elke plek. Werkt offline.",
   "chat.jump.saved": "Opgeslagen plekken",
   "chat.jump.nearby": "In de buurt",
   "chat.jump.anywhere":
@@ -368,6 +370,17 @@ export const strings: Strings = {
   "chat.jump.go": "Ga",
   "chat.jump.how":
     "Een geohash vinden: open een locatiekanaal > tik op de naam > kopieer hem daar.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Sleep om te draaien · knijp om te zoomen · tik om te centreren",
+  "chat.globe.zoom_in": "Zoom in om een cel te kiezen",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Naar {cell}",
+  "chat.globe.larger": "Grotere cel",
+  "chat.globe.smaller": "Kleinere cel",
+  "chat.globe.label": "Wereldbol, gecentreerd op {cell}",
+  "chat.globe.adjust": "Veeg omhoog of omlaag om de celgrootte te wijzigen",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

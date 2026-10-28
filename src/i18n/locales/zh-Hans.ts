@@ -318,6 +318,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "无法打开该网格。请稍后再试。",
   "chat.jump.title": "前往某地",
+  "chat.jump.globe": "在地球仪上选择",
+  "chat.jump.globe_note": "转到任何地方。可离线使用。",
   "chat.jump.saved": "已保存的地点",
   "chat.jump.nearby": "附近",
   "chat.jump.anywhere": "打开任意地点的公开位置频道，哪怕你并不在那里。",
@@ -348,6 +350,16 @@ export const strings: Strings = {
   "chat.jump.go": "前往",
   "chat.jump.how":
     "查找 geohash：打开一个位置频道 > 点按它的名称 > 从那里复制。",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "拖动旋转 · 双指缩放 · 轻点对准",
+  "chat.globe.zoom_in": "放大以选择网格",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "前往 {cell}",
+  "chat.globe.larger": "更大的网格",
+  "chat.globe.smaller": "更小的网格",
+  "chat.globe.label": "地球仪，中心为 {cell}",
+  "chat.globe.adjust": "向上或向下轻扫以更改网格大小",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable": "无法触达所有成员。等对方在附近时再试一次。",

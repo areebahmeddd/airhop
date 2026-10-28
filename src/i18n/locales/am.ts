@@ -316,6 +316,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "ያ ሕዋስ ሊከፈት አልቻለም። ከጥቂት ጊዜ በኋላ እንደገና ሞክር።",
   "chat.jump.title": "ወደ አንድ ቦታ ሂድ",
+  "chat.jump.globe": "በሉሉ ላይ ምረጥ",
+  "chat.jump.globe_note": "ወደ የትኛውም ቦታ አሽከርክር። ያለ ኢንተርኔት ይሠራል።",
   "chat.jump.saved": "የተቀመጡ ቦታዎች",
   "chat.jump.nearby": "በአቅራቢያ",
   "chat.jump.anywhere": "የየትኛውንም ቦታ ይፋዊ የአካባቢ ሰርጥ ክፈት፤ አንተ በሌለህበት ቦታም እንኳ።",
@@ -344,6 +346,16 @@ export const strings: Strings = {
   "chat.jump.remove_place": "{name} ን ከተቀመጡ ቦታዎች አስወግድ",
   "chat.jump.go": "ሂድ",
   "chat.jump.how": "ጂኦሃሽ ለማግኘት፦ የአካባቢ ሰርጥ ክፈት > ስሙን ንካ > ከዚያ ቅዳው።",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "ለማሽከርከር ጎትት · ለማጉላት ቆንጥጥ · ለማተኮር መታ አድርግ",
+  "chat.globe.zoom_in": "ሕዋስ ለመምረጥ አጉላ",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "ወደ {cell} ሂድ",
+  "chat.globe.larger": "ትልቅ ሕዋስ",
+  "chat.globe.smaller": "ትንሽ ሕዋስ",
+  "chat.globe.label": "ሉል፣ በ{cell} ላይ ያተኮረ",
+  "chat.globe.adjust": "የሕዋሱን መጠን ለመቀየር ወደ ላይ ወይም ወደ ታች ጥረግ",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable": "ሁሉንም አባላት መድረስ አልተቻለም። በአቅራቢያ ሲሆኑ እንደገና ሞክር።",

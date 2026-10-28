@@ -344,6 +344,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Diese Zelle konnte nicht geöffnet werden. Versuche es gleich noch einmal.",
   "chat.jump.title": "Zu einem Ort",
+  "chat.jump.globe": "Auf dem Globus wählen",
+  "chat.jump.globe_note": "Dreh ihn zu jedem Ort. Funktioniert offline.",
   "chat.jump.saved": "Gespeicherte Orte",
   "chat.jump.nearby": "In der Nähe",
   "chat.jump.anywhere":
@@ -376,6 +378,18 @@ export const strings: Strings = {
   "chat.jump.go": "Los",
   "chat.jump.how":
     "So findest du einen Geohash: Öffne einen Standortkanal > tippe auf seinen Namen > kopiere ihn dort.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Ziehen zum Drehen · Spreizen zum Zoomen · Tippen zum Ausrichten",
+  "chat.globe.zoom_in": "Zoome hinein, um eine Zelle zu wählen",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Zu {cell} gehen",
+  "chat.globe.larger": "Größere Zelle",
+  "chat.globe.smaller": "Kleinere Zelle",
+  "chat.globe.label": "Globus, zentriert auf {cell}",
+  "chat.globe.adjust":
+    "Nach oben oder unten wischen, um die Zellgröße zu ändern",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

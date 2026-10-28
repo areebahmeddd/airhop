@@ -324,6 +324,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "تعذّر فتح تلك الخلية. حاول بعد قليل.",
   "chat.jump.title": "اذهب إلى مكان",
+  "chat.jump.globe": "اختر على الكرة الأرضية",
+  "chat.jump.globe_note": "أدِرها إلى أي مكان. تعمل دون إنترنت.",
   "chat.jump.saved": "الأماكن المحفوظة",
   "chat.jump.nearby": "بالجوار",
   "chat.jump.anywhere": "افتح قناة موقع عامة في أي مكان، حتى مكان لست فيه.",
@@ -354,6 +356,16 @@ export const strings: Strings = {
   "chat.jump.go": "اذهب",
   "chat.jump.how":
     "للعثور على جيوهاش: افتح قناة موقع > اضغط على اسمها > انسخه من هناك.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "اسحب للتدوير · اقرص للتكبير · انقر للتركيز",
+  "chat.globe.zoom_in": "كبّر لاختيار خلية",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "اذهب إلى {cell}",
+  "chat.globe.larger": "خلية أكبر",
+  "chat.globe.smaller": "خلية أصغر",
+  "chat.globe.label": "الكرة الأرضية، مركزها {cell}",
+  "chat.globe.adjust": "اسحب لأعلى أو لأسفل لتغيير حجم الخلية",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

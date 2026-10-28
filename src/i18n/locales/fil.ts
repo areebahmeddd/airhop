@@ -345,6 +345,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Hindi nabuksan ang cell na iyon. Subukan ulit maya-maya.",
   "chat.jump.title": "Pumunta sa isang lugar",
+  "chat.jump.globe": "Pumili sa globo",
+  "chat.jump.globe_note": "Paikutin kahit saan. Gumagana kahit offline.",
   "chat.jump.saved": "Mga naka-save na lugar",
   "chat.jump.nearby": "Malapit",
   "chat.jump.anywhere":
@@ -377,6 +379,18 @@ export const strings: Strings = {
   "chat.jump.go": "Pumunta",
   "chat.jump.how":
     "Para makahanap ng geohash: buksan ang isang channel ng lokasyon > i-tap ang pangalan nito > kopyahin ito mula roon.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "I-drag para paikutin · i-pinch para mag-zoom · i-tap para i-focus",
+  "chat.globe.zoom_in": "Mag-zoom in para pumili ng cell",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Pumunta sa {cell}",
+  "chat.globe.larger": "Mas malaking cell",
+  "chat.globe.smaller": "Mas maliit na cell",
+  "chat.globe.label": "Globo, nakasentro sa {cell}",
+  "chat.globe.adjust":
+    "Mag-swipe pataas o pababa para baguhin ang laki ng cell",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

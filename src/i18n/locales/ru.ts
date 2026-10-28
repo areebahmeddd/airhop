@@ -335,6 +335,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Не удалось открыть эту ячейку. Попробуйте через минуту.",
   "chat.jump.title": "Перейти к месту",
+  "chat.jump.globe": "Выбрать на глобусе",
+  "chat.jump.globe_note": "Поверните к любому месту. Работает без интернета.",
   "chat.jump.saved": "Сохранённые места",
   "chat.jump.nearby": "Рядом",
   "chat.jump.anywhere":
@@ -366,6 +368,17 @@ export const strings: Strings = {
   "chat.jump.go": "Перейти",
   "chat.jump.how":
     "Как найти geohash: откройте канал местоположения > коснитесь его названия > скопируйте оттуда.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Перетащите, чтобы вращать · сведите пальцы для масштаба · коснитесь, чтобы навести",
+  "chat.globe.zoom_in": "Приблизьте, чтобы выбрать ячейку",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Перейти к {cell}",
+  "chat.globe.larger": "Ячейка крупнее",
+  "chat.globe.smaller": "Ячейка мельче",
+  "chat.globe.label": "Глобус, в центре {cell}",
+  "chat.globe.adjust": "Проведите вверх или вниз, чтобы изменить размер ячейки",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

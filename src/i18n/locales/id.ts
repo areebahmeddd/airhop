@@ -336,6 +336,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Sel itu tidak bisa dibuka. Coba lagi sebentar lagi.",
   "chat.jump.title": "Pergi ke suatu tempat",
+  "chat.jump.globe": "Pilih di globe",
+  "chat.jump.globe_note": "Putar ke tempat mana pun. Berfungsi tanpa internet.",
   "chat.jump.saved": "Tempat tersimpan",
   "chat.jump.nearby": "Sekitar",
   "chat.jump.anywhere":
@@ -368,6 +370,17 @@ export const strings: Strings = {
   "chat.jump.go": "Pergi",
   "chat.jump.how":
     "Cara menemukan geohash: buka kanal lokasi > ketuk namanya > salin dari sana.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Seret untuk memutar · cubit untuk zoom · ketuk untuk fokus",
+  "chat.globe.zoom_in": "Perbesar untuk memilih sel",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Pergi ke {cell}",
+  "chat.globe.larger": "Sel lebih besar",
+  "chat.globe.smaller": "Sel lebih kecil",
+  "chat.globe.label": "Globe, berpusat di {cell}",
+  "chat.globe.adjust": "Geser ke atas atau ke bawah untuk mengubah ukuran sel",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

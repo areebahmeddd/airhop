@@ -340,6 +340,9 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "ထိုဆဲလ်ကို မဖွင့်နိုင်ခဲ့ပါ။ ခဏနေ ထပ်စမ်းကြည့်ပါ။",
   "chat.jump.title": "နေရာတစ်ခုသို့ သွားပါ",
+  "chat.jump.globe": "ကမ္ဘာလုံးပေါ်တွင် ရွေးပါ",
+  "chat.jump.globe_note":
+    "မည်သည့်နေရာသို့မဆို လှည့်ပါ။ အင်တာနက်မလိုဘဲ အလုပ်လုပ်သည်။",
   "chat.jump.saved": "သိမ်းထားသော နေရာများ",
   "chat.jump.nearby": "အနီးအနား",
   "chat.jump.anywhere":
@@ -372,6 +375,17 @@ export const strings: Strings = {
   "chat.jump.go": "သွားပါ",
   "chat.jump.how":
     "ဂျီအိုဟက်ရှ်ရှာရန် — တည်နေရာချန်နယ်တစ်ခု ဖွင့်ပါ > ၎င်း၏အမည်ကို နှိပ်ပါ > ထိုနေရာမှ ကူးပါ။",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "လှည့်ရန် ဆွဲပါ · ချဲ့ရန် ညှပ်ပါ · ဗဟိုချရန် တို့ပါ",
+  "chat.globe.zoom_in": "ဆဲလ်ရွေးရန် ချဲ့ကြည့်ပါ",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell} သို့ သွားပါ",
+  "chat.globe.larger": "ပိုကြီးသော ဆဲလ်",
+  "chat.globe.smaller": "ပိုသေးသော ဆဲလ်",
+  "chat.globe.label": "ကမ္ဘာလုံး၊ ဗဟိုတွင် {cell}",
+  "chat.globe.adjust":
+    "ဆဲလ်အရွယ်အစား ပြောင်းရန် အပေါ် သို့မဟုတ် အောက်သို့ ပွတ်ဆွဲပါ",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

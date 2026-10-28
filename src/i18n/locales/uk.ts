@@ -335,6 +335,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Не вдалося відкрити ту комірку. Спробуйте за мить.",
   "chat.jump.title": "Перейти до місця",
+  "chat.jump.globe": "Вибрати на глобусі",
+  "chat.jump.globe_note": "Оберніть до будь-якого місця. Працює без інтернету.",
   "chat.jump.saved": "Збережені місця",
   "chat.jump.nearby": "Поблизу",
   "chat.jump.anywhere":
@@ -366,6 +368,17 @@ export const strings: Strings = {
   "chat.jump.go": "Перейти",
   "chat.jump.how":
     "Щоб знайти geohash: відкрийте канал місцевості > торкніться його назви > скопіюйте його звідти.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Перетягніть, щоб обертати · зведіть пальці для масштабу · торкніться, щоб навести",
+  "chat.globe.zoom_in": "Наблизьте, щоб вибрати комірку",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Перейти до {cell}",
+  "chat.globe.larger": "Більша комірка",
+  "chat.globe.smaller": "Менша комірка",
+  "chat.globe.label": "Глобус, у центрі {cell}",
+  "chat.globe.adjust": "Проведіть угору або вниз, щоб змінити розмір комірки",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

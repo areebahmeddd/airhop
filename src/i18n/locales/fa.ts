@@ -329,6 +329,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "آن سلول باز نشد. کمی بعد دوباره تلاش کنید.",
   "chat.jump.title": "رفتن به یک جا",
+  "chat.jump.globe": "انتخاب روی کره",
+  "chat.jump.globe_note": "به هر جایی بچرخانید. بدون اینترنت کار می‌کند.",
   "chat.jump.saved": "جاهای ذخیره‌شده",
   "chat.jump.nearby": "اطراف",
   "chat.jump.anywhere":
@@ -361,6 +363,17 @@ export const strings: Strings = {
   "chat.jump.go": "برو",
   "chat.jump.how":
     "برای یافتن یک ژئوهش: یک کانال موقعیت را باز کنید > روی نامش بزنید > از همان‌جا کپی کنید.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "بکشید تا بچرخد · با دو انگشت بزرگ‌نمایی کنید · ضربه بزنید تا وسط بیاید",
+  "chat.globe.zoom_in": "برای انتخاب سلول بزرگ‌نمایی کنید",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "رفتن به {cell}",
+  "chat.globe.larger": "سلول بزرگ‌تر",
+  "chat.globe.smaller": "سلول کوچک‌تر",
+  "chat.globe.label": "کره، با مرکز {cell}",
+  "chat.globe.adjust": "برای تغییر اندازهٔ سلول، به بالا یا پایین بکشید",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

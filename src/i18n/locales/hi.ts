@@ -331,6 +331,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "वह सेल नहीं खुल सकी। थोड़ी देर में फिर कोशिश करें।",
   "chat.jump.title": "किसी जगह जाएँ",
+  "chat.jump.globe": "ग्लोब पर चुनें",
+  "chat.jump.globe_note": "किसी भी जगह की ओर घुमाएँ। बिना इंटरनेट के चलता है।",
   "chat.jump.saved": "सहेजी हुई जगहें",
   "chat.jump.nearby": "आस-पास",
   "chat.jump.anywhere":
@@ -363,6 +365,17 @@ export const strings: Strings = {
   "chat.jump.go": "जाएँ",
   "chat.jump.how":
     "जियोहैश ढूँढ़ने के लिए: कोई स्थान चैनल खोलें > उसका नाम टैप करें > वहीं से कॉपी करें।",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "घुमाने के लिए खींचें · ज़ूम के लिए पिंच करें · फ़ोकस के लिए टैप करें",
+  "chat.globe.zoom_in": "सेल चुनने के लिए ज़ूम इन करें",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell} पर जाएँ",
+  "chat.globe.larger": "बड़ी सेल",
+  "chat.globe.smaller": "छोटी सेल",
+  "chat.globe.label": "ग्लोब, केंद्र में {cell}",
+  "chat.globe.adjust": "सेल का आकार बदलने के लिए ऊपर या नीचे स्वाइप करें",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

@@ -115,8 +115,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
               <li>
                 <strong>Location channels:</strong> public as well, but scoped to a map cell instead
                 of a name, from a single block up to a whole region. Your own cell opens
-                automatically, and entering a geohash takes you to any other. These bridge over the
-                internet, so you can read a place you are not standing in.
+                automatically, and picking a cell on the globe or entering its geohash takes you to
+                any other. These bridge over the internet, so you can read a place you are not
+                standing in.
               </li>
               <li>
                 <strong>Private channels:</strong> invite-only. The key travels inside the invite

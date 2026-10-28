@@ -9,6 +9,7 @@ import {
   formatAgo,
   formatAmount,
   formatBytes,
+  formatCellSize,
   formatClockTime,
   formatDateSeparator,
   formatDuration,
@@ -161,6 +162,27 @@ describe("formatBytes", () => {
     expect(formatBytes(cap + 20_000)).toBe(formatBytes(cap));
     expect(formatBytes(cap + 20_000, true)).toBe("1.1 MiB");
     expect(formatBytes(cap, true)).toBe("1.0 MiB");
+  });
+});
+
+describe("formatCellSize", () => {
+  it("quotes each globe precision at a sensible grain", () => {
+    expect(formatCellSize(5_000_000)).toBe("5,000 km");
+    expect(formatCellSize(156_000)).toBe("156 km");
+    expect(formatCellSize(4_890)).toBe("4.9 km");
+    expect(formatCellSize(153)).toBe("153 m");
+    expect(formatCellSize(4.77)).toBe("4.8 m");
+    expect(formatCellSize(0.074)).toBe("0.07 m");
+  });
+
+  it("writes the decimal separator of the app's language", () => {
+    const before = useSettingsStore.getState().language;
+    useSettingsStore.setState({ language: "de" });
+    try {
+      expect(formatCellSize(1_220)).toBe("1,2 km");
+    } finally {
+      useSettingsStore.setState({ language: before });
+    }
   });
 });
 

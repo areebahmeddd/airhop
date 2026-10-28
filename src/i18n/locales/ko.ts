@@ -329,6 +329,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "그 셀을 열지 못했습니다. 잠시 후 다시 시도하세요.",
   "chat.jump.title": "장소로 이동",
+  "chat.jump.globe": "지구본에서 고르기",
+  "chat.jump.globe_note": "어디로든 돌려 보세요. 오프라인에서도 작동합니다.",
   "chat.jump.saved": "저장된 장소",
   "chat.jump.nearby": "근처",
   "chat.jump.anywhere":
@@ -361,6 +363,16 @@ export const strings: Strings = {
   "chat.jump.go": "이동",
   "chat.jump.how":
     "지오해시를 찾으려면 위치 채널을 열고 > 이름을 탭한 뒤 > 거기서 복사하세요.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "드래그해 회전 · 핀치해 확대 · 탭해 초점 맞추기",
+  "chat.globe.zoom_in": "확대해서 셀을 고르세요",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell}(으)로 이동",
+  "chat.globe.larger": "더 큰 셀",
+  "chat.globe.smaller": "더 작은 셀",
+  "chat.globe.label": "지구본, 중심 {cell}",
+  "chat.globe.adjust": "위나 아래로 쓸어 셀 크기 변경",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

@@ -325,6 +325,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "เปิดเซลล์นั้นไม่ได้ ลองอีกครั้งในอีกสักครู่",
   "chat.jump.title": "ไปยังสถานที่",
+  "chat.jump.globe": "เลือกบนลูกโลก",
+  "chat.jump.globe_note": "หมุนไปที่ใดก็ได้ ใช้งานได้แบบออฟไลน์",
   "chat.jump.saved": "สถานที่ที่บันทึกไว้",
   "chat.jump.nearby": "ใกล้เคียง",
   "chat.jump.anywhere":
@@ -357,6 +359,16 @@ export const strings: Strings = {
   "chat.jump.go": "ไป",
   "chat.jump.how":
     "วิธีหาจีโอแฮช: เปิดช่องตำแหน่ง > แตะชื่อของมัน > คัดลอกจากตรงนั้น",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "ลากเพื่อหมุน · บีบเพื่อซูม · แตะเพื่อจัดกึ่งกลาง",
+  "chat.globe.zoom_in": "ซูมเข้าเพื่อเลือกเซลล์",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "ไปที่ {cell}",
+  "chat.globe.larger": "เซลล์ใหญ่ขึ้น",
+  "chat.globe.smaller": "เซลล์เล็กลง",
+  "chat.globe.label": "ลูกโลก กึ่งกลางที่ {cell}",
+  "chat.globe.adjust": "ปัดขึ้นหรือลงเพื่อเปลี่ยนขนาดเซลล์",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

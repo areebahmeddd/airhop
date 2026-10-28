@@ -332,6 +332,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Không mở được ô đó. Hãy thử lại sau ít phút.",
   "chat.jump.title": "Đến một nơi",
+  "chat.jump.globe": "Chọn trên quả địa cầu",
+  "chat.jump.globe_note": "Xoay đến bất kỳ nơi nào. Hoạt động ngoại tuyến.",
   "chat.jump.saved": "Nơi đã lưu",
   "chat.jump.nearby": "Lân cận",
   "chat.jump.anywhere":
@@ -363,6 +365,16 @@ export const strings: Strings = {
   "chat.jump.go": "Đến",
   "chat.jump.how":
     "Để tìm một geohash: mở một kênh vị trí > chạm vào tên kênh > sao chép từ đó.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "Kéo để xoay · chụm để thu phóng · chạm để căn giữa",
+  "chat.globe.zoom_in": "Phóng to để chọn một ô",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Đến {cell}",
+  "chat.globe.larger": "Ô lớn hơn",
+  "chat.globe.smaller": "Ô nhỏ hơn",
+  "chat.globe.label": "Quả địa cầu, tâm tại {cell}",
+  "chat.globe.adjust": "Vuốt lên hoặc xuống để đổi kích thước ô",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

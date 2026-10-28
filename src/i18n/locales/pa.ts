@@ -331,6 +331,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "ਉਹ ਸੈੱਲ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕਿਆ। ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
   "chat.jump.title": "ਕਿਸੇ ਥਾਂ ’ਤੇ ਜਾਓ",
+  "chat.jump.globe": "ਗਲੋਬ ’ਤੇ ਚੁਣੋ",
+  "chat.jump.globe_note": "ਕਿਸੇ ਵੀ ਥਾਂ ਵੱਲ ਘੁਮਾਓ। ਇੰਟਰਨੈੱਟ ਤੋਂ ਬਿਨਾਂ ਚੱਲਦਾ ਹੈ।",
   "chat.jump.saved": "ਸੰਭਾਲੀਆਂ ਥਾਵਾਂ",
   "chat.jump.nearby": "ਨੇੜੇ",
   "chat.jump.anywhere":
@@ -363,6 +365,16 @@ export const strings: Strings = {
   "chat.jump.go": "ਜਾਓ",
   "chat.jump.how":
     "ਜੀਓਹੈਸ਼ ਲੱਭਣ ਲਈ: ਕੋਈ ਟਿਕਾਣਾ ਚੈਨਲ ਖੋਲ੍ਹੋ > ਇਸ ਦੇ ਨਾਂ ’ਤੇ ਦਬਾਓ > ਉੱਥੋਂ ਨਕਲ ਕਰੋ।",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "ਘੁਮਾਉਣ ਲਈ ਖਿੱਚੋ · ਜ਼ੂਮ ਲਈ ਚੂੰਢੀ ਭਰੋ · ਫੋਕਸ ਲਈ ਟੈਪ ਕਰੋ",
+  "chat.globe.zoom_in": "ਸੈੱਲ ਚੁਣਨ ਲਈ ਜ਼ੂਮ ਇਨ ਕਰੋ",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell} ’ਤੇ ਜਾਓ",
+  "chat.globe.larger": "ਵੱਡਾ ਸੈੱਲ",
+  "chat.globe.smaller": "ਛੋਟਾ ਸੈੱਲ",
+  "chat.globe.label": "ਗਲੋਬ, ਕੇਂਦਰ ਵਿੱਚ {cell}",
+  "chat.globe.adjust": "ਸੈੱਲ ਦਾ ਆਕਾਰ ਬਦਲਣ ਲਈ ਉੱਪਰ ਜਾਂ ਹੇਠਾਂ ਸਵਾਈਪ ਕਰੋ",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

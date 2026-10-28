@@ -335,6 +335,9 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "ამ უჯრის გახსნა ვერ მოხერხდა. სცადე ცოტა ხანში.",
   "chat.jump.title": "გადადი ადგილას",
+  "chat.jump.globe": "აირჩიე გლობუსზე",
+  "chat.jump.globe_note":
+    "დაატრიალე ნებისმიერ ადგილამდე. მუშაობს ინტერნეტის გარეშე.",
   "chat.jump.saved": "შენახული ადგილები",
   "chat.jump.nearby": "ახლოს",
   "chat.jump.anywhere":
@@ -367,6 +370,17 @@ export const strings: Strings = {
   "chat.jump.go": "გადასვლა",
   "chat.jump.how":
     "geohash-ის საპოვნელად: გახსენი მდებარეობის არხი > შეეხე მის სახელს > დააკოპირე იქიდან.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "გადაათრიე დასატრიალებლად · მოჭერი მასშტაბისთვის · შეეხე ფოკუსისთვის",
+  "chat.globe.zoom_in": "გაადიდე უჯრის ასარჩევად",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell}-ზე გადასვლა",
+  "chat.globe.larger": "უფრო დიდი უჯრა",
+  "chat.globe.smaller": "უფრო პატარა უჯრა",
+  "chat.globe.label": "გლობუსი, ცენტრში {cell}",
+  "chat.globe.adjust": "უჯრის ზომის შესაცვლელად გადაფურცლე ზემოთ ან ქვემოთ",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

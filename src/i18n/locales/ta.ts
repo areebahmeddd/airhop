@@ -344,6 +344,9 @@ export const strings: Strings = {
   "chat.jump.failed":
     "அந்தக் கட்டத்தைத் திறக்க முடியவில்லை. சற்று நேரத்தில் மீண்டும் முயலுங்கள்.",
   "chat.jump.title": "ஓர் இடத்துக்குச் செல்",
+  "chat.jump.globe": "உலக உருண்டையில் தேர்ந்தெடு",
+  "chat.jump.globe_note":
+    "எந்த இடத்துக்கும் சுழற்று. இணையம் இல்லாமலும் இயங்கும்.",
   "chat.jump.saved": "சேமித்த இடங்கள்",
   "chat.jump.nearby": "அருகில்",
   "chat.jump.anywhere":
@@ -376,6 +379,16 @@ export const strings: Strings = {
   "chat.jump.go": "செல்",
   "chat.jump.how":
     "geohash ஐக் கண்டறிய: ஓர் இடச் சேனலைத் திறங்கள் > அதன் பெயரைத் தட்டுங்கள் > அங்கிருந்து நகலெடுங்கள்.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "சுழற்ற இழு · பெரிதாக்கக் கிள்ளு · மையப்படுத்தத் தட்டு",
+  "chat.globe.zoom_in": "கட்டத்தைத் தேர்ந்தெடுக்கப் பெரிதாக்கு",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell}-க்குச் செல்",
+  "chat.globe.larger": "பெரிய கட்டம்",
+  "chat.globe.smaller": "சிறிய கட்டம்",
+  "chat.globe.label": "உலக உருண்டை, மையத்தில் {cell}",
+  "chat.globe.adjust": "கட்டத்தின் அளவை மாற்ற மேலே அல்லது கீழே தேய்",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

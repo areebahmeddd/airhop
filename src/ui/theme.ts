@@ -97,6 +97,17 @@ export const Colors = {
   bridge: "#4F46E5", // public mesh chat stitched across islands (bridge)
   bridgeDim: "rgba(79,70,229,0.09)",
 
+  // ---- Globe picker ----
+  // Two greys for water and land and nothing more: the accent is the selected
+  // cell's alone. Land against water is too close to read as an edge, so the
+  // coastline carries the shapes and clears 3:1 against the water (WCAG
+  // 1.4.11). Borders and the graticule are orientation and stay quieter.
+  globeWater: "#FFFFFF",
+  globeLand: "#E8E8E8",
+  globeCoast: "#8F8F8F",
+  globeBorder: "#C4C4C4",
+  globeGraticule: "#EEEEEE",
+
   // ---- Overlays ----
   overlay: "rgba(0,0,0,0.45)",
 } as const;
@@ -164,6 +175,15 @@ export const DarkColors = {
   gatewayDim: "rgba(20,184,166,0.16)",
   bridge: "#6366F1",
   bridgeDim: "rgba(99,102,241,0.16)",
+
+  // ---- Globe picker ----
+  // Same roles as the light palette. Land is lifted above the water rather
+  // than sunk below it, and the coast still clears 3:1 on the water.
+  globeWater: "#161616",
+  globeLand: "#262626",
+  globeCoast: "#6A6A6A",
+  globeBorder: "#3A3A3A",
+  globeGraticule: "#1D1D1D",
 
   // ---- Overlays ----
   overlay: "rgba(0,0,0,0.6)",

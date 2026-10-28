@@ -53,7 +53,11 @@ export default function LicensesScreen({ onBack }: Props): React.JSX.Element {
                     <View style={styles.settingLabelGroup}>
                       <Text style={styles.settingLabel}>{entry.name}</Text>
                       <Text style={styles.settingDescription}>
-                        v{entry.version}
+                        {/* Only a version number takes a v: some entries
+                            name a scale or the binary they ship inside. */}
+                        {/^\d/.test(entry.version)
+                          ? `v${entry.version}`
+                          : entry.version}
                       </Text>
                     </View>
                     <Text

@@ -343,6 +343,9 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Tsy voasokatra io efitra io. Andramo indray afaka kelikely.",
   "chat.jump.title": "Mandehana any amin'ny toerana iray",
+  "chat.jump.globe": "Misafidiana amin'ny tany boribory",
+  "chat.jump.globe_note":
+    "Ahodino any amin'ny toerana rehetra. Mandeha na tsy misy aterineto.",
   "chat.jump.saved": "Toerana voatahiry",
   "chat.jump.nearby": "Akaiky",
   "chat.jump.anywhere":
@@ -375,6 +378,18 @@ export const strings: Strings = {
   "chat.jump.go": "Mandehana",
   "chat.jump.how":
     "Mba hahitana geohash: sokafy fantsonan-toerana > tsindrio ny anarany > adikao avy ao.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Sintony hanodinana · tsindrio roa hanalehibe · tsindrio hifantoka",
+  "chat.globe.zoom_in": "Halehibeo mba hisafidianana efitra",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Mandehana any amin'ny {cell}",
+  "chat.globe.larger": "Efitra lehibe kokoa",
+  "chat.globe.smaller": "Efitra kely kokoa",
+  "chat.globe.label": "Tany boribory, afovoany {cell}",
+  "chat.globe.adjust":
+    "Ahosaho miakatra na midina mba hanovana ny haben'ny efitra",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

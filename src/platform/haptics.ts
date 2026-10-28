@@ -51,6 +51,15 @@ export function crossedThreshold(): void {
   void Haptics.selectionAsync().catch(() => {});
 }
 
+// A finger moved the globe picker onto a new cell. The cell is chosen by what
+// sits under the crosshair, not by where the finger is, so the tick is what
+// says the selection changed while the eyes are on the land. Only under a
+// finger: a flight or a fling crosses dozens of cells and would buzz
+// throughout.
+export function stepped(): void {
+  void Haptics.selectionAsync().catch(() => {});
+}
+
 // A hold crossed into "let go now and this is thrown away": sliding a
 // push-to-talk recording back to cancel. Rigid rather than the tick
 // `crossedThreshold` uses, because push-to-talk is used without looking and the

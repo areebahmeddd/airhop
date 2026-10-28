@@ -335,6 +335,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "そのセルを開けませんでした。少ししてからもう一度お試しください。",
   "chat.jump.title": "場所へ移動",
+  "chat.jump.globe": "地球儀で選ぶ",
+  "chat.jump.globe_note": "どこへでも回せます。オフラインで使えます。",
   "chat.jump.saved": "保存した場所",
   "chat.jump.nearby": "周辺",
   "chat.jump.anywhere":
@@ -367,6 +369,16 @@ export const strings: Strings = {
   "chat.jump.go": "移動",
   "chat.jump.how":
     "ジオハッシュの調べ方: 位置チャンネルを開く > 名前をタップ > そこからコピー。",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "ドラッグで回転 · ピンチでズーム · タップで中央へ",
+  "chat.globe.zoom_in": "ズームインしてセルを選んでください",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell}へ移動",
+  "chat.globe.larger": "大きいセル",
+  "chat.globe.smaller": "小さいセル",
+  "chat.globe.label": "地球儀、中心は{cell}",
+  "chat.globe.adjust": "上下にスワイプしてセルの大きさを変更",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

@@ -126,6 +126,9 @@ const SKIP_FILES = [
   // Bridge lines, quoted verbatim from upstream. Wire-visible: a translated
   // word here would be a bridge that does not resolve.
   "src/data/bridges.ts",
+  // The globe's packed geometry and Natural Earth's place names: map data,
+  // and place names are proper nouns.
+  "src/data/world-geometry.ts",
   // The catalog itself.
   "src/i18n/",
   // Diagnostics bundle for maintainers triaging bug reports, not user-facing text.
@@ -145,6 +148,10 @@ const IGNORE = new Set([
   // around them, which is the part that varies.
   "KiB",
   "MiB",
+  "km",
+  // Font families the globe asks Skia's font manager for by name.
+  "Helvetica",
+  "Menlo",
   "Ed25519 + X25519",
   "AES-256",
   "GitHub",

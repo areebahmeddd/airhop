@@ -926,6 +926,17 @@ geohash rather than by being there, nobody in Bluetooth range is in it, so it ru
 over Nostr only. Its messages carry a `t=teleport` tag, and bitchat lists the
 sender as teleported rather than nearby.
 
+The cell is picked on a globe or typed as its geohash, as in bitchat. The globe
+draws Natural Earth geometry bundled with the app, the same files bitchat ships,
+so it works offline and asks no one anything: no map tiles, no map SDK, and no
+place-name lookup for wherever it is pointed, since each of those would tell a
+third party where the user is looking. The cell under the crosshair is the
+selection and the zoom sets its precision, by bitchat's rules, so the same view
+picks the same cell in both apps. A picked cell takes the same path as a typed
+one, which decides between the user's own named channel and a teleport. The
+globe renders with Skia on the UI thread; a phone whose GPU Skia cannot use
+(no Vulkan 1.1 on Android) is offered the geohash field alone.
+
 ## 7. Payments
 
 ### Why Cashu

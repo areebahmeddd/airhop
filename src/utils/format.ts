@@ -185,6 +185,19 @@ export function formatBytes(bytes: number, roundUp = false): string {
   return `${formatFixed(round((bytes / (1024 * 1024)) * 10) / 10, 1)} MiB`;
 }
 
+// How far a map cell reaches, "4.9 km" or "38 m", for the globe picker. Metric
+// in every language (see en.ts), SI symbols that read the same everywhere,
+// and a precision that shrinks no further than the figure means: a cell's
+// size is an approximation to begin with.
+export function formatCellSize(meters: number): string {
+  const km = meters / 1000;
+  if (km >= 100) return `${formatNumber(Math.round(km))} km`;
+  if (km >= 1) return `${formatFixed(km, 1)} km`;
+  if (meters >= 10) return `${formatFixed(Math.round(meters), 0)} m`;
+  if (meters >= 1) return `${formatFixed(meters, 1)} m`;
+  return `${formatFixed(meters, 2)} m`;
+}
+
 function formatFixed(value: number, fractionDigits: number): string {
   return numberFormatter({
     minimumFractionDigits: fractionDigits,

@@ -331,6 +331,9 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "وہ خانہ نہ کھل سکا۔ تھوڑی دیر میں دوبارہ کوشش کریں۔",
   "chat.jump.title": "کسی جگہ جائیں",
+  "chat.jump.globe": "گلوب پر چنیں",
+  "chat.jump.globe_note":
+    "کسی بھی جگہ کی طرف گھمائیں۔ انٹرنیٹ کے بغیر چلتا ہے۔",
   "chat.jump.saved": "محفوظ جگہیں",
   "chat.jump.nearby": "قریب",
   "chat.jump.anywhere":
@@ -363,6 +366,17 @@ export const strings: Strings = {
   "chat.jump.go": "جائیں",
   "chat.jump.how":
     "geohash ڈھونڈنے کے لیے: کوئی مقامی چینل کھولیں > اس کا نام چھوئیں > وہیں سے کاپی کریں۔",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "گھمانے کے لیے کھینچیں · زوم کے لیے چٹکی لیں · فوکس کے لیے ٹیپ کریں",
+  "chat.globe.zoom_in": "خانہ چننے کے لیے زوم ان کریں",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell} پر جائیں",
+  "chat.globe.larger": "بڑا خانہ",
+  "chat.globe.smaller": "چھوٹا خانہ",
+  "chat.globe.label": "گلوب، مرکز میں {cell}",
+  "chat.globe.adjust": "خانے کا سائز بدلنے کے لیے اوپر یا نیچے سوائپ کریں",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

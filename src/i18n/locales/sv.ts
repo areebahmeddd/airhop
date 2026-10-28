@@ -332,6 +332,9 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Cellen kunde inte öppnas. Försök igen om en stund.",
   "chat.jump.title": "Gå till en plats",
+  "chat.jump.globe": "Välj på jordgloben",
+  "chat.jump.globe_note":
+    "Snurra till vilken plats som helst. Fungerar offline.",
   "chat.jump.saved": "Sparade platser",
   "chat.jump.nearby": "I närheten",
   "chat.jump.anywhere":
@@ -363,6 +366,17 @@ export const strings: Strings = {
   "chat.jump.go": "Gå",
   "chat.jump.how":
     "Så hittar du en geohash: öppna en platskanal > tryck på dess namn > kopiera den därifrån.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Dra för att snurra · nyp för att zooma · tryck för att centrera",
+  "chat.globe.zoom_in": "Zooma in för att välja en cell",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Gå till {cell}",
+  "chat.globe.larger": "Större cell",
+  "chat.globe.smaller": "Mindre cell",
+  "chat.globe.label": "Jordglob, centrerad på {cell}",
+  "chat.globe.adjust": "Svep uppåt eller nedåt för att ändra cellens storlek",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

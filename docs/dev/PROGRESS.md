@@ -24,6 +24,7 @@ Where the build stands: what exists and how it is verified, what is in flight, a
 - A courier hands mail over on any link bound by a direct announce, where bitchat-ios also requires a Noise session made on that link ([PROTOCOLS.md](../spec/PROTOCOLS.md#61-depositing-and-carrying)).
 - The app-switcher snapshot cover needs Android API 33, leaving API 26 to 32 exposed ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#countermeasures)).
 - A public `#bluetooth` message retried after an app kill can show twice to a neighbor who had the first copy, since those packets carry no message ID.
+- On Android the globe picker draws with Vulkan 1.1, which every 64-bit phone launched on Android 10 or later has. A phone without it (older, 32-bit or Android Go) still installs Airhop, since the manifest drops Skia's Vulkan requirement, but is not offered the globe and picks a location channel by typing its geohash. Every supported iPhone has Metal.
 
 ## What Exists
 

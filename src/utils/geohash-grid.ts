@@ -1,11 +1,15 @@
-// Geohash geometry: which cells touch a given cell.
+// Geohash geometry: a cell's box and centre, the cells touching it, and the
+// encoder. The globe picker draws a cell and its neighbours with it, the jump
+// sheet offers the cells around yours as one-tap destinations, and the mesh
+// bridge listens on a cell's neighbours as well as the cell.
 //
-// This is what lets "the next neighbourhood over" be a tap rather than a
-// geohash somebody has to know. A geohash is a grid by construction, so its
-// neighbours are pure arithmetic on the string: no map, no tile server, no API
-// key, and nothing that tells a third party which part of the world is being
-// looked at. Offline, dependency-free, and correct at the poles and the date
-// line, which the classic neighbour lookup tables famously are not.
+// A geohash is a grid by construction, so all of this is arithmetic on the
+// string: no map, no tile server, and nothing that tells a third party which
+// part of the world is being looked at.
+//
+// Worklets, since the globe calls them on the UI thread every frame. A worklet
+// captures what it calls when it is defined, so each helper sits above its
+// callers.
 
 const ALPHABET = "0123456789bcdefghjkmnpqrstuvwxyz";
 
@@ -19,6 +23,7 @@ export interface GeohashBounds {
 // The box a geohash covers, and with it the cell's size, which is what the
 // neighbour walk steps by. An empty string is the whole world.
 export function geohashBounds(gh: string): GeohashBounds {
+  "worklet";
   let minLat = -90;
   let maxLat = 90;
   let minLon = -180;
@@ -47,6 +52,7 @@ export function geohashBounds(gh: string): GeohashBounds {
 
 // The centre of a cell, for naming it or pointing relays at it.
 export function geohashCenter(gh: string): { lat: number; lon: number } {
+  "worklet";
   const b = geohashBounds(gh);
   return {
     lat: (b.minLat + b.maxLat) / 2,
@@ -54,66 +60,15 @@ export function geohashCenter(gh: string): { lat: number; lon: number } {
   };
 }
 
-// The eight cells touching this one, and the compass direction of each.
-//
-// Walking the grid by arithmetic rather than by table: step half a cell past the
-// edge in each direction and re-encode at the same precision. It is a few more
-// operations than the classic border/neighbour lookup tables, and it cannot get
-// the wrap-around at the poles or the date line wrong, which those tables
-// famously do.
-export const NEIGHBOUR_DIRECTIONS = [
-  "N",
-  "NE",
-  "E",
-  "SE",
-  "S",
-  "SW",
-  "W",
-  "NW",
-] as const;
-export type NeighbourDirection = (typeof NEIGHBOUR_DIRECTIONS)[number];
-
-const OFFSETS: Record<NeighbourDirection, [number, number]> = {
-  N: [1, 0],
-  NE: [1, 1],
-  E: [0, 1],
-  SE: [-1, 1],
-  S: [-1, 0],
-  SW: [-1, -1],
-  W: [0, -1],
-  NW: [1, -1],
-};
-
-export function geohashNeighbours(
-  gh: string,
-): { direction: NeighbourDirection; geohash: string }[] {
-  if (gh.length === 0) return [];
-  const b = geohashBounds(gh);
-  const latStep = b.maxLat - b.minLat;
-  const lonStep = b.maxLon - b.minLon;
-  const { lat, lon } = geohashCenter(gh);
-
-  const out: { direction: NeighbourDirection; geohash: string }[] = [];
-  for (const direction of NEIGHBOUR_DIRECTIONS) {
-    const [dLat, dLon] = OFFSETS[direction];
-    // Clamp latitude: there is no cell north of the pole, so that neighbour
-    // simply does not exist rather than wrapping to nonsense.
-    const nextLat = lat + dLat * latStep;
-    if (nextLat > 90 || nextLat < -90) continue;
-    // Longitude wraps, and the date line is an ordinary edge to a geohash.
-    let nextLon = lon + dLon * lonStep;
-    if (nextLon > 180) nextLon -= 360;
-    if (nextLon < -180) nextLon += 360;
-    const neighbour = encodeGeohash(nextLat, nextLon, gh.length);
-    if (neighbour !== gh) out.push({ direction, geohash: neighbour });
-  }
-  return out;
-}
-
-// Local copy of the encoder rather than an import from core/nostr/presence:
-// that module pulls in the Nostr client stack, and this one is used by the
-// picker UI, which must stay free of transport code.
-function encodeGeohash(lat: number, lon: number, precision: number): string {
+// A copy of core/nostr/geohash-presence's encoder rather than an import:
+// that module pulls in the Nostr client stack, and the globe must stay free
+// of transport code.
+export function encodeGeohash(
+  lat: number,
+  lon: number,
+  precision: number,
+): string {
+  "worklet";
   let minLat = -90;
   let maxLat = 90;
   let minLon = -180;
@@ -152,4 +107,61 @@ function encodeGeohash(lat: number, lon: number, precision: number): string {
     }
   }
   return hash;
+}
+
+// The eight cells touching this one, and the compass direction of each.
+//
+// Walking the grid by arithmetic rather than by table: step half a cell past the
+// edge in each direction and re-encode at the same precision. It is a few more
+// operations than the classic border/neighbour lookup tables, and it cannot get
+// the wrap-around at the poles or the date line wrong, which those tables
+// famously do.
+const NEIGHBOUR_DIRECTIONS = [
+  "N",
+  "NE",
+  "E",
+  "SE",
+  "S",
+  "SW",
+  "W",
+  "NW",
+] as const;
+export type NeighbourDirection = (typeof NEIGHBOUR_DIRECTIONS)[number];
+
+const OFFSETS: Record<NeighbourDirection, [number, number]> = {
+  N: [1, 0],
+  NE: [1, 1],
+  E: [0, 1],
+  SE: [-1, 1],
+  S: [-1, 0],
+  SW: [-1, -1],
+  W: [0, -1],
+  NW: [1, -1],
+};
+
+export function geohashNeighbours(
+  gh: string,
+): { direction: NeighbourDirection; geohash: string }[] {
+  "worklet";
+  if (gh.length === 0) return [];
+  const b = geohashBounds(gh);
+  const latStep = b.maxLat - b.minLat;
+  const lonStep = b.maxLon - b.minLon;
+  const { lat, lon } = geohashCenter(gh);
+
+  const out: { direction: NeighbourDirection; geohash: string }[] = [];
+  for (const direction of NEIGHBOUR_DIRECTIONS) {
+    const [dLat, dLon] = OFFSETS[direction];
+    // Clamp latitude: there is no cell north of the pole, so that neighbour
+    // simply does not exist rather than wrapping to nonsense.
+    const nextLat = lat + dLat * latStep;
+    if (nextLat > 90 || nextLat < -90) continue;
+    // Longitude wraps, and the date line is an ordinary edge to a geohash.
+    let nextLon = lon + dLon * lonStep;
+    if (nextLon > 180) nextLon -= 360;
+    if (nextLon < -180) nextLon += 360;
+    const neighbour = encodeGeohash(nextLat, nextLon, gh.length);
+    if (neighbour !== gh) out.push({ direction, geohash: neighbour });
+  }
+  return out;
 }

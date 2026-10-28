@@ -337,6 +337,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "O hücre açılamadı. Birazdan yeniden dene.",
   "chat.jump.title": "Bir yere git",
+  "chat.jump.globe": "Küre üzerinde seç",
+  "chat.jump.globe_note": "Herhangi bir yere döndür. Çevrimdışı çalışır.",
   "chat.jump.saved": "Kayıtlı yerler",
   "chat.jump.nearby": "Yakında",
   "chat.jump.anywhere":
@@ -368,6 +370,18 @@ export const strings: Strings = {
   "chat.jump.go": "Git",
   "chat.jump.how":
     "Geohash bulmak için: bir konum kanalı aç > adına dokun > oradan kopyala.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Döndürmek için sürükle · yakınlaştırmak için kıstır · odaklamak için dokun",
+  "chat.globe.zoom_in": "Hücre seçmek için yakınlaştır",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell} hücresine git",
+  "chat.globe.larger": "Daha büyük hücre",
+  "chat.globe.smaller": "Daha küçük hücre",
+  "chat.globe.label": "Küre, merkezde {cell}",
+  "chat.globe.adjust":
+    "Hücre boyutunu değiştirmek için yukarı veya aşağı kaydır",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable": "Her üyeye ulaşılamadı. Yakındayken yeniden dene.",

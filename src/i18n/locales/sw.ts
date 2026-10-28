@@ -340,6 +340,9 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Seli hiyo haikuweza kufunguliwa. Jaribu tena baada ya muda mfupi.",
   "chat.jump.title": "Nenda mahali",
+  "chat.jump.globe": "Chagua kwenye tufe",
+  "chat.jump.globe_note":
+    "Zungusha hadi mahali popote. Inafanya kazi bila intaneti.",
   "chat.jump.saved": "Mahali palipohifadhiwa",
   "chat.jump.nearby": "Karibu",
   "chat.jump.anywhere":
@@ -372,6 +375,17 @@ export const strings: Strings = {
   "chat.jump.go": "Nenda",
   "chat.jump.how":
     "Kupata geohash: fungua kituo cha mahali > gusa jina lake > inakili kutoka hapo.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Buruta ili kuzungusha · bana ili kukuza · gusa ili kulenga",
+  "chat.globe.zoom_in": "Kuza ili kuchagua seli",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Nenda {cell}",
+  "chat.globe.larger": "Seli kubwa zaidi",
+  "chat.globe.smaller": "Seli ndogo zaidi",
+  "chat.globe.label": "Tufe, katikati ni {cell}",
+  "chat.globe.adjust": "Telezesha juu au chini ili kubadilisha ukubwa wa seli",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":

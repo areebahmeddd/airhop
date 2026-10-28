@@ -91,6 +91,11 @@
   <!-- The same-platform fast path is optional; phones without it run on the
        BLE mesh. -->
   <uses-feature android:name="android.hardware.wifi.aware" android:required="false"/>
+  <!-- react-native-skia declares Vulkan 1.1 required, which would hide the
+       whole app from every phone without it for the sake of one screen. The
+       globe picker checks Skia.gpu.isAvailable and offers the geohash field
+       alone where Skia cannot draw. -->
+  <uses-feature android:name="android.hardware.vulkan.version" tools:node="remove"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>

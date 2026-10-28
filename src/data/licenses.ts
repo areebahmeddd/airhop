@@ -183,7 +183,7 @@ const CATALOG: {
   {
     category: "UI & rendering",
     description:
-      "What draws the screen: fonts, icons, assets, gestures, animation, SVG and QR codes.",
+      "What draws the screen: fonts, icons, assets, gestures, animation, SVG, the globe and QR codes.",
     packages: [
       {
         name: "@expo-google-fonts/jetbrains-mono",
@@ -229,6 +229,11 @@ const CATALOG: {
         name: "react-native-safe-area-context",
         license: "MIT",
         repo: "https://github.com/AppAndFlow/react-native-safe-area-context",
+      },
+      {
+        name: "react-native-skia",
+        license: "MIT AND BSD-3-Clause",
+        repo: "https://github.com/wcandillon/react-native-skia",
       },
       {
         name: "react-native-svg",
@@ -300,8 +305,6 @@ const CATALOG: {
         repo: "https://github.com/LinusU/react-native-get-random-values",
       },
       {
-        // Wrapper is MIT; it links Tencent's MMKV (BSD-3-Clause), which ships
-        // in the binary.
         name: "react-native-mmkv",
         license: "MIT AND BSD-3-Clause",
         repo: "https://github.com/mrousavy/react-native-mmkv",
@@ -315,6 +318,19 @@ const CATALOG: {
         name: "zustand",
         license: "MIT",
         repo: "https://github.com/pmndrs/zustand",
+      },
+    ],
+  },
+  {
+    category: "Map data",
+    description:
+      "The coastlines, borders and city names the globe draws, bundled so it works offline.",
+    packages: [
+      {
+        name: "Natural Earth",
+        version: "1:110m and 1:50m",
+        license: "Public domain",
+        repo: "https://www.naturalearthdata.com",
       },
     ],
   },
