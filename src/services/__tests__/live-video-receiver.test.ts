@@ -233,10 +233,34 @@ describe("LiveVideoReceiver", () => {
     const id = liveVideoRowID(SENDER, streamID);
     expect(row(id)?.liveVideo).toBeUndefined();
     expect(row(id)?.attachment?.uri).toBe(attachment.uri);
+    expect(native.cancelRecording).toHaveBeenCalled();
     // A file for a stream this phone never saw is an ordinary video.
     expect(
       receiver.absorbFinalFile(SENDER, ROOM, "ffffffffffffffff", attachment),
     ).toBe(false);
+  });
+
+  test("a stream resumed after its silence close gets a row, and the file folds both into one", async () => {
+    const { receiver } = setup();
+    const { packetizer, streamID } = stream();
+    for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+    feed(receiver, packetizer, 1);
+    now += 91_000;
+    jest.advanceTimersByTime(1_000);
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    feed(receiver, packetizer, 1, 92_000);
+    const rows = () =>
+      (useChatStore.getState().messages[ROOM] ?? []).filter((m) =>
+        m.id.startsWith(liveVideoRowID(SENDER, streamID)),
+      );
+    expect(rows()).toHaveLength(2);
+    receiver.absorbFinalFile(SENDER, ROOM, streamID, {
+      type: "video",
+      uri: "file:///cache/airhop_in_final.mp4",
+      name: `video_${streamID}.mp4`,
+    });
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0].attachment?.uri).toBe("file:///cache/airhop_in_final.mp4");
   });
 
   test("a stream past its byte budget is closed", () => {

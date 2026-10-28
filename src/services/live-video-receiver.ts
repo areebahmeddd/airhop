@@ -16,8 +16,9 @@
 // quiet one whose END arrived finishes, and one with no END closes after 90 s.
 // Any end leaves the recording rebuilt here in the row, and if the sender's
 // own file (video_<id>.mp4) arrives later it takes the row over. Packets after
-// a silence close open a new row: bitchat joins the segments into one, which
-// needs a remux this side does not do.
+// a silence close open a new row for the new segment, since joining the two
+// recordings needs a remux; the sender's file, being the whole stream, then
+// replaces every segment's row with one.
 
 import NativeAirhopVideo from "@bridge/NativeAirhopVideo";
 import { bytesToBase64 } from "@core/encoding/base64";
@@ -171,28 +172,35 @@ export class LiveVideoReceiver {
     this.ensureTicking();
   }
 
-  // The sender's own recording arrived as a file. Returns true when it took a
-  // stream's row over, in which case the caller adds no row of its own.
+  // The sender's own recording arrived as a file. Returns true when it took
+  // the stream's rows over, in which case the caller adds no row of its own.
   absorbFinalFile(
     senderPeerID: string,
     channel: string,
     streamID: string,
     attachment: ChatAttachment,
   ): boolean {
-    const key = `${senderPeerID}:${streamID}`;
-    const live = this.streams.get(key);
-    const rowID = live?.rowID ?? liveVideoRowID(senderPeerID, streamID);
-    const row = useChatStore
-      .getState()
-      .messages[channel]?.find((m) => m.id === rowID);
-    if (row === undefined) return false;
+    const base = liveVideoRowID(senderPeerID, streamID);
+    const chat = useChatStore.getState();
+    // The first segment's row, then any a resumed stream opened after it.
+    const rows = (chat.messages[channel] ?? []).filter(
+      (m) => m.id === base || m.id.startsWith(`${base}-`),
+    );
+    if (rows.length === 0) return false;
+    const live = this.streams.get(`${senderPeerID}:${streamID}`);
     if (live !== undefined) this.close(live, "replaced");
-    const rebuilt = row.attachment?.uri;
-    useChatStore
-      .getState()
-      .setLiveVideoRow(channel, rowID, { liveVideo: undefined, attachment });
-    if (rebuilt !== undefined && rebuilt !== attachment.uri)
-      deleteFile(rebuilt);
+    const [kept, ...rest] = rows;
+    for (const row of rows) {
+      const rebuilt = row.attachment?.uri;
+      if (rebuilt !== undefined && rebuilt !== attachment.uri) {
+        deleteFile(rebuilt);
+      }
+    }
+    for (const row of rest) chat.removeMessage(channel, row.id);
+    chat.setLiveVideoRow(channel, kept.id, {
+      liveVideo: undefined,
+      attachment,
+    });
     return true;
   }
 
@@ -518,7 +526,10 @@ export class LiveVideoReceiver {
       }
       const silent = now - stream.lastPacketMs;
       if (silent >= CLOSE_AFTER_SILENCE_MS) {
-        this.apply(stream, stream.assembler.flush(), now);
+        // drain, not flush: flush ends the stream, and one closed by silence
+        // must stay open to a resumed segment.
+        this.apply(stream, stream.assembler.drain(), now);
+        this.present(stream, stream.playout.flush());
         if (this.streams.has(stream.key)) this.close(stream, "silence");
         continue;
       }
