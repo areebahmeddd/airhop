@@ -25,10 +25,10 @@ OPTIONAL INTERNET MODE
 
 PRIVACY AND SECURITY
 
-- Open source under the MIT License
-- Every message is digitally signed to prevent impersonation
-- Attachments are automatically deleted after seven days
-- Panic wipe permanently deletes all messages and cryptographic keys stored on the device
+- Open source under the MIT License.
+- Every message is digitally signed to prevent impersonation.
+- Attachments are automatically deleted after seven days.
+- Panic wipe permanently deletes all messages and cryptographic keys stored on the device.
 
 WHAT AIRHOP DOESN'T PROMISE
 
