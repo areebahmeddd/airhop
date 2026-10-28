@@ -13,6 +13,7 @@ import {
   GossipSync,
   IdentityTree,
   InternetGateway,
+  LiveVideoPath,
   MeshBridge,
   ModuleMap,
   NoiseHandshake,
@@ -48,6 +49,7 @@ const TOC = [
       { id: "rooms", label: "Rooms" },
       { id: "attachments", label: "Attachments" },
       { id: "voice", label: "Live voice" },
+      { id: "video", label: "Live video" },
     ],
   },
   {
@@ -1274,22 +1276,90 @@ export default function ArchitecturePage() {
                 instead. Location channels are excluded too, since that would put your voice on
                 public relays.
               </p>
+            </Section>
+
+            <Section
+              id="video"
+              eyebrow="The system · 12"
+              title="Live video"
+              lede="Going live streams your camera to everyone in range, or to one person, in bitchat's own stream format. It is built to lose packets and keep the picture."
+            >
               <p>
-                Live video, started from the attach menu, follows the same rules in the same two
-                places. It is H.264 and AAC-LC in 0x2D packets of at most 352 bytes, as bitchat
-                sends it, with{" "}
+                A video note is a clip you record and send. Live video starts from the attach menu
+                and goes out as it is filmed: H.264 for the picture and the same AAC-LC as live
+                voice for the sound, cut into packets of{" "}
+                <strong className="text-ink">at most 352 bytes</strong>, so none is ever fragmented.
+                The packet type is bitchat's, 0x2D, and the encoding is too, so a stream from either
+                app plays on the other.
+              </p>
+
+              <Table
+                head={["Quality", "Picture", "Rate", "Meant for"]}
+                rows={[
+                  ["Low", "144 x 192, 8 fps", "18 kbps", "People several hops away"],
+                  ["Medium", "240 x 320, 12 fps", "56 kbps", "One or two hops"],
+                  ["High", "480 x 640, 24 fps", "360 kbps", "Right next to you"],
+                ]}
+              />
+
+              <p>
+                Loss is planned for rather than retried. Each block of packets carries{" "}
                 <TextLink href="https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction">
                   Reed-Solomon
                 </TextLink>{" "}
-                parity so one lost packet seldom costs a frame. Over Bluetooth it is paced to 24
-                packets a second and sheds bitrate when the radio backs up; Wi-Fi Aware and LAN
-                carry the larger pictures. Everyone who receives a stream keeps a recording of it.
+                parity, and any k of its k + r pieces rebuild it, so a lost packet usually costs
+                nothing. When a block cannot be rebuilt the picture freezes instead of smearing, and
+                picks up at the next keyframe, which comes every 2 seconds. The stream's settings
+                ride ahead of every keyframe too, which is what lets someone who walks into range
+                halfway through start watching within a couple of seconds.
+              </p>
+
+              <Figure caption="One stream, two halves. The sender never waits on a viewer, and a viewer never asks for anything back.">
+                <LiveVideoPath />
+              </Figure>
+
+              <p>
+                The sender paces itself to the route. Each neighbour gets one copy, on its fastest
+                link, so the stream is held to{" "}
+                <strong className="text-ink">24 packets a second</strong> only while someone in
+                range has nothing faster than Bluetooth; when everyone also shares Wi-Fi Aware or a
+                local network the limit rises to 300 packets a second. If the queue grows or the
+                radio starts refusing writes, the bitrate backs off, and far enough behind the video
+                is dropped while the sound carries on.
+              </p>
+
+              <Table
+                head={["", "Public room", "Direct message"]}
+                rows={[
+                  ["Packet", "0x2D, broadcast", "0x0A inside Noise"],
+                  ["Who can watch", "Everyone in range", "One person"],
+                  ["Protected by", "Ed25519 signature", "The Noise session"],
+                  ["Relayed", "Yes, up to 5 to 7 hops", "No, it needs a direct link"],
+                ]}
+              />
+
+              <Note label="Every stream leaves a recording">
+                Each phone that receives a stream records it, watched or not, and the stream shows
+                in the chat from its first picture. When it ends, that row becomes the recording.{" "}
+                <strong className="text-ink">
+                  A stream that fits 100 KiB is resent as an ordinary file
+                </strong>{" "}
+                and replaces every copy; a longer one stays as each phone rebuilt it.
+              </Note>
+
+              <p>
+                Watching costs only what you look at. A stream is decoded only while its chat is
+                open, it starts silent until you tap it, and only one stream is heard at a time.
+                Live voice keeps the floor: someone talking takes the speaker, and the stream's
+                sound comes back when they stop. Live video is offered in the same two places as
+                live voice, for the same reasons, and a phone follows at most four streams at once,
+                one per sender.
               </p>
             </Section>
 
             <Section
               id="bridge"
-              eyebrow="Beyond the mesh · 12"
+              eyebrow="Beyond the mesh · 13"
               title="The internet layer"
               lede="When Bluetooth range runs out and there is a connection available, the same conversation continues over Nostr relays. No infrastructure anyone here controls. Two features ride this layer: the internet gateway and the mesh bridge."
             >
@@ -1409,7 +1479,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="tor"
-              eyebrow="Beyond the mesh · 13"
+              eyebrow="Beyond the mesh · 14"
               title="The onion router"
               lede="Gift wrap hides who is talking to whom. It does not hide your IP address from the relay. Tor closes that gap. Both platforms run the same embedded client; what differs is how much of the app it covers and how it reaches the network."
             >
@@ -1547,7 +1617,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="wallet"
-              eyebrow="Optional features · 14"
+              eyebrow="Optional features · 15"
               title="The wallet"
               lede="Cashu ecash, chosen because it is the only payment system where the transfer itself needs no network at all. A coin is a bearer instrument, and handing one over is just a message, or a QR code on a screen."
             >
@@ -1625,7 +1695,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="ai"
-              eyebrow="Optional features · 15"
+              eyebrow="Optional features · 16"
               title="The AI assistant"
               lede="A small language model running on the phone itself, for when there is no signal and nobody nearby to ask."
             >
@@ -1648,7 +1718,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="social"
-              eyebrow="Optional features · 16"
+              eyebrow="Optional features · 17"
               title="Social bridges"
               lede="An Ed25519 key pair is already enough to be a Bluesky account or a Fediverse actor. Airhop can lend yours to either, without registering anywhere and without touching the mesh."
             >
@@ -1725,7 +1795,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="modules"
-              eyebrow="For developers · 17"
+              eyebrow="For developers · 18"
               title="Module map"
               lede="Around 200 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
             >
@@ -1770,7 +1840,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="wire"
-              eyebrow="For developers · 18"
+              eyebrow="For developers · 19"
               title="Wire format"
               lede="Byte-for-byte identical to bitchat v2. This is what makes an Airhop phone and a bitchat phone join the same mesh with no translation layer and no configuration."
             >
@@ -1850,7 +1920,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="threat"
-              eyebrow="For developers · 19"
+              eyebrow="For developers · 20"
               title="Threat model"
               lede="What the design defends against, and the seven things it does not."
             >

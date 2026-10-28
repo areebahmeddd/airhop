@@ -4,6 +4,7 @@ export { GiftWrap } from "./GiftWrap";
 export { GossipSync } from "./GossipSync";
 export { IdentityTree } from "./IdentityTree";
 export { InternetGateway } from "./InternetGateway";
+export { LiveVideoPath } from "./LiveVideoPath";
 export { MeshBridge } from "./MeshBridge";
 export { ModuleMap } from "./ModuleMap";
 export { NoiseHandshake } from "./NoiseHandshake";
