@@ -237,6 +237,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "ለ{name} ተጨማሪ አማራጮች",
   "chat.dm.remove_contact_short": "እውቂያን አስወግድ",
   "chat.dm.block_short": "እውቂያን አግድ",
+  "chat.dm.signing_key_refused":
+    "አንድ ሰው ለ{name} የተለየ ቁልፍ አቀረበ፣ Airhop ግን አልተቀበለውም። ይህ ውይይት የነበረውን ቁልፍ ይይዛል።",
   "chat.dm.delete_short": "ውይይቱን ሰርዝ",
 
   // ---- Chats: vocabulary shared by both lists ----

@@ -249,6 +249,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Pilihan lain untuk {name}",
   "chat.dm.remove_contact_short": "Buang kenalan",
   "chat.dm.block_short": "Sekat kenalan",
+  "chat.dm.signing_key_refused":
+    "Seseorang mengemukakan kunci lain untuk {name}, dan Airhop menolaknya. Sembang ini mengekalkan kunci yang sedia ada.",
   "chat.dm.delete_short": "Padam sembang",
 
   // ---- Chats: vocabulary shared by both lists ----

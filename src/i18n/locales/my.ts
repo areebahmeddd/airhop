@@ -253,6 +253,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} အတွက် ထပ်မံရွေးချယ်စရာများ",
   "chat.dm.remove_contact_short": "အဆက်အသွယ် ဖယ်ပါ",
   "chat.dm.block_short": "အဆက်အသွယ် ပိတ်ဆို့ပါ",
+  "chat.dm.signing_key_refused":
+    "တစ်စုံတစ်ယောက်က {name} အတွက် မတူသော သော့ကို တင်ပြခဲ့ပြီး Airhop က ငြင်းပယ်ခဲ့သည်။ ဤချက်သည် ယခင်သော့ကိုသာ ဆက်ထားသည်။",
   "chat.dm.delete_short": "စကားပြော ဖျက်ပါ",
 
   // ---- Chats: vocabulary shared by both lists ----

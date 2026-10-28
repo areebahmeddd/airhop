@@ -244,6 +244,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} ਲਈ ਹੋਰ ਵਿਕਲਪ",
   "chat.dm.remove_contact_short": "ਸੰਪਰਕ ਹਟਾਓ",
   "chat.dm.block_short": "ਸੰਪਰਕ ਬਲਾਕ ਕਰੋ",
+  "chat.dm.signing_key_refused":
+    "ਕਿਸੇ ਨੇ {name} ਲਈ ਵੱਖਰੀ ਕੁੰਜੀ ਪੇਸ਼ ਕੀਤੀ, ਅਤੇ Airhop ਨੇ ਉਸਨੂੰ ਠੁਕਰਾ ਦਿੱਤਾ। ਇਹ ਚੈਟ ਪਹਿਲਾਂ ਵਾਲੀ ਕੁੰਜੀ ਹੀ ਰੱਖਦੀ ਹੈ।",
   "chat.dm.delete_short": "ਗੱਲਬਾਤ ਮਿਟਾਓ",
 
   // ---- Chats: vocabulary shared by both lists ----

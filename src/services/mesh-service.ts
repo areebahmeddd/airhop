@@ -408,6 +408,8 @@ const MAX_REMEMBERED_IDS = 2000;
 // TransportConfig.pttPublicFrameMaxAgeSeconds (30s).
 export const PTT_FRAME_MAX_AGE_MS = 30_000;
 
+const KEY_REFUSED_ROW_PREFIX = "key-refused-";
+
 // How far a packet's timestamp may sit from our clock before we refuse to carry
 // or act on it. Matches bitchat's 2-minute window (REQUEST_SYNC_MANAGER.md).
 //
@@ -3113,6 +3115,31 @@ export class MeshService {
     );
   }
 
+  // Someone announced another signing key under a peer whose key is settled
+  // (proven in a session, or verified in person) and was refused. The chat
+  // already held with them says so, as bitchat-ios does, so an impersonation
+  // attempt is not invisible. One notice per refused key, none while the newest
+  // message already is one (keys cost nothing to mint), and no chat is opened
+  // for it. An unsettled key gets no notice: a session decides which is right.
+  private warnOfRefusedSigningKey(peerID: string, refused: Uint8Array): void {
+    const channel = `dm:${peerID}`;
+    const chat = useChatStore.getState();
+    const thread = chat.messages[channel];
+    if (thread === undefined || thread.length === 0) return;
+    if (thread[thread.length - 1].id.startsWith(KEY_REFUSED_ROW_PREFIX)) return;
+    const name = resolveDisplayName(peerID);
+    chat.addMessage({
+      id: KEY_REFUSED_ROW_PREFIX + bytesToHex(refused),
+      channel,
+      senderID: peerID,
+      senderNickname: name,
+      ...systemRow("chat.dm.signing_key_refused", { name }),
+      timestampMs: Date.now(),
+      isMine: false,
+      isSystem: true,
+    });
+  }
+
   // Send our capabilities and signing key inside an established session.
   //
   // Emitted after every completed handshake by both roles. The initiator
@@ -3653,11 +3680,12 @@ export class MeshService {
     // (onAuthenticatedPeerState).
     const held = this.knownSigningKey(peerID);
     if (held !== undefined && !equalBytes(held, info.signingPubKey)) {
-      if (
-        isDirectAnnounce &&
-        this.registry.provenSigningKey(peerID) === undefined &&
-        !isVerified(useContactsStore.getState().getContact(peerID))
-      ) {
+      const settled =
+        this.registry.provenSigningKey(peerID) !== undefined ||
+        isVerified(useContactsStore.getState().getContact(peerID));
+      if (settled) {
+        this.warnOfRefusedSigningKey(peerID, info.signingPubKey);
+      } else if (isDirectAnnounce) {
         this.ensureNoiseSession(peerID);
       }
       return;

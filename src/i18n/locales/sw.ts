@@ -254,6 +254,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Chaguo zaidi za {name}",
   "chat.dm.remove_contact_short": "Ondoa anwani",
   "chat.dm.block_short": "Zuia anwani",
+  "chat.dm.signing_key_refused":
+    "Mtu aliwasilisha ufunguo tofauti kwa {name}, na Airhop iliukataa. Mazungumzo haya yanaendelea na ufunguo uliokuwepo.",
   "chat.dm.delete_short": "Futa gumzo",
 
   // ---- Chats: vocabulary shared by both lists ----

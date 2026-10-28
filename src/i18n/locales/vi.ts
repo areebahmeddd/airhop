@@ -250,6 +250,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Thêm tùy chọn cho {name}",
   "chat.dm.remove_contact_short": "Gỡ liên hệ",
   "chat.dm.block_short": "Chặn liên hệ",
+  "chat.dm.signing_key_refused":
+    "Ai đó đã đưa ra một khóa khác cho {name}, và Airhop đã từ chối. Cuộc trò chuyện này giữ nguyên khóa cũ.",
   "chat.dm.delete_short": "Xóa cuộc trò chuyện",
 
   // ---- Chats: vocabulary shared by both lists ----

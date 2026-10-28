@@ -249,6 +249,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Mais opções para {name}",
   "chat.dm.remove_contact_short": "Remover o contacto",
   "chat.dm.block_short": "Bloquear o contacto",
+  "chat.dm.signing_key_refused":
+    "Alguém apresentou uma chave diferente para {name}, e o Airhop recusou-a. Esta conversa mantém a chave que já tinha.",
   "chat.dm.delete_short": "Eliminar a conversa",
 
   // ---- Chats: vocabulary shared by both lists ----

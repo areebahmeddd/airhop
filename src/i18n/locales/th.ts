@@ -244,6 +244,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "ตัวเลือกเพิ่มเติมสำหรับ {name}",
   "chat.dm.remove_contact_short": "นำผู้ติดต่อออก",
   "chat.dm.block_short": "บล็อกผู้ติดต่อ",
+  "chat.dm.signing_key_refused":
+    "มีคนแสดงกุญแจอื่นสำหรับ {name} และ Airhop ปฏิเสธไปแล้ว แชทนี้ยังใช้กุญแจเดิม",
   "chat.dm.delete_short": "ลบแชท",
 
   // ---- Chats: vocabulary shared by both lists ----

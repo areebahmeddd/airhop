@@ -238,6 +238,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} 的更多选项",
   "chat.dm.remove_contact_short": "移除联系人",
   "chat.dm.block_short": "屏蔽联系人",
+  "chat.dm.signing_key_refused":
+    "有人为 {name} 出示了另一把密钥，Airhop 已拒绝。此聊天继续使用原有密钥。",
   "chat.dm.delete_short": "删除聊天",
 
   // ---- Chats: vocabulary shared by both lists ----

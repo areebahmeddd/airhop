@@ -257,6 +257,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Iba pang opsyon para sa {name}",
   "chat.dm.remove_contact_short": "Alisin ang contact",
   "chat.dm.block_short": "I-block ang contact",
+  "chat.dm.signing_key_refused":
+    "May nagpakita ng ibang susi para kay {name}, at tinanggihan ito ng Airhop. Pinananatili ng chat na ito ang dati nitong susi.",
   "chat.dm.delete_short": "Burahin ang chat",
 
   // ---- Chats: vocabulary shared by both lists ----

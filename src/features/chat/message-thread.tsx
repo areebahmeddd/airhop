@@ -421,7 +421,12 @@ function mediaHeightForAspect(aspect: number | null): number {
 function systemRowIcon(
   key: string | undefined,
 ): "camera" | "alert-circle" | "info" {
-  if (key?.startsWith("chat.board.urgent") === true) return "alert-circle";
+  if (
+    key?.startsWith("chat.board.urgent") === true ||
+    key === "chat.dm.signing_key_refused"
+  ) {
+    return "alert-circle";
+  }
   if (key?.startsWith("chat.screenshot") === true) return "camera";
   return "info";
 }

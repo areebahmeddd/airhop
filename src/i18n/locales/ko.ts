@@ -246,6 +246,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name}의 추가 옵션",
   "chat.dm.remove_contact_short": "연락처 제거",
   "chat.dm.block_short": "연락처 차단",
+  "chat.dm.signing_key_refused":
+    "누군가 {name}의 다른 키를 제시했지만 Airhop이 거부했습니다. 이 채팅은 기존 키를 그대로 씁니다.",
   "chat.dm.delete_short": "채팅 삭제",
 
   // ---- Chats: vocabulary shared by both lists ----

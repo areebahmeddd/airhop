@@ -237,6 +237,17 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   );
   s.check("bob has alice's real signing key bound before the attack", legit);
 
+  // A DM opens a session, which proves alice's key, so a contradicting
+  // announce is news worth telling bob about rather than a question a session
+  // still has to settle.
+  alice.sendDm(bob.peerID, "hi bob");
+  const proven = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("hi bob"),
+    20_000,
+  );
+  s.check("bob and alice share a session and a chat", proven);
+
   // Attack 1: an UNSIGNED announce claiming alice's ID.
   //
   // Verification must not run only `if (SIGNED)`: clearing the flag would let
@@ -276,6 +287,30 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
     }),
   );
   await s.world.advance(2000);
+  // The same forgery again, freshly stamped: still one notice for one key.
+  inject(
+    s,
+    radio,
+    bob.id,
+    mallory.id,
+    forgeAnnounce({
+      claimedPeerID: alice.peerID,
+      noisePubKey: alice.identity.noiseStaticPubKey,
+      signingPubKey: mallory.identity.signingPubKey,
+      nickname: "alice",
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(2000);
+  const notices = bob
+    .messages(`dm:${alice.peerID}`)
+    .filter((m) => m.id.startsWith("key-refused-"));
+  s.check(
+    "bob's chat with alice says a different key was refused, once",
+    notices.length === 1,
+    `${notices.length} notices`,
+  );
 
   // Attack 3: sender mismatch, claiming alice's ID while carrying mallory's
   // own noise key. Rejected because the ID does not derive from the key.

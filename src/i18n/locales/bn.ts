@@ -247,6 +247,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name}-এর আরও বিকল্প",
   "chat.dm.remove_contact_short": "পরিচিতি সরান",
   "chat.dm.block_short": "পরিচিতি ব্লক করুন",
+  "chat.dm.signing_key_refused":
+    "কেউ {name}-এর জন্য একটি আলাদা কী দিয়েছিল, Airhop তা প্রত্যাখ্যান করেছে। এই চ্যাট আগের কী-ই রাখছে।",
   "chat.dm.delete_short": "চ্যাট মুছুন",
 
   // ---- Chats: vocabulary shared by both lists ----

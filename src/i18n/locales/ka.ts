@@ -251,6 +251,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name}-ის დამატებითი პარამეტრები",
   "chat.dm.remove_contact_short": "კონტაქტის წაშლა",
   "chat.dm.block_short": "კონტაქტის დაბლოკვა",
+  "chat.dm.signing_key_refused":
+    "ვიღაცამ {name}-ისთვის სხვა გასაღები წარადგინა და Airhop-მა უარყო. ეს ჩატი ძველ გასაღებს ინარჩუნებს.",
   "chat.dm.delete_short": "მიმოწერის წაშლა",
 
   // ---- Chats: vocabulary shared by both lists ----

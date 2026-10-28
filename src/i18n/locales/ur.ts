@@ -250,6 +250,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} کے مزید اختیارات",
   "chat.dm.remove_contact_short": "رابطہ ہٹائیں",
   "chat.dm.block_short": "رابطہ مسدود کریں",
+  "chat.dm.signing_key_refused":
+    "کسی نے {name} کے لیے مختلف کلید پیش کی، اور Airhop نے اسے رد کر دیا۔ یہ چیٹ پہلے والی کلید ہی رکھتی ہے۔",
   "chat.dm.delete_short": "چیٹ حذف کریں",
 
   // ---- Chats: vocabulary shared by both lists ----

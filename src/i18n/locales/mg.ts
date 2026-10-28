@@ -254,6 +254,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Safidy fanampiny ho an'ny {name}",
   "chat.dm.remove_contact_short": "Esory ny fifandraisana",
   "chat.dm.block_short": "Sakano ny fifandraisana",
+  "chat.dm.signing_key_refused":
+    "Nisy nanolotra lakile hafa ho an'i {name}, ary nolavin'i Airhop izany. Mitazona ny lakile efa nananany ity resaka ity.",
   "chat.dm.delete_short": "Fafao ny resaka",
 
   // ---- Chats: vocabulary shared by both lists ----

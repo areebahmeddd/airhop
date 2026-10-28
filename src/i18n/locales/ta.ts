@@ -257,6 +257,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} க்கான மேலும் தேர்வுகள்",
   "chat.dm.remove_contact_short": "தொடர்பை அகற்று",
   "chat.dm.block_short": "தொடர்பைத் தடு",
+  "chat.dm.signing_key_refused":
+    "யாரோ {name}-க்கு வேறு சாவியைக் காட்டினார், Airhop அதை மறுத்தது. இந்த அரட்டை ஏற்கெனவே இருந்த சாவியையே வைத்திருக்கிறது.",
   "chat.dm.delete_short": "அரட்டையை நீக்கு",
 
   // ---- Chats: vocabulary shared by both lists ----
