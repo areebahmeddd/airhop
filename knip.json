@@ -8,23 +8,9 @@
         "App.tsx!",
         "src/**/__tests__/**/*.{ts,tsx}",
         "src/**/__benchmarks__/**/*.bench.ts",
-        "scripts/*.js!",
-        "press/build.mjs!",
-        "press/tools/*.mjs!"
+        "scripts/*.js!"
       ],
-      "project": [
-        "src/**/*.{ts,tsx,js}!",
-        "scripts/**/*.js!",
-        "press/**/*.mjs!"
-      ]
-    },
-    "press/film": {
-      "entry": [
-        "scripts/{build,hyperframes,narrate,render,score,score-trailer}.mjs!"
-      ],
-      "project": ["**/*.mjs!"],
-      "ignoreBinaries": ["ffmpeg"],
-      "ignoreDependencies": ["gsap", "@hyperframes/core", "feather-icons"]
+      "project": ["src/**/*.{ts,tsx,js}!", "scripts/**/*.js!"]
     }
   }
 }
