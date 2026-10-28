@@ -213,6 +213,26 @@ export class LinkRegistry {
     return links;
   }
 
+  // One link per announced peer, its fastest, plus every link no peer has
+  // announced on yet, since that could be anyone. What a live stream goes down:
+  // a peer held on Bluetooth and LAN takes the LAN copy alone, and the
+  // Bluetooth airtime goes to neighbours with nothing faster.
+  fastestLinks(): readonly Link[] {
+    const links: Link[] = [];
+    const seen = new Set<string>();
+    for (const linkID of this.linkIDs()) {
+      const kind = this.kindByLink.get(linkID);
+      if (kind === undefined) continue;
+      const peerID = this.peerByLink.get(linkID);
+      const fastest = peerID === undefined ? undefined : this.linkFor(peerID);
+      const link = fastest ?? { id: linkID, kind };
+      if (seen.has(link.id)) continue;
+      seen.add(link.id);
+      links.push(link);
+    }
+    return links;
+  }
+
   // In `TRANSPORT_KINDS` order, each transport's in the order its links came up.
   linkIDs(kind?: TransportKind): readonly string[] {
     const ids: string[] = [];
@@ -302,25 +322,35 @@ export class LinkRegistry {
     dataBase64: string,
     options: BroadcastOptions = {},
   ): Promise<boolean> {
-    return (await this.broadcastCounted(dataBase64, options)).sent > 0;
+    const targets = this.linkIDs(options.kind).filter(
+      (linkID) => linkID !== options.exclude,
+    );
+    return (await this.writeCounted(targets, dataBase64)).sent > 0;
   }
 
-  // As broadcast, counting the links that took the bytes and the ones that
-  // refused them. A refused Bluetooth write is a full transmit queue, which is
-  // the congestion signal a live stream steers by.
-  async broadcastCounted(
+  // Down `fastestLinks()`, counting the links that took the bytes and the ones
+  // that refused them. A refused Bluetooth write is a full transmit queue, which
+  // is the congestion signal a live stream steers by.
+  broadcastFastest(
     dataBase64: string,
-    options: BroadcastOptions = {},
+  ): Promise<{ sent: number; refused: number }> {
+    return this.writeCounted(
+      this.fastestLinks().map((link) => link.id),
+      dataBase64,
+    );
+  }
+
+  private async writeCounted(
+    linkIDs: readonly string[],
+    dataBase64: string,
   ): Promise<{ sent: number; refused: number }> {
     const results = await Promise.all(
-      this.linkIDs(options.kind)
-        .filter((linkID) => linkID !== options.exclude)
-        .map((linkID) =>
-          this.send(linkID, dataBase64).then(
-            () => true,
-            () => false,
-          ),
+      linkIDs.map((linkID) =>
+        this.send(linkID, dataBase64).then(
+          () => true,
+          () => false,
         ),
+      ),
     );
     const sent = results.filter(Boolean).length;
     return { sent, refused: results.length - sent };

@@ -237,6 +237,35 @@ describe("LinkRegistry", () => {
       });
     });
 
+    it("fastestLinks() keeps one link per peer, its fastest", () => {
+      links.open("ble", "c:1");
+      links.open("ble", "p:1");
+      links.open("lan", "lan-in-1");
+      links.open("ble", "c:2");
+      links.bind("c:1", "peer-a");
+      links.bind("p:1", "peer-a");
+      links.bind("lan-in-1", "peer-a");
+      links.bind("c:2", "peer-b");
+
+      expect(links.fastestLinks()).toEqual([
+        { id: "lan-in-1", kind: "lan" },
+        { id: "c:2", kind: "ble" },
+      ]);
+    });
+
+    it("fastestLinks() keeps every link no peer has announced on", () => {
+      links.open("ble", "c:1");
+      links.open("ble", "p:9");
+      links.open("wifi", "wifi-1");
+      links.bind("c:1", "peer-a");
+      links.bind("wifi-1", "peer-a");
+
+      expect(links.fastestLinks()).toEqual([
+        { id: "wifi-1", kind: "wifi" },
+        { id: "p:9", kind: "ble" },
+      ]);
+    });
+
     it("reports nothing for an unknown peer", () => {
       expect(links.linkFor("peer-a")).toBeUndefined();
       expect(links.linksFor("peer-a")).toEqual([]);
@@ -384,16 +413,20 @@ describe("LinkRegistry", () => {
       await expect(links.broadcast("AAAA")).resolves.toBe(false);
     });
 
-    it("broadcastCounted() tells the links that took the bytes from those that refused", async () => {
+    it("broadcastFastest() writes each peer's fastest link and counts refusals", async () => {
       links.open("ble", "c:1");
-      links.open("ble", "p:2");
-      links.open("wifi", "wifi-1");
-      rec.fail("p:2");
+      links.open("lan", "lan-out-1");
+      links.open("ble", "c:2");
+      links.bind("c:1", "peer-a");
+      links.bind("lan-out-1", "peer-a");
+      links.bind("c:2", "peer-b");
+      rec.fail("c:2");
 
-      await expect(links.broadcastCounted("AAAA")).resolves.toEqual({
-        sent: 2,
+      await expect(links.broadcastFastest("AAAA")).resolves.toEqual({
+        sent: 1,
         refused: 1,
       });
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["lan-out-1"]);
     });
 
     it("a refused write never closes the link", async () => {

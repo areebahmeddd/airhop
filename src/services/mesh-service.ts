@@ -2465,11 +2465,13 @@ export class MeshService {
     }
     const dmPeer = channel.startsWith("dm:") ? channel.slice(3) : null;
     const ttl = originTtl(PacketType.VIDEO_FRAME, this.links.degree());
-    // Wi-Fi Aware and LAN carry far more than Bluetooth, but a room stream
-    // goes down every link at once, so one Bluetooth link sets its pace.
+    // Wi-Fi Aware and LAN carry far more than Bluetooth. A room stream goes to
+    // each neighbour on its fastest link, so it is held to Bluetooth's pace
+    // only while some neighbour has nothing faster. Decided once: a neighbour
+    // arriving later on Bluetooth alone is met by refused writes instead.
     const overBluetooth =
       dmPeer === null
-        ? this.links.size("ble") > 0
+        ? this.links.fastestLinks().some((link) => link.kind === "ble")
         : (this.links.linkFor(dmPeer)?.kind ?? "ble") === "ble";
     const senderID = hexToBytes(this.identity.peerID);
     const session = new LiveVideoSendSession(quality, {
@@ -2498,7 +2500,7 @@ export class MeshService {
         // packet always fits a Bluetooth frame, so every link takes it whole.
         this.floodRouter.originate(packet);
         void this.links
-          .broadcastCounted(bytesToBase64(encodePacket(packet)))
+          .broadcastFastest(bytesToBase64(encodePacket(packet)))
           .then(({ refused }) => {
             if (refused > 0) session.noteRefused(refused);
           });

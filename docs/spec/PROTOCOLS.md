@@ -850,7 +850,9 @@ CANCELED 0x04  no body
 56 kbps) and High (480x640, 24 fps, 360 kbps), each with its own parity ratios,
 keyframes every 2 s. The sender paces to the lower of the preset's rate and the
 route's budget, 24 packets a second with any Bluetooth hop ahead and 300 over
-Wi-Fi Aware or LAN alone, and drops a packet that waited over 1.2 s. Congestion
+Wi-Fi Aware or LAN alone, and drops a packet that waited over 1.2 s. A room
+stream goes to each neighbour once, on its fastest link, so only a neighbour
+with nothing faster than Bluetooth holds it to Bluetooth's budget. Congestion
 control reads the deeper of its pacing queue and the radio's, which Airhop's
 native links show only as refused writes: any refusal counts as a queue at its
 high water, and refusals for half of what went out as one far enough behind to
