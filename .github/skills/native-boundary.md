@@ -58,9 +58,12 @@ TurboModule specs are named `Native<Name>.ts` in `src/bridge/`, Codegen's conven
 | `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS       | Wi-Fi Aware pairing sheet; absent on Android                                                  |
 | `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | Both      | mDNS discovery and TCP links, and the device-transfer socket                                  |
 | `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | Both      | AAC-LC capture and playback for live voice                                                    |
+| `NativeAirhopVideo.ts`       | `"AirhopVideo"`       | Both      | H.264 camera encode, decode onto a surface, and MP4 recording for live video                  |
 | `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Both      | Arti lifecycle                                                                                |
 | `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | iOS       | WebSocket over Arti's SOCKS5; Android proxies OkHttp instead                                  |
 | `NativeAirhopApp.ts`         | `"AirhopApp"`         | Both      | Recent log on both; restart, boot start, APK share and ring alert on Android, rejected on iOS |
+
+`NativeAirhopVideoViews.ts` declares the two views live video draws into, `AirhopVideoSurface` and `AirhopCameraPreview`, legacy view managers resolved through the same interop layer.
 
 `AirhopForegroundService`, `AirhopBootReceiver` and `AirhopBootService` (Kotlin) have no spec: `setBackgroundServiceEnabled` on the BLE module drives the first, and `setAutoStartOnBoot` on the App module the start after a reboot.
 

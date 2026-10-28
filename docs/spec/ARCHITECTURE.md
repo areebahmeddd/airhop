@@ -34,7 +34,8 @@ it rather than restating it. What is planned and when is in
 | Bulletin board            | Yes, signed `0x23`       | Yes, kind 1 mirror  | Public and signed, 1 to 7 day expiry, gossip catch-up. A location cell can also take a permanent Nostr note. An urgent post also writes one line into the chat it belongs to                     |
 | Voice notes               | Yes, as a file           | No                  | Recorded AAC, not live                                                                                                                                                                           |
 | Live push-to-talk         | Yes, `0x29` bursts       | No                  | AAC-LC 16 kHz mono, 350 ms jitter buffer. Also shipped by bitchat, so it works between the two                                                                                                   |
-| Video sharing             | Yes, as a file           | No                  | Recorded and played inline, round video notes held to record. bitchat's live streams (`0x2D`) are relayed, not yet played                                                                        |
+| Video sharing             | Yes, as a file           | No                  | Recorded and played inline, round video notes held to record                                                                                                                                     |
+| Live video                | Yes, `0x2D` streams      | No                  | H.264 and AAC-LC with erasure-coded packets, as bitchat ships it, so streams cross between the two. Sent from the attach menu, watched live in the chat, kept as a recording                     |
 | File transfer             | Yes, per-type caps       | No                  | Sends 512 KiB photos and voice, 1 MiB otherwise, as bitchat-ios does. Both accept 1 MiB of any type, bitchat-ios's decoder ceiling. Received files share a 100 MiB budget, oldest out first      |
 | Location pin              | Yes, sealed `0x50`       | No                  | One point in a DM, sent once. No live sharing, no map, never couriered                                                                                                                           |
 | Ring                      | Yes, sealed `0x51`       | No                  | Airhop only. A doorbell for someone in range: opt-in per contact, proven per session, rings for 45 s or until answered, and every refusal is answered so the sender is never left guessing       |
@@ -1532,6 +1533,7 @@ lives in `android/` or `ios/`.
 │  AirhopLANModule   Network framework / NsdManager (mDNS)                 │
 │  AirhopWiFiModule  Wi-Fi Aware (Android API 29+, iOS 26+)                │
 │  AirhopVoiceModule AAC capture and playback                              │
+│  AirhopVideoModule H.264 camera encode, surface decode, MP4 recording    │
 │  AirhopTorModule   Arti (Rust), obfs4, Snowflake, WebTunnel (Go)         │
 │  AirhopAppModule   restart, boot start, ring alert, APK share            │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -1659,6 +1661,7 @@ So there is one module per hardware or OS capability and no more.
 | ------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `AirhopBLEModule`         | Both     | BLE GATT Peripheral and Central, radio state, power mode                                                                                |
 | `AirhopVoiceModule`       | Both     | AAC-LC capture and playback for voice notes and PTT                                                                                     |
+| `AirhopVideoModule`       | Both     | Live video's camera and H.264 encoder, decoding onto a native surface, and the MP4 a stream is recorded into                            |
 | `AirhopWiFiModule`        | Both     | Wi-Fi Aware same-platform fast path                                                                                                     |
 | `AirhopLANModule`         | Both     | mDNS discovery, its TCP links, and the transfer socket                                                                                  |
 | `AirhopWiFiPairing`       | iOS      | The system pairing sheet that fast path needs                                                                                           |

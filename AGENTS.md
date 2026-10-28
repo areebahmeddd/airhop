@@ -40,6 +40,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 | Private-channel and private-group crypto                       | `src/core/mesh/rooms/`                             |
 | Courier (store-and-forward) envelopes and one-time prekeys     | `src/core/mesh/courier/`                           |
 | Live push-to-talk capture and playback                         | `src/core/mesh/voice/`                             |
+| Live video: packets, erasure code, stream send and receive     | `src/core/mesh/video/`                             |
 | Which transport a message leaves on                            | `src/core/router/`                                 |
 | Which public messages are hidden as spam                       | `src/core/spam/`                                   |
 | Base64 shared across the protocol                              | `src/core/encoding/`                               |
@@ -91,13 +92,13 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 - Never change the `packet-codec.ts` byte layout without bumping the protocol version and keeping a decode path for the old one.
 - Never change the BLE Service UUID (`F47B5E2D...`) or Characteristic UUID (`A1B2C3D4...`). A change partitions the network.
 - Never change peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`, defined once in `src/core/crypto/peer-id.ts`). Gossip sync and DM addressing depend on it.
-- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical, and Airhop relays `0x2D` without playing it. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
+- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical, and so is `0x2D`, sent and played exactly as bitchat does (LIVE_VIDEO_V1). [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
 - A protocol change ships only after a message exchange across Airhop, bitchat-ios and bitchat-android.
 
 ### Native Code
 
 - Swift lives in `ios/`, Kotlin in `android/`. They expose **raw bytes** to TypeScript: no protocol logic, no routing decisions, no crypto.
-- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopTorSocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, and `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot; these are services, not modules.
+- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopVideoModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopTorSocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, and `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot; these are services, not modules.
 - `AirhopAppModule` diverges by platform: iOS rejects `restart`, `setAutoStartOnBoot`, `copyApkToCache`, `startRingAlert` and `stopRingAlert`, since it can relaunch nothing, has no boot receiver, has no sideloading to share an APK into, and has no ringtone loop outside CallKit.
 - `native/arti/` (Rust) and `native/iptproxy/` (Go) are the one exception to "raw bytes only": a Tor client and its pluggable transports, each owning a SOCKS5 listener and its own lifecycle. They still know nothing about mesh packets, routing or message encryption, and both platforms build the same sources.
 

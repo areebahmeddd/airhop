@@ -428,11 +428,13 @@ A "gateway" device can bridge the BLE mesh to the Nostr internet:
 
 ### 8.3 Video
 
-**Status: Not explicitly supported.**
-
-- No video MIME type appears in `MimeType.swift` or `MimeType.kt`.
-- `mp4` audio is supported but not video.
-- This is a gap. No video transmission mechanism exists.
+**Status: Live video written on both platforms, in review.** The released
+builds carry video only as a file. The live video work in review defines
+LIVE_VIDEO_V1 (`docs/LIVE_VIDEO_V1.md`): `VIDEO_FRAME` (`0x2D`) in the room and
+Noise payload `0x0A` in a DM, H.264 Constrained Baseline with AAC-LC audio,
+packets of at most 352 bytes protected by Reed-Solomon parity, and a final
+`video_<id>.mp4` that replaces viewers' live copy when it fits 100 KiB. Clips
+and gallery videos are transcoded to fit and named `clip_*.mp4`.
 
 ### 8.4 Push-to-Talk / Live Voice Streaming
 
@@ -805,7 +807,6 @@ No forensic recovery is possible after panic wipe without the Keychain, which is
 
 | Gap                                    | Severity | Notes                                                                   |
 | -------------------------------------- | -------- | ----------------------------------------------------------------------- |
-| **No video support**                   | High     | No packet type, no codec, BLE bandwidth insufficient (~18 KiB/s)        |
 | **No video calling**                   | High     | Architecturally infeasible over BLE; would require internet path        |
 | **Courier envelopes = text only**      | Medium   | 16 KiB cap; images cannot be physically relayed                         |
 | **Nostr path = text only**             | Medium   | Media does not ride Nostr                                               |

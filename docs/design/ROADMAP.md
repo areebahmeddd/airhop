@@ -30,9 +30,9 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 ### Gap 5: Files and Video
 
-**bitchat:** Accepts 1 MiB of any type, checked as a packet is decoded; bitchat-ios keeps the photos and voice notes it sends under 512 KiB. Video crosses the wire but neither platform plays it.
+**bitchat:** Accepts 1 MiB of any type, checked as a packet is decoded; bitchat-ios keeps the photos and voice notes it sends under 512 KiB. Live video (LIVE_VIDEO_V1, `0x2D`) is written on both platforms and in review, not yet released.
 
-**Airhop:** Matches the ceiling and the send budgets, and does not raise them: bitchat-ios rejects a packet past the ceiling while decoding it, so a higher one would break interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the extension, and the fragment layer splits it for the radio. Video rides that path and plays inline on both platforms; a bitchat peer sees an ordinary file. There is no live video: Bluetooth is too slow, Wi-Fi Aware cannot cross platforms, and LAN needs both peers on one network with it switched on.
+**Airhop:** Matches the ceiling and the send budgets, and does not raise them: bitchat-ios rejects a packet past the ceiling while decoding it, so a higher one would break interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the extension, and the fragment layer splits it for the radio. Video rides that path and plays inline on both platforms; a bitchat peer sees an ordinary file, round video notes included. Live video follows LIVE_VIDEO_V1 exactly, so streams cross between the two: the Low preset costs about the airtime of a live voice burst, erasure-coded packets absorb loss, and a stream that fits 100 KiB is resent as a file.
 
 ### Gap 6: Cashu Wallet
 

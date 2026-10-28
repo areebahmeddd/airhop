@@ -263,7 +263,7 @@ allocations closes to 16.
 | `PONG`               | `0x27` | Unicast           | Directed mesh echo reply: echoed nonce and origin TTL. Hops = originTTL − receivedTTL + 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `NOSTR_CARRIER`      | `0x28` | Broadcast/Unicast | A signed Nostr event ferried between the mesh and a gateway or bridge. See [section 3.9](#39-gateway-carrier)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `VOICE_FRAME`        | `0x29` | Broadcast         | One live push-to-talk packet, signed like a public message ([section 3.1](#31-voice-burst-payload)). Shipped by bitchat too, so live voice works between the two. A DM burst rides `NoisePayloadType.VOICE_FRAME` (`0x08`) instead. Broadcast only, with a 30 s freshness window, both checked with the signature before relay                                                                                                                                                                                                                                                                                                                                        |
-| `VIDEO_FRAME`        | `0x2D` | Broadcast         | bitchat's live video: one signed packet of a stream (`docs/LIVE_VIDEO_V1.md` upstream). Airhop relays it as a stream, like `VOICE_FRAME`, after the same checks plus every rule bitchat's decoder holds the packet to; it does not play it yet. A finished recording also arrives as an ordinary `video/mp4` file, which Airhop shows. Never gossip-synced                                                                                                                                                                                                                                                                                                            |
+| `VIDEO_FRAME`        | `0x2D` | Broadcast         | One live video packet, signed like a voice frame ([section 3.10](#310-live-video)). Shared with bitchat, so a stream from either client plays on the other. Never gossip-synced                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `CHANNEL_ENC`        | `0x50` | Broadcast         | Airhop private channel: XChaCha20-Poly1305 sealed message. bitchat relays it without interpreting it (Airhop extension)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `CHANNEL_MSG_AIRHOP` | `0x51` | Broadcast         | Public message in a location channel. Payload `[chLen u8][channel][idLen u8][msgId][text]`, see [section 3.7](#37-public-channel-messages). bitchat relays it without interpreting it (Airhop extension)                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
@@ -368,7 +368,7 @@ match bitchat's `NoisePayloadType` up to `0x21`.
 | `0x07` | GROUP_KEY_UPDATE         | Creator-signed group state (rotation or roster)                                                |
 | `0x08` | VOICE_FRAME              | `VoiceBurstPacket` ([section 3.1](#31-voice-burst-payload))                                    |
 | `0x09` | _(accepted, never sent)_ | Alias for `0x20` emitted by prerelease bitchat-ios builds                                      |
-| `0x0A` | _(bitchat, not handled)_ | bitchat's private live video. Dropped as an unknown inner type until Airhop plays live video   |
+| `0x0A` | VIDEO_FRAME              | `VideoBurstPacket` ([section 3.10](#310-live-video)), a live stream sent to one person         |
 | `0x20` | PRIVATE_FILE             | `BitchatFilePacket` TLV ([section 3.2](#32-file-packet-payload)), encrypted before fragmenting |
 | `0x21` | AUTHENTICATED_PEER_STATE | `[version=0x01][TLV…]`: `0x01` capabilities, `0x02` Ed25519 key                                |
 | `0x22` | CONTACT_CARD             | Contact card binary, same encoding as the QR card, then a 64-byte proof                        |
@@ -632,7 +632,7 @@ Bluetooth fragments.
 | `LEAVE`         | Verify against the signing key held for the claimed sender                                                                                                           |
 | `FILE_TRANSFER` | Verify against the signing key held for the claimed sender                                                                                                           |
 | `VOICE_FRAME`   | Be a broadcast, not our own, within 30 s of our clock, and verify as above                                                                                           |
-| `VIDEO_FRAME`   | As `VOICE_FRAME`, and carry bitchat's live video header (`[streamID 8][seq u16][kind u8]`, kind `0x00` to `0x04`, at most 352 bytes)                                 |
+| `VIDEO_FRAME`   | As `VOICE_FRAME`, and decode as a whole `VideoBurstPacket` under every rule a bitchat decoder holds it to ([section 3.10](#310-live-video))                          |
 | `BOARD_POST`    | Decode and carry a valid author signature; a post must also be live (not expired, not dated over an hour ahead, not expiring past its maximum lifetime plus an hour) |
 
 A packet failing is dropped outright, before dedup, so a forged copy arriving
@@ -816,6 +816,57 @@ Every other rule is the receiver's:
   its gateway toggle and a live relay connection all hold, and re-announces
   without it the moment one drops. A bridge advertises its rendezvous cell in
   ANNOUNCE TLV `0x06`, a geohash of precision 6.
+
+### 3.10 Live video
+
+bitchat's LIVE_VIDEO_V1, byte for byte. A stream is a run of `VideoBurstPacket`s,
+each at most 352 bytes so a signed, Noise-wrapped packet with a four-hop route
+still fits one 512-byte BLE write. In the room it travels as `VIDEO_FRAME`
+(`0x2D`), signed and admitted like a voice frame; in a DM it is Noise payload
+`0x0A`. The codec is `src/core/mesh/video/`, and its tests replay the spec's
+golden vectors and bitchat's loss simulations case for case.
+
+```text
+[streamID: 8][sequence: u16][kind: u8][body]
+
+START    0x01  [version=1][videoCodec=0x01][width u16][height u16][fps][bitrateKbps u16][audioCodec]
+DATA     0x00  [block u16][index][entries: [flags][unitSeq u16][ptsMs u32][fragIndex][fragCount][len u16][bytes]...]
+PARITY   0x03  [block u16][parityIndex][k][r][symbolLen u16][symbol]
+END      0x02  [durationMs u32][videoUnits u16][audioUnits u16][packets u16]
+CANCELED 0x04  no body
+```
+
+| Field        | Value                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Video        | H.264 Constrained Baseline, Annex B, SPS and PPS in-band on every IDR                   |
+| Audio        | Optional raw AAC-LC, 16 kHz mono, 64 ms frames: live voice's own format                 |
+| Erasure code | Systematic Reed-Solomon over GF(2^8), polynomial `0x11D`, Cauchy rows; any k of k + r   |
+| Block        | At most 32 sources and 16 parity, closed by count, by time or ahead of a keyframe       |
+| START        | At sequence 0 and again before every keyframe, so a late viewer starts at the next one  |
+| END          | Sent three times; copies are duplicates                                                 |
+| Final file   | `video_<streamID hex>.mp4`, resent only when it fits 100 KiB, and takes over the stream |
+
+**Sending.** Presets Low (144x192, 8 fps, 18 kbps video), Medium (240x320, 12 fps,
+56 kbps) and High (480x640, 24 fps, 360 kbps), each with its own parity ratios,
+keyframes every 2 s. The sender paces to the lower of the preset's rate and 24
+packets a second, drops a packet that waited over 1.2 s, and lets its own queue
+drive congestion control: the bitrate backs off as it grows and video is skipped
+until a fresh keyframe once it is far behind, audio carrying on. bitchat also
+reads its Bluetooth link queues, asks for a faster connection interval while
+live, and drops live packets older than 1.5 s in a link queue; Airhop's native
+links expose none of that, so its own queue is the only signal.
+
+**Receiving.** Units are released per track in order, a gap skipped after 900 ms,
+and after any skipped video unit deltas wait for the next keyframe, so a loss
+freezes the picture rather than corrupting it. Playback runs 350 ms behind the
+sender's clock and rebases on a unit more than 1.5 s late. Bounds per phone and
+stream: 4 streams, 24 MiB, 96 kB/s with 3 s of burst, 48 blocks, 192 units a
+track. A stream quiet for 4 s shows as reconnecting; one whose END arrived
+finishes; one with no END closes after 90 s. Every stream becomes a row in its
+chat from its first START, decoded only while that chat is open, heard only once
+unmuted and never over live voice, and ends as the recording this phone rebuilt.
+bitchat reopens a stream that resumes after its 90 s close in the same row and
+joins the segments; Airhop opens a new row, since joining needs a remux.
 
 ## 4. Routing Constants
 
