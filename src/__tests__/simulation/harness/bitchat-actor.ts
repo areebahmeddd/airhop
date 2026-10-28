@@ -64,15 +64,16 @@ import type { World } from "./world";
 // MessageType.swift / MessageType.kt. Anything outside this set reaches no
 // handler on a real bitchat build.
 //
-// The three values past voiceFrame are listed as raw numbers because Airhop has
-// no constant for them: 0x2A and 0x2B are reserved upstream for courier
-// spray-ack, and 0x2C is announceV2. They are here so this actor claims the
+// 0x2A to 0x2C are listed as raw numbers because Airhop has no constant for
+// them: 0x2A and 0x2B are reserved upstream for courier spray-ack, and 0x2C is
+// announceV2. They are here so this actor claims the
 // range bitchat actually claims, which is what makes a future Airhop type
 // landing on one of them fail a scenario instead of passing quietly.
 const BITCHAT_KNOWN_TYPES = new Set<number>([
   0x2a,
   0x2b,
   0x2c,
+  PacketType.VIDEO_FRAME,
   PacketType.ANNOUNCE,
   PacketType.CHANNEL_MSG,
   PacketType.LEAVE,

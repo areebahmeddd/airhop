@@ -98,6 +98,7 @@ import { SlidingWindowLimiter } from "@core/mesh/routing/sliding-window-limiter"
 import { nextHopFor } from "@core/mesh/routing/source-route";
 import { GossipSync, isSyncReplyInWindow } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
+import { decodeVideoBurstPacket } from "@core/mesh/video/video-burst-packet";
 import { VoiceCaptureSession } from "@core/mesh/voice/voice-capture";
 import { VoicePlayer } from "@core/mesh/voice/voice-player";
 import {
@@ -1865,7 +1866,12 @@ export class MeshService {
       case PacketType.FILE_TRANSFER:
         return this.senderIsAuthentic(packet, bytesToHex(packet.senderID));
       case PacketType.VOICE_FRAME:
-        return this.voiceFrameIsAuthentic(packet);
+        return this.liveFrameIsAuthentic(packet);
+      case PacketType.VIDEO_FRAME:
+        return (
+          decodeVideoBurstPacket(packet.payload) !== null &&
+          this.liveFrameIsAuthentic(packet)
+        );
       case PacketType.BOARD_POST:
         return this.validBoardWire(packet) !== null;
       default:
@@ -2048,12 +2054,12 @@ export class MeshService {
   // Alice in one room and play her voice out of strangers' phones days later,
   // attributed to her and presented as live.
   //
-  // 30 s is bitchat-ios TransportConfig.pttPublicFrameMaxAgeSeconds, and the
-  // broadcast and not-self rules are its BLEService.handleVoiceFrame's, all
-  // applied before the signature. Generous next to the couple of seconds a
-  // frame needs to cross the mesh, and tight enough that a burst cannot
-  // outlive the moment it was spoken.
-  private voiceFrameIsAuthentic(packet: Packet): boolean {
+  // Live voice and video share bitchat-ios's admission
+  // (authenticatedLiveFrameSender): broadcast, not our own, inside 30 s, then
+  // the signature. 30 s is generous next to the couple of seconds a frame
+  // needs to cross the mesh, and tight enough that a stream cannot outlive the
+  // moment it was sent.
+  private liveFrameIsAuthentic(packet: Packet): boolean {
     const senderID = bytesToHex(packet.senderID);
     if (senderID === this.identity.peerID) return false;
     if (!isBroadcast(packet)) return false;

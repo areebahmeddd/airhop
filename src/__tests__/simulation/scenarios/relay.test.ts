@@ -453,7 +453,7 @@ function boardPost(
 const sentBy = (p: Packet, d: SimDevice): boolean =>
   bytesToHex(p.senderID) === d.peerID;
 
-test("R08 a forged board post, file or voice frame is relayed by no one", async () => {
+test("R08 a forged board post, file, voice or video frame is relayed by no one", async () => {
   // bitchat-ios checks these before it relays them, and relays only what its
   // handler accepted. Carried unchecked, each costs its forger nothing and
   // every relay the airtime; a file arriving whole is cut into hundreds of
@@ -538,6 +538,23 @@ test("R08 a forged board post, file or voice frame is relayed by no one", async 
     mallory.id,
     broadcastAs(alice, mallory, PacketType.VOICE_FRAME, burstStart, now()),
   );
+  // bitchat's live video: a START under alice's ID signed by mallory, and one
+  // alice did sign whose kind byte no client defines.
+  const videoStart = new Uint8Array([
+    1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0x01, 1, 1, 0, 160, 0, 120, 15, 0, 200, 0,
+  ]);
+  const videoBadKind = videoStart.slice();
+  videoBadKind[10] = 0x09;
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    broadcastAs(alice, mallory, PacketType.VIDEO_FRAME, videoStart, now()),
+  );
+  radio.injectTo(
+    bob.id,
+    mallory.id,
+    broadcastAs(alice, alice, PacketType.VIDEO_FRAME, videoBadKind, now()),
+  );
   await advanceFor(s.world, 10_000);
 
   s.check(
@@ -556,6 +573,10 @@ test("R08 a forged board post, file or voice frame is relayed by no one", async 
   s.check(
     "bob relayed no forged voice frame",
     !air.some((p) => p.type === PacketType.VOICE_FRAME),
+  );
+  s.check(
+    "bob relayed no forged or malformed video frame",
+    !air.some((p) => p.type === PacketType.VIDEO_FRAME),
   );
   s.check(
     "carol shows none of it",
@@ -587,11 +608,18 @@ test("R08 a forged board post, file or voice frame is relayed by no one", async 
     "alice's voice reached carol's speaker through bob",
     (carol.voice?.framesPlayed.length ?? 0) > 0,
   );
+  radio.injectTo(
+    bob.id,
+    alice.id,
+    broadcastAs(alice, alice, PacketType.VIDEO_FRAME, videoStart, now()),
+  );
+  await advanceFor(s.world, 2_000);
   s.check(
     "bob relayed each of alice's",
     air.some((p) => p.type === PacketType.BOARD_POST) &&
       air.some((p) => sentBy(p, alice) && p.type === PacketType.FRAGMENT) &&
-      air.some((p) => p.type === PacketType.VOICE_FRAME),
+      air.some((p) => p.type === PacketType.VOICE_FRAME) &&
+      air.some((p) => p.type === PacketType.VIDEO_FRAME),
   );
 
   s.expectNone("no forged senders", noForgedSenders([alice, bob, carol]));

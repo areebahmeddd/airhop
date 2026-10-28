@@ -31,9 +31,9 @@ const DEFAULT_TTL = 7;
 // TransportConfig.bleHighDegreeThreshold.
 const HIGH_DEGREE_THRESHOLD = 6;
 
-// Media fragments and live voice: bleFragmentRelayTtlCap and
+// Media fragments and live voice and video: bleFragmentRelayTtlCap and
 // bleFragmentRelayTtlCapDense, then bleFragmentRelayMinDelayMs and MaxDelayMs.
-// A talker emits ~15 packets a second into a 350 ms jitter buffer, so the
+// A stream emits 15 to 24 packets a second into a 350 ms jitter buffer, so the
 // ordinary window (up to 220 ms a hop) would spend the buffer in three hops.
 const STREAM_TTL_CAP = 7;
 const STREAM_TTL_CAP_DENSE = 5;
@@ -45,6 +45,14 @@ const BROADCAST_TTL_CAP_DENSE = 5;
 const BROADCAST_TTL_CAP_MID = 6;
 const BROADCAST_TTL_CAP_MID_PRIORITY = 7;
 
+function isStream(type: PacketType): boolean {
+  return (
+    type === PacketType.FRAGMENT ||
+    type === PacketType.VOICE_FRAME ||
+    type === PacketType.VIDEO_FRAME
+  );
+}
+
 export interface RelayDecision {
   ttl: number; // the TTL the relayed copy carries
   delayMs: number;
@@ -54,7 +62,7 @@ export interface RelayDecision {
 // with, before its own hop is taken off. Shared with originTtl, so what this
 // node authors starts inside the range its neighbours' relays produce.
 //
-// Live voice floods like a fragment, a stream that a dense graph must
+// Live media floods like a fragment, a stream that a dense graph must
 // contain; announces and urgent board posts get a hop more than other traffic
 // at mid degree; a thin chain (degree 2 or less) relays at full depth, since
 // every hop counts there and flooding costs little.
@@ -64,7 +72,7 @@ export function relayLimit(
   degree: number,
 ): number {
   const dense = degree >= HIGH_DEGREE_THRESHOLD;
-  if (type === PacketType.FRAGMENT || type === PacketType.VOICE_FRAME) {
+  if (isStream(type)) {
     return dense ? STREAM_TTL_CAP_DENSE : STREAM_TTL_CAP;
   }
   if (dense) return BROADCAST_TTL_CAP_DENSE;
@@ -157,12 +165,9 @@ export function relayDecision(
     ttlCap,
     relayLimit(packet.type, isUrgentBoard, degree),
   );
-  const isStream =
-    packet.type === PacketType.FRAGMENT ||
-    packet.type === PacketType.VOICE_FRAME;
   return {
     ttl: limit - 1,
-    delayMs: isStream
+    delayMs: isStream(packet.type)
       ? randomInt(STREAM_MIN_DELAY_MS, STREAM_MAX_DELAY_MS)
       : broadcastDelayMs(degree),
   };

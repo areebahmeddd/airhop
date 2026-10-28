@@ -298,7 +298,7 @@ describe("bitchat vector: public channel message payload", () => {
     }
   });
 
-  // Clear of bitchat's frontier, which is at 0x2C and moves forward. The
+  // Clear of bitchat's frontier, which is at 0x2D and moves forward. The
   // margin itself is checked against bitchat's own enum in conformance.test.ts;
   // this only pins the value so a change here is deliberate.
   test("the Airhop channel type sits in the Airhop range", () => {

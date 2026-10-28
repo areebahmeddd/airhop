@@ -1,10 +1,10 @@
 // The packet type byte, per PROTOCOLS.md section 3. Its own module so the
 // payload limits can key on it without importing the codec that imports them.
 //
-// Everything up to VOICE_FRAME except DR_ENCRYPTED (0x12, Airhop's own) matches
+// Everything below 0x50 except DR_ENCRYPTED (0x12, Airhop's own) matches
 // bitchat's MessageType enum (public domain; `MessageType.swift` on iOS,
 // `BinaryProtocol.kt` on Android). bitchat allocates forward and has reached
-// 0x2C, so the values just past it are theirs to take, not ours. Airhop's own
+// 0x2D, so the values just past it are theirs to take, not ours. Airhop's own
 // types live at 0x50 and up; see the note there before adding one.
 export const enum PacketType {
   ANNOUNCE = 0x01, // "I'm here" with nickname
@@ -24,12 +24,13 @@ export const enum PacketType {
   PONG = 0x27, // Directed mesh echo reply (echoed nonce + origin TTL)
   NOSTR_CARRIER = 0x28, // Gateway-ferried signed Nostr event
   VOICE_FRAME = 0x29, // PTT audio burst (matches bitchat-ios voiceFrame)
+  VIDEO_FRAME = 0x2d, // Live video packet (bitchat videoFrame); relayed, not played
 
   // Airhop extensions, allocated at 0x50 to stay clear of bitchat's frontier.
-  // bitchat assigns forward and has reached 0x2C, so anything just past their
+  // bitchat assigns forward and has reached 0x2D, so anything just past their
   // last shipped value is contested ground: one byte with two meanings makes
   // each side's parser depend on the other's validation to not misfire. 0x50
-  // leaves them 36 values of room, and conformance.test.ts fails if they come
+  // leaves them 35 values of room, and conformance.test.ts fails if they come
   // within 16, so a future collision surfaces in CI rather than in the field.
   CHANNEL_ENC = 0x50, // Airhop private channel: XChaCha20-Poly1305 sealed msg
   // Not 0x02: bitchat's BLE mesh has one public room, so a location cell sent as

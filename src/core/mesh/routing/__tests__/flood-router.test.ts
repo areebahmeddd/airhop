@@ -362,11 +362,15 @@ describe("relayDecision", () => {
     },
   );
 
-  test.each(DEGREES)("broadcast fragments and voice at degree %i", (deg) => {
-    const ttl = deg >= 6 ? 4 : 6;
-    expectRelay(pkt(PacketType.FRAGMENT), deg, ttl, STREAM);
-    expectRelay(pkt(PacketType.VOICE_FRAME), deg, ttl, STREAM);
-  });
+  test.each(DEGREES)(
+    "broadcast fragments, voice and video at degree %i",
+    (deg) => {
+      const ttl = deg >= 6 ? 4 : 6;
+      expectRelay(pkt(PacketType.FRAGMENT), deg, ttl, STREAM);
+      expectRelay(pkt(PacketType.VOICE_FRAME), deg, ttl, STREAM);
+      expectRelay(pkt(PacketType.VIDEO_FRAME), deg, ttl, STREAM);
+    },
+  );
 
   // A recipient only makes these types directed; broadcast, they are clamped
   // like anything else, and a recipient on another type changes nothing.
