@@ -2523,6 +2523,8 @@ export class MeshService {
       packetBudget: overBluetooth ? BLE_PACKET_BUDGET : WIFI_PACKET_BUDGET,
     });
     this.liveVideoSend = session;
+    // A stream we were listening to would play into our own microphone.
+    this.liveVideo?.setAudible(null);
     try {
       if (withAudio) await setAudioForRecording();
       await session.start();

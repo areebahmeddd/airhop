@@ -5,6 +5,7 @@
 // depend on per-thread interactive state: playingUri, revealedAttachments,
 // claimToken) and are handed down as render props.
 
+import { isVideoNoteName } from "@core/mesh/wire/file-packet";
 import type { ChatToken } from "@core/payments/cashu";
 import { useT } from "@i18n";
 import { contentTextAlign } from "@i18n/layout";
@@ -141,6 +142,15 @@ function MessageBubble({
     onToggleSelect?.(item);
   }
 
+  // A round video note stands on its own, as it does in every messenger that
+  // has one: a circle inside a bubble reads as a picture of a circle. Its time
+  // and ticks keep the bubble's colour in a pill beneath it.
+  const bare =
+    item.attachment?.type === "video" &&
+    isVideoNoteName(item.attachment.name) &&
+    item.text.length === 0 &&
+    tokens.length === 0;
+
   // While selecting, the row itself is the target: the avatar and the sender
   // name stop opening a profile so a tap anywhere reads the same way.
   const senderPress =
@@ -260,7 +270,11 @@ function MessageBubble({
           <View
             style={[
               styles.bubble,
-              item.isMine ? styles.bubbleMine : styles.bubbleTheirs,
+              bare
+                ? styles.bubbleBare
+                : item.isMine
+                  ? styles.bubbleMine
+                  : styles.bubbleTheirs,
               // Both sides gate on the same run marker the avatar and sender
               // name use, so a run carries exactly one tail either way.
               !item.isMine && isFirstFromSender && styles.bubbleTailTheirs,
@@ -272,18 +286,20 @@ function MessageBubble({
               <View
                 style={[
                   styles.forwardedTag,
-                  item.isMine && styles.forwardedTagMine,
+                  item.isMine && !bare && styles.forwardedTagMine,
                 ]}
               >
                 <Feather
                   name="corner-up-right"
                   size={11}
-                  color={item.isMine ? Colors.textInverse : Colors.textMuted}
+                  color={
+                    item.isMine && !bare ? Colors.textInverse : Colors.textMuted
+                  }
                 />
                 <Text
                   style={[
                     styles.forwardedTagText,
-                    item.isMine && styles.forwardedTagTextMine,
+                    item.isMine && !bare && styles.forwardedTagTextMine,
                   ]}
                 >
                   {T("chat.bubble.forwarded")}
@@ -356,7 +372,15 @@ function MessageBubble({
               </React.Fragment>
             ))}
 
-            <View style={styles.metaRow}>
+            <View
+              style={[
+                styles.metaRow,
+                bare && [
+                  styles.metaPill,
+                  item.isMine ? styles.bubbleMine : styles.bubbleTheirs,
+                ],
+              ]}
+            >
               <Text
                 style={[styles.timestamp, item.isMine && styles.timestampMine]}
               >
@@ -654,6 +678,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     bubbleMine: { backgroundColor: Colors.myBubble },
     bubbleTheirs: { backgroundColor: Colors.theirBubble },
+    bubbleBare: { paddingHorizontal: 0, paddingVertical: 0 },
     // The squared-off corner pointing at the sender. Logical, because bubbles
     // align by writing direction, or the tail points away in Arabic.
     bubbleTailTheirs: { borderBottomStartRadius: Radius.sm },
@@ -705,6 +730,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       justifyContent: "flex-end",
       gap: Spacing["xs-sm"],
       marginTop: Spacing.xs,
+    },
+    metaPill: {
+      alignSelf: "flex-end",
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: Spacing["2xs"],
+      borderRadius: Radius.full,
     },
     timestamp: {
       fontSize: FontSize.xs,

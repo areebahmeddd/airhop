@@ -416,7 +416,6 @@ const LIVE_AVAILABILITY_POLL_MS = 3000;
 const BURST_MAX_SECS = Math.floor(MAX_BURST_MS / 1000);
 
 const MEDIA_BUBBLE_WIDTH = 220;
-// A round note, one size whatever the clip's shape: the circle crops it.
 const VIDEO_NOTE_SIZE = 200;
 const MEDIA_MIN_ASPECT = 0.75; // portrait floor: 220 x 293
 const MEDIA_MAX_ASPECT = 1.9; // landscape ceiling: 220 x 116
@@ -559,6 +558,7 @@ function VideoNoteAttachment({
   onAskResend?: () => void;
 }): React.JSX.Element {
   const T = useT();
+  const Colors = useThemeColors();
   const present = useAttachmentPresent(uri);
   const reduceMotion = useReducedMotion();
   const [withSound, setWithSound] = useState(false);
@@ -566,6 +566,16 @@ function VideoNoteAttachment({
     p.loop = true;
     p.muted = true;
   });
+  // Read off the file once it loads: a received note carries no duration.
+  const [seconds, setSeconds] = useState<number | null>(() =>
+    player.duration > 0 ? player.duration : null,
+  );
+  useEffect(() => {
+    const sub = player.addListener("sourceLoad", ({ duration }) => {
+      if (duration > 0) setSeconds(duration);
+    });
+    return () => sub.remove();
+  }, [player]);
 
   useEffect(() => {
     // The player is a native handle whose properties are its API; there is
@@ -599,6 +609,31 @@ function VideoNoteAttachment({
         contentFit="cover"
         nativeControls={false}
       />
+      {/* The live bubble's sound badge, so both say the same thing: silent
+          until tapped. */}
+      <View
+        style={[
+          videoAttachmentStyles.noteBadge,
+          { backgroundColor: Colors.overlay },
+        ]}
+        pointerEvents="none"
+      >
+        <Feather
+          name={withSound ? "volume-2" : "volume-x"}
+          size={12}
+          color={Colors.onStatus}
+        />
+        {seconds !== null && (
+          <Text
+            style={[
+              videoAttachmentStyles.noteBadgeText,
+              { color: Colors.onStatus },
+            ]}
+          >
+            {formatDuration(seconds)}
+          </Text>
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -619,6 +654,22 @@ const videoAttachmentStyles = StyleSheet.create({
     height: VIDEO_NOTE_SIZE,
     borderRadius: Radius.full,
     backgroundColor: "#000",
+  },
+  noteBadge: {
+    position: "absolute",
+    bottom: Spacing.md,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing["2xs"],
+    borderRadius: Radius.full,
+  },
+  noteBadgeText: {
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.semibold,
+    fontVariant: ["tabular-nums"],
   },
 });
 
