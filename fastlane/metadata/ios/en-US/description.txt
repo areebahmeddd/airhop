@@ -1,6 +1,6 @@
 Offline doesn't mean disconnected.
 
-Airhop lets nearby phones communicate directly over Bluetooth. Chat, share photos and videos, make offline payments, and talk with live push-to-talk, all without mobile data, Wi-Fi, or servers.
+Airhop lets nearby phones communicate directly over Bluetooth. Chat, share photos and videos, make offline payments, talk with live push-to-talk, and go live on camera, all without mobile data, Wi-Fi, or servers.
 
 No account. No phone number. No server. Just open the app and you're reachable.
 
@@ -11,6 +11,7 @@ FEATURES
 - Private groups and invite-only channels
 - Photo, video, and voice note sharing
 - Live push-to-talk, like a walkie-talkie
+- Live video to everyone nearby or to one contact
 - Bulletin boards for persistent local announcements
 - Send and receive Cashu ecash
 
