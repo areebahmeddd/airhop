@@ -848,8 +848,9 @@ CANCELED 0x04  no body
 
 **Sending.** Presets Low (144x192, 8 fps, 18 kbps video), Medium (240x320, 12 fps,
 56 kbps) and High (480x640, 24 fps, 360 kbps), each with its own parity ratios,
-keyframes every 2 s. The sender paces to the lower of the preset's rate and 24
-packets a second, drops a packet that waited over 1.2 s, and lets its own queue
+keyframes every 2 s. The sender paces to the lower of the preset's rate and the
+route's budget, 24 packets a second with any Bluetooth hop ahead and 300 over
+Wi-Fi Aware or LAN alone, drops a packet that waited over 1.2 s, and lets its own queue
 drive congestion control: the bitrate backs off as it grows and video is skipped
 until a fresh keyframe once it is far behind, audio carrying on. bitchat also
 reads its Bluetooth link queues, asks for a faster connection interval while
@@ -863,7 +864,8 @@ sender's clock and rebases on a unit more than 1.5 s late. Bounds per phone and
 stream: 4 streams, 24 MiB, 96 kB/s with 3 s of burst, 48 blocks, 192 units a
 track. A stream quiet for 4 s shows as reconnecting; one whose END arrived
 finishes; one with no END closes after 90 s. Every stream becomes a row in its
-chat from its first START, decoded only while that chat is open, heard only once
+chat with its first picture, so a stray START or a stream canceled within a
+second leaves nothing; it is decoded only while that chat is open, heard only once
 unmuted and never over live voice, and ends as the recording this phone rebuilt.
 bitchat reopens a stream that resumes after its 90 s close in the same row and
 joins the segments; Airhop opens a new row, since joining needs a remux.
