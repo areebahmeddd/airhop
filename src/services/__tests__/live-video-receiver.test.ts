@@ -263,6 +263,58 @@ describe("LiveVideoReceiver", () => {
     expect(rows()[0].attachment?.uri).toBe("file:///cache/airhop_in_final.mp4");
   });
 
+  test("a sender's next stream ends the last one, whose END went missing", async () => {
+    const { receiver } = setup();
+    const first = stream();
+    for (const p of first.packetizer.start())
+      receiver.onPacket(SENDER, ROOM, p);
+    feed(receiver, first.packetizer, 1);
+    const next = new VideoStreamPacketizer(
+      Uint8Array.from([9, 9, 9, 9, 9, 9, 9, 9]),
+      { width: 144, height: 192, fps: 8, bitrateKbps: 18, hasAudio: true },
+      LIVE_VIDEO_QUALITIES.low.fec,
+    );
+    for (const p of next.start()) receiver.onPacket(SENDER, ROOM, p);
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    const old = row(liveVideoRowID(SENDER, first.streamID));
+    expect(old?.liveVideo).toBeUndefined();
+    expect(old?.attachment?.type).toBe("video");
+    // The old stream stays over: a straggler from it opens nothing.
+    for (const p of first.packetizer.tick(1_000)) {
+      receiver.onPacket(SENDER, ROOM, p);
+    }
+    expect(
+      row(liveVideoRowID(SENDER, first.streamID))?.liveVideo,
+    ).toBeUndefined();
+  });
+
+  test("a stream cut off by the mesh stopping picks up again when it restarts", async () => {
+    const { receiver } = setup();
+    const { packetizer, streamID } = stream();
+    for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+    feed(receiver, packetizer, 1);
+    receiver.stop();
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    feed(receiver, packetizer, 1, 2_000);
+    const rows = (useChatStore.getState().messages[ROOM] ?? []).filter((m) =>
+      m.id.startsWith(liveVideoRowID(SENDER, streamID)),
+    );
+    expect(rows).toHaveLength(2);
+    expect(rows.some((m) => m.liveVideo?.state === "live")).toBe(true);
+  });
+
+  test("a stream of START alone never takes a row and gives its slot back", () => {
+    const { receiver } = setup();
+    const { packetizer, streamID } = stream();
+    for (let i = 0; i < 12; i++) {
+      for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+      now += 1_000;
+      jest.advanceTimersByTime(1_000);
+    }
+    expect(row(liveVideoRowID(SENDER, streamID))).toBeUndefined();
+    expect(native.cancelRecording).toHaveBeenCalled();
+  });
+
   test("a stream past its byte budget is closed", () => {
     const { receiver } = setup();
     const { packetizer, streamID } = stream();

@@ -865,7 +865,9 @@ and after any skipped video unit deltas wait for the next keyframe, so a loss
 freezes the picture rather than corrupting it. Playback runs 350 ms behind the
 sender's clock and rebases on a unit more than 1.5 s late. Bounds per phone and
 stream: 4 streams, 24 MiB, 96 kB/s with 3 s of burst, 48 blocks, 192 units a
-track. A stream quiet for 4 s shows as reconnecting; one whose END arrived
+track. A sender holds one stream at a time, so a new one ends its last even if
+that END was lost, and a stream with no picture after 10 s gives its slot back.
+A stream quiet for 4 s shows as reconnecting; one whose END arrived
 finishes; one with no END closes after 90 s. Every stream becomes a row in its
 chat with its first picture, so a stray START or a stream canceled within a
 second leaves nothing; it is decoded only while that chat is open, heard only once

@@ -50,10 +50,10 @@ const MAX_BYTES_PER_SECOND = 96_000;
 const BURST_ALLOWANCE_SECONDS = 3;
 
 const QUIET_MS = 4_000;
-// A stream that never sends START has no picture to show. A late joiner gets
+// A stream that shows no picture in this long is dropped. A late joiner gets
 // one with the next keyframe, two seconds at most, so this is generous; it
-// keeps stray stream IDs from holding the MAX_STREAMS slots.
-const START_DEADLINE_MS = 10_000;
+// keeps a stream of START packets alone from holding a MAX_STREAMS slot.
+const PICTURE_DEADLINE_MS = 10_000;
 const CLOSE_AFTER_SILENCE_MS = 90_000;
 // Fine enough for 24 fps; the clock below is what keeps frames even.
 const TICK_MS = 40;
@@ -149,6 +149,11 @@ export class LiveVideoReceiver {
     if (stream === undefined) {
       const closedBySilence = this.finished.get(key);
       if (closedBySilence === false) return;
+      // One camera, one stream: a sender's new stream means the old one is
+      // over, even if its END was lost.
+      for (const other of [...this.streams.values()]) {
+        if (other.senderPeerID === senderPeerID) this.end(other, false);
+      }
       if (this.streams.size >= MAX_STREAMS) return;
       stream = this.open(key, senderPeerID, streamID, channel, now);
       if (closedBySilence === true) {
@@ -229,14 +234,27 @@ export class LiveVideoReceiver {
   // Everything stops: the mesh went down or the app is being wiped. What was
   // received so far is still kept as a recording.
   stop(): void {
-    for (const stream of [...this.streams.values()]) {
-      if (stream.config === null) this.streams.delete(stream.key);
-      else this.close(stream, "bound");
-    }
+    for (const stream of [...this.streams.values()]) this.end(stream, true);
     this.stopTicking();
   }
 
   // ---- Internals ----
+
+  // A stream with a row ends as its recording; one that never showed a
+  // picture just goes, its recording with it. A reopenable one takes a new row
+  // if its packets come back: the mesh restarted, or it simply had no picture
+  // yet.
+  private end(stream: Stream, reopenable: boolean): void {
+    if (stream.rowAdded) {
+      this.close(stream, reopenable ? "silence" : "ended");
+      return;
+    }
+    this.streams.delete(stream.key);
+    if (!reopenable) this.rememberFinished(stream.key, false);
+    NativeAirhopVideo?.cancelRecording(stream.key);
+    if (stream.recordingPath !== null) deleteFile(stream.recordingPath);
+    if (this.streams.size === 0) this.stopTicking();
+  }
 
   private close(
     stream: Stream,
@@ -518,10 +536,10 @@ export class LiveVideoReceiver {
   private tick(): void {
     const now = this.now();
     for (const stream of [...this.streams.values()]) {
-      if (stream.config === null) {
-        if (now - stream.openedAtMs >= START_DEADLINE_MS) {
-          this.streams.delete(stream.key);
-        }
+      if (!stream.rowAdded) {
+        if (now - stream.openedAtMs >= PICTURE_DEADLINE_MS) {
+          this.end(stream, true);
+        } else this.apply(stream, stream.assembler.onTick(now), now);
         continue;
       }
       const silent = now - stream.lastPacketMs;

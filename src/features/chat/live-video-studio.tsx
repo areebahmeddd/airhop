@@ -187,6 +187,8 @@ export default function LiveVideoStudio({
 
   const end = useCallback(
     async (canceled: boolean): Promise<void> => {
+      // A second tap while the first is still sending END.
+      if (phaseRef.current === "ending") return;
       const mesh: MeshService | null = getMeshService();
       if (phaseRef.current === "live" || phaseRef.current === "starting") {
         setPhaseBoth("ending");

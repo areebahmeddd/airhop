@@ -89,13 +89,15 @@ final class AirhopVideoCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDel
     }
   }
 
+  // Queued on the session queue at once, not after the encoder's flush, so a
+  // start that follows straight away (going live again) runs after this stop
+  // rather than being undone by it.
   func stop(completion: @escaping () -> Void) {
-    stopEncoding {
-      self.sessionQueue.async {
-        self.removeObservers()
-        if self.session.isRunning { self.session.stopRunning() }
-        completion()
-      }
+    stopEncoding {}
+    sessionQueue.async {
+      self.removeObservers()
+      if self.session.isRunning { self.session.stopRunning() }
+      completion()
     }
   }
 
