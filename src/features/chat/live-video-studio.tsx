@@ -164,16 +164,17 @@ export default function LiveVideoStudio({
     };
   }, [visible, quality]);
 
-  // Whether anyone can watch: re-asked while previewing, since a peer can
-  // walk into range with the camera already open.
+  // Whether anyone can watch: re-asked throughout, since peers walk into and
+  // out of range with the camera open, and a stream sent to nobody should say
+  // so rather than show a healthy signal.
   useEffect(() => {
-    if (!visible || phase !== "preview") return;
+    if (!visible) return;
     const check = (): void =>
       setCanGoLive(getMeshService()?.canSendLiveVideo(channel) === true);
     check();
     const timer = setInterval(check, 2_000);
     return () => clearInterval(timer);
-  }, [visible, phase, channel]);
+  }, [visible, channel]);
 
   useEffect(() => {
     if (phase !== "live") return;
@@ -342,7 +343,9 @@ export default function LiveVideoStudio({
           >
             {cameraReady && <AirhopCameraPreview style={styles.fill} />}
           </View>
-          {live ? (
+          {live && !canGoLive ? (
+            <Text style={styles.caption}>{T("chat.live_video.nobody")}</Text>
+          ) : live ? (
             <View
               style={styles.signalRow}
               accessible

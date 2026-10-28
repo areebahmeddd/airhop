@@ -43,8 +43,12 @@ export default function LiveVideoBubble({
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const receiver = getMeshService()?.liveVideoReceiver ?? null;
+  const subscribe = useMemo(
+    () => (receiver === null ? noop : receiver.subscribe.bind(receiver)),
+    [receiver],
+  );
   const audible = useSyncExternalStore(
-    receiver?.subscribe.bind(receiver) ?? noop,
+    subscribe,
     () => receiver?.audible ?? null,
   );
   const [now, setNow] = useState(() => Date.now());

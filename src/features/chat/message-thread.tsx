@@ -3119,6 +3119,9 @@ export default function MessageThread({
       showAlert(t("chat.forward.app_row"), t("chat.forward.app_row_body"));
       return false;
     }
+    // A stream still running has nothing to send yet; its recording, once it
+    // ends, forwards like any video.
+    if (source.liveVideo !== undefined) return false;
     if (source.attachment) {
       // Attachments live in a cache that retention, the received-media quota
       // and Clear all empty. The bubble already says the file is gone; say the

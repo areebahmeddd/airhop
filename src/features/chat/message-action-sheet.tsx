@@ -65,8 +65,10 @@ export default function MessageActionSheet({
   // A row Airhop wrote is not forwarded (see forwardMessage), so it is not
   // offered. A place is, and explains why not when tapped: someone looking for
   // how to pass a location on is told, rather than finding nothing.
+  // A live stream has nothing to forward until it ends as a recording.
   const canForward =
-    message.systemKey === undefined || message.locationPin !== undefined;
+    (message.systemKey === undefined || message.locationPin !== undefined) &&
+    message.liveVideo === undefined;
 
   // Photos and videos have somewhere to go (the system gallery); everything
   // else goes out through the share sheet, so the row says what will happen.

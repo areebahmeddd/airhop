@@ -56,6 +56,7 @@ const SNAPSHOT: DiagnosticsSnapshot = {
     customRelays: 0,
     torBridgeMode: "off",
     liveVoice: true,
+    liveVideo: true,
   },
 };
 

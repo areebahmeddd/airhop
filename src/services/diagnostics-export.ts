@@ -53,6 +53,7 @@ export interface DiagnosticsSnapshot {
     customRelays: number;
     torBridgeMode: string;
     liveVoice: boolean;
+    liveVideo: boolean;
   };
   // Absent only if the native module itself is missing. Empty where the
   // platform refused to hand back a log.
@@ -99,6 +100,7 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     `  Custom relays: ${s.settings.customRelays}`,
     `  Tor bridge mode: ${s.settings.torBridgeMode}`,
     `  Live voice: ${yes(s.settings.liveVoice)}`,
+    `  Live video: ${yes(s.settings.liveVideo)}`,
     "",
   ];
   if (s.wifiTransport !== undefined && s.wifiTransport.trim().length > 0) {
@@ -237,6 +239,7 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       customRelays: settings.customRelays.length,
       torBridgeMode: settings.torBridgeMode,
       liveVoice: settings.liveVoiceEnabled,
+      liveVideo: settings.liveVideoEnabled,
     },
     log,
     wifiTransport,
