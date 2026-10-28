@@ -680,6 +680,12 @@ export const strings: Strings = {
   "chat.voice.limit_reached": "دو منٹ کی حد آ گئی، بھیجنے کے لیے چھوڑ دیں",
   "chat.voice.limit_sent": "دو منٹ کی حد آ گئی، نوٹ بھیج دیا گیا",
   "chat.voice.stop_send": "ریکارڈنگ روکیں اور بھیجیں",
+  "chat.video_note.hold": "ویڈیو نوٹ ریکارڈ کرنے کے لیے دبا کر رکھیں",
+  "chat.video_note.a11y_toggle":
+    "ریکارڈنگ شروع یا بند کرنے کے لیے دو بار تھپتھپائیں۔",
+  "chat.video_note.not_recorded": "ویڈیو نوٹ ریکارڈ نہیں ہوا",
+  "chat.video_note.limit_sent": "وقت ختم، ویڈیو نوٹ بھیج دیا گیا",
+  "chat.video_note.a11y": "ویڈیو نوٹ، آواز کے لیے دو بار تھپتھپائیں",
   "chat.voice.lift_lock": "ہاتھ آزاد ریکارڈنگ کے لیے اوپر سرکائیں",
   "chat.voice.live_speaking": "{name} بول رہے ہیں",
   "chat.voice.live_ended": "ختم",
@@ -695,6 +701,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "مائیکروفون تک رسائی",
   "chat.perm.mic_live_purpose": "قریبی لوگوں سے بات کرنا",
   "chat.perm.mic_note_purpose": "صوتی نوٹ ریکارڈ کرنا",
+  "chat.perm.video_note_purpose": "ویڈیو نوٹ ریکارڈ کرنے کے لیے",
   "chat.perm.recording_stopped": "ریکارڈنگ روک دی گئی",
   "chat.perm.record_failed":
     "ریکارڈنگ شروع نہ ہو سکی۔ مائیکروفون کی اجازتیں جانچیں۔",

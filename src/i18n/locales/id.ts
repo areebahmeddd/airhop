@@ -693,6 +693,12 @@ export const strings: Strings = {
     "Batas dua menit tercapai, lepaskan untuk mengirim",
   "chat.voice.limit_sent": "Batas dua menit tercapai, catatannya terkirim",
   "chat.voice.stop_send": "Hentikan perekaman lalu kirim",
+  "chat.video_note.hold": "Tahan untuk merekam catatan video",
+  "chat.video_note.a11y_toggle":
+    "Ketuk dua kali untuk memulai atau menghentikan rekaman.",
+  "chat.video_note.not_recorded": "Catatan video tidak terekam",
+  "chat.video_note.limit_sent": "Waktu habis, catatan video terkirim",
+  "chat.video_note.a11y": "Catatan video, ketuk dua kali untuk suara",
   "chat.voice.lift_lock": "Geser ke atas untuk merekam bebas genggam",
   "chat.voice.live_speaking": "{name} sedang bicara",
   "chat.voice.live_ended": "Selesai",
@@ -708,6 +714,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Akses mikrofon",
   "chat.perm.mic_live_purpose": "bicara dengan orang di dekat sini",
   "chat.perm.mic_note_purpose": "merekam catatan suara",
+  "chat.perm.video_note_purpose": "merekam catatan video",
   "chat.perm.recording_stopped": "Perekaman dihentikan",
   "chat.perm.record_failed":
     "Perekaman tidak bisa dimulai. Periksa izin mikrofon.",

@@ -700,6 +700,12 @@ export const strings: Strings = {
     "Tratra ny fetra roa minitra, alefaso mba handefa",
   "chat.voice.limit_sent": "Tratra ny fetra roa minitra, nalefa ny naoty",
   "chat.voice.stop_send": "Ajanony ny fandraketana ary alefaso",
+  "chat.video_note.hold": "Tazomy mba handraketana naoty video",
+  "chat.video_note.a11y_toggle":
+    "Tsindrio indroa mba hanombohana na hampitsaharana ny fandraketana.",
+  "chat.video_note.not_recorded": "Tsy voarakitra ny naoty video",
+  "chat.video_note.limit_sent": "Lany ny fotoana, lasa ny naoty video",
+  "chat.video_note.a11y": "Naoty video, tsindrio indroa raha hihaino",
   "chat.voice.lift_lock": "Sintono miakatra mba handrakitra tsy mihazona",
   "chat.voice.live_speaking": "Miteny i {name}",
   "chat.voice.live_ended": "Tapitra",
@@ -715,6 +721,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Fidirana amin'ny mikrô",
   "chat.perm.mic_live_purpose": "hiresaka amin'ny olona akaiky",
   "chat.perm.mic_note_purpose": "handrakitra naoty feo",
+  "chat.perm.video_note_purpose": "handraketana naoty video",
   "chat.perm.recording_stopped": "Nijanona ny fandraketana",
   "chat.perm.record_failed":
     "Tsy afaka nanomboka ny fandraketana. Jereo ny alalana amin'ny mikrô.",

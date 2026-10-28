@@ -7,9 +7,11 @@ import {
   MIN_BURST_KEEP_MS,
 } from "@core/mesh/voice/voice-capture";
 import {
+  isVideoNoteName,
   MAX_BITCHAT_TRANSFER_BYTES,
   MAX_VIDEO_SECONDS,
   maxBytesForType,
+  videoNoteName,
   wireMediaName,
 } from "@core/mesh/wire/file-packet";
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
@@ -101,6 +103,7 @@ import Toast from "@ui/components/toast";
 import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import { useKeyboardInset } from "@ui/hooks/use-keyboard";
+import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
 import {
   BUTTON_HEIGHT,
   DISABLED_OPACITY,
@@ -214,11 +217,20 @@ import {
 import ContactInfoSheet from "./contact-info-sheet";
 import { dmReachesOverInternet } from "./dm-reaches-over-internet";
 import ForwardSheet from "./forward-sheet";
+import {
+  CANCEL_SLIDE_DISARM,
+  CANCEL_SLIDE_DISTANCE,
+  LOCK_SLIDE_DISTANCE,
+} from "./hold-gesture";
 import MessageActionSheet from "./message-action-sheet";
 import MessageBubble from "./message-bubble";
 import MessageInfoSheet from "./message-info-sheet";
 import { NoticesSheet } from "./notices-sheet";
 import SendLocationSheet from "./send-location-sheet";
+import {
+  useVideoNoteRecorder,
+  type RecordedVideoNote,
+} from "./video-note-recorder";
 
 type AttachAction =
   "camera" | "library" | "document" | "voice" | "location" | "ecash";
@@ -383,28 +395,14 @@ const TRANSFER_CARD_LIMIT = 2;
 // not a decision.
 const LIVE_AVAILABILITY_POLL_MS = 3000;
 
-// How far the finger travels toward the start of the compose row before letting
-// go discards the hold instead of sending it. Sized to the hint text: past the
-// drift of a hand held up to speak, within one flick of a thumb already there.
-const CANCEL_SLIDE_DISTANCE = 110;
-
-// Where it disarms again. Hysteresis: a single threshold flips state every time
-// a resting thumb drifts across it, and each flip is a haptic and a re-render.
-const CANCEL_SLIDE_DISARM = 70;
-
-// How far the finger lifts before a held recording becomes a hands-free one.
-//
-// Shorter than the cancel slide because the two must never be ambiguous: a
-// diagonal drag has to resolve to one of them, and cancel is the destructive
-// answer, so it takes the longer, more deliberate travel.
-const LOCK_SLIDE_DISTANCE = 64;
-
 // The live-burst ceiling in seconds, for the HUD. Derived from the value the
 // capture layer actually enforces, so the badge cannot claim a burst is still
 // going out after the encoder has stopped feeding it.
 const BURST_MAX_SECS = Math.floor(MAX_BURST_MS / 1000);
 
 const MEDIA_BUBBLE_WIDTH = 220;
+// A round note, one size whatever the clip's shape: the circle crops it.
+const VIDEO_NOTE_SIZE = 200;
 const MEDIA_MIN_ASPECT = 0.75; // portrait floor: 220 x 293
 const MEDIA_MAX_ASPECT = 1.9; // landscape ceiling: 220 x 116
 // Until the real dimensions are read, 4:3 keeps the row from jumping far.
@@ -528,11 +526,72 @@ function VideoAttachment({
   );
 }
 
+// A round video note: a silent loop in the thread, with sound on tap. Muted
+// autoplay is what makes it read as a face rather than a file, and it stops for
+// anyone who asked the OS for less motion, who gets a still frame and a tap.
+function VideoNoteAttachment({
+  uri,
+  onAskResend,
+}: {
+  uri: string;
+  onAskResend?: () => void;
+}): React.JSX.Element {
+  const T = useT();
+  const present = useAttachmentPresent(uri);
+  const reduceMotion = useReducedMotion();
+  const [withSound, setWithSound] = useState(false);
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = true;
+    p.muted = true;
+  });
+
+  useEffect(() => {
+    // The player is a native handle whose properties are its API; there is
+    // no setter method to call instead.
+    // eslint-disable-next-line react-hooks/immutability
+    player.muted = !withSound;
+    // Sound starts the note over, so it is heard from its first word.
+    if (withSound) player.replay();
+    else if (reduceMotion) player.pause();
+    else player.play();
+  }, [player, reduceMotion, withSound]);
+
+  if (!present) {
+    return <AttachmentUnavailable kind="video" onAskResend={onAskResend} />;
+  }
+
+  function toggleSound(): void {
+    setWithSound((on) => !on);
+  }
+
+  return (
+    <Pressable
+      onPress={toggleSound}
+      accessibilityRole="button"
+      accessibilityLabel={T("chat.video_note.a11y")}
+      accessibilityState={{ checked: withSound }}
+    >
+      <VideoView
+        style={videoAttachmentStyles.note}
+        player={player}
+        contentFit="cover"
+        nativeControls={false}
+      />
+    </Pressable>
+  );
+}
+
 const videoAttachmentStyles = StyleSheet.create({
   video: {
     width: 220,
     height: 150,
     borderRadius: Radius.md,
+    backgroundColor: "#000",
+  },
+  note: {
+    width: VIDEO_NOTE_SIZE,
+    height: VIDEO_NOTE_SIZE,
+    borderRadius: Radius.full,
     backgroundColor: "#000",
   },
 });
@@ -3915,6 +3974,46 @@ export default function MessageThread({
   );
   const talkGesture = usePanGesture(talkConfig);
 
+  // The camera's twin of the mic, kept apart from the voice and live state
+  // above; see video-note-recorder.tsx.
+  const [composeBarHeight, setComposeBarHeight] = useState(0);
+  const videoNote = useVideoNoteRecorder({
+    enabled: mediaAllowed && !isRecording && !isTalkingLive,
+    // The keyboard pads the screen from below, which an absolute overlay does
+    // not feel, so it is added in.
+    bottomInset: composeBarHeight + keyboardInset,
+    onRecorded: (note) => void sendVideoNote(note),
+    onToast: (message) => setToast({ message, icon: "video" }),
+  });
+
+  // A finished note, sent like any other video, under the name that has it
+  // drawn round. The camera writes outside the attachment cache, so it is
+  // adopted first, as a voice note is.
+  async function sendVideoNote(note: RecordedVideoNote): Promise<void> {
+    const name = videoNoteName();
+    const uri = await adoptIntoAttachmentCache(note.uri, name);
+    const send = (): void =>
+      sendAttachmentMessage("video", uri, name, "video/mp4", note.durationMs, {
+        sizeBytes: note.sizeBytes,
+      });
+    if (note.atLimit) {
+      setToast({ message: t("chat.video_note.limit_sent"), icon: "video" });
+    }
+    const caution = bitchatMediaCaution("video", note.sizeBytes);
+    if (caution !== null) {
+      showAlert(caution.title, caution.body, [
+        {
+          text: T("common.cancel"),
+          style: "cancel",
+          onPress: () => discardPickerCopy(uri),
+        },
+        { text: T("chat.attach.send_anyway"), onPress: send },
+      ]);
+      return;
+    }
+    send();
+  }
+
   // The button follows the finger, so the slide reads as dragging the recording
   // away rather than as missing the button. It also shrinks, which is the same
   // progress again for a thumb covering the hint text.
@@ -4397,7 +4496,9 @@ export default function MessageThread({
             />
           );
         }
-        return (
+        return isVideoNoteName(attachment.name) ? (
+          <VideoNoteAttachment uri={attachment.uri} onAskResend={onAskResend} />
+        ) : (
           <VideoAttachment uri={attachment.uri} onAskResend={onAskResend} />
         );
       }
@@ -5270,6 +5371,8 @@ export default function MessageThread({
         </Pressable>
       </AppModal>
 
+      {videoNote.overlay}
+
       <Toast
         message={toast?.message ?? null}
         icon={toast?.icon}
@@ -5440,7 +5543,10 @@ export default function MessageThread({
         )}
 
       {!selecting && (
-        <View style={styles.composeBar}>
+        <View
+          style={styles.composeBar}
+          onLayout={(e) => setComposeBarHeight(e.nativeEvent.layout.height)}
+        >
           {/* Attach. Always present, greyed where media cannot be delivered, so
             the bar keeps its shape and the reason is one tap away. */}
           <Pressable
@@ -5512,71 +5618,76 @@ export default function MessageThread({
               <Feather name="mic" size={16} color={Colors.textMuted} />
             </Pressable>
           ) : (
-            // PTT button: hold to talk, slide back to cancel.
+            // PTT button: hold to talk, slide back to cancel. The video note
+            // sits beside it while nothing is being said.
             mediaAllowed && (
-              <GestureDetector gesture={talkGesture}>
-                {/* A padded wrapper, not `hitSlop`: gesture handlers ignore
+              <>
+                {!isRecording && !isTalkingLive && videoNote.button}
+                <GestureDetector gesture={talkGesture}>
+                  {/* A padded wrapper, not `hitSlop`: gesture handlers ignore
                     it, so the 44pt target must be a real view. The negative
                     margin gives those points back to the layout. */}
-                <View
-                  style={styles.pttTarget}
-                  // Inert while the bar owns the recording. A press here would
-                  // otherwise start a second recorder over the one already
-                  // running and, worse, send it on release: the gesture's
-                  // finalize has no way to tell a press that did nothing from a
-                  // release that meant something. The bar's Send and X are the
-                  // controls in this state, under a screen reader too.
-                  pointerEvents={handsFreeRecording ? "none" : "auto"}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    liveTalker !== null
-                      ? T("chat.thread.someone_talking", {
-                          hold: liveAvailable
-                            ? T("chat.voice.hold_live")
-                            : T("chat.voice.hold_record"),
-                          name: liveTalker,
-                        })
-                      : liveAvailable
-                        ? T("chat.voice.hold_live")
-                        : T("chat.voice.hold_record")
-                  }
-                  // A hold-and-slide cannot be performed with a screen reader
-                  // on, so this is a start/stop toggle there. No cancel: a
-                  // gesture that exists only as a distance has no accessible
-                  // form.
-                  accessibilityHint={T("chat.voice.a11y_toggle")}
-                  onAccessibilityTap={() => {
-                    if (isPTTActive) {
-                      void talkRef.current.end();
-                      return;
+                  <View
+                    style={styles.pttTarget}
+                    // Inert while the bar owns the recording. A press here would
+                    // otherwise start a second recorder over the one already
+                    // running and, worse, send it on release: the gesture's
+                    // finalize has no way to tell a press that did nothing from a
+                    // release that meant something. The bar's Send and X are the
+                    // controls in this state, under a screen reader too.
+                    pointerEvents={
+                      handsFreeRecording || videoNote.active ? "none" : "auto"
                     }
-                    // Nothing is held, so the bar's buttons are the way out and
-                    // the slide hint would be unusable advice. Set after
-                    // start(), which clears the flag for the held case, and only
-                    // for a note: a live burst has no buttons to offer.
-                    void talkRef.current.start().then(() => {
-                      if (!liveHoldRef.current) setHandsFreeRecording(true);
-                    });
-                  }}
-                >
-                  <Animated.View
-                    style={[
-                      styles.pttButton,
-                      isPTTActive && styles.pttButtonActive,
-                      // Somebody else has the floor. The button still works: a
-                      // mesh has no floor arbiter, and refusing to send would
-                      // desync the moment the network partitions. It just says
-                      // so first.
-                      liveTalker !== null &&
-                        !isPTTActive &&
-                        styles.pttButtonBusy,
-                      // Past the threshold the button is a discard.
-                      cancelArmed && styles.pttButtonCancel,
-                      micSlideStyle,
-                    ]}
+                    accessible
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      liveTalker !== null
+                        ? T("chat.thread.someone_talking", {
+                            hold: liveAvailable
+                              ? T("chat.voice.hold_live")
+                              : T("chat.voice.hold_record"),
+                            name: liveTalker,
+                          })
+                        : liveAvailable
+                          ? T("chat.voice.hold_live")
+                          : T("chat.voice.hold_record")
+                    }
+                    // A hold-and-slide cannot be performed with a screen reader
+                    // on, so this is a start/stop toggle there. No cancel: a
+                    // gesture that exists only as a distance has no accessible
+                    // form.
+                    accessibilityHint={T("chat.voice.a11y_toggle")}
+                    onAccessibilityTap={() => {
+                      if (isPTTActive) {
+                        void talkRef.current.end();
+                        return;
+                      }
+                      // Nothing is held, so the bar's buttons are the way out and
+                      // the slide hint would be unusable advice. Set after
+                      // start(), which clears the flag for the held case, and only
+                      // for a note: a live burst has no buttons to offer.
+                      void talkRef.current.start().then(() => {
+                        if (!liveHoldRef.current) setHandsFreeRecording(true);
+                      });
+                    }}
                   >
-                    {/* The mic, until the slide turns it into a discard. The
+                    <Animated.View
+                      style={[
+                        styles.pttButton,
+                        isPTTActive && styles.pttButtonActive,
+                        // Somebody else has the floor. The button still works: a
+                        // mesh has no floor arbiter, and refusing to send would
+                        // desync the moment the network partitions. It just says
+                        // so first.
+                        liveTalker !== null &&
+                          !isPTTActive &&
+                          styles.pttButtonBusy,
+                        // Past the threshold the button is a discard.
+                        cancelArmed && styles.pttButtonCancel,
+                        micSlideStyle,
+                      ]}
+                    >
+                      {/* The mic, until the slide turns it into a discard. The
                       radio glyph already means "the mesh" elsewhere (peer list,
                       radar, network settings), so state is carried by colour:
 
@@ -5587,20 +5698,21 @@ export default function MessageThread({
                       Busy is the border, a separate property, so "live
                       available" and "someone else is talking" can both show at
                       once. */}
-                    <Feather
-                      name={cancelArmed ? "trash-2" : "mic"}
-                      size={16}
-                      color={
-                        cancelArmed || isPTTActive
-                          ? Colors.danger
-                          : liveAvailable
-                            ? Colors.accent
-                            : Colors.textMuted
-                      }
-                    />
-                  </Animated.View>
-                </View>
-              </GestureDetector>
+                      <Feather
+                        name={cancelArmed ? "trash-2" : "mic"}
+                        size={16}
+                        color={
+                          cancelArmed || isPTTActive
+                            ? Colors.danger
+                            : liveAvailable
+                              ? Colors.accent
+                              : Colors.textMuted
+                        }
+                      />
+                    </Animated.View>
+                  </View>
+                </GestureDetector>
+              </>
             )
           )}
         </View>

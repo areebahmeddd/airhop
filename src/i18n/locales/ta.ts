@@ -708,6 +708,13 @@ export const strings: Strings = {
   "chat.voice.limit_sent":
     "இரண்டு நிமிட வரம்பு எட்டப்பட்டது, குறிப்பு அனுப்பப்பட்டது",
   "chat.voice.stop_send": "பதிவை நிறுத்தி அனுப்பு",
+  "chat.video_note.hold": "வீடியோ குறிப்பைப் பதிவுசெய்ய அழுத்திப் பிடிக்கவும்",
+  "chat.video_note.a11y_toggle":
+    "பதிவைத் தொடங்க அல்லது நிறுத்த இருமுறை தட்டவும்.",
+  "chat.video_note.not_recorded": "வீடியோ குறிப்பு பதிவாகவில்லை",
+  "chat.video_note.limit_sent":
+    "நேரம் முடிந்தது, வீடியோ குறிப்பு அனுப்பப்பட்டது",
+  "chat.video_note.a11y": "வீடியோ குறிப்பு, ஒலிக்கு இருமுறை தட்டவும்",
   "chat.voice.lift_lock": "கை விடுவித்துப் பதிவுசெய்ய மேலே நகர்த்துங்கள்",
   "chat.voice.live_speaking": "{name} பேசுகிறார்",
   "chat.voice.live_ended": "முடிந்தது",
@@ -723,6 +730,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "ஒலிவாங்கி அணுகல்",
   "chat.perm.mic_live_purpose": "அருகிலுள்ளவர்களுடன் பேச",
   "chat.perm.mic_note_purpose": "ஒரு குரல் குறிப்பைப் பதிவுசெய்ய",
+  "chat.perm.video_note_purpose": "வீடியோ குறிப்பைப் பதிவுசெய்ய",
   "chat.perm.recording_stopped": "பதிவு நிறுத்தப்பட்டது",
   "chat.perm.record_failed":
     "பதிவைத் தொடங்க முடியவில்லை. ஒலிவாங்கி அனுமதிகளைச் சரிபாருங்கள்.",

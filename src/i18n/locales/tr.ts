@@ -690,6 +690,12 @@ export const strings: Strings = {
     "İki dakika sınırına ulaşıldı, göndermek için bırak",
   "chat.voice.limit_sent": "İki dakika sınırına ulaşıldı, not gönderildi",
   "chat.voice.stop_send": "Kaydı durdur ve gönder",
+  "chat.video_note.hold": "Görüntülü not kaydetmek için basılı tut",
+  "chat.video_note.a11y_toggle":
+    "Kaydı başlatmak veya durdurmak için iki kez dokun.",
+  "chat.video_note.not_recorded": "Görüntülü not kaydedilemedi",
+  "chat.video_note.limit_sent": "Süre doldu, görüntülü not gönderildi",
+  "chat.video_note.a11y": "Görüntülü not, ses için iki kez dokun",
   "chat.voice.lift_lock": "Eller serbest kaydetmek için yukarı kaydır",
   "chat.voice.live_speaking": "{name} konuşuyor",
   "chat.voice.live_ended": "Bitti",
@@ -705,6 +711,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Mikrofon erişimi",
   "chat.perm.mic_live_purpose": "yakındaki insanlarla konuşmak",
   "chat.perm.mic_note_purpose": "bir sesli not kaydetmek",
+  "chat.perm.video_note_purpose": "görüntülü not kaydetmek",
   "chat.perm.recording_stopped": "Kayıt durduruldu",
   "chat.perm.record_failed":
     "Kayıt başlatılamadı. Mikrofon izinlerini denetle.",

@@ -692,6 +692,12 @@ export const strings: Strings = {
     "Grens van twee minuten bereikt, laat los om te versturen",
   "chat.voice.limit_sent": "Grens van twee minuten bereikt, bericht verstuurd",
   "chat.voice.stop_send": "Opname stoppen en versturen",
+  "chat.video_note.hold": "Houd ingedrukt voor een videonotitie",
+  "chat.video_note.a11y_toggle":
+    "Tik twee keer om de opname te starten of te stoppen.",
+  "chat.video_note.not_recorded": "Videonotitie is niet opgenomen",
+  "chat.video_note.limit_sent": "Tijd is om, videonotitie verstuurd",
+  "chat.video_note.a11y": "Videonotitie, tik twee keer voor geluid",
   "chat.voice.lift_lock": "Schuif omhoog om handsfree op te nemen",
   "chat.voice.live_speaking": "{name} is aan het woord",
   "chat.voice.live_ended": "Beëindigd",
@@ -707,6 +713,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Microfoontoegang",
   "chat.perm.mic_live_purpose": "praten met mensen in de buurt",
   "chat.perm.mic_note_purpose": "een spraakbericht opnemen",
+  "chat.perm.video_note_purpose": "een videonotitie op te nemen",
   "chat.perm.recording_stopped": "Opname gestopt",
   "chat.perm.record_failed":
     "De opname kon niet starten. Controleer de microfoonrechten.",

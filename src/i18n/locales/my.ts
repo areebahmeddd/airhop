@@ -699,6 +699,12 @@ export const strings: Strings = {
   "chat.voice.limit_sent":
     "နှစ်မိနစ် ကန့်သတ်ချက်ရောက်၍ မှတ်စုကို ပို့လိုက်ပါပြီ",
   "chat.voice.stop_send": "အသံဖမ်းခြင်း ရပ်ပြီး ပို့ပါ",
+  "chat.video_note.hold": "ဗီဒီယိုမှတ်စု ရိုက်ရန် ဖိထားပါ",
+  "chat.video_note.a11y_toggle":
+    "ရိုက်ကူးမှု စတင်ရန် သို့မဟုတ် ရပ်ရန် နှစ်ချက်နှိပ်ပါ။",
+  "chat.video_note.not_recorded": "ဗီဒီယိုမှတ်စု မရိုက်ကူးနိုင်ခဲ့ပါ",
+  "chat.video_note.limit_sent": "အချိန်ကုန်ပြီ၊ ဗီဒီယိုမှတ်စု ပို့ပြီးပါပြီ",
+  "chat.video_note.a11y": "ဗီဒီယိုမှတ်စု၊ အသံအတွက် နှစ်ချက်နှိပ်ပါ",
   "chat.voice.lift_lock": "လက်လွှတ်၍ အသံဖမ်းရန် အပေါ်သို့ ဆွဲပါ",
   "chat.voice.live_speaking": "{name} စကားပြောနေသည်",
   "chat.voice.live_ended": "ပြီးဆုံး",
@@ -714,6 +720,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "မိုက်ခရိုဖုန်း အသုံးပြုခွင့်",
   "chat.perm.mic_live_purpose": "အနီးအနားရှိသူများနှင့် စကားပြောရန်",
   "chat.perm.mic_note_purpose": "အသံမှတ်စု ဖမ်းရန်",
+  "chat.perm.video_note_purpose": "ဗီဒီယိုမှတ်စု ရိုက်ကူးရန်",
   "chat.perm.recording_stopped": "အသံဖမ်းခြင်း ရပ်သွားသည်",
   "chat.perm.record_failed":
     "အသံဖမ်းခြင်း မစတင်နိုင်ပါ။ မိုက်ခရိုဖုန်းခွင့်ပြုချက်များကို စစ်ဆေးပါ။",

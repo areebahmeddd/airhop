@@ -682,6 +682,12 @@ export const strings: Strings = {
   "chat.voice.limit_reached": "ਦੋ ਮਿੰਟ ਦੀ ਹੱਦ ਪੂਰੀ, ਭੇਜਣ ਲਈ ਛੱਡੋ",
   "chat.voice.limit_sent": "ਦੋ ਮਿੰਟ ਦੀ ਹੱਦ ਪੂਰੀ, ਨੋਟ ਭੇਜ ਦਿੱਤਾ",
   "chat.voice.stop_send": "ਰਿਕਾਰਡਿੰਗ ਰੋਕ ਕੇ ਭੇਜੋ",
+  "chat.video_note.hold": "ਵੀਡੀਓ ਨੋਟ ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਦਬਾ ਕੇ ਰੱਖੋ",
+  "chat.video_note.a11y_toggle":
+    "ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਜਾਂ ਬੰਦ ਕਰਨ ਲਈ ਦੋ ਵਾਰ ਟੈਪ ਕਰੋ।",
+  "chat.video_note.not_recorded": "ਵੀਡੀਓ ਨੋਟ ਰਿਕਾਰਡ ਨਹੀਂ ਹੋਇਆ",
+  "chat.video_note.limit_sent": "ਸਮਾਂ ਖ਼ਤਮ, ਵੀਡੀਓ ਨੋਟ ਭੇਜ ਦਿੱਤਾ",
+  "chat.video_note.a11y": "ਵੀਡੀਓ ਨੋਟ, ਆਵਾਜ਼ ਲਈ ਦੋ ਵਾਰ ਟੈਪ ਕਰੋ",
   "chat.voice.lift_lock": "ਬਿਨਾਂ ਹੱਥ ਲਾਏ ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਉੱਪਰ ਖਿਸਕਾਓ",
   "chat.voice.live_speaking": "{name} ਬੋਲ ਰਹੇ ਹਨ",
   "chat.voice.live_ended": "ਖ਼ਤਮ",
@@ -697,6 +703,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀ ਪਹੁੰਚ",
   "chat.perm.mic_live_purpose": "ਨੇੜਲੇ ਲੋਕਾਂ ਨਾਲ ਗੱਲ ਕਰਨ",
   "chat.perm.mic_note_purpose": "ਵੌਇਸ ਨੋਟ ਰਿਕਾਰਡ ਕਰਨ",
+  "chat.perm.video_note_purpose": "ਵੀਡੀਓ ਨੋਟ ਰਿਕਾਰਡ ਕਰਨ ਲਈ",
   "chat.perm.recording_stopped": "ਰਿਕਾਰਡਿੰਗ ਰੁਕ ਗਈ",
   "chat.perm.record_failed":
     "ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕੀ। ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀਆਂ ਇਜਾਜ਼ਤਾਂ ਦੇਖੋ।",

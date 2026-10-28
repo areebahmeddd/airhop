@@ -707,6 +707,12 @@ export const strings: Strings = {
   "chat.voice.limit_sent":
     "Naabot ang limitasyong dalawang minuto, naipadala ang note",
   "chat.voice.stop_send": "Itigil ang pagre-record at ipadala",
+  "chat.video_note.hold": "Pindutin nang matagal para mag-record ng video note",
+  "chat.video_note.a11y_toggle":
+    "I-double tap para simulan o itigil ang pag-record.",
+  "chat.video_note.not_recorded": "Hindi na-record ang video note",
+  "chat.video_note.limit_sent": "Ubos na ang oras, naipadala ang video note",
+  "chat.video_note.a11y": "Video note, i-double tap para sa tunog",
   "chat.voice.lift_lock": "Mag-slide paitaas para mag-record nang hands-free",
   "chat.voice.live_speaking": "Nagsasalita si {name}",
   "chat.voice.live_ended": "Tapos na",
@@ -722,6 +728,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Pag-access sa mikropono",
   "chat.perm.mic_live_purpose": "makipag-usap sa mga taong malapit",
   "chat.perm.mic_note_purpose": "mag-record ng voice note",
+  "chat.perm.video_note_purpose": "mag-record ng video note",
   "chat.perm.recording_stopped": "Itinigil ang pagre-record",
   "chat.perm.record_failed":
     "Hindi nasimulan ang pagre-record. Suriin ang mga pahintulot sa mikropono.",

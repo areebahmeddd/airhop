@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Airhop dùng Bluetooth để báo sự hiện diện của bạn cho các nút mạng ở gần.";
 "NSLocalNetworkUsageDescription" = "Airhop dùng mạng nội bộ để kết nối trực tiếp với các thiết bị ở gần khi truyền dữ liệu lớn (video, tệp lớn).";
 "NSCameraUsageDescription" = "Airhop dùng máy ảnh để quét mã QR của một liên hệ, và để chụp ảnh cùng quay video chia sẻ với các nút mạng ở gần.";
-"NSMicrophoneUsageDescription" = "Airhop dùng micrô để ghi tin nhắn thoại và để truyền giọng nói trực tiếp tới các nút mạng ở gần.";
+"NSMicrophoneUsageDescription" = "Airhop dùng micrô để ghi tin nhắn thoại và ghi chú video và để truyền giọng nói trực tiếp tới các nút mạng ở gần.";
 "NSPhotoLibraryUsageDescription" = "Airhop truy cập thư viện ảnh của bạn để chia sẻ hình ảnh và video qua mạng lưới.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop lưu ảnh và video vào thư viện ảnh của bạn khi bạn chọn lưu một mục, và khi bạn tải mã QR của mình về.";
 "NSFaceIDUsageDescription" = "Airhop dùng Face ID để xác nhận đó là bạn: để mở ứng dụng khi khóa ứng dụng đang bật, và trước khi hiện cụm từ khôi phục hoặc chuyển danh tính của bạn sang điện thoại mới.";

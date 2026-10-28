@@ -693,6 +693,12 @@ export const strings: Strings = {
     "Kikomo cha dakika mbili kimefikiwa, achia ili kutuma",
   "chat.voice.limit_sent": "Kikomo cha dakika mbili kimefikiwa, noti imetumwa",
   "chat.voice.stop_send": "Simamisha kurekodi na utume",
+  "chat.video_note.hold": "Shikilia ili kurekodi ujumbe wa video",
+  "chat.video_note.a11y_toggle":
+    "Gusa mara mbili kuanza au kusimamisha kurekodi.",
+  "chat.video_note.not_recorded": "Ujumbe wa video haukurekodiwa",
+  "chat.video_note.limit_sent": "Muda umekwisha, ujumbe wa video umetumwa",
+  "chat.video_note.a11y": "Ujumbe wa video, gusa mara mbili kwa sauti",
   "chat.voice.lift_lock": "Telezesha juu ili kurekodi bila kushikilia",
   "chat.voice.live_speaking": "{name} anazungumza",
   "chat.voice.live_ended": "Imeisha",
@@ -708,6 +714,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Ufikiaji wa maikrofoni",
   "chat.perm.mic_live_purpose": "kuzungumza na watu walio karibu",
   "chat.perm.mic_note_purpose": "kurekodi noti ya sauti",
+  "chat.perm.video_note_purpose": "kurekodi ujumbe wa video",
   "chat.perm.recording_stopped": "Kurekodi kumesimamishwa",
   "chat.perm.record_failed":
     "Kurekodi hakukuweza kuanza. Kagua ruhusa za maikrofoni.",

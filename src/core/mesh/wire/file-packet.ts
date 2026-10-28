@@ -74,6 +74,21 @@ export function wireMediaName(
   return `${kind === "image" ? "img" : "voice"}_${uuidV4()}.${extension}`;
 }
 
+// A round video note is an ordinary video file, marked only by its name, so
+// bitchat and older builds show it as a plain video and nothing on the wire
+// changes. Never bitchat's `video_<16 hex>.mp4`: that names a finished live
+// stream, and a bitchat receiver would try to swap it into a live bubble.
+const VIDEO_NOTE_NAME = /^note_[0-9a-f-]{36}(?: \(\d+\))?\.mp4$/i;
+
+export function videoNoteName(): string {
+  return `note_${uuidV4()}.mp4`;
+}
+
+// The receiver may have suffixed a repeat arrival, as "name (1).mp4".
+export function isVideoNoteName(name: string | undefined): boolean {
+  return name !== undefined && VIDEO_NOTE_NAME.test(name);
+}
+
 // The wire name for an attachment.
 //
 // The name is not cosmetic: the receiver writes it to disk, and the photo

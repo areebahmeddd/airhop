@@ -686,6 +686,12 @@ export const strings: Strings = {
   "chat.voice.limit_reached": "ორწუთიან ზღვარს მიაღწიე, გაუშვი გასაგზავნად",
   "chat.voice.limit_sent": "ორწუთიან ზღვარს მიაღწიე, ჩანაწერი გაიგზავნა",
   "chat.voice.stop_send": "ჩაწერის შეწყვეტა და გაგზავნა",
+  "chat.video_note.hold": "ვიდეოჩანაწერისთვის ხანგრძლივად დააჭირეთ",
+  "chat.video_note.a11y_toggle":
+    "ჩაწერის დასაწყებად ან შესაჩერებლად ორჯერ შეეხეთ.",
+  "chat.video_note.not_recorded": "ვიდეოჩანაწერი არ ჩაიწერა",
+  "chat.video_note.limit_sent": "დრო ამოიწურა, ვიდეოჩანაწერი გაიგზავნა",
+  "chat.video_note.a11y": "ვიდეოჩანაწერი, ხმისთვის ორჯერ შეეხეთ",
   "chat.voice.lift_lock": "გადაასრიალე ზემოთ ხელის აშვებით ჩასაწერად",
   "chat.voice.live_speaking": "{name} საუბრობს",
   "chat.voice.live_ended": "დასრულდა",
@@ -701,6 +707,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "მიკროფონთან წვდომა",
   "chat.perm.mic_live_purpose": "ესაუბრო ახლომდებარე ადამიანებს",
   "chat.perm.mic_note_purpose": "ჩაწერო ხმოვანი ჩანაწერი",
+  "chat.perm.video_note_purpose": "ვიდეოჩანაწერის გასაკეთებლად",
   "chat.perm.recording_stopped": "ჩაწერა შეწყდა",
   "chat.perm.record_failed":
     "ჩაწერის დაწყება ვერ მოხერხდა. შეამოწმე მიკროფონის ნებართვები.",

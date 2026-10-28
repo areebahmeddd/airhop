@@ -702,6 +702,12 @@ export const strings: Strings = {
     "Zwei-Minuten-Grenze erreicht, zum Senden loslassen",
   "chat.voice.limit_sent": "Zwei-Minuten-Grenze erreicht, Notiz gesendet",
   "chat.voice.stop_send": "Aufnahme beenden und senden",
+  "chat.video_note.hold": "Halten für eine Videonachricht",
+  "chat.video_note.a11y_toggle":
+    "Doppeltippen, um die Aufnahme zu starten oder zu beenden.",
+  "chat.video_note.not_recorded": "Videonachricht wurde nicht aufgenommen",
+  "chat.video_note.limit_sent": "Zeit abgelaufen, Videonachricht gesendet",
+  "chat.video_note.a11y": "Videonachricht, doppeltippen für Ton",
   "chat.voice.lift_lock": "Nach oben wischen, um freihändig aufzunehmen",
   "chat.voice.live_speaking": "{name} spricht",
   "chat.voice.live_ended": "Beendet",
@@ -717,6 +723,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Mikrofonzugriff",
   "chat.perm.mic_live_purpose": "mit Menschen in der Nähe zu sprechen",
   "chat.perm.mic_note_purpose": "eine Sprachnotiz aufzunehmen",
+  "chat.perm.video_note_purpose": "eine Videonachricht aufzunehmen",
   "chat.perm.recording_stopped": "Aufnahme beendet",
   "chat.perm.record_failed":
     "Aufnahme konnte nicht gestartet werden. Prüfe die Mikrofonberechtigungen.",

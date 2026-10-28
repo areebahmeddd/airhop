@@ -686,6 +686,12 @@ export const strings: Strings = {
   "chat.voice.limit_sent":
     "Gränsen på två minuter är nådd, meddelandet skickat",
   "chat.voice.stop_send": "Stoppa inspelningen och skicka",
+  "chat.video_note.hold": "Håll in för att spela in en videoanteckning",
+  "chat.video_note.a11y_toggle":
+    "Tryck två gånger för att starta eller stoppa inspelningen.",
+  "chat.video_note.not_recorded": "Videoanteckningen spelades inte in",
+  "chat.video_note.limit_sent": "Tiden är slut, videoanteckningen skickad",
+  "chat.video_note.a11y": "Videoanteckning, tryck två gånger för ljud",
   "chat.voice.lift_lock": "Dra uppåt för att spela in handsfree",
   "chat.voice.live_speaking": "{name} talar",
   "chat.voice.live_ended": "Avslutad",
@@ -701,6 +707,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Mikrofonåtkomst",
   "chat.perm.mic_live_purpose": "prata med folk i närheten",
   "chat.perm.mic_note_purpose": "spela in ett röstmeddelande",
+  "chat.perm.video_note_purpose": "spela in en videoanteckning",
   "chat.perm.recording_stopped": "Inspelningen stoppades",
   "chat.perm.record_failed":
     "Inspelningen kunde inte starta. Kontrollera mikrofonbehörigheterna.",

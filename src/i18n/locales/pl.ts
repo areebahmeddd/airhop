@@ -694,6 +694,13 @@ export const strings: Strings = {
   "chat.voice.limit_reached": "Osiągnięto limit dwóch minut, puść, żeby wysłać",
   "chat.voice.limit_sent": "Osiągnięto limit dwóch minut, notatka wysłana",
   "chat.voice.stop_send": "Zatrzymaj nagrywanie i wyślij",
+  "chat.video_note.hold": "Przytrzymaj, aby nagrać notatkę wideo",
+  "chat.video_note.a11y_toggle":
+    "Stuknij dwukrotnie, aby rozpocząć lub zatrzymać nagrywanie.",
+  "chat.video_note.not_recorded": "Notatka wideo się nie nagrała",
+  "chat.video_note.limit_sent": "Czas minął, notatka wideo wysłana",
+  "chat.video_note.a11y":
+    "Notatka wideo, stuknij dwukrotnie, aby włączyć dźwięk",
   "chat.voice.lift_lock": "Przesuń w górę, żeby nagrywać bez trzymania",
   "chat.voice.live_speaking": "{name} mówi",
   "chat.voice.live_ended": "Zakończono",
@@ -709,6 +716,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Dostęp do mikrofonu",
   "chat.perm.mic_live_purpose": "rozmawiać z ludźmi w pobliżu",
   "chat.perm.mic_note_purpose": "nagrać notatkę głosową",
+  "chat.perm.video_note_purpose": "nagrać notatkę wideo",
   "chat.perm.recording_stopped": "Nagrywanie zatrzymane",
   "chat.perm.record_failed":
     "Nie udało się rozpocząć nagrywania. Sprawdź uprawnienia do mikrofonu.",

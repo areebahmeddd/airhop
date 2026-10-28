@@ -688,6 +688,12 @@ export const strings: Strings = {
     "Достигнут предел в две минуты, отпустите для отправки",
   "chat.voice.limit_sent": "Достигнут предел в две минуты, заметка отправлена",
   "chat.voice.stop_send": "Остановить запись и отправить",
+  "chat.video_note.hold": "Удерживайте, чтобы записать видеосообщение",
+  "chat.video_note.a11y_toggle":
+    "Дважды коснитесь, чтобы начать или остановить запись.",
+  "chat.video_note.not_recorded": "Видеосообщение не записалось",
+  "chat.video_note.limit_sent": "Время вышло, видеосообщение отправлено",
+  "chat.video_note.a11y": "Видеосообщение, дважды коснитесь для звука",
   "chat.voice.lift_lock": "Проведите вверх для записи без рук",
   "chat.voice.live_speaking": "{name} говорит",
   "chat.voice.live_ended": "Завершено",
@@ -703,6 +709,7 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Доступ к микрофону",
   "chat.perm.mic_live_purpose": "говорить с людьми поблизости",
   "chat.perm.mic_note_purpose": "записать голосовую заметку",
+  "chat.perm.video_note_purpose": "записать видеосообщение",
   "chat.perm.recording_stopped": "Запись остановлена",
   "chat.perm.record_failed":
     "Не удалось начать запись. Проверьте разрешения микрофона.",
