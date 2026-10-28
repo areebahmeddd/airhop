@@ -321,9 +321,9 @@ export default function BrandPage() {
               ))}
             </div>
             <p className="text-secondary mt-4 text-xs leading-relaxed">
-              Store screenshots, the feature graphic and the social banners are in{" "}
-              <TextLink href={REPO_LINKS.pressAssets}>press/out</TextLink> in the repository, light
-              and dark.
+              Store screenshots, the feature graphic and the social banners, light and dark, are on
+              the <TextLink href={REPO_LINKS.pressAssets}>press kit branch</TextLink> of the
+              repository.
             </p>
           </Panel>
 

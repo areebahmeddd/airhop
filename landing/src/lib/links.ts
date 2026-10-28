@@ -41,5 +41,5 @@ export const REPO_LINKS = {
   discussions: `${REPO}/discussions`,
   releases: `${REPO}/releases/latest`,
   apk: `${REPO}/releases/latest/download/airhop.apk`,
-  pressAssets: `${REPO}/tree/main/press/out`,
+  pressAssets: `${REPO}/tree/maintainer/press-kit/press/out`,
 } as const;
