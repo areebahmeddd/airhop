@@ -94,7 +94,7 @@ const QUALITY_META: Record<
   UploadQuality,
   { labelKey: TranslationKey; descriptionKey: TranslationKey }
 > = {
-  // Every photo is fitted to the same 512 KiB budget before it is sent, so this
+  // Every photo is fitted to the same 256 KiB budget before it is sent, so this
   // is not a size dial: it is how much detail to try to keep inside that
   // budget. Low reaches a sendable file in one pass and gets moving sooner,
   // High holds on to detail and may take a couple of passes to fit.
