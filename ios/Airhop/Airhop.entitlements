@@ -20,5 +20,12 @@
          silent switch and Apple grants them to nobody. -->
     <key>com.apple.developer.usernotifications.time-sensitive</key>
     <true/>
+    <!-- The App Group the home screen widget reads the mesh snapshot from
+         (MeshWidgetState.swift, AirhopWidget.entitlements). Like the two above,
+         it has to be enabled for the App ID and present in the profile. -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+      <string>group.org.onemindlabs.airhop</string>
+    </array>
   </dict>
 </plist>

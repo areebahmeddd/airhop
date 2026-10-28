@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mesh network</string>
   <string name="mesh_channel_description">Pinapanatiling aktibo ang mesh ng Airhop sa background</string>
   <string name="mesh_notification_title">Aktibo ang mesh ng Airhop</string>
@@ -8,4 +8,16 @@
     <item quantity="one">%1$s peer ang nasa saklaw</item>
     <item quantity="other">%1$s peer ang nasa saklaw</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Naka-off ang Bluetooth · hindi nag-i-scan</string>
+  <string name="widget_label">Mga peer na nasa saklaw</string>
+  <string name="widget_description">Mga peer na nasa saklaw, at kung kailan sila binilang</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">peer ang nasa saklaw</item>
+    <item quantity="other">peer ang nasa saklaw</item>
+  </plurals>
+  <string name="widget_nobody">walang nasa saklaw</string>
+  <string name="widget_as_of">noong %1$s</string>
+  <string name="widget_paused">Naka-pause ang mesh</string>
+  <string name="widget_unset">Buksan ang Airhop</string>
+  <string name="widget_stale">Buksan ang Airhop para i-refresh</string>
 </resources>

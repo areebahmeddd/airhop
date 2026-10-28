@@ -13,16 +13,16 @@ What Swift and Kotlin may do, what they must leave to TypeScript, and the shape 
 
 ## Key Files
 
-| Path                                                          | Holds                                                                                                                                            |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/bridge/Native*.ts`                                       | The hand-maintained contracts, one per module                                                                                                    |
-| `ios/Airhop/`                                                 | Swift modules                                                                                                                                    |
-| `android/app/src/main/java/org/onemindlabs/airhop/`           | Kotlin modules, by radio: `ble/`, `wifi/`, `lan/`, `tor/`, `voice/`, `video/`, `app/`, `service/`, `transport/`                                  |
-| `native/arti/`, `native/iptproxy/`                            | Embedded Tor client (Rust) and pluggable transports (Go)                                                                                         |
-| `src/core/mesh/links/link-registry.ts`                        | Which peer is on which link                                                                                                                      |
-| `android/app/src/test/`, `ios/Tests/`                         | Native unit tests: framing, Aware dial rules, long writes, LAN interface filter, voice playback bursts, Tor proxy, Tor status, bridge transports |
-| `bitchat/ios/bitchat/Services/BLE/`                           | Reference iOS BLE implementation                                                                                                                 |
-| `bitchat/android/app/src/main/java/com/bitchat/android/mesh/` | Reference Android BLE implementation                                                                                                             |
+| Path                                                          | Holds                                                                                                                                                           |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/bridge/Native*.ts`                                       | The hand-maintained contracts, one per module                                                                                                                   |
+| `ios/Airhop/`                                                 | Swift modules                                                                                                                                                   |
+| `android/app/src/main/java/org/onemindlabs/airhop/`           | Kotlin modules, by radio: `ble/`, `wifi/`, `lan/`, `tor/`, `voice/`, `video/`, `app/`, `service/`, `widget/`, `transport/`                                      |
+| `native/arti/`, `native/iptproxy/`                            | Embedded Tor client (Rust) and pluggable transports (Go)                                                                                                        |
+| `src/core/mesh/links/link-registry.ts`                        | Which peer is on which link                                                                                                                                     |
+| `android/app/src/test/`, `ios/Tests/`                         | Native unit tests: framing, Aware dial rules, long writes, LAN interface filter, voice playback bursts, Tor proxy, Tor status, bridge transports, widget states |
+| `bitchat/ios/bitchat/Services/BLE/`                           | Reference iOS BLE implementation                                                                                                                                |
+| `bitchat/android/app/src/main/java/com/bitchat/android/mesh/` | Reference Android BLE implementation                                                                                                                            |
 
 ## The Rule
 
@@ -51,21 +51,21 @@ The exceptions are `native/arti/` and `native/iptproxy/`: a Tor client and its p
 
 TurboModule specs are named `Native<Name>.ts` in `src/bridge/`, Codegen's convention and the only PascalCase file names in `src/`.
 
-| Spec                         | Registered as         | Platforms | Purpose                                                                                       |
-| ---------------------------- | --------------------- | --------- | --------------------------------------------------------------------------------------------- |
-| `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | Both      | BLE peripheral and central I/O, radio state, power mode                                       |
-| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | Both      | Wi-Fi Aware I/O; same-platform only (Android API 29+, iOS 26+)                                |
-| `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS       | Wi-Fi Aware pairing sheet; absent on Android                                                  |
-| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | Both      | mDNS discovery and TCP links, and the device-transfer socket                                  |
-| `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | Both      | AAC-LC capture and playback for live voice                                                    |
-| `NativeAirhopVideo.ts`       | `"AirhopVideo"`       | Both      | H.264 camera encode, decode onto a surface, and MP4 recording for live video                  |
-| `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Both      | Arti lifecycle                                                                                |
-| `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | iOS       | WebSocket over Arti's SOCKS5; Android proxies OkHttp instead                                  |
-| `NativeAirhopApp.ts`         | `"AirhopApp"`         | Both      | Recent log on both; restart, boot start, APK share and ring alert on Android, rejected on iOS |
+| Spec                         | Registered as         | Platforms | Purpose                                                                                                             |
+| ---------------------------- | --------------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| `NativeAirhopBLE.ts`         | `"AirhopBLE"`         | Both      | BLE peripheral and central I/O, radio state, power mode                                                             |
+| `NativeAirhopWiFi.ts`        | `"AirhopWiFi"`        | Both      | Wi-Fi Aware I/O; same-platform only (Android API 29+, iOS 26+)                                                      |
+| `NativeAirhopWiFiPairing.ts` | `"AirhopWiFiPairing"` | iOS       | Wi-Fi Aware pairing sheet; absent on Android                                                                        |
+| `NativeAirhopLAN.ts`         | `"AirhopLAN"`         | Both      | mDNS discovery and TCP links, and the device-transfer socket                                                        |
+| `NativeAirhopVoice.ts`       | `"AirhopVoice"`       | Both      | AAC-LC capture and playback for live voice                                                                          |
+| `NativeAirhopVideo.ts`       | `"AirhopVideo"`       | Both      | H.264 camera encode, decode onto a surface, and MP4 recording for live video                                        |
+| `NativeAirhopTor.ts`         | `"AirhopTorModule"`   | Both      | Arti lifecycle                                                                                                      |
+| `NativeAirhopTorSocket.ts`   | `"AirhopTorSocket"`   | iOS       | WebSocket over Arti's SOCKS5; Android proxies OkHttp instead                                                        |
+| `NativeAirhopApp.ts`         | `"AirhopApp"`         | Both      | Recent log and the mesh snapshot on both; restart, boot start, APK share and ring alert on Android, rejected on iOS |
 
-`NativeAirhopVideoViews.ts` declares the two views live video draws into, `AirhopVideoSurface` and `AirhopCameraPreview`, legacy view managers resolved through the same interop layer.
+`NativeAirhopVideoViews.ts` declares the two views live video draws into, `AirhopVideoSurface` and `AirhopCameraPreview`, legacy view managers resolved through the same interop layer. The camera keeps the screen on from `startCamera` to `stopCamera` (`isIdleTimerDisabled` on iOS, `FLAG_KEEP_SCREEN_ON` on Android), since auto-lock would background the app and end a stream. On Android, a start whose camera provider resolves after a stop does not bind, and `setFacing` rejects with `CAMERA_FAILED` on a device without the other camera (iOS falls back to the camera it has).
 
-`AirhopForegroundService`, `AirhopBootReceiver` and `AirhopBootService` (Kotlin) have no spec: `setBackgroundServiceEnabled` on the BLE module drives the first, and `setAutoStartOnBoot` on the App module the start after a reboot.
+`AirhopForegroundService`, `AirhopBootReceiver`, `AirhopBootService` and `AirhopMeshWidget` (Kotlin) have no spec: `setBackgroundServiceEnabled` on the BLE module starts and stops the first, `setAutoStartOnBoot` on the App module arms the start after a reboot, and `setMeshSnapshot` on the App module gives the notice and the widget one count to show. On iOS the same call writes the App Group store the `AirhopWidget` extension (`ios/AirhopWidget/`) reads, and asks WidgetKit to reload; the extension has no bridge, and draws only what that store holds.
 
 ## BLE Contract
 
@@ -78,8 +78,6 @@ writeToLink(linkID: string, dataBase64: string): Promise<void>
 getRadioState(): Promise<{ supported, poweredOn, authorization, ... }>
 setPowerMode(mode: string): Promise<void>        // no-op on iOS
 setBackgroundServiceEnabled(enabled: boolean): Promise<void>
-setBackgroundPeerCount(count: number): Promise<void>     // no-op on iOS
-openBackgroundNoticeSettings(): Promise<boolean>        // false on iOS
 requestEnableBluetooth(): Promise<boolean>
 openLocationSettings(): Promise<boolean>
 ```

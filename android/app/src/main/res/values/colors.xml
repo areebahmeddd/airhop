@@ -1,5 +1,4 @@
 <resources>
-  <color name="splashscreen_background">#FFFFFF</color>
   <color name="iconBackground">#ffffff</color>
   <color name="colorPrimary">#023c69</color>
   <!-- Accent for the notification shade: the tint of the small icon and of the
@@ -10,4 +9,12 @@
        the app's, and a single value has to be legible on both. Airhop's ink on a light shade; its background colour on a
        dark one. -->
   <color name="notification_icon_color">#111111</color>
+  <!-- The home screen widget, which also follows the system theme. The
+       surface, textPrimary and textSecondary tokens of src/ui/theme.ts, so the
+       card reads as the app's own: 18.9:1 and 7.3:1 against the surface. -->
+  <color name="mesh_widget_surface">#FFFFFF</color>
+  <color name="mesh_widget_ink">#111111</color>
+  <color name="mesh_widget_ink_secondary">#565656</color>
+  <!-- Ink at the alpha that lands a pressed card on surfacePressed (#E8E8E8). -->
+  <color name="mesh_widget_pressed">#19111111</color>
 </resources>

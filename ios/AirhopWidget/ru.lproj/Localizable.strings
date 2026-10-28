@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-ru/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetooth выключен · не сканируем";
+"widget_label" = "Узлы в зоне действия";
+"widget_description" = "Узлы в зоне действия и время, когда их сосчитали";
+"widget_nobody" = "никого в зоне действия";
+"widget_as_of" = "на %1$@";
+"widget_paused" = "Сеть приостановлена";
+"widget_unset" = "Откройте Airhop";
+"widget_stale" = "Откройте Airhop, чтобы обновить";

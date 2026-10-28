@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mesh-Netzwerk</string>
   <string name="mesh_channel_description">Hält das Airhop-Mesh im Hintergrund aktiv</string>
   <string name="mesh_notification_title">Airhop-Mesh aktiv</string>
@@ -8,4 +8,16 @@
     <item quantity="one">%1$s Peer in Reichweite</item>
     <item quantity="other">%1$s Peers in Reichweite</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth aus · keine Suche</string>
+  <string name="widget_label">Peers in Reichweite</string>
+  <string name="widget_description">Peers in Reichweite und wann sie gezählt wurden</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">Peer in Reichweite</item>
+    <item quantity="other">Peers in Reichweite</item>
+  </plurals>
+  <string name="widget_nobody">niemand in Reichweite</string>
+  <string name="widget_as_of">Stand %1$s</string>
+  <string name="widget_paused">Mesh pausiert</string>
+  <string name="widget_unset">Öffne Airhop</string>
+  <string name="widget_stale">Öffne Airhop zum Aktualisieren</string>
 </resources>

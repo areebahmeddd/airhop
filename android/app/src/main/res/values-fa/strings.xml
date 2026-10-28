@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">شبکهٔ مش</string>
   <string name="mesh_channel_description">مش Airhop را در پس‌زمینه فعال نگه می‌دارد</string>
   <string name="mesh_notification_title">مش Airhop فعال است</string>
@@ -8,4 +8,16 @@
     <item quantity="one">%1$s همتا در محدوده</item>
     <item quantity="other">%1$s همتا در محدوده</item>
   </plurals>
+  <string name="mesh_bluetooth_off">بلوتوث خاموش · پویشی انجام نمی‌شود</string>
+  <string name="widget_label">همتایان در محدوده</string>
+  <string name="widget_description">همتایان در محدوده، و زمانی که شمرده شدند</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">همتا در محدوده</item>
+    <item quantity="other">همتا در محدوده</item>
+  </plurals>
+  <string name="widget_nobody">کسی در محدوده نیست</string>
+  <string name="widget_as_of">ساعت %1$s</string>
+  <string name="widget_paused">مش متوقف است</string>
+  <string name="widget_unset">Airhop را باز کنید</string>
+  <string name="widget_stale">برای تازه کردن، Airhop را باز کنید</string>
 </resources>

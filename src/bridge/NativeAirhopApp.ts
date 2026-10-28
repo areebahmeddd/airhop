@@ -6,7 +6,8 @@
 // restart, setAutoStartOnBoot, copyApkToCache, startRingAlert and
 // stopRingAlert reject immediately on iOS: no supported relaunch path, no
 // boot receiver, no sideloading, and no ringtone loop outside CallKit.
-// recentLog runs on both.
+// openBackgroundNoticeSettings answers false there, having no notice to open.
+// recentLog and the mesh snapshot run on both.
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 
@@ -46,6 +47,26 @@ export interface Spec extends TurboModule {
   startRingAlert(durationMs: number): Promise<boolean>;
   // Safe when nothing is ringing.
   stopRingAlert(): Promise<void>;
+
+  // The one reading shown outside the app: the home screen widget's count and
+  // its time, and on Android the reachable count on the background notice.
+  // Nothing else crosses, since the widget sits where anyone holding the phone
+  // can read it. Native passes it on and decides only how to draw it, and when
+  // a reading is too old to show (MeshWidgetState.kt, MeshWidgetState.swift).
+  // On iOS each call reloads the widget, which spends its daily budget.
+  //
+  //   INVALID         a negative count, or a time that cannot be
+  setMeshSnapshot(
+    count: number,
+    meshOn: boolean,
+    bluetoothOff: boolean,
+    atMs: number,
+  ): Promise<void>;
+  // The widget back to "Open Airhop" and, on Android, the notice's count back
+  // to zero, for the panic wipe.
+  clearMeshSnapshot(): Promise<void>;
+  // The notice's system settings page, to quiet or hide it. False on iOS.
+  openBackgroundNoticeSettings(): Promise<boolean>;
 }
 
 // `get`, not `getEnforcing`: a missing module is an answer, not a crash.

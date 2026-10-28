@@ -1,17 +1,20 @@
 // AirhopAppModule: process-level operations that belong to no radio.
 //
-// Only recentLog does anything here, reading back what AirhopLog's categories
-// wrote to the log store. restart, setAutoStartOnBoot, copyApkToCache,
-// startRingAlert and stopRingAlert reject immediately: iOS has no relaunch
-// path, no boot receiver, no sideloading to share an APK into, and no ringtone
-// loop outside CallKit, which is for calls. A ring on iOS is the notification
-// chain in notification-service.ts.
+// Two things run here: recentLog, reading back what AirhopLog's categories
+// wrote to the log store, and the mesh snapshot the home screen widget draws.
+// restart, setAutoStartOnBoot, copyApkToCache, startRingAlert and
+// stopRingAlert reject immediately: iOS has no relaunch path, no boot
+// receiver, no sideloading to share an APK into, and no ringtone loop outside
+// CallKit, which is for calls. A ring on iOS is the notification chain in
+// notification-service.ts. openBackgroundNoticeSettings answers false, there
+// being no background notice.
 //
 // Bridge file: AirhopAppModule.mm
 // TypeScript spec: src/bridge/NativeAirhopApp.ts
 import Foundation
 import OSLog
 import React
+import WidgetKit
 
 @objc(AirhopAppModule)
 final class AirhopAppModule: NSObject, RCTBridgeModule {
@@ -66,6 +69,57 @@ final class AirhopAppModule: NSObject, RCTBridgeModule {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     reject("UNSUPPORTED", "iOS cannot loop a ringtone outside a call", nil)
+  }
+
+  // Into the App Group AirhopWidget reads, then a reload. Every reload spends
+  // the widget's daily budget, so background-notice.ts decides how often this
+  // runs; here it only writes and asks. A build without the App Group
+  // entitlement gets the app's own defaults back, and the widget then reads an
+  // empty store, which is "Open Airhop" rather than anything false.
+  @objc
+  func setMeshSnapshot(
+    _ count: Double,
+    meshOn: Bool,
+    bluetoothOff: Bool,
+    atMs: Double,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard
+      let snapshot = MeshSnapshot(
+        fromBridge: count, meshOn: meshOn, bluetoothOff: bluetoothOff, atMs: atMs)
+    else {
+      reject("INVALID", "Not a snapshot: count \(count), at \(atMs)", nil)
+      return
+    }
+    guard let defaults = UserDefaults(suiteName: MeshWidgetStore.suiteName) else {
+      reject("UNSUPPORTED", "no App Group store", nil)
+      return
+    }
+    snapshot.write(to: defaults)
+    WidgetCenter.shared.reloadTimelines(ofKind: MeshWidgetStore.kind)
+    resolve(nil)
+  }
+
+  // For the panic wipe: the widget back to "Open Airhop".
+  @objc
+  func clearMeshSnapshot(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    if let defaults = UserDefaults(suiteName: MeshWidgetStore.suiteName) {
+      MeshSnapshot.clear(defaults)
+    }
+    WidgetCenter.shared.reloadTimelines(ofKind: MeshWidgetStore.kind)
+    resolve(nil)
+  }
+
+  @objc
+  func openBackgroundNoticeSettings(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(false)
   }
 
   // Last 30 minutes, Airhop's own categories only, oldest first, capped at

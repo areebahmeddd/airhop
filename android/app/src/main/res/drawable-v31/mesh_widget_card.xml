@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From API 31 the launcher clips the view with id @android:id/background to
+     its own radius, so the card takes the same one rather than showing a
+     second corner inside the clip. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+  <solid android:color="@color/mesh_widget_surface"/>
+  <corners android:radius="@android:dimen/system_app_widget_background_radius"/>
+</shape>

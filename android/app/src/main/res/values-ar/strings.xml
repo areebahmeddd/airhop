@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">شبكة Airhop</string>
   <string name="mesh_channel_description">يبقي شبكة Airhop نشطة في الخلفية</string>
   <string name="mesh_notification_title">شبكة Airhop نشطة</string>
@@ -12,4 +12,20 @@
     <item quantity="many">%1$s نظيرًا ضمن النطاق</item>
     <item quantity="other">%1$s نظير ضمن النطاق</item>
   </plurals>
+  <string name="mesh_bluetooth_off">البلوتوث معطّل · لا بحث</string>
+  <string name="widget_label">النظراء ضمن النطاق</string>
+  <string name="widget_description">النظراء ضمن النطاق، ووقت عدّهم</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="zero">نظير ضمن النطاق</item>
+    <item quantity="one">نظير ضمن النطاق</item>
+    <item quantity="two">نظيران ضمن النطاق</item>
+    <item quantity="few">نظراء ضمن النطاق</item>
+    <item quantity="many">نظيرًا ضمن النطاق</item>
+    <item quantity="other">نظير ضمن النطاق</item>
+  </plurals>
+  <string name="widget_nobody">لا أحد ضمن النطاق</string>
+  <string name="widget_as_of">آخر تحديث %1$s</string>
+  <string name="widget_paused">الشبكة متوقفة</string>
+  <string name="widget_unset">افتح Airhop</string>
+  <string name="widget_stale">افتح Airhop للتحديث</string>
 </resources>

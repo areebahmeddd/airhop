@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- The widget count's autosize steps (layout/mesh_widget.xml):
+       FontSize.2xl, xl and lg from src/ui/theme.ts. -->
+  <array name="mesh_widget_count_sizes">
+    <item>30sp</item>
+    <item>24sp</item>
+    <item>20sp</item>
+  </array>
+</resources>

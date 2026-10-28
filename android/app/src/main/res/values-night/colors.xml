@@ -2,4 +2,10 @@
   <!-- See values/colors.xml. The shade is dark here, so the accent has to be
        light or the small icon disappears into it. -->
   <color name="notification_icon_color">#F5F5F5</color>
+  <!-- The same three tokens from DarkColors: 16.6:1 and 7.4:1. -->
+  <color name="mesh_widget_surface">#161616</color>
+  <color name="mesh_widget_ink">#F5F5F5</color>
+  <color name="mesh_widget_ink_secondary">#A6A6A6</color>
+  <!-- Lands a pressed card on surfacePressed (#2A2A2A). -->
+  <color name="mesh_widget_pressed">#17F5F5F5</color>
 </resources>

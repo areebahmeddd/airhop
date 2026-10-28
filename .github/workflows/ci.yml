@@ -221,7 +221,7 @@ jobs:
       - name: Check Swift formatting
         run: |
           set -euo pipefail
-          swift format --in-place --recursive ios/Airhop ios/Tests ios/Package.swift
+          swift format --in-place --recursive ios/Airhop ios/AirhopWidget ios/Tests ios/Package.swift
           git diff --exit-code -- ios
 
       - name: Run Swift unit tests

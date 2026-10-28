@@ -10,6 +10,10 @@ import {
   resetWalletStorage,
   WALLET_STORAGE_ID,
 } from "@store/wallet-store";
+import {
+  clearBackgroundNotice,
+  stopBackgroundNotice,
+} from "../background-notice";
 import { wipeCacheDirectory } from "../file-transfer-service";
 import { stopNotificationPipeline } from "../notification-pipeline";
 import { dismissAllNotifications } from "../notification-service";
@@ -47,6 +51,13 @@ jest.mock("../notification-service", () => ({
 // whether the wipe stops it matters here.
 jest.mock("../notification-pipeline", () => ({
   stopNotificationPipeline: jest.fn(),
+}));
+
+// The notice and the widget reach a native module; only whether the wipe stops
+// the count and clears what was shown matters here.
+jest.mock("../background-notice", () => ({
+  stopBackgroundNotice: jest.fn(),
+  clearBackgroundNotice: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Provide a full in-memory MMKV implementation so Zustand's persist middleware
@@ -314,6 +325,38 @@ describe("panicWipe", () => {
 
     expect(stop).toHaveBeenCalledTimes(1);
     expect(stoppedBeforeClear).toBe(true);
+  });
+
+  test("stops counting peers before clearing anything, then clears the widget", async () => {
+    // A recount after the widget is cleared would write a fresh reading for
+    // the destroyed identity in place of "Open Airhop".
+    const stop = stopBackgroundNotice as jest.Mock;
+    const clear = clearBackgroundNotice as jest.Mock;
+    stop.mockClear();
+    clear.mockClear();
+    let stoppedBeforeClear = false;
+    let clearedBeforeStoresCleared = false;
+    mockClearAll.mockImplementationOnce(() => {
+      stoppedBeforeClear = stop.mock.calls.length > 0;
+      clearedBeforeStoresCleared = clear.mock.calls.length > 0;
+    });
+
+    await panicWipe();
+
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(stoppedBeforeClear).toBe(true);
+    // Last, with the tray: the keys and partitions go first.
+    expect(clearedBeforeStoresCleared).toBe(false);
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  test("finishes when the widget cannot be cleared", async () => {
+    // A native side that refuses, or a build without the module.
+    (clearBackgroundNotice as jest.Mock).mockRejectedValueOnce(
+      new Error("refused"),
+    );
+    await expect(panicWipe()).resolves.toEqual({ keysDestroyed: true });
+    expect(isPanicWipePending()).toBe(false);
   });
 
   test("wipes every sensitive persisted store, including the activity feed", () => {

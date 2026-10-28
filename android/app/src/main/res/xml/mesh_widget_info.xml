@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AirhopMeshWidget's provider.
+
+     Home screen only: a lock screen or always-on surface is read by whoever holds
+     the phone. Two by two, as targetCellWidth/Height from API 31; below it the
+     launcher rounds the 110dp minimums up to whole cells, two each way on a
+     phone.
+
+     Resizable in width only, from two cells to four (276dp, four portrait cells
+     in Android's sizing table): wider lets a long caption sit on one line and
+     the card line up under a full-width widget, while taller would add only
+     blank space, which the widget quality guidelines ask a maximum to prevent.
+
+     updatePeriodMillis is the platform's 30-minute floor and only retires a
+     stale reading; the count itself arrives by push. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/mesh_widget"
+    android:maxResizeWidth="276dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minWidth="110dp"
+    android:previewImage="@drawable/mesh_widget_preview"
+    android:previewLayout="@layout/mesh_widget"
+    android:resizeMode="horizontal"
+    android:targetCellHeight="2"
+    android:targetCellWidth="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen"/>

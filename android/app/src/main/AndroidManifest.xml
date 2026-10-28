@@ -173,5 +173,22 @@
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
       </intent-filter>
     </receiver>
+    <!-- The home screen widget. exported=true because the system widget host
+         delivers APPWIDGET_UPDATE from outside the app; the other three are
+         protected broadcasts, so nothing but the system can send them. -->
+    <receiver
+      android:name="org.onemindlabs.airhop.widget.AirhopMeshWidget"
+      android:exported="true"
+      android:label="@string/widget_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+        <action android:name="android.intent.action.TIME_SET"/>
+        <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+        <action android:name="android.intent.action.LOCALE_CHANGED"/>
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/mesh_widget_info"/>
+    </receiver>
   </application>
 </manifest>

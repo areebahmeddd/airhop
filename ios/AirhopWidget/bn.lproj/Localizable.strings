@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-bn/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "ব্লুটুথ বন্ধ · খোঁজা হচ্ছে না";
+"widget_label" = "নাগালে থাকা পিয়ার";
+"widget_description" = "নাগালে থাকা পিয়ার, আর কখন গোনা হয়েছে";
+"widget_nobody" = "নাগালে কেউ নেই";
+"widget_as_of" = "%1$@ অনুযায়ী";
+"widget_paused" = "মেশ থেমে আছে";
+"widget_unset" = "Airhop খুলুন";
+"widget_stale" = "রিফ্রেশ করতে Airhop খুলুন";

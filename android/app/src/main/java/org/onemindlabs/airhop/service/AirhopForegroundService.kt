@@ -62,7 +62,7 @@ class AirhopForegroundService : Service() {
     // simply stands down.
     private fun promoteToForeground() {
         try {
-            val shown = peerCount
+            val shown = reading
             ServiceCompat.startForeground(
                 this,
                 NOTIFICATION_ID,
@@ -79,7 +79,7 @@ class AirhopForegroundService : Service() {
                 // A count that arrived while this one was being posted. Posted
                 // directly: Android lists a foreground notice as active only
                 // after a moment, and one this new cannot have been swiped away.
-                if (peerCount != shown) post()
+                if (reading != shown) post()
             }
         } catch (e: Exception) {
             if (
@@ -131,7 +131,7 @@ class AirhopForegroundService : Service() {
 
     private fun post() {
         getSystemService(NotificationManager::class.java)
-            .notify(NOTIFICATION_ID, buildNotification(peerCount))
+            .notify(NOTIFICATION_ID, buildNotification(reading))
     }
 
     // A notice the person swiped away (Android 14+) stays away. One hidden only
@@ -157,7 +157,7 @@ class AirhopForegroundService : Service() {
 
     // MARK: - Notification
 
-    private fun buildNotification(count: Int): Notification {
+    private fun buildNotification(shown: Reading): Notification {
         val launchIntent =
             Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -183,7 +183,7 @@ class AirhopForegroundService : Service() {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.mesh_notification_title))
-            .setContentText(peerLine(count))
+            .setContentText(peerLine(shown))
             // The same drawable the manifest points expo-notifications at, so
             // the notice sitting in the shade all day and a notice about a
             // message are recognisably one app.
@@ -198,26 +198,38 @@ class AirhopForegroundService : Service() {
     }
 
     // Zero keeps the default line, which is also what a start shows before the
-    // first count.
-    private fun peerLine(count: Int): String =
-        if (count > 0) {
-            // A string argument keeps the digits Latin, as the app writes them.
-            resources.getQuantityString(R.plurals.mesh_notification_peers, count, count.toString())
-        } else {
-            getString(R.string.mesh_notification_text)
+    // first count, unless Bluetooth is off: then nobody is reachable because the
+    // phone cannot listen, and the default "Discovering" would claim it can. A
+    // count still wins, since peers over Wi-Fi or LAN are real. The widget draws
+    // the same rule (MeshWidgetState.kt).
+    private fun peerLine(shown: Reading): String =
+        when {
+            shown.count > 0 ->
+                // A string argument keeps the digits Latin, as the app writes them.
+                resources.getQuantityString(
+                    R.plurals.mesh_notification_peers,
+                    shown.count,
+                    shown.count.toString(),
+                )
+            shown.bluetoothOff -> getString(R.string.mesh_bluetooth_off)
+            else -> getString(R.string.mesh_notification_text)
         }
+
+    // What the notice says, as JS last counted it.
+    private data class Reading(val count: Int, val bluetoothOff: Boolean)
 
     companion object {
         private val lock = Any()
         private var running: AirhopForegroundService? = null
-        @Volatile private var peerCount = 0
+        @Volatile private var reading = Reading(0, false)
 
         // Re-posted under the same ID, which is how Android updates a foreground
         // notice.
-        fun setPeerCount(count: Int) {
+        fun setReading(count: Int, bluetoothOff: Boolean) {
             synchronized(lock) {
-                val changed = count != peerCount
-                peerCount = count
+                val next = Reading(count, bluetoothOff)
+                val changed = next != reading
+                reading = next
                 running?.repost(changed)
             }
         }

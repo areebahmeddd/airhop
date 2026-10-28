@@ -43,6 +43,10 @@ import {
   wipeWalletStorage,
 } from "@store/wallet-store";
 import { settleOr, withTimeout } from "@utils/with-timeout";
+import {
+  clearBackgroundNotice,
+  stopBackgroundNotice,
+} from "./background-notice";
 import { resetBoardAlerts } from "./board-alerts";
 import { syncAutoStartOnBoot } from "./boot-sync";
 import { wipeCacheDirectory } from "./file-transfer-service";
@@ -170,6 +174,11 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   //     would otherwise write a bell entry, a tray card and a badge for the
   //     identity being destroyed, in between the steps that clear them.
   stopNotificationPipeline();
+  // And stop counting peers for the notice and the widget. Left running, its
+  // next recount would write a fresh reading after the widget is cleared
+  // below, and a wiped phone would read "nobody in range" for an identity
+  // that no longer exists rather than "Open Airhop".
+  stopBackgroundNotice();
 
   // 0d. Cancel any chat write still inside its throttle window, before
   //     anything is cleared. A pending write holds a plaintext snapshot of
@@ -327,6 +336,9 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   // left the lock screen showing the last conversations has not done what the
   // user asked.
   await settleOr(dismissAllNotifications(), BEST_EFFORT_TIMEOUT_MS, undefined);
+  // The home screen widget is the same kind of surface: back to "Open Airhop",
+  // with the count and its time gone, and the notice's count back to zero.
+  await settleOr(clearBackgroundNotice(), BEST_EFFORT_TIMEOUT_MS, undefined);
 
   // Stop Arti and destroy its data directory, on both platforms.
   //

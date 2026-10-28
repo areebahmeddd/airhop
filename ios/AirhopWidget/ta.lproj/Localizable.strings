@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-ta/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "புளூடூத் முடக்கம் · தேடவில்லை";
+"widget_label" = "வரம்பில் உள்ள பியர்கள்";
+"widget_description" = "வரம்பில் உள்ள பியர்கள், அவை எப்போது எண்ணப்பட்டன";
+"widget_nobody" = "வரம்பில் யாரும் இல்லை";
+"widget_as_of" = "%1$@ நிலவரப்படி";
+"widget_paused" = "மெஷ் இடைநிறுத்தம்";
+"widget_unset" = "Airhop ஐத் திறங்கள்";
+"widget_stale" = "புதுப்பிக்க Airhop ஐத் திறங்கள்";

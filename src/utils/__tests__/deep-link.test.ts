@@ -7,6 +7,7 @@
 // back.
 import {
   channelInviteLink,
+  isMeshLink,
   parseAirhopLink,
   peerInviteLink,
 } from "../deep-link";
@@ -113,5 +114,22 @@ describe("link builders round-trip", () => {
       kind: "peer",
       peerID: "aabbccdd00112233",
     });
+  });
+});
+
+describe("isMeshLink", () => {
+  it("matches the widget's link and nothing longer", () => {
+    expect(isMeshLink("airhop://mesh")).toBe(true);
+    expect(isMeshLink(" AIRHOP://Mesh/ ")).toBe(true);
+    expect(isMeshLink("airhop:mesh")).toBe(true);
+    expect(isMeshLink("airhop://mesh/x")).toBe(false);
+    expect(isMeshLink("airhop://mesh?k=1")).toBe(false);
+    expect(isMeshLink("airhop://meshy")).toBe(false);
+    expect(isMeshLink("https://mesh")).toBe(false);
+  });
+
+  it("is not a link anything else acts on", () => {
+    // A tab switch only: it must never reach the Join sheet.
+    expect(parseAirhopLink("airhop://mesh")).toBeNull();
   });
 });

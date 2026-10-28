@@ -169,6 +169,7 @@ import {
   type ChannelFilter,
   type DmFilter,
 } from "@utils/chat-filter";
+import { isMeshLink } from "@utils/deep-link";
 import { amountParts } from "@utils/format";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
@@ -1365,9 +1366,15 @@ function AppContent(): React.JSX.Element {
   //
   // `cashu:` links follow the same rule into the Wallet: Receive opens filled
   // in, and nothing is redeemed until Receive is tapped.
+  //
+  // airhop://mesh, the home screen widget's tap, only opens the Mesh tab.
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     const handle = (url: string | null): void => {
+      if (url !== null && isMeshLink(url)) {
+        navigateToTabRef.current("mesh");
+        return;
+      }
       const token = cashuLinkToken(url);
       if (url !== null && token !== null) {
         if (isOwnHandoffEcho(url)) {

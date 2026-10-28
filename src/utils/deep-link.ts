@@ -5,6 +5,9 @@
 //   airhop://channel/<name>   join a public channel by name
 //   airhop://peer/<peerID>    start a DM with a peer (16 hex chars)
 //
+// And airhop://mesh, which the home screen widget opens. It names a tab and
+// does nothing else, so any app may fire it for no more than a tab switch.
+//
 // Parsing is pure and defensive: anything malformed returns null, so a stray
 // link can never join a garbage channel or open a bogus DM.
 
@@ -83,4 +86,8 @@ export function channelInviteLink(
 
 export function peerInviteLink(peerID: string): string {
   return `airhop://peer/${peerID}`;
+}
+
+export function isMeshLink(url: string): boolean {
+  return /^airhop:(?:\/\/)?mesh\/?$/i.test(url.trim());
 }

@@ -1657,18 +1657,20 @@ Hardware requires native code. Routing, crypto, Nostr and payments do not, and
 native code is harder to test, keep consistent across platforms and reason about.
 So there is one module per hardware or OS capability and no more.
 
-| Module                    | Platform | Capability                                                                                                                              |
-| ------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `AirhopBLEModule`         | Both     | BLE GATT Peripheral and Central, radio state, power mode                                                                                |
-| `AirhopVoiceModule`       | Both     | AAC-LC capture and playback for voice notes and PTT                                                                                     |
-| `AirhopVideoModule`       | Both     | Live video's camera and H.264 encoder, decoding onto a native surface, and the MP4 a stream is recorded into                            |
-| `AirhopWiFiModule`        | Both     | Wi-Fi Aware same-platform fast path                                                                                                     |
-| `AirhopLANModule`         | Both     | mDNS discovery, its TCP links, and the transfer socket                                                                                  |
-| `AirhopWiFiPairing`       | iOS      | The system pairing sheet that fast path needs                                                                                           |
-| `AirhopTorModule`         | Both     | Embedded Arti's lifecycle and bootstrap status                                                                                          |
-| `AirhopTorSocket`         | iOS      | The SOCKS5 WebSocket that iOS needs and Android does not                                                                                |
-| `AirhopAppModule`         | Both     | Process-level operations: recent log on both; relaunch, start on boot, APK sharing and the ring loop on Android only, which iOS rejects |
-| `AirhopForegroundService` | Android  | Keeps the process, and so the mesh, alive in the background                                                                             |
+| Module                    | Platform | Capability                                                                                                                                                    |
+| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AirhopBLEModule`         | Both     | BLE GATT Peripheral and Central, radio state, power mode                                                                                                      |
+| `AirhopVoiceModule`       | Both     | AAC-LC capture and playback for voice notes and PTT                                                                                                           |
+| `AirhopVideoModule`       | Both     | Live video's camera and H.264 encoder, decoding onto a native surface, and the MP4 a stream is recorded into                                                  |
+| `AirhopWiFiModule`        | Both     | Wi-Fi Aware same-platform fast path                                                                                                                           |
+| `AirhopLANModule`         | Both     | mDNS discovery, its TCP links, and the transfer socket                                                                                                        |
+| `AirhopWiFiPairing`       | iOS      | The system pairing sheet that fast path needs                                                                                                                 |
+| `AirhopTorModule`         | Both     | Embedded Arti's lifecycle and bootstrap status                                                                                                                |
+| `AirhopTorSocket`         | iOS      | The SOCKS5 WebSocket that iOS needs and Android does not                                                                                                      |
+| `AirhopAppModule`         | Both     | Process-level operations: recent log and the mesh snapshot on both; relaunch, start on boot, APK sharing and the ring loop on Android only, which iOS rejects |
+| `AirhopForegroundService` | Android  | Keeps the process, and so the mesh, alive in the background                                                                                                   |
+| `AirhopMeshWidget`        | Android  | The home screen widget: the reachable count and the time it was counted, drawn from the snapshot JS pushes                                                    |
+| `AirhopWidget`            | iOS      | The same widget as a WidgetKit extension, reading the snapshot from the App Group the app writes it to                                                        |
 
 None of them knows anything about packets, routing or encryption.
 
@@ -1681,7 +1683,7 @@ the same surface. Bytes cross base64-encoded, the only representation both
 runtimes agree on safely. The full per-module contract is in
 [`.github/skills/native-boundary.md`](../../.github/skills/native-boundary.md).
 
-`src/bridge/NativeAirhopBLE.ts` is the largest, at twelve methods:
+`src/bridge/NativeAirhopBLE.ts` is the largest, at ten methods:
 
 1. `startAdvertising` / `stopAdvertising`: GATT Peripheral
 2. `startScanning` / `stopScanning`: GATT Central
@@ -1690,7 +1692,14 @@ runtimes agree on safely. The full per-module contract is in
 5. `setPowerMode`: how hard to run the radios
 6. `requestEnableBluetooth` / `openLocationSettings`: one-tap fixes for the Mesh banner
 7. `setBackgroundServiceEnabled`: hold the process up, independent of advertising
-8. `setBackgroundPeerCount` / `openBackgroundNoticeSettings`: the reachable count on that service's notice, and its system settings page
+
+What that service's notice says is not a radio's business. `AirhopAppModule`
+takes it in `setMeshSnapshot`, one reading of the reachable count, whether the
+mesh runs, whether Bluetooth is off, and when. The notice and the home screen
+widget on both platforms draw it, and `clearMeshSnapshot` puts them back for
+the panic wipe. On iOS each push reloads the widget against a daily budget, so
+`background-notice.ts` holds pushes to one per ten minutes while the app is in
+the background.
 
 Nothing about Tor is asked of it. `AirhopTorModule` owns that and answers
 directly; a radio module reporting on Tor would be a boundary violation.

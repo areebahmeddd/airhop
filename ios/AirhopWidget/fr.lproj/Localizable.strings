@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-fr/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetooth désactivé · aucun balayage";
+"widget_label" = "Pairs à portée";
+"widget_description" = "Les pairs à portée, et l’heure à laquelle ils ont été comptés";
+"widget_nobody" = "personne à portée";
+"widget_as_of" = "à %1$@";
+"widget_paused" = "Maillage en pause";
+"widget_unset" = "Ouvre Airhop";
+"widget_stale" = "Ouvre Airhop pour actualiser";

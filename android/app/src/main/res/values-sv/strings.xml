@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mesh-nätverk</string>
   <string name="mesh_channel_description">Håller Airhops mesh aktiv i bakgrunden</string>
   <string name="mesh_notification_title">Airhops mesh är aktiv</string>
@@ -8,4 +8,16 @@
     <item quantity="one">%1$s peer inom räckhåll</item>
     <item quantity="other">%1$s peers inom räckhåll</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth av · skannar inte</string>
+  <string name="widget_label">Peers inom räckhåll</string>
+  <string name="widget_description">Peers inom räckhåll och när de räknades</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">peer inom räckhåll</item>
+    <item quantity="other">peers inom räckhåll</item>
+  </plurals>
+  <string name="widget_nobody">ingen inom räckhåll</string>
+  <string name="widget_as_of">kl. %1$s</string>
+  <string name="widget_paused">Meshen pausad</string>
+  <string name="widget_unset">Öppna Airhop</string>
+  <string name="widget_stale">Öppna Airhop för att uppdatera</string>
 </resources>

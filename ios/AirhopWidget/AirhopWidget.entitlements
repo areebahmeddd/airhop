@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!-- The App Group the app writes the mesh snapshot into
+         (MeshWidgetState.swift). The same group as Airhop.entitlements, enabled
+         on both App IDs and present in both provisioning profiles, or the
+         widget reads an empty store and shows "Open Airhop". -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+      <string>group.org.onemindlabs.airhop</string>
+    </array>
+  </dict>
+</plist>
