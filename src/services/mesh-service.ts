@@ -98,8 +98,12 @@ import { SlidingWindowLimiter } from "@core/mesh/routing/sliding-window-limiter"
 import { nextHopFor } from "@core/mesh/routing/source-route";
 import { GossipSync, isSyncReplyInWindow } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
+import type { LiveVideoQuality } from "@core/mesh/video/live-video-quality";
 import { decodeVideoBurstPacket } from "@core/mesh/video/video-burst-packet";
-import { VoiceCaptureSession } from "@core/mesh/voice/voice-capture";
+import {
+  VoiceCaptureSession,
+  VoiceCodec,
+} from "@core/mesh/voice/voice-capture";
 import { VoicePlayer } from "@core/mesh/voice/voice-player";
 import {
   decodeBoardWire,
@@ -267,7 +271,7 @@ import {
   type Event as NostrEvent,
 } from "nostr-tools";
 import { DeviceEventEmitter, type EventSubscription } from "react-native";
-import { setAudioForPlayback } from "./audio-session";
+import { setAudioForPlayback, setAudioForRecording } from "./audio-session";
 import { noteUrgentNotice } from "./board-alerts";
 import { BridgeService } from "./bridge-service";
 import {
@@ -282,6 +286,11 @@ import {
   type GeoParticipant,
 } from "./geohash-channel-service";
 import { LANController, newInstanceName } from "./lan-controller";
+import { LiveVideoReceiver } from "./live-video-receiver";
+import {
+  LiveVideoSendSession,
+  type FinishedLiveVideo,
+} from "./live-video-sender";
 import { ringVerdict, ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
@@ -724,6 +733,11 @@ export class MeshService {
   // them, or null. A burst is only played when it belongs to THIS channel. See
   // setLiveVoiceAudible.
   private audibleChannel: string | null = null;
+  // Live video. The receiver runs whenever the mesh does (a device without the
+  // native video module never builds one); a send session exists only while
+  // this user is live, and holds the microphone while it does.
+  private liveVideo: LiveVideoReceiver | null = null;
+  private liveVideoSend: LiveVideoSendSession | null = null;
 
   // Stored closure so sendDRMessage can unicast DR_ENCRYPTED packets without
   // duplicating the radio preference logic.
@@ -1075,9 +1089,14 @@ export class MeshService {
     // session, so flipping the switch repeatedly settles wherever it lands.
     this.liveVoiceUnsub?.();
     this.liveVoiceUnsub = useSettingsStore.subscribe((state, prev) => {
-      if (state.liveVoiceEnabled === prev.liveVoiceEnabled) return;
-      if (!state.liveVoiceEnabled) this.closeVoice();
+      if (state.liveVoiceEnabled !== prev.liveVoiceEnabled) {
+        if (!state.liveVoiceEnabled) this.closeVoice();
+      }
+      if (state.liveVideoEnabled !== prev.liveVideoEnabled) {
+        if (!state.liveVideoEnabled) this.closeVideo();
+      }
     });
+    this.openVideo();
 
     // Either way the switch flips, every sender starts from a full budget.
     this.spamFilter.enabled = useSettingsStore.getState().spamFilterEnabled;
@@ -2009,6 +2028,9 @@ export class MeshService {
       case PacketType.VOICE_FRAME:
         this.onVoiceFrame(packet);
         break;
+      case PacketType.VIDEO_FRAME:
+        this.onVideoFrame(packet);
+        break;
       default:
         break;
     }
@@ -2156,6 +2178,8 @@ export class MeshService {
   // peer inside their Noise session; anything else broadcasts to the room.
   canSendLiveVoice(channel: string): boolean {
     if (!isLiveVoiceAvailable()) return false;
+    // A live video stream holds the microphone.
+    if (this.liveVideoSend !== null) return false;
     if (!useSettingsStore.getState().liveVoiceEnabled) return false;
     // Live voice is media, and it goes where media goes. In particular it must
     // never reach a private channel or group: a public burst is broadcast
@@ -2348,6 +2372,142 @@ export class MeshService {
     // because the activity report is normally driven by inbound frames and
     // those have just stopped arriving.
     this.reportPttActivity();
+  }
+
+  // ---- Live video ----
+
+  private openVideo(): void {
+    if (this.liveVideo !== null || !LiveVideoReceiver.available) return;
+    const receiver = new LiveVideoReceiver({
+      resolveNickname: resolveDisplayName,
+      watchedChannel: () => this.audibleChannel,
+      playAudio: (streamKey, frames) => {
+        // Live voice has the floor while anyone is talking: a stream's sound
+        // waits rather than taking the speaker from under a burst.
+        if ((this.pttPlayer?.activeSessions.length ?? 0) > 0) return;
+        if (this.ensurePttPlayer() === null) return;
+        void this.pttPlayback?.playFrames(
+          streamKey,
+          VoiceCodec.AAC_LC_16KHZ_MONO,
+          frames,
+        );
+      },
+      stopAudio: (streamKey) => this.pttPlayback?.finishSession(streamKey),
+    });
+    receiver.dropStaleRows();
+    this.fileXfer.absorbLiveVideo = (sender, channel, streamID, attachment) =>
+      receiver.absorbFinalFile(sender, channel, streamID, attachment);
+    this.liveVideo = receiver;
+  }
+
+  // Ends our own stream with an END and closes every stream being received,
+  // keeping what each recorded so far.
+  private closeVideo(): void {
+    void this.stopLiveVideo(false);
+    this.liveVideo?.stop();
+  }
+
+  // A public stream packet, authenticated before it got here (mayRelay).
+  // Shown only in the Bluetooth room, and only to someone still in it, as a
+  // public file is.
+  private onVideoFrame(packet: Packet): void {
+    if (!useChatStore.getState().channels.includes(BRIDGE_CHANNEL)) return;
+    this.liveVideo?.onPacket(
+      bytesToHex(packet.senderID),
+      BRIDGE_CHANNEL,
+      packet.payload,
+    );
+  }
+
+  get liveVideoReceiver(): LiveVideoReceiver | null {
+    return this.liveVideo;
+  }
+
+  // Whether this user can go live in `channel` now. Live voice's scope rules:
+  // media rooms only, a session for a DM, a link for the room.
+  canSendLiveVideo(channel: string): boolean {
+    if (!LiveVideoReceiver.available) return false;
+    if (!useSettingsStore.getState().liveVideoEnabled) return false;
+    if (!canSendMedia(channel)) return false;
+    if (this.pttCapture !== null) return false;
+    if (channel.startsWith("dm:")) {
+      const peerID = channel.slice(3);
+      return (
+        this.registry.get(peerID)?.session !== undefined &&
+        this.links.hasPeer(peerID)
+      );
+    }
+    return channel === BRIDGE_CHANNEL && this.links.size() > 0;
+  }
+
+  // Go live in `channel` on the camera the caller opened. Null when that is
+  // not possible right now; `onFailure` hears a stream the camera ended.
+  async startLiveVideo(
+    channel: string,
+    quality: LiveVideoQuality,
+    withAudio: boolean,
+    onFailure: () => void,
+  ): Promise<LiveVideoSendSession | null> {
+    if (this.liveVideoSend !== null || !this.canSendLiveVideo(channel)) {
+      return null;
+    }
+    const dmPeer = channel.startsWith("dm:") ? channel.slice(3) : null;
+    const ttl = originTtl(PacketType.VIDEO_FRAME, this.links.degree());
+    const senderID = hexToBytes(this.identity.peerID);
+    const session = new LiveVideoSendSession(quality, {
+      send: (payload) => {
+        if (dmPeer !== null) {
+          // A packet that finds no session is gone, as a voice frame is.
+          this.router.sendNoisePayload(
+            dmPeer,
+            NoisePayloadType.VIDEO_FRAME,
+            payload,
+          );
+          return;
+        }
+        const packet: Packet = {
+          type: PacketType.VIDEO_FRAME,
+          ttl,
+          flags: Flags.SIGNED,
+          senderID,
+          recipientID: new Uint8Array(8),
+          timestamp: Date.now(),
+          signature: new Uint8Array(64),
+          payload,
+        };
+        packet.signature = signPacket(packet, this.identity.signingPrivKey);
+        // Never gossiped, as a voice burst is not: late, it is worthless.
+        this.broadcastPacket(packet);
+      },
+      audio:
+        withAudio && isLiveVoiceAvailable() ? new NativeAudioCapture() : null,
+      onFailure,
+    });
+    this.liveVideoSend = session;
+    try {
+      if (withAudio) await setAudioForRecording();
+      await session.start();
+    } catch {
+      this.liveVideoSend = null;
+      void setAudioForPlayback();
+      return null;
+    }
+    return session;
+  }
+
+  // End our stream with END, or CANCELED when `canceled`, and hand back the
+  // recording.
+  async stopLiveVideo(canceled: boolean): Promise<FinishedLiveVideo | null> {
+    const session = this.liveVideoSend;
+    if (session === null) return null;
+    const finished = await session.stop(canceled);
+    if (this.liveVideoSend === session) this.liveVideoSend = null;
+    if (this.pttCapture === null) void setAudioForPlayback();
+    return finished;
+  }
+
+  get isLiveVideoSending(): boolean {
+    return this.liveVideoSend !== null;
   }
 
   // ---- Noise XX handshake handlers ----
@@ -3311,6 +3471,10 @@ export class MeshService {
     // A live burst from this peer. Confidentiality and authenticity both come
     // from the Noise session it arrived in, so unlike a public burst there is
     // no separate signature to check: getting here at all proves the sender.
+    if (payload.type === NoisePayloadType.VIDEO_FRAME) {
+      this.liveVideo?.onPacket(senderID, channel, payload.body);
+      return;
+    }
     if (payload.type === NoisePayloadType.VOICE_FRAME) {
       if (!useSettingsStore.getState().liveVoiceEnabled) return;
       // Same rule as a public burst: only audible in the thread it belongs to.
@@ -7649,7 +7813,9 @@ export class MeshService {
     // packet needs a radio to leave on. Left open, the microphone and every
     // inbound VoiceSession's timers would outlive the mesh, and going Away or
     // panic wiping would leave a stranger's audio coming out of the speaker.
+    // Live video too: its END needs the same radio.
     this.closeVoice();
+    this.closeVideo();
 
     // Apply the teardown once the farewells have had time to reach the wire.
     // A GATT write clears within a connection interval, so this is a handful

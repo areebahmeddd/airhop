@@ -41,6 +41,7 @@ export type SettingId =
   | "background"
   | "auto-start-boot"
   | "live-voice"
+  | "live-video"
   | "mesh-bridge"
   | "gateway"
   | "transfer"
@@ -140,6 +141,14 @@ export const SETTINGS_INDEX = [
     sectionKey: HUB,
     icon: "mic",
     target: { kind: "row", view: "root", id: "live-voice" },
+  },
+  {
+    key: "live-video",
+    labelKey: "settings.conn.live_video",
+    descriptionKey: "settings.conn.live_video_desc",
+    sectionKey: HUB,
+    icon: "video",
+    target: { kind: "row", view: "root", id: "live-video" },
   },
   {
     key: "mesh-bridge",

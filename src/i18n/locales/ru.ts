@@ -573,6 +573,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Отправить сатоши Cashu из кошелька",
   "chat.attach.location": "Геопозиция",
   "chat.attach.location_desc": "Отправить, где вы сейчас",
+  "chat.attach.live": "Начать эфир",
+  "chat.attach.live_desc": "Транслируйте камеру людям поблизости",
   "chat.attach.title": "Вложить",
 
   // ---- Chat: location pin ----
@@ -694,6 +696,40 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Видеосообщение не записалось",
   "chat.video_note.limit_sent": "Время вышло, видеосообщение отправлено",
   "chat.video_note.a11y": "Видеосообщение, дважды коснитесь для звука",
+  "chat.live_video.preview": "Прямой эфир",
+  "chat.live_video.badge": "Эфир",
+  "chat.live_video.reconnecting": "Переподключение…",
+  "chat.live_video.a11y":
+    "{name} в эфире. Коснитесь дважды, чтобы включить или выключить звук.",
+  "chat.live_video.title": "Прямой эфир",
+  "chat.live_video.go_live": "Начать эфир",
+  "chat.live_video.end": "Завершить",
+  "chat.live_video.end_title": "Завершить эфир?",
+  "chat.live_video.end_body":
+    "При завершении запись останется в этом чате. При удалении всех зрителей попросят её стереть.",
+  "chat.live_video.discard": "Удалить",
+  "chat.live_video.keep": "Продолжить эфир",
+  "chat.live_video.audience_room": "Смотреть могут все в радиусе Bluetooth.",
+  "chat.live_video.audience_dm": "Смотреть может только {name}.",
+  "chat.live_video.nobody": "Сейчас рядом нет никого, кто мог бы смотреть.",
+  "chat.live_video.quality_low": "Низкое",
+  "chat.live_video.quality_medium": "Среднее",
+  "chat.live_video.quality_high": "Высокое",
+  "chat.live_video.quality_low_hint":
+    "Доходит до людей через несколько переходов",
+  "chat.live_video.quality_medium_hint": "Для людей в одном-двух переходах",
+  "chat.live_video.quality_high_hint": "Для людей совсем рядом с вами",
+  "chat.live_video.signal_good": "Успевает",
+  "chat.live_video.signal_weak": "Отстаёт",
+  "chat.live_video.signal_poor":
+    "Слишком медленно для видео, передаётся только звук",
+  "chat.live_video.mic": "Микрофон",
+  "chat.live_video.flip": "Сменить камеру",
+  "chat.live_video.camera_failed": "Не удалось открыть камеру",
+  "chat.live_video.camera_lost": "Камера остановилась, поэтому эфир завершён",
+  "chat.live_video.failed": "Не удалось начать эфир",
+  "chat.live_video.kept_here":
+    "Слишком длинно, чтобы отправить файлом. У каждого зрителя остаётся своя копия.",
   "chat.voice.lift_lock": "Проведите вверх для записи без рук",
   "chat.voice.live_speaking": "{name} говорит",
   "chat.voice.live_ended": "Завершено",
@@ -710,6 +746,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "говорить с людьми поблизости",
   "chat.perm.mic_note_purpose": "записать голосовую заметку",
   "chat.perm.video_note_purpose": "записать видеосообщение",
+  "chat.perm.live_video_purpose": "начать прямой эфир",
   "chat.perm.recording_stopped": "Запись остановлена",
   "chat.perm.record_failed":
     "Не удалось начать запись. Проверьте разрешения микрофона.",
@@ -2078,6 +2115,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Выключить голосовую связь?",
   "settings.conn.live_voice_off_body":
     "Удержание микрофона будет записывать голосовую заметку. Она уйдёт, когда вы отпустите, и никто не услышит её, пока не включит.",
+  "settings.conn.live_video": "Прямой эфир",
+  "settings.conn.live_video_desc":
+    "Транслируйте камеру людям поблизости и смотрите их эфиры",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Маршрутизация через Tor",
   "settings.conn.tor_desc":

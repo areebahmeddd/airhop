@@ -133,6 +133,8 @@ export default function ConnectivityGroup({
   const T = useT();
   const torEnabled = useSettingsStore((s) => s.torEnabled);
   const liveVoiceEnabled = useSettingsStore((s) => s.liveVoiceEnabled);
+  const liveVideoEnabled = useSettingsStore((s) => s.liveVideoEnabled);
+  const setLiveVideoEnabled = useSettingsStore((s) => s.setLiveVideoEnabled);
   const setLiveVoiceEnabled = useSettingsStore((s) => s.setLiveVoiceEnabled);
   const backgroundMeshEnabled = useSettingsStore(
     (s) => s.backgroundMeshEnabled,
@@ -303,6 +305,19 @@ export default function ConnectivityGroup({
             <SettingSwitch
               value={liveVoiceEnabled}
               onValueChange={(v) => requestToggle("liveVoice", v)}
+            />
+          }
+        />
+        <GroupDivider />
+        <SettingRow
+          id="live-video"
+          icon="video"
+          label={T("settings.conn.live_video")}
+          description={T("settings.conn.live_video_desc")}
+          control={
+            <SettingSwitch
+              value={liveVideoEnabled}
+              onValueChange={setLiveVideoEnabled}
             />
           }
         />

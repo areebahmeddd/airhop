@@ -568,6 +568,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "ਆਪਣੇ ਵਾਲਿਟ ਵਿੱਚੋਂ Cashu sats ਭੇਜੋ",
   "chat.attach.location": "ਟਿਕਾਣਾ",
   "chat.attach.location_desc": "ਤੁਸੀਂ ਇਸ ਵੇਲੇ ਕਿੱਥੇ ਹੋ, ਉਹ ਭੇਜੋ",
+  "chat.attach.live": "ਲਾਈਵ ਜਾਓ",
+  "chat.attach.live_desc": "ਆਪਣਾ ਕੈਮਰਾ ਨੇੜਲੇ ਲੋਕਾਂ ਤੱਕ ਸਟ੍ਰੀਮ ਕਰੋ",
   "chat.attach.title": "ਨੱਥੀ ਕਰੋ",
 
   // ---- Chat: location pin ----
@@ -688,6 +690,39 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "ਵੀਡੀਓ ਨੋਟ ਰਿਕਾਰਡ ਨਹੀਂ ਹੋਇਆ",
   "chat.video_note.limit_sent": "ਸਮਾਂ ਖ਼ਤਮ, ਵੀਡੀਓ ਨੋਟ ਭੇਜ ਦਿੱਤਾ",
   "chat.video_note.a11y": "ਵੀਡੀਓ ਨੋਟ, ਆਵਾਜ਼ ਲਈ ਦੋ ਵਾਰ ਟੈਪ ਕਰੋ",
+  "chat.live_video.preview": "ਲਾਈਵ ਵੀਡੀਓ",
+  "chat.live_video.badge": "ਲਾਈਵ",
+  "chat.live_video.reconnecting": "ਮੁੜ ਜੁੜ ਰਿਹਾ ਹੈ…",
+  "chat.live_video.a11y":
+    "{name} ਲਾਈਵ ਹਨ। ਆਵਾਜ਼ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨ ਲਈ ਦੋ ਵਾਰ ਟੈਪ ਕਰੋ।",
+  "chat.live_video.title": "ਲਾਈਵ ਵੀਡੀਓ",
+  "chat.live_video.go_live": "ਲਾਈਵ ਜਾਓ",
+  "chat.live_video.end": "ਖਤਮ ਕਰੋ",
+  "chat.live_video.end_title": "ਲਾਈਵ ਵੀਡੀਓ ਖਤਮ ਕਰਨੀ ਹੈ?",
+  "chat.live_video.end_body":
+    "ਖਤਮ ਕਰਨ ਨਾਲ ਰਿਕਾਰਡਿੰਗ ਇਸੇ ਚੈਟ ਵਿੱਚ ਰਹਿੰਦੀ ਹੈ। ਰੱਦ ਕਰਨ ਨਾਲ ਦੇਖ ਰਹੇ ਸਾਰੇ ਲੋਕਾਂ ਨੂੰ ਇਸਨੂੰ ਮਿਟਾਉਣ ਲਈ ਕਿਹਾ ਜਾਂਦਾ ਹੈ।",
+  "chat.live_video.discard": "ਰੱਦ ਕਰੋ",
+  "chat.live_video.keep": "ਸਟ੍ਰੀਮ ਜਾਰੀ ਰੱਖੋ",
+  "chat.live_video.audience_room": "ਬਲੂਟੁੱਥ ਦੀ ਰੇਂਜ ਵਿੱਚ ਹਰ ਕੋਈ ਦੇਖ ਸਕਦਾ ਹੈ।",
+  "chat.live_video.audience_dm": "ਸਿਰਫ਼ {name} ਦੇਖ ਸਕਦੇ ਹਨ।",
+  "chat.live_video.nobody": "ਇਸ ਵੇਲੇ ਦੇਖਣ ਲਈ ਰੇਂਜ ਵਿੱਚ ਕੋਈ ਨਹੀਂ ਹੈ।",
+  "chat.live_video.quality_low": "ਘੱਟ",
+  "chat.live_video.quality_medium": "ਦਰਮਿਆਨੀ",
+  "chat.live_video.quality_high": "ਉੱਚੀ",
+  "chat.live_video.quality_low_hint": "ਕਈ ਹੌਪ ਦੂਰ ਦੇ ਲੋਕਾਂ ਤੱਕ ਪਹੁੰਚਦੀ ਹੈ",
+  "chat.live_video.quality_medium_hint": "ਇੱਕ ਜਾਂ ਦੋ ਹੌਪ ਦੂਰ ਦੇ ਲੋਕਾਂ ਲਈ",
+  "chat.live_video.quality_high_hint": "ਬਿਲਕੁਲ ਤੁਹਾਡੇ ਕੋਲ ਦੇ ਲੋਕਾਂ ਲਈ",
+  "chat.live_video.signal_good": "ਨਾਲ ਚੱਲ ਰਿਹਾ ਹੈ",
+  "chat.live_video.signal_weak": "ਪਿੱਛੇ ਰਹਿ ਰਿਹਾ ਹੈ",
+  "chat.live_video.signal_poor":
+    "ਵੀਡੀਓ ਲਈ ਬਹੁਤ ਹੌਲੀ, ਸਿਰਫ਼ ਆਵਾਜ਼ ਭੇਜੀ ਜਾ ਰਹੀ ਹੈ",
+  "chat.live_video.mic": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ",
+  "chat.live_video.flip": "ਕੈਮਰਾ ਬਦਲੋ",
+  "chat.live_video.camera_failed": "ਕੈਮਰਾ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕਿਆ",
+  "chat.live_video.camera_lost": "ਕੈਮਰਾ ਰੁਕ ਗਿਆ, ਇਸ ਲਈ ਸਟ੍ਰੀਮ ਖਤਮ ਹੋ ਗਈ",
+  "chat.live_video.failed": "ਲਾਈਵ ਨਹੀਂ ਜਾ ਸਕੇ",
+  "chat.live_video.kept_here":
+    "ਫ਼ਾਈਲ ਵਜੋਂ ਭੇਜਣ ਲਈ ਬਹੁਤ ਲੰਮੀ ਹੈ। ਦੇਖਣ ਵਾਲੇ ਹਰ ਕਿਸੇ ਕੋਲ ਆਪਣੀ ਕਾਪੀ ਰਹਿੰਦੀ ਹੈ।",
   "chat.voice.lift_lock": "ਬਿਨਾਂ ਹੱਥ ਲਾਏ ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਉੱਪਰ ਖਿਸਕਾਓ",
   "chat.voice.live_speaking": "{name} ਬੋਲ ਰਹੇ ਹਨ",
   "chat.voice.live_ended": "ਖ਼ਤਮ",
@@ -704,6 +739,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "ਨੇੜਲੇ ਲੋਕਾਂ ਨਾਲ ਗੱਲ ਕਰਨ",
   "chat.perm.mic_note_purpose": "ਵੌਇਸ ਨੋਟ ਰਿਕਾਰਡ ਕਰਨ",
   "chat.perm.video_note_purpose": "ਵੀਡੀਓ ਨੋਟ ਰਿਕਾਰਡ ਕਰਨ ਲਈ",
+  "chat.perm.live_video_purpose": "ਲਾਈਵ ਜਾਣ ਲਈ",
   "chat.perm.recording_stopped": "ਰਿਕਾਰਡਿੰਗ ਰੁਕ ਗਈ",
   "chat.perm.record_failed":
     "ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਨਹੀਂ ਹੋ ਸਕੀ। ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਦੀਆਂ ਇਜਾਜ਼ਤਾਂ ਦੇਖੋ।",
@@ -2045,6 +2081,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "ਸਿੱਧੀ ਆਵਾਜ਼ ਬੰਦ ਕਰਨੀ ਹੈ?",
   "settings.conn.live_voice_off_body":
     "ਮਾਈਕ ਦਬਾ ਕੇ ਰੱਖਣ ਨਾਲ ਇਸ ਦੀ ਥਾਂ ਵੌਇਸ ਨੋਟ ਰਿਕਾਰਡ ਹੁੰਦਾ ਹੈ। ਛੱਡਣ ’ਤੇ ਇਹ ਭੇਜ ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਜਦੋਂ ਤੱਕ ਕੋਈ ਇਸ ਨੂੰ ਚਲਾਉਂਦਾ ਨਹੀਂ, ਕਿਸੇ ਨੂੰ ਸੁਣਦਾ ਨਹੀਂ।",
+  "settings.conn.live_video": "ਲਾਈਵ ਵੀਡੀਓ",
+  "settings.conn.live_video_desc":
+    "ਆਪਣਾ ਕੈਮਰਾ ਨੇੜਲੇ ਲੋਕਾਂ ਤੱਕ ਸਟ੍ਰੀਮ ਕਰੋ, ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਦੇਖੋ",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor ਰਾਊਟਿੰਗ",
   "settings.conn.tor_desc": "ਵਾਧੂ ਨਿੱਜਤਾ ਲਈ Nostr ਦੀ ਆਵਾਜਾਈ Tor ਰਾਹੀਂ ਭੇਜੋ",

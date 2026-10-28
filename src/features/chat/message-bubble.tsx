@@ -42,6 +42,7 @@ import {
   type StyleProp,
   type TextStyle,
 } from "react-native";
+import LiveVideoBubble from "./live-video-bubble";
 import LocationCard from "./location-card";
 
 // Drawn size of a sender's avatar in a channel thread. Tapping it (or the name
@@ -311,6 +312,7 @@ function MessageBubble({
             )}
 
             {item.attachment && renderAttachment(item.attachment)}
+            {item.liveVideo && <LiveVideoBubble message={item} />}
 
             {/* The message text is the one-line summary the conversation list
                 and notifications read, so it is suppressed here where the card

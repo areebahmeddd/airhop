@@ -589,6 +589,9 @@ export const strings: Strings = {
   "chat.attach.location": "இடம்",
   "chat.attach.location_desc":
     "நீங்கள் இப்போது எங்கே இருக்கிறீர்கள் என்பதை அனுப்புங்கள்",
+  "chat.attach.live": "நேரலைக்குச் செல்",
+  "chat.attach.live_desc":
+    "அருகிலுள்ளவர்களுக்கு உங்கள் கேமராவை நேரலையாக்குங்கள்",
   "chat.attach.title": "இணை",
 
   // ---- Chat: location pin ----
@@ -715,6 +718,41 @@ export const strings: Strings = {
   "chat.video_note.limit_sent":
     "நேரம் முடிந்தது, வீடியோ குறிப்பு அனுப்பப்பட்டது",
   "chat.video_note.a11y": "வீடியோ குறிப்பு, ஒலிக்கு இருமுறை தட்டவும்",
+  "chat.live_video.preview": "நேரலை வீடியோ",
+  "chat.live_video.badge": "நேரலை",
+  "chat.live_video.reconnecting": "மீண்டும் இணைக்கிறது…",
+  "chat.live_video.a11y":
+    "{name} நேரலையில் உள்ளார். ஒலியை இயக்க அல்லது நிறுத்த இருமுறை தட்டுங்கள்.",
+  "chat.live_video.title": "நேரலை வீடியோ",
+  "chat.live_video.go_live": "நேரலைக்குச் செல்",
+  "chat.live_video.end": "முடி",
+  "chat.live_video.end_title": "நேரலை வீடியோவை முடிக்கவா?",
+  "chat.live_video.end_body":
+    "முடித்தால் பதிவு இந்த உரையாடலிலேயே இருக்கும். நிராகரித்தால் பார்க்கும் அனைவரிடமும் அதை அழிக்கச் சொல்லப்படும்.",
+  "chat.live_video.discard": "நிராகரி",
+  "chat.live_video.keep": "நேரலையைத் தொடர்",
+  "chat.live_video.audience_room":
+    "புளூடூத் வரம்பில் உள்ள அனைவரும் பார்க்கலாம்.",
+  "chat.live_video.audience_dm": "{name} மட்டுமே பார்க்க முடியும்.",
+  "chat.live_video.nobody": "இப்போது பார்க்க வரம்பில் யாரும் இல்லை.",
+  "chat.live_video.quality_low": "குறைவு",
+  "chat.live_video.quality_medium": "நடுத்தரம்",
+  "chat.live_video.quality_high": "அதிகம்",
+  "chat.live_video.quality_low_hint": "பல ஹாப் தொலைவில் உள்ளவர்களை அடையும்",
+  "chat.live_video.quality_medium_hint":
+    "ஒன்று அல்லது இரண்டு ஹாப் தொலைவில் உள்ளவர்களுக்கு",
+  "chat.live_video.quality_high_hint": "உங்கள் அருகிலேயே உள்ளவர்களுக்கு",
+  "chat.live_video.signal_good": "சரியாகச் செல்கிறது",
+  "chat.live_video.signal_weak": "பின்தங்குகிறது",
+  "chat.live_video.signal_poor":
+    "வீடியோவுக்கு மிக மெதுவாக உள்ளது, ஒலி மட்டும் அனுப்பப்படுகிறது",
+  "chat.live_video.mic": "மைக்ரோஃபோன்",
+  "chat.live_video.flip": "கேமராவை மாற்று",
+  "chat.live_video.camera_failed": "கேமராவைத் திறக்க முடியவில்லை",
+  "chat.live_video.camera_lost": "கேமரா நின்றதால் நேரலை முடிந்தது",
+  "chat.live_video.failed": "நேரலைக்குச் செல்ல முடியவில்லை",
+  "chat.live_video.kept_here":
+    "கோப்பாக அனுப்ப மிக நீளமானது. பார்த்த ஒவ்வொருவரிடமும் அவரவர் நகல் இருக்கும்.",
   "chat.voice.lift_lock": "கை விடுவித்துப் பதிவுசெய்ய மேலே நகர்த்துங்கள்",
   "chat.voice.live_speaking": "{name} பேசுகிறார்",
   "chat.voice.live_ended": "முடிந்தது",
@@ -731,6 +769,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "அருகிலுள்ளவர்களுடன் பேச",
   "chat.perm.mic_note_purpose": "ஒரு குரல் குறிப்பைப் பதிவுசெய்ய",
   "chat.perm.video_note_purpose": "வீடியோ குறிப்பைப் பதிவுசெய்ய",
+  "chat.perm.live_video_purpose": "நேரலைக்குச் செல்ல",
   "chat.perm.recording_stopped": "பதிவு நிறுத்தப்பட்டது",
   "chat.perm.record_failed":
     "பதிவைத் தொடங்க முடியவில்லை. ஒலிவாங்கி அனுமதிகளைச் சரிபாருங்கள்.",
@@ -2141,6 +2180,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "நேரடிக் குரலை முடக்கவா?",
   "settings.conn.live_voice_off_body":
     "ஒலிவாங்கியை அழுத்திப் பிடித்தால் அதற்குப் பதிலாகக் குரல் குறிப்பு பதிவாகும். விடும்போது அது அனுப்பப்படும், இயக்கும் வரை யாரும் கேட்க மாட்டார்கள்.",
+  "settings.conn.live_video": "நேரலை வீடியோ",
+  "settings.conn.live_video_desc":
+    "அருகிலுள்ளவர்களுக்கு உங்கள் கேமராவை நேரலையாக்குங்கள், அவர்களுடையதையும் பாருங்கள்",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor திசைவழி",
   "settings.conn.tor_desc":

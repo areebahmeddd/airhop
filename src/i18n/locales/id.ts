@@ -576,6 +576,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Kirim sat Cashu dari dompetmu",
   "chat.attach.location": "Lokasi",
   "chat.attach.location_desc": "Kirim posisimu sekarang",
+  "chat.attach.live": "Siaran langsung",
+  "chat.attach.live_desc": "Siarkan kamera Anda ke orang di sekitar",
   "chat.attach.title": "Lampirkan",
 
   // ---- Chat: location pin ----
@@ -699,6 +701,43 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Catatan video tidak terekam",
   "chat.video_note.limit_sent": "Waktu habis, catatan video terkirim",
   "chat.video_note.a11y": "Catatan video, ketuk dua kali untuk suara",
+  "chat.live_video.preview": "Video langsung",
+  "chat.live_video.badge": "Langsung",
+  "chat.live_video.reconnecting": "Menyambung ulang…",
+  "chat.live_video.a11y":
+    "{name} sedang siaran langsung. Ketuk dua kali untuk menyalakan atau mematikan suara.",
+  "chat.live_video.title": "Video langsung",
+  "chat.live_video.go_live": "Mulai siaran",
+  "chat.live_video.end": "Akhiri",
+  "chat.live_video.end_title": "Akhiri video langsung?",
+  "chat.live_video.end_body":
+    "Mengakhiri menyimpan rekaman di obrolan ini. Membuang meminta semua yang menonton untuk menghapusnya.",
+  "chat.live_video.discard": "Buang",
+  "chat.live_video.keep": "Lanjutkan siaran",
+  "chat.live_video.audience_room":
+    "Semua orang dalam jangkauan Bluetooth bisa menonton.",
+  "chat.live_video.audience_dm": "Hanya {name} yang bisa menonton.",
+  "chat.live_video.nobody":
+    "Saat ini tidak ada yang dalam jangkauan untuk menonton.",
+  "chat.live_video.quality_low": "Rendah",
+  "chat.live_video.quality_medium": "Sedang",
+  "chat.live_video.quality_high": "Tinggi",
+  "chat.live_video.quality_low_hint":
+    "Menjangkau orang beberapa lompatan jauhnya",
+  "chat.live_video.quality_medium_hint":
+    "Untuk orang satu atau dua lompatan jauhnya",
+  "chat.live_video.quality_high_hint": "Untuk orang tepat di sebelah Anda",
+  "chat.live_video.signal_good": "Lancar",
+  "chat.live_video.signal_weak": "Mulai tertinggal",
+  "chat.live_video.signal_poor":
+    "Terlalu lambat untuk video, hanya suara yang dikirim",
+  "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.flip": "Ganti kamera",
+  "chat.live_video.camera_failed": "Tidak bisa membuka kamera",
+  "chat.live_video.camera_lost": "Kamera berhenti, jadi siaran berakhir",
+  "chat.live_video.failed": "Tidak bisa siaran langsung",
+  "chat.live_video.kept_here":
+    "Terlalu panjang untuk dikirim sebagai file. Setiap yang menonton menyimpan salinannya sendiri.",
   "chat.voice.lift_lock": "Geser ke atas untuk merekam bebas genggam",
   "chat.voice.live_speaking": "{name} sedang bicara",
   "chat.voice.live_ended": "Selesai",
@@ -715,6 +754,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "bicara dengan orang di dekat sini",
   "chat.perm.mic_note_purpose": "merekam catatan suara",
   "chat.perm.video_note_purpose": "merekam catatan video",
+  "chat.perm.live_video_purpose": "melakukan siaran langsung",
   "chat.perm.recording_stopped": "Perekaman dihentikan",
   "chat.perm.record_failed":
     "Perekaman tidak bisa dimulai. Periksa izin mikrofon.",
@@ -2084,6 +2124,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Matikan suara langsung?",
   "settings.conn.live_voice_off_body":
     "Menahan mikrofon akan merekam catatan suara. Ia terkirim saat kamu lepaskan, dan tidak ada yang mendengarnya sampai mereka memutarnya.",
+  "settings.conn.live_video": "Video langsung",
+  "settings.conn.live_video_desc":
+    "Siarkan kamera Anda ke orang di sekitar, dan tonton siaran mereka",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Perutean Tor",
   "settings.conn.tor_desc":

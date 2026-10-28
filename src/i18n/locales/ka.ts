@@ -573,6 +573,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "გააგზავნე Cashu sat-ები შენი საფულიდან",
   "chat.attach.location": "მდებარეობა",
   "chat.attach.location_desc": "გააგზავნე, სად ხარ ახლა",
+  "chat.attach.live": "პირდაპირ ეთერში გასვლა",
+  "chat.attach.live_desc": "გაუზიარე კამერა ახლომყოფებს",
   "chat.attach.title": "მიმაგრება",
 
   // ---- Chat: location pin ----
@@ -692,6 +694,42 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "ვიდეოჩანაწერი არ ჩაიწერა",
   "chat.video_note.limit_sent": "დრო ამოიწურა, ვიდეოჩანაწერი გაიგზავნა",
   "chat.video_note.a11y": "ვიდეოჩანაწერი, ხმისთვის ორჯერ შეეხეთ",
+  "chat.live_video.preview": "პირდაპირი ვიდეო",
+  "chat.live_video.badge": "ეთერში",
+  "chat.live_video.reconnecting": "ხელახლა დაკავშირება…",
+  "chat.live_video.a11y":
+    "{name} პირდაპირ ეთერშია. ორჯერ შეეხე ხმის ჩასართავად ან გამოსართავად.",
+  "chat.live_video.title": "პირდაპირი ვიდეო",
+  "chat.live_video.go_live": "ეთერში გასვლა",
+  "chat.live_video.end": "დასრულება",
+  "chat.live_video.end_title": "დავასრულოთ პირდაპირი ვიდეო?",
+  "chat.live_video.end_body":
+    "დასრულებისას ჩანაწერი ამ ჩატში რჩება. გაუქმებისას ყველა მაყურებელს ეთხოვება მისი წაშლა.",
+  "chat.live_video.discard": "გაუქმება",
+  "chat.live_video.keep": "გაგრძელება",
+  "chat.live_video.audience_room":
+    "ბლუთუზის დიაპაზონში მყოფ ყველას შეუძლია ყურება.",
+  "chat.live_video.audience_dm": "მხოლოდ {name}-ს შეუძლია ყურება.",
+  "chat.live_video.nobody": "ახლა დიაპაზონში საყურებლად არავინაა.",
+  "chat.live_video.quality_low": "დაბალი",
+  "chat.live_video.quality_medium": "საშუალო",
+  "chat.live_video.quality_high": "მაღალი",
+  "chat.live_video.quality_low_hint":
+    "აღწევს რამდენიმე ნახტომით დაშორებულ ადამიანებს",
+  "chat.live_video.quality_medium_hint":
+    "ერთი ან ორი ნახტომით დაშორებული ადამიანებისთვის",
+  "chat.live_video.quality_high_hint": "შენს გვერდით მყოფი ადამიანებისთვის",
+  "chat.live_video.signal_good": "ასწრებს",
+  "chat.live_video.signal_weak": "ჩამორჩება",
+  "chat.live_video.signal_poor":
+    "ვიდეოსთვის ზედმეტად ნელია, იგზავნება მხოლოდ ხმა",
+  "chat.live_video.mic": "მიკროფონი",
+  "chat.live_video.flip": "კამერის შეცვლა",
+  "chat.live_video.camera_failed": "კამერის გახსნა ვერ მოხერხდა",
+  "chat.live_video.camera_lost": "კამერა გაჩერდა, ამიტომ ეთერი დასრულდა",
+  "chat.live_video.failed": "ეთერში გასვლა ვერ მოხერხდა",
+  "chat.live_video.kept_here":
+    "ფაილად გასაგზავნად ზედმეტად გრძელია. ყველა მაყურებელს საკუთარი ასლი რჩება.",
   "chat.voice.lift_lock": "გადაასრიალე ზემოთ ხელის აშვებით ჩასაწერად",
   "chat.voice.live_speaking": "{name} საუბრობს",
   "chat.voice.live_ended": "დასრულდა",
@@ -708,6 +746,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "ესაუბრო ახლომდებარე ადამიანებს",
   "chat.perm.mic_note_purpose": "ჩაწერო ხმოვანი ჩანაწერი",
   "chat.perm.video_note_purpose": "ვიდეოჩანაწერის გასაკეთებლად",
+  "chat.perm.live_video_purpose": "პირდაპირ ეთერში გასასვლელად",
   "chat.perm.recording_stopped": "ჩაწერა შეწყდა",
   "chat.perm.record_failed":
     "ჩაწერის დაწყება ვერ მოხერხდა. შეამოწმე მიკროფონის ნებართვები.",
@@ -2071,6 +2110,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "გამოვრთოთ პირდაპირი ხმა?",
   "settings.conn.live_voice_off_body":
     "მიკროფონის დაკავებისას სანაცვლოდ ხმოვანი ჩანაწერი იწერება. ის იგზავნება, როცა ხელს გაუშვებ, და სანამ არ ჩართავენ, არავინ გაიგონებს.",
+  "settings.conn.live_video": "პირდაპირი ვიდეო",
+  "settings.conn.live_video_desc":
+    "გაუზიარე კამერა ახლომყოფებს და უყურე მათსას",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-ით მიმართვა",
   "settings.conn.tor_desc":

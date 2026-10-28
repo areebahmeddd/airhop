@@ -582,6 +582,9 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Mandefa sat Cashu avy amin'ny kitapom-bolanao",
   "chat.attach.location": "Toerana",
   "chat.attach.location_desc": "Alefaso izay misy anao izao",
+  "chat.attach.live": "Mandefa mivantana",
+  "chat.attach.live_desc":
+    "Alefaso mivantana amin'ny olona akaiky ny fakantsarinao",
   "chat.attach.title": "Ampiaraho",
 
   // ---- Chat: location pin ----
@@ -706,6 +709,44 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Tsy voarakitra ny naoty video",
   "chat.video_note.limit_sent": "Lany ny fotoana, lasa ny naoty video",
   "chat.video_note.a11y": "Naoty video, tsindrio indroa raha hihaino",
+  "chat.live_video.preview": "Horonan-tsary mivantana",
+  "chat.live_video.badge": "Mivantana",
+  "chat.live_video.reconnecting": "Mifandray indray…",
+  "chat.live_video.a11y":
+    "Mandefa mivantana i {name}. Tsindrio indroa mba hampandeha na hamonoana ny feo.",
+  "chat.live_video.title": "Horonan-tsary mivantana",
+  "chat.live_video.go_live": "Andefa mivantana",
+  "chat.live_video.end": "Tapitra",
+  "chat.live_video.end_title": "Hatapitra ve ny fandefasana mivantana?",
+  "chat.live_video.end_body":
+    "Raha atapitra dia mijanona ato amin'ity resaka ity ny fandraketana. Raha ariana dia angatahina hamafa izany ny mpijery rehetra.",
+  "chat.live_video.discard": "Ario",
+  "chat.live_video.keep": "Tohizo ny fandefasana",
+  "chat.live_video.audience_room":
+    "Afaka mijery izay rehetra ao anatin'ny fahatratrarana Bluetooth.",
+  "chat.live_video.audience_dm": "I {name} ihany no afaka mijery.",
+  "chat.live_video.nobody":
+    "Tsy misy olona ao anatin'ny fahatratrarana hijery amin'izao.",
+  "chat.live_video.quality_low": "Ambany",
+  "chat.live_video.quality_medium": "Antonony",
+  "chat.live_video.quality_high": "Avo",
+  "chat.live_video.quality_low_hint":
+    "Mahatratra olona lavitra dingana maromaro",
+  "chat.live_video.quality_medium_hint":
+    "Ho an'ny olona lavitra dingana iray na roa",
+  "chat.live_video.quality_high_hint": "Ho an'ny olona eo akaikinao",
+  "chat.live_video.signal_good": "Manaraka tsara",
+  "chat.live_video.signal_weak": "Mihemotra",
+  "chat.live_video.signal_poor":
+    "Miadana loatra ho an'ny horonan-tsary, feo ihany no alefa",
+  "chat.live_video.mic": "Mikrô",
+  "chat.live_video.flip": "Ovay ny fakantsary",
+  "chat.live_video.camera_failed": "Tsy nety nisokatra ny fakantsary",
+  "chat.live_video.camera_lost":
+    "Nijanona ny fakantsary, ka tapitra ny fandefasana",
+  "chat.live_video.failed": "Tsy nety nandefa mivantana",
+  "chat.live_video.kept_here":
+    "Lava loatra ho alefa ho rakitra. Samy mitazona ny dika azy ny mpijery rehetra.",
   "chat.voice.lift_lock": "Sintono miakatra mba handrakitra tsy mihazona",
   "chat.voice.live_speaking": "Miteny i {name}",
   "chat.voice.live_ended": "Tapitra",
@@ -722,6 +763,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "hiresaka amin'ny olona akaiky",
   "chat.perm.mic_note_purpose": "handrakitra naoty feo",
   "chat.perm.video_note_purpose": "handraketana naoty video",
+  "chat.perm.live_video_purpose": "handefa mivantana",
   "chat.perm.recording_stopped": "Nijanona ny fandraketana",
   "chat.perm.record_failed":
     "Tsy afaka nanomboka ny fandraketana. Jereo ny alalana amin'ny mikrô.",
@@ -2135,6 +2177,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Vonoina ny feo mivantana?",
   "settings.conn.live_voice_off_body":
     "Ny fihazonana ny mikrô dia mandrakitra naoty feo kosa. Alefa izy rehefa avelanao, ary tsy misy mandre azy raha tsy mampandeha azy.",
+  "settings.conn.live_video": "Horonan-tsary mivantana",
+  "settings.conn.live_video_desc":
+    "Alefaso mivantana amin'ny olona akaiky ny fakantsarinao, ary jereo ny azy ireo",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Fitondrana amin'ny Tor",
   "settings.conn.tor_desc":

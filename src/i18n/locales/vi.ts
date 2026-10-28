@@ -570,6 +570,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Gửi sat Cashu từ ví của bạn",
   "chat.attach.location": "Vị trí",
   "chat.attach.location_desc": "Gửi nơi bạn đang ở ngay lúc này",
+  "chat.attach.live": "Phát trực tiếp",
+  "chat.attach.live_desc": "Phát camera của bạn cho người ở gần",
   "chat.attach.title": "Đính kèm",
 
   // ---- Chat: location pin ----
@@ -689,6 +691,40 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Ghi chú video chưa được quay",
   "chat.video_note.limit_sent": "Hết giờ, đã gửi ghi chú video",
   "chat.video_note.a11y": "Ghi chú video, chạm hai lần để bật tiếng",
+  "chat.live_video.preview": "Video trực tiếp",
+  "chat.live_video.badge": "Trực tiếp",
+  "chat.live_video.reconnecting": "Đang kết nối lại…",
+  "chat.live_video.a11y":
+    "{name} đang phát trực tiếp. Nhấn đúp để bật hoặc tắt âm thanh.",
+  "chat.live_video.title": "Video trực tiếp",
+  "chat.live_video.go_live": "Phát trực tiếp",
+  "chat.live_video.end": "Kết thúc",
+  "chat.live_video.end_title": "Kết thúc video trực tiếp?",
+  "chat.live_video.end_body":
+    "Kết thúc sẽ giữ bản ghi trong cuộc trò chuyện này. Hủy bỏ sẽ yêu cầu mọi người đang xem xóa nó.",
+  "chat.live_video.discard": "Hủy bỏ",
+  "chat.live_video.keep": "Tiếp tục phát",
+  "chat.live_video.audience_room":
+    "Mọi người trong phạm vi Bluetooth đều xem được.",
+  "chat.live_video.audience_dm": "Chỉ {name} xem được.",
+  "chat.live_video.nobody": "Hiện không có ai trong phạm vi để xem.",
+  "chat.live_video.quality_low": "Thấp",
+  "chat.live_video.quality_medium": "Trung bình",
+  "chat.live_video.quality_high": "Cao",
+  "chat.live_video.quality_low_hint": "Đến được người cách vài bước nhảy",
+  "chat.live_video.quality_medium_hint":
+    "Cho người cách một hoặc hai bước nhảy",
+  "chat.live_video.quality_high_hint": "Cho người ngay cạnh bạn",
+  "chat.live_video.signal_good": "Đang theo kịp",
+  "chat.live_video.signal_weak": "Đang chậm lại",
+  "chat.live_video.signal_poor": "Quá chậm cho video, chỉ đang gửi âm thanh",
+  "chat.live_video.mic": "Micrô",
+  "chat.live_video.flip": "Đổi camera",
+  "chat.live_video.camera_failed": "Không mở được camera",
+  "chat.live_video.camera_lost": "Camera đã dừng nên buổi phát đã kết thúc",
+  "chat.live_video.failed": "Không thể phát trực tiếp",
+  "chat.live_video.kept_here":
+    "Quá dài để gửi dưới dạng tệp. Mỗi người đã xem giữ bản sao riêng.",
   "chat.voice.lift_lock": "Trượt lên để ghi âm rảnh tay",
   "chat.voice.live_speaking": "{name} đang nói",
   "chat.voice.live_ended": "Đã kết thúc",
@@ -705,6 +741,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "nói chuyện với người ở gần",
   "chat.perm.mic_note_purpose": "ghi một tin nhắn thoại",
   "chat.perm.video_note_purpose": "quay ghi chú video",
+  "chat.perm.live_video_purpose": "phát trực tiếp",
   "chat.perm.recording_stopped": "Đã dừng ghi âm",
   "chat.perm.record_failed":
     "Không bắt đầu ghi âm được. Hãy kiểm tra quyền micrô.",
@@ -2063,6 +2100,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Tắt thoại trực tiếp?",
   "settings.conn.live_voice_off_body":
     "Thay vào đó, giữ micrô sẽ ghi một tin nhắn thoại. Nó gửi khi bạn thả tay, và không ai nghe được cho tới khi họ bấm phát.",
+  "settings.conn.live_video": "Video trực tiếp",
+  "settings.conn.live_video_desc":
+    "Phát camera của bạn cho người ở gần, và xem buổi phát của họ",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Định tuyến qua Tor",
   "settings.conn.tor_desc": "Đưa lưu lượng Nostr qua Tor để riêng tư hơn",

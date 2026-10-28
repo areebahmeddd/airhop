@@ -564,6 +564,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "فرستادن Cashu sats از کیف پول شما",
   "chat.attach.location": "موقعیت مکانی",
   "chat.attach.location_desc": "بفرستید همین حالا کجا هستید",
+  "chat.attach.live": "پخش زنده",
+  "chat.attach.live_desc": "دوربینت را برای افراد نزدیک پخش کن",
   "chat.attach.title": "پیوست",
 
   // ---- Chat: location pin ----
@@ -682,6 +684,40 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "یادداشت ویدیویی ضبط نشد",
   "chat.video_note.limit_sent": "زمان تمام شد، یادداشت ویدیویی فرستاده شد",
   "chat.video_note.a11y": "یادداشت ویدیویی، برای صدا دو بار ضربه بزنید",
+  "chat.live_video.preview": "ویدیوی زنده",
+  "chat.live_video.badge": "زنده",
+  "chat.live_video.reconnecting": "در حال اتصال دوباره…",
+  "chat.live_video.a11y":
+    "{name} در حال پخش زنده است. برای روشن یا خاموش کردن صدا دو بار ضربه بزنید.",
+  "chat.live_video.title": "ویدیوی زنده",
+  "chat.live_video.go_live": "شروع پخش زنده",
+  "chat.live_video.end": "پایان",
+  "chat.live_video.end_title": "ویدیوی زنده تمام شود؟",
+  "chat.live_video.end_body":
+    "با پایان دادن، ضبط در همین گفتگو می‌ماند. با دور انداختن، از همه بینندگان خواسته می‌شود آن را پاک کنند.",
+  "chat.live_video.discard": "دور انداختن",
+  "chat.live_video.keep": "ادامهٔ پخش",
+  "chat.live_video.audience_room":
+    "همه در محدودهٔ بلوتوث می‌توانند تماشا کنند.",
+  "chat.live_video.audience_dm": "فقط {name} می‌تواند تماشا کند.",
+  "chat.live_video.nobody": "الان کسی در محدوده نیست که تماشا کند.",
+  "chat.live_video.quality_low": "کم",
+  "chat.live_video.quality_medium": "متوسط",
+  "chat.live_video.quality_high": "زیاد",
+  "chat.live_video.quality_low_hint": "به افرادی در چند پرش دورتر می‌رسد",
+  "chat.live_video.quality_medium_hint": "برای افرادی در یک یا دو پرش دورتر",
+  "chat.live_video.quality_high_hint": "برای افرادی درست کنار شما",
+  "chat.live_video.signal_good": "همگام است",
+  "chat.live_video.signal_weak": "عقب می‌افتد",
+  "chat.live_video.signal_poor":
+    "برای ویدیو خیلی کند است، فقط صدا فرستاده می‌شود",
+  "chat.live_video.mic": "میکروفون",
+  "chat.live_video.flip": "تعویض دوربین",
+  "chat.live_video.camera_failed": "دوربین باز نشد",
+  "chat.live_video.camera_lost": "دوربین متوقف شد، پس پخش تمام شد",
+  "chat.live_video.failed": "پخش زنده شروع نشد",
+  "chat.live_video.kept_here":
+    "برای فرستادن به‌عنوان فایل خیلی طولانی است. هر کسی که تماشا کرد نسخهٔ خودش را نگه می‌دارد.",
   "chat.voice.lift_lock": "برای ضبط بدون نگه داشتن، به بالا بکشید",
   "chat.voice.live_speaking": "{name} در حال صحبت",
   "chat.voice.live_ended": "پایان یافت",
@@ -698,6 +734,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "صحبت با آدم‌های نزدیک",
   "chat.perm.mic_note_purpose": "ضبط یک پیام صوتی",
   "chat.perm.video_note_purpose": "ضبط یادداشت ویدیویی",
+  "chat.perm.live_video_purpose": "پخش زنده",
   "chat.perm.recording_stopped": "ضبط متوقف شد",
   "chat.perm.record_failed": "ضبط آغاز نشد. دسترسی‌های میکروفون را بررسی کنید.",
 
@@ -2046,6 +2083,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "صدای زنده خاموش شود؟",
   "settings.conn.live_voice_off_body":
     "نگه داشتن میکروفون به جایش یک پیام صوتی ضبط می‌کند. با رها کردن فرستاده می‌شود، و تا کسی پخشش نکند نمی‌شنود.",
+  "settings.conn.live_video": "ویدیوی زنده",
+  "settings.conn.live_video_desc":
+    "دوربینت را برای افراد نزدیک پخش کن و پخش آن‌ها را ببین",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "مسیردهی Tor",
   "settings.conn.tor_desc":

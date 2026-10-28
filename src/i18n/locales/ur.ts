@@ -566,6 +566,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "اپنے بٹوے سے Cashu کے sat بھیجیں",
   "chat.attach.location": "مقام",
   "chat.attach.location_desc": "بھیجیں کہ آپ اس وقت کہاں ہیں",
+  "chat.attach.live": "لائیو جائیں",
+  "chat.attach.live_desc": "اپنا کیمرہ قریبی لوگوں تک اسٹریم کریں",
   "chat.attach.title": "منسلک کریں",
 
   // ---- Chat: location pin ----
@@ -686,6 +688,39 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "ویڈیو نوٹ ریکارڈ نہیں ہوا",
   "chat.video_note.limit_sent": "وقت ختم، ویڈیو نوٹ بھیج دیا گیا",
   "chat.video_note.a11y": "ویڈیو نوٹ، آواز کے لیے دو بار تھپتھپائیں",
+  "chat.live_video.preview": "لائیو ویڈیو",
+  "chat.live_video.badge": "لائیو",
+  "chat.live_video.reconnecting": "دوبارہ جڑ رہا ہے…",
+  "chat.live_video.a11y":
+    "{name} لائیو ہیں۔ آواز آن یا آف کرنے کے لیے دو بار تھپتھپائیں۔",
+  "chat.live_video.title": "لائیو ویڈیو",
+  "chat.live_video.go_live": "لائیو جائیں",
+  "chat.live_video.end": "ختم کریں",
+  "chat.live_video.end_title": "لائیو ویڈیو ختم کریں؟",
+  "chat.live_video.end_body":
+    "ختم کرنے پر ریکارڈنگ اسی چیٹ میں رہتی ہے۔ مسترد کرنے پر دیکھنے والے سبھی لوگوں سے اسے مٹانے کو کہا جاتا ہے۔",
+  "chat.live_video.discard": "مسترد کریں",
+  "chat.live_video.keep": "اسٹریم جاری رکھیں",
+  "chat.live_video.audience_room": "بلوٹوتھ کی رینج میں ہر کوئی دیکھ سکتا ہے۔",
+  "chat.live_video.audience_dm": "صرف {name} دیکھ سکتے ہیں۔",
+  "chat.live_video.nobody": "اس وقت دیکھنے کے لیے رینج میں کوئی نہیں ہے۔",
+  "chat.live_video.quality_low": "کم",
+  "chat.live_video.quality_medium": "درمیانی",
+  "chat.live_video.quality_high": "زیادہ",
+  "chat.live_video.quality_low_hint": "کئی ہاپ دور کے لوگوں تک پہنچتی ہے",
+  "chat.live_video.quality_medium_hint": "ایک یا دو ہاپ دور کے لوگوں کے لیے",
+  "chat.live_video.quality_high_hint": "بالکل آپ کے ساتھ موجود لوگوں کے لیے",
+  "chat.live_video.signal_good": "ساتھ چل رہا ہے",
+  "chat.live_video.signal_weak": "پیچھے رہ رہا ہے",
+  "chat.live_video.signal_poor":
+    "ویڈیو کے لیے بہت سست، صرف آواز بھیجی جا رہی ہے",
+  "chat.live_video.mic": "مائیکروفون",
+  "chat.live_video.flip": "کیمرہ بدلیں",
+  "chat.live_video.camera_failed": "کیمرہ نہیں کھل سکا",
+  "chat.live_video.camera_lost": "کیمرہ رک گیا، اس لیے اسٹریم ختم ہو گئی",
+  "chat.live_video.failed": "لائیو نہیں جا سکے",
+  "chat.live_video.kept_here":
+    "فائل کے طور پر بھیجنے کے لیے بہت لمبی ہے۔ دیکھنے والے ہر فرد کے پاس اپنی کاپی رہتی ہے۔",
   "chat.voice.lift_lock": "ہاتھ آزاد ریکارڈنگ کے لیے اوپر سرکائیں",
   "chat.voice.live_speaking": "{name} بول رہے ہیں",
   "chat.voice.live_ended": "ختم",
@@ -702,6 +737,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "قریبی لوگوں سے بات کرنا",
   "chat.perm.mic_note_purpose": "صوتی نوٹ ریکارڈ کرنا",
   "chat.perm.video_note_purpose": "ویڈیو نوٹ ریکارڈ کرنے کے لیے",
+  "chat.perm.live_video_purpose": "لائیو جانے کے لیے",
   "chat.perm.recording_stopped": "ریکارڈنگ روک دی گئی",
   "chat.perm.record_failed":
     "ریکارڈنگ شروع نہ ہو سکی۔ مائیکروفون کی اجازتیں جانچیں۔",
@@ -2044,6 +2080,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "براہ راست آواز بند کریں؟",
   "settings.conn.live_voice_off_body":
     "مائیک دبائے رکھنے سے اس کے بجائے صوتی نوٹ ریکارڈ ہوتا ہے۔ چھوڑنے پر وہ بھیج دیا جاتا ہے، اور جب تک کوئی اسے چلا نہ لے، سنتا کوئی نہیں۔",
+  "settings.conn.live_video": "لائیو ویڈیو",
+  "settings.conn.live_video_desc":
+    "اپنا کیمرہ قریبی لوگوں تک اسٹریم کریں، اور ان کا دیکھیں",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor سے رخ بندی",
   "settings.conn.tor_desc":

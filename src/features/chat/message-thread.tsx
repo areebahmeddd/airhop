@@ -61,6 +61,8 @@ import {
   type GeoParticipant,
 } from "@services/geohash-channel-service";
 import { prepareImageForSend } from "@services/image-compression";
+import { LiveVideoReceiver } from "@services/live-video-receiver";
+import type { FinishedLiveVideo } from "@services/live-video-sender";
 import { hasLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
 import {
@@ -158,6 +160,7 @@ import {
   useAudioRecorder,
   useAudioRecorderState,
 } from "expo-audio";
+import { Camera } from "expo-camera";
 import * as Clipboard from "expo-clipboard";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
@@ -222,6 +225,7 @@ import {
   CANCEL_SLIDE_DISTANCE,
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
+import LiveVideoStudio from "./live-video-studio";
 import MessageActionSheet from "./message-action-sheet";
 import MessageBubble from "./message-bubble";
 import MessageInfoSheet from "./message-info-sheet";
@@ -233,7 +237,7 @@ import {
 } from "./video-note-recorder";
 
 type AttachAction =
-  "camera" | "library" | "document" | "voice" | "location" | "ecash";
+  "camera" | "library" | "document" | "voice" | "live" | "location" | "ecash";
 
 // A picked attachment staged for the caption composer before it is sent.
 interface PendingAttachment {
@@ -258,6 +262,9 @@ const ATTACH_OPTIONS: {
   // so offering it there is a control that can only ever fail. Ecash does not
   // need this, since `payPerson` can reach a Nostr key by nutzap.
   meshOnly?: boolean;
+  // Live video: the Bluetooth room or a mesh DM, never a location channel,
+  // which has no radio under it.
+  liveOnly?: boolean;
 }[] = [
   {
     action: "camera",
@@ -286,6 +293,13 @@ const ATTACH_OPTIONS: {
     icon: "mic",
     labelKey: "chat.attach.voice",
     descKey: "chat.attach.voice_desc",
+  },
+  {
+    action: "live",
+    icon: "video",
+    labelKey: "chat.attach.live",
+    descKey: "chat.attach.live_desc",
+    liveOnly: true,
   },
   {
     action: "location",
@@ -2919,6 +2933,9 @@ export default function MessageThread({
           if (started) setHandsFreeRecording(true);
         });
         break;
+      case "live":
+        void openLiveStudio();
+        break;
       case "location":
         setShowSendLocation(true);
         break;
@@ -3973,6 +3990,70 @@ export default function MessageThread({
     ],
   );
   const talkGesture = usePanGesture(talkConfig);
+
+  // Going live, from the attach menu. The camera is required and the
+  // microphone is not: a stream without one goes out silent.
+  const liveVideoEnabled = useSettingsStore((s) => s.liveVideoEnabled);
+  const liveVideoOffered =
+    liveVideoEnabled &&
+    LiveVideoReceiver.available &&
+    mediaAllowed &&
+    (channel === BRIDGE_CHANNEL || isMeshDM);
+  const [liveStudio, setLiveStudio] = useState<{ micAllowed: boolean } | null>(
+    null,
+  );
+
+  async function openLiveStudio(): Promise<void> {
+    const purpose = { purpose: t("chat.perm.live_video_purpose") };
+    const camera = await ensurePermission(
+      Camera.getCameraPermissionsAsync,
+      Camera.requestCameraPermissionsAsync,
+      { label: t("chat.perm.camera_label"), ...purpose },
+    );
+    if (!camera) return;
+    const mic = await ensurePermission(
+      Camera.getMicrophonePermissionsAsync,
+      Camera.requestMicrophonePermissionsAsync,
+      { label: t("chat.perm.mic_label"), ...purpose },
+    );
+    setLiveStudio({ micAllowed: mic });
+  }
+
+  // The stream is over. A recording that fits one file transfer follows it,
+  // and takes over every viewer's live row; a longer one stays here, since
+  // viewers already hold the copy they rebuilt.
+  function handleLiveFinished(recording: FinishedLiveVideo): void {
+    if (recording.fitsAsFile) {
+      sendAttachmentMessage(
+        "video",
+        recording.uri,
+        recording.name,
+        "video/mp4",
+        recording.durationMs,
+        { sizeBytes: recording.sizeBytes },
+      );
+      return;
+    }
+    useChatStore.getState().addMessage({
+      id: newMessageId(),
+      channel,
+      senderID: localPeerID,
+      senderNickname: localNickname,
+      text: "",
+      timestampMs: Date.now(),
+      isMine: true,
+      attachment: {
+        type: "video",
+        uri: recording.uri,
+        name: recording.name,
+        mimeType: "video/mp4",
+        durationMs: recording.durationMs,
+        sizeBytes: recording.sizeBytes,
+      },
+      status: "sent",
+    });
+    setToast({ message: t("chat.live_video.kept_here"), icon: "video" });
+  }
 
   // The camera's twin of the mic, kept apart from the voice and live state
   // above; see video-note-recorder.tsx.
@@ -5373,6 +5454,18 @@ export default function MessageThread({
 
       {videoNote.overlay}
 
+      {liveStudio !== null && (
+        <LiveVideoStudio
+          visible
+          channel={channel}
+          audienceName={isDM ? displayName : null}
+          micAllowed={liveStudio.micAllowed}
+          onClose={() => setLiveStudio(null)}
+          onFinished={handleLiveFinished}
+          onToast={(message) => setToast({ message, icon: "video" })}
+        />
+      )}
+
       <Toast
         message={toast?.message ?? null}
         icon={toast?.icon}
@@ -5835,6 +5928,7 @@ export default function MessageThread({
           (o) =>
             (!o.dmOnly || isDM) &&
             (!o.meshOnly || isMeshDM) &&
+            (!o.liveOnly || liveVideoOffered) &&
             (o.action !== "location" || acceptsLocationPin),
         ).map(({ action, icon, labelKey, descKey }, i) => (
           <React.Fragment key={action}>

@@ -580,6 +580,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "သင့်ပိုက်ဆံအိတ်မှ Cashu sats ပို့ပါ",
   "chat.attach.location": "တည်နေရာ",
   "chat.attach.location_desc": "သင် ယခုရှိသည့်နေရာကို ပို့ပါ",
+  "chat.attach.live": "တိုက်ရိုက်ထုတ်လွှင့်ရန်",
+  "chat.attach.live_desc": "အနီးရှိလူများထံ သင့်ကင်မရာကို တိုက်ရိုက်လွှင့်ပါ",
   "chat.attach.title": "ပူးတွဲပါ",
 
   // ---- Chat: location pin ----
@@ -705,6 +707,42 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "ဗီဒီယိုမှတ်စု မရိုက်ကူးနိုင်ခဲ့ပါ",
   "chat.video_note.limit_sent": "အချိန်ကုန်ပြီ၊ ဗီဒီယိုမှတ်စု ပို့ပြီးပါပြီ",
   "chat.video_note.a11y": "ဗီဒီယိုမှတ်စု၊ အသံအတွက် နှစ်ချက်နှိပ်ပါ",
+  "chat.live_video.preview": "တိုက်ရိုက်ဗီဒီယို",
+  "chat.live_video.badge": "တိုက်ရိုက်",
+  "chat.live_video.reconnecting": "ပြန်ချိတ်ဆက်နေသည်…",
+  "chat.live_video.a11y":
+    "{name} တိုက်ရိုက်ထုတ်လွှင့်နေသည်။ အသံဖွင့်ရန် သို့မဟုတ် ပိတ်ရန် နှစ်ချက်တို့ပါ။",
+  "chat.live_video.title": "တိုက်ရိုက်ဗီဒီယို",
+  "chat.live_video.go_live": "တိုက်ရိုက်စတင်ရန်",
+  "chat.live_video.end": "ရပ်ရန်",
+  "chat.live_video.end_title": "တိုက်ရိုက်ဗီဒီယိုကို ရပ်မလား။",
+  "chat.live_video.end_body":
+    "ရပ်လျှင် မှတ်တမ်းသည် ဤချက်တွင် ကျန်ရှိမည်။ ပယ်ဖျက်လျှင် ကြည့်နေသူအားလုံးကို ဖျက်ရန် ပြောမည်။",
+  "chat.live_video.discard": "ပယ်ဖျက်ရန်",
+  "chat.live_video.keep": "ဆက်လွှင့်ရန်",
+  "chat.live_video.audience_room":
+    "ဘလူးတုသ်အကွာအဝေးအတွင်းရှိ မည်သူမဆို ကြည့်နိုင်သည်။",
+  "chat.live_video.audience_dm": "{name} သာ ကြည့်နိုင်သည်။",
+  "chat.live_video.nobody": "ယခု ကြည့်ရန် အကွာအဝေးအတွင်း မည်သူမျှ မရှိပါ။",
+  "chat.live_video.quality_low": "နိမ့်",
+  "chat.live_video.quality_medium": "အလယ်အလတ်",
+  "chat.live_video.quality_high": "မြင့်",
+  "chat.live_video.quality_low_hint":
+    "ခုန်ကူးမှု အများအပြားအကွာရှိ လူများထံ ရောက်သည်",
+  "chat.live_video.quality_medium_hint":
+    "ခုန်ကူးမှု တစ်ကြိမ် သို့မဟုတ် နှစ်ကြိမ်အကွာရှိ လူများအတွက်",
+  "chat.live_video.quality_high_hint": "သင့်ဘေးရှိ လူများအတွက်",
+  "chat.live_video.signal_good": "အမီလိုက်နေသည်",
+  "chat.live_video.signal_weak": "နောက်ကျနေသည်",
+  "chat.live_video.signal_poor": "ဗီဒီယိုအတွက် နှေးလွန်းသဖြင့် အသံသာ ပို့နေသည်",
+  "chat.live_video.mic": "မိုက်ခရိုဖုန်း",
+  "chat.live_video.flip": "ကင်မရာပြောင်းရန်",
+  "chat.live_video.camera_failed": "ကင်မရာကို ဖွင့်၍မရပါ",
+  "chat.live_video.camera_lost":
+    "ကင်မရာ ရပ်သွားသဖြင့် ထုတ်လွှင့်မှု ပြီးဆုံးသွားသည်",
+  "chat.live_video.failed": "တိုက်ရိုက်ထုတ်လွှင့်၍ မရပါ",
+  "chat.live_video.kept_here":
+    "ဖိုင်အဖြစ် ပို့ရန် ရှည်လွန်းသည်။ ကြည့်ခဲ့သူတိုင်း မိမိကိုယ်ပိုင်မိတ္တူကို ထားရှိမည်။",
   "chat.voice.lift_lock": "လက်လွှတ်၍ အသံဖမ်းရန် အပေါ်သို့ ဆွဲပါ",
   "chat.voice.live_speaking": "{name} စကားပြောနေသည်",
   "chat.voice.live_ended": "ပြီးဆုံး",
@@ -721,6 +759,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "အနီးအနားရှိသူများနှင့် စကားပြောရန်",
   "chat.perm.mic_note_purpose": "အသံမှတ်စု ဖမ်းရန်",
   "chat.perm.video_note_purpose": "ဗီဒီယိုမှတ်စု ရိုက်ကူးရန်",
+  "chat.perm.live_video_purpose": "တိုက်ရိုက်ထုတ်လွှင့်ရန်",
   "chat.perm.recording_stopped": "အသံဖမ်းခြင်း ရပ်သွားသည်",
   "chat.perm.record_failed":
     "အသံဖမ်းခြင်း မစတင်နိုင်ပါ။ မိုက်ခရိုဖုန်းခွင့်ပြုချက်များကို စစ်ဆေးပါ။",
@@ -2118,6 +2157,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "တိုက်ရိုက်အသံကို ပိတ်မလား?",
   "settings.conn.live_voice_off_body":
     "မိုက်ကို ဖိထားလျှင် ယင်းအစား အသံမှတ်စုတစ်ခု အသံဖမ်းပါမည်။ လွှတ်လိုက်လျှင် ပို့ပြီး ၎င်းတို့ဖွင့်နားမထောင်မချင်း မည်သူမျှ မကြားရပါ။",
+  "settings.conn.live_video": "တိုက်ရိုက်ဗီဒီယို",
+  "settings.conn.live_video_desc":
+    "အနီးရှိလူများထံ သင့်ကင်မရာကို လွှင့်ပြီး သူတို့၏ကိုလည်း ကြည့်ပါ",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor လမ်းကြောင်း",
   "settings.conn.tor_desc":

@@ -570,6 +570,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Skicka Cashu-sats ur din plånbok",
   "chat.attach.location": "Plats",
   "chat.attach.location_desc": "Skicka var du är just nu",
+  "chat.attach.live": "Sänd live",
+  "chat.attach.live_desc": "Strömma din kamera till folk i närheten",
   "chat.attach.title": "Bifoga",
 
   // ---- Chat: location pin ----
@@ -692,6 +694,38 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Videoanteckningen spelades inte in",
   "chat.video_note.limit_sent": "Tiden är slut, videoanteckningen skickad",
   "chat.video_note.a11y": "Videoanteckning, tryck två gånger för ljud",
+  "chat.live_video.preview": "Livevideo",
+  "chat.live_video.badge": "Live",
+  "chat.live_video.reconnecting": "Återansluter…",
+  "chat.live_video.a11y":
+    "{name} sänder live. Dubbeltryck för att slå på eller av ljudet.",
+  "chat.live_video.title": "Livevideo",
+  "chat.live_video.go_live": "Sänd live",
+  "chat.live_video.end": "Avsluta",
+  "chat.live_video.end_title": "Avsluta livevideon?",
+  "chat.live_video.end_body":
+    "Avslutar du stannar inspelningen i den här chatten. Slänger du ombeds alla som tittar att radera den.",
+  "chat.live_video.discard": "Släng",
+  "chat.live_video.keep": "Fortsätt sända",
+  "chat.live_video.audience_room": "Alla inom Bluetooth-räckvidd kan titta.",
+  "chat.live_video.audience_dm": "Bara {name} kan titta.",
+  "chat.live_video.nobody": "Ingen är inom räckhåll för att titta just nu.",
+  "chat.live_video.quality_low": "Låg",
+  "chat.live_video.quality_medium": "Mellan",
+  "chat.live_video.quality_high": "Hög",
+  "chat.live_video.quality_low_hint": "Når folk flera hopp bort",
+  "chat.live_video.quality_medium_hint": "För folk ett eller två hopp bort",
+  "chat.live_video.quality_high_hint": "För folk precis bredvid dig",
+  "chat.live_video.signal_good": "Hänger med",
+  "chat.live_video.signal_weak": "Halkar efter",
+  "chat.live_video.signal_poor": "För långsamt för video, bara ljud skickas",
+  "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.flip": "Byt kamera",
+  "chat.live_video.camera_failed": "Kunde inte öppna kameran",
+  "chat.live_video.camera_lost": "Kameran stannade, så sändningen avslutades",
+  "chat.live_video.failed": "Kunde inte sända live",
+  "chat.live_video.kept_here":
+    "För lång för att skickas som fil. Alla som tittade behåller sin egen kopia.",
   "chat.voice.lift_lock": "Dra uppåt för att spela in handsfree",
   "chat.voice.live_speaking": "{name} talar",
   "chat.voice.live_ended": "Avslutad",
@@ -708,6 +742,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "prata med folk i närheten",
   "chat.perm.mic_note_purpose": "spela in ett röstmeddelande",
   "chat.perm.video_note_purpose": "spela in en videoanteckning",
+  "chat.perm.live_video_purpose": "sända live",
   "chat.perm.recording_stopped": "Inspelningen stoppades",
   "chat.perm.record_failed":
     "Inspelningen kunde inte starta. Kontrollera mikrofonbehörigheterna.",
@@ -2059,6 +2094,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Stänga av direktröst?",
   "settings.conn.live_voice_off_body":
     "Att hålla in mikrofonen spelar in ett röstmeddelande i stället. Det skickas när du släpper, och ingen hör det förrän de spelar upp det.",
+  "settings.conn.live_video": "Livevideo",
+  "settings.conn.live_video_desc":
+    "Strömma din kamera till folk i närheten och se deras",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-routing",
   "settings.conn.tor_desc":

@@ -575,6 +575,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Stuur Cashu-sats uit je portemonnee",
   "chat.attach.location": "Locatie",
   "chat.attach.location_desc": "Stuur waar je nu bent",
+  "chat.attach.live": "Live gaan",
+  "chat.attach.live_desc": "Stream je camera naar mensen in de buurt",
   "chat.attach.title": "Bijvoegen",
 
   // ---- Chat: location pin ----
@@ -698,6 +700,42 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Videonotitie is niet opgenomen",
   "chat.video_note.limit_sent": "Tijd is om, videonotitie verstuurd",
   "chat.video_note.a11y": "Videonotitie, tik twee keer voor geluid",
+  "chat.live_video.preview": "Livevideo",
+  "chat.live_video.badge": "Live",
+  "chat.live_video.reconnecting": "Opnieuw verbinden…",
+  "chat.live_video.a11y":
+    "{name} is live. Dubbeltik om het geluid aan of uit te zetten.",
+  "chat.live_video.title": "Livevideo",
+  "chat.live_video.go_live": "Live gaan",
+  "chat.live_video.end": "Stoppen",
+  "chat.live_video.end_title": "Livevideo stoppen?",
+  "chat.live_video.end_body":
+    "Bij stoppen blijft de opname in deze chat. Bij weggooien wordt iedereen die kijkt gevraagd hem te wissen.",
+  "chat.live_video.discard": "Weggooien",
+  "chat.live_video.keep": "Doorgaan met streamen",
+  "chat.live_video.audience_room":
+    "Iedereen binnen Bluetooth-bereik kan kijken.",
+  "chat.live_video.audience_dm": "Alleen {name} kan kijken.",
+  "chat.live_video.nobody": "Er is nu niemand binnen bereik om te kijken.",
+  "chat.live_video.quality_low": "Laag",
+  "chat.live_video.quality_medium": "Middel",
+  "chat.live_video.quality_high": "Hoog",
+  "chat.live_video.quality_low_hint":
+    "Bereikt mensen een paar sprongen verderop",
+  "chat.live_video.quality_medium_hint":
+    "Voor mensen een of twee sprongen verderop",
+  "chat.live_video.quality_high_hint": "Voor mensen vlak naast je",
+  "chat.live_video.signal_good": "Houdt het bij",
+  "chat.live_video.signal_weak": "Loopt achter",
+  "chat.live_video.signal_poor":
+    "Te traag voor video, alleen geluid wordt verstuurd",
+  "chat.live_video.mic": "Microfoon",
+  "chat.live_video.flip": "Camera wisselen",
+  "chat.live_video.camera_failed": "Kan de camera niet openen",
+  "chat.live_video.camera_lost": "De camera stopte, dus de stream is afgelopen",
+  "chat.live_video.failed": "Kan niet live gaan",
+  "chat.live_video.kept_here":
+    "Te lang om als bestand te versturen. Iedereen die keek houdt een eigen kopie.",
   "chat.voice.lift_lock": "Schuif omhoog om handsfree op te nemen",
   "chat.voice.live_speaking": "{name} is aan het woord",
   "chat.voice.live_ended": "Beëindigd",
@@ -714,6 +752,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "praten met mensen in de buurt",
   "chat.perm.mic_note_purpose": "een spraakbericht opnemen",
   "chat.perm.video_note_purpose": "een videonotitie op te nemen",
+  "chat.perm.live_video_purpose": "live te gaan",
   "chat.perm.recording_stopped": "Opname gestopt",
   "chat.perm.record_failed":
     "De opname kon niet starten. Controleer de microfoonrechten.",
@@ -2087,6 +2126,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Live spraak uitzetten?",
   "settings.conn.live_voice_off_body":
     "De microfoon ingedrukt houden neemt dan een spraakbericht op. Het gaat weg als je loslaat, en niemand hoort het tot ze het afspelen.",
+  "settings.conn.live_video": "Livevideo",
+  "settings.conn.live_video_desc":
+    "Stream je camera naar mensen in de buurt en kijk naar die van hen",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Via Tor routeren",
   "settings.conn.tor_desc":

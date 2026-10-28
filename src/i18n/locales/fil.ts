@@ -587,6 +587,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Magpadala ng Cashu sat mula sa wallet mo",
   "chat.attach.location": "Lokasyon",
   "chat.attach.location_desc": "Ipadala kung nasaan ka ngayon",
+  "chat.attach.live": "Mag-live",
+  "chat.attach.live_desc": "I-stream ang camera mo sa mga tao sa malapit",
   "chat.attach.title": "Maglakip",
 
   // ---- Chat: location pin ----
@@ -713,6 +715,41 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Hindi na-record ang video note",
   "chat.video_note.limit_sent": "Ubos na ang oras, naipadala ang video note",
   "chat.video_note.a11y": "Video note, i-double tap para sa tunog",
+  "chat.live_video.preview": "Live na video",
+  "chat.live_video.badge": "Live",
+  "chat.live_video.reconnecting": "Muling kumokonekta…",
+  "chat.live_video.a11y":
+    "Naka-live si {name}. I-double tap para buksan o patayin ang tunog.",
+  "chat.live_video.title": "Live na video",
+  "chat.live_video.go_live": "Mag-live",
+  "chat.live_video.end": "Tapusin",
+  "chat.live_video.end_title": "Tapusin ang live na video?",
+  "chat.live_video.end_body":
+    "Kapag tinapos, mananatili ang recording sa chat na ito. Kapag itinapon, sasabihan ang lahat ng nanonood na burahin ito.",
+  "chat.live_video.discard": "Itapon",
+  "chat.live_video.keep": "Ituloy ang stream",
+  "chat.live_video.audience_room":
+    "Puwedeng manood ang lahat ng nasa abot ng Bluetooth.",
+  "chat.live_video.audience_dm": "Si {name} lang ang puwedeng manood.",
+  "chat.live_video.nobody": "Walang nasa abot na puwedeng manood ngayon.",
+  "chat.live_video.quality_low": "Mababa",
+  "chat.live_video.quality_medium": "Katamtaman",
+  "chat.live_video.quality_high": "Mataas",
+  "chat.live_video.quality_low_hint": "Umaabot sa mga taong ilang hop ang layo",
+  "chat.live_video.quality_medium_hint":
+    "Para sa mga taong isa o dalawang hop ang layo",
+  "chat.live_video.quality_high_hint": "Para sa mga taong katabi mo",
+  "chat.live_video.signal_good": "Nakakasabay",
+  "chat.live_video.signal_weak": "Nahuhuli",
+  "chat.live_video.signal_poor":
+    "Masyadong mabagal para sa video, tunog lang ang ipinapadala",
+  "chat.live_video.mic": "Mikropono",
+  "chat.live_video.flip": "Palitan ang camera",
+  "chat.live_video.camera_failed": "Hindi mabuksan ang camera",
+  "chat.live_video.camera_lost": "Huminto ang camera, kaya natapos ang stream",
+  "chat.live_video.failed": "Hindi makapag-live",
+  "chat.live_video.kept_here":
+    "Masyadong mahaba para ipadala bilang file. May sariling kopya ang bawat nanood.",
   "chat.voice.lift_lock": "Mag-slide paitaas para mag-record nang hands-free",
   "chat.voice.live_speaking": "Nagsasalita si {name}",
   "chat.voice.live_ended": "Tapos na",
@@ -729,6 +766,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "makipag-usap sa mga taong malapit",
   "chat.perm.mic_note_purpose": "mag-record ng voice note",
   "chat.perm.video_note_purpose": "mag-record ng video note",
+  "chat.perm.live_video_purpose": "mag-live",
   "chat.perm.recording_stopped": "Itinigil ang pagre-record",
   "chat.perm.record_failed":
     "Hindi nasimulan ang pagre-record. Suriin ang mga pahintulot sa mikropono.",
@@ -2129,6 +2167,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "I-off ang live na boses?",
   "settings.conn.live_voice_off_body":
     "Kapag pinindot nang matagal ang mikropono, voice note ang nire-record. Naipapadala ito kapag binitawan mo, at walang makakarinig nito hangga't hindi nila ito pinapatugtog.",
+  "settings.conn.live_video": "Live na video",
+  "settings.conn.live_video_desc":
+    "I-stream ang camera mo sa mga tao sa malapit, at panoorin ang kanila",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Pagruruta sa Tor",
   "settings.conn.tor_desc":

@@ -573,6 +573,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Cüzdanından Cashu satı gönder",
   "chat.attach.location": "Konum",
   "chat.attach.location_desc": "Şu anda nerede olduğunu gönder",
+  "chat.attach.live": "Canlı yayına geç",
+  "chat.attach.live_desc": "Kameranı yakındaki kişilere yayınla",
   "chat.attach.title": "Ekle",
 
   // ---- Chat: location pin ----
@@ -696,6 +698,40 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Görüntülü not kaydedilemedi",
   "chat.video_note.limit_sent": "Süre doldu, görüntülü not gönderildi",
   "chat.video_note.a11y": "Görüntülü not, ses için iki kez dokun",
+  "chat.live_video.preview": "Canlı video",
+  "chat.live_video.badge": "Canlı",
+  "chat.live_video.reconnecting": "Yeniden bağlanıyor…",
+  "chat.live_video.a11y":
+    "{name} canlı yayında. Sesi açmak veya kapatmak için iki kez dokun.",
+  "chat.live_video.title": "Canlı video",
+  "chat.live_video.go_live": "Canlı yayına geç",
+  "chat.live_video.end": "Bitir",
+  "chat.live_video.end_title": "Canlı video bitirilsin mi?",
+  "chat.live_video.end_body":
+    "Bitirirsen kayıt bu sohbette kalır. Atarsan izleyen herkesten silmesi istenir.",
+  "chat.live_video.discard": "At",
+  "chat.live_video.keep": "Yayına devam et",
+  "chat.live_video.audience_room": "Bluetooth menzilindeki herkes izleyebilir.",
+  "chat.live_video.audience_dm": "Yalnızca {name} izleyebilir.",
+  "chat.live_video.nobody": "Şu anda menzilde izleyecek kimse yok.",
+  "chat.live_video.quality_low": "Düşük",
+  "chat.live_video.quality_medium": "Orta",
+  "chat.live_video.quality_high": "Yüksek",
+  "chat.live_video.quality_low_hint": "Birkaç atlama ötedeki kişilere ulaşır",
+  "chat.live_video.quality_medium_hint":
+    "Bir veya iki atlama ötedeki kişiler için",
+  "chat.live_video.quality_high_hint": "Hemen yanındaki kişiler için",
+  "chat.live_video.signal_good": "Yetişiyor",
+  "chat.live_video.signal_weak": "Geride kalıyor",
+  "chat.live_video.signal_poor":
+    "Video için çok yavaş, yalnızca ses gönderiliyor",
+  "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.flip": "Kamerayı değiştir",
+  "chat.live_video.camera_failed": "Kamera açılamadı",
+  "chat.live_video.camera_lost": "Kamera durdu, bu yüzden yayın bitti",
+  "chat.live_video.failed": "Canlı yayına geçilemedi",
+  "chat.live_video.kept_here":
+    "Dosya olarak göndermek için çok uzun. İzleyen herkes kendi kopyasını saklar.",
   "chat.voice.lift_lock": "Eller serbest kaydetmek için yukarı kaydır",
   "chat.voice.live_speaking": "{name} konuşuyor",
   "chat.voice.live_ended": "Bitti",
@@ -712,6 +748,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "yakındaki insanlarla konuşmak",
   "chat.perm.mic_note_purpose": "bir sesli not kaydetmek",
   "chat.perm.video_note_purpose": "görüntülü not kaydetmek",
+  "chat.perm.live_video_purpose": "canlı yayına geçmek",
   "chat.perm.recording_stopped": "Kayıt durduruldu",
   "chat.perm.record_failed":
     "Kayıt başlatılamadı. Mikrofon izinlerini denetle.",
@@ -2064,6 +2101,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Canlı ses kapatılsın mı?",
   "settings.conn.live_voice_off_body":
     "Mikrofonu basılı tutmak bunun yerine sesli not kaydeder. Bıraktığında gönderilir ve oynatana kadar kimse duymaz.",
+  "settings.conn.live_video": "Canlı video",
+  "settings.conn.live_video_desc":
+    "Kameranı yakındaki kişilere yayınla ve onlarınkini izle",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor yönlendirmesi",
   "settings.conn.tor_desc":

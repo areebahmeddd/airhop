@@ -578,6 +578,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Tuma sat za Cashu kutoka pochi yako",
   "chat.attach.location": "Mahali",
   "chat.attach.location_desc": "Tuma ulipo sasa hivi",
+  "chat.attach.live": "Rusha moja kwa moja",
+  "chat.attach.live_desc": "Tiririsha kamera yako kwa watu walio karibu",
   "chat.attach.title": "Ambatisha",
 
   // ---- Chat: location pin ----
@@ -699,6 +701,42 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Ujumbe wa video haukurekodiwa",
   "chat.video_note.limit_sent": "Muda umekwisha, ujumbe wa video umetumwa",
   "chat.video_note.a11y": "Ujumbe wa video, gusa mara mbili kwa sauti",
+  "chat.live_video.preview": "Video ya moja kwa moja",
+  "chat.live_video.badge": "Moja kwa moja",
+  "chat.live_video.reconnecting": "Inaunganisha upya…",
+  "chat.live_video.a11y":
+    "{name} yuko hewani. Gusa mara mbili kuwasha au kuzima sauti.",
+  "chat.live_video.title": "Video ya moja kwa moja",
+  "chat.live_video.go_live": "Rusha moja kwa moja",
+  "chat.live_video.end": "Maliza",
+  "chat.live_video.end_title": "Maliza video ya moja kwa moja?",
+  "chat.live_video.end_body":
+    "Kumaliza kunaacha rekodi kwenye gumzo hili. Kutupa kunawaambia wote wanaotazama waifute.",
+  "chat.live_video.discard": "Tupa",
+  "chat.live_video.keep": "Endelea kurusha",
+  "chat.live_video.audience_room":
+    "Kila mtu aliye katika eneo la Bluetooth anaweza kutazama.",
+  "chat.live_video.audience_dm": "Ni {name} pekee anayeweza kutazama.",
+  "chat.live_video.nobody": "Hakuna aliye karibu wa kutazama kwa sasa.",
+  "chat.live_video.quality_low": "Chini",
+  "chat.live_video.quality_medium": "Wastani",
+  "chat.live_video.quality_high": "Juu",
+  "chat.live_video.quality_low_hint":
+    "Inawafikia watu walio hatua kadhaa mbali",
+  "chat.live_video.quality_medium_hint":
+    "Kwa watu walio hatua moja au mbili mbali",
+  "chat.live_video.quality_high_hint": "Kwa watu walio karibu nawe kabisa",
+  "chat.live_video.signal_good": "Inaenda sawa",
+  "chat.live_video.signal_weak": "Inachelewa",
+  "chat.live_video.signal_poor": "Polepole mno kwa video, sauti pekee inatumwa",
+  "chat.live_video.mic": "Maikrofoni",
+  "chat.live_video.flip": "Badilisha kamera",
+  "chat.live_video.camera_failed": "Imeshindwa kufungua kamera",
+  "chat.live_video.camera_lost":
+    "Kamera ilisimama, kwa hivyo matangazo yameisha",
+  "chat.live_video.failed": "Imeshindwa kurusha moja kwa moja",
+  "chat.live_video.kept_here":
+    "Ni ndefu mno kutumwa kama faili. Kila aliyetazama anabaki na nakala yake.",
   "chat.voice.lift_lock": "Telezesha juu ili kurekodi bila kushikilia",
   "chat.voice.live_speaking": "{name} anazungumza",
   "chat.voice.live_ended": "Imeisha",
@@ -715,6 +753,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "kuzungumza na watu walio karibu",
   "chat.perm.mic_note_purpose": "kurekodi noti ya sauti",
   "chat.perm.video_note_purpose": "kurekodi ujumbe wa video",
+  "chat.perm.live_video_purpose": "kurusha moja kwa moja",
   "chat.perm.recording_stopped": "Kurekodi kumesimamishwa",
   "chat.perm.record_failed":
     "Kurekodi hakukuweza kuanza. Kagua ruhusa za maikrofoni.",
@@ -2095,6 +2134,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Uzime sauti ya moja kwa moja?",
   "settings.conn.live_voice_off_body":
     "Kushikilia maikrofoni hurekodi noti ya sauti badala yake. Hutumwa ukiachia, na hakuna anayeisikia hadi waichezeshe.",
+  "settings.conn.live_video": "Video ya moja kwa moja",
+  "settings.conn.live_video_desc":
+    "Tiririsha kamera yako kwa watu walio karibu, na utazame zao",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Uelekezaji wa Tor",
   "settings.conn.tor_desc":

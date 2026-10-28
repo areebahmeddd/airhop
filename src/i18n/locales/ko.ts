@@ -563,6 +563,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "지갑에서 Cashu sats 보내기",
   "chat.attach.location": "위치",
   "chat.attach.location_desc": "지금 있는 곳 보내기",
+  "chat.attach.live": "라이브 시작",
+  "chat.attach.live_desc": "근처 사람들에게 카메라를 스트리밍",
   "chat.attach.title": "첨부",
 
   // ---- Chat: location pin ----
@@ -681,6 +683,38 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "영상 메모가 녹화되지 않았습니다",
   "chat.video_note.limit_sent": "시간이 다 되어 영상 메모를 보냈습니다",
   "chat.video_note.a11y": "영상 메모, 소리를 들으려면 두 번 탭",
+  "chat.live_video.preview": "라이브 영상",
+  "chat.live_video.badge": "라이브",
+  "chat.live_video.reconnecting": "다시 연결 중…",
+  "chat.live_video.a11y":
+    "{name} 님이 라이브 중입니다. 두 번 탭하여 소리를 켜거나 끄세요.",
+  "chat.live_video.title": "라이브 영상",
+  "chat.live_video.go_live": "라이브 시작",
+  "chat.live_video.end": "종료",
+  "chat.live_video.end_title": "라이브 영상을 종료할까요?",
+  "chat.live_video.end_body":
+    "종료하면 녹화본이 이 채팅에 남습니다. 삭제하면 시청 중인 모든 사람에게 지우라고 알립니다.",
+  "chat.live_video.discard": "삭제",
+  "chat.live_video.keep": "계속 스트리밍",
+  "chat.live_video.audience_room": "블루투스 범위 안의 누구나 볼 수 있습니다.",
+  "chat.live_video.audience_dm": "{name} 님만 볼 수 있습니다.",
+  "chat.live_video.nobody": "지금은 범위 안에 볼 사람이 없습니다.",
+  "chat.live_video.quality_low": "낮음",
+  "chat.live_video.quality_medium": "보통",
+  "chat.live_video.quality_high": "높음",
+  "chat.live_video.quality_low_hint": "여러 홉 떨어진 사람까지 닿습니다",
+  "chat.live_video.quality_medium_hint": "한두 홉 떨어진 사람용",
+  "chat.live_video.quality_high_hint": "바로 옆에 있는 사람용",
+  "chat.live_video.signal_good": "원활함",
+  "chat.live_video.signal_weak": "뒤처지는 중",
+  "chat.live_video.signal_poor": "영상을 보내기엔 너무 느려 소리만 보내는 중",
+  "chat.live_video.mic": "마이크",
+  "chat.live_video.flip": "카메라 전환",
+  "chat.live_video.camera_failed": "카메라를 열 수 없습니다",
+  "chat.live_video.camera_lost": "카메라가 멈춰 스트리밍이 종료되었습니다",
+  "chat.live_video.failed": "라이브를 시작할 수 없습니다",
+  "chat.live_video.kept_here":
+    "파일로 보내기에는 너무 깁니다. 시청한 사람은 각자 사본을 보관합니다.",
   "chat.voice.lift_lock": "위로 밀면 손을 떼고 녹음",
   "chat.voice.live_speaking": "{name}이(가) 말하는 중",
   "chat.voice.live_ended": "종료됨",
@@ -697,6 +731,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "근처 사람들과 대화하기",
   "chat.perm.mic_note_purpose": "음성 메모를 녹음하기",
   "chat.perm.video_note_purpose": "영상 메모를 녹화하려면",
+  "chat.perm.live_video_purpose": "라이브를 시작하려면",
   "chat.perm.recording_stopped": "녹음이 중지되었습니다",
   "chat.perm.record_failed":
     "녹음을 시작하지 못했습니다. 마이크 권한을 확인하세요.",
@@ -2028,6 +2063,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "실시간 음성을 끌까요?",
   "settings.conn.live_voice_off_body":
     "마이크를 누르고 있으면 대신 음성 메모가 녹음됩니다. 손을 떼면 전송되고, 상대가 재생하기 전까지는 아무도 듣지 못합니다.",
+  "settings.conn.live_video": "라이브 영상",
+  "settings.conn.live_video_desc":
+    "근처 사람들에게 카메라를 스트리밍하고 그들의 방송도 보세요",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 경로 설정",
   "settings.conn.tor_desc":

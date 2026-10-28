@@ -567,6 +567,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "আপনার ওয়ালেট থেকে Cashu sat পাঠান",
   "chat.attach.location": "অবস্থান",
   "chat.attach.location_desc": "আপনি এখন কোথায় আছেন তা পাঠান",
+  "chat.attach.live": "লাইভে যান",
+  "chat.attach.live_desc": "কাছের মানুষদের কাছে আপনার ক্যামেরা স্ট্রিম করুন",
   "chat.attach.title": "সংযুক্ত করুন",
 
   // ---- Chat: location pin ----
@@ -685,6 +687,38 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "ভিডিও নোট রেকর্ড হয়নি",
   "chat.video_note.limit_sent": "সময় শেষ, ভিডিও নোট পাঠানো হয়েছে",
   "chat.video_note.a11y": "ভিডিও নোট, শব্দের জন্য দুবার ট্যাপ করুন",
+  "chat.live_video.preview": "লাইভ ভিডিও",
+  "chat.live_video.badge": "লাইভ",
+  "chat.live_video.reconnecting": "আবার সংযোগ হচ্ছে…",
+  "chat.live_video.a11y":
+    "{name} লাইভে আছেন। শব্দ চালু বা বন্ধ করতে দুবার ট্যাপ করুন।",
+  "chat.live_video.title": "লাইভ ভিডিও",
+  "chat.live_video.go_live": "লাইভে যান",
+  "chat.live_video.end": "শেষ করুন",
+  "chat.live_video.end_title": "লাইভ ভিডিও শেষ করবেন?",
+  "chat.live_video.end_body":
+    "শেষ করলে রেকর্ডিং এই চ্যাটে থাকবে। বাতিল করলে যারা দেখছেন সবাইকে এটি মুছে ফেলতে বলা হবে।",
+  "chat.live_video.discard": "বাতিল করুন",
+  "chat.live_video.keep": "স্ট্রিম চালিয়ে যান",
+  "chat.live_video.audience_room": "ব্লুটুথ সীমার মধ্যে সবাই দেখতে পারবেন।",
+  "chat.live_video.audience_dm": "শুধু {name} দেখতে পারবেন।",
+  "chat.live_video.nobody": "এই মুহূর্তে দেখার মতো কেউ সীমার মধ্যে নেই।",
+  "chat.live_video.quality_low": "নিম্ন",
+  "chat.live_video.quality_medium": "মাঝারি",
+  "chat.live_video.quality_high": "উচ্চ",
+  "chat.live_video.quality_low_hint": "কয়েক হপ দূরের মানুষের কাছে পৌঁছায়",
+  "chat.live_video.quality_medium_hint": "এক বা দুই হপ দূরের মানুষের জন্য",
+  "chat.live_video.quality_high_hint": "ঠিক আপনার পাশের মানুষের জন্য",
+  "chat.live_video.signal_good": "তাল মিলিয়ে চলছে",
+  "chat.live_video.signal_weak": "পিছিয়ে পড়ছে",
+  "chat.live_video.signal_poor": "ভিডিওর জন্য খুব ধীর, শুধু শব্দ পাঠানো হচ্ছে",
+  "chat.live_video.mic": "মাইক্রোফোন",
+  "chat.live_video.flip": "ক্যামেরা বদলান",
+  "chat.live_video.camera_failed": "ক্যামেরা খোলা যায়নি",
+  "chat.live_video.camera_lost": "ক্যামেরা থেমে গেছে, তাই স্ট্রিম শেষ হয়েছে",
+  "chat.live_video.failed": "লাইভে যাওয়া যায়নি",
+  "chat.live_video.kept_here":
+    "ফাইল হিসেবে পাঠানোর জন্য খুব দীর্ঘ। যারা দেখেছেন তাদের প্রত্যেকের কাছে নিজের কপি থাকবে।",
   "chat.voice.lift_lock": "হাত ছাড়া রেকর্ড করতে উপরে সরান",
   "chat.voice.live_speaking": "{name} কথা বলছেন",
   "chat.voice.live_ended": "শেষ",
@@ -701,6 +735,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "কাছের লোকদের সঙ্গে কথা বলতে",
   "chat.perm.mic_note_purpose": "একটি ভয়েস নোট রেকর্ড করতে",
   "chat.perm.video_note_purpose": "ভিডিও নোট রেকর্ড করতে",
+  "chat.perm.live_video_purpose": "লাইভে যেতে",
   "chat.perm.recording_stopped": "রেকর্ডিং থেমেছে",
   "chat.perm.record_failed":
     "রেকর্ডিং শুরু করা গেল না। মাইক্রোফোনের অনুমতি দেখুন।",
@@ -2038,6 +2073,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "সরাসরি কথা বন্ধ করবেন?",
   "settings.conn.live_voice_off_body":
     "মাইক ধরে রাখলে বরং একটি ভয়েস নোট রেকর্ড হয়। ছেড়ে দিলে সেটি যায়, আর কেউ না চালানো পর্যন্ত শোনে না।",
+  "settings.conn.live_video": "লাইভ ভিডিও",
+  "settings.conn.live_video_desc":
+    "কাছের মানুষদের কাছে আপনার ক্যামেরা স্ট্রিম করুন, আর তাদেরটা দেখুন",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor রাউটিং",
   "settings.conn.tor_desc":

@@ -577,6 +577,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Wyślij saty Cashu ze swojego portfela",
   "chat.attach.location": "Lokalizacja",
   "chat.attach.location_desc": "Wyślij, gdzie teraz jesteś",
+  "chat.attach.live": "Transmisja na żywo",
+  "chat.attach.live_desc": "Transmituj kamerę do osób w pobliżu",
   "chat.attach.title": "Załącz",
 
   // ---- Chat: location pin ----
@@ -701,6 +703,41 @@ export const strings: Strings = {
   "chat.video_note.limit_sent": "Czas minął, notatka wideo wysłana",
   "chat.video_note.a11y":
     "Notatka wideo, stuknij dwukrotnie, aby włączyć dźwięk",
+  "chat.live_video.preview": "Wideo na żywo",
+  "chat.live_video.badge": "Na żywo",
+  "chat.live_video.reconnecting": "Ponowne łączenie…",
+  "chat.live_video.a11y":
+    "{name} nadaje na żywo. Stuknij dwukrotnie, żeby włączyć lub wyłączyć dźwięk.",
+  "chat.live_video.title": "Wideo na żywo",
+  "chat.live_video.go_live": "Zacznij nadawać",
+  "chat.live_video.end": "Zakończ",
+  "chat.live_video.end_title": "Zakończyć wideo na żywo?",
+  "chat.live_video.end_body":
+    "Zakończenie zostawia nagranie w tym czacie. Odrzucenie prosi wszystkich oglądających o jego usunięcie.",
+  "chat.live_video.discard": "Odrzuć",
+  "chat.live_video.keep": "Nadawaj dalej",
+  "chat.live_video.audience_room": "Każdy w zasięgu Bluetooth może oglądać.",
+  "chat.live_video.audience_dm": "Tylko {name} może oglądać.",
+  "chat.live_video.nobody": "Teraz nikt w zasięgu nie może oglądać.",
+  "chat.live_video.quality_low": "Niska",
+  "chat.live_video.quality_medium": "Średnia",
+  "chat.live_video.quality_high": "Wysoka",
+  "chat.live_video.quality_low_hint": "Dociera do osób kilka przeskoków dalej",
+  "chat.live_video.quality_medium_hint":
+    "Dla osób jeden lub dwa przeskoki dalej",
+  "chat.live_video.quality_high_hint": "Dla osób tuż obok ciebie",
+  "chat.live_video.signal_good": "Nadąża",
+  "chat.live_video.signal_weak": "Zostaje w tyle",
+  "chat.live_video.signal_poor":
+    "Za wolno na wideo, wysyłany jest tylko dźwięk",
+  "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.flip": "Przełącz kamerę",
+  "chat.live_video.camera_failed": "Nie udało się otworzyć kamery",
+  "chat.live_video.camera_lost":
+    "Kamera się zatrzymała, więc transmisja się zakończyła",
+  "chat.live_video.failed": "Nie udało się zacząć transmisji",
+  "chat.live_video.kept_here":
+    "Za długie, żeby wysłać jako plik. Każdy, kto oglądał, zachowuje własną kopię.",
   "chat.voice.lift_lock": "Przesuń w górę, żeby nagrywać bez trzymania",
   "chat.voice.live_speaking": "{name} mówi",
   "chat.voice.live_ended": "Zakończono",
@@ -717,6 +754,7 @@ export const strings: Strings = {
   "chat.perm.mic_live_purpose": "rozmawiać z ludźmi w pobliżu",
   "chat.perm.mic_note_purpose": "nagrać notatkę głosową",
   "chat.perm.video_note_purpose": "nagrać notatkę wideo",
+  "chat.perm.live_video_purpose": "nadawać na żywo",
   "chat.perm.recording_stopped": "Nagrywanie zatrzymane",
   "chat.perm.record_failed":
     "Nie udało się rozpocząć nagrywania. Sprawdź uprawnienia do mikrofonu.",
@@ -2085,6 +2123,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Wyłączyć głos na żywo?",
   "settings.conn.live_voice_off_body":
     "Przytrzymanie mikrofonu nagrywa zamiast tego notatkę głosową. Wysyła się po puszczeniu i nikt jej nie usłyszy, dopóki jej nie odtworzy.",
+  "settings.conn.live_video": "Wideo na żywo",
+  "settings.conn.live_video_desc":
+    "Transmituj kamerę do osób w pobliżu i oglądaj ich transmisje",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Trasowanie przez Tor",
   "settings.conn.tor_desc":
