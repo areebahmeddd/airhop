@@ -71,7 +71,10 @@ async function bootStartMesh(): Promise<void> {
   getMeshService()?.retryRadios();
   // The dependents that need no screen. The rest (wallet, permission prompts)
   // wait for the app to be opened, which runs them for this same mesh.
-  startNotificationPipeline(() => nickname);
+  startNotificationPipeline(
+    () => nickname,
+    (channel) => getMeshService()?.mentionSuffixFor(channel) ?? null,
+  );
   startBackgroundNotice();
   startReachabilityWatch();
   sweepMediaIfDue();

@@ -437,6 +437,8 @@ function renderMessageText(
   });
 }
 
+const MENTION_SUFFIX_STYLE: TextStyle = { fontWeight: FontWeight.regular };
+
 // Render message text with @mentions emphasised and URLs tappable, the way
 // every chat app does. A mention is an "@" at a word start followed by nickname
 // characters; anything else (an email's "@", a lone "@") is left plain.
@@ -449,15 +451,16 @@ function renderInlineTokens(
   linkStyle: StyleProp<TextStyle>,
   onLongPress: () => void,
 ): React.ReactNode {
-  // Letters, marks and digits in any script, the set mentionsNickname notifies
-  // on, so every @name that notifies is also highlighted.
-  const re = /(^|\s)(@[\p{L}\p{M}\p{N}_-]+)|(https?:\/\/\S+|www\.\S+)/gu;
+  // Every @name that notifies is highlighted, in any script. A location
+  // channel's "#abcd" belongs to the mention, drawn lighter as in bitchat.
+  const re =
+    /(^|\s)(@[\p{L}\p{M}\p{N}_-]+)(#[0-9a-fA-F]{4}(?![\p{L}\p{N}_]))?|(https?:\/\/\S+|www\.\S+)/gu;
   const out: React.ReactNode[] = [];
   let last = 0;
   let key = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
-    const url = m[3];
+    const url = m[4];
     if (url === undefined) {
       const lead = m[1];
       // Plain run up to and including the leading whitespace.
@@ -465,6 +468,9 @@ function renderInlineTokens(
       out.push(
         <Text key={key++} style={mentionStyle}>
           {m[2]}
+          {m[3] !== undefined ? (
+            <Text style={MENTION_SUFFIX_STYLE}>{m[3]}</Text>
+          ) : null}
         </Text>,
       );
       last = m.index + m[0].length;

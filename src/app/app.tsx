@@ -448,7 +448,10 @@ function startMeshDependents(): void {
   // Arrivals become notifications, bell entries and the badge. Idempotent:
   // a boot start may already have started it for this mesh.
   const nickname = peerIDToUsername(mesh.peerID);
-  startNotificationPipeline(() => nickname);
+  startNotificationPipeline(
+    () => nickname,
+    (channel) => getMeshService()?.mentionSuffixFor(channel) ?? null,
+  );
   startBackgroundNotice();
 
   // A network coming back nudges relays, Tor, queued mail and the wallet.

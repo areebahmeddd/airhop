@@ -50,6 +50,32 @@ describe("mentionsNickname", () => {
   });
 });
 
+// bitchat writes "@name#abcd" in a location channel, where names are not unique.
+describe("mentionsNickname with a location channel suffix", () => {
+  it("matches our own suffix, in any case", () => {
+    expect(mentionsNickname("@ana#d2c4 nice", "ana", "d2c4")).toBe(true);
+    expect(mentionsNickname("@ana#D2C4 nice", "ana", "d2c4")).toBe(true);
+  });
+
+  it("refuses another person's suffix on the same name", () => {
+    expect(mentionsNickname("@ana#9c02 nice", "ana", "d2c4")).toBe(false);
+  });
+
+  it("still matches when either mention carries ours", () => {
+    expect(mentionsNickname("@ana#9c02 and @ana#d2c4", "ana", "d2c4")).toBe(
+      true,
+    );
+  });
+
+  it("goes by the name alone when the mention has no suffix", () => {
+    expect(mentionsNickname("hey @ana", "ana", "d2c4")).toBe(true);
+  });
+
+  it("goes by the name alone outside a location channel", () => {
+    expect(mentionsNickname("@ana#9c02 nice", "ana", null)).toBe(true);
+  });
+});
+
 // The cross-platform case. One keyboard produces the composed form, another the
 // decomposed form, and the two render identically. Without normalization the
 // mention never fires: the mentioned peer is not notified and neither side can

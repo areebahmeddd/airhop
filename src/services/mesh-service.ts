@@ -4937,6 +4937,14 @@ export class MeshService {
     return this.geoChannels?.participantsFor(channel) ?? [];
   }
 
+  // The `#abcd` bitchat adds to a mention of us in a location channel: the end
+  // of our cell key. Null where the channel has no cell.
+  mentionSuffixFor(channel: string): string | null {
+    const geohash = this.geoChannels?.geohashFor(channel) ?? null;
+    if (geohash === null || this.geoChannels === null) return null;
+    return this.geoChannels.cellPubkeyFor(geohash).slice(-4);
+  }
+
   // Start (or resume) an encrypted geohash DM with a channel participant. Binds
   // their per-cell pubkey to this channel's geohash so a reply is sent from our
   // matching per-cell identity. The caller then opens dm:nostr_<pubkey>.
