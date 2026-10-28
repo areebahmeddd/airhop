@@ -5,8 +5,10 @@
 //
 // A stream is received whether or not anyone is watching. Assembling and
 // recording are cheap, and a stream that only existed for whoever had the
-// right chat open would leave no trace for anyone else, which is also why the
-// row exists from the first START. Decoding is not cheap, so units go to the
+// right chat open would leave no trace for anyone else, so the row appears
+// with the first picture, not with START: a stream that never shows one (a
+// stray START, a stream canceled within a second) leaves nothing behind.
+// Decoding is not cheap, so units go to the
 // screen only while the chat is open, and sound only for the one stream the
 // user unmuted, never over live voice.
 //
@@ -37,6 +39,7 @@ import {
   enforceIncomingQuota,
   INCOMING_FILE_PREFIX,
 } from "./file-transfer-service";
+import { trackLiveVideoWork } from "./live-video-work";
 
 // LIVE_VIDEO_V1's resource bounds. Every one caps what a hostile sender in
 // range can make this phone hold.
@@ -78,8 +81,10 @@ interface Stream {
   rowID: string;
   assembler: VideoStreamAssembler;
   playout: LiveVideoPlayout<Unit>;
-  // Set once START arrives: until then there is no row and no recording.
+  // Set once START arrives: until then there is no recording.
   config: { width: number; height: number; hasAudio: boolean } | null;
+  // Whether the row is in the chat; it is added with the first picture.
+  rowAdded: boolean;
   recordingPath: string | null;
   openedAtMs: number;
   lastPacketMs: number;
@@ -241,7 +246,7 @@ export class LiveVideoReceiver {
       }
       return;
     }
-    void this.finishRecording(stream);
+    void trackLiveVideoWork(this.finishRecording(stream));
     if (this.streams.size === 0) this.stopTicking();
   }
 
@@ -261,6 +266,7 @@ export class LiveVideoReceiver {
       assembler: new VideoStreamAssembler(),
       playout: new LiveVideoPlayout<Unit>(),
       config: null,
+      rowAdded: false,
       recordingPath: null,
       openedAtMs: now,
       lastPacketMs: now,
@@ -304,6 +310,9 @@ export class LiveVideoReceiver {
           };
           this.record(stream, unit);
           stream.playout.push(unit, now);
+          // The assembler releases no video before a keyframe, so this is the
+          // first picture.
+          if (unit.track === "video" && !stream.rowAdded) this.addRow(stream);
           break;
         }
         case "videoSkipped":
@@ -345,6 +354,12 @@ export class LiveVideoReceiver {
     ).catch(() => {
       stream.recordingPath = null;
     });
+  }
+
+  private addRow(stream: Stream): void {
+    const config = stream.config;
+    if (config === null) return;
+    stream.rowAdded = true;
     const chat = useChatStore.getState();
     if (stream.channel.startsWith("dm:")) chat.addChannel(stream.channel);
     chat.addMessage({

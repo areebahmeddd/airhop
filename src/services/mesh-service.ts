@@ -295,6 +295,7 @@ import {
   LiveVideoSendSession,
   type FinishedLiveVideo,
 } from "./live-video-sender";
+import { trackLiveVideoWork } from "./live-video-work";
 import { ringVerdict, ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
@@ -2511,7 +2512,7 @@ export class MeshService {
   async stopLiveVideo(canceled: boolean): Promise<FinishedLiveVideo | null> {
     const session = this.liveVideoSend;
     if (session === null) return null;
-    const finished = await session.stop(canceled);
+    const finished = await trackLiveVideoWork(session.stop(canceled));
     if (this.liveVideoSend === session) this.liveVideoSend = null;
     if (this.pttCapture === null) void setAudioForPlayback();
     return finished;

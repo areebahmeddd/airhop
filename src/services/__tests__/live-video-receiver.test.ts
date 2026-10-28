@@ -143,18 +143,21 @@ function feed(
 }
 
 describe("LiveVideoReceiver", () => {
-  test("a START opens a live row, and END leaves the recording in it", async () => {
+  test("the first picture opens a live row, and END leaves the recording in it", async () => {
     const { receiver } = setup();
     const { packetizer, streamID } = stream();
     for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
     const id = liveVideoRowID(SENDER, streamID);
+    // START alone shows nothing: a stream with no picture leaves no row.
+    expect(row(id)).toBeUndefined();
+    feed(receiver, packetizer, 0.5);
     expect(row(id)?.liveVideo).toMatchObject({
       streamID,
       state: "live",
       width: 144,
       height: 192,
     });
-    feed(receiver, packetizer, 3);
+    feed(receiver, packetizer, 2.5, 500);
     for (const p of packetizer.finish(3_000, 3_000)) {
       receiver.onPacket(SENDER, ROOM, p);
     }

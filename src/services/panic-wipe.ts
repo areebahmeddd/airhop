@@ -46,6 +46,7 @@ import { settleOr, withTimeout } from "@utils/with-timeout";
 import { resetBoardAlerts } from "./board-alerts";
 import { syncAutoStartOnBoot } from "./boot-sync";
 import { wipeCacheDirectory } from "./file-transfer-service";
+import { settleLiveVideoWork } from "./live-video-work";
 import { clearLocationCache } from "./location-service";
 import { stopNotificationPipeline } from "./notification-pipeline";
 import { dismissAllNotifications } from "./notification-service";
@@ -369,6 +370,9 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   //
   //    Awaited: it yields between batches rather than holding the thread, and
   //    awaiting it is what keeps step 5 honest.
+  //    Live video first: a recording the stopped mesh is still finishing
+  //    would otherwise land in the cache just after it was emptied.
+  await settleOr(settleLiveVideoWork(), BEST_EFFORT_TIMEOUT_MS, undefined);
   try {
     await wipeCacheDirectory();
   } catch {
