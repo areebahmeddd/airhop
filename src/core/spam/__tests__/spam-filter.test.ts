@@ -154,7 +154,7 @@ describe("repetition", () => {
     expect(h.send("A".repeat(40))).toBe("repeated-characters");
     expect(h.send(`hey ${"!".repeat(60)}`)).toBe("repeated-characters");
     expect(h.send("buy now ".repeat(6))).toBe("repeated-characters");
-    expect(h.send("A​".repeat(40))).toBe("repeated-characters");
+    expect(h.send("A\u200b".repeat(40))).toBe("repeated-characters");
     expect(
       harness().send(
         "The market by the old bridge opens at nine, bring cash because the card reader is flaky.",
@@ -226,9 +226,9 @@ describe("repetition", () => {
 
   test("disguised copies fold to the text a reader sees", () => {
     const base = "Free sats for everyone, claim yours now";
-    const invisibles = ["‌", "‍", "⁠", "­", "‎"];
+    const invisibles = ["\u200c", "\u200d", "\u2060", "\u00ad", "\u200e"];
     const disguises = [
-      Array.from(base, (c) => `${c}​`).join(""),
+      Array.from(base, (c) => `${c}\u200b`).join(""),
       Array.from(base, (c, i) => c + invisibles[i % invisibles.length]).join(
         "",
       ),
