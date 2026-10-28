@@ -165,9 +165,9 @@ export const strings = {
   "home.features.messaging.groups.line": "Invite links for a room, or a signed list of up to 16.",
   "home.features.messaging.board.name": "Bulletin board",
   "home.features.messaging.board.line": "Notices pinned to an area for up to seven days.",
-  "home.features.messaging.voice.name": "Live voice",
+  "home.features.messaging.voice.name": "Live voice and video",
   "home.features.messaging.voice.line":
-    "Hold the mic and talk to anyone in range, walkie-talkie style.",
+    "Hold the mic to talk, or go live on camera, to anyone in range.",
   "home.features.messaging.notes.name": "Voice notes",
   "home.features.messaging.notes.line": "Recorded audio, faster than typing directions.",
   "home.features.messaging.files.name": "Photos, video and files",

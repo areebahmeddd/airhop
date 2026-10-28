@@ -173,9 +173,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "அறிவிப்புப் பலகை",
   "home.features.messaging.board.line":
     "ஒரு பகுதியில் ஏழு நாட்கள் வரை ஒட்டப்பட்டிருக்கும் அறிவிப்புகள்.",
-  "home.features.messaging.voice.name": "நேரடிக் குரல்",
+  "home.features.messaging.voice.name": "நேரடிக் குரல் மற்றும் காணொளி",
   "home.features.messaging.voice.line":
-    "ஒலிவாங்கியை அழுத்திப் பிடித்து எல்லைக்குள் உள்ள எவருடனும் பேசுங்கள், வாக்கி-டாக்கி போல.",
+    "ஒலிவாங்கியை அழுத்திப் பேசுங்கள், அல்லது கேமராவில் நேரலை செய்யுங்கள், எல்லைக்குள் உள்ள எவருக்கும்.",
   "home.features.messaging.notes.name": "குரல் குறிப்புகள்",
   "home.features.messaging.notes.line":
     "பதிவு செய்யப்பட்ட ஒலி, வழியைத் தட்டச்சு செய்வதைவிட வேகமானது.",

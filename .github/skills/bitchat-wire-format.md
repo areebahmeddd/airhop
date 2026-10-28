@@ -103,10 +103,11 @@ A bitchat node never interprets a type it does not know, but it relays it: the u
 | `PING` / `PONG`      | `0x26` / `0x27` | Unicast           | Directed echo (nonce + origin TTL)                        |
 | `NOSTR_CARRIER`      | `0x28`          | Broadcast/Unicast | Gateway-ferried signed Nostr event                        |
 | `VOICE_FRAME`        | `0x29`          | Broadcast         | Live push-to-talk burst, signed                           |
+| `VIDEO_FRAME`        | `0x2D`          | Broadcast         | Live video packet (LIVE_VIDEO_V1), signed                 |
 | `CHANNEL_ENC`        | `0x50`          | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop only)         |
 | `CHANNEL_MSG_AIRHOP` | `0x51`          | Broadcast         | Named public channel, a location cell (Airhop only)       |
 
-Retired, never to be reused: `0x30 VIDEO_FRAME` (a same-platform Wi-Fi path, so never cross-platform; video ships as a file) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
+Retired, never to be reused: `0x30 VIDEO_FRAME` (Airhop's old same-platform Wi-Fi path, never cross-platform; live video is bitchat's `0x2D`) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
 
 Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitchat-ios `PacketPayloadLimits`. A new type needing more than a v1 frame has to be added there before it ships, or receivers drop it.
 
@@ -151,6 +152,7 @@ The plaintext of `NOISE_ENCRYPTED` is `[type u8][body]` (`NoisePayloadType`). bi
 | `0x03`        | `DELIVERED`                         | `0x21`           | `AUTHENTICATED_PEER_STATE`                                  |
 | `0x06`/`0x07` | `GROUP_INVITE` / `GROUP_KEY_UPDATE` | `0x22`           | `CONTACT_CARD` (Airhop)                                     |
 | `0x08`        | `VOICE_FRAME`                       | `0x50` to `0x53` | `LOCATION_PIN`, `RING`, `RING_ACK`, `RING_REFUSED` (Airhop) |
+| `0x0A`        | `VIDEO_FRAME`                       |                  |                                                             |
 
 - `PRIVATE_MESSAGE` fields have one-byte lengths, so message ID and content are each capped at 255 UTF-8 bytes on all three clients.
 - A DM attachment goes only sealed as `0x20`, and only to a peer that proved capability bit 8 inside its `0x21`. The cleartext directed `FILE_TRANSFER` is still received, never sent.

@@ -41,17 +41,17 @@ A packet rebuilt from fragments goes through `admit`, not `receive`: it is dedup
 - **Full depth** (`ttl - 1`): handshakes, and with a recipient `NOISE_ENCRYPTED`, `DR_ENCRYPTED`, `COURIER_ENV`, `PING`, `PONG`, `NOSTR_CARRIER` and fragments.
 - **Clamped by degree** (`relayLimit`), the relayed copy carrying one less than the cap or its own TTL, whichever is lower:
 
-| Class                           | Degree ≤ 2 | 3 to 5 | ≥ 6 |
-| ------------------------------- | ---------- | ------ | --- |
-| Broadcast fragments, live voice | 7          | 7      | 5   |
-| Announces, urgent board posts   | 7          | 7      | 5   |
-| Other broadcasts                | 7          | 6      | 5   |
+| Class                                     | Degree ≤ 2 | 3 to 5 | ≥ 6 |
+| ----------------------------------------- | ---------- | ------ | --- |
+| Broadcast fragments, live voice and video | 7          | 7      | 5   |
+| Announces, urgent board posts             | 7          | 7      | 5   |
+| Other broadcasts                          | 7          | 6      | 5   |
 
 An all-`0xFF` recipient (bitchat-android's broadcast) counts as a broadcast, so such a fragment is clamped rather than relayed at full depth.
 
-**Origin TTL.** A broadcast this node authors (channel, group, board, public file, live voice per burst) draws its TTL from `[ceiling - 2, ceiling]` of `relayLimit` at this node's degree, so the maximum alone does not mark the author. Announces keep `7`, because a directly heard announce is recognised by `ttl === ANNOUNCE_TTL`; directed traffic, prekey bundles and gateway carriers keep `7` too.
+**Origin TTL.** A broadcast this node authors (channel, group, board, public file, live voice or video per packet) draws its TTL from `[ceiling - 2, ceiling]` of `relayLimit` at this node's degree, so the maximum alone does not mark the author. Announces keep `7`, because a directly heard announce is recognised by `ttl === ANNOUNCE_TTL`; directed traffic, prekey bundles and gateway carriers keep `7` too.
 
-**Jitter.** Every relay waits a random delay so a room's relays do not collide and dedup has time to work: 10 to 35 ms for handshakes, 20 to 60 ms for other directed traffic, 8 to 25 ms for fragments and live voice, and for other broadcasts 10 to 40, 60 to 150, 80 to 180 or 100 to 220 ms at degree ≤ 2, 3 to 5, 6 to 9 and 10 up.
+**Jitter.** Every relay waits a random delay so a room's relays do not collide and dedup has time to work: 10 to 35 ms for handshakes, 20 to 60 ms for other directed traffic, 8 to 25 ms for fragments and live voice and video, and for other broadcasts 10 to 40, 60 to 150, 80 to 180 or 100 to 220 ms at degree ≤ 2, 3 to 5, 6 to 9 and 10 up.
 
 **Fanout.** A relay goes to every link but the one it arrived on. bitchat-ios's fanout subset is not implemented. A source-routed packet naming this node goes to the next named hop instead, falling back to the flood when anything about the route is unclear. Airhop follows routes and never originates them.
 

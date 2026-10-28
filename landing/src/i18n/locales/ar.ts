@@ -161,9 +161,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "روابط دعوة لغرفة، أو قائمة موقّعة تصل إلى 16 عضوًا.",
   "home.features.messaging.board.name": "لوحة إعلانات",
   "home.features.messaging.board.line": "إشعارات مثبّتة على منطقة لمدة تصل إلى سبعة أيام.",
-  "home.features.messaging.voice.name": "صوت مباشر",
+  "home.features.messaging.voice.name": "صوت وفيديو مباشر",
   "home.features.messaging.voice.line":
-    "اضغط على الميكروفون وتحدث إلى كل من في النطاق، مثل جهاز اللاسلكي.",
+    "اضغط على الميكروفون لتتحدث، أو ابدأ بثًا مباشرًا بالكاميرا، إلى كل من في النطاق.",
   "home.features.messaging.notes.name": "رسائل صوتية",
   "home.features.messaging.notes.line": "صوت مسجّل، أسرع من كتابة الاتجاهات.",
   "home.features.messaging.files.name": "صور وفيديو وملفات",

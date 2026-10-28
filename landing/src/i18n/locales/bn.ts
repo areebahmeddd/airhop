@@ -170,9 +170,9 @@ const strings: Strings = {
     "ঘরের জন্য আমন্ত্রণ লিঙ্ক, নয়তো 16 জন পর্যন্ত স্বাক্ষরিত তালিকা।",
   "home.features.messaging.board.name": "নোটিশ বোর্ড",
   "home.features.messaging.board.line": "একটি এলাকায় সাত দিন পর্যন্ত আটকে থাকা নোটিশ।",
-  "home.features.messaging.voice.name": "সরাসরি কণ্ঠ",
+  "home.features.messaging.voice.name": "সরাসরি কণ্ঠ ও ভিডিও",
   "home.features.messaging.voice.line":
-    "মাইক চেপে ধরে নাগালের যে কারও সাথে কথা বলুন, ওয়াকি-টকির মতো।",
+    "মাইক চেপে ধরে কথা বলুন, বা ক্যামেরায় সরাসরি দেখান, নাগালের যে কাউকে।",
   "home.features.messaging.notes.name": "ভয়েস নোট",
   "home.features.messaging.notes.line": "রেকর্ড করা অডিও, পথের নির্দেশ টাইপ করার চেয়ে দ্রুত।",
   "home.features.messaging.files.name": "ছবি, ভিডিও ও ফাইল",

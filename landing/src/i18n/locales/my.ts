@@ -173,9 +173,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "ကြေညာစာအုပ်",
   "home.features.messaging.board.line":
     "ဧရိယာတစ်ခုတွင် ခုနစ်ရက်အထိ ကပ်ထားသော အကြောင်းကြားချက်များ။",
-  "home.features.messaging.voice.name": "တိုက်ရိုက်အသံ",
+  "home.features.messaging.voice.name": "တိုက်ရိုက်အသံနှင့် ဗီဒီယို",
   "home.features.messaging.voice.line":
-    "မိုက်ကို ဖိထားပြီး အကွာအဝေးအတွင်းရှိ မည်သူနှင့်မဆို စကားပြောပါ၊ ဝါကီတောကီကဲ့သို့။",
+    "မိုက်ကို ဖိပြီး စကားပြောပါ၊ သို့မဟုတ် ကင်မရာဖြင့် တိုက်ရိုက်ထုတ်လွှင့်ပါ၊ အကွာအဝေးအတွင်းရှိ မည်သူ့ထံမဆို။",
   "home.features.messaging.notes.name": "အသံမှတ်စု",
   "home.features.messaging.notes.line": "အသံသွင်းထားသောအရာ၊ လမ်းညွှန်ရိုက်ထည့်ရသည်ထက် မြန်သည်။",
   "home.features.messaging.files.name": "ဓာတ်ပုံ၊ ဗီဒီယိုနှင့် ဖိုင်များ",

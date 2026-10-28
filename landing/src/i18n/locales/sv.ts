@@ -168,9 +168,9 @@ const strings: Strings = {
     "Inbjudningslänkar till ett rum, eller en signerad lista på upp till 16.",
   "home.features.messaging.board.name": "Anslagstavla",
   "home.features.messaging.board.line": "Anslag fästa vid ett område i upp till sju dagar.",
-  "home.features.messaging.voice.name": "Direktsänd röst",
+  "home.features.messaging.voice.name": "Direktsänd röst och video",
   "home.features.messaging.voice.line":
-    "Håll in mikrofonen och prata med alla inom räckhåll, som en walkie-talkie.",
+    "Håll in mikrofonen för att prata, eller sänd live med kameran, till alla inom räckhåll.",
   "home.features.messaging.notes.name": "Röstmeddelanden",
   "home.features.messaging.notes.line": "Inspelat ljud, snabbare än att skriva en vägbeskrivning.",
   "home.features.messaging.files.name": "Foton, video och filer",

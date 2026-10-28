@@ -171,9 +171,9 @@ const strings: Strings = {
     "Links de convite para uma sala, ou uma lista assinada de até 16.",
   "home.features.messaging.board.name": "Mural de avisos",
   "home.features.messaging.board.line": "Avisos fixados numa área por até sete dias.",
-  "home.features.messaging.voice.name": "Voz ao vivo",
+  "home.features.messaging.voice.name": "Voz e vídeo ao vivo",
   "home.features.messaging.voice.line":
-    "Segure o microfone e fale com quem estiver ao alcance, estilo walkie-talkie.",
+    "Segure o microfone para falar, ou entre ao vivo pela câmera, para quem estiver ao alcance.",
   "home.features.messaging.notes.name": "Notas de voz",
   "home.features.messaging.notes.line": "Áudio gravado, mais rápido do que digitar instruções.",
   "home.features.messaging.files.name": "Fotos, vídeo e arquivos",

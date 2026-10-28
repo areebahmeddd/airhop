@@ -55,6 +55,7 @@ What each feature is for, and when someone would actually reach for it.
 - Photos and video. Both open in the chat where they land, with no download step.
 - Voice notes. Recorded audio, faster than typing directions.
 - Live voice. Hold the mic and talk to everyone in range, walkie-talkie style. Hands stay on what you are doing.
+- Live video. Show everyone in range, or one person, what you are looking at, in bitchat's own stream format. Everyone who receives it keeps the recording.
 - File transfer. Up to 1 MiB, bitchat's limit and about 56 seconds over Bluetooth, from an allow-list of everyday formats.
 - Store-and-forward courier. When nothing can reach the recipient now, a nearby phone carries the sealed message and hands it over when they eventually meet. The carrier cannot read it, and media never travels this way.
 

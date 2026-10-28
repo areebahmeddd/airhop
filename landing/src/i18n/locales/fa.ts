@@ -167,9 +167,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "پیوند دعوت برای یک اتاق، یا فهرستی امضاشده تا ۱۶ نفر.",
   "home.features.messaging.board.name": "تابلوی اعلانات",
   "home.features.messaging.board.line": "اعلان‌هایی که تا هفت روز به یک محدوده سنجاق می‌شوند.",
-  "home.features.messaging.voice.name": "صدای زنده",
+  "home.features.messaging.voice.name": "صدا و ویدیوی زنده",
   "home.features.messaging.voice.line":
-    "میکروفون را نگه دارید و با هر کسی در برد حرف بزنید، مثل بی‌سیم.",
+    "میکروفون را نگه دارید و حرف بزنید، یا با دوربین پخش زنده کنید، برای هر کسی در برد.",
   "home.features.messaging.notes.name": "پیام صوتی",
   "home.features.messaging.notes.line": "صدای ضبط‌شده، سریع‌تر از تایپ کردن مسیر.",
   "home.features.messaging.files.name": "عکس، ویدیو و فایل",

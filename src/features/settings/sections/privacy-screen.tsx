@@ -56,6 +56,7 @@ const SECTIONS: LegalSection[] = [
           "A batch of single-use public keys, so someone can leave you a protected message while you are offline. These contain no private information.",
           "Encrypted group traffic, which nearby devices relay but cannot read unless they are members of that group.",
           "Live voice, on unless you turn it off. Holding the mic streams your voice to everyone in Bluetooth range as you speak. A public burst is signed but not encrypted, the same as a room attachment. In a direct message it stays inside that peer's encrypted session. When you let go, the same audio is also sent as an ordinary voice note.",
+          "Live video, on unless you turn it off, and only while you choose to go live. Your camera, and your microphone unless you mute it, stream to everyone in Bluetooth range. Like live voice, a public stream is signed but not encrypted, and in a direct message it stays inside that peer's encrypted session. When it ends, a short stream is also sent as an ordinary video, and everyone who received it keeps a recording.",
           "A screenshot notice, in private conversations only. Taking a screenshot in a direct message, private group, or private channel tells the people in it that you did, under your display name. In the public mesh room and location channels nothing is sent, because announcing it there would record that you were present. The screenshot itself is never sent.",
           "Approximate Bluetooth signal strength (radio metadata visible to any nearby receiver).",
         ],
@@ -179,7 +180,7 @@ const SECTIONS: LegalSection[] = [
           "**Panic wipe.** Erase all local keys, messages, queued mail, cached media, Tor state, notifications, and app data from the Profile screen. Photos you saved to your gallery belong to your phone's photo library and stay there, and on iPhone a Wi-Fi Aware pairing stays in the system's own list until you remove it in the Settings app.",
           "**Feature controls.** Tor routing, the mesh bridge, and the internet gateway can each be turned on or off in settings, and location channels left unjoined. Anything already published to a relay cannot be recalled.",
           "**Wallet.** Remove a mint at any time from the Wallet tab. Removing one deletes the coins held there from this device, so withdraw or send them first. A panic wipe destroys the wallet file, its encryption key, and the recovery phrase together.",
-          "**System permissions.** Bluetooth, location, microphone, camera, photo library, and notification access can each be revoked in your device settings at any time. Camera access is used to scan QR codes and to take photos or videos you choose to send.",
+          "**System permissions.** Bluetooth, location, microphone, camera, photo library, and notification access can each be revoked in your device settings at any time. Camera access is used to scan QR codes, to take photos, videos and video notes you choose to send, and to go live when you choose to.",
         ],
       },
     ],
@@ -208,7 +209,7 @@ export default function PrivacyScreen({ onBack }: Props): React.JSX.Element {
   return (
     <LegalDocScreen
       title="Privacy Policy"
-      lastUpdated="October 19, 2026"
+      lastUpdated="October 28, 2026"
       sections={SECTIONS}
       onBack={onBack}
     />

@@ -672,7 +672,7 @@ export default function ArchitecturePage() {
                 rows={[
                   [
                     "Carries",
-                    "Everything, including live voice",
+                    "Everything, including live voice and video",
                     "Everything BLE carries",
                     "Everything BLE carries, same platform only",
                     "DMs and location channels",
@@ -1274,6 +1274,17 @@ export default function ArchitecturePage() {
                 instead. Location channels are excluded too, since that would put your voice on
                 public relays.
               </p>
+              <p>
+                Live video, started from the attach menu, follows the same rules in the same two
+                places. It is H.264 and AAC-LC in 0x2D packets of at most 352 bytes, as bitchat
+                sends it, with{" "}
+                <TextLink href="https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction">
+                  Reed-Solomon
+                </TextLink>{" "}
+                parity so one lost packet seldom costs a frame. Over Bluetooth it is paced to 24
+                packets a second and sheds bitrate when the radio backs up; Wi-Fi Aware and LAN
+                carry the larger pictures. Everyone who receives a stream keeps a recording of it.
+              </p>
             </Section>
 
             <Section
@@ -1816,6 +1827,7 @@ export default function ArchitecturePage() {
                   ["PING / PONG", "0x26 / 0x27", "Directed mesh echo, measures hop distance"],
                   ["NOSTR_CARRIER", "0x28", "Gateway-ferried Nostr event"],
                   ["VOICE_FRAME", "0x29", "Live push-to-talk burst"],
+                  ["VIDEO_FRAME", "0x2D", "One packet of a live video stream"],
                   ["CHANNEL_ENC", "0x50", "Private channel · Airhop extension"],
                   [
                     "CHANNEL_MSG_AIRHOP",

@@ -170,9 +170,9 @@ const strings: Strings = {
     "Linki z zaproszeniem do pokoju albo podpisana lista do 16 osób.",
   "home.features.messaging.board.name": "Tablica ogłoszeń",
   "home.features.messaging.board.line": "Ogłoszenia przypięte do obszaru nawet na siedem dni.",
-  "home.features.messaging.voice.name": "Głos na żywo",
+  "home.features.messaging.voice.name": "Głos i wideo na żywo",
   "home.features.messaging.voice.line":
-    "Przytrzymaj mikrofon i mów do wszystkich w zasięgu, jak przez krótkofalówkę.",
+    "Przytrzymaj mikrofon, by mówić, albo nadawaj na żywo z kamery, do wszystkich w zasięgu.",
   "home.features.messaging.notes.name": "Notatki głosowe",
   "home.features.messaging.notes.line": "Nagrany dźwięk, szybszy niż pisanie wskazówek.",
   "home.features.messaging.files.name": "Zdjęcia, wideo i pliki",

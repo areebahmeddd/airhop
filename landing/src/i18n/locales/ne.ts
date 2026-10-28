@@ -170,9 +170,9 @@ const strings: Strings = {
     "कोठाका लागि निम्तो लिंक, वा 16 जनासम्मको हस्ताक्षरित सूची।",
   "home.features.messaging.board.name": "सूचना पाटी",
   "home.features.messaging.board.line": "कुनै क्षेत्रमा सात दिनसम्म टाँसिने सूचनाहरू।",
-  "home.features.messaging.voice.name": "प्रत्यक्ष आवाज",
+  "home.features.messaging.voice.name": "प्रत्यक्ष आवाज र भिडियो",
   "home.features.messaging.voice.line":
-    "माइक थिचिराखेर पहुँचभित्रका जोसुकैसँग बोल्नुहोस्, वाकीटकीजस्तै।",
+    "माइक थिचेर बोल्नुहोस्, वा क्यामेराबाट प्रत्यक्ष प्रसारण गर्नुहोस्, पहुँचभित्रका जोसुकैलाई।",
   "home.features.messaging.notes.name": "आवाज सन्देश",
   "home.features.messaging.notes.line": "रेकर्ड गरिएको आवाज, बाटो टाइप गर्नुभन्दा छिटो।",
   "home.features.messaging.files.name": "फोटो, भिडियो र फाइल",

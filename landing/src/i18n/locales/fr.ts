@@ -173,9 +173,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "Tableau d'affichage",
   "home.features.messaging.board.line":
     "Des avis épinglés à une zone pendant sept jours au maximum.",
-  "home.features.messaging.voice.name": "Voix en direct",
+  "home.features.messaging.voice.name": "Voix et vidéo en direct",
   "home.features.messaging.voice.line":
-    "Maintenez le micro et parlez à tous ceux à portée, comme un talkie-walkie.",
+    "Maintenez le micro pour parler, ou filmez en direct, pour tous ceux à portée.",
   "home.features.messaging.notes.name": "Notes vocales",
   "home.features.messaging.notes.line":
     "De l'audio enregistré, plus rapide que taper un itinéraire.",

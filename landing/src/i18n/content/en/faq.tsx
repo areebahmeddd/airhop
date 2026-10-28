@@ -263,7 +263,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "What media can I send?",
-        a: "Images, voice notes, videos, and any other file format, all over Bluetooth. Each file is sent as one packet, split into fragments for the radio, paced so the radio is not overrun, and reassembled on the other side. Videos are sent as files and play inline; they are not live streams. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; voice notes are capped tighter at 512 KiB, and photos are fitted to 256 KiB so they finish inside bitchat's 30 second reassembly window. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
+        a: "Images, voice notes, videos, and any other file format, all over Bluetooth. Each file is sent as one packet, split into fragments for the radio, paced so the radio is not overrun, and reassembled on the other side. Videos, round video notes included, are sent as files and play inline. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; voice notes are capped tighter at 512 KiB, and photos are fitted to 256 KiB so they finish inside bitchat's 30 second reassembly window. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
       },
       {
         q: "Why is there no video or voice calling?",
@@ -272,9 +272,10 @@ export const FAQ_SECTIONS: FaqSection[] = [
             Two reasons, and neither of them is a to-do.
             <br />
             <br />
-            <strong>Bandwidth.</strong> Bluetooth Low Energy moves roughly 18 KiB/s on a link. Live
-            voice fits inside that at about 2 KiB/s, which is exactly why holding the mic works.
-            Video does not fit at any quality worth watching, so a call would have to ride the fast
+            <strong>Bandwidth.</strong> Bluetooth Low Energy moves roughly 18 KiB/s on a link,
+            shared with everyone relaying through it. Live voice fits inside that at about 2 KiB/s,
+            which is exactly why holding the mic works, and one-way live video fits at a small
+            picture. A call doubles that in both directions, so it would have to ride the fast
             transports instead.
             <br />
             <br />
@@ -282,12 +283,12 @@ export const FAQ_SECTIONS: FaqSection[] = [
             protocol on both platforms, but Apple requires a paired data path that Android cannot
             complete, so it only ever connects Android to Android, or iPhone to iPhone. LAN crosses
             platforms, but only where both phones share a network. A calling feature that fails on
-            half the pairs is worse than none, so the video packet type was removed from the
-            protocol rather than shipped half working.
+            half the pairs is worse than none.
             <br />
             <br />
             What you get instead is live push-to-talk voice, which covers what a call on a mesh is
-            usually for, and video as a file that plays inline in the chat.
+            usually for, one-way live video to the room or a direct message, and video notes and
+            video files that play inline in the chat.
           </>
         ),
       },
@@ -522,12 +523,12 @@ export const FAQ_SECTIONS: FaqSection[] = [
             </ul>
             The exceptions are attachments posted to the public Bluetooth room, which are signed
             rather than encrypted for bitchat compatibility (nobody can forge or alter one, but any
-            device relaying it can open it), live voice in a public room, which is broadcast the
-            same way while you hold the mic, and public geohash channels, which are readable by
-            design since anyone nearby can join them. Attachments and live voice in a direct message
-            are always sealed in the same Noise session as your text. A broadcast has no single
-            session to seal to, which is why neither media nor live voice is offered in a private
-            channel or group.
+            device relaying it can open it), live voice and live video in a public room, which are
+            broadcast the same way while they run, and public geohash channels, which are readable
+            by design since anyone nearby can join them. Attachments and live streams in a direct
+            message are always sealed in the same Noise session as your text. A broadcast has no
+            single session to seal to, which is why neither media nor live streams are offered in a
+            private channel or group.
             <br />
             <br />
             <strong>Anonymous: partially.</strong>

@@ -171,9 +171,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "Papan pengumuman",
   "home.features.messaging.board.line":
     "Pengumuman yang tersemat pada suatu area hingga tujuh hari.",
-  "home.features.messaging.voice.name": "Suara langsung",
+  "home.features.messaging.voice.name": "Suara dan video langsung",
   "home.features.messaging.voice.line":
-    "Tahan mikrofon dan bicara ke siapa pun dalam jangkauan, ala walkie-talkie.",
+    "Tahan mikrofon untuk bicara, atau siaran langsung dari kamera, ke siapa pun dalam jangkauan.",
   "home.features.messaging.notes.name": "Pesan suara",
   "home.features.messaging.notes.line":
     "Audio terekam, lebih cepat daripada mengetik petunjuk arah.",

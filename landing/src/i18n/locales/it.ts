@@ -170,9 +170,9 @@ const strings: Strings = {
     "Link d'invito per una stanza, o un elenco firmato fino a 16 persone.",
   "home.features.messaging.board.name": "Bacheca",
   "home.features.messaging.board.line": "Avvisi affissi a un'area per un massimo di sette giorni.",
-  "home.features.messaging.voice.name": "Voce dal vivo",
+  "home.features.messaging.voice.name": "Voce e video dal vivo",
   "home.features.messaging.voice.line":
-    "Tieni premuto il microfono e parla con chiunque sia a portata, come un walkie-talkie.",
+    "Tieni premuto il microfono per parlare, o vai in diretta con la fotocamera, con chiunque sia a portata.",
   "home.features.messaging.notes.name": "Note vocali",
   "home.features.messaging.notes.line": "Audio registrato, più veloce che scrivere indicazioni.",
   "home.features.messaging.files.name": "Foto, video e file",

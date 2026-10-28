@@ -168,9 +168,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "İlan panosu",
   "home.features.messaging.board.line":
     "Bir alana en fazla yedi gün boyunca iliştirilen duyurular.",
-  "home.features.messaging.voice.name": "Canlı ses",
+  "home.features.messaging.voice.name": "Canlı ses ve görüntü",
   "home.features.messaging.voice.line":
-    "Mikrofonu basılı tutun ve menzildeki herkesle konuşun, telsiz gibi.",
+    "Konuşmak için mikrofonu basılı tutun ya da kamerayla canlı yayın açın, menzildeki herkese.",
   "home.features.messaging.notes.name": "Sesli notlar",
   "home.features.messaging.notes.line": "Kaydedilmiş ses, tarif yazmaktan daha hızlı.",
   "home.features.messaging.files.name": "Fotoğraf, video ve dosyalar",

@@ -169,9 +169,9 @@ const strings: Strings = {
     "Ссылки-приглашения в комнату или подписанный список до 16 участников.",
   "home.features.messaging.board.name": "Доска объявлений",
   "home.features.messaging.board.line": "Объявления, закреплённые за районом на срок до семи дней.",
-  "home.features.messaging.voice.name": "Живой голос",
+  "home.features.messaging.voice.name": "Живой голос и видео",
   "home.features.messaging.voice.line":
-    "Удерживайте микрофон и говорите со всеми в зоне действия, как по рации.",
+    "Удерживайте микрофон, чтобы говорить, или ведите прямой эфир с камеры для всех в зоне действия.",
   "home.features.messaging.notes.name": "Голосовые заметки",
   "home.features.messaging.notes.line": "Запись голоса, быстрее, чем набирать указания.",
   "home.features.messaging.files.name": "Фото, видео и файлы",

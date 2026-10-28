@@ -61,6 +61,7 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 | 📎 **Sharing**    | Photos & videos           | Send photos and videos over the mesh. Photos support PNG, JPEG, GIF and WebP up to 512 KiB; videos support MP4 and MOV up to 1 MiB           |
 |                   | Voice notes               | Send a recorded voice note over the mesh in AAC, 16 kHz mono, up to 512 KiB                                                                  |
 |                   | Live voice                | Hold the mic to talk to people in range, walkie-talkie style; recordings land in chat as voice notes                                         |
+|                   | Live video                | Go live from the camera to people in range or one contact                                                                                    |
 |                   | File transfer             | Send any file format over the mesh, including documents and archives, up to 1 MiB per file                                                   |
 |                   | Store-and-forward courier | Messages are delivered automatically when a route becomes available, sealed to a one-time prekey for forward secrecy                         |
 | 🔒 **Identity**   | No-account identity       | Identity is an Ed25519 key pair stored only on your device                                                                                   |
@@ -114,7 +115,7 @@ Airhop chooses a transport per message. Bluetooth is the only one that needs no 
 
 |                   | BLE mesh                                               | LAN (mDNS + TCP)                        | Wi-Fi Aware                                | Nostr relays                    | Courier                                  |
 | ----------------- | ------------------------------------------------------ | --------------------------------------- | ------------------------------------------ | ------------------------------- | ---------------------------------------- |
-| Carries           | Everything, including live voice                       | Everything BLE carries                  | Everything BLE carries, same platform only | DMs and location channels       | Sealed text envelopes, up to 16 KiB each |
+| Carries           | Everything, including live voice and video             | Everything BLE carries                  | Everything BLE carries, same platform only | DMs and location channels       | Sealed text envelopes, up to 16 KiB each |
 | Needs internet    | No                                                     | No, but everyone must be on one network | No                                         | Yes                             | No                                       |
 | iPhone to Android | Yes                                                    | Yes                                     | No                                         | Yes                             | Yes                                      |
 | Range             | 30 to 50 m indoors, up to 100 m line of sight, per hop | Wherever the network reaches            | ~30 m                                      | Global                          | Wherever the carrier walks               |

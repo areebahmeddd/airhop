@@ -145,6 +145,13 @@ export default function PrivacyPage() {
                 ordinary voice note.
               </li>
               <li>
+                Live video, on unless you turn it off, and only while you choose to go live. Your
+                camera, and your microphone unless you mute it, stream to everyone in Bluetooth
+                range. Like live voice, a public stream is signed but not encrypted, and in a direct
+                message it stays inside that peer's encrypted session. When it ends, a short stream
+                is also sent as an ordinary video, and everyone who received it keeps a recording.
+              </li>
+              <li>
                 A screenshot notice, in private conversations only. Taking a screenshot in a direct
                 message, private group, or private channel tells the people in it that you did,
                 under your display name. In the public mesh room and location channels nothing is
@@ -476,8 +483,8 @@ export default function PrivacyPage() {
               <li>
                 <strong>System permissions.</strong> Bluetooth, location, microphone, camera, photo
                 library, and notification access can each be revoked in your device settings at any
-                time. Camera access is used to scan QR codes and to take photos or videos you choose
-                to send.
+                time. Camera access is used to scan QR codes, to take photos, videos and video notes
+                you choose to send, and to go live when you choose to.
               </li>
             </ul>
           </section>
