@@ -102,12 +102,6 @@ final class AirhopVideoSurfaceView: UIView {
     }
   }
 
-  @objc var resizeMode: NSString = "cover" {
-    didSet {
-      displayLayer.videoGravity = resizeMode == "contain" ? .resizeAspect : .resizeAspectFill
-    }
-  }
-
   override init(frame: CGRect) {
     super.init(frame: frame)
     displayLayer.videoGravity = .resizeAspectFill

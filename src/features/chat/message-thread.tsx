@@ -5459,7 +5459,6 @@ export default function MessageThread({
 
       {liveStudio !== null && (
         <LiveVideoStudio
-          visible
           channel={channel}
           audienceName={isDM ? displayName : null}
           micAllowed={liveStudio.micAllowed}

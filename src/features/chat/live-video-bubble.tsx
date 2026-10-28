@@ -28,9 +28,9 @@ import React, {
 } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-// The width every media bubble in a thread uses.
+// MEDIA_BUBBLE_WIDTH in message-thread.tsx, the width of every media bubble.
 const WIDTH = 220;
-const SOUND_BUTTON = 32;
+const SOUND_BADGE = 32;
 
 const noop = (): (() => void) => () => undefined;
 
@@ -80,7 +80,6 @@ export default function LiveVideoBubble({
       <AirhopVideoSurface
         style={StyleSheet.absoluteFill}
         surfaceKey={`${message.senderID}:${live.streamID}`}
-        resizeMode="cover"
       />
       <View style={styles.topRow} pointerEvents="none">
         <View style={styles.badge}>
@@ -178,8 +177,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       position: "absolute",
       bottom: Spacing.sm,
       end: Spacing.sm,
-      width: SOUND_BUTTON,
-      height: SOUND_BUTTON,
+      width: SOUND_BADGE,
+      height: SOUND_BADGE,
       borderRadius: Radius.full,
       alignItems: "center",
       justifyContent: "center",

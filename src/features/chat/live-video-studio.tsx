@@ -3,13 +3,13 @@
 //
 // Before going live the quality, the camera and the microphone can all be
 // changed; once live only the camera can, since START has told viewers what
-// the stream carries. Leaving any way at all (the close button, system back,
-// the app losing the foreground, the camera being taken) ends the stream with
-// END rather than abandoning it, and the recording comes back to the thread.
-// Only "Discard" sends CANCELED, which tells viewers to drop what they have.
+// the stream carries. Leaving any way at all (End, system back, the app going
+// to the background, the camera being taken, the thread going away) ends the
+// stream with END and hands its recording back to the thread. Only Discard
+// sends CANCELED, which tells viewers to drop what they have.
 //
-// Permissions are the thread's to ask before this opens: a blocked-permission
-// alert drawn from here would sit under this modal.
+// Mounted only while open. Permissions are the thread's to ask first: a
+// blocked-permission alert drawn from here would sit under this modal.
 
 import type { CameraFacing } from "@bridge/NativeAirhopVideo";
 import { AirhopCameraPreview } from "@bridge/NativeAirhopVideoViews";
@@ -33,7 +33,6 @@ import UpperText from "@ui/components/upper-text";
 import {
   FontSize,
   FontWeight,
-  hitSlopFor,
   MIN_TOUCH,
   Radius,
   Spacing,
@@ -71,17 +70,14 @@ const QUALITY_HINT: Record<LiveVideoQualityName, TranslationKey> = {
   high: "chat.live_video.quality_high_hint",
 };
 
-// Matches the compose row's round controls.
-const CONTROL_SIZE = 44;
+const CONTROL_SIZE = MIN_TOUCH;
 // How often the timer and the signal meter refresh while live.
 const STATS_INTERVAL_MS = 500;
 
-// Packets waiting to leave, as the congestion controller reads them: under its
-// high water the link is keeping up, past its skip water video is dropping.
 function signalOf(stats: LiveVideoSendStats | null): 0 | 1 | 2 {
   if (stats === null) return 2;
   if (stats.skipping) return 0;
-  return stats.backlog >= 14 ? 1 : 2;
+  return stats.congested ? 1 : 2;
 }
 
 // Three bars of rising height, as a phone's signal meter draws them.
@@ -94,7 +90,6 @@ const SIGNAL_KEY: Record<0 | 1 | 2, TranslationKey> = {
 };
 
 interface Props {
-  visible: boolean;
   channel: string;
   // Whom the stream reaches, for the line under the preview: null for the
   // Bluetooth room, a name for a DM.
@@ -107,14 +102,13 @@ interface Props {
 }
 
 export default function LiveVideoStudio({
-  visible,
   channel,
   audienceName,
   micAllowed,
   onClose,
   onFinished,
   onToast,
-}: Props): React.JSX.Element | null {
+}: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
@@ -145,7 +139,7 @@ export default function LiveVideoStudio({
   // The camera follows the quality, so the preview always shows the frame the
   // stream will have.
   useEffect(() => {
-    if (!visible || phaseRef.current !== "preview") return;
+    if (phaseRef.current !== "preview") return;
     let cancelled = false;
     setCameraReady(false);
     LiveVideoSendSession.openCamera(
@@ -163,19 +157,18 @@ export default function LiveVideoStudio({
     return () => {
       cancelled = true;
     };
-  }, [visible, quality]);
+  }, [quality]);
 
   // Whether anyone can watch: re-asked throughout, since peers walk into and
   // out of range with the camera open, and a stream sent to nobody should say
   // so rather than show a healthy signal.
   useEffect(() => {
-    if (!visible) return;
     const check = (): void =>
       setCanGoLive(getMeshService()?.canSendLiveVideo(channel) === true);
     check();
     const timer = setInterval(check, 2_000);
     return () => clearInterval(timer);
-  }, [visible, channel]);
+  }, [channel]);
 
   const end = useCallback(
     async (canceled: boolean): Promise<void> => {
@@ -189,9 +182,6 @@ export default function LiveVideoStudio({
         sessionRef.current = null;
         if (recording !== null) callbacks.current.onFinished(recording);
       }
-      setConfirmingEnd(false);
-      setStats(null);
-      setPhaseBoth("preview");
       callbacks.current.onClose();
     },
     [setPhaseBoth],
@@ -221,8 +211,6 @@ export default function LiveVideoStudio({
     setPhaseBoth("live");
   }, [channel, quality, micOn, end, setPhaseBoth]);
 
-  // Leaving the app ends the stream: the camera stops in the background on
-  // both platforms, and a stream with no picture is not live.
   const endRef = useRef(end);
   useEffect(() => {
     endRef.current = end;
@@ -242,10 +230,12 @@ export default function LiveVideoStudio({
     }, STATS_INTERVAL_MS);
     return () => clearInterval(timer);
   }, [phase]);
+
+  // Going to the background ends the stream: the camera stops there on both
+  // platforms. Not on inactive, which iOS reports for Control Center and a
+  // call banner, both of which leave the camera running.
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
-      // Background, not inactive: iOS reports inactive for Control Center and
-      // a call banner, which leave the camera running.
       if (state === "background" && phaseRef.current === "live") {
         void endRef.current(false);
       }
@@ -253,11 +243,10 @@ export default function LiveVideoStudio({
     return () => sub.remove();
   }, []);
 
-  // The camera is released whenever the studio closes or goes away. A stream
-  // still live then ends with END and its recording is still handed back: the
-  // thread can go from under a live studio, as when a ring is answered.
+  // The camera is released when the studio goes. A stream still live then ends
+  // and its recording is still handed back: the thread can go from under a
+  // live studio, as when a ring is answered.
   useEffect(() => {
-    if (!visible) return;
     return () => {
       if (phaseRef.current === "live" || phaseRef.current === "starting") {
         void getMeshService()
@@ -268,24 +257,23 @@ export default function LiveVideoStudio({
       }
       void LiveVideoSendSession.closeCamera();
     };
-  }, [visible]);
+  }, []);
 
   const requestClose = useCallback((): void => {
     if (phaseRef.current === "live") {
       setConfirmingEnd(true);
       return;
     }
-    if (phaseRef.current === "preview") void end(true);
-  }, [end]);
+    if (phaseRef.current === "preview") callbacks.current.onClose();
+  }, []);
 
   useEffect(() => {
-    if (!visible) return;
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
       requestClose();
       return true;
     });
     return () => sub.remove();
-  }, [visible, requestClose]);
+  }, [requestClose]);
 
   const flip = useCallback((): void => {
     const next: CameraFacing = facing === "front" ? "back" : "front";
@@ -293,8 +281,6 @@ export default function LiveVideoStudio({
     setFacing(next);
     void LiveVideoSendSession.setFacing(next).catch(() => undefined);
   }, [facing]);
-
-  if (!visible) return null;
 
   const live = phase === "live";
   const busy = phase === "starting" || phase === "ending";
@@ -318,7 +304,6 @@ export default function LiveVideoStudio({
             onPress={requestClose}
             disabled={busy}
             style={styles.iconButton}
-            hitSlop={hitSlopFor(CONTROL_SIZE)}
             accessibilityRole="button"
             accessibilityLabel={T("common.close")}
           >
@@ -343,7 +328,6 @@ export default function LiveVideoStudio({
             onPress={flip}
             disabled={busy}
             style={styles.iconButton}
-            hitSlop={hitSlopFor(CONTROL_SIZE)}
             accessibilityRole="button"
             accessibilityLabel={T("chat.live_video.flip")}
           >
@@ -449,7 +433,6 @@ export default function LiveVideoStudio({
                   onPress={() => setMicOn((on) => !on)}
                   disabled={!micAllowed}
                   style={[styles.round, !micOn && styles.roundOff]}
-                  hitSlop={hitSlopFor(CONTROL_SIZE)}
                   accessibilityRole="switch"
                   accessibilityState={{
                     checked: micOn,

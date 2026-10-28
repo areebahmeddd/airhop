@@ -57,6 +57,7 @@ const SENDER = "a1b2c3d4e5f60718";
 const ROOM = "#bluetooth";
 
 let now = 1_000_000;
+let watching: string | null = null;
 
 function setup() {
   const played: string[] = [];
@@ -70,9 +71,7 @@ function setup() {
   return { receiver, played };
 }
 
-let watching: string | null = null;
-
-function stream(hasAudio = true) {
+function stream() {
   const id = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8]);
   const q = LIVE_VIDEO_QUALITIES.low;
   const packetizer = new VideoStreamPacketizer(
@@ -82,7 +81,7 @@ function stream(hasAudio = true) {
       height: q.height,
       fps: q.fps,
       bitrateKbps: 18,
-      hasAudio,
+      hasAudio: true,
     },
     q.fec,
   );
@@ -303,7 +302,7 @@ describe("LiveVideoReceiver", () => {
     expect(rows.some((m) => m.liveVideo?.state === "live")).toBe(true);
   });
 
-  test("a stream of START alone never takes a row and gives its slot back", () => {
+  test("a stream of START alone never takes a row, and is dropped for good", () => {
     const { receiver } = setup();
     const { packetizer, streamID } = stream();
     for (let i = 0; i < 12; i++) {

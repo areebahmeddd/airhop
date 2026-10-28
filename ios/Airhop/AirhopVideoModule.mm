@@ -63,7 +63,6 @@ RCT_EXTERN_METHOD(stopCamera:(RCTPromiseResolveBlock)resolve
 @interface RCT_EXTERN_MODULE(AirhopVideoSurfaceManager, RCTViewManager)
 
 RCT_EXPORT_VIEW_PROPERTY(surfaceKey, NSString)
-RCT_EXPORT_VIEW_PROPERTY(resizeMode, NSString)
 
 @end
 

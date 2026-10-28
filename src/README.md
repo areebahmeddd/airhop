@@ -40,6 +40,7 @@ than kept flat:
 | `rooms/`     | Private-channel and private-group crypto                          |
 | `courier/`   | Store-and-forward envelopes and the one-time prekeys they seal to |
 | `voice/`     | Live push-to-talk capture and playback                            |
+| `video/`     | Live video packets, erasure code, stream send and receive         |
 
 `wire/` holds the bytes that must stay compatible with bitchat, so a change to
 byte layout is visible as a change under one directory.
@@ -132,7 +133,7 @@ The test suite follows four principles:
 | ---------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
 | `core/crypto/`   | Noise XX/X, Double Ratchet, keychain, contact cards, verification QR   | None                                      |
 | `core/encoding/` | Base64 round-trips and malformed input                                 | None                                      |
-| `core/mesh/`     | Wire format, routing, gossip, fragments, voice, bulletin board         | Native BLE I/O                            |
+| `core/mesh/`     | Wire format, routing, gossip, fragments, voice, video, bulletin board  | Native BLE I/O                            |
 | `core/nostr/`    | Gift-wrap, geohash identity, relay discovery, bitchat interoperability | Live network calls (`NostrClient` mocked) |
 | `core/payments/` | Cashu BDHKE, DLEQ, proof selection, Nutzap, seed handling              | Mint connectivity                         |
 | `core/router/`   | Peer registry and transport selection                                  | Native transports                         |

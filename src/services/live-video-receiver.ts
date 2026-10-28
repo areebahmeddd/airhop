@@ -3,22 +3,20 @@
 // ChatLiveVideoCoordinator in Airhop's terms; LIVE_VIDEO_V1 "Receiver
 // behavior" is the contract.
 //
-// A stream is received whether or not anyone is watching. Assembling and
-// recording are cheap, and a stream that only existed for whoever had the
-// right chat open would leave no trace for anyone else, so the row appears
-// with the first picture, not with START: a stream that never shows one (a
-// stray START, a stream canceled within a second) leaves nothing behind.
-// Decoding is not cheap, so units go to the
+// A stream is received whether or not anyone is watching: assembling and
+// recording are cheap, and a stream only whoever had the right chat open could
+// see would leave no trace for anyone else. Its row appears with the first
+// picture rather than with START, so a stray START or a stream canceled within
+// a second leaves nothing behind. Decoding is not cheap, so units reach the
 // screen only while the chat is open, and sound only for the one stream the
 // user unmuted, never over live voice.
 //
-// A stream goes quiet as "reconnecting" after 4 s and keeps its row open; a
-// quiet one whose END arrived finishes, and one with no END closes after 90 s.
-// Any end leaves the recording rebuilt here in the row, and if the sender's
-// own file (video_<id>.mp4) arrives later it takes the row over. Packets after
-// a silence close open a new row for the new segment, since joining the two
-// recordings needs a remux; the sender's file, being the whole stream, then
-// replaces every segment's row with one.
+// A stream quiet for 4 s shows as reconnecting and keeps its row; a quiet one
+// whose END arrived finishes, and one with no END closes after 90 s. Every end
+// leaves the recording rebuilt here in the row, and the sender's own file
+// (video_<id>.mp4), if it arrives, takes the row over. Packets after a silence
+// close open a row for the new segment, since joining two recordings needs a
+// remux; the sender's file, being the whole stream, replaces both.
 
 import NativeAirhopVideo from "@bridge/NativeAirhopVideo";
 import { bytesToBase64 } from "@core/encoding/base64";
@@ -61,10 +59,8 @@ const TICK_MS = 40;
 // late packets cannot open it again.
 const FINISHED_MEMORY = 64;
 
-export const LIVE_VIDEO_ROW_PREFIX = "live-video-";
-
 export function liveVideoRowID(senderPeerID: string, streamID: string): string {
-  return `${LIVE_VIDEO_ROW_PREFIX}${senderPeerID}-${streamID}`;
+  return `live-video-${senderPeerID}-${streamID}`;
 }
 
 interface Unit {
@@ -107,8 +103,8 @@ export interface LiveVideoReceiverDeps {
 
 export class LiveVideoReceiver {
   private readonly streams = new Map<string, Stream>();
-  // Streams that ended, keyed like `streams`, true when the silence closed
-  // them (packets may open a new row) and false when the sender ended them.
+  // Streams that ended, keyed like `streams`: true when their packets may
+  // open a new row, false when the stream is over for good.
   private readonly finished = new Map<string, boolean>();
   private timer: ReturnType<typeof setInterval> | null = null;
   private audibleRow: string | null = null;
@@ -147,8 +143,8 @@ export class LiveVideoReceiver {
 
     let stream = this.streams.get(key);
     if (stream === undefined) {
-      const closedBySilence = this.finished.get(key);
-      if (closedBySilence === false) return;
+      const reopenable = this.finished.get(key);
+      if (reopenable === false) return;
       // One camera, one stream: a sender's new stream means the old one is
       // over, even if its END was lost.
       for (const other of [...this.streams.values()]) {
@@ -156,7 +152,7 @@ export class LiveVideoReceiver {
       }
       if (this.streams.size >= MAX_STREAMS) return;
       stream = this.open(key, senderPeerID, streamID, channel, now);
-      if (closedBySilence === true) {
+      if (reopenable === true) {
         // A new row for the new segment, so its ID must differ from the old.
         stream.rowID = `${stream.rowID}-${String(now)}`;
         this.finished.delete(key);
@@ -164,7 +160,7 @@ export class LiveVideoReceiver {
     }
 
     if (!this.admit(stream, payload.length, now)) {
-      this.close(stream, "bound");
+      this.close(stream, "ended");
       return;
     }
     stream.lastPacketMs = now;
@@ -242,11 +238,10 @@ export class LiveVideoReceiver {
 
   // A stream with a row ends as its recording; one that never showed a
   // picture just goes, its recording with it. A reopenable one takes a new row
-  // if its packets come back: the mesh restarted, or it simply had no picture
-  // yet.
+  // if its packets come back, as they do once a stopped mesh restarts.
   private end(stream: Stream, reopenable: boolean): void {
     if (stream.rowAdded) {
-      this.close(stream, reopenable ? "silence" : "ended");
+      this.close(stream, reopenable ? "reopenable" : "ended");
       return;
     }
     this.streams.delete(stream.key);
@@ -256,12 +251,14 @@ export class LiveVideoReceiver {
     if (this.streams.size === 0) this.stopTicking();
   }
 
+  // "replaced" is the sender's file taking the row, which discards the
+  // recording rebuilt here.
   private close(
     stream: Stream,
-    why: "ended" | "silence" | "bound" | "replaced",
+    why: "ended" | "reopenable" | "replaced",
   ): void {
     this.streams.delete(stream.key);
-    this.rememberFinished(stream.key, why === "silence");
+    this.rememberFinished(stream.key, why === "reopenable");
     this.deps.stopAudio(stream.key);
     NativeAirhopVideo?.releaseDecoder(stream.key);
     if (this.audibleRow === stream.rowID) this.setAudible(null);
@@ -508,9 +505,9 @@ export class LiveVideoReceiver {
     });
   }
 
-  private rememberFinished(key: string, bySilence: boolean): void {
+  private rememberFinished(key: string, reopenable: boolean): void {
     this.finished.delete(key);
-    this.finished.set(key, bySilence);
+    this.finished.set(key, reopenable);
     while (this.finished.size > FINISHED_MEMORY) {
       this.finished.delete(this.finished.keys().next().value as string);
     }
@@ -541,16 +538,18 @@ export class LiveVideoReceiver {
         // cannot show anything, or one only holding a slot.
         if (now - stream.openedAtMs >= PICTURE_DEADLINE_MS) {
           this.end(stream, false);
-        } else this.apply(stream, stream.assembler.onTick(now), now);
+        } else {
+          this.apply(stream, stream.assembler.onTick(now), now);
+        }
         continue;
       }
       const silent = now - stream.lastPacketMs;
       if (silent >= CLOSE_AFTER_SILENCE_MS) {
-        // drain, not flush: flush ends the stream, and one closed by silence
-        // must stay open to a resumed segment.
+        // drain, not flush: flush ends the stream for good, and one closed by
+        // silence must stay open to a resumed segment.
         this.apply(stream, stream.assembler.drain(), now);
         this.present(stream, stream.playout.flush());
-        if (this.streams.has(stream.key)) this.close(stream, "silence");
+        if (this.streams.has(stream.key)) this.close(stream, "reopenable");
         continue;
       }
       if (silent >= QUIET_MS) {

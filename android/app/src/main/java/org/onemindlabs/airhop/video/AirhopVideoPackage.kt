@@ -36,11 +36,6 @@ internal class VideoSurfaceManager : SimpleViewManager<VideoSurfaceView>() {
         view.surfaceKey = key ?: ""
     }
 
-    // The surface is laid out at the stream's own aspect, so filling it is
-    // already a cover; there is nothing to crop.
-    @ReactProp(name = "resizeMode")
-    fun setResizeMode(@Suppress("UNUSED_PARAMETER") view: VideoSurfaceView, mode: String?) = Unit
-
     override fun onDropViewInstance(view: VideoSurfaceView) {
         view.dispose()
         super.onDropViewInstance(view)

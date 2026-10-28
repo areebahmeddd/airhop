@@ -46,12 +46,12 @@ const FINAL_DRAIN_MS = 8_000;
 // One AAC-LC frame: 1024 samples at 16 kHz.
 const AUDIO_FRAME_MS = 64;
 
+// What the studio's timer and signal meter show.
 export interface LiveVideoSendStats {
   elapsedMs: number;
-  packetsSent: number;
-  bitrate: number;
-  // Packets waiting to leave: the congestion signal, shown as a meter.
-  backlog: number;
+  // The queue is past its high water and the bitrate is backing off.
+  congested: boolean;
+  // So far behind that only sound is going out.
   skipping: boolean;
 }
 
@@ -90,11 +90,11 @@ export class LiveVideoSendSession {
   private awaitingKeyframe = false;
   private audioFrames = 0;
   private audioOffsetMs: number | null = null;
-  private packetsSent = 0;
   // Radio writes refused since the last congestion check, against packets
   // handed over in it.
   private refusedInWindow = 0;
   private sentInWindow = 0;
+  private lastBacklog = 0;
   private readonly highWater: number;
   private readonly skipWater: number;
   // Live from start() until stop() is called.
@@ -110,7 +110,7 @@ export class LiveVideoSendSession {
   private errorSub: EventSubscription | null = null;
 
   constructor(
-    readonly quality: LiveVideoQuality,
+    private readonly quality: LiveVideoQuality,
     private readonly deps: Deps,
   ) {
     this.now = deps.now ?? Date.now;
@@ -130,6 +130,8 @@ export class LiveVideoSendSession {
     );
     const budget = deps.packetBudget;
     this.pacer = LiveVideoPacer.forQuality(quality, budget);
+    // bitchat's marks: back off at 0.6 s of the route's packets queued, drop
+    // video at 1.5 s.
     this.highWater = Math.max(6, Math.floor((budget * 6) / 10));
     this.skipWater = Math.max(18, Math.floor((budget * 3) / 2));
     this.congestion = new LiveVideoCongestionController(quality.videoBitrate, {
@@ -173,9 +175,7 @@ export class LiveVideoSendSession {
   stats(): LiveVideoSendStats {
     return {
       elapsedMs: this.running ? this.now() - this.startedAtMs : 0,
-      packetsSent: this.packetsSent,
-      bitrate: this.congestion.bitrate,
-      backlog: this.pacer.backlog,
+      congested: this.lastBacklog >= this.highWater,
       skipping: this.congestion.skipping,
     };
   }
@@ -337,10 +337,8 @@ export class LiveVideoSendSession {
     const at = this.elapsed();
     if (at - this.lastCongestionMs >= CONGESTION_CHECK_MS) {
       this.lastCongestionMs = at;
-      const decision = this.congestion.onBacklog(
-        Math.max(this.pacer.backlog, this.radioBacklog()),
-        at,
-      );
+      this.lastBacklog = Math.max(this.pacer.backlog, this.radioBacklog());
+      const decision = this.congestion.onBacklog(this.lastBacklog, at);
       NativeAirhopVideo?.setBitrate(decision.bitrate);
       if (decision.skipVideo) this.awaitingKeyframe = true;
       if (decision.requestKeyframe) NativeAirhopVideo?.requestKeyframe();
@@ -350,7 +348,6 @@ export class LiveVideoSendSession {
   }
 
   private sendPacket(packet: Uint8Array): void {
-    this.packetsSent++;
     this.sentInWindow++;
     this.deps.send(packet);
   }

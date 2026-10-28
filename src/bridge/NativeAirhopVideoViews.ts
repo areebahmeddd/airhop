@@ -8,10 +8,10 @@
 // as a mirror would be. Neither does anything on its own.
 import { requireNativeComponent, type ViewProps } from "react-native";
 
+// The picture fills the view, cropped to it; callers size the view to the
+// stream's aspect.
 export interface VideoSurfaceProps extends ViewProps {
   surfaceKey: string;
-  // "cover" crops to fill, "contain" letterboxes.
-  resizeMode?: "cover" | "contain";
 }
 
 export const AirhopVideoSurface =

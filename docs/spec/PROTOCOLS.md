@@ -836,15 +836,15 @@ END      0x02  [durationMs u32][videoUnits u16][audioUnits u16][packets u16]
 CANCELED 0x04  no body
 ```
 
-| Field         | Value                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------ |
-| Video         | H.264 Constrained Baseline, Annex B, SPS and PPS in-band on every IDR                      |
-| Audio         | Optional raw AAC-LC, 16 kHz mono, 64 ms frames: live voice's own format                    |
-| Erasure code  | Systematic Reed-Solomon over GF(2^8), polynomial `0x11D`, Cauchy rows; any k of k + r      |
-| Block         | At most 32 sources and 16 parity, closed by count, by time or ahead of a keyframe          |
-| START         | At sequence 0 and again before every keyframe, so a late viewer starts at the next one     |
-| END, CANCELED | Sent three times; copies are duplicates. bitchat sends CANCELED once, which reads the same |
-| Final file    | `video_<streamID hex>.mp4`, resent only when it fits 100 KiB, and takes over the stream    |
+| Field         | Value                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------- |
+| Video         | H.264 Constrained Baseline, Annex B, SPS and PPS in-band on every IDR                   |
+| Audio         | Optional raw AAC-LC, 16 kHz mono, 64 ms frames: live voice's own format                 |
+| Erasure code  | Systematic Reed-Solomon over GF(2^8), polynomial `0x11D`, Cauchy rows; any k of k + r   |
+| Block         | At most 32 sources and 16 parity, closed by count, by time or ahead of a keyframe       |
+| START         | At sequence 0 and again before every keyframe, so a late viewer starts at the next one  |
+| END, CANCELED | Sent three times and the copies ignored; bitchat sends CANCELED once                    |
+| Final file    | `video_<streamID hex>.mp4`, resent only when it fits 100 KiB, and takes over the stream |
 
 **Sending.** Presets Low (144x192, 8 fps, 18 kbps video), Medium (240x320, 12 fps,
 56 kbps) and High (480x640, 24 fps, 360 kbps), each with its own parity ratios,
@@ -866,7 +866,7 @@ freezes the picture rather than corrupting it. Playback runs 350 ms behind the
 sender's clock and rebases on a unit more than 1.5 s late. Bounds per phone and
 stream: 4 streams, 24 MiB, 96 kB/s with 3 s of burst, 48 blocks, 192 units a
 track. A sender holds one stream at a time, so a new one ends its last even if
-that END was lost, and a stream with no picture after 10 s gives its slot back.
+that END was lost, and a stream with no picture after 10 s is dropped for good.
 A stream quiet for 4 s shows as reconnecting; one whose END arrived
 finishes; one with no END closes after 90 s. Every stream becomes a row in its
 chat with its first picture, so a stray START or a stream canceled within a
