@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # The reviewed directory every bitchat client routes by; it changes rarely, so staleness is in months.
+  # Default routing directory shared by all bitchat clients
   SOURCE_REPOSITORY: https://github.com/permissionlesstech/bitchat.git
   SOURCE_OWNER_REPO: permissionlesstech/bitchat
   SOURCE_PATH: relays/online_relays_gps.csv
