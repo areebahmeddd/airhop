@@ -717,6 +717,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "ਵੀਡੀਓ ਲਈ ਬਹੁਤ ਹੌਲੀ, ਸਿਰਫ਼ ਆਵਾਜ਼ ਭੇਜੀ ਜਾ ਰਹੀ ਹੈ",
   "chat.live_video.mic": "ਮਾਈਕ੍ਰੋਫ਼ੋਨ",
+  "chat.live_video.no_sound": "ਆਵਾਜ਼ ਨਹੀਂ",
   "chat.live_video.flip": "ਕੈਮਰਾ ਬਦਲੋ",
   "chat.live_video.camera_failed": "ਕੈਮਰਾ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕਿਆ",
   "chat.live_video.camera_lost": "ਕੈਮਰਾ ਰੁਕ ਗਿਆ, ਇਸ ਲਈ ਸਟ੍ਰੀਮ ਖਤਮ ਹੋ ਗਈ",

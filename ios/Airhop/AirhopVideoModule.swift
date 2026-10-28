@@ -20,6 +20,7 @@
 import AVFoundation
 import Foundation
 import React
+import UIKit
 
 private enum VideoEvent {
   static let encoded = "AirhopVideo.encoded"
@@ -66,6 +67,7 @@ final class AirhopVideoCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDel
         if !self.session.isRunning { self.session.startRunning() }
         guard self.session.isRunning else { throw VideoError.camera }
         self.observeInterruptions()
+        Self.keepScreenOn(true)
         completion(nil)
       } catch {
         completion(error)
@@ -97,8 +99,16 @@ final class AirhopVideoCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDel
     sessionQueue.async {
       self.removeObservers()
       if self.session.isRunning { self.session.stopRunning() }
+      Self.keepScreenOn(false)
       completion()
     }
+  }
+
+  // A studio is a camera people prop up and leave. Auto-lock would send the
+  // app to the background, which ends the stream. Dispatched from the session
+  // queue, so a start and a stop reach the main queue in the order they ran.
+  private static func keepScreenOn(_ on: Bool) {
+    DispatchQueue.main.async { UIApplication.shared.isIdleTimerDisabled = on }
   }
 
   // MARK: Encoding

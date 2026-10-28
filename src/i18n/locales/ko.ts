@@ -709,6 +709,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "뒤처지는 중",
   "chat.live_video.signal_poor": "영상을 보내기엔 너무 느려 소리만 보내는 중",
   "chat.live_video.mic": "마이크",
+  "chat.live_video.no_sound": "소리 없음",
   "chat.live_video.flip": "카메라 전환",
   "chat.live_video.camera_failed": "카메라를 열 수 없습니다",
   "chat.live_video.camera_lost": "카메라가 멈춰 스트리밍이 종료되었습니다",

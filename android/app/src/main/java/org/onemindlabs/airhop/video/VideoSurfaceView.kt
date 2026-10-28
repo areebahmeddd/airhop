@@ -2,10 +2,10 @@
 // rendering straight onto it.
 //
 // Units arrive already paced by TypeScript and are shown the moment they
-// decode. A surface that has just appeared, or whose decoder failed, waits for
-// the next keyframe rather than painting deltas with nothing under them. Each
-// surface decodes on a thread of its own, so a slow codec holds up only its
-// own stream.
+// decode. A surface that has just appeared, has lost a unit, or whose decoder
+// failed waits for the next keyframe rather than painting deltas with nothing
+// under them. Each surface decodes on a thread of its own, so a slow codec
+// holds up only its own stream.
 package org.onemindlabs.airhop.video
 
 import android.content.Context
@@ -43,6 +43,12 @@ internal class VideoSurfaceView(context: Context) :
         const val MAX_WIDTH = 480
         const val MAX_HEIGHT = 640
         const val INPUT_WAIT_US = 10_000L
+        // Tries for an input buffer, draining output between them: a codec with
+        // every input held is waiting for its output to be taken.
+        const val INPUT_ATTEMPTS = 5
+        // How long the first output poll after a queued unit waits, so its
+        // picture shows now rather than when the next unit arrives.
+        const val OUTPUT_WAIT_US = 10_000L
     }
 
     private val thread = HandlerThread("airhop-video-decode").apply { start() }
@@ -99,15 +105,20 @@ internal class VideoSurfaceView(context: Context) :
     override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) =
         Unit
 
+    // False, so the texture outlives this call: the codec may still render into
+    // it until the decode thread releases both, in that order. Once dispose()
+    // has wound the thread down it takes the codec with it, and the view
+    // releases the texture itself.
     override fun onSurfaceTextureDestroyed(texture: SurfaceTexture): Boolean {
         if (surfaceKey.isNotEmpty()) VideoSurfaces.detach(surfaceKey, this)
-        handler.post {
+        val posted = handler.post {
             releaseCodec()
             surface?.release()
             surface = null
             awaitingKeyframe = true
+            texture.release()
         }
-        return true
+        return !posted
     }
 
     override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
@@ -131,16 +142,20 @@ internal class VideoSurfaceView(context: Context) :
         }
         val decoder = codec ?: return
         try {
-            val index = decoder.dequeueInputBuffer(INPUT_WAIT_US)
-            if (index >= 0) {
-                decoder.getInputBuffer(index)?.apply {
-                    clear()
-                    put(annexB)
-                }
-                inputPtsUs += 1_000
-                decoder.queueInputBuffer(index, 0, annexB.size, inputPtsUs, 0)
+            val index = dequeueInput(decoder)
+            if (index < 0) {
+                // This unit is lost, and the deltas after it would paint over
+                // the hole: hold the picture until the next keyframe instead.
+                awaitingKeyframe = true
+                return
             }
-            render(decoder)
+            decoder.getInputBuffer(index)?.apply {
+                clear()
+                put(annexB)
+            }
+            inputPtsUs += 1_000
+            decoder.queueInputBuffer(index, 0, annexB.size, inputPtsUs, 0)
+            render(decoder, OUTPUT_WAIT_US)
         } catch (error: IllegalStateException) {
             // CodecException is one: the picture holds until the next keyframe.
             Log.w(TAG, "Decoder error, waiting for a keyframe: ${error.message}")
@@ -170,10 +185,22 @@ internal class VideoSurfaceView(context: Context) :
             false
         }
 
-    private fun render(decoder: MediaCodec) {
+    private fun dequeueInput(decoder: MediaCodec): Int {
+        repeat(INPUT_ATTEMPTS) {
+            val index = decoder.dequeueInputBuffer(INPUT_WAIT_US)
+            if (index >= 0) return index
+            render(decoder)
+        }
+        return -1
+    }
+
+    // Shows every decoded picture. Only the first poll may wait.
+    private fun render(decoder: MediaCodec, firstWaitUs: Long = 0L) {
         val info = MediaCodec.BufferInfo()
+        var waitUs = firstWaitUs
         while (true) {
-            val index = decoder.dequeueOutputBuffer(info, 0L)
+            val index = decoder.dequeueOutputBuffer(info, waitUs)
+            waitUs = 0L
             if (index >= 0) {
                 decoder.releaseOutputBuffer(index, info.size > 0)
             } else if (index == MediaCodec.INFO_TRY_AGAIN_LATER) {

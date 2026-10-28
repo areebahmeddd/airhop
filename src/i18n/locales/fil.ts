@@ -744,6 +744,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "Masyadong mabagal para sa video, tunog lang ang ipinapadala",
   "chat.live_video.mic": "Mikropono",
+  "chat.live_video.no_sound": "Walang tunog",
   "chat.live_video.flip": "Palitan ang camera",
   "chat.live_video.camera_failed": "Hindi mabuksan ang camera",
   "chat.live_video.camera_lost": "Huminto ang camera, kaya natapos ang stream",

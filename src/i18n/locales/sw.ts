@@ -730,6 +730,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "Inachelewa",
   "chat.live_video.signal_poor": "Polepole mno kwa video, sauti pekee inatumwa",
   "chat.live_video.mic": "Maikrofoni",
+  "chat.live_video.no_sound": "Hakuna sauti",
   "chat.live_video.flip": "Badilisha kamera",
   "chat.live_video.camera_failed": "Imeshindwa kufungua kamera",
   "chat.live_video.camera_lost":

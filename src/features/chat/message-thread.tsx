@@ -550,18 +550,23 @@ function VideoAttachment({
 // A round video note: a silent loop in the thread, with sound on tap. Muted
 // autoplay is what makes it read as a face rather than a file, and it stops for
 // anyone who asked the OS for less motion, who gets a still frame and a tap.
+// Sound is the thread's to give, one clip at a time as for voice notes, and a
+// live voice burst turns it off as it pauses a voice note.
 function VideoNoteAttachment({
   uri,
+  withSound,
+  onToggleSound,
   onAskResend,
 }: {
   uri: string;
+  withSound: boolean;
+  onToggleSound: () => void;
   onAskResend?: () => void;
 }): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
   const present = useAttachmentPresent(uri);
   const reduceMotion = useReducedMotion();
-  const [withSound, setWithSound] = useState(false);
   const player = useVideoPlayer(uri, (p) => {
     p.loop = true;
     p.muted = true;
@@ -592,13 +597,9 @@ function VideoNoteAttachment({
     return <AttachmentUnavailable kind="video" onAskResend={onAskResend} />;
   }
 
-  function toggleSound(): void {
-    setWithSound((on) => !on);
-  }
-
   return (
     <Pressable
-      onPress={toggleSound}
+      onPress={onToggleSound}
       accessibilityRole="button"
       accessibilityLabel={T("chat.video_note.a11y")}
       accessibilityState={{ checked: withSound }}
@@ -2009,6 +2010,19 @@ export default function MessageThread({
   // Which voice note is playing, by message id. One at a time: starting a
   // second pauses the first, since two clips over one speaker is noise.
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+  // A live stream's sound is the same speaker: a note given sound silences the
+  // stream, and a stream unmuted stops the note.
+  const liveVideoReceiver = getMeshService()?.liveVideoReceiver ?? null;
+  useEffect(() => {
+    if (playingMessageId !== null) liveVideoReceiver?.setAudible(null);
+  }, [liveVideoReceiver, playingMessageId]);
+  useEffect(
+    () =>
+      liveVideoReceiver?.subscribe(() => {
+        if (liveVideoReceiver.audible !== null) setPlayingMessageId(null);
+      }),
+    [liveVideoReceiver],
+  );
   const [revealedAttachments, setRevealedAttachments] = useState<Set<string>>(
     new Set(),
   );
@@ -4070,6 +4084,8 @@ export default function MessageThread({
   );
 
   async function openLiveStudio(): Promise<void> {
+    // A note playing on would go out through the stream's microphone.
+    setPlayingMessageId(null);
     const purpose = { purpose: t("chat.perm.live_video_purpose") };
     const camera = await ensurePermission(
       Camera.getCameraPermissionsAsync,
@@ -4077,12 +4093,15 @@ export default function MessageThread({
       { label: t("chat.perm.camera_label"), ...purpose },
     );
     if (!camera) return;
-    const mic = await ensurePermission(
-      Camera.getMicrophonePermissionsAsync,
-      Camera.requestMicrophonePermissionsAsync,
-      { label: t("chat.perm.mic_label"), ...purpose },
-    );
-    setLiveStudio({ micAllowed: mic });
+    // Asked, but never explained here: the microphone is optional, and the
+    // blocked-permission alert would open under the studio. The studio says
+    // it is off instead.
+    const mic = await Camera.getMicrophonePermissionsAsync();
+    const micAllowed =
+      mic.granted ||
+      (mic.canAskAgain &&
+        (await Camera.requestMicrophonePermissionsAsync()).granted);
+    setLiveStudio({ micAllowed });
   }
 
   // The stream is over. A recording that fits one file transfer follows it,
@@ -4139,13 +4158,15 @@ export default function MessageThread({
   async function sendVideoNote(note: RecordedVideoNote): Promise<void> {
     const name = videoNoteName();
     const uri = await adoptIntoAttachmentCache(note.uri, name);
-    const send = (): void =>
+    // "Sent" only once it is: the bitchat caution below can still cancel it.
+    const send = (): void => {
       sendAttachmentMessage("video", uri, name, "video/mp4", note.durationMs, {
         sizeBytes: note.sizeBytes,
       });
-    if (note.atLimit) {
-      setToast({ message: t("chat.video_note.limit_sent"), icon: "video" });
-    }
+      if (note.atLimit) {
+        setToast({ message: t("chat.video_note.limit_sent"), icon: "video" });
+      }
+    };
     const caution = bitchatMediaCaution("video", note.sizeBytes);
     if (caution !== null) {
       showAlert(caution.title, caution.body, [
@@ -4644,7 +4665,16 @@ export default function MessageThread({
           );
         }
         return isVideoNoteName(attachment.name) ? (
-          <VideoNoteAttachment uri={attachment.uri} onAskResend={onAskResend} />
+          <VideoNoteAttachment
+            uri={attachment.uri}
+            withSound={playingMessageId === messageId}
+            onToggleSound={() =>
+              setPlayingMessageId((current) =>
+                current === messageId ? null : messageId,
+              )
+            }
+            onAskResend={onAskResend}
+          />
         ) : (
           <VideoAttachment
             uri={attachment.uri}
@@ -5997,7 +6027,10 @@ export default function MessageThread({
           (o) =>
             (!o.dmOnly || isDM) &&
             (!o.meshOnly || isMeshDM) &&
-            (!o.liveOnly || liveVideoOffered) &&
+            // Not over a note being recorded: the stream would need the
+            // microphone and camera the recording holds.
+            (!o.liveOnly ||
+              (liveVideoOffered && !isRecording && !videoNote.active)) &&
             (o.action !== "location" || acceptsLocationPin),
         ).map(({ action, icon, labelKey, descKey }, i) => (
           <React.Fragment key={action}>

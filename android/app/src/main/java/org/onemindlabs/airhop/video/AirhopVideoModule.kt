@@ -168,8 +168,8 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun setFacing(facing: String, promise: Promise) {
         main.post {
-            VideoCamera.setFacing(facing)
-            promise.resolve(null)
+            if (VideoCamera.setFacing(facing)) promise.resolve(null)
+            else promise.reject("CAMERA_FAILED", "could not switch camera")
         }
     }
 

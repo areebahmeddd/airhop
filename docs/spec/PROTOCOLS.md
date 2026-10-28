@@ -329,6 +329,14 @@ receive: both accept up to 1 MiB of any type. A photo is also resized to 256 KiB
 (`MAX_SENT_IMAGE_BYTES`) before it is sent, so a transfer to bitchat finishes
 inside its 30-second assembly window.
 
+Video has no such resize, since the app carries no transcoder. A camera clip or
+a round video note (`note_<uuid>.mp4`, at most 15 s at about 250 kbps, near
+700 KB at full length) reaches bitchat-ios only when it finishes inside that
+window, about 350 KiB (`MAX_BITCHAT_TRANSFER_BYTES`), so roughly the first ten
+seconds of a note. A DM to a known bitchat peer cautions before any video; the
+room has no single recipient to warn. A finished live stream is resent only at
+100 KiB or less ([section 3.10](#310-live-video)).
+
 | Type          | Send cap |
 | ------------- | -------- |
 | Photo         | 512 KiB  |
@@ -868,15 +876,29 @@ freezes the picture rather than corrupting it. Playback runs 350 ms behind the
 sender's clock and rebases on a unit more than 1.5 s late. Bounds per phone and
 stream: 4 streams, 24 MiB, 96 kB/s with 3 s of burst, 48 blocks, 192 units a
 track. A sender holds one stream at a time, so a new one ends its last even if
-that END was lost, and a stream with no picture after 10 s is dropped for good.
+that END was lost; an END or CANCELED for a stream never followed is ignored,
+as bitchat ignores it. A stream with no picture after 10 s gives its slot back
+but not for good: a sender sending sound only has no keyframe to offer, and its
+picture opens the stream again.
 A stream quiet for 4 s shows as reconnecting; one whose END arrived
 finishes; one with no END closes after 90 s. Every stream becomes a row in its
 chat with its first picture, so a stray START or a stream canceled within a
 second leaves nothing; it is decoded only while that chat is open, heard only once
 unmuted and never over live voice, and ends as the recording this phone rebuilt.
+A thread plays one sound at a time, so unmuting a stream stops a voice or video
+note and giving a note sound silences the stream. bitchat also silences stream
+sound while its live voice setting is off; Airhop leaves that to the mute, since
+the stream is only heard once unmuted.
 bitchat reopens a stream that resumes after its 90 s close in the same row and
 joins the segments; Airhop gives the new segment a row of its own, since joining
 needs a remux, and the sender's file, when it comes, replaces both with one.
+CANCELED removes every segment's row.
+
+**Ending with the mesh.** A stream ended because the mesh stopped sends its END
+only if the radios are still up when it is queued, after the encoder and the
+microphone flush; the DM sessions and the radios go down right after the LEAVE.
+Viewers that miss it see the stream reconnect, then close after 90 s, keeping
+what they rebuilt.
 
 ## 4. Routing Constants
 
@@ -888,7 +910,7 @@ needs a remux, and the sender's file, when it comes, replaces both with one.
 | Broadcast relay TTL                            | `min(ttl, 7)` at degree ≤ 2; `min(ttl, 6)` at 3–5 (`7` for announces and urgent board posts); `min(ttl, 5)` at ≥ 6; then one less | `RelayController.decide`                                                                                                                                                                                                                                                                                      |
 | Directed relay                                 | `min(ttl, 7)` less one; `10–35 ms` for handshakes, `20–60 ms` otherwise                                                           | Handshakes, and `NOISE_ENCRYPTED`, `DR_ENCRYPTED` (Airhop), `COURIER_ENV`, `PING`, `PONG`, `NOSTR_CARRIER` and `FRAGMENT` with a recipient                                                                                                                                                                    |
 | Never relayed                                  | `REQUEST_SYNC`; `ttl <= 1`; a packet whose sender or recipient is this node                                                       | This node's own announce is still handled, which is how an identity running elsewhere shows                                                                                                                                                                                                                   |
-| Relay fanout                                   | Every link except the ingress one                                                                                                 | A source route naming this node goes to the next hop only. bitchat-ios's fanout subset is not implemented                                                                                                                                                                                                     |
+| Relay fanout                                   | Every link except the ingress one                                                                                                 | A source route naming this node goes to the next hop only. bitchat-ios's fanout subset is not implemented, nor its live video pruning (no relay to a neighbour the mesh graph shows hears the origin directly); receivers dedupe both                                                                         |
 | Fragment frame budget                          | `512 bytes`                                                                                                                       | ATT attribute ceiling: the whole encoded frame, not the payload                                                                                                                                                                                                                                               |
 | Fragment data per frame                        | `467 bytes`                                                                                                                       | Frame budget minus header, senderID, recipientID and fragment header                                                                                                                                                                                                                                          |
 | Max concurrent assemblies                      | `128`                                                                                                                             | In-flight fragment reassembly slots, each dropped after 30 s idle                                                                                                                                                                                                                                             |

@@ -736,6 +736,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "နောက်ကျနေသည်",
   "chat.live_video.signal_poor": "ဗီဒီယိုအတွက် နှေးလွန်းသဖြင့် အသံသာ ပို့နေသည်",
   "chat.live_video.mic": "မိုက်ခရိုဖုန်း",
+  "chat.live_video.no_sound": "အသံမပါ",
   "chat.live_video.flip": "ကင်မရာပြောင်းရန်",
   "chat.live_video.camera_failed": "ကင်မရာကို ဖွင့်၍မရပါ",
   "chat.live_video.camera_lost":

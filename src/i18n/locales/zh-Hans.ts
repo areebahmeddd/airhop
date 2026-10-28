@@ -679,6 +679,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "正在落后",
   "chat.live_video.signal_poor": "太慢无法传视频，仅发送声音",
   "chat.live_video.mic": "麦克风",
+  "chat.live_video.no_sound": "无声",
   "chat.live_video.flip": "切换摄像头",
   "chat.live_video.camera_failed": "无法打开摄像头",
   "chat.live_video.camera_lost": "摄像头已停止，直播已结束",

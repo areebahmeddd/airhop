@@ -724,6 +724,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "ვიდეოსთვის ზედმეტად ნელია, იგზავნება მხოლოდ ხმა",
   "chat.live_video.mic": "მიკროფონი",
+  "chat.live_video.no_sound": "ხმის გარეშე",
   "chat.live_video.flip": "კამერის შეცვლა",
   "chat.live_video.camera_failed": "კამერის გახსნა ვერ მოხერხდა",
   "chat.live_video.camera_lost": "კამერა გაჩერდა, ამიტომ ეთერი დასრულდა",

@@ -720,6 +720,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "遅れ気味",
   "chat.live_video.signal_poor": "動画には遅すぎるため、音声のみ送信中",
   "chat.live_video.mic": "マイク",
+  "chat.live_video.no_sound": "音声なし",
   "chat.live_video.flip": "カメラを切り替え",
   "chat.live_video.camera_failed": "カメラを開けませんでした",
   "chat.live_video.camera_lost": "カメラが停止したため、配信を終了しました",

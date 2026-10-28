@@ -727,6 +727,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "Terlalu perlahan untuk video, hanya bunyi dihantar",
   "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.no_sound": "Tiada bunyi",
   "chat.live_video.flip": "Tukar kamera",
   "chat.live_video.camera_failed": "Tidak dapat membuka kamera",
   "chat.live_video.camera_lost": "Kamera berhenti, jadi siaran tamat",

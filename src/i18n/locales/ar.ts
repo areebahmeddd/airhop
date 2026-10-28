@@ -701,6 +701,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "يتأخر",
   "chat.live_video.signal_poor": "بطيء جدًا للفيديو، يُرسَل الصوت فقط",
   "chat.live_video.mic": "الميكروفون",
+  "chat.live_video.no_sound": "بلا صوت",
   "chat.live_video.flip": "تبديل الكاميرا",
   "chat.live_video.camera_failed": "تعذّر فتح الكاميرا",
   "chat.live_video.camera_lost": "توقفت الكاميرا، فانتهى البث",

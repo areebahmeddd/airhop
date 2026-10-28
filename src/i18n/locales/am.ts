@@ -678,6 +678,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "ወደ ኋላ እየቀረ ነው",
   "chat.live_video.signal_poor": "ለቪዲዮ በጣም ቀርፋፋ፣ ድምፅ ብቻ እየተላከ ነው",
   "chat.live_video.mic": "ማይክሮፎን",
+  "chat.live_video.no_sound": "ድምፅ የለም",
   "chat.live_video.flip": "ካሜራ ቀይር",
   "chat.live_video.camera_failed": "ካሜራውን መክፈት አልተቻለም",
   "chat.live_video.camera_lost": "ካሜራው ቆሟል፣ ስለዚህ ስርጭቱ አብቅቷል",

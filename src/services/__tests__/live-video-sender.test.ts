@@ -10,6 +10,7 @@ import {
 import { decodeVideoBurstPacket } from "@core/mesh/video/video-burst-packet";
 import { DeviceEventEmitter } from "react-native";
 import { LiveVideoSendSession } from "../live-video-sender";
+import type { NativeAudioCapture } from "../voice-audio-backend";
 
 jest.mock("@bridge/NativeAirhopVideo", () => ({
   __esModule: true,
@@ -170,6 +171,53 @@ describe("LiveVideoSendSession", () => {
     expect(sent).toHaveLength(0);
     expect(native.startEncoding).not.toHaveBeenCalled();
     expect(native.cancelRecording).toHaveBeenCalled();
+  });
+
+  test("a stop while the encoder is starting never opens the microphone", async () => {
+    let encoding: () => void = () => undefined;
+    native.startEncoding.mockImplementationOnce(
+      () => new Promise<void>((resolve) => (encoding = resolve)),
+    );
+    const audio = {
+      startCapture: jest.fn(() => Promise.resolve()),
+      stopCapture: jest.fn(() => Promise.resolve()),
+    };
+    const s = new LiveVideoSendSession(LIVE_VIDEO_QUALITIES.low, {
+      send: () => undefined,
+      audio: audio as unknown as NativeAudioCapture,
+      onFailure: () => undefined,
+      packetBudget: BLE_PACKET_BUDGET,
+      now: () => now,
+    });
+    const starting = s.start();
+    for (let i = 0; i < 5; i++) await Promise.resolve();
+    const stopping = s.stop(false);
+    encoding();
+    await starting;
+    await advance(200);
+    await stopping;
+    expect(audio.startCapture).not.toHaveBeenCalled();
+  });
+
+  test("a microphone that will not open leaves a silent stream that says so", async () => {
+    const audio = {
+      startCapture: jest.fn(() => Promise.reject(new Error("mic taken"))),
+      stopCapture: jest.fn(() => Promise.resolve()),
+    };
+    const s = new LiveVideoSendSession(LIVE_VIDEO_QUALITIES.low, {
+      send: () => undefined,
+      audio: audio as unknown as NativeAudioCapture,
+      onFailure: () => undefined,
+      packetBudget: BLE_PACKET_BUDGET,
+      now: () => now,
+    });
+    expect(s.summary().withSound).toBe(true);
+    await s.start();
+    expect(s.isRunning).toBe(true);
+    expect(s.summary().withSound).toBe(false);
+    const stopping = s.stop(true);
+    await advance(200);
+    await stopping;
   });
 
   test("a radio refusing writes backs the encoder off", async () => {

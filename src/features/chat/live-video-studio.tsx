@@ -3,13 +3,15 @@
 //
 // Before going live the quality, the camera and the microphone can all be
 // changed; once live only the camera can, since START has told viewers what
-// the stream carries. Leaving any way at all (End, system back, the app going
-// to the background, the camera being taken, the thread going away) ends the
-// stream with END and hands its recording back to the thread. Only Discard
-// sends CANCELED, which tells viewers to drop what they have.
+// the stream carries. End, close and system back ask first (End, Discard or
+// Keep streaming). Every other way out (the app going to the background, the
+// camera being taken, the thread going away) ends the stream with END and
+// hands its recording back to the thread. Only Discard sends CANCELED, which
+// tells viewers to drop what they have.
 //
 // Mounted only while open. Permissions are the thread's to ask first: a
-// blocked-permission alert drawn from here would sit under this modal.
+// blocked-permission alert drawn from here would sit under this modal, and for
+// the same reason this screen carries its own toast.
 
 import type { CameraFacing } from "@bridge/NativeAirhopVideo";
 import { AirhopCameraPreview } from "@bridge/NativeAirhopVideoViews";
@@ -19,7 +21,10 @@ import {
 } from "@core/mesh/video/live-video-quality";
 import { t, useT, type TranslationKey } from "@i18n";
 import { acknowledged, held } from "@platform/haptics";
-import { Feather } from "@react-native-vector-icons/feather/static";
+import {
+  Feather,
+  type FeatherIconName,
+} from "@react-native-vector-icons/feather/static";
 import {
   LiveVideoSendSession,
   type FinishedLiveVideo,
@@ -29,11 +34,15 @@ import { getMeshService, type MeshService } from "@services/mesh-service";
 import AppModal from "@ui/components/app-modal";
 import PrimaryButton from "@ui/components/primary-button";
 import RingAlertSheet from "@ui/components/ring-alert-sheet";
+import TextButton from "@ui/components/text-button";
+import Toast from "@ui/components/toast";
 import UpperText from "@ui/components/upper-text";
 import {
+  DISABLED_OPACITY,
   FontSize,
   FontWeight,
   MIN_TOUCH,
+  PRESSED_OPACITY,
   Radius,
   Spacing,
   useThemeColors,
@@ -115,15 +124,22 @@ export default function LiveVideoStudio({
 
   const [phase, setPhase] = useState<Phase>("preview");
   const [quality, setQuality] = useState<LiveVideoQualityName>("low");
-  const [facing, setFacing] = useState<CameraFacing>("front");
   // Read when the camera reopens for a new quality; a flip goes to the open
-  // camera directly.
+  // camera directly. Nothing renders from it, so it is a ref, not state.
   const facingRef = useRef<CameraFacing>("front");
   const [micOn, setMicOn] = useState(micAllowed);
   const [cameraReady, setCameraReady] = useState(false);
   const [confirmingEnd, setConfirmingEnd] = useState(false);
   const [stats, setStats] = useState<LiveVideoSendStats | null>(null);
   const [canGoLive, setCanGoLive] = useState(false);
+  // Whether the stream carries sound: the mic switch, unless no microphone
+  // opened.
+  const [liveWithSound, setLiveWithSound] = useState(true);
+  const [toast, setToast] = useState<{
+    message: string;
+    icon: FeatherIconName;
+  } | null>(null);
+  const hideToast = useCallback(() => setToast(null), []);
 
   const phaseRef = useRef<Phase>("preview");
   const setPhaseBoth = useCallback((next: Phase) => {
@@ -163,8 +179,12 @@ export default function LiveVideoStudio({
   // out of range with the camera open, and a stream sent to nobody should say
   // so rather than show a healthy signal.
   useEffect(() => {
-    const check = (): void =>
-      setCanGoLive(getMeshService()?.canSendLiveVideo(channel) === true);
+    const check = (): void => {
+      const mesh = getMeshService();
+      // A DM peer who walks into range with no session yet gets one opened.
+      mesh?.prepareLiveVideo(channel);
+      setCanGoLive(mesh?.canSendLiveVideo(channel) === true);
+    };
     check();
     const timer = setInterval(check, 2_000);
     return () => clearInterval(timer);
@@ -197,18 +217,29 @@ export default function LiveVideoStudio({
       LIVE_VIDEO_QUALITIES[quality],
       micOn,
       () => {
-        callbacks.current.onToast(t("chat.live_video.camera_lost"));
-        void end(false);
+        // Said by the thread once the studio has closed: shown now, it would
+        // fade under this modal while END drains.
+        void end(false).then(() =>
+          callbacks.current.onToast(t("chat.live_video.camera_lost")),
+        );
       },
     );
+    // Ended while starting (the camera lost, the studio closing) by a caller
+    // that has already stopped the stream. Widened: the check at the top
+    // narrowed the ref to "preview", and narrowing does not see the await.
+    if ((phaseRef.current as Phase) !== "starting") return;
     if (session === null) {
       setPhaseBoth("preview");
-      callbacks.current.onToast(t("chat.live_video.failed"));
+      setToast({ message: t("chat.live_video.failed"), icon: "alert-circle" });
       return;
     }
     sessionRef.current = session;
+    setLiveWithSound(session.summary().withSound);
     acknowledged();
     setPhaseBoth("live");
+    // Sent to the background while starting, which the AppState listener
+    // below only acts on once live.
+    if (AppState.currentState === "background") void end(false);
   }, [channel, quality, micOn, end, setPhaseBoth]);
 
   const endRef = useRef(end);
@@ -245,10 +276,12 @@ export default function LiveVideoStudio({
 
   // The camera is released when the studio goes. A stream still live then ends
   // and its recording is still handed back: the thread can go from under a
-  // live studio, as when a ring is answered.
+  // live studio, as when a ring is answered. One still starting ends too, and
+  // the start, when it returns, finds the studio already ending.
   useEffect(() => {
     return () => {
       if (phaseRef.current === "live" || phaseRef.current === "starting") {
+        phaseRef.current = "ending";
         void getMeshService()
           ?.stopLiveVideo(false, sessionRef.current)
           .then((recording) => {
@@ -276,11 +309,29 @@ export default function LiveVideoStudio({
   }, [requestClose]);
 
   const flip = useCallback((): void => {
-    const next: CameraFacing = facing === "front" ? "back" : "front";
+    const previous = facingRef.current;
+    const next: CameraFacing = previous === "front" ? "back" : "front";
     facingRef.current = next;
-    setFacing(next);
-    void LiveVideoSendSession.setFacing(next).catch(() => undefined);
-  }, [facing]);
+    // A phone with one camera keeps the one it has.
+    void LiveVideoSendSession.setFacing(next).catch(() => {
+      facingRef.current = previous;
+    });
+  }, []);
+
+  // The microphone is optional, so a blocked one is said here rather than by
+  // an alert, which would open under this modal.
+  const toggleMic = useCallback((): void => {
+    if (!micAllowed) {
+      setToast({
+        message: t("permission.blocked_title", {
+          label: t("chat.perm.mic_label"),
+        }),
+        icon: "mic-off",
+      });
+      return;
+    }
+    setMicOn((on) => !on);
+  }, [micAllowed]);
 
   const live = phase === "live";
   const busy = phase === "starting" || phase === "ending";
@@ -303,15 +354,22 @@ export default function LiveVideoStudio({
           <Pressable
             onPress={requestClose}
             disabled={busy}
-            style={styles.iconButton}
+            style={({ pressed }) => [
+              styles.iconButton,
+              busy && styles.disabled,
+              pressed && styles.dimmed,
+            ]}
             accessibilityRole="button"
             accessibilityLabel={T("common.close")}
+            accessibilityState={{ disabled: busy }}
           >
             <Feather name="x" size={22} color={Colors.textPrimary} />
           </Pressable>
           {live ? (
-            <View style={styles.liveRow} accessibilityLiveRegion="polite">
-              <View style={styles.liveBadge}>
+            <View style={styles.liveRow}>
+              {/* Announced once, on going live; the timer below changes
+                  every second and would be read out every second. */}
+              <View style={styles.liveBadge} accessibilityLiveRegion="polite">
                 <View style={styles.liveDot} />
                 <UpperText style={styles.liveBadgeText}>
                   {T("chat.live_video.badge")}
@@ -320,16 +378,30 @@ export default function LiveVideoStudio({
               <Text style={styles.timer}>
                 {formatDuration(Math.floor((stats?.elapsedMs ?? 0) / 1000))}
               </Text>
+              {!liveWithSound && (
+                <Feather
+                  name="mic-off"
+                  size={16}
+                  color={Colors.textSecondary}
+                  accessible
+                  accessibilityLabel={T("chat.live_video.no_sound")}
+                />
+              )}
             </View>
           ) : (
             <Text style={styles.title}>{T("chat.live_video.title")}</Text>
           )}
           <Pressable
             onPress={flip}
-            disabled={busy}
-            style={styles.iconButton}
+            disabled={busy || !cameraReady}
+            style={({ pressed }) => [
+              styles.iconButton,
+              (busy || !cameraReady) && styles.disabled,
+              pressed && styles.dimmed,
+            ]}
             accessibilityRole="button"
             accessibilityLabel={T("chat.live_video.flip")}
+            accessibilityState={{ disabled: busy || !cameraReady }}
           >
             <Feather name="refresh-cw" size={20} color={Colors.textPrimary} />
           </Pressable>
@@ -371,6 +443,11 @@ export default function LiveVideoStudio({
               {canGoLive ? audience : T("chat.live_video.nobody")}
             </Text>
           )}
+          <Toast
+            message={toast?.message ?? null}
+            icon={toast?.icon}
+            onHide={hideToast}
+          />
         </View>
 
         <View style={styles.footer}>
@@ -391,13 +468,10 @@ export default function LiveVideoStudio({
                 label={T("chat.live_video.discard")}
                 onPress={() => void end(true)}
               />
-              <Pressable
+              <TextButton
+                label={T("chat.live_video.keep")}
                 onPress={() => setConfirmingEnd(false)}
-                style={styles.keep}
-                accessibilityRole="button"
-              >
-                <Text style={styles.keepText}>{T("chat.live_video.keep")}</Text>
-              </Pressable>
+              />
             </View>
           ) : live || busy ? (
             <PrimaryButton
@@ -411,7 +485,11 @@ export default function LiveVideoStudio({
                 {QUALITIES.map(({ name, labelKey }) => (
                   <Pressable
                     key={name}
-                    style={[styles.tab, quality === name && styles.tabActive]}
+                    style={({ pressed }) => [
+                      styles.tab,
+                      quality === name && styles.tabActive,
+                      pressed && styles.dimmed,
+                    ]}
                     onPress={() => setQuality(name)}
                     accessibilityRole="radio"
                     accessibilityState={{ checked: quality === name }}
@@ -430,15 +508,23 @@ export default function LiveVideoStudio({
               <Text style={styles.hint}>{T(QUALITY_HINT[quality])}</Text>
               <View style={styles.actions}>
                 <Pressable
-                  onPress={() => setMicOn((on) => !on)}
-                  disabled={!micAllowed}
-                  style={[styles.round, !micOn && styles.roundOff]}
+                  onPress={toggleMic}
+                  style={({ pressed }) => [
+                    styles.round,
+                    !micOn && styles.roundOff,
+                    !micAllowed && styles.disabled,
+                    pressed && styles.roundPressed,
+                  ]}
                   accessibilityRole="switch"
-                  accessibilityState={{
-                    checked: micOn,
-                    disabled: !micAllowed,
-                  }}
+                  accessibilityState={{ checked: micOn }}
                   accessibilityLabel={T("chat.live_video.mic")}
+                  accessibilityHint={
+                    micAllowed
+                      ? undefined
+                      : T("permission.blocked_body", {
+                          purpose: T("chat.perm.live_video_purpose"),
+                        })
+                  }
                 >
                   <Feather
                     name={micOn ? "mic" : "mic-off"}
@@ -536,7 +622,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 2,
       borderColor: Colors.border,
     },
-    // The one place the stream's state shows without words: red while live.
     frameLive: {
       borderColor: Colors.danger,
     },
@@ -631,15 +716,14 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       textAlign: "center",
       marginBottom: Spacing.xs,
     },
-    keep: {
-      minHeight: MIN_TOUCH,
-      alignItems: "center",
-      justifyContent: "center",
+    dimmed: {
+      opacity: PRESSED_OPACITY,
     },
-    keepText: {
-      fontSize: FontSize.base,
-      fontWeight: FontWeight.medium,
-      color: Colors.textSecondary,
+    roundPressed: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    disabled: {
+      opacity: DISABLED_OPACITY,
     },
   });
 }

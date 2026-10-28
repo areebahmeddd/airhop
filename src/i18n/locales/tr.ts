@@ -726,6 +726,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "Video için çok yavaş, yalnızca ses gönderiliyor",
   "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.no_sound": "Ses yok",
   "chat.live_video.flip": "Kamerayı değiştir",
   "chat.live_video.camera_failed": "Kamera açılamadı",
   "chat.live_video.camera_lost": "Kamera durdu, bu yüzden yayın bitti",

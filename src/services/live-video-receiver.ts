@@ -31,7 +31,11 @@ import {
 } from "@core/mesh/video/video-stream-assembler";
 import { liveVideoFileName } from "@core/mesh/wire/file-packet";
 import { bytesToHex } from "@noble/hashes/utils.js";
-import { useChatStore, type ChatAttachment } from "@store/chat-store";
+import {
+  useChatStore,
+  type ChatAttachment,
+  type ChatMessage,
+} from "@store/chat-store";
 import { useSettingsStore } from "@store/settings-store";
 import * as FileSystem from "expo-file-system";
 import {
@@ -48,9 +52,11 @@ const MAX_BYTES_PER_SECOND = 96_000;
 const BURST_ALLOWANCE_SECONDS = 3;
 
 const QUIET_MS = 4_000;
-// A stream that shows no picture in this long is dropped. A late joiner gets
-// one with the next keyframe, two seconds at most, so this is generous; it
-// keeps a stream of START packets alone from holding a MAX_STREAMS slot.
+// A stream that shows no picture in this long is let go, with its empty
+// recording and its MAX_STREAMS slot. A late joiner gets a picture at the next
+// keyframe, two seconds at most, so this is generous. It is not shut out
+// (bitchat never lets one go): a sender sending sound only has no keyframe to
+// offer, and its next packet opens the stream again.
 const PICTURE_DEADLINE_MS = 10_000;
 const CLOSE_AFTER_SILENCE_MS = 90_000;
 // Fine enough for 24 fps; the clock below is what keeps frames even.
@@ -82,6 +88,8 @@ interface Stream {
   config: { width: number; height: number; hasAudio: boolean } | null;
   // Whether the row is in the chat; it is added with the first picture.
   rowAdded: boolean;
+  // Video went undecoded while nobody watched; decoding resumes at a keyframe.
+  decodeStale: boolean;
   recordingPath: string | null;
   openedAtMs: number;
   lastPacketMs: number;
@@ -145,6 +153,19 @@ export class LiveVideoReceiver {
     if (stream === undefined) {
       const reopenable = this.finished.get(key);
       if (reopenable === false) return;
+      // END or CANCELED with nothing open here: never followed, forgotten, or
+      // closed by silence. Opening it would end the sender's current stream.
+      // One closed by silence is now over for good, and a discard takes its
+      // rows.
+      if (packet.kind === "end" || packet.kind === "canceled") {
+        if (reopenable === true) {
+          this.rememberFinished(key, false);
+          if (packet.kind === "canceled") {
+            removeRows(channel, senderPeerID, streamID);
+          }
+        }
+        return;
+      }
       // One camera, one stream: a sender's new stream means the old one is
       // over, even if its END was lost.
       for (const other of [...this.streams.values()]) {
@@ -152,11 +173,7 @@ export class LiveVideoReceiver {
       }
       if (this.streams.size >= MAX_STREAMS) return;
       stream = this.open(key, senderPeerID, streamID, channel, now);
-      if (reopenable === true) {
-        // A new row for the new segment, so its ID must differ from the old.
-        stream.rowID = `${stream.rowID}-${String(now)}`;
-        this.finished.delete(key);
-      }
+      this.finished.delete(key);
     }
 
     if (!this.admit(stream, payload.length, now)) {
@@ -181,15 +198,16 @@ export class LiveVideoReceiver {
     streamID: string,
     attachment: ChatAttachment,
   ): boolean {
-    const base = liveVideoRowID(senderPeerID, streamID);
-    const chat = useChatStore.getState();
-    // The first segment's row, then any a resumed stream opened after it.
-    const rows = (chat.messages[channel] ?? []).filter(
-      (m) => m.id === base || m.id.startsWith(`${base}-`),
-    );
-    if (rows.length === 0) return false;
-    const live = this.streams.get(`${senderPeerID}:${streamID}`);
+    // A fast transfer can beat END, or even the first picture. The file is the
+    // whole stream either way, so the stream is over for good and no stray
+    // packet opens a row beside it.
+    const key = `${senderPeerID}:${streamID}`;
+    const live = this.streams.get(key);
     if (live !== undefined) this.close(live, "replaced");
+    this.rememberFinished(key, false);
+    const rows = streamRows(channel, senderPeerID, streamID);
+    if (rows.length === 0) return false;
+    const chat = useChatStore.getState();
     const [kept, ...rest] = rows;
     for (const row of rows) {
       const rebuilt = row.attachment?.uri;
@@ -250,7 +268,15 @@ export class LiveVideoReceiver {
       return;
     }
     this.streams.delete(stream.key);
+    // A resumed segment let go before its picture still has the rows of the
+    // segments before it, which a later discard has to find.
     if (!reopenable) this.rememberFinished(stream.key, false);
+    else if (
+      streamRows(stream.channel, stream.senderPeerID, stream.streamID).length >
+      0
+    ) {
+      this.rememberFinished(stream.key, true);
+    }
     NativeAirhopVideo?.cancelRecording(stream.key);
     if (stream.recordingPath !== null) deleteFile(stream.recordingPath);
     if (this.streams.size === 0) this.stopTicking();
@@ -285,16 +311,21 @@ export class LiveVideoReceiver {
     channel: string,
     now: number,
   ): Stream {
+    // A segment after a dropout gets a row of its own, so its ID must differ
+    // from the rows the stream already left.
+    const base = liveVideoRowID(senderPeerID, streamID);
+    const resumed = streamRows(channel, senderPeerID, streamID).length > 0;
     const stream: Stream = {
       key,
       senderPeerID,
       streamID,
       channel,
-      rowID: liveVideoRowID(senderPeerID, streamID),
+      rowID: resumed ? `${base}-${String(now)}` : base,
       assembler: new VideoStreamAssembler(),
       playout: new LiveVideoPlayout<Unit>(),
       config: null,
       rowAdded: false,
+      decodeStale: false,
       recordingPath: null,
       openedAtMs: now,
       lastPacketMs: now,
@@ -449,7 +480,12 @@ export class LiveVideoReceiver {
     for (const unit of units) {
       if (unit.track === "audio") {
         if (audible) sound.push(unit.data);
-      } else if (watching) {
+      } else if (!watching) {
+        // The decoder missed this unit, so the deltas after it have nothing
+        // under them until the next keyframe.
+        stream.decodeStale = true;
+      } else if (!stream.decodeStale || unit.keyframe) {
+        stream.decodeStale = false;
         NativeAirhopVideo?.decodeVideo(
           stream.key,
           bytesToBase64(unit.data),
@@ -468,7 +504,7 @@ export class LiveVideoReceiver {
     NativeAirhopVideo?.cancelRecording(stream.key);
     if (stream.recordingPath !== null) deleteFile(stream.recordingPath);
     if (this.audibleRow === stream.rowID) this.setAudible(null);
-    useChatStore.getState().removeMessage(stream.channel, stream.rowID);
+    removeRows(stream.channel, stream.senderPeerID, stream.streamID);
     if (this.streams.size === 0) this.stopTicking();
   }
 
@@ -539,10 +575,9 @@ export class LiveVideoReceiver {
     const now = this.now();
     for (const stream of [...this.streams.values()]) {
       if (!stream.rowAdded) {
-        // Not reopenable: ten seconds without one keyframe is a stream that
-        // cannot show anything, or one only holding a slot.
+        // Reopenable, as PICTURE_DEADLINE_MS explains.
         if (now - stream.openedAtMs >= PICTURE_DEADLINE_MS) {
-          this.end(stream, false);
+          this.end(stream, true);
         } else {
           this.apply(stream, stream.assembler.onTick(now), now);
         }
@@ -575,6 +610,34 @@ export class LiveVideoReceiver {
       }
     }
     if (this.streams.size === 0) this.stopTicking();
+  }
+}
+
+// Every row a stream left in `channel`: the first segment's, then any a stream
+// resumed after a dropout opened.
+function streamRows(
+  channel: string,
+  senderPeerID: string,
+  streamID: string,
+): ChatMessage[] {
+  const base = liveVideoRowID(senderPeerID, streamID);
+  return (useChatStore.getState().messages[channel] ?? []).filter(
+    (m) => m.id === base || m.id.startsWith(`${base}-`),
+  );
+}
+
+// Every row a discarded stream left, segments before a dropout included, with
+// the recordings rebuilt behind them. One still being finished deletes itself
+// when it finds its row gone.
+function removeRows(
+  channel: string,
+  senderPeerID: string,
+  streamID: string,
+): void {
+  const chat = useChatStore.getState();
+  for (const row of streamRows(channel, senderPeerID, streamID)) {
+    if (row.attachment?.uri !== undefined) deleteFile(row.attachment.uri);
+    chat.removeMessage(channel, row.id);
   }
 }
 

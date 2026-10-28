@@ -84,8 +84,10 @@ export interface Spec extends TurboModule {
   // ---- Capture ----
 
   // Open the camera behind every mounted AirhopCameraPreview. Rejects without
-  // permission or a camera. Nothing is encoded until startEncoding.
+  // permission or a camera. Nothing is encoded until startEncoding. The screen
+  // stays on until stopCamera.
   startCamera(options: CameraOptions): Promise<void>;
+  // Rejects, keeping the open camera, when the switch fails.
   setFacing(facing: CameraFacing): Promise<void>;
   // Emit AirhopVideo.encoded from now on, pts counted from this call. The
   // first unit is a keyframe.

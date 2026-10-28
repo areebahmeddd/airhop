@@ -2489,12 +2489,31 @@ export class MeshService {
     const session = new LiveVideoSendSession(quality, {
       send: (payload) => {
         if (dmPeer !== null) {
-          // A packet that finds no session is gone, as a voice frame is.
-          this.router.sendNoisePayload(
-            dmPeer,
-            NoisePayloadType.VIDEO_FRAME,
-            payload,
-          );
+          // Only down the direct link canSendLiveVideo asked for: without one,
+          // unicastFn would flood every packet across the mesh. A packet that
+          // finds no session is gone, as a voice frame is. One sealed packet
+          // pads to 512 bytes, a single write on any link.
+          const link = this.links.linkFor(dmPeer);
+          const packet =
+            link === undefined
+              ? null
+              : this.router.buildNoisePayloadPacket(
+                  dmPeer,
+                  NoisePayloadType.VIDEO_FRAME,
+                  payload,
+                );
+          if (link === undefined || packet === null) return;
+          if (link.kind === "ble") this.floodRouter.originate(packet);
+          // A refusal is a full radio queue, as in the room. On Wi-Fi Aware it
+          // is a link gone, as unicastFn reads it, so the next packet takes the
+          // peer's next link. The packet budget stays the one chosen at start;
+          // the refusals back the bitrate off instead.
+          void this.links
+            .send(link.id, bytesToBase64(encodePacket(packet)))
+            .catch(() => {
+              session.noteRefused(1);
+              if (link.kind === "wifi") this.onLinkGone(link.id);
+            });
           return;
         }
         const packet: Packet = {
@@ -2529,20 +2548,35 @@ export class MeshService {
       if (withAudio) await setAudioForRecording();
       await session.start();
     } catch {
-      this.liveVideoSend = null;
+      // A stop during the start may already have cleared it for a newer one.
+      if (this.liveVideoSend === session) this.liveVideoSend = null;
       void setAudioForPlayback();
       return null;
     }
-    return session;
+    // Stopped while starting (the studio closed, the mesh stopped), by a
+    // caller that has already cleaned up.
+    return session.isRunning ? session : null;
+  }
+
+  // Polled by a DM's studio: opens a session with a linked peer that has none
+  // yet (only contacts get one before the first message), so Go live is ready
+  // by the time the camera is. A session or a handshake in flight makes it a
+  // no-op, and the handshake limiter paces the rest.
+  prepareLiveVideo(channel: string): void {
+    if (!channel.startsWith("dm:")) return;
+    const peerID = channel.slice(3);
+    if (this.links.hasPeer(peerID)) this.ensureNoiseSession(peerID);
   }
 
   // End our stream with END, or CANCELED when `canceled`, and hand back the
-  // recording. `session` names the stream the caller holds, so a studio still
-  // gets its recording when the mesh stopping ended the stream first.
+  // recording. `held` is the stream the caller holds, so a studio still gets
+  // its recording when the mesh stopping ended the stream first; a caller whose
+  // stream is still starting holds none and ends the current one.
   async stopLiveVideo(
     canceled: boolean,
-    session: LiveVideoSendSession | null = this.liveVideoSend,
+    held?: LiveVideoSendSession | null,
   ): Promise<FinishedLiveVideo | null> {
+    const session = held ?? this.liveVideoSend;
     if (session === null) return null;
     const finished = await trackLiveVideoWork(session.stop(canceled));
     if (this.liveVideoSend === session) this.liveVideoSend = null;

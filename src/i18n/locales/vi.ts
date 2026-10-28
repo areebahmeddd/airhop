@@ -719,6 +719,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "Đang chậm lại",
   "chat.live_video.signal_poor": "Quá chậm cho video, chỉ đang gửi âm thanh",
   "chat.live_video.mic": "Micrô",
+  "chat.live_video.no_sound": "Không có âm thanh",
   "chat.live_video.flip": "Đổi camera",
   "chat.live_video.camera_failed": "Không mở được camera",
   "chat.live_video.camera_lost": "Camera đã dừng nên buổi phát đã kết thúc",

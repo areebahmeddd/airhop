@@ -703,6 +703,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "เริ่มตามไม่ทัน",
   "chat.live_video.signal_poor": "ช้าเกินไปสำหรับวิดีโอ กำลังส่งเฉพาะเสียง",
   "chat.live_video.mic": "ไมโครโฟน",
+  "chat.live_video.no_sound": "ไม่มีเสียง",
   "chat.live_video.flip": "สลับกล้อง",
   "chat.live_video.camera_failed": "เปิดกล้องไม่ได้",
   "chat.live_video.camera_lost": "กล้องหยุดทำงาน ไลฟ์จึงจบลง",

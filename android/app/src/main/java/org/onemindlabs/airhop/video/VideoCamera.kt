@@ -10,10 +10,12 @@
 package org.onemindlabs.airhop.video
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import android.util.Size
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.CameraState
@@ -47,6 +49,9 @@ internal object VideoCamera {
     private var facing = "front"
     private var previewHost: WeakReference<CameraPreviewHost>? = null
     private var observedState: LiveData<CameraState>? = null
+    // Bumped by every start and stop, so a provider that resolves late can
+    // tell whether its start still stands. Main thread.
+    private var generation = 0
 
     // Analysis-thread state, read by the drain thread under `encoderLock`.
     private val encoderLock = Object()
@@ -76,12 +81,20 @@ internal object VideoCamera {
         this.fps = maxOf(1, fps)
         this.facing = facing
         owner = WeakReference(lifecycle)
+        val ticket = ++generation
         val future = ProcessCameraProvider.getInstance(context)
         future.addListener(
             {
+                // Stopped, or started again, while the provider was resolving:
+                // binding now would leave a camera open that nothing owns.
+                if (ticket != generation) {
+                    done(null)
+                    return@addListener
+                }
                 try {
                     provider = future.get()
                     bind()
+                    keepScreenOn(true)
                     done(null)
                 } catch (error: Exception) {
                     Log.w(TAG, "Camera unavailable: ${error.message}")
@@ -92,20 +105,45 @@ internal object VideoCamera {
         )
     }
 
-    // Main thread.
-    fun setFacing(facing: String) {
+    // Main thread. False, with the old camera back, when the other one cannot
+    // be bound (a device with a single camera).
+    fun setFacing(facing: String): Boolean {
+        val previous = this.facing
         this.facing = facing
-        if (provider != null) bind()
+        if (provider != null) {
+            try {
+                bind()
+            } catch (error: Exception) {
+                Log.w(TAG, "Camera switch failed: ${error.message}")
+                this.facing = previous
+                // The old camera did not come back either: report a camera
+                // failure, which ends a stream on air rather than freezing it.
+                if (runCatching { bind() }.isFailure && encoder != null)
+                    onError?.invoke("camera switch failed")
+                return false
+            }
+        }
         // A new camera is a new picture: viewers need a keyframe for it.
         encoder?.requestKeyframe()
+        return true
     }
 
     // Main thread.
     fun stop() {
+        generation++
         stopEncoding {}
         provider?.unbindAll()
         preview = null
         analysis = null
+        keepScreenOn(false)
+    }
+
+    // A studio is a camera people prop up and leave. The screen timing out
+    // would send the app to the background, which ends the stream.
+    private fun keepScreenOn(on: Boolean) {
+        val window = (owner?.get() as? Activity)?.window ?: return
+        if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     fun startEncoding(

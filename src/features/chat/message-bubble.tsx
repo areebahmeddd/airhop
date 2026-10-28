@@ -32,6 +32,7 @@ import {
   withAlpha,
 } from "@ui/theme";
 import { tokenizeFormatting } from "@utils/message-format";
+import { messagePreviewText } from "@utils/message-preview";
 import { messageText } from "@utils/message-text";
 import React, { useMemo } from "react";
 import {
@@ -264,7 +265,10 @@ function MessageBubble({
           }
           accessibilityLabel={T("chat.bubble.a11y", {
             sender: item.isMine ? T("chat.you") : item.senderNickname,
-            body: messageText(item) || T("chat.bubble.attachment"),
+            body:
+              messageText(item) ||
+              messagePreviewText(item) ||
+              T("chat.bubble.attachment"),
           })}
         >
           <View

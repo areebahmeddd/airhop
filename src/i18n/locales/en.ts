@@ -750,6 +750,7 @@ export const strings = {
   "chat.live_video.signal_weak": "Falling behind",
   "chat.live_video.signal_poor": "Too slow for video, sending sound only",
   "chat.live_video.mic": "Microphone",
+  "chat.live_video.no_sound": "No sound",
   "chat.live_video.flip": "Switch camera",
   "chat.live_video.camera_failed": "Couldn’t open the camera",
   "chat.live_video.camera_lost": "The camera stopped, so the stream ended",

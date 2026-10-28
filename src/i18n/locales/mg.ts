@@ -740,6 +740,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "Miadana loatra ho an'ny horonan-tsary, feo ihany no alefa",
   "chat.live_video.mic": "Mikrô",
+  "chat.live_video.no_sound": "Tsy misy feo",
   "chat.live_video.flip": "Ovay ny fakantsary",
   "chat.live_video.camera_failed": "Tsy nety nisokatra ny fakantsary",
   "chat.live_video.camera_lost":

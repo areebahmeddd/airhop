@@ -720,6 +720,7 @@ export const strings: Strings = {
   "chat.live_video.signal_weak": "Halkar efter",
   "chat.live_video.signal_poor": "För långsamt för video, bara ljud skickas",
   "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.no_sound": "Inget ljud",
   "chat.live_video.flip": "Byt kamera",
   "chat.live_video.camera_failed": "Kunde inte öppna kameran",
   "chat.live_video.camera_lost": "Kameran stannade, så sändningen avslutades",

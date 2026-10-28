@@ -730,6 +730,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "Te traag voor video, alleen geluid wordt verstuurd",
   "chat.live_video.mic": "Microfoon",
+  "chat.live_video.no_sound": "Geen geluid",
   "chat.live_video.flip": "Camera wisselen",
   "chat.live_video.camera_failed": "Kan de camera niet openen",
   "chat.live_video.camera_lost": "De camera stopte, dus de stream is afgelopen",

@@ -35,6 +35,10 @@ import * as FileSystem from "expo-file-system";
 import { NativeEventEmitter, type EventSubscription } from "react-native";
 import { CACHE_FILE_PREFIX } from "./file-transfer-service";
 import type { NativeAudioCapture } from "./voice-audio-backend";
+import {
+  currentWipeGeneration,
+  isCurrentWipeGeneration,
+} from "./wipe-generation";
 
 const EVT_ENCODED = "AirhopVideo.encoded";
 const EVT_CAMERA_ERROR = "AirhopVideo.cameraError";
@@ -96,6 +100,9 @@ export class LiveVideoSendSession {
   private readonly recordingKey: string;
   private readonly recording: FileSystem.File;
   private readonly now: () => number;
+  private readonly wipeGeneration = currentWipeGeneration();
+  // Whether sound goes out: a microphone was given and it opened.
+  private withSound: boolean;
   private startedAtMs = 0;
   private lastCongestionMs = -Infinity;
   private awaitingKeyframe = false;
@@ -125,6 +132,7 @@ export class LiveVideoSendSession {
     private readonly deps: Deps,
   ) {
     this.now = deps.now ?? Date.now;
+    this.withSound = deps.audio !== null;
     const id = randomBytes(STREAM_ID_BYTES);
     this.streamID = bytesToHex(id);
     this.recordingKey = `send:${this.streamID}`;
@@ -195,7 +203,7 @@ export class LiveVideoSendSession {
     return {
       ...this.stats(),
       quality: this.quality.name,
-      withSound: this.deps.audio !== null,
+      withSound: this.withSound,
       videoBitrate: this.congestion.bitrate,
       packetBudget: this.deps.packetBudget,
     };
@@ -243,10 +251,18 @@ export class LiveVideoSendSession {
       await this.stop(true);
       throw err;
     }
+    // A stop during startEncoding has already shut the microphone; opening it
+    // now would leave it on with nothing to close it.
+    const audio = this.deps.audio;
+    if (audio === null || this.stopping !== null) return;
     // The microphone is a bonus: a stream that cannot get one goes on silent.
-    await this.deps.audio
-      ?.startCapture((frame) => this.onAudio(frame))
-      .catch(() => undefined);
+    await audio
+      .startCapture((frame) => this.onAudio(frame))
+      .catch(() => {
+        this.withSound = false;
+      });
+    // Stopped while it was opening, after end() had closed it.
+    if (this.stopping !== null) await audio.stopCapture();
   }
 
   // A link's radio refused this many writes: its transmit queue is full.
@@ -296,6 +312,12 @@ export class LiveVideoSendSession {
       ?.finishRecording(this.recordingKey)
       .catch(() => null);
     if (result === null || result === undefined) return null;
+    // A panic wipe ran while the stream drained: a file finished after it
+    // would be the one thing to survive the wipe.
+    if (!isCurrentWipeGeneration(this.wipeGeneration)) {
+      discard(this.recording);
+      return null;
+    }
     return {
       uri: this.recording.uri,
       name: liveVideoFileName(this.streamID),

@@ -712,6 +712,7 @@ export const strings: Strings = {
   "chat.live_video.signal_poor":
     "برای ویدیو خیلی کند است، فقط صدا فرستاده می‌شود",
   "chat.live_video.mic": "میکروفون",
+  "chat.live_video.no_sound": "بدون صدا",
   "chat.live_video.flip": "تعویض دوربین",
   "chat.live_video.camera_failed": "دوربین باز نشد",
   "chat.live_video.camera_lost": "دوربین متوقف شد، پس پخش تمام شد",

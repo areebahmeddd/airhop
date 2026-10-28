@@ -302,9 +302,10 @@ describe("LiveVideoReceiver", () => {
     expect(rows.some((m) => m.liveVideo?.state === "live")).toBe(true);
   });
 
-  test("a stream of START alone never takes a row, and is dropped for good", () => {
+  test("a stream with no picture gives its slot back, and its picture still opens it", () => {
     const { receiver } = setup();
     const { packetizer, streamID } = stream();
+    // A sender sending sound only: no keyframe, so no picture to show.
     for (let i = 0; i < 12; i++) {
       for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
       now += 1_000;
@@ -312,10 +313,115 @@ describe("LiveVideoReceiver", () => {
     }
     expect(row(liveVideoRowID(SENDER, streamID))).toBeUndefined();
     expect(native.cancelRecording).toHaveBeenCalled();
-    // Dropped for good, so more START packets do not take the slot again.
-    native.startRecording.mockClear();
+    // Video returns: the stream is not shut out for having been quiet.
+    feed(receiver, packetizer, 1, 12_000);
+    expect(row(liveVideoRowID(SENDER, streamID))?.liveVideo?.state).toBe(
+      "live",
+    );
+  });
+
+  test("the tail of a stream never followed opens nothing", () => {
+    const { receiver } = setup();
+    const current = stream();
+    for (const p of current.packetizer.start())
+      receiver.onPacket(SENDER, ROOM, p);
+    feed(receiver, current.packetizer, 1);
+    const earlier = new VideoStreamPacketizer(
+      Uint8Array.from([9, 9, 9, 9, 9, 9, 9, 9]),
+      { width: 144, height: 192, fps: 8, bitrateKbps: 18, hasAudio: true },
+      LIVE_VIDEO_QUALITIES.low.fec,
+    );
+    for (const p of [...earlier.finish(3_000, 0), ...earlier.cancel()]) {
+      receiver.onPacket(SENDER, ROOM, p);
+    }
+    expect(receiver.streamCount).toBe(1);
+    expect(
+      row(liveVideoRowID(SENDER, current.streamID))?.liveVideo?.state,
+    ).toBe("live");
+  });
+
+  test("CANCELED takes every segment's row away", async () => {
+    const { receiver } = setup();
+    const { packetizer, streamID } = stream();
     for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
-    expect(native.startRecording).not.toHaveBeenCalled();
+    feed(receiver, packetizer, 1);
+    now += 91_000;
+    jest.advanceTimersByTime(1_000);
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    feed(receiver, packetizer, 1, 92_000);
+    for (const p of packetizer.cancel()) receiver.onPacket(SENDER, ROOM, p);
+    const rows = (useChatStore.getState().messages[ROOM] ?? []).filter((m) =>
+      m.id.startsWith(liveVideoRowID(SENDER, streamID)),
+    );
+    expect(rows).toHaveLength(0);
+  });
+
+  test("a discard after a resumed segment was let go still takes the earlier rows", async () => {
+    const { receiver } = setup();
+    const { packetizer, streamID } = stream();
+    for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+    feed(receiver, packetizer, 1);
+    now += 91_000;
+    jest.advanceTimersByTime(1_000);
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    // Back with sound only, then quiet: the new segment is let go unseen.
+    for (let i = 0; i < 10; i++) {
+      for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+      now += 1_000;
+      jest.advanceTimersByTime(1_000);
+    }
+    expect(receiver.streamCount).toBe(0);
+    for (const p of packetizer.cancel()) receiver.onPacket(SENDER, ROOM, p);
+    const rows = (useChatStore.getState().messages[ROOM] ?? []).filter((m) =>
+      m.id.startsWith(liveVideoRowID(SENDER, streamID)),
+    );
+    expect(rows).toHaveLength(0);
+  });
+
+  test("a discard arriving after the mesh stopped still takes the rows away", async () => {
+    const { receiver } = setup();
+    const { packetizer, streamID } = stream();
+    for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+    feed(receiver, packetizer, 1);
+    receiver.stop();
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    expect(row(liveVideoRowID(SENDER, streamID))?.attachment).toBeDefined();
+    for (const p of packetizer.cancel()) receiver.onPacket(SENDER, ROOM, p);
+    expect(row(liveVideoRowID(SENDER, streamID))).toBeUndefined();
+    expect(receiver.streamCount).toBe(0);
+    // Over for good: a straggler opens nothing.
+    feed(receiver, packetizer, 1, 2_000);
+    expect(row(liveVideoRowID(SENDER, streamID))).toBeUndefined();
+  });
+
+  test("the sender's file arriving before the first picture ends the stream", () => {
+    const { receiver } = setup();
+    const { packetizer, streamID } = stream();
+    for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+    expect(
+      receiver.absorbFinalFile(SENDER, ROOM, streamID, {
+        type: "video",
+        uri: "file:///cache/airhop_in_final.mp4",
+        name: `video_${streamID}.mp4`,
+      }),
+    ).toBe(false);
+    expect(receiver.streamCount).toBe(0);
+    // Its late pictures do not add a second row beside the file's.
+    feed(receiver, packetizer, 1);
+    expect(row(liveVideoRowID(SENDER, streamID))).toBeUndefined();
+  });
+
+  test("decoding picks up at a keyframe after the chat was away", () => {
+    const { receiver } = setup();
+    const { packetizer } = stream();
+    for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+    feed(receiver, packetizer, 1);
+    expect(native.decodeVideo).not.toHaveBeenCalled();
+    watching = ROOM;
+    feed(receiver, packetizer, 2, 1_000);
+    expect(native.decodeVideo).toHaveBeenCalled();
+    // The first unit decoded is the keyframe at 2 s, never a delta before it.
+    expect(native.decodeVideo.mock.calls[0][2]).toBe(true);
   });
 
   test("a stream past its byte budget is closed", () => {
