@@ -302,6 +302,16 @@ export class LinkRegistry {
     dataBase64: string,
     options: BroadcastOptions = {},
   ): Promise<boolean> {
+    return (await this.broadcastCounted(dataBase64, options)).sent > 0;
+  }
+
+  // As broadcast, counting the links that took the bytes and the ones that
+  // refused them. A refused Bluetooth write is a full transmit queue, which is
+  // the congestion signal a live stream steers by.
+  async broadcastCounted(
+    dataBase64: string,
+    options: BroadcastOptions = {},
+  ): Promise<{ sent: number; refused: number }> {
     const results = await Promise.all(
       this.linkIDs(options.kind)
         .filter((linkID) => linkID !== options.exclude)
@@ -312,7 +322,8 @@ export class LinkRegistry {
           ),
         ),
     );
-    return results.some(Boolean);
+    const sent = results.filter(Boolean).length;
+    return { sent, refused: results.length - sent };
   }
 
   // Onward to every link except the one the bytes arrived on. A packet does not

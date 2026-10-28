@@ -384,6 +384,18 @@ describe("LinkRegistry", () => {
       await expect(links.broadcast("AAAA")).resolves.toBe(false);
     });
 
+    it("broadcastCounted() tells the links that took the bytes from those that refused", async () => {
+      links.open("ble", "c:1");
+      links.open("ble", "p:2");
+      links.open("wifi", "wifi-1");
+      rec.fail("p:2");
+
+      await expect(links.broadcastCounted("AAAA")).resolves.toEqual({
+        sent: 2,
+        refused: 1,
+      });
+    });
+
     it("a refused write never closes the link", async () => {
       links.open("ble", "c:1");
       rec.fail("c:1");

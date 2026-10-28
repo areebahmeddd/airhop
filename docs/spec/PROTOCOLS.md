@@ -850,12 +850,15 @@ CANCELED 0x04  no body
 56 kbps) and High (480x640, 24 fps, 360 kbps), each with its own parity ratios,
 keyframes every 2 s. The sender paces to the lower of the preset's rate and the
 route's budget, 24 packets a second with any Bluetooth hop ahead and 300 over
-Wi-Fi Aware or LAN alone, drops a packet that waited over 1.2 s, and lets its own queue
-drive congestion control: the bitrate backs off as it grows and video is skipped
-until a fresh keyframe once it is far behind, audio carrying on. bitchat also
-reads its Bluetooth link queues, asks for a faster connection interval while
-live, and drops live packets older than 1.5 s in a link queue; Airhop's native
-links expose none of that, so its own queue is the only signal.
+Wi-Fi Aware or LAN alone, and drops a packet that waited over 1.2 s. Congestion
+control reads the deeper of its pacing queue and the radio's, which Airhop's
+native links show only as refused writes: any refusal counts as a queue at its
+high water, and refusals for half of what went out as one far enough behind to
+skip video. The bitrate backs off as the queue grows and video is skipped until
+a fresh keyframe once it is far behind, audio carrying on. bitchat reads its
+link queues' depth directly, asks for a faster connection interval while live,
+and drops live packets older than 1.5 s inside a link queue; Airhop's links have
+no such controls.
 
 **Receiving.** Units are released per track in order, a gap skipped after 900 ms,
 and after any skipped video unit deltas wait for the next keyframe, so a loss
@@ -868,7 +871,8 @@ chat with its first picture, so a stray START or a stream canceled within a
 second leaves nothing; it is decoded only while that chat is open, heard only once
 unmuted and never over live voice, and ends as the recording this phone rebuilt.
 bitchat reopens a stream that resumes after its 90 s close in the same row and
-joins the segments; Airhop opens a new row, since joining needs a remux.
+joins the segments; Airhop gives the new segment a row of its own, since joining
+needs a remux, and the sender's file, when it comes, replaces both with one.
 
 ## 4. Routing Constants
 

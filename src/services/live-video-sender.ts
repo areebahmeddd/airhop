@@ -3,7 +3,8 @@
 // samples recorded into the MP4 that follows the stream as a file. bitchat's
 // LiveVideoSendSession in Airhop's terms.
 //
-// Every 250 ms the pacing queue's depth drives congestion control: a growing
+// Every 250 ms congestion control reads the deeper of two queues: the pacing
+// queue's, and the radio's, which shows only as writes it refused. A growing
 // queue lowers the encoder's bitrate, a deep one drops video at the source
 // (audio keeps flowing) until it drains and a keyframe restarts the picture.
 // There is no receiver feedback to steer by; a broadcast has many listeners
@@ -90,6 +91,12 @@ export class LiveVideoSendSession {
   private audioFrames = 0;
   private audioOffsetMs: number | null = null;
   private packetsSent = 0;
+  // Radio writes refused since the last congestion check, against packets
+  // handed over in it.
+  private refusedInWindow = 0;
+  private sentInWindow = 0;
+  private readonly highWater: number;
+  private readonly skipWater: number;
   // Live from start() until stop() is called.
   private running = false;
   // Units still accepted: through the encoder's and the microphone's flush,
@@ -120,9 +127,11 @@ export class LiveVideoSendSession {
     );
     const budget = deps.packetBudget;
     this.pacer = LiveVideoPacer.forQuality(quality, budget);
+    this.highWater = Math.max(6, Math.floor((budget * 6) / 10));
+    this.skipWater = Math.max(18, Math.floor((budget * 3) / 2));
     this.congestion = new LiveVideoCongestionController(quality.videoBitrate, {
-      highWater: Math.max(6, Math.floor((budget * 6) / 10)),
-      skipWater: Math.max(18, Math.floor((budget * 3) / 2)),
+      highWater: this.highWater,
+      skipWater: this.skipWater,
     });
     this.recording = new FileSystem.File(
       FileSystem.Paths.cache,
@@ -210,6 +219,11 @@ export class LiveVideoSendSession {
     await this.deps.audio
       ?.startCapture((frame) => this.onAudio(frame))
       .catch(() => undefined);
+  }
+
+  // A link's radio refused this many writes: its transmit queue is full.
+  noteRefused(count: number): void {
+    this.refusedInWindow += count;
   }
 
   // Ends the stream: END (or CANCELED), the queue drained, the recording
@@ -312,7 +326,10 @@ export class LiveVideoSendSession {
     const at = this.elapsed();
     if (at - this.lastCongestionMs >= CONGESTION_CHECK_MS) {
       this.lastCongestionMs = at;
-      const decision = this.congestion.onBacklog(this.pacer.backlog, at);
+      const decision = this.congestion.onBacklog(
+        Math.max(this.pacer.backlog, this.radioBacklog()),
+        at,
+      );
       NativeAirhopVideo?.setBitrate(decision.bitrate);
       if (decision.skipVideo) this.awaitingKeyframe = true;
       if (decision.requestKeyframe) NativeAirhopVideo?.requestKeyframe();
@@ -323,7 +340,20 @@ export class LiveVideoSendSession {
 
   private sendPacket(packet: Uint8Array): void {
     this.packetsSent++;
+    this.sentInWindow++;
     this.deps.send(packet);
+  }
+
+  // A full radio queue read as a queue depth, since the radio reports only
+  // that it refused: any refusal is a queue at its high water, and refusals
+  // for half of what went out are one far enough behind to drop video.
+  private radioBacklog(): number {
+    const refused = this.refusedInWindow;
+    const sent = this.sentInWindow;
+    this.refusedInWindow = 0;
+    this.sentInWindow = 0;
+    if (refused === 0) return 0;
+    return refused * 2 >= sent ? this.skipWater : this.highWater;
   }
 
   private async finalDrain(): Promise<void> {

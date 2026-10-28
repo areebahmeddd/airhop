@@ -2487,8 +2487,14 @@ export class MeshService {
           payload,
         };
         packet.signature = signPacket(packet, this.identity.signingPrivKey);
-        // Never gossiped, as a voice burst is not: late, it is worthless.
-        this.broadcastPacket(packet);
+        // Never gossiped, as a voice burst is not: late, it is worthless. One
+        // packet always fits a Bluetooth frame, so every link takes it whole.
+        this.floodRouter.originate(packet);
+        void this.links
+          .broadcastCounted(bytesToBase64(encodePacket(packet)))
+          .then(({ refused }) => {
+            if (refused > 0) session.noteRefused(refused);
+          });
       },
       audio:
         withAudio && isLiveVoiceAvailable() ? new NativeAudioCapture() : null,
