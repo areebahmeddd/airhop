@@ -15,6 +15,7 @@ import org.onemindlabs.airhop.ble.AirhopBLEPackage
 import org.onemindlabs.airhop.lan.AirhopLANPackage
 import org.onemindlabs.airhop.tor.AirhopTorPackage
 import org.onemindlabs.airhop.tor.AirhopTorProxy
+import org.onemindlabs.airhop.video.AirhopVideoPackage
 import org.onemindlabs.airhop.voice.AirhopVoicePackage
 import org.onemindlabs.airhop.wifi.AirhopWiFiPackage
 
@@ -29,6 +30,7 @@ class MainApplication : Application(), ReactApplication {
                     add(AirhopWiFiPackage())
                     add(AirhopLANPackage())
                     add(AirhopVoicePackage())
+                    add(AirhopVideoPackage())
                     add(AirhopTorPackage())
                     add(AirhopAppPackage())
                 },

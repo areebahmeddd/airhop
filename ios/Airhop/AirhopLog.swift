@@ -18,12 +18,14 @@ enum AirhopLog {
   static let tor = Logger(subsystem: subsystem, category: "AirhopTorModule")
   static let iptProxy = Logger(subsystem: subsystem, category: "AirhopIPtProxy")
   static let voice = Logger(subsystem: subsystem, category: "AirhopVoiceModule")
+  static let video = Logger(subsystem: subsystem, category: "AirhopVideoModule")
   static let app = Logger(subsystem: subsystem, category: "AirhopAppModule")
 
   // What recentLog() reads back. Any other subsystem or category entry in
   // the store, ours or another process's, is dropped.
   static let categories: Set<String> = [
     "AirhopBLEModule", "AirhopWiFiModule", "AirhopLANModule",
-    "AirhopTorModule", "AirhopIPtProxy", "AirhopVoiceModule", "AirhopAppModule",
+    "AirhopTorModule", "AirhopIPtProxy", "AirhopVoiceModule", "AirhopVideoModule",
+    "AirhopAppModule",
   ]
 }

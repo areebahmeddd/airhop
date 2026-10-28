@@ -57,6 +57,7 @@ private val LOG_TAGS =
         "AirhopTorModule",
         "AirhopIPtProxy",
         "AirhopVoiceModule",
+        "AirhopVideoModule",
         "AirhopForegroundService",
         "AirhopAppModule",
         "AndroidRuntime",
