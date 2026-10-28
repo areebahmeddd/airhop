@@ -57,7 +57,7 @@ Add the file before tagging. Without it the release still builds and the App Sto
 
 `scripts/release.sh X.Y.Z` stamps the app and the widget extension with `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` before it commits and tags, so the tag already carries both. Pushing the tag `vX.Y.Z` runs `ios-release` in `.github/workflows/release.yml` on a macOS runner:
 
-1. Check every signing secret is set, so a missing one fails with its name rather than deep inside fastlane.
+1. Check every secret below is set, so a missing one fails with its name rather than deep inside fastlane.
 2. Decode the distribution certificate and the two App Store profiles, the app's and the widget extension's, from secrets.
 3. `fastlane ios beta`: import them into a temporary keychain, sign both targets for `APPLE_TEAM_ID`, archive, upload to TestFlight.
 4. Attest the IPA and keep it as a workflow artifact for 90 days.
@@ -69,16 +69,16 @@ Submitting for review is done by hand in App Store Connect.
 
 | Secret                                   | Holds                                               |
 | ---------------------------------------- | --------------------------------------------------- |
-| `APPLE_TEAM_ID`                          | the 10-character team ID, under Membership details  |
 | `APP_STORE_CONNECT_KEY_ID`               | API key ID                                          |
 | `APP_STORE_CONNECT_ISSUER_ID`            | API key issuer                                      |
 | `APP_STORE_CONNECT_KEY_P8`               | base64 of the `.p8`                                 |
+| `APPLE_TEAM_ID`                          | the 10-character team ID, under Membership details  |
 | `IOS_CERTIFICATE_BASE64`                 | base64 of the Apple Distribution `.p12`             |
 | `IOS_CERTIFICATE_PASSWORD`               | password set when the `.p12` was exported           |
 | `IOS_PROVISIONING_PROFILE_BASE64`        | base64 of the app's App Store `.mobileprovision`    |
 | `IOS_WIDGET_PROVISIONING_PROFILE_BASE64` | base64 of the widget's App Store `.mobileprovision` |
 
-### Making the certificate and profile
+### Making the certificate and profiles
 
 Once, on any machine with `openssl`. Nothing here needs a Mac.
 
