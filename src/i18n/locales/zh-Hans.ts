@@ -1738,6 +1738,7 @@ export const strings: Strings = {
   "settings.diag.share": "分享诊断信息",
   "settings.diag.share_desc":
     "用于错误报告的连接与设置详情。不包含消息、名字或密钥。",
+  "settings.diag.share_fallback": "无法打开分享。已改为复制报告。",
   "settings.section.storage_desc": "用量与缓存",
   "settings.section.appearance": "外观",
   "settings.section.appearance_desc": "主题、字体和语言",

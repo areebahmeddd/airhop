@@ -1740,6 +1740,7 @@ export const strings: Strings = {
   "settings.diag.share": "分享診斷資訊",
   "settings.diag.share_desc":
     "用於錯誤回報的連線與設定詳情。不包含訊息、名字或金鑰。",
+  "settings.diag.share_fallback": "無法開啟分享。已改為複製報告。",
   "settings.section.storage_desc": "用量與快取",
   "settings.section.appearance": "外觀",
   "settings.section.appearance_desc": "主題、字體和語言",

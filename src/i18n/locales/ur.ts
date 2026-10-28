@@ -1837,6 +1837,8 @@ export const strings: Strings = {
   "settings.diag.share": "تشخیص شیئر کریں",
   "settings.diag.share_desc":
     "بگ رپورٹ کے لیے کنکشن اور سیٹنگز کی تفصیلات۔ پیغامات، نام اور کلیدیں شامل نہیں ہیں۔",
+  "settings.diag.share_fallback":
+    "شیئرنگ نہیں کھل سکی۔ اس کے بجائے رپورٹ کاپی ہو گئی۔",
   "settings.section.storage_desc": "استعمال اور کیش",
   "settings.section.appearance": "ظاہری شکل",
   "settings.section.appearance_desc": "تھیم، فونٹ اور زبان",

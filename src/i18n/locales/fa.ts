@@ -1841,6 +1841,8 @@ export const strings: Strings = {
   "settings.diag.share": "هم‌رسانی عیب‌یابی",
   "settings.diag.share_desc":
     "وضعیت انتقال و تنظیمات برای گزارش خطا. هرگز پیام، نام یا کلید نه.",
+  "settings.diag.share_fallback":
+    "اشتراک‌گذاری باز نشد. گزارش به‌جای آن کپی شد.",
   "settings.section.storage_desc": "مصرف و حافظهٔ نهان",
   "settings.section.appearance": "ظاهر",
   "settings.section.appearance_desc": "پوسته، قلم و زبان",

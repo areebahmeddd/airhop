@@ -1862,6 +1862,8 @@ export const strings: Strings = {
   "settings.diag.share": "Поділитися діагностикою",
   "settings.diag.share_desc":
     "Відомості про підключення та налаштування для звіту про помилку. Повідомлення, імена та ключі не включаються.",
+  "settings.diag.share_fallback":
+    "Не вдалося відкрити меню «Поділитися». Звіт скопійовано.",
   "settings.section.storage_desc": "Використання та кеш",
   "settings.section.appearance": "Вигляд",
   "settings.section.appearance_desc": "Тема, шрифт і мова",

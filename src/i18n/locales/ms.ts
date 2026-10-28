@@ -1876,6 +1876,8 @@ export const strings: Strings = {
   "settings.diag.share": "Kongsi diagnostik",
   "settings.diag.share_desc":
     "Butiran sambungan dan tetapan untuk laporan pepijat. Mesej, nama dan kunci tidak disertakan.",
+  "settings.diag.share_fallback":
+    "Tidak dapat membuka perkongsian. Laporan disalin sebagai ganti.",
   "settings.section.storage_desc": "Penggunaan dan cache",
   "settings.section.appearance": "Penampilan",
   "settings.section.appearance_desc": "Tema, fon dan bahasa",

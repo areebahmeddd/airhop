@@ -1791,6 +1791,8 @@ export const strings: Strings = {
   "settings.diag.share": "مشاركة بيانات التشخيص",
   "settings.diag.share_desc":
     "حالة النقل والإعدادات لتقرير خلل. لا رسائل ولا أسماء ولا مفاتيح أبداً.",
+  "settings.diag.share_fallback":
+    "تعذّر فتح المشاركة. نُسخ التقرير بدلاً من ذلك.",
   "settings.section.storage_desc": "الاستخدام والتخزين المؤقت",
   "settings.section.appearance": "المظهر",
   "settings.section.appearance_desc": "المظهر والخط واللغة",

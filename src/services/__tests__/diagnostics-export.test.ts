@@ -15,10 +15,12 @@ jest.mock("expo-sharing", () => ({}));
 jest.mock("../mesh-service", () => ({ getMeshService: () => null }));
 
 import { useChatStore } from "@store/chat-store";
+import { useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
 import {
   buildDiagnosticsReport,
   getDiagnosticsReport,
+  timeZoneLabel,
   type DiagnosticsSnapshot,
 } from "../diagnostics-export";
 
@@ -27,8 +29,9 @@ const SNAPSHOT: DiagnosticsSnapshot = {
   app: "1.0.4",
   platform: "Android 14 (API 34)",
   device: "samsung SM-S928B",
+  timeZone: "UTC-7",
   transports: {
-    bluetooth: "none",
+    bluetooth: "active",
     lan: "off",
     wifiAware: "active",
     nostr: "connected",
@@ -47,6 +50,7 @@ const SNAPSHOT: DiagnosticsSnapshot = {
     clockSkewed: false,
   },
   settings: {
+    wifiAware: true,
     lanTransport: false,
     geoRelayDiscovery: true,
     customRelays: 0,
@@ -55,14 +59,64 @@ const SNAPSHOT: DiagnosticsSnapshot = {
   },
 };
 
+describe("timeZoneLabel", () => {
+  it("names whole and part-hour offsets on both sides of UTC", () => {
+    expect(timeZoneLabel(0)).toBe("UTC");
+    expect(timeZoneLabel(420)).toBe("UTC-7");
+    expect(timeZoneLabel(-330)).toBe("UTC+5:30");
+    expect(timeZoneLabel(-345)).toBe("UTC+5:45");
+    expect(timeZoneLabel(210)).toBe("UTC-3:30");
+  });
+});
+
 describe("buildDiagnosticsReport", () => {
-  it("carries every transport with its link count", () => {
+  it("carries every transport with its link count, in one order", () => {
     const report = buildDiagnosticsReport({ ...SNAPSHOT, log: "" });
-    expect(report).toContain("Bluetooth: none · 2 links");
-    expect(report).toContain("Local network: off · 0 links");
-    expect(report).toContain("Wi-Fi Aware: active · 1 links");
-    expect(report).toContain("Nostr: connected");
-    expect(report).toContain("Reachable peers: 1");
+    expect(report).toContain(
+      [
+        "Transports",
+        "  Bluetooth: active · 2 links",
+        "  Wi-Fi Aware: active · 1 link",
+        "  Local network: off · 0 links",
+        "  Nostr: connected",
+        "",
+      ].join("\n"),
+    );
+  });
+
+  it("lists mesh state under the app's names, ingress faults last", () => {
+    expect(buildDiagnosticsReport(SNAPSHOT)).toContain(
+      [
+        "Mesh",
+        "  Reachable peers: 1",
+        "  Presence: online",
+        "  Internet fallback: on",
+        "  Mesh bridge: off",
+        "  Internet gateway: off",
+        "  Tor routing: off",
+        "  Power saving: off",
+        "  Clock skewed: off",
+        "  Ingress faults: 0",
+        "",
+      ].join("\n"),
+    );
+  });
+
+  it("states the time zone beside the UTC timestamp", () => {
+    expect(buildDiagnosticsReport(SNAPSHOT)).toContain(
+      "Generated: 2026-09-11T12:00:00.000Z\nTime zone: UTC-7\n",
+    );
+  });
+
+  // Off by the user and on but idle must not read the same.
+  it("lists both local transport switches, Wi-Fi Aware first", () => {
+    const report = buildDiagnosticsReport({
+      ...SNAPSHOT,
+      settings: { ...SNAPSHOT.settings, wifiAware: false },
+    });
+    expect(report).toContain(
+      "  Wi-Fi Aware transport: off\n  Local network transport: off\n",
+    );
   });
 
   it("says when the platform has no log rather than showing an empty one", () => {
@@ -77,24 +131,25 @@ describe("buildDiagnosticsReport", () => {
   it("includes the native log when there is one", () => {
     const report = buildDiagnosticsReport({
       ...SNAPSHOT,
-      log: "09-11 12:00:00.000 I/AirhopWiFiModule: WiFi Aware attached\n",
+      log: "09-11 12:00:00.000 I/AirhopWiFiModule: Wi-Fi Aware attached\n",
     });
-    expect(report).toContain("WiFi Aware attached");
+    expect(report).toContain("Wi-Fi Aware attached");
     expect(report).toContain("this app's tags only");
   });
 
-  it("carries the WiFi transport's own account when the module has one", () => {
+  it("carries the Wi-Fi Aware module's own account when it has one", () => {
     const report = buildDiagnosticsReport({
       ...SNAPSHOT,
       log: "",
-      wifiTransport: "attached: true for 12s\npeers: 1\n  ab12cd34 connected\n",
+      wifiTransport:
+        "Attached: yes, for 12 s\nPeers now: 1\n  ab12cd34 connected\n",
     });
-    expect(report).toContain("Wi-Fi Aware transport");
-    expect(report).toContain("  attached: true for 12s");
+    expect(report).toContain("\nWi-Fi Aware details\n");
+    expect(report).toContain("  Attached: yes, for 12 s");
     expect(report).toContain("    ab12cd34 connected");
     // Nothing to say on a platform without it.
     expect(buildDiagnosticsReport({ ...SNAPSHOT, log: "" })).not.toContain(
-      "Wi-Fi Aware transport",
+      "Wi-Fi Aware details",
     );
   });
 
@@ -115,6 +170,15 @@ describe("buildDiagnosticsReport", () => {
     );
     expect(withFault(null)).toContain(
       "Ingress faults: 3 (last: RangeError, undecoded)",
+    );
+  });
+
+  it("reports a running Bluetooth mesh as active and a blocker by name", async () => {
+    useMeshStateStore.setState({ bleBlocker: "none" });
+    expect(await getDiagnosticsReport()).toContain("  Bluetooth: active · ");
+    useMeshStateStore.setState({ bleBlocker: "adapter-off" });
+    expect(await getDiagnosticsReport()).toContain(
+      "  Bluetooth: adapter-off · ",
     );
   });
 

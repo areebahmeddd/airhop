@@ -1882,6 +1882,8 @@ export const strings: Strings = {
   "settings.diag.share": "Compartilhar diagnóstico",
   "settings.diag.share_desc":
     "Detalhes de conexão e ajustes para um relatório de bug. Mensagens, nomes e chaves são excluídos.",
+  "settings.diag.share_fallback":
+    "Não foi possível abrir o compartilhamento. O relatório foi copiado.",
   "settings.section.storage_desc": "Uso e cache",
   "settings.section.appearance": "Aparência",
   "settings.section.appearance_desc": "Tema, fonte e idioma",

@@ -1804,6 +1804,7 @@ export const strings: Strings = {
   "settings.diag.share": "แชร์ข้อมูลวินิจฉัย",
   "settings.diag.share_desc":
     "รายละเอียดการเชื่อมต่อและการตั้งค่าสำหรับรายงานข้อบกพร่อง ไม่รวมข้อความ ชื่อ หรือกุญแจ",
+  "settings.diag.share_fallback": "เปิดการแชร์ไม่ได้ จึงคัดลอกรายงานแทน",
   "settings.section.storage_desc": "การใช้งานและแคช",
   "settings.section.appearance": "รูปลักษณ์",
   "settings.section.appearance_desc": "ธีม แบบอักษร และภาษา",

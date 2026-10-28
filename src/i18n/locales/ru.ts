@@ -1865,6 +1865,8 @@ export const strings: Strings = {
   "settings.diag.share": "Поделиться диагностикой",
   "settings.diag.share_desc":
     "Сведения о подключении и настройках для отчёта об ошибке. Сообщения, имена и ключи не включаются.",
+  "settings.diag.share_fallback":
+    "Не удалось открыть меню «Поделиться». Отчёт скопирован.",
   "settings.section.storage_desc": "Использование и кэш",
   "settings.section.appearance": "Оформление",
   "settings.section.appearance_desc": "Тема, шрифт и язык",

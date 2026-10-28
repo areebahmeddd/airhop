@@ -1836,6 +1836,8 @@ export const strings: Strings = {
   "settings.diag.share": "डायग्नोस्टिक्स साझा करें",
   "settings.diag.share_desc":
     "बग रिपोर्ट के लिए ट्रांसपोर्ट और सेटिंग्स की स्थिति। कभी संदेश, नाम या कुंजी नहीं।",
+  "settings.diag.share_fallback":
+    "शेयर नहीं खुल सका। इसके बजाय रिपोर्ट कॉपी हो गई।",
   "settings.section.storage_desc": "इस्तेमाल और कैश",
   "settings.section.appearance": "रूप-रंग",
   "settings.section.appearance_desc": "थीम, फ़ॉन्ट और भाषा",

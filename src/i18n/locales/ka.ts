@@ -1863,6 +1863,8 @@ export const strings: Strings = {
   "settings.diag.share": "დიაგნოსტიკის გაზიარება",
   "settings.diag.share_desc":
     "ტრანსპორტისა და პარამეტრების მდგომარეობა ხარვეზის ანგარიშისთვის. არასოდეს შეტყობინებები, სახელები ან გასაღებები.",
+  "settings.diag.share_fallback":
+    "გაზიარება ვერ გაიხსნა. სანაცვლოდ ანგარიში დაკოპირდა.",
   "settings.section.storage_desc": "მოხმარება და ქეში",
   "settings.section.appearance": "გარეგნობა",
   "settings.section.appearance_desc": "თემა, შრიფტი და ენა",

@@ -1902,6 +1902,8 @@ export const strings: Strings = {
   "settings.diag.share": "Diagnose teilen",
   "settings.diag.share_desc":
     "Transport- und Einstellungsstatus für einen Fehlerbericht. Nie Nachrichten, Namen oder Schlüssel.",
+  "settings.diag.share_fallback":
+    "Teilen ließ sich nicht öffnen. Bericht stattdessen kopiert.",
   "settings.section.storage_desc": "Belegung und Cache",
   "settings.section.appearance": "Erscheinungsbild",
   "settings.section.appearance_desc": "Erscheinungsbild, Schrift und Sprache",

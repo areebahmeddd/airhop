@@ -485,11 +485,11 @@ private actor WiFiAwareTransport {
   /// reads these notices back.
   func dumpState() -> String {
     """
-    attached: \(isRunning)
-    peers known: \(endpoints.count)
-    links up: \(links.count)
-    dials in flight: \(dialling.count)
-    backing off: \(redialDelay.count)
+    Attached: \(isRunning ? "yes" : "no")
+    Peers now: \(endpoints.count)
+    Links now: \(links.count)
+    Dials in flight: \(dialling.count)
+    Backing off: \(redialDelay.count)
     """
   }
 }
@@ -685,7 +685,7 @@ final class AirhopWiFiModule: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     guard #available(iOS 26.0, *) else {
-      resolve("attached: false")
+      resolve("Attached: no")
       return
     }
     dumpState(resolve: resolve)
@@ -694,7 +694,7 @@ final class AirhopWiFiModule: RCTEventEmitter {
   @available(iOS 26.0, *)
   private func dumpState(resolve: @escaping RCTPromiseResolveBlock) {
     guard let transport = box as? WiFiAwareTransport else {
-      resolve("attached: false")
+      resolve("Attached: no")
       return
     }
     Task {

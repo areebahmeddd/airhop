@@ -1825,6 +1825,8 @@ export const strings: Strings = {
   "settings.diag.share": "진단 정보 공유",
   "settings.diag.share_desc":
     "버그 신고용 연결 및 설정 세부 정보입니다. 메시지, 이름, 키는 포함되지 않습니다.",
+  "settings.diag.share_fallback":
+    "공유를 열 수 없습니다. 대신 보고서를 복사했습니다.",
   "settings.section.storage_desc": "사용량과 캐시",
   "settings.section.appearance": "화면",
   "settings.section.appearance_desc": "테마, 글꼴, 언어",

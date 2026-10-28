@@ -1900,6 +1900,8 @@ export const strings: Strings = {
   "settings.diag.share": "Partager le diagnostic",
   "settings.diag.share_desc":
     "État des transports et des réglages pour un rapport de bug. Jamais de messages, de noms ni de clés.",
+  "settings.diag.share_fallback":
+    "Impossible d’ouvrir le partage. Rapport copié à la place.",
   "settings.section.storage_desc": "Utilisation et cache",
   "settings.section.appearance": "Apparence",
   "settings.section.appearance_desc": "Thème, police et langue",

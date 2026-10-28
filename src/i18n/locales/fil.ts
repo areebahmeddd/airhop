@@ -1914,6 +1914,8 @@ export const strings: Strings = {
   "settings.diag.share": "Ibahagi ang diagnostics",
   "settings.diag.share_desc":
     "Estado ng transport at settings para sa bug report. Walang mensahe, pangalan, o susi kailanman.",
+  "settings.diag.share_fallback":
+    "Hindi mabuksan ang pagbabahagi. Kinopya na lang ang report.",
   "settings.section.storage_desc": "Paggamit at cache",
   "settings.section.appearance": "Anyo",
   "settings.section.appearance_desc": "Tema, font at wika",

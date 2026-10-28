@@ -1913,6 +1913,8 @@ export const strings: Strings = {
   "settings.diag.share": "Zarao ny diagnostika",
   "settings.diag.share_desc":
     "Antsipirihan'ny fifandraisana sy ny fandrindrana ho an'ny tatitra olana. Tsy tafiditra ny hafatra, anarana ary lakile.",
+  "settings.diag.share_fallback":
+    "Tsy nisokatra ny fizarana. Nadika kosa ilay tatitra.",
   "settings.section.storage_desc": "Fampiasana sy tahiry vonjimaika",
   "settings.section.appearance": "Endrika",
   "settings.section.appearance_desc": "Lohahevitra, endri-tsoratra ary fiteny",

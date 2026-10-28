@@ -1855,6 +1855,8 @@ export const strings: Strings = {
   "settings.diag.share": "診断情報を共有",
   "settings.diag.share_desc":
     "不具合報告用の通信手段と設定の状態。メッセージ、名前、鍵は含まれません。",
+  "settings.diag.share_fallback":
+    "共有を開けませんでした。代わりにレポートをコピーしました。",
   "settings.section.storage_desc": "使用量とキャッシュ",
   "settings.section.appearance": "外観",
   "settings.section.appearance_desc": "テーマ、フォント、言語",

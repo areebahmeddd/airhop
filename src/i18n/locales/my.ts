@@ -1897,6 +1897,8 @@ export const strings: Strings = {
   "settings.diag.share": "ရောဂါရှာဖွေချက် မျှဝေရန်",
   "settings.diag.share_desc":
     "ချို့ယွင်းချက် အစီရင်ခံစာအတွက် ချိတ်ဆက်မှုနှင့် ဆက်တင်အသေးစိတ်များ။ စာများ၊ အမည်များနှင့် သော့များ မပါဝင်ပါ။",
+  "settings.diag.share_fallback":
+    "မျှဝေမှုကို ဖွင့်၍မရပါ။ ယင်းအစား အစီရင်ခံစာကို ကူးယူထားပါသည်။",
   "settings.section.storage_desc": "အသုံးပြုမှုနှင့် ကက်ရှ်",
   "settings.section.appearance": "အသွင်အပြင်",
   "settings.section.appearance_desc": "အပြင်အဆင်၊ ဖောင့်နှင့် ဘာသာစကား",

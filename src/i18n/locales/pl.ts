@@ -1873,6 +1873,8 @@ export const strings: Strings = {
   "settings.diag.share": "Udostępnij diagnostykę",
   "settings.diag.share_desc":
     "Szczegóły połączenia i ustawień do zgłoszenia błędu. Wiadomości, nazwy i klucze są wykluczone.",
+  "settings.diag.share_fallback":
+    "Nie udało się otworzyć udostępniania. Raport skopiowano zamiast tego.",
   "settings.section.storage_desc": "Zużycie i pamięć podręczna",
   "settings.section.appearance": "Wygląd",
   "settings.section.appearance_desc": "Motyw, czcionka i język",

@@ -1832,6 +1832,8 @@ export const strings: Strings = {
   "settings.diag.share": "ডায়াগনস্টিক শেয়ার করুন",
   "settings.diag.share_desc":
     "বাগ রিপোর্টের জন্য ট্রান্সপোর্ট ও সেটিংসের অবস্থা। কখনও বার্তা, নাম বা কী নয়।",
+  "settings.diag.share_fallback":
+    "শেয়ার খোলা যায়নি। এর বদলে রিপোর্ট কপি হয়েছে।",
   "settings.section.storage_desc": "ব্যবহার ও ক্যাশ",
   "settings.section.appearance": "চেহারা",
   "settings.section.appearance_desc": "থিম, ফন্ট ও ভাষা",

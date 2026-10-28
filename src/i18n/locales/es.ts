@@ -1888,6 +1888,8 @@ export const strings: Strings = {
   "settings.diag.share": "Compartir diagnóstico",
   "settings.diag.share_desc":
     "Estado de transportes y ajustes para un informe de error. Nunca mensajes, nombres ni claves.",
+  "settings.diag.share_fallback":
+    "No se pudo abrir Compartir. Se copió el informe.",
   "settings.section.storage_desc": "Uso y caché",
   "settings.section.appearance": "Apariencia",
   "settings.section.appearance_desc": "Tema, fuente e idioma",

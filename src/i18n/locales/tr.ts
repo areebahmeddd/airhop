@@ -1856,6 +1856,8 @@ export const strings: Strings = {
   "settings.diag.share": "Tanılamayı paylaş",
   "settings.diag.share_desc":
     "Hata raporu için bağlantı ve ayar ayrıntıları. Mesajlar, adlar ve anahtarlar hariç tutulur.",
+  "settings.diag.share_fallback":
+    "Paylaşım açılamadı. Bunun yerine rapor kopyalandı.",
   "settings.section.storage_desc": "Kullanım ve önbellek",
   "settings.section.appearance": "Görünüm",
   "settings.section.appearance_desc": "Tema, yazı tipi ve dil",

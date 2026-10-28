@@ -1853,6 +1853,8 @@ export const strings: Strings = {
   "settings.diag.share": "Chia sẻ chẩn đoán",
   "settings.diag.share_desc":
     "Chi tiết kết nối và cài đặt cho báo cáo lỗi. Tin nhắn, tên và khóa được loại trừ.",
+  "settings.diag.share_fallback":
+    "Không mở được chia sẻ. Đã sao chép báo cáo thay thế.",
   "settings.section.storage_desc": "Mức dùng và bộ nhớ đệm",
   "settings.section.appearance": "Giao diện",
   "settings.section.appearance_desc": "Giao diện, phông chữ và ngôn ngữ",

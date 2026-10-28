@@ -1921,6 +1921,8 @@ export const strings: Strings = {
   "settings.diag.share": "கண்டறிதலைப் பகிர்",
   "settings.diag.share_desc":
     "பிழை அறிக்கைக்கான இணைப்பு மற்றும் அமைப்பு விவரங்கள். செய்திகள், பெயர்கள் மற்றும் விசைகள் சேர்க்கப்படாது.",
+  "settings.diag.share_fallback":
+    "பகிர்வைத் திறக்க முடியவில்லை. அதற்குப் பதிலாக அறிக்கை நகலெடுக்கப்பட்டது.",
   "settings.section.storage_desc": "பயன்பாடும் தற்காலிகச் சேமிப்பும்",
   "settings.section.appearance": "தோற்றம்",
   "settings.section.appearance_desc": "தீம், எழுத்துரு, மொழி",

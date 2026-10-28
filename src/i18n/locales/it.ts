@@ -1891,6 +1891,8 @@ export const strings: Strings = {
   "settings.diag.share": "Condividi diagnostica",
   "settings.diag.share_desc":
     "Stato di trasporti e impostazioni per una segnalazione. Mai messaggi, nomi o chiavi.",
+  "settings.diag.share_fallback":
+    "Impossibile aprire la condivisione. Rapporto copiato al suo posto.",
   "settings.section.storage_desc": "Utilizzo e cache",
   "settings.section.appearance": "Aspetto",
   "settings.section.appearance_desc": "Tema, carattere e lingua",

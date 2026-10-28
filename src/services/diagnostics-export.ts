@@ -25,6 +25,8 @@ export interface DiagnosticsSnapshot {
   app: string;
   platform: string;
   device: string;
+  // Log lines are local time and `generatedAt` is UTC.
+  timeZone: string;
   transports: {
     bluetooth: string;
     lan: string;
@@ -45,6 +47,7 @@ export interface DiagnosticsSnapshot {
     clockSkewed: boolean;
   };
   settings: {
+    wifiAware: boolean;
     lanTransport: boolean;
     geoRelayDiscovery: boolean;
     customRelays: number;
@@ -65,30 +68,34 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
   const lines = [
     "Airhop diagnostics",
     `Generated: ${s.generatedAt}`,
+    `Time zone: ${s.timeZone}`,
     `App: ${s.app}`,
     `Platform: ${s.platform}`,
     `Device: ${s.device}`,
     "",
     "Transports",
-    `  Bluetooth: ${s.transports.bluetooth} · ${s.transports.links.ble} links`,
-    `  Local network: ${s.transports.lan} · ${s.transports.links.lan} links`,
-    `  Wi-Fi Aware: ${s.transports.wifiAware} · ${s.transports.links.wifi} links`,
+    `  Bluetooth: ${s.transports.bluetooth} · ${linkCount(s.transports.links.ble)}`,
+    `  Wi-Fi Aware: ${s.transports.wifiAware} · ${linkCount(s.transports.links.wifi)}`,
+    `  Local network: ${s.transports.lan} · ${linkCount(s.transports.links.lan)}`,
     `  Nostr: ${s.transports.nostr}`,
-    `  Ingress faults: ${ingressFaultLine(s.transports.ingressFaults, s.transports.lastIngressFault)}`,
     "",
+    // The Connectivity screen's labels and order. Ingress faults are mesh
+    // health, not a radio.
     "Mesh",
     `  Reachable peers: ${s.mesh.reachablePeers}`,
     `  Presence: ${s.mesh.presence}`,
-    `  Internet: ${yes(s.mesh.internet)}`,
-    `  Tor: ${s.mesh.tor}`,
-    `  Gateway: ${yes(s.mesh.gateway)}`,
-    `  Bridge: ${s.mesh.bridge}`,
+    `  Internet fallback: ${yes(s.mesh.internet)}`,
+    `  Mesh bridge: ${s.mesh.bridge}`,
+    `  Internet gateway: ${yes(s.mesh.gateway)}`,
+    `  Tor routing: ${s.mesh.tor}`,
     `  Power saving: ${yes(s.mesh.powerSaving)}`,
     `  Clock skewed: ${yes(s.mesh.clockSkewed)}`,
+    `  Ingress faults: ${ingressFaultLine(s.transports.ingressFaults, s.transports.lastIngressFault)}`,
     "",
     "Settings",
+    `  Wi-Fi Aware transport: ${yes(s.settings.wifiAware)}`,
     `  Local network transport: ${yes(s.settings.lanTransport)}`,
-    `  Relay discovery: ${yes(s.settings.geoRelayDiscovery)}`,
+    `  Geo-relay discovery: ${yes(s.settings.geoRelayDiscovery)}`,
     `  Custom relays: ${s.settings.customRelays}`,
     `  Tor bridge mode: ${s.settings.torBridgeMode}`,
     `  Live voice: ${yes(s.settings.liveVoice)}`,
@@ -96,7 +103,7 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
   ];
   if (s.wifiTransport !== undefined && s.wifiTransport.trim().length > 0) {
     lines.push(
-      "Wi-Fi Aware transport",
+      "Wi-Fi Aware details",
       ...s.wifiTransport
         .trimEnd()
         .split("\n")
@@ -115,6 +122,25 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     );
   }
   return lines.join("\n") + "\n";
+}
+
+// The report is English by design, so the plural is settled here.
+function linkCount(n: number): string {
+  return n === 1 ? "1 link" : `${String(n)} links`;
+}
+
+/**
+ * @public Exported for its test. getTimezoneOffset is minutes behind UTC, so
+ * the sign flips.
+ */
+export function timeZoneLabel(offsetMinutes: number): string {
+  if (offsetMinutes === 0) return "UTC";
+  const ahead = -offsetMinutes;
+  const abs = Math.abs(ahead);
+  const hours = Math.floor(abs / 60);
+  const minutes = abs % 60;
+  const sign = ahead > 0 ? "+" : "-";
+  return `UTC${sign}${String(hours)}${minutes === 0 ? "" : `:${String(minutes).padStart(2, "0")}`}`;
 }
 
 // A packet type names the handler to look at; none means the frame never
@@ -177,13 +203,16 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
     () => undefined,
   );
 
+  const now = new Date();
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: now.toISOString(),
     app: APP_VERSION,
     platform: platformLabel(),
     device: deviceLabel(),
+    timeZone: timeZoneLabel(now.getTimezoneOffset()),
     transports: {
-      bluetooth: mesh.bleBlocker,
+      // bleBlocker names what stops the mesh, so "none" means it is running.
+      bluetooth: mesh.bleBlocker === "none" ? "active" : mesh.bleBlocker,
       lan: mesh.lanState,
       wifiAware: mesh.wifiFastPath,
       nostr: mesh.nostrConnected ? "connected" : "not connected",
@@ -202,6 +231,7 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       clockSkewed: mesh.clockSkewed,
     },
     settings: {
+      wifiAware: settings.wifiAwareEnabled,
       lanTransport: settings.lanTransportEnabled,
       geoRelayDiscovery: settings.geoRelayDiscovery,
       customRelays: settings.customRelays.length,

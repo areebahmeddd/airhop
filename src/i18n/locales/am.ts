@@ -1736,6 +1736,7 @@ export const strings: Strings = {
   "settings.diag.share": "የምርመራ መረጃ አጋራ",
   "settings.diag.share_desc":
     "ለስህተት ሪፖርት የመተላለፊያ እና የቅንብር ዝርዝሮች። መልእክቶች፣ ስሞች ወይም ቁልፎች በፍጹም አይካተቱም።",
+  "settings.diag.share_fallback": "ማጋራት አልተከፈተም። ሪፖርቱ በምትኩ ተቀድቷል።",
   "settings.section.storage_desc": "አጠቃቀምና ጊዜያዊ ማከማቻ",
   "settings.section.appearance": "መልክ",
   "settings.section.appearance_desc": "ገጽታ፣ ቅርጸ ቁምፊና ቋንቋ",

@@ -1828,6 +1828,8 @@ export const strings: Strings = {
   "settings.diag.share": "निदान साझा गर्नुहोस्",
   "settings.diag.share_desc":
     "बग रिपोर्टका लागि जडान र सेटिङका विवरण। सन्देश, नाम र कुञ्जी समावेश हुँदैनन्।",
+  "settings.diag.share_fallback":
+    "साझेदारी खोल्न सकिएन। बरु रिपोर्ट प्रतिलिपि गरियो।",
   "settings.section.storage_desc": "प्रयोग र क्यास",
   "settings.section.appearance": "रूप",
   "settings.section.appearance_desc": "थिम, फन्ट र भाषा",

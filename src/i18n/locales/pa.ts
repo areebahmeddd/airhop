@@ -1840,6 +1840,8 @@ export const strings: Strings = {
   "settings.diag.share": "ਡਾਇਗਨੌਸਟਿਕਸ ਸਾਂਝੇ ਕਰੋ",
   "settings.diag.share_desc":
     "ਬੱਗ ਰਿਪੋਰਟ ਲਈ ਕਨੈਕਸ਼ਨ ਅਤੇ ਸੈਟਿੰਗਾਂ ਦੇ ਵੇਰਵੇ। ਸੁਨੇਹੇ, ਨਾਂ ਅਤੇ ਕੁੰਜੀਆਂ ਸ਼ਾਮਲ ਨਹੀਂ ਹਨ।",
+  "settings.diag.share_fallback":
+    "ਸਾਂਝਾ ਕਰਨਾ ਨਹੀਂ ਖੁੱਲ੍ਹ ਸਕਿਆ। ਇਸ ਦੀ ਥਾਂ ਰਿਪੋਰਟ ਕਾਪੀ ਹੋ ਗਈ।",
   "settings.section.storage_desc": "ਵਰਤੋਂ ਅਤੇ ਕੈਸ਼",
   "settings.section.appearance": "ਦਿੱਖ",
   "settings.section.appearance_desc": "ਥੀਮ, ਫ਼ੌਂਟ ਅਤੇ ਭਾਸ਼ਾ",

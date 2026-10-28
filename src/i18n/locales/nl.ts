@@ -1878,6 +1878,8 @@ export const strings: Strings = {
   "settings.diag.share": "Diagnose delen",
   "settings.diag.share_desc":
     "Verbindings- en instellingsdetails voor een bugrapport. Berichten, namen en sleutels worden uitgesloten.",
+  "settings.diag.share_fallback":
+    "Delen kon niet worden geopend. Rapport in plaats daarvan gekopieerd.",
   "settings.section.storage_desc": "Gebruik en cache",
   "settings.section.appearance": "Weergave",
   "settings.section.appearance_desc": "Thema, lettertype en taal",

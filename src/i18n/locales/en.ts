@@ -1859,6 +1859,8 @@ export const strings = {
   "settings.diag.share": "Share diagnostics",
   "settings.diag.share_desc":
     "Transport and settings details for a bug report. Messages, names, and keys are excluded.",
+  "settings.diag.share_fallback":
+    "Couldn’t open sharing. Report copied instead.",
   "settings.section.storage_desc": "Usage and cache",
   "settings.section.appearance": "Appearance",
   "settings.section.appearance_desc": "Theme, font, and language",

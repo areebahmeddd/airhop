@@ -1883,6 +1883,8 @@ export const strings: Strings = {
   "settings.diag.share": "Shiriki uchunguzi",
   "settings.diag.share_desc":
     "Maelezo ya muunganisho na mipangilio kwa ripoti ya hitilafu. Ujumbe, majina na funguo hazijumuishwi.",
+  "settings.diag.share_fallback":
+    "Imeshindwa kufungua kushiriki. Ripoti imenakiliwa badala yake.",
   "settings.section.storage_desc": "Matumizi na akiba",
   "settings.section.appearance": "Muonekano",
   "settings.section.appearance_desc": "Mandhari, fonti na lugha",

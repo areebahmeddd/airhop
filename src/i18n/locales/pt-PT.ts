@@ -1887,6 +1887,8 @@ export const strings: Strings = {
   "settings.diag.share": "Partilhar diagnóstico",
   "settings.diag.share_desc":
     "Detalhes de ligação e definições para um relatório de erro. Mensagens, nomes e chaves são excluídos.",
+  "settings.diag.share_fallback":
+    "Não foi possível abrir a partilha. O relatório foi copiado.",
   "settings.section.storage_desc": "Utilização e cache",
   "settings.section.appearance": "Aspeto",
   "settings.section.appearance_desc": "Tema, tipo de letra e idioma",

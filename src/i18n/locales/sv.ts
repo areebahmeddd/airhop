@@ -1852,6 +1852,8 @@ export const strings: Strings = {
   "settings.diag.share": "Dela diagnostik",
   "settings.diag.share_desc":
     "Anslutnings- och inställningsdetaljer för en felrapport. Meddelanden, namn och nycklar utesluts.",
+  "settings.diag.share_fallback":
+    "Det gick inte att öppna delning. Rapporten kopierades i stället.",
   "settings.section.storage_desc": "Användning och cache",
   "settings.section.appearance": "Utseende",
   "settings.section.appearance_desc": "Tema, teckensnitt och språk",
