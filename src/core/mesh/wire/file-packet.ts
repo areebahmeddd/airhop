@@ -481,6 +481,12 @@ export function encodeFilePacket(p: FilePacket): Uint8Array | null {
   return out;
 }
 
+// A u32 or u64 field as a number. Precise to 2^53, far past any size that
+// matters here.
+function bigEndian(bytes: Uint8Array): number {
+  return bytes.reduce((v, byte) => v * 256 + byte, 0);
+}
+
 // Decode a bitchat TLV blob. Tolerates bitchat's legacy encodings (fileSize
 // len 8, content len 2). Returns null when malformed or over the size cap.
 export function decodeFilePacket(data: Uint8Array): FilePacket | null {
@@ -526,7 +532,12 @@ export function decodeFilePacket(data: Uint8Array): FilePacket | null {
         fileName = dec.decode(value);
         break;
       case TLV_FILESIZE:
-        // value is the declared size; we trust the content bytes themselves.
+        // The content bytes are what is kept, but a declared size over the
+        // ceiling is refused outright, as bitchat-ios does, so all three
+        // clients reject the same packet.
+        if ((len === 4 || len === 8) && bigEndian(value) > MAX_FILE_BYTES) {
+          return null;
+        }
         break;
       case TLV_MIMETYPE:
         mimeType = dec.decode(value);
