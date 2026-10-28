@@ -129,8 +129,12 @@ export const SettingsScroll = React.forwardRef<
   ScrollViewInstance,
   Omit<ScrollViewProps, "contentContainerStyle"> & {
     children: React.ReactNode;
+    fill?: boolean;
   }
->(function SettingsScroll({ children, ...scrollProps }, forwardedRef) {
+>(function SettingsScroll(
+  { children, fill = false, ...scrollProps },
+  forwardedRef,
+) {
   const styles = useSharedStyles();
   const scrollRef = useRef<ScrollViewInstance>(null);
   const contentRef = useRef<ViewInstance>(null);
@@ -163,12 +167,17 @@ export const SettingsScroll = React.forwardRef<
           else if (forwardedRef !== null) forwardedRef.current = node;
         }}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={fill ? styles.fill : undefined}
         {...scrollProps}
       >
         {/* The content padding rides on a real View rather than
             contentContainerStyle, so rows have an ancestor to measure against.
             Identical box either way. */}
-        <View ref={contentRef} style={styles.content} collapsable={false}>
+        <View
+          ref={contentRef}
+          style={[styles.content, fill && styles.fill]}
+          collapsable={false}
+        >
           {children}
         </View>
       </ScrollView>
@@ -425,6 +434,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       padding: Spacing.base,
       gap: Spacing.md,
       paddingBottom: TAB_BAR_CLEARANCE,
+    },
+    fill: {
+      flexGrow: 1,
     },
     subHeader: {
       flexDirection: "row",
