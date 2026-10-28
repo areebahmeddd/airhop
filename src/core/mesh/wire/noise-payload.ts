@@ -19,6 +19,10 @@ export const NoisePayloadType = {
   // same bytes a public burst carries in a VOICE_FRAME packet, so one wire
   // format serves both scopes and only the envelope differs.
   VOICE_FRAME: 0x08,
+  // One live video packet, a VideoBurstPacket: the same bytes a public stream
+  // carries in a VIDEO_FRAME packet (LIVE_VIDEO_V1). 0x0A, since 0x09 is the
+  // private-file alias below.
+  VIDEO_FRAME: 0x0a,
   // A whole file, encrypted inside the session rather than signed in the open.
   // Body is a BitchatFilePacket TLV - the same bytes a public FILE_TRANSFER
   // carries, so one encoder serves both and only the envelope differs.

@@ -89,6 +89,21 @@ export function isVideoNoteName(name: string | undefined): boolean {
   return name !== undefined && VIDEO_NOTE_NAME.test(name);
 }
 
+// A finished live stream, resent as a file: `video_` and the stream ID as 16
+// lowercase hex. The name is the whole link between the file and the live
+// bubble it replaces, on every client.
+const LIVE_VIDEO_NAME = /^video_([0-9a-f]{16})(?: \(\d+\))?\.mp4$/i;
+
+export function liveVideoFileName(streamIDHex: string): string {
+  return `video_${streamIDHex.toLowerCase()}.mp4`;
+}
+
+// The stream a file finishes, or null for any other file.
+export function liveVideoStreamOf(name: string | undefined): string | null {
+  const match = name === undefined ? null : LIVE_VIDEO_NAME.exec(name);
+  return match === null ? null : match[1].toLowerCase();
+}
+
 // The wire name for an attachment.
 //
 // The name is not cosmetic: the receiver writes it to disk, and the photo

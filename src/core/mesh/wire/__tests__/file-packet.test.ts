@@ -7,6 +7,8 @@ import {
   ensureFileExtension,
   isAllowedMime,
   isVideoNoteName,
+  liveVideoFileName,
+  liveVideoStreamOf,
   MAX_FILE_BYTES,
   MAX_IMAGE_BYTES,
   MAX_VOICE_BYTES,
@@ -349,6 +351,30 @@ describe("video note names", () => {
       "note_abc.mp4",
     ]) {
       expect(isVideoNoteName(name)).toBe(false);
+    }
+  });
+});
+
+describe("live video file names", () => {
+  test("a stream's file names it, and only it", () => {
+    const name = liveVideoFileName("0102030405060708");
+    expect(name).toBe("video_0102030405060708.mp4");
+    expect(liveVideoStreamOf(name)).toBe("0102030405060708");
+    expect(liveVideoStreamOf("video_0102030405060708 (1).mp4")).toBe(
+      "0102030405060708",
+    );
+    expect(liveVideoStreamOf("VIDEO_0102030405060A0B.MP4")).toBe(
+      "0102030405060a0b",
+    );
+    expect(isVideoNoteName(name)).toBe(false);
+    for (const other of [
+      undefined,
+      "video_01020304.mp4",
+      "video_0102030405060708.mov",
+      "clip_0102030405060708.mp4",
+      videoNoteName(),
+    ]) {
+      expect(liveVideoStreamOf(other)).toBeNull();
     }
   });
 });

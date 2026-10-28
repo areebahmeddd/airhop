@@ -127,7 +127,6 @@ function entryIsValid(e: LiveVideoEntry): boolean {
   );
 }
 
-/** @public Exported for its test until a stream is sent. */
 export function encodeEntries(entries: readonly LiveVideoEntry[]): Uint8Array {
   const out: number[] = [];
   for (const e of entries) {
@@ -225,11 +224,8 @@ function kindIsValid(k: VideoPacketKind): boolean {
   }
 }
 
-/**
- * @public Exported for its test until a stream is sent. Null for a packet
- * bitchat would not build: a wrong-sized stream ID, a sequence out of range,
- * or any field outside its bounds.
- */
+// Null for a packet bitchat would not build: a wrong-sized stream ID, a
+// sequence out of range, or any field outside its bounds.
 export function encodeVideoBurstPacket(p: VideoBurstPacket): Uint8Array | null {
   if (
     p.streamID.length !== STREAM_ID_BYTES ||
