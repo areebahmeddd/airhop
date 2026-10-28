@@ -2080,7 +2080,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Torの利用を隠します。Snowflakeより速いものの、これらのブリッジは公開されており遮断する回線もあります。",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "通常のウェブサイト閲覧のように見せて、Torの利用を隠します。他より遮断されにくい方法です。",
   "settings.tor.mode_custom": "カスタムブリッジ",

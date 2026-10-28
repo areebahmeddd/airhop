@@ -2104,7 +2104,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Ukrywa, że używasz Tor. Szybsze niż Snowflake, ale te mostki są publiczne i część sieci je blokuje.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Ukrywa korzystanie z Tor, wyglądając jak zwykłe odwiedziny strony. Trudniejszy do zablokowania niż pozostałe.",
   "settings.tor.mode_custom": "Własne mostki",

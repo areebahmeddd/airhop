@@ -1951,7 +1951,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "隱藏你正在使用 Tor。比 Snowflake 快，但這些橋接是公開的，有些網路會封鎖。",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "讓流量看起來像一般的網站瀏覽，藉此隱藏你在使用 Tor。比其他方式更難封鎖。",
   "settings.tor.mode_custom": "自訂橋接",

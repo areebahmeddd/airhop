@@ -2148,7 +2148,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Itinatago na gumagamit ka ng Tor. Mas mabilis kaysa Snowflake, pero pampubliko ang mga bridge na ito at hinaharangan ng ilang network.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Itinatago na gumagamit ka ng Tor sa pamamagitan ng pagmukhang karaniwang pagbisita sa website. Mas mahirap harangan kaysa sa iba.",
   "settings.tor.mode_custom": "Sariling bridge",

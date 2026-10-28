@@ -2082,7 +2082,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Che giấu việc bạn dùng Tor. Nhanh hơn Snowflake, nhưng các cầu nối này công khai và một số mạng chặn chúng.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Ẩn việc bạn dùng Tor bằng cách trông như một lượt truy cập web bình thường. Khó chặn hơn các cách khác.",
   "settings.tor.mode_custom": "Cầu nối riêng",

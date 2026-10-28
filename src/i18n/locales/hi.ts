@@ -2061,7 +2061,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "छिपाता है कि आप Tor इस्तेमाल कर रहे हैं। Snowflake से तेज़, लेकिन ये ब्रिज सार्वजनिक हैं और कुछ नेटवर्क इन्हें रोकते हैं।",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "यह सामान्य वेबसाइट विज़िट जैसा दिखकर छिपाता है कि आप Tor इस्तेमाल करते हैं। बाकियों से ब्लॉक करना कठिन।",
   "settings.tor.mode_custom": "अपने ब्रिज",

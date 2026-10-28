@@ -2079,7 +2079,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Döljer att du använder Tor. Snabbare än Snowflake, men dessa bryggor är offentliga och vissa nätverk blockerar dem.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Döljer att du använder Tor genom att likna ett vanligt webbplatsbesök. Svårare att blockera än de andra.",
   "settings.tor.mode_custom": "Egna bryggor",

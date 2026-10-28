@@ -2089,7 +2089,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "მალავს, რომ Tor-ს იყენებ. Snowflake-ზე სწრაფია, თუმცა ეს ხიდები საჯაროა და ზოგი ქსელი ბლოკავს.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "მალავს Tor-ის გამოყენებას ჩვეულებრივი ვებგვერდის მონახულების იმიტაციით. სხვებზე რთულად დასაბლოკია.",
   "settings.tor.mode_custom": "საკუთარი ხიდები",

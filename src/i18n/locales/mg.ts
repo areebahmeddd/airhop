@@ -2155,7 +2155,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Manafina fa mampiasa Tor ianao. Haingana noho ny Snowflake, saingy ampahibemaso ireo tetezana ireo ka sakanan'ny tambajotra sasany.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Manafina ny fampiasanao Tor amin'ny fanaovana azy ho toy ny fitsidihana tranonkala mahazatra. Sarotra sakanana noho ny hafa.",
   "settings.tor.mode_custom": "Tetezana manokana",

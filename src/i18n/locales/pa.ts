@@ -2063,7 +2063,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "ਲੁਕਾਉਂਦਾ ਹੈ ਕਿ ਤੁਸੀਂ Tor ਵਰਤ ਰਹੇ ਹੋ। Snowflake ਤੋਂ ਤੇਜ਼, ਪਰ ਇਹ ਬ੍ਰਿਜ ਜਨਤਕ ਹਨ ਅਤੇ ਕੁਝ ਨੈੱਟਵਰਕ ਇਨ੍ਹਾਂ ਨੂੰ ਰੋਕਦੇ ਹਨ।",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "ਆਮ ਵੈੱਬਸਾਈਟ ਵਿਜ਼ਿਟ ਵਾਂਗ ਦਿਖ ਕੇ ਲੁਕਾਉਂਦਾ ਹੈ ਕਿ ਤੁਸੀਂ Tor ਵਰਤਦੇ ਹੋ। ਬਾਕੀਆਂ ਨਾਲੋਂ ਬਲਾਕ ਕਰਨਾ ਔਖਾ।",
   "settings.tor.mode_custom": "ਆਪਣੇ ਬ੍ਰਿਜ",

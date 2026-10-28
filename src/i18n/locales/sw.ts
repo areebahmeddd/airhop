@@ -2115,7 +2115,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Huficha kuwa unatumia Tor. Haraka kuliko Snowflake, lakini madaraja haya ni ya umma na baadhi ya mitandao huyazuia.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Huficha kuwa unatumia Tor kwa kuonekana kama kutembelea tovuti ya kawaida. Ngumu kuzuia kuliko nyingine.",
   "settings.tor.mode_custom": "Madaraja yako",

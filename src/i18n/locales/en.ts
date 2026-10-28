@@ -2080,7 +2080,7 @@ export const strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Hides that you use Tor. Faster than Snowflake, but these bridges are public and some networks block them.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Hides that you use Tor by looking like an ordinary website visit. Harder to block than the others.",
   "settings.tor.mode_custom": "Custom bridges",

@@ -2011,7 +2011,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "يخفي استخدامك لـ Tor. أسرع من Snowflake، لكن هذه الجسور علنية وبعض الشبكات تحجبها.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "يخفي استخدامك لـ Tor بجعله يبدو كزيارة عادية لموقع ويب. حظره أصعب من غيره.",
   "settings.tor.mode_custom": "جسور مخصصة",

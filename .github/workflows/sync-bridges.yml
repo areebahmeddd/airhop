@@ -91,7 +91,5 @@ jobs:
           if [ -z "$(gh pr list --head "$UPDATE_BRANCH" --state open --json number --jq '.[0].number')" ]; then
             gh pr create --base main --head "$UPDATE_BRANCH" \
               --title "$PR_TITLE" \
-              --body "Built-in bridge lines refreshed from the Tor Project's Moat endpoint, the same source Tor Browser uses.
-
-          Review this rather than merging on green: these lines are how a censored user reaches the network, and a bridge that has been enumerated is worse than none because it looks like the safe choice."
+              --body "Updates the built-in bridge lines from the Tor Project, the same list Tor Browser ships. Please look over the diff before merging: people on censored networks rely on these lines to connect."
           fi

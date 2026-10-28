@@ -2137,7 +2137,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor သုံးနေကြောင်း ဖုံးကွယ်ပေးသည်။ Snowflake ထက် မြန်သော်လည်း ဤတံတားများမှာ အများသိဖြစ်ပြီး အချို့ကွန်ရက်များက ပိတ်ဆို့သည်။",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "သာမန်ဝဘ်ဆိုက်လည်ပတ်မှုပုံစံဖြင့် Tor သုံးနေကြောင်း ဖုံးကွယ်ပေးသည်။ အခြားနည်းများထက် ပိတ်ဆို့ရန် ခက်သည်။",
   "settings.tor.mode_custom": "ကိုယ်ပိုင်တံတားများ",

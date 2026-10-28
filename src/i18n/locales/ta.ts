@@ -2160,7 +2160,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "நீங்கள் Tor பயன்படுத்துவதை மறைக்கிறது. Snowflake ஐ விட வேகமானது, ஆனால் இந்தப் பாலங்கள் பொதுவானவை, சில நெட்வொர்க்குகள் தடுக்கின்றன.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "சாதாரண இணையதள வருகை போலத் தோன்றி நீங்கள் Tor பயன்படுத்துவதை மறைக்கிறது. மற்றவற்றை விட தடுப்பது கடினம்.",
   "settings.tor.mode_custom": "சொந்தப் பாலங்கள்",
