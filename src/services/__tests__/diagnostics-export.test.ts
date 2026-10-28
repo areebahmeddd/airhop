@@ -26,7 +26,7 @@ import {
 
 const SNAPSHOT: DiagnosticsSnapshot = {
   generatedAt: "2026-09-11T12:00:00.000Z",
-  app: "1.0.4",
+  app: "1.0.0",
   platform: "Android 14 (API 34)",
   device: "samsung SM-S928B",
   timeZone: "UTC-7",
