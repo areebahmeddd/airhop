@@ -926,6 +926,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name} க்கு முன்னனுப்ப முடியாது",
   "chat.forward.too_long_for_dm":
     "நேரடிச் செய்திக்கு மிக நீளமானது. அதற்குப் பதிலாக ஒரு சேனல் அல்லது குழுவுக்கு முன்னனுப்புங்கள்.",
+  "chat.forward.too_long_for_public":
+    "பொது அறைக்கு மிக நீளம், அங்கு இது ஸ்பேமாக மறைக்கப்படும். பதிலாக ஒரு குழுவிற்கு அனுப்புங்கள்.",
   "chat.forward.channels": "சேனல்கள்",
   "chat.forward.groups": "குழுக்கள்",
   "chat.forward.locations": "இடங்கள்",
@@ -1962,6 +1964,9 @@ export const strings: Strings = {
   "settings.general.show_media": "ஊடகத்தைத் தானாகக் காட்டு",
   "settings.general.show_media_desc":
     "புகைப்படங்களும் வீடியோக்களும் அரட்டையிலேயே தோன்றும், அல்லது ஒரு தட்டலுக்குப் பின் இருக்கும்",
+  "settings.general.spam_filter": "ஸ்பேம் வடிகட்டி",
+  "settings.general.spam_filter_desc":
+    "மிக வேகமாக இடுபவர்கள், திரும்பத் திரும்பச் சொல்பவர்கள் அல்லது இணைப்புகளைக் குவிப்பவர்களின் பொதுச் செய்திகளை மறைக்கிறது. தனிப்பட்ட செய்திகள் ஒருபோதும் வடிகட்டப்படாது.",
   "settings.general.reset": "அமைப்புகளை மீட்டமை",
   "settings.general.media_retention": "ஊடகத்தை இத்தனை நாள் வைத்திரு",
   "settings.general.media_retention_desc":

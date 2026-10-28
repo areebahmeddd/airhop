@@ -63,6 +63,7 @@ import {
   publicContentKey,
   PublicMessageLimiter,
 } from "@core/router/public-message-limiter";
+import { SpamFilter } from "@core/spam/spam-filter";
 import { t } from "@i18n";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
@@ -316,8 +317,10 @@ export class GeohashChannelService {
   // and in an internet-only build.
   private readonly gateway?: GatewayHooks;
 
-  // Shared with the mesh room: one budget per text across transports.
+  // Shared with the mesh room: one budget per sender and text across
+  // transports.
   private readonly publicLimiter: PublicMessageLimiter;
+  private readonly spamFilter: SpamFilter;
 
   constructor(
     client: NostrClient,
@@ -325,11 +328,13 @@ export class GeohashChannelService {
     nickname: string,
     gateway?: GatewayHooks,
     publicLimiter: PublicMessageLimiter = new PublicMessageLimiter(),
+    spamFilter: SpamFilter = new SpamFilter(),
   ) {
     this.client = client;
     this.nickname = nickname;
     this.gateway = gateway;
     this.publicLimiter = publicLimiter;
+    this.spamFilter = spamFilter;
     this.geohashSeed = deriveGeohashSeed(signingPrivKey);
     // Load the vendored relay directory synchronously. It is kept current by a
     // weekly CI sync from bitchat's reviewed list (see geo-relay-source.ts); we
@@ -803,12 +808,13 @@ export class GeohashChannelService {
     // any rate.
     if (
       !hasStoredMessage(channel, id) &&
-      !this.publicLimiter.allow(
+      (!this.publicLimiter.allow(
         `nostr:${event.pubkey}`,
         publicContentKey(event.content),
         validatedDifficulty(event.id, event.tags),
         Date.now(),
-      )
+      ) ||
+        this.isSpam(event, id))
     ) {
       return;
     }
@@ -822,6 +828,19 @@ export class GeohashChannelService {
         Math.min(event.created_at, Math.floor(Date.now() / 1000)) * 1000,
       isMine: false,
     });
+  }
+
+  // The spam filter runs on backfill too: its buckets run on message time, so
+  // an hour of history arriving at once is judged as it was sent.
+  private isSpam(event: NostrEvent, rowID: string): boolean {
+    return (
+      this.spamFilter.check(
+        `nostr:${event.pubkey}`,
+        rowID,
+        event.content,
+        event.created_at * 1000,
+      ) !== "allowed"
+    );
   }
 
   // ---- Geohash direct messages ----
@@ -1140,14 +1159,15 @@ export class GeohashChannelService {
         const nowMs = Date.now();
         backfillUntilMs ??= nowMs + BACKFILL_GRACE_MS;
         if (
-          nowMs >= backfillUntilMs &&
           !hasStoredMessage(channel, id) &&
-          !this.publicLimiter.allow(
-            `nostr:${event.pubkey}`,
-            publicContentKey(event.content),
-            validatedDifficulty(event.id, event.tags),
-            nowMs,
-          )
+          ((nowMs >= backfillUntilMs &&
+            !this.publicLimiter.allow(
+              `nostr:${event.pubkey}`,
+              publicContentKey(event.content),
+              validatedDifficulty(event.id, event.tags),
+              nowMs,
+            )) ||
+            this.isSpam(event, id))
         ) {
           return;
         }

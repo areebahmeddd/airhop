@@ -908,6 +908,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Tidak bisa diteruskan ke {name}",
   "chat.forward.too_long_for_dm":
     "Terlalu panjang untuk pesan langsung. Teruskan ke kanal atau grup saja.",
+  "chat.forward.too_long_for_public":
+    "Terlalu panjang untuk ruang publik, di sana akan disembunyikan sebagai spam. Teruskan ke grup saja.",
   "chat.forward.channels": "Kanal",
   "chat.forward.groups": "Grup",
   "chat.forward.locations": "Lokasi",
@@ -1912,6 +1914,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Tampilkan media otomatis",
   "settings.general.show_media_desc":
     "Foto dan video muncul di obrolan, atau menunggu di balik satu ketukan",
+  "settings.general.spam_filter": "Filter spam",
+  "settings.general.spam_filter_desc":
+    "Menyembunyikan pesan publik dari orang yang mengirim terlalu cepat, mengulang diri, atau membanjiri tautan. Pesan pribadi tidak pernah difilter.",
   "settings.general.reset": "Setel ulang pengaturan",
   "settings.general.media_retention": "Simpan media selama",
   "settings.general.media_retention_desc":

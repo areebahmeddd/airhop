@@ -896,6 +896,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name}-ს გადაგზავნა შეუძლებელია",
   "chat.forward.too_long_for_dm":
     "პირდაპირი შეტყობინებისთვის ძალიან გრძელია. ამის ნაცვლად გადაუგზავნეთ არხს ან ჯგუფს.",
+  "chat.forward.too_long_for_public":
+    "საჯარო ოთახისთვის ძალიან გრძელია და იქ სპამად დაიმალება. სანაცვლოდ ჯგუფში გადააგზავნეთ.",
   "chat.forward.channels": "არხები",
   "chat.forward.groups": "ჯგუფები",
   "chat.forward.locations": "მდებარეობები",
@@ -1904,6 +1906,9 @@ export const strings: Strings = {
   "settings.general.show_media": "მედიის ავტომატური ჩვენება",
   "settings.general.show_media_desc":
     "ფოტოები და ვიდეოები ჩნდება მიმოწერაში, ან შეხებამდე დამალული რჩება",
+  "settings.general.spam_filter": "სპამის ფილტრი",
+  "settings.general.spam_filter_desc":
+    "მალავს საჯარო შეტყობინებებს მათგან, ვინც ძალიან სწრაფად წერს, იმეორებს თავს ან ბმულებით ავსებს ჩატს. პირადი შეტყობინებები არასოდეს იფილტრება.",
   "settings.general.reset": "პარამეტრების საწყისზე დაბრუნება",
   "settings.general.media_retention": "მედიის შენახვა",
   "settings.general.media_retention_desc":

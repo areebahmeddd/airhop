@@ -895,6 +895,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name}には転送できません",
   "chat.forward.too_long_for_dm":
     "ダイレクトメッセージには長すぎます。チャンネルかグループに転送してください。",
+  "chat.forward.too_long_for_public":
+    "公開ルームには長すぎるため、スパムとして非表示になります。代わりにグループへ転送してください。",
   "chat.forward.channels": "チャンネル",
   "chat.forward.groups": "グループ",
   "chat.forward.locations": "場所",
@@ -1894,6 +1896,9 @@ export const strings: Strings = {
   "settings.general.show_media": "メディアを自動表示",
   "settings.general.show_media_desc":
     "写真と動画をチャットに表示するか、タップするまで隠しておきます",
+  "settings.general.spam_filter": "スパムフィルター",
+  "settings.general.spam_filter_desc":
+    "投稿が速すぎる人、同じ内容を繰り返す人、リンクを大量に貼る人の公開メッセージを隠します。プライベートメッセージは一切フィルタリングされません。",
   "settings.general.reset": "設定をリセット",
   "settings.general.media_retention": "メディアの保存期間",
   "settings.general.media_retention_desc":

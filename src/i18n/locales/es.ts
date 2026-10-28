@@ -905,6 +905,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "No se puede reenviar a {name}",
   "chat.forward.too_long_for_dm":
     "Demasiado largo para un mensaje directo. Reenvíalo a un canal o grupo.",
+  "chat.forward.too_long_for_public":
+    "Demasiado largo para una sala pública, donde se ocultaría como spam. Reenvíalo a un grupo.",
   "chat.forward.channels": "Canales",
   "chat.forward.groups": "Grupos",
   "chat.forward.locations": "Ubicaciones",
@@ -1929,6 +1931,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Mostrar los medios automáticamente",
   "settings.general.show_media_desc":
     "Las fotos y los vídeos aparecen en el chat, o se quedan tras un toque",
+  "settings.general.spam_filter": "Filtro de spam",
+  "settings.general.spam_filter_desc":
+    "Oculta los mensajes públicos de quienes publican demasiado rápido, se repiten o inundan de enlaces. Los mensajes privados nunca se filtran.",
   "settings.general.reset": "Restablecer los ajustes",
   "settings.general.media_retention": "Conservar los medios durante",
   "settings.general.media_retention_desc":

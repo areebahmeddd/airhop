@@ -844,6 +844,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "ወደ {name} ማስተላለፍ አይቻልም",
   "chat.forward.too_long_for_dm":
     "ለቀጥታ መልእክት በጣም ረጅም ነው። በምትኩ ወደ ቻናል ወይም ቡድን ያስተላልፉት።",
+  "chat.forward.too_long_for_public":
+    "ለሕዝብ ክፍል በጣም ረጅም ነው፤ እንደ አይፈለጌ ይደበቃል። በምትኩ ወደ ቡድን አስተላልፉት።",
   "chat.forward.channels": "ሰርጦች",
   "chat.forward.groups": "ቡድኖች",
   "chat.forward.locations": "አካባቢዎች",
@@ -1774,6 +1776,9 @@ export const strings: Strings = {
   "settings.general.show_media": "ሚዲያን በራስ-ሰር አሳይ",
   "settings.general.show_media_desc":
     "ፎቶዎችና ቪዲዮዎች በውይይቱ ውስጥ ይታያሉ፣ ወይም ከአንድ ንክኪ በኋላ ይቀራሉ",
+  "settings.general.spam_filter": "የአይፈለጌ ማጣሪያ",
+  "settings.general.spam_filter_desc":
+    "በጣም በፍጥነት የሚለጥፉ፣ ራሳቸውን የሚደግሙ ወይም አገናኞችን የሚያጎርፉ ሰዎችን ይፋዊ መልእክቶች ይደብቃል። የግል መልእክቶች በፍጹም አይጣሩም።",
   "settings.general.reset": "ቅንብሮችን ዳግም አስጀምር",
   "settings.general.media_retention": "ሚዲያን ለዚህን ያህል ጊዜ ያዝ",
   "settings.general.media_retention_desc":

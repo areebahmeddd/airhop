@@ -902,6 +902,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Переслати не можна: {name}",
   "chat.forward.too_long_for_dm":
     "Задовге для прямого повідомлення. Перешліть його в канал або групу.",
+  "chat.forward.too_long_for_public":
+    "Задовге для публічної кімнати, там це сховають як спам. Перешліть у групу.",
   "chat.forward.channels": "Канали",
   "chat.forward.groups": "Групи",
   "chat.forward.locations": "Місцевості",
@@ -1902,6 +1904,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Показувати медіа автоматично",
   "settings.general.show_media_desc":
     "Фото й відео з’являються в чаті або лишаються за одним дотиком",
+  "settings.general.spam_filter": "Фільтр спаму",
+  "settings.general.spam_filter_desc":
+    "Приховує публічні повідомлення тих, хто пише надто часто, повторюється або засипає чат посиланнями. Особисті повідомлення ніколи не фільтруються.",
   "settings.general.reset": "Скинути налаштування",
   "settings.general.media_retention": "Зберігати медіа",
   "settings.general.media_retention_desc":

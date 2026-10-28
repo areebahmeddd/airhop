@@ -896,6 +896,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Không chuyển tiếp được tới {name}",
   "chat.forward.too_long_for_dm":
     "Quá dài cho tin nhắn trực tiếp. Hãy chuyển tiếp vào một kênh hoặc nhóm.",
+  "chat.forward.too_long_for_public":
+    "Quá dài cho phòng công khai, nơi nó sẽ bị ẩn như thư rác. Hãy chuyển tiếp đến một nhóm.",
   "chat.forward.channels": "Kênh",
   "chat.forward.groups": "Nhóm",
   "chat.forward.locations": "Vị trí",
@@ -1893,6 +1895,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Tự động hiện phương tiện",
   "settings.general.show_media_desc":
     "Ảnh và video hiện ngay trong cuộc trò chuyện, hoặc phải chạm mới hiện",
+  "settings.general.spam_filter": "Bộ lọc thư rác",
+  "settings.general.spam_filter_desc":
+    "Ẩn tin nhắn công khai của người đăng quá nhanh, lặp lại hoặc tràn ngập liên kết. Tin nhắn riêng không bao giờ bị lọc.",
   "settings.general.reset": "Đặt lại cài đặt",
   "settings.general.media_retention": "Giữ phương tiện trong",
   "settings.general.media_retention_desc":

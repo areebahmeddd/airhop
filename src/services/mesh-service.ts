@@ -214,6 +214,7 @@ import {
   publicContentKey,
   PublicMessageLimiter,
 } from "@core/router/public-message-limiter";
+import { SpamFilter } from "@core/spam/spam-filter";
 import { t } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { equalBytes } from "@noble/curves/utils.js";
@@ -603,6 +604,7 @@ export class MeshService {
   // Unsubscribe for the settings listener that tears live voice down when the
   // user switches it off mid-burst.
   private liveVoiceUnsub: (() => void) | null = null;
+  private spamFilterUnsub: (() => void) | null = null;
   private backgroundPrefUnsub: (() => void) | null = null;
   // Unsubscribe for the contacts-store listener that binds a peer's durable
   // Nostr pubkey from the registry when a contact is created.
@@ -642,6 +644,9 @@ export class MeshService {
   private readonly handshakeLimiter = new HandshakeRateLimiter();
   // Shared with the geohash channels.
   private readonly publicLimiter = new PublicMessageLimiter();
+  // One filter for every public intake, so a sender's budget and a text's
+  // copies count once across the mesh, the bridge and location channels.
+  private readonly spamFilter = new SpamFilter();
 
   // Double Ratchet states keyed by peerID, each bound to the Noise session it
   // was seeded from and ignored under any other (see ratchetFor). The ratchet
@@ -1074,6 +1079,15 @@ export class MeshService {
     this.liveVoiceUnsub = useSettingsStore.subscribe((state, prev) => {
       if (state.liveVoiceEnabled === prev.liveVoiceEnabled) return;
       if (!state.liveVoiceEnabled) this.closeVoice();
+    });
+
+    // Either way the switch flips, every sender starts from a full budget.
+    this.spamFilter.enabled = useSettingsStore.getState().spamFilterEnabled;
+    this.spamFilterUnsub?.();
+    this.spamFilterUnsub = useSettingsStore.subscribe((state, prev) => {
+      if (state.spamFilterEnabled === prev.spamFilterEnabled) return;
+      this.spamFilter.enabled = state.spamFilterEnabled;
+      this.spamFilter.reset();
     });
 
     // Periodic gossip filter, so peers can tell us what they're missing.
@@ -4502,17 +4516,24 @@ export class MeshService {
       this.registry.get(senderID)?.nickname,
     );
 
-    // A sync reply is history we asked for, not a flood.
+    // A sync reply is history we asked for, not a flood, so only the spam
+    // filter, which runs on message time, judges it.
     const id = rowID(senderID);
     if (
-      packet.isRSR !== true &&
       !hasStoredMessage(channel, id) &&
-      !this.publicLimiter.allow(
-        `mesh:${senderID}`,
-        publicContentKey(text),
-        0,
-        Date.now(),
-      )
+      ((packet.isRSR !== true &&
+        !this.publicLimiter.allow(
+          `mesh:${senderID}`,
+          publicContentKey(text),
+          0,
+          Date.now(),
+        )) ||
+        this.spamFilter.check(
+          `mesh:${senderID}`,
+          id,
+          text,
+          packet.timestamp,
+        ) !== "allowed")
     ) {
       return;
     }
@@ -7171,6 +7192,7 @@ export class MeshService {
           this.acceptGeoContactCard(body, senderPubkey, recipientPubkey),
       },
       this.publicLimiter,
+      this.spamFilter,
     );
     this.geoChannels.setForeground(this.appForeground);
     void this.geoChannels.refresh();
@@ -7204,14 +7226,21 @@ export class MeshService {
           return;
         }
         if (useBlockedStore.getState().isBlocked(msg.senderKey)) return;
+        const senderKey = msg.senderKey.replace(/^nostr_/, "nostr:");
         if (
           !hasStoredMessage(BRIDGE_CHANNEL, msg.id) &&
-          !this.publicLimiter.allow(
-            msg.senderKey.replace(/^nostr_/, "nostr:"),
+          (!this.publicLimiter.allow(
+            senderKey,
             publicContentKey(msg.text),
             0,
             Date.now(),
-          )
+          ) ||
+            this.spamFilter.check(
+              senderKey,
+              msg.id,
+              msg.text,
+              msg.timestampMs,
+            ) !== "allowed")
         ) {
           return;
         }
@@ -7623,6 +7652,8 @@ export class MeshService {
     this.gatewayUnsub = null;
     this.liveVoiceUnsub?.();
     this.liveVoiceUnsub = null;
+    this.spamFilterUnsub?.();
+    this.spamFilterUnsub = null;
     this.backgroundPrefUnsub?.();
     this.backgroundPrefUnsub = null;
     this.bridgeUnsub?.();

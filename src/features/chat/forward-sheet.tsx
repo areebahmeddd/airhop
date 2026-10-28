@@ -121,9 +121,15 @@ export default function ForwardSheet({
   function blockedReason(channel: string): string | null {
     const media = carriesMedia ? mediaBlockedReason(channel) : null;
     if (media !== null) return media;
-    return texts.every((text) => forwardTextFits(channel, text))
-      ? null
-      : t("chat.forward.too_long_for_dm");
+    const sealed = useChatStore.getState().channelKeys[channel] !== undefined;
+    if (texts.every((text) => forwardTextFits(channel, text, sealed))) {
+      return null;
+    }
+    return t(
+      channel.startsWith("dm:")
+        ? "chat.forward.too_long_for_dm"
+        : "chat.forward.too_long_for_public",
+    );
   }
 
   function handlePick(channel: string): void {

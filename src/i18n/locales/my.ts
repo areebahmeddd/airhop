@@ -914,6 +914,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name} ထံ ထပ်ဆင့်မပို့နိုင်ပါ",
   "chat.forward.too_long_for_dm":
     "တိုက်ရိုက်မက်ဆေ့ဂျ်အတွက် ရှည်လွန်းသည်။ ချန်နယ် သို့မဟုတ် အဖွဲ့သို့ ထပ်ဆင့်ပို့ပါ။",
+  "chat.forward.too_long_for_public":
+    "အများသုံး အခန်းအတွက် ရှည်လွန်းသဖြင့် စပမ်းအဖြစ် ဖျောက်ထားခံရမည်။ ယင်းအစား အုပ်စုသို့ ထပ်ဆင့်ပို့ပါ။",
   "chat.forward.channels": "ချန်နယ်များ",
   "chat.forward.groups": "အဖွဲ့များ",
   "chat.forward.locations": "တည်နေရာများ",
@@ -1941,6 +1943,9 @@ export const strings: Strings = {
   "settings.general.show_media": "မီဒီယာကို အလိုအလျောက် ပြပါ",
   "settings.general.show_media_desc":
     "ဓာတ်ပုံနှင့် ဗီဒီယိုများကို စကားပြောထဲတွင် ပြသည်၊ သို့မဟုတ် တစ်ချက်နှိပ်မှ ပေါ်စေသည်",
+  "settings.general.spam_filter": "စပမ်း စစ်ထုတ်စနစ်",
+  "settings.general.spam_filter_desc":
+    "အလွန်မြန်မြန် ပို့သူ၊ ထပ်ခါထပ်ခါ ပြောသူ သို့မဟုတ် လင့်ခ်များ ပြည့်လျှံစေသူတို့၏ အများသုံး စာများကို ဖျောက်ထားသည်။ ကိုယ်ရေးကိုယ်တာ စာများကို ဘယ်တော့မှ မစစ်ထုတ်ပါ။",
   "settings.general.reset": "ဆက်တင်များ ပြန်လည်သတ်မှတ်ပါ",
   "settings.general.media_retention": "မီဒီယာကို သိမ်းထားမည့်ကာလ",
   "settings.general.media_retention_desc":

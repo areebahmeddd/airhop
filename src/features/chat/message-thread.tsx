@@ -204,7 +204,13 @@ import Animated, {
 import { scheduleOnRN } from "react-native-worklets";
 import SendEcashSheet from "../wallet/send-ecash-sheet";
 import ChannelInfoSheet from "./channel-info-sheet";
-import { clampCaption, forwardTextFits } from "./compose-budget";
+import {
+  clampCaption,
+  clampPublicText,
+  forwardTextFits,
+  isPublicRoom,
+  publicCharsLeft,
+} from "./compose-budget";
 import ContactInfoSheet from "./contact-info-sheet";
 import ForwardSheet from "./forward-sheet";
 import MessageActionSheet from "./message-action-sheet";
@@ -1979,7 +1985,20 @@ export default function MessageThread({
     };
   }, [audioRecorder]);
 
-  const msgs = useMemo(() => messages[channel] ?? [], [messages, channel]);
+  // A blocked sender's earlier messages leave the room with them, and come back
+  // if they are unblocked.
+  const blockedPeerIDs = useBlockedStore((s) => s.blockedPeerIDs);
+  const blockedAliases = useBlockedStore((s) => s.blockedAliases);
+  const msgs = useMemo(() => {
+    const all = messages[channel] ?? [];
+    if (blockedPeerIDs.length === 0) return all;
+    return all.filter(
+      (m) =>
+        m.isMine ||
+        (!blockedPeerIDs.includes(m.senderID) &&
+          blockedAliases[m.senderID] === undefined),
+    );
+  }, [messages, channel, blockedPeerIDs, blockedAliases]);
   // A token under an uncached keyset reads from its metadata until the fetch
   // updates `mints` and it decodes in full.
   useEffect(() => {
@@ -2371,8 +2390,9 @@ export default function MessageThread({
   // ---- Composer length budget ----
   //
   // A DM rides a TLV with a one-byte length field, so its budget is 255 UTF-8
-  // bytes and belongs to the wire. Channel and group messages carry text as the
-  // rest of the payload with no such field, so they keep the 2000-character
+  // bytes and belongs to the wire. A public room's is the spam filter's 1200
+  // characters, past which bitchat, and Airhop, hide the message. Groups and
+  // private channels are sealed to members and keep the 2000-character
   // composer. The budget is per-conversation, not global.
   //
   // Enforced while typing rather than on send. A send-time refusal is the wrong
@@ -2380,18 +2400,50 @@ export default function MessageThread({
   // thing left to say is "delete some of that". This is what `maxLength` would
   // do if it could count bytes.
   const draftBudget = isDM ? PRIVATE_MESSAGE_MAX_CONTENT_BYTES : null;
-  const draftBytesLeft =
-    draftBudget === null ? null : draftBudget - utf8ByteLength(draft);
+  const publicRoom = isPublicRoom(channel, isPrivate);
+  const draftLeft =
+    draftBudget !== null
+      ? draftBudget - utf8ByteLength(draft)
+      : publicRoom
+        ? publicCharsLeft(draft)
+        : null;
 
   // Only near the end. An always-on counter turns a one-line reply into a
   // metered exercise; this explains the stop before it happens, then leaves.
   const DRAFT_COUNTER_FROM = 40;
   const showDraftCounter =
-    draftBytesLeft !== null && draftBytesLeft <= DRAFT_COUNTER_FROM;
+    draftLeft !== null && draftLeft <= DRAFT_COUNTER_FROM;
+
+  function clampDraft(text: string): string {
+    if (draftBudget !== null) return truncateToUtf8Bytes(text, draftBudget);
+    return publicRoom ? clampPublicText(text) : text;
+  }
 
   function handleDraftChange(next: string): void {
-    setDraft(
-      draftBudget === null ? next : truncateToUtf8Bytes(next, draftBudget),
+    setDraft(clampDraft(next));
+  }
+
+  // A public room's sender is a mesh peer ID or a `nostr_` key (a location
+  // channel or the bridge); the block store takes either, and every intake
+  // already drops what it lists. A mesh peer's session goes too, as from the
+  // DM list.
+  function confirmBlockSender(message: ChatMessage): void {
+    showAlert(
+      t("chat.dm.block"),
+      t("chat.dm.block_body", { name: message.senderNickname }),
+      [
+        { text: T("common.cancel"), style: "cancel" },
+        {
+          text: t("chat.dm.block_confirm"),
+          style: "destructive",
+          onPress: () => {
+            useBlockedStore.getState().blockPeer(message.senderID);
+            if (!message.senderID.startsWith("nostr_")) {
+              getMeshService()?.forgetPeer(message.senderID);
+            }
+          },
+        },
+      ],
     );
   }
 
@@ -2708,7 +2760,7 @@ export default function MessageThread({
       // one way text can pass the composer budget and still overrun it. Clamp
       // again rather than refuse: the emote is decoration, and a trimmed trout
       // beats a message that encodes to null and vanishes.
-      if (draftBudget !== null) text = truncateToUtf8Bytes(text, draftBudget);
+      text = clampDraft(text);
     }
     // At most one message is ever held: commit the previous one first.
     commitHeld();
@@ -3018,10 +3070,16 @@ export default function MessageThread({
     // The forward sheet greys a DM that cannot hold the text; this is the
     // backstop for any other caller. Refused rather than cut: see
     // forwardTextFits.
-    if (!forwardTextFits(targetChannel, source.text)) {
+    const sealed =
+      useChatStore.getState().channelKeys[targetChannel] !== undefined;
+    if (!forwardTextFits(targetChannel, source.text, sealed)) {
       showAlert(
         t("chat.forward.cant_send_here"),
-        t("chat.forward.too_long_for_dm"),
+        t(
+          targetChannel.startsWith("dm:")
+            ? "chat.forward.too_long_for_dm"
+            : "chat.forward.too_long_for_public",
+        ),
       );
       return false;
     }
@@ -4994,8 +5052,8 @@ export default function MessageThread({
         <View style={styles.dmStatusBar}>
           <Feather name="edit-3" size={12} color={Colors.textMuted} />
           <Text style={styles.dmStatusText}>
-            {draftBytesLeft! > 0
-              ? TP("chat.thread.length_left", draftBytesLeft!)
+            {draftLeft! > 0
+              ? TP("chat.thread.length_left", draftLeft!)
               : T("chat.thread.length_full")}
           </Text>
         </View>
@@ -5929,6 +5987,16 @@ export default function MessageThread({
           const target = actionSheet;
           if (target) setPickedIds(new Set([target.id]));
         }}
+        onBlock={
+          actionSheet !== null &&
+          publicRoom &&
+          !actionSheet.isMine &&
+          actionSheet.isSystem !== true &&
+          actionSheet.systemKey === undefined &&
+          actionSheet.senderID.length > 0
+            ? () => confirmBlockSender(actionSheet)
+            : undefined
+        }
       />
 
       <MessageInfoSheet

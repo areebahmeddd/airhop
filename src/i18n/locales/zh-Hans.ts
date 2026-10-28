@@ -846,6 +846,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "不能转发给 {name}",
   "chat.forward.too_long_for_dm":
     "太长，无法作为私信发送。请改为转发到频道或群组。",
+  "chat.forward.too_long_for_public":
+    "对公开房间来说太长，会被当作垃圾消息隐藏。请改为转发到群组。",
   "chat.forward.channels": "频道",
   "chat.forward.groups": "群组",
   "chat.forward.locations": "位置",
@@ -1775,6 +1777,9 @@ export const strings: Strings = {
   "settings.general.show_media": "自动显示媒体",
   "settings.general.show_media_desc":
     "照片和视频直接出现在聊天里，或者点一下才显示",
+  "settings.general.spam_filter": "垃圾消息过滤",
+  "settings.general.spam_filter_desc":
+    "隐藏发帖过快、反复重复或大量发链接的人的公开消息。私信从不过滤。",
   "settings.general.reset": "重置设置",
   "settings.general.media_retention": "媒体保留时长",
   "settings.general.media_retention_desc":

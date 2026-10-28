@@ -922,6 +922,8 @@ export const strings = {
   "chat.forward.cant_send_to": "Can’t forward to {name}",
   "chat.forward.too_long_for_dm":
     "Too long for a direct message. Forward it to a channel or group instead.",
+  "chat.forward.too_long_for_public":
+    "Too long for a public room, where it would be hidden as spam. Forward it to a group instead.",
   "chat.forward.channels": "Channels",
   "chat.forward.groups": "Groups",
   "chat.forward.locations": "Locations",
@@ -1898,6 +1900,9 @@ export const strings = {
   "settings.general.show_media": "Show media automatically",
   "settings.general.show_media_desc":
     "Photos and videos appear in the chat, or stay behind a tap",
+  "settings.general.spam_filter": "Spam filter",
+  "settings.general.spam_filter_desc":
+    "Hides public messages from people who post too fast, repeat themselves or flood links. Private messages are never filtered.",
   "settings.general.reset": "Reset settings",
   "settings.general.media_retention": "Keep media for",
   "settings.general.media_retention_desc":

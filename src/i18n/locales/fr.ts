@@ -912,6 +912,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Impossible de transférer à {name}",
   "chat.forward.too_long_for_dm":
     "Trop long pour un message direct. Transfère-le plutôt vers un canal ou un groupe.",
+  "chat.forward.too_long_for_public":
+    "Trop long pour un salon public, où il serait masqué comme spam. Transférez-le plutôt à un groupe.",
   "chat.forward.channels": "Canaux",
   "chat.forward.groups": "Groupes",
   "chat.forward.locations": "Lieux",
@@ -1942,6 +1944,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Afficher les médias automatiquement",
   "settings.general.show_media_desc":
     "Les photos et les vidéos apparaissent dans la discussion, ou restent derrière un appui",
+  "settings.general.spam_filter": "Filtre anti-spam",
+  "settings.general.spam_filter_desc":
+    "Masque les messages publics des personnes qui publient trop vite, se répètent ou inondent de liens. Les messages privés ne sont jamais filtrés.",
   "settings.general.reset": "Réinitialiser les réglages",
   "settings.general.media_retention": "Conserver les médias pendant",
   "settings.general.media_retention_desc":

@@ -903,6 +903,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Haiwezi kusambazwa kwa {name}",
   "chat.forward.too_long_for_dm":
     "Ni ndefu mno kwa ujumbe wa moja kwa moja. Isambaze kwa chaneli au kikundi badala yake.",
+  "chat.forward.too_long_for_public":
+    "Ni ndefu mno kwa chumba cha umma, ambapo ingefichwa kama taka. Isambaze kwa kikundi badala yake.",
   "chat.forward.channels": "Vituo",
   "chat.forward.groups": "Vikundi",
   "chat.forward.locations": "Mahali",
@@ -1925,6 +1927,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Onyesha midia kiotomatiki",
   "settings.general.show_media_desc":
     "Picha na video huonekana kwenye gumzo, au hubaki nyuma ya mguso mmoja",
+  "settings.general.spam_filter": "Kichujio cha taka",
+  "settings.general.spam_filter_desc":
+    "Huficha ujumbe wa umma kutoka kwa watu wanaochapisha haraka mno, wanaojirudia au wanaofurisha viungo. Ujumbe wa faragha hauchujwi kamwe.",
   "settings.general.reset": "Weka upya mipangilio",
   "settings.general.media_retention": "Hifadhi midia kwa",
   "settings.general.media_retention_desc":

@@ -903,6 +903,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Tidak boleh dimajukan kepada {name}",
   "chat.forward.too_long_for_dm":
     "Terlalu panjang untuk mesej terus. Majukan ke saluran atau kumpulan sahaja.",
+  "chat.forward.too_long_for_public":
+    "Terlalu panjang untuk bilik awam, di sana ia akan disembunyikan sebagai spam. Majukan ke kumpulan sahaja.",
   "chat.forward.channels": "Saluran",
   "chat.forward.groups": "Kumpulan",
   "chat.forward.locations": "Lokasi",
@@ -1918,6 +1920,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Tunjuk media secara automatik",
   "settings.general.show_media_desc":
     "Gambar dan video muncul dalam sembang, atau menunggu di sebalik satu ketikan",
+  "settings.general.spam_filter": "Penapis spam",
+  "settings.general.spam_filter_desc":
+    "Menyembunyikan mesej awam daripada orang yang menghantar terlalu laju, mengulang diri atau membanjiri pautan. Mesej peribadi tidak pernah ditapis.",
   "settings.general.reset": "Tetap semula tetapan",
   "settings.general.media_retention": "Simpan media selama",
   "settings.general.media_retention_desc":

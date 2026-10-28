@@ -886,6 +886,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "هدایت به {name} ممکن نیست",
   "chat.forward.too_long_for_dm":
     "برای پیام مستقیم بیش از حد طولانی است. به‌جای آن به یک کانال یا گروه بازارسال کنید.",
+  "chat.forward.too_long_for_public":
+    "برای اتاق عمومی بیش از حد طولانی است و آنجا به‌عنوان هرزنامه پنهان می‌شود. به‌جای آن به یک گروه بازارسال کنید.",
   "chat.forward.channels": "کانال‌ها",
   "chat.forward.groups": "گروه‌ها",
   "chat.forward.locations": "موقعیت‌ها",
@@ -1881,6 +1883,9 @@ export const strings: Strings = {
   "settings.general.show_media": "نمایش خودکار رسانه",
   "settings.general.show_media_desc":
     "عکس‌ها و ویدیوها در گفتگو نمایان شوند، یا پشت یک ضربه بمانند",
+  "settings.general.spam_filter": "فیلتر هرزنامه",
+  "settings.general.spam_filter_desc":
+    "پیام‌های عمومی کسانی را که خیلی سریع می‌فرستند، خود را تکرار می‌کنند یا پیوند می‌ریزند پنهان می‌کند. پیام‌های خصوصی هرگز فیلتر نمی‌شوند.",
   "settings.general.reset": "بازنشانی تنظیمات",
   "settings.general.media_retention": "نگهداری رسانه به مدت",
   "settings.general.media_retention_desc":

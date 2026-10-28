@@ -888,6 +888,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name}-কে ফরোয়ার্ড করা যায় না",
   "chat.forward.too_long_for_dm":
     "সরাসরি বার্তার জন্য খুব দীর্ঘ। এর বদলে কোনো চ্যানেল বা গ্রুপে ফরওয়ার্ড করুন।",
+  "chat.forward.too_long_for_public":
+    "পাবলিক রুমের জন্য খুব লম্বা, সেখানে এটি স্প্যাম হিসেবে লুকানো হবে। এর বদলে একটি গ্রুপে ফরোয়ার্ড করুন।",
   "chat.forward.channels": "চ্যানেল",
   "chat.forward.groups": "গ্রুপ",
   "chat.forward.locations": "অবস্থান",
@@ -1872,6 +1874,9 @@ export const strings: Strings = {
   "settings.general.show_media": "মিডিয়া নিজে থেকেই দেখান",
   "settings.general.show_media_desc":
     "ছবি ও ভিডিও চ্যাটেই দেখা যায়, নাকি একটি ট্যাপের পেছনে থাকে",
+  "settings.general.spam_filter": "স্প্যাম ফিল্টার",
+  "settings.general.spam_filter_desc":
+    "যারা খুব দ্রুত পোস্ট করে, একই কথা বারবার বলে বা লিংকে ভরিয়ে দেয়, তাদের পাবলিক বার্তা লুকায়। ব্যক্তিগত বার্তা কখনও ফিল্টার হয় না।",
   "settings.general.reset": "সেটিংস রিসেট করুন",
   "settings.general.media_retention": "মিডিয়া রাখুন",
   "settings.general.media_retention_desc":

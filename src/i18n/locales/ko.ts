@@ -885,6 +885,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name}에게는 전달할 수 없음",
   "chat.forward.too_long_for_dm":
     "다이렉트 메시지로 보내기에는 너무 깁니다. 대신 채널이나 그룹으로 전달하세요.",
+  "chat.forward.too_long_for_public":
+    "공개 방에 보내기에는 너무 길어서 스팸으로 숨겨집니다. 대신 그룹으로 전달하세요.",
   "chat.forward.channels": "채널",
   "chat.forward.groups": "그룹",
   "chat.forward.locations": "위치",
@@ -1864,6 +1866,9 @@ export const strings: Strings = {
   "settings.general.show_media": "미디어 자동 표시",
   "settings.general.show_media_desc":
     "사진과 동영상을 채팅에 바로 표시하거나, 탭해야 보이게 둡니다",
+  "settings.general.spam_filter": "스팸 필터",
+  "settings.general.spam_filter_desc":
+    "너무 빠르게 올리거나, 같은 말을 반복하거나, 링크를 쏟아내는 사람의 공개 메시지를 숨깁니다. 개인 메시지는 절대 걸러지지 않습니다.",
   "settings.general.reset": "설정 초기화",
   "settings.general.media_retention": "미디어 보관 기간",
   "settings.general.media_retention_desc":

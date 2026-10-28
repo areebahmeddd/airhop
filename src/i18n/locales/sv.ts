@@ -899,6 +899,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Går inte att vidarebefordra till {name}",
   "chat.forward.too_long_for_dm":
     "För långt för ett direktmeddelande. Vidarebefordra det till en kanal eller grupp i stället.",
+  "chat.forward.too_long_for_public":
+    "För långt för ett offentligt rum, där det skulle döljas som spam. Vidarebefordra det till en grupp i stället.",
   "chat.forward.channels": "Kanaler",
   "chat.forward.groups": "Grupper",
   "chat.forward.locations": "Platser",
@@ -1892,6 +1894,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Visa media automatiskt",
   "settings.general.show_media_desc":
     "Foton och videor visas i chatten, eller ligger kvar bakom en tryckning",
+  "settings.general.spam_filter": "Spamfilter",
+  "settings.general.spam_filter_desc":
+    "Döljer offentliga meddelanden från personer som skriver för snabbt, upprepar sig eller översvämmar med länkar. Privata meddelanden filtreras aldrig.",
   "settings.general.reset": "Återställ inställningar",
   "settings.general.media_retention": "Behåll media i",
   "settings.general.media_retention_desc":

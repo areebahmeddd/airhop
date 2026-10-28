@@ -1,4 +1,5 @@
-// Long-press context menu for a message: info, save, forward, copy and select.
+// Long-press context menu for a message: info, save, forward, copy, select and,
+// in a public room, block the sender.
 // It shares the bottom-sheet chrome of the attachment picker and the channel
 // info sheet.
 
@@ -31,6 +32,9 @@ interface Props {
   // Enter selection mode with this message picked, for forwarding several at
   // once. Same place WhatsApp and Signal put it: the long-press menu.
   onSelect: () => void;
+  // Offered only in a public room, where a stranger's message is the one place
+  // to act on them.
+  onBlock?: () => void;
 }
 
 export default function MessageActionSheet({
@@ -41,6 +45,7 @@ export default function MessageActionSheet({
   onInfo,
   onSave,
   onSelect,
+  onBlock,
 }: Props): React.JSX.Element | null {
   const T = useT();
   const Colors = useThemeColors();
@@ -129,6 +134,17 @@ export default function MessageActionSheet({
           onPress={() => act(onSelect)}
           color={Colors.textPrimary}
         />
+        {onBlock && (
+          <>
+            <View style={styles.divider} />
+            <ActionRow
+              icon="slash"
+              label={T("chat.dm.block_confirm")}
+              onPress={() => act(onBlock)}
+              color={Colors.danger}
+            />
+          </>
+        )}
       </View>
     </BottomSheet>
   );

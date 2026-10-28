@@ -876,6 +876,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "ส่งต่อไปยัง {name} ไม่ได้",
   "chat.forward.too_long_for_dm":
     "ยาวเกินไปสำหรับข้อความโดยตรง ส่งต่อไปยังช่องหรือกลุ่มแทน",
+  "chat.forward.too_long_for_public":
+    "ยาวเกินไปสำหรับห้องสาธารณะ ซึ่งจะถูกซ่อนเป็นสแปม ส่งต่อไปยังกลุ่มแทน",
   "chat.forward.channels": "ช่อง",
   "chat.forward.groups": "กลุ่ม",
   "chat.forward.locations": "ตำแหน่ง",
@@ -1844,6 +1846,9 @@ export const strings: Strings = {
   "settings.general.show_media": "แสดงสื่อโดยอัตโนมัติ",
   "settings.general.show_media_desc":
     "รูปภาพและวิดีโอปรากฏในแชท หรือซ่อนไว้หลังการแตะ",
+  "settings.general.spam_filter": "ตัวกรองสแปม",
+  "settings.general.spam_filter_desc":
+    "ซ่อนข้อความสาธารณะจากผู้ที่โพสต์เร็วเกินไป พูดซ้ำ หรือส่งลิงก์ท่วม ข้อความส่วนตัวจะไม่ถูกกรองเลย",
   "settings.general.reset": "รีเซ็ตการตั้งค่า",
   "settings.general.media_retention": "เก็บสื่อไว้เป็นเวลา",
   "settings.general.media_retention_desc":

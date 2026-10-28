@@ -910,6 +910,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Non si può inoltrare a {name}",
   "chat.forward.too_long_for_dm":
     "Troppo lungo per un messaggio diretto. Inoltralo invece a un canale o a un gruppo.",
+  "chat.forward.too_long_for_public":
+    "Troppo lungo per una stanza pubblica, dove verrebbe nascosto come spam. Inoltralo invece a un gruppo.",
   "chat.forward.channels": "Canali",
   "chat.forward.groups": "Gruppi",
   "chat.forward.locations": "Posizioni",
@@ -1934,6 +1936,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Mostra i media automaticamente",
   "settings.general.show_media_desc":
     "Le foto e i video compaiono nella chat, oppure restano dietro un tocco",
+  "settings.general.spam_filter": "Filtro antispam",
+  "settings.general.spam_filter_desc":
+    "Nasconde i messaggi pubblici di chi scrive troppo in fretta, si ripete o inonda di link. I messaggi privati non vengono mai filtrati.",
   "settings.general.reset": "Ripristina le impostazioni",
   "settings.general.media_retention": "Conserva i media per",
   "settings.general.media_retention_desc":

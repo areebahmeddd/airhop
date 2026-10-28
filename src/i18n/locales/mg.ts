@@ -916,6 +916,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Tsy azo ampitaina amin'i {name}",
   "chat.forward.too_long_for_dm":
     "Lava loatra ho an'ny hafatra mivantana. Alefaso any amin'ny fantsona na vondrona kosa.",
+  "chat.forward.too_long_for_public":
+    "Lava loatra ho an'ny efitra ho an'ny daholobe, ka ho afenina ho spam ao. Alefaso any amin'ny vondrona kosa.",
   "chat.forward.channels": "Fantsona",
   "chat.forward.groups": "Vondrona",
   "chat.forward.locations": "Toerana",
@@ -1956,6 +1958,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Asehoy ho azy ny media",
   "settings.general.show_media_desc":
     "Miseho ao amin'ny resaka ny sary sy ny horonan-tsary, na mijanona ao ambadiky ny fitsindriana",
+  "settings.general.spam_filter": "Sivana spam",
+  "settings.general.spam_filter_desc":
+    "Manafina ny hafatra ho an'ny daholobe avy amin'ireo mandefa haingana loatra, mamerimberina, na manondraka rohy. Tsy sivanina mihitsy ny hafatra manokana.",
   "settings.general.reset": "Avereno ny fandrindrana",
   "settings.general.media_retention": "Tehirizo ny media mandritra ny",
   "settings.general.media_retention_desc":

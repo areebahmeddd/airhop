@@ -176,6 +176,8 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
   const styles = useSharedStyles();
   const undoSendSeconds = useSettingsStore((s) => s.undoSendSeconds);
   const setUndoSendSeconds = useSettingsStore((s) => s.setUndoSendSeconds);
+  const spamFilterEnabled = useSettingsStore((s) => s.spamFilterEnabled);
+  const setSpamFilterEnabled = useSettingsStore((s) => s.setSpamFilterEnabled);
   const autoDownloadMedia = useSettingsStore((s) => s.autoDownloadMedia);
   const setAutoDownloadMedia = useSettingsStore((s) => s.setAutoDownloadMedia);
   const uploadQuality = useSettingsStore((s) => s.uploadQuality);
@@ -280,6 +282,19 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                 </Text>
               }
               onPress={() => setShowUndoSheet(true)}
+            />
+            <GroupDivider />
+            <SettingRow
+              id="spam-filter"
+              icon="filter"
+              label={T("settings.general.spam_filter")}
+              description={T("settings.general.spam_filter_desc")}
+              control={
+                <SettingSwitch
+                  value={spamFilterEnabled}
+                  onValueChange={setSpamFilterEnabled}
+                />
+              }
             />
           </View>
         </View>

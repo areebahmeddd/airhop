@@ -891,6 +891,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name} کو آگے نہیں بھیجا جا سکتا",
   "chat.forward.too_long_for_dm":
     "براہِ راست پیغام کے لیے بہت لمبا ہے۔ اس کے بجائے اسے کسی چینل یا گروپ میں فارورڈ کریں۔",
+  "chat.forward.too_long_for_public":
+    "عوامی کمرے کے لیے بہت لمبا ہے، وہاں یہ اسپام کے طور پر چھپ جائے گا۔ اس کے بجائے کسی گروپ کو آگے بھیجیں۔",
   "chat.forward.channels": "چینل",
   "chat.forward.groups": "گروپ",
   "chat.forward.locations": "مقامات",
@@ -1878,6 +1880,9 @@ export const strings: Strings = {
   "settings.general.show_media": "میڈیا خودکار طور پر دکھائیں",
   "settings.general.show_media_desc":
     "تصاویر اور ویڈیوز چیٹ میں نظر آتی ہیں، یا ایک ٹچ کے پیچھے رہتی ہیں",
+  "settings.general.spam_filter": "اسپام فلٹر",
+  "settings.general.spam_filter_desc":
+    "بہت تیزی سے پوسٹ کرنے، خود کو دہرانے یا لنکس کی بھرمار کرنے والوں کے عوامی پیغامات چھپاتا ہے۔ نجی پیغامات کبھی فلٹر نہیں ہوتے۔",
   "settings.general.reset": "ترتیبات دوبارہ ترتیب دیں",
   "settings.general.media_retention": "میڈیا اتنی دیر رکھیں",
   "settings.general.media_retention_desc":

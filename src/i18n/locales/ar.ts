@@ -870,6 +870,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "تعذّرت إعادة التوجيه إلى {name}",
   "chat.forward.too_long_for_dm":
     "أطول من أن تُرسل كرسالة مباشرة. أعد توجيهها إلى قناة أو مجموعة بدلًا من ذلك.",
+  "chat.forward.too_long_for_public":
+    "طويلة جداً لغرفة عامة، إذ ستُخفى كرسالة مزعجة. أعد توجيهها إلى مجموعة بدلاً من ذلك.",
   "chat.forward.channels": "القنوات",
   "chat.forward.groups": "المجموعات",
   "chat.forward.locations": "المواقع",
@@ -1831,6 +1833,9 @@ export const strings: Strings = {
   "settings.general.show_media": "عرض الوسائط تلقائيًا",
   "settings.general.show_media_desc":
     "تظهر الصور ومقاطع الفيديو في المحادثة، أو تبقى خلف ضغطة",
+  "settings.general.spam_filter": "مرشّح الرسائل المزعجة",
+  "settings.general.spam_filter_desc":
+    "يخفي الرسائل العامة ممن ينشرون بسرعة كبيرة أو يكررون أنفسهم أو يغرقون المحادثة بالروابط. لا تُرشَّح الرسائل الخاصة أبداً.",
   "settings.general.reset": "إعادة ضبط الإعدادات",
   "settings.general.media_retention": "الاحتفاظ بالوسائط لمدة",
   "settings.general.media_retention_desc":

@@ -901,6 +901,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name} kişisine iletilemiyor",
   "chat.forward.too_long_for_dm":
     "Doğrudan mesaj için çok uzun. Bunun yerine bir kanala veya gruba ilet.",
+  "chat.forward.too_long_for_public":
+    "Herkese açık bir oda için çok uzun, orada spam olarak gizlenir. Bunun yerine bir gruba ilet.",
   "chat.forward.channels": "Kanallar",
   "chat.forward.groups": "Gruplar",
   "chat.forward.locations": "Konumlar",
@@ -1896,6 +1898,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Medyayı otomatik göster",
   "settings.general.show_media_desc":
     "Fotoğraflar ve videolar sohbette görünür ya da bir dokunuşun ardında bekler",
+  "settings.general.spam_filter": "Spam filtresi",
+  "settings.general.spam_filter_desc":
+    "Çok hızlı yazan, kendini tekrarlayan veya bağlantı yağdıran kişilerin herkese açık mesajlarını gizler. Özel mesajlar asla filtrelenmez.",
   "settings.general.reset": "Ayarları sıfırla",
   "settings.general.media_retention": "Medyayı şu kadar sakla",
   "settings.general.media_retention_desc":

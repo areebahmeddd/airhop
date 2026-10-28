@@ -46,6 +46,7 @@ export type SettingId =
   | "transfer"
   | "wipe"
   | "undo"
+  | "spam-filter"
   | "media-quality"
   | "media-retention"
   | "show-media"
@@ -302,6 +303,14 @@ export const SETTINGS_INDEX = [
     sectionKey: "settings.section.general",
     icon: "rotate-ccw",
     target: { kind: "row", view: "general", id: "undo" },
+  },
+  {
+    key: "spam-filter",
+    labelKey: "settings.general.spam_filter",
+    descriptionKey: "settings.general.spam_filter_desc",
+    sectionKey: "settings.section.general",
+    icon: "filter",
+    target: { kind: "row", view: "general", id: "spam-filter" },
   },
   {
     key: "media-quality",

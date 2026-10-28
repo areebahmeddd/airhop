@@ -897,6 +897,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Нельзя переслать: {name}",
   "chat.forward.too_long_for_dm":
     "Слишком длинное для личного сообщения. Перешлите его в канал или группу.",
+  "chat.forward.too_long_for_public":
+    "Слишком длинно для публичной комнаты, там это скроют как спам. Перешлите в группу.",
   "chat.forward.channels": "Каналы",
   "chat.forward.groups": "Группы",
   "chat.forward.locations": "Места",
@@ -1906,6 +1908,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Показывать медиа автоматически",
   "settings.general.show_media_desc":
     "Фото и видео появляются в чате или остаются за одним касанием",
+  "settings.general.spam_filter": "Фильтр спама",
+  "settings.general.spam_filter_desc":
+    "Скрывает публичные сообщения тех, кто пишет слишком часто, повторяется или заваливает чат ссылками. Личные сообщения никогда не фильтруются.",
   "settings.general.reset": "Сбросить настройки",
   "settings.general.media_retention": "Хранить медиа",
   "settings.general.media_retention_desc":

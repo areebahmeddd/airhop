@@ -922,6 +922,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Hindi maipapasa kay {name}",
   "chat.forward.too_long_for_dm":
     "Masyadong mahaba para sa direktang mensahe. I-forward ito sa isang channel o grupo sa halip.",
+  "chat.forward.too_long_for_public":
+    "Masyadong mahaba para sa pampublikong kuwarto, kung saan itatago ito bilang spam. Ipasa na lang sa isang grupo.",
   "chat.forward.channels": "Mga Channel",
   "chat.forward.groups": "Mga Grupo",
   "chat.forward.locations": "Mga Lokasyon",
@@ -1956,6 +1958,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Awtomatikong ipakita ang media",
   "settings.general.show_media_desc":
     "Lumilitaw sa chat ang mga larawan at video, o naghihintay sa likod ng isang tap",
+  "settings.general.spam_filter": "Filter ng spam",
+  "settings.general.spam_filter_desc":
+    "Itinatago ang mga pampublikong mensahe ng mga taong masyadong mabilis mag-post, umuulit, o nagbabaha ng link. Hindi kailanman sinasala ang mga pribadong mensahe.",
   "settings.general.reset": "I-reset ang mga setting",
   "settings.general.media_retention": "Itago ang media nang",
   "settings.general.media_retention_desc":

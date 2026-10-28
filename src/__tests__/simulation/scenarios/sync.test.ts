@@ -121,14 +121,23 @@ function signedPublicMessage(
 
 // Text that DEFLATE cannot shrink back under one frame, so a message carrying
 // it has to travel as fragments over Bluetooth.
-function incompressible(world: Scenario["world"], length: number): string {
-  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+function incompressible(
+  world: Scenario["world"],
+  length: number,
+  alphabet = "abcdefghijklmnopqrstuvwxyz0123456789",
+): string {
   let out = "";
+  const chars = Array.from(alphabet);
   for (let i = 0; i < length; i++) {
-    out += alphabet[world.rng.int(0, alphabet.length - 1)];
+    out += chars[world.rng.int(0, chars.length - 1)];
   }
   return out;
 }
+
+// Four bytes a character, drawn from thousands, so DEFLATE gains little.
+const CJK_EXTENSION_B = Array.from({ length: 4_096 }, (_, i) =>
+  String.fromCodePoint(0x20000 + i),
+).join("");
 
 // Fragments of `inner`, cut the way a Bluetooth sender cuts them, as frames
 // ready to put on the air.
@@ -783,8 +792,10 @@ test("S09 a bitchat transfer that outlasts the window still completes", async ()
   }
 
   // Under the 30s idle timeout, so only the freshness window is in play.
+  // Kept inside the public spam filter's 1200 characters, and made of
+  // four-byte characters so it still runs to enough fragments.
   const gapMs = 25_000;
-  const text = incompressible(s.world, 6_000);
+  const text = incompressible(s.world, 1_150, CJK_EXTENSION_B);
   const frames = bitchatFragments(
     signedPublicMessage(alice, channel, text, s.world.wallClock(), "slow"),
   );

@@ -905,6 +905,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Kan niet worden doorgestuurd naar {name}",
   "chat.forward.too_long_for_dm":
     "Te lang voor een direct bericht. Stuur het in plaats daarvan door naar een kanaal of groep.",
+  "chat.forward.too_long_for_public":
+    "Te lang voor een openbare ruimte, waar het als spam verborgen zou worden. Stuur het liever door naar een groep.",
   "chat.forward.channels": "Kanalen",
   "chat.forward.groups": "Groepen",
   "chat.forward.locations": "Locaties",
@@ -1918,6 +1920,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Media automatisch tonen",
   "settings.general.show_media_desc":
     "Foto’s en video’s verschijnen in de chat, of blijven achter een tik",
+  "settings.general.spam_filter": "Spamfilter",
+  "settings.general.spam_filter_desc":
+    "Verbergt openbare berichten van mensen die te snel posten, zichzelf herhalen of links spammen. Privéberichten worden nooit gefilterd.",
   "settings.general.reset": "Instellingen resetten",
   "settings.general.media_retention": "Media bewaren gedurende",
   "settings.general.media_retention_desc":
