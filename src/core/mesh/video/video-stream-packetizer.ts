@@ -210,8 +210,14 @@ export class VideoStreamPacketizer {
     return out;
   }
 
+  // Repeated like END: one lost CANCELED would leave viewers holding a
+  // stream its sender discarded. The copies dedupe as duplicates.
   cancel(): Uint8Array[] {
-    return this.packet({ kind: "canceled" });
+    const out: Uint8Array[] = [];
+    for (let i = 0; i < END_COPIES; i++) {
+      out.push(...this.packet({ kind: "canceled" }));
+    }
+    return out;
   }
 
   private flushShard(nowMs: number): Uint8Array[] {

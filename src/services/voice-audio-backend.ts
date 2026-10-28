@@ -237,6 +237,9 @@ export class NativeAudioPlayback implements AudioPlaybackBackend {
   // restarts the iOS engine under the tail, which loses exactly the audio this
   // exists to keep, and under a newer burst it costs that burst a rebuild.
   finishSession(burstIDHex: string): void {
+    // A long-lived session (a live video stream's sound) asks again after
+    // being muted and unmuted, rather than staying refused for good.
+    if (this.refusedBurst === burstIDHex) this.refusedBurst = null;
     if (this.openBurst !== burstIDHex) return;
     this.openBurst = null;
     this.onLevel(0);

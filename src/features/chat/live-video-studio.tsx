@@ -177,14 +177,6 @@ export default function LiveVideoStudio({
     return () => clearInterval(timer);
   }, [visible, channel]);
 
-  useEffect(() => {
-    if (phase !== "live") return;
-    const timer = setInterval(() => {
-      setStats(sessionRef.current?.stats() ?? null);
-    }, STATS_INTERVAL_MS);
-    return () => clearInterval(timer);
-  }, [phase]);
-
   const end = useCallback(
     async (canceled: boolean): Promise<void> => {
       // A second tap while the first is still sending END.
@@ -192,7 +184,8 @@ export default function LiveVideoStudio({
       const mesh: MeshService | null = getMeshService();
       if (phaseRef.current === "live" || phaseRef.current === "starting") {
         setPhaseBoth("ending");
-        const recording = (await mesh?.stopLiveVideo(canceled)) ?? null;
+        const recording =
+          (await mesh?.stopLiveVideo(canceled, sessionRef.current)) ?? null;
         sessionRef.current = null;
         if (recording !== null) callbacks.current.onFinished(recording);
       }
@@ -234,9 +227,26 @@ export default function LiveVideoStudio({
   useEffect(() => {
     endRef.current = end;
   });
+
+  useEffect(() => {
+    if (phase !== "live") return;
+    const timer = setInterval(() => {
+      const session = sessionRef.current;
+      // Ended from outside (the mesh stopped): close as an End would, which
+      // still hands the recording back.
+      if (session !== null && !session.isRunning) {
+        void endRef.current(false);
+        return;
+      }
+      setStats(session?.stats() ?? null);
+    }, STATS_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [phase]);
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
-      if (state !== "active" && phaseRef.current === "live") {
+      // Background, not inactive: iOS reports inactive for Control Center and
+      // a call banner, which leave the camera running.
+      if (state === "background" && phaseRef.current === "live") {
         void endRef.current(false);
       }
     });
@@ -251,7 +261,7 @@ export default function LiveVideoStudio({
     return () => {
       if (phaseRef.current === "live" || phaseRef.current === "starting") {
         void getMeshService()
-          ?.stopLiveVideo(false)
+          ?.stopLiveVideo(false, sessionRef.current)
           .then((recording) => {
             if (recording !== null) callbacks.current.onFinished(recording);
           });

@@ -537,8 +537,10 @@ export class LiveVideoReceiver {
     const now = this.now();
     for (const stream of [...this.streams.values()]) {
       if (!stream.rowAdded) {
+        // Not reopenable: ten seconds without one keyframe is a stream that
+        // cannot show anything, or one only holding a slot.
         if (now - stream.openedAtMs >= PICTURE_DEADLINE_MS) {
-          this.end(stream, true);
+          this.end(stream, false);
         } else this.apply(stream, stream.assembler.onTick(now), now);
         continue;
       }

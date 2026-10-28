@@ -2117,8 +2117,15 @@ export class MeshService {
         // capture engine, which reads that as the microphone being taken away
         // and ends the burst the user is still holding. This guard is the
         // reason the call lives here rather than beside the native release
-        // that prompts it. A release still flushing holds the microphone too.
-        if (this.pttCapture !== null || this.pttClosing !== null) return;
+        // that prompts it. A release still flushing holds the microphone too,
+        // and so does a live video stream with sound.
+        if (
+          this.pttCapture !== null ||
+          this.pttClosing !== null ||
+          this.liveVideoSend !== null
+        ) {
+          return;
+        }
         // A burst arriving in this same instant can land after this and pay for
         // one engine rebuild. The player recovers from that on its own, and
         // sequencing it exactly would cost a state machine out of all
@@ -2514,9 +2521,12 @@ export class MeshService {
   }
 
   // End our stream with END, or CANCELED when `canceled`, and hand back the
-  // recording.
-  async stopLiveVideo(canceled: boolean): Promise<FinishedLiveVideo | null> {
-    const session = this.liveVideoSend;
+  // recording. `session` names the stream the caller holds, so a studio still
+  // gets its recording when the mesh stopping ended the stream first.
+  async stopLiveVideo(
+    canceled: boolean,
+    session: LiveVideoSendSession | null = this.liveVideoSend,
+  ): Promise<FinishedLiveVideo | null> {
     if (session === null) return null;
     const finished = await trackLiveVideoWork(session.stop(canceled));
     if (this.liveVideoSend === session) this.liveVideoSend = null;

@@ -313,6 +313,10 @@ describe("LiveVideoReceiver", () => {
     }
     expect(row(liveVideoRowID(SENDER, streamID))).toBeUndefined();
     expect(native.cancelRecording).toHaveBeenCalled();
+    // Dropped for good, so more START packets do not take the slot again.
+    native.startRecording.mockClear();
+    for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+    expect(native.startRecording).not.toHaveBeenCalled();
   });
 
   test("a stream past its byte budget is closed", () => {

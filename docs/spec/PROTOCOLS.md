@@ -836,15 +836,15 @@ END      0x02  [durationMs u32][videoUnits u16][audioUnits u16][packets u16]
 CANCELED 0x04  no body
 ```
 
-| Field        | Value                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------- |
-| Video        | H.264 Constrained Baseline, Annex B, SPS and PPS in-band on every IDR                   |
-| Audio        | Optional raw AAC-LC, 16 kHz mono, 64 ms frames: live voice's own format                 |
-| Erasure code | Systematic Reed-Solomon over GF(2^8), polynomial `0x11D`, Cauchy rows; any k of k + r   |
-| Block        | At most 32 sources and 16 parity, closed by count, by time or ahead of a keyframe       |
-| START        | At sequence 0 and again before every keyframe, so a late viewer starts at the next one  |
-| END          | Sent three times; copies are duplicates                                                 |
-| Final file   | `video_<streamID hex>.mp4`, resent only when it fits 100 KiB, and takes over the stream |
+| Field         | Value                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| Video         | H.264 Constrained Baseline, Annex B, SPS and PPS in-band on every IDR                      |
+| Audio         | Optional raw AAC-LC, 16 kHz mono, 64 ms frames: live voice's own format                    |
+| Erasure code  | Systematic Reed-Solomon over GF(2^8), polynomial `0x11D`, Cauchy rows; any k of k + r      |
+| Block         | At most 32 sources and 16 parity, closed by count, by time or ahead of a keyframe          |
+| START         | At sequence 0 and again before every keyframe, so a late viewer starts at the next one     |
+| END, CANCELED | Sent three times; copies are duplicates. bitchat sends CANCELED once, which reads the same |
+| Final file    | `video_<streamID hex>.mp4`, resent only when it fits 100 KiB, and takes over the stream    |
 
 **Sending.** Presets Low (144x192, 8 fps, 18 kbps video), Medium (240x320, 12 fps,
 56 kbps) and High (480x640, 24 fps, 360 kbps), each with its own parity ratios,

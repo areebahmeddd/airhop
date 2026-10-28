@@ -142,6 +142,36 @@ describe("LiveVideoSendSession", () => {
     expect(native.finishRecording).not.toHaveBeenCalled();
   });
 
+  test("every caller of stop gets the one recording", async () => {
+    const { s } = session();
+    await s.start();
+    encoded(0, true);
+    await advance(1_500);
+    const first = s.stop(false);
+    const second = s.stop(true);
+    await advance(500);
+    const [a, b] = await Promise.all([first, second]);
+    expect(a).not.toBeNull();
+    expect(b).toBe(a);
+    expect(native.finishRecording).toHaveBeenCalledTimes(1);
+  });
+
+  test("a stop while the recording is still opening puts nothing on air", async () => {
+    let open: () => void = () => undefined;
+    native.startRecording.mockImplementationOnce(
+      () => new Promise<void>((resolve) => (open = resolve)),
+    );
+    const { s, sent } = session();
+    const starting = s.start();
+    expect(await s.stop(false)).toBeNull();
+    open();
+    await starting;
+    await advance(200);
+    expect(sent).toHaveLength(0);
+    expect(native.startEncoding).not.toHaveBeenCalled();
+    expect(native.cancelRecording).toHaveBeenCalled();
+  });
+
   test("a radio refusing writes backs the encoder off", async () => {
     const { s } = session();
     await s.start();

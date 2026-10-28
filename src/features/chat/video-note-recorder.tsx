@@ -352,7 +352,9 @@ export function useVideoNoteRecorder({
   });
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
-      if (state !== "active") finishRef.current("send");
+      // Background, not inactive: iOS reports inactive for Control Center,
+      // which leaves the camera recording.
+      if (state === "background") finishRef.current("send");
     });
     return () => sub.remove();
   }, []);

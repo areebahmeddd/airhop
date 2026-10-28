@@ -99,6 +99,9 @@ export class LiveVideoSendSession {
   private readonly skipWater: number;
   // Live from start() until stop() is called.
   private running = false;
+  // stop()'s answer, shared by every caller: the studio and the mesh can both
+  // end one stream, and both must get its recording.
+  private stopping: Promise<FinishedLiveVideo | null> | null = null;
   // Units still accepted: through the encoder's and the microphone's flush,
   // which stop() waits for, so the stream's last moments are not lost.
   private accepting = false;
@@ -181,6 +184,18 @@ export class LiveVideoSendSession {
   async start(): Promise<void> {
     const native = NativeAirhopVideo;
     if (!native) throw new Error(t("chat.live_video.failed"));
+    await native.startRecording(
+      this.recordingKey,
+      this.recording.uri,
+      this.quality.width,
+      this.quality.height,
+      this.deps.audio !== null,
+    );
+    // Ended while the recording was opening: nothing has gone on air yet.
+    if (this.stopping !== null) {
+      native.cancelRecording(this.recordingKey);
+      return;
+    }
     const emitter = new NativeEventEmitter(
       native as unknown as ConstructorParameters<typeof NativeEventEmitter>[0],
     );
@@ -196,14 +211,6 @@ export class LiveVideoSendSession {
     this.errorSub = emitter.addListener(EVT_CAMERA_ERROR, () => {
       if (this.running) this.deps.onFailure();
     });
-
-    await native.startRecording(
-      this.recordingKey,
-      this.recording.uri,
-      this.quality.width,
-      this.quality.height,
-      this.deps.audio !== null,
-    );
     this.startedAtMs = this.now();
     this.running = true;
     this.accepting = true;
@@ -228,8 +235,14 @@ export class LiveVideoSendSession {
 
   // Ends the stream: END (or CANCELED), the queue drained, the recording
   // finished. Null when canceled, too short, or nothing was recorded.
-  async stop(canceled: boolean): Promise<FinishedLiveVideo | null> {
-    if (!this.running) return null;
+  stop(canceled: boolean): Promise<FinishedLiveVideo | null> {
+    this.stopping ??= this.running ? this.end(canceled) : Promise.resolve(null);
+    return this.stopping;
+  }
+
+  // ---- Internals ----
+
+  private async end(canceled: boolean): Promise<FinishedLiveVideo | null> {
     this.running = false;
     const native = NativeAirhopVideo;
     // Both flushes emit their last units before they resolve, and those still
@@ -270,8 +283,6 @@ export class LiveVideoSendSession {
       fitsAsFile: result.sizeBytes <= MAX_LIVE_VIDEO_FILE_BYTES,
     };
   }
-
-  // ---- Internals ----
 
   private elapsed(): number {
     return this.now() - this.startedAtMs;
