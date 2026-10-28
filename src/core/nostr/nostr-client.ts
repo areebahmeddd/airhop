@@ -1,7 +1,7 @@
 // Nostr client: SimplePool with auto-reconnect and optional Tor proxy.
 //
-// Connects to 3-5 relays simultaneously. Publish uses first-ACK-wins: the
-// event is sent to all relays and the promise resolves on the first OK.
+// Publish uses first-ACK-wins: the event is sent to all relays and the promise
+// resolves on the first OK.
 //
 // Relay selection: caller provides the relay list. Use geo-relay.ts to pick
 // the closest relays. A fixed set of default gift-wrap relays is always
@@ -12,6 +12,9 @@
 // implementation (see tor-routing.ts): on iOS for TorWebSocket, which tunnels
 // over Arti's SOCKS5 proxy, and on Android by the proxy installed into the
 // shared OkHttp client every socket is built from.
+//
+// Pings catch a socket that went silent without closing, which reconnect alone
+// never notices; on React Native they run as a cheap REQ every 29 s.
 //
 // Auto-reconnect covers a relay that drops after connecting, and only that.
 // nostr-tools never retries a relay whose first connect fails: it is dropped,
@@ -37,8 +40,8 @@ const MAX_RELAY_COUNT = 5;
 // Ceiling for an explicit per-call relay set, deliberately higher than
 // MAX_RELAY_COUNT.
 //
-// A geohash cell's set is the 5 nearest relays (the interop rendezvous, which
-// must stay intact) PLUS the user's custom relays, appended last by
+// A geohash cell's set is its GEO_RELAY_COUNT routed relays (the interop
+// rendezvous, which must stay intact) PLUS the user's custom relays, appended last by
 // mergeGeoRelays. Capping that back to MAX_RELAY_COUNT would trim from the tail
 // and so drop exactly the custom entries, silently undoing the setting for
 // anyone who left geo-relay discovery on: the UI would report the relay added
@@ -128,7 +131,7 @@ export class NostrClient {
 
   constructor(config: NostrClientConfig = {}) {
     this.onConnectionChange = config.onConnectionChange;
-    this.pool = new SimplePool({ enableReconnect: true });
+    this.pool = new SimplePool({ enableReconnect: true, enablePing: true });
     this.pool.maxWaitForConnection = CONNECT_TIMEOUT_MS;
     // The pool tells us as relays connect and drop (set as properties: the
     // SimplePool constructor doesn't accept these in its options). We translate

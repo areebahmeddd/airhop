@@ -14,12 +14,13 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Upstream relay directory and sync settings.
-  # Rows are canonicalized to match scripts/relay-url.js for interoperability.
-  SOURCE_REPOSITORY: https://github.com/permissionlesstech/georelays.git
-  SOURCE_OWNER_REPO: permissionlesstech/georelays
-  SOURCE_PATH: nostr_relays.csv
-  STALE_AFTER_DAYS: 7
+  # bitchat's reviewed directory, the file both bitchat clients route by, so a
+  # location channel lands on the same relays for every client. It changes only
+  # when reviewed, so staleness is measured in months, not days.
+  SOURCE_REPOSITORY: https://github.com/permissionlesstech/bitchat.git
+  SOURCE_OWNER_REPO: permissionlesstech/bitchat
+  SOURCE_PATH: relays/online_relays_gps.csv
+  STALE_AFTER_DAYS: 90
   UPDATE_BRANCH: automation/relays
   PR_TITLE: "chore(relays): sync relay directory from upstream"
   RELAY_FILES: assets/data/nostr_relays.csv src/data/relays.ts landing/src/data/relays.ts

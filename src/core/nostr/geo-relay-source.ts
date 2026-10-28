@@ -7,12 +7,11 @@
 // (a deanonymisation vector, especially under Tor), and works offline, which is
 // exactly when this app matters most.
 //
-// Freshness comes from a daily CI sync (.github/workflows/sync-relays.yml) that
-// pulls permissionlesstech/georelays, validates it, and opens a pull request:
-// the directory ships inside the bundle, so a human approves what lands.
-//
-// Interop with bitchat comes from canonicalizing rows the same way they do, in
-// GeoRelayDirectory.loadEntries, not from tracking an identical file.
+// It is bitchat's reviewed directory (relays/online_relays_gps.csv), the file
+// both bitchat clients route by: the same file, canonicalized the same way, is
+// what puts every client in a cell on the same relays. A weekly CI sync
+// (.github/workflows/sync-relays.yml) proposes upstream changes as a pull
+// request, since the directory ships inside the bundle.
 
 import { GEO_RELAYS } from "@data/relays";
 import type { RelayEntry } from "./geo-relay";
