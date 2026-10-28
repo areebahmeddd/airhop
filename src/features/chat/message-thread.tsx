@@ -8,6 +8,7 @@ import {
 } from "@core/mesh/voice/voice-capture";
 import {
   isVideoNoteName,
+  liveVideoStreamOf,
   MAX_BITCHAT_TRANSFER_BYTES,
   MAX_VIDEO_SECONDS,
   maxBytesForType,
@@ -510,12 +511,16 @@ interface VoiceNoteBubbleProps {
   onAskResend?: () => void;
 }
 
-// Inline video player for a received (or sent) video attachment.
+// Inline video player for a received (or sent) video attachment. A finished
+// live stream keeps the shape its live bubble had, so the row does not jump
+// when the stream ends.
 function VideoAttachment({
   uri,
+  liveRecording = false,
   onAskResend,
 }: {
   uri: string;
+  liveRecording?: boolean;
   onAskResend?: () => void;
 }): React.JSX.Element {
   const present = useAttachmentPresent(uri);
@@ -531,7 +536,10 @@ function VideoAttachment({
 
   return (
     <VideoView
-      style={videoAttachmentStyles.video}
+      style={[
+        videoAttachmentStyles.video,
+        liveRecording && videoAttachmentStyles.live,
+      ]}
       player={player}
       contentFit="contain"
       fullscreenOptions={{ enable: true }}
@@ -601,6 +609,10 @@ const videoAttachmentStyles = StyleSheet.create({
     height: 150,
     borderRadius: Radius.md,
     backgroundColor: "#000",
+  },
+  // Every live video quality is 3:4.
+  live: {
+    height: mediaHeightForAspect(3 / 4),
   },
   note: {
     width: VIDEO_NOTE_SIZE,
@@ -4583,7 +4595,11 @@ export default function MessageThread({
         return isVideoNoteName(attachment.name) ? (
           <VideoNoteAttachment uri={attachment.uri} onAskResend={onAskResend} />
         ) : (
-          <VideoAttachment uri={attachment.uri} onAskResend={onAskResend} />
+          <VideoAttachment
+            uri={attachment.uri}
+            liveRecording={liveVideoStreamOf(attachment.name) !== null}
+            onAskResend={onAskResend}
+          />
         );
       }
     }

@@ -112,7 +112,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
   return StyleSheet.create({
     frame: {
       width: WIDTH,
-      borderRadius: Radius.lg,
+      borderRadius: Radius.md,
       overflow: "hidden",
       // The picture's own ground until the first keyframe paints it.
       backgroundColor: Colors.surfaceRaised,
