@@ -39,11 +39,13 @@ final class AirhopVideoDisplays {
   }
 
   func decode(key: String, annexB: Data, keyframe: Bool) {
-    let stream = streams[key] ?? {
-      let created = Stream()
-      streams[key] = created
-      return created
-    }()
+    let stream: Stream
+    if let known = streams[key] {
+      stream = known
+    } else {
+      stream = Stream()
+      streams[key] = stream
+    }
     guard let view = views[key]?.view else {
       stream.awaitingKeyframe = true
       return
