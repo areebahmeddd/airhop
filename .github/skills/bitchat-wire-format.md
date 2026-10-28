@@ -81,7 +81,7 @@ No nonce field; deduplication is content-addressed (`computePacketId`, bitchat's
 
 ## Packet Type Registry
 
-Everything up to `0x29` is bitchat's. bitchat allocates forward and has reached `0x2C` (`0x2A` and `0x2B` reserved for courier spray-ack, `0x2C` `announceV2`), so Airhop's extensions start at `0x50`. `conformance.test.ts` parses bitchat's `MessageType.swift` and fails if its frontier comes within 16 of an Airhop type; `DR_ENCRYPTED` (`0x12`, never assigned by bitchat) is the one listed exemption. bitchat-android implements only `0x01` to `0x03`, `0x10`, `0x11`, `0x20` to `0x22` and `0x29`.
+Everything below `0x50` except `0x12` is bitchat's. bitchat allocates forward and has reached `0x2D` (`0x2A` and `0x2B` reserved for courier spray-ack, `0x2C` `announceV2`, `0x2D` live video, which Airhop relays but does not play), so Airhop's extensions start at `0x50`. `conformance.test.ts` parses bitchat's `MessageType.swift` and fails if its frontier comes within 16 of an Airhop type; `DR_ENCRYPTED` (`0x12`, never assigned by bitchat) is the one listed exemption. bitchat-android implements only `0x01` to `0x03`, `0x10`, `0x11`, `0x20` to `0x22` and `0x29`.
 
 A bitchat node never interprets a type it does not know, but it relays it: the unknown case falls through to `scheduleRelayIfNeeded`, and `RelayController.decide` treats it as an ordinary broadcast. An Airhop-only type therefore crosses a mesh of bitchat phones, invisible to their users. Two projects giving one number two meanings is the risk, not relaying.
 

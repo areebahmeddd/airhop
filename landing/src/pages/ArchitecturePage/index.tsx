@@ -418,24 +418,19 @@ export default function ArchitecturePage() {
                     "Every phone runs both at once, which is what makes this a mesh and not a star",
                   ],
                   [
-                    "TTL",
-                    "A hop budget stamped on a packet, reduced by one at each relay",
-                    "At most 7, lower in a crowd, and the packet stops when it runs out",
-                  ],
-                  [
                     "Flooding",
                     "Rebroadcasting to everyone in range instead of routing along one chosen path",
                     "The default, because a mesh of strangers cannot agree on a map",
                   ],
                   [
+                    "TTL",
+                    "A hop budget stamped on a packet, reduced by one at each relay",
+                    "At most 7, lower in a crowd, and the packet stops when it runs out",
+                  ],
+                  [
                     "LRU cache",
                     "A fixed-size cache that discards whatever was used least recently",
                     "1000 packet IDs over a 5 minute window, so a looped copy is dropped instead of forwarded",
-                  ],
-                  [
-                    "TLV",
-                    "Type-length-value, a self-describing byte layout that older readers can skip past",
-                    "ANNOUNCE payloads, file transfers and courier envelopes",
                   ],
                   [
                     "Golomb-Coded Set",
@@ -446,6 +441,11 @@ export default function ArchitecturePage() {
                     "Store-and-forward",
                     "Holding a message until a route to the recipient appears",
                     "Courier envelopes, 40 at a time, discarded after 24 hours",
+                  ],
+                  [
+                    "TLV",
+                    "Type-length-value, a self-describing byte layout that older readers can skip past",
+                    "ANNOUNCE payloads, file transfers and courier envelopes",
                   ],
                 ]}
               />
@@ -465,6 +465,16 @@ export default function ArchitecturePage() {
                     "The key exchange inside both Noise patterns",
                   ],
                   [
+                    "AEAD",
+                    "Encryption that also detects tampering",
+                    "ChaCha20-Poly1305, and XChaCha20-Poly1305 where a longer nonce is safer",
+                  ],
+                  [
+                    "HKDF",
+                    "Derives many keys from one secret, deterministically",
+                    "Turns the signing key into the Nostr identity and every per-cell identity",
+                  ],
+                  [
                     "Noise XX",
                     "A handshake where both sides prove who they are",
                     "Live direct-message sessions, and the reason bitchat and Airhop can talk",
@@ -478,16 +488,6 @@ export default function ArchitecturePage() {
                     "Forward secrecy",
                     "Past messages stay unreadable even if a key leaks later",
                     "Noise XX gives it once per session, Double Ratchet gives it once per message",
-                  ],
-                  [
-                    "AEAD",
-                    "Encryption that also detects tampering",
-                    "ChaCha20-Poly1305, and XChaCha20-Poly1305 where a longer nonce is safer",
-                  ],
-                  [
-                    "HKDF",
-                    "Derives many keys from one secret, deterministically",
-                    "Turns the signing key into the Nostr identity and every per-cell identity",
                   ],
                   [
                     "Prekey",
@@ -512,6 +512,11 @@ export default function ArchitecturePage() {
                     "Eleven are used, listed in the internet layer section",
                   ],
                   [
+                    "secp256k1",
+                    "The elliptic curve Bitcoin and Nostr both use",
+                    "Your Nostr identity, derived from the signing key, never stored on its own",
+                  ],
+                  [
                     "Gift wrap",
                     "Nested encryption that hides who sent a message and what it says",
                     "Every internet DM, so a relay operator sees only ciphertext from a throwaway key, plus the recipient's key it delivers to",
@@ -525,11 +530,6 @@ export default function ArchitecturePage() {
                     "Geohash",
                     "Coordinates encoded as a short string, which gets coarser as you shorten it",
                     "Scopes location channels, and presence is only broadcast at precision 5 or coarser",
-                  ],
-                  [
-                    "secp256k1",
-                    "The elliptic curve Bitcoin and Nostr both use",
-                    "Your Nostr identity, derived from the signing key, never stored on its own",
                   ],
                 ]}
               />
@@ -559,14 +559,14 @@ export default function ArchitecturePage() {
                     "Nutzaps, so the payment event can be public while the money stays private",
                   ],
                   [
-                    "BIP-39",
-                    "Twelve words that encode a seed",
-                    "The recovery phrase. Created when the wallet is first set up so every coin is derived from it; backup counts as on once you have viewed the words, and as safe once you prove you wrote them down",
-                  ],
-                  [
                     "bolt11",
                     "The Lightning invoice format",
                     "How value moves in and out, the only part that needs the internet",
+                  ],
+                  [
+                    "BIP-39",
+                    "Twelve words that encode a seed",
+                    "The recovery phrase. Created when the wallet is first set up so every coin is derived from it; backup counts as on once you have viewed the words, and as safe once you prove you wrote them down",
                   ],
                 ]}
               />

@@ -41,6 +41,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 | Courier (store-and-forward) envelopes and one-time prekeys     | `src/core/mesh/courier/`                           |
 | Live push-to-talk capture and playback                         | `src/core/mesh/voice/`                             |
 | Which transport a message leaves on                            | `src/core/router/`                                 |
+| Which public messages are hidden as spam                       | `src/core/spam/`                                   |
 | Base64 shared across the protocol                              | `src/core/encoding/`                               |
 | Device transfer: the code, handshake and bundle (pure)         | `src/core/move/`                                   |
 | Device transfer: what moves, and both phones' sides            | `src/services/move-*.ts`                           |
@@ -90,7 +91,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 - Never change the `packet-codec.ts` byte layout without bumping the protocol version and keeping a decode path for the old one.
 - Never change the BLE Service UUID (`F47B5E2D...`) or Characteristic UUID (`A1B2C3D4...`). A change partitions the network.
 - Never change peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`, defined once in `src/core/crypto/peer-id.ts`). Gossip sync and DM addressing depend on it.
-- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2C`, with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
+- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical, and Airhop relays `0x2D` without playing it. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
 - A protocol change ships only after a message exchange across Airhop, bitchat-ios and bitchat-android.
 
 ### Native Code

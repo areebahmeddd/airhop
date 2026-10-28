@@ -34,7 +34,7 @@ it rather than restating it. What is planned and when is in
 | Bulletin board            | Yes, signed `0x23`       | Yes, kind 1 mirror  | Public and signed, 1 to 7 day expiry, gossip catch-up. A location cell can also take a permanent Nostr note. An urgent post also writes one line into the chat it belongs to                     |
 | Voice notes               | Yes, as a file           | No                  | Recorded AAC, not live                                                                                                                                                                           |
 | Live push-to-talk         | Yes, `0x29` bursts       | No                  | AAC-LC 16 kHz mono, 350 ms jitter buffer. Also shipped by bitchat, so it works between the two                                                                                                   |
-| Video sharing             | Yes, as a file           | No                  | Recorded and played inline. Live streaming is not possible across platforms                                                                                                                      |
+| Video sharing             | Yes, as a file           | No                  | Recorded and played inline, round video notes held to record. bitchat's live streams (`0x2D`) are relayed, not yet played                                                                        |
 | File transfer             | Yes, per-type caps       | No                  | Sends 512 KiB photos and voice, 1 MiB otherwise, as bitchat-ios does. Both accept 1 MiB of any type, bitchat-ios's decoder ceiling. Received files share a 100 MiB budget, oldest out first      |
 | Location pin              | Yes, sealed `0x50`       | No                  | One point in a DM, sent once. No live sharing, no map, never couriered                                                                                                                           |
 | Ring                      | Yes, sealed `0x51`       | No                  | Airhop only. A doorbell for someone in range: opt-in per contact, proven per session, rings for 45 s or until answered, and every refusal is answered so the sender is never left guessing       |
@@ -49,7 +49,7 @@ it rather than restating it. What is planned and when is in
 | Internet gateway          | Relays for others        | Yes                 | Off by default. Carries public location traffic for offline peers                                                                                                                                |
 | Mesh bridge               | Relays for others        | Yes                 | Off by default. Joins two Bluetooth islands' `#bluetooth` rooms through a Nostr rendezvous cell                                                                                                  |
 | Tor routing               | n/a                      | Yes                 | Embedded Arti on both. BLE is local, so nothing to route                                                                                                                                         |
-| Relay discovery           | n/a                      | Yes                 | Bundled CSV, refreshed from the georelays repo                                                                                                                                                   |
+| Relay discovery           | n/a                      | Yes                 | Bundled CSV, bitchat's reviewed relay directory                                                                                                                                                  |
 | bitchat compatibility     | Yes                      | Yes                 | Same wire format both directions. Airhop-only types are ignored by bitchat                                                                                                                       |
 
 ## 2. Identity
@@ -478,10 +478,10 @@ Bluetooth's.
 > is an Android-to-Android or iPhone-to-iPhone accelerator, and anything crossing
 > platforms uses Bluetooth, LAN or Nostr.
 
-| Platform | Framework                                                                                | Floor             | Notes                                                                                                                                                                                                                                                                |
-| -------- | ---------------------------------------------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Android  | [`WifiAwareManager`](https://developer.android.com/develop/connectivity/wifi/wifi-aware) | API 29            | The peer's address is a link-local IPv6 in `WifiAwareNetworkInfo`, which does not exist below 29, so the module is not registered there and TypeScript reads its absence as unsupported. Android 17 gates the socket behind `ACCESS_LOCAL_NETWORK`, already declared |
-| iOS      | [`WiFiAware`](https://developer.apple.com/documentation/WiFiAware) on Network framework  | iOS 26, iPhone 12 | Needs the `com.apple.developer.wifi-aware` entitlement, a managed capability, and the service under `WiFiAwareServices` in `Info.plist`                                                                                                                              |
+| Platform | Framework                                                                                | Floor             | Notes                                                                                                                                                                                                                                                                                                     |
+| -------- | ---------------------------------------------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Android  | [`WifiAwareManager`](https://developer.android.com/develop/connectivity/wifi/wifi-aware) | API 29            | The peer's address is a link-local IPv6 in `WifiAwareNetworkInfo`, which does not exist below 29, so the module is not registered there and TypeScript reads its absence as unsupported. Android 17 drops the socket without `ACCESS_LOCAL_NETWORK`, which is declared and requested at launch on API 37+ |
+| iOS      | [`WiFiAware`](https://developer.apple.com/documentation/WiFiAware) on Network framework  | iOS 26, iPhone 12 | Needs the `com.apple.developer.wifi-aware` entitlement, a managed capability, and the service under `WiFiAwareServices` in `Info.plist`                                                                                                                                                                   |
 
 Neither has a power policy of its own. `src/services/power-policy.ts` scales
 the BLE radios and leaves this one alone: the OS withdraws Aware under battery
@@ -559,8 +559,8 @@ half each person is playing.
 
 ### Nostr
 
-- 300+ public relays from the georelays dataset, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
-- A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its five nearest, plus up to five the user adds. DMs use a pool of well-known relays, at most five
+- 300+ public relays from bitchat's reviewed directory (`relays/online_relays_gps.csv`, the file both bitchat clients route by), bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
+- A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (five primaries and five warm backups, used for both publishing and subscribing, as bitchat routes), plus up to five the user adds. DMs use a pool of well-known relays, at most five
 - NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
 - Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
 - A publish goes to every relay in its set and counts as sent on the first acceptance, so no single relay is load-bearing
@@ -722,12 +722,21 @@ the router's window (45 s on a direct link, 60 s through the mesh), so a flood
 to someone who has left does not keep the message from reaching Nostr or a
 courier.
 
-Every DM that leaves over the mesh or waits for a handshake also sits in the
-outbox until a delivery receipt names it, because a flood has nothing to
-acknowledge it and even a direct link can carry a packet sealed under a session
-the other side has lost. A retry reuses the message ID and the recipient
-collapses duplicates. The outbox caps each recipient's queue, and a message it
-evicts shows as failed rather than waiting forever.
+Every DM sits in the outbox until a delivery or read receipt names it, whichever
+tier carried it: a flood has nothing to acknowledge it, even a direct link can
+carry a packet sealed under a session the other side has lost, and a relay
+holds a gift wrap for a recipient who may stay offline for days. A retry reuses
+the message ID and the recipient collapses duplicates, so a peer who walks into
+range while a relay holds their copy gets it over the radio. The outbox caps
+each recipient's queue, and a message it evicts shows as failed rather than
+waiting forever.
+
+A relay copy is paced: republished daily once a relay accepted it, every two
+minutes while none has, and retried by the 45 s outbox sweep as well as by
+announces, foregrounds and reconnects. It is never charged against the attempt
+cap, and a copy a relay accepted never shows as failed, since the recipient's
+inbox reads the full seven-day outbox lifetime back. One every relay refused
+drops back to queued.
 
 Receipts use the same ID on every path. The recipient answers each DM with a
 delivery receipt, and owes a read receipt until the thread is opened (bounded
@@ -1325,6 +1334,7 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 | Traffic analysis (BLE)             | Private payloads (Noise, Double Ratchet and private channels) are encrypted and padded to fixed buckets, so their length says little about the message. Public traffic is plaintext by design, and headers are always in the clear (see [Out of scope](#out-of-scope))                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Relay censorship                   | Several relays are queried in parallel, so any single relay failure is transparent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Forged departure                   | A LEAVE is checked against the signing key held for its sender before the relay decision, so an unverifiable one is neither acted on nor passed to nodes that may check less strictly. See [PROTOCOLS.md section 3.6](PROTOCOLS.md#36-leave-files-board-posts-and-voice-are-verified-before-they-are-relayed)                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Public spam                        | bitchat's spam filter, ported with its limits: per sender 6 messages then one per 10 s, 1200 characters and 2 links a minute, and near-copies hidden whether one sender repeats a text or many identities spread it, with disguises folded away first. Runs on message time, so backfill is judged as it was sent. Local only: a hidden message is still relayed, and the user can switch it off                                                                                                                                                                                                                                                                                                                   |
 | Sybil flooding                     | TTL bounds propagation. The registry and radar are capped with oldest-first eviction that never drops a peer holding a real BLE link                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Relay abuse                        | A forged file, board post, voice frame or LEAVE is dropped before it is relayed; nothing addressed to this phone or sent under its own ID is relayed by it. A receiving card is shown only for a sender whose key is held, at most three at once, unnamed in public rooms                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Gateway abuse                      | A gateway publishes only a fresh location-channel note tagged for the carrier's cell, from a depositor whose packet signature verifies, within a per-depositor rate. Every carried event is checked against its own signature, and a bridged row gives way to the signed radio copy                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -1506,7 +1516,7 @@ lives in `android/` or `ios/`.
 │  PROTOCOL CORE  (src/core, pure TS)  │   │  NOSTR  (src/core/nostr)      │
 │  crypto: Noise XX / X, Double        │   │  NIP-17/59 gift wrap,         │
 │    Ratchet, Ed25519, @noble only     │   │  bitchat nip44-v2 envelope    │
-│  mesh/wire: packet codec, TLVs       │   │  NostrClient: 5 nearest geo   │
+│  mesh/wire: packet codec, TLVs       │   │  NostrClient: 10 nearest geo  │
 │  mesh/routing: FloodRouter, dedup,   │   │    relays + up to 5 custom    │
 │    fragments, source routes          │   │    per cell; up to 5 for DMs  │
 │  mesh/sync: GossipSync (GCS)         │   │  GeoRelayDirectory: ~300      │

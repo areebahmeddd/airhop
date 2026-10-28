@@ -235,9 +235,9 @@ fallback for a route that cannot be built.
 
 ## 3. Packet Type Registry
 
-Every type up to `VOICE_FRAME` except `DR_ENCRYPTED` matches bitchat's
+Every type below `0x50` except `DR_ENCRYPTED` matches bitchat's
 `MessageType` enum (public domain). bitchat allocates forward and has reached
-`0x2C`, with `0x2A` and `0x2B` reserved upstream for courier spray-ack, so
+`0x2D`, with `0x2A` and `0x2B` reserved upstream for courier spray-ack, so
 Airhop extensions start at `0x50`. A bitchat node never interprets a type it
 does not know, but it does relay it, so an extension still crosses a mesh of
 bitchat phones. `conformance.test.ts` parses bitchat's enum from a local
@@ -263,6 +263,7 @@ allocations closes to 16.
 | `PONG`               | `0x27` | Unicast           | Directed mesh echo reply: echoed nonce and origin TTL. Hops = originTTL − receivedTTL + 1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `NOSTR_CARRIER`      | `0x28` | Broadcast/Unicast | A signed Nostr event ferried between the mesh and a gateway or bridge. See [section 3.9](#39-gateway-carrier)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `VOICE_FRAME`        | `0x29` | Broadcast         | One live push-to-talk packet, signed like a public message ([section 3.1](#31-voice-burst-payload)). Shipped by bitchat too, so live voice works between the two. A DM burst rides `NoisePayloadType.VOICE_FRAME` (`0x08`) instead. Broadcast only, with a 30 s freshness window, both checked with the signature before relay                                                                                                                                                                                                                                                                                                                                        |
+| `VIDEO_FRAME`        | `0x2D` | Broadcast         | bitchat's live video: one signed packet of a stream (`docs/LIVE_VIDEO_V1.md` upstream). Airhop relays it as a stream, like `VOICE_FRAME`, after the same checks plus every rule bitchat's decoder holds the packet to; it does not play it yet. A finished recording also arrives as an ordinary `video/mp4` file, which Airhop shows. Never gossip-synced                                                                                                                                                                                                                                                                                                            |
 | `CHANNEL_ENC`        | `0x50` | Broadcast         | Airhop private channel: XChaCha20-Poly1305 sealed message. bitchat relays it without interpreting it (Airhop extension)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `CHANNEL_MSG_AIRHOP` | `0x51` | Broadcast         | Public message in a location channel. Payload `[chLen u8][channel][idLen u8][msgId][text]`, see [section 3.7](#37-public-channel-messages). bitchat relays it without interpreting it (Airhop extension)                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
@@ -367,6 +368,7 @@ match bitchat's `NoisePayloadType` up to `0x21`.
 | `0x07` | GROUP_KEY_UPDATE         | Creator-signed group state (rotation or roster)                                                |
 | `0x08` | VOICE_FRAME              | `VoiceBurstPacket` ([section 3.1](#31-voice-burst-payload))                                    |
 | `0x09` | _(accepted, never sent)_ | Alias for `0x20` emitted by prerelease bitchat-ios builds                                      |
+| `0x0A` | _(bitchat, not handled)_ | bitchat's private live video. Dropped as an unknown inner type until Airhop plays live video   |
 | `0x20` | PRIVATE_FILE             | `BitchatFilePacket` TLV ([section 3.2](#32-file-packet-payload)), encrypted before fragmenting |
 | `0x21` | AUTHENTICATED_PEER_STATE | `[version=0x01][TLV…]`: `0x01` capabilities, `0x02` Ed25519 key                                |
 | `0x22` | CONTACT_CARD             | Contact card binary, same encoding as the QR card, then a 64-byte proof                        |
@@ -376,7 +378,7 @@ match bitchat's `NoisePayloadType` up to `0x21`.
 | `0x53` | RING_REFUSED             | `[reason: u8]` then UTF-8 ringID. Sent when the receiver's phone chose to stay quiet           |
 
 **Airhop's own Noise payloads start at `0x50`.** bitchat holds `0x01` to
-`0x03`, `0x06` to `0x09`, `0x10` to `0x12` and `0x20` to `0x21` and allocates
+`0x03`, `0x06` to `0x0A`, `0x10` to `0x12` and `0x20` to `0x21` and allocates
 forward, so the reasoning that puts Airhop's packet types at `0x50` applies
 here. `0x22` sits below that line and stays there, since moving it would break
 every shipped build for no gain.
@@ -630,6 +632,7 @@ Bluetooth fragments.
 | `LEAVE`         | Verify against the signing key held for the claimed sender                                                                                                           |
 | `FILE_TRANSFER` | Verify against the signing key held for the claimed sender                                                                                                           |
 | `VOICE_FRAME`   | Be a broadcast, not our own, within 30 s of our clock, and verify as above                                                                                           |
+| `VIDEO_FRAME`   | As `VOICE_FRAME`, and carry bitchat's live video header (`[streamID 8][seq u16][kind u8]`, kind `0x00` to `0x04`, at most 352 bytes)                                 |
 | `BOARD_POST`    | Decode and carry a valid author signature; a post must also be live (not expired, not dated over an hour ahead, not expiring past its maximum lifetime plus an hour) |
 
 A packet failing is dropped outright, before dedup, so a forged copy arriving

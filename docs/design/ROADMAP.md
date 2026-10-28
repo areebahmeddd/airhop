@@ -65,50 +65,7 @@ What each milestone delivered, item by item, is in [PROGRESS.md](../dev/PROGRESS
 
 ### Planned
 
-#### v1.1.0: AI Assistant
-
-**Goal:** An assistant that runs entirely on the phone, opt-in behind a tab of its own.
-
-Nothing typed into it leaves the phone, and it does not touch the mesh protocol, wire format or crypto layer. The one network call is the model download, held to the same internet and Tor rules as a mint call. A model can also be imported from a file or shared phone to phone, so someone with no connection can still get one. A small model can be confidently wrong, so it is a general assistant, not a source of medical advice.
-
-- [ ] Off by default: switched on in General, Features, which adds an AI tab
-- [ ] Inference through `llama.rn` (llama.cpp), built from source on both platforms, in the foreground only and released under memory pressure
-- [ ] Pinned model catalog in `src/data/`: small multilingual GGUF models chosen by an eval across the languages Airhop ships, each with its size, RAM and SHA-256
-- [ ] Download, import and share: resumable, hash-verified before the first load, refused on iOS while Tor is on
-- [ ] Device fit: a model the phone lacks the memory or storage for is shown but cannot be downloaded
-- [ ] Pure logic (device fit, context window, prompt) in `src/core/ai/`, the engine and model files in `src/services/`
-- [ ] Chat UI in `src/features/ai/`: streamed answers, stop, and history kept on the phone, cleared by the panic wipe
-- [ ] A bad answer reported by email from inside the app, since Google Play requires in-app reporting for generative AI and Airhop has no server to receive it; every answer labelled as AI-generated, as the EU AI Act requires
-
-**Milestone:** A phone gets a model once, by download or from a nearby phone, then answers questions with no connection at all while the mesh keeps running.
-
-#### v1.2.0: Relay Hardware
-
-**Goal:** Run the relay path against real nodes.
-
-Relay support is written and simulated but has never met hardware; see [PROTOCOLS.md section 10](../spec/PROTOCOLS.md#10-relay-nodes). LoRa carries text in practice, not files or live voice, and its band is regional: 915 MHz in the US, 868 MHz in the EU.
-
-- [ ] [Bitle](https://github.com/bitleproject/bitle) firmware on the mesh: Noise XX, courier mailbox, gossip sync, and the `0xB1` relay flag read off a real announce
-- [ ] The LoRa trunk carrying messages between two nodes with no phone bridging the gap
-- [ ] The same runs against bitchat, so one deployed node serves both clients
-
-**Milestone:** A Bitle node relays between an Airhop phone and a bitchat phone, and the LoRa trunk carries traffic with no phone in between.
-
-#### v1.3.0: Web / Browser
-
-**Goal:** A Nostr-only web client that shares the TypeScript protocol core.
-
-A browser tab cannot advertise as a Bluetooth peripheral, so it cannot join the mesh and reaches people over Nostr only. It is its own identity rather than a mirror of a phone, since two devices answering for one identity break each other's sessions, and it holds no wallet. The browser weakens three guarantees, and the client says so: keys sit in browser storage rather than a keychain, relays see the IP because a page cannot embed Tor, and whoever serves the page serves the code.
-
-- [ ] `react-native-web` build target, with Bluetooth, Wi-Fi, LAN, Tor and voice gated behind platform checks
-- [ ] Nostr client, gift-wrap DMs and location channels working in the browser
-- [ ] A wipe that clears the keys and all history
-- [ ] Progressive Web App manifest for offline caching, served as a static bundle from a tagged release
-- [ ] The storage, Tor and serving differences stated before first use
-
-**Milestone:** A browser tab exchanges encrypted DMs with an Airhop mobile node over Nostr.
-
-#### v1.4.0: Terminal / CLI
+#### v1.1.0: Terminal / CLI
 
 **Goal:** A headless Node.js node for Linux, Raspberry Pi, or any server.
 
@@ -122,7 +79,19 @@ A terminal node relays, carries courier mail and bridges to Nostr where phones a
 
 **Milestone:** A Raspberry Pi running Airhop CLI relays BLE packets between two mobile nodes.
 
-#### v1.5.0: Smartwatch Companions
+#### v1.2.0: Relay Hardware
+
+**Goal:** Run the relay path against real nodes.
+
+Relay support is written and simulated but has never met hardware; see [PROTOCOLS.md section 10](../spec/PROTOCOLS.md#10-relay-nodes). LoRa carries text in practice, not files or live voice, and its band is regional: 915 MHz in the US, 868 MHz in the EU.
+
+- [ ] [Bitle](https://github.com/bitleproject/bitle) firmware on the mesh: Noise XX, courier mailbox, gossip sync, and the `0xB1` relay flag read off a real announce
+- [ ] The LoRa trunk carrying messages between two nodes with no phone bridging the gap
+- [ ] The same runs against bitchat, so one deployed node serves both clients
+
+**Milestone:** A Bitle node relays between an Airhop phone and a bitchat phone, and the LoRa trunk carries traffic with no phone in between.
+
+#### v1.3.0: Smartwatch Companions
 
 **Goal:** Companion apps for Apple Watch and Wear OS, with no change to the core protocol.
 
@@ -135,11 +104,11 @@ Neither watchOS nor Wear OS lets an app run the background Bluetooth a mesh node
 
 **Milestone:** A user replies to a message and triggers a panic wipe from their wrist on both Apple Watch and Wear OS.
 
-#### v1.6.0: Desktop (macOS + Windows)
+#### v1.4.0: Desktop (macOS + Windows)
 
 **Goal:** Airhop on the desktop, macOS first.
 
-The iOS app already runs on Apple silicon Macs, as an iPad app or through Mac Catalyst, with CoreBluetooth unchanged, so the Mac starts from the same binary. `react-native-macos` trails React Native and Expo covers macOS only in part, so a native target waits until that path falls short. Wi-Fi Aware is iPhone and iPad only, so Bluetooth and LAN carry the Mac. A desktop is its own identity, as in v1.3.0. Windows follows once the Mac is stable, since WinRT needs a BLE module of its own.
+The iOS app already runs on Apple silicon Macs, as an iPad app or through Mac Catalyst, with CoreBluetooth unchanged, so the Mac starts from the same binary. `react-native-macos` trails React Native and Expo covers macOS only in part, so a native target waits until that path falls short. Wi-Fi Aware is iPhone and iPad only, so Bluetooth and LAN carry the Mac. A desktop is its own identity, as in v1.5.0. Windows follows once the Mac is stable, since WinRT needs a BLE module of its own.
 
 - [ ] The iOS app on Apple silicon Macs, as an iPad app or through Mac Catalyst
 - [ ] Bluetooth, LAN and Tor tested on the Mac, with the sandbox entitlements it needs
@@ -149,23 +118,25 @@ The iOS app already runs on Apple silicon Macs, as an iPad app or through Mac Ca
 
 **Milestone:** A Mac joins the BLE mesh alongside iOS and Android peers. Windows target scoped and in progress.
 
-#### v1.7.0: Federated Social
+#### v1.5.0: Web / Browser
 
-**Goal:** Opt-in sharing to Bluesky and Mastodon, without touching the core protocol.
+**Goal:** A Nostr-only web client that shares the TypeScript protocol core.
 
-A phone cannot be a Bluesky PDS or an ActivityPub server: both need a public, always-on HTTPS endpoint, the kind of server Airhop never runs. An Airhop key is not an AT Protocol identity either, which is a `did:plc` or `did:web` signed with secp256k1 or P-256. So Airhop acts as a client of accounts the person already has, and nothing changes for anyone who never connects one.
+A browser tab cannot advertise as a Bluetooth peripheral, so it cannot join the mesh and reaches people over Nostr only. It is its own identity rather than a mirror of a phone, since two devices answering for one identity break each other's sessions, and it holds no wallet. The browser weakens three guarantees, and the client says so: keys sit in browser storage rather than a keychain, relays see the IP because a page cannot embed Tor, and whoever serves the page serves the code.
 
-- [ ] Sign in to an existing Bluesky or Mastodon account through its own login, with the token in the keychain
-- [ ] Share your own message or board post, with a preview and a confirmation each time
-- [ ] Never other people's messages, never media, and no contact matching between Airhop and either network
+- [ ] `react-native-web` build target, with Bluetooth, Wi-Fi, LAN, Tor and voice gated behind platform checks
+- [ ] Nostr client, gift-wrap DMs and location channels working in the browser
+- [ ] A wipe that clears the keys and all history
+- [ ] Progressive Web App manifest for offline caching, served as a static bundle from a tagged release
+- [ ] The storage, Tor and serving differences stated before first use
 
-**Milestone:** A user posts their own board notice to Bluesky and Mastodon, with no server run by Airhop.
+**Milestone:** A browser tab exchanges encrypted DMs with an Airhop mobile node over Nostr.
 
-#### v1.8.0: SDK / Library
+#### v1.6.0: SDK / Library
 
 **Goal:** Publish the protocol core as a versioned package before the audit locks down the API surface.
 
-Since v1.4.0 the engine lives in `src/core/`, so it can ship on its own. Shipping it before v1.9.0 puts the public API inside the audit scope, and lets developers build bitchat-compatible apps without reimplementing Noise XX, the GCS gossip filter, Double Ratchet, or the packet codec. Other languages implement the protocol natively against the spec and its vectors rather than wrapping this one, since TypeScript does not compile to WebAssembly.
+Since v1.1.0 the engine lives in `src/core/`, so it can ship on its own. Shipping it before v1.9.0 puts the public API inside the audit scope, and lets developers build bitchat-compatible apps without reimplementing Noise XX, the GCS gossip filter, Double Ratchet, or the packet codec. Other languages implement the protocol natively against the spec and its vectors rather than wrapping this one, since TypeScript does not compile to WebAssembly.
 
 ##### SDK Packages
 
@@ -185,11 +156,40 @@ Since v1.4.0 the engine lives in `src/core/`, so it can ship on its own. Shippin
 
 **Milestone:** `@airhop/core` published on npm, and a third-party app built on it joins the mesh. Two reference custom builds ship.
 
+#### v1.7.0: AI Assistant
+
+**Goal:** An assistant that runs entirely on the phone, opt-in behind a tab of its own.
+
+Nothing typed into it leaves the phone, and it does not touch the mesh protocol, wire format or crypto layer. The one network call is the model download, held to the same internet and Tor rules as a mint call. A model can also be imported from a file or shared phone to phone, so someone with no connection can still get one. A small model can be confidently wrong, so it is a general assistant, not a source of medical advice.
+
+- [ ] Off by default: switched on in General, Features, which adds an AI tab
+- [ ] Inference through `llama.rn` (llama.cpp), built from source on both platforms, in the foreground only and released under memory pressure
+- [ ] Pinned model catalog in `src/data/`: small multilingual GGUF models chosen by an eval across the languages Airhop ships, each with its size, RAM and SHA-256
+- [ ] Download, import and share: resumable, hash-verified before the first load, refused on iOS while Tor is on
+- [ ] Device fit: a model the phone lacks the memory or storage for is shown but cannot be downloaded
+- [ ] Pure logic (device fit, context window, prompt) in `src/core/ai/`, the engine and model files in `src/services/`
+- [ ] Chat UI in `src/features/ai/`: streamed answers, stop, and history kept on the phone, cleared by the panic wipe
+- [ ] A bad answer reported by email from inside the app, since Google Play requires in-app reporting for generative AI and Airhop has no server to receive it; every answer labelled as AI-generated, as the EU AI Act requires
+
+**Milestone:** A phone gets a model once, by download or from a nearby phone, then answers questions with no connection at all while the mesh keeps running.
+
+#### v1.8.0: Federated Social
+
+**Goal:** Opt-in sharing to Bluesky and Mastodon, without touching the core protocol.
+
+A phone cannot be a Bluesky PDS or an ActivityPub server: both need a public, always-on HTTPS endpoint, the kind of server Airhop never runs. An Airhop key is not an AT Protocol identity either, which is a `did:plc` or `did:web` signed with secp256k1 or P-256. So Airhop acts as a client of accounts the person already has, and nothing changes for anyone who never connects one.
+
+- [ ] Sign in to an existing Bluesky or Mastodon account through its own login, with the token in the keychain
+- [ ] Share your own message or board post, with a preview and a confirmation each time
+- [ ] Never other people's messages, never media, and no contact matching between Airhop and either network
+
+**Milestone:** A user posts their own board notice to Bluesky and Mastodon, with no server run by Airhop.
+
 #### v1.9.0: Security Hardening
 
 **Goal:** Independent verification of every security guarantee before the v2.0.0 flagship release.
 
-This phase exists because cryptographic correctness cannot be self-certified. The Noise XX state machine, Double Ratchet ratchet steps, key storage boundaries, and packet signing paths all require external eyes before Airhop can be recommended for high-risk use. The v1.8.0 SDK packages are included in the audit scope, because a public API that ships without independent review is a liability for every downstream developer building on it. [OTF's Security Lab](https://www.opentech.fund/labs/security-lab/) funds audits of internet freedom tools and publishes the reports.
+This phase exists because cryptographic correctness cannot be self-certified. The Noise XX state machine, Double Ratchet ratchet steps, key storage boundaries, and packet signing paths all require external eyes before Airhop can be recommended for high-risk use. The v1.6.0 SDK packages are included in the audit scope, because a public API that ships without independent review is a liability for every downstream developer building on it. [OTF's Security Lab](https://www.opentech.fund/labs/security-lab/) funds audits of internet freedom tools and publishes the reports.
 
 - [ ] Engage a third-party security firm (Cure53 or equivalent) for a full cryptographic audit covering `src/core/crypto/`, packet signing, key storage, the wallet, and the public API surface of `@airhop/core`
 - [ ] Engage a second independent auditor for the BLE mesh layer, Nostr bridge, device transfer, Tor integration, and `@airhop/ble` (two firms, separate scopes)
@@ -253,7 +253,7 @@ Private communication should be understandable, not merely trusted. v2.0.0 redes
 
 - **Probability:** Low to medium. Noise, the Double Ratchet and packet signing pass their tests and a full internal security review, but nobody outside the project has audited them.
 - **Impact:** A subtle state-machine error could leak keys or break interop, and Airhop cannot yet be recommended for high-risk use.
-- **Mitigation:** Reference vectors where bitchat or the specs publish them, adversarial scenarios in the simulation ([PROGRESS.md](../dev/PROGRESS.md#security-analysis)), and two independent audits in [v1.9.0](#v190-security-hardening).
+- **Mitigation:** Reference vectors where bitchat or the specs publish them, adversarial scenarios in the simulation ([SECURITY-REVIEW.md](../dev/SECURITY-REVIEW.md#2-executive-summary)), and two independent audits in [v1.9.0](#v190-security-hardening).
 
 ## 4. Porting From bitchat
 

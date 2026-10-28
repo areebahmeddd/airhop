@@ -15,6 +15,7 @@ architectural layer.
 | `core/nostr/`    | Nostr client, NIP-59 gift-wrap, geohash relay discovery, and presence          |
 | `core/payments/` | Cashu tokens, DLEQ, proof selection, NIP-61 events, and BIP-39 seed handling   |
 | `core/router/`   | Transport selection through `PeerRegistry` and `MessageRouter`                 |
+| `core/spam/`     | The public spam filter bitchat shares: rate buckets and repetition checks      |
 | `services/`      | Runtime services including mesh, wallet, and transfer orchestration            |
 | `features/`      | Screen-level logic that connects services to the UI                            |
 | `store/`         | Zustand state slices with MMKV persistence                                     |
@@ -135,6 +136,7 @@ The test suite follows four principles:
 | `core/nostr/`    | Gift-wrap, geohash identity, relay discovery, bitchat interoperability | Live network calls (`NostrClient` mocked) |
 | `core/payments/` | Cashu BDHKE, DLEQ, proof selection, Nutzap, seed handling              | Mint connectivity                         |
 | `core/router/`   | Peer registry and transport selection                                  | Native transports                         |
+| `core/spam/`     | Rate buckets, near-copy and disguise detection, bitchat's test cases   | None                                      |
 | `i18n/`          | Catalog completeness, plural rules, right-to-left layout helpers       | None                                      |
 | `services/`      | Per-service behaviour: payments, geohash channels, transfers, policy   | Physical radios (simulated)               |
 | `store/`         | State transitions and persistence shape                                | MMKV persistence (mocked)                 |

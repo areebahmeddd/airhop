@@ -231,9 +231,8 @@ On bitchat-ios:
 ### 4.5 Relay Network
 
 - **300+ relays** worldwide (as of mid-2026).
-- The `georelays` repository tracks and geolocates all bitchat-capable relays.
-- The iOS app bundles a `nostr_relays.csv` fallback and fetches live updates from `georelays`.
-- The `GeoRelayDirectory` selects the closest relay(s) to a geohash coordinate for location channels.
+- The `georelays` repository tracks and geolocates all bitchat-capable relays. A reviewed copy lives in the bitchat repo as `relays/online_relays_gps.csv`, and both bitchat clients route by that file (`docs/GeoRelayRouting.md`).
+- The `GeoRelayDirectory` routes a location channel to the 5 relays nearest the cell plus the next 5 as warm backups, for both publishing and subscribing, with ties broken by relay URL.
 
 ### 4.6 Geohash Location Channels
 
@@ -647,10 +646,10 @@ The `bitchat/georelays` folder is a **standalone toolchain** for discovering, fi
 
 ### Automation
 
-A GitHub Actions workflow runs the full pipeline daily and commits the results. The apps fetch the latest `nostr_relays.csv` at runtime from:
+A GitHub Actions workflow runs the full pipeline daily and commits the results to `georelays`. The bitchat clients fetch the reviewed copy at runtime from:
 
 ```text
-https://raw.githubusercontent.com/permissionlesstech/georelays/refs/heads/main/nostr_relays.csv
+https://raw.githubusercontent.com/permissionlesstech/bitchat/refs/heads/main/relays/online_relays_gps.csv
 ```
 
 ### Usage in the App

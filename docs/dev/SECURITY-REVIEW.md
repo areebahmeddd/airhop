@@ -30,26 +30,50 @@
 4. Every behaviour fix carries a test that fails without it. Pure copy, comment and documentation changes are the exception.
 5. Three later rounds walked the finished branch again: a pre-merge sanity audit screen by screen, a final pass of each subsystem against its specification, and a trace of every in-chat payload through the interruptions people actually meet. Their items carry IDs that continue each area's numbering.
 
+**Threat model.** Anyone in radio range can transmit anything: forge any plaintext header field, replay captured packets, mint unlimited identities, and drop or corrupt what passes through them. They cannot break Ed25519, Noise XX, or SHA-256 preimage resistance.
+
 **Ground rules applied to every fix.** bitchat-ios wire compatibility holds; Airhop-only payloads (the Double Ratchet, geo contact cards, private channels, device transfer) may change. No code path for older Airhop builds, since only testers run them. No reinvention: existing helpers and installed libraries first, and an upstream report where the defect is upstream.
 
 ## 2. Executive summary
 
 The cryptographic primitives and the wire format were sound on arrival: the Noise XX pattern and split, low-order point rejection, decode caps, the DEFLATE ratio, the freshness window and dedup all match bitchat-ios. The defects sat in the state and wiring around them. A forged packet could permanently desynchronise the Double Ratchet. Signing-key pins, including those of verified contacts, did not survive a restart. Courier mail never opened between Airhop and bitchat-ios. A location-channel stranger could fold themselves into a friend's DM thread. A DM photo could go out in the clear. The release pipeline would have built a same-named branch instead of the tag.
 
-**Verdict.** Every High and Medium finding is fixed on the branch, except SUP-5, a repository setting the owner holds. What remains before the release is operational: a green CI run including the iOS build, and the device checks in section 9. The rebuilt native binaries are committed ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)).
+**Verdict.** Every High and Medium finding is fixed on the branch, except SUP-5, a repository setting the owner holds. What remains before the release is operational: a green CI run including the iOS build. The rebuilt native binaries are committed ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)).
+
+**Attacks run against a live mesh.** Each row is an executable scenario in `src/__tests__/simulation/` (I04 in `src/services/__tests__/move-session.test.ts`), run against isolated copies of the app over a modeled radio. "Refused" means the app rejected it and told the user nothing false while refusing. Across every scenario the harness also asserts that nothing forged renders, nothing renders twice, delivery state never runs backwards and no sat is created or destroyed.
+
+| ID   | Attack                                                                   | Outcome                                                                                                            |
+| ---- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| C08  | Forged ANNOUNCE rebinding a known peer's signing key                     | Refused at all three layers; the real key survives and still verifies                                              |
+| C14  | After a restart, an announce first as a saved contact, under another key | Everything sent in the contact's name refused; the real contact, one hop away through the attacker, still verifies |
+| C14b | Contact saved from a forged link card carrying the attacker's key        | The real peer's session proof corrects the stored key                                                              |
+| C15  | Stranger in a location DM forwards a friend's card, plain or re-signed   | Every forwarded card refused; the friend's key untouched                                                           |
+| F10  | Private-room member seals a message in another member's name             | Dropped; a copy under the victim's message ID does not displace hers                                               |
+| I04  | Someone who read the transfer code races the real old phone              | Nothing installs unless the person confirms matching words; a decline replaces the code                            |
+| S03  | Stale packet with a perfect signature, into a phone that never saw it    | Refused on age; the matched fresh copy is accepted                                                                 |
+| M07  | Recorded voice burst played out of a stranger's phone later              | Refused on freshness and not relayed; a valid signature does not make a burst live                                 |
+| S15  | 1,100 forged messages under a real peer's ID, then a latecomer syncs     | The forgeries are neither kept nor served; the latecomer gets the real peer's messages                             |
+| C11b | Genuine Double Ratchet packet replayed past dedup                        | The failed decrypt is discarded and the session kept                                                               |
+| C12  | Handshake msg1 flood under 500 random IDs                                | Pending state bounded, at most 30 answered a minute; a genuine first contact completes                             |
+| F03  | Store-and-forward carrier inspecting what it carries                     | Sealed; the carrier cannot read it                                                                                 |
+| F04  | Tor unavailable                                                          | Fails closed; never silently falls back to the clear net                                                           |
+| W24  | One real coin padded with forged ones, handed over in a dead zone        | Stored unconfirmed, never "genuine"; online the mint refuses it and none stays in the balance                      |
+| W27  | 50 nutzaps locked to the recipient's key, from forged proofs             | No Activity rows, no retries; a genuine nutzap still lands                                                         |
+| W29  | Token taken in a dead zone, then redeemed by someone else who read it    | Secured by the reconcile pass when the internet returns; the later redeemer is refused                             |
+| C06  | Phone taken, panic wipe run                                              | Nothing survives; the rest of the room carries on                                                                  |
 
 **By severity and status** (164 items):
 
-| Severity     | Items | Fixed | Fixed in part | Fixed earlier | Accepted | Owner | Blocked |
-| ------------ | ----- | ----- | ------------- | ------------- | -------- | ----- | ------- |
-| High         | 7     | 7     |               |               |          |       |         |
-| Medium       | 48    | 47    |               |               |          | 1     |         |
-| Low          | 83    | 78    | 3             |               | 1        |       | 1       |
-| Info         | 24    | 18    | 1             | 1             | 4        |       |         |
-| Not recorded | 2     | 1     |               |               |          | 1     |         |
-| **Total**    | 164   | 151   | 4             | 1             | 5        | 2     | 1       |
+| Severity     | Items | Fixed | Fixed in part | Fixed earlier | Accepted | Owner |
+| ------------ | ----- | ----- | ------------- | ------------- | -------- | ----- |
+| High         | 7     | 7     |               |               |          |       |
+| Medium       | 48    | 47    |               |               |          | 1     |
+| Low          | 83    | 79    | 3             |               | 1        |       |
+| Info         | 24    | 18    | 1             | 1             | 4        |       |
+| Not recorded | 2     | 1     |               |               |          | 1     |
+| **Total**    | 164   | 152   | 4             | 1             | 5        | 2     |
 
-Status meanings: **Fixed** (on the branch, with the commit given); **Fixed in part** (the defect is closed, and a proposed extra was declined or is blocked); **Fixed earlier** (before this pass); **Accepted** (a deliberate trade-off, section 6); **Owner** (a setting or decision outside the repository); **Blocked** (waits on an upstream release, section 7).
+Status meanings: **Fixed** (on the branch, with the commit given); **Fixed in part** (the defect is closed, and a proposed extra was declined or is blocked); **Fixed earlier** (before this pass); **Accepted** (a deliberate trade-off, section 6); **Owner** (a setting or decision outside the repository).
 
 "Not recorded" covers R-3 and R-12, whose descriptions lived only in the second review, which is no longer in the tree. The pass record lists R-3 as fixed with its parent finding and R-12 as an owner item alongside SUP-5.
 
@@ -813,11 +837,10 @@ Standing decisions: the gitignored release keystore stays where it is; `"private
 
 ## 7. Blockers and dependencies
 
-| Item                    | Waits on                                                          | State (checked 2026-09-27)                             | Then                                                                                              |
-| ----------------------- | ----------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| NET-4 local measure     | nbd-wtf/nostr-tools#560                                           | Open, unmerged; latest release 2.25.2                  | Upgrade and collapse back to one `subscribeMany`; keep the post-verify set only if #560 lacks one |
-| CRY-2 reference vectors | A macOS machine to run bitchat-ios's XCTest                       | Optional; Python `noiseprotocol` vectors are committed | Commit seal vectors produced by bitchat-ios                                                       |
-| Swift changes           | CI's iOS build (Swift is not compiled on the development machine) | Required before merge                                  | Section 9                                                                                         |
+| Item                    | Waits on                                    | State (checked 2026-09-27)                             | Then                                                                                              |
+| ----------------------- | ------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| NET-4 local measure     | nbd-wtf/nostr-tools#560                     | Open, unmerged; latest release 2.25.2                  | Upgrade and collapse back to one `subscribeMany`; keep the post-verify set only if #560 lacks one |
+| CRY-2 reference vectors | A macOS machine to run bitchat-ios's XCTest | Optional; Python `noiseprotocol` vectors are committed | Commit seal vectors produced by bitchat-ios                                                       |
 
 ## 8. bitchat-ios upstream findings
 
@@ -837,59 +860,3 @@ Gaps found in bitchat-ios while using it as the reference. None is accommodated;
 | The relay URL check accepts hex and octal IPv4                                                                                                                           | Refused (NET-13)                                                       | Info     |
 
 For the record only, bitchat-android: the 256-fragment cap (permissionlesstech/bitchat-android#940) and sync replies without `IS_RSR`, both refused by bitchat-ios as well.
-
-**Drafted, not filed.** Every item above except the geocoder note, to permissionlesstech/bitchat, with CRY-4 also to bitchat-android as a courtesy. Also drafted: a comment on nbd-wtf/nostr-tools#560 with Airhop's reproduction (not a duplicate issue); an issue on tladesignz/IPtProxy asking for 5.5.2 with the raised pion and x/text minimums and the govulncheck output; a request on the Snowflake GitLab for a v2.14.2 tag from `main`, which already carries the fixes.
-
-## 9. Owner actions
-
-### Device checks
-
-**Tor and network**
-
-- Android with Tor on, with each of Direct, obfs4 and Snowflake: bootstrap reaches a circuit; LAN and Wi-Fi Aware link up and carry a photo, and a phone transfer completes (plain sockets stay direct); the APK update download goes through Tor; a held route fails fast instead of hanging.
-- iOS with Tor on: a start shows "starting", not "could not connect"; a Snowflake bootstrap slower than 75 s still opens the relays.
-- Crash during Tor start: kill the app mid-start and relaunch. Tor stays on, the internet stays paused, the Mesh banner opens the Tor screen, and Try again recovers.
-- A refused bridge change and a refused Try again both leave Tor on and held.
-- R-13: with Tor on, check whether an `HttpURLConnection` request resolves DNS at the exit.
-
-**Transports**
-
-- Wi-Fi Aware on the Samsung testers (S21, S22+, S25 Ultra): links come up as before. Watch Diagnostics for "Refused inbound on", "Inbound interface unknown, accepting" and "unsolicited hello".
-- iOS LAN: two iPhones on one Wi-Fi link; two on different networks no longer see each other (AWDL off); a transfer over Personal Hotspot works.
-
-**Identity, launch and transfer**
-
-- Transfer: both phones show the same six words, in the same order on a right-to-left phone; it works over each phone's hotspot and over USB tethering; a code carrying a non-local address fails with "same Wi-Fi".
-- iOS launch before first unlock (R-8): a background relaunch shows the keys screen, the app boots normally once unlocked, and the Wallet tab opens without a force-quit.
-
-**Messaging and courier**
-
-- A DM written to an absent contact with nobody near is taken by the next phone that walks up and delivered.
-- A DM photo to a peer with no session starts the handshake and goes sealed.
-
-**Live voice**
-
-- On both platforms the last word of a live burst is heard, and two people talking back to back both come through.
-- A playing voice note pauses when someone starts talking.
-
-**Wallet**
-
-- A token received with Wi-Fi off confirms on its own after reconnecting, including by turning the internet switch back on.
-- A refused receipt's Copy button works, in both themes and right to left.
-- A "Locked" label shows for a token locked to someone else.
-- A nutzap to an NDK-based wallet locks rather than falling back to a token.
-
-**bitchat-ios interop**
-
-- DMs, courier mail (both prologues) and sync in both directions, board posts included.
-- `#city` presence counted on both phones.
-- A three-hop chain and a dense room of six or more phones carrying text, live voice and a photo.
-- A private photo and a voice note reach delivered in both directions.
-
-### Later
-
-- Collapse the per-relay Nostr subscriptions once a nostr-tools release carries #560.
-- SUP-14 dashboard items: DNSSEC (Cloudflare, then the DS record at Namecheap), a CAA record, NEL off, Bot Fight Mode off. HSTS preload only as an organisation-wide decision.
-- Immutable releases (needs draft-then-publish), and a strict landing `style-src` alongside other landing work.
-- bitchat-ios's 30-day rotation of unconsumed prekeys.
-- File the upstream notes in section 8.
