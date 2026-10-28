@@ -28,6 +28,7 @@ import {
 import { getMeshService, type MeshService } from "@services/mesh-service";
 import AppModal from "@ui/components/app-modal";
 import PrimaryButton from "@ui/components/primary-button";
+import RingAlertSheet from "@ui/components/ring-alert-sheet";
 import UpperText from "@ui/components/upper-text";
 import {
   FontSize,
@@ -240,13 +241,18 @@ export default function LiveVideoStudio({
     return () => sub.remove();
   }, []);
 
-  // The camera is released whenever the studio closes or goes away, and a
-  // stream still live then ends with END rather than being left running.
+  // The camera is released whenever the studio closes or goes away. A stream
+  // still live then ends with END and its recording is still handed back: the
+  // thread can go from under a live studio, as when a ring is answered.
   useEffect(() => {
     if (!visible) return;
     return () => {
       if (phaseRef.current === "live" || phaseRef.current === "starting") {
-        void getMeshService()?.stopLiveVideo(false);
+        void getMeshService()
+          ?.stopLiveVideo(false)
+          .then((recording) => {
+            if (recording !== null) callbacks.current.onFinished(recording);
+          });
       }
       void LiveVideoSendSession.closeCamera();
     };
@@ -459,6 +465,7 @@ export default function LiveVideoStudio({
           )}
         </View>
       </SafeAreaView>
+      <RingAlertSheet />
     </AppModal>
   );
 }
