@@ -212,6 +212,7 @@ import {
   publicCharsLeft,
 } from "./compose-budget";
 import ContactInfoSheet from "./contact-info-sheet";
+import { dmReachesOverInternet } from "./dm-reaches-over-internet";
 import ForwardSheet from "./forward-sheet";
 import MessageActionSheet from "./message-action-sheet";
 import MessageBubble from "./message-bubble";
@@ -1609,16 +1610,16 @@ export default function MessageThread({
     dmPeerID !== null && onlinePeers.some((p) => p.peerID === dmPeerID);
   // Whether this DM can still be delivered when the peer is not nearby: either
   // they are a Nostr-only correspondent, or we hold their durable
-  // Nostr pubkey (from a v2 QR card or a past ANNOUNCE). Drives honest banner
-  // copy: an offline peer we can still reach over the internet must not be shown
-  // the same "we'll deliver when they're nearby" line as an unreachable one.
+  // Nostr pubkey (from a v2 QR card or a past ANNOUNCE), and a relay is live.
+  // Drives honest banner copy: an offline peer we can still reach over the
+  // internet must not be shown the same "we'll deliver when they're nearby"
+  // line as an unreachable one, nor the reverse.
   const dmContactNostr = useContactsStore((s) =>
     dmPeerID !== null ? s.contacts[dmPeerID]?.nostrPubkeyHex : undefined,
   );
   const dmInternetReachable =
     dmPeerID !== null &&
-    (dmPeerID.startsWith("nostr_") ||
-      (dmContactNostr !== undefined && dmContactNostr.length > 0));
+    dmReachesOverInternet(dmPeerID, dmContactNostr, nostrConnected);
   // A contact we hold NO keys for: added from a bare peer ID (typed, pasted, or
   // an airhop://peer link) and never met.
   //

@@ -872,13 +872,12 @@ export class GeohashChannelService {
   }
 
   // Send an end-to-end encrypted DM to a participant's per-geohash pubkey, from
-  // our own per-geohash identity for that cell. Returns false if the content is
-  // too long for one PrivateMessagePacket.
+  // our own per-geohash identity for that cell. Returns false when no relay is
+  // live or the content is too long for one PrivateMessagePacket, as the main
+  // identity's DM path does, so the caller's outbox keeps it queued.
   //
-  // True is optimistic, as for any Nostr DM: no relay has answered yet. If none
-  // accepts it, the message is parked in the outbox under the same keys a
-  // Nostr-only send queues with, so the retry sweep routes it back here and the
-  // bubble resolves through the outbox rather than claiming a send that died.
+  // True is optimistic, as for any Nostr DM: no relay has answered yet.
+  // `onRelayAnswer` hears whether one accepted it.
   //
   // The envelope carries a random sender ID and no recipient, never our mesh
   // peer ID, matching bitchat. That ID does not rotate per cell, so it would let
@@ -888,23 +887,12 @@ export class GeohashChannelService {
     recipientPubkey: string,
     messageID: string,
     text: string,
-    queuedAtMs = Date.now(),
+    onRelayAnswer?: (accepted: boolean) => void,
   ): boolean {
+    if (!this.client.isConnected) return false;
     const envelope = encodeBitchatDmEnvelope(null, null, messageID, text);
     if (envelope === null) return false;
-    this.publishGeoWrap(geohash, recipientPubkey, envelope, () => {
-      const recipientPeerID = `nostr_${recipientPubkey}`;
-      const evicted = useOutboxStore.getState().enqueue({
-        id: messageID,
-        recipientPeerID,
-        channel: `dm:${recipientPeerID}`,
-        text,
-        createdAtMs: queuedAtMs,
-      });
-      for (const msg of evicted) {
-        useChatStore.getState().setMessageStatus(msg.channel, msg.id, "failed");
-      }
-    });
+    this.publishGeoWrap(geohash, recipientPubkey, envelope, onRelayAnswer);
     this.registerGeoDmPeer(recipientPubkey, geohash);
     return true;
   }
@@ -936,7 +924,9 @@ export class GeohashChannelService {
       geohash,
       recipientPubkey,
       encodeBitchatCardEnvelope(null, null, card),
-      onRejected,
+      (accepted) => {
+        if (!accepted) onRejected?.();
+      },
     );
     this.registerGeoDmPeer(recipientPubkey, geohash);
   }
@@ -969,17 +959,20 @@ export class GeohashChannelService {
 
   // Gift-wrap `envelope` from our per-cell identity to `recipientPubkey` and
   // publish it to the default relays (matching bitchat's geo-DM transport).
-  // `onRejected` runs when no relay accepted it; receipts pass none, since a
+  // `onAnswer` hears whether any relay accepted it; receipts pass none, since a
   // lost one has nothing to retry.
   private publishGeoWrap(
     geohash: string,
     recipientPubkey: string,
     envelope: string,
-    onRejected?: () => void,
+    onAnswer?: (accepted: boolean) => void,
   ): void {
     const identity = this.identityFor(geohash);
     const { event } = wrapDm(envelope, identity.privKey, recipientPubkey);
-    void this.client.publish(event).catch(() => onRejected?.());
+    void this.client.publish(event).then(
+      () => onAnswer?.(true),
+      () => onAnswer?.(false),
+    );
   }
 
   // Handle an inbound gift wrap on a cell's DM inbox.
@@ -1020,16 +1013,19 @@ export class GeohashChannelService {
       this.registerGeoDmPeer(dm.senderPubkey, geohash);
     }
 
+    // A receipt is what the outbox entry waits for, as on every DM transport.
     if (env.type === NoisePayloadType.DELIVERED) {
       useChatStore
         .getState()
         .setMessageStatus(channel, env.messageID, "delivered", Date.now());
+      useOutboxStore.getState().resolve(env.messageID);
       return;
     }
     if (env.type === NoisePayloadType.READ_RECEIPT) {
       useChatStore
         .getState()
         .setMessageStatus(channel, env.messageID, "read", Date.now());
+      useOutboxStore.getState().resolve(env.messageID);
       return;
     }
     // They chose to tell us who they durably are. Accepting it is what turns a

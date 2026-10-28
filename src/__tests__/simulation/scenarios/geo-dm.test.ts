@@ -30,6 +30,7 @@ import {
 } from "@core/nostr/geohash-identity";
 import { unwrapDm } from "@core/nostr/gift-wrap";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { ATTEMPT_MIN_INTERVAL_MS } from "@store/outbox-store";
 import { SimDevice } from "../harness/device";
 import { noCrashes } from "../harness/invariants";
 import { RadioFabric } from "../harness/radio-fabric";
@@ -93,7 +94,6 @@ test("G01 a geohash DM retried from the outbox still leaves from the cell identi
 
   const mesh = alice.mesh as unknown as {
     publishNostrDm: (...args: unknown[]) => boolean;
-    flushOutbox: (peerID: string) => void;
   };
   let mainIdentitySends = 0;
   const publishNostrDm = mesh.publishNostrDm.bind(mesh);
@@ -103,21 +103,36 @@ test("G01 a geohash DM retried from the outbox still leaves from the cell identi
   };
   const pending = (): { id: string }[] =>
     alice.store("outboxStore").getState().pending as { id: string }[];
+  const status = (): string | undefined =>
+    alice.messages(`dm:${thread}`).find((m) => m.text === "meet at the plaza")
+      ?.status;
 
   // No relay acknowledges it, so it is parked for the retry sweep.
   relay.setAllRelayConditions({ withholdOk: true });
-  alice.sendDm(thread, "meet at the plaza", "g01-msg");
-  const parked = await waitForCoarse(
+  alice.send(`dm:${thread}`, "meet at the plaza");
+  const refused = await waitForCoarse(
     s.world,
-    () => pending().some((m) => m.id === "g01-msg"),
+    () => status() === "queued",
     30_000,
   );
-  s.check("the refused DM waits in the outbox", parked);
+  s.check(
+    "the refused DM's bubble goes back to queued",
+    refused,
+    `status=${String(status())}`,
+  );
+  const msgID = alice
+    .messages(`dm:${thread}`)
+    .find((m) => m.text === "meet at the plaza")?.id;
+  s.check(
+    "the refused DM waits in the outbox",
+    pending().some((m) => m.id === msgID),
+  );
 
+  // Nothing announces that the relays would now take it: the outbox sweep
+  // retries it once the resend spacing has passed.
   relay.setAllRelayConditions({ withholdOk: false });
   const before = relay.eventsOfKind(GIFT_WRAP_KIND).length;
-  mesh.flushOutbox(thread);
-  await s.world.advance(5_000);
+  await s.world.advance(ATTEMPT_MIN_INTERVAL_MS + 60_000);
 
   const retried = relay
     .eventsOfKind(GIFT_WRAP_KIND)
@@ -142,9 +157,10 @@ test("G01 a geohash DM retried from the outbox still leaves from the cell identi
     `sends=${String(mainIdentitySends)}`,
   );
   s.check(
-    "a retry that went out leaves the queue",
-    !pending().some((m) => m.id === "g01-msg"),
+    "a retry a relay took waits in the queue for the stranger's receipt",
+    pending().some((m) => m.id === msgID),
   );
+  s.check("and its bubble is ticked again", status() === "sent");
 
   s.expectNone("process health", noCrashes([alice]));
   s.assert(true);

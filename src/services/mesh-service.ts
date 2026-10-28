@@ -241,6 +241,7 @@ import { groupChannel, useGroupStore } from "@store/group-store";
 import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import {
+  nostrResendDue,
   OUTBOX_TTL_MS,
   useOutboxStore,
   type PendingMessage,
@@ -300,14 +301,12 @@ import { WiFiPairingWatcher } from "./wifi-pairing-service";
 // receive DR_ENCRYPTED packets.
 const DR_SEED_INFO = new TextEncoder().encode("airhop-dr-seed-v1");
 
-// How often to sweep the outbox for queued DMs that can now go over Nostr.
-// Slow on purpose: it is a safety net behind the event-driven flush, not the
-// primary delivery path, so it stays cheap and never spams relays.
+// The outbox sweep: expire what aged out, retry what is due over relays. A
+// safety net behind the event-driven flush; nostrResendDue paces each message.
 const OUTBOX_SWEEP_INTERVAL_MS = 45_000;
 
-// Floor between outbox retries, however many events ask for one. Retries are
-// event-driven now, and events arrive in bursts: a foreground round trip alone
-// raises several.
+// Floor between event-driven outbox retries, however many events ask for one.
+// Events arrive in bursts: a foreground round trip alone raises several.
 const OUTBOX_RETRY_MIN_INTERVAL_MS = 10_000;
 
 // bitchat-ios scheduleInitialSyncToPeer's delay for a new direct peer.
@@ -609,11 +608,7 @@ export class MeshService {
   // Unsubscribe for the contacts-store listener that binds a peer's durable
   // Nostr pubkey from the registry when a contact is created.
   private contactsUnsub: (() => void) | null = null;
-  // Periodic sweep that retries queued DMs over Nostr for recipients the mesh
-  // can no longer promptly reach. Mirrors bitchat's retryBridgeCourierDeposits:
-  // a peer stays "reachable" for a minute after its radio disappears, so the
-  // original send trusted the mesh and never tried the internet, and nothing
-  // else retried it. Null when the service is stopped.
+  // Null when the service is stopped.
   private outboxSweepTimer: ReturnType<typeof setInterval> | null = null;
   private lastOutboxRetryMs = 0;
   private outboxRetryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1193,13 +1188,11 @@ export class MeshService {
       // A grant flipped, or a contact holding one was removed.
       this.reproveRingGrants();
     });
-    // Retry queued DMs over the internet on a slow cadence. flushOutbox routes
-    // through trySendDm, whose Nostr tier uses the durable contact npub, so a
-    // message parked for someone who has left Bluetooth range gets delivered
-    // once we have their npub and relays are up, without waiting for them to
-    // reappear on BLE (the only trigger that existed before).
+    // No event says a relay refused a DM or that a peer left Bluetooth range,
+    // so without this timer both would wait for an unrelated foreground.
     this.outboxSweepTimer = setInterval(() => {
       this.expireQueuedMail();
+      this.retryDueOverRelays();
       this.refreshCourierDropsIfDayChanged();
       // The only reaper that runs without a new handshake to store, which a
       // pair stranded by a lost msg3 never has.
@@ -3301,21 +3294,18 @@ export class MeshService {
         useChatStore
           .getState()
           .setMessageStatus(channel, messageId, "delivered", Date.now());
-        // The recipient has it, so stop owing it to them. This is the
-        // acknowledgement the outbox has been waiting for: without it, a
-        // message delivered by a blind flood would be retried on every sweep
-        // until it aged out a week later.
-        useOutboxStore.getState().resolve(messageId);
-        this.courieredTo.delete(messageId);
+        this.resolveAcknowledged(messageId);
       }
       return;
     }
     if (payload.type === NoisePayloadType.READ_RECEIPT) {
       const messageId = new TextDecoder().decode(payload.body);
-      if (messageId)
+      if (messageId) {
         useChatStore
           .getState()
           .setMessageStatus(channel, messageId, "read", Date.now());
+        this.resolveAcknowledged(messageId);
+      }
       return;
     }
     if (
@@ -3426,15 +3416,14 @@ export class MeshService {
       useChatStore
         .getState()
         .setMessageStatus(channel, payload.messageId, "delivered", Date.now());
-      // Acknowledged, so stop owing it. Same rule on every transport.
-      useOutboxStore.getState().resolve(payload.messageId);
-      this.courieredTo.delete(payload.messageId);
+      this.resolveAcknowledged(payload.messageId);
       return;
     }
     if (payload.type === DmPayloadType.READ_RECEIPT) {
       useChatStore
         .getState()
         .setMessageStatus(channel, payload.messageId, "read", Date.now());
+      this.resolveAcknowledged(payload.messageId);
       return;
     }
 
@@ -6225,70 +6214,42 @@ export class MeshService {
     // A stable id for this message, reused across the mesh envelope, the outbox,
     // and any retry, so a delivery receipt can always be matched to it.
     const msgID = messageID ?? newMessageId();
+
+    // Queued before anything goes out, so a fast receipt cannot beat its entry,
+    // and kept until a receipt: "sent" only means it left the device. A flood
+    // has no ack, a session can be stale, and a relay may hold it for days. A
+    // retry reuses the message id, and the recipient collapses the duplicate.
+    this.enqueueOutbox({
+      id: msgID,
+      recipientPeerID,
+      channel: `dm:${recipientPeerID}`,
+      text,
+      createdAtMs: Date.now(),
+    });
+
     // A Nostr-only correspondent (we've never heard their ANNOUNCE, so we have
     // no peerID for them). There is no mesh route to look up, so reply over the
-    // same transport their message arrived on.
+    // same transport their message arrived on. With no relay live it waits in
+    // the outbox; a Nostr-only peer has no mesh key, so nothing can courier
+    // it: it is queued, not carried.
     if (recipientPeerID.startsWith("nostr_")) {
-      if (this.sendToNostrPeer(recipientPeerID, msgID, text)) {
-        return "sent-nostr";
-      }
-      // Offline: queue it, keyed by the same identifier so a later flush
-      // resolves to this branch again once relays are reachable. A Nostr-only
-      // peer has no mesh key, so nothing can courier it: it is queued, not
-      // carried.
-      this.enqueueOutbox({
-        id: msgID,
-        recipientPeerID,
-        channel: `dm:${recipientPeerID}`,
-        text,
-        createdAtMs: Date.now(),
-      });
-      return "queued";
+      return this.sendToNostrPeer(recipientPeerID, msgID, text)
+        ? "sent-nostr"
+        : "queued";
     }
 
-    // Whether the mesh could deliver this without guessing. A flood has no
-    // acknowledgement, so "we sent it into the mesh" and "they got it" are not
-    // the same claim.
     const result = this.trySendDm(recipientPeerID, text, msgID);
-
-    // "sent" means it left the device, not that they have it. A flood at TTL 7
-    // has nothing to acknowledge it, and even a direct link can carry a packet
-    // sealed under a session the other side no longer holds: a peer whose app
-    // was killed, or whose phone died, comes back with no session and drops
-    // the message silently until the next handshake. So every mesh send stays
-    // queued until a delivery receipt resolves it. A retry reuses the message
-    // id and the recipient collapses the duplicate, which is the same dedupe
-    // the courier path relies on.
-    if (result === "handshaking" || result === "sent") {
-      this.enqueueOutbox({
-        id: msgID,
-        recipientPeerID,
-        channel: `dm:${recipientPeerID}`,
-        text,
-        createdAtMs: Date.now(),
-      });
-    }
     if (result === "handshaking") return "queued";
 
     if (result === "needs-courier") {
-      // No direct route. Hand a sealed copy to the mesh so any peer that meets
-      // the recipient can deliver it, AND keep our own copy queued in case they
-      // simply walk back to us. The two paths are complementary, and the
-      // recipient dedupes by message id if both arrive.
-      const carried = this.sendViaCourier(recipientPeerID, text, msgID);
-      // Genuinely queue it. Dropping it here while the UI says "queued for
-      // delivery" loses the message for good, even if the peer reappears
-      // moments later.
-      this.enqueueOutbox({
-        id: msgID,
-        recipientPeerID,
-        channel: `dm:${recipientPeerID}`,
-        text,
-        createdAtMs: Date.now(),
-      });
-      // "carried" only when a courier actually took a sealed copy (we hold the
-      // recipient's Noise key); otherwise it is merely queued locally.
-      return carried ? "needs-courier" : "queued";
+      // No route now. Hand a sealed copy to the mesh so any peer that meets the
+      // recipient can deliver it, beside our own queued copy in case they
+      // simply walk back to us. The recipient dedupes by message id if both
+      // arrive. "carried" only when a courier actually took a sealed copy (we
+      // hold the recipient's Noise key); otherwise it is merely queued.
+      return this.sendViaCourier(recipientPeerID, text, msgID)
+        ? "needs-courier"
+        : "queued";
     }
     return result;
   }
@@ -6301,39 +6262,32 @@ export class MeshService {
   // The cell is read from the store, not through geoChannels, so a geohash-DM
   // peer waits for that service rather than falling to the main identity,
   // which would tie our npub and peer ID to the per-cell pseudonym.
-  //
-  // `queuedAtMs` is when the message first entered the outbox. A relay that
-  // refuses it re-queues it under that time, so a message relays always refuse
-  // still expires rather than being re-dated on every retry.
   private sendToNostrPeer(
     recipientPeerID: string,
     msgID: string,
     text: string,
-    queuedAtMs = Date.now(),
   ): boolean {
     const pubkey = recipientPeerID.slice("nostr_".length);
     const geohash = useChatStore.getState().geoDmCells[pubkey];
-    if (geohash !== undefined) {
-      return (
-        this.geoChannels?.sendGeoDm(geohash, pubkey, msgID, text, queuedAtMs) ??
-        false
-      );
-    }
-    return this.publishNostrDm(
-      pubkey,
-      msgID,
-      text,
-      recipientPeerID,
-      queuedAtMs,
-    );
+    if (geohash === undefined) return this.publishNostrDm(pubkey, msgID, text);
+    const sent =
+      this.geoChannels?.sendGeoDm(geohash, pubkey, msgID, text, (accepted) =>
+        this.onRelayAnswer(msgID, accepted),
+      ) ?? false;
+    if (sent) useOutboxStore.getState().markNostrSent(msgID);
+    return sent;
   }
 
   // Attempt delivery over the best available transport, without queueing.
   // Never for a `nostr_` recipient: those go through sendToNostrPeer.
+  //
+  // `allowNostr` false skips the relay tier: a flush passes it for a message
+  // whose relay copy is not yet due again (nostrResendDue).
   private trySendDm(
     recipientPeerID: string,
     text: string,
     msgID: string,
+    allowNostr = true,
   ): "sent" | "sent-nostr" | "needs-courier" | "handshaking" {
     // Priority 1: Double Ratchet over a direct link (Airhop-to-Airhop only).
     // DR adds per-message forward secrecy on top of the Noise transport. Every
@@ -6403,7 +6357,7 @@ export class MeshService {
       //
       // The caller enqueues on this, and the outbox is the only copy: a
       // completed handshake flushes it (tryInitDR), a stuck one leaves it for
-      // the sweep. One copy is what lets a reclaimed payment or a deleted
+      // the next flush. One copy is what lets a reclaimed payment or a deleted
       // message stay unsent once the session forms.
       return "handshaking";
     }
@@ -6428,30 +6382,34 @@ export class MeshService {
     }
 
     // Priority 4: Nostr gift-wrap DM over the internet, for a peer no radio
-    // reaches. The DURABLE contact npub first: it came from a card or from an
-    // announce whose key was vouched for, where the registry's is whatever the
-    // last announce claimed. It is also the whole point: reach someone the
-    // registry has already forgotten (they left Bluetooth range, or we met them
-    // only by QR and never over BLE at all). Doing this here, in the service
-    // layer, is what makes both a first send and an outbox flush use the
-    // internet fallback, since the router only ever sees the ephemeral registry.
-    const contactNpub = useContactsStore
-      .getState()
-      .getContact(recipientPeerID)?.nostrPubkeyHex;
-    const nostrPubkey =
-      contactNpub !== undefined && contactNpub.length > 0
-        ? contactNpub
-        : this.registry.nostrPubkeyFor(recipientPeerID);
+    // reaches. Doing this here, in the service layer, is what makes both a
+    // first send and an outbox flush use the internet fallback, since the
+    // router only ever sees the ephemeral registry.
+    const nostrPubkey = allowNostr
+      ? this.nostrAddressFor(recipientPeerID)
+      : undefined;
     if (
       nostrPubkey !== undefined &&
-      nostrPubkey.length > 0 &&
-      this.publishNostrDm(nostrPubkey, msgID, text, recipientPeerID)
+      this.publishNostrDm(nostrPubkey, msgID, text)
     ) {
       return "sent-nostr";
     }
 
     // Priority 5: nothing reached them now, so hand it to the courier layer.
     return "needs-courier";
+  }
+
+  // The npub a DM to `peerID` is gift-wrapped to. The contact's first: it was
+  // vouched for, and it reaches someone the registry has already forgotten.
+  private nostrAddressFor(peerID: string): string | undefined {
+    const contactNpub = useContactsStore
+      .getState()
+      .getContact(peerID)?.nostrPubkeyHex;
+    const npub =
+      contactNpub !== undefined && contactNpub.length > 0
+        ? contactNpub
+        : this.registry.nostrPubkeyFor(peerID);
+    return npub !== undefined && npub.length > 0 ? npub : undefined;
   }
 
   // Publish a gift-wrapped DM to relays, wrapped in bitchat's `bitchat1:`
@@ -6466,12 +6424,13 @@ export class MeshService {
   // leaves the bubble ticked for a message still on this phone. The outbox
   // publishes it when a relay connects, as bitchat-ios does
   // (NostrTransport.canDeliverPromptly).
+  //
+  // True is optimistic: no relay has answered yet. The answer lands on the
+  // outbox entry the caller queued (onRelayAnswer).
   private publishNostrDm(
     recipientPubkeyHex: string,
     messageID: string,
     text: string,
-    outboxPeerID?: string,
-    queuedAtMs = Date.now(),
   ): boolean {
     if (this.nostrClient === null || !this.relaysConnected) return false;
     // No embedded recipient peer ID: we only know the Nostr pubkey, not the
@@ -6484,23 +6443,26 @@ export class MeshService {
     );
     if (envelope === null) return false;
     const { event } = wrapDm(envelope, this.nostrPrivKey, recipientPubkeyHex);
-    void this.nostrClient.publish(event).catch(() => {
-      // No relay accepted it (all rejected, or timed out with no ACK). We
-      // already returned an optimistic "sent-nostr", so park it in the outbox
-      // for the internet-retry sweep instead of losing it. On success this
-      // never runs, so a delivered message is not re-queued; the receiver
-      // dedupes by message id if a later resend does land twice.
-      if (outboxPeerID !== undefined) {
-        this.enqueueOutbox({
-          id: messageID,
-          recipientPeerID: outboxPeerID,
-          channel: `dm:${outboxPeerID}`,
-          text,
-          createdAtMs: queuedAtMs,
-        });
-      }
-    });
+    useOutboxStore.getState().markNostrSent(messageID);
+    void this.nostrClient.publish(event).then(
+      () => this.onRelayAnswer(messageID, true),
+      () => this.onRelayAnswer(messageID, false),
+    );
     return true;
+  }
+
+  // Accepted: the entry waits for its receipt, spared the attempt cap and the
+  // failed state, since the recipient can fetch it later. Refused by every
+  // relay: back to the hourglass, unless an earlier copy is still on a relay.
+  private onRelayAnswer(messageID: string, accepted: boolean): void {
+    const outbox = useOutboxStore.getState();
+    if (accepted) {
+      outbox.markRelayAccepted(messageID);
+      return;
+    }
+    const msg = outbox.pending.find((m) => m.id === messageID);
+    if (msg === undefined || msg.relayAccepted === true) return;
+    useChatStore.getState().setMessageStatus(msg.channel, msg.id, "queued");
   }
 
   // Publish a delivery/read receipt for a Nostr DM back to the sender's pubkey,
@@ -6785,6 +6747,10 @@ export class MeshService {
   // shape the outbox exists to prevent. A message that is never going out has
   // to say so, the same way a refused send does, so the user can decide to try
   // another way.
+  //
+  // Except a message a relay accepted. It did go out, the recipient may have
+  // fetched it with only the receipt lost (bitchat drops a duplicate it has
+  // already acknowledged without acknowledging again), so it keeps its tick.
   private reportDroppedMail(dropped: PendingMessage[]): void {
     // Anything leaving the queue takes its courier record with it, so the map
     // cannot grow for the life of the process.
@@ -6792,8 +6758,17 @@ export class MeshService {
     if (dropped.length === 0) return;
     const chat = useChatStore.getState();
     for (const msg of dropped) {
+      if (msg.relayAccepted === true) continue;
       chat.setMessageStatus(msg.channel, msg.id, "failed");
     }
+  }
+
+  // A delivery or read receipt, over any transport, settles the entry. A read
+  // counts too, as in bitchat-ios, since a lost DELIVERED leaves it the only
+  // proof.
+  private resolveAcknowledged(messageID: string): void {
+    useOutboxStore.getState().resolve(messageID);
+    this.courieredTo.delete(messageID);
   }
 
   // Offer every queued DM for a recipient out of reach to whatever carriers
@@ -6822,22 +6797,27 @@ export class MeshService {
     const queued = outbox.forPeer(peerID);
     if (queued.length === 0) return;
 
+    const now = Date.now();
     for (const msg of queued) {
       // Reuse the queued id so the retried send keeps the same message id, and
       // a delivery receipt still lands on the original bubble.
+      //
+      // A relay copy is paced (nostrResendDue): one a relay holds stays
+      // fetchable, so republishing it on every announce or sweep would only
+      // spam relays. The mesh tiers are not paced, so a recipient who walks
+      // into range still gets it over the radio.
+      const nostrDue = nostrResendDue(msg, now);
       if (peerID.startsWith("nostr_")) {
-        // As sendDm treats a first send: out means resolved, and a relay that
-        // then refuses it queues it again. Nothing left the device otherwise,
-        // so that is not an attempt, and the rest of the batch fares the same.
-        if (!this.sendToNostrPeer(peerID, msg.id, msg.text, msg.createdAtMs)) {
-          break;
-        }
-        outbox.resolve(msg.id);
+        // Relays are the only route to a Nostr-only peer. Not an attempt
+        // either way: a relay is not a route that acknowledges, and when none
+        // is live the rest of the batch fares the same.
+        if (!nostrDue) continue;
+        if (!this.sendToNostrPeer(peerID, msg.id, msg.text)) break;
         useChatStore.getState().setMessageStatus(msg.channel, msg.id, "sent");
         continue;
       }
       const hadDirectLink = this.links.hasPeer(peerID);
-      const result = this.trySendDm(peerID, msg.text, msg.id);
+      const result = this.trySendDm(peerID, msg.text, msg.id, nostrDue);
       // Keep it queued, recording the attempt, whenever the retry did not
       // establish delivery:
       //
@@ -6851,6 +6831,13 @@ export class MeshService {
       // A delivery receipt is what clears it.
       if (result === "handshaking" || (result === "sent" && !hadDirectLink)) {
         outbox.markAttempted(msg.id);
+        continue;
+      }
+      if (result === "needs-courier" && !nostrDue) {
+        // The mesh does not reach them and a relay copy is out, so there is
+        // nothing to do until it is due again. No courier copy either, as a
+        // first send that reached a relay takes none: it would only park a
+        // second copy on the relays.
         continue;
       }
       if (result === "needs-courier") {
@@ -6890,11 +6877,13 @@ export class MeshService {
       // ready yet, and be dropped with nothing to say so. Resolving here would
       // make that loss permanent.
       //
-      // A DELIVERED receipt clears the entry (see the three receipt handlers),
-      // and every retry reuses the same message id, so a redundant resend
-      // collapses on the recipient rather than showing twice. Anything never
-      // acknowledged ages out of the queue after OUTBOX_TTL_MS.
-      outbox.markAttempted(msg.id);
+      // A receipt clears the entry (see resolveAcknowledged), and every retry
+      // reuses the same message id, so a redundant resend collapses on the
+      // recipient rather than showing twice. Anything never acknowledged ages
+      // out of the queue after OUTBOX_TTL_MS.
+      //
+      // A relay copy is not charged: see MAX_SEND_ATTEMPTS.
+      if (result === "sent") outbox.markAttempted(msg.id);
     }
   }
 
@@ -6915,8 +6904,8 @@ export class MeshService {
   //
   // bitchat separates these too (cleanupExpiredMessages vs flushOutbox), and the
   // separation is what makes an attempt mean something. A timer that re-sends
-  // manufactures "attempts" out of elapsed time, shrinking a seven-day queue to
-  // minutes and re-flooding an unreachable peer without end.
+  // over the radio manufactures "attempts" out of elapsed time, shrinking a
+  // seven-day queue to minutes and re-flooding an unreachable peer without end.
   private expireQueuedMail(): void {
     const outbox = useOutboxStore.getState();
     const dropped = outbox.evictExpired();
@@ -6924,14 +6913,43 @@ export class MeshService {
     this.reportDroppedMail(dropped);
   }
 
+  // The timer half of the internet retry: mail whose relay copy is due again
+  // (nostrResendDue), for peers the mesh does not reach. Nothing else fires
+  // when every relay refused a DM, or when the peer a mesh copy went to has
+  // left range, so without it that mail waits for an unrelated foreground or
+  // reconnect. bitchat-ios runs the same kind of sweep for its relay deposits
+  // (MessageRouter.startBridgeDepositSweep).
+  //
+  // Relay sends only. A peer the mesh reaches is flushed by its own announces,
+  // and leaving it out keeps the timer from charging a radio attempt
+  // (MAX_SEND_ATTEMPTS). A peer with no npub has no relay route, so a sweep
+  // with nothing due touches nothing.
+  private retryDueOverRelays(): void {
+    if (!this.relaysConnected) return;
+    const now = Date.now();
+    const due = new Set<string>();
+    for (const msg of useOutboxStore.getState().pending) {
+      const peerID = msg.recipientPeerID;
+      if (due.has(peerID) || !nostrResendDue(msg, now)) continue;
+      if (this.registry.isReachable(peerID)) continue;
+      if (
+        !peerID.startsWith("nostr_") &&
+        this.nostrAddressFor(peerID) === undefined
+      ) {
+        continue;
+      }
+      due.add(peerID);
+    }
+    for (const peerID of due) this.flushOutbox(peerID);
+  }
+
   // Retry everything owed, over whatever route now exists. trySendDm's Nostr
   // tier consults the durable contact npub, so mail for someone out of BLE
   // range goes out without waiting for them to reappear.
   //
-  // Called on real delivery opportunities only (a peer announcing, the app
-  // coming forward, relays reconnecting), never on a bare timer. That is
-  // bitchat's model: flushOutbox fires from peer key events and startup, and
-  // there is no periodic send sweep anywhere in MessageRouter.
+  // Called on real delivery opportunities (a peer key or card arriving, the
+  // app coming forward, the network changing, relays reconnecting), bitchat's
+  // flushOutbox triggers. The bare timer is retryDueOverRelays.
   private retryQueuedOverInternet(): void {
     // One retry per window, however many events land.
     //
@@ -7368,15 +7386,14 @@ export class MeshService {
                 "delivered",
                 Date.now(),
               );
-            // Acknowledged over the internet counts just as much as over the
-            // radio: the recipient has it, so it leaves the queue.
-            useOutboxStore.getState().resolve(env.messageID);
+            this.resolveAcknowledged(env.messageID);
             return;
           }
           if (env.type === NoisePayloadType.READ_RECEIPT) {
             useChatStore
               .getState()
               .setMessageStatus(channel, env.messageID, "read", Date.now());
+            this.resolveAcknowledged(env.messageID);
             return;
           }
           if (env.type !== NoisePayloadType.PRIVATE_MESSAGE) return;

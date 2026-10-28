@@ -3,7 +3,10 @@
 import { base64UrlToBytes } from "@core/encoding/base64";
 import { NoisePayloadType } from "@core/mesh/wire/noise-payload";
 import { decodePacket } from "@core/mesh/wire/packet-codec";
-import { decodeBitchatEnvelope } from "@core/nostr/bitchat-envelope";
+import {
+  decodeBitchatEnvelope,
+  encodeBitchatAckEnvelope,
+} from "@core/nostr/bitchat-envelope";
 import {
   deriveGeohashIdentity,
   deriveGeohashSeed,
@@ -30,6 +33,7 @@ function mockClient(
   published: { content: string; pubkey: string }[],
 ): NostrClient {
   return {
+    isConnected: true,
     subscribe: () => ({ close: () => undefined }),
     publish: async (event: { content: string; pubkey: string }) => {
       published.push(event);
@@ -493,12 +497,34 @@ describe("carrying a location peer's name out of the channel", () => {
 });
 
 // A geo DM no relay would take must not leave a confident "sent" behind it.
-describe("a geo DM the relays refuse", () => {
+describe("a geo DM the relays cannot take", () => {
   const GEOHASH = "u4pruy";
+  const pubkey = (): string =>
+    deriveGeohashIdentity(
+      deriveGeohashSeed(ed25519.utils.randomSecretKey()),
+      GEOHASH,
+    ).pubKeyHex;
 
-  it("is parked in the outbox under the Nostr-only keys", async () => {
-    useOutboxStore.getState().clearAll();
+  // As the main identity's DM path refuses: the caller keeps it queued rather
+  // than ticking a message that is still on this phone.
+  it("is refused while no relay is live", () => {
+    const published: { content: string; pubkey: string }[] = [];
     const client = {
+      ...mockClient(published),
+      isConnected: false,
+    } as unknown as NostrClient;
+    const service = new GeohashChannelService(
+      client,
+      ed25519.utils.randomSecretKey(),
+      "alice",
+    );
+    expect(service.sendGeoDm(GEOHASH, pubkey(), "gm-8", "hello")).toBe(false);
+    expect(published).toHaveLength(0);
+  });
+
+  it("tells the caller every relay refused it", async () => {
+    const client = {
+      isConnected: true,
       subscribe: () => ({ close: () => undefined }),
       publish: () => Promise.reject(new Error("no relay accepted")),
     } as unknown as NostrClient;
@@ -507,25 +533,65 @@ describe("a geo DM the relays refuse", () => {
       ed25519.utils.randomSecretKey(),
       "alice",
     );
-    const pubkey = deriveGeohashIdentity(
-      deriveGeohashSeed(ed25519.utils.randomSecretKey()),
-      GEOHASH,
-    ).pubKeyHex;
-
-    // A retry, so it is parked under the time it first queued: a message the
-    // relays always refuse must still expire.
-    const firstQueuedAt = Date.now() - 60_000;
+    const answers: boolean[] = [];
     expect(
-      service.sendGeoDm(GEOHASH, pubkey, "gm-9", "hello", firstQueuedAt),
+      service.sendGeoDm(GEOHASH, pubkey(), "gm-9", "hello", (accepted) =>
+        answers.push(accepted),
+      ),
     ).toBe(true);
     await Promise.resolve();
     await Promise.resolve();
+    expect(answers).toEqual([false]);
+  });
+});
 
-    const queued = useOutboxStore.getState().pending;
-    expect(
-      queued.map((p) => [p.id, p.recipientPeerID, p.channel, p.createdAtMs]),
-    ).toEqual([
-      ["gm-9", `nostr_${pubkey}`, `dm:nostr_${pubkey}`, firstQueuedAt],
-    ]);
+// The outbox keeps a geo DM until its recipient answers, as for any DM.
+describe("a receipt for a geo DM", () => {
+  const GEOHASH = "u4pruy";
+
+  it.each([
+    ["delivered", NoisePayloadType.DELIVERED],
+    ["read", NoisePayloadType.READ_RECEIPT],
+  ] as const)("resolves its outbox entry when %s", (_label, type) => {
+    useOutboxStore.getState().clearAll();
+    const aliceSigning = ed25519.utils.randomSecretKey();
+    const bobPublished: { content: string; pubkey: string }[] = [];
+    const alice = new GeohashChannelService(
+      mockClient([]),
+      aliceSigning,
+      "alice",
+    );
+    const bob = new GeohashChannelService(
+      mockClient(bobPublished),
+      ed25519.utils.randomSecretKey(),
+      "bob",
+    );
+    const aliceCell = deriveGeohashIdentity(
+      deriveGeohashSeed(aliceSigning),
+      GEOHASH,
+    );
+    const bobCell = bob.cellPubkeyFor(GEOHASH);
+    useOutboxStore.getState().enqueue({
+      id: "gm-r",
+      recipientPeerID: `nostr_${bobCell}`,
+      channel: `dm:nostr_${bobCell}`,
+      text: "hi",
+      createdAtMs: Date.now(),
+    });
+
+    (
+      bob as unknown as {
+        publishGeoWrap: (g: string, p: string, e: string) => void;
+      }
+    ).publishGeoWrap(
+      GEOHASH,
+      aliceCell.pubKeyHex,
+      encodeBitchatAckEnvelope(null, null, type, "gm-r"),
+    );
+    (
+      alice as unknown as { handleGeoDm: (e: unknown, g: string) => void }
+    ).handleGeoDm(bobPublished[0], GEOHASH);
+
+    expect(useOutboxStore.getState().pending).toHaveLength(0);
   });
 });

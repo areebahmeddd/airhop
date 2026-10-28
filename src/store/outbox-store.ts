@@ -1,8 +1,9 @@
-// Pending outbound DMs awaiting a route to their recipient: the queue behind
-// the "queued for delivery" the UI shows. MeshService enqueues every mesh send
-// and flushes when the peer becomes reachable again (its ANNOUNCE, a session
-// coming up), and a delivery receipt resolves the entry. Persisted, since the
-// promise has to survive a restart.
+// Pending outbound DMs awaiting their recipient's receipt: the queue behind
+// the "queued for delivery" the UI shows. MeshService enqueues every DM before
+// it goes out, over the mesh or a relay, and flushes when a route appears (an
+// ANNOUNCE, a session coming up, relays connecting, the periodic sweep); a
+// delivery or read receipt resolves the entry. Persisted, since the promise
+// has to survive a restart.
 //
 // Not the store-and-forward courier (sealed envelopes carried by third
 // parties); this covers the recipient coming back to us, without trusting
@@ -22,6 +23,11 @@ export interface PendingMessage {
   attempts: number;
   // When the last charged attempt went out. Absent until the first one.
   lastAttemptMs?: number;
+  // When a copy was last handed to relays. Absent until the first one.
+  nostrSentMs?: number;
+  // A relay acknowledged a copy. Sticky: a later republish every relay refuses
+  // does not take back the copy an earlier one left.
+  relayAccepted?: boolean;
 }
 
 // Give up after this long. A week-old "hi" is noise, not a message.
@@ -33,8 +39,8 @@ export const MAX_PENDING_PER_PEER = 100;
 
 // Real send opportunities before a message is called failed. An attempt is
 // charged only when something went out over a route that could have
-// acknowledged it: never by the courier branch, which sends nothing, and never
-// by a timer.
+// acknowledged it: never by the courier branch, a timer or a relay publish. A
+// copy a relay accepted is exempt: it stays fetchable for OUTBOX_TTL_MS.
 export const MAX_SEND_ATTEMPTS = 8;
 
 // The least time between two charged attempts on one message. Opportunities
@@ -42,6 +48,21 @@ export const MAX_SEND_ATTEMPTS = 8;
 // announce flushes the queue, so charged per announce the eight attempts would
 // be gone in minutes. Sends in between still go out; they are not charged.
 export const ATTEMPT_MIN_INTERVAL_MS = 2 * 60 * 1000;
+
+// An accepted relay copy is republished daily, as cover for a relay that
+// prunes it, the day a courier drop and bitchat-ios's outbox both last. One no
+// relay accepted waits only the attempt spacing.
+export const NOSTR_REPUBLISH_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+// Whether `msg` may go to relays again now.
+export function nostrResendDue(msg: PendingMessage, nowMs: number): boolean {
+  if (msg.nostrSentMs === undefined) return true;
+  const wait =
+    msg.relayAccepted === true
+      ? NOSTR_REPUBLISH_INTERVAL_MS
+      : ATTEMPT_MIN_INTERVAL_MS;
+  return nowMs - msg.nostrSentMs >= wait;
+}
 
 interface OutboxState {
   pending: PendingMessage[];
@@ -55,8 +76,13 @@ interface OutboxState {
   // Charge one attempt, unless the last charged one was under
   // ATTEMPT_MIN_INTERVAL_MS ago.
   markAttempted: (id: string, nowMs?: number) => void;
-  // Drop anything past OUTBOX_TTL_MS or MAX_SEND_ATTEMPTS. Returns what was
-  // dropped so the sender's bubble can stop claiming it is still coming.
+  // A copy went to relays.
+  markNostrSent: (id: string, nowMs?: number) => void;
+  // A relay acknowledged a copy.
+  markRelayAccepted: (id: string) => void;
+  // Drop anything past OUTBOX_TTL_MS, or past MAX_SEND_ATTEMPTS with no relay
+  // copy. Returns what was dropped so the sender's bubble can stop claiming it
+  // is still coming.
   evictExpired: (nowMs?: number) => PendingMessage[];
   clearAll: () => void;
 }
@@ -119,10 +145,28 @@ export const useOutboxStore = create<OutboxState>()(
         }));
       },
 
+      markNostrSent(id, nowMs = Date.now()) {
+        set((state) => ({
+          pending: state.pending.map((p) =>
+            p.id === id ? { ...p, nostrSentMs: nowMs } : p,
+          ),
+        }));
+      },
+
+      markRelayAccepted(id) {
+        set((state) => ({
+          pending: state.pending.map((p) =>
+            p.id === id ? { ...p, relayAccepted: true } : p,
+          ),
+        }));
+      },
+
       evictExpired(nowMs = Date.now()) {
         const cutoff = nowMs - OUTBOX_TTL_MS;
         const dropped = get().pending.filter(
-          (p) => p.createdAtMs < cutoff || p.attempts >= MAX_SEND_ATTEMPTS,
+          (p) =>
+            p.createdAtMs < cutoff ||
+            (p.attempts >= MAX_SEND_ATTEMPTS && p.relayAccepted !== true),
         );
         if (dropped.length === 0) return [];
         const doomed = new Set(dropped.map((p) => p.id));
