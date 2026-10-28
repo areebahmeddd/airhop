@@ -19,7 +19,6 @@ import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import { LiveVideoCongestionController } from "@core/mesh/video/live-video-congestion";
 import { LiveVideoPacer } from "@core/mesh/video/live-video-pacer";
 import {
-  BLE_PACKET_BUDGET,
   KEYFRAME_INTERVAL_SECONDS,
   MAX_LIVE_VIDEO_FILE_BYTES,
   MIN_LIVE_VIDEO_MS,
@@ -72,6 +71,8 @@ interface Deps {
   audio: NativeAudioCapture | null;
   // Ends the stream on the session's own initiative: the camera was taken.
   onFailure: () => void;
+  // Packets a second the route carries; see live-video-quality.ts.
+  packetBudget: number;
   now?: () => number;
 }
 
@@ -89,7 +90,11 @@ export class LiveVideoSendSession {
   private audioFrames = 0;
   private audioOffsetMs: number | null = null;
   private packetsSent = 0;
+  // Live from start() until stop() is called.
   private running = false;
+  // Units still accepted: through the encoder's and the microphone's flush,
+  // which stop() waits for, so the stream's last moments are not lost.
+  private accepting = false;
   private timer: ReturnType<typeof setInterval> | null = null;
   private encodedSub: EventSubscription | null = null;
   private errorSub: EventSubscription | null = null;
@@ -113,10 +118,11 @@ export class LiveVideoSendSession {
       },
       quality.fec,
     );
-    this.pacer = LiveVideoPacer.forQuality(quality, BLE_PACKET_BUDGET);
+    const budget = deps.packetBudget;
+    this.pacer = LiveVideoPacer.forQuality(quality, budget);
     this.congestion = new LiveVideoCongestionController(quality.videoBitrate, {
-      highWater: Math.max(6, Math.floor((BLE_PACKET_BUDGET * 6) / 10)),
-      skipWater: Math.max(18, Math.floor((BLE_PACKET_BUDGET * 3) / 2)),
+      highWater: Math.max(6, Math.floor((budget * 6) / 10)),
+      skipWater: Math.max(18, Math.floor((budget * 3) / 2)),
     });
     this.recording = new FileSystem.File(
       FileSystem.Paths.cache,
@@ -191,6 +197,7 @@ export class LiveVideoSendSession {
     );
     this.startedAtMs = this.now();
     this.running = true;
+    this.accepting = true;
     this.pacer.enqueue(this.packetizer.start(), 0);
     this.timer = setInterval(() => this.tick(), TICK_MS);
     try {
@@ -211,10 +218,11 @@ export class LiveVideoSendSession {
     if (!this.running) return null;
     this.running = false;
     const native = NativeAirhopVideo;
+    // Both flushes emit their last units before they resolve, and those still
+    // go into the stream and the file.
     await this.deps.audio?.stopCapture().catch(() => undefined);
-    // The encoder's last units are emitted before this resolves, so they make
-    // it into the stream and the file.
     await native?.stopEncoding().catch(() => undefined);
+    this.accepting = false;
     this.encodedSub?.remove();
     this.errorSub?.remove();
     this.encodedSub = null;
@@ -256,7 +264,7 @@ export class LiveVideoSendSession {
   }
 
   private onVideo(dataBase64: string, ptsMs: number, keyframe: boolean): void {
-    if (!this.running) return;
+    if (!this.accepting) return;
     NativeAirhopVideo?.appendVideo(
       this.recordingKey,
       dataBase64,
@@ -279,7 +287,7 @@ export class LiveVideoSendSession {
   }
 
   private onAudio(frame: Uint8Array): void {
-    if (!this.running) return;
+    if (!this.accepting) return;
     // The first frame anchors the audio clock to the stream's; after that
     // every frame is exactly 64 ms on, as the encoder made it.
     this.audioOffsetMs ??= this.elapsed();

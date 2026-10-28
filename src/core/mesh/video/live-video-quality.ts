@@ -59,9 +59,11 @@ export const LIVE_VIDEO_QUALITIES: Record<
   },
 };
 
-// Packets a second a Bluetooth route carries before queues build up out of
-// sight. The sender paces to the lower of this and what the preset needs.
+// Packets a second a route carries before queues build up out of sight. The
+// sender paces to the lower of this and what the preset needs. A stream with
+// any Bluetooth hop ahead of it is held to Bluetooth's.
 export const BLE_PACKET_BUDGET = 24;
+export const WIFI_PACKET_BUDGET = 300;
 
 // The largest recording resent as a file afterwards: 256 fragments of about
 // 450 B, less the file's TLVs, the header, the signature and Noise framing.

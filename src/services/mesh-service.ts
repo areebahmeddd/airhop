@@ -98,7 +98,11 @@ import { SlidingWindowLimiter } from "@core/mesh/routing/sliding-window-limiter"
 import { nextHopFor } from "@core/mesh/routing/source-route";
 import { GossipSync, isSyncReplyInWindow } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
-import type { LiveVideoQuality } from "@core/mesh/video/live-video-quality";
+import {
+  BLE_PACKET_BUDGET,
+  WIFI_PACKET_BUDGET,
+  type LiveVideoQuality,
+} from "@core/mesh/video/live-video-quality";
 import { decodeVideoBurstPacket } from "@core/mesh/video/video-burst-packet";
 import {
   VoiceCaptureSession,
@@ -2453,6 +2457,12 @@ export class MeshService {
     }
     const dmPeer = channel.startsWith("dm:") ? channel.slice(3) : null;
     const ttl = originTtl(PacketType.VIDEO_FRAME, this.links.degree());
+    // Wi-Fi Aware and LAN carry far more than Bluetooth, but a room stream
+    // goes down every link at once, so one Bluetooth link sets its pace.
+    const overBluetooth =
+      dmPeer === null
+        ? this.links.size("ble") > 0
+        : (this.links.linkFor(dmPeer)?.kind ?? "ble") === "ble";
     const senderID = hexToBytes(this.identity.peerID);
     const session = new LiveVideoSendSession(quality, {
       send: (payload) => {
@@ -2482,6 +2492,7 @@ export class MeshService {
       audio:
         withAudio && isLiveVoiceAvailable() ? new NativeAudioCapture() : null,
       onFailure,
+      packetBudget: overBluetooth ? BLE_PACKET_BUDGET : WIFI_PACKET_BUDGET,
     });
     this.liveVideoSend = session;
     try {
