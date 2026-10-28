@@ -113,6 +113,7 @@ final class AirhopVideoCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDel
         return false
       }
       encoder.onFrame = { [weak self] frame in self?.onFrame?(frame) }
+      encoder.onError = { [weak self] in self?.onError?("encoder failed") }
       self.encoder = encoder
       self.originSeconds = CMClockGetTime(CMClockGetHostTimeClock()).seconds
       self.lastFrameSeconds = 0
@@ -237,9 +238,11 @@ final class AirhopVideoCamera: NSObject, AVCaptureVideoDataOutputSampleBufferDel
     }
     observers = [
       center.addObserver(
-        forName: .AVCaptureSessionWasInterrupted, object: session, queue: nil, using: report),
+        forName: AVCaptureSession.wasInterruptedNotification, object: session, queue: nil,
+        using: report),
       center.addObserver(
-        forName: .AVCaptureSessionRuntimeError, object: session, queue: nil, using: report),
+        forName: AVCaptureSession.runtimeErrorNotification, object: session, queue: nil,
+        using: report),
     ]
   }
 
@@ -262,12 +265,25 @@ final class AirhopVideoModule: RCTEventEmitter {
   private let recordingQueue = DispatchQueue(label: "org.onemindlabs.airhop.video.recording")
   // Recording-queue state.
   private var recordings: [String: VideoMp4Writer] = [:]
+  // Its own lock: the recording queue can be busy finishing a file.
+  private let optionsLock = NSLock()
   private var cameraOptions: NSDictionary?
 
   @objc override static func requiresMainQueueSetup() -> Bool { false }
 
   override func supportedEvents() -> [String]! {
     [VideoEvent.encoded, VideoEvent.cameraError]
+  }
+
+  // A JS reload or teardown: the camera goes off and no recording is left
+  // open.
+  override func invalidate() {
+    AirhopVideoCamera.shared.stop {}
+    recordingQueue.async {
+      self.recordings.values.forEach { $0.cancel() }
+      self.recordings.removeAll()
+    }
+    super.invalidate()
   }
 
   override init() {
@@ -368,7 +384,9 @@ final class AirhopVideoModule: RCTEventEmitter {
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    recordingQueue.sync { cameraOptions = options }
+    optionsLock.lock()
+    cameraOptions = options
+    optionsLock.unlock()
     let facing = options["facing"] as? String ?? "front"
     let fps = (options["fps"] as? NSNumber)?.intValue ?? 8
     AirhopVideoCamera.shared.start(facing: facing, fps: fps) { error in
@@ -399,7 +417,9 @@ final class AirhopVideoModule: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    let options = recordingQueue.sync { cameraOptions }
+    optionsLock.lock()
+    let options = cameraOptions
+    optionsLock.unlock()
     let number = { (key: String, fallback: Int) -> Int in
       (options?[key] as? NSNumber)?.intValue ?? fallback
     }

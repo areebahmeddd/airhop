@@ -10,6 +10,7 @@
 import AVFoundation
 import CoreMedia
 import Foundation
+import OSLog
 import VideoToolbox
 
 // MARK: - Annex B and AVCC
@@ -424,6 +425,9 @@ final class VideoH264Encoder {
   let height: Int
   let fps: Int
   var onFrame: ((VideoEncodedFrame) -> Void)?
+  // The session stopped encoding (a hardware session invalidated in the
+  // background answers every frame with an error). Called once.
+  var onError: (() -> Void)?
 
   private let callbackQueue = DispatchQueue(
     label: "org.onemindlabs.airhop.video.encoder", qos: .userInitiated)
@@ -432,6 +436,7 @@ final class VideoH264Encoder {
   private var transfer: VTPixelTransferSession?
   private var pool: CVPixelBufferPool?
   private var forceKeyframe = true
+  private var reportedError = false
   private var lastPtsUs: Int64 = .min
   private var currentBitrate: Int
 
@@ -531,6 +536,11 @@ final class VideoH264Encoder {
     }
     if status != noErr {
       AirhopLog.video.error("Encode failed (\(status, privacy: .public))")
+      if !reportedError {
+        reportedError = true
+        let onError = self.onError
+        callbackQueue.async { onError?() }
+      }
     }
   }
 

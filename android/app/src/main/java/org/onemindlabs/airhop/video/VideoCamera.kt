@@ -16,6 +16,7 @@ import android.util.Log
 import android.util.Size
 import android.widget.FrameLayout
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraState
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.ResolutionSelector
@@ -24,6 +25,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
@@ -44,6 +46,7 @@ internal object VideoCamera {
     private var analysis: ImageAnalysis? = null
     private var facing = "front"
     private var previewHost: WeakReference<CameraPreviewHost>? = null
+    private var observedState: LiveData<CameraState>? = null
 
     // Analysis-thread state, read by the drain thread under `encoderLock`.
     private val encoderLock = Object()
@@ -51,6 +54,8 @@ internal object VideoCamera {
     @Volatile private var fps = 8
     private var originNs = 0L
     private var lastFrameNs = 0L
+    // One report per stream: a codec that failed once fails on every frame.
+    private var reportedFailure = false
     private var drainThread: Thread? = null
 
     // Main thread.
@@ -118,6 +123,7 @@ internal object VideoCamera {
                     .getOrNull() ?: return false
             originNs = System.nanoTime()
             lastFrameNs = 0L
+            reportedFailure = false
             encoder = created
             created.requestKeyframe()
             drainThread = Thread({ drainLoop(created) }, "airhop-video-encoder").also(Thread::start)
@@ -205,6 +211,10 @@ internal object VideoCamera {
             else CameraSelector.DEFAULT_FRONT_CAMERA
         provider.unbindAll()
         val bound = provider.bindToLifecycle(lifecycle, camera, nextPreview, nextAnalysis)
+        // Each bind (a new quality, the other camera) would otherwise add an
+        // observer beside the last, and one error would be reported over and over.
+        observedState?.removeObservers(lifecycle)
+        observedState = bound.cameraInfo.cameraState
         bound.cameraInfo.cameraState.observe(lifecycle) { state ->
             if (state.error != null && encoder != null)
                 onError?.invoke("camera error ${state.error?.code}")
@@ -225,7 +235,13 @@ internal object VideoCamera {
             lastFrameNs = now
             val ptsUs = (now - originNs) / 1_000
             runCatching { current.encode(YuvSource.fromImageProxy(image), ptsUs) }
-                .onFailure { Log.w(TAG, "Encode failed: ${it.message}") }
+                .onFailure {
+                    Log.w(TAG, "Encode failed: ${it.message}")
+                    if (!reportedFailure) {
+                        reportedFailure = true
+                        onError?.invoke("encoder failed")
+                    }
+                }
         }
     }
 
