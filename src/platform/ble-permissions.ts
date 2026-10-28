@@ -30,6 +30,9 @@ import { PermissionsAndroid, Platform, type Permission } from "react-native";
 // access whatever we say about it.
 const NEVER_FOR_LOCATION_MIN_API = 31;
 
+// Android 17.
+const LOCAL_NETWORK_MIN_API = 37;
+
 export interface BlePermissionResult {
   granted: boolean;
   // Permissions the user denied. Empty when granted === true.
@@ -106,16 +109,16 @@ export async function ensureBlePermissions(): Promise<BlePermissionResult> {
   // NEARBY_WIFI_DEVICES is API 33+. Below that the location permissions cover
   // Aware discovery already.
   //
-  // ACCESS_LOCAL_NETWORK is deliberately not here yet. The manifest declares it
-  // so the Aware socket keeps working later, but local network protection is
-  // only enforced for apps targeting Android 17 and this one targets 36. Asking
-  // now would show a dialog that unlocks nothing. Add it in the same commit
-  // that raises targetSdkVersion to 37, and with the persisted marker the fast
-  // path below describes: it carries its own permission group, so a denial
-  // would otherwise be re-prompted on every launch.
+  // ACCESS_LOCAL_NETWORK is API 37+. Declared in the manifest, it loses the
+  // implicit grant older targets get, and Android 17 drops the Wi-Fi Aware and
+  // LAN sockets without it. It shares the Bluetooth permissions' group, so it
+  // adds no dialog.
   const optional: Permission[] = [];
   if (apiLevel >= 33) {
     optional.push("android.permission.NEARBY_WIFI_DEVICES" as Permission);
+  }
+  if (apiLevel >= LOCAL_NETWORK_MIN_API) {
+    optional.push("android.permission.ACCESS_LOCAL_NETWORK" as Permission);
   }
 
   // Fast path: skip the prompt when there is nothing left to ask for.

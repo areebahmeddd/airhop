@@ -51,13 +51,11 @@
        handle is an opaque discovery token, not a position. bitchat/android
        declares the flag here too. -->
   <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:usesPermissionFlags="neverForLocation"/>
-  <!-- Android 17 gates local network access behind a runtime permission, and a
-       WiFi Aware data path is a raw socket over a link-local IPv6 address, so
-       it counts. Opt-in on Android 16 and enforced for apps targeting 17, which
-       this one does not yet - declared now so the targetSdk bump does not
-       silently break the fast path. It sits in the NEARBY_DEVICES group beside
-       NEARBY_WIFI_DEVICES, so granting one covers the other and the user sees
-       no second dialog. -->
+  <!-- Android 17 drops local network traffic without this, including the
+       Wi-Fi Aware data path (link-local IPv6) and the LAN transport. Once
+       declared it must be granted at any target SDK, so ble-permissions.ts
+       requests it on API 37+, in the Nearby devices group the Bluetooth
+       permissions already use. -->
   <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
   <!-- Android 13+ runtime permission for local message notifications -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
