@@ -68,6 +68,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Drop the version heading
+        run: sed -i -e '1{/^## /d}' -e '/./,$!d' -e 's/^### /## /' RELEASE_NOTES.md
+
       - name: Append verification instructions
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
