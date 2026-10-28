@@ -18,6 +18,7 @@ import { useSettingsStore } from "@store/settings-store";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Platform } from "react-native";
+import type { LiveVideoSendSummary } from "./live-video-sender";
 import { getMeshService, type IngressFault } from "./mesh-service";
 
 export interface DiagnosticsSnapshot {
@@ -25,7 +26,6 @@ export interface DiagnosticsSnapshot {
   app: string;
   platform: string;
   device: string;
-  // Log lines are local time and `generatedAt` is UTC.
   timeZone: string;
   transports: {
     bluetooth: string;
@@ -45,6 +45,10 @@ export interface DiagnosticsSnapshot {
     bridge: string;
     powerSaving: boolean;
     clockSkewed: boolean;
+  };
+  liveVideo: {
+    sending: LiveVideoSendSummary | null;
+    receiving: number;
   };
   settings: {
     wifiAware: boolean;
@@ -80,8 +84,6 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     `  Local network: ${s.transports.lan} · ${linkCount(s.transports.links.lan)}`,
     `  Nostr: ${s.transports.nostr}`,
     "",
-    // The Connectivity screen's labels and order. Ingress faults are mesh
-    // health, not a radio.
     "Mesh",
     `  Reachable peers: ${s.mesh.reachablePeers}`,
     `  Presence: ${s.mesh.presence}`,
@@ -92,6 +94,9 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     `  Power saving: ${yes(s.mesh.powerSaving)}`,
     `  Clock skewed: ${yes(s.mesh.clockSkewed)}`,
     `  Ingress faults: ${ingressFaultLine(s.transports.ingressFaults, s.transports.lastIngressFault)}`,
+    "",
+    "Live video",
+    ...liveVideoLines(s.liveVideo),
     "",
     "Settings",
     `  Wi-Fi Aware transport: ${yes(s.settings.wifiAware)}`,
@@ -129,6 +134,32 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
 // The report is English by design, so the plural is settled here.
 function linkCount(n: number): string {
   return n === 1 ? "1 link" : `${String(n)} links`;
+}
+
+const QUALITY_LABEL: Record<LiveVideoSendSummary["quality"], string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};
+
+// In the studio's own words for the signal meter, so a report and a
+// screenshot of the studio describe a stream the same way.
+function liveVideoLines(state: DiagnosticsSnapshot["liveVideo"]): string[] {
+  const receiving =
+    state.receiving === 1 ? "1 stream" : `${String(state.receiving)} streams`;
+  const send = state.sending;
+  if (send === null) return ["  Sending: no", `  Receiving: ${receiving}`];
+  const signal = send.skipping
+    ? "too slow for video, sending sound only"
+    : send.congested
+      ? "falling behind"
+      : "keeping up";
+  return [
+    `  Sending: ${QUALITY_LABEL[send.quality]} for ${String(Math.floor(send.elapsedMs / 1000))} s, microphone ${send.withSound ? "on" : "off"}`,
+    `  Video bitrate: ${String(Math.round(send.videoBitrate / 1000))} kbps, paced to ${String(send.packetBudget)} packets a second`,
+    `  Signal: ${signal}`,
+    `  Receiving: ${receiving}`,
+  ];
 }
 
 /**
@@ -188,6 +219,11 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
     wifi: 0,
   };
   const ingress = getMeshService()?.getIngressFaults();
+  // No mesh yet reads as idle, the way the link counts above do.
+  const liveVideo = getMeshService()?.getLiveVideoState() ?? {
+    sending: null,
+    receiving: 0,
+  };
   const tor = !settings.torEnabled
     ? "off"
     : mesh.torActive
@@ -232,6 +268,7 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       powerSaving: mesh.powerSaving,
       clockSkewed: mesh.clockSkewed,
     },
+    liveVideo,
     settings: {
       wifiAware: settings.wifiAwareEnabled,
       lanTransport: settings.lanTransportEnabled,

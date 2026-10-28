@@ -49,6 +49,7 @@ const SNAPSHOT: DiagnosticsSnapshot = {
     powerSaving: false,
     clockSkewed: false,
   },
+  liveVideo: { sending: null, receiving: 0 },
   settings: {
     wifiAware: true,
     lanTransport: false,
@@ -101,6 +102,72 @@ describe("buildDiagnosticsReport", () => {
         "",
       ].join("\n"),
     );
+  });
+
+  it("puts live video between the mesh and the settings", () => {
+    const report = buildDiagnosticsReport(SNAPSHOT);
+    expect(report).toContain(
+      [
+        "  Ingress faults: 0",
+        "",
+        "Live video",
+        "  Sending: no",
+        "  Receiving: 0 streams",
+        "",
+        "Settings",
+        "",
+      ].join("\n"),
+    );
+  });
+
+  it("describes a stream being sent in the studio's words", () => {
+    const report = buildDiagnosticsReport({
+      ...SNAPSHOT,
+      liveVideo: {
+        sending: {
+          quality: "medium",
+          elapsedMs: 84_900,
+          withSound: true,
+          videoBitrate: 41_500,
+          packetBudget: 24,
+          congested: true,
+          skipping: false,
+        },
+        receiving: 1,
+      },
+    });
+    expect(report).toContain(
+      [
+        "Live video",
+        "  Sending: Medium for 84 s, microphone on",
+        "  Video bitrate: 42 kbps, paced to 24 packets a second",
+        "  Signal: falling behind",
+        "  Receiving: 1 stream",
+        "",
+      ].join("\n"),
+    );
+  });
+
+  it("says when a sent stream is down to sound", () => {
+    const report = buildDiagnosticsReport({
+      ...SNAPSHOT,
+      liveVideo: {
+        sending: {
+          quality: "low",
+          elapsedMs: 3_000,
+          withSound: false,
+          videoBitrate: 6_000,
+          packetBudget: 300,
+          congested: true,
+          skipping: true,
+        },
+        receiving: 0,
+      },
+    });
+    expect(report).toContain(
+      "  Signal: too slow for video, sending sound only\n",
+    );
+    expect(report).toContain("microphone off");
   });
 
   it("states the time zone beside the UTC timestamp", () => {

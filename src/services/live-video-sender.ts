@@ -24,6 +24,7 @@ import {
   MAX_LIVE_VIDEO_FILE_BYTES,
   MIN_LIVE_VIDEO_MS,
   type LiveVideoQuality,
+  type LiveVideoQualityName,
 } from "@core/mesh/video/live-video-quality";
 import { STREAM_ID_BYTES } from "@core/mesh/video/video-burst-packet";
 import { VideoStreamPacketizer } from "@core/mesh/video/video-stream-packetizer";
@@ -53,6 +54,16 @@ export interface LiveVideoSendStats {
   congested: boolean;
   // So far behind that only sound is going out.
   skipping: boolean;
+}
+
+// What the diagnostics report says about the stream: its settings and how it
+// is coping, never who is watching.
+export interface LiveVideoSendSummary extends LiveVideoSendStats {
+  quality: LiveVideoQualityName;
+  withSound: boolean;
+  // Where congestion control has the encoder now, in bits per second.
+  videoBitrate: number;
+  packetBudget: number;
 }
 
 export interface FinishedLiveVideo {
@@ -177,6 +188,16 @@ export class LiveVideoSendSession {
       elapsedMs: this.running ? this.now() - this.startedAtMs : 0,
       congested: this.lastBacklog >= this.highWater,
       skipping: this.congestion.skipping,
+    };
+  }
+
+  summary(): LiveVideoSendSummary {
+    return {
+      ...this.stats(),
+      quality: this.quality.name,
+      withSound: this.deps.audio !== null,
+      videoBitrate: this.congestion.bitrate,
+      packetBudget: this.deps.packetBudget,
     };
   }
 

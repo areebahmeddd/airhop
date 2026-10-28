@@ -208,6 +208,11 @@ export class LiveVideoReceiver {
   // ---- Sound ----
 
   // The one row whose sound plays, or null for none.
+  // Streams being received, a picture yet or not.
+  get streamCount(): number {
+    return this.streams.size;
+  }
+
   get audible(): string | null {
     return this.audibleRow;
   }

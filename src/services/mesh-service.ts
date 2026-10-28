@@ -294,6 +294,7 @@ import { LiveVideoReceiver } from "./live-video-receiver";
 import {
   LiveVideoSendSession,
   type FinishedLiveVideo,
+  type LiveVideoSendSummary,
 } from "./live-video-sender";
 import { trackLiveVideoWork } from "./live-video-work";
 import { ringVerdict, ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
@@ -821,6 +822,17 @@ export class MeshService {
     return Object.fromEntries(
       TRANSPORT_KINDS.map((kind) => [kind, this.links.size(kind)]),
     ) as Record<TransportKind, number>;
+  }
+
+  // Live video now, for the diagnostics report.
+  getLiveVideoState(): {
+    sending: LiveVideoSendSummary | null;
+    receiving: number;
+  } {
+    return {
+      sending: this.liveVideoSend?.summary() ?? null,
+      receiving: this.liveVideo?.streamCount ?? 0,
+    };
   }
 
   constructor(identity: Identity) {
