@@ -95,9 +95,11 @@ enum MeshWidgetState: Equatable {
   case counted(count: Int, atMs: Int64)
 
   // A reading the app has stopped refreshing is retired this long after it was
-  // taken. JS refreshes an unchanged one every minute in front and every ten
-  // behind, so past this nothing is counting any more.
-  static let staleAfterMs: Int64 = 15 * 60_000
+  // taken. JS refreshes an unchanged one every minute in front and every 45
+  // behind, so past this nothing is counting any more. Longer than Android's
+  // 15 minutes because WidgetKit's daily reload budget, a few dozen, cannot
+  // carry a refresh every few minutes through a day in the background.
+  static let staleAfterMs: Int64 = 60 * 60_000
 
   // `bootMs` is when this boot began on the wall clock. A reading from before it
   // came from a mesh that cannot still be running, whatever its age.

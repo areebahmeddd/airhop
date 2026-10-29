@@ -4,14 +4,15 @@
 // It counts nothing itself. background-notice.ts pushes a snapshot through
 // AirhopAppModule, the same push that feeds the background notice, so the two
 // and the Mesh tab cannot disagree. The snapshot lives in SharedPreferences
-// because the provider is also woken with no process behind it: every 30
-// minutes (updatePeriodMillis, which is only there to retire a stale reading),
+// because the provider is also woken with no process behind it: when a reading
+// turns stale (an alarm each draw sets), every 30 minutes (updatePeriodMillis),
 // after a boot, and on a clock, zone or language change.
 //
 // RemoteViews only, no Glance or Compose: one small layout needs no new
 // dependency.
 package org.onemindlabs.airhop.widget
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -42,6 +43,9 @@ private const val KEY_AT_MS = "at_ms"
 // app.tsx answers it by switching to the Mesh tab, the screen this summarises.
 private const val MESH_LINK = "airhop://mesh"
 
+// Sent only to this provider, by the alarm `scheduleStale` sets.
+private const val ACTION_STALE = "org.onemindlabs.airhop.widget.STALE"
+
 class AirhopMeshWidget : AppWidgetProvider() {
 
     // The broadcast's own IDs are ignored: the receiver is exported, as a
@@ -58,7 +62,8 @@ class AirhopMeshWidget : AppWidgetProvider() {
         when (intent.action) {
             Intent.ACTION_TIME_CHANGED,
             Intent.ACTION_TIMEZONE_CHANGED,
-            Intent.ACTION_LOCALE_CHANGED -> redrawQuietly(context)
+            Intent.ACTION_LOCALE_CHANGED,
+            ACTION_STALE -> redrawQuietly(context)
             else -> super.onReceive(context, intent)
         }
     }
@@ -121,8 +126,10 @@ class AirhopMeshWidget : AppWidgetProvider() {
             if (ids.isEmpty()) return
 
             val nowMs = System.currentTimeMillis()
-            val state = meshWidgetState(read(context), nowMs, nowMs - SystemClock.elapsedRealtime())
+            val snapshot = read(context)
+            val state = meshWidgetState(snapshot, nowMs, nowMs - SystemClock.elapsedRealtime())
             val lines = meshWidgetLines(state, ResourceCopy(context))
+            scheduleStale(context, meshWidgetStaleAtMs(snapshot, state))
 
             // With no count the caption is the whole message, which the layout
             // draws larger and in ink, in a view of its own.
@@ -134,6 +141,23 @@ class AirhopMeshWidget : AppWidgetProvider() {
             views.setLine(R.id.mesh_widget_message, lines.caption.takeUnless { counted })
             views.setOnClickPendingIntent(android.R.id.background, openMesh(context))
             manager.updateAppWidget(ids, views)
+        }
+
+        // Redraws when the reading on screen turns stale, which a killed
+        // process would otherwise leave up until the 30-minute update. Inexact
+        // and not a wakeup: it needs no exact-alarm permission, and lands by the
+        // time the screen is on to show it. One alarm, replaced by every draw and
+        // cancelled once nothing on screen can age.
+        private fun scheduleStale(context: Context, atMs: Long?) {
+            val alarms = context.getSystemService(AlarmManager::class.java) ?: return
+            val pending =
+                PendingIntent.getBroadcast(
+                    context,
+                    0,
+                    Intent(context, AirhopMeshWidget::class.java).setAction(ACTION_STALE),
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+                )
+            if (atMs == null) alarms.cancel(pending) else alarms.set(AlarmManager.RTC, atMs, pending)
         }
 
         private fun RemoteViews.setLine(id: Int, text: String?) {

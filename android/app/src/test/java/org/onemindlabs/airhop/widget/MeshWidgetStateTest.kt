@@ -118,6 +118,25 @@ class MeshWidgetStateTest {
         )
     }
 
+    @Test
+    fun aReadingTurnsStaleJustPastItsCutoffAndTheRestHold() {
+        val reading = snap(3, now)
+        assertEquals(now + STALE_AFTER_MS + 1, meshWidgetStaleAtMs(reading, state(reading)))
+        val off = snap(0, now, bluetoothOff = true)
+        assertEquals(now + STALE_AFTER_MS + 1, meshWidgetStaleAtMs(off, state(off)))
+        // The redraw it schedules really is stale.
+        assertEquals(
+            MeshWidgetState.Stale,
+            meshWidgetState(reading, now + STALE_AFTER_MS + 1, boot),
+        )
+
+        val paused = snap(3, now, meshOn = false)
+        assertNull(meshWidgetStaleAtMs(paused, state(paused)))
+        assertNull(meshWidgetStaleAtMs(null, MeshWidgetState.Unset))
+        val stale = snap(3, now - STALE_AFTER_MS - 1)
+        assertNull(meshWidgetStaleAtMs(stale, state(stale)))
+    }
+
     // ---- What it draws ----
 
     @Test

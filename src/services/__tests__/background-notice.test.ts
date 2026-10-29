@@ -2,9 +2,9 @@
 // reachable count, whether the mesh runs, whether Bluetooth is off, and when.
 // Pushed once per settled burst and when the mesh or Bluetooth changes, never
 // for an unchanged reading except the once-a-minute refresh that keeps its time
-// current, and repeated on leaving the screen. On iOS, where every push reloads
-// the widget against a daily budget, the app in the background pushes at most
-// every ten minutes.
+// current, and on Android repeated on leaving the screen. On iOS, where every
+// push reloads the widget against a daily budget, the app in the background
+// pushes at most every 45 minutes, and leaving the screen spends nothing.
 
 const mockSetSnapshot = jest.fn<
   Promise<void>,
@@ -260,10 +260,19 @@ describe("on iOS", () => {
     expect(mockSetSnapshot).toHaveBeenCalledTimes(2);
   });
 
-  it("in the background, holds a changed count to one push in ten minutes", () => {
+  it("spends no push on leaving the screen", () => {
+    jest.advanceTimersByTime(2_000);
     appStateNow = "background";
     onAppState?.("background");
+    expect(mockSetSnapshot).not.toHaveBeenCalled();
+  });
+
+  it("in the background, holds a changed count to one push in 45 minutes", () => {
+    // The last push in front, a minute before leaving.
+    jest.advanceTimersByTime(60_000);
     expect(readings()).toEqual([[0, true]]);
+    appStateNow = "background";
+    onAppState?.("background");
 
     // Two people arrive and keep announcing every 30 s, as a real room does.
     const announce = (seconds: number): void => {
@@ -273,11 +282,11 @@ describe("on iOS", () => {
         jest.advanceTimersByTime(30_000);
       }
     };
-    announce(9 * 60 + 30);
+    announce(43 * 60 + 30);
     expect(mockSetSnapshot).toHaveBeenCalledTimes(1);
 
-    // Past ten minutes the count that moved goes out, once.
-    announce(60);
+    // Past 45 minutes the count that moved goes out, once.
+    announce(90);
     expect(readings()).toEqual([
       [0, true],
       [2, true],

@@ -6,7 +6,8 @@ import XCTest
 // reading of a snapshot.
 final class MeshWidgetStateTests: XCTestCase {
   private let now: Int64 = 1_800_000_000_000
-  private var boot: Int64 { now - 3_600_000 }
+  // Well before the hour-long cutoff, so the age tests test age, not boot.
+  private var boot: Int64 { now - 6 * 3_600_000 }
 
   private func state(_ snapshot: MeshSnapshot?, nowMs: Int64? = nil) -> MeshWidgetState {
     MeshWidgetState(snapshot, nowMs: nowMs ?? now, bootMs: boot)
@@ -102,7 +103,7 @@ final class MeshWidgetStateTests: XCTestCase {
     XCTAssertEqual(state(snap(0, at: now)), .counted(count: 0, atMs: now))
   }
 
-  func testAReadingAgesOutAtFifteenMinutes() {
+  func testAReadingAgesOutAtItsCutoff() {
     let at = now - MeshWidgetState.staleAfterMs
     XCTAssertEqual(state(snap(2, at: at)), .counted(count: 2, atMs: at))
     XCTAssertEqual(state(snap(2, at: at - 1)), .stale)

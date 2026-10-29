@@ -24,17 +24,18 @@ const COALESCE_MS = 1_000;
 const RECOUNT_MS = 15_000;
 
 // An unchanged reading goes again this often, so its time stays current. The
-// widget shows that time to the minute and retires a reading 15 minutes old,
-// which is how it tells a counting mesh from a process that was killed.
+// widget shows that time to the minute and retires a reading that has gone
+// unrefreshed too long (15 minutes on Android, an hour on iOS), which is how it
+// tells a counting mesh from a process that was killed.
 const REFRESH_MS = 60_000;
 
 // iOS charges every widget reload against a daily budget of a few dozen, except
 // while the app is in front, and once it is spent no reload lands until the next
-// day. So with the app behind, a reading goes at most this often, under the
-// 15-minute cutoff so a mesh the OS keeps waking still reads as live. The mesh
-// pausing or Bluetooth going off is never held back: either changes what the
-// widget says, and both are rare.
-const IOS_AWAY_GAP_MS = 10 * 60_000;
+// day. So with the app behind, a reading goes at most this often: about 32 a
+// day, inside the budget, and under the widget's one-hour cutoff so a mesh the
+// OS keeps waking still reads as live. The mesh pausing or Bluetooth going off
+// is never held back: either changes what the widget says, and both are rare.
+const IOS_AWAY_GAP_MS = 45 * 60_000;
 
 interface Snapshot {
   count: number;
@@ -107,12 +108,13 @@ export function startBackgroundNotice(): void {
     }
   });
   const recount = setInterval(() => push(false), RECOUNT_MS);
-  // Repeated on every trip to the background, changed or not: on Android so
+  // Repeated on every trip to the background, changed or not, on Android, so
   // native can post a notice that went up before notifications were allowed, as
-  // on a first launch, and on iOS so the widget holds the reading the app left
-  // with.
+  // on a first launch. Not on iOS, where it would spend a reload of the daily
+  // budget on a reading the free pushes in front left no more than a minute
+  // old.
   const appState = AppState.addEventListener("change", (next) => {
-    if (next === "background") push(true);
+    if (next === "background" && Platform.OS === "android") push(true);
   });
 
   stops = [

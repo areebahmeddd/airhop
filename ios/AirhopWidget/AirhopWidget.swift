@@ -89,7 +89,8 @@ struct MeshWidgetView: View {
       if let count = lines.count {
         // A display figure, as the wallet balance is drawn: bold, slight
         // negative tracking, digits that hold their width as the count moves.
-        // It shrinks before it clips under a large Dynamic Type size. The
+        // A fixed size, so it is the captions that grow under a large Dynamic
+        // Type size, and it shrinks before it clips beside them. The
         // accent group, so a tinted Home Screen paints the number in the
         // chosen tint and everything else white.
         Text(count)

@@ -62,6 +62,17 @@ internal fun meshWidgetState(snapshot: MeshSnapshot?, nowMs: Long, bootMs: Long)
     return MeshWidgetState.Counted(snapshot.count, snapshot.atMs)
 }
 
+// When this state turns stale on its own, for the alarm that redraws it then.
+// Null for the states that hold until the app writes again.
+internal fun meshWidgetStaleAtMs(snapshot: MeshSnapshot?, state: MeshWidgetState): Long? =
+    when (state) {
+        is MeshWidgetState.Counted,
+        MeshWidgetState.BluetoothOff -> snapshot?.let { it.atMs + STALE_AFTER_MS + 1 }
+        MeshWidgetState.Unset,
+        MeshWidgetState.Paused,
+        MeshWidgetState.Stale -> null
+    }
+
 // The widget's resources, behind an interface so the tests need no Android.
 internal interface MeshWidgetCopy {
     // "as of 14:05", for the reading taken at atMs.

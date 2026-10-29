@@ -1709,8 +1709,10 @@ takes it in `setMeshSnapshot`, one reading of the reachable count, whether the
 mesh runs, whether Bluetooth is off, and when. The notice and the home screen
 widget on both platforms draw it, and `clearMeshSnapshot` puts them back for
 the panic wipe. On iOS each push reloads the widget against a daily budget, so
-`background-notice.ts` holds pushes to one per ten minutes while the app is in
-the background.
+`background-notice.ts` holds pushes to one per 45 minutes while the app is in
+the background, and the widget retires a reading after an hour rather than
+Android's 15 minutes. On Android an alarm redraws the widget when its reading
+turns stale, so a killed process cannot leave an old count up.
 
 Nothing about Tor is asked of it. `AirhopTorModule` owns that and answers
 directly; a radio module reporting on Tor would be a boundary violation.
