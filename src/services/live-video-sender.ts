@@ -21,14 +21,16 @@ import { LiveVideoCongestionController } from "@core/mesh/video/live-video-conge
 import { LiveVideoPacer } from "@core/mesh/video/live-video-pacer";
 import {
   KEYFRAME_INTERVAL_SECONDS,
-  MAX_LIVE_VIDEO_FILE_BYTES,
   MIN_LIVE_VIDEO_MS,
   type LiveVideoQuality,
   type LiveVideoQualityName,
 } from "@core/mesh/video/live-video-quality";
 import { STREAM_ID_BYTES } from "@core/mesh/video/video-burst-packet";
 import { VideoStreamPacketizer } from "@core/mesh/video/video-stream-packetizer";
-import { liveVideoFileName } from "@core/mesh/wire/file-packet";
+import {
+  liveVideoFileName,
+  MAX_BITCHAT_VIDEO_BYTES,
+} from "@core/mesh/wire/file-packet";
 import { t } from "@i18n";
 import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
 import * as FileSystem from "expo-file-system";
@@ -323,7 +325,7 @@ export class LiveVideoSendSession {
       name: liveVideoFileName(this.streamID),
       durationMs: result.durationMs,
       sizeBytes: result.sizeBytes,
-      fitsAsFile: result.sizeBytes <= MAX_LIVE_VIDEO_FILE_BYTES,
+      fitsAsFile: result.sizeBytes <= MAX_BITCHAT_VIDEO_BYTES,
     };
   }
 

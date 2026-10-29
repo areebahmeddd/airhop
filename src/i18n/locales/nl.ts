@@ -578,6 +578,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Maak een foto of video",
   "chat.attach.camera_desc_photo": "Foto maken",
+  "chat.attach.video": "Video opnemen",
+  "chat.attach.video_desc": "Neem een korte clip op",
   "chat.attach.library": "Fotogalerij",
   "chat.attach.library_desc": "Kies uit je galerij",
   "chat.attach.document": "Document",
@@ -650,6 +652,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Voeg een bijschrift toe…",
   "chat.attach.send": "Bijlage sturen",
   "chat.attach.generic": "Bijlage",
+  "chat.video_prep.preparing": "Video voorbereiden",
+  "chat.video_prep.waiting": "Wachten om video voor te bereiden",
+  "chat.video_prep.cancel": "Stop met het voorbereiden van deze video",
+  "chat.video_prep.too_large":
+    "Deze video kon niet klein genoeg worden gemaakt om te versturen.",
+  "chat.video_prep.unreadable":
+    "Deze video kon niet worden geopend. Probeer een andere.",
+  "chat.video_prep.failed":
+    "Er ging iets mis bij het voorbereiden van die video. Probeer het opnieuw.",
+  "chat.video_prep.interrupted":
+    "Je verliet Airhop voordat de video klaar was. Probeer hem opnieuw te versturen.",
+  "chat.trim.play": "Voorbeeld afspelen",
+  "chat.trim.pause": "Voorbeeld pauzeren",
+  "chat.trim.start": "Begin van de clip",
+  "chat.trim.end": "Einde van de clip",
   "chat.media.view_full": "Foto op volledig scherm bekijken",
   "chat.media.gone_photo": "De foto staat niet op dit toestel",
   "chat.media.gone_video": "De video staat niet op dit toestel",

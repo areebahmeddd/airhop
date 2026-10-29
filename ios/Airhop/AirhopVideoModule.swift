@@ -1,9 +1,12 @@
-// AirhopVideoModule: live video for Airhop.
+// AirhopVideoModule: live video, and the transcode that fits a video to a
+// mesh transfer.
 //
 // iOS counterpart of AirhopVideoModule.kt, with the same contract: the camera
 // becomes a stream of H.264 access units, units become pictures on a surface,
-// and units plus AAC frames become an MP4. No protocol, no pacing, no packet
-// knowledge: those live in core/mesh/video/ and live-video-*.ts.
+// units plus AAC frames become an MP4, and a file becomes a smaller one to the
+// plan it is handed (VideoTranscode/). No protocol, no pacing, no packet
+// knowledge, no sizing decisions: those live in core/mesh/video/,
+// live-video-*.ts and video-prepare.ts.
 //
 // Units cross the bridge as base64 Annex B with SPS and PPS on every keyframe,
 // exactly the LIVE_VIDEO_V1 unit format. Audio is not captured here; the
@@ -11,12 +14,14 @@
 // for the recording.
 //
 // Threading: every exported method returns at once. The camera has its own
-// session queue, recordings their own serial queue, and display work runs on
-// the main thread with the layers it feeds.
+// session queue, recordings their own serial queue, display work runs on the
+// main thread with the layers it feeds, and transcodes run one after another
+// as tasks off it.
 //
 // Events emitted to TypeScript:
-//   AirhopVideo.encoded      { dataBase64, ptsMs, keyframe }
-//   AirhopVideo.cameraError  { message }
+//   AirhopVideo.encoded            { dataBase64, ptsMs, keyframe }
+//   AirhopVideo.cameraError        { message }
+//   AirhopVideo.transcodeProgress  { jobKey, fraction }
 import AVFoundation
 import Foundation
 import React
@@ -25,6 +30,7 @@ import UIKit
 private enum VideoEvent {
   static let encoded = "AirhopVideo.encoded"
   static let cameraError = "AirhopVideo.cameraError"
+  static let transcodeProgress = "AirhopVideo.transcodeProgress"
 }
 
 // MARK: - Camera
@@ -280,21 +286,29 @@ final class AirhopVideoModule: RCTEventEmitter {
   // Its own lock: the recording queue can be busy finishing a file.
   private let optionsLock = NSLock()
   private var cameraOptions: NSDictionary?
+  // Guards both: passes by job key, and the last one queued, which the next
+  // waits for.
+  private let transcodeLock = NSLock()
+  private var transcodes: [String: VideoTranscodePass] = [:]
+  private var transcodeTail: Task<Void, Never>?
 
   @objc override static func requiresMainQueueSetup() -> Bool { false }
 
   override func supportedEvents() -> [String]! {
-    [VideoEvent.encoded, VideoEvent.cameraError]
+    [VideoEvent.encoded, VideoEvent.cameraError, VideoEvent.transcodeProgress]
   }
 
-  // A JS reload or teardown: the camera goes off and no recording is left
-  // open.
+  // A JS reload or teardown: the camera goes off and no recording or
+  // transcode is left open.
   override func invalidate() {
     AirhopVideoCamera.shared.stop {}
     recordingQueue.async {
       self.recordings.values.forEach { $0.cancel() }
       self.recordings.removeAll()
     }
+    transcodeLock.lock()
+    transcodes.values.forEach { $0.cancel() }
+    transcodeLock.unlock()
     super.invalidate()
   }
 
@@ -387,6 +401,122 @@ final class AirhopVideoModule: RCTEventEmitter {
     recordingQueue.async {
       self.recordings.removeValue(forKey: recordingKey)?.cancel()
     }
+  }
+
+  // MARK: Transcode
+
+  @objc func probeVideo(
+    _ uri: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let url = Self.fileURL(uri) else {
+      reject("BAD_PATH", "not a file URL", nil)
+      return
+    }
+    Task.detached(priority: .userInitiated) {
+      do {
+        let probe = try await VideoTranscodeProbing.probe(url)
+        resolve([
+          "durationMs": probe.durationMs,
+          "width": probe.width,
+          "height": probe.height,
+          "hasAudio": probe.hasAudio,
+        ])
+      } catch VideoTranscodeError.noVideo {
+        reject("NO_VIDEO", "no video track", nil)
+      } catch {
+        reject("UNREADABLE", "cannot open the video", error)
+      }
+    }
+  }
+
+  @objc func transcodeVideo(
+    _ jobKey: String,
+    source: String,
+    output: String,
+    options: NSDictionary,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let sourceURL = Self.fileURL(source), let outputURL = Self.fileURL(output) else {
+      reject("BAD_PATH", "not a file URL", nil)
+      return
+    }
+    let number = { (key: String) -> Int in (options[key] as? NSNumber)?.intValue ?? 0 }
+    let pass = VideoTranscodePass(
+      source: sourceURL,
+      output: outputURL,
+      options: VideoTranscodeOptions(
+        startMs: number("startMs"),
+        keepMs: number("keepMs"),
+        width: number("width"),
+        height: number("height"),
+        fps: number("fps"),
+        videoBitrate: number("videoBitrate"),
+        audioBitrate: number("audioBitrate"),
+        keyframeIntervalSeconds: number("keyframeIntervalSeconds")
+      ))
+    transcodeLock.lock()
+    transcodes[jobKey]?.cancel()
+    transcodes[jobKey] = pass
+    let previous = transcodeTail
+    let task = Task.detached(priority: .userInitiated) { [weak self] in
+      await previous?.value
+      do {
+        let result = try await pass.run { fraction in
+          self?.sendEvent(
+            withName: VideoEvent.transcodeProgress,
+            body: ["jobKey": jobKey, "fraction": fraction])
+        }
+        resolve(["sizeBytes": Double(result.sizeBytes), "durationMs": result.durationMs])
+      } catch VideoTranscodeError.cancelled {
+        reject("CANCELLED", "transcode cancelled", nil)
+      } catch {
+        // Domain and code only: an NSError's description carries the file path.
+        let nsError = error as NSError
+        let code = "\(nsError.domain) \(nsError.code)"
+        AirhopLog.video.error("Transcode failed (\(code, privacy: .public))")
+        reject("TRANSCODE_FAILED", "transcode failed", error)
+      }
+      self?.finishTranscode(jobKey, pass)
+    }
+    transcodeTail = task
+    transcodeLock.unlock()
+  }
+
+  @objc func cancelTranscode(_ jobKey: String) {
+    transcodeLock.lock()
+    let pass = transcodes[jobKey]
+    transcodeLock.unlock()
+    pass?.cancel()
+  }
+
+  @objc func extractFrames(
+    _ source: String,
+    timesMs: [NSNumber],
+    maxEdge: Double,
+    outputs: [String],
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let outputURLs = outputs.compactMap(Self.fileURL)
+    guard let sourceURL = Self.fileURL(source), outputURLs.count == outputs.count else {
+      reject("BAD_PATH", "not a file URL", nil)
+      return
+    }
+    Task.detached(priority: .utility) {
+      await VideoFrames.write(
+        source: sourceURL, timesMs: timesMs.map(\.doubleValue), maxEdge: Int(maxEdge),
+        outputs: outputURLs)
+      resolve(nil)
+    }
+  }
+
+  private func finishTranscode(_ jobKey: String, _ pass: VideoTranscodePass) {
+    transcodeLock.lock()
+    if transcodes[jobKey] === pass { transcodes.removeValue(forKey: jobKey) }
+    transcodeLock.unlock()
   }
 
   // MARK: Capture

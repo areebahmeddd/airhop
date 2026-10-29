@@ -37,6 +37,26 @@ RCT_EXTERN_METHOD(finishRecording:(NSString *)recordingKey
 
 RCT_EXTERN_METHOD(cancelRecording:(NSString *)recordingKey)
 
+RCT_EXTERN_METHOD(probeVideo:(NSString *)uri
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(transcodeVideo:(NSString *)jobKey
+                  source:(NSString *)source
+                  output:(NSString *)output
+                  options:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(cancelTranscode:(NSString *)jobKey)
+
+RCT_EXTERN_METHOD(extractFrames:(NSString *)source
+                  timesMs:(NSArray<NSNumber *> *)timesMs
+                  maxEdge:(double)maxEdge
+                  outputs:(NSArray<NSString *> *)outputs
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(startCamera:(NSDictionary *)options
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)

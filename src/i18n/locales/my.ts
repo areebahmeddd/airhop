@@ -584,6 +584,8 @@ export const strings: Strings = {
   "chat.attach.camera": "ကင်မရာ",
   "chat.attach.camera_desc": "ဓာတ်ပုံ သို့မဟုတ် ဗီဒီယို ရိုက်ပါ",
   "chat.attach.camera_desc_photo": "ဓာတ်ပုံ ရိုက်ပါ",
+  "chat.attach.video": "ဗီဒီယို ရိုက်ပါ",
+  "chat.attach.video_desc": "ကလစ်တို တစ်ခု ရိုက်ပါ",
   "chat.attach.library": "ဓာတ်ပုံပြခန်း",
   "chat.attach.library_desc": "သင့်ပြခန်းမှ ရွေးပါ",
   "chat.attach.document": "စာရွက်စာတမ်း",
@@ -657,6 +659,21 @@ export const strings: Strings = {
   "chat.attach.caption": "စာတန်း ထည့်ပါ…",
   "chat.attach.send": "ပူးတွဲဖိုင် ပို့ပါ",
   "chat.attach.generic": "ပူးတွဲဖိုင်",
+  "chat.video_prep.preparing": "ဗီဒီယို ပြင်ဆင်နေသည်",
+  "chat.video_prep.waiting": "ဗီဒီယို ပြင်ဆင်ရန် စောင့်ဆိုင်းဆဲ",
+  "chat.video_prep.cancel": "ဤဗီဒီယို ပြင်ဆင်ခြင်းကို ရပ်ပါ",
+  "chat.video_prep.too_large":
+    "ဤဗီဒီယိုကို ပို့နိုင်လောက်အောင် မသေးငယ်စေနိုင်ခဲ့ပါ။",
+  "chat.video_prep.unreadable":
+    "ဤဗီဒီယိုကို ဖွင့်၍ မရပါ။ အခြားတစ်ခု စမ်းကြည့်ပါ။",
+  "chat.video_prep.failed":
+    "ထိုဗီဒီယိုကို ပြင်ဆင်ရာတွင် တစ်ခုခု မှားယွင်းသွားသည်။ ထပ်စမ်းကြည့်ပါ။",
+  "chat.video_prep.interrupted":
+    "ဗီဒီယို အဆင်သင့်မဖြစ်မီ Airhop မှ ထွက်သွားခဲ့သည်။ ထပ်ပို့ကြည့်ပါ။",
+  "chat.trim.play": "အစမ်းကြည့်ရှုမှု ဖွင့်ပါ",
+  "chat.trim.pause": "အစမ်းကြည့်ရှုမှု ခဏရပ်ပါ",
+  "chat.trim.start": "ကလစ်၏ အစ",
+  "chat.trim.end": "ကလစ်၏ အဆုံး",
   "chat.media.view_full": "ဓာတ်ပုံကို ဖန်သားပြင်အပြည့် ကြည့်ပါ",
   "chat.media.gone_photo": "ဓာတ်ပုံသည် ဤစက်ပေါ်တွင် မရှိပါ",
   "chat.media.gone_video": "ဗီဒီယိုသည် ဤစက်ပေါ်တွင် မရှိပါ",

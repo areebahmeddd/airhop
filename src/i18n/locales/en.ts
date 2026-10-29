@@ -604,6 +604,8 @@ export const strings = {
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Take a photo or video",
   "chat.attach.camera_desc_photo": "Take a photo",
+  "chat.attach.video": "Record video",
+  "chat.attach.video_desc": "Record a short clip",
   "chat.attach.library": "Photo library",
   "chat.attach.library_desc": "Choose from your library",
   "chat.attach.document": "Document",
@@ -676,6 +678,21 @@ export const strings = {
   "chat.attach.caption": "Add a caption…",
   "chat.attach.send": "Send attachment",
   "chat.attach.generic": "Attachment",
+  "chat.video_prep.preparing": "Preparing video",
+  "chat.video_prep.waiting": "Waiting to prepare video",
+  "chat.video_prep.cancel": "Stop preparing this video",
+  "chat.video_prep.too_large":
+    "This video could not be made small enough to send.",
+  "chat.video_prep.unreadable":
+    "This video could not be opened. Try another one.",
+  "chat.video_prep.failed":
+    "Something went wrong preparing that video. Try again.",
+  "chat.video_prep.interrupted":
+    "You left Airhop before the video was ready. Try sending it again.",
+  "chat.trim.play": "Play preview",
+  "chat.trim.pause": "Pause preview",
+  "chat.trim.start": "Start of the clip",
+  "chat.trim.end": "End of the clip",
   "chat.media.view_full": "View photo full screen",
   "chat.media.gone_photo": "Photo not on this device",
   "chat.media.gone_video": "Video not on this device",

@@ -591,6 +591,8 @@ export const strings: Strings = {
   "chat.attach.camera": "கேமரா",
   "chat.attach.camera_desc": "புகைப்படமோ வீடியோவோ எடு",
   "chat.attach.camera_desc_photo": "புகைப்படம் எடுக்கவும்",
+  "chat.attach.video": "வீடியோ பதிவுசெய்",
+  "chat.attach.video_desc": "சிறிய கிளிப்பைப் பதிவுசெய்யுங்கள்",
   "chat.attach.library": "புகைப்படத் தொகுப்பு",
   "chat.attach.library_desc": "உங்கள் தொகுப்பிலிருந்து தேர்ந்தெடுங்கள்",
   "chat.attach.document": "ஆவணம்",
@@ -666,6 +668,21 @@ export const strings: Strings = {
   "chat.attach.caption": "விளக்கம் சேருங்கள்…",
   "chat.attach.send": "இணைப்பை அனுப்பு",
   "chat.attach.generic": "இணைப்பு",
+  "chat.video_prep.preparing": "வீடியோ தயாராகிறது",
+  "chat.video_prep.waiting": "வீடியோவைத் தயாரிக்கக் காத்திருக்கிறது",
+  "chat.video_prep.cancel": "இந்த வீடியோவைத் தயாரிப்பதை நிறுத்து",
+  "chat.video_prep.too_large":
+    "இந்த வீடியோவை அனுப்பும் அளவுக்குச் சிறியதாக்க முடியவில்லை.",
+  "chat.video_prep.unreadable":
+    "இந்த வீடியோவைத் திறக்க முடியவில்லை. வேறொன்றை முயலுங்கள்.",
+  "chat.video_prep.failed":
+    "அந்த வீடியோவைத் தயாரிப்பதில் ஏதோ தவறாகிவிட்டது. மீண்டும் முயலுங்கள்.",
+  "chat.video_prep.interrupted":
+    "வீடியோ தயாராகும் முன்பே Airhop-ஐ விட்டு வெளியேறினீர்கள். மீண்டும் அனுப்ப முயலுங்கள்.",
+  "chat.trim.play": "முன்னோட்டத்தை இயக்கு",
+  "chat.trim.pause": "முன்னோட்டத்தை இடைநிறுத்து",
+  "chat.trim.start": "கிளிப்பின் தொடக்கம்",
+  "chat.trim.end": "கிளிப்பின் முடிவு",
   "chat.media.view_full": "புகைப்படத்தை முழுத் திரையில் பார்",
   "chat.media.gone_photo": "புகைப்படம் இந்தச் சாதனத்தில் இல்லை",
   "chat.media.gone_video": "வீடியோ இந்தச் சாதனத்தில் இல்லை",

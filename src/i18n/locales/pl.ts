@@ -580,6 +580,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Aparat",
   "chat.attach.camera_desc": "Zrób zdjęcie albo film",
   "chat.attach.camera_desc_photo": "Zrób zdjęcie",
+  "chat.attach.video": "Nagraj wideo",
+  "chat.attach.video_desc": "Nagraj krótki klip",
   "chat.attach.library": "Galeria zdjęć",
   "chat.attach.library_desc": "Wybierz z galerii",
   "chat.attach.document": "Dokument",
@@ -652,6 +654,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Dodaj podpis…",
   "chat.attach.send": "Wyślij załącznik",
   "chat.attach.generic": "Załącznik",
+  "chat.video_prep.preparing": "Przygotowywanie wideo",
+  "chat.video_prep.waiting": "Wideo czeka na przygotowanie",
+  "chat.video_prep.cancel": "Przerwij przygotowywanie tego wideo",
+  "chat.video_prep.too_large":
+    "Nie udało się zmniejszyć tego wideo na tyle, by je wysłać.",
+  "chat.video_prep.unreadable":
+    "Nie udało się otworzyć tego wideo. Spróbuj innego.",
+  "chat.video_prep.failed":
+    "Coś poszło nie tak przy przygotowywaniu tego wideo. Spróbuj ponownie.",
+  "chat.video_prep.interrupted":
+    "Opuszczono Airhop, zanim wideo było gotowe. Spróbuj wysłać je ponownie.",
+  "chat.trim.play": "Odtwórz podgląd",
+  "chat.trim.pause": "Wstrzymaj podgląd",
+  "chat.trim.start": "Początek klipu",
+  "chat.trim.end": "Koniec klipu",
   "chat.media.view_full": "Pokaż zdjęcie na pełnym ekranie",
   "chat.media.gone_photo": "Zdjęcia nie ma na tym urządzeniu",
   "chat.media.gone_video": "Filmu nie ma na tym urządzeniu",

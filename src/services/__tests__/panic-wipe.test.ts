@@ -19,6 +19,7 @@ import { stopNotificationPipeline } from "../notification-pipeline";
 import { dismissAllNotifications } from "../notification-service";
 import { setNutzapWatcher } from "../nutzap-watcher-handle";
 import { MMKV_STORE_IDS, panicWipe } from "../panic-wipe";
+import { cancelAllVideoPreparation } from "../video-prepare";
 import {
   currentWipeGeneration,
   isCurrentWipeGeneration,
@@ -38,6 +39,11 @@ jest.mock("@core/crypto/keychain", () => ({
 // stays a pure unit and can assert the wipe was invoked.
 jest.mock("../file-transfer-service", () => ({
   wipeCacheDirectory: jest.fn().mockResolvedValue(undefined),
+}));
+
+// A video being shrunk is stopped by the wipe; only the order matters here.
+jest.mock("../video-prepare", () => ({
+  cancelAllVideoPreparation: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Dismissing the tray reaches expo-notifications, which registers push
@@ -213,6 +219,23 @@ describe("panicWipe", () => {
     // and the saved QR card.
     await panicWipe();
     expect(wipeCacheDirectory).toHaveBeenCalledTimes(1);
+  });
+
+  test("stops a video being shrunk before it empties the cache", async () => {
+    // A shrunk file finished after the cache was emptied would survive it.
+    const order: string[] = [];
+    (cancelAllVideoPreparation as jest.Mock).mockImplementationOnce(() => {
+      order.push("video");
+      return Promise.resolve();
+    });
+    (wipeCacheDirectory as jest.Mock).mockImplementationOnce(() => {
+      order.push("cache");
+      return Promise.resolve();
+    });
+
+    await panicWipe();
+
+    expect(order).toEqual(["video", "cache"]);
   });
 
   test("reports the keys as destroyed on success", async () => {

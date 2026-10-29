@@ -576,6 +576,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Камера",
   "chat.attach.camera_desc": "Снять фото или видео",
   "chat.attach.camera_desc_photo": "Сделать фото",
+  "chat.attach.video": "Снять видео",
+  "chat.attach.video_desc": "Снять короткий клип",
   "chat.attach.library": "Медиатека",
   "chat.attach.library_desc": "Выбрать из медиатеки",
   "chat.attach.document": "Документ",
@@ -647,6 +649,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Добавить подпись…",
   "chat.attach.send": "Отправить вложение",
   "chat.attach.generic": "Вложение",
+  "chat.video_prep.preparing": "Подготовка видео",
+  "chat.video_prep.waiting": "Видео ждёт подготовки",
+  "chat.video_prep.cancel": "Остановить подготовку этого видео",
+  "chat.video_prep.too_large":
+    "Не удалось уменьшить это видео настолько, чтобы его отправить.",
+  "chat.video_prep.unreadable":
+    "Не удалось открыть это видео. Попробуйте другое.",
+  "chat.video_prep.failed":
+    "Что-то пошло не так при подготовке видео. Попробуйте ещё раз.",
+  "chat.video_prep.interrupted":
+    "Вы вышли из Airhop до того, как видео было готово. Попробуйте отправить его снова.",
+  "chat.trim.play": "Воспроизвести превью",
+  "chat.trim.pause": "Приостановить превью",
+  "chat.trim.start": "Начало клипа",
+  "chat.trim.end": "Конец клипа",
   "chat.media.view_full": "Открыть фото на весь экран",
   "chat.media.gone_photo": "Фото нет на этом устройстве",
   "chat.media.gone_video": "Видео нет на этом устройстве",

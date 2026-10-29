@@ -55,6 +55,7 @@ import { clearLocationCache } from "./location-service";
 import { stopNotificationPipeline } from "./notification-pipeline";
 import { dismissAllNotifications } from "./notification-service";
 import { setNutzapRebinder, stopNutzapWatcher } from "./nutzap-watcher-handle";
+import { cancelAllVideoPreparation } from "./video-prepare";
 import { resetWalletService } from "./wallet-service";
 import { bumpWipeGeneration } from "./wipe-generation";
 import { beginPanicWipe, condemnIdentity, endPanicWipe } from "./wipe-marker";
@@ -382,9 +383,16 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   //
   //    Awaited: it yields between batches rather than holding the thread, and
   //    awaiting it is what keeps step 5 honest.
-  //    Live video first: a recording the stopped mesh is still finishing
-  //    would otherwise land in the cache just after it was emptied.
-  await settleOr(settleLiveVideoWork(), BEST_EFFORT_TIMEOUT_MS, undefined);
+  //    Video work first: a recording the stopped mesh is still finishing, or
+  //    a video still being shrunk, would otherwise land in the cache just
+  //    after it was emptied.
+  await settleOr(
+    Promise.all([settleLiveVideoWork(), cancelAllVideoPreparation()]).then(
+      () => undefined,
+    ),
+    BEST_EFFORT_TIMEOUT_MS,
+    undefined,
+  );
   try {
     await wipeCacheDirectory();
   } catch {

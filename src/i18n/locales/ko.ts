@@ -565,6 +565,8 @@ export const strings: Strings = {
   "chat.attach.camera": "카메라",
   "chat.attach.camera_desc": "사진이나 동영상 촬영",
   "chat.attach.camera_desc_photo": "사진 찍기",
+  "chat.attach.video": "동영상 촬영",
+  "chat.attach.video_desc": "짧은 클립 촬영하기",
   "chat.attach.library": "사진 라이브러리",
   "chat.attach.library_desc": "라이브러리에서 선택",
   "chat.attach.document": "문서",
@@ -636,6 +638,21 @@ export const strings: Strings = {
   "chat.attach.caption": "설명 추가…",
   "chat.attach.send": "첨부 파일 보내기",
   "chat.attach.generic": "첨부 파일",
+  "chat.video_prep.preparing": "동영상 준비 중",
+  "chat.video_prep.waiting": "동영상 준비 대기 중",
+  "chat.video_prep.cancel": "이 동영상 준비 중단",
+  "chat.video_prep.too_large":
+    "이 동영상을 보낼 수 있을 만큼 작게 만들지 못했습니다.",
+  "chat.video_prep.unreadable":
+    "이 동영상을 열 수 없습니다. 다른 동영상으로 시도하세요.",
+  "chat.video_prep.failed":
+    "그 동영상을 준비하는 중 문제가 생겼습니다. 다시 시도하세요.",
+  "chat.video_prep.interrupted":
+    "동영상이 준비되기 전에 Airhop을 떠났습니다. 다시 보내 보세요.",
+  "chat.trim.play": "미리보기 재생",
+  "chat.trim.pause": "미리보기 일시정지",
+  "chat.trim.start": "클립 시작",
+  "chat.trim.end": "클립 끝",
   "chat.media.view_full": "사진 전체 화면으로 보기",
   "chat.media.gone_photo": "사진이 이 기기에 없습니다",
   "chat.media.gone_video": "동영상이 이 기기에 없습니다",

@@ -1151,9 +1151,15 @@ export default function ArchitecturePage() {
               <Table
                 head={["", "Photo", "Voice note", "Video", "Anything else"]}
                 rows={[
-                  ["Cap", "512 KiB, fitted to 256 KiB", "512 KiB", "1 MiB", "1 MiB"],
-                  ["Resized first", "Yes", "No", "No", "No"],
-                  ["Sent as", "JPEG, or GIF and PNG as they are", "AAC", "MP4 or MOV", "As-is"],
+                  [
+                    "Cap",
+                    "512 KiB, fitted to 256 KiB",
+                    "512 KiB",
+                    "1 MiB, fitted to the recipient",
+                    "1 MiB",
+                  ],
+                  ["Resized first", "Yes", "No", "Yes", "No"],
+                  ["Sent as", "JPEG, or GIF and PNG as they are", "AAC", "MP4", "As-is"],
                 ]}
               />
 
@@ -1165,6 +1171,20 @@ export default function ArchitecturePage() {
                 fits, because that is what strips its metadata, GPS included, and one the encoder
                 cannot open is refused rather than sent as it is. A GIF or PNG that fits goes
                 unchanged, so an animation stays animated and a screenshot stays lossless.
+              </p>
+
+              <p>
+                A video can be any length, but{" "}
+                <strong className="text-ink">up to one minute of it is sent</strong>. Before
+                sending, a trimmer under the preview lets you pick which minute, or any shorter
+                part; left alone, a longer video sends its first minute. That part is then shrunk to
+                whoever receives it, the same way a photo is. Anything a bitchat phone might get, in
+                the Bluetooth room or a DM with someone not known to run Airhop, is fitted to 100
+                KiB, the size bitchat sends its own clips at; another Airhop phone gets the full 1
+                MiB. The picture size, frame rate and sound follow from what that budget affords, so
+                a short clip stays sharp and a full minute becomes a small, silent one. Like a
+                photo, a picked or recorded video is always re-encoded, which strips the location a
+                phone camera writes.
               </p>
 
               <Note label="What the quality setting actually does">

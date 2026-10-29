@@ -43,6 +43,8 @@
 		A1D3C4E5B6074F1288AA0405 /* AirhopVideoMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0406 /* AirhopVideoMedia.swift */; };
 		A1D3C4E5B6074F1288AA0407 /* AirhopVideoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0408 /* AirhopVideoViews.swift */; };
 		A1D3C4E5B6074F1288AA0409 /* SurfaceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA040A /* SurfaceRegistry.swift */; };
+		A1D3C4E5B6074F1288AA040B /* VideoTranscodePass.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA040C /* VideoTranscodePass.swift */; };
+		A1D3C4E5B6074F1288AA040D /* VideoFrames.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA040E /* VideoFrames.swift */; };
 		A1D3C4E5B6074F1288AA0501 /* MeshWidgetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0511 /* MeshWidgetState.swift */; };
 		A1D3C4E5B6074F1288AA0502 /* MeshWidgetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0511 /* MeshWidgetState.swift */; };
 		A1D3C4E5B6074F1288AA0503 /* AirhopWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0512 /* AirhopWidget.swift */; };
@@ -153,6 +155,8 @@
 		A1D3C4E5B6074F1288AA0406 /* AirhopVideoMedia.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopVideoMedia.swift; path = Airhop/AirhopVideoMedia.swift; sourceTree = "<group>"; };
 		A1D3C4E5B6074F1288AA0408 /* AirhopVideoViews.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopVideoViews.swift; path = Airhop/AirhopVideoViews.swift; sourceTree = "<group>"; };
 		A1D3C4E5B6074F1288AA040A /* SurfaceRegistry.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = SurfaceRegistry.swift; path = Airhop/VideoSurfaces/SurfaceRegistry.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA040C /* VideoTranscodePass.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = VideoTranscodePass.swift; path = Airhop/VideoTranscode/VideoTranscodePass.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA040E /* VideoFrames.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = VideoFrames.swift; path = Airhop/VideoTranscode/VideoFrames.swift; sourceTree = "<group>"; };
 		A1D3C4E5B6074F1288AA0511 /* MeshWidgetState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshWidgetState.swift; sourceTree = "<group>"; };
 		A1D3C4E5B6074F1288AA0512 /* AirhopWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirhopWidget.swift; sourceTree = "<group>"; };
 		A1D3C4E5B6074F1288AA0513 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -283,6 +287,8 @@
 				A1D3C4E5B6074F1288AA0406 /* AirhopVideoMedia.swift */,
 				A1D3C4E5B6074F1288AA0408 /* AirhopVideoViews.swift */,
 				A1D3C4E5B6074F1288AA040A /* SurfaceRegistry.swift */,
+				A1D3C4E5B6074F1288AA040C /* VideoTranscodePass.swift */,
+				A1D3C4E5B6074F1288AA040E /* VideoFrames.swift */,
 				B5B7883FE2864809B556B722 /* AirhopVoiceModule.mm */,
 				66E175A8511747A080C246EA /* AirhopVoiceModule.swift */,
 				708D4EAC142B4B5F8FF71CF5 /* AirhopWiFiModule.mm */,
@@ -713,6 +719,8 @@
 				A1D3C4E5B6074F1288AA0405 /* AirhopVideoMedia.swift in Sources */,
 				A1D3C4E5B6074F1288AA0407 /* AirhopVideoViews.swift in Sources */,
 				A1D3C4E5B6074F1288AA0409 /* SurfaceRegistry.swift in Sources */,
+				A1D3C4E5B6074F1288AA040B /* VideoTranscodePass.swift in Sources */,
+				A1D3C4E5B6074F1288AA040D /* VideoFrames.swift in Sources */,
 				04CD453DBC41469BB2CF2595 /* AirhopVoiceModule.mm in Sources */,
 				56B4EC76AA924F30BDF0032B /* AirhopVoiceModule.swift in Sources */,
 				7663466FA96548F1AA63AA78 /* AirhopWiFiModule.mm in Sources */,

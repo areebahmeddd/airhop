@@ -575,6 +575,8 @@ export const strings: Strings = {
   "chat.attach.camera": "カメラ",
   "chat.attach.camera_desc": "写真または動画を撮る",
   "chat.attach.camera_desc_photo": "写真を撮る",
+  "chat.attach.video": "動画を撮影",
+  "chat.attach.video_desc": "短いクリップを撮影する",
   "chat.attach.library": "フォトライブラリ",
   "chat.attach.library_desc": "ライブラリから選ぶ",
   "chat.attach.document": "書類",
@@ -646,6 +648,21 @@ export const strings: Strings = {
   "chat.attach.caption": "キャプションを追加…",
   "chat.attach.send": "添付を送信",
   "chat.attach.generic": "添付",
+  "chat.video_prep.preparing": "動画を準備中",
+  "chat.video_prep.waiting": "動画の準備を待機中",
+  "chat.video_prep.cancel": "この動画の準備を中止",
+  "chat.video_prep.too_large":
+    "この動画を送信できる大きさまで小さくできませんでした。",
+  "chat.video_prep.unreadable":
+    "この動画を開けませんでした。別の動画をお試しください。",
+  "chat.video_prep.failed":
+    "その動画の準備中に問題が起きました。もう一度お試しください。",
+  "chat.video_prep.interrupted":
+    "動画の準備が終わる前にAirhopを離れました。もう一度送信してください。",
+  "chat.trim.play": "プレビューを再生",
+  "chat.trim.pause": "プレビューを一時停止",
+  "chat.trim.start": "クリップの開始位置",
+  "chat.trim.end": "クリップの終了位置",
   "chat.media.view_full": "写真を全画面で見る",
   "chat.media.gone_photo": "この端末に写真はありません",
   "chat.media.gone_video": "この端末に動画はありません",

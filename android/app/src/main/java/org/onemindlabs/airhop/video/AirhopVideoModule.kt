@@ -1,10 +1,12 @@
-// AirhopVideoModule: live video for Airhop.
+// AirhopVideoModule: live video, and the transcode that fits a video to a
+// mesh transfer.
 //
 // The camera becomes a stream of H.264 access units, units become pictures on
-// a surface, and units plus AAC frames become an MP4. Nothing else: no
-// protocol, no pacing, no packet knowledge. Those live in core/mesh/video/
-// and live-video-*.ts, exactly as the voice module leaves the burst format to
-// TypeScript.
+// a surface, units plus AAC frames become an MP4, and a file becomes a smaller
+// one to the plan it is handed (VideoTranscoder). Nothing else: no protocol,
+// no pacing, no packet knowledge, no sizing decisions. Those live in
+// core/mesh/video/, live-video-*.ts and video-prepare.ts, exactly as the voice
+// module leaves the burst format to TypeScript.
 //
 // Units cross the bridge as base64 Annex B with SPS and PPS on every keyframe,
 // the LIVE_VIDEO_V1 unit format. Audio is not captured here; the microphone
@@ -13,12 +15,13 @@
 //
 // Threading contract: every @ReactMethod returns at once. The camera binds on
 // the main thread, encoding runs on CameraX's analysis thread and a drain
-// thread, each surface decodes on its own thread, and recordings share one
-// worker.
+// thread, each surface decodes on its own thread, recordings share one
+// worker, and transcodes run one at a time on the transcoder's own looper.
 //
 // Events emitted to TypeScript:
-//   AirhopVideo.encoded      { dataBase64, ptsMs, keyframe }
-//   AirhopVideo.cameraError  { message }
+//   AirhopVideo.encoded            { dataBase64, ptsMs, keyframe }
+//   AirhopVideo.cameraError        { message }
+//   AirhopVideo.transcodeProgress  { jobKey, fraction }
 package org.onemindlabs.airhop.video
 
 import android.net.Uri
@@ -30,6 +33,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
@@ -40,6 +44,7 @@ internal const val TAG = "AirhopVideoModule"
 
 private const val EVT_ENCODED = "AirhopVideo.encoded"
 private const val EVT_CAMERA_ERROR = "AirhopVideo.cameraError"
+private const val EVT_TRANSCODE_PROGRESS = "AirhopVideo.transcodeProgress"
 
 class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -49,6 +54,9 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
     // Recording-thread state.
     private val recordings = HashMap<String, Mp4Writer>()
     @Volatile private var cameraOptions: ReadableMap? = null
+    // Its threads start with the first video shrunk, not with the app.
+    private val transcoderSlot = lazy { VideoTranscoder(reactContext) }
+    private val transcoder by transcoderSlot
     private var listenerCount = 0
 
     init {
@@ -144,6 +152,100 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
         recordingExecutor.execute { recordings.remove(recordingKey)?.cancel() }
     }
 
+    // ---- Transcode ----
+
+    @ReactMethod
+    fun probeVideo(uri: String, promise: Promise) {
+        transcoder.probe(
+            uri,
+            { probe ->
+                promise.resolve(
+                    WritableNativeMap().apply {
+                        putDouble("durationMs", probe.durationMs.toDouble())
+                        putDouble("width", probe.width.toDouble())
+                        putDouble("height", probe.height.toDouble())
+                        putBoolean("hasAudio", probe.hasAudio)
+                    }
+                )
+            },
+            { failure -> promise.reject(failure.code, failure.message) },
+        )
+    }
+
+    @ReactMethod
+    fun transcodeVideo(
+        jobKey: String,
+        source: String,
+        output: String,
+        options: ReadableMap,
+        promise: Promise,
+    ) {
+        val file = fileOf(output)
+        if (file == null) {
+            promise.reject("BAD_PATH", "not a file URI")
+            return
+        }
+        fun number(key: String): Int =
+            if (options.hasKey(key)) options.getDouble(key).toInt() else 0
+        val plan =
+            TranscodePlan(
+                startMs = number("startMs").toLong(),
+                keepMs = number("keepMs").toLong(),
+                width = number("width"),
+                height = number("height"),
+                fps = number("fps"),
+                videoBitrate = number("videoBitrate"),
+                audioBitrate = number("audioBitrate"),
+                keyframeIntervalSeconds = number("keyframeIntervalSeconds"),
+            )
+        transcoder.enqueue(
+            jobKey,
+            source,
+            file,
+            plan,
+            onProgress = { fraction ->
+                emit(
+                    EVT_TRANSCODE_PROGRESS,
+                    WritableNativeMap().apply {
+                        putString("jobKey", jobKey)
+                        putDouble("fraction", fraction)
+                    },
+                )
+            },
+            onDone = { sizeBytes, durationMs ->
+                promise.resolve(
+                    WritableNativeMap().apply {
+                        putDouble("sizeBytes", sizeBytes.toDouble())
+                        putDouble("durationMs", durationMs.toDouble())
+                    }
+                )
+            },
+            onFail = { failure -> promise.reject(failure.code, failure.message) },
+        )
+    }
+
+    @ReactMethod
+    fun cancelTranscode(jobKey: String) {
+        transcoder.cancel(jobKey)
+    }
+
+    @ReactMethod
+    fun extractFrames(
+        source: String,
+        timesMs: ReadableArray,
+        maxEdge: Double,
+        outputs: ReadableArray,
+        promise: Promise,
+    ) {
+        val files = (0 until outputs.size()).mapNotNull { fileOf(outputs.getString(it) ?: "") }
+        if (files.size != outputs.size()) {
+            promise.reject("BAD_PATH", "not a file URI")
+            return
+        }
+        val times = (0 until timesMs.size()).map { timesMs.getDouble(it).toLong() }
+        transcoder.frames(source, times, maxEdge.toInt(), files) { promise.resolve(null) }
+    }
+
     // ---- Capture ----
 
     @ReactMethod
@@ -228,6 +330,7 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
             recordings.values.forEach { it.cancel() }
             recordings.clear()
         }
+        if (transcoderSlot.isInitialized()) transcoder.release()
         super.invalidate()
     }
 

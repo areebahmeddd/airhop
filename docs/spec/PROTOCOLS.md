@@ -329,13 +329,18 @@ receive: both accept up to 1 MiB of any type. A photo is also resized to 256 KiB
 (`MAX_SENT_IMAGE_BYTES`) before it is sent, so a transfer to bitchat finishes
 inside its 30-second assembly window.
 
-Video has no such resize, since the app carries no transcoder. A camera clip or
-a round video note (`note_<uuid>.mp4`, at most 15 s at about 250 kbps, near
-700 KB at full length) reaches bitchat-ios only when it finishes inside that
-window, about 350 KiB (`MAX_BITCHAT_TRANSFER_BYTES`), so roughly the first ten
-seconds of a note. A DM to a known bitchat peer cautions before any video; the
-room has no single recipient to warn. A finished live stream is resent only at
-100 KiB or less ([section 3.10](#310-live-video)).
+A video is shrunk before it is sent, to the size its recipient can take: 100 KiB
+(`MAX_BITCHAT_VIDEO_BYTES`, bitchat-ios's own clip budget) for the Bluetooth room
+and for a DM to anyone not known to run Airhop, and the 1 MiB ceiling for a DM to
+another Airhop phone. It is an ordinary H.264 + AAC `video/mp4` named
+`clip_<uuid>.mp4` (a video note keeps `note_<uuid>.mp4`), never `video_<16 hex>.mp4`,
+which names a finished live stream ([section 3.10](#310-live-video)). The numbers
+come from bitchat-ios's `VideoTranscoder.plan` (`transcode-plan.ts`): at most
+60 s is kept, the first minute unless the sender trims another part, sound stays at 12 kbps only while the whole budget reaches
+30 kbps, and size and frame rate step down with the bitrate. A picked or recorded
+video is always re-encoded, which strips its location as the photo resize does; a
+video note or a forward is re-encoded only when it does not fit. Nothing on the
+wire changes.
 
 | Type          | Send cap |
 | ------------- | -------- |

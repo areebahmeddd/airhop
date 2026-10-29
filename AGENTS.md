@@ -29,46 +29,46 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 
 ## Where Things Live
 
-| Thing                                                          | Location                                           |
-| -------------------------------------------------------------- | -------------------------------------------------- |
-| Crypto (Noise XX and X, identity, Double Ratchet, keychain)    | `src/core/crypto/`                                 |
-| Wire format: the packet frame and every payload                | `src/core/mesh/wire/`                              |
-| Mesh routing, dedup, fragmentation, source routes              | `src/core/mesh/routing/`                           |
-| Open links per radio, and the writes that go down them         | `src/core/mesh/links/`                             |
-| GCS gossip sync                                                | `src/core/mesh/sync/`                              |
-| Announces and nickname normalization                           | `src/core/mesh/discovery/`                         |
-| Private-channel and private-group crypto                       | `src/core/mesh/rooms/`                             |
-| Courier (store-and-forward) envelopes and one-time prekeys     | `src/core/mesh/courier/`                           |
-| Live push-to-talk capture and playback                         | `src/core/mesh/voice/`                             |
-| Live video: packets, erasure code, stream send and receive     | `src/core/mesh/video/`                             |
-| Which transport a message leaves on                            | `src/core/router/`                                 |
-| Which public messages are hidden as spam                       | `src/core/spam/`                                   |
-| Base64 shared across the protocol                              | `src/core/encoding/`                               |
-| Device transfer: the code, handshake and bundle (pure)         | `src/core/move/`                                   |
-| Device transfer: what moves, and both phones' sides            | `src/services/move-*.ts`                           |
-| Nostr (client, gift wrap, geo-relays, presence, courier relay) | `src/core/nostr/`                                  |
-| Payments: tokens, DLEQ, NIP-61, seed (pure)                    | `src/core/payments/`                               |
-| Runtime wiring: mesh, wallet, Tor, anything touching a mint    | `src/services/`                                    |
-| Which peers the LAN transport dials, and the cap on it         | `src/services/lan-dial-policy.ts`                  |
-| Screen logic                                                   | `src/features/`                                    |
-| UI components, hooks, theme tokens                             | `src/ui/`                                          |
-| Thin wrappers over OS APIs (permissions, haptics)              | `src/platform/`                                    |
-| State management (Zustand over MMKV)                           | `src/store/`                                       |
-| UI copy: the catalog, the runtime, right-to-left helpers       | `src/i18n/`                                        |
-| Stateless helpers                                              | `src/utils/`                                       |
-| Generated and static tables (relays, bridges, licenses)        | `src/data/`                                        |
-| Bundled relay list, refreshed by CI                            | `assets/data/nostr_relays.csv`                     |
-| Globe picker geometry (Natural Earth, as bitchat bundles it)   | `assets/data/world/`, `src/data/world-geometry.ts` |
-| Globe picker projection, camera and detail rules (pure)        | `src/utils/globe-*.ts`                             |
-| Native module specs (hand-maintained, interop layer)           | `src/bridge/`                                      |
-| Root component and tab state machine                           | `src/app/`                                         |
-| Whole-app lifecycle and simulation suites                      | `src/__tests__/`                                   |
-| Native unit tests (the pure pieces beside each module)         | `android/app/src/test/`, `ios/Tests/`              |
-| iOS native                                                     | `ios/`                                             |
-| Android native                                                 | `android/`                                         |
-| Embedded Tor client (Rust, both platforms)                     | `native/arti/`                                     |
-| Pluggable transports (Go, both platforms)                      | `native/iptproxy/`                                 |
-| Every protocol constant                                        | [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md) |
+| Thing                                                            | Location                                           |
+| ---------------------------------------------------------------- | -------------------------------------------------- |
+| Crypto (Noise XX and X, identity, Double Ratchet, keychain)      | `src/core/crypto/`                                 |
+| Wire format: the packet frame and every payload                  | `src/core/mesh/wire/`                              |
+| Mesh routing, dedup, fragmentation, source routes                | `src/core/mesh/routing/`                           |
+| Open links per radio, and the writes that go down them           | `src/core/mesh/links/`                             |
+| GCS gossip sync                                                  | `src/core/mesh/sync/`                              |
+| Announces and nickname normalization                             | `src/core/mesh/discovery/`                         |
+| Private-channel and private-group crypto                         | `src/core/mesh/rooms/`                             |
+| Courier (store-and-forward) envelopes and one-time prekeys       | `src/core/mesh/courier/`                           |
+| Live push-to-talk capture and playback                           | `src/core/mesh/voice/`                             |
+| Live video packets, erasure code, and a sent video's shrink plan | `src/core/mesh/video/`                             |
+| Which transport a message leaves on                              | `src/core/router/`                                 |
+| Which public messages are hidden as spam                         | `src/core/spam/`                                   |
+| Base64 shared across the protocol                                | `src/core/encoding/`                               |
+| Device transfer: the code, handshake and bundle (pure)           | `src/core/move/`                                   |
+| Device transfer: what moves, and both phones' sides              | `src/services/move-*.ts`                           |
+| Nostr (client, gift wrap, geo-relays, presence, courier relay)   | `src/core/nostr/`                                  |
+| Payments: tokens, DLEQ, NIP-61, seed (pure)                      | `src/core/payments/`                               |
+| Runtime wiring: mesh, wallet, Tor, anything touching a mint      | `src/services/`                                    |
+| Which peers the LAN transport dials, and the cap on it           | `src/services/lan-dial-policy.ts`                  |
+| Screen logic                                                     | `src/features/`                                    |
+| UI components, hooks, theme tokens                               | `src/ui/`                                          |
+| Thin wrappers over OS APIs (permissions, haptics)                | `src/platform/`                                    |
+| State management (Zustand over MMKV)                             | `src/store/`                                       |
+| UI copy: the catalog, the runtime, right-to-left helpers         | `src/i18n/`                                        |
+| Stateless helpers                                                | `src/utils/`                                       |
+| Generated and static tables (relays, bridges, licenses)          | `src/data/`                                        |
+| Bundled relay list, refreshed by CI                              | `assets/data/nostr_relays.csv`                     |
+| Globe picker geometry (Natural Earth, as bitchat bundles it)     | `assets/data/world/`, `src/data/world-geometry.ts` |
+| Globe picker projection, camera and detail rules (pure)          | `src/utils/globe-*.ts`                             |
+| Native module specs (hand-maintained, interop layer)             | `src/bridge/`                                      |
+| Root component and tab state machine                             | `src/app/`                                         |
+| Whole-app lifecycle and simulation suites                        | `src/__tests__/`                                   |
+| Native unit tests (the pure pieces beside each module)           | `android/app/src/test/`, `ios/Tests/`              |
+| iOS native                                                       | `ios/`                                             |
+| Android native                                                   | `android/`                                         |
+| Embedded Tor client (Rust, both platforms)                       | `native/arti/`                                     |
+| Pluggable transports (Go, both platforms)                        | `native/iptproxy/`                                 |
+| Every protocol constant                                          | [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md) |
 
 [`src/README.md`](src/README.md) describes each `src/` layer and how to run its tests.
 

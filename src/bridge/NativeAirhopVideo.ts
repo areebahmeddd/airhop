@@ -1,13 +1,15 @@
-// The native contract for live video: H.264 in and out of the hardware codecs,
-// pictures on screen, and samples into an MP4.
+// The native contract for video: H.264 in and out of the hardware codecs,
+// pictures on screen, samples into an MP4, and one transcode pass of a file.
 //
 // Hand-maintained, not Codegen input. See NativeAirhopBLE.ts for why.
 //
 // Media plumbing only. The wire format, erasure code, packetizer, assembler,
 // pacing and the playout clock are all in core/mesh/video/; nothing here knows
-// what a packet is. iOS is backed by AirhopVideoModule.swift (AVCaptureSession,
-// VideoToolbox, AVSampleBufferDisplayLayer, AVAssetWriter), Android by
-// AirhopVideoModule.kt (CameraX, MediaCodec, MediaMuxer).
+// what a packet is, and a transcode runs the plan core/mesh/video/transcode-plan
+// makes without second-guessing it. iOS is backed by AirhopVideoModule.swift
+// (AVCaptureSession, VideoToolbox, AVSampleBufferDisplayLayer, AVAssetReader and
+// AVAssetWriter), Android by AirhopVideoModule.kt (CameraX, MediaCodec,
+// MediaMuxer, Media3 Transformer).
 //
 // Video crosses the bridge as base64 H.264 access units in Annex B with 4-byte
 // start codes, and every keyframe carries its SPS and PPS in-band: LIVE_VIDEO_V1's
@@ -16,12 +18,14 @@
 //
 // Events emitted by native code:
 //
-//   AirhopVideo.encoded      { dataBase64, ptsMs, keyframe }
-//   AirhopVideo.cameraError  { message }
+//   AirhopVideo.encoded            { dataBase64, ptsMs, keyframe }
+//   AirhopVideo.cameraError        { message }
+//   AirhopVideo.transcodeProgress  { jobKey, fraction }
 //
 // cameraError means capture stopped on its own (the camera was taken, the
 // encoder failed, the app lost the foreground) and the caller should end the
-// stream.
+// stream. transcodeProgress is throttled natively, and `fraction` runs 0 to 1
+// over one pass.
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 
@@ -42,6 +46,35 @@ export interface CameraOptions {
 export interface FinishedRecording {
   durationMs: number;
   sizeBytes: number;
+}
+
+// A source as a transcode sees it. The size is upright, rotation applied.
+export interface VideoProbe {
+  durationMs: number;
+  width: number;
+  height: number;
+  hasAudio: boolean;
+}
+
+// One pass: `keepMs` of the source from `startMs`, as H.264 at exactly this
+// upright size, frame rate and bitrate, with AAC-LC 16 kHz mono at
+// `audioBitrate`, or no sound at 0. The output starts at zero, SDR BT.709
+// whatever the source, with no source metadata (location above all) carried
+// over.
+export interface TranscodeOptions {
+  startMs: number;
+  keepMs: number;
+  width: number;
+  height: number;
+  fps: number;
+  videoBitrate: number;
+  audioBitrate: number;
+  keyframeIntervalSeconds: number;
+}
+
+export interface TranscodeResult {
+  sizeBytes: number;
+  durationMs: number;
 }
 
 export interface Spec extends TurboModule {
@@ -80,6 +113,34 @@ export interface Spec extends TurboModule {
   // Null, and nothing left on disk, when no picture was ever written.
   finishRecording(recordingKey: string): Promise<FinishedRecording | null>;
   cancelRecording(recordingKey: string): void;
+
+  // ---- Transcode ----
+
+  // Rejects NO_VIDEO for a file without a picture, UNREADABLE for one that
+  // cannot be opened.
+  probeVideo(uri: string): Promise<VideoProbe>;
+  // One pass from `source` to `output` (file:// URIs). Passes run one at a
+  // time; a second waits for the first. Rejects CANCELLED after
+  // cancelTranscode, TRANSCODE_FAILED otherwise, and either way leaves nothing
+  // at `output`.
+  transcodeVideo(
+    jobKey: string,
+    source: string,
+    output: string,
+    options: TranscodeOptions,
+  ): Promise<TranscodeResult>;
+  // A key with nothing running, or already finished, is ignored.
+  cancelTranscode(jobKey: string): void;
+  // Upright JPEG stills of the source at each of `timesMs`, the nearest
+  // keyframe to each, no larger than `maxEdge` pixels on the long side, written
+  // to the matching `outputs` (file:// URIs). A frame that cannot be grabbed is
+  // skipped rather than failing the rest.
+  extractFrames(
+    source: string,
+    timesMs: number[],
+    maxEdge: number,
+    outputs: string[],
+  ): Promise<void>;
 
   // ---- Capture ----
 

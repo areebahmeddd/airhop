@@ -32,15 +32,17 @@ export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
 // reassembly times out on idle, not on total duration.
 export const MAX_SENT_IMAGE_BYTES = 256 * 1024; // 256 KiB
 
-// Longest video the camera will record, in seconds.
-//
-// A recording is sent exactly as it comes off the camera: `quality` in
-// expo-image-picker applies to stills, and there is no transcoder in the app, so
-// length is the only lever on size. At the 1 MiB ceiling a longer clip would be
-// refused after the user had already shot it, which is the worst moment to say
-// no. A picked video is still checked against the ceiling at pick time, since
-// nothing bounds what is already in the library.
+// Longest video the camera will record, in seconds. A recording is shrunk
+// before it is sent (video-prepare.ts), so this bounds the picture rather than
+// the file: 15 s still keeps sound and 10 fps at bitchat's 100 KiB, where a
+// minute drops to a silent 6 fps.
 export const MAX_VIDEO_SECONDS = 15;
+
+// The largest video a bitchat phone is sent: bitchat-ios's
+// LiveVideoLimits.maxVideoFileBytes, which both its clips and a finished live
+// stream are fitted to. A video for the Bluetooth room, or for a DM to anyone
+// not known to run Airhop, is shrunk under it.
+export const MAX_BITCHAT_VIDEO_BYTES = 100 * 1024; // 100 KiB
 
 // The largest transfer that reliably completes inside bitchat's 30-second
 // assembly window, with room for the retries a busy link forces. At the ~20ms
@@ -87,6 +89,12 @@ export function videoNoteName(): string {
 // The receiver may have suffixed a repeat arrival, as "name (1).mp4".
 export function isVideoNoteName(name: string | undefined): boolean {
   return name !== undefined && VIDEO_NOTE_NAME.test(name);
+}
+
+// A shrunk video, named the way bitchat names its clips. No client reads the
+// name; it only has to stay clear of `video_`, below.
+export function videoClipName(): string {
+  return `clip_${uuidV4()}.mp4`;
 }
 
 // A finished live stream, resent as a file: `video_` and the stream ID as 16

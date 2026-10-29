@@ -110,6 +110,7 @@ import {
   primeTorRoutingOnStartup,
   revalidateTorRouting,
 } from "@services/tor-routing";
+import { discardStaleVideoWork } from "@services/video-prepare";
 import {
   initWalletService,
   publishOwnNutzapInfo,
@@ -1111,13 +1112,15 @@ function AppContent(): React.JSX.Element {
   }, [isInThread, isSearching]);
 
   // Retire attachments past their retention window: at launch here, and on
-  // each return to the app once due (see services/media-retention).
+  // each return to the app once due (see services/media-retention). Half-shrunk
+  // videos a dead process left go too.
   //
   // Runs unconditionally, before any identity check: expired media belongs to
   // nobody, and a launch that ends at the onboarding screen is exactly the
   // launch after a wipe, where leftover files matter most.
   useEffect(() => {
     sweepMediaIfDue();
+    discardStaleVideoWork();
   }, []);
 
   // Settle messages the last process left mid-send, once per JS runtime.

@@ -591,6 +591,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Kumuha ng larawan o video",
   "chat.attach.camera_desc_photo": "Kumuha ng litrato",
+  "chat.attach.video": "Mag-record ng video",
+  "chat.attach.video_desc": "Mag-record ng maikling clip",
   "chat.attach.library": "Photo library",
   "chat.attach.library_desc": "Pumili mula sa library mo",
   "chat.attach.document": "Dokumento",
@@ -664,6 +666,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Magdagdag ng caption…",
   "chat.attach.send": "Ipadala ang attachment",
   "chat.attach.generic": "Attachment",
+  "chat.video_prep.preparing": "Inihahanda ang video",
+  "chat.video_prep.waiting": "Naghihintay na maihanda ang video",
+  "chat.video_prep.cancel": "Itigil ang paghahanda ng video na ito",
+  "chat.video_prep.too_large":
+    "Hindi napaliit nang sapat ang video na ito para maipadala.",
+  "chat.video_prep.unreadable":
+    "Hindi mabuksan ang video na ito. Sumubok ng iba.",
+  "chat.video_prep.failed":
+    "May mali sa paghahanda ng video na iyon. Subukan ulit.",
+  "chat.video_prep.interrupted":
+    "Umalis ka sa Airhop bago naihanda ang video. Subukang ipadala ulit.",
+  "chat.trim.play": "I-play ang preview",
+  "chat.trim.pause": "I-pause ang preview",
+  "chat.trim.start": "Simula ng clip",
+  "chat.trim.end": "Dulo ng clip",
   "chat.media.view_full": "Tingnan ang larawan nang buong screen",
   "chat.media.gone_photo": "Wala sa device na ito ang larawan",
   "chat.media.gone_video": "Wala sa device na ito ang video",

@@ -582,6 +582,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Piga picha au video",
   "chat.attach.camera_desc_photo": "Piga picha",
+  "chat.attach.video": "Rekodi video",
+  "chat.attach.video_desc": "Rekodi klipu fupi",
   "chat.attach.library": "Ghala la picha",
   "chat.attach.library_desc": "Chagua kutoka ghala lako",
   "chat.attach.document": "Hati",
@@ -653,6 +655,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Ongeza maelezo…",
   "chat.attach.send": "Tuma kiambatisho",
   "chat.attach.generic": "Kiambatisho",
+  "chat.video_prep.preparing": "Inaandaa video",
+  "chat.video_prep.waiting": "Inasubiri kuandaa video",
+  "chat.video_prep.cancel": "Acha kuandaa video hii",
+  "chat.video_prep.too_large":
+    "Video hii haikuweza kupunguzwa vya kutosha ili itumwe.",
+  "chat.video_prep.unreadable":
+    "Video hii haikuweza kufunguliwa. Jaribu nyingine.",
+  "chat.video_prep.failed":
+    "Kuna kilichoenda vibaya kuandaa video hiyo. Jaribu tena.",
+  "chat.video_prep.interrupted":
+    "Uliondoka Airhop kabla video haijawa tayari. Jaribu kuituma tena.",
+  "chat.trim.play": "Cheza onyesho la awali",
+  "chat.trim.pause": "Simamisha onyesho la awali",
+  "chat.trim.start": "Mwanzo wa klipu",
+  "chat.trim.end": "Mwisho wa klipu",
   "chat.media.view_full": "Tazama picha kwa skrini nzima",
   "chat.media.gone_photo": "Picha haipo kwenye kifaa hiki",
   "chat.media.gone_video": "Video haipo kwenye kifaa hiki",

@@ -580,6 +580,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Fotocamera",
   "chat.attach.camera_desc": "Scatta una foto o registra un video",
   "chat.attach.camera_desc_photo": "Scatta una foto",
+  "chat.attach.video": "Registra video",
+  "chat.attach.video_desc": "Registra una breve clip",
   "chat.attach.library": "Galleria foto",
   "chat.attach.library_desc": "Scegli dalla tua galleria",
   "chat.attach.document": "Documento",
@@ -653,6 +655,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Aggiungi una didascalia…",
   "chat.attach.send": "Invia l’allegato",
   "chat.attach.generic": "Allegato",
+  "chat.video_prep.preparing": "Preparazione del video",
+  "chat.video_prep.waiting": "In attesa di preparare il video",
+  "chat.video_prep.cancel": "Interrompi la preparazione di questo video",
+  "chat.video_prep.too_large":
+    "Non è stato possibile ridurre abbastanza questo video per inviarlo.",
+  "chat.video_prep.unreadable":
+    "Non è stato possibile aprire questo video. Provane un altro.",
+  "chat.video_prep.failed":
+    "Qualcosa è andato storto nella preparazione di quel video. Riprova.",
+  "chat.video_prep.interrupted":
+    "Hai lasciato Airhop prima che il video fosse pronto. Prova a rinviarlo.",
+  "chat.trim.play": "Riproduci anteprima",
+  "chat.trim.pause": "Metti in pausa l’anteprima",
+  "chat.trim.start": "Inizio della clip",
+  "chat.trim.end": "Fine della clip",
   "chat.media.view_full": "Vedi la foto a schermo intero",
   "chat.media.gone_photo": "La foto non è su questo dispositivo",
   "chat.media.gone_video": "Il video non è su questo dispositivo",

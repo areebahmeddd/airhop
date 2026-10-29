@@ -81,7 +81,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] `AirhopLANModule`: mDNS discovery plus TCP links (`NWListener` / `NWBrowser`, `NsdManager`), carrying the same packets the radio carries
 - [x] `src/services/lan-controller.ts`: link lifecycle, registered beside BLE and Wi-Fi Aware, off by default behind `lanTransportEnabled`
 - [x] `src/services/lan-dial-policy.ts`: the ring that caps LAN at 8 links per phone
-- [x] Video and any other allowed file type shared as attachments, played inline
+- [x] Video and any other allowed file type shared as attachments, played inline. A video is trimmed to the part chosen on the caption sheet, at most a minute, and shrunk first, to bitchat-ios's 100 KiB clip budget wherever a bitchat phone may receive it and to the 1 MiB ceiling for another Airhop phone (`src/core/mesh/video/transcode-plan.ts`, `src/services/video-prepare.ts`, `src/features/chat/video-trimmer.tsx`, one native pass on each platform)
 - [x] Battery optimization flow (`src/platform/battery-optimization.ts`: OEM deep links for 10 skins, standard Android fallback)
 
 ### v0.9.5: Localization

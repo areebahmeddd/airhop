@@ -587,6 +587,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Fakan-tsary",
   "chat.attach.camera_desc": "Maka sary na horonan-tsary",
   "chat.attach.camera_desc_photo": "Maka sary",
+  "chat.attach.video": "Handraketa horonan-tsary",
+  "chat.attach.video_desc": "Raketo horonan-tsary fohy",
   "chat.attach.library": "Tahirin-tsary",
   "chat.attach.library_desc": "Fidio avy amin'ny tahirinao",
   "chat.attach.document": "Antontan-taratasy",
@@ -660,6 +662,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Ampio fanazavana…",
   "chat.attach.send": "Alefaso ny fanampiny",
   "chat.attach.generic": "Fanampiny",
+  "chat.video_prep.preparing": "Manomana ny horonan-tsary",
+  "chat.video_prep.waiting": "Miandry ny hanomanana ny horonan-tsary",
+  "chat.video_prep.cancel": "Atsaharo ny fanomanana ity horonan-tsary ity",
+  "chat.video_prep.too_large":
+    "Tsy azo natao kely ampy hahafahana mandefa azy ity horonan-tsary ity.",
+  "chat.video_prep.unreadable":
+    "Tsy nety nivoha ity horonan-tsary ity. Andramo ny hafa.",
+  "chat.video_prep.failed":
+    "Nisy tsy nety tamin'ny fanomanana io horonan-tsary io. Andramo indray.",
+  "chat.video_prep.interrupted":
+    "Nialanao ny Airhop talohan'ny nahavonona ny horonan-tsary. Andramo alefa indray.",
+  "chat.trim.play": "Alefaso ny topy maso",
+  "chat.trim.pause": "Ajanony kely ny topy maso",
+  "chat.trim.start": "Fiandohan'ny horonan-tsary",
+  "chat.trim.end": "Fiafaran'ny horonan-tsary",
   "chat.media.view_full": "Jereo ny sary manerana ny efijery",
   "chat.media.gone_photo": "Tsy eto amin'ity fitaovana ity ny sary",
   "chat.media.gone_video": "Tsy eto amin'ity fitaovana ity ny horonan-tsary",

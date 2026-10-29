@@ -2,6 +2,7 @@
 // Shows messages with sender and timestamp. Text input to compose and PTT button.
 
 import { nicknameKey, normalizeNickname } from "@core/mesh/discovery/nickname";
+import type { TranscodeRange } from "@core/mesh/video/transcode-plan";
 import {
   MAX_BURST_MS,
   MIN_BURST_KEEP_MS,
@@ -71,6 +72,13 @@ import {
   reportWalletError,
 } from "@services/payment-router";
 import {
+  cancelVideoPreparation,
+  canTranscodeVideo,
+  prepareVideoForSend,
+  type VideoOrigin,
+  type VideoPrepFailure,
+} from "@services/video-prepare";
+import {
   fetchKeysetsForTokenText,
   hostOf,
   tokenLockedToOthers,
@@ -97,6 +105,7 @@ import {
   transferSpeedBps,
   useTransferStore,
 } from "@store/transfer-store";
+import { useVideoPrepStore } from "@store/video-prep-store";
 import { keysetRefsOf, useWalletStore } from "@store/wallet-store";
 import AppModal from "@ui/components/app-modal";
 import Avatar from "@ui/components/avatar";
@@ -239,9 +248,18 @@ import {
   useVideoNoteRecorder,
   type RecordedVideoNote,
 } from "./video-note-recorder";
+import { initialTrim, MIN_TRIM_MS } from "./video-trim";
+import VideoTrimmer from "./video-trimmer";
 
 type AttachAction =
-  "camera" | "library" | "document" | "voice" | "live" | "location" | "ecash";
+  | "camera"
+  | "video"
+  | "library"
+  | "document"
+  | "voice"
+  | "live"
+  | "location"
+  | "ecash";
 
 // A picked attachment staged for the caption composer before it is sent.
 interface PendingAttachment {
@@ -250,6 +268,9 @@ interface PendingAttachment {
   name?: string;
   mimeType?: string;
   sizeBytes?: number;
+  durationMs?: number;
+  // The part of a video to send, once the trimmer has moved.
+  trim?: TranscodeRange;
 }
 
 const ATTACH_OPTIONS: {
@@ -269,16 +290,26 @@ const ATTACH_OPTIONS: {
   // Live video: the Bluetooth room or a mesh DM, never a location channel,
   // which has no radio under it.
   liveOnly?: boolean;
+  // iOS records from the camera row itself; see handleCameraAttach.
+  androidOnly?: boolean;
 }[] = [
   {
     action: "camera",
     icon: "camera",
     labelKey: "chat.attach.camera",
-    // Android's camera shoots stills only; see handleCameraAttach.
+    // Android's camera app shoots a photo or a video per launch, never a
+    // choice of both; see handleCameraAttach.
     descKey:
       Platform.OS === "ios"
         ? "chat.attach.camera_desc"
         : "chat.attach.camera_desc_photo",
+  },
+  {
+    action: "video",
+    icon: "film",
+    labelKey: "chat.attach.video",
+    descKey: "chat.attach.video_desc",
+    androidOnly: true,
   },
   {
     action: "library",
@@ -766,6 +797,9 @@ function createUndoStyles(Colors: ReturnType<typeof useThemeColors>) {
 // Files crawl over Bluetooth (~18 KiB/s), so one at the 1 MiB cap takes about a
 // minute; showing live percent, speed and ETA is the difference between
 // "working" and "frozen" from the user's side.
+//
+// A video still being shrunk shows here too, ahead of the transfers, since it
+// is the step before one: its bubble appears only once it is ready to send.
 function TransferProgressList({
   channel,
 }: {
@@ -779,8 +813,10 @@ function TransferProgressList({
   const mine = Object.values(transfers)
     .filter((t) => t.channel === channel)
     .sort((a, b) => a.startedAtMs - b.startedAtMs);
+  const preps = useVideoPrepStore((s) => s.preps);
+  const preparing = Object.values(preps).filter((p) => p.channel === channel);
 
-  if (mine.length === 0) return null;
+  if (mine.length === 0 && preparing.length === 0) return null;
 
   // Only the front of the queue gets a card. Attachments go out one at a time
   // over one paced radio queue, so everything behind the first is sitting at 0%
@@ -793,6 +829,45 @@ function TransferProgressList({
 
   return (
     <View style={styles.wrap}>
+      {preparing.map((p) => {
+        const pct = Math.round(p.fraction * 100);
+        return (
+          <View key={p.id} style={styles.card}>
+            <Feather name="film" size={18} color={Colors.textSecondary} />
+            <View style={styles.body}>
+              <View style={styles.topRow}>
+                <Text style={styles.name} numberOfLines={1}>
+                  {p.status === "active"
+                    ? T("chat.video_prep.preparing")
+                    : T("chat.video_prep.waiting")}
+                </Text>
+                <View style={styles.transferRight}>
+                  {p.status === "active" && (
+                    <Text style={styles.pct}>{pct}%</Text>
+                  )}
+                  <Pressable
+                    onPress={() => cancelVideoPreparation(p.id)}
+                    style={({ pressed }) => pressed && styles.closePressed}
+                    hitSlop={HIT_SLOP}
+                    accessibilityRole="button"
+                    accessibilityLabel={T("chat.video_prep.cancel")}
+                  >
+                    <Feather name="x" size={16} color={Colors.textMuted} />
+                  </Pressable>
+                </View>
+              </View>
+              <View style={styles.track}>
+                <View
+                  style={[
+                    styles.fill,
+                    { width: `${pct}%`, backgroundColor: Colors.accent },
+                  ]}
+                />
+              </View>
+            </View>
+          </View>
+        );
+      })}
       {shown.map((t) => {
         const pct =
           t.totalBytes > 0
@@ -903,6 +978,7 @@ function TransferProgressList({
                           ? getMeshService()?.cancelTransfer(t.id)
                           : useTransferStore.getState().dismiss(t.id)
                       }
+                      style={({ pressed }) => pressed && styles.closePressed}
                       hitSlop={HIT_SLOP}
                       accessibilityRole="button"
                       accessibilityLabel={
@@ -1044,6 +1120,7 @@ function createTransferStyles(Colors: ReturnType<typeof useThemeColors>) {
       marginTop: Spacing["2xs"],
     },
     fill: { height: 3, borderRadius: Radius.xs },
+    closePressed: { opacity: PRESSED_OPACITY },
   });
 }
 
@@ -2078,6 +2155,20 @@ export default function MessageThread({
   // caption (WhatsApp-style) instead of it firing off the instant it is chosen.
   const [pendingAttachment, setPendingAttachment] =
     useState<PendingAttachment | null>(null);
+  // What the caption sheet draws. It slides out after the attachment is
+  // cleared, so it keeps the last one rather than collapsing to the document
+  // placeholder mid-slide.
+  const [sheetAttachment, setSheetAttachment] =
+    useState<PendingAttachment | null>(null);
+  if (pendingAttachment !== null && pendingAttachment !== sheetAttachment) {
+    setSheetAttachment(pendingAttachment);
+  }
+  // A video the caption sheet can trim: one this build can cut, with room for
+  // more than the shortest part a trim allows.
+  const trimmable =
+    sheetAttachment?.type === "video" &&
+    canTranscodeVideo() &&
+    (sheetAttachment.durationMs ?? 0) > MIN_TRIM_MS;
   const [captionDraft, setCaptionDraft] = useState("");
   // Brief delivery status hint shown below the compose bar for DMs.
   // "queued" = no route available; cleared after 4 seconds.
@@ -3000,7 +3091,10 @@ export default function MessageThread({
     setShowAttachMenu(false);
     switch (action) {
       case "camera":
-        void handleCameraAttach();
+        void handleCameraAttach(false);
+        break;
+      case "video":
+        void handleCameraAttach(true);
         break;
       case "library":
         void handleLibraryAttach();
@@ -3176,6 +3270,82 @@ export default function MessageThread({
     })();
   }
 
+  // A video goes out at the size its recipient can take: shrunk first where
+  // video-prepare says so, with its progress on a card above the composer, and
+  // its bubble only once it is ready, the way a photo waits for its resize.
+  // The source stays the caller's, apart from a picker's or recorder's copy,
+  // which has served its purpose once this settles.
+  async function sendVideoAttachment(
+    video: {
+      uri: string;
+      name?: string;
+      mimeType?: string;
+      sizeBytes?: number;
+      durationMs?: number;
+      trim?: TranscodeRange;
+    },
+    origin: VideoOrigin,
+    options: {
+      targetChannel?: string;
+      forwarded?: boolean;
+      caption?: string;
+      onSent?: () => void;
+    } = {},
+  ): Promise<void> {
+    const targetChannel = options.targetChannel ?? channel;
+    const ownsSource = origin !== "forward";
+    if (!canSendMedia(targetChannel)) {
+      if (ownsSource) discardPickerCopy(video.uri);
+      return;
+    }
+    const ready = await prepareVideoForSend({
+      ...video,
+      channel: targetChannel,
+      origin,
+      toAirhop: recipientRunsAirhop(targetChannel),
+    });
+    if (ownsSource && (!ready.ok || ready.uri !== video.uri)) {
+      discardPickerCopy(video.uri);
+    }
+    if (!ready.ok) {
+      reportVideoPrepFailure(ready.reason);
+      return;
+    }
+    sendAttachmentMessage(
+      "video",
+      ready.uri,
+      ready.name,
+      ready.mimeType,
+      ready.durationMs ?? video.durationMs,
+      {
+        targetChannel,
+        forwarded: options.forwarded,
+        sizeBytes: ready.sizeBytes,
+        caption: options.caption,
+      },
+    );
+    options.onSent?.();
+  }
+
+  // Only a DM to a peer known to run Airhop. A room has listeners of both
+  // kinds, and an unidentified peer may be on bitchat.
+  function recipientRunsAirhop(targetChannel: string): boolean {
+    if (!targetChannel.startsWith("dm:")) return false;
+    return getMeshService()?.peerRunsAirhop(targetChannel.slice(3)) === true;
+  }
+
+  // Cancelled from its card says nothing: the user is the one who stopped it.
+  function reportVideoPrepFailure(reason: VideoPrepFailure): void {
+    if (reason === "cancelled") return;
+    const body: Record<Exclude<VideoPrepFailure, "cancelled">, string> = {
+      interrupted: t("chat.video_prep.interrupted"),
+      too_large: t("chat.video_prep.too_large"),
+      unreadable: t("chat.video_prep.unreadable"),
+      failed: t("chat.video_prep.failed"),
+    };
+    showAlert(t("chat.attach.not_sent"), body[reason]);
+  }
+
   // Forwarding reuses the existing send pipeline: it's just composing a new
   // message with the original content in a different channel/DM. No protocol
   // changes needed.
@@ -3214,6 +3384,14 @@ export default function MessageThread({
         // "why not" is one the reader has seen before.
         showAlert(t("chat.attach.not_sent"), t("chat.media.gone_note"));
         return false;
+      }
+      if (source.attachment.type === "video") {
+        void sendVideoAttachment(source.attachment, "forward", {
+          targetChannel,
+          forwarded: true,
+          caption: source.text || undefined,
+        });
+        return true;
       }
       sendAttachmentMessage(
         source.attachment.type,
@@ -3383,9 +3561,10 @@ export default function MessageThread({
 
   // Refuse an attachment the mesh cannot carry, at the moment it is picked.
   //
-  // Only video and documents: those go out as they are, so the cap is final
-  // here. A photo does not, because `prepareImageForSend` resizes it under the
-  // budget, and a 6 MB camera shot is the ordinary case rather than an error.
+  // Only documents, and videos on a build that cannot shrink them: those go out
+  // as they are, so the cap is final here. A photo and a video do not, because
+  // `prepareImageForSend` and `prepareVideoForSend` fit them under the budget,
+  // and a 6 MB camera shot is the ordinary case rather than an error.
   //
   // Otherwise the file is accepted, a caption sheet opens, a bubble appears,
   // and only then does reading the bytes throw, leaving a failed message for
@@ -3398,6 +3577,7 @@ export default function MessageThread({
   ): boolean {
     if (sizeBytes === undefined) return false;
     if (type !== "video" && type !== "document") return false;
+    if (type === "video" && canTranscodeVideo()) return false;
     const cap = maxBytesForType(type);
     if (sizeBytes <= cap) return false;
     showAlert(
@@ -3436,17 +3616,21 @@ export default function MessageThread({
       uri: asset.uri,
       sizeBytes: asset.fileSize,
       // An image goes out under bitchat's stable-ID name so the far side can
-      // dedup it and acknowledge it; video has no such shape and keeps the
-      // picker's name.
+      // dedup it and acknowledge it. A video is renamed when it is shrunk; the
+      // picker's name only shows in the caption sheet.
       name:
         type === "video"
           ? (asset.fileName ?? "video.mp4")
           : wireMediaName("image", "jpg"),
       mimeType: asset.mimeType,
+      durationMs: asset.duration ?? undefined,
     });
   }
 
-  async function handleCameraAttach(): Promise<void> {
+  // iOS's camera offers a photo or a video in one screen. Android hands capture
+  // to the installed camera app, which shoots one or the other per launch, so
+  // there the two are separate rows.
+  async function handleCameraAttach(videoOnly: boolean): Promise<void> {
     const granted = await ensurePermission(
       () => ImagePicker.getCameraPermissionsAsync(),
       () => ImagePicker.requestCameraPermissionsAsync(),
@@ -3457,17 +3641,17 @@ export default function MessageThread({
     );
     if (!granted) return;
     const result = await ImagePicker.launchCameraAsync({
-      // A recording is sent as it comes off the camera and the mesh takes
-      // 1 MiB, so a clip has to be small when shot. iOS can be told to record
-      // at its lowest preset, which keeps 15 seconds in range. Android hands
-      // capture to whichever camera app is installed and passes no quality at
-      // all, so a clip there is full resolution and overruns the cap in about
-      // a second: offering video would only let the user shoot something that
-      // is refused afterwards. Stills only on Android; a short clip from the
-      // library still works.
-      mediaTypes: Platform.OS === "ios" ? ["images", "videos"] : ["images"],
+      mediaTypes: videoOnly
+        ? ["videos"]
+        : Platform.OS === "ios"
+          ? ["images", "videos"]
+          : ["images"],
       videoMaxDuration: MAX_VIDEO_SECONDS,
-      videoQuality: ImagePicker.UIImagePickerControllerQualityType.Low,
+      // A recording is shrunk before it is sent, so it only has to be a good
+      // source: 640x480 is above every size the shrink makes, and far less to
+      // decode than the camera's own. Android's camera app takes no quality
+      // and records at its own.
+      videoQuality: ImagePicker.UIImagePickerControllerQualityType.VGA640x480,
       // Stills only; see videoQuality for a recording.
       quality: UPLOAD_QUALITY_VALUES[useSettingsStore.getState().uploadQuality],
       allowsEditing: false,
@@ -3524,9 +3708,12 @@ export default function MessageThread({
   //   size  bitchat expires a half-built file 30 seconds after the FIRST piece
   //         arrives, not the last, so anything past that window is dropped on
   //         arrival however well the transfer went.
-  //   kind  bitchat accepts a video or a document and stores the bytes, but only
-  //         knows how to display images and voice notes, so it shows an
-  //         unopenable "[file] name.ext" line.
+  //   kind  bitchat stores a document but shows it as a "[file] name.ext" line
+  //         it cannot open.
+  //
+  // A video that will be shrunk is judged on what goes out, not what was
+  // picked: fitted to bitchat's 100 KiB, it is never too big. bitchat plays
+  // video, so the kind is no warning for one.
   //
   // Channels and groups are skipped: they have many recipients of unknown kinds,
   // so a warning there would fire almost always and mean almost nothing.
@@ -3537,7 +3724,12 @@ export default function MessageThread({
     if (!isDM) return null;
     if (getMeshService()?.peerRunsAirhop(channel.slice(3)) !== false)
       return null;
-    if (sizeBytes !== undefined && sizeBytes > MAX_BITCHAT_TRANSFER_BYTES) {
+    const shrunk = type === "video" && canTranscodeVideo();
+    if (
+      !shrunk &&
+      sizeBytes !== undefined &&
+      sizeBytes > MAX_BITCHAT_TRANSFER_BYTES
+    ) {
       return {
         title: t("chat.attach.bitchat_too_big"),
         body: t("chat.attach.bitchat_too_big_body", {
@@ -3545,7 +3737,7 @@ export default function MessageThread({
         }),
       };
     }
-    if (type === "video" || type === "document") {
+    if (type === "document") {
       return {
         title: t("chat.attach.bitchat_unopenable"),
         body: t("chat.attach.bitchat_unopenable_body", {
@@ -3598,16 +3790,22 @@ export default function MessageThread({
       // the caution too: a sheet dismissed without an answer then leaves a
       // file those can reach, not one in the picker's folder.
       void adoptIntoAttachmentCache(p.uri, p.name ?? p.type).then((uri) => {
-        const send = (): void =>
+        const send = (): void => {
+          if (p.type === "video") {
+            void sendVideoAttachment({ ...p, uri }, "picked", { caption });
+            return;
+          }
           sendAttachmentMessage(p.type, uri, p.name, p.mimeType, undefined, {
             sizeBytes: p.sizeBytes,
             caption,
           });
-        // A bitchat recipient handles a video or a document very differently
-        // from an Airhop one, and neither difference is visible from this
-        // screen, so say it before the send rather than leaving the user with a
-        // sent tick and a confused friend. Images never get here: they are
-        // always resized under the send budget, and bitchat renders them.
+        };
+        // A bitchat recipient handles a large file or a document very
+        // differently from an Airhop one, and neither difference is visible
+        // from this screen, so say it before the send rather than leaving the
+        // user with a sent tick and a confused friend. Images never get here:
+        // they are always resized under the send budget, and bitchat renders
+        // them.
         const caution = bitchatMediaCaution(p.type, p.sizeBytes);
         if (caution !== null) {
           showAlert(caution.title, caution.body, [
@@ -4185,14 +4383,29 @@ export default function MessageThread({
   async function sendVideoNote(note: RecordedVideoNote): Promise<void> {
     const name = videoNoteName();
     const uri = await adoptIntoAttachmentCache(note.uri, name);
-    // "Sent" only once it is: the bitchat caution below can still cancel it.
+    // "Sent" only once it is: the size caution below, on a build that cannot
+    // shrink it, and the shrink itself can both still stop it.
     const send = (): void => {
-      sendAttachmentMessage("video", uri, name, "video/mp4", note.durationMs, {
-        sizeBytes: note.sizeBytes,
-      });
-      if (note.atLimit) {
-        setToast({ message: t("chat.video_note.limit_sent"), icon: "video" });
-      }
+      void sendVideoAttachment(
+        {
+          uri,
+          name,
+          mimeType: "video/mp4",
+          sizeBytes: note.sizeBytes,
+          durationMs: note.durationMs,
+        },
+        "note",
+        {
+          onSent: () => {
+            if (note.atLimit) {
+              setToast({
+                message: t("chat.video_note.limit_sent"),
+                icon: "video",
+              });
+            }
+          },
+        },
+      );
     };
     const caution = bitchatMediaCaution("video", note.sizeBytes);
     if (caution !== null) {
@@ -6078,6 +6291,7 @@ export default function MessageThread({
           (o) =>
             (!o.dmOnly || isDM) &&
             (!o.meshOnly || isMeshDM) &&
+            (!o.androidOnly || Platform.OS === "android") &&
             // Not over a note being recorded: the stream would need the
             // microphone and camera the recording holds.
             (!o.liveOnly ||
@@ -6176,22 +6390,32 @@ export default function MessageThread({
         sheetStyle={styles.composerSheet}
         scrimColor={COMPOSER_SCRIM}
       >
-        {pendingAttachment?.type === "image" ? (
+        {sheetAttachment?.type === "image" ? (
           <Image
-            source={{ uri: pendingAttachment.uri }}
+            source={{ uri: sheetAttachment.uri }}
             style={styles.composerPreview}
             resizeMode="contain"
+          />
+        ) : sheetAttachment?.type === "video" && trimmable ? (
+          <VideoTrimmer
+            key={sheetAttachment.uri}
+            uri={sheetAttachment.uri}
+            durationMs={sheetAttachment.durationMs ?? 0}
+            initialRange={initialTrim(sheetAttachment.durationMs ?? 0)}
+            onChange={(trim) =>
+              setPendingAttachment((p) => (p === null ? p : { ...p, trim }))
+            }
           />
         ) : (
           <View style={styles.composerFilePreview}>
             <Feather
-              name={pendingAttachment?.type === "video" ? "film" : "file"}
+              name={sheetAttachment?.type === "video" ? "film" : "file"}
               size={40}
               color={Colors.textSecondary}
             />
             <Text style={styles.composerFileName} numberOfLines={1}>
-              {pendingAttachment?.name ??
-                (pendingAttachment?.type === "video"
+              {sheetAttachment?.name ??
+                (sheetAttachment?.type === "video"
                   ? T("chat.media.video")
                   : T("chat.attach.document"))}
             </Text>

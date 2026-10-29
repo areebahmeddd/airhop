@@ -147,6 +147,11 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.6.2")
     implementation("androidx.camera:camera-view:1.6.2")
 
+    // Shrinking a video before it is sent (VideoTranscoder). Media3's modules
+    // must share one version, so these follow the one expo-video pins.
+    implementation("androidx.media3:media3-transformer:1.9.1")
+    implementation("androidx.media3:media3-effect:1.9.1")
+
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";

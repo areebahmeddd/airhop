@@ -653,7 +653,7 @@ Medium · Fixed. An 8 s timeout or a throwing read took the first-install branch
 
 #### APP-3 · Android photos under 512 KiB kept their EXIF, GPS included
 
-Medium · Fixed. JPEG and WebP are always re-encoded; GIF and PNG that fit go unchanged. iOS stills and Android library picks were already clean. Location inside sent videos is out of scope and documented.
+Medium · Fixed. JPEG and WebP are always re-encoded; GIF and PNG that fit go unchanged. iOS stills and Android library picks were already clean. A picked or recorded video is re-encoded before it is sent, which drops its location the same way.
 
 #### APP-4 · Picker copies escaped retention and Clear; iOS `tmp/` escaped the wipe
 

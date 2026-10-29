@@ -60,6 +60,15 @@ export function stepped(): void {
   void Haptics.selectionAsync().catch(() => {});
 }
 
+// A drag ran into a stop it cannot pass: a trimmer handle at the shortest or
+// longest part a video send allows, or at the video's own end. The handle halts
+// under a finger that keeps moving, and the finger hides it, so the tick is what
+// says the stop is deliberate. Entering the stop only, so a finger pressing
+// against it does not chatter.
+export function reachedLimit(): void {
+  void Haptics.selectionAsync().catch(() => {});
+}
+
 // A hold crossed into "let go now and this is thrown away": sliding a
 // push-to-talk recording back to cancel. Rigid rather than the tick
 // `crossedThreshold` uses, because push-to-talk is used without looking and the

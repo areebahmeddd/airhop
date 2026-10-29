@@ -65,11 +65,6 @@ export const LIVE_VIDEO_QUALITIES: Record<
 export const BLE_PACKET_BUDGET = 24;
 export const WIFI_PACKET_BUDGET = 300;
 
-// The largest recording resent as a file afterwards: 256 fragments of about
-// 450 B, less the file's TLVs, the header, the signature and Noise framing.
-// A longer stream is not resent; viewers keep what they rebuilt.
-export const MAX_LIVE_VIDEO_FILE_BYTES = 100 * 1024;
-
 // A stream shorter than this is a slip of the thumb: it is canceled, not
 // ended, and nothing is recorded.
 export const MIN_LIVE_VIDEO_MS = 1_000;
