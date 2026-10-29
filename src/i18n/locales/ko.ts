@@ -524,7 +524,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "화면을 캡처했습니다",
   "chat.screenshot.you_took_private":
     "화면을 캡처했습니다 · 아무에게도 알리지 않았습니다",
-  "chat.screenshot.heads_up": "알려드립니다",
   "chat.screenshot.peer_took": "{name} 님이 화면을 캡처했습니다",
   "chat.screenshot.notified_dm": "{name}에게 이 대화를 캡처했다고 알렸습니다.",
   "chat.screenshot.notified":

@@ -563,7 +563,6 @@ export const strings = {
     "Bridging to nearby areas · tap for nearby only",
   "chat.screenshot.you_took": "You took a screenshot",
   "chat.screenshot.you_took_private": "You took a screenshot · nobody was told",
-  "chat.screenshot.heads_up": "Heads up",
   "chat.screenshot.peer_took": "{name} took a screenshot",
   "chat.screenshot.notified_dm":
     "{name} was notified that you took a screenshot of this conversation.",

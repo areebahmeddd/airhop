@@ -2792,16 +2792,20 @@ export default function MessageThread({
         isMine: true,
         isSystem: true,
       });
-      showAlert(
-        t("chat.screenshot.heads_up"),
-        isDM
+      // A toast, not a dialog: the screenshot already happened and the row
+      // above records it, so there is nothing to answer. A dialog would also
+      // take the touch from a held mic or video note, which then sends, and
+      // replace any confirmation already on screen.
+      setToast({
+        message: isDM
           ? t("chat.screenshot.notified_dm", {
               name: resolveDisplayName(channel.slice(3)),
             })
           : tellsPeersOnScreenshot
             ? t("chat.screenshot.notified")
             : t("chat.screenshot.not_notified"),
-      );
+        icon: "camera",
+      });
     });
     return () => subscription.remove();
   }, [

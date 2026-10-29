@@ -530,7 +530,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Bạn đã chụp màn hình",
   "chat.screenshot.you_took_private":
     "Bạn đã chụp màn hình · không ai được báo",
-  "chat.screenshot.heads_up": "Lưu ý",
   "chat.screenshot.peer_took": "{name} đã chụp màn hình",
   "chat.screenshot.notified_dm":
     "{name} đã được báo rằng bạn chụp màn hình cuộc trò chuyện này.",

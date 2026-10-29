@@ -541,7 +541,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Umepiga picha ya skrini",
   "chat.screenshot.you_took_private":
     "Umepiga picha ya skrini · hakuna aliyeambiwa",
-  "chat.screenshot.heads_up": "Angalizo",
   "chat.screenshot.peer_took": "{name} amepiga picha ya skrini",
   "chat.screenshot.notified_dm":
     "{name} ameambiwa kuwa umepiga picha ya skrini ya mazungumzo haya.",

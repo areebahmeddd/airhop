@@ -498,7 +498,6 @@ export const strings: Strings = {
   "chat.bridge.bridging_label": "ወደ አቅራቢያ አካባቢዎች እየተሻገረ · ለአቅራቢያ ብቻ ንካ",
   "chat.screenshot.you_took": "ቅጽበታዊ ገጽ እይታ አንስተሃል",
   "chat.screenshot.you_took_private": "ቅጽበታዊ ገጽ እይታ አንስተሃል · ለማንም አልተነገረም",
-  "chat.screenshot.heads_up": "አስተውል",
   "chat.screenshot.peer_took": "{name} ቅጽበታዊ ገጽ እይታ አንስቷል",
   "chat.screenshot.notified_dm":
     "የዚህን ውይይት ቅጽበታዊ ገጽ እይታ እንዳነሳህ ለ{name} ተነግሮታል።",

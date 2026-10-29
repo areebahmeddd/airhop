@@ -536,7 +536,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Ekran görüntüsü aldın",
   "chat.screenshot.you_took_private":
     "Ekran görüntüsü aldın · kimseye söylenmedi",
-  "chat.screenshot.heads_up": "Dikkat",
   "chat.screenshot.peer_took": "{name} ekran görüntüsü aldı",
   "chat.screenshot.notified_dm":
     "{name} kişisine bu konuşmanın ekran görüntüsünü aldığın bildirildi.",

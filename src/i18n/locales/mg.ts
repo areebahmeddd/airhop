@@ -545,7 +545,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Naka sarin'efijery ianao",
   "chat.screenshot.you_took_private":
     "Naka sarin'efijery ianao · tsy nisy nampandrenesina",
-  "chat.screenshot.heads_up": "Mitandrema",
   "chat.screenshot.peer_took": "Naka sarin'efijery i {name}",
   "chat.screenshot.notified_dm":
     "Nampandrenesina i {name} fa naka sarin'efijery an'ity resaka ity ianao.",

@@ -522,7 +522,6 @@ export const strings: Strings = {
     "กำลังเชื่อมไปยังพื้นที่ใกล้เคียง · แตะเพื่อจำกัดเฉพาะบริเวณใกล้เคียง",
   "chat.screenshot.you_took": "คุณถ่ายภาพหน้าจอ",
   "chat.screenshot.you_took_private": "คุณถ่ายภาพหน้าจอ · ไม่มีใครถูกแจ้ง",
-  "chat.screenshot.heads_up": "โปรดทราบ",
   "chat.screenshot.peer_took": "{name} ถ่ายภาพหน้าจอ",
   "chat.screenshot.notified_dm":
     "{name} ได้รับแจ้งแล้วว่าคุณถ่ายภาพหน้าจอบทสนทนานี้",

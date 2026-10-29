@@ -526,7 +526,6 @@ export const strings: Strings = {
     "در حال پل زدن به مناطق نزدیک · برای فقط نزدیک بزنید",
   "chat.screenshot.you_took": "شما عکس صفحه گرفتید",
   "chat.screenshot.you_took_private": "شما عکس صفحه گرفتید · به کسی گفته نشد",
-  "chat.screenshot.heads_up": "توجه",
   "chat.screenshot.peer_took": "{name} عکس صفحه گرفت",
   "chat.screenshot.notified_dm":
     "به {name} خبر داده شد که شما از این گفتگو عکس صفحه گرفتید.",

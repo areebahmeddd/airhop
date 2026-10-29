@@ -533,7 +533,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "スクリーンショットを撮りました",
   "chat.screenshot.you_took_private":
     "スクリーンショットを撮りました · 誰にも通知されていません",
-  "chat.screenshot.heads_up": "お知らせ",
   "chat.screenshot.peer_took": "{name}がスクリーンショットを撮りました",
   "chat.screenshot.notified_dm":
     "この会話のスクリーンショットを撮ったことが{name}に通知されました。",

@@ -542,7 +542,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "သင် ဖန်သားပြင်ဓာတ်ပုံ ရိုက်ခဲ့သည်",
   "chat.screenshot.you_took_private":
     "သင် ဖန်သားပြင်ဓာတ်ပုံ ရိုက်ခဲ့သည် · မည်သူ့ကိုမျှ မပြောပါ",
-  "chat.screenshot.heads_up": "သတိပြုပါ",
   "chat.screenshot.peer_took": "{name} က ဖန်သားပြင်ဓာတ်ပုံ ရိုက်ခဲ့သည်",
   "chat.screenshot.notified_dm":
     "ဤစကားပြော၏ ဖန်သားပြင်ဓာတ်ပုံ သင်ရိုက်ခဲ့ကြောင်း {name} ကို အသိပေးထားပါသည်။",

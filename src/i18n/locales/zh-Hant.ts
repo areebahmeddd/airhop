@@ -500,7 +500,6 @@ export const strings: Strings = {
   "chat.bridge.bridging_label": "正橋接到附近區域 · 點一下可改為僅限附近",
   "chat.screenshot.you_took": "你截了圖",
   "chat.screenshot.you_took_private": "你截了圖 · 沒有告訴任何人",
-  "chat.screenshot.heads_up": "提醒你一下",
   "chat.screenshot.peer_took": "{name} 截了圖",
   "chat.screenshot.notified_dm": "{name} 已經知道你截了這段對話的圖。",
   "chat.screenshot.notified": "本頻道的所有人都已經知道你截了圖。",

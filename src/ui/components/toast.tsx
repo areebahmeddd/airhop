@@ -16,8 +16,14 @@ import {
   Feather,
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
-import React, { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import {
+  AccessibilityInfo,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -26,8 +32,28 @@ import Animated, {
 import { Duration, FontSize, Radius, Spacing, useThemeColors } from "../theme";
 
 // Long enough to read a few words without looking for it, short enough that it
-// never sits in the way of the next thing.
-const VISIBLE_MS = 2200;
+// never sits in the way of the next thing. A longer line stays longer: about a
+// second to notice the pill, then average silent reading speed (some 240 words
+// a minute), up to a ceiling, so a sentence that explains something is not gone
+// before it is read.
+const MIN_VISIBLE_MS = 2200;
+const NOTICE_MS = 1000;
+const READ_MS_PER_CHAR = 50;
+const MAX_VISIBLE_MS = 6000;
+// A Chinese, Japanese or Korean character carries about what two or three Latin
+// ones do, so a translated sentence is not cut short for being fewer characters.
+const DENSE_SCRIPT =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu;
+const DENSE_WEIGHT = 2.5;
+
+function visibleMs(message: string): number {
+  const dense = message.match(DENSE_SCRIPT)?.length ?? 0;
+  const weighted = message.length + dense * (DENSE_WEIGHT - 1);
+  return Math.min(
+    MAX_VISIBLE_MS,
+    Math.max(MIN_VISIBLE_MS, NOTICE_MS + weighted * READ_MS_PER_CHAR),
+  );
+}
 const FADE_MS = Duration.base;
 
 interface Props {
@@ -51,9 +77,20 @@ export default function Toast({
   const Colors = useThemeColors();
   const opacity = useSharedValue(0);
   const lift = useSharedValue(8);
+  // Callers pass an inline onHide, which changes every render. Read through a
+  // ref, so a parent re-rendering neither restarts the timer nor, on iOS,
+  // announces the message again.
+  const onHideRef = useRef(onHide);
+  useEffect(() => {
+    onHideRef.current = onHide;
+  });
 
   useEffect(() => {
     if (message === null) return;
+    // accessibilityLiveRegion below is Android's; VoiceOver needs telling.
+    if (Platform.OS === "ios") {
+      AccessibilityInfo.announceForAccessibility(message);
+    }
     opacity.value = withTiming(1, { duration: FADE_MS });
     lift.value = withTiming(0, { duration: FADE_MS });
     // Both timers are tracked. Untracked, a message arriving during the
@@ -64,13 +101,13 @@ export default function Toast({
       opacity.value = withTiming(0, { duration: FADE_MS });
       lift.value = withTiming(8, { duration: FADE_MS });
       // Unmount after the fade, not with it, or the pill vanishes mid-animation.
-      fade = setTimeout(onHide, FADE_MS);
-    }, VISIBLE_MS);
+      fade = setTimeout(() => onHideRef.current(), FADE_MS);
+    }, visibleMs(message));
     return () => {
       clearTimeout(hold);
       if (fade !== null) clearTimeout(fade);
     };
-  }, [message, onHide, opacity, lift]);
+  }, [message, opacity, lift]);
 
   const anim = useAnimatedStyle(() => ({
     opacity: opacity.value,

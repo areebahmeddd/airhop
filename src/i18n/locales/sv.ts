@@ -532,7 +532,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Du tog en skärmbild",
   "chat.screenshot.you_took_private":
     "Du tog en skärmbild · ingen fick veta det",
-  "chat.screenshot.heads_up": "Obs",
   "chat.screenshot.peer_took": "{name} tog en skärmbild",
   "chat.screenshot.notified_dm":
     "{name} fick veta att du tog en skärmbild av det här samtalet.",

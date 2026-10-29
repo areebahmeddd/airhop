@@ -517,7 +517,6 @@ export const strings: Strings = {
     "يجري التجسير إلى المناطق القريبة · اضغط للجوار فقط",
   "chat.screenshot.you_took": "التقطت لقطة شاشة",
   "chat.screenshot.you_took_private": "التقطت لقطة شاشة · لم يُبلَّغ أحد",
-  "chat.screenshot.heads_up": "تنبيه",
   "chat.screenshot.peer_took": "التقط {name} لقطة شاشة",
   "chat.screenshot.notified_dm":
     "أُبلغ {name} بأنك التقطت لقطة شاشة لهذه المحادثة.",

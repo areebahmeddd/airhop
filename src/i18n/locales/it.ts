@@ -538,7 +538,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Hai fatto uno screenshot",
   "chat.screenshot.you_took_private":
     "Hai fatto uno screenshot · nessuno è stato avvisato",
-  "chat.screenshot.heads_up": "Attenzione",
   "chat.screenshot.peer_took": "{name} ha fatto uno screenshot",
   "chat.screenshot.notified_dm":
     "{name} è stato avvisato che hai fatto uno screenshot di questa conversazione.",

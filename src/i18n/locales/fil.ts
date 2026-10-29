@@ -548,7 +548,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Kumuha ka ng screenshot",
   "chat.screenshot.you_took_private":
     "Kumuha ka ng screenshot · walang sinabihan",
-  "chat.screenshot.heads_up": "Paalala",
   "chat.screenshot.peer_took": "Kumuha ng screenshot si {name}",
   "chat.screenshot.notified_dm":
     "Nabalitaan ni {name} na kumuha ka ng screenshot ng usapang ito.",
