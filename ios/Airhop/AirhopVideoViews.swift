@@ -3,9 +3,9 @@
 //
 // A surface is an AVSampleBufferDisplayLayer, which decodes H.264 itself, so
 // there is no separate decoder to keep in step with it. Units arrive already
-// paced by TypeScript and are shown the moment they land. A surface that has
-// just mounted, or whose layer failed (the app went to the background), waits
-// for the next keyframe rather than painting deltas with nothing under them.
+// paced by TypeScript and are shown the moment they land. Every surface under
+// a key gets them (SurfaceRegistry), so a stream plays in its bubble and its
+// full-screen viewer at once.
 import AVFoundation
 import React
 import UIKit
@@ -15,27 +15,22 @@ import UIKit
 final class AirhopVideoDisplays {
   static let shared = AirhopVideoDisplays()
 
+  // A stream's parameter sets, shared by every layer showing it.
   private final class Stream {
     var format: CMVideoFormatDescription?
     var parameters: (sps: Data, pps: Data)?
-    var awaitingKeyframe = true
   }
 
   // Main thread only: the views and their layers live there.
-  private var views: [String: WeakSurface] = [:]
+  private let surfaces = SurfaceRegistry<AirhopVideoSurfaceView>()
   private var streams: [String: Stream] = [:]
 
-  private struct WeakSurface {
-    weak var view: AirhopVideoSurfaceView?
-  }
-
   func attach(_ view: AirhopVideoSurfaceView, key: String) {
-    views[key] = WeakSurface(view: view)
-    streams[key]?.awaitingKeyframe = true
+    surfaces.attach(view, key: key)
   }
 
   func detach(_ view: AirhopVideoSurfaceView, key: String) {
-    if views[key]?.view === view { views[key] = nil }
+    surfaces.detach(view, key: key)
   }
 
   func decode(key: String, annexB: Data, keyframe: Bool) {
@@ -46,42 +41,43 @@ final class AirhopVideoDisplays {
       stream = Stream()
       streams[key] = stream
     }
-    guard let view = views[key]?.view else {
-      stream.awaitingKeyframe = true
-      return
-    }
-    let layer = view.displayLayer
-    if layer.status == .failed {
-      layer.flush()
-      stream.awaitingKeyframe = true
+    // A layer that failed (the app went to the background) starts again at
+    // the next keyframe.
+    for view in surfaces.surfaces(for: key) where view.displayLayer.status == .failed {
+      view.displayLayer.flush()
+      surfaces.resync(view, key: key)
     }
     let units = VideoNAL.units(inAnnexB: annexB)
     guard !units.isEmpty else { return }
+    let targets = surfaces.receivers(key: key, keyframe: keyframe)
+    guard !targets.isEmpty else { return }
     if keyframe, let sets = VideoNAL.parameterSets(in: units),
       stream.parameters?.sps != sets.sps || stream.parameters?.pps != sets.pps
     {
       stream.format = VideoNAL.formatDescription(sps: sets.sps, pps: sets.pps)
       stream.parameters = sets
     }
-    if stream.awaitingKeyframe {
-      guard keyframe else { return }
-      stream.awaitingKeyframe = false
-    }
     let kept = units.filter {
       let type = VideoNAL.type($0)
       return type != VideoNAL.typeSPS && type != VideoNAL.typePPS && type != VideoNAL.typeAUD
     }
-    guard let format = stream.format,
-      let sample = VideoNAL.sampleBuffer(
-        avcc: VideoNAL.avcc(from: kept), format: format, pts: .zero, keyframe: keyframe)
-    else { return }
-    VideoNAL.setAttachment(sample, kCMSampleAttachmentKey_DisplayImmediately, true)
-    layer.enqueue(sample)
+    guard let format = stream.format else { return }
+    let avcc = VideoNAL.avcc(from: kept)
+    // A sample buffer each: a layer owns what it is given.
+    for view in targets {
+      let sample = VideoNAL.sampleBuffer(avcc: avcc, format: format, pts: .zero, keyframe: keyframe)
+      guard let sample else { continue }
+      VideoNAL.setAttachment(sample, kCMSampleAttachmentKey_DisplayImmediately, true)
+      view.displayLayer.enqueue(sample)
+    }
   }
 
   func release(key: String) {
     streams[key] = nil
-    views[key]?.view?.displayLayer.flushAndRemoveImage()
+    for view in surfaces.surfaces(for: key) {
+      view.displayLayer.flushAndRemoveImage()
+      surfaces.resync(view, key: key)
+    }
   }
 }
 

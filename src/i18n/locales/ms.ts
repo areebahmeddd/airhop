@@ -714,7 +714,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "Langsung",
   "chat.live_video.reconnecting": "Menyambung semula…",
   "chat.live_video.a11y":
-    "{name} sedang bersiaran langsung. Ketik dua kali untuk menghidupkan atau mematikan bunyi.",
+    "{name} sedang bersiaran langsung. Ketik dua kali untuk menonton.",
+  "chat.live_video.live_from": "{name} sedang bersiaran langsung",
+  "chat.live_video.sound": "Bunyi",
+  "chat.live_video.ended": "Siaran tamat",
   "chat.live_video.title": "Video langsung",
   "chat.live_video.go_live": "Mula siaran",
   "chat.live_video.end": "Tamatkan",

@@ -706,8 +706,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Video trực tiếp",
   "chat.live_video.badge": "Trực tiếp",
   "chat.live_video.reconnecting": "Đang kết nối lại…",
-  "chat.live_video.a11y":
-    "{name} đang phát trực tiếp. Nhấn đúp để bật hoặc tắt âm thanh.",
+  "chat.live_video.a11y": "{name} đang phát trực tiếp. Nhấn đúp để xem.",
+  "chat.live_video.live_from": "{name} đang phát trực tiếp",
+  "chat.live_video.sound": "Âm thanh",
+  "chat.live_video.ended": "Đã kết thúc trực tiếp",
   "chat.live_video.title": "Video trực tiếp",
   "chat.live_video.go_live": "Phát trực tiếp",
   "chat.live_video.end": "Kết thúc",

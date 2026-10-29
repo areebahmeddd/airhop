@@ -36,7 +36,6 @@ import PrimaryButton from "@ui/components/primary-button";
 import RingAlertSheet from "@ui/components/ring-alert-sheet";
 import TextButton from "@ui/components/text-button";
 import Toast from "@ui/components/toast";
-import UpperText from "@ui/components/upper-text";
 import {
   DISABLED_OPACITY,
   FontSize,
@@ -64,6 +63,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LiveBadge from "./live-badge";
 
 type Phase = "preview" | "starting" | "live" | "ending";
 
@@ -369,12 +369,7 @@ export default function LiveVideoStudio({
             <View style={styles.liveRow}>
               {/* Announced once, on going live; the timer below changes
                   every second and would be read out every second. */}
-              <View style={styles.liveBadge} accessibilityLiveRegion="polite">
-                <View style={styles.liveDot} />
-                <UpperText style={styles.liveBadgeText}>
-                  {T("chat.live_video.badge")}
-                </UpperText>
-              </View>
+              <LiveBadge accessibilityLiveRegion="polite" />
               <Text style={styles.timer}>
                 {formatDuration(Math.floor((stats?.elapsedMs ?? 0) / 1000))}
               </Text>
@@ -579,26 +574,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexDirection: "row",
       alignItems: "center",
       gap: Spacing.sm,
-    },
-    liveBadge: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: Spacing.xs,
-      paddingHorizontal: Spacing.sm,
-      paddingVertical: Spacing["2xs"],
-      borderRadius: Radius.full,
-      backgroundColor: Colors.danger,
-    },
-    liveDot: {
-      width: Spacing["xs-sm"],
-      height: Spacing["xs-sm"],
-      borderRadius: Radius.full,
-      backgroundColor: Colors.onStatus,
-    },
-    liveBadgeText: {
-      fontSize: FontSize.xs,
-      fontWeight: FontWeight.bold,
-      color: Colors.onStatus,
     },
     timer: {
       fontSize: FontSize.md,

@@ -732,8 +732,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Live na video",
   "chat.live_video.badge": "Live",
   "chat.live_video.reconnecting": "Muling kumokonekta…",
-  "chat.live_video.a11y":
-    "Naka-live si {name}. I-double tap para buksan o patayin ang tunog.",
+  "chat.live_video.a11y": "Naka-live si {name}. I-double tap para manood.",
+  "chat.live_video.live_from": "Naka-live si {name}",
+  "chat.live_video.sound": "Tunog",
+  "chat.live_video.ended": "Tapos na ang live",
   "chat.live_video.title": "Live na video",
   "chat.live_video.go_live": "Mag-live",
   "chat.live_video.end": "Tapusin",

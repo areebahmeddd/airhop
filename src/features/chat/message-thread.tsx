@@ -208,6 +208,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnRN } from "react-native-worklets";
 import SendEcashSheet from "../wallet/send-ecash-sheet";
 import ChannelInfoSheet from "./channel-info-sheet";
@@ -227,6 +228,8 @@ import {
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
 import LiveVideoStudio from "./live-video-studio";
+import LiveVideoViewer from "./live-video-viewer";
+import type { LiveVideoViewerTarget } from "./live-video-viewer-state";
 import MessageActionSheet from "./message-action-sheet";
 import MessageBubble from "./message-bubble";
 import MessageInfoSheet from "./message-info-sheet";
@@ -615,7 +618,7 @@ function VideoNoteAttachment({
       <View
         style={[
           videoAttachmentStyles.noteBadge,
-          { backgroundColor: Colors.overlay },
+          { backgroundColor: Colors.mediaScrim },
         ]}
         pointerEvents="none"
       >
@@ -1529,6 +1532,8 @@ export default function MessageThread({
   const TP = useTPlural();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
+  // The photo viewer is a Modal, outside the thread's own safe area.
+  const insets = useSafeAreaInsets();
   // How far the compose bar has to lift to clear the on-screen keyboard.
   const keyboardInset = useKeyboardInset();
   const { messages, addMessage, addChannel } = useChatStore();
@@ -4104,6 +4109,28 @@ export default function MessageThread({
     setLiveStudio({ micAllowed });
   }
 
+  const [liveViewer, setLiveViewer] = useState<{
+    target: LiveVideoViewerTarget;
+    senderName: string;
+  } | null>(null);
+
+  // Opening a stream is asking to watch it, sound and all. Reads only stable
+  // things: the bubble's memo keeps the first copy of this it was given.
+  function openLiveViewer(item: ChatMessage): void {
+    const live = item.liveVideo;
+    if (live === undefined) return;
+    if (live.hasAudio) getMeshService()?.liveVideoReceiver?.setAudible(item.id);
+    setLiveViewer({
+      target: {
+        channel: item.channel,
+        rowID: item.id,
+        senderID: item.senderID,
+        streamID: live.streamID,
+      },
+      senderName: item.senderNickname,
+    });
+  }
+
   // The stream is over. A recording that fits one file transfer follows it,
   // and takes over every viewer's live row; a longer one stays here, since
   // viewers already hold the copy they rebuilt.
@@ -5210,6 +5237,7 @@ export default function MessageThread({
                   selecting={selecting}
                   selected={selectedIds.has(item.id)}
                   onToggleSelect={toggleSelected}
+                  onOpenLiveVideo={openLiveViewer}
                   onRetry={handleRetryMessage}
                   onPressSender={isDM ? handlePressDMSender : handlePressSender}
                   highlighted={item.id === highlightedMessageId}
@@ -5499,55 +5527,70 @@ export default function MessageThread({
               accessibilityLabel={T("chat.media.photo")}
             />
           )}
+          {/* At the start, as on every other full-screen view. */}
           <Pressable
-            style={styles.fullscreenClose}
+            style={({ pressed }) => [
+              styles.fullscreenButton,
+              styles.fullscreenClose,
+              { top: insets.top + Spacing.sm },
+              pressed && styles.fullscreenButtonPressed,
+            ]}
             onPress={() => setFullscreenImage(null)}
-            hitSlop={hitSlopFor(20)}
             accessibilityRole="button"
             accessibilityLabel={T("chat.media.close_photo")}
           >
-            <Feather name="x" size={24} color="#FFFFFF" />
+            <Feather name="x" size={22} color={Colors.onStatus} />
           </Pressable>
           {/* Both act on the file as it arrived, untouched. */}
           {fullscreenImage !== null && (
-            <View style={styles.fullscreenActions}>
+            <View
+              style={[
+                styles.fullscreenActions,
+                { bottom: insets.bottom + Spacing.xl },
+              ]}
+            >
               <Pressable
-                style={styles.fullscreenAction}
+                style={({ pressed }) => [
+                  styles.fullscreenButton,
+                  pressed && styles.fullscreenButtonPressed,
+                ]}
                 onPress={() =>
                   void saveAttachmentToDevice(
                     { type: "image", uri: fullscreenImage },
                     true,
                   )
                 }
-                hitSlop={hitSlopFor(20)}
                 accessibilityRole="button"
                 accessibilityLabel={T("chat.media.save_photo")}
               >
-                <Feather name="download" size={22} color="#FFFFFF" />
+                <Feather name="download" size={22} color={Colors.onStatus} />
               </Pressable>
               <Pressable
-                style={styles.fullscreenAction}
+                style={({ pressed }) => [
+                  styles.fullscreenButton,
+                  pressed && styles.fullscreenButtonPressed,
+                ]}
                 onPress={() =>
                   void openAttachment(
                     { type: "image", uri: fullscreenImage },
                     true,
                   )
                 }
-                hitSlop={hitSlopFor(20)}
                 accessibilityRole="button"
                 accessibilityLabel={T("chat.media.share_photo")}
               >
-                <Feather name="share" size={22} color="#FFFFFF" />
+                <Feather name="share" size={22} color={Colors.onStatus} />
               </Pressable>
             </View>
           )}
           {/* Inside the Modal: a toast in the thread below would sit behind
-              this viewer, and the save would look like it did nothing. */}
+              this viewer, and the save would look like it did nothing. Lifted
+              clear of the buttons. */}
           <Toast
             message={toast?.message ?? null}
             icon={toast?.icon}
             onHide={() => setToast(null)}
-            bottomOffset={112}
+            bottomOffset={insets.bottom + Spacing.xl + MIN_TOUCH + Spacing.base}
           />
         </Pressable>
       </AppModal>
@@ -5562,6 +5605,14 @@ export default function MessageThread({
           onClose={() => setLiveStudio(null)}
           onFinished={handleLiveFinished}
           onToast={(message) => setToast({ message, icon: "video" })}
+        />
+      )}
+
+      {liveViewer !== null && (
+        <LiveVideoViewer
+          target={liveViewer.target}
+          senderName={liveViewer.senderName}
+          onClose={() => setLiveViewer(null)}
         />
       )}
 
@@ -7027,30 +7078,26 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       width: "100%",
       height: "100%",
     },
-    fullscreenClose: {
-      position: "absolute",
-      top: 48,
-      end: 20,
-      width: 40,
-      height: 40,
+    fullscreenButton: {
+      width: MIN_TOUCH,
+      height: MIN_TOUCH,
       borderRadius: Radius.full,
-      backgroundColor: "rgba(0,0,0,0.5)",
+      backgroundColor: Colors.mediaScrim,
       alignItems: "center",
       justifyContent: "center",
+    },
+    // A scrim fill reads as no fill on a dark photo, so the press dims.
+    fullscreenButtonPressed: {
+      opacity: PRESSED_OPACITY,
+    },
+    fullscreenClose: {
+      position: "absolute",
+      start: Spacing.base,
     },
     fullscreenActions: {
       position: "absolute",
-      bottom: 48,
       flexDirection: "row",
       gap: Spacing.base,
-    },
-    fullscreenAction: {
-      width: 48,
-      height: 48,
-      borderRadius: Radius.full,
-      backgroundColor: "rgba(0,0,0,0.5)",
-      alignItems: "center",
-      justifyContent: "center",
     },
     attachVoice: {
       flexDirection: "row",

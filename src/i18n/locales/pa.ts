@@ -705,8 +705,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "ਲਾਈਵ ਵੀਡੀਓ",
   "chat.live_video.badge": "ਲਾਈਵ",
   "chat.live_video.reconnecting": "ਮੁੜ ਜੁੜ ਰਿਹਾ ਹੈ…",
-  "chat.live_video.a11y":
-    "{name} ਲਾਈਵ ਹਨ। ਆਵਾਜ਼ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰਨ ਲਈ ਦੋ ਵਾਰ ਟੈਪ ਕਰੋ।",
+  "chat.live_video.a11y": "{name} ਲਾਈਵ ਹਨ। ਦੇਖਣ ਲਈ ਦੋ ਵਾਰ ਟੈਪ ਕਰੋ।",
+  "chat.live_video.live_from": "{name} ਲਾਈਵ ਹਨ",
+  "chat.live_video.sound": "ਆਵਾਜ਼",
+  "chat.live_video.ended": "ਲਾਈਵ ਖਤਮ ਹੋ ਗਿਆ",
   "chat.live_video.title": "ਲਾਈਵ ਵੀਡੀਓ",
   "chat.live_video.go_live": "ਲਾਈਵ ਜਾਓ",
   "chat.live_video.end": "ਖਤਮ ਕਰੋ",

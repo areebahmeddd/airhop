@@ -728,7 +728,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "Mivantana",
   "chat.live_video.reconnecting": "Mifandray indray…",
   "chat.live_video.a11y":
-    "Mandefa mivantana i {name}. Tsindrio indroa mba hampandeha na hamonoana ny feo.",
+    "Mandefa mivantana i {name}. Tsindrio indroa raha hijery.",
+  "chat.live_video.live_from": "Mandefa mivantana i {name}",
+  "chat.live_video.sound": "Feo",
+  "chat.live_video.ended": "Tapitra ny fandefasana",
   "chat.live_video.title": "Horonan-tsary mivantana",
   "chat.live_video.go_live": "Andefa mivantana",
   "chat.live_video.end": "Tapitra",

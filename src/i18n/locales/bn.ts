@@ -703,8 +703,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "লাইভ ভিডিও",
   "chat.live_video.badge": "লাইভ",
   "chat.live_video.reconnecting": "আবার সংযোগ হচ্ছে…",
-  "chat.live_video.a11y":
-    "{name} লাইভে আছেন। শব্দ চালু বা বন্ধ করতে দুবার ট্যাপ করুন।",
+  "chat.live_video.a11y": "{name} লাইভে আছেন। দেখতে দুবার ট্যাপ করুন।",
+  "chat.live_video.live_from": "{name} লাইভে আছেন",
+  "chat.live_video.sound": "শব্দ",
+  "chat.live_video.ended": "লাইভ শেষ হয়েছে",
   "chat.live_video.title": "লাইভ ভিডিও",
   "chat.live_video.go_live": "লাইভে যান",
   "chat.live_video.end": "শেষ করুন",

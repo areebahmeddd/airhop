@@ -712,8 +712,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Прямой эфир",
   "chat.live_video.badge": "Эфир",
   "chat.live_video.reconnecting": "Переподключение…",
-  "chat.live_video.a11y":
-    "{name} в эфире. Коснитесь дважды, чтобы включить или выключить звук.",
+  "chat.live_video.a11y": "{name} в эфире. Коснитесь дважды, чтобы смотреть.",
+  "chat.live_video.live_from": "{name} в эфире",
+  "chat.live_video.sound": "Звук",
+  "chat.live_video.ended": "Эфир завершён",
   "chat.live_video.title": "Прямой эфир",
   "chat.live_video.go_live": "Начать эфир",
   "chat.live_video.end": "Завершить",

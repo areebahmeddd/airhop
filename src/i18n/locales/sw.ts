@@ -718,8 +718,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Video ya moja kwa moja",
   "chat.live_video.badge": "Moja kwa moja",
   "chat.live_video.reconnecting": "Inaunganisha upya…",
-  "chat.live_video.a11y":
-    "{name} yuko hewani. Gusa mara mbili kuwasha au kuzima sauti.",
+  "chat.live_video.a11y": "{name} yuko hewani. Gusa mara mbili kutazama.",
+  "chat.live_video.live_from": "{name} yuko hewani",
+  "chat.live_video.sound": "Sauti",
+  "chat.live_video.ended": "Matangazo yamekwisha",
   "chat.live_video.title": "Video ya moja kwa moja",
   "chat.live_video.go_live": "Rusha moja kwa moja",
   "chat.live_video.end": "Maliza",

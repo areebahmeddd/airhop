@@ -699,7 +699,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "라이브",
   "chat.live_video.reconnecting": "다시 연결 중…",
   "chat.live_video.a11y":
-    "{name} 님이 라이브 중입니다. 두 번 탭하여 소리를 켜거나 끄세요.",
+    "{name} 님이 라이브 중입니다. 두 번 탭하여 시청하세요.",
+  "chat.live_video.live_from": "{name} 님이 라이브 중",
+  "chat.live_video.sound": "소리",
+  "chat.live_video.ended": "라이브 종료됨",
   "chat.live_video.title": "라이브 영상",
   "chat.live_video.go_live": "라이브 시작",
   "chat.live_video.end": "종료",

@@ -701,7 +701,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "زنده",
   "chat.live_video.reconnecting": "در حال اتصال دوباره…",
   "chat.live_video.a11y":
-    "{name} در حال پخش زنده است. برای روشن یا خاموش کردن صدا دو بار ضربه بزنید.",
+    "{name} در حال پخش زنده است. برای تماشا دو بار ضربه بزنید.",
+  "chat.live_video.live_from": "{name} در حال پخش زنده است",
+  "chat.live_video.sound": "صدا",
+  "chat.live_video.ended": "پخش زنده تمام شد",
   "chat.live_video.title": "ویدیوی زنده",
   "chat.live_video.go_live": "شروع پخش زنده",
   "chat.live_video.end": "پایان",

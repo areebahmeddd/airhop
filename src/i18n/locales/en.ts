@@ -739,8 +739,10 @@ export const strings = {
   "chat.live_video.preview": "Live video",
   "chat.live_video.badge": "Live",
   "chat.live_video.reconnecting": "Reconnecting…",
-  "chat.live_video.a11y":
-    "{name} is live. Double tap to turn the sound on or off.",
+  "chat.live_video.a11y": "{name} is live. Double tap to watch.",
+  "chat.live_video.live_from": "{name} is live",
+  "chat.live_video.sound": "Sound",
+  "chat.live_video.ended": "Stream ended",
   "chat.live_video.title": "Live video",
   "chat.live_video.go_live": "Go live",
   "chat.live_video.end": "End",

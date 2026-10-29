@@ -705,8 +705,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "لائیو ویڈیو",
   "chat.live_video.badge": "لائیو",
   "chat.live_video.reconnecting": "دوبارہ جڑ رہا ہے…",
-  "chat.live_video.a11y":
-    "{name} لائیو ہیں۔ آواز آن یا آف کرنے کے لیے دو بار تھپتھپائیں۔",
+  "chat.live_video.a11y": "{name} لائیو ہیں۔ دیکھنے کے لیے دو بار تھپتھپائیں۔",
+  "chat.live_video.live_from": "{name} لائیو ہیں",
+  "chat.live_video.sound": "آواز",
+  "chat.live_video.ended": "لائیو ختم ہو گیا",
   "chat.live_video.title": "لائیو ویڈیو",
   "chat.live_video.go_live": "لائیو جائیں",
   "chat.live_video.end": "ختم کریں",

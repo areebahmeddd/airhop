@@ -715,8 +715,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Canlı video",
   "chat.live_video.badge": "Canlı",
   "chat.live_video.reconnecting": "Yeniden bağlanıyor…",
-  "chat.live_video.a11y":
-    "{name} canlı yayında. Sesi açmak veya kapatmak için iki kez dokun.",
+  "chat.live_video.a11y": "{name} canlı yayında. İzlemek için iki kez dokun.",
+  "chat.live_video.live_from": "{name} canlı yayında",
+  "chat.live_video.sound": "Ses",
+  "chat.live_video.ended": "Yayın sona erdi",
   "chat.live_video.title": "Canlı video",
   "chat.live_video.go_live": "Canlı yayına geç",
   "chat.live_video.end": "Bitir",

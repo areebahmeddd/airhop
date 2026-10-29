@@ -716,8 +716,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Livevideo",
   "chat.live_video.badge": "Live",
   "chat.live_video.reconnecting": "Opnieuw verbinden…",
-  "chat.live_video.a11y":
-    "{name} is live. Dubbeltik om het geluid aan of uit te zetten.",
+  "chat.live_video.a11y": "{name} is live. Dubbeltik om te kijken.",
+  "chat.live_video.live_from": "{name} is live",
+  "chat.live_video.sound": "Geluid",
+  "chat.live_video.ended": "Uitzending beëindigd",
   "chat.live_video.title": "Livevideo",
   "chat.live_video.go_live": "Live gaan",
   "chat.live_video.end": "Stoppen",

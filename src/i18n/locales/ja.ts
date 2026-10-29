@@ -710,7 +710,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "ライブ",
   "chat.live_video.reconnecting": "再接続中…",
   "chat.live_video.a11y":
-    "{name}さんがライブ配信中です。ダブルタップで音声をオン・オフします。",
+    "{name}さんがライブ配信中です。ダブルタップで視聴します。",
+  "chat.live_video.live_from": "{name}さんがライブ配信中",
+  "chat.live_video.sound": "音声",
+  "chat.live_video.ended": "配信が終了しました",
   "chat.live_video.title": "ライブ動画",
   "chat.live_video.go_live": "配信を開始",
   "chat.live_video.end": "終了",

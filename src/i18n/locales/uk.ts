@@ -717,8 +717,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Прямий ефір",
   "chat.live_video.badge": "Ефір",
   "chat.live_video.reconnecting": "Перепідключення…",
-  "chat.live_video.a11y":
-    "{name} в ефірі. Торкніться двічі, щоб увімкнути або вимкнути звук.",
+  "chat.live_video.a11y": "{name} в ефірі. Торкніться двічі, щоб дивитися.",
+  "chat.live_video.live_from": "{name} в ефірі",
+  "chat.live_video.sound": "Звук",
+  "chat.live_video.ended": "Ефір завершено",
   "chat.live_video.title": "Прямий ефір",
   "chat.live_video.go_live": "Почати ефір",
   "chat.live_video.end": "Завершити",

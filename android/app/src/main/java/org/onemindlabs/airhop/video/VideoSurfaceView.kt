@@ -5,7 +5,7 @@
 // decode. A surface that has just appeared, has lost a unit, or whose decoder
 // failed waits for the next keyframe rather than painting deltas with nothing
 // under them. Each surface decodes on a thread of its own, so a slow codec
-// holds up only its own stream.
+// holds up only its own picture.
 package org.onemindlabs.airhop.video
 
 import android.content.Context
@@ -17,24 +17,9 @@ import android.os.HandlerThread
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
-import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 
-internal object VideoSurfaces {
-    private val surfaces = HashMap<String, WeakReference<VideoSurfaceView>>()
-
-    @Synchronized
-    fun attach(key: String, view: VideoSurfaceView) {
-        surfaces[key] = WeakReference(view)
-    }
-
-    @Synchronized
-    fun detach(key: String, view: VideoSurfaceView) {
-        if (surfaces[key]?.get() === view) surfaces.remove(key)
-    }
-
-    @Synchronized fun get(key: String): VideoSurfaceView? = surfaces[key]?.get()
-}
+internal object VideoSurfaces : SurfaceRegistry<VideoSurfaceView>()
 
 internal class VideoSurfaceView(context: Context) :
     TextureView(context), TextureView.SurfaceTextureListener {

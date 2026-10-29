@@ -735,7 +735,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "நேரலை",
   "chat.live_video.reconnecting": "மீண்டும் இணைக்கிறது…",
   "chat.live_video.a11y":
-    "{name} நேரலையில் உள்ளார். ஒலியை இயக்க அல்லது நிறுத்த இருமுறை தட்டுங்கள்.",
+    "{name} நேரலையில் உள்ளார். பார்க்க இருமுறை தட்டுங்கள்.",
+  "chat.live_video.live_from": "{name} நேரலையில் உள்ளார்",
+  "chat.live_video.sound": "ஒலி",
+  "chat.live_video.ended": "நேரலை முடிந்தது",
   "chat.live_video.title": "நேரலை வீடியோ",
   "chat.live_video.go_live": "நேரலைக்குச் செல்",
   "chat.live_video.end": "முடி",

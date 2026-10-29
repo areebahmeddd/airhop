@@ -711,8 +711,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "პირდაპირი ვიდეო",
   "chat.live_video.badge": "ეთერში",
   "chat.live_video.reconnecting": "ხელახლა დაკავშირება…",
-  "chat.live_video.a11y":
-    "{name} პირდაპირ ეთერშია. ორჯერ შეეხე ხმის ჩასართავად ან გამოსართავად.",
+  "chat.live_video.a11y": "{name} პირდაპირ ეთერშია. ორჯერ შეეხე სანახავად.",
+  "chat.live_video.live_from": "{name} პირდაპირ ეთერშია",
+  "chat.live_video.sound": "ხმა",
+  "chat.live_video.ended": "ეთერი დასრულდა",
   "chat.live_video.title": "პირდაპირი ვიდეო",
   "chat.live_video.go_live": "ეთერში გასვლა",
   "chat.live_video.end": "დასრულება",

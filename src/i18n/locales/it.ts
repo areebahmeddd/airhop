@@ -719,8 +719,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Video in diretta",
   "chat.live_video.badge": "In diretta",
   "chat.live_video.reconnecting": "Riconnessione…",
-  "chat.live_video.a11y":
-    "{name} è in diretta. Tocca due volte per attivare o disattivare l’audio.",
+  "chat.live_video.a11y": "{name} è in diretta. Tocca due volte per guardare.",
+  "chat.live_video.live_from": "{name} è in diretta",
+  "chat.live_video.sound": "Audio",
+  "chat.live_video.ended": "Diretta terminata",
   "chat.live_video.title": "Video in diretta",
   "chat.live_video.go_live": "Vai in diretta",
   "chat.live_video.end": "Termina",

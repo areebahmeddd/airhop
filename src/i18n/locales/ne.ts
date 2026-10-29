@@ -705,7 +705,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "लाइभ",
   "chat.live_video.reconnecting": "फेरि जोडिँदै…",
   "chat.live_video.a11y":
-    "{name} लाइभमा हुनुहुन्छ। आवाज खोल्न वा बन्द गर्न दुई पटक ट्याप गर्नुहोस्।",
+    "{name} लाइभमा हुनुहुन्छ। हेर्न दुई पटक ट्याप गर्नुहोस्।",
+  "chat.live_video.live_from": "{name} लाइभमा हुनुहुन्छ",
+  "chat.live_video.sound": "आवाज",
+  "chat.live_video.ended": "लाइभ सकियो",
   "chat.live_video.title": "लाइभ भिडियो",
   "chat.live_video.go_live": "लाइभ जानुहोस्",
   "chat.live_video.end": "अन्त्य गर्नुहोस्",

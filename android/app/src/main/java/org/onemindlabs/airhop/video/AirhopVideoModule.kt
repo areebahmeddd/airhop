@@ -74,12 +74,12 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun decodeVideo(surfaceKey: String, dataBase64: String, keyframe: Boolean) {
         val data = runCatching { Base64.decode(dataBase64, Base64.NO_WRAP) }.getOrNull() ?: return
-        VideoSurfaces.get(surfaceKey)?.submit(data, keyframe)
+        VideoSurfaces.all(surfaceKey).forEach { it.submit(data, keyframe) }
     }
 
     @ReactMethod
     fun releaseDecoder(surfaceKey: String) {
-        VideoSurfaces.get(surfaceKey)?.releaseDecoder()
+        VideoSurfaces.all(surfaceKey).forEach { it.releaseDecoder() }
     }
 
     // ---- Recording ----

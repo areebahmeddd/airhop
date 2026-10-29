@@ -435,6 +435,7 @@ export class LiveVideoReceiver {
         startedAtMs: this.now(),
         width: config.width,
         height: config.height,
+        hasAudio: config.hasAudio,
       },
     });
   }
@@ -450,6 +451,7 @@ export class LiveVideoReceiver {
         state: stream.quiet ? "reconnecting" : "live",
         width: stream.config.width,
         height: stream.config.height,
+        hasAudio: stream.config.hasAudio,
       },
       attachment: undefined,
     });

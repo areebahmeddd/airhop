@@ -725,7 +725,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "တိုက်ရိုက်",
   "chat.live_video.reconnecting": "ပြန်ချိတ်ဆက်နေသည်…",
   "chat.live_video.a11y":
-    "{name} တိုက်ရိုက်ထုတ်လွှင့်နေသည်။ အသံဖွင့်ရန် သို့မဟုတ် ပိတ်ရန် နှစ်ချက်တို့ပါ။",
+    "{name} တိုက်ရိုက်ထုတ်လွှင့်နေသည်။ ကြည့်ရန် နှစ်ချက်တို့ပါ။",
+  "chat.live_video.live_from": "{name} တိုက်ရိုက်ထုတ်လွှင့်နေသည်",
+  "chat.live_video.sound": "အသံ",
+  "chat.live_video.ended": "ထုတ်လွှင့်မှု ပြီးဆုံးပါပြီ",
   "chat.live_video.title": "တိုက်ရိုက်ဗီဒီယို",
   "chat.live_video.go_live": "တိုက်ရိုက်စတင်ရန်",
   "chat.live_video.end": "ရပ်ရန်",

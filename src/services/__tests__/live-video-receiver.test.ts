@@ -155,6 +155,7 @@ describe("LiveVideoReceiver", () => {
       state: "live",
       width: 144,
       height: 192,
+      hasAudio: true,
     });
     feed(receiver, packetizer, 2.5, 500);
     for (const p of packetizer.finish(3_000, 3_000)) {
@@ -468,6 +469,7 @@ describe("LiveVideoReceiver", () => {
         startedAtMs: 0,
         width: 144,
         height: 192,
+        hasAudio: true,
       },
     });
     setup().receiver.dropStaleRows();

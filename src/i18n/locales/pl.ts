@@ -720,7 +720,10 @@ export const strings: Strings = {
   "chat.live_video.badge": "Na żywo",
   "chat.live_video.reconnecting": "Ponowne łączenie…",
   "chat.live_video.a11y":
-    "{name} nadaje na żywo. Stuknij dwukrotnie, żeby włączyć lub wyłączyć dźwięk.",
+    "{name} nadaje na żywo. Stuknij dwukrotnie, żeby oglądać.",
+  "chat.live_video.live_from": "{name} nadaje na żywo",
+  "chat.live_video.sound": "Dźwięk",
+  "chat.live_video.ended": "Transmisja zakończona",
   "chat.live_video.title": "Wideo na żywo",
   "chat.live_video.go_live": "Zacznij nadawać",
   "chat.live_video.end": "Zakończ",

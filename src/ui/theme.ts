@@ -110,6 +110,10 @@ export const Colors = {
 
   // ---- Overlays ----
   overlay: "rgba(0,0,0,0.45)",
+  // Behind white text and glyphs laid over a photo or video. At 0.6 white
+  // text holds 4.5:1 even over a white picture; `overlay`, which dims a
+  // screen behind a sheet, does not in this theme.
+  mediaScrim: "rgba(0,0,0,0.6)",
 } as const;
 
 // Dark variant, same keys as Colors so a screen swaps the whole palette by
@@ -187,6 +191,7 @@ export const DarkColors = {
 
   // ---- Overlays ----
   overlay: "rgba(0,0,0,0.6)",
+  mediaScrim: "rgba(0,0,0,0.6)",
 } as const;
 
 // A 4pt grid, with in-between steps named for the two they sit between. Each

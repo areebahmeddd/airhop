@@ -690,8 +690,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "فيديو مباشر",
   "chat.live_video.badge": "مباشر",
   "chat.live_video.reconnecting": "جارٍ إعادة الاتصال…",
-  "chat.live_video.a11y":
-    "{name} يبث مباشرة. انقر مرتين لتشغيل الصوت أو إيقافه.",
+  "chat.live_video.a11y": "{name} يبث مباشرة. انقر مرتين للمشاهدة.",
+  "chat.live_video.live_from": "{name} يبث مباشرة",
+  "chat.live_video.sound": "الصوت",
+  "chat.live_video.ended": "انتهى البث",
   "chat.live_video.title": "فيديو مباشر",
   "chat.live_video.go_live": "ابدأ البث",
   "chat.live_video.end": "إنهاء",

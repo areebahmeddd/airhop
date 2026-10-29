@@ -711,8 +711,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "Livevideo",
   "chat.live_video.badge": "Live",
   "chat.live_video.reconnecting": "Återansluter…",
-  "chat.live_video.a11y":
-    "{name} sänder live. Dubbeltryck för att slå på eller av ljudet.",
+  "chat.live_video.a11y": "{name} sänder live. Dubbeltryck för att titta.",
+  "chat.live_video.live_from": "{name} sänder live",
+  "chat.live_video.sound": "Ljud",
+  "chat.live_video.ended": "Sändningen har avslutats",
   "chat.live_video.title": "Livevideo",
   "chat.live_video.go_live": "Sänd live",
   "chat.live_video.end": "Avsluta",

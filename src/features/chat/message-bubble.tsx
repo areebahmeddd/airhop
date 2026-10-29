@@ -103,6 +103,8 @@ interface Props {
   selecting?: boolean;
   selected?: boolean;
   onToggleSelect?: (item: ChatMessage) => void;
+  // Tapping a live stream's picture opens it full screen.
+  onOpenLiveVideo?: (item: ChatMessage) => void;
 }
 
 function MessageBubble({
@@ -123,6 +125,7 @@ function MessageBubble({
   selecting,
   selected,
   onToggleSelect,
+  onOpenLiveVideo,
 }: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
@@ -259,6 +262,10 @@ function MessageBubble({
           onPress={selecting === true ? handleToggle : undefined}
           onLongPress={handleLongPress}
           delayLongPress={LONG_PRESS_MS}
+          // A live stream's two controls, the picture and its sound, are their
+          // own nodes and name the sender themselves; as one node with the
+          // bubble neither could be reached.
+          accessible={selecting === true || item.liveVideo === undefined}
           accessibilityRole={selecting === true ? "checkbox" : "button"}
           accessibilityState={
             selecting === true ? { checked: selected === true } : undefined
@@ -332,7 +339,12 @@ function MessageBubble({
             )}
 
             {item.attachment && renderAttachment(item.attachment)}
-            {item.liveVideo && <LiveVideoBubble message={item} />}
+            {item.liveVideo && (
+              <LiveVideoBubble
+                message={item}
+                onOpen={selecting === true ? undefined : onOpenLiveVideo}
+              />
+            )}
 
             {/* The message text is the one-line summary the conversation list
                 and notifications read, so it is suppressed here where the card

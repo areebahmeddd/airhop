@@ -667,8 +667,10 @@ export const strings: Strings = {
   "chat.live_video.preview": "ቀጥታ ቪዲዮ",
   "chat.live_video.badge": "ቀጥታ",
   "chat.live_video.reconnecting": "እንደገና በመገናኘት ላይ…",
-  "chat.live_video.a11y":
-    "{name} በቀጥታ ላይ ነው። ድምፁን ለማብራት ወይም ለማጥፋት ሁለቴ መታ ያድርጉ።",
+  "chat.live_video.a11y": "{name} በቀጥታ ላይ ነው። ለመመልከት ሁለቴ መታ ያድርጉ።",
+  "chat.live_video.live_from": "{name} በቀጥታ ላይ ነው",
+  "chat.live_video.sound": "ድምፅ",
+  "chat.live_video.ended": "ስርጭቱ አብቅቷል",
   "chat.live_video.title": "ቀጥታ ቪዲዮ",
   "chat.live_video.go_live": "በቀጥታ ይልቀቁ",
   "chat.live_video.end": "ጨርስ",

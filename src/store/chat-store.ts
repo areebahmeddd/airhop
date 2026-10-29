@@ -117,6 +117,9 @@ export interface ChatMessage {
     startedAtMs: number;
     width: number;
     height: number;
+    // Whether START said the stream carries sound; a silent one offers no
+    // sound control.
+    hasAudio: boolean;
   };
   // A Ring alert, tagged with a bell in message-bubble.tsx. `status` covers
   // its full lifecycle: "sent" until acknowledged, "read" once it is.
