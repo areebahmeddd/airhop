@@ -60,6 +60,7 @@ import {
   liveVideoViewerState,
   type LiveVideoViewerTarget,
 } from "./live-video-viewer-state";
+import { useExclusivePlayback } from "./use-exclusive-playback";
 
 const CONTROL_SIZE = MIN_TOUCH;
 // Every live video quality is 3:4; an ended stream keeps the frame it had.
@@ -76,12 +77,17 @@ interface Props {
   target: LiveVideoViewerTarget;
   // Taken when the viewer opened: the row, and its nickname, can go.
   senderName: string;
+  // Whether the replay holds the thread's one sound, and how it takes it.
+  replayPlaying: boolean;
+  onReplayPlay: () => void;
   onClose: () => void;
 }
 
 export default function LiveVideoViewer({
   target,
   senderName,
+  replayPlaying,
+  onReplayPlay,
   onClose,
 }: Props): React.JSX.Element {
   const T = useT();
@@ -236,7 +242,11 @@ export default function LiveVideoViewer({
                       )}
                     </>
                   ) : state.replay !== null ? (
-                    <Replay uri={state.replay.uri} />
+                    <Replay
+                      uri={state.replay.uri}
+                      playing={replayPlaying}
+                      onPlay={onReplayPlay}
+                    />
                   ) : (
                     <View style={styles.nothing}>
                       <Feather
@@ -299,10 +309,19 @@ function KeepScreenOn(): null {
 
 // The stream's recording, played where the picture was. Not started on its
 // own: the stream ending is no reason to make a sound.
-function Replay({ uri }: { uri: string }): React.JSX.Element {
+function Replay({
+  uri,
+  playing,
+  onPlay,
+}: {
+  uri: string;
+  playing: boolean;
+  onPlay: () => void;
+}): React.JSX.Element {
   const player = useVideoPlayer(uri, (p) => {
     p.loop = false;
   });
+  useExclusivePlayback(player, playing, onPlay);
   return (
     <VideoView
       style={StyleSheet.absoluteFill}

@@ -244,6 +244,7 @@ import MessageBubble from "./message-bubble";
 import MessageInfoSheet from "./message-info-sheet";
 import { NoticesSheet } from "./notices-sheet";
 import SendLocationSheet from "./send-location-sheet";
+import { useExclusivePlayback } from "./use-exclusive-playback";
 import {
   useVideoNoteRecorder,
   type RecordedVideoNote,
@@ -550,10 +551,14 @@ interface VoiceNoteBubbleProps {
 function VideoAttachment({
   uri,
   liveRecording = false,
+  playing,
+  onPlay,
   onAskResend,
 }: {
   uri: string;
   liveRecording?: boolean;
+  playing: boolean;
+  onPlay: () => void;
   onAskResend?: () => void;
 }): React.JSX.Element {
   const present = useAttachmentPresent(uri);
@@ -562,6 +567,7 @@ function VideoAttachment({
     // start at once when the list renders.
     p.loop = false;
   });
+  useExclusivePlayback(player, playing, onPlay);
 
   if (!present) {
     return <AttachmentUnavailable kind="video" onAskResend={onAskResend} />;
@@ -590,11 +596,13 @@ function VideoNoteAttachment({
   uri,
   withSound,
   onToggleSound,
+  onFinished,
   onAskResend,
 }: {
   uri: string;
   withSound: boolean;
   onToggleSound: () => void;
+  onFinished: () => void;
   onAskResend?: () => void;
 }): React.JSX.Element {
   const T = useT();
@@ -616,16 +624,33 @@ function VideoNoteAttachment({
     return () => sub.remove();
   }, [player]);
 
+  // The player is a native handle whose properties are its API; there is no
+  // setter method to call instead.
+  /* eslint-disable react-hooks/immutability */
   useEffect(() => {
-    // The player is a native handle whose properties are its API; there is
-    // no setter method to call instead.
-    // eslint-disable-next-line react-hooks/immutability
     player.muted = !withSound;
-    // Sound starts the note over, so it is heard from its first word.
+    // With sound a note plays once, from its first word, then goes back to
+    // its silent loop, rather than repeating someone's words until tapped.
+    player.loop = !withSound;
     if (withSound) player.replay();
     else if (reduceMotion) player.pause();
     else player.play();
   }, [player, reduceMotion, withSound]);
+  const onFinishedRef = useRef(onFinished);
+  useEffect(() => {
+    onFinishedRef.current = onFinished;
+  });
+  useEffect(() => {
+    if (!withSound) return;
+    const sub = player.addListener("playToEnd", () => {
+      // Back to the start, so the silent loop (or the still frame) picks up
+      // from the first frame rather than the last.
+      player.currentTime = 0;
+      onFinishedRef.current();
+    });
+    return () => sub.remove();
+  }, [player, withSound]);
+  /* eslint-enable react-hooks/immutability */
 
   if (!present) {
     return <AttachmentUnavailable kind="video" onAskResend={onAskResend} />;
@@ -2105,6 +2130,12 @@ export default function MessageThread({
       }),
     [liveVideoReceiver],
   );
+  // An open microphone would pick up whatever the speaker is playing, so every
+  // press that opens one quiets any note or stream with sound first.
+  function silencePlayback(): void {
+    setPlayingMessageId(null);
+    getMeshService()?.liveVideoReceiver?.setAudible(null);
+  }
   const [revealedAttachments, setRevealedAttachments] = useState<Set<string>>(
     new Set(),
   );
@@ -3969,6 +4000,7 @@ export default function MessageThread({
   }
 
   async function handleTalkStart(): Promise<void> {
+    silencePlayback();
     setHandsFreeRecording(false);
     // Opening the mic is not instant: a permission prompt can sit on screen for
     // seconds, and the audio session itself takes a moment. A finger can be
@@ -4287,8 +4319,7 @@ export default function MessageThread({
   );
 
   async function openLiveStudio(): Promise<void> {
-    // A note playing on would go out through the stream's microphone.
-    setPlayingMessageId(null);
+    silencePlayback();
     const purpose = { purpose: t("chat.perm.live_video_purpose") };
     const camera = await ensurePermission(
       Camera.getCameraPermissionsAsync,
@@ -4375,6 +4406,7 @@ export default function MessageThread({
     bottomInset: composeBarHeight + keyboardInset,
     onRecorded: (note) => void sendVideoNote(note),
     onToast: (message) => setToast({ message, icon: "video" }),
+    onStart: silencePlayback,
   });
 
   // A finished note, sent like any other video, under the name that has it
@@ -4913,12 +4945,19 @@ export default function MessageThread({
                 current === messageId ? null : messageId,
               )
             }
+            onFinished={() =>
+              setPlayingMessageId((current) =>
+                current === messageId ? null : current,
+              )
+            }
             onAskResend={onAskResend}
           />
         ) : (
           <VideoAttachment
             uri={attachment.uri}
             liveRecording={liveVideoStreamOf(attachment.name) !== null}
+            playing={playingMessageId === messageId}
+            onPlay={() => setPlayingMessageId(messageId)}
             onAskResend={onAskResend}
           />
         );
@@ -5825,7 +5864,17 @@ export default function MessageThread({
         <LiveVideoViewer
           target={liveViewer.target}
           senderName={liveViewer.senderName}
-          onClose={() => setLiveViewer(null)}
+          replayPlaying={playingMessageId === liveViewer.target.rowID}
+          onReplayPlay={() => setPlayingMessageId(liveViewer.target.rowID)}
+          onClose={() => {
+            // The replay's player goes with the viewer, so its claim on the
+            // speaker goes too.
+            const rowID = liveViewer.target.rowID;
+            setPlayingMessageId((current) =>
+              current === rowID ? null : current,
+            );
+            setLiveViewer(null);
+          }}
         />
       )}
 

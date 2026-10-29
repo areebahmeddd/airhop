@@ -104,6 +104,8 @@ interface Options {
   bottomInset: number;
   onRecorded: (note: RecordedVideoNote) => void;
   onToast: (message: string) => void;
+  // Each press, before the microphone opens.
+  onStart: () => void;
 }
 
 export function useVideoNoteRecorder({
@@ -111,6 +113,7 @@ export function useVideoNoteRecorder({
   bottomInset,
   onRecorded,
   onToast,
+  onStart,
 }: Options): {
   button: React.JSX.Element;
   overlay: React.JSX.Element | null;
@@ -137,9 +140,11 @@ export function useVideoNoteRecorder({
   const lastSizeRef = useRef<number | undefined>(undefined);
   const onRecordedRef = useRef(onRecorded);
   const onToastRef = useRef(onToast);
+  const onStartRef = useRef(onStart);
   useEffect(() => {
     onRecordedRef.current = onRecorded;
     onToastRef.current = onToast;
+    onStartRef.current = onStart;
   });
 
   const slide = useSharedValue(0);
@@ -168,6 +173,7 @@ export function useVideoNoteRecorder({
   const begin = useCallback(async (): Promise<void> => {
     if (!enabled || phaseRef.current !== "idle") return;
     held();
+    onStartRef.current();
     const hold = ++holdSeq.current;
     const purpose = { purpose: t("chat.perm.video_note_purpose") };
     const camera = await ensurePermission(
@@ -464,7 +470,9 @@ export function useVideoNoteRecorder({
             cx={RING_SIZE / 2}
             cy={RING_SIZE / 2}
             r={RING_RADIUS}
-            stroke={Colors.danger}
+            // White, not the recording red: red on the dimmed light chat
+            // holds about 1.4:1, white about 3.4:1 (WCAG 1.4.11 asks 3:1).
+            stroke={Colors.onStatus}
             strokeWidth={RING_WIDTH}
             strokeLinecap="round"
             fill="none"
