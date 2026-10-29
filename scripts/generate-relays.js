@@ -13,7 +13,7 @@
 // to fail offline (which is exactly when this app matters most).
 //
 // Upstream: .github/workflows/sync-relays.yml proposes a weekly refresh of the
-// vendored CSV from bitchat's reviewed directory, as a pull request for review.
+// vendored CSV from georelays, as a pull request for review.
 //
 // Rows are canonicalized, not copied: the feed lists many hosts twice, bare and
 // with an explicit :443, and those are one relay. The CSV stays byte-identical

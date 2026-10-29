@@ -50,7 +50,7 @@ it rather than restating it. What is planned and when is in
 | Internet gateway          | Relays for others        | Yes                 | Off by default. Carries public location traffic for offline peers                                                                                                                                |
 | Mesh bridge               | Relays for others        | Yes                 | Off by default. Joins two Bluetooth islands' `#bluetooth` rooms through a Nostr rendezvous cell                                                                                                  |
 | Tor routing               | n/a                      | Yes                 | Embedded Arti on both. BLE is local, so nothing to route                                                                                                                                         |
-| Relay discovery           | n/a                      | Yes                 | Bundled CSV, bitchat's reviewed relay directory                                                                                                                                                  |
+| Relay discovery           | n/a                      | Yes                 | Bundled CSV from georelays, refreshed weekly                                                                                                                                                     |
 | bitchat compatibility     | Yes                      | Yes                 | Same wire format both directions. Airhop-only types are ignored by bitchat                                                                                                                       |
 
 ## 2. Identity
@@ -560,7 +560,7 @@ half each person is playing.
 
 ### Nostr
 
-- 300+ public relays from bitchat's reviewed directory (`relays/online_relays_gps.csv`, the file both bitchat clients route by), bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
+- 300+ public relays from georelays (`nostr_relays.csv`, the directory both bitchat clients are built from), taken weekly at the snapshot bitchat-ios's own sync takes, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
 - A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (five primaries and five warm backups, used for both publishing and subscribing, as bitchat routes), plus up to five the user adds. DMs use a pool of well-known relays, at most five
 - NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
 - Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is

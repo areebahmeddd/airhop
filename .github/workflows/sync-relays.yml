@@ -2,8 +2,8 @@ name: Sync Relay Directory
 
 on:
   schedule:
-    # Weekly on Friday at 07:00 UTC
-    - cron: "0 7 * * 5"
+    # Weekly on Sunday at 06:00 UTC
+    - cron: "0 6 * * 0"
   workflow_dispatch:
 
 permissions:
@@ -14,11 +14,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Default routing directory shared by all bitchat clients
-  SOURCE_REPOSITORY: https://github.com/permissionlesstech/bitchat.git
-  SOURCE_OWNER_REPO: permissionlesstech/bitchat
-  SOURCE_PATH: relays/online_relays_gps.csv
-  STALE_AFTER_DAYS: 90
+  # Upstream relay directory and sync settings.
+  SOURCE_REPOSITORY: https://github.com/permissionlesstech/georelays.git
+  SOURCE_OWNER_REPO: permissionlesstech/georelays
+  SOURCE_PATH: nostr_relays.csv
+  STALE_AFTER_DAYS: 7
   UPDATE_BRANCH: automation/relays
   PR_TITLE: "chore(relays): sync relay directory from upstream"
   RELAY_FILES: assets/data/nostr_relays.csv src/data/relays.ts landing/src/data/relays.ts
@@ -44,10 +44,17 @@ jobs:
 
       - name: Fetch candidate at a pinned commit
         id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          source_commit=$(git ls-remote --refs "$SOURCE_REPOSITORY" refs/heads/main | awk 'NR == 1 { print $1 }')
+          if [[ "$GITHUB_EVENT_NAME" == "schedule" ]]; then
+            cutoff=$(date -u +%Y-%m-%dT06:00:00Z)
+            source_commit=$(gh api "repos/$SOURCE_OWNER_REPO/commits?sha=main&until=$cutoff&per_page=1" --jq '.[0].sha // empty')
+          else
+            source_commit=$(git ls-remote --refs "$SOURCE_REPOSITORY" refs/heads/main | awk 'NR == 1 { print $1 }')
+          fi
           if [[ ! "$source_commit" =~ ^[0-9a-f]{40}$ ]]; then
             echo "::error::Could not resolve an immutable upstream commit."
             exit 1

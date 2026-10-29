@@ -2,8 +2,8 @@ name: Sync Bridge Directory
 
 on:
   schedule:
-    # Weekly on Friday at 07:00 UTC
-    - cron: "0 7 * * 5"
+    # Weekly on Sunday at 06:00 UTC
+    - cron: "0 6 * * 0"
   workflow_dispatch:
 
 permissions:
@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Moat's built-in endpoint, the same source Tor Browser uses.
+  # Upstream bridge directory and sync settings.
   SOURCE_URL: https://bridges.torproject.org/moat/circumvention/builtin
   UPDATE_BRANCH: automation/bridges
   PR_TITLE: "chore(bridges): sync built-in bridges from the Tor Project"
