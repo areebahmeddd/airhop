@@ -58,6 +58,7 @@ const SNAPSHOT: DiagnosticsSnapshot = {
     torBridgeMode: "off",
     liveVoice: true,
     liveVideo: true,
+    spamFilter: true,
   },
 };
 
@@ -118,6 +119,18 @@ describe("buildDiagnosticsReport", () => {
         "",
       ].join("\n"),
     );
+  });
+
+  // It hides public messages without telling the sender, so a report of one
+  // that never arrived needs to say whether it was on.
+  it("says whether the spam filter is on", () => {
+    expect(buildDiagnosticsReport(SNAPSHOT)).toContain("  Spam filter: on\n");
+    expect(
+      buildDiagnosticsReport({
+        ...SNAPSHOT,
+        settings: { ...SNAPSHOT.settings, spamFilter: false },
+      }),
+    ).toContain("  Spam filter: off\n");
   });
 
   it("describes a stream being sent in the studio's words", () => {

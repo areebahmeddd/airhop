@@ -66,6 +66,7 @@ private val LOG_TAGS =
         "AirhopVoiceModule",
         "AirhopVideoModule",
         "AirhopForegroundService",
+        "AirhopBootService",
         "AirhopAppModule",
         "AirhopMeshWidget",
         "AndroidRuntime",

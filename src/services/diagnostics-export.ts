@@ -58,6 +58,7 @@ export interface DiagnosticsSnapshot {
     torBridgeMode: string;
     liveVoice: boolean;
     liveVideo: boolean;
+    spamFilter: boolean;
   };
   // Absent only if the native module itself is missing. Empty where the
   // platform refused to hand back a log.
@@ -106,6 +107,7 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     `  Tor bridge mode: ${s.settings.torBridgeMode}`,
     `  Live voice: ${yes(s.settings.liveVoice)}`,
     `  Live video: ${yes(s.settings.liveVideo)}`,
+    `  Spam filter: ${yes(s.settings.spamFilter)}`,
     "",
   ];
   if (s.wifiTransport !== undefined && s.wifiTransport.trim().length > 0) {
@@ -277,6 +279,7 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       torBridgeMode: settings.torBridgeMode,
       liveVoice: settings.liveVoiceEnabled,
       liveVideo: settings.liveVideoEnabled,
+      spamFilter: settings.spamFilterEnabled,
     },
     log,
     wifiTransport,
