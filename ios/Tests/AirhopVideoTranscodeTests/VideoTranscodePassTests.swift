@@ -285,33 +285,62 @@ private enum SyntheticClip {
     guard writer.startWriting() else { throw writer.error ?? CocoaError(.fileWriteUnknown) }
     writer.startSession(atSourceTime: .zero)
 
+    // Each track is fed as the writer asks for it, as the pass itself does: the
+    // writer interleaves, so all the video first would stall waiting for sound.
+    let group = DispatchGroup()
     let frames = Int(fps) * seconds
-    for index in 0..<frames {
-      while !video.isReadyForMoreMediaData { Thread.sleep(forTimeInterval: 0.002) }
-      let buffer = try pixelBuffer(pool: adaptor.pixelBufferPool, shade: UInt8(index * 7 % 255))
+    var frameIndex = 0
+    feed(video, label: "video", group: group) {
+      guard frameIndex < frames,
+        let buffer = try? pixelBuffer(
+          pool: adaptor.pixelBufferPool, shade: UInt8(frameIndex * 7 % 255))
+      else { return false }
       _ = adaptor.append(
-        buffer, withPresentationTime: CMTime(value: CMTimeValue(index), timescale: fps))
+        buffer, withPresentationTime: CMTime(value: CMTimeValue(frameIndex), timescale: fps))
+      frameIndex += 1
+      return true
     }
-    video.markAsFinished()
-
     if let audio {
       let chunk = 1_024
       let total = Int(sampleRate) * seconds
       var start = 0
-      while start < total {
-        while !audio.isReadyForMoreMediaData { Thread.sleep(forTimeInterval: 0.002) }
-        let tone = try toneBuffer(start: start, frames: min(chunk, total - start))
+      feed(audio, label: "audio", group: group) {
+        guard start < total,
+          let tone = try? toneBuffer(start: start, frames: min(chunk, total - start))
+        else { return false }
         _ = audio.append(tone)
         start += chunk
+        return true
       }
-      audio.markAsFinished()
     }
+    group.wait()
 
     let done = DispatchSemaphore(value: 0)
     writer.finishWriting { done.signal() }
     done.wait()
     guard writer.status == .completed else { throw writer.error ?? CocoaError(.fileWriteUnknown) }
     return url
+  }
+
+  // Appends while the input is ready and `next` has more, then finishes the
+  // input and leaves `group` once.
+  private static func feed(
+    _ input: AVAssetWriterInput, label: String, group: DispatchGroup,
+    next: @escaping () -> Bool
+  ) {
+    group.enter()
+    var finished = false
+    input.requestMediaDataWhenReady(on: DispatchQueue(label: "synthetic.\(label)")) {
+      guard !finished else { return }
+      while input.isReadyForMoreMediaData {
+        guard next() else {
+          finished = true
+          input.markAsFinished()
+          group.leave()
+          return
+        }
+      }
+    }
   }
 
   private static func pixelBuffer(pool: CVPixelBufferPool?, shade: UInt8) throws -> CVPixelBuffer {

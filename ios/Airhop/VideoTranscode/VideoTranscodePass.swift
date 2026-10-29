@@ -95,6 +95,8 @@ final class VideoTranscodePass {
   private let source: URL
   private let output: URL
   private let options: VideoTranscodeOptions
+  // Only ever taken through withLock: encode is async, and Swift forbids bare
+  // lock() and unlock() there.
   private let lock = NSLock()
   private var cancelled = false
   private var reader: AVAssetReader?
@@ -107,17 +109,15 @@ final class VideoTranscodePass {
 
   // Safe from any thread, before, during or after run.
   func cancel() {
-    lock.lock()
-    cancelled = true
-    let reader = self.reader
-    lock.unlock()
+    let reader = lock.withLock {
+      cancelled = true
+      return self.reader
+    }
     reader?.cancelReading()
   }
 
   private var isCancelled: Bool {
-    lock.lock()
-    defer { lock.unlock() }
-    return cancelled
+    lock.withLock { cancelled }
   }
 
   func run(onProgress: @escaping (Double) -> Void) async throws -> VideoTranscodeResult {
@@ -209,10 +209,10 @@ final class VideoTranscodePass {
       }
     }
 
-    lock.lock()
-    self.reader = reader
-    let cancelledBeforeStart = cancelled
-    lock.unlock()
+    let cancelledBeforeStart = lock.withLock {
+      self.reader = reader
+      return cancelled
+    }
     if cancelledBeforeStart { throw VideoTranscodeError.cancelled }
 
     guard reader.startReading() else {

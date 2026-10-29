@@ -157,7 +157,8 @@ class AirhopMeshWidget : AppWidgetProvider() {
                     Intent(context, AirhopMeshWidget::class.java).setAction(ACTION_STALE),
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
                 )
-            if (atMs == null) alarms.cancel(pending) else alarms.set(AlarmManager.RTC, atMs, pending)
+            if (atMs == null) alarms.cancel(pending)
+            else alarms.set(AlarmManager.RTC, atMs, pending)
         }
 
         private fun RemoteViews.setLine(id: Int, text: String?) {
