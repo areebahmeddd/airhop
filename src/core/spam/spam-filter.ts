@@ -79,6 +79,11 @@ export class SpamFilter {
 
   // `senderKey` must name the author stably within a transport, and
   // `messageID` must be the same for every copy of one message.
+  //
+  // Give it every copy that arrives, including one already in the chat: the
+  // filter starts empty on each launch, and a replay that left out what it had
+  // admitted would judge the copies it hid against nothing, and show them.
+  // Later copies cost nothing, since the first verdict is remembered.
   check(
     senderKey: string,
     messageID: string,
@@ -152,8 +157,8 @@ export class SpamFilter {
     this.verdicts.clear();
   }
 
-  // Newest first, so a burst of look-alikes exhausting the budget spends it on
-  // the oldest texts.
+  // Newest first: copies come in bursts, so the budget goes where they are, and
+  // running out leaves only the oldest texts unchecked.
   private repeatsOthers(
     senderKey: string,
     length: number,

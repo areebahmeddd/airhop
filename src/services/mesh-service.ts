@@ -223,7 +223,7 @@ import {
   publicContentKey,
   PublicMessageLimiter,
 } from "@core/router/public-message-limiter";
-import { SpamFilter } from "@core/spam/spam-filter";
+import { SpamFilter, type SpamVerdict } from "@core/spam/spam-filter";
 import { t } from "@i18n";
 import { x25519 } from "@noble/curves/ed25519.js";
 import { equalBytes } from "@noble/curves/utils.js";
@@ -4784,21 +4784,20 @@ export class MeshService {
     // A sync reply is history we asked for, not a flood, so only the spam
     // filter, which runs on message time, judges it.
     const id = rowID(senderID);
-    if (
-      !hasStoredMessage(channel, id) &&
-      ((packet.isRSR !== true &&
+    const judge = (): SpamVerdict =>
+      this.spamFilter.check(`mesh:${senderID}`, id, text, packet.timestamp);
+    if (hasStoredMessage(channel, id)) {
+      // Never hidden, but still judged; see SpamFilter.check.
+      judge();
+    } else if (
+      (packet.isRSR !== true &&
         !this.publicLimiter.allow(
           `mesh:${senderID}`,
           publicContentKey(text),
           0,
           Date.now(),
         )) ||
-        this.spamFilter.check(
-          `mesh:${senderID}`,
-          id,
-          text,
-          packet.timestamp,
-        ) !== "allowed")
+      judge() !== "allowed"
     ) {
       return;
     }
@@ -7529,20 +7528,19 @@ export class MeshService {
         }
         if (useBlockedStore.getState().isBlocked(msg.senderKey)) return;
         const senderKey = msg.senderKey.replace(/^nostr_/, "nostr:");
-        if (
-          !hasStoredMessage(BRIDGE_CHANNEL, msg.id) &&
-          (!this.publicLimiter.allow(
+        const judge = (): SpamVerdict =>
+          this.spamFilter.check(senderKey, msg.id, msg.text, msg.timestampMs);
+        if (hasStoredMessage(BRIDGE_CHANNEL, msg.id)) {
+          // Never hidden, but still judged; see SpamFilter.check.
+          judge();
+        } else if (
+          !this.publicLimiter.allow(
             senderKey,
             publicContentKey(msg.text),
             0,
             Date.now(),
           ) ||
-            this.spamFilter.check(
-              senderKey,
-              msg.id,
-              msg.text,
-              msg.timestampMs,
-            ) !== "allowed")
+          judge() !== "allowed"
         ) {
           return;
         }

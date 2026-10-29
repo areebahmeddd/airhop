@@ -806,15 +806,17 @@ export class GeohashChannelService {
     // Flood-limited like the relay path, as in bitchat-ios: the carrier is
     // unsigned, so anyone in radio range can ferry fresh self-signed events at
     // any rate.
-    if (
-      !hasStoredMessage(channel, id) &&
-      (!this.publicLimiter.allow(
+    if (hasStoredMessage(channel, id)) {
+      // Never hidden, but still judged; see SpamFilter.check.
+      this.isSpam(event, id);
+    } else if (
+      !this.publicLimiter.allow(
         `nostr:${event.pubkey}`,
         publicContentKey(event.content),
         validatedDifficulty(event.id, event.tags),
         Date.now(),
       ) ||
-        this.isSpam(event, id))
+      this.isSpam(event, id)
     ) {
       return;
     }
@@ -1154,16 +1156,18 @@ export class GeohashChannelService {
 
         const nowMs = Date.now();
         backfillUntilMs ??= nowMs + BACKFILL_GRACE_MS;
-        if (
-          !hasStoredMessage(channel, id) &&
-          ((nowMs >= backfillUntilMs &&
+        if (hasStoredMessage(channel, id)) {
+          // Never hidden, but still judged; see SpamFilter.check.
+          this.isSpam(event, id);
+        } else if (
+          (nowMs >= backfillUntilMs &&
             !this.publicLimiter.allow(
               `nostr:${event.pubkey}`,
               publicContentKey(event.content),
               validatedDifficulty(event.id, event.tags),
               nowMs,
             )) ||
-            this.isSpam(event, id))
+          this.isSpam(event, id)
         ) {
           return;
         }

@@ -290,6 +290,28 @@ describe("senders, duplicates and time", () => {
     expect(verdicts.filter((v) => v === "allowed")).toHaveLength(6);
   });
 
+  // The service hands over every copy, stored ones too, for exactly this.
+  test("a relaunch replaying the same history hides the same messages", () => {
+    const now = 1_000_000_000;
+    const history = [
+      ...Array.from({ length: 10 }, (_, i) => ({
+        sender: "alice",
+        text: `message number ${i} about the weather`,
+        at: now - 60_000 + i * 1000,
+      })),
+      ...Array.from({ length: 6 }, (_, i) => ({
+        sender: `throwaway${i}`,
+        text: "join my channel for free sats now",
+        at: now - 30_000 + i * 1000,
+      })),
+    ];
+    const judge = (filter: SpamFilter) =>
+      history.map((m, i) => filter.check(m.sender, `m${i}`, m.text, m.at));
+    const before = judge(new SpamFilter(() => now));
+    expect(before.filter((v) => v !== "allowed")).toHaveLength(11);
+    expect(judge(new SpamFilter(() => now + 5_000))).toEqual(before);
+  });
+
   test("backfill cannot be squeezed in before shown messages", () => {
     const h = harness();
     for (let i = 0; i < 6; i++) h.send(undefined, { at: h.ago(60) });
