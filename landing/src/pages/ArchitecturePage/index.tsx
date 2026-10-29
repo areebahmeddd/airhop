@@ -1302,7 +1302,15 @@ export default function ArchitecturePage() {
               id="video"
               eyebrow="The system · 12"
               title="Live video"
-              lede="Going live streams your camera to everyone in range, or to one person, in bitchat's own stream format. It is built to lose packets and keep the picture."
+              lede={
+                <>
+                  Going live streams your camera to everyone in range, or to one person, in{" "}
+                  <TextLink href="https://github.com/permissionlesstech/bitchat/blob/main/docs/LIVE_VIDEO_V1.md">
+                    bitchat's own stream format
+                  </TextLink>
+                  . It is built to lose packets and keep the picture.
+                </>
+              }
             >
               <p>
                 A video note is a clip you record and send. Live video starts from the attach menu
@@ -1364,7 +1372,8 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">
                   A stream that fits 100 KiB is resent as an ordinary file
                 </strong>{" "}
-                and replaces every copy; a longer one stays as each phone rebuilt it.
+                and replaces every copy; a longer one stays as each phone rebuilt it. Turning off
+                Live video in settings stops your phone from showing or recording streams.
               </Note>
 
               <p>
