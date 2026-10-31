@@ -27,6 +27,7 @@ import type { Event } from "nostr-tools";
 import type { Filter } from "nostr-tools/filter";
 import type { SubCloser } from "nostr-tools/pool";
 import { SimplePool } from "nostr-tools/pool";
+import { normalizeURL } from "nostr-tools/utils";
 import {
   DEFAULT_DM_RELAYS,
   GEO_RELAY_COUNT,
@@ -119,6 +120,7 @@ export type EoseHandler = () => void;
 export class NostrClient {
   private readonly pool: SimplePool;
   private readonly relays: string[];
+  private readonly dmRelays: Set<string>;
   private readonly onConnectionChange?: (connected: boolean) => void;
   // Last reported connectivity, so we only notify on an actual transition.
   private connected = false;
@@ -128,6 +130,10 @@ export class NostrClient {
   private draining = false;
   private closed = false;
   private readonly resubscribeTimers = new Set<ReturnType<typeof setTimeout>>();
+  // Pool keys of every relay seen live, which tells one in reconnect backoff
+  // from one still on its first connect. Bounded by the relays this client
+  // has opened, a handful per cell visited.
+  private readonly everLive = new Set<string>();
 
   constructor(config: NostrClientConfig = {}) {
     this.onConnectionChange = config.onConnectionChange;
@@ -153,6 +159,7 @@ export class NostrClient {
     ) as string[];
     const merged = [...new Set([...provided, ...defaults])];
     this.relays = merged.slice(0, MAX_RELAY_COUNT);
+    this.dmRelays = new Set(defaults);
   }
 
   // Active relay URLs (for diagnostics and UI).
@@ -172,10 +179,25 @@ export class NostrClient {
     return [...this.pool.listConnectionStatus().values()].some(Boolean);
   }
 
+  // Whether one of the default DM relays is live: the only relays a DM, a
+  // location DM or a courier drop is published to. A location or custom relay
+  // alone keeps isConnected true while every such publish has nowhere to go,
+  // so those sends must ask this instead (bitchat-ios isDMRelayConnected).
+  get isDMConnected(): boolean {
+    for (const [url, live] of this.pool.listConnectionStatus()) {
+      // nostr-tools keys the pool by its own normal form, with a trailing
+      // slash on a bare host.
+      if (live && this.dmRelays.has(url.replace(/\/$/, ""))) return true;
+    }
+    return false;
+  }
+
   // Recompute "any relay live" and notify only on a has-any / has-none flip, so
   // the UI's internet-bridge indicator tracks real connectivity without churn.
   private reconcileConnected(): void {
-    const any = this.isConnected;
+    const status = this.pool.listConnectionStatus();
+    this.noteLive(status);
+    const any = [...status.values()].some(Boolean);
     if (any !== this.connected) {
       this.connected = any;
       this.onConnectionChange?.(any);
@@ -360,8 +382,19 @@ export class NostrClient {
   // Publish an event. Resolves when at least one relay ACKs OK, or rejects after
   // PUBLISH_TIMEOUT_MS with no ACK. `relays` targets a specific relay set (see
   // subscribe); omit it for DM / gift-wrap traffic on the default pool.
+  //
+  // A relay that was live and has dropped is skipped. nostr-tools would open a
+  // connect of its own on it in the middle of its reconnect backoff, and when
+  // that fails it drops the relay from the pool while the relay object goes
+  // on reconnecting unseen: isConnected and isDMConnected then stay false and
+  // onConnectionChange never reports the recovery, so nothing held for it is
+  // ever sent. Its own reconnect brings it back. A relay never yet live is
+  // still tried, which is how a new cell's relays are first opened.
   async publish(event: Event, relays?: string[]): Promise<PublishResult> {
-    const targets = this.resolveRelays(relays);
+    const targets = this.withoutReconnecting(this.resolveRelays(relays));
+    if (targets.length === 0) {
+      throw new Error("Publish skipped: every relay is reconnecting");
+    }
     return new Promise<PublishResult>((resolve, reject) => {
       let resolved = false;
       const results: PublishResult[] = [];
@@ -404,6 +437,24 @@ export class NostrClient {
           });
       });
     });
+  }
+
+  // Drops the relays that were live once and are down now. One mid first
+  // connect also reads as down, but a publish joins that connect rather than
+  // starting its own, so only a relay seen live is in backoff.
+  private withoutReconnecting(targets: string[]): string[] {
+    const status = this.pool.listConnectionStatus();
+    this.noteLive(status);
+    return targets.filter((url) => {
+      const key = poolKey(url);
+      return (
+        key === null || status.get(key) !== false || !this.everLive.has(key)
+      );
+    });
+  }
+
+  private noteLive(status: Map<string, boolean>): void {
+    for (const [url, live] of status) if (live) this.everLive.add(url);
   }
 
   // Query relays and collect all matching events up to EOSE. One query per
@@ -462,11 +513,11 @@ const RECONNECT_SINCE_SKEW_SECONDS = 15 * 60;
 // nostr-tools moves a subscription's `since` to just past the newest
 // `created_at` it has received whenever a relay reconnects. One validly signed
 // event dated years ahead would then have that relay withhold every real event
-// until the subscription is reopened, so a write lands no later than the
-// newer of now and the event, less the skew, and never before the `since` the
-// caller asked for. A gift wrap's `created_at` is blurred 15 minutes either
-// side of the send time, so even that could pass over a newer wrap: a gift-wrap
-// filter keeps the `since` it was given and ignores the write.
+// until the subscription is reopened, so a write is capped at now, then set
+// the skew further back, and never before the `since` the caller asked for.
+// A gift wrap's `created_at` is blurred 15 minutes either side of the send
+// time, so even that could pass over a newer wrap: a gift-wrap filter keeps
+// the `since` it was given and ignores the write.
 function guardSince(filter: Filter): Filter {
   const giftWrap = filter.kinds?.includes(KIND_GIFT_WRAP) === true;
   const { since: requested, ...rest } = filter;
@@ -482,6 +533,16 @@ function guardSince(filter: Filter): Filter {
       since = requested === undefined ? bounded : Math.max(requested, bounded);
     },
   });
+}
+
+// The key nostr-tools files a relay under in its pool, or null for a URL it
+// would refuse anyway.
+function poolKey(url: string): string | null {
+  try {
+    return normalizeURL(url);
+  } catch {
+    return null;
+  }
 }
 
 // Ensure a relay URL starts with wss:// or ws://, and strip a trailing slash.

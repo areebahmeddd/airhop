@@ -7,6 +7,7 @@
 // per-relay `connected` (listConnectionStatus) is the socket state, so these
 // flip that map with no hook call and assert the client notices.
 
+import { DEFAULT_DM_RELAYS } from "../geo-relay";
 import { NostrClient } from "../nostr-client";
 
 const mockStatus = new Map<string, boolean>();
@@ -67,4 +68,16 @@ test("a closed client reports nothing further", () => {
   mockStatus.set("wss://a", true);
   jest.advanceTimersByTime(60_000);
   expect(changes).toEqual([]);
+});
+
+// DMs, location DMs and courier drops go to the default DM relays alone, so
+// a live location or custom relay must not read as a route for them.
+test("isDMConnected counts only the default DM relays", () => {
+  const c = (client = new NostrClient());
+  mockStatus.set("wss://a-location-relay.example/", true);
+  expect(c.isConnected).toBe(true);
+  expect(c.isDMConnected).toBe(false);
+  // nostr-tools keys a bare host with a trailing slash.
+  mockStatus.set(`${DEFAULT_DM_RELAYS[0]}/`, true);
+  expect(c.isDMConnected).toBe(true);
 });

@@ -134,6 +134,10 @@ const PARTITIONS: Record<StoreId, MovedPartition | null> = {
   },
   // Read from disk on every call.
   "group-invite-outbox": { carry: "always", reload: () => undefined },
+  // Moves with the history it describes, so the new phone does not reopen and
+  // re-acknowledge the week its relays replay. Read when the mesh is built,
+  // which on the new phone is after the move lands.
+  "nostr-processed-events": { carry: "history", reload: () => undefined },
   "geohash-bookmarks-store": {
     carry: "always",
     reload: () => void useGeohashBookmarksStore.persist.rehydrate(),
