@@ -16,13 +16,16 @@ Where the build stands: what exists and how it is verified, what is in flight, a
 
 | Item                                                | Waiting on                          |
 | --------------------------------------------------- | ----------------------------------- |
-| Collapse the per-relay Nostr subscriptions into one | A nostr-tools release carrying #560 |
+| Collapse the per-relay Nostr subscriptions into one | A nostr-tools release carrying #563 |
 
 **Known gaps, accepted:**
 
 - More than 1,000 lost Double Ratchet messages in one chain (`MAX_SKIP`) leave a pair out of step until a restart or a `LEAVE`. A replay raises the same error, so healing on it would let any listener tear a session down; bitchat-ios makes the same trade.
 - A courier hands mail over on any link bound by a direct announce, where bitchat-ios also requires a Noise session made on that link ([PROTOCOLS.md](../spec/PROTOCOLS.md#61-depositing-and-carrying)).
 - The app-switcher snapshot cover needs Android API 33, leaving API 26 to 32 exposed ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#countermeasures)).
+- A screenshot in a private chat is not announced on Android 13 alone, where detecting one needs a media read permission Airhop does not hold ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#countermeasures)).
+- Posting in a location channel links the cell to this identity: a post carries the mesh name, and an in-place post also goes over Bluetooth under the mesh key ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#key-pair)).
+- On Android, and on iOS without Tor, a relay WebSocket frame has no inbound size bound, so a hostile relay could send one huge frame ([SECURITY-REVIEW.md](SECURITY-REVIEW.md#6-limitations-and-accepted-risks)).
 - A public `#bluetooth` message retried after an app kill can show twice to a neighbor who had the first copy, since those packets carry no message ID.
 - On Android the globe picker draws with Vulkan 1.1, which every 64-bit phone launched on Android 10 or later has. A phone without it (older, 32-bit or Android Go) still installs Airhop, since the manifest drops Skia's Vulkan requirement, but is not offered the globe and picks a location channel by typing its geohash. Every supported iPhone has Metal.
 
@@ -71,7 +74,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 
 - [x] `src/core/crypto/double-ratchet.ts`: Signal Double Ratchet, per-message forward secrecy. The root key comes from the Noise XX **exporter secret**, so it cannot be rebuilt from long-lived keys or from the public handshake bytes
 - [x] One-time prekey bundles (`src/core/mesh/wire/prekey-bundle.ts`, `src/core/mesh/courier/prekey-store.ts`) gossiped as `0x24`, never published to Nostr. **X3DH is not used**: the handshake already seeds the ratchet ([ARCHITECTURE.md section 5](../spec/ARCHITECTURE.md#5-encryption))
-- [x] `src/core/crypto/contact-exchange.ts`: binary contact card over the `airhop:v1/<base64url>` QR scheme, peer ID checked against the keys it carries; a card arriving by link is recorded unverified
+- [x] `src/core/crypto/contact-exchange.ts`: binary contact card over the `airhop:v1/<base64url>` QR scheme, signed by the card's own signing key, peer ID checked against the keys it carries; a card arriving by link is recorded unverified
 - [x] `src/utils/username.ts`: deterministic adjective-noun-suffix name from the peer ID, 128-entry word lists
 - [x] `src/services/panic-wipe.ts`: clears every keychain item, all MMKV partitions, the media cache, the notification tray and Arti's data directory, and reports whether the keys were destroyed. `wipe-marker.ts` records the intent first, so a wipe killed mid-run finishes on the next launch
 

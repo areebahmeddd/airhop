@@ -44,7 +44,7 @@ The exceptions are `native/arti/` and `native/iptproxy/`: a Tor client and its p
 - **Stream framing** on Wi-Fi Aware and LAN is `[u32 BE length][bytes]`, applied by native, byte-identical on both. BLE writes are single ATT values, 512 bytes at most; fragmentation happens in TypeScript.
 - **Refuse, never pretend.** A start that cannot run rejects with a `code` the caller branches on (`RADIO_OFF`, `PERMISSION_DENIED`, `UNSUPPORTED`, `LAN_UNAVAILABLE` and so on), rather than resolving and leaving a dead radio behind a UI that believes it runs.
 - **Optional modules** use `TurboModuleRegistry.get` and callers optional-chain: a missing module is an answer (unsupported), not a crash. Only `AirhopBLE` is `getEnforcing`. `NativeAirhopTorSocket.ts` is the exception: a classic `RCTEventEmitter` read from `NativeModules`, so callers gate on `isTorSocketNativeAvailable()`.
-- **Events** go through `NativeEventEmitter`, named `<Module>.<event>`, except the Tor modules' `TorStatusChanged` and `TorSocketEvent`. Only a spec whose module emits carries `addListener` / `removeListeners`.
+- **Events** go through `NativeEventEmitter`, named `<Module>.<event>`, except the Tor modules' `TorStatusChanged` and `TorSocketEvent`. Only a spec whose module emits carries `addListener` / `removeListeners`. Subscribe through the emitting module (`nativeEvents(module)` in `src/services/native-events.ts`), never `DeviceEventEmitter` alone: an iOS `RCTEventEmitter` drops every event while its listener count is zero, and only the module's own `addListener` raises it. Removing the subscriptions on stop lowers the count, so iOS stops sending while the mesh is stopped. `src/__tests__/lifecycle/native-events.test.ts` fails on an Airhop event subscribed without its module, and the iOS harness models the gate. `AirhopBLE.meshStopRequested` is the exception: Android only, emitted with no gate, and kept on `DeviceEventEmitter` so it holds no iOS count.
 - **`linkID` is opaque**, assigned by native, and names a connection, not a peer. TypeScript binds a peer to a link when that peer announces directly on it, and `LinkRegistry.peerOf` attributes later traffic. A packet's `senderID` is plaintext and forgeable, so it never decides who is on the far end.
 
 ## Modules
@@ -97,6 +97,12 @@ openLocationSettings(): Promise<boolean>
 
 `localName` is Android's peer ID for scan-response service data; iOS accepts it for signature parity and advertises the service UUID alone, as bitchat-ios does.
 
+`stopScanning` also disconnects every central-role link, pending dials included, and emits `linkDisconnected` for each, on both platforms (bitchat-ios `stopServices`). Duty cycling and power-mode changes go through the internal scan cycle and keep their links; `stopAdvertising` (Invisible) touches no central link.
+
+## Tor Contract
+
+`startTor` rejects with a code the Tor screen names: `tor_bridge_rejected` (Arti refused the bridge lines), `tor_transport_failed` (the pluggable transports did not start), `tor_port_busy` (127.0.0.1:39050 already held, by bitchat-ios for one) or `tor_start_failed`. `stopTor(keepHeld)` resolves only once Arti and its transports are down, on both platforms, so a start that follows cannot overlap it; `keepHeld` leaves Android's HTTP stack held rather than routed direct, for a bridge change that starts again straight after, and iOS, holding nothing natively, ignores it.
+
 ## BLE UUIDs
 
 Both native modules hold these as constants and advertise, scan and serve on them. The `serviceUUID` arguments are part of the bridge shape and are not read; TypeScript passes the same values from [PROTOCOLS.md section 1](../../docs/spec/PROTOCOLS.md#1-ble-identifiers), so all three copies must agree.
@@ -115,6 +121,7 @@ There is one BLE module (`AirhopBLEModule`). Extend it; never add a second. The 
 - Parse, route, sign or encrypt in Swift or Kotlin.
 - Dial, or choose whom to dial, in native.
 - Resolve a start that did not happen, or crash on a missing optional module.
+- Subscribe to a module's events through `DeviceEventEmitter` alone; iOS never sends them.
 - Treat a `linkID` as a peer, or a `senderID` as proof of who is on a link.
 - Change a UUID in one of its three places.
 - Hand-edit a built binary under `ios/Frameworks/`, `android/app/src/main/jniLibs/` or `android/app/libs/`; rebuild and re-record with `node scripts/verify-vendored.js --write`.

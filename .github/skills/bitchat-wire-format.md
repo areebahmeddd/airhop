@@ -115,14 +115,14 @@ Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitch
 
 The packet type decides the payload, so neither form carries a marker byte.
 
-| Channel      | Type   | Payload                                      |
-| ------------ | ------ | -------------------------------------------- |
-| `#bluetooth` | `0x02` | The message text as UTF-8, nothing else      |
-| Any other    | `0x51` | `[chLen u8][channel][idLen u8][msgId][text]` |
+| Channel      | Type   | Payload                                                        |
+| ------------ | ------ | -------------------------------------------------------------- |
+| `#bluetooth` | `0x02` | The message text as UTF-8, nothing else                        |
+| Any other    | `0x51` | `[chLen u8][channel][idLen u8][msgId][cellLen u8][cell][text]` |
 
 bitchat's mesh has one public room, and `BLEPublicMessageHandler` renders the whole payload as the body, so `#bluetooth` sends and accepts the bare form. It needs no message ID: bitchat-ios derives one from sender, timestamp and content (`MeshMessageIdentity.stableID`), and Airhop's `bridgeStableID` matches it. The payload is decoded strictly; invalid UTF-8 is dropped, not rendered as replacement characters.
 
-Location cells travel under `0x51`, where both bitchat clients see an unknown type and relay it. Catch-up comes from its own gossip-sync bit, 24, which bitchat masks off ([PROTOCOLS section 5.2](../../docs/spec/PROTOCOLS.md#52-sync-type-bits)).
+Location cells travel under `0x51`, where both bitchat clients see an unknown type and relay it. `cell` is the geohash a location level was written in (empty otherwise, or with no fix), and a receiver drops a level message only when both cells are known and differ ([PROTOCOLS section 3.7](../../docs/spec/PROTOCOLS.md#37-public-channel-messages)). Catch-up comes from its own gossip-sync bit, 24, which bitchat masks off ([PROTOCOLS section 5.2](../../docs/spec/PROTOCOLS.md#52-sync-type-bits)).
 
 ## ANNOUNCE TLV
 
