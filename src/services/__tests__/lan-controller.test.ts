@@ -314,7 +314,7 @@ describe("failures", () => {
     expect(lan.isUnsupported).toBe(false);
   });
 
-  test("keeps trying after a refused permission, since it can be granted", async () => {
+  test("asks again after a refused permission, since a grant can land just after", async () => {
     mockStartLAN.mockImplementation(() => rejectWith("PERMISSION_DENIED"));
     const lan = running();
 
@@ -322,6 +322,70 @@ describe("failures", () => {
 
     expect(mockStartLAN.mock.calls.length).toBeGreaterThan(1);
     expect(lan.failure).toBe("permission");
+  });
+
+  test("stops asking after a refused permission, rather than polling for good", async () => {
+    mockStartLAN.mockImplementation(() => rejectWith("PERMISSION_DENIED"));
+    running();
+
+    await settle(10_000);
+    const asked = mockStartLAN.mock.calls.length;
+    await settle(60_000);
+
+    expect(asked).toBeLessThanOrEqual(3);
+    expect(mockStartLAN).toHaveBeenCalledTimes(asked);
+  });
+
+  test("a resume asks again after the ladder has stopped, and a grant starts it", async () => {
+    mockStartLAN.mockImplementation(() => rejectWith("PERMISSION_DENIED"));
+    const lan = running();
+    await settle(60_000);
+    const asked = mockStartLAN.mock.calls.length;
+
+    // Back from Settings with access granted.
+    mockStartLAN.mockResolvedValue(undefined);
+    lan.refresh();
+    await settle();
+
+    expect(mockStartLAN.mock.calls.length).toBe(asked + 1);
+    expect(lan.isStarted).toBe(true);
+  });
+
+  // iOS reports a Local Network refusal from the browser, after the listener
+  // has already reached ready: the start resolves, the transport says it is
+  // available, then dies, and the next start is the one refused. The
+  // available edge in the middle must not reset the ladder, or this repeats
+  // every couple of seconds for as long as the app runs.
+  test("an iOS refusal that resolves first, then dies, does not loop", async () => {
+    const seen: string[] = [];
+    const lan = new LANController(
+      () => SELF,
+      (s) => seen.push(s),
+    );
+    let refusalPending = false;
+    mockStartLAN.mockImplementation(() => {
+      if (refusalPending) {
+        refusalPending = false;
+        return rejectWith("PERMISSION_DENIED");
+      }
+      setTimeout(() => {
+        lan.onAvailabilityChanged(true);
+        refusalPending = true;
+        lan.onAvailabilityChanged(false);
+      }, 100);
+      return Promise.resolve();
+    });
+    lan.start();
+    lan.setEnabled(true);
+
+    for (let i = 0; i < 10; i++) await settle(10_000);
+    const asked = mockStartLAN.mock.calls.length;
+    for (let i = 0; i < 10; i++) await settle(10_000);
+
+    expect(asked).toBeLessThanOrEqual(4);
+    expect(mockStartLAN).toHaveBeenCalledTimes(asked);
+    expect(lan.isStarted).toBe(false);
+    expect(seen[seen.length - 1]).toBe("permission");
   });
 
   test("recovers when the network goes away and comes back", async () => {

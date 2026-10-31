@@ -26,6 +26,13 @@ import { dialTargets } from "./lan-dial-policy";
 // costs nothing and polling a network interface in a pocket is not free.
 const BACKOFF_MS = [500, 1500, 4000, 10_000, 30_000] as const;
 
+// Rungs a permission refusal climbs before the ladder stops, about two seconds
+// of asking. Fewer than wifi-controller allows: an iOS refusal costs a whole
+// publish-and-browse cycle per ask (the listener comes up, then browsing is
+// refused), and a grant happens only in Settings, whose return is a resume that
+// calls refresh().
+const PERMISSION_RETRIES = 2;
+
 // How long a run has to last before losing it reads as bad luck rather than
 // flapping. Below it the retry ladder keeps climbing.
 const STABLE_RUN_MS = 60_000;
@@ -119,6 +126,14 @@ export class LANController {
   private started = false;
   private unsupported = false;
   private lastFailure: LanFailure | null = null;
+  // Set by a permission refusal and kept through the start that follows it,
+  // which `lastFailure` is not. On iOS a refused browse still lets the listener
+  // reach ready, so the transport comes up, reports itself available and dies
+  // again a moment later; resetting the ladder on that edge is a loop that
+  // republishes every couple of seconds for good. Cleared only by something
+  // that can mean a grant: refresh, renew, a restart, the switch, a run that
+  // lasted.
+  private permissionRefused = false;
 
   // Everyone mDNS currently sees, by the name they publish. A name is the only
   // address this layer needs: the ring sorts on it and native dials by it.
@@ -149,13 +164,13 @@ export class LANController {
     if (this.enabled === enabled) return;
     this.enabled = enabled;
     if (!enabled) this.generation += 1;
-    this.attempt = 0;
+    this.rearm();
     void this.reconcile();
   }
 
   start(): void {
     this.meshRunning = true;
-    this.attempt = 0;
+    this.rearm();
     void this.reconcile();
   }
 
@@ -170,7 +185,7 @@ export class LANController {
   // the phone joined a different network.
   refresh(): void {
     if (this.unsupported) return;
-    this.attempt = 0;
+    this.rearm();
     void this.reconcile();
   }
 
@@ -180,7 +195,7 @@ export class LANController {
   renew(): void {
     if (this.unsupported) return;
     this.renewPending = true;
-    this.attempt = 0;
+    this.rearm();
     void this.reconcile();
   }
 
@@ -201,11 +216,12 @@ export class LANController {
       void NativeAirhopLAN?.stopLAN().catch(() => {});
       // Only a run that lasted resets it, for the reason wifi-controller
       // gives: resetting on every drop turns the retry into a hot loop.
-      if (ranStably) this.attempt = 0;
+      if (ranStably) this.rearm();
       this.scheduleRetry();
       return;
     }
-    this.attempt = 0;
+    // Not after a refusal: see permissionRefused.
+    if (!this.permissionRefused) this.attempt = 0;
     void this.reconcile();
   }
 
@@ -260,6 +276,11 @@ export class LANController {
       clearInterval(this.reviewTimer);
       this.reviewTimer = null;
     }
+  }
+
+  private rearm(): void {
+    this.attempt = 0;
+    this.permissionRefused = false;
   }
 
   private forgetNetwork(): void {
@@ -385,6 +406,12 @@ export class LANController {
         return;
       }
       this.report(failure === "permission" ? "permission" : "unavailable");
+      // A refusal is asked again briefly, since a grant can land just after the
+      // start that needed it, then left to refresh() and the next start.
+      if (failure === "permission") {
+        this.permissionRefused = true;
+        if (this.attempt >= PERMISSION_RETRIES) return;
+      }
       this.scheduleRetry();
       return;
     }

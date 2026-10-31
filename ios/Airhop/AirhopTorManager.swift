@@ -50,11 +50,24 @@ private func airhop_tor_status() -> Int32
 private func airhop_tor_summary(_ buf: UnsafeMutablePointer<CChar>, _ len: Int32) -> Int32
 
 /// Return codes from the native client, mirroring AIRHOP_TOR_* in
-/// native/arti/src/lib.rs. Only the two the manager distinguishes are named;
+/// native/arti/src/lib.rs. Only the ones the app distinguishes are named;
 /// every other failure is reported by its number, which is enough to look up.
 enum AirhopTorRC {
   static let ok: Int32 = 0
   static let alreadyRunning: Int32 = -1
+  static let dataDir: Int32 = -2
+  static let bind: Int32 = -5
+  static let bridgeLine: Int32 = -7
+  static let bridgeTransport: Int32 = -8
+}
+
+/// Why a start did not happen, for the rejection code AirhopTorModule answers
+/// with.
+enum AirhopTorStartFailure {
+  /// The pluggable transports did not come up.
+  case transports
+  /// Arti refused, with its return code.
+  case arti(Int32)
 }
 
 /// What Arti reports about itself, decoded from the packed status word.
@@ -185,9 +198,9 @@ public final class AirhopTorManager: ObservableObject {
   /// safe to call from several places at once.
   ///
   /// `completion` is called once the native start has answered, which is what
-  /// `AirhopTorModule.startTor` resolves on. `false` means one thing: a start
+  /// `AirhopTorModule.startTor` resolves on. A failure means one thing: a start
   /// was attempted and failed. Already running, or no start attempted, is
-  /// `true`, because the caller has nothing to unwind.
+  /// nil, because the caller has nothing to unwind.
   ///
   /// Calling it before the native side answers would clear `torStartPending`
   /// in `tor-routing.ts` while the client was still being built, leaving iOS
@@ -195,15 +208,15 @@ public final class AirhopTorManager: ObservableObject {
   ///
   /// Nil for the internal callers, the path monitor and the foreground resume,
   /// which want the attempt made and have nobody to answer.
-  public func startIfNeeded(completion: (@MainActor (Bool) -> Void)? = nil) {
+  func startIfNeeded(completion: (@MainActor (AirhopTorStartFailure?) -> Void)? = nil) {
     guard allowAutoStart, isAppForeground else {
       // Nothing attempted, so nothing to report as failed. The next
       // foreground calls this again.
-      completion?(true)
+      completion?(nil)
       return
     }
     guard !ArtiStatus.current.running else {
-      completion?(true)
+      completion?(nil)
       return
     }
 
@@ -213,7 +226,7 @@ public final class AirhopTorManager: ObservableObject {
 
     guard let dir = dataDirectoryURL()?.path else {
       failAttempt(epoch)
-      completion?(false)
+      completion?(.arti(AirhopTorRC.dataDir))
       return
     }
     try? FileManager.default.createDirectory(
@@ -236,7 +249,7 @@ public final class AirhopTorManager: ObservableObject {
       guard let ports = AirhopIPtProxy.shared.start(AirhopTransport.named(in: lines)) else {
         await MainActor.run {
           self?.failAttempt(epoch)
-          completion?(false)
+          completion?(.transports)
         }
         return
       }
@@ -262,7 +275,7 @@ public final class AirhopTorManager: ObservableObject {
           // Reported as success: the path monitor bumps the epoch on a
           // network change, and failing here would have the JS side
           // turn Tor off underneath the attempt that replaced this one.
-          completion?(true)
+          completion?(nil)
           return
         }
         // Already running is a success. startIfNeeded reads the
@@ -275,7 +288,7 @@ public final class AirhopTorManager: ObservableObject {
           // sits on "starting" for the whole session over a client
           // that does not exist.
           self.failAttempt(epoch)
-          completion?(false)
+          completion?(.arti(rc))
           return
         }
         // The listener is bound by the time start returns, so there is
@@ -284,7 +297,7 @@ public final class AirhopTorManager: ObservableObject {
         NotificationCenter.default.post(name: .AirhopTorWillStart, object: nil)
         self.startStatusPoll(epoch)
         self.startPathMonitorIfNeeded()
-        completion?(true)
+        completion?(nil)
       }
     }
   }
@@ -359,14 +372,20 @@ public final class AirhopTorManager: ObservableObject {
     restarting = false
   }
 
-  /// Fully shut Arti down. Safe to call from any context.
+  /// Fully shut Arti down, returning once it and its transports are stopped.
   ///
   /// Revokes auto-start consent: a full shutdown is only reached by the user
   /// switching Tor off or by a panic wipe, and both are withdrawals. Leaving
   /// the flag set would let the path monitor restart Arti behind someone who
   /// turned it off, repopulating the directory a wipe exists to destroy.
   /// `startTor` re-grants it.
-  public func shutdownCompletely() {
+  ///
+  /// Awaited, as `wipeState` is, because a bridge change starts again straight
+  /// after: Arti clears its running flag before its stop returns, so a start
+  /// racing a detached stop would bring up transports that the stop's trailing
+  /// `AirhopIPtProxy.stop()` then kills under the new client. A caller that
+  /// does not wait (the internet switch) is covered by `pendingStop`.
+  public func shutdownCompletely() async {
     allowAutoStart = false
     bridgeLines = ""
     #if canImport(Network)
@@ -379,15 +398,36 @@ public final class AirhopTorManager: ObservableObject {
     isStarting = false
     restarting = false
 
+    stopGeneration &+= 1
+    let generation = stopGeneration
+    // Chained behind any stop still running, so the newest one finishing
+    // means every earlier one has, and waiting on it is enough.
+    let previous = pendingStop
     // Off the main actor: stop waits for the runtime to wind down, bounded
     // in Rust at two seconds, and that must not land on the thread drawing
     // the toggle the user just tapped.
-    Task.detached(priority: .userInitiated) {
+    let stop = Task.detached(priority: .userInitiated) {
+      if let previous { await previous.value }
       _ = airhop_tor_stop()
       // After Arti, so nothing is left dialling a transport that has gone.
       AirhopIPtProxy.shared.stop()
     }
+    pendingStop = stop
+    await stop.value
+    if generation == stopGeneration { pendingStop = nil }
   }
+
+  /// The newest stop still winding Arti and its transports down, nil once
+  /// none is. `AirhopTorModule.startTor` waits on it: JS does not await the
+  /// stop an internet switch-off makes, so switching it back on at once would
+  /// otherwise start against a stop in flight, and either find Arti still
+  /// running (and start nothing) or have its transports killed by the stop.
+  private(set) var pendingStop: Task<Void, Never>?
+
+  /// Bumped by every stop, so a start that waited one out can tell a later
+  /// stop withdrew it meanwhile, and stand down rather than run Tor nobody
+  /// still wants.
+  private(set) var stopGeneration = 0
 
   // MARK: - Filesystem
 

@@ -51,6 +51,28 @@ data class ArtiStatus(
     }
 }
 
+// The rejection codes startTor answers with, matching AirhopTorModule.swift, so
+// tor-routing.ts can tell a refusal the user can fix from one that retrying
+// might. Only the failures with a different remedy are told apart.
+internal object TorStartFailure {
+    // The pluggable transports did not come up.
+    const val TRANSPORT = "tor_transport_failed"
+    // Arti refused the bridge lines: unparsable, or naming a transport it
+    // cannot reach. Retrying the same lines cannot help.
+    const val BRIDGE_LINES = "tor_bridge_rejected"
+    // Something else holds the SOCKS port, usually another Tor client.
+    const val PORT_BUSY = "tor_port_busy"
+    const val OTHER = "tor_start_failed"
+
+    fun codeFor(rc: Int): String =
+        when (rc) {
+            ArtiNative.ERR_BRIDGE_LINE,
+            ArtiNative.ERR_BRIDGE_TRANSPORT -> BRIDGE_LINES
+            ArtiNative.ERR_BIND -> PORT_BUSY
+            else -> OTHER
+        }
+}
+
 object ArtiNative {
 
     // Mirrors AIRHOP_TOR_* in native/arti/src/lib.rs.

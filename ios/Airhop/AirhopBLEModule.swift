@@ -77,6 +77,13 @@ final class AirhopBLEModule: RCTEventEmitter {
   // the foreground, as bitchat-ios's BLERadioController does. Both on `queue`.
   private var appActive = true
   private var overdueDials: Set<String> = []
+  // A scan without duplicates reports each peer once, so a central link that
+  // drops on screen is not found again until the scan restarts. One restart
+  // per interval at most, so a peer that keeps failing is redialled at that
+  // pace rather than in a loop. bitchat-ios scans with duplicates on screen
+  // to the same end. On `queue`.
+  private static let rescanDelaySec: TimeInterval = 5
+  private var rescanPending = false
   // linkID -> CBCentral (peripheral role connections from remote centrals)
   private var peripheralLinks: [String: CBCentral] = [:]
 
@@ -187,16 +194,32 @@ final class AirhopBLEModule: RCTEventEmitter {
       self.overdueDials.removeAll()
       // A scan without duplicates reports each peer once, so a peer whose dial
       // was cancelled is found again only by a fresh scan, as in bitchat-ios.
-      if self.actuallyScanning, self.centralManager?.state == .poweredOn {
-        self.centralManager?.stopScan()
-        self.actuallyScanning = false
-        self.applyState()
-      }
+      self.restartScan()
     }
   }
 
   @objc private func appDidEnterBackground() {
     queue.async { [weak self] in self?.appActive = false }
+  }
+
+  // Must be called on `queue`.
+  private func restartScan() {
+    guard actuallyScanning, centralManager?.state == .poweredOn else { return }
+    centralManager?.stopScan()
+    actuallyScanning = false
+    applyState()
+  }
+
+  // A central link dropped, failed or timed out on screen. Off screen a
+  // pending connect is what brings the peer back. Must be called on `queue`.
+  private func scheduleRescan() {
+    guard appActive, wantScanning, !rescanPending else { return }
+    rescanPending = true
+    queue.asyncAfter(deadline: .now() + Self.rescanDelaySec) { [weak self] in
+      guard let self else { return }
+      self.rescanPending = false
+      if self.appActive { self.restartScan() }
+    }
   }
 
   // MARK: Peripheral (advertising)
@@ -447,6 +470,11 @@ final class AirhopBLEModule: RCTEventEmitter {
     }
   }
 
+  // Also cancels every link this side dialled, pending dials included, as
+  // bitchat-ios's BLEService does when it stops. Otherwise an Away phone stays
+  // connected to its neighbours and is woken by their traffic, and after a
+  // panic wipe the new identity announces down the connection that carried
+  // the old one's LEAVE. Invisible only stops advertising, so it keeps them.
   @objc
   func stopScanning(
     _ resolve: @escaping RCTPromiseResolveBlock,
@@ -456,6 +484,16 @@ final class AirhopBLEModule: RCTEventEmitter {
       guard let self else { return }
       self.wantScanning = false
       self.applyState()
+      // Outside poweredOn CoreBluetooth rejects the cancel as API misuse, and
+      // the state callback has already retired the links.
+      if let central = self.centralManager, central.state == .poweredOn {
+        for peripheral in self.centralLinks.values {
+          central.cancelPeripheralConnection(peripheral)
+        }
+      }
+      // Reported here rather than left to didDisconnect: a cancelled pending
+      // connect may never call back.
+      self.retireAllCentralLinks()
       resolve(nil)
     }
   }
@@ -838,6 +876,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     centralLinks.removeValue(forKey: linkID)
     rssiTimers[linkID]?.cancel()
     rssiTimers.removeValue(forKey: linkID)
+    scheduleRescan()
   }
 
   func centralManager(
@@ -883,6 +922,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     readyCentralLinks.remove(linkID)
     centralAttempts.removeValue(forKey: linkID)
     overdueDials.remove(linkID)
+    scheduleRescan()
   }
 
   func centralManager(
@@ -892,13 +932,18 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
   ) {
     AirhopLog.ble.notice("BLE link down (central)")
     let linkID = centralLinkID(for: peripheral)
-    centralLinks.removeValue(forKey: linkID)
+    // Absent when retireAllCentralLinks already retired it and said so, or
+    // expireDial freed it before JS ever heard it connect.
+    let wasLinked = centralLinks.removeValue(forKey: linkID) != nil
     readyCentralLinks.remove(linkID)
     centralAttempts.removeValue(forKey: linkID)
     overdueDials.remove(linkID)
     rssiTimers[linkID]?.cancel()
     rssiTimers.removeValue(forKey: linkID)
-    sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
+    if wasLinked {
+      sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
+    }
+    scheduleRescan()
   }
 
   func centralManager(

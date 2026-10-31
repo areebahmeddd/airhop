@@ -52,6 +52,44 @@ class AwareDialTest {
         assertEquals(0, AwareDial.epochOf(wrapped))
     }
 
+    // ---- Request epochs ----
+
+    @Test
+    fun firstRequestIsAlwaysNew() {
+        assertTrue(AwareDial.isNewRequest(1, -1, idle = true))
+        assertTrue(AwareDial.isNewRequest(200, -1, idle = false))
+    }
+
+    // A duplicate is answered, never treated as a fresh attempt.
+    @Test
+    fun repeatedEpochIsNotNew() {
+        assertFalse(AwareDial.isNewRequest(7, 7, idle = true))
+        assertFalse(AwareDial.isNewRequest(7, 7, idle = false))
+    }
+
+    @Test
+    fun laterEpochIsNewAndEarlierIsStaleWhileBusy() {
+        assertTrue(AwareDial.isNewRequest(8, 7, idle = false))
+        assertFalse(AwareDial.isNewRequest(6, 7, idle = false))
+    }
+
+    // The counter is one byte: 0 after 255 is the next attempt, not an old one.
+    @Test
+    fun epochWrapIsNew() {
+        assertTrue(AwareDial.isNewRequest(0, 255, idle = false))
+        assertTrue(AwareDial.isNewRequest(3, 250, idle = false))
+        assertFalse(AwareDial.isNewRequest(250, 3, idle = false))
+    }
+
+    // An initiator that re-attached dials from 1 again. A responder with
+    // nothing in flight takes it rather than waiting for the counter to pass
+    // the old value.
+    @Test
+    fun restartedCounterIsNewWhenIdle() {
+        assertTrue(AwareDial.isNewRequest(1, 40, idle = true))
+        assertTrue(AwareDial.isNewRequest(1, 255, idle = true))
+    }
+
     @Test
     fun instanceNeedsEightBytesPastOffset() {
         assertNull(AwareDial.instanceFrom(ByteArray(8), 1))

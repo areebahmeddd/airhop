@@ -57,6 +57,20 @@ internal object AwareDial {
 
     fun epochOf(message: ByteArray): Int = message[MSG_BYTES - 1].toInt() and 0xff
 
+    // Whether a connect request starts a new attempt rather than repeating or
+    // trailing the last one seen (`last`, -1 for none). The epoch is one byte
+    // and per attach on the initiator, so it wraps after 255 dials and starts
+    // again from 1 when the initiator re-attaches. Serial-number order (RFC
+    // 1982) covers the wrap. A responder with nothing in flight (`idle`) takes
+    // any epoch but the last, which covers the restart: the worst a stale
+    // request can do there is open a path that times out.
+    fun isNewRequest(epoch: Int, last: Int, idle: Boolean): Boolean {
+        if (last < 0) return true
+        if (epoch == last) return false
+        if (idle) return true
+        return ((epoch - last) and 0xff) in 1..127
+    }
+
     fun instanceFrom(bytes: ByteArray, offset: Int): String? {
         if (bytes.size < offset + INSTANCE_BYTES) return null
         return bytes.copyOfRange(offset, offset + INSTANCE_BYTES).toHex()

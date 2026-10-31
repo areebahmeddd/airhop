@@ -106,8 +106,10 @@ export async function ensureBlePermissions(): Promise<BlePermissionResult> {
   // WiFi is an accelerator, the mesh must run without it, and a denial here
   // never fails the gate.
   //
-  // NEARBY_WIFI_DEVICES is API 33+. Below that the location permissions cover
-  // Aware discovery already.
+  // NEARBY_WIFI_DEVICES is API 33+. Below that Aware discovery needs fine
+  // location, which is asked for only on API <=30, where BLE needs it too. On
+  // API 31 and 32 Aware goes without rather than raise a location prompt for
+  // an accelerator, and wifi-controller.ts stops retrying the refusal.
   //
   // ACCESS_LOCAL_NETWORK is API 37+. Declared in the manifest, it loses the
   // implicit grant older targets get, and Android 17 drops the Wi-Fi Aware and

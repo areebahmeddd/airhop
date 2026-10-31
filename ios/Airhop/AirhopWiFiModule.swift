@@ -112,6 +112,9 @@ private actor WiFiAwareTransport {
   private var redialDelay: [WAPairedDevice.ID: Duration] = [:]
 
   private var linkSeq = 0
+  /// How long a new connection has to come up and exchange hellos (see
+  /// `serve`): Android's 7 s connect timeout plus its 5 s HELLO_TIMEOUT_MS.
+  private static let helloTimeout: Duration = .seconds(12)
   private var runTask: Task<Void, Never>?
   /// Regenerated per attach, so it never identifies this device across sessions.
   private var localToken = Data()
@@ -231,12 +234,14 @@ private actor WiFiAwareTransport {
   ///
   /// Reported so the JS reconciler forgets it is started and retries, rather
   /// than latching over a transport with nothing published or subscribed. No
-  /// matching `true` edge: iOS has no state broadcast to hang one on.
+  /// matching `true` edge: iOS has no state broadcast to hang one on. No
+  /// reason either: the JS breaker counts Android's "session" drops, a chipset
+  /// that resets when a data path opens, and nothing here is that.
   private func reportUnavailable() {
     stop()
     guard lastReportedAvailable != false else { return }
     lastReportedAvailable = false
-    emit(WiFiEvent.availabilityChanged, ["available": false, "reason": "session"])
+    emit(WiFiEvent.availabilityChanged, ["available": false])
   }
 
   // MARK: Dialling
@@ -312,7 +317,16 @@ private actor WiFiAwareTransport {
     var redial: WAEndpoint?
     // False only where the peer's own connection is the one that survives.
     var retryLater = true
+    // A dial or an accepted connection that has not traded hellos in time is
+    // not becoming a link, and nothing else would end it: neither the connect
+    // nor the receive below has a deadline of its own. Cancelling the link's
+    // task unwinds both into the defer.
+    let helloDeadline = Task {
+      try? await Task.sleep(for: Self.helloTimeout)
+      if !Task.isCancelled { handle.task?.cancel() }
+    }
     defer {
+      helloDeadline.cancel()
       // Hello failed, tiebreak lost or read loop ended, this is the one
       // place a link stops existing. A registry entry left behind holds the
       // connection alive with nobody reading it.
@@ -333,6 +347,7 @@ private actor WiFiAwareTransport {
       let header = try await connection.receive(exactly: Framing.prefixBytes).content
       guard let length = Framing.length(header), length == AwareDial.tokenBytes else { return }
       let peerToken = try await connection.receive(exactly: length).content
+      helloDeadline.cancel()
 
       // After the hello, not before: the path only populates once ready.
       if deviceID == nil {
@@ -623,8 +638,42 @@ final class AirhopWiFiModule: RCTEventEmitter {
       return
     }
     Task {
+      await self.flushWrites()
       await transport.stop()
       resolve(nil)
+    }
+  }
+
+  // MARK: Farewell flush
+
+  /// Writes handed over and not yet answered. Counted here, on the bridge's
+  /// queue, rather than in the transport: each write and the stop are separate
+  /// tasks, and a stop can reach the actor before a write handed over ahead of
+  /// it does.
+  private let pendingLock = NSLock()
+  private var pendingWrites = 0
+
+  private func adjustPendingWrites(_ delta: Int) {
+    pendingLock.lock()
+    pendingWrites += delta
+    pendingLock.unlock()
+  }
+
+  private var hasPendingWrites: Bool {
+    pendingLock.lock()
+    defer { pendingLock.unlock() }
+    return pendingWrites > 0
+  }
+
+  /// The farewell (a LEAVE, a voice or video END) is handed over in the same
+  /// tick as the stop, and cancelling a link drops what it has not sent. A
+  /// healthy link takes it in milliseconds; a stalled one gets 300 ms, as on
+  /// Android.
+  @available(iOS 26.0, *)
+  private func flushWrites() async {
+    let deadline = ContinuousClock.now + .milliseconds(300)
+    while hasPendingWrites, ContinuousClock.now < deadline {
+      try? await Task.sleep(for: .milliseconds(10))
     }
   }
 
@@ -665,7 +714,10 @@ final class AirhopWiFiModule: RCTEventEmitter {
       reject("LINK_CLOSED", "WiFi transport is not running", nil)
       return
     }
+    // Counted before the task exists, so a stop handed over next sees it.
+    adjustPendingWrites(1)
     Task {
+      defer { self.adjustPendingWrites(-1) }
       do {
         try await transport.write(linkID: linkID, payload: payload)
         resolve(nil)

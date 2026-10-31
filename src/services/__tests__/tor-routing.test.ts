@@ -25,7 +25,7 @@ const mockGetTorStatus = jest.fn<
   []
 >();
 const mockStartTor = jest.fn<Promise<void>, [string]>();
-const mockStopTor = jest.fn<Promise<void>, []>();
+const mockStopTor = jest.fn<Promise<void>, [boolean]>();
 const mockAwaitTorReady = jest.fn<Promise<boolean>, [number]>();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
 const mockHoldRoute = jest.fn<Promise<void>, []>();
@@ -92,7 +92,7 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
   __esModule: true,
   default: {
     startTor: (lines: string) => mockStartTor(lines),
-    stopTor: () => mockStopTor(),
+    stopTor: (keepHeld: boolean) => mockStopTor(keepHeld),
     getTorStatus: () => mockGetTorStatus(),
     awaitTorReady: (s: number) => mockAwaitTorReady(s),
     setAppForeground: (f: boolean) => mockSetAppForeground(f),
@@ -279,6 +279,19 @@ describe("enabling Tor on Android", () => {
     expect(mockStopTor).toHaveBeenCalled();
     expect(mockSetTorEnabled).toHaveBeenLastCalledWith(false);
     expect(useMeshStateStore.getState().torActive).toBe(false);
+  });
+
+  // Another Tor client holding the port is not a network blocking Tor, and
+  // waiting will not clear it.
+  test("a port another client holds is reported as such", async () => {
+    mockStartTor.mockRejectedValue(
+      Object.assign(new Error("rc=-5"), { code: "tor_port_busy" }),
+    );
+
+    const result = await setTorRouting(true);
+
+    expect(result).toEqual({ ok: false, reason: "port-busy" });
+    expect(mockStopTor).toHaveBeenCalledWith(false);
   });
 
   test("consent withdrawn during the bootstrap is not overridden", async () => {
@@ -717,6 +730,30 @@ describe("revalidating on Android", () => {
 
     expect(mockSetTorActive).toHaveBeenLastCalledWith(false);
   });
+
+  test("Tor switched off while the status is in flight claims nothing", async () => {
+    mockTorEnabled = true;
+    mockGetTorStatus.mockImplementation(async () => {
+      mockTorEnabled = false;
+      return status({ isReady: true });
+    });
+
+    await revalidateTorRouting();
+
+    expect(mockSetTorActive).not.toHaveBeenCalledWith(true);
+  });
+
+  test("the internet switched off while the status is in flight blocks nothing", async () => {
+    mockTorEnabled = true;
+    mockGetTorStatus.mockImplementation(async () => {
+      mockInternetEnabled = false;
+      return status({ isReady: false, isStarting: false });
+    });
+
+    await revalidateTorRouting();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
+  });
 });
 
 describe("the master internet switch", () => {
@@ -844,6 +881,43 @@ describe("bridge modes", () => {
       expect.stringContaining("snowflake "),
     );
     expect(mockSetTorBridgeMode).toHaveBeenCalledWith("snowflake");
+  });
+
+  // Routed direct between the stop and the start, a wallet call in the gap
+  // would reach the mint on the device's own address.
+  test("the restart keeps traffic held across the gap", async () => {
+    await setTorRouting(true);
+    jest.clearAllMocks();
+
+    await setTorBridgeMode("snowflake");
+
+    expect(mockStopTor).toHaveBeenCalledTimes(1);
+    expect(mockStopTor).toHaveBeenCalledWith(true);
+  });
+
+  test("bridge lines the client refuses say so, not try again", async () => {
+    await setTorRouting(true);
+    mockStartTor.mockRejectedValue(
+      Object.assign(new Error("rc=-7"), { code: "tor_bridge_rejected" }),
+    );
+
+    const result = await setTorBridgeMode("custom", "obfs4 nonsense");
+
+    expect(result).toEqual({ ok: false, reason: "bad-bridges" });
+    // Still held, as for any refused restart.
+    expect(mockTorEnabled).toBe(true);
+    expect(mockHoldRoute).toHaveBeenCalled();
+  });
+
+  test("transports that will not start are blamed on the bridge lines too", async () => {
+    await setTorRouting(true);
+    mockStartTor.mockRejectedValue(
+      Object.assign(new Error("transports"), { code: "tor_transport_failed" }),
+    );
+
+    const result = await setTorBridgeMode("snowflake");
+
+    expect(result).toEqual({ ok: false, reason: "bad-bridges" });
   });
 
   // Between the old client and the new one there is no Tor, and a pool rebuilt

@@ -14,7 +14,8 @@ import NativeAirhopWiFiPairing, {
 import { t } from "@i18n";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import type { useThemeColors } from "@ui/theme";
-import { DeviceEventEmitter, type EventSubscription } from "react-native";
+import type { EventSubscription } from "react-native";
+import { nativeEvents } from "./native-events";
 
 // The palette object a screen holds, named the way settings-primitives does.
 type ThemeColors = ReturnType<typeof useThemeColors>;
@@ -90,8 +91,9 @@ export class WiFiPairingWatcher {
     if (this.started || !hasWiFiPairing()) return;
     this.started = true;
     active = this;
-    // Before the first read, so a pairing made during it is not lost.
-    this.sub = DeviceEventEmitter.addListener(
+    // Before the first read, so a pairing made during it is not lost. Through
+    // the module, or iOS never sends it (see native-events.ts).
+    this.sub = nativeEvents(NativeAirhopWiFiPairing).addListener(
       "AirhopWiFiPairing.devicesChanged",
       ({ count }: { count: number }) => {
         // `supported` cannot change within a process, so carry it forward.

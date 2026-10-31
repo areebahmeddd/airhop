@@ -168,6 +168,10 @@ private const val HELLO_TIMEOUT_MS = 5_000L
 // seconds the read side allows a frame.
 private const val WRITE_STALL_MS = FrameReader.FRAME_DEADLINE_MS
 
+// How long stopWiFi lets queued writes go out before releasing the paths.
+private const val FAREWELL_FLUSH_MS = 300L
+private const val FAREWELL_POLL_MS = 10L
+
 // Accepted sockets still waiting for their hello. A real one sends it within a
 // round trip of connecting, so more than a few at once is not data paths.
 private const val MAX_PENDING_HELLO = 4
@@ -245,6 +249,8 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         @Volatile var lastReadAtMs = SystemClock.elapsedRealtime()
         // When the write in progress began, 0 while none is.
         @Volatile var writingSinceMs = 0L
+        // Writes handed over and not yet finished, queued ones included.
+        val pendingWrites = AtomicInteger(0)
         var heartbeat: ScheduledFuture<*>? = null
     }
 
@@ -493,10 +499,26 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun stopWiFi(promise: Promise) {
         val accepted = onState {
+            awaitWrites()
             teardown()
             promise.resolve(null)
         }
         if (!accepted) promise.resolve(null)
+    }
+
+    // The farewell (a LEAVE, a voice or video END) is handed to writeToWiFiLink
+    // in the same tick as stopWiFi, and releasing the data path destroys every
+    // socket on it, queued writes included. A healthy link takes them in
+    // milliseconds, and a stalled one gets FAREWELL_FLUSH_MS. State thread.
+    private fun awaitWrites() {
+        val deadline = now() + FAREWELL_FLUSH_MS
+        try {
+            while (links.values.any { it.pendingWrites.get() > 0 } && now() < deadline) {
+                Thread.sleep(FAREWELL_POLL_MS)
+            }
+        } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
     }
 
     // Idempotent. Links are announced closed before the map is cleared so JS
@@ -556,15 +578,18 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
 
     // Reported as unavailable so the reconciler forgets it is started and
-    // re-attaches on its ladder.
+    // re-attaches on its ladder. Switching Wi-Fi off ends the session too, often
+    // before the state broadcast arrives, so the radio is asked rather than
+    // assumed: only an end under a live radio counts toward the JS breaker.
     private fun reportUnavailable() {
+        val reason = if (awareManager()?.isAvailable == true) REASON_SESSION else REASON_RADIO
         teardown()
         lastReportedAvailable = false
         emitEvent(
             EVT_AVAILABILITY_CHANGED,
             WritableNativeMap().apply {
                 putBoolean("available", false)
-                putString("reason", REASON_SESSION)
+                putString("reason", reason)
             },
         )
     }
@@ -579,9 +604,11 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         registerAwareReceiver()
     }
 
+    // Registered whether or not the service answers yet: one missing at startup
+    // would otherwise leave every later radio change unheard, and each drop
+    // read as a session ending under a live radio.
     private fun registerAwareReceiver() {
         if (awareReceiverRegistered) return
-        val manager = awareManager() ?: return
         try {
             // A protected system broadcast; NOT_EXPORTED is required from API 34.
             ContextCompat.registerReceiver(
@@ -592,7 +619,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             )
             awareReceiverRegistered = true
             // Seeded so the first broadcast is compared against reality.
-            lastReportedAvailable = manager.isAvailable
+            lastReportedAvailable = awareManager()?.isAvailable
         } catch (e: Exception) {
             Log.e(TAG, "Could not register Wi-Fi Aware state receiver", e)
         }
@@ -634,6 +661,8 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             promise.reject("INVALID_DATA", "Empty frame")
             return
         }
+        // Counted before the hand-off, so a stop arriving next sees it.
+        link.pendingWrites.incrementAndGet()
         val accepted = onIo {
             try {
                 writeFrame(link, data)
@@ -642,9 +671,14 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                 logW("Write failed on $linkID: ${e.message}")
                 onState { closeLink(linkID, "write failed") }
                 promise.reject("WRITE_FAILED", e.message, e)
+            } finally {
+                link.pendingWrites.decrementAndGet()
             }
         }
-        if (!accepted) promise.reject("LINK_CLOSED", "WiFi transport is shutting down")
+        if (!accepted) {
+            link.pendingWrites.decrementAndGet()
+            promise.reject("LINK_CLOSED", "WiFi transport is shutting down")
+        }
     }
 
     // Blocking. IO thread, except the hello, which is a few bytes into an
@@ -1026,7 +1060,10 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         if (instance == instanceHex) return
         val peer = peerFor(instance)
         peer.subscribeHandle = peerHandle
-        peer.token = ssi.copyOfRange(0, AwareDial.TOKEN_BYTES)
+        val token = ssi.copyOfRange(0, AwareDial.TOKEN_BYTES)
+        // A new token is a new attach, whose dial counter starts again.
+        if (peer.token?.contentEquals(token) == false) peer.peerEpoch = -1
+        peer.token = token
         subscribeHandles[peerHandle] = instance
         logI(
             "Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialling" else "waiting for its dial"}"
@@ -1157,7 +1194,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         // the tiebreak arriving late. Answered again while our side of it
         // stands, since the READY may be the half that was lost.
         val responding = peer.role == Role.RESPONDER && peer.state != DialState.IDLE
-        if (epoch <= peer.peerEpoch) {
+        if (!AwareDial.isNewRequest(epoch, peer.peerEpoch, peer.state == DialState.IDLE)) {
             if (responding && epoch == peer.peerEpoch) sendReady(session, peerHandle, epoch)
             return
         }
