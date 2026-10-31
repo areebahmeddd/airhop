@@ -739,6 +739,8 @@ export class MeshService {
   // them, or null. A burst is only played when it belongs to THIS channel. See
   // setLiveVoiceAudible.
   private audibleChannel: string | null = null;
+  // Whether the user is recording a voice or video note. See setNoteRecording.
+  private noteRecording = false;
   // Live video. The receiver runs whenever the mesh does (a device without the
   // native video module never builds one); a send session exists only while
   // this user is live, and holds the microphone while it does.
@@ -2115,7 +2117,7 @@ export class MeshService {
     // background the app or leave the thread in the middle of a burst, and the
     // audio should stop there rather than play on to the end.
     this.pttPlayback = new NativeAudioPlayback(
-      () => this.audibleChannel !== null,
+      () => this.audibleChannel !== null && !this.noteRecording,
       (level) => this.reportPttLevel({ inbound: level }),
       () => {
         // The speaker is quiet, so hand the audio session back: the same
@@ -2130,11 +2132,12 @@ export class MeshService {
         // and ends the burst the user is still holding. This guard is the
         // reason the call lives here rather than beside the native release
         // that prompts it. A release still flushing holds the microphone too,
-        // and so does a live video stream with sound.
+        // and so does a live video stream with sound, and a note recording.
         if (
           this.pttCapture !== null ||
           this.pttClosing !== null ||
-          this.liveVideoSend !== null
+          this.liveVideoSend !== null ||
+          this.noteRecording
         ) {
           return;
         }
@@ -2238,6 +2241,18 @@ export class MeshService {
   // liveVoiceEnabled && isAppActive && isViewing.
   setLiveVoiceAudible(channel: string | null): void {
     this.audibleChannel = channel;
+  }
+
+  // Set by the open thread while a voice or video note records. Its microphone
+  // would pick up whatever the speaker plays, so live voice is held meanwhile:
+  // tracked, so the talking banner still shows, but silent. Nothing is lost,
+  // since every live burst also arrives as a voice note. A stream's sound is
+  // switched off when the recording starts (the thread's silencePlayback), and
+  // shares this gate, so it stays silent if turned back on mid-recording. Our
+  // own live talk is not a note and keeps hearing the room, as a
+  // walkie-talkie does.
+  setNoteRecording(recording: boolean): void {
+    this.noteRecording = recording;
   }
 
   // Open the mic and start streaming a burst to everyone in range. Returns

@@ -8,25 +8,17 @@
 //
 // Self-contained on purpose: the mic's state machine also drives live voice,
 // and a second recorder threaded through it would put both at risk. The thread
-// renders the button and the overlay and is handed a finished file.
+// renders the button, the overlay and, in the same recording bar a voice note
+// uses, the timer and controls (`bar`); it is handed a finished file.
 
 import { MIN_BURST_KEEP_MS } from "@core/mesh/voice/voice-capture";
 import { MAX_FILE_BYTES, MAX_VIDEO_SECONDS } from "@core/mesh/wire/file-packet";
 import { t, useT } from "@i18n";
-import { chevronBack, isRTLLayout } from "@i18n/layout";
+import { isRTLLayout } from "@i18n/layout";
 import { acknowledged, armed, held, released } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
 import { Feather } from "@react-native-vector-icons/feather/static";
-import {
-  FontSize,
-  FontWeight,
-  hitSlopFor,
-  MIN_TOUCH,
-  Radius,
-  Spacing,
-  useThemeColors,
-} from "@ui/theme";
-import { formatDuration } from "@utils/format";
+import { MIN_TOUCH, Radius, useThemeColors } from "@ui/theme";
 import { Camera, CameraView } from "expo-camera";
 import * as FileSystem from "expo-file-system";
 import React, {
@@ -39,10 +31,9 @@ import React, {
 import {
   AppState,
   Platform,
-  Pressable,
   StyleSheet,
-  Text,
   View,
+  type ViewStyle,
 } from "react-native";
 import {
   GestureDetector,
@@ -55,6 +46,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  type AnimatedStyle,
 } from "react-native-reanimated";
 import Svg, { Circle } from "react-native-svg";
 import { scheduleOnRN } from "react-native-worklets";
@@ -94,6 +86,19 @@ export interface RecordedVideoNote {
 
 type Phase = "idle" | "opening" | "recording" | "locked";
 
+// What the thread's recording bar shows while a note records.
+export interface VideoNoteBar {
+  // Locked or started from a screen reader: no finger is down, so the bar
+  // offers cancel and send instead of the slide hint.
+  handsFree: boolean;
+  cancelArmed: boolean;
+  canLock: boolean;
+  seconds: number;
+  hintStyle: AnimatedStyle<ViewStyle>;
+  cancel: () => void;
+  send: () => void;
+}
+
 // How a recording ends, decided before the recorder's promise settles.
 type Outcome = "send" | "cancel";
 
@@ -117,6 +122,7 @@ export function useVideoNoteRecorder({
 }: Options): {
   button: React.JSX.Element;
   overlay: React.JSX.Element | null;
+  bar: VideoNoteBar | null;
   active: boolean;
 } {
   const T = useT();
@@ -372,6 +378,10 @@ export function useVideoNoteRecorder({
     ],
   }));
 
+  const hintStyle = useAnimatedStyle(() => ({
+    opacity: 1 - 0.5 * (slide.get() / CANCEL_SLIDE_DISTANCE),
+  }));
+
   const ringProps = useAnimatedProps(() => ({
     strokeDashoffset: RING_LENGTH * (1 - progress.get()),
   }));
@@ -421,7 +431,7 @@ export function useVideoNoteRecorder({
     <View
       style={[styles.overlay, { bottom: bottomInset }]}
       // Held, the finger is on the button below and must stay there; locked,
-      // the overlay's own buttons take over.
+      // the thread under it waits until the bar's cancel or send.
       pointerEvents={phase === "locked" ? "auto" : "box-none"}
     >
       <View style={styles.ringBox} pointerEvents="none">
@@ -483,67 +493,25 @@ export function useVideoNoteRecorder({
           />
         </Svg>
       </View>
-
-      <View style={styles.footer}>
-        <Text style={styles.timer} accessibilityLiveRegion="polite">
-          {formatDuration(elapsedSecs)}
-        </Text>
-        {phase === "locked" ? (
-          <View style={styles.lockedActions}>
-            <Pressable
-              style={styles.roundAction}
-              onPress={() => finish("cancel")}
-              hitSlop={hitSlopFor(BUTTON_SIZE)}
-              accessibilityRole="button"
-              accessibilityLabel={T("chat.voice.cancel_recording")}
-            >
-              <Feather name="x" size={18} color={Colors.textPrimary} />
-            </Pressable>
-            <Pressable
-              style={[styles.roundAction, styles.sendAction]}
-              onPress={() => {
-                acknowledged();
-                finish("send");
-              }}
-              hitSlop={hitSlopFor(BUTTON_SIZE)}
-              accessibilityRole="button"
-              accessibilityLabel={T("chat.voice.stop_send")}
-            >
-              <Feather name="arrow-up" size={18} color={Colors.textInverse} />
-            </Pressable>
-          </View>
-        ) : (
-          <View style={styles.hintRow}>
-            <Feather
-              name={cancelArmed ? "trash-2" : chevronBack}
-              size={14}
-              color={cancelArmed ? Colors.danger : Colors.textMuted}
-            />
-            <Text
-              style={[styles.hint, cancelArmed && styles.hintArmed]}
-              numberOfLines={1}
-            >
-              {cancelArmed
-                ? T("chat.voice.release_cancel")
-                : T("chat.voice.slide_cancel")}
-            </Text>
-            {!cancelArmed && (
-              <View
-                style={styles.lockHint}
-                accessible
-                accessibilityLabel={T("chat.voice.lift_lock")}
-              >
-                <Feather name="chevron-up" size={12} color={Colors.textMuted} />
-                <Feather name="lock" size={13} color={Colors.textMuted} />
-              </View>
-            )}
-          </View>
-        )}
-      </View>
     </View>
   ) : null;
 
-  return { button, overlay, active };
+  const bar: VideoNoteBar | null = active
+    ? {
+        handsFree: phase === "locked",
+        cancelArmed,
+        canLock: phase === "recording" && !cancelArmed,
+        seconds: elapsedSecs,
+        hintStyle,
+        cancel: () => finish("cancel"),
+        send: () => {
+          acknowledged();
+          finish("send");
+        },
+      }
+    : null;
+
+  return { button, overlay, bar, active };
 }
 
 // The recorder writes to the camera's own cache; a discarded note goes now
@@ -586,7 +554,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.overlay,
       alignItems: "center",
       justifyContent: "center",
-      gap: Spacing.lg,
     },
     ringBox: {
       width: RING_SIZE,
@@ -600,53 +567,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.full,
       overflow: "hidden",
       backgroundColor: "#000",
-    },
-    // A surface pill, so the text reads in both themes over the dimmed chat.
-    footer: {
-      alignItems: "center",
-      gap: Spacing.md,
-      paddingVertical: Spacing.md,
-      paddingHorizontal: Spacing.lg,
-      borderRadius: Radius.xl,
-      backgroundColor: Colors.surface,
-    },
-    timer: {
-      fontSize: FontSize.md,
-      fontWeight: FontWeight.semibold,
-      color: Colors.textPrimary,
-      fontVariant: ["tabular-nums"],
-    },
-    hintRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: Spacing.xs,
-    },
-    hint: {
-      fontSize: FontSize.sm,
-      color: Colors.textMuted,
-    },
-    hintArmed: {
-      color: Colors.danger,
-    },
-    lockHint: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginStart: Spacing.md,
-    },
-    lockedActions: {
-      flexDirection: "row",
-      gap: Spacing["2xl"],
-    },
-    roundAction: {
-      width: BUTTON_SIZE,
-      height: BUTTON_SIZE,
-      borderRadius: Radius.full,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: Colors.surfaceRaised,
-    },
-    sendAction: {
-      backgroundColor: Colors.accent,
     },
   });
 }

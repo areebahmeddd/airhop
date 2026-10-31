@@ -49,6 +49,7 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
+import { useExclusivePlayback } from "./use-exclusive-playback";
 import { slideTrim, trimEndTo, trimStartTo } from "./video-trim";
 
 const PREVIEW_HEIGHT = 240;
@@ -73,6 +74,9 @@ interface Props {
   // Where the handles start; later moves are reported through onChange.
   initialRange: TranscodeRange;
   onChange: (range: TranscodeRange) => void;
+  // Whether the preview holds the thread's one sound, and how it takes it.
+  previewPlaying: boolean;
+  onPreviewPlay: () => void;
 }
 
 export default function VideoTrimmer({
@@ -80,6 +84,8 @@ export default function VideoTrimmer({
   durationMs,
   initialRange,
   onChange,
+  previewPlaying,
+  onPreviewPlay,
 }: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
@@ -108,6 +114,7 @@ export default function VideoTrimmer({
     p.loop = false;
     p.timeUpdateEventInterval = 0.1;
   });
+  useExclusivePlayback(player, previewPlaying, onPreviewPlay);
 
   // The chosen part plays on a loop, including one that runs to the video's
   // own end, where the player stops rather than passing the end handle.
