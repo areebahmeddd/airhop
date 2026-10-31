@@ -34,6 +34,7 @@ import {
   HIT_SLOP,
   LineHeight,
   MIN_TOUCH,
+  PRESSED_OPACITY,
   Radius,
   Spacing,
   useThemeColors,
@@ -224,7 +225,10 @@ export default function VerifyContactScreen({
           <View style={styles.topBar}>
             <Pressable
               onPress={onClose}
-              style={styles.iconBtn}
+              style={({ pressed }) => [
+                styles.iconBtn,
+                pressed && styles.pressed,
+              ]}
               hitSlop={HIT_SLOP}
               accessibilityRole="button"
               accessibilityLabel={T("common.close")}
@@ -246,7 +250,10 @@ export default function VerifyContactScreen({
                 {T("contacts.verify.choose_body", { name })}
               </Text>
               <Pressable
-                style={styles.methodRow}
+                style={({ pressed }) => [
+                  styles.methodRow,
+                  pressed && styles.pressed,
+                ]}
                 onPress={handleChooseCamera}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.method_scan")}
@@ -265,7 +272,10 @@ export default function VerifyContactScreen({
                   saved from a typed peer ID has no keys and so no code. */}
               {words !== null ? (
                 <Pressable
-                  style={styles.methodRow}
+                  style={({ pressed }) => [
+                    styles.methodRow,
+                    pressed && styles.pressed,
+                  ]}
                   onPress={() => setStage("compare")}
                   accessibilityRole="button"
                   accessibilityLabel={T("contacts.verify.method_compare")}
@@ -298,7 +308,10 @@ export default function VerifyContactScreen({
               </Text>
               <SafetyWords words={words} color="#FFFFFF" />
               <Pressable
-                style={styles.primaryBtn}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
                 onPress={handleCodesMatch}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.codes_match")}
@@ -308,6 +321,7 @@ export default function VerifyContactScreen({
                 </Text>
               </Pressable>
               <Pressable
+                style={({ pressed }) => pressed && styles.pressed}
                 onPress={() => {
                   // A mismatch is the finding, not a failure to retry: the
                   // words are the same next time, so a retry would only invite
@@ -337,7 +351,10 @@ export default function VerifyContactScreen({
                 {T("contacts.verify.codes_differ_body", { name })}
               </Text>
               <Pressable
-                style={styles.primaryBtn}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
                 onPress={handleChooseCamera}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.method_scan")}
@@ -347,6 +364,7 @@ export default function VerifyContactScreen({
                 </Text>
               </Pressable>
               <Pressable
+                style={({ pressed }) => pressed && styles.pressed}
                 onPress={onClose}
                 accessibilityRole="button"
                 accessibilityLabel={T("common.close")}
@@ -368,7 +386,10 @@ export default function VerifyContactScreen({
                 {T("contacts.verify.compared_body", { name })}
               </Text>
               <Pressable
-                style={styles.primaryBtn}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
                 onPress={onClose}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.done")}
@@ -412,7 +433,10 @@ export default function VerifyContactScreen({
                 {T("contacts.verify.camera_off_body")}
               </Text>
               <Pressable
-                style={styles.primaryBtn}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
                 onPress={() => void Linking.openSettings()}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.open_settings")}
@@ -422,6 +446,7 @@ export default function VerifyContactScreen({
                 </Text>
               </Pressable>
               <Pressable
+                style={({ pressed }) => pressed && styles.pressed}
                 onPress={onClose}
                 accessibilityRole="button"
                 accessibilityLabel={T("common.close")}
@@ -443,7 +468,10 @@ export default function VerifyContactScreen({
                 {T("contacts.verify.match_body", { name })}
               </Text>
               <Pressable
-                style={styles.primaryBtn}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
                 onPress={onClose}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.done")}
@@ -467,7 +495,10 @@ export default function VerifyContactScreen({
                 {T("contacts.verify.different_body", { name })}
               </Text>
               <Pressable
-                style={styles.primaryBtn}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
                 onPress={handleRetry}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.scan_again")}
@@ -477,6 +508,7 @@ export default function VerifyContactScreen({
                 </Text>
               </Pressable>
               <Pressable
+                style={({ pressed }) => pressed && styles.pressed}
                 onPress={onClose}
                 accessibilityRole="button"
                 accessibilityLabel={T("common.cancel")}
@@ -500,7 +532,10 @@ export default function VerifyContactScreen({
                   : T("contacts.verify.tampered_body")}
               </Text>
               <Pressable
-                style={styles.primaryBtn}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  pressed && styles.pressed,
+                ]}
                 onPress={handleRetry}
                 accessibilityRole="button"
                 accessibilityLabel={T("contacts.verify.scan_again")}
@@ -510,6 +545,7 @@ export default function VerifyContactScreen({
                 </Text>
               </Pressable>
               <Pressable
+                style={({ pressed }) => pressed && styles.pressed}
                 onPress={onClose}
                 accessibilityRole="button"
                 accessibilityLabel={T("common.cancel")}
@@ -658,6 +694,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     methodSub: {
       fontSize: FontSize.xs,
       color: "rgba(255,255,255,0.6)",
+    },
+    // Every control here sits over the camera on a fixed dark scrim, white or
+    // translucent, with no neutral fill to darken, so each one dims.
+    pressed: {
+      opacity: PRESSED_OPACITY,
     },
   });
 }

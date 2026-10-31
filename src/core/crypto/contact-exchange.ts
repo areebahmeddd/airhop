@@ -1,8 +1,9 @@
 // Contact card: compact binary encoding for QR code peer exchange.
 //
 // When two users meet in person, phone A displays a QR and phone B scans it
-// with the camera. The QR carries a ContactCard binary blob, encoded in a URI
-// scheme so scanners open Airhop directly: "airhop:v1/<base64url>".
+// with the camera. The QR carries a ContactCard binary blob followed by its
+// signature, encoded in a URI scheme so scanners open Airhop directly:
+// "airhop:v1/<base64url>".
 //
 // ContactCard binary layout (fixed header, variable nickname, trailing npub):
 //
@@ -18,8 +19,25 @@
 // and signing keys for BLE, and the Nostr key so a contact met only by QR (never
 // over Bluetooth) is still reachable over the internet. Airhop is pre-1.0 with no
 // install base, so there is exactly one card format rather than a versioned pair.
+//
+// The QR (and a shared link or pasted code, which are the same string) is that
+// card followed by a 64-byte Ed25519 signature by the signing key it names:
+//   Ed25519(signingKey, "airhop-contact-card-v1" || card)
+// The peer ID check already ties the Noise key to the peer ID, but nothing else
+// ties the Nostr key or the name to the keys, so without this anyone could swap
+// the Nostr key in a real person's card and receive their internet DMs, even
+// after a safety-number match marks them verified. An unsigned card is refused.
+// The bare card (no signature) is also the body of a geo contact card, which
+// carries its own proof (core/nostr/geo-card-proof).
 
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { equalBytes } from "@noble/curves/utils.js";
+import {
+  bytesToHex,
+  concatBytes,
+  hexToBytes,
+  utf8ToBytes,
+} from "@noble/hashes/utils.js";
 import { base64UrlToBytes, bytesToBase64Url } from "../encoding/base64";
 import { normalizeNickname } from "../mesh/discovery/nickname";
 
@@ -115,6 +133,10 @@ export function decodeContactCard(buf: Uint8Array): AirhopContactCard {
   if (buf.length < npubStart + NOSTR_PUBKEY_SIZE) {
     throw new Error("contact-exchange: buffer truncated");
   }
+  // One encoding per card: trailing bytes are a different card, not padding.
+  if (buf.length !== npubStart + NOSTR_PUBKEY_SIZE) {
+    throw new Error("contact-exchange: trailing bytes");
+  }
 
   // The peer's choice, saved as the contact's own name, so it enters in the
   // canonical form an announced name does: no bidi overrides, invisibles or
@@ -133,26 +155,59 @@ export function decodeContactCard(buf: Uint8Array): AirhopContactCard {
 }
 
 // URI scheme for QR codes. Standard scanners launch the app via deep link.
-// Content: "airhop:v1/<base64url-encoded-ContactCard-binary>"
+// Content: "airhop:v1/<base64url(ContactCard binary || signature)>"
 const QR_SCHEME = "airhop:v1/";
+const CARD_CONTEXT = utf8ToBytes("airhop-contact-card-v1");
+const SIGNATURE_SIZE = 64;
 
-export function encodeQRContent(card: ContactCard): string {
+// Signed with the private half of the card's own signing key, so a caller
+// handing in any other key is a bug rather than a card to emit.
+export function encodeQRContent(
+  card: ContactCard,
+  signingPrivKey: Uint8Array,
+): string {
+  if (!equalBytes(ed25519.getPublicKey(signingPrivKey), card.signingPubKey)) {
+    throw new Error("contact-exchange: signing key does not match the card");
+  }
   const binary = encodeContactCard(card);
-  return QR_SCHEME + bytesToBase64Url(binary);
+  const signature = ed25519.sign(
+    concatBytes(CARD_CONTEXT, binary),
+    signingPrivKey,
+  );
+  return QR_SCHEME + bytesToBase64Url(concatBytes(binary, signature));
 }
 
-// Parse a QR code content string. Returns null if it's not an Airhop contact QR.
+// Whether `text` is in our card's scheme at all, so a reader can tell a card
+// that failed (refused, and said so) from a code that is not one (ignored).
+export function isContactQR(text: string): boolean {
+  return text.startsWith(QR_SCHEME);
+}
+
+// Parse a QR code content string. Null when it is not an Airhop contact QR, or
+// is one that is malformed, unsigned or whose signature fails.
 export function decodeQRContent(qr: string): AirhopContactCard | null {
-  if (!qr.startsWith(QR_SCHEME)) return null;
-  const b64 = qr.slice(QR_SCHEME.length);
+  if (!isContactQR(qr)) return null;
   let binary: Uint8Array;
   try {
-    binary = base64UrlToBytes(b64);
+    binary = base64UrlToBytes(qr.slice(QR_SCHEME.length));
+  } catch {
+    return null;
+  }
+  if (binary.length <= SIGNATURE_SIZE) return null;
+  const body = binary.subarray(0, binary.length - SIGNATURE_SIZE);
+  let card: AirhopContactCard;
+  try {
+    card = decodeContactCard(body);
   } catch {
     return null;
   }
   try {
-    return decodeContactCard(binary);
+    const signed = ed25519.verify(
+      binary.subarray(binary.length - SIGNATURE_SIZE),
+      concatBytes(CARD_CONTEXT, body),
+      card.signingPubKey,
+    );
+    return signed ? card : null;
   } catch {
     return null;
   }
