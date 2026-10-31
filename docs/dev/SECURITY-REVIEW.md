@@ -38,7 +38,7 @@
 
 The cryptographic primitives and the wire format were sound on arrival: the Noise XX pattern and split, low-order point rejection, decode caps, the DEFLATE ratio, the freshness window and dedup all match bitchat-ios. The defects sat in the state and wiring around them. A forged packet could permanently desynchronise the Double Ratchet. Signing-key pins, including those of verified contacts, did not survive a restart. Courier mail never opened between Airhop and bitchat-ios. A location-channel stranger could fold themselves into a friend's DM thread. A DM photo could go out in the clear. The release pipeline would have built a same-named branch instead of the tag.
 
-**Verdict.** Every Critical, High and Medium finding is fixed on the branch, except SUP-5, a repository setting the owner holds. What remains before the release is operational: a green CI run including the iOS build. The rebuilt native binaries are committed ([`2bf32ae`](https://github.com/areebahmeddd/airhop/commit/2bf32ae)).
+**Verdict.** Every Critical, High and Medium finding is fixed, except SUP-5, a repository setting the owner holds.
 
 **Attacks run against a live mesh.** Each row is an executable scenario in `src/__tests__/simulation/` (I04 in `src/services/__tests__/move-session.test.ts`), run against isolated copies of the app over a modeled radio. "Refused" means the app rejected it and told the user nothing false while refusing. Across every scenario the harness also asserts that nothing forged renders, nothing renders twice, delivery state never runs backwards and no sat is created or destroyed.
 
@@ -76,7 +76,7 @@ The cryptographic primitives and the wire format were sound on arrival: the Nois
 
 Status meanings: **Fixed** (on the branch, with the commit given); **Fixed in part** (the defect is closed, and a proposed extra was declined or is blocked); **Fixed earlier** (before this pass); **Accepted** (a deliberate trade-off, section 6); **Owner** (a setting or decision outside the repository).
 
-"Not recorded" covers R-3 and R-12, whose descriptions lived only in the second review, which is no longer in the tree. The pass record lists R-3 as fixed with its parent finding and R-12 as an owner item alongside SUP-5.
+"Not recorded" covers R-3 and R-12, whose descriptions lived only in the second review and were not carried into this document. The pass record lists R-3 as fixed with its parent finding and R-12 as an owner item alongside SUP-5.
 
 ## 3. Status table
 
@@ -957,7 +957,7 @@ Standing decisions: the gitignored release keystore stays where it is; `"private
 
 ## 7. Blockers and dependencies
 
-| Item                    | Waits on                                    | State (checked 2026-09-27)                             | Then                                                                                                                   |
+| Item                    | Waits on                                    | State (checked 2026-10-31)                             | Then                                                                                                                   |
 | ----------------------- | ------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
 | NET-4 local measure     | nbd-wtf/nostr-tools#563 and #562            | Open, unmerged; latest release 2.25.4 carries neither  | Upgrade, collapse back to one `subscribeMany` and drop our post-verify set (#563 adds one); keep `guardSince` (NET-23) |
 | CRY-2 reference vectors | A macOS machine to run bitchat-ios's XCTest | Optional; Python `noiseprotocol` vectors are committed | Commit seal vectors produced by bitchat-ios                                                                            |
