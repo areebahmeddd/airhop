@@ -171,6 +171,40 @@ export interface MintConditions {
   // mint has already spent and discards the blanks that are the only route to
   // the change.
   meltChangeKeysetUnknown: boolean;
+  // The Lightning payment is still routing when the mint answers: the inputs
+  // are held, the quote reads PENDING and no change is signed until
+  // `settlePendingMelts` decides. A melt for that quote meanwhile is refused
+  // as pending.
+  //   "answered": a 200 with the quote PENDING, which NUT-05 allows.
+  //   "gateway":  the mint holds the request while it routes and a proxy
+  //               times it out with its 504 page, so cashu-ts's NUT-19 retry
+  //               meets the refusal.
+  // Paid or not, reading either as the outcome loses money.
+  meltRoutesSlowly: "answered" | "gateway" | null;
+  // The NUT-00 code on that refusal. 20005 is NUT-05's; a mint sending a
+  // generic code leaves only the wording, and null sends no code at all.
+  meltPendingCode: number | null;
+  // Whether the mint offers NUT-09 restore. Off, it is left out of /v1/info
+  // and /v1/restore answers 404, as on a mint that never implemented it.
+  nut09: boolean;
+  // HTTP failures that carry no NUT error, per endpoint, keyed by path
+  // ("/v1/swap", "/v1/restore", "/v1/melt/bolt11"). They say nothing about
+  // what the mint did, which is the point: a wallet that reads one as a
+  // refusal discards the only data that could rebuild the coins.
+  httpFailures: Record<string, EndpointFailure>;
+}
+
+// A 500 from the mint, a 429 rate limit, or the HTML error page a reverse
+// proxy serves in the mint's place (nginx's 504 "Gateway Time-out").
+export type HttpFailure = "server-error" | "rate-limited" | "proxy-page";
+
+export interface EndpointFailure {
+  failure: HttpFailure;
+  // "before": the mint never sees the request. "after": it acts in full and
+  // the failure takes the place of its answer, as a gateway timing out on a
+  // slow mint does. Applies to NUT-19 cache hits too, so an identical retry
+  // meets the same outage.
+  when: "before" | "after";
 }
 
 const DEFAULT_CONDITIONS: MintConditions = {
@@ -188,13 +222,50 @@ const DEFAULT_CONDITIONS: MintConditions = {
   meltFails: false,
   meltVanishes: false,
   meltChangeKeysetUnknown: false,
+  meltRoutesSlowly: null,
+  meltPendingCode: 20005,
+  nut09: true,
+  httpFailures: {},
 };
+
+const PROXY_PAGE =
+  "<html>\r\n<head><title>504 Gateway Time-out</title></head>\r\n<body>\r\n<center><h1>504 Gateway Time-out</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n";
 
 // A well-formed keyset id (NUT-02 version byte + 14 hex) that no fabric will
 // ever serve keys for, so a signature stamped with it is unresolvable rather
 // than malformed. Getting refused at parse time would exercise a different path
 // entirely.
 const UNLISTED_KEYSET_ID = "00ffffffffffffff";
+
+interface Signature {
+  id: string;
+  amount: number;
+  C_: string;
+  dleq: { e: string; s: string };
+}
+
+interface MeltRequest {
+  inputs: { id: string; secret: string; amount: number; C: string }[];
+  blanks: { B_: string; amount: number; id: string }[];
+  fee: number;
+}
+
+interface FabricQuote {
+  amount: number;
+  unit: string;
+  paid: boolean;
+  issued: boolean;
+  // The bolt11 string. NUT-05 echoes it back as `request` on every melt
+  // quote and melt response, and cashu-ts refuses a response without it.
+  request?: string;
+  // Change signed against the wallet's blank outputs. Held on the quote so
+  // a later `checkMeltQuote` can return it, which is the ONLY way a wallet
+  // recovers its unused routing reserve after a melt response goes missing.
+  change?: Signature[];
+  // A melt still routing under `meltRoutesSlowly`, settled by
+  // `settlePendingMelts`.
+  routing?: MeltRequest;
+}
 
 interface Keyset {
   id: string;
@@ -213,27 +284,7 @@ export class MintFabric {
   private readonly keysetVersion: 0 | 1;
   // Every proof secret the mint has signed, and whether it has been spent.
   private conditions: MintConditions = { ...DEFAULT_CONDITIONS };
-  private readonly quotes = new Map<
-    string,
-    {
-      amount: number;
-      unit: string;
-      paid: boolean;
-      issued: boolean;
-      // The bolt11 string. NUT-05 echoes it back as `request` on every melt
-      // quote and melt response, and cashu-ts refuses a response without it.
-      request?: string;
-      // Change signed against the wallet's blank outputs. Held on the quote so
-      // a later `checkMeltQuote` can return it, which is the ONLY way a wallet
-      // recovers its unused routing reserve after a melt response goes missing.
-      change?: {
-        id: string;
-        amount: number;
-        C_: string;
-        dleq: { e: string; s: string };
-      }[];
-    }
-  >();
+  private readonly quotes = new Map<string, FabricQuote>();
   // Every blinded message the mint has ever signed, keyed by B_. NUT-09 restore
   // is exactly a lookup in this table: the wallet re-derives its blinded
   // messages from the seed and asks "which of these do you recognise".
@@ -378,6 +429,8 @@ export class MintFabric {
     }
 
     const path = url.slice(this.url.length);
+    const injected = this.injectedFailure(path);
+    if (injected?.when === "before") return this.failWith(path, injected);
     const rawBody = this.rawBody(init);
     const cacheKey = this.cacheKeyFor(path, rawBody);
 
@@ -390,6 +443,7 @@ export class MintFabric {
           `${path} answered from the NUT-19 cache`,
         );
         this.failIfSwapResponseLost(path);
+        if (injected !== null) return this.failWith(path, injected);
         return this.raw(hit, 200);
       }
     }
@@ -401,7 +455,36 @@ export class MintFabric {
       this.responseCache.set(cacheKey, await response.text());
     }
     this.failIfSwapResponseLost(path);
+    if (injected !== null) return this.failWith(path, injected);
     return response;
+  }
+
+  // By whole path segments, so "/v1/keys" does not also fail "/v1/keysets".
+  private injectedFailure(path: string): EndpointFailure | null {
+    for (const [prefix, failure] of Object.entries(
+      this.conditions.httpFailures,
+    )) {
+      if (path === prefix || path.startsWith(`${prefix}/`)) return failure;
+    }
+    return null;
+  }
+
+  private failWith(path: string, injected: EndpointFailure): Response {
+    this.world.say(
+      "MINT_HTTP_FAILURE",
+      `${path}: ${injected.failure} ${injected.when} the mint acted`,
+    );
+    switch (injected.failure) {
+      case "server-error":
+        return this.json({ detail: "Internal Server Error" }, 500);
+      case "rate-limited":
+        return this.raw("Too Many Requests", 429, {
+          "content-type": "text/plain",
+          "retry-after": "30",
+        });
+      case "proxy-page":
+        return this.raw(PROXY_PAGE, 504, { "content-type": "text/html" });
+    }
   }
 
   // The mint has done everything it was asked and the wire gives out on the way
@@ -489,11 +572,15 @@ export class MintFabric {
     return this.raw(JSON.stringify(payload), status);
   }
 
-  private raw(text: string, status = 200): Response {
+  private raw(
+    text: string,
+    status = 200,
+    headers: Record<string, string> = { "content-type": "application/json" },
+  ): Response {
     return {
       ok: status >= 200 && status < 300,
       status,
-      headers: { get: () => "application/json" },
+      headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
       json: async () => JSON.parse(text) as unknown,
       text: async () => text,
     } as unknown as Response;
@@ -522,7 +609,7 @@ export class MintFabric {
         },
         "5": { methods: [{ method: "bolt11", unit: "sat" }] },
         "7": { supported: true },
-        "9": { supported: true },
+        ...(this.conditions.nut09 ? { "9": { supported: true } } : {}),
         "11": { supported: true },
         "12": { supported: true },
         // NUT-19 states its settings inline rather than as `supported`, and the
@@ -604,12 +691,26 @@ export class MintFabric {
   // NUT-02: a mint signs only under its active keyset. 12002 is what makes a
   // wallet with a stale snapshot repair it, so signing under an old keyset
   // here would let a rotation scenario pass that a real mint would refuse.
-  private refusesOutputs(outputs: { id: string }[]): Response | null {
+  //
+  // Then NUT-00 10002: a blinded message is signed once. A deterministic
+  // wallet whose counter fell behind (a restore that skipped a keyset, a
+  // phrase used on another phone) re-derives one, and a mint that signed it
+  // again would hide the clash and the recovery it needs.
+  private refusesOutputs(
+    outputs: { id: string; B_?: string }[],
+  ): Response | null {
     for (const output of outputs) {
       if (output.id === this.keyset.id) continue;
       return this.keysets.some((k) => k.id === output.id)
         ? this.json({ detail: "Keyset is inactive.", code: 12002 }, 400)
         : this.json({ detail: "Keyset is not known.", code: 12001 }, 400);
+    }
+    if (outputs.some((o) => o.B_ !== undefined && this.signedByB.has(o.B_))) {
+      this.world.say("MINT_OUTPUT_REUSED", "a blinded message signed before");
+      return this.json(
+        { detail: "Blinded message of output already signed", code: 10002 },
+        400,
+      );
     }
     return null;
   }
@@ -763,7 +864,12 @@ export class MintFabric {
         unit: existing.unit,
         request: existing.request ?? "",
         fee_reserve: this.conditions.meltFeeReserve,
-        state: existing.paid ? "PAID" : "UNPAID",
+        state:
+          existing.routing !== undefined
+            ? "PENDING"
+            : existing.paid
+              ? "PAID"
+              : "UNPAID",
         expiry: Math.floor(Date.now() / 1000) + 3600,
         payment_preimage: existing.paid ? "sim-preimage" : null,
         change: existing.change ?? [],
@@ -801,6 +907,7 @@ export class MintFabric {
   // silently dropped spent proofs would hide exactly the case where a user
   // restores an old phrase and thinks they are richer than they are.
   private restore(body: Record<string, unknown>): Response {
+    if (!this.conditions.nut09) return this.json({ detail: "Not Found" }, 404);
     const outputs = (body.outputs ?? []) as {
       B_: string;
       amount?: number;
@@ -827,12 +934,13 @@ export class MintFabric {
   }
 
   private melt(body: Record<string, unknown>): Response {
-    const inputs = (body.inputs ?? []) as {
-      id: string;
-      secret: string;
-      amount: number;
-      C: string;
-    }[];
+    const quoteId = typeof body.quote === "string" ? body.quote : "";
+    const quote = this.quotes.get(quoteId);
+    // NUT-05: one payment per quote. The inputs are only held, not spent, so
+    // without this a retry would pay the invoice twice.
+    if (quote?.routing !== undefined) return this.quotePendingRefusal();
+
+    const inputs = (body.inputs ?? []) as MeltRequest["inputs"];
     if (inputs.some((input) => this.refusesInput(input))) {
       return this.json(
         { detail: "Token could not be verified.", code: 10003 },
@@ -852,8 +960,6 @@ export class MintFabric {
     );
     if (outputRefusal !== null) return outputRefusal;
 
-    const quoteId = typeof body.quote === "string" ? body.quote : "";
-    const quote = this.quotes.get(quoteId);
     const inputSum = inputs.reduce((a, b) => a + b.amount, 0);
     const fee = this.feeFor(inputs.length);
 
@@ -884,6 +990,81 @@ export class MintFabric {
       return this.json({ detail: "Payment failed.", code: 20000 }, 400);
     }
 
+    const blanks = (body.outputs ?? []) as MeltRequest["blanks"];
+    const routing = this.conditions.meltRoutesSlowly;
+    if (routing !== null && quote !== undefined) {
+      quote.routing = { inputs, blanks, fee };
+      this.world.say("MINT_MELT_ROUTING", `${quoteId} answered ${routing}`);
+      if (routing === "gateway") {
+        return this.raw(PROXY_PAGE, 504, { "content-type": "text/html" });
+      }
+      return this.json({
+        ...this.meltResponse(quoteId, quote),
+        state: "PENDING",
+        payment_preimage: null,
+        change: [],
+      });
+    }
+
+    const change = this.payMelt(quote, { inputs, blanks, fee });
+
+    if (this.conditions.meltVanishes) {
+      // Paid, inputs burned, change signed, and the wallet hears nothing. It
+      // must not guess. Only the quote can tell it what happened.
+      this.world.say("MINT_MELT_VANISHED", "paid, but the answer never landed");
+      throw new TypeError("Network request failed");
+    }
+
+    return this.json({
+      ...this.meltResponse(quoteId, quote),
+      state: "PAID",
+      payment_preimage: "sim-preimage",
+      change,
+    });
+  }
+
+  private meltResponse(
+    quoteId: string,
+    quote: FabricQuote | undefined,
+  ): Record<string, unknown> {
+    return {
+      quote: quoteId,
+      amount: quote?.amount ?? 0,
+      unit: "sat",
+      request: quote?.request ?? "",
+      fee_reserve: this.conditions.meltFeeReserve,
+      expiry: Math.floor(Date.now() / 1000) + 3600,
+    };
+  }
+
+  private quotePendingRefusal(): Response {
+    const code = this.conditions.meltPendingCode;
+    this.world.say("MINT_MELT_PENDING", `refused, code ${String(code)}`);
+    return this.json(
+      code === null
+        ? { detail: "Quote is pending." }
+        : { detail: "Quote is pending.", code },
+      400,
+    );
+  }
+
+  // Ends every melt still routing under `meltRoutesSlowly`: "paid" spends the
+  // inputs and signs the change onto the quote, "failed" lets the inputs go.
+  settlePendingMelts(outcome: "paid" | "failed"): void {
+    for (const quote of this.quotes.values()) {
+      const routing = quote.routing;
+      if (routing === undefined) continue;
+      quote.routing = undefined;
+      if (outcome === "paid") this.payMelt(quote, routing);
+      this.world.say("MINT_MELT_SETTLED", outcome);
+    }
+  }
+
+  // The payment went through: the inputs are spent and the change signed.
+  private payMelt(
+    quote: FabricQuote | undefined,
+    { inputs, blanks, fee }: MeltRequest,
+  ): Signature[] {
     for (const input of inputs) this.spentYs.add(this.yFor(input.secret));
     this.feesCollected += fee;
     if (quote !== undefined) quote.paid = true;
@@ -901,22 +1082,13 @@ export class MintFabric {
     // case for a balance made of powers of two. Getting this wrong makes the
     // fabric quietly pocket the difference, and a wallet losing money to
     // over-payment looks like a passing test.
+    const inputSum = inputs.reduce((a, b) => a + b.amount, 0);
     const reserve = this.conditions.meltFeeReserve;
     const unused = Math.max(
       0,
       inputSum - fee - (quote?.amount ?? 0) - this.conditions.meltActualFee,
     );
-    const blanks = (body.outputs ?? []) as {
-      B_: string;
-      amount: number;
-      id: string;
-    }[];
-    const change: {
-      id: string;
-      amount: number;
-      C_: string;
-      dleq: { e: string; s: string };
-    }[] = [];
+    const change: Signature[] = [];
     let remaining = unused;
     for (const blank of blanks) {
       if (remaining <= 0) break;
@@ -941,25 +1113,7 @@ export class MintFabric {
     // Kept on the quote either way. A wallet that never saw this response comes
     // back later and asks the quote for it, which is the whole recovery path.
     if (quote !== undefined) quote.change = change;
-
-    if (this.conditions.meltVanishes) {
-      // Paid, inputs burned, change signed, and the wallet hears nothing. It
-      // must not guess. Only the quote can tell it what happened.
-      this.world.say("MINT_MELT_VANISHED", "paid, but the answer never landed");
-      throw new TypeError("Network request failed");
-    }
-
-    return this.json({
-      quote: quoteId,
-      amount: quote?.amount ?? 0,
-      unit: "sat",
-      request: quote?.request ?? "",
-      fee_reserve: reserve,
-      state: "PAID",
-      expiry: Math.floor(Date.now() / 1000) + 3600,
-      payment_preimage: "sim-preimage",
-      change,
-    });
+    return change;
   }
 
   // ---- BDHKE ----

@@ -102,7 +102,9 @@ describe("addProofs", () => {
     state().addProofs(MINT, "sat", [proof]);
     const result = state().addProofs(MINT, "sat", [proof, makeProof(64)]);
 
-    expect(result).toEqual({ added: 1, duplicates: 1 });
+    // Only the new coin's value: a caller reporting what arrived must not
+    // count the one already held.
+    expect(result).toEqual({ added: 1, duplicates: 1, addedValue: 64 });
     expect(state().proofs[accountKey(MINT, "sat")]).toHaveLength(2);
   });
 
@@ -114,7 +116,7 @@ describe("addProofs", () => {
     // Receiving our own outgoing token back must not credit it twice: the
     // reservation still holds those proofs against the pending send.
     const result = state().addProofs(MINT, "sat", [proof]);
-    expect(result).toEqual({ added: 0, duplicates: 1 });
+    expect(result).toEqual({ added: 0, duplicates: 1, addedValue: 0 });
     expect(balance("sat")).toBe(0);
   });
 
@@ -130,6 +132,7 @@ describe("addProofs", () => {
     expect(state().addProofs(MINT, "sat", [])).toEqual({
       added: 0,
       duplicates: 0,
+      addedValue: 0,
     });
     expect(state().proofs[accountKey(MINT, "sat")]).toBeUndefined();
   });
@@ -322,6 +325,23 @@ describe("mints", () => {
     expect(state().proofs[accountKey(MINT, "sat")]).toBeUndefined();
     expect(state().proofs[accountKey(MINT, "usd")]).toBeUndefined();
     expect(state().proofs[accountKey(OTHER, "sat")]).toHaveLength(1);
+  });
+
+  it("removing a mint drops its reservations, so no account of it lingers", () => {
+    state().addMint(MINT);
+    const held = makeProof(10);
+    state().addProofs(MINT, "usd", [held]);
+    state().reserveProofs("send-1", MINT, "usd", [held]);
+    const other = makeProof(20);
+    state().addProofs(OTHER, "sat", [other]);
+    state().reserveProofs("send-2", OTHER, "sat", [other]);
+
+    state().removeMint(MINT);
+
+    expect(Object.keys(state().reserved)).toEqual(["send-2"]);
+    expect(
+      selectAccounts(state()).filter((a) => a.mintUrl === MINT),
+    ).toHaveLength(0);
   });
 });
 
@@ -553,6 +573,16 @@ describe("counters", () => {
     // into counters already used by live proofs.
     state().advanceCounter(KEYSET, 20);
     expect(state().counters[KEYSET]).toBe(50);
+  });
+
+  it("a phrase change starts every keyset from zero", () => {
+    state().reserveCounters(KEYSET, 240);
+    state().reserveCounters("other-keyset", 3);
+
+    state().resetCounters();
+
+    expect(state().counters).toEqual({});
+    expect(state().reserveCounters(KEYSET, 1).start).toBe(0);
   });
 
   it("clearAll resets backup state and counters together", () => {

@@ -2187,3 +2187,245 @@ test("W22 a deposit whose answer never arrives is rebuilt, not written off", asy
     scenario = null;
   }
 });
+
+test("W30 a mint answering recovery with a 5xx, a 429 or a proxy page loses nothing", async () => {
+  // The outage that lost a swap's answer is the same one the replay meets on
+  // the next pass. None of these answers is the mint's own: it may hold
+  // outputs only the stored preview can rebuild, so the preview stays and the
+  // coins stay counted until a real answer comes.
+  for (const failure of [
+    "server-error",
+    "rate-limited",
+    "proxy-page",
+  ] as const) {
+    const s = (scenario = new Scenario({
+      id: "W30",
+      title: `lost swap replayed against a ${failure}`,
+      seed: 130,
+    }));
+    const mint = new MintFabric(s.world);
+    mint.install();
+    const { devices } = room(s, [android("alice", 11), android("bob", 22)]);
+    const [alice, bob] = devices;
+    for (const d of devices) await d.walletReady();
+    for (const d of devices) await d.addMint(mint.url);
+    await alice.depositSats(500);
+    const token = await alice.prepareSend(120);
+    s.check("alice built a token to hand over", token !== null);
+    if (token === null) {
+      s.assert(false);
+      return;
+    }
+    const handedOver = alice.reservedBalance();
+    alice.confirmLastSend();
+
+    mint.setConditions({ swapResponseLost: true });
+    await bob.receiveTokenResult(token);
+    mint.setConditions({
+      swapResponseLost: false,
+      httpFailures: {
+        "/v1/swap": { failure, when: "before" },
+        "/v1/restore": { failure, when: "before" },
+      },
+    });
+
+    await bob.reconcile();
+    s.check(
+      "the replay is still waiting on the mint",
+      bob.pendingSwapPreviews() === 1,
+      `previews=${bob.pendingSwapPreviews()}`,
+    );
+    await bob.refreshWallet();
+    s.check(
+      "and the balance did not fall",
+      bob.balance() === handedOver,
+      `balance=${bob.balance()} expected=${handedOver}`,
+    );
+
+    mint.setConditions({ httpFailures: {} });
+    await bob.reconcile();
+    s.check(
+      "once the mint answers, the outputs come back as confirmed money",
+      bob.balance() === handedOver &&
+        bob.unverifiedBalance() === 0 &&
+        bob.pendingSwapPreviews() === 0,
+      `balance=${bob.balance()} unverified=${bob.unverifiedBalance()} previews=${bob.pendingSwapPreviews()}`,
+    );
+    s.check(
+      "no sat was created or destroyed",
+      alice.totalHeld() + bob.totalHeld() === 500,
+      `alice=${alice.totalHeld()} bob=${bob.totalHeld()}`,
+    );
+    s.expectNone("process health", noCrashes(devices));
+    s.assert(true);
+    s.close();
+    scenario = null;
+  }
+});
+
+test("W31 a paid withdrawal answered with a proxy's 504 page is not handed back", async () => {
+  const s = (scenario = new Scenario({
+    id: "W31",
+    title: "melt paid, then a gateway timeout in place of the answer",
+    seed: 131,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  mint.setConditions({ meltFeeReserve: 16, meltActualFee: 3 });
+  const { devices } = room(s, [android("alice", 11)]);
+  const [alice] = devices;
+  await alice.walletReady();
+  await alice.addMint(mint.url);
+  await alice.depositSats(500);
+  const before = alice.totalHeld();
+
+  // nginx in front of the mint gives up while the mint is still paying.
+  mint.setConditions({
+    httpFailures: {
+      "/v1/melt/bolt11": { failure: "proxy-page", when: "after" },
+    },
+  });
+  const result = await alice.withdraw(simInvoice(100));
+  s.check("the withdrawal could not report success", result === null);
+  s.check(
+    "the coins the mint burned are not shown as spendable",
+    alice.reservedBalance() > 0 && alice.totalHeld() === before,
+    `reserved=${alice.reservedBalance()} held=${alice.totalHeld()} before=${before}`,
+  );
+
+  mint.setConditions({ httpFailures: {} });
+  await alice.reconcile();
+  s.check(
+    "the quote settles it: paid, with the unused reserve back as change",
+    alice.reservedBalance() === 0 && alice.totalHeld() === before - 103,
+    `reserved=${alice.reservedBalance()} held=${alice.totalHeld()} expected=${before - 103}`,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("W32 a melt's swap-down replayed after a lost answer stays the user's", async () => {
+  // Breaking a coin up before a melt is a swap to ourselves. Replayed, both
+  // halves are ours, unlike a nutzap's lock, whose send half is someone
+  // else's.
+  const s = (scenario = new Scenario({
+    id: "W32",
+    title: "swap-down replay credits both halves",
+    seed: 132,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  mint.setConditions({ meltFeeReserve: 4, meltActualFee: 1 });
+  const { devices } = room(s, [android("alice", 11)]);
+  const [alice] = devices;
+  await alice.walletReady();
+  await alice.addMint(mint.url);
+  await alice.depositSats(64);
+
+  mint.setConditions({ swapResponseLost: true });
+  const result = await alice.withdraw(simInvoice(32));
+  s.check("the payment did not go ahead", result === null);
+  mint.setConditions({ swapResponseLost: false });
+
+  await alice.reconcile();
+  s.check(
+    "every sat of the swap is spendable again, none held as a token",
+    alice.balance() === 64 && alice.pendingSwapPreviews() === 0,
+    `balance=${alice.balance()} previews=${alice.pendingSwapPreviews()}`,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("W33 a mint added after a restore picks up where the phrase left off", async () => {
+  // The restore named one mint, so the phrase's counters at the other start
+  // from zero, behind outputs the mint has signed. A mint refuses a blinded
+  // message twice (10002), so the next deposit there would fail for good.
+  const s = (scenario = new Scenario({
+    id: "W33",
+    title: "NUT-13 counters caught up on a mint added after a restore",
+    seed: 133,
+  }));
+  const first = new MintFabric(s.world, "https://first.test");
+  const second = new MintFabric(s.world, "https://second.test");
+  // Its own keyset: two fabrics otherwise share one, and so its counters.
+  second.rotateKeyset();
+  first.install();
+  second.install();
+  const { devices } = room(s, [{ ...android("alice", 11), wipeable: true }]);
+  const [alice] = devices;
+  await alice.walletReady();
+  await alice.addMint(first.url);
+  await alice.addMint(second.url);
+  const phrase = await alice.enableBackup();
+  await alice.depositSats(64, first.url);
+  await alice.depositSats(32, second.url);
+
+  await alice.panicWipe();
+  alice.launch();
+  await alice.walletReady();
+  await alice.addMint(first.url);
+  const restored = await alice.restoreFrom(phrase ?? "", [first.url]);
+  s.check(
+    "the named mint's coins came back",
+    restored?.recovered === 64,
+    `recovered=${String(restored?.recovered)}`,
+  );
+
+  await alice.addMint(second.url);
+  const deposited = await alice.depositSats(16, second.url);
+  s.check(
+    "a deposit at the mint added later is not refused",
+    deposited && alice.balanceAt(second.url) === 16,
+    `deposited=${String(deposited)} balance=${alice.balanceAt(second.url)}`,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("W34 a withdrawal the mint is still paying is held, not refused", async () => {
+  // A slow route outlasts the gateway in front of the mint, and cashu-ts's
+  // NUT-19 retry meets "quote is pending" (20005). A refusal in form only: the
+  // payment may still land, and the coins with it.
+  const s = (scenario = new Scenario({
+    id: "W34",
+    title: "melt still routing: gateway timeout, then 'quote is pending'",
+    seed: 134,
+  }));
+  const mint = new MintFabric(s.world);
+  mint.install();
+  mint.setConditions({ meltFeeReserve: 16, meltActualFee: 3 });
+  const { devices } = room(s, [android("alice", 11)]);
+  const [alice] = devices;
+  await alice.walletReady();
+  await alice.addMint(mint.url);
+  await alice.depositSats(500);
+  const before = alice.totalHeld();
+
+  mint.setConditions({ meltRoutesSlowly: "gateway" });
+  const result = await alice.withdraw(simInvoice(100));
+  s.check("the withdrawal could not report success", result === null);
+  s.check(
+    "the coins the mint holds are not shown as spendable",
+    alice.reservedBalance() > 0 && alice.totalHeld() === before,
+    `reserved=${alice.reservedBalance()} held=${alice.totalHeld()} before=${before}`,
+  );
+
+  mint.setConditions({ meltRoutesSlowly: null });
+  await alice.reconcile();
+  s.check(
+    "and stay held while the quote reads PENDING",
+    alice.reservedBalance() > 0 && alice.totalHeld() === before,
+    `reserved=${alice.reservedBalance()} held=${alice.totalHeld()}`,
+  );
+
+  mint.settlePendingMelts("paid");
+  await alice.reconcile();
+  s.check(
+    "the quote settles it: paid, with the unused reserve back as change",
+    alice.reservedBalance() === 0 && alice.totalHeld() === before - 103,
+    `reserved=${alice.reservedBalance()} held=${alice.totalHeld()} expected=${before - 103}`,
+  );
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
