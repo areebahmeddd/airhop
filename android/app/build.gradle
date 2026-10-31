@@ -131,6 +131,14 @@ android {
     }
 }
 
+// The camera's document scanner, which nothing calls (no scanDocumentAsync). The
+// prebuilt expo-camera module depends on it whatever
+// expo.camera.document-scanner-enabled says, and checks for the class before
+// using it. Barcode scanning stays, for QR codes.
+configurations.configureEach {
+    exclude group: "com.google.android.gms", module: "play-services-mlkit-document-scanner"
+}
+
 dependencies {
     // Versioned by the React Native Gradle plugin.
     implementation("com.facebook.react:react-android")

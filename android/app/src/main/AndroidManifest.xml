@@ -45,7 +45,9 @@
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <!-- Android 13+ (API 33) runtime permission for WiFi Aware discovery. The
        same-platform WiFi fast path is optional, so a denial never blocks the
-       BLE mesh. On API <=32 the location permissions above already cover it.
+       BLE mesh. Below API 33 Aware needs fine location instead, which is asked
+       for only on API <=30, where BLE needs it, so Android 12 and 12L go
+       without the fast path rather than see a location prompt for it.
 
        neverForLocation for the same reason as BLUETOOTH_SCAN: a WiFi Aware peer
        handle is an opaque discovery token, not a position. bitchat/android
@@ -68,10 +70,15 @@
        updating itself by any other route. -->
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+  <!-- No broad media access. From API 33 the image picker is the system photo
+       picker and every media library call saves without reading, so neither
+       asks for these, and Play removes apps that hold them without a core
+       need. Stripped from what the libraries merge in: expo-media-library's
+       partial-access grant, and expo-screen-capture's READ_MEDIA_IMAGES, which
+       on API 33 only is how it sees a screenshot, so the screenshot notice is
+       silent on Android 13. -->
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" tools:node="remove"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
