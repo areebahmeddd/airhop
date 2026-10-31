@@ -79,7 +79,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "无法创建你的密钥",
   "onboarding.identity.failed_body":
     "这台设备不让 Airhop 安全地保存它们。请再试一次，或者重启手机后重新打开 Airhop。",
-  "onboarding.identity.steps_a11y": "步骤：{steps}",
+  "onboarding.identity.steps_list_a11y":
+    "步骤：{first}。{second}。{third}。{fourth}。",
   "onboarding.identity.step.x25519": "正在生成 X25519 静态密钥对",
   "onboarding.identity.step.ed25519": "正在生成 Ed25519 签名密钥对",
   "onboarding.identity.step.keychain": "正在把密钥存入系统钥匙串",
@@ -88,8 +89,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "你在网状网络上的名字",
   "onboarding.username.peer_id": "节点 ID",
-  "onboarding.username.card_a11y":
-    "你在网状网络上的名字是 {username}。节点 ID {peerID}。{props}。",
+  "onboarding.username.card_full_a11y":
+    "你在网状网络上的名字是 {username}。节点 ID {peerID}。算法：{algorithm}。存储：{storage}。需要账户：{account}。",
   "onboarding.username.explanation":
     "这个用户名是由你的公钥确定性推导出来的。在任何看得到你节点 ID 的设备上，它都一样。",
   "onboarding.username.cta": "进入 Airhop",
@@ -153,7 +154,7 @@ export const strings: Strings = {
     "用于发现附近设备并在它们之间中继消息。网状网络由此形成，没有互联网连接也能用。",
   "onboarding.primer.location.title": "定位",
   "onboarding.primer.location.body":
-    "把你放进附近的区域频道，小到一个街区，大到一整个地区。Airhop 从不追踪你，也不会把你的精确位置发出这台设备。",
+    "把你放进附近的区域频道，小到一个街区，大到一整个地区。Airhop 从不追踪你，只有当你给别人发送位置时，你的精确位置才会离开这台设备。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "即使应用已关闭也能收到新消息提醒。通知在你的设备本地生成，不经过任何服务器。",
@@ -164,6 +165,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "蓝牙访问权限",
   "permission.bluetooth.purpose": "在网状网络上发现附近设备",
+  "permission.location.label": "定位访问权限",
+  "permission.location.purpose": "在蓝牙范围之外触达位置频道",
   "permission.open_settings": "打开设置",
   "permission.not_now": "暂不",
   "permission.blocked_title": "{label}已关闭",
@@ -221,8 +224,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "在范围内",
   "chat.dm.row_hint": "双击并按住可查看更多选项",
   "chat.channels.row_hint": "双击并按住可查看更多选项",
-  "chat.dm.you_prefix": "你：",
-  "chat.draft_prefix": "草稿：",
+  "chat.draft_preview": "草稿：{draft}",
   "chat.dm.none": "没有私信",
   "chat.dm.none_desc": "前往网状网络标签页，点按一个节点即可开始加密私信。",
   "chat.dm.contact_info": "联系人信息",
@@ -430,6 +432,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "公开频道",
   "chat.thread.notices": "本频道的公告",
   "chat.thread.invite": "邀请他人加入本频道",
+  "chat.thread.location_off": "定位已关 · 仅触达附近的人",
   "chat.thread.not_in_range": "不在附近。正通过互联网送达。",
   "chat.thread.not_nearby": "不在附近。等对方回到范围内或上线后，我们会送达。",
   "chat.thread.no_keys":
@@ -455,7 +458,7 @@ export const strings: Strings = {
   "chat.thread.message": "消息",
   "chat.thread.message_placeholder": "消息…",
   "chat.thread.length_full": "消息已达上限",
-  "chat.thread.waiting_for": "等待 {name} 回来 · {percent}%",
+  "chat.thread.waiting_for": "等待 {name} 回来 · {percent}",
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/秒",
   "chat.transfer.left": "剩余 {time}",
@@ -511,7 +514,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "查看 {name} 的个人资料",
   "chat.bubble.forwarded": "已转发",
   "chat.bubble.attachment": "附件",
-  "chat.bubble.a11y": "{sender}：{body}。长按查看更多选项。",
+  "chat.bubble.a11y": "{sender}：{body}",
+  "chat.bubble.a11y_hint": "双击并按住可查看更多选项",
+  "chat.bubble.more_options": "更多选项",
+  "chat.bubble.open_link": "打开 {link}",
+  "chat.bubble.status_delivered": "已送达",
+  "chat.bubble.status_read": "已读",
   "chat.bubble.failed_retry": "发送失败。点按重试。",
 
   // ---- Chats: message actions and info ----
@@ -636,6 +644,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "个文件",
   "chat.media.pause_voice": "暂停语音留言",
   "chat.media.play_voice": "播放语音留言",
+  "chat.media.pause_video": "暂停视频",
+  "chat.media.play_video": "播放视频",
   "chat.media.voice_position": "语音留言位置",
   "chat.media.voice_scrub": "沿着音条点按可跳到该处",
   "chat.media.image": "图片",
@@ -679,6 +689,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "视频留言未能录制",
   "chat.video_note.limit_sent": "时间到，视频留言已发送",
   "chat.video_note.a11y": "视频留言，轻点两下播放声音",
+  "chat.video_note.sound_on": "开启声音",
+  "chat.video_note.sound_off": "关闭声音",
   "chat.live_video.preview": "直播视频",
   "chat.live_video.badge": "直播",
   "chat.live_video.reconnecting": "正在重新连接…",
@@ -853,6 +865,10 @@ export const strings: Strings = {
   "chat.notices.post": "发布公告",
   "chat.notices.post_short": "发布",
   "chat.notices.delete": "删除公告",
+  "chat.notices.delete_title": "删除这条公告？",
+  "chat.notices.delete_body":
+    "所有收到它的人都会被请求删除它。此操作无法撤销。",
+  "chat.notices.permanent": "永久",
   "chat.notices.fades_soon": "即将消退",
   "chat.notices.1_day": "1 天",
   "chat.notices.3_days": "3 天",
@@ -927,6 +943,12 @@ export const strings: Strings = {
   "chat.forward.app_row": "未转发",
   "chat.forward.app_row_body":
     "这一行来自 Airhop，不是某个人发的，所以没有可转发的内容。",
+  "chat.forward.has_ecash":
+    "这里面有 ecash，谁先领取，钱就归谁，所以不会转发。",
+  "chat.forward.public_title": "转发到 {name}？",
+  "chat.forward.public_mesh_body": "附近的任何人都能在那里看到，而且无法撤回。",
+  "chat.forward.public_geo_body":
+    "这片区域里的任何人都能在那里看到，包括通过公共互联网中继，而且无法撤回。",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "正在启动网状网络…",
@@ -939,7 +961,7 @@ export const strings: Strings = {
   "mesh.banner.advertising_unsupported": "这台手机能看到别人，但自己不会被发现",
   "mesh.banner.location_off_android": "定位已关 · Android 需要它才能找到节点",
   "mesh.banner.paused": "网状网络已暂停 · 你处于离开状态",
-  "mesh.banner.location_off": "定位已关 · 位置频道不可用",
+  "mesh.banner.location_off": "定位已关 · 位置频道仅触达附近",
   "mesh.banner.battery_saver": "省电模式 · 扫描频率降低",
   "mesh.banner.wipe_incomplete":
     "抹除未完成 · 可能还有残留数据，重新打开会再试一次",
@@ -965,7 +987,9 @@ export const strings: Strings = {
   "mesh.banner.hint.app_settings": "在系统设置中打开 Airhop 的权限",
   "mesh.banner.hint.battery_settings": "打开这台手机的后台活动设置",
   "mesh.banner.hint.tor_settings": "打开 Airhop 的 Tor 设置",
+  "mesh.banner.hint.enable_location": "请求定位权限，或说明如何在设置中允许",
   "mesh.banner.dismiss": "忽略：{label}",
+  "mesh.banner.action_a11y": "{action}：{banner}",
   "mesh.banner.hint.dismiss": "永久隐藏这条提示",
 
   // ---- Mesh: radar ----
@@ -1185,6 +1209,8 @@ export const strings: Strings = {
     "{mint} 发行 {units}。它的密钥已缓存在这台设备上，因此即使没有互联网，来自它的代币现在也能核验。",
   "wallet.mint.remove_plain":
     "把 {mint} 从你的钱包中移除？它缓存的密钥也会一并删除，来自它的代币将无法再离线核验。",
+  "wallet.mint.remove_holdings":
+    "{mint} 持有：\n{holdings}\n移除后，这些都会从这台设备上删除。请先取出或发送。",
   "wallet.mint.title": "铸币厂",
   "wallet.mint.none_desc":
     "铸币厂发行并兑付你的 ecash。添加一个，就能通过 Lightning 充值或接收它的代币。",
@@ -1518,6 +1544,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "已被花费",
   "wallet.err.change_pending": "已支付，找零待返还",
   "wallet.svc.mint_unreachable": "无法连接到铸币厂。",
+  "wallet.svc.mint_http_error": "铸币厂返回了错误（HTTP {status}）。",
   "wallet.svc.tor_ios": "在 iOS 上，铸币厂请求不走 Tor。",
   "wallet.svc.tor_ios_body":
     "iOS 上的 Tor 只覆盖 Nostr，所以这个请求会走明网到达铸币厂，把你的 IP 和这笔 ecash 关联起来。请在设置中打开{setting}，或者先关掉 Tor。通过网状网络收发 ecash 仍然可用。",
@@ -1610,6 +1637,10 @@ export const strings: Strings = {
   "wallet.svc.inexact_title": "你的币在离线状态下凑不出正好 {amount} {unit}。",
   "wallet.svc.inexact_detail":
     "你能发出的最小代币是 {spend} {unit}。离线是没有找零的，所以多出的 {extra} {unit} 会归接收方。",
+  "wallet.svc.spend_changed":
+    "这笔发送现在需要 {spend} {unit}，超过了你同意的金额。",
+  "wallet.svc.spend_changed_body":
+    "你在考虑时，你的币发生了变化。没有发送任何东西。请重试以查看新金额。",
   "wallet.svc.no_single_mint":
     "没有哪一个铸币厂单独持有 {amount} {unit}。来自不同铸币厂的 ecash 无法合并成一个代币：请先在一个铸币厂归拢，或者分几笔发送。",
   "wallet.svc.have_tried_send": "你有 {total} {unit}，却想发送 {amount}。",
@@ -1636,6 +1667,9 @@ export const strings: Strings = {
     "没有发送其他任何东西。在铸币厂确认结果之前，这些币会被保留。若付款已完成，锁定的代币会出现在“动态”中供你转交。若未完成，币会退回。",
   "wallet.svc.send_spent_by_swap":
     "在此代币被领取之前，这些币已被兑换回你的钱包，因此它已无法领取。金额在你的余额中。",
+  "wallet.svc.payment_in_doubt_body":
+    "在铸币厂确认结果之前，这些币会被保留，下次刷新时会再次检查。在此之前，请不要再次支付这张发票。",
+  "wallet.svc.mint_removed": "你已移除这个铸币厂，所以不再跟踪这一项。",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "已通过二维码验证",
@@ -1677,7 +1711,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "那个 bitchat 代码已过期。请对方重新打开自己的二维码。",
   "contacts.scan.tampered":
-    "这个二维码无效：它的节点 ID 和它的密钥对不上。它可能被人动过手脚。",
+    "这个二维码无效：它的密钥校验不通过。它可能被人动过手脚。",
   "contacts.scan.key_conflict":
     "你已经存有此人的另一把密钥，所以没有做任何更改。请当面扫描对方的二维码来替换。",
   "contacts.scan.already_added": "已经在你的联系人里",
@@ -1699,7 +1733,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "这个二维码属于别人。请 {name} 出示自己的代码。",
   "contacts.verify.tampered_body":
-    "这个二维码看起来被动过手脚：它的 ID 和它的密钥对不上。",
+    "这个二维码看起来被动过手脚：它的密钥校验不通过。",
   "contacts.verify.choose_title": "你想怎么核对？",
   "contacts.verify.choose_body":
     "两种方式都能确认这台手机上的密钥确实属于 {name}。",
@@ -1867,7 +1901,7 @@ export const strings: Strings = {
     "把偏好设置恢复为默认值，你的身份、消息、联系人和钱包都不受影响",
   "settings.general.reset_title": "重置设置？",
   "settings.general.reset_body":
-    "偏好设置会恢复默认，包括外观、语言、通知、撤回发送，以及连接相关项（互联网、Tor、网关、桥接、中继）。锁定 Airhop、媒体保留时长和你的状态保持原样。你的身份、消息、联系人和钱包不受影响。",
+    "偏好设置会恢复默认，包括外观、语言、通知、撤回发送，以及连接相关项（网关、网状网络桥接、中继）。锁定 Airhop、媒体保留时长、互联网开关、Tor 及其网桥，以及你的状态保持原样。你的身份、消息、联系人和钱包不受影响。",
   "settings.general.reset_confirm": "重置",
 
   // ---- Settings: privacy and security ----
@@ -2008,6 +2042,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Tor 还没有连上。它会保持开启并继续尝试；网状网络标签页会告诉你它何时开始转发，或者这个网络是否在拦截它。",
   "settings.conn.tor_failed": "无法启动 Tor。请稍后重试。",
+  "settings.conn.tor_bad_bridges":
+    "Tor 无法使用这些网桥。请检查一下，或者选择其他连接方式。",
+  "settings.conn.tor_port_busy":
+    "另一个应用正在占用 Tor 需要的端口，通常是另一个运行 Tor 的应用。请关闭它，然后重试。",
   "settings.tor.status": "Tor 状态",
   "settings.tor.connection": "连接方式",
   "settings.tor.mode_off": "直连",
@@ -2149,6 +2187,8 @@ export const strings: Strings = {
   "settings.language.set_a11y": "把语言设为 {value}",
   "settings.language.pending": "下次打开时生效",
   "settings.language.pending_a11y": "{value}，将在你下次打开 Airhop 时生效",
+  "settings.language.phone": "手机语言",
+  "settings.language.name_endonym_a11y": "{name}（{endonym}）",
   "settings.language.rtl_restart": "立即重新打开",
   "settings.language.rtl_title": "重新打开 Airhop 以完成切换",
   "settings.language.rtl_body":
@@ -2164,7 +2204,8 @@ export const strings: Strings = {
   "settings.status.away": "离开",
   "settings.status.away_desc": "网状网络已暂停，不扫描也不广播",
   "settings.status.invisible": "隐身",
-  "settings.status.invisible_desc": "蓝牙扫描时不可见，你连接的手机仍能看到你",
+  "settings.status.invisible_desc":
+    "不通过蓝牙广播，但通过蓝牙或 Wi-Fi 与本机相连的手机仍能看到你",
   "settings.status.title": "状态",
   "settings.status.set_a11y": "把状态设为 {value}",
   "settings.status.edit": "编辑状态",
@@ -2413,6 +2454,10 @@ export const plurals: Plurals = {
   "chat.select.forward": {
     other: "转发 {count} 条消息",
   },
+  "chat.forward.too_many_public": {
+    other:
+      "公开房间只会显示同一个人连续发送的 {count} 条消息，其余的会丢失。请每次少转发一些。",
+  },
   "chat.voice.live_speaking_count": {
     other: "{count} 人正在说话",
   },
@@ -2478,12 +2523,12 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    other:
-      "{mint} 处有 {count} 枚币，共 {balance} {unit}。移除会把这笔余额从这台设备上永久抹掉，而且没有备份。请先把余额取走或发出去。",
-  },
   "wallet.mint.split_across": {
     other: "余额分散在 {count} 个铸币厂。把它归拢到一个。",
+  },
+  "wallet.mint.remove_pending": {
+    other:
+      "{mint} 处有 {count} 笔付款尚未完成。移除这个铸币厂会放弃这些付款，以及它们本应退回的一切。",
   },
 
   // ---- Wallet: Lightning ----
@@ -2494,6 +2539,9 @@ export const plurals: Plurals = {
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     other: "从 {mints} 恢复出 {count} 枚未花费的币。",
+  },
+  "wallet.backup.already_held": {
+    other: "找到的 {count} 枚币已经在这个钱包里，所以没有重复计入。",
   },
   "wallet.backup.already_spent": {
     other:

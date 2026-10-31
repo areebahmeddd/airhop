@@ -81,7 +81,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "Không tạo được khóa cho bạn",
   "onboarding.identity.failed_body":
     "Thiết bị này không cho Airhop lưu chúng một cách an toàn. Hãy thử lại, hoặc khởi động lại điện thoại rồi mở lại Airhop.",
-  "onboarding.identity.steps_a11y": "Các bước: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Các bước: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "Đang tạo cặp khóa tĩnh X25519",
   "onboarding.identity.step.ed25519": "Đang tạo cặp khóa ký Ed25519",
   "onboarding.identity.step.keychain":
@@ -91,8 +92,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Tên của bạn trên mạng lưới",
   "onboarding.username.peer_id": "ID nút mạng",
-  "onboarding.username.card_a11y":
-    "Tên của bạn trên mạng lưới là {username}. ID nút mạng {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Tên của bạn trên mạng lưới là {username}. ID nút mạng {peerID}. Thuật toán: {algorithm}. Nơi lưu: {storage}. Cần tài khoản: {account}.",
   "onboarding.username.explanation":
     "Tên người dùng này được dẫn ra một cách xác định từ khóa công khai của bạn. Nó giống nhau trên mọi thiết bị nhìn thấy ID nút mạng của bạn.",
   "onboarding.username.cta": "Vào Airhop",
@@ -160,7 +161,7 @@ export const strings: Strings = {
     "Tìm các thiết bị ở gần và chuyển tiếp tin nhắn giữa chúng. Đây là thứ tạo nên mạng lưới và chạy được mà không cần kết nối Internet.",
   "onboarding.primer.location.title": "Vị trí",
   "onboarding.primer.location.body":
-    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn hay gửi vị trí chính xác của bạn ra khỏi thiết bị.",
+    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn, và vị trí chính xác của bạn chỉ rời khỏi thiết bị khi bạn gửi vị trí cho ai đó.",
   "onboarding.primer.notifications.title": "Thông báo",
   "onboarding.primer.notifications.body":
     "Nhận báo tin nhắn mới ngay cả khi ứng dụng đã đóng. Thông báo được tạo ngay trên thiết bị của bạn, không có máy chủ nào tham gia.",
@@ -171,6 +172,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "Quyền truy cập Bluetooth",
   "permission.bluetooth.purpose": "tìm các thiết bị ở gần trên mạng lưới",
+  "permission.location.label": "Quyền truy cập vị trí",
+  "permission.location.purpose": "tới được các kênh vị trí ngoài tầm Bluetooth",
   "permission.open_settings": "Mở Cài đặt",
   "permission.not_now": "Để sau",
   "permission.blocked_title": "{label} đang tắt",
@@ -231,8 +234,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "trong tầm",
   "chat.dm.row_hint": "Chạm hai lần rồi giữ để xem thêm tùy chọn",
   "chat.channels.row_hint": "Chạm hai lần rồi giữ để xem thêm tùy chọn",
-  "chat.dm.you_prefix": "Bạn:",
-  "chat.draft_prefix": "Bản nháp:",
+  "chat.draft_preview": "Bản nháp: {draft}",
   "chat.dm.none": "Không có tin nhắn riêng",
   "chat.dm.none_desc":
     "Vào thẻ Mạng lưới và chạm một nút mạng để bắt đầu tin nhắn riêng được mã hóa.",
@@ -448,6 +450,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Kênh công khai",
   "chat.thread.notices": "Bản tin của kênh này",
   "chat.thread.invite": "Mời ai đó vào kênh này",
+  "chat.thread.location_off": "Vị trí đã tắt · chỉ tới được người ở gần",
   "chat.thread.not_in_range": "Không ở gần. Đang chuyển qua Internet.",
   "chat.thread.not_nearby":
     "Không ở gần. Chúng tôi sẽ chuyển khi họ trở lại trong tầm hoặc lên mạng.",
@@ -475,7 +478,7 @@ export const strings: Strings = {
   "chat.thread.message": "Tin nhắn",
   "chat.thread.message_placeholder": "Tin nhắn…",
   "chat.thread.length_full": "Tin nhắn đã đầy",
-  "chat.thread.waiting_for": "Đang đợi {name} quay lại · {percent}%",
+  "chat.thread.waiting_for": "Đang đợi {name} quay lại · {percent}",
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "còn {time}",
@@ -543,7 +546,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Xem hồ sơ của {name}",
   "chat.bubble.forwarded": "Đã chuyển tiếp",
   "chat.bubble.attachment": "tệp đính kèm",
-  "chat.bubble.a11y": "{sender}: {body}. Nhấn giữ để xem thêm tùy chọn.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "Chạm hai lần rồi giữ để xem thêm tùy chọn",
+  "chat.bubble.more_options": "Thêm tùy chọn",
+  "chat.bubble.open_link": "Mở {link}",
+  "chat.bubble.status_delivered": "Đã chuyển",
+  "chat.bubble.status_read": "Đã đọc",
   "chat.bubble.failed_retry": "Gửi thất bại. Chạm để thử lại.",
 
   // ---- Chats: message actions and info ----
@@ -672,6 +680,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "tệp",
   "chat.media.pause_voice": "Tạm dừng tin nhắn thoại",
   "chat.media.play_voice": "Phát tin nhắn thoại",
+  "chat.media.pause_video": "Tạm dừng video",
+  "chat.media.play_video": "Phát video",
   "chat.media.voice_position": "Vị trí trong tin nhắn thoại",
   "chat.media.voice_scrub": "Chạm dọc các vạch để nhảy tới điểm đó",
   "chat.media.image": "Hình ảnh",
@@ -717,6 +727,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Ghi chú video chưa được quay",
   "chat.video_note.limit_sent": "Hết giờ, đã gửi ghi chú video",
   "chat.video_note.a11y": "Ghi chú video, chạm hai lần để bật tiếng",
+  "chat.video_note.sound_on": "Bật âm thanh",
+  "chat.video_note.sound_off": "Tắt âm thanh",
   "chat.live_video.preview": "Video trực tiếp",
   "chat.live_video.badge": "Trực tiếp",
   "chat.live_video.reconnecting": "Đang kết nối lại…",
@@ -902,6 +914,10 @@ export const strings: Strings = {
   "chat.notices.post": "Đăng bản tin",
   "chat.notices.post_short": "Đăng",
   "chat.notices.delete": "Xóa bản tin",
+  "chat.notices.delete_title": "Xóa bản tin này?",
+  "chat.notices.delete_body":
+    "Mọi người đang có bản tin này sẽ được yêu cầu gỡ nó. Bạn không thể hoàn tác việc này.",
+  "chat.notices.permanent": "Vĩnh viễn",
   "chat.notices.fades_soon": "sắp mờ đi",
   "chat.notices.1_day": "1 ngày",
   "chat.notices.3_days": "3 ngày",
@@ -980,6 +996,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "Không được chuyển tiếp",
   "chat.forward.app_row_body":
     "Dòng này do Airhop tạo, không phải của một người, nên không có gì để chuyển tiếp.",
+  "chat.forward.has_ecash":
+    "Tin này chứa ecash, và ai nhận trước sẽ giữ số tiền đó, nên nó không được chuyển tiếp.",
+  "chat.forward.public_title": "Chuyển tiếp tới {name}?",
+  "chat.forward.public_mesh_body":
+    "Bất kỳ ai ở gần đều đọc được nó ở đó, và không thể rút lại.",
+  "chat.forward.public_geo_body":
+    "Bất kỳ ai trong khu vực này đều đọc được nó ở đó, kể cả trên các bộ chuyển tiếp Internet công khai, và không thể rút lại.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Đang khởi động mạng lưới…",
@@ -995,7 +1018,8 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "Vị trí đã tắt · Android cần nó để tìm nút mạng",
   "mesh.banner.paused": "Mạng lưới tạm dừng · bạn đang vắng mặt",
-  "mesh.banner.location_off": "Vị trí đã tắt · không dùng được kênh vị trí",
+  "mesh.banner.location_off":
+    "Vị trí đã tắt · kênh vị trí chỉ tới được người ở gần",
   "mesh.banner.battery_saver": "Tiết kiệm pin · quét thưa hơn",
   "mesh.banner.wipe_incomplete":
     "Xóa chưa xong · có thể còn sót dữ liệu, mở lại sẽ thử tiếp",
@@ -1028,7 +1052,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "Mở cài đặt hoạt động nền của điện thoại này",
   "mesh.banner.hint.tor_settings": "Mở cài đặt Tor của Airhop",
+  "mesh.banner.hint.enable_location":
+    "Yêu cầu quyền truy cập vị trí, hoặc giải thích cách cho phép trong Cài đặt",
   "mesh.banner.dismiss": "Bỏ qua: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Ẩn hẳn ghi chú này",
 
   // ---- Mesh: radar ----
@@ -1261,6 +1288,8 @@ export const strings: Strings = {
     "{mint} phát hành {units}. Khóa của nó đã được lưu sẵn trên thiết bị này, nên token từ nó giờ kiểm tra được kể cả khi không có mạng.",
   "wallet.mint.remove_plain":
     "Gỡ {mint} khỏi ví của bạn? Khóa lưu sẵn của nó cũng mất theo, nên token từ nó không kiểm tra được khi ngoại tuyến nữa.",
+  "wallet.mint.remove_holdings":
+    "{mint} đang giữ:\n{holdings}\nGỡ nó đi sẽ xóa tất cả những thứ này khỏi thiết bị này. Hãy rút hoặc gửi đi trước.",
   "wallet.mint.title": "Nhà đúc",
   "wallet.mint.none_desc":
     "Nhà đúc phát hành và quy đổi ecash của bạn. Hãy thêm một nhà đúc để nạp qua Lightning hoặc nhận token của nó.",
@@ -1613,6 +1642,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Đã tiêu rồi",
   "wallet.err.change_pending": "Đã trả, đang chờ tiền thối",
   "wallet.svc.mint_unreachable": "Không kết nối được tới nhà đúc.",
+  "wallet.svc.mint_http_error": "Nhà đúc trả về lỗi (HTTP {status}).",
   "wallet.svc.tor_ios": "Trên iOS, các yêu cầu tới nhà đúc không đi qua Tor.",
   "wallet.svc.tor_ios_body":
     "Tor trên iOS chỉ bao được Nostr, nên yêu cầu này sẽ tới nhà đúc qua mạng trần và gắn IP của bạn với khoản ecash này. Bật {setting} trong Cài đặt, hoặc tắt Tor trước. Gửi và nhận ecash qua mạng lưới vẫn chạy.",
@@ -1716,6 +1746,10 @@ export const strings: Strings = {
     "Các đồng của bạn không tạo ra được đúng {amount} {unit} khi ngoại tuyến.",
   "wallet.svc.inexact_detail":
     "Token nhỏ nhất bạn gửi được là {spend} {unit}. Ngoại tuyến thì không có tiền thối, nên phần dư {extra} {unit} sẽ thuộc về người nhận.",
+  "wallet.svc.spend_changed":
+    "Lần gửi này giờ sẽ tốn {spend} {unit}, nhiều hơn mức bạn đã đồng ý.",
+  "wallet.svc.spend_changed_body":
+    "Các đồng của bạn đã thay đổi trong lúc bạn đang cân nhắc. Chưa có gì được gửi. Hãy thử lại để xem số tiền mới.",
   "wallet.svc.no_single_mint":
     "Không nhà đúc đơn lẻ nào giữ {amount} {unit}. Ecash từ các nhà đúc khác nhau không gộp được vào một token: hãy gộp về một nhà đúc trước, hoặc gửi thành nhiều khoản riêng.",
   "wallet.svc.have_tried_send":
@@ -1746,6 +1780,10 @@ export const strings: Strings = {
     "Không có gì khác được gửi. Các đồng được giữ lại cho đến khi nhà đúc xác nhận kết quả. Nếu thành công, token đã khóa sẽ hiện trong Hoạt động để bạn trao đi. Nếu không, các đồng sẽ quay về.",
   "wallet.svc.send_spent_by_swap":
     "Các đồng này đã được hoán đổi trở lại ví của bạn trước khi token được nhận, nên không thể nhận nó nữa. Giá trị nằm trong số dư của bạn.",
+  "wallet.svc.payment_in_doubt_body":
+    "Các đồng được giữ lại cho đến khi nhà đúc xác nhận kết quả, việc này sẽ được kiểm tra lại ở lần làm mới tiếp theo. Đừng thanh toán lại hóa đơn này trước lúc đó.",
+  "wallet.svc.mint_removed":
+    "Bạn đã gỡ nhà đúc này, nên mục này không còn được theo dõi.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Đã xác minh qua QR",
@@ -1788,7 +1826,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Mã bitchat đó đã hết hạn. Hãy nhờ họ mở lại mã QR của mình.",
   "contacts.scan.tampered":
-    "Mã QR này không hợp lệ: ID nút mạng của nó không khớp với khóa của nó. Có thể nó đã bị can thiệp.",
+    "Mã QR này không hợp lệ: khóa của nó không qua được kiểm tra. Có thể nó đã bị can thiệp.",
   "contacts.scan.key_conflict":
     "Bạn đã có một khóa khác cho người này, nên không có gì thay đổi. Hãy quét mã của họ khi gặp trực tiếp để thay thế.",
   "contacts.scan.already_added": "Đã có trong danh bạ của bạn",
@@ -1811,7 +1849,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "Mã QR này thuộc về người khác. Hãy nhờ {name} đưa mã của chính họ.",
   "contacts.verify.tampered_body":
-    "Mã QR này trông như đã bị can thiệp: ID của nó không khớp với khóa của nó.",
+    "Mã QR này trông như đã bị can thiệp: khóa của nó không qua được kiểm tra.",
   "contacts.verify.choose_title": "Bạn muốn kiểm tra bằng cách nào?",
   "contacts.verify.choose_body":
     "Cả hai cách đều xác nhận rằng những khóa trên điện thoại này thực sự là của {name}.",
@@ -1990,7 +2028,7 @@ export const strings: Strings = {
     "Đưa các tùy chọn về mặc định, còn danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn",
   "settings.general.reset_title": "Đặt lại cài đặt?",
   "settings.general.reset_body":
-    "Các tùy chọn quay về mặc định, gồm giao diện, ngôn ngữ, thông báo, hoàn tác gửi, và kết nối (Internet, Tor, cổng kết nối, cầu nối, bộ chuyển tiếp). Khóa Airhop, thời gian giữ phương tiện và trạng thái của bạn vẫn giữ như đã đặt. Danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn.",
+    "Các tùy chọn quay về mặc định, gồm giao diện, ngôn ngữ, thông báo, hoàn tác gửi, và kết nối (cổng kết nối, cầu nối mạng lưới, bộ chuyển tiếp). Khóa Airhop, thời gian giữ phương tiện, công tắc Internet, Tor cùng các cầu nối của nó, và trạng thái của bạn vẫn giữ như đã đặt. Danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn.",
   "settings.general.reset_confirm": "Đặt lại",
 
   // ---- Settings: privacy and security ----
@@ -2146,6 +2184,10 @@ export const strings: Strings = {
     "Tor vẫn chưa kết nối được. Nó vẫn bật và tiếp tục thử; thẻ Mạng lưới sẽ báo khi nó bắt đầu định tuyến, hoặc khi mạng này đang chặn nó.",
   "settings.conn.tor_failed":
     "Không thể khởi động Tor. Hãy thử lại sau giây lát.",
+  "settings.conn.tor_bad_bridges":
+    "Tor không dùng được các dòng cầu nối này. Hãy kiểm tra lại, hoặc chọn kiểu kết nối khác.",
+  "settings.conn.tor_port_busy":
+    "Một ứng dụng khác đang dùng cổng mà Tor cần, thường là một ứng dụng khác đang chạy Tor. Hãy đóng ứng dụng đó rồi thử lại.",
   "settings.tor.status": "Trạng thái Tor",
   "settings.tor.connection": "Kết nối",
   "settings.tor.mode_off": "Trực tiếp",
@@ -2290,6 +2332,8 @@ export const strings: Strings = {
   "settings.language.pending": "Vào lần mở tới",
   "settings.language.pending_a11y":
     "{value}, áp dụng vào lần tới bạn mở Airhop",
+  "settings.language.phone": "Ngôn ngữ của điện thoại",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Mở lại ngay",
   "settings.language.rtl_title": "Hãy mở lại Airhop để hoàn tất",
   "settings.language.rtl_body":
@@ -2306,7 +2350,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Mạng lưới tạm dừng, không quét cũng không phát",
   "settings.status.invisible": "Ẩn",
   "settings.status.invisible_desc":
-    "Ẩn khỏi các lượt quét Bluetooth, các điện thoại bạn kết nối vẫn thấy bạn",
+    "Không phát qua Bluetooth, nhưng các điện thoại mà máy này kết nối qua Bluetooth hoặc Wi-Fi vẫn thấy bạn",
   "settings.status.title": "Trạng thái",
   "settings.status.set_a11y": "Đặt trạng thái thành {value}",
   "settings.status.edit": "Sửa trạng thái",
@@ -2575,6 +2619,10 @@ export const plurals: Plurals = {
   "chat.select.forward": {
     other: "Chuyển tiếp {count} tin nhắn",
   },
+  "chat.forward.too_many_public": {
+    other:
+      "Phòng công khai chỉ hiện {count} tin nhắn liên tiếp từ một người, nên phần còn lại sẽ bị mất. Hãy chuyển tiếp ít hơn mỗi lần.",
+  },
   "chat.voice.live_speaking_count": {
     other: "{count} người đang nói",
   },
@@ -2640,12 +2688,12 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    other:
-      "{mint} giữ {balance} {unit} trong {count} đồng. Gỡ nó đi sẽ hủy vĩnh viễn số dư đó khỏi thiết bị này, và không có bản sao lưu. Hãy rút hoặc gửi số dư đi trước.",
-  },
   "wallet.mint.split_across": {
     other: "Số dư nằm rải rác ở {count} nhà đúc. Hãy dời về một nơi.",
+  },
+  "wallet.mint.remove_pending": {
+    other:
+      "{count} khoản thanh toán tại {mint} vẫn chưa hoàn tất. Gỡ nhà đúc sẽ bỏ các khoản đó, cùng mọi thứ chúng còn có thể mang về.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2657,6 +2705,10 @@ export const plurals: Plurals = {
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     other: "Đã khôi phục {count} đồng chưa tiêu từ {mints}.",
+  },
+  "wallet.backup.already_held": {
+    other:
+      "{count} đồng tìm thấy đã có trong ví này, nên chúng không được tính lại.",
   },
   "wallet.backup.already_spent": {
     other:

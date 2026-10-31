@@ -81,7 +81,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "Funguo zako hazikuweza kutengenezwa",
   "onboarding.identity.failed_body":
     "Kifaa hiki hakikuruhusu Airhop kuzihifadhi kwa usalama. Jaribu tena, au washa upya simu yako kisha fungua Airhop tena.",
-  "onboarding.identity.steps_a11y": "Hatua: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Hatua: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519":
     "Inatengeneza jozi tuli ya funguo za X25519",
   "onboarding.identity.step.ed25519":
@@ -93,8 +94,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Jina lako kwenye mesh",
   "onboarding.username.peer_id": "Kitambulisho cha peer",
-  "onboarding.username.card_a11y":
-    "Jina lako kwenye mesh ni {username}. Kitambulisho cha peer {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Jina lako kwenye mesh ni {username}. Kitambulisho cha peer {peerID}. Algoriti: {algorithm}. Hifadhi: {storage}. Akaunti inahitajika: {account}.",
   "onboarding.username.explanation":
     "Jina hili la mtumiaji linatokana moja kwa moja na ufunguo wako wa umma. Ni lilelile kwenye kila kifaa kinachoona kitambulisho chako cha peer.",
   "onboarding.username.cta": "Ingia Airhop",
@@ -164,7 +165,7 @@ export const strings: Strings = {
     "Hutafuta vifaa vilivyo karibu na kupitisha jumbe kati yake. Hivi ndivyo mesh inavyoundwa, na hufanya kazi bila muunganisho wa intaneti.",
   "onboarding.primer.location.title": "Mahali",
   "onboarding.primer.location.body":
-    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe wala haitumi mahali ulipo hasa nje ya kifaa chako.",
+    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe, na mahali ulipo hasa hutoka kwenye kifaa chako tu unapomtumia mtu pini ya mahali.",
   "onboarding.primer.notifications.title": "Arifa",
   "onboarding.primer.notifications.body":
     "Pokea taarifa za jumbe mpya hata programu ikiwa imefungwa. Arifa hutengenezwa hapa kwenye kifaa chako, bila seva yoyote kuhusika.",
@@ -175,6 +176,9 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "Ufikiaji wa Bluetooth",
   "permission.bluetooth.purpose": "kugundua vifaa vilivyo karibu kupitia mesh",
+  "permission.location.label": "Ufikiaji wa mahali",
+  "permission.location.purpose":
+    "kufikia vituo vya mahali nje ya masafa ya Bluetooth",
   "permission.open_settings": "Fungua Mipangilio",
   "permission.not_now": "Si sasa",
   "permission.blocked_title": "{label} imezimwa",
@@ -235,8 +239,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "ndani ya masafa",
   "chat.dm.row_hint": "Gusa mara mbili na ushikilie kwa chaguo zaidi",
   "chat.channels.row_hint": "Gusa mara mbili na ushikilie kwa chaguo zaidi",
-  "chat.dm.you_prefix": "Wewe:",
-  "chat.draft_prefix": "Rasimu:",
+  "chat.draft_preview": "Rasimu: {draft}",
   "chat.dm.none": "Hakuna jumbe za moja kwa moja",
   "chat.dm.none_desc":
     "Nenda kwenye kichupo cha Mesh na uguse peer ili kuanzisha ujumbe wa moja kwa moja uliosimbwa.",
@@ -460,6 +463,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Kituo cha umma",
   "chat.thread.notices": "Matangazo ya kituo hiki",
   "chat.thread.invite": "Alika mtu kwenye kituo hiki",
+  "chat.thread.location_off":
+    "Mahali pamezimwa · inafikia watu walio karibu pekee",
   "chat.thread.not_in_range": "Hayupo karibu. Inafikishwa kupitia intaneti.",
   "chat.thread.not_nearby":
     "Hayupo karibu. Tutafikisha atakaporudi ndani ya masafa au akiwa mtandaoni.",
@@ -487,7 +492,7 @@ export const strings: Strings = {
   "chat.thread.message": "Ujumbe",
   "chat.thread.message_placeholder": "Ujumbe…",
   "chat.thread.length_full": "Ujumbe umejaa",
-  "chat.thread.waiting_for": "Inasubiri {name} arudi · {percent}%",
+  "chat.thread.waiting_for": "Inasubiri {name} arudi · {percent}",
   "chat.transfer.progress": "{done} kati ya {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "zimebaki {time}",
@@ -554,7 +559,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Tazama wasifu wa {name}",
   "chat.bubble.forwarded": "Umesambazwa",
   "chat.bubble.attachment": "kiambatisho",
-  "chat.bubble.a11y": "{sender}: {body}. Shikilia kwa muda kwa chaguo zaidi.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "Gusa mara mbili na ushikilie kwa chaguo zaidi",
+  "chat.bubble.more_options": "Chaguo zaidi",
+  "chat.bubble.open_link": "Fungua {link}",
+  "chat.bubble.status_delivered": "Umefikishwa",
+  "chat.bubble.status_read": "Umesomwa",
   "chat.bubble.failed_retry": "Imeshindwa kutuma. Gusa ili kujaribu tena.",
 
   // ---- Chats: message actions and info ----
@@ -684,6 +694,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "faili",
   "chat.media.pause_voice": "Sitisha noti ya sauti",
   "chat.media.play_voice": "Cheza noti ya sauti",
+  "chat.media.pause_video": "Sitisha video",
+  "chat.media.play_video": "Cheza video",
   "chat.media.voice_position": "Nafasi kwenye noti ya sauti",
   "chat.media.voice_scrub": "Gusa kwenye mistari ili kurukia mahali hapo",
   "chat.media.image": "Picha",
@@ -731,6 +743,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Ujumbe wa video haukurekodiwa",
   "chat.video_note.limit_sent": "Muda umekwisha, ujumbe wa video umetumwa",
   "chat.video_note.a11y": "Ujumbe wa video, gusa mara mbili kwa sauti",
+  "chat.video_note.sound_on": "Washa sauti",
+  "chat.video_note.sound_off": "Zima sauti",
   "chat.live_video.preview": "Video ya moja kwa moja",
   "chat.live_video.badge": "Moja kwa moja",
   "chat.live_video.reconnecting": "Inaunganisha upya…",
@@ -917,6 +931,10 @@ export const strings: Strings = {
   "chat.notices.post": "Bandika tangazo",
   "chat.notices.post_short": "Bandika",
   "chat.notices.delete": "Futa tangazo",
+  "chat.notices.delete_title": "Ufute tangazo hili?",
+  "chat.notices.delete_body":
+    "Kila aliye nalo ataombwa aliondoe. Huwezi kutendua hatua hii.",
+  "chat.notices.permanent": "La kudumu",
   "chat.notices.fades_soon": "litafifia hivi karibuni",
   "chat.notices.1_day": "Siku 1",
   "chat.notices.3_days": "Siku 3",
@@ -994,6 +1012,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "Haikusambazwa",
   "chat.forward.app_row_body":
     "Mstari huu umetoka kwa Airhop, si kwa mtu, kwa hivyo hakuna cha kusambaza.",
+  "chat.forward.has_ecash":
+    "Hii ina ecash, na atakayeidai kwanza ndiye anayebaki na pesa, kwa hivyo haisambazwi.",
+  "chat.forward.public_title": "Sambaza kwa {name}?",
+  "chat.forward.public_mesh_body":
+    "Yeyote aliye karibu anaweza kuusoma huko, na hauwezi kurudishwa.",
+  "chat.forward.public_geo_body":
+    "Yeyote aliye katika eneo hili anaweza kuusoma huko, ikiwemo kupitia relay za umma za intaneti, na hauwezi kurudishwa.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Inaanzisha mesh…",
@@ -1011,7 +1036,7 @@ export const strings: Strings = {
     "Mahali pamezimwa · Android inapahitaji ili kupata peer",
   "mesh.banner.paused": "Mesh imesitishwa · hupo",
   "mesh.banner.location_off":
-    "Mahali pamezimwa · vituo vya mahali havipatikani",
+    "Mahali pamezimwa · vituo vya mahali vinafikia walio karibu pekee",
   "mesh.banner.battery_saver": "Kiokoa betri · inachanganua mara chache zaidi",
   "mesh.banner.wipe_incomplete":
     "Ufutaji haujakamilika · baadhi ya data huenda ikabaki, itajaribiwa tena wakati wa kufungua upya",
@@ -1044,7 +1069,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "Hufungua mipangilio ya shughuli za chinichini za simu hii",
   "mesh.banner.hint.tor_settings": "Hufungua mipangilio ya Tor ya Airhop",
+  "mesh.banner.hint.enable_location":
+    "Huomba ufikiaji wa mahali, au hueleza jinsi ya kuuruhusu kwenye Mipangilio",
   "mesh.banner.dismiss": "Ondoa: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Huficha noti hii kabisa",
 
   // ---- Mesh: radar ----
@@ -1278,6 +1306,8 @@ export const strings: Strings = {
     "{mint} hutoa {units}. Funguo zake zimehifadhiwa kwenye kifaa hiki, kwa hivyo tokeni zitokazo kwake sasa zinaweza kukaguliwa hata bila intaneti.",
   "wallet.mint.remove_plain":
     "Uondoe {mint} kwenye pochi yako? Funguo zake zilizohifadhiwa nazo zitaondoka, kwa hivyo tokeni zitokazo kwake hazitaweza kukaguliwa nje ya mtandao.",
+  "wallet.mint.remove_holdings":
+    "{mint} inashikilia:\n{holdings}\nKuiondoa kunafuta yote haya kwenye kifaa hiki. Toa au tuma kwanza.",
   "wallet.mint.title": "Mint",
   "wallet.mint.none_desc":
     "Mint hutoa na kukomboa ecash yako. Ongeza moja ili kuongeza salio kupitia Lightning au kupokea tokeni zake.",
@@ -1641,6 +1671,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Tayari imetumika",
   "wallet.err.change_pending": "Imelipwa, chenji inasubiri",
   "wallet.svc.mint_unreachable": "Haikuweza kuifikia mint.",
+  "wallet.svc.mint_http_error": "Mint ilijibu kwa hitilafu (HTTP {status}).",
   "wallet.svc.tor_ios": "Maombi ya mint hayapiti kwenye Tor kwenye iOS.",
   "wallet.svc.tor_ios_body":
     "Tor kwenye iOS hufunika Nostr pekee, kwa hivyo ombi hili lingeifikia mint kupitia mtandao wazi na kuunganisha IP yako na ecash hii. Washa {setting} kwenye Mipangilio, au zima Tor kwanza. Kutuma na kupokea ecash kupitia mesh bado kunafanya kazi.",
@@ -1750,6 +1781,10 @@ export const strings: Strings = {
     "Sarafu zako haziwezi kutoa {amount} {unit} kamili nje ya mtandao.",
   "wallet.svc.inexact_detail":
     "Tokeni ndogo zaidi unayoweza kutuma ni {spend} {unit}. Nje ya mtandao hakuna chenji, kwa hivyo {extra} {unit} za ziada zitamwendea mpokeaji.",
+  "wallet.svc.spend_changed":
+    "Utumaji huu sasa ungechukua {spend} {unit}, zaidi ya ulivyokubali.",
+  "wallet.svc.spend_changed_body":
+    "Sarafu zako zilibadilika ulipokuwa ukiamua. Hakuna kilichotumwa. Jaribu tena ili kuona kiasi kipya.",
   "wallet.svc.no_single_mint":
     "Hakuna mint moja inayoshikilia {amount} {unit}. Ecash kutoka mint tofauti haiwezi kuunganishwa kwenye tokeni moja: iunganishe kwenye mint moja kwanza, au ituma kwa viasi tofauti.",
   "wallet.svc.have_tried_send":
@@ -1778,6 +1813,10 @@ export const strings: Strings = {
     "Hakuna kingine kilichotumwa. Sarafu zimeshikiliwa hadi mint ithibitishe matokeo. Ikiwa malipo yalipita, tokeni iliyofungwa itaonekana chini ya Shughuli ili uikabidhi. Kama sivyo, sarafu zinarudi.",
   "wallet.svc.send_spent_by_swap":
     "Sarafu hizi zilibadilishwa kurudi kwenye pochi yako kabla tokeni hii haijachukuliwa, kwa hivyo haiwezi kuchukuliwa tena. Thamani iko kwenye salio lako.",
+  "wallet.svc.payment_in_doubt_body":
+    "Sarafu zimeshikiliwa hadi mint ithibitishe matokeo, ambayo yatakaguliwa tena wakati wa kuonyesha upya unaofuata. Usilipe ankara hii tena hadi wakati huo.",
+  "wallet.svc.mint_removed":
+    "Uliondoa mint hii, kwa hivyo hili halifuatiliwi tena.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Imethibitishwa kupitia QR",
@@ -1822,7 +1861,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Msimbo huo wa bitchat umekwisha muda. Waombe wafungue QR yao tena.",
   "contacts.scan.tampered":
-    "Msimbo huu wa QR si sahihi: kitambulisho chake cha peer hakilingani na funguo zake. Huenda umeingiliwa.",
+    "Msimbo huu wa QR si sahihi: funguo zake hazipiti ukaguzi. Huenda umeingiliwa.",
   "contacts.scan.key_conflict":
     "Tayari una ufunguo tofauti wa mtu huyu, kwa hivyo hakuna kilichobadilika. Changanua msimbo wake ana kwa ana ili kuubadilisha.",
   "contacts.scan.already_added": "Tayari yuko kwenye anwani zako",
@@ -1845,7 +1884,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "QR hii ni ya mtu mwingine. Mwombe {name} aonyeshe msimbo wake mwenyewe.",
   "contacts.verify.tampered_body":
-    "QR hii inaonekana imeingiliwa: kitambulisho chake hakilingani na ufunguo wake.",
+    "QR hii inaonekana imeingiliwa: funguo zake hazipiti ukaguzi.",
   "contacts.verify.choose_title": "Unataka kukagua vipi?",
   "contacts.verify.choose_body":
     "Zote mbili zinathibitisha kwamba funguo zilizo kwenye simu hii ni za {name} kweli.",
@@ -2029,7 +2068,7 @@ export const strings: Strings = {
     "Hurudisha mapendeleo kwenye hali zake za kawaida, bila kugusa utambulisho, jumbe, anwani na pochi yako",
   "settings.general.reset_title": "Uweke upya mipangilio?",
   "settings.general.reset_body":
-    "Mapendeleo hurudi kwenye hali zake za kawaida, ikiwemo muonekano, lugha, arifa, tendua kutuma, na muunganisho (intaneti, Tor, lango, daraja, relay). Kufuli ya Airhop, muda wa kuhifadhi midia, na hali yako hubaki kama ulivyoweka. Utambulisho, jumbe, anwani na pochi yako hazitaguswa.",
+    "Mapendeleo hurudi kwenye hali zake za kawaida, ikiwemo muonekano, lugha, arifa, tendua kutuma, na muunganisho (lango, daraja la mesh, relay). Kufuli ya Airhop, muda wa kuhifadhi midia, swichi ya intaneti, Tor na madaraja yake, na hali yako hubaki kama ulivyoweka. Utambulisho, jumbe, anwani na pochi yako hazitaguswa.",
   "settings.general.reset_confirm": "Weka upya",
 
   // ---- Settings: privacy and security ----
@@ -2186,6 +2225,10 @@ export const strings: Strings = {
     "Tor bado haijaunganishwa. Inabaki imewashwa na inaendelea kujaribu; kichupo cha Mesh kitasema itakapokuwa inaelekeza, au kama mtandao huu unaizuia.",
   "settings.conn.tor_failed":
     "Imeshindwa kuanzisha Tor. Jaribu tena baada ya muda mfupi.",
+  "settings.conn.tor_bad_bridges":
+    "Tor haikuweza kutumia mistari hii ya daraja. Ikague, au chagua muunganisho mwingine.",
+  "settings.conn.tor_port_busy":
+    "Programu nyingine inatumia mlango unaohitajika na Tor, mara nyingi programu nyingine inayoendesha Tor. Ifunge, kisha ujaribu tena.",
   "settings.tor.status": "Hali ya Tor",
   "settings.tor.connection": "Muunganisho",
   "settings.tor.mode_off": "Moja kwa moja",
@@ -2333,6 +2376,8 @@ export const strings: Strings = {
   "settings.language.pending": "Wakati wa kufungua tena",
   "settings.language.pending_a11y":
     "{value}, itaanza kutumika utakapofungua Airhop tena",
+  "settings.language.phone": "Lugha ya simu",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Fungua tena sasa",
   "settings.language.rtl_title": "Fungua Airhop tena ili kumaliza",
   "settings.language.rtl_body":
@@ -2350,7 +2395,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Mesh imesitishwa, haichanganui wala haitangazi",
   "settings.status.invisible": "Hataonekana",
   "settings.status.invisible_desc":
-    "Amefichwa kwenye uchanganuzi wa Bluetooth, bado anaonekana na simu unazounganisha nazo",
+    "Hatangazwi kupitia Bluetooth, lakini simu ambazo kifaa hiki kimeunganishwa nazo kupitia Bluetooth au Wi-Fi bado zinakuona",
   "settings.status.title": "Hali",
   "settings.status.set_a11y": "Weka hali kuwa {value}",
   "settings.status.edit": "Hariri hali",
@@ -2640,6 +2685,11 @@ export const plurals: Plurals = {
     one: "Sambaza ujumbe {count}",
     other: "Sambaza jumbe {count}",
   },
+  "chat.forward.too_many_public": {
+    one: "Chumba cha umma huonyesha ujumbe {count} tu mfululizo kutoka kwa mtu mmoja, kwa hivyo vilivyobaki vingepotea. Sambaza vichache kwa wakati mmoja.",
+    other:
+      "Chumba cha umma huonyesha jumbe {count} tu mfululizo kutoka kwa mtu mmoja, kwa hivyo zilizobaki zingepotea. Sambaza chache kwa wakati mmoja.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} anazungumza",
     other: "{count} wanazungumza",
@@ -2723,14 +2773,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} inashikilia {balance} {unit} katika sarafu {count}. Kuiondoa kunafuta salio hilo kwenye kifaa hiki kabisa na hakuna nakala rudufu. Toa au tuma salio kwanza.",
-    other:
-      "{mint} inashikilia {balance} {unit} katika sarafu {count}. Kuiondoa kunafuta salio hilo kwenye kifaa hiki kabisa na hakuna nakala rudufu. Toa au tuma salio kwanza.",
-  },
   "wallet.mint.split_across": {
     one: "Salio limegawanywa kwenye mint {count}. Lihamishie kwenye moja.",
     other: "Salio limegawanywa kwenye mint {count}. Lihamishie kwenye moja.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "Malipo {count} kwenye {mint} bado hayajakamilika. Kuiondoa mint kunayaacha, pamoja na chochote ambacho bado yangerudisha.",
+    other:
+      "Malipo {count} kwenye {mint} bado hayajakamilika. Kuiondoa mint kunayaacha, pamoja na chochote ambacho bado yangerudisha.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2744,6 +2794,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "Umerejesha sarafu {count} ambayo haijatumika kutoka {mints}.",
     other: "Umerejesha sarafu {count} ambazo hazijatumika kutoka {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "Sarafu {count} iliyopatikana tayari iko kwenye pochi hii, kwa hivyo haikuhesabiwa tena.",
+    other:
+      "Sarafu {count} zilizopatikana tayari ziko kwenye pochi hii, kwa hivyo hazikuhesabiwa tena.",
   },
   "wallet.backup.already_spent": {
     one: "Sarafu {count} ilipatikana lakini ilikuwa imeshatumika, kwa hivyo hakuna kilichowekwa. Hilo ni la kawaida: kila sarafu uliyowahi kutumia hubaki kwenye kumbukumbu zinazohifadhiwa na mint.",

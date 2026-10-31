@@ -79,7 +79,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "無法建立你的金鑰",
   "onboarding.identity.failed_body":
     "這台裝置不讓 Airhop 安全地存放它們。請再試一次，或者重新開機後重新開啟 Airhop。",
-  "onboarding.identity.steps_a11y": "步驟：{steps}",
+  "onboarding.identity.steps_list_a11y":
+    "步驟：{first}。{second}。{third}。{fourth}。",
   "onboarding.identity.step.x25519": "正在產生 X25519 靜態金鑰對",
   "onboarding.identity.step.ed25519": "正在產生 Ed25519 簽章金鑰對",
   "onboarding.identity.step.keychain": "正在把金鑰存入系統鑰匙圈",
@@ -88,8 +89,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "你在網狀網路上的名字",
   "onboarding.username.peer_id": "節點 ID",
-  "onboarding.username.card_a11y":
-    "你在網狀網路上的名字是 {username}。節點 ID {peerID}。{props}。",
+  "onboarding.username.card_full_a11y":
+    "你在網狀網路上的名字是 {username}。節點 ID {peerID}。演算法：{algorithm}。存放位置：{storage}。需要帳戶：{account}。",
   "onboarding.username.explanation":
     "這個使用者名稱是由你的公鑰確定性推導出來的。在任何看得到你節點 ID 的裝置上，它都一樣。",
   "onboarding.username.cta": "進入 Airhop",
@@ -153,7 +154,7 @@ export const strings: Strings = {
     "用來找出附近裝置並在它們之間中繼訊息。網狀網路由此成形，沒有網路連線也能用。",
   "onboarding.primer.location.title": "定位",
   "onboarding.primer.location.body":
-    "把你放進附近的區域頻道，小到一個街廓，大到一整個地區。Airhop 從不追蹤你，也不會把你的精確位置送出這台裝置。",
+    "把你放進附近的區域頻道，小到一個街廓，大到一整個地區。Airhop 從不追蹤你，只有在你傳送位置給別人時，你的精確位置才會離開這台裝置。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "就算 App 關著也能收到新訊息提醒。通知是在你的裝置本機產生的，不經過任何伺服器。",
@@ -164,6 +165,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "藍牙存取權",
   "permission.bluetooth.purpose": "在網狀網路上找出附近裝置",
+  "permission.location.label": "定位存取權",
+  "permission.location.purpose": "在藍牙範圍之外觸及位置頻道",
   "permission.open_settings": "開啟設定",
   "permission.not_now": "暫時不要",
   "permission.blocked_title": "{label}已關閉",
@@ -221,8 +224,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "在範圍內",
   "chat.dm.row_hint": "點兩下並按住可查看更多選項",
   "chat.channels.row_hint": "點兩下並按住可查看更多選項",
-  "chat.dm.you_prefix": "你：",
-  "chat.draft_prefix": "草稿：",
+  "chat.draft_preview": "草稿：{draft}",
   "chat.dm.none": "沒有私訊",
   "chat.dm.none_desc": "前往網狀網路分頁，點一下某個節點即可開始加密私訊。",
   "chat.dm.contact_info": "聯絡人資訊",
@@ -430,6 +432,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "公開頻道",
   "chat.thread.notices": "本頻道的公告",
   "chat.thread.invite": "邀請別人加入本頻道",
+  "chat.thread.location_off": "定位已關 · 僅觸及附近的人",
   "chat.thread.not_in_range": "不在附近。正透過網路遞送。",
   "chat.thread.not_nearby": "不在附近。等對方回到範圍內或上線後，我們會遞送。",
   "chat.thread.no_keys":
@@ -455,7 +458,7 @@ export const strings: Strings = {
   "chat.thread.message": "訊息",
   "chat.thread.message_placeholder": "訊息…",
   "chat.thread.length_full": "訊息已達上限",
-  "chat.thread.waiting_for": "等待 {name} 回來 · {percent}%",
+  "chat.thread.waiting_for": "等待 {name} 回來 · {percent}",
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/秒",
   "chat.transfer.left": "剩餘 {time}",
@@ -511,7 +514,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "查看 {name} 的個人檔案",
   "chat.bubble.forwarded": "已轉傳",
   "chat.bubble.attachment": "附件",
-  "chat.bubble.a11y": "{sender}：{body}。長按查看更多選項。",
+  "chat.bubble.a11y": "{sender}：{body}",
+  "chat.bubble.a11y_hint": "點兩下並按住可查看更多選項",
+  "chat.bubble.more_options": "更多選項",
+  "chat.bubble.open_link": "開啟 {link}",
+  "chat.bubble.status_delivered": "已送達",
+  "chat.bubble.status_read": "已讀",
   "chat.bubble.failed_retry": "傳送失敗。點一下重試。",
 
   // ---- Chats: message actions and info ----
@@ -636,6 +644,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "個檔案",
   "chat.media.pause_voice": "暫停語音留言",
   "chat.media.play_voice": "播放語音留言",
+  "chat.media.pause_video": "暫停影片",
+  "chat.media.play_video": "播放影片",
   "chat.media.voice_position": "語音留言位置",
   "chat.media.voice_scrub": "沿著音條點一下就能跳到那個位置",
   "chat.media.image": "圖片",
@@ -679,6 +689,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "影片留言未能錄製",
   "chat.video_note.limit_sent": "時間到，影片留言已傳送",
   "chat.video_note.a11y": "影片留言，輕點兩下播放聲音",
+  "chat.video_note.sound_on": "開啟聲音",
+  "chat.video_note.sound_off": "關閉聲音",
   "chat.live_video.preview": "直播影片",
   "chat.live_video.badge": "直播",
   "chat.live_video.reconnecting": "正在重新連線…",
@@ -853,6 +865,10 @@ export const strings: Strings = {
   "chat.notices.post": "張貼公告",
   "chat.notices.post_short": "張貼",
   "chat.notices.delete": "刪除公告",
+  "chat.notices.delete_title": "刪除這則公告？",
+  "chat.notices.delete_body":
+    "所有收到它的人都會被要求刪除它。這個動作無法復原。",
+  "chat.notices.permanent": "永久",
   "chat.notices.fades_soon": "即將淡去",
   "chat.notices.1_day": "1 天",
   "chat.notices.3_days": "3 天",
@@ -927,6 +943,12 @@ export const strings: Strings = {
   "chat.forward.app_row": "未轉傳",
   "chat.forward.app_row_body":
     "這一行來自 Airhop，不是某個人傳的，所以沒有可轉傳的內容。",
+  "chat.forward.has_ecash":
+    "這裡面有 ecash，誰先領取，錢就歸誰，所以不會轉傳。",
+  "chat.forward.public_title": "轉傳到 {name}？",
+  "chat.forward.public_mesh_body": "附近的任何人都能在那裡看到，而且無法收回。",
+  "chat.forward.public_geo_body":
+    "這片區域裡的任何人都能在那裡看到，包括透過公開的網路中繼，而且無法收回。",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "正在啟動網狀網路…",
@@ -939,7 +961,7 @@ export const strings: Strings = {
   "mesh.banner.advertising_unsupported": "這支手機看得到別人，但自己不會被發現",
   "mesh.banner.location_off_android": "定位已關 · Android 需要它才找得到節點",
   "mesh.banner.paused": "網狀網路已暫停 · 你處於離開狀態",
-  "mesh.banner.location_off": "定位已關 · 位置頻道無法使用",
+  "mesh.banner.location_off": "定位已關 · 位置頻道僅觸及附近",
   "mesh.banner.battery_saver": "省電模式 · 掃描次數減少",
   "mesh.banner.wipe_incomplete":
     "抹除未完成 · 可能還有殘留資料，重新開啟會再試一次",
@@ -965,7 +987,9 @@ export const strings: Strings = {
   "mesh.banner.hint.app_settings": "在系統設定中開啟 Airhop 的權限",
   "mesh.banner.hint.battery_settings": "開啟這支手機的背景活動設定",
   "mesh.banner.hint.tor_settings": "開啟 Airhop 的 Tor 設定",
+  "mesh.banner.hint.enable_location": "要求定位權限，或說明如何在設定中允許",
   "mesh.banner.dismiss": "忽略：{label}",
+  "mesh.banner.action_a11y": "{action}：{banner}",
   "mesh.banner.hint.dismiss": "永久隱藏這則提示",
 
   // ---- Mesh: radar ----
@@ -1186,6 +1210,8 @@ export const strings: Strings = {
     "{mint} 發行 {units}。它的金鑰已快取在這台裝置上，所以就算沒有網路，來自它的代幣現在也能核對。",
   "wallet.mint.remove_plain":
     "把 {mint} 從你的錢包移除？它快取的金鑰也會一併刪掉，來自它的代幣將無法再離線核對。",
+  "wallet.mint.remove_holdings":
+    "{mint} 持有：\n{holdings}\n移除後，這些都會從這台裝置上刪除。請先領出或送出。",
   "wallet.mint.title": "鑄幣廠",
   "wallet.mint.none_desc":
     "鑄幣廠發行並兌付你的 ecash。新增一個，就能透過 Lightning 儲值或接收它的代幣。",
@@ -1519,6 +1545,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "已被花用",
   "wallet.err.change_pending": "已付款，找零待退",
   "wallet.svc.mint_unreachable": "連不上鑄幣廠。",
+  "wallet.svc.mint_http_error": "鑄幣廠回傳了錯誤（HTTP {status}）。",
   "wallet.svc.tor_ios": "在 iOS 上，鑄幣廠請求不走 Tor。",
   "wallet.svc.tor_ios_body":
     "iOS 上的 Tor 只涵蓋 Nostr，所以這個請求會走明網到鑄幣廠，把你的 IP 和這筆 ecash 連在一起。請在設定中開啟{setting}，或者先把 Tor 關掉。透過網狀網路收付 ecash 仍然可用。",
@@ -1611,6 +1638,10 @@ export const strings: Strings = {
   "wallet.svc.inexact_title": "你的幣在離線狀態下湊不出剛好 {amount} {unit}。",
   "wallet.svc.inexact_detail":
     "你送得出的最小代幣是 {spend} {unit}。離線是沒有找零的，所以多出的 {extra} {unit} 會歸收款方。",
+  "wallet.svc.spend_changed":
+    "這筆傳送現在需要 {spend} {unit}，超過你同意的金額。",
+  "wallet.svc.spend_changed_body":
+    "你在考慮的時候，你的幣有了變動。沒有傳送任何東西。請再試一次以查看新金額。",
   "wallet.svc.no_single_mint":
     "沒有哪一個鑄幣廠單獨持有 {amount} {unit}。來自不同鑄幣廠的 ecash 無法併成一個代幣：請先在一個鑄幣廠整合，或者分成幾筆送出。",
   "wallet.svc.have_tried_send": "你有 {total} {unit}，卻想送出 {amount}。",
@@ -1637,6 +1668,9 @@ export const strings: Strings = {
     "沒有傳送其他任何東西。在鑄幣廠確認結果之前，這些幣會被保留。若付款已完成，鎖定的代幣會出現在「動態」中供你轉交。若未完成，幣會退回。",
   "wallet.svc.send_spent_by_swap":
     "在此代幣被領取之前，這些幣已被兌換回你的錢包，因此它已無法領取。金額在你的餘額中。",
+  "wallet.svc.payment_in_doubt_body":
+    "在鑄幣廠確認結果之前，這些幣會被保留，下次重新整理時會再檢查一次。在那之前，請不要再支付這張發票。",
+  "wallet.svc.mint_removed": "你已移除這個鑄幣廠，所以不再追蹤這一筆。",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "已透過 QR 碼驗證",
@@ -1679,7 +1713,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "那個 bitchat 代碼已過期。請對方重新開啟自己的 QR 碼。",
   "contacts.scan.tampered":
-    "這個 QR 碼無效：它的節點 ID 和它的金鑰對不上。它可能被人動過手腳。",
+    "這個 QR 碼無效：它的金鑰驗證不通過。它可能被人動過手腳。",
   "contacts.scan.key_conflict":
     "你已經存有這個人的另一把金鑰，所以沒有做任何變更。請當面掃描對方的 QR 碼來替換。",
   "contacts.scan.already_added": "已經在你的聯絡人裡",
@@ -1701,7 +1735,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "這個 QR 碼屬於別人。請 {name} 出示自己的代碼。",
   "contacts.verify.tampered_body":
-    "這個 QR 碼看起來被動過手腳：它的 ID 和它的金鑰對不上。",
+    "這個 QR 碼看起來被動過手腳：它的金鑰驗證不通過。",
   "contacts.verify.choose_title": "你想怎麼核對？",
   "contacts.verify.choose_body":
     "兩種方式都能確認這支手機上的金鑰確實屬於 {name}。",
@@ -1870,7 +1904,7 @@ export const strings: Strings = {
     "把偏好設定回復為預設值，你的身分、訊息、聯絡人和錢包都不受影響",
   "settings.general.reset_title": "重設設定？",
   "settings.general.reset_body":
-    "偏好設定會回復預設，包括外觀、語言、通知、收回傳送，以及連線相關項目（網路、Tor、閘道、橋接、中繼）。鎖定 Airhop、媒體保留時間和你的狀態維持原樣。你的身分、訊息、聯絡人和錢包不受影響。",
+    "偏好設定會回復預設，包括外觀、語言、通知、收回傳送，以及連線相關項目（閘道、網狀網路橋接、中繼）。鎖定 Airhop、媒體保留時間、網路開關、Tor 及其橋接，以及你的狀態維持原樣。你的身分、訊息、聯絡人和錢包不受影響。",
   "settings.general.reset_confirm": "重設",
 
   // ---- Settings: privacy and security ----
@@ -2011,6 +2045,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Tor 還沒有連上。它會保持開啟並繼續嘗試；網狀網路分頁會告訴你它何時開始轉送，或者這個網路是不是在擋它。",
   "settings.conn.tor_failed": "無法啟動 Tor。請稍後再試。",
+  "settings.conn.tor_bad_bridges":
+    "Tor 無法使用這些橋接。請檢查一下，或者選擇其他連線方式。",
+  "settings.conn.tor_port_busy":
+    "另一個 App 正在占用 Tor 需要的連接埠，通常是另一個執行 Tor 的 App。請關閉它，然後再試一次。",
   "settings.tor.status": "Tor 狀態",
   "settings.tor.connection": "連線方式",
   "settings.tor.mode_off": "直連",
@@ -2153,6 +2191,8 @@ export const strings: Strings = {
   "settings.language.set_a11y": "把語言設為 {value}",
   "settings.language.pending": "下次開啟時生效",
   "settings.language.pending_a11y": "{value}，會在你下次開啟 Airhop 時生效",
+  "settings.language.phone": "手機語言",
+  "settings.language.name_endonym_a11y": "{name}（{endonym}）",
   "settings.language.rtl_restart": "立即重新開啟",
   "settings.language.rtl_title": "重新開啟 Airhop 以完成切換",
   "settings.language.rtl_body":
@@ -2168,7 +2208,8 @@ export const strings: Strings = {
   "settings.status.away": "離開",
   "settings.status.away_desc": "網狀網路已暫停，不掃描也不廣播",
   "settings.status.invisible": "隱形",
-  "settings.status.invisible_desc": "藍牙掃描時看不到，你連線的手機仍看得到你",
+  "settings.status.invisible_desc":
+    "不透過藍牙廣播，但透過藍牙或 Wi-Fi 與這支手機相連的手機仍看得到你",
   "settings.status.title": "狀態",
   "settings.status.set_a11y": "把狀態設為 {value}",
   "settings.status.edit": "編輯狀態",
@@ -2418,6 +2459,10 @@ export const plurals: Plurals = {
   "chat.select.forward": {
     other: "轉傳 {count} 則訊息",
   },
+  "chat.forward.too_many_public": {
+    other:
+      "公開房間只會顯示同一個人連續傳的 {count} 則訊息，其餘的會遺失。請每次少轉傳一些。",
+  },
   "chat.voice.live_speaking_count": {
     other: "{count} 人正在說話",
   },
@@ -2483,12 +2528,12 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    other:
-      "{mint} 那裡有 {count} 枚幣，共 {balance} {unit}。移除會把這筆餘額從這台裝置上永久抹掉，而且沒有備份。請先把餘額領走或送出去。",
-  },
   "wallet.mint.split_across": {
     other: "餘額分散在 {count} 個鑄幣廠。把它整合到一個。",
+  },
+  "wallet.mint.remove_pending": {
+    other:
+      "{mint} 那裡有 {count} 筆付款尚未完成。移除這個鑄幣廠會放棄這些付款，以及它們本來會退回的一切。",
   },
 
   // ---- Wallet: Lightning ----
@@ -2499,6 +2544,9 @@ export const plurals: Plurals = {
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     other: "從 {mints} 復原出 {count} 枚未花用的幣。",
+  },
+  "wallet.backup.already_held": {
+    other: "找到的 {count} 枚幣已經在這個錢包裡，所以沒有重複計入。",
   },
   "wallet.backup.already_spent": {
     other:

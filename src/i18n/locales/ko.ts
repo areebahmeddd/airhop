@@ -79,7 +79,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "키를 생성하지 못했습니다",
   "onboarding.identity.failed_body":
     "이 기기가 Airhop이 키를 안전하게 저장하도록 허용하지 않았습니다. 다시 시도하거나, 휴대폰을 재시작한 뒤 Airhop을 다시 여세요.",
-  "onboarding.identity.steps_a11y": "단계: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "단계: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "X25519 고정 키 쌍 생성 중",
   "onboarding.identity.step.ed25519": "Ed25519 서명 키 쌍 생성 중",
   "onboarding.identity.step.keychain": "OS 키체인에 키 저장 중",
@@ -88,8 +89,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "메시에서의 내 이름",
   "onboarding.username.peer_id": "피어 ID",
-  "onboarding.username.card_a11y":
-    "메시에서의 내 이름은 {username}입니다. 피어 ID {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "메시에서의 내 이름은 {username}입니다. 피어 ID {peerID}. 알고리즘: {algorithm}. 저장 위치: {storage}. 계정 필요: {account}.",
   "onboarding.username.explanation":
     "이 사용자 이름은 공개 키에서 결정론적으로 도출됩니다. 내 피어 ID를 보는 모든 기기에서 동일하게 표시됩니다.",
   "onboarding.username.cta": "Airhop 시작",
@@ -158,7 +159,7 @@ export const strings: Strings = {
     "근처 기기를 찾고 그 사이에서 메시지를 중계합니다. 이렇게 메시가 만들어지며 인터넷 연결 없이 작동합니다.",
   "onboarding.primer.location.title": "위치",
   "onboarding.primer.location.body":
-    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며 정확한 위치를 기기 밖으로 보내지 않습니다.",
+    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며, 정확한 위치는 누군가에게 위치를 보낼 때만 기기 밖으로 나갑니다.",
   "onboarding.primer.notifications.title": "알림",
   "onboarding.primer.notifications.body":
     "앱이 닫혀 있을 때도 새 메시지 알림을 받습니다. 알림은 기기 안에서 만들어지며 서버는 관여하지 않습니다.",
@@ -169,6 +170,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "블루투스 접근",
   "permission.bluetooth.purpose": "메시에서 근처 기기를 찾기",
+  "permission.location.label": "위치 접근",
+  "permission.location.purpose": "블루투스 범위 너머의 위치 채널에 닿기",
   "permission.open_settings": "설정 열기",
   "permission.not_now": "나중에",
   "permission.blocked_title": "{label}이(가) 꺼져 있습니다",
@@ -228,8 +231,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "범위 내",
   "chat.dm.row_hint": "두 번 탭한 뒤 길게 눌러 추가 옵션 보기",
   "chat.channels.row_hint": "두 번 탭한 뒤 길게 눌러 추가 옵션 보기",
-  "chat.dm.you_prefix": "나:",
-  "chat.draft_prefix": "임시 저장:",
+  "chat.draft_preview": "임시 저장: {draft}",
   "chat.dm.none": "다이렉트 메시지가 없습니다",
   "chat.dm.none_desc": "메시 탭에서 피어를 탭해 암호화된 DM을 시작하세요.",
   "chat.dm.contact_info": "연락처 정보",
@@ -446,6 +448,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "공개 채널",
   "chat.thread.notices": "이 채널의 공지",
   "chat.thread.invite": "이 채널에 초대하기",
+  "chat.thread.location_off": "위치 꺼짐 · 근처 사람에게만 닿는 중",
   "chat.thread.not_in_range": "근처에 없습니다. 인터넷으로 전달합니다.",
   "chat.thread.not_nearby":
     "근처에 없습니다. 다시 범위에 들어오거나 온라인이 되면 전달합니다.",
@@ -473,7 +476,7 @@ export const strings: Strings = {
   "chat.thread.message": "메시지",
   "chat.thread.message_placeholder": "메시지…",
   "chat.thread.length_full": "메시지가 가득 찼습니다",
-  "chat.thread.waiting_for": "{name}이(가) 돌아오기를 기다리는 중 · {percent}%",
+  "chat.thread.waiting_for": "{name}이(가) 돌아오기를 기다리는 중 · {percent}",
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/초",
   "chat.transfer.left": "{time} 남음",
@@ -536,7 +539,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "{name}의 프로필 보기",
   "chat.bubble.forwarded": "전달됨",
   "chat.bubble.attachment": "첨부 파일",
-  "chat.bubble.a11y": "{sender}: {body}. 길게 눌러 추가 옵션 보기.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "두 번 탭한 뒤 길게 눌러 추가 옵션 보기",
+  "chat.bubble.more_options": "추가 옵션",
+  "chat.bubble.open_link": "{link} 열기",
+  "chat.bubble.status_delivered": "전달됨",
+  "chat.bubble.status_read": "읽음",
   "chat.bubble.failed_retry": "보내지 못했습니다. 탭하여 다시 시도하세요.",
 
   // ---- Chats: message actions and info ----
@@ -667,6 +675,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "파일",
   "chat.media.pause_voice": "음성 메모 일시정지",
   "chat.media.play_voice": "음성 메모 재생",
+  "chat.media.pause_video": "동영상 일시정지",
+  "chat.media.play_video": "동영상 재생",
   "chat.media.voice_position": "음성 메모 위치",
   "chat.media.voice_scrub": "막대를 따라 탭하면 그 지점으로 이동합니다",
   "chat.media.image": "이미지",
@@ -711,6 +721,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "영상 메모가 녹화되지 않았습니다",
   "chat.video_note.limit_sent": "시간이 다 되어 영상 메모를 보냈습니다",
   "chat.video_note.a11y": "영상 메모, 소리를 들으려면 두 번 탭",
+  "chat.video_note.sound_on": "소리 켜기",
+  "chat.video_note.sound_off": "소리 끄기",
   "chat.live_video.preview": "라이브 영상",
   "chat.live_video.badge": "라이브",
   "chat.live_video.reconnecting": "다시 연결 중…",
@@ -894,6 +906,10 @@ export const strings: Strings = {
   "chat.notices.post": "공지 올리기",
   "chat.notices.post_short": "올리기",
   "chat.notices.delete": "공지 삭제",
+  "chat.notices.delete_title": "이 공지를 삭제할까요?",
+  "chat.notices.delete_body":
+    "공지를 가진 모든 사람에게 삭제를 요청합니다. 되돌릴 수 없습니다.",
+  "chat.notices.permanent": "영구",
   "chat.notices.fades_soon": "곧 사라짐",
   "chat.notices.1_day": "1일",
   "chat.notices.3_days": "3일",
@@ -970,6 +986,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "전달되지 않음",
   "chat.forward.app_row_body":
     "이 줄은 사람이 아니라 Airhop이 작성한 것이므로 전달할 내용이 없습니다.",
+  "chat.forward.has_ecash":
+    "ecash가 들어 있어 먼저 받는 사람이 돈을 갖게 되므로 전달되지 않습니다.",
+  "chat.forward.public_title": "{name}에 전달할까요?",
+  "chat.forward.public_mesh_body":
+    "근처에 있는 누구나 그곳에서 읽을 수 있으며, 되돌릴 수 없습니다.",
+  "chat.forward.public_geo_body":
+    "이 지역의 누구나 공개 인터넷 릴레이를 포함해 그곳에서 읽을 수 있으며, 되돌릴 수 없습니다.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "메시를 시작하는 중…",
@@ -984,7 +1007,7 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "위치 꺼짐 · Android는 피어를 찾는 데 위치가 필요합니다",
   "mesh.banner.paused": "메시 일시 중지 · 자리 비움 상태",
-  "mesh.banner.location_off": "위치 꺼짐 · 위치 채널 사용 불가",
+  "mesh.banner.location_off": "위치 꺼짐 · 위치 채널은 근처에만 닿음",
   "mesh.banner.battery_saver": "배터리 절약 모드 · 스캔 빈도 감소",
   "mesh.banner.wipe_incomplete":
     "삭제 미완료 · 일부 데이터가 남아 있을 수 있으며 다시 열면 재시도합니다",
@@ -1015,7 +1038,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "이 휴대폰의 백그라운드 활동 설정을 엽니다",
   "mesh.banner.hint.tor_settings": "Airhop의 Tor 설정을 엽니다",
+  "mesh.banner.hint.enable_location":
+    "위치 접근을 요청하거나, 설정에서 허용하는 방법을 알려 줍니다",
   "mesh.banner.dismiss": "닫기: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "이 안내를 완전히 숨깁니다",
 
   // ---- Mesh: radar ----
@@ -1245,6 +1271,8 @@ export const strings: Strings = {
     "{mint}은(는) {units}을(를) 발행합니다. 키가 이 기기에 캐시되어 있어 이제 인터넷 없이도 이 민트의 토큰을 검증할 수 있습니다.",
   "wallet.mint.remove_plain":
     "{mint}을(를) 지갑에서 제거할까요? 캐시된 키도 함께 사라지므로 이 민트의 토큰을 오프라인에서 검증할 수 없게 됩니다.",
+  "wallet.mint.remove_holdings":
+    "{mint} 보유 내역:\n{holdings}\n제거하면 이 모든 것이 이 기기에서 삭제됩니다. 먼저 인출하거나 보내세요.",
   "wallet.mint.title": "민트",
   "wallet.mint.none_desc":
     "민트는 ecash를 발행하고 교환합니다. Lightning으로 충전하거나 그 민트의 토큰을 받으려면 추가하세요.",
@@ -1593,6 +1621,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "이미 사용됨",
   "wallet.err.change_pending": "결제됨, 거스름돈 대기 중",
   "wallet.svc.mint_unreachable": "민트에 연결하지 못했습니다.",
+  "wallet.svc.mint_http_error": "민트가 오류로 응답했습니다(HTTP {status}).",
   "wallet.svc.tor_ios": "iOS에서는 민트 요청이 Tor를 거치지 않습니다.",
   "wallet.svc.tor_ios_body":
     "iOS의 Tor는 Nostr만 감싸므로, 이 요청은 일반 네트워크로 민트에 닿아 IP와 이 ecash를 연결하게 됩니다. 설정에서 {setting}을(를) 켜거나 Tor를 먼저 끄세요. 메시를 통한 ecash 송수신은 계속 작동합니다.",
@@ -1696,6 +1725,10 @@ export const strings: Strings = {
     "보유한 코인으로는 오프라인에서 정확히 {amount} {unit}을(를) 만들 수 없습니다.",
   "wallet.svc.inexact_detail":
     "보낼 수 있는 가장 작은 토큰은 {spend} {unit}입니다. 오프라인에서는 거스름돈이 없으므로 초과분 {extra} {unit}은(는) 받는 사람에게 갑니다.",
+  "wallet.svc.spend_changed":
+    "이제 이 전송에는 {spend} {unit}이(가) 필요해 동의한 금액보다 많습니다.",
+  "wallet.svc.spend_changed_body":
+    "결정하는 동안 코인이 바뀌었습니다. 아무것도 보내지 않았습니다. 다시 시도하면 새 금액을 볼 수 있습니다.",
   "wallet.svc.no_single_mint":
     "{amount} {unit}을(를) 보유한 단일 민트가 없습니다. 서로 다른 민트의 ecash는 하나의 토큰으로 합칠 수 없으니, 먼저 한 민트로 통합하거나 나누어 보내세요.",
   "wallet.svc.have_tried_send":
@@ -1724,6 +1757,10 @@ export const strings: Strings = {
     "다른 것은 보내지지 않았습니다. 민트가 결과를 확인할 때까지 코인은 보류됩니다. 처리되었다면 잠긴 토큰이 활동에 나타나니 전달해 주세요. 아니라면 코인이 돌아옵니다.",
   "wallet.svc.send_spent_by_swap":
     "이 토큰을 받기 전에 코인이 교환되어 지갑으로 돌아왔기 때문에 더 이상 받을 수 없습니다. 금액은 잔액에 있습니다.",
+  "wallet.svc.payment_in_doubt_body":
+    "민트가 결과를 확인할 때까지 코인은 보류되며, 다음 새로고침 때 다시 확인합니다. 그때까지 이 인보이스를 다시 결제하지 마세요.",
+  "wallet.svc.mint_removed":
+    "이 민트를 제거했으므로 더 이상 추적하지 않습니다.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR로 확인됨",
@@ -1766,7 +1803,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "그 bitchat 코드는 만료되었습니다. 상대방에게 QR을 다시 열어달라고 하세요.",
   "contacts.scan.tampered":
-    "이 QR 코드는 유효하지 않습니다. 피어 ID가 키와 일치하지 않습니다. 변조되었을 수 있습니다.",
+    "이 QR 코드는 유효하지 않습니다. 키 검증에 실패했습니다. 변조되었을 수 있습니다.",
   "contacts.scan.key_conflict":
     "이 사람의 다른 키를 이미 가지고 있어 아무것도 바뀌지 않았습니다. 바꾸려면 직접 만나 상대의 코드를 스캔하세요.",
   "contacts.scan.already_added": "이미 연락처에 있습니다",
@@ -1789,7 +1826,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "이 QR은 다른 사람의 것입니다. {name}에게 본인 코드를 보여달라고 하세요.",
   "contacts.verify.tampered_body":
-    "이 QR은 변조된 것으로 보입니다. ID가 키와 일치하지 않습니다.",
+    "이 QR은 변조된 것으로 보입니다. 키 검증에 실패했습니다.",
   "contacts.verify.choose_title": "어떤 방법으로 확인하시겠습니까?",
   "contacts.verify.choose_body":
     "두 방법 모두 이 휴대폰에 있는 키가 정말 {name}의 것인지 확인해 줍니다.",
@@ -1962,7 +1999,7 @@ export const strings: Strings = {
     "신원, 메시지, 연락처, 지갑은 그대로 둔 채 환경설정을 기본값으로 되돌립니다",
   "settings.general.reset_title": "설정을 초기화할까요?",
   "settings.general.reset_body":
-    "화면, 언어, 알림, 보내기 취소, 연결(인터넷, Tor, 게이트웨이, 브리지, 릴레이)을 포함한 환경설정이 기본값으로 돌아갑니다. Airhop 잠금, 미디어 보관 기간, 상태는 설정한 그대로 유지됩니다. 신원, 메시지, 연락처, 지갑은 그대로 유지됩니다.",
+    "화면, 언어, 알림, 보내기 취소, 연결(게이트웨이, 메시 브리지, 릴레이)을 포함한 환경설정이 기본값으로 돌아갑니다. Airhop 잠금, 미디어 보관 기간, 인터넷 스위치, Tor와 그 브리지, 상태는 설정한 그대로 유지됩니다. 신원, 메시지, 연락처, 지갑은 그대로 유지됩니다.",
   "settings.general.reset_confirm": "초기화",
 
   // ---- Settings: privacy and security ----
@@ -2114,6 +2151,10 @@ export const strings: Strings = {
     "Tor가 아직 연결되지 않았습니다. 계속 켜진 채로 시도하며, 경로 설정이 되었는지 또는 이 네트워크가 차단하고 있는지는 메시 탭에서 알려줍니다.",
   "settings.conn.tor_failed":
     "Tor를 시작할 수 없습니다. 잠시 후 다시 시도하세요.",
+  "settings.conn.tor_bad_bridges":
+    "Tor가 이 브리지 라인을 사용할 수 없습니다. 확인하거나 다른 연결 방식을 선택하세요.",
+  "settings.conn.tor_port_busy":
+    "Tor에 필요한 포트를 다른 앱이 사용 중이며, 대개 Tor를 실행하는 다른 앱입니다. 그 앱을 닫은 뒤 다시 시도하세요.",
   "settings.tor.status": "Tor 상태",
   "settings.tor.connection": "연결 방식",
   "settings.tor.mode_off": "직접",
@@ -2255,6 +2296,8 @@ export const strings: Strings = {
   "settings.language.set_a11y": "언어를 {value}(으)로 설정",
   "settings.language.pending": "다음에 열 때 적용",
   "settings.language.pending_a11y": "{value}, 다음에 Airhop을 열 때 적용됩니다",
+  "settings.language.phone": "휴대폰 언어",
+  "settings.language.name_endonym_a11y": "{name}({endonym})",
   "settings.language.rtl_restart": "지금 다시 열기",
   "settings.language.rtl_title": "Airhop을 다시 열어 마무리하세요",
   "settings.language.rtl_body":
@@ -2271,7 +2314,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "메시 일시 중지, 스캔도 광고도 하지 않음",
   "settings.status.invisible": "보이지 않음",
   "settings.status.invisible_desc":
-    "블루투스 스캔에는 숨겨지고, 연결한 휴대폰에는 계속 보임",
+    "블루투스로 광고하지 않지만, 이 휴대폰과 블루투스나 Wi-Fi로 연결된 휴대폰에는 계속 보임",
   "settings.status.title": "상태",
   "settings.status.set_a11y": "상태를 {value}(으)로 설정",
   "settings.status.edit": "상태 편집",
@@ -2533,6 +2576,10 @@ export const plurals: Plurals = {
   "chat.select.forward": {
     other: "메시지 {count}개 전달",
   },
+  "chat.forward.too_many_public": {
+    other:
+      "공개 방에서는 한 사람의 연속 메시지를 {count}개까지만 보여 주므로 나머지는 사라집니다. 한 번에 더 적게 전달하세요.",
+  },
   "chat.voice.live_speaking_count": {
     other: "{count}명이 말하는 중",
   },
@@ -2598,12 +2645,12 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    other:
-      "{mint}이(가) 코인 {count}개에 {balance} {unit}을(를) 보유하고 있습니다. 제거하면 그 잔액이 이 기기에서 영구히 삭제되며 백업은 없습니다. 잔액을 먼저 인출하거나 보내세요.",
-  },
   "wallet.mint.split_across": {
     other: "잔액이 민트 {count}곳에 나뉘어 있습니다. 한 곳으로 옮기세요.",
+  },
+  "wallet.mint.remove_pending": {
+    other:
+      "{mint}의 결제 {count}건이 아직 완료되지 않았습니다. 민트를 제거하면 이 결제와 아직 돌려받을 수 있던 것을 모두 포기하게 됩니다.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2615,6 +2662,10 @@ export const plurals: Plurals = {
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     other: "{mints}에서 사용하지 않은 코인 {count}개를 복구했습니다.",
+  },
+  "wallet.backup.already_held": {
+    other:
+      "찾은 코인 {count}개는 이미 이 지갑에 있어 다시 계산하지 않았습니다.",
   },
   "wallet.backup.already_spent": {
     other:

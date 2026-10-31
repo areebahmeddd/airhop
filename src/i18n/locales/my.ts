@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "သင့်သော့များကို ဖန်တီး၍ မရပါ",
   "onboarding.identity.failed_body":
     "ဤစက်သည် Airhop ကို သော့များ လုံခြုံစွာသိမ်းဆည်းခွင့် မပြုခဲ့ပါ။ ထပ်စမ်းကြည့်ပါ၊ သို့မဟုတ် ဖုန်းကို ပြန်ဖွင့်ပြီး Airhop ကို ပြန်ဖွင့်ပါ။",
-  "onboarding.identity.steps_a11y": "အဆင့်များ — {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "အဆင့်များ: {first}။ {second}။ {third}။ {fourth}။",
   "onboarding.identity.step.x25519": "X25519 အမြဲတမ်းသော့တွဲ ဖန်တီးနေသည်",
   "onboarding.identity.step.ed25519": "Ed25519 လက်မှတ်ထိုးသော့တွဲ ဖန်တီးနေသည်",
   "onboarding.identity.step.keychain":
@@ -90,8 +91,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "မက်ရှ်ပေါ်ရှိ သင့်နာမည်",
   "onboarding.username.peer_id": "လုပ်ဖော်ကိုင်ဖက် ID",
-  "onboarding.username.card_a11y":
-    "မက်ရှ်ပေါ်ရှိ သင့်နာမည်မှာ {username} ဖြစ်သည်။ လုပ်ဖော်ကိုင်ဖက် ID {peerID}။ {props}။",
+  "onboarding.username.card_full_a11y":
+    "မက်ရှ်ပေါ်ရှိ သင့်နာမည်မှာ {username} ဖြစ်သည်။ လုပ်ဖော်ကိုင်ဖက် ID {peerID}။ အယ်လဂိုရီသမ်: {algorithm}။ သိမ်းဆည်းရာ: {storage}။ အကောင့် လိုအပ်မှု: {account}။",
   "onboarding.username.explanation":
     "ဤအသုံးပြုသူအမည်ကို သင့်အများသုံးသော့မှ တိကျစွာ ထုတ်ယူထားသည်။ သင့်လုပ်ဖော်ကိုင်ဖက် ID ကို မြင်သည့် စက်တိုင်းတွင် တူညီပါသည်။",
   "onboarding.username.cta": "Airhop သို့ ဝင်ပါ",
@@ -161,7 +162,7 @@ export const strings: Strings = {
     "အနီးအနားရှိ စက်များကို ရှာဖွေပြီး ၎င်းတို့အကြား မက်ဆေ့ဂျ်များကို ထပ်ဆင့်ပို့ပေးသည်။ မက်ရှ်ကို ဤနည်းဖြင့် တည်ဆောက်ပြီး အင်တာနက်မလိုဘဲ အလုပ်လုပ်သည်။",
   "onboarding.primer.location.title": "တည်နေရာ",
   "onboarding.primer.location.body":
-    "ရပ်ကွက်မှ ဒေသအထိ အနီးအနားရှိ ဧရိယာချန်နယ်များတွင် သင့်ကို ထည့်သွင်းပေးသည်။ Airhop သည် သင့်ကို ဘယ်တော့မှ မခြေရာခံသလို သင့်တိကျသောတည်နေရာကိုလည်း စက်ပြင်ပသို့ မပို့ပါ။",
+    "ရပ်ကွက်မှ ဒေသအထိ အနီးအနားရှိ ဧရိယာချန်နယ်များတွင် သင့်ကို ထည့်သွင်းပေးသည်။ Airhop သည် သင့်ကို ဘယ်တော့မှ မခြေရာခံပါ။ သင့်တိကျသောတည်နေရာသည် တစ်စုံတစ်ဦးထံ တည်နေရာ ပို့သည့်အခါမှသာ သင့်စက်ပြင်ပသို့ ထွက်သွားသည်။",
   "onboarding.primer.notifications.title": "အကြောင်းကြားချက်များ",
   "onboarding.primer.notifications.body":
     "အက်ပ်ပိတ်ထားချိန်တွင်ပင် မက်ဆေ့ဂျ်အသစ်များအတွက် အကြောင်းကြားချက် ရယူပါ။ အကြောင်းကြားချက်များကို သင့်စက်ပေါ်တွင်သာ ဖန်တီးပြီး ဆာဗာ မပါဝင်ပါ။",
@@ -173,6 +174,9 @@ export const strings: Strings = {
   "permission.bluetooth.label": "ဘလူးတုသ် အသုံးပြုခွင့်",
   "permission.bluetooth.purpose":
     "မက်ရှ်ပေါ်တွင် အနီးအနားရှိစက်များကို ရှာဖွေရန်",
+  "permission.location.label": "တည်နေရာ အသုံးပြုခွင့်",
+  "permission.location.purpose":
+    "ဘလူးတုသ်အကွာအဝေးကို ကျော်၍ တည်နေရာချန်နယ်များထံ ရောက်ရန်",
   "permission.open_settings": "ဆက်တင်များ ဖွင့်ပါ",
   "permission.not_now": "ယခုမဟုတ်သေး",
   "permission.blocked_title": "{label} ပိတ်ထားသည်",
@@ -234,8 +238,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "ထပ်မံရွေးချယ်စရာများအတွက် နှစ်ချက်နှိပ်ပြီး ဖိထားပါ",
   "chat.channels.row_hint":
     "ထပ်မံရွေးချယ်စရာများအတွက် နှစ်ချက်နှိပ်ပြီး ဖိထားပါ",
-  "chat.dm.you_prefix": "သင်:",
-  "chat.draft_prefix": "မူကြမ်း:",
+  "chat.draft_preview": "မူကြမ်း: {draft}",
   "chat.dm.none": "တိုက်ရိုက်မက်ဆေ့ဂျ် မရှိပါ",
   "chat.dm.none_desc":
     "စာဝှက်ထားသော တိုက်ရိုက်မက်ဆေ့ဂျ် စတင်ရန် မက်ရှ်တဘ်သို့သွား၍ လုပ်ဖော်ကိုင်ဖက်တစ်ဦးကို နှိပ်ပါ။",
@@ -460,6 +463,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "အများသုံး ချန်နယ်",
   "chat.thread.notices": "ဤချန်နယ်၏ အသိပေးချက်များ",
   "chat.thread.invite": "ဤချန်နယ်သို့ တစ်စုံတစ်ဦးကို ဖိတ်ပါ",
+  "chat.thread.location_off":
+    "တည်နေရာ ပိတ်ထားသည် · အနီးအနားရှိသူများထံသာ ရောက်နေသည်",
   "chat.thread.not_in_range":
     "အနီးအနားတွင် မရှိပါ။ အင်တာနက်မှတစ်ဆင့် ပို့နေသည်။",
   "chat.thread.not_nearby":
@@ -488,7 +493,7 @@ export const strings: Strings = {
   "chat.thread.message": "မက်ဆေ့ဂျ်",
   "chat.thread.message_placeholder": "မက်ဆေ့ဂျ်…",
   "chat.thread.length_full": "မက်ဆေ့ဂျ် ပြည့်နေပါပြီ",
-  "chat.thread.waiting_for": "{name} ပြန်လာရန် စောင့်နေသည် · {percent}%",
+  "chat.thread.waiting_for": "{name} ပြန်လာရန် စောင့်နေသည် · {percent}",
   "chat.transfer.progress": "{total} အနက် {done}",
   "chat.transfer.speed": "{size}/စက္ကန့်",
   "chat.transfer.left": "{time} ကျန်သည်",
@@ -555,7 +560,13 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "{name} ၏ ပရိုဖိုင်ကို ကြည့်ပါ",
   "chat.bubble.forwarded": "ထပ်ဆင့်ပို့ထားသည်",
   "chat.bubble.attachment": "ပူးတွဲဖိုင်",
-  "chat.bubble.a11y": "{sender} — {body}။ ထပ်မံရွေးချယ်စရာများအတွက် ဖိထားပါ။",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint":
+    "ထပ်မံရွေးချယ်စရာများအတွက် နှစ်ချက်နှိပ်ပြီး ဖိထားပါ",
+  "chat.bubble.more_options": "ထပ်မံရွေးချယ်စရာများ",
+  "chat.bubble.open_link": "{link} ကို ဖွင့်ပါ",
+  "chat.bubble.status_delivered": "ရောက်ပြီး",
+  "chat.bubble.status_read": "ဖတ်ပြီး",
   "chat.bubble.failed_retry": "ပို့၍ မရပါ။ ထပ်စမ်းရန် နှိပ်ပါ။",
 
   // ---- Chats: message actions and info ----
@@ -688,6 +699,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "ဖိုင်",
   "chat.media.pause_voice": "အသံမှတ်စု ခဏရပ်ပါ",
   "chat.media.play_voice": "အသံမှတ်စု ဖွင့်ပါ",
+  "chat.media.pause_video": "ဗီဒီယို ခဏရပ်ပါ",
+  "chat.media.play_video": "ဗီဒီယို ဖွင့်ပါ",
   "chat.media.voice_position": "အသံမှတ်စု အနေအထား",
   "chat.media.voice_scrub": "ထိုနေရာသို့ ခုန်ရန် တန်းများပေါ်တွင် နှိပ်ပါ",
   "chat.media.image": "ရုပ်ပုံ",
@@ -737,6 +750,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "ဗီဒီယိုမှတ်စု မရိုက်ကူးနိုင်ခဲ့ပါ",
   "chat.video_note.limit_sent": "အချိန်ကုန်ပြီ၊ ဗီဒီယိုမှတ်စု ပို့ပြီးပါပြီ",
   "chat.video_note.a11y": "ဗီဒီယိုမှတ်စု၊ အသံအတွက် နှစ်ချက်နှိပ်ပါ",
+  "chat.video_note.sound_on": "အသံ ဖွင့်ပါ",
+  "chat.video_note.sound_off": "အသံ ပိတ်ပါ",
   "chat.live_video.preview": "တိုက်ရိုက်ဗီဒီယို",
   "chat.live_video.badge": "တိုက်ရိုက်",
   "chat.live_video.reconnecting": "ပြန်ချိတ်ဆက်နေသည်…",
@@ -928,6 +943,10 @@ export const strings: Strings = {
   "chat.notices.post": "အသိပေးချက် တင်ပါ",
   "chat.notices.post_short": "တင်ပါ",
   "chat.notices.delete": "အသိပေးချက် ဖျက်ပါ",
+  "chat.notices.delete_title": "ဤအသိပေးချက်ကို ဖျက်မလား?",
+  "chat.notices.delete_body":
+    "၎င်းကို ရထားသူတိုင်းအား ဖယ်ရှားရန် တောင်းဆိုမည်။ ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍ မရပါ။",
+  "chat.notices.permanent": "အမြဲတမ်း",
   "chat.notices.fades_soon": "မကြာမီ မှိန်သွားမည်",
   "chat.notices.1_day": "1 ရက်",
   "chat.notices.3_days": "3 ရက်",
@@ -1006,6 +1025,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "ထပ်ဆင့်မပို့ပါ",
   "chat.forward.app_row_body":
     "ဤစာကြောင်းသည် လူတစ်ဦးထံမှ မဟုတ်ဘဲ Airhop ထံမှ ဖြစ်သောကြောင့် ထပ်ဆင့်ပို့စရာ မရှိပါ။",
+  "chat.forward.has_ecash":
+    "ဤအရာတွင် ecash ပါဝင်ပြီး အရင်ရယူသူက ငွေကို ရသွားမည်ဖြစ်သောကြောင့် ထပ်ဆင့်မပို့ပါ။",
+  "chat.forward.public_title": "{name} သို့ ထပ်ဆင့်ပို့မလား?",
+  "chat.forward.public_mesh_body":
+    "အနီးအနားရှိ မည်သူမဆို ထိုနေရာတွင် ဖတ်နိုင်ပြီး ပြန်ရုပ်သိမ်း၍ မရပါ။",
+  "chat.forward.public_geo_body":
+    "ဤဧရိယာရှိ မည်သူမဆို အများသုံး အင်တာနက် ထပ်ဆင့်လွှင့်စက်များပေါ်တွင်ပါ ထိုနေရာ၌ ဖတ်နိုင်ပြီး ပြန်ရုပ်သိမ်း၍ မရပါ။",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "မက်ရှ်ကို စတင်နေသည်…",
@@ -1023,7 +1049,7 @@ export const strings: Strings = {
     "တည်နေရာ ပိတ်ထားသည် · Android သည် လုပ်ဖော်ကိုင်ဖက်ရှာရန် ၎င်းကို လိုအပ်သည်",
   "mesh.banner.paused": "မက်ရှ် ရပ်ထားသည် · သင် ဝေးနေသည်",
   "mesh.banner.location_off":
-    "တည်နေရာ ပိတ်ထားသည် · တည်နေရာချန်နယ်များ မရနိုင်ပါ",
+    "တည်နေရာ ပိတ်ထားသည် · တည်နေရာချန်နယ်များ အနီးအနားသို့သာ ရောက်သည်",
   "mesh.banner.battery_saver": "ဘက်ထရီချွေတာမှု · ရှာဖွေမှု လျော့နည်းသည်",
   "mesh.banner.wipe_incomplete":
     "ဖျက်ခြင်း မပြီးဆုံးပါ · အချက်အလက်အချို့ ကျန်နိုင်ပြီး ပြန်ဖွင့်လျှင် ထပ်ကြိုးစားပါမည်",
@@ -1058,7 +1084,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "ဤဖုန်း၏ နောက်ခံလှုပ်ရှားမှုဆက်တင်များကို ဖွင့်သည်",
   "mesh.banner.hint.tor_settings": "Airhop ၏ Tor ဆက်တင်များကို ဖွင့်သည်",
+  "mesh.banner.hint.enable_location":
+    "တည်နေရာ အသုံးပြုခွင့် တောင်းသည်၊ သို့မဟုတ် ဆက်တင်များတွင် ခွင့်ပြုပုံကို ရှင်းပြသည်",
   "mesh.banner.dismiss": "ဖယ်ရှားပါ — {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "ဤမှတ်ချက်ကို အပြီးအပိုင် ဝှက်ထားသည်",
 
   // ---- Mesh: radar ----
@@ -1297,6 +1326,8 @@ export const strings: Strings = {
     "{mint} သည် {units} ကို ထုတ်ပေးသည်။ ၎င်း၏သော့များကို ဤစက်ပေါ်တွင် သိမ်းထားသဖြင့် ယခု အင်တာနက်မရှိလည်း ၎င်း၏တိုကင်များကို စစ်ဆေးနိုင်ပါပြီ။",
   "wallet.mint.remove_plain":
     "{mint} ကို သင့်ပိုက်ဆံအိတ်မှ ဖယ်မလား? သိမ်းထားသောသော့များလည်း ပါသွားမည်ဖြစ်၍ ၎င်း၏တိုကင်များကို အော့ဖ်လိုင်းတွင် မစစ်ဆေးနိုင်တော့ပါ။",
+  "wallet.mint.remove_holdings":
+    "{mint} တွင် ရှိသည်များ:\n{holdings}\nဖယ်ရှားလိုက်လျှင် ဤအရာအားလုံး ဤစက်မှ ပျက်သွားမည်။ အရင်ထုတ်ပါ သို့မဟုတ် ပို့ပါ။",
   "wallet.mint.title": "မင့်များ",
   "wallet.mint.none_desc":
     "မင့်သည် သင့် ecash ကို ထုတ်ပေးပြီး ပြန်လဲပေးသည်။ Lightning ဖြင့် ငွေဖြည့်ရန် သို့မဟုတ် ၎င်း၏ တိုကင်များ လက်ခံရန် တစ်ခုထည့်ပါ။",
@@ -1654,6 +1685,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "သုံးပြီးဖြစ်သည်",
   "wallet.err.change_pending": "ပေးချေပြီး၊ အကြွေ စောင့်ဆိုင်းဆဲ",
   "wallet.svc.mint_unreachable": "မင့်ကို မဆက်သွယ်နိုင်ခဲ့ပါ။",
+  "wallet.svc.mint_http_error": "မင့်က အမှားဖြင့် ပြန်ဖြေသည် (HTTP {status})။",
   "wallet.svc.tor_ios":
     "iOS ပေါ်တွင် မင့်တောင်းဆိုမှုများသည် Tor မှ မဖြတ်သန်းပါ။",
   "wallet.svc.tor_ios_body":
@@ -1767,6 +1799,10 @@ export const strings: Strings = {
     "သင့်အကြွေစေ့များသည် အော့ဖ်လိုင်းတွင် {amount} {unit} အတိအကျ မဖြစ်နိုင်ပါ။",
   "wallet.svc.inexact_detail":
     "ပို့နိုင်သည့် အသေးဆုံးတိုကင်မှာ {spend} {unit} ဖြစ်သည်။ အော့ဖ်လိုင်းတွင် အကြွေပြန်အမ်းခြင်း မရှိသဖြင့် ပိုသော {extra} {unit} သည် လက်ခံသူထံ ရောက်သွားမည်။",
+  "wallet.svc.spend_changed":
+    "ဤပို့ခြင်းသည် ယခု {spend} {unit} ကုန်မည်ဖြစ်ပြီး သင်သဘောတူထားသည်ထက် ပိုများသည်။",
+  "wallet.svc.spend_changed_body":
+    "သင် ဆုံးဖြတ်နေစဉ် သင့်အကြွေစေ့များ ပြောင်းလဲသွားသည်။ ဘာမျှ မပို့ရသေးပါ။ ပမာဏအသစ်ကို ကြည့်ရန် ထပ်စမ်းပါ။",
   "wallet.svc.no_single_mint":
     "{amount} {unit} ကို ကိုင်ထားသော မင့်တစ်ခုတည်း မရှိပါ။ မတူညီသောမင့်များမှ ecash ကို တိုကင်တစ်ခုတည်းအဖြစ် ပေါင်း၍ မရပါ — မင့်တစ်ခုတည်းတွင် အရင်စုစည်းပါ၊ သို့မဟုတ် ပမာဏခွဲ၍ ပို့ပါ။",
   "wallet.svc.have_tried_send":
@@ -1796,6 +1832,10 @@ export const strings: Strings = {
     "အခြားဘာမှ မပို့ရသေးပါ။ ရလဒ်ကို မင့်က အတည်ပြုသည်အထိ အကြွေစေ့များကို ထိန်းထားသည်။ ပြီးမြောက်ခဲ့ပါက သော့ခတ်ထားသော တိုကင်သည် လွှဲပေးရန် လှုပ်ရှားမှုတွင် ပေါ်လာမည်။ မဟုတ်ပါက အကြွေစေ့များ ပြန်ရောက်လာမည်။",
   "wallet.svc.send_spent_by_swap":
     "ဤတိုကင်ကို မရယူမီ အကြွေစေ့များကို သင့်ပိုက်ဆံအိတ်ထဲသို့ ပြန်လဲထားပြီးဖြစ်သောကြောင့် ၎င်းကို ရယူ၍မရတော့ပါ။ တန်ဖိုးသည် သင့်လက်ကျန်ထဲတွင်ရှိသည်။",
+  "wallet.svc.payment_in_doubt_body":
+    "ရလဒ်ကို မင့်က အတည်ပြုသည်အထိ အကြွေစေ့များကို ထိန်းထားပြီး နောက်တစ်ကြိမ် မင့်နှင့် စစ်ဆေးသည့်အခါ ထပ်စစ်မည်။ ထိုအချိန်အထိ ဤငွေတောင်းခံလွှာကို ထပ်မပေးချေပါနှင့်။",
+  "wallet.svc.mint_removed":
+    "သင် ဤမင့်ကို ဖယ်ရှားခဲ့သောကြောင့် ၎င်းကို ခြေရာမခံတော့ပါ။",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR ဖြင့် အတည်ပြုပြီး",
@@ -1838,7 +1878,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "ထို bitchat ကုဒ် သက်တမ်းကုန်သွားပါပြီ။ ၎င်းတို့၏ QR ကို ပြန်ဖွင့်ပေးရန် တောင်းဆိုပါ။",
   "contacts.scan.tampered":
-    "ဤ QR ကုဒ် မမှန်ကန်ပါ — ၎င်း၏ လုပ်ဖော်ကိုင်ဖက် ID သည် သော့များနှင့် မကိုက်ညီပါ။ ပြုပြင်ခံထားရနိုင်သည်။",
+    "ဤ QR ကုဒ် မမှန်ကန်ပါ။ ၎င်း၏ သော့များကို စစ်ဆေး၍ မအောင်မြင်ပါ။ ပြုပြင်ခံထားရနိုင်သည်။",
   "contacts.scan.key_conflict":
     "၎င်းတို့အတွက် မတူညီသောသော့တစ်ခု သင့်ထံတွင် ရှိပြီးသားဖြစ်သောကြောင့် ဘာမျှ မပြောင်းလဲပါ။ အစားထိုးရန် ၎င်းတို့၏ကုဒ်ကို လူချင်းတွေ့၍ စကန်ဖတ်ပါ။",
   "contacts.scan.already_added": "သင့်အဆက်အသွယ်များတွင် ရှိပြီးသား",
@@ -1861,7 +1901,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "ဤ QR သည် အခြားသူတစ်ဦး၏ ဖြစ်သည်။ {name} ကို ၎င်း၏ကိုယ်ပိုင်ကုဒ်ကို ပြရန် တောင်းဆိုပါ။",
   "contacts.verify.tampered_body":
-    "ဤ QR သည် ပြုပြင်ခံထားရပုံရသည် — ၎င်း၏ ID သည် သော့နှင့် မကိုက်ညီပါ။",
+    "ဤ QR သည် ပြုပြင်ခံထားရပုံရသည်။ ၎င်း၏ သော့များကို စစ်ဆေး၍ မအောင်မြင်ပါ။",
   "contacts.verify.choose_title": "မည်သို့ စစ်ဆေးလိုပါသလဲ?",
   "contacts.verify.choose_body":
     "နှစ်မျိုးလုံးက ဤဖုန်းပေါ်ရှိ သော့များသည် {name} ၏ အမှန်တကယ် ဖြစ်ကြောင်း အတည်ပြုပေးသည်။",
@@ -2046,7 +2086,7 @@ export const strings: Strings = {
     "သင့်အထောက်အထား၊ မက်ဆေ့ဂျ်များ၊ အဆက်အသွယ်များနှင့် ပိုက်ဆံအိတ်ကို မထိဘဲ ဦးစားပေးချက်များကို မူလအတိုင်း ပြန်ထားပေးသည်",
   "settings.general.reset_title": "ဆက်တင်များ ပြန်လည်သတ်မှတ်မလား?",
   "settings.general.reset_body":
-    "အသွင်အပြင်၊ ဘာသာစကား၊ အကြောင်းကြားချက်များ၊ ပို့ခြင်းပြန်ရုပ်သိမ်းခြင်းနှင့် ချိတ်ဆက်မှု (အင်တာနက်၊ Tor၊ ဝင်ပေါက်၊ တံတား၊ ထပ်ဆင့်လွှင့်စက်များ) အပါအဝင် ဦးစားပေးချက်များသည် မူလအတိုင်း ပြန်ဖြစ်သွားမည်။ Airhop လော့ခ်၊ မီဒီယာကို သိမ်းထားမည့်ကာလနှင့် သင့်အခြေအနေတို့မှာ သတ်မှတ်ထားသည့်အတိုင်း ရှိနေမည်။ သင့်အထောက်အထား၊ မက်ဆေ့ဂျ်များ၊ အဆက်အသွယ်များနှင့် ပိုက်ဆံအိတ်ကို မထိပါ။",
+    "အသွင်အပြင်၊ ဘာသာစကား၊ အကြောင်းကြားချက်များ၊ ပို့ခြင်းပြန်ရုပ်သိမ်းခြင်းနှင့် ချိတ်ဆက်မှု (ဝင်ပေါက်၊ မက်ရှ်တံတား၊ ထပ်ဆင့်လွှင့်စက်များ) အပါအဝင် ဦးစားပေးချက်များသည် မူလအတိုင်း ပြန်ဖြစ်သွားမည်။ Airhop လော့ခ်၊ မီဒီယာကို သိမ်းထားမည့်ကာလ၊ အင်တာနက်ခလုတ်၊ Tor နှင့် ၎င်း၏တံတားများ၊ သင့်အခြေအနေတို့မှာ သတ်မှတ်ထားသည့်အတိုင်း ရှိနေမည်။ သင့်အထောက်အထား၊ မက်ဆေ့ဂျ်များ၊ အဆက်အသွယ်များနှင့် ပိုက်ဆံအိတ်ကို မထိပါ။",
   "settings.general.reset_confirm": "ပြန်လည်သတ်မှတ်ပါ",
 
   // ---- Settings: privacy and security ----
@@ -2209,6 +2249,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Tor မချိတ်ဆက်ရသေးပါ။ ၎င်းသည် ဖွင့်ထားဆဲဖြစ်ပြီး ဆက်ကြိုးစားနေပါသည်။ လမ်းကြောင်းရသည့်အခါ သို့မဟုတ် ဤကွန်ရက်က ပိတ်ဆို့နေသည်ဆိုပါက မက်ရှ်တဘ်က အသိပေးပါလိမ့်မည်။",
   "settings.conn.tor_failed": "Tor ကို စတင်၍မရပါ။ ခဏနေ ထပ်စမ်းပါ။",
+  "settings.conn.tor_bad_bridges":
+    "Tor သည် ဤတံတားလိုင်းများကို အသုံးမပြုနိုင်ခဲ့ပါ။ ၎င်းတို့ကို စစ်ဆေးပါ၊ သို့မဟုတ် အခြားချိတ်ဆက်မှုကို ရွေးပါ။",
+  "settings.conn.tor_port_busy":
+    "Tor လိုအပ်သော ပို့တ်ကို အခြားအက်ပ်တစ်ခုက သုံးနေသည်၊ များသောအားဖြင့် Tor ကို လည်ပတ်နေသော အခြားအက်ပ်ဖြစ်သည်။ ၎င်းကို ပိတ်ပြီးမှ ထပ်စမ်းပါ။",
   "settings.tor.status": "Tor အခြေအနေ",
   "settings.tor.connection": "ချိတ်ဆက်မှု",
   "settings.tor.mode_off": "တိုက်ရိုက်",
@@ -2356,6 +2400,8 @@ export const strings: Strings = {
   "settings.language.pending": "နောက်တစ်ကြိမ် ဖွင့်သည့်အခါ",
   "settings.language.pending_a11y":
     "{value}၊ နောက်တစ်ကြိမ် Airhop ဖွင့်သည့်အခါ အကျိုးသက်ရောက်မည်",
+  "settings.language.phone": "ဖုန်း ဘာသာစကား",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "ယခုပြန်ဖွင့်ပါ",
   "settings.language.rtl_title": "ပြီးမြောက်စေရန် Airhop ကို ပြန်ဖွင့်ပါ",
   "settings.language.rtl_body":
@@ -2372,7 +2418,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "မက်ရှ် ရပ်ထားသည်၊ မရှာဖွေ မကြေညာ",
   "settings.status.invisible": "မမြင်ရ",
   "settings.status.invisible_desc":
-    "ဘလူးတုသ် ရှာဖွေမှုတွင် ပုန်းနေသည်၊ သင်ချိတ်ဆက်ထားသော ဖုန်းများက သင့်ကို ဆက်မြင်နေရသည်",
+    "ဘလူးတုသ်ဖြင့် မကြေညာပါ၊ သို့သော် ဤဖုန်းနှင့် ဘလူးတုသ် သို့မဟုတ် Wi-Fi ဖြင့် ချိတ်ထားသော ဖုန်းများက သင့်ကို ဆက်မြင်နေရသည်",
   "settings.status.title": "အခြေအနေ",
   "settings.status.set_a11y": "အခြေအနေကို {value} အဖြစ် သတ်မှတ်ပါ",
   "settings.status.edit": "အခြေအနေ ပြင်ပါ",
@@ -2648,6 +2694,10 @@ export const plurals: Plurals = {
   "chat.select.forward": {
     other: "မက်ဆေ့ဂျ် {count} ခု ထပ်ဆင့်ပို့ပါ",
   },
+  "chat.forward.too_many_public": {
+    other:
+      "အများသုံး အခန်းသည် လူတစ်ဦးထံမှ ဆက်တိုက် မက်ဆေ့ဂျ် {count} ခုကိုသာ ပြသဖြင့် ကျန်သည်များ ပျောက်သွားမည်။ တစ်ကြိမ်လျှင် နည်းနည်းစီ ထပ်ဆင့်ပို့ပါ။",
+  },
   "chat.voice.live_speaking_count": {
     other: "{count} ဦး စကားပြောနေသည်",
   },
@@ -2713,12 +2763,12 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    other:
-      "{mint} တွင် {balance} {unit} ကို အကြွေစေ့ {count} ခုအဖြစ် သိမ်းထားသည်။ ဖယ်ရှားလိုက်လျှင် ထိုလက်ကျန်သည် ဤစက်မှ အပြီးအပိုင် ပျက်သွားပြီး အရန်သိမ်းထားခြင်းလည်း မရှိပါ။ လက်ကျန်ငွေကို အရင်ထုတ်ပါ သို့မဟုတ် ပို့ပါ။",
-  },
   "wallet.mint.split_across": {
     other: "လက်ကျန်ကို မင့် {count} ခုတွင် ခွဲထားသည်။ တစ်ခုတည်းသို့ ရွှေ့ပါ။",
+  },
+  "wallet.mint.remove_pending": {
+    other:
+      "{mint} ရှိ ငွေပေးချေမှု {count} ခု မပြီးမြောက်သေးပါ။ မင့်ကို ဖယ်ရှားလျှင် ၎င်းတို့ကို စွန့်လွှတ်ရမည်ဖြစ်ပြီး ၎င်းတို့ ပြန်ရနိုင်မည့် အရာများလည်း ဆုံးရှုံးမည်။",
   },
 
   // ---- Wallet: Lightning ----
@@ -2730,6 +2780,10 @@ export const plurals: Plurals = {
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     other: "{mints} မှ မသုံးရသေးသော အကြွေစေ့ {count} ခု ပြန်ရရှိခဲ့သည်။",
+  },
+  "wallet.backup.already_held": {
+    other:
+      "တွေ့ရှိသော အကြွေစေ့ {count} ခုသည် ဤပိုက်ဆံအိတ်တွင် ရှိပြီးဖြစ်သဖြင့် ထပ်မရေတွက်ပါ။",
   },
   "wallet.backup.already_spent": {
     other:

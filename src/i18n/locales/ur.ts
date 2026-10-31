@@ -81,7 +81,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "آپ کی کلیدیں نہیں بن سکیں",
   "onboarding.identity.failed_body":
     "اس آلے نے Airhop کو انہیں محفوظ طریقے سے رکھنے کی اجازت نہیں دی۔ دوبارہ کوشش کریں، یا اپنا فون دوبارہ چالو کر کے Airhop پھر کھولیں۔",
-  "onboarding.identity.steps_a11y": "مراحل: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "مراحل: {first}۔ {second}۔ {third}۔ {fourth}۔",
   "onboarding.identity.step.x25519":
     "مستقل X25519 کلیدوں کا جوڑا بنایا جا رہا ہے",
   "onboarding.identity.step.ed25519":
@@ -93,8 +94,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "میش پر آپ کا نام",
   "onboarding.username.peer_id": "پیئر شناخت",
-  "onboarding.username.card_a11y":
-    "میش پر آپ کا نام {username} ہے۔ پیئر شناخت {peerID}۔ {props}۔",
+  "onboarding.username.card_full_a11y":
+    "میش پر آپ کا نام {username} ہے۔ پیئر شناخت {peerID}۔ الگورتھم: {algorithm}۔ ذخیرہ: {storage}۔ اکاؤنٹ درکار ہے: {account}۔",
   "onboarding.username.explanation":
     "یہ صارف نام آپ کی عوامی کلید سے قطعی طور پر اخذ ہوتا ہے۔ یہ ہر اُس آلے پر ایک جیسا ہوتا ہے جو آپ کی پیئر شناخت دیکھتا ہے۔",
   "onboarding.username.cta": "Airhop میں داخل ہوں",
@@ -160,7 +161,7 @@ export const strings: Strings = {
     "قریبی آلات ڈھونڈتا ہے اور ان کے درمیان پیغامات پہنچاتا ہے۔ میش اسی طرح بنتی ہے، اور یہ انٹرنیٹ کے بغیر کام کرتی ہے۔",
   "onboarding.primer.location.title": "مقام",
   "onboarding.primer.location.body":
-    "آپ کو قریبی علاقے کے چینلوں میں رکھتا ہے، ایک محلے سے لے کر پورے خطے تک۔ Airhop آپ کا تعاقب کبھی نہیں کرتا اور نہ ہی آپ کا درست مقام آلے سے باہر بھیجتا ہے۔",
+    "آپ کو قریبی علاقے کے چینلوں میں رکھتا ہے، ایک محلے سے لے کر پورے خطے تک۔ Airhop آپ کا تعاقب کبھی نہیں کرتا، اور آپ کا درست مقام آپ کے آلے سے صرف تب باہر جاتا ہے جب آپ کسی کو اپنا مقام بھیجتے ہیں۔",
   "onboarding.primer.notifications.title": "اطلاعات",
   "onboarding.primer.notifications.body":
     "ایپ بند ہونے پر بھی نئے پیغامات کی اطلاع پائیں۔ اطلاعات آپ کے آلے پر مقامی طور پر بنتی ہیں، کسی سرور کی شمولیت کے بغیر۔",
@@ -171,6 +172,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "بلوٹوتھ تک رسائی",
   "permission.bluetooth.purpose": "میش کے ذریعے قریبی آلات دریافت کرنا",
+  "permission.location.label": "مقام تک رسائی",
+  "permission.location.purpose": "بلوٹوتھ کی حد سے آگے مقامی چینلوں تک پہنچنے",
   "permission.open_settings": "ترتیبات کھولیں",
   "permission.not_now": "ابھی نہیں",
   "permission.blocked_title": "{label} بند ہے",
@@ -231,8 +234,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "حدود میں",
   "chat.dm.row_hint": "مزید اختیارات کے لیے دو بار چھو کر دبائے رکھیں",
   "chat.channels.row_hint": "مزید اختیارات کے لیے دو بار چھو کر دبائے رکھیں",
-  "chat.dm.you_prefix": "آپ:",
-  "chat.draft_prefix": "ڈرافٹ:",
+  "chat.draft_preview": "ڈرافٹ: {draft}",
   "chat.dm.none": "کوئی براہ راست پیغام نہیں",
   "chat.dm.none_desc":
     "خفیہ براہ راست پیغام شروع کرنے کے لیے میش ٹیب پر جائیں اور کسی پیئر کو چھوئیں۔",
@@ -450,6 +452,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "عوامی چینل",
   "chat.thread.notices": "اس چینل کے اعلانات",
   "chat.thread.invite": "اس چینل میں کسی کو مدعو کریں",
+  "chat.thread.location_off": "مقام بند · صرف قریبی لوگوں تک پہنچ رہے ہیں",
   "chat.thread.not_in_range": "قریب نہیں۔ انٹرنیٹ سے پہنچایا جا رہا ہے۔",
   "chat.thread.not_nearby":
     "قریب نہیں۔ جب وہ حدود میں لوٹیں گے یا آن لائن ہوں گے تو ہم پہنچا دیں گے۔",
@@ -477,7 +480,7 @@ export const strings: Strings = {
   "chat.thread.message": "پیغام",
   "chat.thread.message_placeholder": "پیغام…",
   "chat.thread.length_full": "پیغام بھر گیا",
-  "chat.thread.waiting_for": "{name} کے لوٹنے کا انتظار · {percent}%",
+  "chat.thread.waiting_for": "{name} کے لوٹنے کا انتظار · {percent}",
   "chat.transfer.progress": "{total} میں سے {done}",
   "chat.transfer.speed": "{size}/سیکنڈ",
   "chat.transfer.left": "{time} باقی",
@@ -542,7 +545,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "{name} کا پروفائل دیکھیں",
   "chat.bubble.forwarded": "آگے بھیجا گیا",
   "chat.bubble.attachment": "منسلکہ",
-  "chat.bubble.a11y": "{sender}: {body}۔ مزید اختیارات کے لیے دبائے رکھیں۔",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "مزید اختیارات کے لیے دو بار چھو کر دبائے رکھیں",
+  "chat.bubble.more_options": "مزید اختیارات",
+  "chat.bubble.open_link": "{link} کھولیں",
+  "chat.bubble.status_delivered": "پہنچ گیا",
+  "chat.bubble.status_read": "پڑھ لیا گیا",
   "chat.bubble.failed_retry": "بھیجنے میں ناکام۔ دوبارہ کوشش کے لیے چھوئیں۔",
 
   // ---- Chats: message actions and info ----
@@ -670,6 +678,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "وہ فائل",
   "chat.media.pause_voice": "صوتی نوٹ روکیں",
   "chat.media.play_voice": "صوتی نوٹ چلائیں",
+  "chat.media.pause_video": "ویڈیو روکیں",
+  "chat.media.play_video": "ویڈیو چلائیں",
   "chat.media.voice_position": "صوتی نوٹ میں جگہ",
   "chat.media.voice_scrub": "اس مقام پر جانے کے لیے لکیروں کے ساتھ چھوئیں",
   "chat.media.image": "تصویر",
@@ -716,6 +726,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "ویڈیو نوٹ ریکارڈ نہیں ہوا",
   "chat.video_note.limit_sent": "وقت ختم، ویڈیو نوٹ بھیج دیا گیا",
   "chat.video_note.a11y": "ویڈیو نوٹ، آواز کے لیے دو بار تھپتھپائیں",
+  "chat.video_note.sound_on": "آواز چالو کریں",
+  "chat.video_note.sound_off": "آواز بند کریں",
   "chat.live_video.preview": "لائیو ویڈیو",
   "chat.live_video.badge": "لائیو",
   "chat.live_video.reconnecting": "دوبارہ جڑ رہا ہے…",
@@ -899,6 +911,10 @@ export const strings: Strings = {
   "chat.notices.post": "اعلان لگائیں",
   "chat.notices.post_short": "لگائیں",
   "chat.notices.delete": "اعلان حذف کریں",
+  "chat.notices.delete_title": "یہ اعلان حذف کریں؟",
+  "chat.notices.delete_body":
+    "جس کے پاس بھی یہ ہے اس سے اسے ہٹانے کو کہا جائے گا۔ یہ عمل واپس نہیں ہو سکتا۔",
+  "chat.notices.permanent": "مستقل",
   "chat.notices.fades_soon": "جلد مٹ جائے گا",
   "chat.notices.1_day": "1 دن",
   "chat.notices.3_days": "3 دن",
@@ -977,6 +993,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "آگے نہیں بھیجا گیا",
   "chat.forward.app_row_body":
     "یہ سطر کسی شخص کی نہیں بلکہ Airhop کی طرف سے ہے، اس لیے آگے بھیجنے کو کچھ نہیں۔",
+  "chat.forward.has_ecash":
+    "اس میں ecash ہے، اور جو اسے پہلے لے لے رقم اسی کی ہو جاتی ہے، اس لیے یہ آگے نہیں بھیجا جاتا۔",
+  "chat.forward.public_title": "{name} کو آگے بھیجیں؟",
+  "chat.forward.public_mesh_body":
+    "قریب موجود کوئی بھی اسے وہاں پڑھ سکتا ہے، اور اسے واپس نہیں لیا جا سکتا۔",
+  "chat.forward.public_geo_body":
+    "اس علاقے میں کوئی بھی اسے وہاں پڑھ سکتا ہے، عوامی انٹرنیٹ ریلے پر بھی، اور اسے واپس نہیں لیا جا سکتا۔",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "میش شروع ہو رہی ہے…",
@@ -991,7 +1014,7 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "مقام بند · Android کو پیئرز ڈھونڈنے کے لیے یہ درکار ہے",
   "mesh.banner.paused": "میش موقوف · آپ موجود نہیں",
-  "mesh.banner.location_off": "مقام بند · مقامی چینل دستیاب نہیں",
+  "mesh.banner.location_off": "مقام بند · مقامی چینل صرف قریب تک پہنچتے ہیں",
   "mesh.banner.battery_saver": "بیٹری بچت · کم بار تلاش کر رہا ہے",
   "mesh.banner.wipe_incomplete":
     "صفائی ادھوری · کچھ ڈیٹا رہ سکتا ہے، دوبارہ کھولنے پر پھر کوشش ہو گی",
@@ -1024,7 +1047,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "اس فون کی پس منظر سرگرمی کی ترتیبات کھولتا ہے",
   "mesh.banner.hint.tor_settings": "Airhop کی Tor ترتیبات کھولتا ہے",
+  "mesh.banner.hint.enable_location":
+    "مقام تک رسائی مانگتا ہے، یا بتاتا ہے کہ ترتیبات میں اس کی اجازت کیسے دیں",
   "mesh.banner.dismiss": "برخاست کریں: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "اس نوٹ کو ہمیشہ کے لیے چھپا دیتا ہے",
 
   // ---- Mesh: radar ----
@@ -1253,6 +1279,8 @@ export const strings: Strings = {
     "{mint} {units} جاری کرتی ہے۔ اس کی کلیدیں اس آلے پر محفوظ ہیں، سو اس کے ٹوکن اب انٹرنیٹ کے بغیر بھی جانچے جا سکتے ہیں۔",
   "wallet.mint.remove_plain":
     "{mint} کو اپنے بٹوے سے ہٹائیں؟ اس کی محفوظ کلیدیں بھی ساتھ جائیں گی، سو اس کے ٹوکن آف لائن جانچے نہیں جا سکیں گے۔",
+  "wallet.mint.remove_holdings":
+    "{mint} کے پاس یہ ہے:\n{holdings}\nاسے ہٹانے سے یہ سب اس آلے سے مٹ جائے گا۔ پہلے اسے نکال لیں یا بھیج دیں۔",
   "wallet.mint.title": "ٹکسالیں",
   "wallet.mint.none_desc":
     "ٹکسال آپ کا ecash جاری کرتی اور چھڑاتی ہے۔ Lightning سے ٹاپ اپ کرنے یا اس کے ٹوکن لینے کے لیے ایک شامل کریں۔",
@@ -1601,6 +1629,8 @@ export const strings: Strings = {
   "wallet.err.already_spent": "پہلے ہی خرچ شدہ",
   "wallet.err.change_pending": "ادا ہو گیا، بقایا زیر التوا",
   "wallet.svc.mint_unreachable": "ٹکسال تک رسائی نہ ہو سکی۔",
+  "wallet.svc.mint_http_error":
+    "ٹکسال نے خرابی کے ساتھ جواب دیا (HTTP {status})۔",
   "wallet.svc.tor_ios": "iOS پر ٹکسال کی درخواستیں Tor سے نہیں جاتیں۔",
   "wallet.svc.tor_ios_body":
     "iOS پر Tor صرف Nostr کو ڈھانپتا ہے، سو یہ درخواست ٹکسال تک کھلے نیٹ سے پہنچتی اور آپ کا IP اس ecash سے جوڑ دیتی۔ ترتیبات میں {setting} آن کریں، یا پہلے Tor بند کریں۔ میش پر ecash بھیجنا اور وصول کرنا پھر بھی کام کرتا ہے۔",
@@ -1704,6 +1734,10 @@ export const strings: Strings = {
     "آپ کے سکے آف لائن ٹھیک {amount} {unit} نہیں بنا سکتے۔",
   "wallet.svc.inexact_detail":
     "سب سے چھوٹا ٹوکن جو آپ بھیج سکتے ہیں {spend} {unit} ہے۔ آف لائن کوئی بقایا نہیں ہوتا، سو اضافی {extra} {unit} وصول کنندہ کو چلے جاتے ہیں۔",
+  "wallet.svc.spend_changed":
+    "اب اسے بھیجنے میں {spend} {unit} لگیں گے، جتنے پر آپ راضی ہوئے تھے اس سے زیادہ۔",
+  "wallet.svc.spend_changed_body":
+    "آپ کے فیصلہ کرتے کرتے آپ کے سکے بدل گئے۔ کچھ نہیں بھیجا گیا۔ نئی رقم دیکھنے کے لیے دوبارہ کوشش کریں۔",
   "wallet.svc.no_single_mint":
     "کوئی ایک ٹکسال {amount} {unit} نہیں رکھتی۔ مختلف ٹکسالوں کا ecash ایک ٹوکن میں یکجا نہیں ہو سکتا: پہلے اسے ایک ٹکسال پر جمع کریں، یا الگ الگ رقموں میں بھیجیں۔",
   "wallet.svc.have_tried_send":
@@ -1733,6 +1767,10 @@ export const strings: Strings = {
     "اور کچھ نہیں بھیجا گیا۔ جب تک ٹکسال نتیجے کی تصدیق نہ کرے، سکے روکے گئے ہیں۔ اگر ادائیگی ہو گئی تو لاک ٹوکن حوالے کرنے کے لیے سرگرمی میں دکھائی دے گا۔ ورنہ سکے واپس آ جائیں گے۔",
   "wallet.svc.send_spent_by_swap":
     "یہ ٹوکن لیے جانے سے پہلے ہی یہ سکے تبدیل ہو کر آپ کے بٹوے میں واپس آ گئے، اس لیے اب اسے لیا نہیں جا سکتا۔ رقم آپ کے بیلنس میں ہے۔",
+  "wallet.svc.payment_in_doubt_body":
+    "جب تک ٹکسال نتیجے کی تصدیق نہ کرے، سکے روکے گئے ہیں، اور اگلی تازہ کاری پر یہ دوبارہ جانچا جائے گا۔ تب تک یہ بل دوبارہ ادا نہ کریں۔",
+  "wallet.svc.mint_removed":
+    "آپ نے یہ ٹکسال ہٹا دی، اس لیے اب اس پر نظر نہیں رکھی جاتی۔",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR سے تصدیق شدہ",
@@ -1775,7 +1813,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "وہ bitchat کوڈ ختم ہو چکا ہے۔ ان سے کہیں کہ اپنا QR دوبارہ کھولیں۔",
   "contacts.scan.tampered":
-    "یہ QR کوڈ درست نہیں: اس کی پیئر شناخت اس کی کلیدوں سے میل نہیں کھاتی۔ ہو سکتا ہے اس سے چھیڑ چھاڑ ہوئی ہو۔",
+    "یہ QR کوڈ درست نہیں: اس کی کلیدیں جانچ پر پوری نہیں اترتیں۔ ہو سکتا ہے اس سے چھیڑ چھاڑ ہوئی ہو۔",
   "contacts.scan.key_conflict":
     "آپ کے پاس ان کی ایک مختلف کلید پہلے سے ہے، اس لیے کچھ نہیں بدلا۔ اسے بدلنے کے لیے ان کا کوڈ روبرو اسکین کریں۔",
   "contacts.scan.already_added": "پہلے ہی آپ کے رابطوں میں ہے",
@@ -1798,7 +1836,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "یہ QR کسی اور کا ہے۔ {name} سے کہیں کہ اپنا کوڈ دکھائیں۔",
   "contacts.verify.tampered_body":
-    "اس QR سے چھیڑ چھاڑ لگتی ہے: اس کی شناخت اس کی کلید سے میل نہیں کھاتی۔",
+    "اس QR سے چھیڑ چھاڑ لگتی ہے: اس کی کلیدیں جانچ پر پوری نہیں اترتیں۔",
   "contacts.verify.choose_title": "آپ کیسے جانچنا چاہتے ہیں؟",
   "contacts.verify.choose_body":
     "دونوں اس بات کی تصدیق کرتے ہیں کہ اس فون پر موجود کلیدیں واقعی {name} کی ہیں۔",
@@ -1977,7 +2015,7 @@ export const strings: Strings = {
     "ترجیحات کو ان کی طے شدہ حالت پر لوٹاتا ہے، آپ کی شناخت، پیغامات، رابطوں اور بٹوے کو چھوئے بغیر",
   "settings.general.reset_title": "ترتیبات دوبارہ ترتیب دیں؟",
   "settings.general.reset_body":
-    "ترجیحات اپنی طے شدہ حالت پر لوٹ جاتی ہیں، جن میں ظاہری شکل، زبان، اطلاعات، بھیجنا واپس لینا، اور رابطہ کاری (انٹرنیٹ، Tor، گیٹ وے، پل، ریلے) شامل ہیں۔ Airhop لاک، میڈیا کتنی دیر رکھا جائے، اور آپ کی حالت ویسے ہی رہتے ہیں جیسے آپ نے طے کیے۔ آپ کی شناخت، پیغامات، رابطے اور بٹوہ اچھوتے رہتے ہیں۔",
+    "ترجیحات اپنی طے شدہ حالت پر لوٹ جاتی ہیں، جن میں ظاہری شکل، زبان، اطلاعات، بھیجنا واپس لینا، اور رابطہ کاری (گیٹ وے، میش پل، ریلے) شامل ہیں۔ Airhop لاک، میڈیا کتنی دیر رکھا جائے، انٹرنیٹ کا سوئچ، Tor اور اس کے پل، اور آپ کی حالت ویسے ہی رہتے ہیں جیسے آپ نے طے کیے۔ آپ کی شناخت، پیغامات، رابطے اور بٹوہ اچھوتے رہتے ہیں۔",
   "settings.general.reset_confirm": "دوبارہ ترتیب دیں",
 
   // ---- Settings: privacy and security ----
@@ -2129,6 +2167,10 @@ export const strings: Strings = {
     "Tor ابھی تک نہیں جڑا۔ وہ چالو رہتا ہے اور کوشش جاری رکھتا ہے؛ میش ٹیب بتا دے گا کہ وہ کب رخ بندی کر رہا ہے، یا اگر یہ نیٹ ورک اسے روک رہا ہو۔",
   "settings.conn.tor_failed":
     "Tor شروع نہیں ہو سکا۔ تھوڑی دیر بعد دوبارہ کوشش کریں۔",
+  "settings.conn.tor_bad_bridges":
+    "Tor پل کی ان سطروں کو استعمال نہیں کر سکا۔ انہیں جانچیں، یا کوئی اور کنکشن چنیں۔",
+  "settings.conn.tor_port_busy":
+    "Tor کو جس پورٹ کی ضرورت ہے اسے کوئی اور ایپ استعمال کر رہی ہے، اکثر Tor چلانے والی کوئی اور ایپ۔ اسے بند کریں، پھر دوبارہ کوشش کریں۔",
   "settings.tor.status": "Tor کی صورتحال",
   "settings.tor.connection": "کنکشن",
   "settings.tor.mode_off": "براہِ راست",
@@ -2274,6 +2316,8 @@ export const strings: Strings = {
   "settings.language.pending": "اگلی بار کھلنے پر",
   "settings.language.pending_a11y":
     "{value}، اگلی بار Airhop کھولنے پر لاگو ہو گا",
+  "settings.language.phone": "فون کی زبان",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "ابھی دوبارہ کھولیں",
   "settings.language.rtl_title": "مکمل کرنے کے لیے Airhop دوبارہ کھولیں",
   "settings.language.rtl_body":
@@ -2290,7 +2334,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "میش موقوف، نہ تلاش نہ تشہیر",
   "settings.status.invisible": "پوشیدہ",
   "settings.status.invisible_desc":
-    "بلوٹوتھ تلاش سے چھپا ہوا، جن فونز سے آپ جڑتے ہیں وہ اب بھی آپ کو دیکھتے ہیں",
+    "بلوٹوتھ پر تشہیر نہیں ہوتی، لیکن جن فونز سے یہ فون بلوٹوتھ یا Wi-Fi پر جڑا ہے وہ اب بھی آپ کو دیکھتے ہیں",
   "settings.status.title": "حالت",
   "settings.status.set_a11y": "حالت {value} کریں",
   "settings.status.edit": "حالت بدلیں",
@@ -2570,6 +2614,11 @@ export const plurals: Plurals = {
     one: "{count} پیغام آگے بھیجیں",
     other: "{count} پیغامات آگے بھیجیں",
   },
+  "chat.forward.too_many_public": {
+    one: "عوامی کمرہ ایک شخص کا لگاتار صرف {count} پیغام دکھاتا ہے، اس لیے باقی ضائع ہو جائیں گے۔ ایک وقت میں کم پیغامات آگے بھیجیں۔",
+    other:
+      "عوامی کمرہ ایک شخص کے لگاتار صرف {count} پیغامات دکھاتا ہے، اس لیے باقی ضائع ہو جائیں گے۔ ایک وقت میں کم پیغامات آگے بھیجیں۔",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} بول رہا ہے",
     other: "{count} بول رہے ہیں",
@@ -2653,14 +2702,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} کے پاس {count} سکے میں {balance} {unit} ہیں۔ اسے ہٹانے سے یہ بیلنس اس آلے سے ہمیشہ کے لیے مٹ جائے گا اور اس کا کوئی بیک اپ نہیں۔ پہلے بیلنس نکال لیں یا بھیج دیں۔",
-    other:
-      "{mint} کے پاس {count} سکوں میں {balance} {unit} ہیں۔ اسے ہٹانے سے یہ بیلنس اس آلے سے ہمیشہ کے لیے مٹ جائے گا اور اس کا کوئی بیک اپ نہیں۔ پہلے بیلنس نکال لیں یا بھیج دیں۔",
-  },
   "wallet.mint.split_across": {
     one: "بیلنس {count} ٹکسال میں بٹا ہوا ہے۔ اسے ایک میں منتقل کریں۔",
     other: "بیلنس {count} ٹکسالوں میں بٹا ہوا ہے۔ اسے ایک میں منتقل کریں۔",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{mint} پر {count} ادائیگی ابھی طے نہیں ہوئی۔ ٹکسال ہٹانے سے وہ چھوڑ دی جائے گی، اس کے ساتھ وہ سب بھی جو وہ ابھی واپس لا سکتی تھی۔",
+    other:
+      "{mint} پر {count} ادائیگیاں ابھی طے نہیں ہوئیں۔ ٹکسال ہٹانے سے وہ چھوڑ دی جائیں گی، ان کے ساتھ وہ سب بھی جو وہ ابھی واپس لا سکتی تھیں۔",
   },
 
   // ---- Wallet: Lightning ----
@@ -2674,6 +2723,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "{mints} سے {count} غیر خرچ شدہ سکہ بحال ہوا۔",
     other: "{mints} سے {count} غیر خرچ شدہ سکے بحال ہوئے۔",
+  },
+  "wallet.backup.already_held": {
+    one: "ملا ہوا {count} سکہ پہلے ہی اس بٹوے میں ہے، اس لیے اسے دوبارہ نہیں گنا گیا۔",
+    other:
+      "ملے ہوئے {count} سکے پہلے ہی اس بٹوے میں ہیں، اس لیے انہیں دوبارہ نہیں گنا گیا۔",
   },
   "wallet.backup.already_spent": {
     one: "{count} سکہ ملا مگر وہ پہلے ہی خرچ ہو چکا تھا، اس لیے کچھ جمع نہیں ہوا۔ یہ معمول کی بات ہے: آپ نے جو بھی سکہ کبھی خرچ کیا ہو وہ ٹکسال کے ریکارڈ میں موجود رہتا ہے۔",

@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "کلیدهای شما ساخته نشد",
   "onboarding.identity.failed_body":
     "این دستگاه به Airhop اجازه نداد کلیدها را ایمن ذخیره کند. دوباره تلاش کنید، یا گوشی را دوباره روشن کنید و Airhop را باز کنید.",
-  "onboarding.identity.steps_a11y": "مراحل: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "مراحل: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "ساخت جفت کلید ثابت X25519",
   "onboarding.identity.step.ed25519": "ساخت جفت کلید امضای Ed25519",
   "onboarding.identity.step.keychain": "ذخیرهٔ کلیدها در کلیدان سیستم‌عامل",
@@ -89,8 +90,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "نام شما روی مش",
   "onboarding.username.peer_id": "شناسهٔ همتا",
-  "onboarding.username.card_a11y":
-    "نام شما روی مش {username} است. شناسهٔ همتا {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "نام شما روی مش {username} است. شناسهٔ همتا {peerID}. الگوریتم: {algorithm}. محل ذخیره: {storage}. نیاز به حساب: {account}.",
   "onboarding.username.explanation":
     "این نام کاربری به شکل قطعی از کلید عمومی شما ساخته می‌شود. روی هر دستگاهی که شناسهٔ همتای شما را ببیند یکسان است.",
   "onboarding.username.cta": "ورود به Airhop",
@@ -157,7 +158,7 @@ export const strings: Strings = {
     "دستگاه‌های نزدیک را پیدا می‌کند و پیام‌ها را میانشان جابه‌جا می‌کند. مش از همین ساخته می‌شود و بدون اتصال اینترنت کار می‌کند.",
   "onboarding.primer.location.title": "موقعیت مکانی",
   "onboarding.primer.location.body":
-    "شما را در کانال‌های منطقهٔ نزدیک قرار می‌دهد، از یک محله تا یک استان. Airhop هرگز شما را ردیابی نمی‌کند و موقعیت دقیقتان را از دستگاه بیرون نمی‌فرستد.",
+    "شما را در کانال‌های منطقهٔ نزدیک قرار می‌دهد، از یک محله تا یک استان. Airhop هرگز شما را ردیابی نمی‌کند، و موقعیت دقیقتان تنها وقتی از دستگاهتان بیرون می‌رود که موقعیتی را برای کسی بفرستید.",
   "onboarding.primer.notifications.title": "اعلان‌ها",
   "onboarding.primer.notifications.body":
     "حتی وقتی برنامه بسته است، از پیام‌های تازه باخبر شوید. اعلان‌ها روی خود دستگاه شما ساخته می‌شوند و هیچ سروری در کار نیست.",
@@ -168,6 +169,9 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "دسترسی بلوتوث",
   "permission.bluetooth.purpose": "یافتن دستگاه‌های نزدیک روی مش",
+  "permission.location.label": "دسترسی موقعیت مکانی",
+  "permission.location.purpose":
+    "رسیدن به کانال‌های موقعیت فراتر از برد بلوتوث",
   "permission.open_settings": "باز کردن تنظیمات",
   "permission.not_now": "الان نه",
   "permission.blocked_title": "{label} خاموش است",
@@ -227,8 +231,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "در محدوده",
   "chat.dm.row_hint": "برای گزینه‌های بیشتر دو بار بزنید و نگه دارید",
   "chat.channels.row_hint": "برای گزینه‌های بیشتر دو بار بزنید و نگه دارید",
-  "chat.dm.you_prefix": "شما:",
-  "chat.draft_prefix": "پیش‌نویس:",
+  "chat.draft_preview": "پیش‌نویس: {draft}",
   "chat.dm.none": "پیام مستقیمی نیست",
   "chat.dm.none_desc":
     "به زبانهٔ مش بروید و روی یک همتا بزنید تا یک پیام مستقیم رمزگذاری‌شده آغاز شود.",
@@ -448,6 +451,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "کانال عمومی",
   "chat.thread.notices": "اطلاعیه‌های این کانال",
   "chat.thread.invite": "دعوت کسی به این کانال",
+  "chat.thread.location_off": "موقعیت مکانی خاموش · فقط به افراد نزدیک می‌رسد",
   "chat.thread.not_in_range": "نزدیک نیست. از راه اینترنت تحویل می‌شود.",
   "chat.thread.not_nearby":
     "نزدیک نیست. هر وقت به محدوده بازگردند یا برخط شوند تحویل می‌دهیم.",
@@ -475,7 +479,7 @@ export const strings: Strings = {
   "chat.thread.message": "پیام",
   "chat.thread.message_placeholder": "پیام…",
   "chat.thread.length_full": "پیام پر است",
-  "chat.thread.waiting_for": "در انتظار بازگشت {name} · {percent}٪",
+  "chat.thread.waiting_for": "در انتظار بازگشت {name} · {percent}",
   "chat.transfer.progress": "{done} از {total}",
   "chat.transfer.speed": "{size}/ث",
   "chat.transfer.left": "{time} مانده",
@@ -539,7 +543,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "دیدن نمایهٔ {name}",
   "chat.bubble.forwarded": "هدایت‌شده",
   "chat.bubble.attachment": "پیوست",
-  "chat.bubble.a11y": "{sender}: {body}. برای گزینه‌های بیشتر نگه دارید.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "برای گزینه‌های بیشتر دو بار بزنید و نگه دارید",
+  "chat.bubble.more_options": "گزینه‌های بیشتر",
+  "chat.bubble.open_link": "باز کردن {link}",
+  "chat.bubble.status_delivered": "رسیده",
+  "chat.bubble.status_read": "خوانده‌شده",
   "chat.bubble.failed_retry": "فرستادن ناموفق بود. برای تلاش دوباره بزنید.",
 
   // ---- Chats: message actions and info ----
@@ -668,6 +677,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "فایل",
   "chat.media.pause_voice": "مکث پیام صوتی",
   "chat.media.play_voice": "پخش پیام صوتی",
+  "chat.media.pause_video": "مکث ویدیو",
+  "chat.media.play_video": "پخش ویدیو",
   "chat.media.voice_position": "جای پیام صوتی",
   "chat.media.voice_scrub": "روی میله‌ها بزنید تا به آن نقطه بپرید",
   "chat.media.image": "تصویر",
@@ -712,6 +723,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "یادداشت ویدیویی ضبط نشد",
   "chat.video_note.limit_sent": "زمان تمام شد، یادداشت ویدیویی فرستاده شد",
   "chat.video_note.a11y": "یادداشت ویدیویی، برای صدا دو بار ضربه بزنید",
+  "chat.video_note.sound_on": "صدا را روشن کن",
+  "chat.video_note.sound_off": "صدا را خاموش کن",
   "chat.live_video.preview": "ویدیوی زنده",
   "chat.live_video.badge": "زنده",
   "chat.live_video.reconnecting": "در حال اتصال دوباره…",
@@ -896,6 +909,10 @@ export const strings: Strings = {
   "chat.notices.post": "گذاشتن اطلاعیه",
   "chat.notices.post_short": "بگذار",
   "chat.notices.delete": "حذف اطلاعیه",
+  "chat.notices.delete_title": "این اطلاعیه حذف شود؟",
+  "chat.notices.delete_body":
+    "از همهٔ کسانی که آن را دارند خواسته می‌شود پاکش کنند. این کار برگشت‌پذیر نیست.",
+  "chat.notices.permanent": "دائمی",
   "chat.notices.fades_soon": "به‌زودی محو می‌شود",
   "chat.notices.1_day": "1 روز",
   "chat.notices.3_days": "3 روز",
@@ -973,6 +990,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "هدایت نشد",
   "chat.forward.app_row_body":
     "این خط از طرف Airhop است، نه از طرف یک شخص، پس چیزی برای هدایت وجود ندارد.",
+  "chat.forward.has_ecash":
+    "این پیام ecash دارد و هر کس اول دریافتش کند پول را نگه می‌دارد، پس هدایت نمی‌شود.",
+  "chat.forward.public_title": "هدایت به {name}؟",
+  "chat.forward.public_mesh_body":
+    "هر کسی در نزدیکی می‌تواند آن را آنجا بخواند، و پس گرفتنی نیست.",
+  "chat.forward.public_geo_body":
+    "هر کسی در این منطقه می‌تواند آن را آنجا بخواند، از جمله روی رله‌های عمومی اینترنت، و پس گرفتنی نیست.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "در حال راه‌اندازی مش…",
@@ -989,7 +1013,7 @@ export const strings: Strings = {
     "موقعیت مکانی خاموش · Android برای یافتن همتاها به آن نیاز دارد",
   "mesh.banner.paused": "مش متوقف است · شما دور هستید",
   "mesh.banner.location_off":
-    "موقعیت مکانی خاموش · کانال‌های موقعیت در دسترس نیستند",
+    "موقعیت مکانی خاموش · کانال‌های موقعیت فقط به نزدیکان می‌رسند",
   "mesh.banner.battery_saver": "ذخیرهٔ باتری · پویش کم‌تر",
   "mesh.banner.wipe_incomplete":
     "پاک‌سازی ناتمام · ممکن است داده‌هایی مانده باشد، با باز کردن دوباره تلاش می‌شود",
@@ -1020,7 +1044,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "تنظیمات فعالیت پس‌زمینهٔ این گوشی را باز می‌کند",
   "mesh.banner.hint.tor_settings": "تنظیمات Tor در Airhop را باز می‌کند",
+  "mesh.banner.hint.enable_location":
+    "دسترسی به موقعیت مکانی را درخواست می‌کند، یا توضیح می‌دهد چطور آن را در تنظیمات مجاز کنید",
   "mesh.banner.dismiss": "بستن: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "این یادداشت را برای همیشه پنهان می‌کند",
 
   // ---- Mesh: radar ----
@@ -1252,6 +1279,8 @@ export const strings: Strings = {
     "{mint} واحد {units} صادر می‌کند. کلیدهایش روی این دستگاه ذخیره شده‌اند، پس توکن‌های آن اکنون حتی بدون اینترنت هم قابل راستی‌آزمایی‌اند.",
   "wallet.mint.remove_plain":
     "{mint} از کیف پول شما برداشته شود؟ کلیدهای ذخیره‌شده‌اش هم می‌روند، پس توکن‌های آن دیگر به شکل برون‌خط راستی‌آزمایی نمی‌شوند.",
+  "wallet.mint.remove_holdings":
+    "{mint} این‌ها را نگه داشته است:\n{holdings}\nبا حذف آن، همهٔ این‌ها از این دستگاه پاک می‌شود. اول آن را برداشت یا ارسال کنید.",
   "wallet.mint.title": "ضراب‌خانه‌ها",
   "wallet.mint.none_desc":
     "ضراب‌خانه ecash شما را صادر و بازخرید می‌کند. یکی اضافه کنید تا با Lightning شارژ کنید یا توکن‌هایش را بپذیرید.",
@@ -1602,6 +1631,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "از پیش خرج شده",
   "wallet.err.change_pending": "پرداخت شد، باقیمانده در انتظار",
   "wallet.svc.mint_unreachable": "دسترسی به ضراب‌خانه ممکن نشد.",
+  "wallet.svc.mint_http_error": "ضراب‌خانه با خطا پاسخ داد (HTTP {status}).",
   "wallet.svc.tor_ios": "روی iOS درخواست‌های ضراب‌خانه از Tor نمی‌گذرند.",
   "wallet.svc.tor_ios_body":
     "Tor روی iOS تنها Nostr را پوشش می‌دهد، پس این درخواست از شبکهٔ باز به ضراب‌خانه می‌رسد و نشانی IP شما را به این ecash گره می‌زند. {setting} را در تنظیمات روشن کنید، یا اول Tor را خاموش کنید. فرستادن و گرفتن ecash روی مش همچنان کار می‌کند.",
@@ -1707,6 +1737,10 @@ export const strings: Strings = {
     "سکه‌های شما به شکل برون‌خط دقیقاً {amount} {unit} نمی‌سازند.",
   "wallet.svc.inexact_detail":
     "کوچک‌ترین توکنی که می‌توانید بفرستید {spend} {unit} است. برون‌خط باقیمانده‌ای در کار نیست، پس {extra} {unit} اضافی به گیرنده می‌رسد.",
+  "wallet.svc.spend_changed":
+    "این ارسال اکنون {spend} {unit} می‌برد، بیشتر از آنچه پذیرفتید.",
+  "wallet.svc.spend_changed_body":
+    "سکه‌هایتان در حالی که تصمیم می‌گرفتید تغییر کردند. چیزی فرستاده نشد. دوباره تلاش کنید تا مبلغ تازه را ببینید.",
   "wallet.svc.no_single_mint":
     "هیچ ضراب‌خانه‌ای به تنهایی {amount} {unit} ندارد. ecash از ضراب‌خانه‌های گوناگون در یک توکن جمع نمی‌شود: اول در یک ضراب‌خانه یکپارچه کنید، یا در مبالغ جداگانه بفرستید.",
   "wallet.svc.have_tried_send":
@@ -1736,6 +1770,10 @@ export const strings: Strings = {
     "چیز دیگری فرستاده نشد. سکه‌ها تا وقتی ضراب‌خانه نتیجه را تأیید کند نگه داشته می‌شوند. اگر انجام شده باشد، توکن قفل‌شده در «فعالیت» ظاهر می‌شود تا آن را تحویل دهید. اگر نه، سکه‌ها برمی‌گردند.",
   "wallet.svc.send_spent_by_swap":
     "این سکه‌ها پیش از دریافت این توکن دوباره به کیف پول شما مبادله شدند، پس دیگر قابل دریافت نیست. مبلغ در موجودی شماست.",
+  "wallet.svc.payment_in_doubt_body":
+    "سکه‌ها تا وقتی ضراب‌خانه نتیجه را تأیید کند نگه داشته می‌شوند، و این در به‌روزرسانی بعدی دوباره بررسی می‌شود. تا آن زمان این صورتحساب را دوباره نپردازید.",
+  "wallet.svc.mint_removed":
+    "شما این ضراب‌خانه را حذف کردید، پس این مورد دیگر پیگیری نمی‌شود.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "با QR تأیید شد",
@@ -1778,7 +1816,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "آن کد bitchat منقضی شده است. از آن‌ها بخواهید QR خود را دوباره باز کنند.",
   "contacts.scan.tampered":
-    "این کد QR نامعتبر است: شناسهٔ همتای آن با کلیدهایش نمی‌خواند. ممکن است دستکاری شده باشد.",
+    "این کد QR نامعتبر است: کلیدهایش تأیید نمی‌شوند. ممکن است دستکاری شده باشد.",
   "contacts.scan.key_conflict":
     "شما از قبل کلید دیگری برای آن‌ها دارید، پس چیزی تغییر نکرد. برای جایگزینی آن، کدشان را حضوری اسکن کنید.",
   "contacts.scan.already_added": "از پیش در مخاطبان شماست",
@@ -1801,7 +1839,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "این QR متعلق به کس دیگری است. از {name} بخواهید کد خودش را نشان دهد.",
   "contacts.verify.tampered_body":
-    "این QR دستکاری‌شده به نظر می‌رسد: شناسه‌اش با کلیدش نمی‌خواند.",
+    "این QR دستکاری‌شده به نظر می‌رسد: کلیدهایش تأیید نمی‌شوند.",
   "contacts.verify.choose_title": "چطور می‌خواهید بررسی کنید؟",
   "contacts.verify.choose_body":
     "هر دو تأیید می‌کنند که کلیدهای روی این گوشی واقعاً متعلق به {name} هستند.",
@@ -1981,7 +2019,7 @@ export const strings: Strings = {
     "ترجیحات را به حالت پیش‌فرض بازمی‌گرداند و هویت، پیام‌ها، مخاطبان و کیف پول شما را دست‌نخورده می‌گذارد",
   "settings.general.reset_title": "تنظیمات بازنشانی شود؟",
   "settings.general.reset_body":
-    "ترجیحات به پیش‌فرض بازمی‌گردند، از جمله ظاهر، زبان، اعلان‌ها، لغو ارسال، و اتصال (اینترنت، Tor، دروازه، پل، رله‌ها). قفل Airhop، مدت نگهداری رسانه، و وضعیت شما همان‌طور که تنظیم کرده‌اید می‌مانند. هویت، پیام‌ها، مخاطبان و کیف پول شما دست‌نخورده می‌مانند.",
+    "ترجیحات به پیش‌فرض بازمی‌گردند، از جمله ظاهر، زبان، اعلان‌ها، لغو ارسال، و اتصال (دروازه، پل مش، رله‌ها). قفل Airhop، مدت نگهداری رسانه، روشن یا خاموش بودن اینترنت، Tor و پل‌هایش، و وضعیت شما همان‌طور که تنظیم کرده‌اید می‌مانند. هویت، پیام‌ها، مخاطبان و کیف پول شما دست‌نخورده می‌مانند.",
   "settings.general.reset_confirm": "بازنشانی",
 
   // ---- Settings: privacy and security ----
@@ -2132,6 +2170,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Tor هنوز متصل نشده است. روشن می‌ماند و تلاش را ادامه می‌دهد؛ زبانهٔ مش خواهد گفت کِی مسیردهی برقرار شده، یا اینکه این شبکه جلویش را گرفته است.",
   "settings.conn.tor_failed": "Tor شروع نشد. کمی بعد دوباره تلاش کنید.",
+  "settings.conn.tor_bad_bridges":
+    "Tor نتوانست از این خط‌های پل استفاده کند. آن‌ها را بررسی کنید، یا اتصال دیگری انتخاب کنید.",
+  "settings.conn.tor_port_busy":
+    "برنامهٔ دیگری از درگاهی که Tor لازم دارد استفاده می‌کند، اغلب برنامه‌ای دیگر که Tor را اجرا می‌کند. آن را ببندید، سپس دوباره تلاش کنید.",
   "settings.tor.status": "وضعیت Tor",
   "settings.tor.connection": "اتصال",
   "settings.tor.mode_off": "مستقیم",
@@ -2277,6 +2319,8 @@ export const strings: Strings = {
   "settings.language.pending": "در باز شدن بعدی",
   "settings.language.pending_a11y":
     "{value}، دفعهٔ بعد که Airhop را باز کنید اعمال می‌شود",
+  "settings.language.phone": "زبان گوشی",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "اکنون باز کنید",
   "settings.language.rtl_title": "برای پایان کار Airhop را دوباره باز کنید",
   "settings.language.rtl_body":
@@ -2293,7 +2337,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "مش متوقف، نه پویش نه پخش",
   "settings.status.invisible": "نامرئی",
   "settings.status.invisible_desc":
-    "پنهان از پویش‌های بلوتوث، ولی گوشی‌هایی که به آن‌ها وصل می‌شوید همچنان شما را می‌بینند",
+    "روی بلوتوث اعلام نمی‌شود، ولی گوشی‌هایی که این گوشی از راه بلوتوث یا Wi-Fi به آن‌ها وصل است همچنان شما را می‌بینند",
   "settings.status.title": "وضعیت",
   "settings.status.set_a11y": "وضعیت روی {value} تنظیم شود",
   "settings.status.edit": "ویرایش وضعیت",
@@ -2572,6 +2616,11 @@ export const plurals: Plurals = {
     one: "هدایت {count} پیام",
     other: "هدایت {count} پیام",
   },
+  "chat.forward.too_many_public": {
+    one: "یک اتاق عمومی فقط {count} پیام پشت سر هم از یک نفر را نشان می‌دهد، پس بقیه از دست می‌روند. هر بار تعداد کمتری هدایت کنید.",
+    other:
+      "یک اتاق عمومی فقط {count} پیام پشت سر هم از یک نفر را نشان می‌دهد، پس بقیه از دست می‌روند. هر بار تعداد کمتری هدایت کنید.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} نفر در حال صحبت",
     other: "{count} نفر در حال صحبت",
@@ -2655,14 +2704,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، این موجودی برای همیشه از این دستگاه پاک می‌شود و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
-    other:
-      "{mint} مبلغ {balance} {unit} را در {count} سکه نگه داشته است. با حذف آن، این موجودی برای همیشه از این دستگاه پاک می‌شود و هیچ نسخهٔ پشتیبانی وجود ندارد. اول موجودی را برداشت یا ارسال کنید.",
-  },
   "wallet.mint.split_across": {
     one: "موجودی میان {count} ضراب‌خانه پخش شده است. به یکی ببریدش.",
     other: "موجودی میان {count} ضراب‌خانه پخش شده است. به یکی ببریدش.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{count} پرداخت در {mint} هنوز تسویه نشده است. حذف ضراب‌خانه آن را رها می‌کند، همراه با هر چیزی که هنوز ممکن بود برگرداند.",
+    other:
+      "{count} پرداخت در {mint} هنوز تسویه نشده‌اند. حذف ضراب‌خانه آن‌ها را رها می‌کند، همراه با هر چیزی که هنوز ممکن بود برگردانند.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2676,6 +2725,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "{count} سکهٔ خرج‌نشده از {mints} بازیابی شد.",
     other: "{count} سکهٔ خرج‌نشده از {mints} بازیابی شد.",
+  },
+  "wallet.backup.already_held": {
+    one: "{count} سکهٔ پیداشده از پیش در این کیف پول است، پس دوباره شمرده نشد.",
+    other:
+      "{count} سکهٔ پیداشده از پیش در این کیف پول هستند، پس دوباره شمرده نشدند.",
   },
   "wallet.backup.already_spent": {
     one: "{count} سکه پیدا شد اما قبلاً خرج شده بود، بنابراین چیزی به موجودی اضافه نشد. این طبیعی است: هر سکه‌ای که تا به حال خرج کرده‌اید همچنان در سوابق ضراب‌خانه می‌ماند.",

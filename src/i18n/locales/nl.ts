@@ -82,7 +82,8 @@ export const strings: Strings = {
     "Je sleutels konden niet worden gemaakt",
   "onboarding.identity.failed_body":
     "Dit toestel liet Airhop ze niet veilig bewaren. Probeer het opnieuw, of herstart je telefoon en open Airhop nog eens.",
-  "onboarding.identity.steps_a11y": "Stappen: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Stappen: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "X25519-sleutelpaar wordt aangemaakt",
   "onboarding.identity.step.ed25519":
     "Ed25519-ondertekeningssleutelpaar wordt aangemaakt",
@@ -93,8 +94,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Je naam op de mesh",
   "onboarding.username.peer_id": "Peer-ID",
-  "onboarding.username.card_a11y":
-    "Je naam op de mesh is {username}. Peer-ID {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Je naam op de mesh is {username}. Peer-ID {peerID}. Algoritme: {algorithm}. Opslag: {storage}. Account nodig: {account}.",
   "onboarding.username.explanation":
     "Deze gebruikersnaam wordt op een vaste manier uit je publieke sleutel afgeleid. Hij is hetzelfde op elk toestel dat je peer-ID ziet.",
   "onboarding.username.cta": "Airhop binnengaan",
@@ -162,7 +163,7 @@ export const strings: Strings = {
     "Vindt toestellen in de buurt en geeft berichten tussen ze door. Zo ontstaat de mesh, en het werkt zonder internetverbinding.",
   "onboarding.primer.location.title": "Locatie",
   "onboarding.primer.location.body":
-    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit en stuurt je precieze locatie nooit van je toestel af.",
+    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit, en je precieze locatie verlaat je toestel alleen als je iemand je locatie stuurt.",
   "onboarding.primer.notifications.title": "Meldingen",
   "onboarding.primer.notifications.body":
     "Krijg meldingen van nieuwe berichten, ook als de app dicht is. Meldingen worden op je eigen toestel gemaakt, zonder server ertussen.",
@@ -173,6 +174,9 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "Bluetooth-toegang",
   "permission.bluetooth.purpose": "toestellen in de buurt op de mesh vinden",
+  "permission.location.label": "Locatietoegang",
+  "permission.location.purpose":
+    "locatiekanalen buiten het Bluetooth-bereik te bereiken",
   "permission.open_settings": "Instellingen openen",
   "permission.not_now": "Nu niet",
   "permission.blocked_title": "{label} staat uit",
@@ -233,8 +237,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "binnen bereik",
   "chat.dm.row_hint": "Tik twee keer en houd vast voor meer opties",
   "chat.channels.row_hint": "Tik twee keer en houd vast voor meer opties",
-  "chat.dm.you_prefix": "Jij:",
-  "chat.draft_prefix": "Concept:",
+  "chat.draft_preview": "Concept: {draft}",
   "chat.dm.none": "Geen directe berichten",
   "chat.dm.none_desc":
     "Ga naar het Mesh-tabblad en tik op een peer om een versleuteld direct bericht te beginnen.",
@@ -455,6 +458,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Openbaar kanaal",
   "chat.thread.notices": "Mededelingen van dit kanaal",
   "chat.thread.invite": "Iemand uitnodigen voor dit kanaal",
+  "chat.thread.location_off": "Locatie uit · bereikt alleen mensen in de buurt",
   "chat.thread.not_in_range": "Niet in de buurt. Wordt via internet bezorgd.",
   "chat.thread.not_nearby":
     "Niet in de buurt. We bezorgen het zodra diegene terug binnen bereik of online is.",
@@ -482,7 +486,7 @@ export const strings: Strings = {
   "chat.thread.message": "Bericht",
   "chat.thread.message_placeholder": "Bericht…",
   "chat.thread.length_full": "Het bericht is vol",
-  "chat.thread.waiting_for": "Wachten tot {name} terug is · {percent}%",
+  "chat.thread.waiting_for": "Wachten tot {name} terug is · {percent}",
   "chat.transfer.progress": "{done} van {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "nog {time}",
@@ -549,7 +553,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Profiel van {name} bekijken",
   "chat.bubble.forwarded": "Doorgestuurd",
   "chat.bubble.attachment": "bijlage",
-  "chat.bubble.a11y": "{sender}: {body}. Houd vast voor meer opties.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "Tik twee keer en houd vast voor meer opties",
+  "chat.bubble.more_options": "Meer opties",
+  "chat.bubble.open_link": "{link} openen",
+  "chat.bubble.status_delivered": "Bezorgd",
+  "chat.bubble.status_read": "Gelezen",
   "chat.bubble.failed_retry":
     "Versturen mislukt. Tik om het opnieuw te proberen.",
 
@@ -681,6 +690,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "dat bestand",
   "chat.media.pause_voice": "Spraakbericht pauzeren",
   "chat.media.play_voice": "Spraakbericht afspelen",
+  "chat.media.pause_video": "Video pauzeren",
+  "chat.media.play_video": "Video afspelen",
   "chat.media.voice_position": "Positie in het spraakbericht",
   "chat.media.voice_scrub": "Tik langs de balkjes om naar dat punt te springen",
   "chat.media.image": "Afbeelding",
@@ -729,6 +740,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Videonotitie is niet opgenomen",
   "chat.video_note.limit_sent": "Tijd is om, videonotitie verstuurd",
   "chat.video_note.a11y": "Videonotitie, tik twee keer voor geluid",
+  "chat.video_note.sound_on": "Geluid aanzetten",
+  "chat.video_note.sound_off": "Geluid uitzetten",
   "chat.live_video.preview": "Livevideo",
   "chat.live_video.badge": "Live",
   "chat.live_video.reconnecting": "Opnieuw verbinden…",
@@ -917,6 +930,10 @@ export const strings: Strings = {
   "chat.notices.post": "Mededeling plaatsen",
   "chat.notices.post_short": "Plaatsen",
   "chat.notices.delete": "Mededeling verwijderen",
+  "chat.notices.delete_title": "Deze mededeling verwijderen?",
+  "chat.notices.delete_body":
+    "Iedereen die de mededeling heeft, wordt gevraagd die te verwijderen. Je kunt dit niet ongedaan maken.",
+  "chat.notices.permanent": "Permanent",
   "chat.notices.fades_soon": "vervaagt binnenkort",
   "chat.notices.1_day": "1 dag",
   "chat.notices.3_days": "3 dagen",
@@ -995,6 +1012,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "Niet doorgestuurd",
   "chat.forward.app_row_body":
     "Deze regel komt van Airhop, niet van een persoon, dus er is niets om door te sturen.",
+  "chat.forward.has_ecash":
+    "Dit bevat ecash, en wie het als eerste ophaalt, houdt het geld, dus het wordt niet doorgestuurd.",
+  "chat.forward.public_title": "Doorsturen naar {name}?",
+  "chat.forward.public_mesh_body":
+    "Iedereen in de buurt kan het daar lezen, en het is niet terug te nemen.",
+  "chat.forward.public_geo_body":
+    "Iedereen in dit gebied kan het daar lezen, ook via openbare internetrelays, en het is niet terug te nemen.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Mesh wordt gestart…",
@@ -1010,7 +1034,7 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "Locatie uit · Android heeft het nodig om peers te vinden",
   "mesh.banner.paused": "Mesh gepauzeerd · je bent weg",
-  "mesh.banner.location_off": "Locatie uit · locatiekanalen niet beschikbaar",
+  "mesh.banner.location_off": "Locatie uit · locatiekanalen alleen in de buurt",
   "mesh.banner.battery_saver": "Batterijbesparing · minder vaak scannen",
   "mesh.banner.wipe_incomplete":
     "Wissen niet afgemaakt · er kan wat data over zijn, opnieuw openen probeert het nog eens",
@@ -1044,7 +1068,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "Opent de achtergrondinstellingen van deze telefoon",
   "mesh.banner.hint.tor_settings": "Opent de Tor-instellingen van Airhop",
+  "mesh.banner.hint.enable_location":
+    "Vraagt om locatietoegang, of legt uit hoe je die in de instellingen toestaat",
   "mesh.banner.dismiss": "Sluiten: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Verbergt deze melding voorgoed",
 
   // ---- Mesh: radar ----
@@ -1278,6 +1305,8 @@ export const strings: Strings = {
     "{mint} geeft {units} uit. De sleutels staan op dit toestel, dus tokens ervan zijn nu ook zonder internet te controleren.",
   "wallet.mint.remove_plain":
     "{mint} uit je portemonnee halen? De opgeslagen sleutels gaan mee, dus tokens ervan zijn dan offline niet meer te controleren.",
+  "wallet.mint.remove_holdings":
+    "{mint} houdt:\n{holdings}\nVerwijderen wist dit allemaal van dit toestel. Neem het eerst op of stuur het weg.",
   "wallet.mint.title": "Mints",
   "wallet.mint.none_desc":
     "Een mint geeft je ecash uit en wisselt het in. Voeg er een toe om via Lightning op te waarderen of tokens ervan te accepteren.",
@@ -1631,6 +1660,8 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Al besteed",
   "wallet.err.change_pending": "Betaald, wisselgeld in afwachting",
   "wallet.svc.mint_unreachable": "De mint kon niet worden bereikt.",
+  "wallet.svc.mint_http_error":
+    "De mint antwoordde met een fout (HTTP {status}).",
   "wallet.svc.tor_ios": "Op iOS gaan mintverzoeken niet via Tor.",
   "wallet.svc.tor_ios_body":
     "Tor op iOS dekt alleen Nostr, dus dit verzoek zou de mint over het open net bereiken en je IP aan deze ecash koppelen. Zet {setting} aan in Instellingen, of zet Tor eerst uit. Ecash sturen en ontvangen over de mesh blijft werken.",
@@ -1743,6 +1774,10 @@ export const strings: Strings = {
     "Je munten kunnen offline niet precies {amount} {unit} maken.",
   "wallet.svc.inexact_detail":
     "Het kleinste token dat je kunt sturen is {spend} {unit}. Offline bestaat er geen wisselgeld, dus de extra {extra} {unit} gaat naar de ontvanger.",
+  "wallet.svc.spend_changed":
+    "Deze betaling zou nu {spend} {unit} kosten, meer dan je had goedgekeurd.",
+  "wallet.svc.spend_changed_body":
+    "Je munten zijn veranderd terwijl je aan het beslissen was. Er is niets verstuurd. Probeer het opnieuw om het nieuwe bedrag te zien.",
   "wallet.svc.no_single_mint":
     "Geen enkele mint houdt in z’n eentje {amount} {unit}. Ecash van verschillende mints kan niet in één token worden samengevoegd: voeg het eerst bij één mint samen, of stuur het in aparte bedragen.",
   "wallet.svc.have_tried_send":
@@ -1772,6 +1807,10 @@ export const strings: Strings = {
     "Er is verder niets verstuurd. De munten worden vastgehouden tot de mint de uitkomst bevestigt. Is de betaling gelukt, dan verschijnt het vergrendelde token onder Activiteit om over te dragen. Zo niet, dan komen de munten terug.",
   "wallet.svc.send_spent_by_swap":
     "Deze munten zijn teruggewisseld naar je portemonnee voordat dit token werd opgehaald, dus het kan niet meer worden opgehaald. Het bedrag staat in je saldo.",
+  "wallet.svc.payment_in_doubt_body":
+    "De munten worden vastgehouden tot de mint de uitkomst bevestigt, wat bij de volgende verversing opnieuw wordt gecontroleerd. Betaal deze factuur tot die tijd niet nog een keer.",
+  "wallet.svc.mint_removed":
+    "Je hebt deze mint verwijderd, dus dit wordt niet meer gevolgd.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Geverifieerd via QR",
@@ -1815,7 +1854,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Die bitchat-code is verlopen. Vraag ze hun QR opnieuw te openen.",
   "contacts.scan.tampered":
-    "Deze QR-code is ongeldig: het peer-ID komt niet overeen met de sleutels. Er is misschien mee geknoeid.",
+    "Deze QR-code is ongeldig: de sleutels kloppen niet. Er is misschien mee geknoeid.",
   "contacts.scan.key_conflict":
     "Je hebt al een andere sleutel voor deze persoon, dus er is niets veranderd. Scan hun code persoonlijk om die te vervangen.",
   "contacts.scan.already_added": "Staat al in je contacten",
@@ -1838,7 +1877,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "Deze QR is van iemand anders. Vraag {name} om de eigen code te laten zien.",
   "contacts.verify.tampered_body":
-    "Er lijkt met deze QR geknoeid: het ID komt niet overeen met de sleutel.",
+    "Er lijkt met deze QR geknoeid: de sleutels kloppen niet.",
   "contacts.verify.choose_title": "Hoe wil je het nagaan?",
   "contacts.verify.choose_body":
     "Allebei bevestigen ze dat de sleutels op deze telefoon echt van {name} zijn.",
@@ -2021,7 +2060,7 @@ export const strings: Strings = {
     "Zet voorkeuren terug op de standaard en laat je identiteit, berichten, contacten en portemonnee met rust",
   "settings.general.reset_title": "Instellingen resetten?",
   "settings.general.reset_body":
-    "Voorkeuren gaan terug naar de standaard, waaronder weergave, taal, meldingen, verzenden ongedaan maken en connectiviteit (internet, Tor, gateway, brug, relays). Airhop-vergrendeling, hoe lang media bewaard blijven en je status blijven zoals je ze hebt ingesteld. Je identiteit, berichten, contacten en portemonnee blijven ongemoeid.",
+    "Voorkeuren gaan terug naar de standaard, waaronder weergave, taal, meldingen, verzenden ongedaan maken en connectiviteit (gateway, meshbrug, relays). Airhop-vergrendeling, hoe lang media bewaard blijven, de internetschakelaar, Tor en zijn bridges en je status blijven zoals je ze hebt ingesteld. Je identiteit, berichten, contacten en portemonnee blijven ongemoeid.",
   "settings.general.reset_confirm": "Resetten",
 
   // ---- Settings: privacy and security ----
@@ -2176,6 +2215,10 @@ export const strings: Strings = {
     "Tor is nog niet verbonden. Het blijft aan en blijft proberen; het Mesh-tabblad laat weten wanneer het routeert, of dat dit netwerk het blokkeert.",
   "settings.conn.tor_failed":
     "Tor kon niet worden gestart. Probeer het zo opnieuw.",
+  "settings.conn.tor_bad_bridges":
+    "Tor kon deze bridge-regels niet gebruiken. Controleer ze of kies een andere verbinding.",
+  "settings.conn.tor_port_busy":
+    "Een andere app gebruikt de poort die Tor nodig heeft, vaak een andere app die Tor draait. Sluit die en probeer het dan opnieuw.",
   "settings.tor.status": "Tor-status",
   "settings.tor.connection": "Verbinding",
   "settings.tor.mode_off": "Direct",
@@ -2323,6 +2366,8 @@ export const strings: Strings = {
   "settings.language.pending": "Bij de volgende keer openen",
   "settings.language.pending_a11y":
     "{value}, gaat in de volgende keer dat je Airhop opent",
+  "settings.language.phone": "Taal van telefoon",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Nu opnieuw openen",
   "settings.language.rtl_title": "Open Airhop opnieuw om het af te maken",
   "settings.language.rtl_body":
@@ -2339,7 +2384,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Mesh gepauzeerd, scant niet en adverteert niet",
   "settings.status.invisible": "Onzichtbaar",
   "settings.status.invisible_desc":
-    "Verborgen voor Bluetooth-scans, nog steeds zichtbaar voor telefoons waarmee je verbinding maakt",
+    "Adverteert niet via Bluetooth, maar telefoons waarmee dit toestel via Bluetooth of Wi-Fi verbonden is, zien je nog steeds",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Status op {value} zetten",
   "settings.status.edit": "Status bewerken",
@@ -2627,6 +2672,11 @@ export const plurals: Plurals = {
     one: "{count} bericht doorsturen",
     other: "{count} berichten doorsturen",
   },
+  "chat.forward.too_many_public": {
+    one: "Een openbare ruimte toont maar {count} bericht achter elkaar van één persoon, dus de rest zou verloren gaan. Stuur er minder tegelijk door.",
+    other:
+      "Een openbare ruimte toont maar {count} berichten achter elkaar van één persoon, dus de rest zou verloren gaan. Stuur er minder tegelijk door.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} aan het woord",
     other: "{count} aan het woord",
@@ -2710,14 +2760,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} houdt {balance} {unit} in {count} munt. Verwijderen wist dat saldo definitief van dit toestel en er is geen back-up. Neem het saldo eerst op of stuur het weg.",
-    other:
-      "{mint} houdt {balance} {unit} in {count} munten. Verwijderen wist dat saldo definitief van dit toestel en er is geen back-up. Neem het saldo eerst op of stuur het weg.",
-  },
   "wallet.mint.split_across": {
     one: "Saldo verdeeld over {count} mint. Verplaats het naar één.",
     other: "Saldo verdeeld over {count} mints. Verplaats het naar één.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{count} betaling bij {mint} is nog niet afgerond. Als je de mint verwijdert, wordt die opgegeven, met alles wat die nog zou terugbrengen.",
+    other:
+      "{count} betalingen bij {mint} zijn nog niet afgerond. Als je de mint verwijdert, worden die opgegeven, met alles wat ze nog zouden terugbrengen.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2731,6 +2781,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "{count} onbestede munt hersteld van {mints}.",
     other: "{count} onbestede munten hersteld van {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "{count} gevonden munt zit al in deze portemonnee, dus die is niet opnieuw meegeteld.",
+    other:
+      "{count} gevonden munten zitten al in deze portemonnee, dus die zijn niet opnieuw meegeteld.",
   },
   "wallet.backup.already_spent": {
     one: "{count} munt gevonden, maar die was al besteed, dus er is niets bijgeschreven. Dat is normaal: elke munt die je ooit hebt uitgegeven blijft staan in de administratie die de mint bijhoudt.",

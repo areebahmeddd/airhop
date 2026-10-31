@@ -313,6 +313,56 @@ describe("interpolation", () => {
   });
 });
 
+describe("a line built only from values", () => {
+  const RLM = "\u200f";
+  const LRM = "\u200e";
+  const vars = { sender: "\u0623\u062d\u0645\u062f", preview: "hi" };
+
+  it("leads with the mark for its language's direction", () => {
+    // Isolates are skipped when a paragraph picks its direction, so without a
+    // mark "{sender}: {preview}" reads left to right in Arabic too.
+    expect(translatorFor("ar")("notif.channel_message", vars)[0]).toBe(RLM);
+    expect(translatorFor("fa")("notif.channel_message", vars)[0]).toBe(RLM);
+    expect(translatorFor("en")("notif.channel_message", vars)[0]).toBe(LRM);
+  });
+
+  it("follows the language, not the frame it is drawn in", () => {
+    // A notification leaves the app's frame; the line is in its language.
+    expect(I18nManager.isRTL).toBe(false);
+    expect(translatorFor("ur")("notif.channel_message", vars)[0]).toBe(RLM);
+  });
+
+  it("marks any value-only template, not only the notification line", () => {
+    expect(
+      translatorFor("ar")("wallet.pay.result", { rail: "a", finality: "b" }),
+    ).toMatch(/^\u200f/);
+  });
+
+  it("leaves a sentence with a letter of its own unmarked", () => {
+    const rendered = t("settings.opens_externally", { label: "About" });
+    expect(rendered.startsWith(LRM)).toBe(false);
+    expect(rendered.startsWith(RLM)).toBe(false);
+  });
+
+  it("is stripped with the isolates before text is compared or sent", () => {
+    expect(
+      stripIsolates(translatorFor("ar")("notif.channel_message", vars)),
+    ).not.toMatch(/[\u200e\u200f\u2068\u2069]/);
+    expect(stripIsolates(t("notif.channel_message", vars))).toBe(
+      "\u0623\u062d\u0645\u062f: hi",
+    );
+  });
+
+  it("keeps a direction mark a person typed past the start", () => {
+    // Only the leading mark is `t()`'s. One inside a copied message is its
+    // author's, steering their own text, and must survive.
+    expect(stripIsolates("\u200fabc \u200e\u05d0 \u200f!")).toBe(
+      "abc \u200e\u05d0 \u200f!",
+    );
+    expect(stripIsolates("\u2068a\u2069 \u2068b\u2069")).toBe("a b");
+  });
+});
+
 describe("plurals", () => {
   it("selects the English categories", () => {
     const rendered = (n: number): string =>

@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "Tsy voaforona ny lakilenao",
   "onboarding.identity.failed_body":
     "Tsy navelan'ity fitaovana ity hitahiry azy ireo am-pilaminana ny Airhop. Andramo indray, na avereno alefa ny findainao ary sokafy indray ny Airhop.",
-  "onboarding.identity.steps_a11y": "Dingana: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Dingana: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "Mamorona lakile X25519 raikitra roa",
   "onboarding.identity.step.ed25519": "Mamorona lakile sonia Ed25519 roa",
   "onboarding.identity.step.keychain":
@@ -90,8 +91,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Ny anaranao eo amin'ny harato",
   "onboarding.username.peer_id": "ID-n'ny teboka",
-  "onboarding.username.card_a11y":
-    "Ny anaranao eo amin'ny harato dia {username}. ID-n'ny teboka {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Ny anaranao eo amin'ny harato dia {username}. ID-n'ny teboka {peerID}. Algoritma: {algorithm}. Fitahirizana: {storage}. Mila kaonty: {account}.",
   "onboarding.username.explanation":
     "Avy amin'ny lakilenao ho an'ny daholobe no niavian'ity anaram-pikambana ity, amin'ny fomba mazava tsy miova. Mitovy izy amin'ny fitaovana rehetra mahita ny ID-n'ny tebokanao.",
   "onboarding.username.cta": "Midira ao amin'ny Airhop",
@@ -161,7 +162,7 @@ export const strings: Strings = {
     "Mahita ny fitaovana akaiky ary mampita hafatra eo amin'izy ireo. Izay no mamorona ny harato, ary miasa tsy misy fifandraisana Internet.",
   "onboarding.primer.location.title": "Toerana",
   "onboarding.primer.location.body":
-    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop ary tsy mandefa ny toeranao marina mivoaka ny fitaovanao.",
+    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop, ary tsy mivoaka ny fitaovanao ny toeranao marina raha tsy mandefa marika toerana amin'olona ianao.",
   "onboarding.primer.notifications.title": "Fampandrenesana",
   "onboarding.primer.notifications.body":
     "Mandraisa fampandrenesana momba ny hafatra vaovao na dia mihidy aza ny rindranasa. Amboarina eo amin'ny fitaovanao ny fampandrenesana, tsy misy mpizara mandray anjara.",
@@ -173,6 +174,9 @@ export const strings: Strings = {
   "permission.bluetooth.label": "Fidirana amin'ny Bluetooth",
   "permission.bluetooth.purpose":
     "hahita ny fitaovana akaiky eo amin'ny harato",
+  "permission.location.label": "Fidirana amin'ny toerana",
+  "permission.location.purpose":
+    "hahatratra ny fantsonan-toerana ankoatry ny halaviran'ny Bluetooth",
   "permission.open_settings": "Sokafy ny Fandrindrana",
   "permission.not_now": "Tsia aloha",
   "permission.blocked_title": "Vonoina ny {label}",
@@ -235,8 +239,7 @@ export const strings: Strings = {
     "Tsindrio indroa ary hazony raha te hahita safidy fanampiny",
   "chat.channels.row_hint":
     "Tsindrio indroa ary hazony raha te hahita safidy fanampiny",
-  "chat.dm.you_prefix": "Ianao:",
-  "chat.draft_prefix": "Volavola:",
+  "chat.draft_preview": "Volavola: {draft}",
   "chat.dm.none": "Tsy misy hafatra mivantana",
   "chat.dm.none_desc":
     "Mandehana any amin'ny takelaka Harato ary tsindrio teboka iray mba hanomboka hafatra mivantana voafono.",
@@ -464,6 +467,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Fantsona ho an'ny daholobe",
   "chat.thread.notices": "Filazana amin'ity fantsona ity",
   "chat.thread.invite": "Manasa olona amin'ity fantsona ity",
+  "chat.thread.location_off":
+    "Vonoina ny toerana · ny olona akaiky ihany no tratrarina",
   "chat.thread.not_in_range": "Tsy akaiky. Ampitaina amin'ny Internet.",
   "chat.thread.not_nearby":
     "Tsy akaiky. Hampitainay rehefa tafaverina ao anatin'ny fetra na tafiditra an-tserasera izy.",
@@ -491,7 +496,7 @@ export const strings: Strings = {
   "chat.thread.message": "Hafatra",
   "chat.thread.message_placeholder": "Hafatra…",
   "chat.thread.length_full": "Feno ny hafatra",
-  "chat.thread.waiting_for": "Miandry ny hiverenan'i {name} · {percent}%",
+  "chat.thread.waiting_for": "Miandry ny hiverenan'i {name} · {percent}",
   "chat.transfer.progress": "{done} amin'ny {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} sisa",
@@ -558,8 +563,13 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Jereo ny mombamomba an'i {name}",
   "chat.bubble.forwarded": "Nampitaina",
   "chat.bubble.attachment": "fanampiny",
-  "chat.bubble.a11y":
-    "{sender}: {body}. Hazony raha te hahita safidy fanampiny.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint":
+    "Tsindrio indroa ary hazony raha te hahita safidy fanampiny",
+  "chat.bubble.more_options": "Safidy fanampiny",
+  "chat.bubble.open_link": "Sokafy ny {link}",
+  "chat.bubble.status_delivered": "Tonga",
+  "chat.bubble.status_read": "Voavaky",
   "chat.bubble.failed_retry": "Tsy voalefa. Tsindrio hanandrana indray.",
 
   // ---- Chats: message actions and info ----
@@ -691,6 +701,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "rakitra",
   "chat.media.pause_voice": "Ajanony ny naoty feo",
   "chat.media.play_voice": "Alefaso ny naoty feo",
+  "chat.media.pause_video": "Ajanony ny horonan-tsary",
+  "chat.media.play_video": "Alefaso ny horonan-tsary",
   "chat.media.voice_position": "Toerana ao amin'ny naoty feo",
   "chat.media.voice_scrub":
     "Tsindrio manaraka ny tsipika mba hankany amin'io toerana io",
@@ -740,6 +752,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Tsy voarakitra ny naoty video",
   "chat.video_note.limit_sent": "Lany ny fotoana, lasa ny naoty video",
   "chat.video_note.a11y": "Naoty video, tsindrio indroa raha hihaino",
+  "chat.video_note.sound_on": "Alefaso ny feo",
+  "chat.video_note.sound_off": "Vonoy ny feo",
   "chat.live_video.preview": "Horonan-tsary mivantana",
   "chat.live_video.badge": "Mivantana",
   "chat.live_video.reconnecting": "Mifandray indray…",
@@ -930,6 +944,10 @@ export const strings: Strings = {
   "chat.notices.post": "Apetraho ny filazana",
   "chat.notices.post_short": "Apetraho",
   "chat.notices.delete": "Fafao ny filazana",
+  "chat.notices.delete_title": "Hofafana ity filazana ity?",
+  "chat.notices.delete_body":
+    "Hangatahina hanala azy izay rehetra manana azy. Tsy azonao foanana izany.",
+  "chat.notices.permanent": "Maharitra",
   "chat.notices.fades_soon": "ho levona tsy ho ela",
   "chat.notices.1_day": "1 andro",
   "chat.notices.3_days": "3 andro",
@@ -1012,6 +1030,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "Tsy nampitaina",
   "chat.forward.app_row_body":
     "Avy amin'ny Airhop ity andalana ity fa tsy avy amin'olona, ka tsy misy azo ampitaina.",
+  "chat.forward.has_ecash":
+    "Misy ecash ao anatin'ity, ary izay mandray azy voalohany no mahazo ny vola, ka tsy ampitaina izy.",
+  "chat.forward.public_title": "Hampitaina amin'ny {name}?",
+  "chat.forward.public_mesh_body":
+    "Afaka mamaky azy any izay rehetra eo akaiky, ary tsy azo averina intsony izy.",
+  "chat.forward.public_geo_body":
+    "Afaka mamaky azy any izay rehetra ao amin'ity faritra ity, anisan'izany amin'ny alalan'ny mpanelanelana Internet ho an'ny daholobe, ary tsy azo averina intsony izy.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Manomboka ny harato…",
@@ -1030,7 +1055,7 @@ export const strings: Strings = {
     "Vonoina ny toerana · mila azy ny Android mba hahitana teboka",
   "mesh.banner.paused": "Miato ny harato · lasa ianao",
   "mesh.banner.location_off":
-    "Vonoina ny toerana · tsy misy ny fantsonan-toerana",
+    "Vonoina ny toerana · ny akaiky ihany no tratran'ny fantsonan-toerana",
   "mesh.banner.battery_saver": "Fitsitsiana batera · mikaroka vitsy kokoa",
   "mesh.banner.wipe_incomplete":
     "Tsy vita ny famafana · mety mbola misy angona sisa, ny fanokafana indray dia manandrana indray",
@@ -1068,7 +1093,10 @@ export const strings: Strings = {
     "Manokatra ny fandrindrana asa any aorian'ity findy ity",
   "mesh.banner.hint.tor_settings":
     "Manokatra ny fandrindrana Tor ao amin'ny Airhop",
+  "mesh.banner.hint.enable_location":
+    "Mangataka fidirana amin'ny toerana, na manazava ny fomba hamelana azy ao amin'ny Fandrindrana",
   "mesh.banner.dismiss": "Esory: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Manafina ity fanamarihana ity mandrakizay",
 
   // ---- Mesh: radar ----
@@ -1309,6 +1337,8 @@ export const strings: Strings = {
     "Mamoaka {units} i {mint}. Voatahiry eto amin'ity fitaovana ity ny lakiley, ka azo hamarinina na dia tsy misy Internet aza ny tapakila avy aminy izao.",
   "wallet.mint.remove_plain":
     "Hesorina amin'ny kitapom-bolanao i {mint}? Lasa koa ny lakiley voatahiry, ka tsy ho azo hamarinina tsy misy Internet intsony ny tapakila avy aminy.",
+  "wallet.mint.remove_holdings":
+    "Mitana ireto i {mint}:\n{holdings}\nNy fanesorana azy dia mamafa izany rehetra izany amin'ity fitaovana ity. Alaivo na alefaso aloha izany.",
   "wallet.mint.title": "Mpamoaka",
   "wallet.mint.none_desc":
     "Ny mpamoaka no mamoaka sy manakalo ny ecash-nao. Ampidiro iray raha hameno amin'ny Lightning na handray ny tapakilany.",
@@ -1668,6 +1698,8 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Efa lany",
   "wallet.err.change_pending": "Voaloa, miandry ny sisa",
   "wallet.svc.mint_unreachable": "Tsy tratra ny mpamoaka.",
+  "wallet.svc.mint_http_error":
+    "Namaly tamin'ny hadisoana ny mpamoaka (HTTP {status}).",
   "wallet.svc.tor_ios":
     "Amin'ny iOS dia tsy mandalo amin'ny Tor ny fangatahana any amin'ny mpamoaka.",
   "wallet.svc.tor_ios_body":
@@ -1784,6 +1816,10 @@ export const strings: Strings = {
     "Tsy mahavita {amount} {unit} tsy misy Internet ny vola madinikao.",
   "wallet.svc.inexact_detail":
     "Ny tapakila kely indrindra azonao alefa dia {spend} {unit}. Tsy misy fanoloran-tsisa raha tsy misy Internet, ka lasan'ny mpandray ny {extra} {unit} fanampiny.",
+  "wallet.svc.spend_changed":
+    "Mila {spend} {unit} izao ity fandefasana ity, mihoatra noho izay nekenao.",
+  "wallet.svc.spend_changed_body":
+    "Niova ny vola madinikao nandritra ny fisaintsainanao. Tsy nisy nalefa. Andramo indray mba hahitana ny sanda vaovao.",
   "wallet.svc.no_single_mint":
     "Tsy misy mpamoaka manokana mitana {amount} {unit}. Tsy azo atambatra ho tapakila iray ny ecash avy amin'ny mpamoaka samihafa: ampiraiso aloha amin'ny mpamoaka iray, na alefaso amin'ny sanda samihafa.",
   "wallet.svc.have_tried_send":
@@ -1813,6 +1849,10 @@ export const strings: Strings = {
     "Tsy nisy zavatra hafa nalefa. Tazonina ny vola mandra-panamarin'ny mpamoaka ny vokany. Raha lasa izy, hiseho ao amin'ny Hetsika ny tapakila voahidy mba hatolotrao. Raha tsy lasa, miverina ny vola.",
   "wallet.svc.send_spent_by_swap":
     "Natakalo niverina tao amin'ny kitapom-bolanao ireo vola ireo talohan'ny nandraisana ity tapakila ity, ka tsy azo raisina intsony izy. Ao amin'ny fitambaran'ny volanao ny sandany.",
+  "wallet.svc.payment_in_doubt_body":
+    "Tazonina ny vola mandra-panamarin'ny mpamoaka ny vokany, izay hojerena indray amin'ny fanavaozana manaraka. Aza aloa indray ity faktiora ity mandra-pahatongan'izay.",
+  "wallet.svc.mint_removed":
+    "Nesorinao ity mpamoaka ity, ka tsy arahina intsony ity.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Voamarina tamin'ny QR",
@@ -1855,7 +1895,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Lany daty io kaody bitchat io. Angataho izy hanokatra indray ny QR-ny.",
   "contacts.scan.tampered":
-    "Tsy mety ity kaody QR ity: tsy mifanaraka amin'ny lakiley ny ID-n'ny tebony. Mety novàna izy.",
+    "Tsy mety ity kaody QR ity: tsy mandalo ny fanamarinana ny lakileny. Mety novàna izy.",
   "contacts.scan.key_conflict":
     "Efa manana lakile hafa ho azy ianao, ka tsy nisy niova. Alaivo sary ny kaodiny rehefa mifanatrika aminy ianao mba hanoloana azy.",
   "contacts.scan.already_added": "Efa ao amin'ny fifandraisanao",
@@ -1878,7 +1918,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "An'olon-kafa ity QR ity. Angataho i {name} haneho ny kaodiny manokana.",
   "contacts.verify.tampered_body":
-    "Toa novàna ity QR ity: tsy mifanaraka amin'ny lakiley ny ID-ny.",
+    "Toa novàna ity QR ity: tsy mandalo ny fanamarinana ny lakileny.",
   "contacts.verify.choose_title": "Ahoana no tianao hanamarinana?",
   "contacts.verify.choose_body":
     "Samy manamafy fa an'i {name} tokoa ny lakile eto amin'ity findy ity izy roa.",
@@ -2065,7 +2105,7 @@ export const strings: Strings = {
     "Mamerina ny safidy amin'ny laoniny, fa tsy mikasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao",
   "settings.general.reset_title": "Averina ny fandrindrana?",
   "settings.general.reset_body":
-    "Miverina amin'ny laoniny ny safidy, ao anatin'izany ny endrika, ny fiteny, ny fampandrenesana, ny fanafoanana fandefasana, ary ny fifandraisana (Internet, Tor, vavahady, tetezana, mpanelanelana). Mijanona araka ny nametrahanao azy ny hidin'ny Airhop, ny faharetan'ny fitehirizana media, ary ny toe-javatrao. Tsy voakasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao.",
+    "Miverina amin'ny laoniny ny safidy, ao anatin'izany ny endrika, ny fiteny, ny fampandrenesana, ny fanafoanana fandefasana, ary ny fifandraisana (vavahady, tetezan'ny harato, mpanelanelana). Mijanona araka ny nametrahanao azy ny hidin'ny Airhop, ny faharetan'ny fitehirizana media, ny bokotra Internet, ny Tor sy ny tetezany, ary ny toe-javatrao. Tsy voakasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao.",
   "settings.general.reset_confirm": "Avereno",
 
   // ---- Settings: privacy and security ----
@@ -2231,6 +2271,10 @@ export const strings: Strings = {
     "Tsy mbola mifandray i Tor. Mijanona mandeha izy ary manohy manandrana; hilaza ny takelaka Harato rehefa mitondra izy, na raha misakana azy ity tambajotra ity.",
   "settings.conn.tor_failed":
     "Tsy afaka nanomboka ny Tor. Andramo indray afaka kelikely.",
+  "settings.conn.tor_bad_bridges":
+    "Tsy afaka nampiasa ireo tsipika tetezana ireo ny Tor. Hamarino izy ireo, na misafidiana fifandraisana hafa.",
+  "settings.conn.tor_port_busy":
+    "Misy rindranasa hafa mampiasa ny seranana ilain'ny Tor, matetika rindranasa hafa mampandeha Tor. Akatony izy, dia andramo indray.",
   "settings.tor.status": "Toetran'ny Tor",
   "settings.tor.connection": "Fifandraisana",
   "settings.tor.mode_off": "Mivantana",
@@ -2380,6 +2424,8 @@ export const strings: Strings = {
   "settings.language.pending": "Amin'ny fanokafana manaraka",
   "settings.language.pending_a11y":
     "{value}, mihatra amin'ny fotoana manaraka hanokafanao ny Airhop",
+  "settings.language.phone": "Fitenin'ny findy",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Sokafy indray izao",
   "settings.language.rtl_title": "Sokafy indray ny Airhop mba hamitana",
   "settings.language.rtl_body":
@@ -2396,7 +2442,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Miato ny harato, tsy mikaroka na manambara",
   "settings.status.invisible": "Tsy hita",
   "settings.status.invisible_desc":
-    "Miafina amin'ny fikarohana Bluetooth, mbola hitan'ny findy ifandraisanao",
+    "Tsy ambara amin'ny Bluetooth, fa mbola mahita anao ny findy ifandraisany amin'ny Bluetooth na Wi-Fi",
   "settings.status.title": "Toe-javatra",
   "settings.status.set_a11y": "Ataovy {value} ny toe-javatra",
   "settings.status.edit": "Ovay ny toe-javatra",
@@ -2689,6 +2735,11 @@ export const plurals: Plurals = {
     one: "Alefaso ny hafatra {count}",
     other: "Alefaso ny hafatra {count}",
   },
+  "chat.forward.too_many_public": {
+    one: "Hafatra {count} misesy avy amin'olona iray ihany no asehon'ny efitra ho an'ny daholobe, ka ho very ny ambiny. Ampitao vitsivitsy kokoa indray mandeha.",
+    other:
+      "Hafatra {count} misesy avy amin'olona iray ihany no asehon'ny efitra ho an'ny daholobe, ka ho very ny ambiny. Ampitao vitsivitsy kokoa indray mandeha.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} miteny",
     other: "{count} miteny",
@@ -2773,15 +2824,15 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "Manana {balance} {unit} ao anatin'ny vola madinika {count} i {mint}. Ny fanesorana azy dia mamafa io fitambaram-bola io tsy misy fiverenany amin'ity fitaovana ity, ary tsy misy dika mitahiry azy. Esory na alefaso aloha ny volanao.",
-    other:
-      "Manana {balance} {unit} ao anatin'ny vola madinika {count} i {mint}. Ny fanesorana azy dia mamafa io fitambaram-bola io tsy misy fiverenany amin'ity fitaovana ity, ary tsy misy dika mitahiry azy. Esory na alefaso aloha ny volanao.",
-  },
   "wallet.mint.split_across": {
     one: "Miparitaka amin'ny mpamoaka {count} ny vola. Afindrao amin'ny iray.",
     other:
       "Miparitaka amin'ny mpamoaka {count} ny vola. Afindrao amin'ny iray.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "Mbola tsy vita ny fandoavana {count} ao amin'i {mint}. Raha esorina ny mpamoaka dia hafoy izy, miaraka amin'izay rehetra mbola mety haveriny.",
+    other:
+      "Mbola tsy vita ny fandoavana {count} ao amin'i {mint}. Raha esorina ny mpamoaka dia hafoy izy ireo, miaraka amin'izay rehetra mbola mety haveriny.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2796,6 +2847,11 @@ export const plurals: Plurals = {
     one: "Vola madinika {count} tsy mbola lany no voaverina avy amin'i {mints}.",
     other:
       "Vola madinika {count} tsy mbola lany no voaverina avy amin'i {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "Efa ao amin'ity kitapom-bola ity ny vola madinika {count} hita, ka tsy nisaina indray izy.",
+    other:
+      "Efa ao amin'ity kitapom-bola ity ny vola madinika {count} hita, ka tsy nisaina indray izy ireo.",
   },
   "wallet.backup.already_spent": {
     one: "Hita ny vola madinika {count}, saingy efa lany, ka tsy nisy natsofoka. Ara-dalàna izany: ny vola madinika rehetra nolanianao dia mijanona ao amin'ny firaketana tehirizin'ny mpamoaka.",

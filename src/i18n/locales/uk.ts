@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "Не вдалося створити ваші ключі",
   "onboarding.identity.failed_body":
     "Цей пристрій не дозволив Airhop зберегти їх безпечно. Спробуйте ще раз або перезапустіть телефон і відкрийте Airhop знову.",
-  "onboarding.identity.steps_a11y": "Кроки: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Кроки: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "Створюємо статичну пару ключів X25519",
   "onboarding.identity.step.ed25519": "Створюємо пару ключів підпису Ed25519",
   "onboarding.identity.step.keychain":
@@ -90,8 +91,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Ваше ім’я в mesh",
   "onboarding.username.peer_id": "Ідентифікатор піра",
-  "onboarding.username.card_a11y":
-    "Ваше ім’я в mesh — {username}. Ідентифікатор піра {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Ваше ім’я в mesh: {username}. Ідентифікатор піра {peerID}. Алгоритм: {algorithm}. Зберігання: {storage}. Потрібен обліковий запис: {account}.",
   "onboarding.username.explanation":
     "Це ім’я користувача детерміновано виводиться з вашого відкритого ключа. Воно однакове на кожному пристрої, який бачить ваш ідентифікатор піра.",
   "onboarding.username.cta": "Увійти в Airhop",
@@ -159,7 +160,7 @@ export const strings: Strings = {
     "Знаходить пристрої поблизу та передає повідомлення між ними. Саме так утворюється mesh, і працює це без інтернету.",
   "onboarding.primer.location.title": "Місцезнаходження",
   "onboarding.primer.location.body":
-    "Розміщує вас у сусідніх каналах місцевості, від кварталу до цілого регіону. Airhop ніколи не стежить за вами й не надсилає ваше точне місцезнаходження за межі пристрою.",
+    "Розміщує вас у сусідніх каналах місцевості, від кварталу до цілого регіону. Airhop ніколи не стежить за вами, а ваше точне місцезнаходження залишає пристрій, лише коли ви надсилаєте комусь мітку місцезнаходження.",
   "onboarding.primer.notifications.title": "Сповіщення",
   "onboarding.primer.notifications.body":
     "Отримуйте сигнали про нові повідомлення, навіть коли застосунок закрито. Сповіщення створюються локально на вашому пристрої, без жодного сервера.",
@@ -170,6 +171,9 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "Доступ до Bluetooth",
   "permission.bluetooth.purpose": "знаходити пристрої поблизу через mesh",
+  "permission.location.label": "Доступ до місцезнаходження",
+  "permission.location.purpose":
+    "діставати канали місцевості за межами досяжності Bluetooth",
   "permission.open_settings": "Відкрити Налаштування",
   "permission.not_now": "Не зараз",
   "permission.blocked_title": "{label} вимкнено",
@@ -232,8 +236,7 @@ export const strings: Strings = {
     "Торкніться двічі й утримуйте, щоб побачити більше варіантів",
   "chat.channels.row_hint":
     "Торкніться двічі й утримуйте, щоб побачити більше варіантів",
-  "chat.dm.you_prefix": "Ви:",
-  "chat.draft_prefix": "Чернетка:",
+  "chat.draft_preview": "Чернетка: {draft}",
   "chat.dm.none": "Немає прямих повідомлень",
   "chat.dm.none_desc":
     "Перейдіть на вкладку Mesh і торкніться піра, щоб почати зашифроване пряме повідомлення.",
@@ -453,6 +456,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Публічний канал",
   "chat.thread.notices": "Оголошення цього каналу",
   "chat.thread.invite": "Запросити когось до цього каналу",
+  "chat.thread.location_off":
+    "Місцезнаходження вимкнено · сягає лише людей поблизу",
   "chat.thread.not_in_range": "Немає поблизу. Доставляємо через інтернет.",
   "chat.thread.not_nearby":
     "Немає поблизу. Доставимо, коли вони повернуться в радіус або будуть онлайн.",
@@ -480,7 +485,7 @@ export const strings: Strings = {
   "chat.thread.message": "Повідомлення",
   "chat.thread.message_placeholder": "Повідомлення…",
   "chat.thread.length_full": "Повідомлення заповнене",
-  "chat.thread.waiting_for": "Чекаємо, поки {name} повернеться · {percent}%",
+  "chat.thread.waiting_for": "Чекаємо, поки {name} повернеться · {percent}",
   "chat.transfer.progress": "{done} з {total}",
   "chat.transfer.speed": "{size}/с",
   "chat.transfer.left": "залишилося {time}",
@@ -547,8 +552,13 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Переглянути профіль {name}",
   "chat.bubble.forwarded": "Переслано",
   "chat.bubble.attachment": "вкладення",
-  "chat.bubble.a11y":
-    "{sender}: {body}. Утримуйте, щоб побачити більше варіантів.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint":
+    "Торкніться двічі й утримуйте, щоб побачити більше варіантів",
+  "chat.bubble.more_options": "Більше варіантів",
+  "chat.bubble.open_link": "Відкрити {link}",
+  "chat.bubble.status_delivered": "Доставлено",
+  "chat.bubble.status_read": "Прочитано",
   "chat.bubble.failed_retry":
     "Не вдалося надіслати. Торкніться, щоб спробувати ще раз.",
 
@@ -680,6 +690,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "той файл",
   "chat.media.pause_voice": "Призупинити голосову нотатку",
   "chat.media.play_voice": "Відтворити голосову нотатку",
+  "chat.media.pause_video": "Призупинити відео",
+  "chat.media.play_video": "Відтворити відео",
   "chat.media.voice_position": "Позиція в голосовій нотатці",
   "chat.media.voice_scrub":
     "Торкайтеся вздовж смужок, щоб перескочити в те місце",
@@ -729,6 +741,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "Відеоповідомлення не записалося",
   "chat.video_note.limit_sent": "Час вийшов, відеоповідомлення надіслано",
   "chat.video_note.a11y": "Відеоповідомлення, двічі торкніться для звуку",
+  "chat.video_note.sound_on": "Увімкнути звук",
+  "chat.video_note.sound_off": "Вимкнути звук",
   "chat.live_video.preview": "Прямий ефір",
   "chat.live_video.badge": "Ефір",
   "chat.live_video.reconnecting": "Перепідключення…",
@@ -911,6 +925,10 @@ export const strings: Strings = {
   "chat.notices.post": "Розмістити оголошення",
   "chat.notices.post_short": "Розмістити",
   "chat.notices.delete": "Видалити оголошення",
+  "chat.notices.delete_title": "Видалити це оголошення?",
+  "chat.notices.delete_body":
+    "Усіх, у кого воно є, попросять його видалити. Цю дію не можна скасувати.",
+  "chat.notices.permanent": "Безстроково",
   "chat.notices.fades_soon": "скоро зникне",
   "chat.notices.1_day": "1 день",
   "chat.notices.3_days": "3 дні",
@@ -988,6 +1006,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "Не переслано",
   "chat.forward.app_row_body":
     "Цей рядок від Airhop, а не від людини, тож пересилати нічого.",
+  "chat.forward.has_ecash":
+    "Тут є ecash, і гроші залишить собі той, хто першим його забере, тому це не пересилається.",
+  "chat.forward.public_title": "Переслати в {name}?",
+  "chat.forward.public_mesh_body":
+    "Там це зможе прочитати будь-хто поблизу, і забрати це назад не вийде.",
+  "chat.forward.public_geo_body":
+    "Там це зможе прочитати будь-хто в цій місцевості, зокрема через публічні інтернет-релеї, і забрати це назад не вийде.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Запускаємо mesh…",
@@ -1007,7 +1032,7 @@ export const strings: Strings = {
     "Місцезнаходження вимкнено · Android потребує його, щоб знаходити пірів",
   "mesh.banner.paused": "Mesh призупинено · вас немає",
   "mesh.banner.location_off":
-    "Місцезнаходження вимкнено · канали місцевості недоступні",
+    "Місцезнаходження вимкнено · канали місцевості лише поблизу",
   "mesh.banner.battery_saver": "Заощадження заряду · сканує рідше",
   "mesh.banner.wipe_incomplete":
     "Очищення незавершене · частина даних могла лишитися, спробуємо знову після повторного відкриття",
@@ -1038,7 +1063,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "Відкриває налаштування фонової активності цього телефона",
   "mesh.banner.hint.tor_settings": "Відкриває налаштування Tor в Airhop",
+  "mesh.banner.hint.enable_location":
+    "Запитує доступ до місцезнаходження або пояснює, як дозволити його в Налаштуваннях",
   "mesh.banner.dismiss": "Приховати: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Ховає цю примітку назавжди",
 
   // ---- Mesh: radar ----
@@ -1268,6 +1296,8 @@ export const strings: Strings = {
     "{mint} випускає {units}. Його ключі зберігаються на цьому пристрої, тож токени від нього тепер можна перевірити навіть без інтернету.",
   "wallet.mint.remove_plain":
     "Вилучити {mint} з вашого гаманця? Збережені ключі підуть разом із ним, тож токени від нього більше не перевірити офлайн.",
+  "wallet.mint.remove_holdings":
+    "{mint} тримає:\n{holdings}\nВидалення зітре все це з цього пристрою. Спершу виведіть або надішліть кошти.",
   "wallet.mint.title": "Мінти",
   "wallet.mint.none_desc":
     "Мінт випускає й погашає ваш ecash. Додайте його, щоб поповнювати через Lightning або приймати його токени.",
@@ -1620,6 +1650,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Уже витрачено",
   "wallet.err.change_pending": "Оплачено, решта очікує",
   "wallet.svc.mint_unreachable": "Не вдалося дістатися мінта.",
+  "wallet.svc.mint_http_error": "Мінт відповів помилкою (HTTP {status}).",
   "wallet.svc.tor_ios": "На iOS запити до мінта не йдуть через Tor.",
   "wallet.svc.tor_ios_body":
     "Tor на iOS охоплює лише Nostr, тож цей запит дістався б мінта відкритою мережею і пов’язав би вашу IP-адресу з цим ecash. Увімкніть {setting} у Налаштуваннях або спершу вимкніть Tor. Надсилання й отримання ecash через mesh працює далі.",
@@ -1724,6 +1755,10 @@ export const strings: Strings = {
     "Ваші монети не складуть офлайн рівно {amount} {unit}.",
   "wallet.svc.inexact_detail":
     "Найменший токен, який ви можете надіслати, це {spend} {unit}. Офлайн решти не буває, тож додаткові {extra} {unit} дістануться одержувачу.",
+  "wallet.svc.spend_changed":
+    "Тепер це надсилання коштуватиме {spend} {unit}, більше, ніж ви погодили.",
+  "wallet.svc.spend_changed_body":
+    "Ваші монети змінилися, поки ви вирішували. Нічого не надіслано. Спробуйте ще раз, щоб побачити нову суму.",
   "wallet.svc.no_single_mint":
     "Жоден окремий мінт не тримає {amount} {unit}. Ecash із різних мінтів не поєднати в один токен: спершу зведіть його в одному мінті або надішліть окремими сумами.",
   "wallet.svc.have_tried_send":
@@ -1753,6 +1788,10 @@ export const strings: Strings = {
     "Більше нічого не надіслано. Монети утримуються, доки мінт не підтвердить результат. Якщо платіж пройшов, заблокований токен з’явиться в розділі «Активність», щоб ви його передали. Якщо ні, монети повернуться.",
   "wallet.svc.send_spent_by_swap":
     "Ці монети обміняно назад у ваш гаманець до того, як токен забрали, тож забрати його вже не можна. Сума на вашому балансі.",
+  "wallet.svc.payment_in_doubt_body":
+    "Монети утримуються, доки мінт не підтвердить результат; це перевіриться знову під час наступного оновлення. До того часу не оплачуйте цей рахунок повторно.",
+  "wallet.svc.mint_removed":
+    "Ви вилучили цей мінт, тож це більше не відстежується.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Підтверджено через QR",
@@ -1795,7 +1834,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Термін дії того коду bitchat минув. Попросіть їх відкрити свій QR знову.",
   "contacts.scan.tampered":
-    "Цей QR-код недійсний: його ідентифікатор піра не збігається з ключами. Можливо, його підмінили.",
+    "Цей QR-код недійсний: його ключі не проходять перевірку. Можливо, його підмінили.",
   "contacts.scan.key_conflict":
     "У вас уже є інший ключ цієї людини, тож нічого не змінилося. Щоб замінити його, відскануйте її код при зустрічі.",
   "contacts.scan.already_added": "Уже у ваших контактах",
@@ -1818,7 +1857,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "Цей QR належить комусь іншому. Попросіть {name} показати власний код.",
   "contacts.verify.tampered_body":
-    "Цей QR виглядає підміненим: його ідентифікатор не збігається з ключем.",
+    "Цей QR виглядає підміненим: його ключі не проходять перевірку.",
   "contacts.verify.choose_title": "Як хочете перевірити?",
   "contacts.verify.choose_body":
     "Обидва способи підтверджують, що ключі на цьому телефоні справді належать {name}.",
@@ -2001,7 +2040,7 @@ export const strings: Strings = {
     "Повертає налаштування до типових, не чіпаючи вашу особистість, повідомлення, контакти та гаманець",
   "settings.general.reset_title": "Скинути налаштування?",
   "settings.general.reset_body":
-    "Налаштування повертаються до типових, зокрема вигляд, мова, сповіщення, скасування надсилання та зв’язок (інтернет, Tor, шлюз, міст, релеї). Блокування Airhop, термін зберігання медіа та ваш статус лишаються такими, як ви їх налаштували. Ваша особистість, повідомлення, контакти та гаманець лишаються недоторканими.",
+    "Налаштування повертаються до типових, зокрема вигляд, мова, сповіщення, скасування надсилання та зв’язок (шлюз, міст mesh, релеї). Блокування Airhop, термін зберігання медіа, перемикач інтернету, Tor і його мости, а також ваш статус лишаються такими, як ви їх налаштували. Ваша особистість, повідомлення, контакти та гаманець лишаються недоторканими.",
   "settings.general.reset_confirm": "Скинути",
 
   // ---- Settings: privacy and security ----
@@ -2159,6 +2198,10 @@ export const strings: Strings = {
     "Tor ще не з’єднався. Він лишається увімкненим і продовжує спроби; вкладка Mesh скаже, коли маршрутизація запрацює або якщо ця мережа її блокує.",
   "settings.conn.tor_failed":
     "Не вдалося запустити Tor. Спробуйте ще раз за мить.",
+  "settings.conn.tor_bad_bridges":
+    "Tor не зміг використати ці рядки мостів. Перевірте їх або виберіть інше підключення.",
+  "settings.conn.tor_port_busy":
+    "Порт, потрібний Tor, зайнятий іншим застосунком, часто іншим застосунком із Tor. Закрийте його й спробуйте ще раз.",
   "settings.tor.status": "Стан Tor",
   "settings.tor.connection": "Підключення",
   "settings.tor.mode_off": "Напряму",
@@ -2305,6 +2348,8 @@ export const strings: Strings = {
   "settings.language.pending": "Під час наступного відкриття",
   "settings.language.pending_a11y":
     "{value}, застосується, коли ви наступного разу відкриєте Airhop",
+  "settings.language.phone": "Мова телефона",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Відкрити знову",
   "settings.language.rtl_title": "Відкрийте Airhop знову, щоб завершити",
   "settings.language.rtl_body":
@@ -2321,7 +2366,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Mesh призупинено, не сканує й не оголошує",
   "settings.status.invisible": "Невидимий",
   "settings.status.invisible_desc":
-    "Прихований від сканування Bluetooth, але досі видимий для телефонів, до яких ви підключаєтеся",
+    "Не оголошується через Bluetooth, але телефони, з якими цей телефон пов’язаний через Bluetooth або Wi-Fi, досі вас бачать",
   "settings.status.title": "Статус",
   "settings.status.set_a11y": "Установити статус на {value}",
   "settings.status.edit": "Змінити статус",
@@ -2635,6 +2680,13 @@ export const plurals: Plurals = {
     many: "Переслати {count} повідомлень",
     other: "Переслати {count} повідомлення",
   },
+  "chat.forward.too_many_public": {
+    one: "Публічна кімната показує лише {count} повідомлення поспіль від однієї людини, тож решта загубиться. Пересилайте менше за раз.",
+    few: "Публічна кімната показує лише {count} повідомлення поспіль від однієї людини, тож решта загубиться. Пересилайте менше за раз.",
+    many: "Публічна кімната показує лише {count} повідомлень поспіль від однієї людини, тож решта загубиться. Пересилайте менше за раз.",
+    other:
+      "Публічна кімната показує лише {count} повідомлення поспіль від однієї людини, тож решта загубиться. Пересилайте менше за раз.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} говорить",
     few: "{count} говорять",
@@ -2754,18 +2806,18 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} тримає {balance} {unit} в {count} монеті. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-    few: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-    many: "{mint} тримає {balance} {unit} у {count} монетах. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-    other:
-      "{mint} тримає {balance} {unit} у {count} монети. Видалення назавжди стирає ці кошти з цього пристрою, і резервної копії немає. Спершу виведіть або надішліть баланс.",
-  },
   "wallet.mint.split_across": {
     one: "Баланс розкидано по {count} мінту. Перенесіть його в один.",
     few: "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
     many: "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
     other: "Баланс розкидано по {count} мінтах. Перенесіть його в один.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{count} платіж у {mint} ще не завершився. Вилучивши мінт, ви відмовитеся від нього разом з усім, що він ще міг би повернути.",
+    few: "{count} платежі у {mint} ще не завершилися. Вилучивши мінт, ви відмовитеся від них разом з усім, що вони ще могли б повернути.",
+    many: "{count} платежів у {mint} ще не завершилися. Вилучивши мінт, ви відмовитеся від них разом з усім, що вони ще могли б повернути.",
+    other:
+      "{count} платежу у {mint} ще не завершилися. Вилучивши мінт, ви відмовитеся від них разом з усім, що вони ще могли б повернути.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2783,6 +2835,13 @@ export const plurals: Plurals = {
     few: "Відновлено {count} невитрачені монети з {mints}.",
     many: "Відновлено {count} невитрачених монет із {mints}.",
     other: "Відновлено {count} невитраченої монети з {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "{count} знайдена монета вже є в цьому гаманці, тож її не враховано вдруге.",
+    few: "{count} знайдені монети вже є в цьому гаманці, тож їх не враховано вдруге.",
+    many: "{count} знайдених монет уже є в цьому гаманці, тож їх не враховано вдруге.",
+    other:
+      "{count} знайденої монети вже є в цьому гаманці, тож їх не враховано вдруге.",
   },
   "wallet.backup.already_spent": {
     one: "Знайдено {count} вже витрачену монету, тож нічого не зараховано. Це нормально: кожна монета, яку ви колись витратили, залишається в записах, що їх веде мінт.",

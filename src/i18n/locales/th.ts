@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "สร้างกุญแจของคุณไม่สำเร็จ",
   "onboarding.identity.failed_body":
     "เครื่องนี้ไม่ยอมให้ Airhop เก็บกุญแจไว้อย่างปลอดภัย ลองอีกครั้ง หรือรีสตาร์ทโทรศัพท์แล้วเปิด Airhop ใหม่",
-  "onboarding.identity.steps_a11y": "ขั้นตอน: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "ขั้นตอน: {first} {second} {third} {fourth}",
   "onboarding.identity.step.x25519": "กำลังสร้างคู่กุญแจถาวร X25519",
   "onboarding.identity.step.ed25519": "กำลังสร้างคู่กุญแจลงลายเซ็น Ed25519",
   "onboarding.identity.step.keychain": "กำลังเก็บกุญแจไว้ใน OS Keychain",
@@ -89,8 +90,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "ชื่อของคุณบนเมช",
   "onboarding.username.peer_id": "ID ของเพียร์",
-  "onboarding.username.card_a11y":
-    "ชื่อของคุณบนเมชคือ {username} ID ของเพียร์ {peerID} {props}",
+  "onboarding.username.card_full_a11y":
+    "ชื่อของคุณบนเมชคือ {username} ID ของเพียร์ {peerID} อัลกอริทึม: {algorithm} ที่จัดเก็บ: {storage} ต้องมีบัญชี: {account}",
   "onboarding.username.explanation":
     "ชื่อผู้ใช้นี้ได้มาจากกุญแจสาธารณะของคุณอย่างแน่นอนตายตัว ทุกเครื่องที่เห็น ID ของเพียร์ของคุณจะเห็นชื่อเดียวกัน",
   "onboarding.username.cta": "เข้าสู่ Airhop",
@@ -156,7 +157,7 @@ export const strings: Strings = {
     "ค้นหาอุปกรณ์ที่อยู่ใกล้เคียงและส่งต่อข้อความระหว่างกัน สิ่งนี้สร้างเมชขึ้นมาและทำงานได้โดยไม่ต้องเชื่อมต่ออินเทอร์เน็ต",
   "onboarding.primer.location.title": "ตำแหน่ง",
   "onboarding.primer.location.body":
-    "จัดคุณเข้าช่องพื้นที่ใกล้เคียง ตั้งแต่ระดับบล็อกไปจนถึงระดับภูมิภาค Airhop ไม่เคยติดตามคุณและไม่ส่งตำแหน่งที่แม่นยำของคุณออกจากเครื่อง",
+    "จัดคุณเข้าช่องพื้นที่ใกล้เคียง ตั้งแต่ระดับบล็อกไปจนถึงระดับภูมิภาค Airhop ไม่เคยติดตามคุณ และตำแหน่งที่แม่นยำของคุณจะออกจากเครื่องก็ต่อเมื่อคุณส่งตำแหน่งให้ใครสักคนเท่านั้น",
   "onboarding.primer.notifications.title": "การแจ้งเตือน",
   "onboarding.primer.notifications.body":
     "รับการแจ้งเตือนข้อความใหม่แม้ในขณะที่ปิดแอปอยู่ การแจ้งเตือนถูกสร้างขึ้นภายในเครื่องของคุณ โดยไม่มีเซิร์ฟเวอร์เข้ามาเกี่ยวข้อง",
@@ -167,6 +168,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "การเข้าถึงบลูทูธ",
   "permission.bluetooth.purpose": "ค้นหาอุปกรณ์ใกล้เคียงบนเมช",
+  "permission.location.label": "การเข้าถึงตำแหน่ง",
+  "permission.location.purpose": "เข้าถึงช่องตำแหน่งที่อยู่นอกระยะบลูทูธ",
   "permission.open_settings": "เปิดการตั้งค่า",
   "permission.not_now": "ไว้ก่อน",
   "permission.blocked_title": "{label} ปิดอยู่",
@@ -226,8 +229,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "อยู่ในระยะ",
   "chat.dm.row_hint": "แตะสองครั้งค้างไว้เพื่อดูตัวเลือกเพิ่มเติม",
   "chat.channels.row_hint": "แตะสองครั้งค้างไว้เพื่อดูตัวเลือกเพิ่มเติม",
-  "chat.dm.you_prefix": "คุณ:",
-  "chat.draft_prefix": "ฉบับร่าง:",
+  "chat.draft_preview": "ฉบับร่าง: {draft}",
   "chat.dm.none": "ไม่มีข้อความโดยตรง",
   "chat.dm.none_desc": "ไปที่แท็บเมชแล้วแตะเพียร์เพื่อเริ่ม DM ที่เข้ารหัส",
   "chat.dm.contact_info": "ข้อมูลผู้ติดต่อ",
@@ -443,6 +445,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "ช่องสาธารณะ",
   "chat.thread.notices": "ประกาศสำหรับช่องนี้",
   "chat.thread.invite": "เชิญใครสักคนเข้าช่องนี้",
+  "chat.thread.location_off": "ตำแหน่งปิดอยู่ · ส่งถึงเฉพาะคนใกล้เคียง",
   "chat.thread.not_in_range": "ไม่ได้อยู่ใกล้ กำลังส่งผ่านอินเทอร์เน็ต",
   "chat.thread.not_nearby":
     "ไม่ได้อยู่ใกล้ เราจะส่งให้เมื่อพวกเขากลับเข้าระยะหรือออนไลน์",
@@ -470,7 +473,7 @@ export const strings: Strings = {
   "chat.thread.message": "ข้อความ",
   "chat.thread.message_placeholder": "ข้อความ…",
   "chat.thread.length_full": "ข้อความเต็มแล้ว",
-  "chat.thread.waiting_for": "กำลังรอ {name} กลับมา · {percent}%",
+  "chat.thread.waiting_for": "กำลังรอ {name} กลับมา · {percent}",
   "chat.transfer.progress": "{done} จาก {total}",
   "chat.transfer.speed": "{size}/วินาที",
   "chat.transfer.left": "เหลือ {time}",
@@ -534,7 +537,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "ดูโปรไฟล์ของ {name}",
   "chat.bubble.forwarded": "ส่งต่อมา",
   "chat.bubble.attachment": "ไฟล์แนบ",
-  "chat.bubble.a11y": "{sender}: {body} กดค้างเพื่อดูตัวเลือกเพิ่มเติม",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "แตะสองครั้งค้างไว้เพื่อดูตัวเลือกเพิ่มเติม",
+  "chat.bubble.more_options": "ตัวเลือกเพิ่มเติม",
+  "chat.bubble.open_link": "เปิด {link}",
+  "chat.bubble.status_delivered": "ส่งถึงแล้ว",
+  "chat.bubble.status_read": "อ่านแล้ว",
   "chat.bubble.failed_retry": "ส่งไม่สำเร็จ แตะเพื่อลองใหม่",
 
   // ---- Chats: message actions and info ----
@@ -660,6 +668,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "ไฟล์",
   "chat.media.pause_voice": "หยุดข้อความเสียงชั่วคราว",
   "chat.media.play_voice": "เล่นข้อความเสียง",
+  "chat.media.pause_video": "หยุดวิดีโอชั่วคราว",
+  "chat.media.play_video": "เล่นวิดีโอ",
   "chat.media.voice_position": "ตำแหน่งในข้อความเสียง",
   "chat.media.voice_scrub": "แตะตามแท่งเพื่อข้ามไปยังจุดนั้น",
   "chat.media.image": "รูปภาพ",
@@ -703,6 +713,8 @@ export const strings: Strings = {
   "chat.video_note.not_recorded": "อัดโน้ตวิดีโอไม่สำเร็จ",
   "chat.video_note.limit_sent": "หมดเวลา ส่งโน้ตวิดีโอแล้ว",
   "chat.video_note.a11y": "โน้ตวิดีโอ แตะสองครั้งเพื่อเปิดเสียง",
+  "chat.video_note.sound_on": "เปิดเสียง",
+  "chat.video_note.sound_off": "ปิดเสียง",
   "chat.live_video.preview": "วิดีโอสด",
   "chat.live_video.badge": "สด",
   "chat.live_video.reconnecting": "กำลังเชื่อมต่อใหม่…",
@@ -881,6 +893,10 @@ export const strings: Strings = {
   "chat.notices.post": "โพสต์ประกาศ",
   "chat.notices.post_short": "โพสต์",
   "chat.notices.delete": "ลบประกาศ",
+  "chat.notices.delete_title": "ลบประกาศนี้หรือไม่",
+  "chat.notices.delete_body":
+    "ทุกคนที่มีประกาศนี้จะได้รับคำขอให้ลบออก การลบนี้ย้อนกลับไม่ได้",
+  "chat.notices.permanent": "ถาวร",
   "chat.notices.fades_soon": "จะจางหายเร็ว ๆ นี้",
   "chat.notices.1_day": "1 วัน",
   "chat.notices.3_days": "3 วัน",
@@ -957,6 +973,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "ไม่ได้ส่งต่อ",
   "chat.forward.app_row_body":
     "บรรทัดนี้มาจาก Airhop ไม่ใช่จากคน จึงไม่มีอะไรให้ส่งต่อ",
+  "chat.forward.has_ecash":
+    "ข้อความนี้มี ecash อยู่ และใครเคลมก่อนจะได้เงินไป จึงไม่ส่งต่อ",
+  "chat.forward.public_title": "ส่งต่อไปยัง {name} หรือไม่",
+  "chat.forward.public_mesh_body":
+    "ทุกคนที่อยู่ใกล้เคียงอ่านได้ที่นั่น และเรียกคืนไม่ได้",
+  "chat.forward.public_geo_body":
+    "ทุกคนในพื้นที่นี้อ่านได้ที่นั่น รวมถึงบนรีเลย์อินเทอร์เน็ตสาธารณะ และเรียกคืนไม่ได้",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "กำลังเริ่มเมช…",
@@ -971,7 +994,7 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "ตำแหน่งปิดอยู่ · Android ต้องใช้เพื่อค้นหาเพียร์",
   "mesh.banner.paused": "เมชหยุดชั่วคราว · คุณไม่อยู่",
-  "mesh.banner.location_off": "ตำแหน่งปิดอยู่ · ใช้ช่องตำแหน่งไม่ได้",
+  "mesh.banner.location_off": "ตำแหน่งปิดอยู่ · ช่องตำแหน่งถึงเฉพาะคนใกล้เคียง",
   "mesh.banner.battery_saver": "โหมดประหยัดแบตเตอรี่ · สแกนถี่น้อยลง",
   "mesh.banner.wipe_incomplete":
     "ล้างข้อมูลไม่ครบ · อาจมีข้อมูลบางส่วนหลงเหลือ เปิดใหม่แล้วจะลองอีกครั้ง",
@@ -1002,7 +1025,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "เปิดการตั้งค่ากิจกรรมเบื้องหลังของโทรศัพท์เครื่องนี้",
   "mesh.banner.hint.tor_settings": "เปิดการตั้งค่า Tor ของ Airhop",
+  "mesh.banner.hint.enable_location":
+    "ขอสิทธิ์เข้าถึงตำแหน่ง หรืออธิบายวิธีอนุญาตในการตั้งค่า",
   "mesh.banner.dismiss": "ปิด: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "ซ่อนข้อความนี้อย่างถาวร",
 
   // ---- Mesh: radar ----
@@ -1227,6 +1253,8 @@ export const strings: Strings = {
     "{mint} ออก {units} กุญแจของมันถูกแคชไว้บนเครื่องนี้ โทเคนจากมินต์นี้จึงตรวจสอบได้แม้ไม่มีอินเทอร์เน็ต",
   "wallet.mint.remove_plain":
     "นำ {mint} ออกจากกระเป๋าเงินของคุณหรือไม่ กุญแจที่แคชไว้จะหายไปด้วย โทเคนจากมินต์นี้จึงตรวจสอบแบบออฟไลน์ไม่ได้อีก",
+  "wallet.mint.remove_holdings":
+    "{mint} ถือ:\n{holdings}\nการนำออกจะลบทั้งหมดนี้จากเครื่องนี้ โปรดถอนหรือส่งออกไปก่อน",
   "wallet.mint.title": "มินต์",
   "wallet.mint.none_desc":
     "มินต์ออกและไถ่ถอน ecash ของคุณ เพิ่มสักแห่งเพื่อเติมเงินผ่าน Lightning หรือรับโทเคนของมินต์นั้น",
@@ -1571,6 +1599,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "ถูกใช้ไปแล้ว",
   "wallet.err.change_pending": "จ่ายแล้ว เงินทอนรอดำเนินการ",
   "wallet.svc.mint_unreachable": "ติดต่อมินต์ไม่ได้",
+  "wallet.svc.mint_http_error": "มินต์ตอบกลับด้วยข้อผิดพลาด (HTTP {status})",
   "wallet.svc.tor_ios": "คำขอไปยังมินต์ไม่ได้ผ่าน Tor บน iOS",
   "wallet.svc.tor_ios_body":
     "Tor บน iOS ครอบคลุมเฉพาะ Nostr คำขอนี้จึงจะไปถึงมินต์ผ่านเครือข่ายเปิดและเชื่อม IP ของคุณเข้ากับ ecash นี้ เปิด {setting} ในการตั้งค่า หรือปิด Tor ก่อน การส่งและรับ ecash ผ่านเมชยังทำงานอยู่",
@@ -1670,6 +1699,10 @@ export const strings: Strings = {
     "เหรียญของคุณสร้างยอด {amount} {unit} แบบพอดีเป๊ะขณะออฟไลน์ไม่ได้",
   "wallet.svc.inexact_detail":
     "โทเคนที่เล็กที่สุดที่คุณส่งได้คือ {spend} {unit} เมื่อออฟไลน์จะไม่มีเงินทอน ส่วนเกิน {extra} {unit} จึงตกเป็นของผู้รับ",
+  "wallet.svc.spend_changed":
+    "ตอนนี้การส่งนี้จะใช้ {spend} {unit} มากกว่าที่คุณตกลงไว้",
+  "wallet.svc.spend_changed_body":
+    "เหรียญของคุณเปลี่ยนไประหว่างที่คุณกำลังตัดสินใจ ไม่มีอะไรถูกส่งออกไป ลองอีกครั้งเพื่อดูยอดใหม่",
   "wallet.svc.no_single_mint":
     "ไม่มีมินต์แห่งใดแห่งเดียวที่ถือ {amount} {unit} ecash จากมินต์ต่างแห่งรวมเป็นโทเคนใบเดียวไม่ได้ ให้รวมยอดไว้ที่มินต์เดียวก่อน หรือแยกส่งเป็นหลายจำนวน",
   "wallet.svc.have_tried_send": "คุณมี {total} {unit} และพยายามส่ง {amount}",
@@ -1697,6 +1730,10 @@ export const strings: Strings = {
     "ไม่มีการส่งอย่างอื่นเพิ่ม เหรียญถูกกันไว้จนกว่ามินต์จะยืนยันผลลัพธ์ หากสำเร็จ โทเคนที่ล็อกไว้จะแสดงในรายการกิจกรรมเพื่อให้คุณส่งต่อ หากไม่สำเร็จ เหรียญจะกลับมา",
   "wallet.svc.send_spent_by_swap":
     "เหรียญเหล่านี้ถูกแลกกลับเข้ากระเป๋าเงินของคุณก่อนที่จะมีการรับโทเคนนี้ จึงรับโทเคนนี้ไม่ได้อีกแล้ว มูลค่าอยู่ในยอดคงเหลือของคุณ",
+  "wallet.svc.payment_in_doubt_body":
+    "เหรียญถูกกันไว้จนกว่ามินต์จะยืนยันผลลัพธ์ ซึ่งจะตรวจสอบอีกครั้งเมื่อรีเฟรชครั้งถัดไป อย่าชำระใบแจ้งหนี้นี้ซ้ำจนกว่าจะถึงตอนนั้น",
+  "wallet.svc.mint_removed":
+    "คุณนำมินต์นี้ออกแล้ว รายการนี้จึงไม่ถูกติดตามอีกต่อไป",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "ยืนยันผ่าน QR แล้ว",
@@ -1739,7 +1776,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "รหัส bitchat นั้นหมดอายุแล้ว ขอให้พวกเขาเปิด QR ขึ้นมาใหม่",
   "contacts.scan.tampered":
-    "คิวอาร์โค้ดนี้ใช้ไม่ได้ ID ของเพียร์ไม่ตรงกับกุญแจ อาจถูกดัดแปลง",
+    "คิวอาร์โค้ดนี้ใช้ไม่ได้ กุญแจของมันตรวจสอบไม่ผ่าน อาจถูกดัดแปลง",
   "contacts.scan.key_conflict":
     "คุณมีกุญแจอีกอันของพวกเขาอยู่แล้ว จึงไม่มีอะไรเปลี่ยนแปลง หากต้องการแทนที่ ให้สแกนรหัสของพวกเขาเมื่อเจอกันต่อหน้า",
   "contacts.scan.already_added": "อยู่ในผู้ติดต่อของคุณแล้ว",
@@ -1761,7 +1798,8 @@ export const strings: Strings = {
     "กุญแจของ {name} ตรงกัน คุณเชื่อถือผู้ติดต่อรายนี้ได้",
   "contacts.verify.different_body":
     "QR นี้เป็นของคนอื่น ขอให้ {name} แสดงรหัสของตัวเอง",
-  "contacts.verify.tampered_body": "QR นี้ดูเหมือนถูกดัดแปลง ID ไม่ตรงกับกุญแจ",
+  "contacts.verify.tampered_body":
+    "QR นี้ดูเหมือนถูกดัดแปลง กุญแจของมันตรวจสอบไม่ผ่าน",
   "contacts.verify.choose_title": "คุณอยากตรวจสอบด้วยวิธีใด",
   "contacts.verify.choose_body":
     "ทั้งสองวิธียืนยันว่ากุญแจบนโทรศัพท์เครื่องนี้เป็นของ {name} จริง",
@@ -1937,7 +1975,7 @@ export const strings: Strings = {
     "คืนการตั้งค่ากลับเป็นค่าเริ่มต้น โดยไม่แตะต้องตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณ",
   "settings.general.reset_title": "รีเซ็ตการตั้งค่าหรือไม่",
   "settings.general.reset_body":
-    "การตั้งค่าจะกลับเป็นค่าเริ่มต้น รวมถึงรูปลักษณ์ ภาษา การแจ้งเตือน การเลิกทำการส่ง และการเชื่อมต่อ (อินเทอร์เน็ต Tor เกตเวย์ บริดจ์ รีเลย์) ส่วนล็อก Airhop ระยะเวลาเก็บสื่อ และสถานะของคุณจะยังคงตามที่ตั้งไว้ ตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณจะไม่ถูกแตะต้อง",
+    "การตั้งค่าจะกลับเป็นค่าเริ่มต้น รวมถึงรูปลักษณ์ ภาษา การแจ้งเตือน การเลิกทำการส่ง และการเชื่อมต่อ (เกตเวย์ บริดจ์เมช รีเลย์) ส่วนล็อก Airhop ระยะเวลาเก็บสื่อ สวิตช์อินเทอร์เน็ต Tor และบริดจ์ของ Tor และสถานะของคุณจะยังคงตามที่ตั้งไว้ ตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณจะไม่ถูกแตะต้อง",
   "settings.general.reset_confirm": "รีเซ็ต",
 
   // ---- Settings: privacy and security ----
@@ -2086,6 +2124,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Tor ยังไม่ได้เชื่อมต่อ มันยังเปิดอยู่และพยายามต่อไป แท็บเมชจะบอกเมื่อมันกำหนดเส้นทางได้แล้ว หรือเมื่อเครือข่ายนี้กำลังบล็อกมันอยู่",
   "settings.conn.tor_failed": "เริ่ม Tor ไม่สำเร็จ ลองอีกครั้งในอีกสักครู่",
+  "settings.conn.tor_bad_bridges":
+    "Tor ใช้บรรทัดบริดจ์เหล่านี้ไม่ได้ ตรวจสอบบรรทัดเหล่านั้น หรือเลือกการเชื่อมต่อแบบอื่น",
+  "settings.conn.tor_port_busy":
+    "แอปอื่นกำลังใช้พอร์ตที่ Tor ต้องการ ซึ่งมักเป็นแอปอื่นที่รัน Tor อยู่ ปิดแอปนั้นแล้วลองอีกครั้ง",
   "settings.tor.status": "สถานะ Tor",
   "settings.tor.connection": "การเชื่อมต่อ",
   "settings.tor.mode_off": "ตรง",
@@ -2230,6 +2272,8 @@ export const strings: Strings = {
   "settings.language.pending": "เมื่อเปิดครั้งถัดไป",
   "settings.language.pending_a11y":
     "{value}, จะมีผลเมื่อคุณเปิด Airhop ครั้งถัดไป",
+  "settings.language.phone": "ภาษาของโทรศัพท์",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "เปิดใหม่ตอนนี้",
   "settings.language.rtl_title": "เปิด Airhop ใหม่เพื่อให้เสร็จสมบูรณ์",
   "settings.language.rtl_body":
@@ -2246,7 +2290,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "เมชหยุดชั่วคราว ไม่สแกนและไม่ประกาศตัว",
   "settings.status.invisible": "ล่องหน",
   "settings.status.invisible_desc":
-    "ซ่อนจากการสแกนบลูทูธ แต่โทรศัพท์ที่คุณเชื่อมต่อด้วยยังเห็นคุณอยู่",
+    "ไม่ประกาศตัวผ่านบลูทูธ แต่โทรศัพท์ที่เครื่องนี้เชื่อมต่อด้วยผ่านบลูทูธหรือ Wi-Fi ยังเห็นคุณอยู่",
   "settings.status.title": "สถานะ",
   "settings.status.set_a11y": "ตั้งสถานะเป็น {value}",
   "settings.status.edit": "แก้ไขสถานะ",
@@ -2507,6 +2551,10 @@ export const plurals: Plurals = {
   "chat.select.forward": {
     other: "ส่งต่อ {count} ข้อความ",
   },
+  "chat.forward.too_many_public": {
+    other:
+      "ห้องสาธารณะแสดงข้อความติดต่อกันจากคนเดียวได้เพียง {count} ข้อความ ส่วนที่เหลือจะหายไป ส่งต่อทีละน้อยลง",
+  },
   "chat.voice.live_speaking_count": {
     other: "{count} คนกำลังพูด",
   },
@@ -2572,12 +2620,12 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    other:
-      "{mint} ถือ {balance} {unit} ในเหรียญ {count} เหรียญ การลบออกจะลบยอดนั้นจากเครื่องนี้อย่างถาวรและไม่มีข้อมูลสำรอง โปรดถอนหรือส่งยอดคงเหลือออกไปก่อน",
-  },
   "wallet.mint.split_across": {
     other: "ยอดคงเหลือกระจายอยู่ในมินต์ {count} แห่ง ย้ายไปรวมที่เดียว",
+  },
+  "wallet.mint.remove_pending": {
+    other:
+      "การชำระเงิน {count} รายการที่ {mint} ยังไม่เสร็จสิ้น การนำมินต์ออกจะละทิ้งรายการเหล่านั้น รวมถึงทุกอย่างที่ยังอาจได้คืนมา",
   },
 
   // ---- Wallet: Lightning ----
@@ -2589,6 +2637,9 @@ export const plurals: Plurals = {
   // ---- Wallet: recovery phrase ----
   "wallet.backup.recovered": {
     other: "กู้คืนเหรียญที่ยังไม่ถูกใช้ {count} เหรียญจาก {mints}",
+  },
+  "wallet.backup.already_held": {
+    other: "เหรียญที่พบ {count} เหรียญอยู่ในกระเป๋าเงินนี้แล้ว จึงไม่ถูกนับซ้ำ",
   },
   "wallet.backup.already_spent": {
     other:
