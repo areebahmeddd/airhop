@@ -24,7 +24,12 @@ import {
   currentWipeGeneration,
   isCurrentWipeGeneration,
 } from "../wipe-generation";
-import { endPanicWipe, isPanicWipePending } from "../wipe-marker";
+import {
+  clearCondemnedIdentity,
+  endPanicWipe,
+  isIdentityCondemned,
+  isPanicWipePending,
+} from "../wipe-marker";
 
 // wipeAllSecrets reaches the Keychain/Keystore; mock it out in tests. Only that
 // one export: KEYCHAIN_ITEMS is read at module scope by wallet-store and
@@ -212,6 +217,58 @@ describe("panicWipe", () => {
     expect(callOrder.filter((x) => x === "mmkv").length).toBeGreaterThanOrEqual(
       MMKV_STORE_IDS.length,
     );
+  });
+
+  test("clears MMKV without waiting for a keychain that has not answered", async () => {
+    // A stalled Keystore must not hold the messages on disk for its deadline.
+    let answer: (() => void) | undefined;
+    mockClearKeys.mockReturnValue(
+      new Promise<void>((resolve) => {
+        answer = resolve;
+      }),
+    );
+
+    const wipe = panicWipe();
+    await Promise.resolve();
+
+    expect(clearedPartitions()).toEqual(
+      expect.arrayContaining([...MMKV_STORE_IDS]),
+    );
+    expect(isPanicWipePending()).toBe(true);
+    answer?.();
+    await expect(wipe).resolves.toEqual({ keysDestroyed: true });
+  });
+
+  test("condemns a surviving identity once the keychain refuses, after MMKV", async () => {
+    // The flag lives outside every cleared partition, so it is still there for
+    // the next launch even though it is written after they are cleared.
+    mockClearKeys.mockRejectedValue(new Error("keychain locked"));
+
+    await panicWipe();
+
+    expect(isIdentityCondemned()).toBe(true);
+    clearCondemnedIdentity();
+  });
+
+  test("empties the cache before the tray, widget and Tor steps", async () => {
+    // Media is message content; the native steps can each take their deadline.
+    const order: string[] = [];
+    (wipeCacheDirectory as jest.Mock).mockImplementationOnce(() => {
+      order.push("cache");
+      return Promise.resolve();
+    });
+    (dismissAllNotifications as jest.Mock).mockImplementationOnce(() => {
+      order.push("tray");
+      return Promise.resolve();
+    });
+    (clearBackgroundNotice as jest.Mock).mockImplementationOnce(() => {
+      order.push("widget");
+      return Promise.resolve();
+    });
+
+    await panicWipe();
+
+    expect(order).toEqual(["cache", "tray", "widget"]);
   });
 
   test("empties the whole cache directory, not just prefixed attachments", async () => {

@@ -28,7 +28,7 @@ jest.mock("@platform/device-auth", () => ({
 
 import { useAppLockStore } from "@store/app-lock-store";
 import { useSettingsStore } from "@store/settings-store";
-import { Platform } from "react-native";
+import { AppState, Platform } from "react-native";
 import {
   awayMs,
   disableAppLock,
@@ -178,6 +178,75 @@ describe("locking", () => {
     expect(phase()).toBe("locked");
     stop();
     expect(mockAppStateSubs.size).toBe(0);
+  });
+});
+
+// Android recreates the Activity while the process, and the lock's state, live
+// on, which unsubscribes and resubscribes the watcher.
+describe("across a remount", () => {
+  const emit = (state: string) => {
+    for (const fn of mockAppStateSubs) fn(state);
+  };
+  const setAppState = (state: string) => {
+    (AppState as { currentState: string }).currentState = state;
+  };
+
+  afterEach(() => setAppState("active"));
+
+  it("still settles a covered lock on a return after remounting away", () => {
+    setLock(true, 60);
+    watchAppLock()();
+    noteBackground(at(0));
+    expect(phase()).toBe("covered");
+
+    setAppState("background");
+    const stop = watchAppLock();
+    setAppState("active");
+    emit("active");
+
+    expect(phase()).toBe("locked");
+    stop();
+  });
+
+  it("settles a covered lock at once when it remounts already back", () => {
+    setLock(true, 60);
+    watchAppLock()();
+    noteBackground(at(0));
+    expect(phase()).toBe("covered");
+
+    const stop = watchAppLock();
+
+    expect(phase()).toBe("locked");
+    stop();
+  });
+
+  it("asks again for a locked lock on a return after remounting away", () => {
+    setLock(true, 0);
+    watchAppLock()();
+    noteBackground(at(0));
+    const { generation } = useAppLockStore.getState();
+
+    setAppState("background");
+    const stop = watchAppLock();
+    setAppState("active");
+    emit("active");
+
+    expect(phase()).toBe("locked");
+    expect(useAppLockStore.getState().generation).toBe(generation + 1);
+    stop();
+  });
+
+  it("leaves a locked lock alone when it remounts already back", () => {
+    setLock(true, 0);
+    noteBackground(at(0));
+    const { generation } = useAppLockStore.getState();
+
+    const stop = watchAppLock();
+    emit("inactive");
+    emit("active");
+
+    expect(useAppLockStore.getState().generation).toBe(generation);
+    stop();
   });
 });
 

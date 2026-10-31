@@ -7,9 +7,9 @@
 // out of. Cancel lasts until the last byte is sent; after that only
 // move-sender's answers remain.
 
-import { decodeQRContent } from "@core/crypto/contact-exchange";
+import { isContactQR } from "@core/crypto/contact-exchange";
 import { decodeMoveInvite, isMoveInvite } from "@core/move/move-invite";
-import { useT, type TranslationKey } from "@i18n";
+import { useT, type TranslationKey, type Translator } from "@i18n";
 import { confirmDeviceOwner } from "@platform/device-auth";
 import { rejected, succeeded } from "@platform/haptics";
 import {
@@ -28,6 +28,7 @@ import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import PrimaryButton from "@ui/components/primary-button";
 import SafetyWords from "@ui/components/safety-words";
 import TextButton from "@ui/components/text-button";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import {
   BUTTON_HEIGHT,
   FontSize,
@@ -81,6 +82,9 @@ interface Props {
   onClose: () => void;
   onResumeMesh: () => void;
   onErased: (keysDestroyed: boolean) => void;
+  // An unconfirmed end with no screen left to ask on. The "sent" marker stays
+  // and the mesh stays down, so the shell asks instead, as a relaunch does.
+  onUnconfirmedAway: () => void;
 }
 
 export default function TransferOutFlow({
@@ -88,6 +92,7 @@ export default function TransferOutFlow({
   onClose,
   onResumeMesh,
   onErased,
+  onUnconfirmedAway,
 }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const T = useT();
@@ -107,18 +112,38 @@ export default function TransferOutFlow({
   const resolved = useRef(false);
   // The sender can reach its outcome after this screen is gone.
   const unmounted = useRef(false);
+  // The last outcome shown, so leaving before answering it still hands it on.
+  const lastState = useRef<SenderState | null>(null);
+  // Read at unmount, whose effect captured the first render's handlers.
+  const outcomeHandlers = useRef({ onErased, onUnconfirmedAway });
+  // Kept current after each commit rather than during render, which React may
+  // repeat or discard.
+  useEffect(() => {
+    outcomeHandlers.current = { onErased, onUnconfirmedAway };
+  });
 
   // Unmounting mid-transfer (a link or a notification switching tabs, Android
   // recreating the Activity) is the Cancel nobody could tap: left running, the
   // sender holds the link with no screen to report to. Before the stream ends
   // this leaves the phone as it was; after, cancel does nothing and the sender
-  // runs on to its outcome.
+  // runs on to its outcome. An outcome already on screen and not yet answered
+  // goes to the shell the same way a later one would: the mesh is down, and
+  // only the person may decide whether this phone keeps the identity.
   useEffect(() => {
     unmounted.current = false;
     return () => {
       unmounted.current = true;
       cancelHandoff.current?.();
       senderRef.current?.cancel();
+      const last = lastState.current;
+      if (resolved.current || last === null) return;
+      if (last.phase === "done") {
+        resolved.current = true;
+        outcomeHandlers.current.onErased(last.keysDestroyed);
+      } else if (last.phase === "unconfirmed") {
+        resolved.current = true;
+        outcomeHandlers.current.onUnconfirmedAway();
+      }
     };
   }, []);
 
@@ -195,7 +220,7 @@ export default function TransferOutFlow({
     const invite = decodeMoveInvite(text);
     if (invite === null) {
       // A contact code is the likeliest mistake, and it gets a word.
-      if (!isMoveInvite(text) && decodeQRContent(text) !== null) {
+      if (!isMoveInvite(text) && isContactQR(text)) {
         setWrongCode(true);
       }
       return;
@@ -205,9 +230,11 @@ export default function TransferOutFlow({
     const sender = new MoveSender(invite, history, {
       onChange: (state) => {
         if (senderRef.current !== sender) return;
+        lastState.current = state;
         // With no screen to ask or report on: an erase still puts the shell
-        // back to first run, and an unconfirmed end keeps this phone, as the
-        // next launch would, rather than leave the mesh down until then.
+        // back to first run, and an unconfirmed end goes to the shell's
+        // recovery question. The new phone may hold the identity, so this one
+        // never rejoins the mesh without the person saying so (move-marker).
         if (unmounted.current) {
           if (resolved.current) return;
           if (state.phase === "done") {
@@ -215,8 +242,7 @@ export default function TransferOutFlow({
             onErased(state.keysDestroyed);
           } else if (state.phase === "unconfirmed") {
             resolved.current = true;
-            clearMoveMarker();
-            onResumeMesh();
+            onUnconfirmedAway();
           }
           return;
         }
@@ -651,6 +677,31 @@ export default function TransferOutFlow({
     );
   }
 
+  // VoiceOver's half of the live regions above, following the same branches as
+  // renderModalBody. Only the wrong-code hint is news on the scanner; the aim
+  // hint arrives with the camera.
+  const announcement =
+    stage.kind === "erasing"
+      ? T("settings.transfer.erasing")
+      : stage.kind === "run"
+        ? runHeading(stage.state, T)
+        : cameraDenied
+          ? T("contacts.verify.camera_off")
+          : !cameraGranted
+            ? T("contacts.verify.waiting_camera")
+            : wrongCode
+              ? T("settings.transfer.wrong_code")
+              : null;
+  // The sending percentage is one phase, announced once rather than per step.
+  const sending = stage.kind === "run" && stage.state.phase === "sending";
+  // Silent while the modal is shut, though its body still renders. The trigger
+  // still moves, so what the modal opens on counts as seen: VoiceOver lands on
+  // its heading anyway.
+  useAnnounce(modalOpen ? announcement : null, {
+    trigger: sending ? "sending" : announcement,
+    assertive: stage.kind === "run" && stage.state.phase === "failed",
+  });
+
   return (
     <>
       {renderSheet()}
@@ -674,6 +725,33 @@ export default function TransferOutFlow({
       </AppModal>
     </>
   );
+}
+
+// What each phase's panel leads with, for VoiceOver: its title, and with a
+// failure the reason too.
+function runHeading(state: SenderState, T: Translator): string {
+  switch (state.phase) {
+    case "connecting":
+      return T("settings.transfer.connecting");
+    case "verify":
+      return T("settings.transfer.confirm_title");
+    case "awaiting":
+      return T("settings.transfer.waiting_confirm");
+    case "sending":
+      return T("settings.transfer.sending", {
+        percent: formatNumber(Math.floor(state.progress * 100)),
+      });
+    case "finishing":
+      return T("settings.transfer.finishing");
+    case "erasing":
+      return T("settings.transfer.erasing");
+    case "done":
+      return T("settings.transfer.done_title");
+    case "unconfirmed":
+      return T("settings.transfer.unconfirmed_title");
+    case "failed":
+      return `${T("settings.transfer.failed_title")}\n${T(FAILURE_BODY[state.reason])}`;
+  }
 }
 
 // The rows that always move wear the same switch, on and dimmed, so the list

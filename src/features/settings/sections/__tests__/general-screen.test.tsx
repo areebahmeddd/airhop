@@ -1,7 +1,8 @@
 // Reset settings and the media retention picker: what each actually changes.
-// Reset's confirm says app lock, the retention window and status stay as set,
-// so those must survive it. The retention sheet says media goes after the
-// chosen time, so a shorter window has to apply to what is already on disk.
+// Reset's confirm says app lock, the retention window, the internet switch, Tor
+// and status stay as set, so those must survive it. The retention sheet says
+// media goes after the chosen time, so a shorter window has to apply to what is
+// already on disk.
 
 import { t, tPlural } from "@i18n";
 import { useAlertStore } from "@store/alert-store";
@@ -15,10 +16,6 @@ import GeneralScreen from "../general-screen";
 // take several seconds on a cold CI runner.
 jest.setTimeout(30_000);
 
-jest.mock("@services/mesh-service", () => ({ getMeshService: () => null }));
-jest.mock("@services/tor-routing", () => ({
-  setTorRouting: jest.fn(() => Promise.resolve({ ok: true })),
-}));
 jest.mock("@services/boot-sync", () => ({ syncAutoStartOnBoot: jest.fn() }));
 
 const mockSweepNow = jest.fn();
@@ -98,6 +95,25 @@ describe("Reset settings", () => {
     expect(s.appLockDelaySeconds).toBe(300);
     expect(s.mediaRetentionDays).toBe(30);
     expect(s.stayInvisible).toBe(true);
+  });
+
+  // A reset meant for the theme must not put a Tor-with-bridges user, or one
+  // with the internet off, on the clear net.
+  it("leaves Tor, its bridges and the internet switch as they were", async () => {
+    useSettingsStore.setState({
+      torEnabled: true,
+      torBridgeMode: "custom",
+      torBridgeLines: "obfs4 192.0.2.1:443 cert=x iat-mode=0",
+      internetEnabled: false,
+    });
+    await renderScreen();
+    await resetSettings();
+
+    const s = useSettingsStore.getState();
+    expect(s.torEnabled).toBe(true);
+    expect(s.torBridgeMode).toBe("custom");
+    expect(s.torBridgeLines).toBe("obfs4 192.0.2.1:443 cert=x iat-mode=0");
+    expect(s.internetEnabled).toBe(false);
   });
 
   it("never shows a subscriber a kept setting switched off", async () => {

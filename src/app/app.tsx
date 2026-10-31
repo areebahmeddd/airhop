@@ -110,6 +110,7 @@ import {
   primeTorRoutingOnStartup,
   revalidateTorRouting,
 } from "@services/tor-routing";
+import { turnOnLocation } from "@services/turn-on-location";
 import { discardStaleVideoWork } from "@services/video-prepare";
 import {
   initWalletService,
@@ -364,6 +365,11 @@ async function startMeshWithPermissions(
     // socket and the Privacy screen reports Tor as off, which is true.
   }
   initMeshService(identity, nickname);
+  // A new mesh assumes the foreground, and the mount effect's AppState report
+  // reached no mesh. On an iOS relaunch into the background (Bluetooth state
+  // restoration) that would run the radios and the location heartbeat as if on
+  // screen until the first AppState change.
+  getMeshService()?.setAppForeground(AppState.currentState !== "background");
   applyStartupPresence();
   // Re-syncs the native auto-start flag on every real launch, in case a
   // toggle's own write was ever missed.
@@ -572,7 +578,7 @@ function startMeshDependents(): void {
     const granted =
       (await hasLocationPermission()) || (await requestLocationPermission());
     // Reflect the grant on the Mesh banner: without it the location channels
-    // are unavailable, and saying so beats a silently empty channel list.
+    // reach only people nearby, and saying so beats a quietly small room.
     useMeshStateStore.getState().setLocationGranted(granted);
     if (granted) getMeshService()?.refreshGeoChannels();
     await requestNotificationPermission();
@@ -622,6 +628,12 @@ async function handleBannerAction(
     case "open-app-settings":
       await Linking.openSettings().catch(() => undefined);
       break;
+
+    // Shared with the banner inside a location channel, so the two cannot
+    // disagree. It retries the radios itself on a grant.
+    case "enable-location":
+      await turnOnLocation();
+      return;
 
     case "open-background-limits": {
       // Walk the ladder for this device and stop at the first screen that
@@ -754,7 +766,9 @@ function AppContent(): React.JSX.Element {
               },
             },
           ]
-        : undefined,
+        : // Passed rather than left to the alert's default, which would say
+          // OK in the language on screen under a title in the target one.
+          [{ text: inTarget("common.ok") }],
     );
   }, [languagePreference, wantedLanguage]);
 
@@ -1634,6 +1648,10 @@ function AppContent(): React.JSX.Element {
               }}
             />
           )}
+          {/* Erase here destroys the identity, so the app lock guards it as it
+              guards the main tabs: this screen can also open mid-session, over
+              an app the lock already covers. */}
+          <LockScreen />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     );
@@ -2261,6 +2279,11 @@ function AppContent(): React.JSX.Element {
                       // Before the first byte is destroyed, so the wiping
                       // screen covers the whole of it.
                       onWipeStart={() => setWipeInProgress(true)}
+                      // The launch's own question, asked now: the mesh is down
+                      // and the "sent" marker stands until it is answered.
+                      onTransferUnconfirmed={() =>
+                        setTransferRecovery("sender")
+                      }
                       onResumeMesh={() => {
                         // Starting the mesh restores only Invisible; keep an
                         // earlier Away.
@@ -2624,7 +2647,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     bellBadge: {
       position: "absolute",
       top: -4,
-      right: -4,
+      end: -4,
       backgroundColor: Colors.accent,
       borderRadius: Radius.full,
       minWidth: 16,
@@ -2701,7 +2724,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     tabDot: {
       position: "absolute",
       top: -1,
-      right: -5,
+      end: -5,
       width: 10,
       height: 10,
       borderRadius: Radius.full,
@@ -2712,7 +2735,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     tabBadge: {
       position: "absolute",
       top: -4,
-      right: -8,
+      end: -8,
       minWidth: 16,
       height: 16,
       borderRadius: Radius.full,
@@ -2735,7 +2758,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     segBadge: {
       position: "absolute",
       top: -5,
-      right: -6,
+      end: -6,
       minWidth: 16,
       height: 16,
       borderRadius: Radius.full,

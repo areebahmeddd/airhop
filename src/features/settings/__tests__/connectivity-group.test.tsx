@@ -1,13 +1,13 @@
 // The hub's "Mesh bridge needs location" row. Its Grant has to do something in
 // every permission state: a refusal the OS will not ask about again makes the
-// request a silent no-op, so there it goes to Settings instead.
+// request a silent no-op, so there it explains Settings instead, through the
+// same turnOnLocation the Location off banners use.
 
 import { t } from "@i18n";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import { render, screen, userEvent } from "@testing-library/react-native";
 import type React from "react";
-import { Linking } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import ConnectivityGroup from "../connectivity-group";
 
@@ -30,6 +30,11 @@ jest.mock("@services/location-service", () => ({
   requestLocationPermission: () => mockRequest(),
 }));
 
+const mockShowBlockedAlert = jest.fn();
+jest.mock("@platform/permissions", () => ({
+  showBlockedAlert: () => mockShowBlockedAlert(),
+}));
+
 jest.mock("@ui/components/bottom-sheet", () => ({
   __esModule: true,
   default: ({
@@ -46,21 +51,13 @@ const METRICS = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
 };
 
-let openSettings: jest.SpyInstance;
-
 beforeEach(() => {
   useSettingsStore.setState({ bridgeEnabled: true, internetEnabled: true });
   useMeshStateStore.setState({ locationGranted: false });
   mockPermission = { granted: false, canAskAgain: true };
   mockRequest.mockReset();
   mockRefreshGeoChannels.mockReset();
-  openSettings = jest
-    .spyOn(Linking, "openSettings")
-    .mockResolvedValue(undefined);
-});
-
-afterEach(() => {
-  openSettings.mockRestore();
+  mockShowBlockedAlert.mockReset();
 });
 
 async function pressGrant(): Promise<void> {
@@ -82,16 +79,16 @@ describe("granting location for the bridge", () => {
     await pressGrant();
 
     expect(mockRequest).toHaveBeenCalled();
-    expect(openSettings).not.toHaveBeenCalled();
+    expect(mockShowBlockedAlert).not.toHaveBeenCalled();
     expect(mockRefreshGeoChannels).toHaveBeenCalled();
     expect(useMeshStateStore.getState().locationGranted).toBe(true);
   });
 
-  it("opens Settings when the OS will not ask again", async () => {
+  it("explains Settings when the OS will not ask again", async () => {
     mockPermission = { granted: false, canAskAgain: false };
     await pressGrant();
 
-    expect(openSettings).toHaveBeenCalled();
+    expect(mockShowBlockedAlert).toHaveBeenCalled();
     expect(mockRequest).not.toHaveBeenCalled();
   });
 });
