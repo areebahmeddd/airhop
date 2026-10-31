@@ -37,8 +37,7 @@ export function usePullRefreshColors(): PullRefreshColors {
       progressBackgroundColor: Colors.surface,
       // A spinner is a meaningful indicator, so it owes 3:1 against its own
       // background (WCAG 1.4.11). On the puck above, textSecondary measures ~7:1
-      // in both themes where textMuted is ~3.6:1 in the dark one, which clears
-      // the floor with no headroom on a shape this thin.
+      // in both themes, headroom textMuted (~5:1) lacks on a shape this thin.
       tintColor: Colors.textSecondary,
       colors: [Colors.textSecondary],
     }),

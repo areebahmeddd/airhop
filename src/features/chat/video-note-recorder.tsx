@@ -55,6 +55,7 @@ import {
   CANCEL_SLIDE_DISTANCE,
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
+import { activateOnly } from "./screen-reader-actions";
 
 // The bitrate the camera is asked for. With the platform's own AAC track on
 // top, a full-length note lands near 700 KB, inside the 1 MiB file ceiling;
@@ -139,6 +140,8 @@ export function useVideoNoteRecorder({
   const holdSeq = useRef(0);
   const phaseRef = useRef<Phase>("idle");
   const outcomeRef = useRef<Outcome | null>(null);
+  // Whether the progress handler has already repeated a stop; see finish.
+  const stopResentRef = useRef(false);
   const startedAtRef = useRef(0);
   // Started from a screen reader, which has no hold: record straight into the
   // hands-free state.
@@ -172,6 +175,7 @@ export function useVideoNoteRecorder({
     lockAvailable.set(false);
     lockedShared.set(false);
     outcomeRef.current = null;
+    stopResentRef.current = false;
     lastSizeRef.current = undefined;
     startLockedRef.current = false;
   }, [setPhaseBoth, progress, lockAvailable, lockedShared]);
@@ -211,6 +215,11 @@ export function useVideoNoteRecorder({
         if (outcome === "send") onToastRef.current(t("chat.video_note.hold"));
         return;
       }
+      // The first decision stands. A release inside expo-camera's start gap
+      // (phase "recording", recorder not yet running) asks a recorder that
+      // has not started to stop, so it keeps going; a later tap must not turn
+      // that cancel into a send. The progress handler re-issues the stop.
+      if (outcomeRef.current !== null) return;
       const tooShort = Date.now() - startedAtRef.current < MIN_BURST_KEEP_MS;
       outcomeRef.current = tooShort ? "cancel" : outcome;
       if (tooShort && outcome === "send") {
@@ -295,6 +304,17 @@ export function useVideoNoteRecorder({
   const beginFromGesture = useCallback((): void => {
     void begin();
   }, [begin]);
+
+  // A hold-and-slide has no screen-reader form, so it is a toggle there,
+  // straight into the hands-free state.
+  const toggleFromScreenReader = useCallback((): void => {
+    if (phaseRef.current === "idle") {
+      startLockedRef.current = true;
+      void begin();
+    } else {
+      finish("send");
+    }
+  }, [begin, finish]);
 
   // Same shape as the mic's hold: a Pan with no minimum distance, ended on
   // every finalize (release, system cancellation, a call), on the UI thread.
@@ -398,14 +418,13 @@ export function useVideoNoteRecorder({
         accessibilityRole="button"
         accessibilityLabel={T("chat.video_note.hold")}
         accessibilityHint={T("chat.video_note.a11y_toggle")}
-        // A hold-and-slide has no screen-reader form, so it is a toggle there,
-        // straight into the hands-free state.
-        onAccessibilityTap={() => {
-          if (phaseRef.current === "idle") {
-            startLockedRef.current = true;
-            void begin();
-          } else {
-            finish("send");
+        // The double tap arrives differently on each platform; see
+        // screen-reader-actions.ts.
+        accessibilityActions={activateOnly(Platform.OS)}
+        onAccessibilityTap={toggleFromScreenReader}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName === "activate") {
+            toggleFromScreenReader();
           }
         }}
       >
@@ -446,6 +465,13 @@ export function useVideoNoteRecorder({
             videoBitrate={VIDEO_BITRATE}
             onCameraReady={() => void startRecording()}
             onRecordingProgress={({ duration, fileSize }) => {
+              // Progress is the first sign the recorder really runs. An ending
+              // decided before then had its stop land on nothing; repeat it
+              // now that it can take, once per recording.
+              if (outcomeRef.current !== null && !stopResentRef.current) {
+                stopResentRef.current = true;
+                cameraRef.current?.stopRecording();
+              }
               lastSizeRef.current = fileSize;
               setElapsedSecs(Math.floor(duration));
               // Whichever runs out first, time or the file ceiling.

@@ -7,7 +7,7 @@
 
 import { isVideoNoteName } from "@core/mesh/wire/file-packet";
 import type { ChatToken } from "@core/payments/cashu";
-import { useT } from "@i18n";
+import { useT, type TranslationKey } from "@i18n";
 import { contentTextAlign } from "@i18n/layout";
 import { held } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
@@ -22,7 +22,6 @@ import {
   FontFamily,
   FontSize,
   FontWeight,
-  HIT_SLOP,
   hitSlopFor,
   LineHeight,
   LONG_PRESS_MS,
@@ -37,6 +36,7 @@ import { messageText } from "@utils/message-text";
 import React, { useMemo } from "react";
 import {
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -45,12 +45,49 @@ import {
   type TextStyle,
 } from "react-native";
 import LiveVideoBubble from "./live-video-bubble";
-import LocationCard from "./location-card";
+import LocationCard, { openInMaps } from "./location-card";
+import {
+  findMessageLinks,
+  inlineTokenPattern,
+  linkHref,
+  trimLink,
+} from "./message-links";
+import {
+  screenReaderActions,
+  type ScreenReaderAction,
+} from "./screen-reader-actions";
 
 // Drawn size of a sender's avatar in a channel thread. Tapping it (or the name
 // beside it) opens that sender's profile, so both carry hitSlopFor() to reach the
 // 44pt floor from 32pt without making the bubbles taller.
 const AVATAR_TAP_SIZE = 32;
+
+// Drawn size of a delivery tick. The failed one is a retry button, grown to the
+// touch floor by slop; the timestamp beside it is plain text.
+const TICK_SIZE = 13;
+
+// Links offered as screen-reader actions, in reading order. A message pasted
+// full of URLs would otherwise bury the menu under them.
+const MAX_LINK_ACTIONS = 3;
+
+// What a screen reader says for each tick, from the words the info sheet
+// already uses where it has them. Keys, not text: see i18n.md.
+const STATUS_LABEL: Record<MessageStatus, TranslationKey> = {
+  sending: "chat.info.sending",
+  sent: "chat.info.sent",
+  carried: "chat.info.courier",
+  queued: "chat.info.queued",
+  delivered: "chat.bubble.status_delivered",
+  read: "chat.bubble.status_read",
+  failed: "chat.info.failed",
+  reclaimed: "chat.info.reclaimed",
+};
+
+// A screen-reader action on what a bubble holds (play, open, claim). The
+// primary one is also what a double tap does, as a tap on it would.
+export interface BubbleAction extends ScreenReaderAction {
+  primary?: boolean;
+}
 
 // Memoized (see the export) so a thread of hundreds of messages does not
 // re-render every bubble on each keyboard, scroll or state tick, which trips
@@ -105,6 +142,11 @@ interface Props {
   onToggleSelect?: (item: ChatMessage) => void;
   // Tapping a live stream's picture opens it full screen.
   onOpenLiveVideo?: (item: ChatMessage) => void;
+  // The actions on what the thread renders into this bubble (attachments and
+  // tokens), for a screen reader. On iOS the bubble is one element, so the
+  // controls drawn inside it are unreachable any other way. A render prop for
+  // the same reason as the two above, and kept fresh by `renderState`.
+  contentActions?: (item: ChatMessage) => readonly BubbleAction[];
 }
 
 function MessageBubble({
@@ -126,6 +168,7 @@ function MessageBubble({
   selected,
   onToggleSelect,
   onOpenLiveVideo,
+  contentActions,
 }: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
@@ -161,6 +204,70 @@ function MessageBubble({
     selecting === true || onPressSender === undefined
       ? undefined
       : () => onPressSender(item);
+
+  // Outside selection the retry tick is the one tappable mark; inside it the
+  // whole row toggles, and a tap on the tick must not resend instead.
+  const retry =
+    item.isMine &&
+    item.status === "failed" &&
+    onRetry !== undefined &&
+    selecting !== true
+      ? () => onRetry(item)
+      : undefined;
+
+  // Everything a sighted reader can tap inside the bubble, as named actions,
+  // since the bubble is a single element to VoiceOver (TalkBack still reaches
+  // the nested controls, and gets the same actions). The menu comes last, and
+  // a double tap does the primary action, or opens the menu when there is none.
+  // A live stream's controls are their own elements, so it needs none of this.
+  function bubbleActions(): ReturnType<typeof screenReaderActions> {
+    if (selecting === true) {
+      return screenReaderActions(handleToggle, [], Platform.OS);
+    }
+    if (item.liveVideo !== undefined) return {};
+    const content = contentActions?.(item) ?? [];
+    const pin = item.locationPin;
+    const links =
+      item.text.length > 0 && !isPureToken && pin === undefined
+        ? findMessageLinks(messageText(item), MAX_LINK_ACTIONS)
+        : [];
+    const actions: ScreenReaderAction[] = [
+      ...content,
+      ...(retry
+        ? [{ name: "retry", label: T("common.try_again"), run: retry }]
+        : []),
+      ...(pin
+        ? [
+            {
+              name: "maps",
+              label: T("chat.location.open_maps"),
+              run: () => openInMaps(pin),
+            },
+          ]
+        : []),
+      ...links.map((link, i) => ({
+        name: `link${String(i)}`,
+        label: T("chat.bubble.open_link", { link }),
+        run: () => void Linking.openURL(linkHref(link)).catch(() => {}),
+      })),
+      {
+        name: "longpress",
+        label: T("chat.bubble.more_options"),
+        run: handleLongPress,
+      },
+    ];
+    const primary = content.find((action) => action.primary === true);
+    return screenReaderActions(
+      primary?.run ?? handleLongPress,
+      actions,
+      Platform.OS,
+    );
+  }
+
+  const status =
+    item.isMine && !item.isSystem && item.status !== undefined
+      ? T(STATUS_LABEL[item.status])
+      : undefined;
 
   return (
     <Pressable
@@ -277,6 +384,19 @@ function MessageBubble({
               messagePreviewText(item) ||
               T("chat.bubble.attachment"),
           })}
+          // The ticks are drawn, so their meaning is spoken here, read after
+          // the label as each platform reads a value.
+          accessibilityValue={
+            status !== undefined ? { text: status } : undefined
+          }
+          // iOS only: TalkBack already says "double tap and hold" for the
+          // declared longpress action, and would read the hint after it.
+          accessibilityHint={
+            selecting === true || Platform.OS !== "ios"
+              ? undefined
+              : T("chat.bubble.a11y_hint")
+          }
+          {...bubbleActions()}
         >
           <View
             style={[
@@ -408,10 +528,10 @@ function MessageBubble({
               {item.isMine &&
                 !item.isSystem &&
                 item.status !== undefined &&
-                (item.status === "failed" && onRetry ? (
+                (retry ? (
                   <Pressable
-                    onPress={() => onRetry(item)}
-                    hitSlop={HIT_SLOP}
+                    onPress={retry}
+                    hitSlop={hitSlopFor(TICK_SIZE)}
                     accessibilityRole="button"
                     accessibilityLabel={T("chat.bubble.failed_retry")}
                   >
@@ -495,8 +615,8 @@ function renderInlineTokens(
 ): React.ReactNode {
   // Every @name that notifies is highlighted, in any script. A location
   // channel's "#abcd" belongs to the mention, drawn lighter as in bitchat.
-  const re =
-    /(^|\s)(@[\p{L}\p{M}\p{N}_-]+)(#[0-9a-fA-F]{4}(?![\p{L}\p{N}_]))?|(https?:\/\/\S+|www\.\S+)/gu;
+  // Shared with findMessageLinks, so a screen reader is offered these links.
+  const re = inlineTokenPattern();
   const out: React.ReactNode[] = [];
   let last = 0;
   let key = 0;
@@ -518,19 +638,14 @@ function renderInlineTokens(
       last = m.index + m[0].length;
       continue;
     }
-    // Trailing punctuation is almost always sentence punctuation, not part of
-    // the URL ("see https://x.com/a." or "(https://x.com/a)").
-    const trimmed = url.replace(/[.,!?;:)\]}'"]+$/, "");
+    const trimmed = trimLink(url);
     out.push(text.slice(last, m.index));
     out.push(
       <Text
         key={key++}
         style={linkStyle}
         onPress={() => {
-          const href = trimmed.startsWith("www.")
-            ? `https://${trimmed}`
-            : trimmed;
-          void Linking.openURL(href).catch(() => {});
+          void Linking.openURL(linkHref(trimmed)).catch(() => {});
         }}
         // Holding a link opens the message actions rather than dead-ending.
         // Text has no delayLongPress, so it crosses at the platform default
@@ -549,10 +664,13 @@ function renderInlineTokens(
   return out;
 }
 
-// WhatsApp-style delivery ticks: a single check for sent, a dim double check
-// for delivered, and a filled blue double check for read. Everything up to
-// delivered stays monochrome (textInverse on the near-black "mine" bubble); read
-// is the sole status that spends the blue accent, so "seen" is unmistakable.
+// WhatsApp-shaped delivery ticks: a single check for sent, a double check for
+// delivered and read. Not WhatsApp's blue for read: blue means a verified
+// contact in this app and nowhere else. Read is instead the one monochrome tick
+// drawn at full strength, so a read double check is the delivered one lighting
+// up. The dimmed ticks are icons, owed 3:1 (WCAG 1.4.11): 0.55 holds 4.05:1 on
+// the dark theme's light bubble, a shade under the timestamp's 0.6 so read
+// stands further from delivered.
 function StatusTick({
   status,
   Colors,
@@ -560,14 +678,13 @@ function StatusTick({
   status: MessageStatus;
   Colors: ReturnType<typeof useThemeColors>;
 }): React.JSX.Element {
-  const SIZE = 13;
   const dim = { opacity: 0.55 };
   switch (status) {
     case "sending":
       return (
         <MaterialDesignIcons
           name="clock-outline"
-          size={SIZE}
+          size={TICK_SIZE}
           color={Colors.textInverse}
           style={dim}
         />
@@ -576,7 +693,7 @@ function StatusTick({
       return (
         <MaterialDesignIcons
           name="check"
-          size={SIZE}
+          size={TICK_SIZE}
           color={Colors.textInverse}
           style={dim}
         />
@@ -585,7 +702,7 @@ function StatusTick({
       return (
         <MaterialDesignIcons
           name="account-arrow-right"
-          size={SIZE}
+          size={TICK_SIZE}
           color={Colors.textInverse}
           style={dim}
         />
@@ -596,7 +713,7 @@ function StatusTick({
       return (
         <MaterialDesignIcons
           name="timer-sand"
-          size={SIZE}
+          size={TICK_SIZE}
           color={Colors.textInverse}
           style={dim}
         />
@@ -605,7 +722,7 @@ function StatusTick({
       return (
         <MaterialDesignIcons
           name="check-all"
-          size={SIZE}
+          size={TICK_SIZE}
           color={Colors.textInverse}
           style={dim}
         />
@@ -614,15 +731,15 @@ function StatusTick({
       return (
         <MaterialDesignIcons
           name="check-all"
-          size={SIZE}
-          color={Colors.verified}
+          size={TICK_SIZE}
+          color={Colors.textInverse}
         />
       );
     case "failed":
       return (
         <MaterialDesignIcons
           name="alert-circle-outline"
-          size={SIZE}
+          size={TICK_SIZE}
           color={Colors.danger}
         />
       );
@@ -632,7 +749,7 @@ function StatusTick({
       return (
         <MaterialDesignIcons
           name="undo-variant"
-          size={SIZE}
+          size={TICK_SIZE}
           color={Colors.textInverse}
           style={dim}
         />
@@ -757,7 +874,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
     },
-    timestampMine: { color: Colors.textInverse, opacity: 0.55 },
+    // Text owes 4.5:1: 0.6 holds 4.82:1 on the dark theme's light bubble,
+    // where the ticks' 0.55 would give 4.05:1. Light reads 7.2:1.
+    timestampMine: { color: Colors.textInverse, opacity: 0.6 },
     forwardedTag: {
       flexDirection: "row",
       alignItems: "center",

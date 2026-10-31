@@ -3,11 +3,10 @@
 // the OS Keychain. The loading animation reassures the user that something
 // real is happening without exposing cryptographic jargon.
 
-import { generateIdentity, saveIdentity } from "@core/crypto/identity";
 import { useT, type TranslationKey } from "@i18n";
-import { markInstallHadIdentity } from "@services/install-marker";
-import { clearCondemnedIdentity } from "@services/wipe-marker";
+import { writeNewIdentity } from "@services/launch-identity";
 import PrimaryButton from "@ui/components/primary-button";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
 import {
   Duration,
@@ -120,20 +119,7 @@ export default function IdentityScreen({
     // The minimum applies to the failure too: an error screen in 80ms reads as
     // a validation error the user caused rather than as attempted work.
     let cancelled = false;
-    Promise.all([
-      generateIdentity().then(async (id) => {
-        // Recorded before the save, so a crash between the two cannot leave a
-        // new identity that the next launch takes for a reinstall's leftover.
-        // Launch has already cleared any leftover before onboarding shows.
-        markInstallHadIdentity();
-        await saveIdentity(id);
-        // A refused wipe's condemned flag names the old identity, so the next
-        // launch must not delete this one.
-        clearCondemnedIdentity();
-        return id.peerID;
-      }),
-      delay(MIN_DISPLAY_MS),
-    ])
+    Promise.all([writeNewIdentity(), delay(MIN_DISPLAY_MS)])
       .then(([peerID]) => {
         if (!cancelled) onComplete(peerID);
       })
@@ -152,6 +138,14 @@ export default function IdentityScreen({
     setFailed(false);
     setAttempt((n) => n + 1);
   }, []);
+
+  // The failure live region below is Android's; this is VoiceOver's.
+  useAnnounce(
+    failed
+      ? `${T("onboarding.identity.failed_heading")}\n${T("onboarding.identity.failed_body")}`
+      : null,
+    { assertive: true },
+  );
 
   if (failed) {
     return (
@@ -210,8 +204,11 @@ export default function IdentityScreen({
         <View
           style={styles.steps}
           accessible
-          accessibilityLabel={T("onboarding.identity.steps_a11y", {
-            steps: steps.join(". "),
+          accessibilityLabel={T("onboarding.identity.steps_list_a11y", {
+            first: steps[0],
+            second: steps[1],
+            third: steps[2],
+            fourth: steps[3],
           })}
         >
           {steps.map((step, i) => (

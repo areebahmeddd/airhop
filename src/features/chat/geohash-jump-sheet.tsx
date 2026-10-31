@@ -29,6 +29,7 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  hitSlopFor,
   LineHeight,
   Radius,
   Spacing,
@@ -53,6 +54,8 @@ import { GeohashPicker, globeAvailable } from "./geohash-picker";
 // How long typing has to stop before the cell's name is looked up. Long enough
 // that a six-character geohash costs one lookup rather than six.
 const NAME_LOOKUP_DEBOUNCE_MS = 500;
+
+const REMOVE_ICON_SIZE = 15;
 
 // Keyed the way `geohashNeighbours` names the eight cells. The chip shows the
 // short point; the label is a whole sentence per direction, since the
@@ -376,13 +379,24 @@ export function GeohashJumpSheet({
                     onPress={() =>
                       useGeohashBookmarksStore.getState().remove(gh)
                     }
-                    hitSlop={HIT_SLOP}
+                    // Inside the row's own target, so it grows in height
+                    // only: 44pt tall within the row, and sideways no further
+                    // than the gap before the place name.
+                    hitSlop={{
+                      ...hitSlopFor(REMOVE_ICON_SIZE),
+                      left: HIT_SLOP.left,
+                      right: HIT_SLOP.right,
+                    }}
                     accessibilityRole="button"
                     accessibilityLabel={T("chat.jump.remove_place", {
                       name: name ?? gh,
                     })}
                   >
-                    <Feather name="x" size={15} color={Colors.textMuted} />
+                    <Feather
+                      name="x"
+                      size={REMOVE_ICON_SIZE}
+                      color={Colors.textMuted}
+                    />
                   </Pressable>
                 </Pressable>
               );

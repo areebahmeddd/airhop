@@ -71,6 +71,7 @@ import {
   receiveTrustingMint,
   reportWalletError,
 } from "@services/payment-router";
+import { turnOnLocation } from "@services/turn-on-location";
 import {
   cancelVideoPreparation,
   canTranscodeVideo,
@@ -96,7 +97,7 @@ import {
 import { loadDraft, saveDraft } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
 import { useGroupStore } from "@store/group-store";
-import { useMeshStateStore } from "@store/mesh-state-store";
+import { locationOffBanner, useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import { UPLOAD_QUALITY_VALUES, useSettingsStore } from "@store/settings-store";
@@ -111,6 +112,7 @@ import AppModal from "@ui/components/app-modal";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
+import MeshStatusBar from "@ui/components/mesh-status-bar";
 import Toast from "@ui/components/toast";
 import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
@@ -145,6 +147,7 @@ import {
   formatDateSeparator,
   formatDuration,
   formatLongDate,
+  formatPercent,
   formatUnitAmount,
 } from "@utils/format";
 import {
@@ -212,6 +215,7 @@ import {
 } from "react-native-gesture-handler";
 import Animated, {
   Easing,
+  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -230,6 +234,11 @@ import {
 } from "./compose-budget";
 import ContactInfoSheet from "./contact-info-sheet";
 import { dmReachesOverInternet } from "./dm-reaches-over-internet";
+import {
+  carriesEcash,
+  forwardRefusal,
+  PUBLIC_FORWARD_BURST,
+} from "./forward-rules";
 import ForwardSheet from "./forward-sheet";
 import {
   CANCEL_SLIDE_DISARM,
@@ -240,9 +249,10 @@ import LiveVideoStudio from "./live-video-studio";
 import LiveVideoViewer from "./live-video-viewer";
 import type { LiveVideoViewerTarget } from "./live-video-viewer-state";
 import MessageActionSheet from "./message-action-sheet";
-import MessageBubble from "./message-bubble";
+import MessageBubble, { type BubbleAction } from "./message-bubble";
 import MessageInfoSheet from "./message-info-sheet";
 import { NoticesSheet } from "./notices-sheet";
+import { activateOnly } from "./screen-reader-actions";
 import SendLocationSheet from "./send-location-sheet";
 import { useExclusivePlayback } from "./use-exclusive-playback";
 import {
@@ -487,6 +497,11 @@ function systemRowIcon(
 const COMPOSE_ATTACH_SIZE = 36;
 const COMPOSE_BUTTON_SIZE = 40;
 const JUMP_BUTTON_SIZE = 36;
+// A transfer card's X glyph and a voice note's play circle, both kept small so
+// the card and the bubble stay compact. Their neighbours (the percentage, the
+// waveform) sit further away than the slop reaches.
+const TRANSFER_CLOSE_SIZE = 16;
+const VOICE_PLAY_SIZE = 32;
 // Header action circles. Same 32pt as the app header's pills, so a circular
 // icon button is one size everywhere it appears in chrome.
 const HEADER_ICON_SIZE = 32;
@@ -568,6 +583,13 @@ function VideoAttachment({
     p.loop = false;
   });
   useExclusivePlayback(player, playing, onPlay);
+  // Handed the speaker by the thread rather than by the native controls, which
+  // is how a screen reader plays it: inside the bubble's one element on iOS,
+  // those controls are out of reach. A start the controls made lands here too,
+  // and playing a playing player does nothing.
+  useEffect(() => {
+    if (playing && present) player.play();
+  }, [player, playing, present]);
 
   if (!present) {
     return <AttachmentUnavailable kind="video" onAskResend={onAskResend} />;
@@ -753,6 +775,9 @@ function UndoSendPill({
     progress.value = withTiming(0, {
       duration: durationMs,
       easing: Easing.linear,
+      // Progress, not decoration: under reduce motion the system default
+      // completes at once, which empties the only countdown for the whole hold.
+      reduceMotion: ReduceMotion.Never,
     });
   }, [progress, durationMs]);
   const fillStyle = useAnimatedStyle(() => ({
@@ -868,12 +893,12 @@ function TransferProgressList({
                 </Text>
                 <View style={styles.transferRight}>
                   {p.status === "active" && (
-                    <Text style={styles.pct}>{pct}%</Text>
+                    <Text style={styles.pct}>{formatPercent(pct / 100)}</Text>
                   )}
                   <Pressable
                     onPress={() => cancelVideoPreparation(p.id)}
                     style={({ pressed }) => pressed && styles.closePressed}
-                    hitSlop={HIT_SLOP}
+                    hitSlop={hitSlopFor(TRANSFER_CLOSE_SIZE)}
                     accessibilityRole="button"
                     accessibilityLabel={T("chat.video_prep.cancel")}
                   >
@@ -940,7 +965,7 @@ function TransferProgressList({
             : t.status === "stalled"
               ? T("chat.thread.waiting_for", {
                   name: t.peerLabel || T("chat.thread.peer"),
-                  percent: pct,
+                  percent: formatPercent(pct / 100),
                 })
               : formatBytes(t.totalBytes);
 
@@ -992,7 +1017,7 @@ function TransferProgressList({
                 </Text>
                 {t.status === "active" || t.status === "stalled" ? (
                   <View style={styles.transferRight}>
-                    <Text style={styles.pct}>{pct}%</Text>
+                    <Text style={styles.pct}>{formatPercent(pct / 100)}</Text>
                     {/* A receive cannot be stopped (the sender keeps sending),
                         so X only hides its card and the file still lands. Only
                         a stream's first fragment opens a card, so it stays
@@ -1004,7 +1029,7 @@ function TransferProgressList({
                           : useTransferStore.getState().dismiss(t.id)
                       }
                       style={({ pressed }) => pressed && styles.closePressed}
-                      hitSlop={HIT_SLOP}
+                      hitSlop={hitSlopFor(TRANSFER_CLOSE_SIZE)}
                       accessibilityRole="button"
                       accessibilityLabel={
                         t.direction === "send"
@@ -1482,6 +1507,7 @@ function VoiceNoteBubble({
       <Pressable
         style={styles.attachVoicePlay}
         onPress={onToggle}
+        hitSlop={hitSlopFor(VOICE_PLAY_SIZE)}
         accessibilityRole="button"
         accessibilityLabel={
           isPlaying ? T("chat.media.pause_voice") : T("chat.media.play_voice")
@@ -1801,6 +1827,14 @@ export default function MessageThread({
   const needsInternet =
     (isGeo || channel.startsWith("dm:nostr_")) && !nostrConnected;
 
+  // Without location a named location channel has no cell, so it runs over
+  // Bluetooth only and reaches nobody beyond it. A teleported cell carries its
+  // geohash in its key and never needs a position, so it is never limited this
+  // way. Read from the store, which the resume refreshes, so the banner goes
+  // the moment a grant made in Settings lands.
+  const locationGranted = useMeshStateStore((s) => s.locationGranted);
+  const showLocationOff = isGeo && !isManualGeo && !locationGranted;
+
   // Header subtitle for a channel (not a group/DM): what kind of room this is,
   // then its place name and/or live count.
   const channelSubtitleParts: string[] = [];
@@ -2118,18 +2152,28 @@ export default function MessageThread({
   // second pauses the first, since two clips over one speaker is noise.
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   // A live stream's sound is the same speaker: a note given sound silences the
-  // stream, and a stream unmuted stops the note.
+  // stream, and a stream unmuted stops the note. Whatever the user starts (a
+  // note, a video, the trimmer's preview, a stream's sound) also silences a
+  // live voice burst, as bitchat-ios does; the burst still shows as talking and
+  // still arrives as a voice note.
   const liveVideoReceiver = getMeshService()?.liveVideoReceiver ?? null;
   useEffect(() => {
-    if (playingMessageId !== null) liveVideoReceiver?.setAudible(null);
+    if (playingMessageId === null) return;
+    liveVideoReceiver?.setAudible(null);
+    getMeshService()?.silenceLiveVoice();
   }, [liveVideoReceiver, playingMessageId]);
-  useEffect(
-    () =>
-      liveVideoReceiver?.subscribe(() => {
-        if (liveVideoReceiver.audible !== null) setPlayingMessageId(null);
-      }),
-    [liveVideoReceiver],
-  );
+  useEffect(() => {
+    if (liveVideoReceiver === null) return;
+    // On a stream gaining sound only, not on a repeat of the same report: a
+    // burst that starts while the stream plays is the user's to hear.
+    let audible = liveVideoReceiver.audible;
+    return liveVideoReceiver.subscribe(() => {
+      const now = liveVideoReceiver.audible;
+      if (now !== null) setPlayingMessageId(null);
+      if (now !== null && now !== audible) getMeshService()?.silenceLiveVoice();
+      audible = now;
+    });
+  }, [liveVideoReceiver]);
   // An open microphone would pick up whatever the speaker is playing, so every
   // press that opens one quiets any note or stream with sound first.
   function silencePlayback(): void {
@@ -2338,6 +2382,14 @@ export default function MessageThread({
       msgs
         .filter((m) => selectedIds.has(m.id) && m.attachment === undefined)
         .map((m) => m.text),
+    [msgs, selectedIds],
+  );
+  // And for ecash, captions included: one token anywhere refuses the forward.
+  const selectedCarriesEcash = useMemo(
+    () =>
+      carriesEcash(
+        msgs.filter((m) => selectedIds.has(m.id)).map((m) => m.text),
+      ),
     [msgs, selectedIds],
   );
 
@@ -3382,6 +3434,30 @@ export default function MessageThread({
     showAlert(t("chat.attach.not_sent"), body[reason]);
   }
 
+  // The forward rules that do not depend on one message's shape (see
+  // forward-rules.ts), said in the forward sheet's words when they refuse.
+  function forwardAllowed(
+    targetChannel: string,
+    messages: readonly ChatMessage[],
+  ): boolean {
+    const refusal = forwardRefusal(
+      targetChannel,
+      useChatStore.getState().channelKeys[targetChannel] !== undefined,
+      {
+        ecash: carriesEcash(messages.map((m) => m.text)),
+        count: messages.length,
+      },
+    );
+    if (refusal === null) return true;
+    showAlert(
+      t("chat.forward.cant_send_here"),
+      refusal === "ecash"
+        ? t("chat.forward.has_ecash")
+        : tPlural("chat.forward.too_many_public", PUBLIC_FORWARD_BURST),
+    );
+    return false;
+  }
+
   // Forwarding reuses the existing send pipeline: it's just composing a new
   // message with the original content in a different channel/DM. No protocol
   // changes needed.
@@ -3389,6 +3465,9 @@ export default function MessageThread({
   // the reader where they are instead of walking them into a thread to look at
   // a message that never arrived.
   function forwardMessage(source: ChatMessage, targetChannel: string): boolean {
+    // The forward sheet greys every room for ecash; this is the backstop for
+    // any other caller (see forward-rules.ts).
+    if (!forwardAllowed(targetChannel, [source])) return false;
     // A place is addressed to one person, so it does not travel on. Forwarding
     // would send the summary text with no pin attached, and would become a real
     // leak the day somebody extends this to carry one. Passing on where a
@@ -3497,6 +3576,9 @@ export default function MessageThread({
     const picked = msgs
       .filter((m) => selectedIds.has(m.id))
       .sort((a, b) => a.timestampMs - b.timestampMs);
+    // Checked over the whole selection first: one token, or a burst a public
+    // room would cut short, refuses all of it rather than leaving a hole.
+    if (!forwardAllowed(targetChannel, picked)) return false;
     let sent = false;
     for (const m of picked) sent = forwardMessage(m, targetChannel) || sent;
     // Nothing went, so nothing has changed: the sheet stays open on the target
@@ -4002,6 +4084,21 @@ export default function MessageThread({
   // and capture dying.
   async function releaseAudioSession(): Promise<void> {
     await setAudioForPlayback().catch(() => {});
+  }
+
+  // A hold-and-slide cannot be performed with a screen reader on, so the mic is
+  // a start/stop toggle there.
+  function toggleTalkFromScreenReader(): void {
+    if (isPTTActive) {
+      void talkRef.current.end();
+      return;
+    }
+    // Nothing is held, so the bar's buttons are the way out and the slide hint
+    // would be unusable advice. Set after start(), which clears the flag for
+    // the held case, and only for a note: a live burst has no buttons to offer.
+    void talkRef.current.start().then(() => {
+      if (!liveHoldRef.current) setHandsFreeRecording(true);
+    });
   }
 
   async function handleTalkStart(): Promise<void> {
@@ -5163,6 +5260,111 @@ export default function MessageThread({
     );
   }
 
+  // The controls renderAttachmentBubble and renderTokenCard draw, as actions a
+  // screen reader can reach on the bubble (see MessageBubble). Same handlers,
+  // same labels, same conditions, so the two never offer different things.
+  function bubbleContentActions(
+    item: ChatMessage,
+    tokens: readonly ChatToken[],
+  ): BubbleAction[] {
+    const actions: BubbleAction[] = [];
+    const attachment = item.attachment;
+    if (attachment?.uri) {
+      const id = item.id;
+      const revealed =
+        item.isMine || autoDownloadMedia || revealedAttachments.has(id);
+      const reveal = (): void =>
+        setRevealedAttachments((prev) => new Set(prev).add(id));
+      const togglePlaying = (): void =>
+        setPlayingMessageId((current) => (current === id ? null : id));
+      const playing = playingMessageId === id;
+      const onAskResend = askResendFor(attachment, item.isMine);
+      if (!attachmentPresent(attachment.uri)) {
+        if (onAskResend) {
+          actions.push({
+            name: "resend",
+            label: t("chat.media.ask_resend"),
+            run: onAskResend,
+            primary: true,
+          });
+        }
+      } else if (attachment.type === "image") {
+        actions.push(
+          revealed
+            ? {
+                name: "media",
+                label: t("chat.media.view_full"),
+                run: () => setFullscreenImage(attachment.uri),
+                primary: true,
+              }
+            : {
+                name: "media",
+                label: t("chat.media.tap_load_photo"),
+                run: reveal,
+                primary: true,
+              },
+        );
+      } else if (attachment.type === "voice") {
+        actions.push({
+          name: "media",
+          label: playing
+            ? t("chat.media.pause_voice")
+            : t("chat.media.play_voice"),
+          run: togglePlaying,
+          primary: true,
+        });
+      } else if (attachment.type === "document") {
+        actions.push({
+          name: "media",
+          label: t("chat.media.open_document", {
+            name: attachment.name ?? t("chat.media.document"),
+          }),
+          run: () => void openAttachment(attachment),
+          primary: true,
+        });
+      } else if (!revealed) {
+        actions.push({
+          name: "media",
+          label: t("chat.media.tap_load_video"),
+          run: reveal,
+          primary: true,
+        });
+      } else {
+        actions.push({
+          name: "media",
+          // A video note always plays; the action switches its sound, and is
+          // named for what it will do, like the play and pause pair.
+          label: isVideoNoteName(attachment.name)
+            ? playing
+              ? t("chat.video_note.sound_off")
+              : t("chat.video_note.sound_on")
+            : playing
+              ? t("chat.media.pause_video")
+              : t("chat.media.play_video"),
+          run: togglePlaying,
+          primary: true,
+        });
+      }
+    }
+    // As the card: nothing to claim on your own token, one already taken, one
+    // locked to somebody else, or while another claim is in flight.
+    if (!item.isMine && claimingToken === null) {
+      tokens.forEach((token, i) => {
+        if (isTokenClaimed(token)) return;
+        if ("info" in token && tokenLockedToOthers(token.info)) return;
+        const face = "info" in token ? token.info : token;
+        actions.push({
+          name: `claim${String(i)}`,
+          label: t("chat.ecash.claim_amount", {
+            ...amountParts(face.amount, face.unit),
+          }),
+          run: () => void claimToken(token),
+        });
+      });
+    }
+    return actions;
+  }
+
   // A token is "claimed" once its proofs have been taken into the wallet.
   // Matched on the first proof's secret, which the store records on claim,
   // because after an online swap the proofs themselves are replaced and can no
@@ -5343,6 +5545,15 @@ export default function MessageThread({
         )}
       </View>
 
+      {/* The Mesh tab's banner, scoped to this room: the channel still works,
+          and the one tap that widens it is here rather than in Settings. */}
+      {showLocationOff && (
+        <MeshStatusBar
+          banners={[locationOffBanner(T("chat.thread.location_off"))]}
+          onAction={() => void turnOnLocation()}
+        />
+      )}
+
       {/* Transport-honest: if the internet still reaches them, say so rather
           than imply delivery waits on Bluetooth range. */}
       {isDM && !isDMPeerOnline && (
@@ -5513,6 +5724,7 @@ export default function MessageThread({
                   selected={selectedIds.has(item.id)}
                   onToggleSelect={toggleSelected}
                   onOpenLiveVideo={openLiveViewer}
+                  contentActions={(row) => bubbleContentActions(row, tokens)}
                   onRetry={handleRetryMessage}
                   onPressSender={isDM ? handlePressDMSender : handlePressSender}
                   highlighted={item.id === highlightedMessageId}
@@ -5793,6 +6005,10 @@ export default function MessageThread({
         <Pressable
           style={styles.fullscreenBackdrop}
           onPress={() => setFullscreenImage(null)}
+          // A tap-anywhere dismiss for sighted users. As an accessible element
+          // it would fold the photo and its Save and Share into one node; the
+          // Close button is the screen reader's way out.
+          accessible={false}
         >
           {fullscreenImage !== null && (
             <Image
@@ -6124,7 +6340,10 @@ export default function MessageThread({
             {draft.trim().length > 0 ? (
               // Send button: shown when there is text
               <Pressable
-                style={styles.sendButton}
+                style={({ pressed }) => [
+                  styles.sendButton,
+                  pressed && styles.accentPressed,
+                ]}
                 onPress={handleSend}
                 hitSlop={hitSlopFor(COMPOSE_BUTTON_SIZE)}
                 accessibilityRole="button"
@@ -6185,18 +6404,14 @@ export default function MessageThread({
                       // gesture that exists only as a distance has no accessible
                       // form.
                       accessibilityHint={T("chat.voice.a11y_toggle")}
-                      onAccessibilityTap={() => {
-                        if (isPTTActive) {
-                          void talkRef.current.end();
-                          return;
+                      // The double tap arrives differently on each platform;
+                      // see screen-reader-actions.ts.
+                      accessibilityActions={activateOnly(Platform.OS)}
+                      onAccessibilityTap={toggleTalkFromScreenReader}
+                      onAccessibilityAction={(event) => {
+                        if (event.nativeEvent.actionName === "activate") {
+                          toggleTalkFromScreenReader();
                         }
-                        // Nothing is held, so the bar's buttons are the way out and
-                        // the slide hint would be unusable advice. Set after
-                        // start(), which clears the flag for the held case, and only
-                        // for a note: a live burst has no buttons to offer.
-                        void talkRef.current.start().then(() => {
-                          if (!liveHoldRef.current) setHandsFreeRecording(true);
-                        });
                       }}
                     >
                       <Animated.View
@@ -6523,7 +6738,10 @@ export default function MessageThread({
             multiline
           />
           <Pressable
-            style={styles.composerSend}
+            style={({ pressed }) => [
+              styles.composerSend,
+              pressed && styles.accentPressed,
+            ]}
             onPress={confirmPendingAttachment}
             accessibilityRole="button"
             accessibilityLabel={T("chat.attach.send")}
@@ -6695,6 +6913,9 @@ export default function MessageThread({
             ? [forwardSource.text]
             : undefined
         }
+        carriesEcash={
+          forwardSource !== null && carriesEcash([forwardSource.text])
+        }
         onClose={() => setForwardSource(null)}
         onForward={(target) => {
           if (!forwardSource) return false;
@@ -6711,6 +6932,8 @@ export default function MessageThread({
         excludeChannel={channel}
         carriesMedia={selectedCarriesMedia}
         texts={selectedTexts}
+        carriesEcash={selectedCarriesEcash}
+        count={selectedIds.size}
         onClose={() => setShowBulkForward(false)}
         onForward={(target) => {
           if (!forwardSelected(target)) return false;
@@ -7072,6 +7295,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 0,
       marginBottom: 1,
     },
+    // Both send buttons are accent fills, so a press dims rather than darkens.
+    accentPressed: { opacity: PRESSED_OPACITY },
     // The mic's touch target: MIN_TOUCH square, occupying only the drawn
     // button's footprint. Padding rather than hitSlop; see the wrapper.
     pttTarget: {
@@ -7423,8 +7648,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       minWidth: 160,
     },
     attachVoicePlay: {
-      width: 32,
-      height: 32,
+      width: VOICE_PLAY_SIZE,
+      height: VOICE_PLAY_SIZE,
       borderRadius: Radius.full,
       backgroundColor: Colors.surface,
       alignItems: "center",

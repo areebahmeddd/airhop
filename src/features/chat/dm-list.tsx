@@ -5,7 +5,8 @@
 // Channels list, so both chat surfaces manage conversations consistently.
 
 import { t, tPlural, useT } from "@i18n";
-import { trailingSwipeActions } from "@i18n/layout";
+import { directionMark, trailingSwipeActions } from "@i18n/layout";
+import { fillRichText } from "@i18n/rich-text";
 import { held } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
@@ -268,9 +269,14 @@ export default function DmList({
             isMuted ? t("chat.a11y.muted") : null,
             isPinned ? t("chat.a11y.pinned") : null,
             draft.length > 0
-              ? `${T("chat.draft_prefix")} ${draft}`
+              ? T("chat.draft_preview", { draft })
               : last
-                ? `${last.isMine ? `${T("chat.dm.you_prefix")} ` : ""}${messagePreviewText(last)}`
+                ? last.isMine
+                  ? T("chat.sender_preview", {
+                      sender: T("chat.you"),
+                      preview: messagePreviewText(last),
+                    })
+                  : messagePreviewText(last)
                 : T("chat.no_messages"),
             timeLabel,
           ]
@@ -346,20 +352,38 @@ export default function DmList({
                 </View>
                 <View style={styles.rowBottom}>
                   {draft.length > 0 ? (
-                    <Text style={styles.preview} numberOfLines={1}>
-                      <Text style={styles.previewDraft}>
-                        {T("chat.draft_prefix")}{" "}
-                      </Text>
-                      {draft}
+                    // Templates, as in the channel list: the words around the
+                    // value are the translator's to place.
+                    <Text
+                      style={[styles.preview, styles.previewDraft]}
+                      numberOfLines={1}
+                    >
+                      {fillRichText(T("chat.draft_preview"), {
+                        draft: (
+                          <Text style={styles.previewDraftBody}>{draft}</Text>
+                        ),
+                      })}
                     </Text>
                   ) : last ? (
                     <Text style={styles.preview} numberOfLines={1}>
                       {last.isMine ? (
-                        <Text style={styles.previewSender}>
-                          {T("chat.dm.you_prefix")}{" "}
-                        </Text>
-                      ) : null}
-                      {messagePreviewText(last)}
+                        <>
+                          {/* Built only from values, so the line takes its
+                              direction from this mark rather than the first
+                              letter of the message. */}
+                          {directionMark}
+                          {fillRichText(T("chat.sender_preview"), {
+                            sender: (
+                              <Text style={styles.previewSender}>
+                                {T("chat.you")}
+                              </Text>
+                            ),
+                            preview: messagePreviewText(last),
+                          })}
+                        </>
+                      ) : (
+                        messagePreviewText(last)
+                      )}
                     </Text>
                   ) : (
                     <Text style={styles.previewEmpty}>
@@ -685,6 +709,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     previewDraft: {
       color: Colors.textPrimary,
       fontWeight: FontWeight.semibold,
+    },
+    previewDraftBody: {
+      color: Colors.textSecondary,
+      fontWeight: FontWeight.regular,
     },
     previewEmpty: {
       fontSize: FontSize.sm,

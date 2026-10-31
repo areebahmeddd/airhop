@@ -3,12 +3,12 @@
 // sub-screens (src/features/settings/sections/*). Panic wipe stays here,
 // at the very bottom, outside every section.
 
-import { encodeQRContent } from "@core/crypto/contact-exchange";
 import {
   isShipped,
   LANGUAGES,
   needsRelaunch,
   PICKER_LANGUAGES,
+  resolvePreference,
   t,
   useT,
   type TranslationKey,
@@ -75,6 +75,7 @@ import {
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import ConnectivityGroup from "./connectivity-group";
+import { languageA11yName, languageRowState } from "./language-rows";
 import AboutScreen from "./sections/about-screen";
 import DiagnosticsScreen from "./sections/diagnostics-screen";
 import GeneralScreen from "./sections/general-screen";
@@ -236,6 +237,9 @@ interface Props {
   onWipeStart?: () => void;
   onWipe?: () => void;
   onResumeMesh?: () => void;
+  // A transfer that ended unconfirmed after its screen was gone: the shell asks
+  // what to do with this phone, as a relaunch would.
+  onTransferUnconfirmed?: () => void;
   // This screen owns a navigation stack the shell cannot see: its sections are
   // early returns, not routes. The shell needs its depth so a horizontal swipe
   // inside a section goes back rather than stepping to the next tab.
@@ -254,6 +258,7 @@ export default function ProfileScreen({
   onWipeStart,
   onWipe,
   onResumeMesh,
+  onTransferUnconfirmed,
   onCanGoBackChange,
   popSignal = 0,
   initialView = "root",
@@ -300,16 +305,31 @@ export default function ProfileScreen({
   const languagePreference = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const setMonoFont = useSettingsStore((s) => s.setMonoFont);
+  // The Phone language row. Its description is the language following the
+  // phone resolves to, in its own script, re-read when the phone's changes.
+  const phoneLanguageRow = languageRowState(
+    "system",
+    languagePreference,
+    T.language,
+    needsRelaunch(languagePreference),
+  );
+  const deviceEndonym = LANGUAGES[resolvePreference("system")].endonym;
+  const phoneLanguageA11y = T("settings.language.name_endonym_a11y", {
+    name: T("settings.language.phone"),
+    endonym: deviceEndonym,
+  });
 
-  // The QR encodes a full contact card (peer ID + Noise and Ed25519 public keys
-  // + nickname), not just the peer ID. A bare ID carries nothing a scanner can
-  // verify or encrypt to; the card lets the other device confirm the ID really
-  // is the fingerprint of these keys and open an encrypted session immediately.
-  // Falls back to the plain ID if the mesh service isn't up yet, which older
-  // builds' scanners also still accept.
+  // The QR encodes a full contact card (peer ID + Noise, Ed25519 and Nostr
+  // public keys + nickname), not just the peer ID. A bare ID carries nothing a
+  // scanner can verify or encrypt to; the card lets the other device confirm
+  // the ID really is the fingerprint of these keys and open an encrypted
+  // session immediately. The mesh service signs it with the identity it
+  // already holds, so nobody can swap the Nostr key in a forwarded copy and
+  // this screen never touches the signing key. The plain ID stands in while
+  // the mesh service isn't up, or still runs an identity this screen has left.
   const qrValue = useMemo(() => {
-    const card = getMeshService()?.getContactCard();
-    return card ? encodeQRContent(card) : peerID;
+    const mesh = getMeshService();
+    return mesh?.peerID === peerID ? mesh.getContactQR() : peerID;
   }, [peerID]);
 
   // The sections below are early returns rather than an overlay, so opening one
@@ -522,7 +542,7 @@ export default function ProfileScreen({
   }
 
   // The same card the QR encodes, as text, for when there is no camera between
-  // the two people. Copy only: the string is ~180 characters, so the box shows
+  // the two people. Copy only: the string is ~250 characters, so the box shows
   // enough to recognise and the glyph does the work.
   function handleCopyContactCode(): void {
     copyContactCode(qrValue);
@@ -1332,27 +1352,75 @@ export default function ProfileScreen({
               })}
             </View>
 
-            {/* No "System" row: first launch follows the phone and a choice
-                here pins it. A language with no catalog yet is dimmed, not
-                hidden, and goes live the release its catalog lands. */}
+            {/* Phone language first, the way both OS per-app pickers offer
+                it: a choice below pins a language, and this row is the way
+                back to following the phone without resetting every other
+                setting. A language with no catalog yet is dimmed, not hidden,
+                and goes live the release its catalog lands. */}
             <UpperText style={styles.appearanceGroupLabel}>
               {T("settings.group.language")}
             </UpperText>
             <View style={[shared.settingsGroup, styles.appearanceGroup]}>
-              {PICKER_LANGUAGES.map((code, i) => {
+              <Pressable
+                style={({ pressed }) => [
+                  styles.optionRowGrouped,
+                  pressed && shared.rowPressed,
+                ]}
+                onPress={() => {
+                  setLanguage("system");
+                  if (!needsRelaunch("system")) setShowThemeModal(false);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{
+                  selected: phoneLanguageRow.selected,
+                  disabled: false,
+                }}
+                accessibilityLabel={
+                  phoneLanguageRow.pending
+                    ? T("settings.language.pending_a11y", {
+                        value: phoneLanguageA11y,
+                      })
+                    : T("settings.language.set_a11y", {
+                        value: phoneLanguageA11y,
+                      })
+                }
+              >
+                <View style={styles.optionIconGrouped}>
+                  <Feather
+                    name="smartphone"
+                    size={18}
+                    color={Colors.textMuted}
+                  />
+                </View>
+                <View style={shared.optionText}>
+                  <Text style={shared.optionLabel}>
+                    {T("settings.language.phone")}
+                  </Text>
+                  <Text style={shared.optionDescription}>{deviceEndonym}</Text>
+                </View>
+                {phoneLanguageRow.pending && (
+                  <Text style={styles.languageSoon}>
+                    {T("settings.language.pending")}
+                  </Text>
+                )}
+                {phoneLanguageRow.selected && !phoneLanguageRow.pending && (
+                  <Feather name="check" size={18} color={Colors.textPrimary} />
+                )}
+              </Pressable>
+              {PICKER_LANGUAGES.map((code) => {
                 const spec = LANGUAGES[code];
                 const shipped = isShipped(code);
-                // Ticked against what is on screen, not against the preference,
-                // so a right-to-left choice waiting for a relaunch does not claim
-                // to be active while the app is still in the old language.
-                const selected = code === T.language;
-                const pending =
-                  languagePreference === code &&
-                  needsRelaunch(languagePreference);
+                const { selected, pending } = languageRowState(
+                  code,
+                  languagePreference,
+                  T.language,
+                  needsRelaunch(languagePreference),
+                );
                 const name = T(spec.nameKey);
+                const a11yName = languageA11yName(T, name, spec.endonym);
                 return (
                   <React.Fragment key={code}>
-                    {i > 0 && <View style={shared.groupDivider} />}
+                    <View style={shared.groupDivider} />
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
@@ -1377,10 +1445,14 @@ export default function ProfileScreen({
                         shipped
                           ? pending
                             ? T("settings.language.pending_a11y", {
-                                value: name,
+                                value: a11yName,
                               })
-                            : T("settings.language.set_a11y", { value: name })
-                          : T("settings.language.soon_a11y", { value: name })
+                            : T("settings.language.set_a11y", {
+                                value: a11yName,
+                              })
+                          : T("settings.language.soon_a11y", {
+                              value: a11yName,
+                            })
                       }
                     >
                       <View style={styles.optionIconGrouped}>
@@ -1426,6 +1498,7 @@ export default function ProfileScreen({
           onClose={() => setShowTransferModal(false)}
           onResumeMesh={() => onResumeMesh?.()}
           onErased={handleTransferErased}
+          onUnconfirmedAway={() => onTransferUnconfirmed?.()}
         />
 
         {/* Drops straight to onboarding, with no second "Wiped" screen. */}

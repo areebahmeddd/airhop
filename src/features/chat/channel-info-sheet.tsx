@@ -40,6 +40,7 @@ import {
   HIT_SLOP,
   hitSlopFor,
   LineHeight,
+  PRESSED_OPACITY,
   Radius,
   Spacing,
   useThemeColors,
@@ -494,7 +495,10 @@ export default function ChannelInfoSheet({
               a location channel with a resolved cell gets a bookmark toggle. */}
       {isGeo && geohash !== null && (
         <Pressable
-          style={styles.cornerBtn}
+          style={({ pressed }) => [
+            styles.cornerBtn,
+            pressed && styles.pressedDim,
+          ]}
           onPress={() => useGeohashBookmarksStore.getState().toggle(geohash)}
           hitSlop={hitSlopFor(28)}
           accessibilityRole="button"
@@ -595,7 +599,10 @@ export default function ChannelInfoSheet({
                     <Text style={styles.factGeohash}>{geohash}</Text>
                   </Text>
                   <Pressable
-                    style={styles.copyBtn}
+                    style={({ pressed }) => [
+                      styles.copyBtn,
+                      pressed && styles.pressedFill,
+                    ]}
                     onPress={handleCopyGeohash}
                     hitSlop={HIT_SLOP}
                     accessibilityRole="button"
@@ -613,7 +620,10 @@ export default function ChannelInfoSheet({
                     about relays behave the same way. */}
                 <View style={styles.factDivider} />
                 <Pressable
-                  style={styles.factRow}
+                  style={({ pressed }) => [
+                    styles.factRow,
+                    pressed && styles.pressedDim,
+                  ]}
                   onPress={() => setRelaysExpanded((v) => !v)}
                   accessibilityRole="button"
                   accessibilityState={{ expanded: relaysExpanded }}
@@ -669,6 +679,7 @@ export default function ChannelInfoSheet({
               {`${memberSectionTitle} · ${memberTotal}`}
             </UpperText>
             <Pressable
+              style={({ pressed }) => pressed && styles.pressedDim}
               onPress={() => {
                 setSearching((s) => !s);
                 setMemberSearch("");
@@ -737,6 +748,7 @@ export default function ChannelInfoSheet({
                 )}
                 {m.onChat && (
                   <Pressable
+                    style={({ pressed }) => pressed && styles.pressedDim}
                     onPress={m.onChat}
                     hitSlop={HIT_SLOP}
                     accessibilityRole="button"
@@ -753,6 +765,7 @@ export default function ChannelInfoSheet({
                 )}
                 {m.onRemove && (
                   <Pressable
+                    style={({ pressed }) => pressed && styles.pressedDim}
                     onPress={m.onRemove}
                     hitSlop={HIT_SLOP}
                     accessibilityRole="button"
@@ -783,7 +796,10 @@ export default function ChannelInfoSheet({
           <View style={styles.actions}>
             {canAddMembers && (
               <Pressable
-                style={styles.actionBtn}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  pressed && styles.pressedFill,
+                ]}
                 onPress={() => {
                   setAddSelected(new Set());
                   setShowAddMembers(true);
@@ -802,9 +818,10 @@ export default function ChannelInfoSheet({
               </Pressable>
             )}
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.actionBtn,
                 canAddMembers && styles.actionBtnStacked,
+                pressed && styles.pressedFill,
               ]}
               onPress={handleLeave}
               accessibilityRole="button"
@@ -853,7 +870,10 @@ export default function ChannelInfoSheet({
                 return (
                   <Pressable
                     key={peer.peerID}
-                    style={styles.addRow}
+                    style={({ pressed }) => [
+                      styles.addRow,
+                      pressed && styles.pressedDim,
+                    ]}
                     onPress={() => toggleAddMember(peer.peerID)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: sel }}
@@ -881,9 +901,10 @@ export default function ChannelInfoSheet({
             </ScrollView>
           )}
           <Pressable
-            style={[
+            style={({ pressed }) => [
               styles.addConfirm,
               addSelected.size === 0 && styles.addConfirmDisabled,
+              pressed && styles.pressedDim,
             ]}
             onPress={handleAddMembers}
             disabled={addSelected.size === 0}
@@ -913,6 +934,14 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingTop: Spacing.sm,
       paddingBottom: Spacing.lg,
       gap: Spacing.sm,
+    },
+    // Every tap reports: a neutral fill darkens, a bare glyph, a row with no
+    // fill of its own or the accent button dims.
+    pressedFill: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    pressedDim: {
+      opacity: PRESSED_OPACITY,
     },
     cornerBtn: {
       position: "absolute",

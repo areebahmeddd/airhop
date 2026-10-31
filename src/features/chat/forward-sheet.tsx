@@ -3,14 +3,18 @@
 // channel/DM, so it needs no protocol changes at all.
 //
 // Targets are grouped by kind so a long chat list stays scannable, each kind in
-// its own bordered box (matching the Appearance sheet): public Channels, private
-// Groups, Location (geohash) cells, and Direct messages.
+// its own bordered box (matching the Appearance sheet): Channels (a private one
+// marked with a lock), private Groups, Location rooms, and Direct messages.
+// Forwarding into a public room asks first, naming the room: one mis-tap there
+// publishes somebody's private words, and a location room's copy goes to
+// public relays for good.
 
-import { t, useT, type TranslationKey } from "@i18n";
+import { t, tPlural, useT, type TranslationKey } from "@i18n";
 import {
   Feather,
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
+import { isGeoChannel } from "@services/geohash-channel-service";
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
 import Avatar from "@ui/components/avatar";
@@ -24,7 +28,6 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import { isManualGeoChannel } from "@utils/channel-key";
 import { channelLabel } from "@utils/conversation-display-name";
 import { mediaBlockedReason } from "@utils/media-policy";
 import { resolveDisplayName } from "@utils/peer-display-name";
@@ -32,6 +35,11 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { forwardTextFits } from "./compose-budget";
+import {
+  forwardRefusal,
+  PUBLIC_FORWARD_BURST,
+  publicForwardReach,
+} from "./forward-rules";
 
 interface Props {
   visible: boolean;
@@ -54,16 +62,28 @@ interface Props {
   // than a channel, so a long one greys the DM targets the same way media
   // greys a room that refuses it.
   texts?: readonly string[];
+  // Whether any picked message (or caption) holds an ecash token, which is
+  // forwarded nowhere; see forwardRefusal.
+  carriesEcash?: boolean;
+  // How many messages are picked. A public room drops a burst past
+  // PUBLIC_FORWARD_BURST at every receiver, so a larger one greys it.
+  count?: number;
 }
 
 type ForwardKind = "channel" | "group" | "location" | "dm";
 
 // One source of truth for what a channel key is, its section, and its icon.
+// Location rooms by level (#block) and teleported cells alike are Locations:
+// both publish to the area's relays, which "Channels" would not suggest.
 function kindOf(channel: string): ForwardKind {
   if (channel.startsWith("dm:")) return "dm";
   if (channel.startsWith("group:")) return "group";
-  if (isManualGeoChannel(channel)) return "location";
+  if (isGeoChannel(channel)) return "location";
   return "channel";
+}
+
+function isSealed(channel: string): boolean {
+  return useChatStore.getState().channelKeys[channel] !== undefined;
 }
 
 // Section order top-to-bottom. Only non-empty sections render.
@@ -89,6 +109,8 @@ export default function ForwardSheet({
   onForward,
   carriesMedia = false,
   texts = NO_TEXTS,
+  carriesEcash = false,
+  count = 1,
 }: Props): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
@@ -119,9 +141,17 @@ export default function ForwardSheet({
 
   // Why this room cannot take the selection, or null when it can.
   function blockedReason(channel: string): string | null {
+    const sealed = isSealed(channel);
+    const refusal = forwardRefusal(channel, sealed, {
+      ecash: carriesEcash,
+      count,
+    });
+    if (refusal === "ecash") return t("chat.forward.has_ecash");
     const media = carriesMedia ? mediaBlockedReason(channel) : null;
     if (media !== null) return media;
-    const sealed = useChatStore.getState().channelKeys[channel] !== undefined;
+    if (refusal === "burst") {
+      return tPlural("chat.forward.too_many_public", PUBLIC_FORWARD_BURST);
+    }
     if (texts.every((text) => forwardTextFits(channel, text, sealed))) {
       return null;
     }
@@ -132,6 +162,12 @@ export default function ForwardSheet({
     );
   }
 
+  function targetLabel(channel: string): string {
+    return kindOf(channel) === "dm"
+      ? resolveDisplayName(channel.slice(3))
+      : channelLabel(channel);
+  }
+
   function handlePick(channel: string): void {
     if (closeTimer.current) return; // Already confirming; ignore a double tap.
     const blocked = blockedReason(channel);
@@ -139,6 +175,27 @@ export default function ForwardSheet({
       showAlert(t("chat.forward.cant_send_here"), blocked);
       return;
     }
+    const reach = publicForwardReach(channel, isSealed(channel));
+    if (reach === null) {
+      send(channel);
+      return;
+    }
+    showAlert(
+      t("chat.forward.public_title", { name: targetLabel(channel) }),
+      t(
+        reach === "geo"
+          ? "chat.forward.public_geo_body"
+          : "chat.forward.public_mesh_body",
+      ),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("chat.action.forward"), onPress: () => send(channel) },
+      ],
+    );
+  }
+
+  function send(channel: string): void {
+    if (closeTimer.current) return;
     // Nothing left: the caller has already explained why, and the sheet stays
     // open on the target list so the tap can be spent on something else.
     if (!onForward(channel)) return;
@@ -175,12 +232,11 @@ export default function ForwardSheet({
               <View style={styles.group}>
                 {section.data.map((item, i) => {
                   const kind = kindOf(item);
-                  const label =
-                    kind === "dm"
-                      ? resolveDisplayName(item.slice(3))
-                      : channelLabel(item);
+                  const label = targetLabel(item);
                   const justSent = sentTo === item;
                   const blocked = blockedReason(item) !== null;
+                  const sealed = isSealed(item);
+                  const isPublic = publicForwardReach(item, sealed) !== null;
                   return (
                     <React.Fragment key={item}>
                       {i > 0 && <View style={styles.divider} />}
@@ -195,6 +251,13 @@ export default function ForwardSheet({
                             ? t("chat.forward.cant_send_to", { name: label })
                             : T("chat.forward.to", { name: label })
                         }
+                        // What the lock or the hash says to a sighted reader,
+                        // in the info sheet's words.
+                        accessibilityHint={
+                          isPublic
+                            ? T("chat.info.public_plain")
+                            : T("chat.info.private_e2ee")
+                        }
                       >
                         {kind === "dm" ? (
                           <Avatar
@@ -205,7 +268,11 @@ export default function ForwardSheet({
                         ) : (
                           <View style={styles.channelIcon}>
                             <Feather
-                              name={ICON_FOR[kind]}
+                              name={
+                                kind === "channel" && sealed
+                                  ? "lock"
+                                  : ICON_FOR[kind]
+                              }
                               size={16}
                               color={Colors.textSecondary}
                             />

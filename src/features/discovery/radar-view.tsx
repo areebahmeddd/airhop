@@ -9,6 +9,7 @@ import { useMeshStateStore, type BleBlocker } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, type NearbyPeer } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
 import StatusDot from "@ui/components/status-dot";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
 import {
   FontSize,
@@ -327,6 +328,14 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     top: C - outerR,
     left: C - outerR,
   };
+  const statusHeadline =
+    peers.length > 0
+      ? TP("mesh.peers_in_range", peers.length)
+      : away
+        ? T("mesh.radar.paused")
+        : blockerHeadline(blocker);
+  useAnnounce(statusHeadline);
+
   const waveStyle = (val: Animated.Value, peak: number, from: number) => ({
     opacity: val.interpolate({
       inputRange: [0, 0.15, 1],
@@ -460,15 +469,10 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
           </View>
 
           {/* One live region, so a blocker is announced when it happens and
-              the two lines read as one stop. */}
+              the two lines read as one stop. VoiceOver hears the headline
+              through useAnnounce above. */}
           <View style={styles.status} accessibilityLiveRegion="polite">
-            <Text style={styles.statusText}>
-              {peers.length > 0
-                ? TP("mesh.peers_in_range", peers.length)
-                : away
-                  ? T("mesh.radar.paused")
-                  : blockerHeadline(blocker)}
-            </Text>
+            <Text style={styles.statusText}>{statusHeadline}</Text>
             <Text style={styles.hintText}>
               {peers.length > 0
                 ? T("mesh.radar.ring_hint")

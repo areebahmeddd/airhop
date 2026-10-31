@@ -406,7 +406,10 @@ export function SubHeader({
     <View style={styles.subHeader}>
       <Pressable
         onPress={onBack}
-        style={styles.subHeaderBack}
+        style={({ pressed }) => [
+          styles.subHeaderBack,
+          pressed && styles.subHeaderBackPressed,
+        ]}
         hitSlop={HIT_SLOP}
         accessibilityRole="button"
         accessibilityLabel={T("settings.back")}
@@ -454,6 +457,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
       marginStart: -Spacing.xs,
+    },
+    // A bare glyph with no fill to darken, so it dims.
+    subHeaderBackPressed: {
+      opacity: PRESSED_OPACITY,
     },
     subHeaderTitle: {
       flex: 1,

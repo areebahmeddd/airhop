@@ -37,7 +37,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingHorizontal: Spacing.sm,
       paddingVertical: Spacing["2xs"],
       borderRadius: Radius.full,
-      backgroundColor: Colors.danger,
+      backgroundColor: Colors.dangerFill,
     },
     dot: {
       width: Spacing["xs-sm"],
