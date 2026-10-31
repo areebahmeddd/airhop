@@ -208,7 +208,7 @@ export class NostrClient {
   // Returns a closer function; call it to cancel the subscription.
   //
   // One pool subscription per relay and filter, never one across relays.
-  // nostr-tools (2.25.2) records an event ID as seen before it verifies the
+  // nostr-tools (2.25.4) records an event ID as seen before it verifies the
   // event, in a set shared by every relay in the call, so one relay sending a
   // bad-signature copy under a genuine ID would hide the real event from every
   // honest relay. Split per relay, that set only ever hides the relay that
@@ -216,8 +216,9 @@ export class NostrClient {
   // look up, verify, then record. An ID is recorded only once nostr-tools has
   // verified the event and the pump has taken it. Each call also gets its own
   // filter object, because a reconnect writes `since` into it, and a relay that
-  // sent a far-future event must move only its own. Collapse back to one call
-  // per filter once a nostr-tools release carries nbd-wtf/nostr-tools#560.
+  // sent a far-future event must move only its own (and `guardSince` bounds
+  // even that). Collapse back to one call per filter once a nostr-tools release
+  // carries nbd-wtf/nostr-tools#563.
   subscribe(
     filters: Filter[],
     onEvent: EventHandler,
@@ -266,7 +267,7 @@ export class NostrClient {
       const openedAtMs = Date.now();
       closers.set(
         key,
-        this.pool.subscribeMany([url], pinGiftWrapSince({ ...filter }), {
+        this.pool.subscribeMany([url], guardSince({ ...filter }), {
           onevent: deliver,
           oneose: attempt === 0 ? oneose : undefined,
           alreadyHaveEvent,
@@ -454,19 +455,32 @@ export class NostrClient {
   }
 }
 
+// How far a reconnect's `since` stays behind the newest event seen, so a sender
+// whose clock runs slow is not skipped. The 15 minutes allowed elsewhere.
+const RECONNECT_SINCE_SKEW_SECONDS = 15 * 60;
+
 // nostr-tools moves a subscription's `since` to just past the newest
-// `created_at` it has delivered whenever a relay reconnects. A gift wrap's
-// `created_at` is blurred up to 15 minutes either side of the send time, so
-// that move can land in the future, and relays then withhold every newer wrap
-// until the clock catches up. A gift-wrap filter keeps the `since` it was
-// given: the library writes to the field, and the write is ignored.
-function pinGiftWrapSince(filter: Filter): Filter {
-  if (filter.kinds?.includes(KIND_GIFT_WRAP) !== true) return filter;
-  const { since, ...rest } = filter;
+// `created_at` it has received whenever a relay reconnects. One validly signed
+// event dated years ahead would then have that relay withhold every real event
+// until the subscription is reopened, so a write lands no later than the
+// newer of now and the event, less the skew, and never before the `since` the
+// caller asked for. A gift wrap's `created_at` is blurred 15 minutes either
+// side of the send time, so even that could pass over a newer wrap: a gift-wrap
+// filter keeps the `since` it was given and ignores the write.
+function guardSince(filter: Filter): Filter {
+  const giftWrap = filter.kinds?.includes(KIND_GIFT_WRAP) === true;
+  const { since: requested, ...rest } = filter;
+  let since = requested;
   return Object.defineProperty(rest, "since", {
     enumerable: true,
     get: () => since,
-    set: () => {},
+    set: (written: unknown) => {
+      if (giftWrap || typeof written !== "number") return;
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const bounded =
+        Math.min(written, nowSeconds) - RECONNECT_SINCE_SKEW_SECONDS;
+      since = requested === undefined ? bounded : Math.max(requested, bounded);
+    },
   });
 }
 

@@ -1,9 +1,11 @@
-// A gift-wrap subscription keeps the `since` it was opened with.
+// What a reconnect may write into a subscription's `since`.
 //
-// nostr-tools moves `since` to just past the newest `created_at` it delivered
-// whenever a relay reconnects. Gift-wrap timestamps are blurred up to 15
-// minutes either side of the send time, so that move could sit in the future
-// and have relays withhold every newer DM.
+// nostr-tools moves `since` to just past the newest `created_at` it received
+// whenever a relay reconnects. A validly signed event dated years ahead would
+// then have that relay withhold every real event, so the write is bounded to
+// 15 minutes behind the newer of now and the event. Gift-wrap timestamps are
+// blurred up to 15 minutes either side of the send time, so a gift-wrap
+// subscription keeps the `since` it was opened with.
 
 import type { Filter } from "nostr-tools/filter";
 import { NostrClient } from "../nostr-client";
@@ -58,6 +60,50 @@ test("a reconnect cannot move a gift-wrap subscription's since", () => {
     kinds: [1059],
     "#p": ["ab"],
     since: SINCE,
+  });
+});
+
+describe("a reconnect after a far-future event", () => {
+  const NOW = SINCE + 86_400;
+  const SKEW = 15 * 60;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW * 1000);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  test("moves since no later than 15 minutes before now", () => {
+    open().subscribe([{ kinds: [20000], since: SINCE }], () => undefined);
+    const [filter] = mockFilters;
+
+    filter.since = NOW + 10 * 365 * 86_400;
+
+    expect(filter.since).toBe(NOW - SKEW);
+  });
+
+  test("keeps 15 minutes behind an ordinary event, never before the requested since", () => {
+    open().subscribe([{ kinds: [20000], since: SINCE }], () => undefined);
+    const [filter] = mockFilters;
+
+    filter.since = NOW - 60;
+    expect(filter.since).toBe(NOW - 60 - SKEW);
+
+    filter.since = SINCE + 1;
+    expect(filter.since).toBe(SINCE);
+  });
+
+  test("bounds a filter opened without a since too", () => {
+    open().subscribe([{ kinds: [1] }], () => undefined);
+    const [filter] = mockFilters;
+    expect(JSON.parse(JSON.stringify(filter))).toEqual({ kinds: [1] });
+
+    filter.since = NOW + 3_600;
+
+    expect(filter.since).toBe(NOW - SKEW);
   });
 });
 
