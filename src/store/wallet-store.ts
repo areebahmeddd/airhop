@@ -171,8 +171,9 @@ interface WalletState {
   // The user proved they wrote it down. Tracked apart because a phrase never
   // copied out is the worst state: the wallet looks protected and is not.
   backupVerified: boolean;
-  // Next NUT-13 counter per keyset. Forward only (a reused counter recreates a
-  // secret the mint has seen), persisted before the outputs it covers are sent.
+  // Next NUT-13 counter per keyset, for the current phrase. Forward only (a
+  // reused counter recreates a secret the mint has seen) until the phrase
+  // changes, persisted before the outputs it covers are sent.
   counters: Record<string, number>;
 
   // ---- Mints ----
@@ -181,11 +182,13 @@ interface WalletState {
   removeMint: (mintUrl: string) => void;
 
   // ---- Proofs ----
+  // `addedValue` is the face value of what was new, so a caller reports only
+  // that rather than coins it already held.
   addProofs: (
     mintUrl: string,
     unit: string,
     proofs: StoredProof[],
-  ) => { added: number; duplicates: number };
+  ) => { added: number; duplicates: number; addedValue: number };
   removeProofs: (mintUrl: string, unit: string, secrets: string[]) => void;
   // For coins someone else may also hold, such as a reclaimed token: the next
   // refresh swaps them, as receipt `receiptTxId`, which makes them ours alone.
@@ -240,6 +243,10 @@ interface WalletState {
   ) => { start: number; count: number };
   // Never moves back: a lower value re-issues counters behind live proofs.
   advanceCounter: (keysetId: string, minNext: number) => void;
+  // For a phrase change only. Counters belong to the phrase that used them:
+  // carried over, the new phrase's coins start where the old one stopped,
+  // past the gap a restore scans from zero, and are never found again.
+  resetCounters: () => void;
 
   // ---- Wipe ----
   clearAccount: (mintUrl: string, unit: string) => void;
@@ -690,6 +697,8 @@ export const useWalletStore = create<WalletState>()(
         });
       },
 
+      // Every unit at the mint, reservations included: a reservation left
+      // behind would keep showing the account the user removed.
       removeMint(mintUrl) {
         const url = normalizeMintUrl(mintUrl);
         set((state) => {
@@ -699,17 +708,26 @@ export const useWalletStore = create<WalletState>()(
           for (const key of Object.keys(proofs)) {
             if (parseAccountKey(key).mintUrl === url) delete proofs[key];
           }
-          return { mints, proofs };
+          const reserved = { ...state.reserved };
+          for (const [txId, entry] of Object.entries(reserved)) {
+            if (parseAccountKey(entry.account).mintUrl === url) {
+              delete reserved[txId];
+            }
+          }
+          return { mints, proofs, reserved };
         });
       },
 
       // ---- Proofs ----
 
       addProofs(mintUrl, unit, incoming) {
-        if (incoming.length === 0) return { added: 0, duplicates: 0 };
+        if (incoming.length === 0) {
+          return { added: 0, duplicates: 0, addedValue: 0 };
+        }
         const key = accountKey(mintUrl, unit);
         let added = 0;
         let duplicates = 0;
+        let addedValue = 0;
         set((state) => {
           const existing = state.proofs[key] ?? [];
           // Dedup by secret, including reserved proofs: a replay or re-paste
@@ -725,12 +743,13 @@ export const useWalletStore = create<WalletState>()(
           });
           added = novel.length;
           duplicates = incoming.length - novel.length;
+          addedValue = sum(novel);
           if (novel.length === 0) return state;
           return {
             proofs: { ...state.proofs, [key]: [...existing, ...novel] },
           };
         });
-        return { added, duplicates };
+        return { added, duplicates, addedValue };
       },
 
       removeProofs(mintUrl, unit, secrets) {
@@ -888,6 +907,10 @@ export const useWalletStore = create<WalletState>()(
           if (current >= minNext) return state;
           return { counters: { ...state.counters, [keysetId]: minNext } };
         });
+      },
+
+      resetCounters() {
+        set({ counters: {} });
       },
 
       markTokenClaimed(firstSecret) {

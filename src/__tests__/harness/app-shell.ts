@@ -6,8 +6,10 @@
 // cannot load without React Native's UI. So it can drift, and anything not
 // listed as modelled may already differ. What it models:
 //
-//   startMeshWithPermissions  ask, record the blocker, prime Tor, start, then
-//                             retryRadios and the dependents, in app.tsx's order
+//   startMeshWithPermissions  ask, record the blocker, prime Tor, start, tell
+//                             the new mesh which side of the screen it is on,
+//                             then retryRadios and the dependents, in app.tsx's
+//                             order
 //   mount                     the foreground effect's resume work on whatever
 //                             mesh exists, then the "boot" launch plan: reuse a
 //                             mesh for the same identity, still running its
@@ -230,6 +232,8 @@ export class AppShell {
     }
     this.os.log("js", "initMeshService");
     initMeshService(this.identity, this.nickname);
+    // The mount effect ran before this mesh existed.
+    getMeshService()?.setAppForeground(this.os.appForeground);
     applyStartupPresence();
     // The nudge for a grant that landed while the mesh was being built.
     getMeshService()?.retryRadios();

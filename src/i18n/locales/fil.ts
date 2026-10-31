@@ -81,7 +81,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "Hindi nagawa ang iyong mga susi",
   "onboarding.identity.failed_body":
     "Hindi pinayagan ng device na ito ang Airhop na itago ang mga ito nang ligtas. Subukan ulit, o i-restart ang iyong telepono at buksang muli ang Airhop.",
-  "onboarding.identity.steps_a11y": "Mga hakbang: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Mga hakbang: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519":
     "Gumagawa ng static na pares ng susing X25519",
   "onboarding.identity.step.ed25519":
@@ -93,8 +94,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Ang pangalan mo sa mesh",
   "onboarding.username.peer_id": "Peer ID",
-  "onboarding.username.card_a11y":
-    "Ang pangalan mo sa mesh ay {username}. Peer ID {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Ang pangalan mo sa mesh ay {username}. Peer ID {peerID}. Algoritmo: {algorithm}. Imbakan: {storage}. Kailangan ng account: {account}.",
   "onboarding.username.explanation":
     "Ang username na ito ay deterministikong kinuha mula sa iyong pampublikong susi. Pareho ito sa bawat device na nakakakita ng iyong peer ID.",
   "onboarding.username.cta": "Pumasok sa Airhop",
@@ -164,7 +165,7 @@ export const strings: Strings = {
     "Naghahanap ng mga device sa malapit at nagpapasa ng mensahe sa pagitan nila. Ganito nabubuo ang mesh, at gumagana ito nang walang koneksyon sa internet.",
   "onboarding.primer.location.title": "Lokasyon",
   "onboarding.primer.location.body":
-    "Inilalagay ka sa mga channel ng lugar sa malapit, mula sa isang bloke hanggang sa isang rehiyon. Hindi ka kailanman sinusubaybayan ng Airhop at hindi nito ipinapadala ang tumpak mong lokasyon palabas ng device mo.",
+    "Inilalagay ka sa mga channel ng lugar sa malapit, mula sa isang bloke hanggang sa isang rehiyon. Hindi ka kailanman sinusubaybayan ng Airhop, at lumalabas lang sa device mo ang tumpak mong lokasyon kapag nagpadala ka ng location pin sa isang tao.",
   "onboarding.primer.notifications.title": "Mga Abiso",
   "onboarding.primer.notifications.body":
     "Tumanggap ng alerto para sa bagong mensahe kahit sarado ang app. Ginagawa ang mga abiso nang lokal sa device mo, walang server na kasangkot.",
@@ -176,6 +177,9 @@ export const strings: Strings = {
   "permission.bluetooth.label": "Pag-access sa Bluetooth",
   "permission.bluetooth.purpose":
     "matuklasan ang mga device sa malapit sa pamamagitan ng mesh",
+  "permission.location.label": "Pag-access sa lokasyon",
+  "permission.location.purpose":
+    "maabot ang mga channel ng lokasyon lampas sa abot ng Bluetooth",
   "permission.open_settings": "Buksan ang Mga Setting",
   "permission.not_now": "Hindi ngayon",
   "permission.blocked_title": "Naka-off ang {label}",
@@ -238,8 +242,7 @@ export const strings: Strings = {
     "I-tap nang dalawang beses at pindutin nang matagal para sa iba pang opsyon",
   "chat.channels.row_hint":
     "I-tap nang dalawang beses at pindutin nang matagal para sa iba pang opsyon",
-  "chat.dm.you_prefix": "Ikaw:",
-  "chat.draft_prefix": "Draft:",
+  "chat.draft_preview": "Draft: {draft}",
   "chat.dm.none": "Walang direktang mensahe",
   "chat.dm.none_desc":
     "Pumunta sa tab na Mesh at i-tap ang isang peer para magsimula ng naka-encrypt na direktang mensahe.",
@@ -257,6 +260,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Iba pang opsyon para sa {name}",
   "chat.dm.remove_contact_short": "Alisin ang contact",
   "chat.dm.block_short": "I-block ang contact",
+  "chat.dm.signing_key_refused":
+    "May nagpakita ng ibang susi para kay {name}, at tinanggihan ito ng Airhop. Pinananatili ng chat na ito ang dati nitong susi.",
   "chat.dm.delete_short": "Burahin ang chat",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -343,6 +348,8 @@ export const strings: Strings = {
   "chat.jump.failed":
     "Hindi nabuksan ang cell na iyon. Subukan ulit maya-maya.",
   "chat.jump.title": "Pumunta sa isang lugar",
+  "chat.jump.globe": "Pumili sa globo",
+  "chat.jump.globe_note": "Paikutin kahit saan. Gumagana kahit offline.",
   "chat.jump.saved": "Mga naka-save na lugar",
   "chat.jump.nearby": "Malapit",
   "chat.jump.anywhere":
@@ -375,6 +382,18 @@ export const strings: Strings = {
   "chat.jump.go": "Pumunta",
   "chat.jump.how":
     "Para makahanap ng geohash: buksan ang isang channel ng lokasyon > i-tap ang pangalan nito > kopyahin ito mula roon.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "I-drag para paikutin · i-pinch para mag-zoom · i-tap para i-focus",
+  "chat.globe.zoom_in": "Mag-zoom in para pumili ng cell",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Pumunta sa {cell}",
+  "chat.globe.larger": "Mas malaking cell",
+  "chat.globe.smaller": "Mas maliit na cell",
+  "chat.globe.label": "Globo, nakasentro sa {cell}",
+  "chat.globe.adjust":
+    "Mag-swipe pataas o pababa para baguhin ang laki ng cell",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -450,6 +469,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Pampublikong channel",
   "chat.thread.notices": "Mga paskil para sa channel na ito",
   "chat.thread.invite": "Mag-imbita ng tao sa channel na ito",
+  "chat.thread.location_off":
+    "Naka-off ang lokasyon · mga tao sa malapit lang ang naaabot",
   "chat.thread.not_in_range": "Wala sa malapit. Inihahatid sa internet.",
   "chat.thread.not_nearby":
     "Wala sa malapit. Ihahatid namin kapag nakabalik na sila sa saklaw o online na.",
@@ -477,7 +498,7 @@ export const strings: Strings = {
   "chat.thread.message": "Mensahe",
   "chat.thread.message_placeholder": "Mensahe…",
   "chat.thread.length_full": "Puno na ang mensahe",
-  "chat.thread.waiting_for": "Hinihintay bumalik si {name} · {percent}%",
+  "chat.thread.waiting_for": "Hinihintay bumalik si {name} · {percent}",
   "chat.transfer.progress": "{done} sa {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} na lang",
@@ -532,7 +553,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Kumuha ka ng screenshot",
   "chat.screenshot.you_took_private":
     "Kumuha ka ng screenshot · walang sinabihan",
-  "chat.screenshot.heads_up": "Paalala",
   "chat.screenshot.peer_took": "Kumuha ng screenshot si {name}",
   "chat.screenshot.notified_dm":
     "Nabalitaan ni {name} na kumuha ka ng screenshot ng usapang ito.",
@@ -546,8 +566,13 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Tingnan ang profile ni {name}",
   "chat.bubble.forwarded": "Ipinasa",
   "chat.bubble.attachment": "attachment",
-  "chat.bubble.a11y":
-    "{sender}: {body}. Pindutin nang matagal para sa iba pang opsyon.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint":
+    "I-tap nang dalawang beses at pindutin nang matagal para sa iba pang opsyon",
+  "chat.bubble.more_options": "Iba pang opsyon",
+  "chat.bubble.open_link": "Buksan ang {link}",
+  "chat.bubble.status_delivered": "Naihatid",
+  "chat.bubble.status_read": "Nabasa na",
   "chat.bubble.failed_retry": "Nabigong maipadala. I-tap para subukan ulit.",
 
   // ---- Chats: message actions and info ----
@@ -575,6 +600,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Kumuha ng larawan o video",
   "chat.attach.camera_desc_photo": "Kumuha ng litrato",
+  "chat.attach.video": "Mag-record ng video",
+  "chat.attach.video_desc": "Mag-record ng maikling clip",
   "chat.attach.library": "Photo library",
   "chat.attach.library_desc": "Pumili mula sa library mo",
   "chat.attach.document": "Dokumento",
@@ -585,6 +612,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Magpadala ng Cashu sat mula sa wallet mo",
   "chat.attach.location": "Lokasyon",
   "chat.attach.location_desc": "Ipadala kung nasaan ka ngayon",
+  "chat.attach.live": "Mag-live",
+  "chat.attach.live_desc": "I-stream ang camera mo sa mga tao sa malapit",
   "chat.attach.title": "Maglakip",
 
   // ---- Chat: location pin ----
@@ -646,6 +675,21 @@ export const strings: Strings = {
   "chat.attach.caption": "Magdagdag ng caption…",
   "chat.attach.send": "Ipadala ang attachment",
   "chat.attach.generic": "Attachment",
+  "chat.video_prep.preparing": "Inihahanda ang video",
+  "chat.video_prep.waiting": "Naghihintay na maihanda ang video",
+  "chat.video_prep.cancel": "Itigil ang paghahanda ng video na ito",
+  "chat.video_prep.too_large":
+    "Hindi napaliit nang sapat ang video na ito para maipadala.",
+  "chat.video_prep.unreadable":
+    "Hindi mabuksan ang video na ito. Sumubok ng iba.",
+  "chat.video_prep.failed":
+    "May mali sa paghahanda ng video na iyon. Subukan ulit.",
+  "chat.video_prep.interrupted":
+    "Umalis ka sa Airhop bago naihanda ang video. Subukang ipadala ulit.",
+  "chat.trim.play": "I-play ang preview",
+  "chat.trim.pause": "I-pause ang preview",
+  "chat.trim.start": "Simula ng clip",
+  "chat.trim.end": "Dulo ng clip",
   "chat.media.view_full": "Tingnan ang larawan nang buong screen",
   "chat.media.gone_photo": "Wala sa device na ito ang larawan",
   "chat.media.gone_video": "Wala sa device na ito ang video",
@@ -661,6 +705,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "file",
   "chat.media.pause_voice": "I-pause ang voice note",
   "chat.media.play_voice": "I-play ang voice note",
+  "chat.media.pause_video": "I-pause ang video",
+  "chat.media.play_video": "I-play ang video",
   "chat.media.voice_position": "Posisyon sa voice note",
   "chat.media.voice_scrub": "I-tap sa mga bar para tumalon sa puntong iyon",
   "chat.media.image": "Imahe",
@@ -705,6 +751,52 @@ export const strings: Strings = {
   "chat.voice.limit_sent":
     "Naabot ang limitasyong dalawang minuto, naipadala ang note",
   "chat.voice.stop_send": "Itigil ang pagre-record at ipadala",
+  "chat.video_note.hold": "Pindutin nang matagal para mag-record ng video note",
+  "chat.video_note.a11y_toggle":
+    "I-double tap para simulan o itigil ang pag-record.",
+  "chat.video_note.not_recorded": "Hindi na-record ang video note",
+  "chat.video_note.limit_sent": "Ubos na ang oras, naipadala ang video note",
+  "chat.video_note.a11y": "Video note, i-double tap para sa tunog",
+  "chat.video_note.sound_on": "I-on ang tunog",
+  "chat.video_note.sound_off": "I-off ang tunog",
+  "chat.live_video.preview": "Live na video",
+  "chat.live_video.badge": "Live",
+  "chat.live_video.reconnecting": "Muling kumokonekta…",
+  "chat.live_video.a11y": "Naka-live si {name}. I-double tap para manood.",
+  "chat.live_video.live_from": "Naka-live si {name}",
+  "chat.live_video.sound": "Tunog",
+  "chat.live_video.ended": "Tapos na ang live",
+  "chat.live_video.title": "Live na video",
+  "chat.live_video.go_live": "Mag-live",
+  "chat.live_video.end": "Tapusin",
+  "chat.live_video.end_title": "Tapusin ang live na video?",
+  "chat.live_video.end_body":
+    "Kapag tinapos, mananatili ang recording sa chat na ito. Kapag itinapon, sasabihan ang lahat ng nanonood na burahin ito.",
+  "chat.live_video.discard": "Itapon",
+  "chat.live_video.keep": "Ituloy ang stream",
+  "chat.live_video.audience_room":
+    "Puwedeng manood ang lahat ng nasa abot ng Bluetooth.",
+  "chat.live_video.audience_dm": "Si {name} lang ang puwedeng manood.",
+  "chat.live_video.nobody": "Walang nasa abot na puwedeng manood ngayon.",
+  "chat.live_video.quality_low": "Mababa",
+  "chat.live_video.quality_medium": "Katamtaman",
+  "chat.live_video.quality_high": "Mataas",
+  "chat.live_video.quality_low_hint": "Umaabot sa mga taong ilang hop ang layo",
+  "chat.live_video.quality_medium_hint":
+    "Para sa mga taong isa o dalawang hop ang layo",
+  "chat.live_video.quality_high_hint": "Para sa mga taong katabi mo",
+  "chat.live_video.signal_good": "Nakakasabay",
+  "chat.live_video.signal_weak": "Nahuhuli",
+  "chat.live_video.signal_poor":
+    "Masyadong mabagal para sa video, tunog lang ang ipinapadala",
+  "chat.live_video.mic": "Mikropono",
+  "chat.live_video.no_sound": "Walang tunog",
+  "chat.live_video.flip": "Palitan ang camera",
+  "chat.live_video.camera_failed": "Hindi mabuksan ang camera",
+  "chat.live_video.camera_lost": "Huminto ang camera, kaya natapos ang stream",
+  "chat.live_video.failed": "Hindi makapag-live",
+  "chat.live_video.kept_here":
+    "Masyadong mahaba para ipadala bilang file. May sariling kopya ang bawat nanood.",
   "chat.voice.lift_lock": "Mag-slide paitaas para mag-record nang hands-free",
   "chat.voice.live_speaking": "Nagsasalita si {name}",
   "chat.voice.live_ended": "Tapos na",
@@ -720,6 +812,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Pag-access sa mikropono",
   "chat.perm.mic_live_purpose": "makipag-usap sa mga taong malapit",
   "chat.perm.mic_note_purpose": "mag-record ng voice note",
+  "chat.perm.video_note_purpose": "mag-record ng video note",
+  "chat.perm.live_video_purpose": "mag-live",
   "chat.perm.recording_stopped": "Itinigil ang pagre-record",
   "chat.perm.record_failed":
     "Hindi nasimulan ang pagre-record. Suriin ang mga pahintulot sa mikropono.",
@@ -854,6 +948,10 @@ export const strings: Strings = {
   "chat.notices.post": "Ipaskil",
   "chat.notices.post_short": "Ipaskil",
   "chat.notices.delete": "Burahin ang paskil",
+  "chat.notices.delete_title": "Burahin ang paskil na ito?",
+  "chat.notices.delete_body":
+    "Hihilingin sa lahat ng may hawak nito na alisin ito. Hindi mo na ito maa-undo.",
+  "chat.notices.permanent": "Permanente",
   "chat.notices.fades_soon": "malapit nang kumupas",
   "chat.notices.1_day": "1 araw",
   "chat.notices.3_days": "3 araw",
@@ -922,6 +1020,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Hindi maipapasa kay {name}",
   "chat.forward.too_long_for_dm":
     "Masyadong mahaba para sa direktang mensahe. I-forward ito sa isang channel o grupo sa halip.",
+  "chat.forward.too_long_for_public":
+    "Masyadong mahaba para sa pampublikong kuwarto, kung saan itatago ito bilang spam. Ipasa na lang sa isang grupo.",
   "chat.forward.channels": "Mga Channel",
   "chat.forward.groups": "Mga Grupo",
   "chat.forward.locations": "Mga Lokasyon",
@@ -930,6 +1030,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "Hindi naipasa",
   "chat.forward.app_row_body":
     "Galing ang linyang ito sa Airhop, hindi sa isang tao, kaya walang maipapasa.",
+  "chat.forward.has_ecash":
+    "May lamang ecash ito, at kung sino ang unang umangkin nito ang magtatago ng pera, kaya hindi ito ipinapasa.",
+  "chat.forward.public_title": "Ipasa sa {name}?",
+  "chat.forward.public_mesh_body":
+    "Mababasa ito roon ng sinumang nasa malapit, at hindi na ito mababawi.",
+  "chat.forward.public_geo_body":
+    "Mababasa ito roon ng sinumang nasa lugar na ito, kasama na sa mga pampublikong relay sa internet, at hindi na ito mababawi.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Sinisimulan ang mesh…",
@@ -950,7 +1057,7 @@ export const strings: Strings = {
     "Naka-off ang lokasyon · kailangan ito ng Android para makahanap ng peer",
   "mesh.banner.paused": "Naka-pause ang mesh · wala ka rito",
   "mesh.banner.location_off":
-    "Naka-off ang lokasyon · hindi available ang mga channel ng lokasyon",
+    "Naka-off ang lokasyon · sa malapit lang umaabot ang mga channel ng lokasyon",
   "mesh.banner.battery_saver": "Battery saver · mas madalang mag-scan",
   "mesh.banner.wipe_incomplete":
     "Hindi tapos ang paglilinis · may ilang datos na maaaring naiwan, susubukan ulit sa muling pagbukas",
@@ -988,7 +1095,10 @@ export const strings: Strings = {
     "Binubuksan ang mga setting ng aktibidad sa background ng teleponong ito",
   "mesh.banner.hint.tor_settings":
     "Binubuksan ang mga setting ng Tor sa Airhop",
+  "mesh.banner.hint.enable_location":
+    "Humihingi ng access sa lokasyon, o ipinapaliwanag kung paano ito payagan sa Mga Setting",
   "mesh.banner.dismiss": "I-dismiss: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Itinatago ang paalalang ito nang tuluyan",
 
   // ---- Mesh: radar ----
@@ -1224,6 +1334,8 @@ export const strings: Strings = {
     "Naglalabas ang {mint} ng {units}. Nakaimbak sa device na ito ang mga susi nito, kaya masusuri na ngayon ang mga token mula rito kahit walang internet.",
   "wallet.mint.remove_plain":
     "Alisin ang {mint} sa wallet mo? Kasama ring mawawala ang mga naka-imbak nitong susi, kaya hindi na masusuri nang offline ang mga token mula rito.",
+  "wallet.mint.remove_holdings":
+    "May hawak ang {mint} na:\n{holdings}\nKapag inalis ito, mabubura ang lahat ng ito sa device na ito. I-withdraw o ipadala muna ito.",
   "wallet.mint.title": "Mga Mint",
   "wallet.mint.none_desc":
     "Ang mint ang naglalabas at tumutubos ng iyong ecash. Magdagdag ng isa para mag-top up gamit ang Lightning o tumanggap ng mga token nito.",
@@ -1583,6 +1695,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Nagastos na",
   "wallet.err.change_pending": "Bayad na, nakabinbin ang sukli",
   "wallet.svc.mint_unreachable": "Hindi naabot ang mint.",
+  "wallet.svc.mint_http_error": "Sumagot ang mint ng error (HTTP {status}).",
   "wallet.svc.tor_ios": "Hindi dumadaan sa Tor ang mga hiling sa mint sa iOS.",
   "wallet.svc.tor_ios_body":
     "Nostr lang ang sakop ng Tor sa iOS, kaya mararating ng hiling na ito ang mint sa bukas na net at maiuugnay ang IP mo sa ecash na ito. I-on ang {setting} sa Settings, o i-off muna ang Tor. Gumagana pa rin ang pagpapadala at pagtanggap ng ecash sa mesh.",
@@ -1697,6 +1810,10 @@ export const strings: Strings = {
     "Hindi kayang gawing eksaktong {amount} {unit} ng mga barya mo nang offline.",
   "wallet.svc.inexact_detail":
     "Ang pinakamaliit na token na kaya mong ipadala ay {spend} {unit}. Walang sukli kapag offline, kaya mapupunta sa tatanggap ang dagdag na {extra} {unit}.",
+  "wallet.svc.spend_changed":
+    "Aabot na ngayon sa {spend} {unit} ang pagpapadalang ito, higit sa pinayagan mo.",
+  "wallet.svc.spend_changed_body":
+    "Nagbago ang mga barya mo habang nagpapasya ka. Walang naipadala. Subukan ulit para makita ang bagong halaga.",
   "wallet.svc.no_single_mint":
     "Walang iisang mint na may hawak na {amount} {unit}. Hindi maisasama sa isang token ang ecash mula sa iba't ibang mint: pagsamahin muna ang mga ito sa isang mint, o ipadala sa magkakahiwalay na halaga.",
   "wallet.svc.have_tried_send":
@@ -1726,6 +1843,10 @@ export const strings: Strings = {
     "Walang ibang naipadala. Nakahawak ang mga barya hanggang makumpirma ng mint ang kinalabasan. Kung natuloy, lalabas ang naka-lock na token sa Aktibidad para iabot mo. Kung hindi, babalik ang mga barya.",
   "wallet.svc.send_spent_by_swap":
     "Napalitan pabalik sa iyong wallet ang mga baryang ito bago naangkin ang token na ito, kaya hindi na ito maaangkin. Nasa balanse mo ang halaga.",
+  "wallet.svc.payment_in_doubt_body":
+    "Nakahawak ang mga barya hanggang makumpirma ng mint ang kinalabasan, na susuriin ulit sa susunod na pag-refresh. Huwag munang bayaran ulit ang invoice na ito hanggang doon.",
+  "wallet.svc.mint_removed":
+    "Inalis mo ang mint na ito, kaya hindi na ito sinusubaybayan.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Na-verify sa pamamagitan ng QR",
@@ -1769,7 +1890,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Nag-expire na ang code na iyon ng bitchat. Hilingin sa kanilang buksang muli ang QR nila.",
   "contacts.scan.tampered":
-    "Hindi wasto ang QR code na ito: hindi tugma ang peer ID nito sa mga susi nito. Maaaring binago ito.",
+    "Hindi wasto ang QR code na ito: hindi pumasa sa pagsusuri ang mga susi nito. Maaaring binago ito.",
   "contacts.scan.key_conflict":
     "May iba ka nang susi para sa kanila, kaya walang nagbago. I-scan nang harapan ang code nila para palitan ito.",
   "contacts.scan.already_added": "Nasa mga contact mo na",
@@ -1792,7 +1913,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "Sa iba pang tao ang QR na ito. Hilingin kay {name} na ipakita ang sariling code niya.",
   "contacts.verify.tampered_body":
-    "Mukhang binago ang QR na ito: hindi tugma ang ID nito sa susi nito.",
+    "Mukhang binago ang QR na ito: hindi pumasa sa pagsusuri ang mga susi nito.",
   "contacts.verify.choose_title": "Paano mo gustong suriin?",
   "contacts.verify.choose_body":
     "Kumpirmado ng dalawa na talagang kay {name} ang mga susi sa teleponong ito.",
@@ -1910,6 +2031,8 @@ export const strings: Strings = {
   "settings.diag.share": "Ibahagi ang diagnostics",
   "settings.diag.share_desc":
     "Estado ng transport at settings para sa bug report. Walang mensahe, pangalan, o susi kailanman.",
+  "settings.diag.share_fallback":
+    "Hindi mabuksan ang pagbabahagi. Kinopya na lang ang report.",
   "settings.section.storage_desc": "Paggamit at cache",
   "settings.section.appearance": "Anyo",
   "settings.section.appearance_desc": "Tema, font at wika",
@@ -1956,6 +2079,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Awtomatikong ipakita ang media",
   "settings.general.show_media_desc":
     "Lumilitaw sa chat ang mga larawan at video, o naghihintay sa likod ng isang tap",
+  "settings.general.spam_filter": "Filter ng spam",
+  "settings.general.spam_filter_desc":
+    "Itinatago ang mga pampublikong mensahe ng mga taong masyadong mabilis mag-post, umuulit, o nagbabaha ng link. Hindi kailanman sinasala ang mga pribadong mensahe.",
   "settings.general.reset": "I-reset ang mga setting",
   "settings.general.media_retention": "Itago ang media nang",
   "settings.general.media_retention_desc":
@@ -1972,7 +2098,7 @@ export const strings: Strings = {
     "Ibinabalik ang mga kagustuhan sa kanilang default, nang hindi ginagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet",
   "settings.general.reset_title": "I-reset ang mga setting?",
   "settings.general.reset_body":
-    "Babalik sa default ang mga kagustuhan, kasama ang anyo, wika, mga abiso, pag-undo ng pagpapadala, at koneksyon (internet, Tor, gateway, bridge, mga relay). Mananatili gaya ng itinakda mo ang lock ng Airhop, kung gaano katagal itinatago ang media, at ang iyong status. Hindi magagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet.",
+    "Babalik sa default ang mga kagustuhan, kasama ang anyo, wika, mga abiso, pag-undo ng pagpapadala, at koneksyon (gateway, mesh bridge, mga relay). Mananatili gaya ng itinakda mo ang lock ng Airhop, kung gaano katagal itinatago ang media, ang switch ng internet, ang Tor at ang mga bridge nito, at ang iyong status. Hindi magagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet.",
   "settings.general.reset_confirm": "I-reset",
 
   // ---- Settings: privacy and security ----
@@ -2113,6 +2239,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "I-off ang live na boses?",
   "settings.conn.live_voice_off_body":
     "Kapag pinindot nang matagal ang mikropono, voice note ang nire-record. Naipapadala ito kapag binitawan mo, at walang makakarinig nito hangga't hindi nila ito pinapatugtog.",
+  "settings.conn.live_video": "Live na video",
+  "settings.conn.live_video_desc":
+    "I-stream ang camera mo sa mga tao sa malapit, at panoorin ang kanila",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Pagruruta sa Tor",
   "settings.conn.tor_desc":
@@ -2128,6 +2257,10 @@ export const strings: Strings = {
     "Hindi pa nakakakonekta ang Tor. Mananatili itong naka-on at patuloy na susubok; sasabihin ng tab na Mesh kung kailan ito nagruruta, o kung hinaharangan ito ng network na ito.",
   "settings.conn.tor_failed":
     "Hindi masimulan ang Tor. Subukan ulit maya-maya.",
+  "settings.conn.tor_bad_bridges":
+    "Hindi magamit ng Tor ang mga bridge line na ito. Suriin ang mga ito, o pumili ng ibang koneksyon.",
+  "settings.conn.tor_port_busy":
+    "May ibang app na gumagamit ng port na kailangan ng Tor, kadalasan ay ibang app na nagpapatakbo ng Tor. Isara ito, saka subukan ulit.",
   "settings.tor.status": "Katayuan ng Tor",
   "settings.tor.connection": "Koneksyon",
   "settings.tor.mode_off": "Direkta",
@@ -2139,7 +2272,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Itinatago na gumagamit ka ng Tor. Mas mabilis kaysa Snowflake, pero pampubliko ang mga bridge na ito at hinaharangan ng ilang network.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Itinatago na gumagamit ka ng Tor sa pamamagitan ng pagmukhang karaniwang pagbisita sa website. Mas mahirap harangan kaysa sa iba.",
   "settings.tor.mode_custom": "Sariling bridge",
@@ -2274,6 +2407,8 @@ export const strings: Strings = {
   "settings.language.pending": "Sa susunod na pagbukas",
   "settings.language.pending_a11y":
     "{value}, iiral sa susunod mong pagbukas ng Airhop",
+  "settings.language.phone": "Wika ng telepono",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Buksang muli ngayon",
   "settings.language.rtl_title": "Buksang muli ang Airhop para matapos ito",
   "settings.language.rtl_body":
@@ -2291,7 +2426,7 @@ export const strings: Strings = {
     "Naka-pause ang mesh, hindi nag-i-scan o nag-a-advertise",
   "settings.status.invisible": "Hindi nakikita",
   "settings.status.invisible_desc":
-    "Nakatago sa mga Bluetooth scan, nakikita pa rin ng mga teleponong kinokonektahan mo",
+    "Hindi ina-advertise sa Bluetooth, pero nakikita ka pa rin ng mga teleponong kakonekta nito sa Bluetooth o Wi-Fi",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Itakda ang status sa {value}",
   "settings.status.edit": "Baguhin ang status",
@@ -2578,6 +2713,11 @@ export const plurals: Plurals = {
     one: "I-forward ang {count} mensahe",
     other: "I-forward ang {count} mensahe",
   },
+  "chat.forward.too_many_public": {
+    one: "Nagpapakita lang ang pampublikong kuwarto ng {count} sunod-sunod na mensahe mula sa isang tao, kaya mawawala ang iba. Magpasa ng mas kaunti sa bawat pagkakataon.",
+    other:
+      "Nagpapakita lang ang pampublikong kuwarto ng {count} sunod-sunod na mensahe mula sa isang tao, kaya mawawala ang iba. Magpasa ng mas kaunti sa bawat pagkakataon.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} ang nagsasalita",
     other: "{count} ang nagsasalita",
@@ -2661,14 +2801,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "May hawak ang {mint} na {balance} {unit} sa {count} barya. Kapag inalis ito, permanenteng mabubura ang balanseng iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
-    other:
-      "May hawak ang {mint} na {balance} {unit} sa {count} barya. Kapag inalis ito, permanenteng mabubura ang balanseng iyon sa device na ito at walang backup. I-withdraw o ipadala muna ang balanse.",
-  },
   "wallet.mint.split_across": {
     one: "Nahahati ang balanse sa {count} mint. Ilipat ito sa isa.",
     other: "Nahahati ang balanse sa {count} mint. Ilipat ito sa isa.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "Hindi pa naaayos ang {count} bayad sa {mint}. Kapag inalis ang mint, iiwan na ito, kasama ang anumang maibabalik pa sana nito.",
+    other:
+      "Hindi pa naaayos ang {count} bayad sa {mint}. Kapag inalis ang mint, iiwan na ang mga ito, kasama ang anumang maibabalik pa sana ng mga ito.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2682,6 +2822,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "Nabawi ang {count} hindi pa nagagastos na barya mula sa {mints}.",
     other: "Nabawi ang {count} hindi pa nagagastos na barya mula sa {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "Nasa wallet na ito ang {count} nahanap na barya, kaya hindi na ito binilang ulit.",
+    other:
+      "Nasa wallet na ito ang {count} nahanap na barya, kaya hindi na binilang ulit ang mga ito.",
   },
   "wallet.backup.already_spent": {
     one: "May natagpuang {count} barya pero nagastos na, kaya walang na-kredito. Normal iyon: nananatili sa talaan ng mint ang bawat baryang nagastos mo kailanman.",

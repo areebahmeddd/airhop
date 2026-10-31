@@ -38,6 +38,15 @@ jest.mock("@ui/components/bottom-sheet", () => ({
   },
 }));
 
+// The toast animates through Reanimated too, so it is just its message.
+jest.mock("@ui/components/toast", () => ({
+  __esModule: true,
+  default: ({ message }: { message: string | null }) => {
+    const { Text } = jest.requireActual("react-native");
+    return message === null ? null : <Text>{message}</Text>;
+  },
+}));
+
 const METRICS = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
   insets: { top: 0, left: 0, right: 0, bottom: 0 },

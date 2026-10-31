@@ -57,10 +57,14 @@ export default function UsernameScreen({
           <View
             style={[styles.card, { borderColor: withAlpha(accentColor, 0.2) }]}
             accessible
-            accessibilityLabel={T("onboarding.username.card_a11y", {
+            // The rows' labels are in the sentence itself, so each language
+            // punctuates the list its own way. Values in identityProps' order.
+            accessibilityLabel={T("onboarding.username.card_full_a11y", {
               username,
               peerID,
-              props: props.map((p) => `${p.label}: ${p.value}`).join(". "),
+              algorithm: props[0].value,
+              storage: props[1].value,
+              account: props[2].value,
             })}
           >
             <View

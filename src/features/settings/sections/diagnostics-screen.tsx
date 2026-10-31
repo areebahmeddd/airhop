@@ -30,6 +30,7 @@ import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
+import Toast from "@ui/components/toast";
 import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import { FontFamily, FontSize, Spacing, useThemeColors } from "@ui/theme";
@@ -92,6 +93,7 @@ export default function DiagnosticsScreen({
   const local = useMemo(() => createStyles(Colors), [Colors]);
   const { copy } = useCopy();
   const [showShareSheet, setShowShareSheet] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   const peers = usePeerStore((s) => s.peers);
   const wifiFastPath = useMeshStateStore((s) => s.wifiFastPath);
@@ -108,13 +110,19 @@ export default function DiagnosticsScreen({
     return () => clearInterval(timer);
   }, []);
 
-  async function handleCopy(): Promise<void> {
-    setShowShareSheet(false);
+  // The sheet closes on tap, so the toast is the only visible confirmation.
+  async function copyReport(confirmation: string): Promise<void> {
     try {
       copy(await getDiagnosticsReport());
+      setToast(confirmation);
     } catch {
       return;
     }
+  }
+
+  function handleCopy(): void {
+    setShowShareSheet(false);
+    void copyReport(t("common.copied"));
   }
 
   // Building the report awaits the native log, so a second tap while the first
@@ -129,9 +137,13 @@ export default function DiagnosticsScreen({
     if (sharingRef.current) return;
     sharingRef.current = true;
     afterSheetsClose(() => {
-      void shareDiagnostics().finally(() => {
-        sharingRef.current = false;
-      });
+      void shareDiagnostics()
+        .then((shown) => {
+          if (!shown) void copyReport(t("settings.diag.share_fallback"));
+        })
+        .finally(() => {
+          sharingRef.current = false;
+        });
     });
   }
 
@@ -169,6 +181,19 @@ export default function DiagnosticsScreen({
             />
             <GroupDivider />
             <SettingRow
+              icon="wifi"
+              label={T("settings.diag.wifi")}
+              description={`${t("settings.diag.wifi_about")} · ${wifiLabel(
+                wifiFastPath,
+              )}`}
+              control={
+                <Text style={[styles.settingValue, styles.settingValueMono]}>
+                  {formatNumber(snapshot.links.wifi)}
+                </Text>
+              }
+            />
+            <GroupDivider />
+            <SettingRow
               icon="share-2"
               label={T("settings.diag.lan")}
               description={
@@ -179,19 +204,6 @@ export default function DiagnosticsScreen({
               control={
                 <Text style={[styles.settingValue, styles.settingValueMono]}>
                   {formatNumber(snapshot.links.lan)}
-                </Text>
-              }
-            />
-            <GroupDivider />
-            <SettingRow
-              icon="wifi"
-              label={T("settings.diag.wifi")}
-              description={`${t("settings.diag.wifi_about")} · ${wifiLabel(
-                wifiFastPath,
-              )}`}
-              control={
-                <Text style={[styles.settingValue, styles.settingValueMono]}>
-                  {formatNumber(snapshot.links.wifi)}
                 </Text>
               }
             />
@@ -310,6 +322,7 @@ export default function DiagnosticsScreen({
             />
           </View>
         </View>
+        <Text style={local.footnote}>{T("settings.diag.footnote")}</Text>
 
         <View style={styles.section}>
           <View style={styles.settingsGroup}>
@@ -324,8 +337,6 @@ export default function DiagnosticsScreen({
             />
           </View>
         </View>
-
-        <Text style={local.footnote}>{T("settings.diag.footnote")}</Text>
       </SettingsScroll>
       <BottomSheet
         visible={showShareSheet}
@@ -343,7 +354,7 @@ export default function DiagnosticsScreen({
               local.sheetButton,
               pressed && styles.sheetBtnPressed,
             ]}
-            onPress={() => void handleCopy()}
+            onPress={handleCopy}
             accessibilityRole="button"
             accessibilityLabel={T("common.copy")}
           >
@@ -370,6 +381,7 @@ export default function DiagnosticsScreen({
           </Pressable>
         </View>
       </BottomSheet>
+      <Toast message={toast} onHide={() => setToast(null)} />
     </View>
   );
 }
@@ -412,8 +424,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center" as const,
       gap: Spacing.sm,
     },
-    // Closes the screen rather than heading a group, so it sits muted and
-    // centred instead of taking a section label's weight.
+    // Explains the Sync group above it, so it stays muted and centred.
     footnote: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,

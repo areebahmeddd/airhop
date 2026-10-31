@@ -2,7 +2,7 @@
 // screens it describes. A renamed row or a mistargeted entry both fail silently
 // at runtime, so both are checked here by reading the screens' source.
 
-import { t } from "@i18n";
+import { t, translatorFor } from "@i18n";
 import {
   searchSettings,
   SETTINGS_INDEX,
@@ -131,5 +131,16 @@ describe("searchSettings", () => {
   it("returns nothing for a word that lands on no entry", () => {
     expect(labels("storage zzzz")).toEqual([]);
     expect(labels("   ")).toEqual([]);
+  });
+
+  // Han and kana put no space between words, so a two-character word is
+  // always found mid-word and has to count.
+  it("finds a short word inside unspaced Chinese and Japanese", () => {
+    const keys = (q: string, code: "zh-Hans" | "ja"): string[] =>
+      searchSettings(q, translatorFor(code)).map((h) => h.entry.key);
+    // "隐藏通知预览": "preview" is the last two characters.
+    expect(keys("预览", "zh-Hans")).toContain("hide-previews");
+    // "通知のプレビューを隠す": "hide" closes the sentence.
+    expect(keys("隠す", "ja")).toContain("hide-previews");
   });
 });

@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Airhop 使用蓝牙向附近的节点表明你的存在。";
 "NSLocalNetworkUsageDescription" = "Airhop 使用局域网直接连接附近的设备，用于传输大文件（视频、大型文件）。";
 "NSCameraUsageDescription" = "Airhop 使用相机扫描联系人的二维码，以及拍摄要分享给附近节点的照片和视频。";
-"NSMicrophoneUsageDescription" = "Airhop 使用麦克风录制语音留言，并把实时语音传给附近的节点。";
+"NSMicrophoneUsageDescription" = "Airhop 使用麦克风录制语音和视频留言，并把实时语音传给附近的节点。";
 "NSPhotoLibraryUsageDescription" = "Airhop 访问你的照片图库，以便通过网状网络分享图片和视频。";
 "NSPhotoLibraryAddUsageDescription" = "当你选择保存，以及下载自己的二维码时，Airhop 会把照片和视频保存到你的照片图库。";
 "NSFaceIDUsageDescription" = "Airhop 使用 Face ID 确认是你本人：在开启应用锁时打开应用，以及在显示你的恢复短语或将你的身份迁移到新手机之前。";

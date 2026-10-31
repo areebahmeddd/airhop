@@ -173,9 +173,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "Schwarzes Brett",
   "home.features.messaging.board.line":
     "Aushänge, die bis zu sieben Tage an ein Gebiet geheftet bleiben.",
-  "home.features.messaging.voice.name": "Live-Sprache",
+  "home.features.messaging.voice.name": "Live-Sprache und -Video",
   "home.features.messaging.voice.line":
-    "Mikro gedrückt halten und mit allen in Reichweite sprechen, wie mit einem Walkie-Talkie.",
+    "Mikro gedrückt halten zum Sprechen oder live mit der Kamera senden, an alle in Reichweite.",
   "home.features.messaging.notes.name": "Sprachnachrichten",
   "home.features.messaging.notes.line":
     "Aufgenommenes Audio, schneller als eine Wegbeschreibung zu tippen.",

@@ -21,8 +21,11 @@
 //   AirhopVoice.captureError  { message }
 package org.onemindlabs.airhop.voice
 
+import android.content.Context
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaCodec
@@ -125,6 +128,14 @@ private const val DECODER_FLUSH_POLLS = 10
 private const val PLAYOUT_SLACK_MS = 200L
 private const val PLAYOUT_POLL_MS = 10L
 
+// VOICE_COMMUNICATION routes to the earpiece/speaker the way a call does and
+// ducks other apps, which is the behaviour a walkie-talkie wants.
+private fun voiceAttributes(): AudioAttributes =
+    AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        .build()
+
 class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
@@ -173,6 +184,42 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     private val playback = PlaybackBursts(MAX_QUEUED_FRAMES)
 
     private var listenerCount = 0
+
+    // ---- Audio focus ---------------------------------------------------------
+    //
+    // Transient and may-duck for the length of a burst, either way round: music
+    // dips under a talker rather than stopping, and a call taking focus is heard
+    // here. Without it nothing tells a capture that a ringing call has silenced
+    // the microphone, and the talker goes on holding a burst nobody hears.
+
+    private val audioManager: AudioManager? by lazy {
+        reactContext.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+    }
+
+    private fun requestVoiceFocus(onLoss: () -> Unit): AudioFocusRequest? {
+        val manager = audioManager ?: return null
+        val request =
+            AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                .setAudioAttributes(voiceAttributes())
+                .setOnAudioFocusChangeListener { change ->
+                    // Ducking for a notification is not a loss; a call is.
+                    if (
+                        change == AudioManager.AUDIOFOCUS_LOSS ||
+                            change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT
+                    ) {
+                        onLoss()
+                    }
+                }
+                .build()
+        // Refused only while a call holds the audio, and a burst proceeds
+        // either way: the capture's own read failures still end it.
+        return runCatching { manager.requestAudioFocus(request) }.map { request }.getOrNull()
+    }
+
+    private fun abandonVoiceFocus(request: AudioFocusRequest?) {
+        if (request == null) return
+        runCatching { audioManager?.abandonAudioFocusRequest(request) }
+    }
 
     // ---- Capture -------------------------------------------------------------
 
@@ -244,6 +291,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         if (captureGeneration.get() != generation) return
         var record: AudioRecord? = null
         var encoder: MediaCodec? = null
+        var focus: AudioFocusRequest? = null
         try {
             val minBuffer =
                 AudioRecord.getMinBufferSize(
@@ -289,6 +337,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     start()
                 }
 
+            focus = requestVoiceFocus { failCapture(generation, "Microphone interrupted") }
             record.startRecording()
             val pcm = ByteArray(PCM_BYTES_PER_FRAME)
             val info = MediaCodec.BufferInfo()
@@ -327,6 +376,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
             runCatching { record?.release() }
             runCatching { encoder?.stop() }
             runCatching { encoder?.release() }
+            abandonVoiceFocus(focus)
         }
     }
 
@@ -442,6 +492,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     private fun runPlayback(burst: PlaybackBurst) {
         var decoder: MediaCodec? = null
         var track: AudioTrack? = null
+        var focus: AudioFocusRequest? = null
         try {
             decoder =
                 MediaCodec.createDecoderByType(AAC_MIME).apply {
@@ -472,15 +523,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                 )
             track =
                 AudioTrack.Builder()
-                    .setAudioAttributes(
-                        AudioAttributes.Builder()
-                            // VOICE_COMMUNICATION routes to the earpiece/speaker the
-                            // way a call does and ducks other apps, which is the
-                            // behaviour a walkie-talkie wants.
-                            .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                            .build()
-                    )
+                    .setAudioAttributes(voiceAttributes())
                     .setAudioFormat(
                         AudioFormat.Builder()
                             .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
@@ -491,6 +534,9 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     .setBufferSizeInBytes(maxOf(minBuffer, PCM_BYTES_PER_FRAME * 4))
                     .setTransferMode(AudioTrack.MODE_STREAM)
                     .build()
+            // A loss needs no answer here: the system routes the call over the
+            // burst, and the burst's voice note still arrives.
+            focus = requestVoiceFocus {}
             track.play()
 
             val info = MediaCodec.BufferInfo()
@@ -517,6 +563,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
             runCatching { track?.release() }
             runCatching { decoder?.stop() }
             runCatching { decoder?.release() }
+            abandonVoiceFocus(focus)
             burst.frames.clear()
             burst.markReleased()
         }

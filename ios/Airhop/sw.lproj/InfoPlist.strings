@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Airhop hutumia Bluetooth kutangaza uwepo wako kwa peers walio karibu.";
 "NSLocalNetworkUsageDescription" = "Airhop hutumia mtandao wa ndani kuunganisha moja kwa moja na vifaa vilivyo karibu kwa uhamishaji mkubwa (video, faili kubwa).";
 "NSCameraUsageDescription" = "Airhop hutumia kamera kuchanganua msimbo QR wa mwasiliani, na kupiga picha na video za kushiriki na peers walio karibu.";
-"NSMicrophoneUsageDescription" = "Airhop hutumia maikrofoni kurekodi noti za sauti na kupeleka sauti ya moja kwa moja kwa peers walio karibu.";
+"NSMicrophoneUsageDescription" = "Airhop hutumia maikrofoni kurekodi noti za sauti na video na kupeleka sauti ya moja kwa moja kwa peers walio karibu.";
 "NSPhotoLibraryUsageDescription" = "Airhop hufikia ghala lako la picha ili kushiriki picha na video kupitia mesh.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop huhifadhi picha na video kwenye ghala lako unapochagua kuhifadhi, na unapopakua msimbo wako QR.";
 "NSFaceIDUsageDescription" = "Airhop hutumia Face ID kuthibitisha kuwa ni wewe: kufungua programu wakati kufuli ya programu imewashwa, na kabla ya kuonyesha kirai chako cha urejeshaji au kuhamisha utambulisho wako kwenye simu mpya.";

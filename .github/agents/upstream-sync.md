@@ -63,7 +63,7 @@ For each non-MAINTENANCE change, identify:
 - Whether Airhop already has this handled
 - Whether it conflicts with any Airhop extension (packet types `0x50+`), or
   moves bitchat's own allocation closer to them. bitchat assigns forward and is
-  at `0x2C`; `conformance.test.ts` fails when the gap closes to 16.
+  at `0x2D`; `conformance.test.ts` fails when the gap closes to 16.
 
 Use these standard mappings:
 

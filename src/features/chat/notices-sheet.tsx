@@ -18,6 +18,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { getMeshService } from "@services/mesh-service";
+import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useBoardStore } from "@store/board-store";
 import {
@@ -31,9 +32,11 @@ import UpperText from "@ui/components/upper-text";
 import {
   FontSize,
   FontWeight,
-  HIT_SLOP,
+  hitSlopFor,
   LineHeight,
+  PRESSED_OPACITY,
   Radius,
+  Shadow,
   Spacing,
   useThemeColors,
 } from "@ui/theme";
@@ -49,6 +52,19 @@ import {
 } from "react-native";
 
 const CONTENT_MAX = 512;
+
+// Drawn height of the Urgent pill and an expiry chip. They sit side by side, so
+// they grow to the touch floor in height only: sideways slop would overlap a
+// neighbour and let view order, not the finger, pick the target.
+const CONTROL_HEIGHT = 26;
+const { top: CONTROL_SLOP_V } = hitSlopFor(CONTROL_HEIGHT);
+const CONTROL_SLOP = {
+  top: CONTROL_SLOP_V,
+  bottom: CONTROL_SLOP_V,
+  left: 0,
+  right: 0,
+};
+
 // days: 0 is the permanent (∞) option, offered only in a location cell (it is a
 // standalone Nostr note with no expiry; the mesh board always expires <= 7 days).
 const EXPIRY_OPTIONS: { labelKey: TranslationKey | null; days: number }[] = [
@@ -231,8 +247,17 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
     }
   }
 
+  // Confirmed like every other delete: the tombstone goes out signed at once
+  // and nothing brings the notice back.
   function handleDelete(post: BoardPost) {
-    mesh?.deleteBoardPost(post);
+    showAlert(t("chat.notices.delete_title"), t("chat.notices.delete_body"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: () => mesh?.deleteBoardPost(post),
+      },
+    ]);
   }
 
   return (
@@ -251,13 +276,21 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
         <Text style={styles.title}>{T("chat.notices.title")}</Text>
       </View>
 
-      {/* Scope tabs: only offer "Here" when a location cell is resolved. */}
+      {/* Scope tabs: only offer "Here" when a location cell is resolved. The
+          app's segment pattern (app.tsx): roles and selected state for screen
+          readers, a hairline on the thumb because in dark `surface` sits darker
+          than this `surfaceRaised` track, and a dim when pressed. */}
       {geohash !== null && (
-        <View style={styles.tabs}>
+        <View style={styles.tabs} accessibilityRole="tablist">
           <Pressable
-            style={[styles.tab, scope === "here" && styles.tabActive]}
+            style={({ pressed }) => [
+              styles.tab,
+              scope === "here" && styles.tabActive,
+              pressed && styles.pressed,
+            ]}
             onPress={() => setScopeOverride("here")}
-            accessibilityRole="button"
+            accessibilityRole="tab"
+            accessibilityState={{ selected: scope === "here" }}
           >
             <Feather
               name="map-pin"
@@ -273,9 +306,14 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
             </Text>
           </Pressable>
           <Pressable
-            style={[styles.tab, scope === "mesh" && styles.tabActive]}
+            style={({ pressed }) => [
+              styles.tab,
+              scope === "mesh" && styles.tabActive,
+              pressed && styles.pressed,
+            ]}
             onPress={() => setScopeOverride("mesh")}
-            accessibilityRole="button"
+            accessibilityRole="tab"
+            accessibilityState={{ selected: scope === "mesh" }}
           >
             <Feather
               name="bluetooth"
@@ -310,9 +348,15 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
         <View style={styles.composerControls}>
           {scope === "mesh" && (
             <Pressable
-              style={[styles.urgentToggle, urgent && styles.urgentToggleOn]}
+              style={({ pressed }) => [
+                styles.urgentToggle,
+                urgent && styles.urgentToggleOn,
+                pressed && styles.pressed,
+              ]}
               onPress={() => setUrgent((u) => !u)}
-              accessibilityRole="button"
+              hitSlop={CONTROL_SLOP}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: urgent }}
               accessibilityLabel={T("chat.notices.mark_urgent")}
             >
               <Text style={[styles.urgentText, urgent && styles.urgentTextOn]}>
@@ -322,16 +366,27 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
           )}
 
           {/* Expiry: a connected segmented track with an accent thumb. */}
-          <View style={styles.expiryChips}>
+          <View style={styles.expiryChips} accessibilityRole="radiogroup">
             {expiryOptions.map((opt) => (
               <Pressable
                 key={opt.days}
-                style={[
+                style={({ pressed }) => [
                   styles.chip,
                   effectiveExpiryDays === opt.days && styles.chipActive,
+                  pressed && styles.pressed,
                 ]}
                 onPress={() => setExpiryDays(opt.days)}
-                accessibilityRole="button"
+                hitSlop={CONTROL_SLOP}
+                accessibilityRole="radio"
+                accessibilityState={{
+                  checked: effectiveExpiryDays === opt.days,
+                }}
+                // The glyph is not a word a screen reader can say.
+                accessibilityLabel={
+                  opt.labelKey === null
+                    ? T("chat.notices.permanent")
+                    : undefined
+                }
               >
                 <Text
                   style={[
@@ -414,7 +469,9 @@ export function NoticesSheet({ visible, onClose, channel }: Props) {
                   {mine && row.post !== undefined && (
                     <Pressable
                       onPress={() => handleDelete(row.post as BoardPost)}
-                      hitSlop={HIT_SLOP}
+                      style={({ pressed }) => pressed && styles.pressed}
+                      // A line of small text, alone at the end of its row.
+                      hitSlop={hitSlopFor(LineHeight.xs)}
                       accessibilityRole="button"
                       accessibilityLabel={t("chat.notices.delete")}
                     >
@@ -464,8 +521,17 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
       borderRadius: Radius.full,
+      // Transparent when inactive, so selecting changes the border's colour
+      // and never the control's geometry.
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: "transparent",
     },
-    tabActive: { backgroundColor: Colors.surface },
+    tabActive: {
+      backgroundColor: Colors.surface,
+      borderColor: Colors.border,
+      ...Shadow.low,
+    },
+    pressed: { opacity: PRESSED_OPACITY },
     tabText: {
       fontSize: FontSize.sm,
       fontWeight: FontWeight.medium,
@@ -485,8 +551,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       maxHeight: 120,
       padding: 0,
     },
+    // Wraps: "Urgent" and three expiry labels overflow a 360pt phone in the
+    // longer languages.
     composerControls: {
       flexDirection: "row",
+      flexWrap: "wrap",
       alignItems: "center",
       justifyContent: "space-between",
       marginTop: Spacing.md,

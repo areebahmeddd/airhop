@@ -81,7 +81,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "შენი გასაღებების შექმნა ვერ მოხერხდა",
   "onboarding.identity.failed_body":
     "ამ მოწყობილობამ Airhop-ს მათი უსაფრთხოდ შენახვის საშუალება არ მისცა. სცადე ხელახლა, ან გადატვირთე ტელეფონი და ხელახლა გახსენი Airhop.",
-  "onboarding.identity.steps_a11y": "ნაბიჯები: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "ნაბიჯები: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519":
     "იქმნება X25519 სტატიკური გასაღებების წყვილი",
   "onboarding.identity.step.ed25519":
@@ -92,8 +93,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "შენი სახელი მეშში",
   "onboarding.username.peer_id": "კვანძის ID",
-  "onboarding.username.card_a11y":
-    "შენი სახელი მეშში არის {username}. კვანძის ID {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "შენი სახელი მეშში არის {username}. კვანძის ID {peerID}. ალგორითმი: {algorithm}. შენახვა: {storage}. საჭიროა ანგარიში: {account}.",
   "onboarding.username.explanation":
     "ეს მომხმარებლის სახელი დეტერმინისტულად გამოითვლება შენი საჯარო გასაღებიდან. ის ერთი და იგივეა ყველა მოწყობილობაზე, რომელიც შენს კვანძის ID-ს ხედავს.",
   "onboarding.username.cta": "Airhop-ში შესვლა",
@@ -160,7 +161,7 @@ export const strings: Strings = {
     "პოულობს ახლომდებარე მოწყობილობებს და მათ შორის შეტყობინებებს გადასცემს. სწორედ ასე იქმნება მეში და მუშაობს ინტერნეტ-კავშირის გარეშე.",
   "onboarding.primer.location.title": "მდებარეობა",
   "onboarding.primer.location.body":
-    "გათავსებს ახლომდებარე ზონის არხებში, კვარტლიდან რეგიონამდე. Airhop არასოდეს გადევნებს თვალს და შენს ზუსტ მდებარეობას მოწყობილობიდან არ გზავნის.",
+    "გათავსებს ახლომდებარე ზონის არხებში, კვარტლიდან რეგიონამდე. Airhop არასოდეს გადევნებს თვალს, შენი ზუსტი მდებარეობა კი მოწყობილობას მხოლოდ მაშინ ტოვებს, როცა ვინმეს მდებარეობის ნიშნულს უგზავნი.",
   "onboarding.primer.notifications.title": "შეტყობინებები",
   "onboarding.primer.notifications.body":
     "მიიღე ახალი შეტყობინებების შესახებ ცნობები მაშინაც, როცა აპლიკაცია დახურულია. შეტყობინებები შენს მოწყობილობაზე იქმნება, სერვერის ჩარევის გარეშე.",
@@ -171,6 +172,9 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "ბლუთუზთან წვდომა",
   "permission.bluetooth.purpose": "იპოვო ახლომდებარე მოწყობილობები მეშში",
+  "permission.location.label": "მდებარეობაზე წვდომა",
+  "permission.location.purpose":
+    "მისწვდე მდებარეობის არხებს ბლუთუზის დიაპაზონს მიღმა",
   "permission.open_settings": "პარამეტრების გახსნა",
   "permission.not_now": "ახლა არა",
   "permission.blocked_title": "{label} გამორთულია",
@@ -232,8 +236,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "შეეხე ორჯერ და დააკავე დამატებითი პარამეტრებისთვის",
   "chat.channels.row_hint":
     "შეეხე ორჯერ და დააკავე დამატებითი პარამეტრებისთვის",
-  "chat.dm.you_prefix": "შენ:",
-  "chat.draft_prefix": "მონახაზი:",
+  "chat.draft_preview": "მონახაზი: {draft}",
   "chat.dm.none": "პირადი შეტყობინებები არ არის",
   "chat.dm.none_desc":
     "გადადი მეშის ჩანართზე და შეეხე კვანძს, რომ დაიწყო დაშიფრული პირადი მიმოწერა.",
@@ -251,6 +254,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name}-ის დამატებითი პარამეტრები",
   "chat.dm.remove_contact_short": "კონტაქტის წაშლა",
   "chat.dm.block_short": "კონტაქტის დაბლოკვა",
+  "chat.dm.signing_key_refused":
+    "ვიღაცამ {name}-ისთვის სხვა გასაღები წარადგინა და Airhop-მა უარყო. ეს ჩატი ძველ გასაღებს ინარჩუნებს.",
   "chat.dm.delete_short": "მიმოწერის წაშლა",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -333,6 +338,9 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "ამ უჯრის გახსნა ვერ მოხერხდა. სცადე ცოტა ხანში.",
   "chat.jump.title": "გადადი ადგილას",
+  "chat.jump.globe": "აირჩიე გლობუსზე",
+  "chat.jump.globe_note":
+    "დაატრიალე ნებისმიერ ადგილამდე. მუშაობს ინტერნეტის გარეშე.",
   "chat.jump.saved": "შენახული ადგილები",
   "chat.jump.nearby": "ახლოს",
   "chat.jump.anywhere":
@@ -365,6 +373,17 @@ export const strings: Strings = {
   "chat.jump.go": "გადასვლა",
   "chat.jump.how":
     "geohash-ის საპოვნელად: გახსენი მდებარეობის არხი > შეეხე მის სახელს > დააკოპირე იქიდან.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "გადაათრიე დასატრიალებლად · მოჭერი მასშტაბისთვის · შეეხე ფოკუსისთვის",
+  "chat.globe.zoom_in": "გაადიდე უჯრის ასარჩევად",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell}-ზე გადასვლა",
+  "chat.globe.larger": "უფრო დიდი უჯრა",
+  "chat.globe.smaller": "უფრო პატარა უჯრა",
+  "chat.globe.label": "გლობუსი, ცენტრში {cell}",
+  "chat.globe.adjust": "უჯრის ზომის შესაცვლელად გადაფურცლე ზემოთ ან ქვემოთ",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -439,6 +458,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "საჯარო არხი",
   "chat.thread.notices": "ამ არხის განცხადებები",
   "chat.thread.invite": "მოიწვიე ვინმე ამ არხში",
+  "chat.thread.location_off":
+    "მდებარეობა გამორთულია · წვდება მხოლოდ ახლომდებარე ადამიანებს",
   "chat.thread.not_in_range":
     "ახლოს არ არის. მიწოდება ინტერნეტით მიმდინარეობს.",
   "chat.thread.not_nearby":
@@ -467,7 +488,7 @@ export const strings: Strings = {
   "chat.thread.message": "შეტყობინება",
   "chat.thread.message_placeholder": "შეტყობინება…",
   "chat.thread.length_full": "შეტყობინება სავსეა",
-  "chat.thread.waiting_for": "{name}-ის დაბრუნებას ელოდება · {percent}%",
+  "chat.thread.waiting_for": "{name}-ის დაბრუნებას ელოდება · {percent}",
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/წმ",
   "chat.transfer.left": "დარჩა {time}",
@@ -520,7 +541,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "ეკრანის სურათი გადაიღე",
   "chat.screenshot.you_took_private":
     "ეკრანის სურათი გადაიღე · არავის შეუტყვია",
-  "chat.screenshot.heads_up": "გაითვალისწინე",
   "chat.screenshot.peer_took": "{name}-მა ეკრანის სურათი გადაიღო",
   "chat.screenshot.notified_dm":
     "{name}-ს ეცნობა, რომ ამ საუბრის ეკრანის სურათი გადაიღე.",
@@ -534,7 +554,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "{name}-ის პროფილის ნახვა",
   "chat.bubble.forwarded": "გადაგზავნილი",
   "chat.bubble.attachment": "დანართი",
-  "chat.bubble.a11y": "{sender}: {body}. დააკავე დამატებითი პარამეტრებისთვის.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "შეეხე ორჯერ და დააკავე დამატებითი პარამეტრებისთვის",
+  "chat.bubble.more_options": "დამატებითი პარამეტრები",
+  "chat.bubble.open_link": "ბმულის გახსნა: {link}",
+  "chat.bubble.status_delivered": "მიწოდებულია",
+  "chat.bubble.status_read": "წაკითხულია",
   "chat.bubble.failed_retry": "გაგზავნა ვერ მოხერხდა. შეეხე ხელახლა საცდელად.",
 
   // ---- Chats: message actions and info ----
@@ -561,6 +586,8 @@ export const strings: Strings = {
   "chat.attach.camera": "კამერა",
   "chat.attach.camera_desc": "გადაიღე ფოტო ან ვიდეო",
   "chat.attach.camera_desc_photo": "ფოტოს გადაღება",
+  "chat.attach.video": "ვიდეოს ჩაწერა",
+  "chat.attach.video_desc": "მოკლე კლიპის ჩაწერა",
   "chat.attach.library": "ფოტოების ბიბლიოთეკა",
   "chat.attach.library_desc": "აირჩიე შენი ბიბლიოთეკიდან",
   "chat.attach.document": "დოკუმენტი",
@@ -571,6 +598,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "გააგზავნე Cashu sat-ები შენი საფულიდან",
   "chat.attach.location": "მდებარეობა",
   "chat.attach.location_desc": "გააგზავნე, სად ხარ ახლა",
+  "chat.attach.live": "პირდაპირ ეთერში გასვლა",
+  "chat.attach.live_desc": "გაუზიარე კამერა ახლომყოფებს",
   "chat.attach.title": "მიმაგრება",
 
   // ---- Chat: location pin ----
@@ -630,6 +659,20 @@ export const strings: Strings = {
   "chat.attach.caption": "დაამატე წარწერა…",
   "chat.attach.send": "დანართის გაგზავნა",
   "chat.attach.generic": "დანართი",
+  "chat.video_prep.preparing": "ვიდეო მზადდება",
+  "chat.video_prep.waiting": "ვიდეო მომზადებას ელოდება",
+  "chat.video_prep.cancel": "ამ ვიდეოს მომზადების შეწყვეტა",
+  "chat.video_prep.too_large":
+    "ამ ვიდეოს გასაგზავნად საკმარისად შემცირება ვერ მოხერხდა.",
+  "chat.video_prep.unreadable": "ამ ვიდეოს გახსნა ვერ მოხერხდა. სცადე სხვა.",
+  "chat.video_prep.failed":
+    "ამ ვიდეოს მომზადებისას რაღაც შეცდომა მოხდა. სცადე ხელახლა.",
+  "chat.video_prep.interrupted":
+    "Airhop-იდან გახვედი, სანამ ვიდეო მზად იქნებოდა. სცადე ხელახლა გაგზავნა.",
+  "chat.trim.play": "გადახედვის დაკვრა",
+  "chat.trim.pause": "გადახედვის დაპაუზება",
+  "chat.trim.start": "კლიპის დასაწყისი",
+  "chat.trim.end": "კლიპის დასასრული",
   "chat.media.view_full": "ფოტოს ნახვა სრულ ეკრანზე",
   "chat.media.gone_photo": "ფოტო ამ მოწყობილობაზე არ არის",
   "chat.media.gone_video": "ვიდეო ამ მოწყობილობაზე არ არის",
@@ -644,6 +687,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "ფაილი",
   "chat.media.pause_voice": "ხმოვანი ჩანაწერის პაუზა",
   "chat.media.play_voice": "ხმოვანი ჩანაწერის დაკვრა",
+  "chat.media.pause_video": "ვიდეოს პაუზა",
+  "chat.media.play_video": "ვიდეოს დაკვრა",
   "chat.media.voice_position": "პოზიცია ხმოვან ჩანაწერში",
   "chat.media.voice_scrub": "შეეხე ზოლებს, რომ იმ წერტილზე გადახვიდე",
   "chat.media.image": "სურათი",
@@ -684,6 +729,53 @@ export const strings: Strings = {
   "chat.voice.limit_reached": "ორწუთიან ზღვარს მიაღწიე, გაუშვი გასაგზავნად",
   "chat.voice.limit_sent": "ორწუთიან ზღვარს მიაღწიე, ჩანაწერი გაიგზავნა",
   "chat.voice.stop_send": "ჩაწერის შეწყვეტა და გაგზავნა",
+  "chat.video_note.hold": "ვიდეოჩანაწერისთვის ხანგრძლივად დააჭირეთ",
+  "chat.video_note.a11y_toggle":
+    "ჩაწერის დასაწყებად ან შესაჩერებლად ორჯერ შეეხეთ.",
+  "chat.video_note.not_recorded": "ვიდეოჩანაწერი არ ჩაიწერა",
+  "chat.video_note.limit_sent": "დრო ამოიწურა, ვიდეოჩანაწერი გაიგზავნა",
+  "chat.video_note.a11y": "ვიდეოჩანაწერი, ხმისთვის ორჯერ შეეხეთ",
+  "chat.video_note.sound_on": "ხმის ჩართვა",
+  "chat.video_note.sound_off": "ხმის გამორთვა",
+  "chat.live_video.preview": "პირდაპირი ვიდეო",
+  "chat.live_video.badge": "ეთერში",
+  "chat.live_video.reconnecting": "ხელახლა დაკავშირება…",
+  "chat.live_video.a11y": "{name} პირდაპირ ეთერშია. ორჯერ შეეხე სანახავად.",
+  "chat.live_video.live_from": "{name} პირდაპირ ეთერშია",
+  "chat.live_video.sound": "ხმა",
+  "chat.live_video.ended": "ეთერი დასრულდა",
+  "chat.live_video.title": "პირდაპირი ვიდეო",
+  "chat.live_video.go_live": "ეთერში გასვლა",
+  "chat.live_video.end": "დასრულება",
+  "chat.live_video.end_title": "დავასრულოთ პირდაპირი ვიდეო?",
+  "chat.live_video.end_body":
+    "დასრულებისას ჩანაწერი ამ ჩატში რჩება. გაუქმებისას ყველა მაყურებელს ეთხოვება მისი წაშლა.",
+  "chat.live_video.discard": "გაუქმება",
+  "chat.live_video.keep": "გაგრძელება",
+  "chat.live_video.audience_room":
+    "ბლუთუზის დიაპაზონში მყოფ ყველას შეუძლია ყურება.",
+  "chat.live_video.audience_dm": "მხოლოდ {name}-ს შეუძლია ყურება.",
+  "chat.live_video.nobody": "ახლა დიაპაზონში საყურებლად არავინაა.",
+  "chat.live_video.quality_low": "დაბალი",
+  "chat.live_video.quality_medium": "საშუალო",
+  "chat.live_video.quality_high": "მაღალი",
+  "chat.live_video.quality_low_hint":
+    "აღწევს რამდენიმე ნახტომით დაშორებულ ადამიანებს",
+  "chat.live_video.quality_medium_hint":
+    "ერთი ან ორი ნახტომით დაშორებული ადამიანებისთვის",
+  "chat.live_video.quality_high_hint": "შენს გვერდით მყოფი ადამიანებისთვის",
+  "chat.live_video.signal_good": "ასწრებს",
+  "chat.live_video.signal_weak": "ჩამორჩება",
+  "chat.live_video.signal_poor":
+    "ვიდეოსთვის ზედმეტად ნელია, იგზავნება მხოლოდ ხმა",
+  "chat.live_video.mic": "მიკროფონი",
+  "chat.live_video.no_sound": "ხმის გარეშე",
+  "chat.live_video.flip": "კამერის შეცვლა",
+  "chat.live_video.camera_failed": "კამერის გახსნა ვერ მოხერხდა",
+  "chat.live_video.camera_lost": "კამერა გაჩერდა, ამიტომ ეთერი დასრულდა",
+  "chat.live_video.failed": "ეთერში გასვლა ვერ მოხერხდა",
+  "chat.live_video.kept_here":
+    "ფაილად გასაგზავნად ზედმეტად გრძელია. ყველა მაყურებელს საკუთარი ასლი რჩება.",
   "chat.voice.lift_lock": "გადაასრიალე ზემოთ ხელის აშვებით ჩასაწერად",
   "chat.voice.live_speaking": "{name} საუბრობს",
   "chat.voice.live_ended": "დასრულდა",
@@ -699,6 +791,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "მიკროფონთან წვდომა",
   "chat.perm.mic_live_purpose": "ესაუბრო ახლომდებარე ადამიანებს",
   "chat.perm.mic_note_purpose": "ჩაწერო ხმოვანი ჩანაწერი",
+  "chat.perm.video_note_purpose": "ვიდეოჩანაწერის გასაკეთებლად",
+  "chat.perm.live_video_purpose": "პირდაპირ ეთერში გასასვლელად",
   "chat.perm.recording_stopped": "ჩაწერა შეწყდა",
   "chat.perm.record_failed":
     "ჩაწერის დაწყება ვერ მოხერხდა. შეამოწმე მიკროფონის ნებართვები.",
@@ -828,6 +922,10 @@ export const strings: Strings = {
   "chat.notices.post": "განცხადების გამოქვეყნება",
   "chat.notices.post_short": "გამოქვეყნება",
   "chat.notices.delete": "განცხადების წაშლა",
+  "chat.notices.delete_title": "წავშალოთ ეს განცხადება?",
+  "chat.notices.delete_body":
+    "ყველას, ვისაც ის აქვს, მისი წაშლა ეთხოვება. ამის გაუქმება შეუძლებელია.",
+  "chat.notices.permanent": "მუდმივი",
   "chat.notices.fades_soon": "მალე ქრება",
   "chat.notices.1_day": "1 დღე",
   "chat.notices.3_days": "3 დღე",
@@ -896,6 +994,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name}-ს გადაგზავნა შეუძლებელია",
   "chat.forward.too_long_for_dm":
     "პირდაპირი შეტყობინებისთვის ძალიან გრძელია. ამის ნაცვლად გადაუგზავნეთ არხს ან ჯგუფს.",
+  "chat.forward.too_long_for_public":
+    "საჯარო ოთახისთვის ძალიან გრძელია და იქ სპამად დაიმალება. სანაცვლოდ ჯგუფში გადააგზავნეთ.",
   "chat.forward.channels": "არხები",
   "chat.forward.groups": "ჯგუფები",
   "chat.forward.locations": "მდებარეობები",
@@ -904,6 +1004,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "არ გადაიგზავნა",
   "chat.forward.app_row_body":
     "ეს ხაზი Airhop-ისგანაა და არა ადამიანისგან, ამიტომ გადასაგზავნი არაფერია.",
+  "chat.forward.has_ecash":
+    "ეს ecash-ს შეიცავს და ფულს ის დაიტოვებს, ვინც მას პირველი მიიღებს, ამიტომ არ გადაიგზავნება.",
+  "chat.forward.public_title": "გადავგზავნოთ {name}-ში?",
+  "chat.forward.public_mesh_body":
+    "იქ მას ახლოს მყოფი ნებისმიერი წაიკითხავს და უკან ვერ წაიღებ.",
+  "chat.forward.public_geo_body":
+    "იქ მას ამ ზონაში ნებისმიერი წაიკითხავს, მათ შორის საჯარო ინტერნეტ-რელეებზე, და უკან ვერ წაიღებ.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "მეში ეშვება…",
@@ -921,7 +1028,7 @@ export const strings: Strings = {
     "მდებარეობა გამორთულია · Android-ს ის კვანძების საპოვნელად სჭირდება",
   "mesh.banner.paused": "მეში შეჩერებულია · შენ არ ხარ",
   "mesh.banner.location_off":
-    "მდებარეობა გამორთულია · მდებარეობის არხები მიუწვდომელია",
+    "მდებარეობა გამორთულია · მდებარეობის არხები მხოლოდ ახლომდებარეებს წვდება",
   "mesh.banner.battery_saver": "ბატარეის დაზოგვა · სკანირება უფრო იშვიათად",
   "mesh.banner.wipe_incomplete":
     "წაშლა დაუსრულებელია · შესაძლოა მონაცემები დარჩა, ხელახლა გახსნა კვლავ ცდის",
@@ -953,7 +1060,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "ხსნის ამ ტელეფონის ფონური აქტივობის პარამეტრებს",
   "mesh.banner.hint.tor_settings": "ხსნის Airhop-ის Tor-ის პარამეტრებს",
+  "mesh.banner.hint.enable_location":
+    "ითხოვს მდებარეობაზე წვდომას, ან განმარტავს, როგორ დაუშვა ის პარამეტრებში",
   "mesh.banner.dismiss": "დახურვა: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "სამუდამოდ მალავს ამ შენიშვნას",
 
   // ---- Mesh: radar ----
@@ -1187,6 +1297,8 @@ export const strings: Strings = {
     "{mint} გამოსცემს {units}-ს. მისი გასაღებები ამ მოწყობილობაზე ინახება, ამიტომ მისი ტოკენების შემოწმება ახლა ინტერნეტის გარეშეც შეიძლება.",
   "wallet.mint.remove_plain":
     "წავშალოთ {mint} შენი საფულიდან? მისი შენახული გასაღებებიც წაიშლება, ამიტომ მისი ტოკენების ოფლაინში შემოწმება აღარ იქნება შესაძლებელი.",
+  "wallet.mint.remove_holdings":
+    "{mint}-ს აქვს:\n{holdings}\nმისი წაშლა ამ ყველაფერს ამ მოწყობილობიდან წაშლის. ჯერ გაიტანე ან გააგზავნე.",
   "wallet.mint.title": "ზარაფხანები",
   "wallet.mint.none_desc":
     "ზარაფხანა გამოსცემს და ანაღდებს შენს ecash-ს. დაამატე, რომ Lightning-ით შეავსო ან მისი ტოკენები მიიღო.",
@@ -1538,6 +1650,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "უკვე დახარჯულია",
   "wallet.err.change_pending": "გადახდილია, ხურდა მოლოდინშია",
   "wallet.svc.mint_unreachable": "ზარაფხანას ვერ მივწვდით.",
+  "wallet.svc.mint_http_error": "ზარაფხანამ შეცდომით უპასუხა (HTTP {status}).",
   "wallet.svc.tor_ios": "iOS-ზე ზარაფხანასთან მოთხოვნები Tor-ით არ გადის.",
   "wallet.svc.tor_ios_body":
     "iOS-ზე Tor მხოლოდ Nostr-ს ფარავს, ამიტომ ეს მოთხოვნა ზარაფხანას ღია ქსელით მიაღწევდა და შენს IP-ს ამ ecash-თან დააკავშირებდა. ჩართე {setting} პარამეტრებში, ან ჯერ გამორთე Tor. მეშით ecash-ის გაგზავნა და მიღება მაინც მუშაობს.",
@@ -1648,6 +1761,10 @@ export const strings: Strings = {
     "შენი მონეტები ოფლაინში ზუსტად {amount} {unit}-ს ვერ ქმნიან.",
   "wallet.svc.inexact_detail":
     "ყველაზე პატარა ტოკენი, რომელსაც გააგზავნი, არის {spend} {unit}. ოფლაინში ხურდა არ არსებობს, ამიტომ დამატებული {extra} {unit} მიმღებს რჩება.",
+  "wallet.svc.spend_changed":
+    "ეს გაგზავნა ახლა {spend} {unit} დაჯდება, იმაზე მეტი, რაზეც დათანხმდი.",
+  "wallet.svc.spend_changed_body":
+    "შენი მონეტები შეიცვალა, სანამ ფიქრობდი. არაფერი გაგზავნილა. სცადე ხელახლა, რომ ახალი თანხა ნახო.",
   "wallet.svc.no_single_mint":
     "არცერთ ცალკეულ ზარაფხანას არ აქვს {amount} {unit}. სხვადასხვა ზარაფხანის ecash ერთ ტოკენში ვერ გაერთიანდება: ჯერ გააერთიანე ერთ ზარაფხანაში, ან გააგზავნე ცალკეული თანხებით.",
   "wallet.svc.have_tried_send":
@@ -1677,6 +1794,10 @@ export const strings: Strings = {
     "სხვა არაფერი გაგზავნილა. მონეტები დაკავებულია, სანამ ზარაფხანა შედეგს დაადასტურებს. თუ გადახდა შესრულდა, ჩაკეტილი ტოკენი გამოჩნდება აქტივობაში გადასაცემად. თუ არა, მონეტები დაბრუნდება.",
   "wallet.svc.send_spent_by_swap":
     "ეს მონეტები შენს საფულეში გადაიცვალა, სანამ ტოკენს მიიღებდნენ, ამიტომ მისი მიღება აღარ შეიძლება. თანხა შენს ბალანსშია.",
+  "wallet.svc.payment_in_doubt_body":
+    "მონეტები დაკავებულია, სანამ ზარაფხანა შედეგს დაადასტურებს, რაც შემდეგი განახლებისას ხელახლა შემოწმდება. მანამდე ეს ინვოისი ხელახლა არ გადაიხადო.",
+  "wallet.svc.mint_removed":
+    "ეს ზარაფხანა წაშალე, ამიტომ ამას აღარ ვადევნებთ თვალს.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "გადამოწმებულია QR-ით",
@@ -1719,7 +1840,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "ამ bitchat-ის კოდს ვადა გაუვიდა. სთხოვე, ხელახლა გახსნას თავისი QR.",
   "contacts.scan.tampered":
-    "ეს QR კოდი არასწორია: მისი კვანძის ID გასაღებებს არ ემთხვევა. შესაძლოა შეცვლილია.",
+    "ეს QR კოდი არასწორია: მისი გასაღებები შემოწმებას ვერ გადის. შესაძლოა შეცვლილია.",
   "contacts.scan.key_conflict":
     "მისთვის უკვე სხვა გასაღები გაქვს, ამიტომ არაფერი შეცვლილა. მის ჩასანაცვლებლად მისი კოდი პირისპირ დაასკანერე.",
   "contacts.scan.already_added": "უკვე შენს კონტაქტებშია",
@@ -1742,7 +1863,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "ეს QR სხვას ეკუთვნის. სთხოვე {name}-ს, თავისი კოდი აჩვენოს.",
   "contacts.verify.tampered_body":
-    "ეს QR შეცვლილს ჰგავს: მისი ID გასაღებს არ ემთხვევა.",
+    "ეს QR შეცვლილს ჰგავს: მისი გასაღებები შემოწმებას ვერ გადის.",
   "contacts.verify.choose_title": "როგორ გინდა შემოწმება?",
   "contacts.verify.choose_body":
     "ორივე ადასტურებს, რომ ამ ტელეფონზე არსებული გასაღებები ნამდვილად {name}-ისაა.",
@@ -1859,6 +1980,8 @@ export const strings: Strings = {
   "settings.diag.share": "დიაგნოსტიკის გაზიარება",
   "settings.diag.share_desc":
     "ტრანსპორტისა და პარამეტრების მდგომარეობა ხარვეზის ანგარიშისთვის. არასოდეს შეტყობინებები, სახელები ან გასაღებები.",
+  "settings.diag.share_fallback":
+    "გაზიარება ვერ გაიხსნა. სანაცვლოდ ანგარიში დაკოპირდა.",
   "settings.section.storage_desc": "მოხმარება და ქეში",
   "settings.section.appearance": "გარეგნობა",
   "settings.section.appearance_desc": "თემა, შრიფტი და ენა",
@@ -1904,6 +2027,9 @@ export const strings: Strings = {
   "settings.general.show_media": "მედიის ავტომატური ჩვენება",
   "settings.general.show_media_desc":
     "ფოტოები და ვიდეოები ჩნდება მიმოწერაში, ან შეხებამდე დამალული რჩება",
+  "settings.general.spam_filter": "სპამის ფილტრი",
+  "settings.general.spam_filter_desc":
+    "მალავს საჯარო შეტყობინებებს მათგან, ვინც ძალიან სწრაფად წერს, იმეორებს თავს ან ბმულებით ავსებს ჩატს. პირადი შეტყობინებები არასოდეს იფილტრება.",
   "settings.general.reset": "პარამეტრების საწყისზე დაბრუნება",
   "settings.general.media_retention": "მედიის შენახვა",
   "settings.general.media_retention_desc":
@@ -1920,7 +2046,7 @@ export const strings: Strings = {
     "აბრუნებს პარამეტრებს საწყის მდგომარეობაში, შენს ვინაობას, შეტყობინებებს, კონტაქტებსა და საფულეს კი ხელუხლებლად ტოვებს",
   "settings.general.reset_title": "დავაბრუნოთ პარამეტრები საწყისზე?",
   "settings.general.reset_body":
-    "პარამეტრები საწყისს უბრუნდება, მათ შორის გარეგნობა, ენა, შეტყობინებები, გაგზავნის გაუქმება და კავშირი (ინტერნეტი, Tor, კარიბჭე, ხიდი, რელეები). Airhop-ის დაბლოკვა, მედიის შენახვის ვადა და შენი სტატუსი ისე რჩება, როგორც დააყენე. შენი ვინაობა, შეტყობინებები, კონტაქტები და საფულე ხელუხლებელი რჩება.",
+    "პარამეტრები საწყისს უბრუნდება, მათ შორის გარეგნობა, ენა, შეტყობინებები, გაგზავნის გაუქმება და კავშირი (კარიბჭე, მეშ-ხიდი, რელეები). Airhop-ის დაბლოკვა, მედიის შენახვის ვადა, ინტერნეტის გადამრთველი, Tor და მისი ხიდები და შენი სტატუსი ისე რჩება, როგორც დააყენე. შენი ვინაობა, შეტყობინებები, კონტაქტები და საფულე ხელუხლებელი რჩება.",
   "settings.general.reset_confirm": "დაბრუნება",
 
   // ---- Settings: privacy and security ----
@@ -2055,6 +2181,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "გამოვრთოთ პირდაპირი ხმა?",
   "settings.conn.live_voice_off_body":
     "მიკროფონის დაკავებისას სანაცვლოდ ხმოვანი ჩანაწერი იწერება. ის იგზავნება, როცა ხელს გაუშვებ, და სანამ არ ჩართავენ, არავინ გაიგონებს.",
+  "settings.conn.live_video": "პირდაპირი ვიდეო",
+  "settings.conn.live_video_desc":
+    "გაუზიარე კამერა ახლომყოფებს და უყურე მათსას",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-ით მიმართვა",
   "settings.conn.tor_desc":
@@ -2069,6 +2198,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Tor ჯერ არ დაკავშირებულა. ის ჩართული რჩება და ცდას აგრძელებს; მეშის ჩანართი გეტყვის, როდის დაიწყო მიმართვა, ან თუ ეს ქსელი მას ბლოკავს.",
   "settings.conn.tor_failed": "Tor ვერ გაეშვა. სცადე ხელახლა ცოტა ხანში.",
+  "settings.conn.tor_bad_bridges":
+    "Tor-მა ვერ გამოიყენა ეს ხიდის ხაზები. შეამოწმე ისინი ან აირჩიე სხვა კავშირი.",
+  "settings.conn.tor_port_busy":
+    "პორტს, რომელიც Tor-ს სჭირდება, სხვა აპლიკაცია იყენებს, ხშირად სხვა აპლიკაცია, რომელშიც Tor მუშაობს. დახურე ის და შემდეგ სცადე ხელახლა.",
   "settings.tor.status": "Tor-ის სტატუსი",
   "settings.tor.connection": "კავშირი",
   "settings.tor.mode_off": "პირდაპირი",
@@ -2080,7 +2213,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "მალავს, რომ Tor-ს იყენებ. Snowflake-ზე სწრაფია, თუმცა ეს ხიდები საჯაროა და ზოგი ქსელი ბლოკავს.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "მალავს Tor-ის გამოყენებას ჩვეულებრივი ვებგვერდის მონახულების იმიტაციით. სხვებზე რთულად დასაბლოკია.",
   "settings.tor.mode_custom": "საკუთარი ხიდები",
@@ -2215,6 +2348,8 @@ export const strings: Strings = {
   "settings.language.pending": "შემდეგი გახსნისას",
   "settings.language.pending_a11y":
     "{value}, ამოქმედდება Airhop-ის შემდეგი გახსნისას",
+  "settings.language.phone": "ტელეფონის ენა",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "ხელახლა გახსნა",
   "settings.language.rtl_title": "დასასრულებლად ხელახლა გახსენი Airhop",
   "settings.language.rtl_body":
@@ -2231,7 +2366,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "მეში შეჩერებულია, არ სკანერებს და არ აცხადებს",
   "settings.status.invisible": "უხილავი",
   "settings.status.invisible_desc":
-    "დამალულია ბლუთუზის სკანირებისგან, მაგრამ ტელეფონები, რომლებსაც უკავშირდები, მაინც გხედავენ",
+    "ბლუთუზით თავს არ აცხადებს, მაგრამ ტელეფონები, რომლებსაც ბლუთუზით ან Wi-Fi-ით უკავშირდება, მაინც გხედავენ",
   "settings.status.title": "სტატუსი",
   "settings.status.set_a11y": "სტატუსის დაყენება {value}-ზე",
   "settings.status.edit": "სტატუსის რედაქტირება",
@@ -2518,6 +2653,11 @@ export const plurals: Plurals = {
     one: "{count} შეტყობინების გადაგზავნა",
     other: "{count} შეტყობინების გადაგზავნა",
   },
+  "chat.forward.too_many_public": {
+    one: "საჯარო ოთახი ერთი ადამიანისგან ზედიზედ მხოლოდ {count} შეტყობინებას აჩვენებს, ამიტომ დანარჩენი დაიკარგება. ერთდროულად ნაკლები გადააგზავნე.",
+    other:
+      "საჯარო ოთახი ერთი ადამიანისგან ზედიზედ მხოლოდ {count} შეტყობინებას აჩვენებს, ამიტომ დანარჩენი დაიკარგება. ერთდროულად ნაკლები გადააგზავნე.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} საუბრობს",
     other: "{count} საუბრობს",
@@ -2601,14 +2741,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint}-ს აქვს {balance} {unit} {count} მონეტაში. მისი წაშლა ამ ბალანსს სამუდამოდ შლის ამ მოწყობილობიდან, და სარეზერვო ასლი არ არსებობს. ჯერ გაიტანე ან გააგზავნე ბალანსი.",
-    other:
-      "{mint}-ს აქვს {balance} {unit} {count} მონეტაში. მისი წაშლა ამ ბალანსს სამუდამოდ შლის ამ მოწყობილობიდან, და სარეზერვო ასლი არ არსებობს. ჯერ გაიტანე ან გააგზავნე ბალანსი.",
-  },
   "wallet.mint.split_across": {
     one: "ბალანსი {count} ზარაფხანაშია გაბნეული. გადაიტანე ერთში.",
     other: "ბალანსი {count} ზარაფხანაშია გაბნეული. გადაიტანე ერთში.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{count} გადახდა {mint}-ში ჯერ არ დასრულებულა. ზარაფხანის წაშლით მასზე უარს ამბობ, იმ ყველაფერთან ერთად, რაც მას ჯერ კიდევ შეეძლო დაებრუნებინა.",
+    other:
+      "{count} გადახდა {mint}-ში ჯერ არ დასრულებულა. ზარაფხანის წაშლით მათზე უარს ამბობ, იმ ყველაფერთან ერთად, რაც მათ ჯერ კიდევ შეეძლოთ დაებრუნებინათ.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2622,6 +2762,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "{mints}-იდან აღდგა {count} დაუხარჯავი მონეტა.",
     other: "{mints}-იდან აღდგა {count} დაუხარჯავი მონეტა.",
+  },
+  "wallet.backup.already_held": {
+    one: "ნაპოვნი {count} მონეტა უკვე ამ საფულეშია, ამიტომ ხელახლა არ ჩაითვალა.",
+    other:
+      "ნაპოვნი {count} მონეტა უკვე ამ საფულეშია, ამიტომ ხელახლა არ ჩაითვალა.",
   },
   "wallet.backup.already_spent": {
     one: "მოიძებნა {count} მონეტა, მაგრამ ის უკვე დახარჯულია, ამიტომ არაფერი ჩაირიცხა. ეს ნორმალურია: ყოველი მონეტა, რომელიც ოდესმე დახარჯე, რჩება ზარაფხანის ჩანაწერებში.",

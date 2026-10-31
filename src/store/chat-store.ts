@@ -105,6 +105,22 @@ export interface ChatMessage {
     accuracyM?: number;
     takenAtMs: number;
   };
+  // A live stream someone is sending, rendered as a live picture until it
+  // ends. Then the field goes and `attachment` holds the recording: this
+  // phone's own reconstruction, replaced by the sender's file if one arrives.
+  // Only ever on a received row; a row still carrying it after a restart is
+  // stale and is dropped (see live-video-receiver.ts).
+  liveVideo?: {
+    // The stream ID, 16 lowercase hex.
+    streamID: string;
+    state: "live" | "reconnecting";
+    startedAtMs: number;
+    width: number;
+    height: number;
+    // Whether START said the stream carries sound; a silent one offers no
+    // sound control.
+    hasAudio: boolean;
+  };
   // A Ring alert, tagged with a bell in message-bubble.tsx. `status` covers
   // its full lifecycle: "sent" until acknowledged, "read" once it is.
   ring?: true;
@@ -242,7 +258,10 @@ interface ChatState {
   // bookkeeping (and the record of which cell we met in) has no one left to
   // serve.
   clearGeoCardExchange: (pubkey: string) => void;
-  addMessage: (msg: ChatMessage) => void;
+  // True when the thread holds the row afterwards, new or already there. False
+  // when it is refused as older than the thread's last clear, or trimmed on
+  // arrival, so an inbound path knows not to recreate the conversation.
+  addMessage: (msg: ChatMessage) => boolean;
   // Advance an outgoing message's delivery status (never downgrades). `atMs`
   // stamps the delivered/read time for the Message info sheet.
   setMessageStatus: (
@@ -257,6 +276,14 @@ interface ChatState {
   // Remove a single message. Used by Undo Send to pull an outgoing message back
   // during its brief hold window, before it is ever transmitted.
   removeMessage: (channel: string, id: string) => void;
+  // Move a live stream's row on: a new state, or its recording in place of
+  // the picture (`liveVideo` undefined and `attachment` set). Touches only a
+  // row that is, or was, a live stream.
+  setLiveVideoRow: (
+    channel: string,
+    id: string,
+    row: Pick<ChatMessage, "liveVideo" | "attachment">,
+  ) => void;
   // Rewrite a row the app itself wrote once its outcome is known (a refused
   // ring reads "Rang, snoozed"). Only rows carrying a systemKey qualify: those
   // are the only words that belong to Airhop rather than to a person.
@@ -532,7 +559,7 @@ export const useChatStore = create<ChatState>()(
           msg.timestampMs <
             Math.min(clearedAt, Date.now()) - CLEARED_CLOCK_SKEW_MS
         ) {
-          return;
+          return false;
         }
         // Decide this before the set() runs: was it already present? Observers
         // must fire exactly once for a new message and never for a duplicate
@@ -613,6 +640,7 @@ export const useChatStore = create<ChatState>()(
         if (stored && !isDuplicate && !msg.isMine && !msg.ring) {
           for (const fn of inboundListeners) fn(msg);
         }
+        return stored;
       },
 
       setMessageStatus(channel, id, status, atMs) {
@@ -690,6 +718,24 @@ export const useChatStore = create<ChatState>()(
           if (existing === undefined) return state;
           const next = existing.filter((m) => m.id !== id);
           if (next.length === existing.length) return state;
+          return { messages: { ...state.messages, [channel]: next } };
+        });
+      },
+
+      setLiveVideoRow(channel, id, row) {
+        set((state) => {
+          const existing = state.messages[channel];
+          if (existing === undefined) return state;
+          let changed = false;
+          const next = existing.map((m) => {
+            if (m.id !== id || m.isMine) return m;
+            if (m.liveVideo === undefined && m.attachment?.type !== "video") {
+              return m;
+            }
+            changed = true;
+            return { ...m, ...row };
+          });
+          if (!changed) return state;
           return { messages: { ...state.messages, [channel]: next } };
         });
       },

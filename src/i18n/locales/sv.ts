@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "Dina nycklar kunde inte skapas",
   "onboarding.identity.failed_body":
     "Enheten lät inte Airhop lagra dem säkert. Försök igen, eller starta om telefonen och öppna Airhop på nytt.",
-  "onboarding.identity.steps_a11y": "Steg: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Steg: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "Skapar statiskt X25519-nyckelpar",
   "onboarding.identity.step.ed25519": "Skapar Ed25519-signeringsnyckelpar",
   "onboarding.identity.step.keychain": "Lagrar nycklar i systemets nyckelring",
@@ -89,8 +90,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Ditt namn på meshen",
   "onboarding.username.peer_id": "Peer-ID",
-  "onboarding.username.card_a11y":
-    "Ditt namn på meshen är {username}. Peer-ID {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Ditt namn på meshen är {username}. Peer-ID {peerID}. Algoritm: {algorithm}. Lagring: {storage}. Konto krävs: {account}.",
   "onboarding.username.explanation":
     "Användarnamnet härleds deterministiskt från din publika nyckel. Det blir detsamma på varje enhet som ser ditt peer-ID.",
   "onboarding.username.cta": "Gå in i Airhop",
@@ -158,7 +159,7 @@ export const strings: Strings = {
     "Hittar enheter i närheten och skickar meddelanden vidare mellan dem. Det är så meshen bildas, och den fungerar utan internet.",
   "onboarding.primer.location.title": "Plats",
   "onboarding.primer.location.body":
-    "Placerar dig i områdeskanaler i närheten, från ett kvarter till en region. Airhop spårar dig aldrig och skickar aldrig din exakta plats från enheten.",
+    "Placerar dig i områdeskanaler i närheten, från ett kvarter till en region. Airhop spårar dig aldrig, och din exakta plats lämnar bara enheten när du skickar din plats till någon.",
   "onboarding.primer.notifications.title": "Aviseringar",
   "onboarding.primer.notifications.body":
     "Få aviseringar om nya meddelanden även när appen är stängd. Aviseringarna skapas lokalt på enheten, utan att någon server är inblandad.",
@@ -169,6 +170,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "Bluetooth-åtkomst",
   "permission.bluetooth.purpose": "hitta enheter i närheten över meshen",
+  "permission.location.label": "Platsåtkomst",
+  "permission.location.purpose": "nå platskanaler bortom Bluetooth-räckvidden",
   "permission.open_settings": "Öppna Inställningar",
   "permission.not_now": "Inte nu",
   "permission.blocked_title": "{label} är av",
@@ -229,8 +232,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "inom räckhåll",
   "chat.dm.row_hint": "Tryck två gånger och håll kvar för fler val",
   "chat.channels.row_hint": "Tryck två gånger och håll kvar för fler val",
-  "chat.dm.you_prefix": "Du:",
-  "chat.draft_prefix": "Utkast:",
+  "chat.draft_preview": "Utkast: {draft}",
   "chat.dm.none": "Inga direktmeddelanden",
   "chat.dm.none_desc":
     "Gå till Mesh-fliken och tryck på en peer för att starta ett krypterat direktmeddelande.",
@@ -248,6 +250,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Fler val för {name}",
   "chat.dm.remove_contact_short": "Ta bort kontakt",
   "chat.dm.block_short": "Blockera kontakt",
+  "chat.dm.signing_key_refused":
+    "Någon visade en annan nyckel för {name}, och Airhop avvisade den. Den här chatten behåller nyckeln den redan hade.",
   "chat.dm.delete_short": "Radera chatten",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -330,6 +334,9 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Cellen kunde inte öppnas. Försök igen om en stund.",
   "chat.jump.title": "Gå till en plats",
+  "chat.jump.globe": "Välj på jordgloben",
+  "chat.jump.globe_note":
+    "Snurra till vilken plats som helst. Fungerar offline.",
   "chat.jump.saved": "Sparade platser",
   "chat.jump.nearby": "I närheten",
   "chat.jump.anywhere":
@@ -361,6 +368,17 @@ export const strings: Strings = {
   "chat.jump.go": "Gå",
   "chat.jump.how":
     "Så hittar du en geohash: öppna en platskanal > tryck på dess namn > kopiera den därifrån.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Dra för att snurra · nyp för att zooma · tryck för att centrera",
+  "chat.globe.zoom_in": "Zooma in för att välja en cell",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Gå till {cell}",
+  "chat.globe.larger": "Större cell",
+  "chat.globe.smaller": "Mindre cell",
+  "chat.globe.label": "Jordglob, centrerad på {cell}",
+  "chat.globe.adjust": "Svep uppåt eller nedåt för att ändra cellens storlek",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -435,6 +453,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Öppen kanal",
   "chat.thread.notices": "Anslag för den här kanalen",
   "chat.thread.invite": "Bjud in någon till den här kanalen",
+  "chat.thread.location_off": "Plats av · når bara personer i närheten",
   "chat.thread.not_in_range": "Inte i närheten. Levereras över internet.",
   "chat.thread.not_nearby":
     "Inte i närheten. Vi levererar när hen är tillbaka inom räckhåll eller online.",
@@ -463,7 +482,7 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "Meddelande…",
   "chat.thread.length_full": "Meddelandet är fullt",
   "chat.thread.waiting_for":
-    "Väntar på att {name} ska komma tillbaka · {percent} %",
+    "Väntar på att {name} ska komma tillbaka · {percent}",
   "chat.transfer.progress": "{done} av {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} kvar",
@@ -516,7 +535,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Du tog en skärmbild",
   "chat.screenshot.you_took_private":
     "Du tog en skärmbild · ingen fick veta det",
-  "chat.screenshot.heads_up": "Obs",
   "chat.screenshot.peer_took": "{name} tog en skärmbild",
   "chat.screenshot.notified_dm":
     "{name} fick veta att du tog en skärmbild av det här samtalet.",
@@ -530,7 +548,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Visa profilen för {name}",
   "chat.bubble.forwarded": "Vidarebefordrat",
   "chat.bubble.attachment": "bilaga",
-  "chat.bubble.a11y": "{sender}: {body}. Håll kvar för fler val.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "Tryck två gånger och håll kvar för fler val",
+  "chat.bubble.more_options": "Fler val",
+  "chat.bubble.open_link": "Öppna {link}",
+  "chat.bubble.status_delivered": "Levererat",
+  "chat.bubble.status_read": "Läst",
   "chat.bubble.failed_retry":
     "Sändningen misslyckades. Tryck för att försöka igen.",
 
@@ -558,6 +581,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Ta ett foto eller en video",
   "chat.attach.camera_desc_photo": "Ta ett foto",
+  "chat.attach.video": "Spela in video",
+  "chat.attach.video_desc": "Spela in ett kort klipp",
   "chat.attach.library": "Fotobibliotek",
   "chat.attach.library_desc": "Välj ur ditt bibliotek",
   "chat.attach.document": "Dokument",
@@ -568,6 +593,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Skicka Cashu-sats ur din plånbok",
   "chat.attach.location": "Plats",
   "chat.attach.location_desc": "Skicka var du är just nu",
+  "chat.attach.live": "Sänd live",
+  "chat.attach.live_desc": "Strömma din kamera till folk i närheten",
   "chat.attach.title": "Bifoga",
 
   // ---- Chat: location pin ----
@@ -626,6 +653,20 @@ export const strings: Strings = {
   "chat.attach.caption": "Lägg till en bildtext…",
   "chat.attach.send": "Skicka bilagan",
   "chat.attach.generic": "Bilaga",
+  "chat.video_prep.preparing": "Förbereder video",
+  "chat.video_prep.waiting": "Väntar på att förbereda video",
+  "chat.video_prep.cancel": "Sluta förbereda den här videon",
+  "chat.video_prep.too_large":
+    "Videon kunde inte göras tillräckligt liten för att skickas.",
+  "chat.video_prep.unreadable": "Videon kunde inte öppnas. Prova en annan.",
+  "chat.video_prep.failed":
+    "Något gick fel när videon förbereddes. Försök igen.",
+  "chat.video_prep.interrupted":
+    "Du lämnade Airhop innan videon var klar. Försök skicka den igen.",
+  "chat.trim.play": "Spela upp förhandsvisning",
+  "chat.trim.pause": "Pausa förhandsvisning",
+  "chat.trim.start": "Klippets början",
+  "chat.trim.end": "Klippets slut",
   "chat.media.view_full": "Visa fotot i helskärm",
   "chat.media.gone_photo": "Fotot finns inte på den här enheten",
   "chat.media.gone_video": "Videon finns inte på den här enheten",
@@ -641,6 +682,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "den där filen",
   "chat.media.pause_voice": "Pausa röstmeddelandet",
   "chat.media.play_voice": "Spela upp röstmeddelandet",
+  "chat.media.pause_video": "Pausa videon",
+  "chat.media.play_video": "Spela upp videon",
   "chat.media.voice_position": "Position i röstmeddelandet",
   "chat.media.voice_scrub":
     "Tryck längs staplarna för att hoppa till den punkten",
@@ -684,6 +727,49 @@ export const strings: Strings = {
   "chat.voice.limit_sent":
     "Gränsen på två minuter är nådd, meddelandet skickat",
   "chat.voice.stop_send": "Stoppa inspelningen och skicka",
+  "chat.video_note.hold": "Håll in för att spela in en videoanteckning",
+  "chat.video_note.a11y_toggle":
+    "Tryck två gånger för att starta eller stoppa inspelningen.",
+  "chat.video_note.not_recorded": "Videoanteckningen spelades inte in",
+  "chat.video_note.limit_sent": "Tiden är slut, videoanteckningen skickad",
+  "chat.video_note.a11y": "Videoanteckning, tryck två gånger för ljud",
+  "chat.video_note.sound_on": "Slå på ljudet",
+  "chat.video_note.sound_off": "Stäng av ljudet",
+  "chat.live_video.preview": "Livevideo",
+  "chat.live_video.badge": "Live",
+  "chat.live_video.reconnecting": "Återansluter…",
+  "chat.live_video.a11y": "{name} sänder live. Dubbeltryck för att titta.",
+  "chat.live_video.live_from": "{name} sänder live",
+  "chat.live_video.sound": "Ljud",
+  "chat.live_video.ended": "Sändningen har avslutats",
+  "chat.live_video.title": "Livevideo",
+  "chat.live_video.go_live": "Sänd live",
+  "chat.live_video.end": "Avsluta",
+  "chat.live_video.end_title": "Avsluta livevideon?",
+  "chat.live_video.end_body":
+    "Avslutar du stannar inspelningen i den här chatten. Slänger du ombeds alla som tittar att radera den.",
+  "chat.live_video.discard": "Släng",
+  "chat.live_video.keep": "Fortsätt sända",
+  "chat.live_video.audience_room": "Alla inom Bluetooth-räckvidd kan titta.",
+  "chat.live_video.audience_dm": "Bara {name} kan titta.",
+  "chat.live_video.nobody": "Ingen är inom räckhåll för att titta just nu.",
+  "chat.live_video.quality_low": "Låg",
+  "chat.live_video.quality_medium": "Mellan",
+  "chat.live_video.quality_high": "Hög",
+  "chat.live_video.quality_low_hint": "Når folk flera hopp bort",
+  "chat.live_video.quality_medium_hint": "För folk ett eller två hopp bort",
+  "chat.live_video.quality_high_hint": "För folk precis bredvid dig",
+  "chat.live_video.signal_good": "Hänger med",
+  "chat.live_video.signal_weak": "Halkar efter",
+  "chat.live_video.signal_poor": "För långsamt för video, bara ljud skickas",
+  "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.no_sound": "Inget ljud",
+  "chat.live_video.flip": "Byt kamera",
+  "chat.live_video.camera_failed": "Kunde inte öppna kameran",
+  "chat.live_video.camera_lost": "Kameran stannade, så sändningen avslutades",
+  "chat.live_video.failed": "Kunde inte sända live",
+  "chat.live_video.kept_here":
+    "För lång för att skickas som fil. Alla som tittade behåller sin egen kopia.",
   "chat.voice.lift_lock": "Dra uppåt för att spela in handsfree",
   "chat.voice.live_speaking": "{name} talar",
   "chat.voice.live_ended": "Avslutad",
@@ -699,6 +785,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Mikrofonåtkomst",
   "chat.perm.mic_live_purpose": "prata med folk i närheten",
   "chat.perm.mic_note_purpose": "spela in ett röstmeddelande",
+  "chat.perm.video_note_purpose": "spela in en videoanteckning",
+  "chat.perm.live_video_purpose": "sända live",
   "chat.perm.recording_stopped": "Inspelningen stoppades",
   "chat.perm.record_failed":
     "Inspelningen kunde inte starta. Kontrollera mikrofonbehörigheterna.",
@@ -832,6 +920,10 @@ export const strings: Strings = {
   "chat.notices.post": "Sätt upp anslag",
   "chat.notices.post_short": "Sätt upp",
   "chat.notices.delete": "Radera anslaget",
+  "chat.notices.delete_title": "Radera det här anslaget?",
+  "chat.notices.delete_body":
+    "Alla som har det ombeds ta bort det. Det går inte att ångra.",
+  "chat.notices.permanent": "Permanent",
   "chat.notices.fades_soon": "bleknar snart",
   "chat.notices.1_day": "1 dag",
   "chat.notices.3_days": "3 dagar",
@@ -899,6 +991,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "Går inte att vidarebefordra till {name}",
   "chat.forward.too_long_for_dm":
     "För långt för ett direktmeddelande. Vidarebefordra det till en kanal eller grupp i stället.",
+  "chat.forward.too_long_for_public":
+    "För långt för ett offentligt rum, där det skulle döljas som spam. Vidarebefordra det till en grupp i stället.",
   "chat.forward.channels": "Kanaler",
   "chat.forward.groups": "Grupper",
   "chat.forward.locations": "Platser",
@@ -907,6 +1001,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "Vidarebefordrades inte",
   "chat.forward.app_row_body":
     "Den här raden kommer från Airhop, inte från en person, så det finns inget att vidarebefordra.",
+  "chat.forward.has_ecash":
+    "Det här innehåller ecash, och den som hämtar det först behåller pengarna, så det vidarebefordras inte.",
+  "chat.forward.public_title": "Vidarebefordra till {name}?",
+  "chat.forward.public_mesh_body":
+    "Alla i närheten kan läsa det där, och det går inte att ta tillbaka.",
+  "chat.forward.public_geo_body":
+    "Alla i det här området kan läsa det där, även via offentliga internetreläer, och det går inte att ta tillbaka.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Startar meshen…",
@@ -921,7 +1022,7 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "Plats av · Android behöver den för att hitta peers",
   "mesh.banner.paused": "Meshen pausad · du är borta",
-  "mesh.banner.location_off": "Plats av · platskanaler är otillgängliga",
+  "mesh.banner.location_off": "Plats av · platskanaler når bara närheten",
   "mesh.banner.battery_saver": "Batterisparläge · skannar mer sällan",
   "mesh.banner.wipe_incomplete":
     "Rensningen är ofullständig · en del data kan finnas kvar, nytt försök när appen öppnas igen",
@@ -951,7 +1052,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "Öppnar telefonens inställningar för bakgrundsaktivitet",
   "mesh.banner.hint.tor_settings": "Öppnar Tor-inställningarna för Airhop",
+  "mesh.banner.hint.enable_location":
+    "Ber om platsåtkomst, eller förklarar hur du tillåter den i Inställningar",
   "mesh.banner.dismiss": "Avfärda: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Döljer den här noteringen för gott",
 
   // ---- Mesh: radar ----
@@ -1181,6 +1285,8 @@ export const strings: Strings = {
     "{mint} ger ut {units}. Dess nycklar finns på enheten, så token därifrån går nu att kontrollera även utan internet.",
   "wallet.mint.remove_plain":
     "Ta bort {mint} från din plånbok? Dess sparade nycklar följer med, så token därifrån går inte längre att kontrollera offline.",
+  "wallet.mint.remove_holdings":
+    "{mint} håller:\n{holdings}\nAtt ta bort den raderar allt detta från enheten. Ta ut eller skicka det först.",
   "wallet.mint.title": "Mintar",
   "wallet.mint.none_desc":
     "En mint ger ut och löser in din ecash. Lägg till en för att fylla på via Lightning eller ta emot token från den.",
@@ -1534,6 +1640,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Redan förbrukat",
   "wallet.err.change_pending": "Betalt, växel väntar",
   "wallet.svc.mint_unreachable": "Minten kunde inte nås.",
+  "wallet.svc.mint_http_error": "Minten svarade med ett fel (HTTP {status}).",
   "wallet.svc.tor_ios": "Mint-förfrågningar går inte genom Tor på iOS.",
   "wallet.svc.tor_ios_body":
     "Tor på iOS täcker bara Nostr, så förfrågan skulle nå minten över det öppna nätet och knyta din IP till den här ecashen. Slå på {setting} i Inställningar, eller stäng av Tor först. Att skicka och ta emot ecash över meshen fungerar ändå.",
@@ -1638,6 +1745,10 @@ export const strings: Strings = {
     "Dina mynt kan inte bilda exakt {amount} {unit} offline.",
   "wallet.svc.inexact_detail":
     "Det minsta tokenet du kan skicka är {spend} {unit}. Offline finns ingen växel, så de extra {extra} {unit} går till mottagaren.",
+  "wallet.svc.spend_changed":
+    "Den här betalningen skulle nu kosta {spend} {unit}, mer än du godkände.",
+  "wallet.svc.spend_changed_body":
+    "Dina mynt ändrades medan du bestämde dig. Inget skickades. Försök igen för att se det nya beloppet.",
   "wallet.svc.no_single_mint":
     "Ingen enskild mint håller {amount} {unit}. Ecash från olika mintar går inte att slå ihop till ett token: slå ihop hos en mint först, eller skicka i separata belopp.",
   "wallet.svc.have_tried_send":
@@ -1667,6 +1778,10 @@ export const strings: Strings = {
     "Inget annat skickades. Mynten hålls kvar tills minten bekräftar utfallet. Gick betalningen igenom visas det låsta tokenet under Aktivitet så att du kan lämna över det. Annars kommer mynten tillbaka.",
   "wallet.svc.send_spent_by_swap":
     "De här mynten växlades tillbaka till din plånbok innan tokenet hämtades, så det kan inte längre hämtas. Beloppet finns i ditt saldo.",
+  "wallet.svc.payment_in_doubt_body":
+    "Mynten hålls kvar tills minten bekräftar utfallet, vilket kontrolleras igen vid nästa uppdatering. Betala inte den här fakturan igen innan dess.",
+  "wallet.svc.mint_removed":
+    "Du tog bort den här minten, så det här följs inte längre.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verifierad via QR",
@@ -1709,7 +1824,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Den bitchat-koden har gått ut. Be dem öppna sin QR igen.",
   "contacts.scan.tampered":
-    "QR-koden är ogiltig: dess peer-ID stämmer inte med nycklarna. Den kan ha manipulerats.",
+    "QR-koden är ogiltig: dess nycklar klarar inte kontrollen. Den kan ha manipulerats.",
   "contacts.scan.key_conflict":
     "Du har redan en annan nyckel för personen, så inget ändrades. Skanna personens kod när ni träffas för att ersätta den.",
   "contacts.scan.already_added": "Finns redan bland dina kontakter",
@@ -1732,7 +1847,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "Den här QR-koden tillhör någon annan. Be {name} visa sin egen kod.",
   "contacts.verify.tampered_body":
-    "QR-koden ser manipulerad ut: dess ID stämmer inte med nyckeln.",
+    "QR-koden ser manipulerad ut: dess nycklar klarar inte kontrollen.",
   "contacts.verify.choose_title": "Hur vill du kontrollera?",
   "contacts.verify.choose_body":
     "Båda bekräftar att nycklarna på den här telefonen verkligen tillhör {name}.",
@@ -1848,6 +1963,8 @@ export const strings: Strings = {
   "settings.diag.share": "Dela diagnostik",
   "settings.diag.share_desc":
     "Anslutnings- och inställningsdetaljer för en felrapport. Meddelanden, namn och nycklar utesluts.",
+  "settings.diag.share_fallback":
+    "Det gick inte att öppna delning. Rapporten kopierades i stället.",
   "settings.section.storage_desc": "Användning och cache",
   "settings.section.appearance": "Utseende",
   "settings.section.appearance_desc": "Tema, teckensnitt och språk",
@@ -1892,6 +2009,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Visa media automatiskt",
   "settings.general.show_media_desc":
     "Foton och videor visas i chatten, eller ligger kvar bakom en tryckning",
+  "settings.general.spam_filter": "Spamfilter",
+  "settings.general.spam_filter_desc":
+    "Döljer offentliga meddelanden från personer som skriver för snabbt, upprepar sig eller översvämmar med länkar. Privata meddelanden filtreras aldrig.",
   "settings.general.reset": "Återställ inställningar",
   "settings.general.media_retention": "Behåll media i",
   "settings.general.media_retention_desc":
@@ -1908,7 +2028,7 @@ export const strings: Strings = {
     "Sätter tillbaka inställningar till sina standardvärden, medan identitet, meddelanden, kontakter och plånbok lämnas orörda",
   "settings.general.reset_title": "Återställa inställningarna?",
   "settings.general.reset_body":
-    "Inställningar går tillbaka till sina standardvärden, bland annat utseende, språk, aviseringar, ångra sändning och uppkoppling (internet, Tor, gateway, brygga, reläer). Applås, hur länge media sparas och din status förblir som du har ställt in dem. Din identitet, dina meddelanden, dina kontakter och din plånbok är orörda.",
+    "Inställningar går tillbaka till sina standardvärden, bland annat utseende, språk, aviseringar, ångra sändning och uppkoppling (gateway, meshbrygga, reläer). Applås, hur länge media sparas, internetbrytaren, Tor och dess bryggor samt din status förblir som du har ställt in dem. Din identitet, dina meddelanden, dina kontakter och din plånbok är orörda.",
   "settings.general.reset_confirm": "Återställ",
 
   // ---- Settings: privacy and security ----
@@ -2043,6 +2163,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Stänga av direktröst?",
   "settings.conn.live_voice_off_body":
     "Att hålla in mikrofonen spelar in ett röstmeddelande i stället. Det skickas när du släpper, och ingen hör det förrän de spelar upp det.",
+  "settings.conn.live_video": "Livevideo",
+  "settings.conn.live_video_desc":
+    "Strömma din kamera till folk i närheten och se deras",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-routing",
   "settings.conn.tor_desc":
@@ -2059,6 +2182,10 @@ export const strings: Strings = {
     "Tor har inte anslutit än. Det förblir påslaget och fortsätter försöka; Mesh-fliken säger till när trafiken dirigeras om, eller om nätverket blockerar det.",
   "settings.conn.tor_failed":
     "Det gick inte att starta Tor. Försök igen om en stund.",
+  "settings.conn.tor_bad_bridges":
+    "Tor kunde inte använda de här bryggraderna. Kontrollera dem eller välj en annan anslutning.",
+  "settings.conn.tor_port_busy":
+    "En annan app använder porten som Tor behöver, ofta en annan app som kör Tor. Stäng den och försök sedan igen.",
   "settings.tor.status": "Tor-status",
   "settings.tor.connection": "Anslutning",
   "settings.tor.mode_off": "Direkt",
@@ -2070,7 +2197,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Döljer att du använder Tor. Snabbare än Snowflake, men dessa bryggor är offentliga och vissa nätverk blockerar dem.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Döljer att du använder Tor genom att likna ett vanligt webbplatsbesök. Svårare att blockera än de andra.",
   "settings.tor.mode_custom": "Egna bryggor",
@@ -2204,6 +2331,8 @@ export const strings: Strings = {
   "settings.language.pending": "Vid nästa öppning",
   "settings.language.pending_a11y":
     "{value}, tillämpas nästa gång du öppnar Airhop",
+  "settings.language.phone": "Telefonens språk",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Öppna igen nu",
   "settings.language.rtl_title": "Öppna Airhop igen för att slutföra",
   "settings.language.rtl_body":
@@ -2220,7 +2349,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Meshen pausad, skannar eller annonserar inte",
   "settings.status.invisible": "Osynlig",
   "settings.status.invisible_desc":
-    "Dold för Bluetooth-skanningar, syns fortfarande för telefoner du ansluter till",
+    "Annonseras inte över Bluetooth, men telefoner som enheten är ansluten till via Bluetooth eller Wi-Fi ser dig fortfarande",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Ställ in statusen på {value}",
   "settings.status.edit": "Ändra status",
@@ -2506,6 +2635,11 @@ export const plurals: Plurals = {
     one: "Vidarebefordra {count} meddelande",
     other: "Vidarebefordra {count} meddelanden",
   },
+  "chat.forward.too_many_public": {
+    one: "Ett offentligt rum visar bara {count} meddelande i rad från en och samma person, så resten skulle gå förlorat. Vidarebefordra färre åt gången.",
+    other:
+      "Ett offentligt rum visar bara {count} meddelanden i rad från en och samma person, så resten skulle gå förlorat. Vidarebefordra färre åt gången.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} talar",
     other: "{count} talar",
@@ -2589,14 +2723,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar det saldot från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
-    other:
-      "{mint} håller {balance} {unit} i {count} mynt. Att ta bort den raderar det saldot från enheten för gott, och det finns ingen säkerhetskopia. Ta ut eller skicka saldot först.",
-  },
   "wallet.mint.split_across": {
     one: "Saldot är uppdelat på {count} mint. Flytta det till en.",
     other: "Saldot är uppdelat på {count} mintar. Flytta det till en.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{count} betalning hos {mint} har inte slutförts än. Att ta bort minten överger den, med allt den fortfarande skulle föra tillbaka.",
+    other:
+      "{count} betalningar hos {mint} har inte slutförts än. Att ta bort minten överger dem, med allt de fortfarande skulle föra tillbaka.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2610,6 +2744,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "Återställde {count} oförbrukat mynt från {mints}.",
     other: "Återställde {count} oförbrukade mynt från {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "{count} hittat mynt finns redan i den här plånboken, så det räknades inte igen.",
+    other:
+      "{count} hittade mynt finns redan i den här plånboken, så de räknades inte igen.",
   },
   "wallet.backup.already_spent": {
     one: "{count} mynt hittades men var redan förbrukat, så inget krediterades. Det är normalt: varje mynt du någonsin har gjort av med finns kvar i mintens register.",

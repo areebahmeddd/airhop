@@ -441,6 +441,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         // would inherit the long deadline instead of proving itself again.
         everSpoke.remove(linkID)
         preparedWrites.remove(linkID)
+        centralMtu.remove(linkID)
         try {
             centralLinks.remove(linkID)?.let {
                 it.disconnect()
@@ -463,8 +464,9 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         )
     }
 
-    // Everything the monitor knows is per session. The panic wipe clears it
-    // along with the rest, so a blocked device is not remembered across one.
+    // Cleared only when the module goes away (invalidate). A stop, Away or a
+    // panic wipe in the same runtime keeps the blocklist, and each block still
+    // expires on its own.
     private fun resetDeviceMonitoring() {
         lastHeardAt.clear()
         everSpoke.clear()
@@ -802,8 +804,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         resolvePendingEnable(false)
         stopRssiPolling()
         stopScanCycle()
-        // Blocklists and silence timers are per session. A module going away
-        // takes them with it, so a wiped or restarted app starts clean.
+        // Blocklists and silence timers live as long as the module, so a
+        // restarted app starts clean.
         stopDeviceMonitor()
         resetDeviceMonitoring()
         preparedWrites.clear()
@@ -1104,24 +1106,6 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // Kept while the service is down, so a later start opens on the current count.
-    @ReactMethod
-    fun setBackgroundPeerCount(count: Int, promise: Promise) {
-        AirhopForegroundService.setPeerCount(count)
-        promise.resolve(null)
-    }
-
-    @ReactMethod
-    fun openBackgroundNoticeSettings(promise: Promise) {
-        try {
-            AirhopForegroundService.openChannelSettings(reactContext)
-            promise.resolve(true)
-        } catch (e: Exception) {
-            Log.w(TAG, "Could not open notification settings: ${e.message}")
-            promise.resolve(false)
-        }
-    }
-
     // Periodic RSSI polling. onReadRemoteRssi only fires in response to an
     // explicit readRemoteRssi() call, so without this poller the rssiUpdated
     // event could never be emitted and signal strength stayed unavailable to
@@ -1356,12 +1340,19 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
+    // Also drops every link this side dialled, pending dials included, as
+    // bitchat-ios does when it stops. Otherwise an Away phone, or one off screen
+    // with background running off, stays connected to its neighbours, and after
+    // a panic wipe the new identity announces down the connection that carried
+    // the old one's LEAVE. Duty cycling and power changes go through
+    // stopScanCycle and keep their links; Invisible only stops advertising.
     @ReactMethod
     fun stopScanning(promise: Promise) {
         try {
             stopRssiPolling()
             stopScanCycle()
             stopDeviceMonitor()
+            for (linkID in centralLinks.keys.toList()) disconnectLink(linkID)
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("BLE_ERROR", "Failed to stop scanning: ${e.message}", e)
@@ -1685,6 +1676,12 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     private val scanCallback =
         object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
+                // A result already queued on the main looper when stopScanning
+                // ran would otherwise dial after its central-link teardown and
+                // leave an Away or wiped phone connected. The flag stays true
+                // across duty-cycle bursts; a power-mode change lowers it only
+                // while it restarts the scan.
+                if (!scanningRequested) return
                 val device = result.device
                 val linkID = "c:${device.address}"
                 if (centralLinks.containsKey(linkID)) return

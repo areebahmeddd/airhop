@@ -110,6 +110,8 @@ import {
   primeTorRoutingOnStartup,
   revalidateTorRouting,
 } from "@services/tor-routing";
+import { turnOnLocation } from "@services/turn-on-location";
+import { discardStaleVideoWork } from "@services/video-prepare";
 import {
   initWalletService,
   publishOwnNutzapInfo,
@@ -169,6 +171,7 @@ import {
   type ChannelFilter,
   type DmFilter,
 } from "@utils/chat-filter";
+import { isMeshLink } from "@utils/deep-link";
 import { amountParts } from "@utils/format";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
@@ -362,6 +365,11 @@ async function startMeshWithPermissions(
     // socket and the Privacy screen reports Tor as off, which is true.
   }
   initMeshService(identity, nickname);
+  // A new mesh assumes the foreground, and the mount effect's AppState report
+  // reached no mesh. On an iOS relaunch into the background (Bluetooth state
+  // restoration) that would run the radios and the location heartbeat as if on
+  // screen until the first AppState change.
+  getMeshService()?.setAppForeground(AppState.currentState !== "background");
   applyStartupPresence();
   // Re-syncs the native auto-start flag on every real launch, in case a
   // toggle's own write was ever missed.
@@ -448,7 +456,10 @@ function startMeshDependents(): void {
   // Arrivals become notifications, bell entries and the badge. Idempotent:
   // a boot start may already have started it for this mesh.
   const nickname = peerIDToUsername(mesh.peerID);
-  startNotificationPipeline(() => nickname);
+  startNotificationPipeline(
+    () => nickname,
+    (channel) => getMeshService()?.mentionSuffixFor(channel) ?? null,
+  );
   startBackgroundNotice();
 
   // A network coming back nudges relays, Tor, queued mail and the wallet.
@@ -567,7 +578,7 @@ function startMeshDependents(): void {
     const granted =
       (await hasLocationPermission()) || (await requestLocationPermission());
     // Reflect the grant on the Mesh banner: without it the location channels
-    // are unavailable, and saying so beats a silently empty channel list.
+    // reach only people nearby, and saying so beats a quietly small room.
     useMeshStateStore.getState().setLocationGranted(granted);
     if (granted) getMeshService()?.refreshGeoChannels();
     await requestNotificationPermission();
@@ -617,6 +628,12 @@ async function handleBannerAction(
     case "open-app-settings":
       await Linking.openSettings().catch(() => undefined);
       break;
+
+    // Shared with the banner inside a location channel, so the two cannot
+    // disagree. It retries the radios itself on a grant.
+    case "enable-location":
+      await turnOnLocation();
+      return;
 
     case "open-background-limits": {
       // Walk the ladder for this device and stop at the first screen that
@@ -749,7 +766,9 @@ function AppContent(): React.JSX.Element {
               },
             },
           ]
-        : undefined,
+        : // Passed rather than left to the alert's default, which would say
+          // OK in the language on screen under a title in the target one.
+          [{ text: inTarget("common.ok") }],
     );
   }, [languagePreference, wantedLanguage]);
 
@@ -1107,13 +1126,15 @@ function AppContent(): React.JSX.Element {
   }, [isInThread, isSearching]);
 
   // Retire attachments past their retention window: at launch here, and on
-  // each return to the app once due (see services/media-retention).
+  // each return to the app once due (see services/media-retention). Half-shrunk
+  // videos a dead process left go too.
   //
   // Runs unconditionally, before any identity check: expired media belongs to
   // nobody, and a launch that ends at the onboarding screen is exactly the
   // launch after a wipe, where leftover files matter most.
   useEffect(() => {
     sweepMediaIfDue();
+    discardStaleVideoWork();
   }, []);
 
   // Settle messages the last process left mid-send, once per JS runtime.
@@ -1362,9 +1383,15 @@ function AppContent(): React.JSX.Element {
   //
   // `cashu:` links follow the same rule into the Wallet: Receive opens filled
   // in, and nothing is redeemed until Receive is tapped.
+  //
+  // airhop://mesh, the home screen widget's tap, only opens the Mesh tab.
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     const handle = (url: string | null): void => {
+      if (url !== null && isMeshLink(url)) {
+        navigateToTabRef.current("mesh");
+        return;
+      }
       const token = cashuLinkToken(url);
       if (url !== null && token !== null) {
         if (isOwnHandoffEcho(url)) {
@@ -1621,6 +1648,10 @@ function AppContent(): React.JSX.Element {
               }}
             />
           )}
+          {/* Erase here destroys the identity, so the app lock guards it as it
+              guards the main tabs: this screen can also open mid-session, over
+              an app the lock already covers. */}
+          <LockScreen />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     );
@@ -2248,6 +2279,11 @@ function AppContent(): React.JSX.Element {
                       // Before the first byte is destroyed, so the wiping
                       // screen covers the whole of it.
                       onWipeStart={() => setWipeInProgress(true)}
+                      // The launch's own question, asked now: the mesh is down
+                      // and the "sent" marker stands until it is answered.
+                      onTransferUnconfirmed={() =>
+                        setTransferRecovery("sender")
+                      }
                       onResumeMesh={() => {
                         // Starting the mesh restores only Invisible; keep an
                         // earlier Away.
@@ -2611,7 +2647,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     bellBadge: {
       position: "absolute",
       top: -4,
-      right: -4,
+      end: -4,
       backgroundColor: Colors.accent,
       borderRadius: Radius.full,
       minWidth: 16,
@@ -2688,7 +2724,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     tabDot: {
       position: "absolute",
       top: -1,
-      right: -5,
+      end: -5,
       width: 10,
       height: 10,
       borderRadius: Radius.full,
@@ -2699,7 +2735,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     tabBadge: {
       position: "absolute",
       top: -4,
-      right: -8,
+      end: -8,
       minWidth: 16,
       height: 16,
       borderRadius: Radius.full,
@@ -2722,7 +2758,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     segBadge: {
       position: "absolute",
       top: -5,
-      right: -6,
+      end: -6,
       minWidth: 16,
       height: 16,
       borderRadius: Radius.full,

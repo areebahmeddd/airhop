@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">မက်ရှ်ကွန်ရက်</string>
   <string name="mesh_channel_description">Airhop မက်ရှ်ကို နောက်ခံတွင် ဆက်လက်လည်ပတ်စေသည်</string>
   <string name="mesh_notification_title">Airhop မက်ရှ် လည်ပတ်နေသည်</string>
@@ -7,4 +7,15 @@
   <plurals name="mesh_notification_peers">
     <item quantity="other">အကွာအဝေးအတွင်း လုပ်ဖော်ကိုင်ဖက် %1$s ဦး</item>
   </plurals>
+  <string name="mesh_bluetooth_off">ဘလူးတုသ် ပိတ်ထားသည် · မရှာဖွေပါ</string>
+  <string name="widget_label">အကွာအဝေးအတွင်း လုပ်ဖော်ကိုင်ဖက်များ</string>
+  <string name="widget_description">အကွာအဝေးအတွင်း လုပ်ဖော်ကိုင်ဖက်များနှင့် ရေတွက်ခဲ့သည့် အချိန်</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="other">အကွာအဝေးအတွင်း လုပ်ဖော်ကိုင်ဖက်</item>
+  </plurals>
+  <string name="widget_nobody">အကွာအဝေးအတွင်း မည်သူမျှ မရှိ</string>
+  <string name="widget_as_of">%1$s အထိ</string>
+  <string name="widget_paused">မက်ရှ် ရပ်ထားသည်</string>
+  <string name="widget_unset">Airhop ကို ဖွင့်ပါ</string>
+  <string name="widget_stale">ပြန်လည်ကြည့်ရှုရန် Airhop ကို ဖွင့်ပါ</string>
 </resources>

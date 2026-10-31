@@ -47,6 +47,7 @@ export function maxPayloadBytes(type: PacketType): number {
     case PacketType.BOARD_POST:
     case PacketType.PREKEY_BUNDLE:
     case PacketType.VOICE_FRAME:
+    case PacketType.VIDEO_FRAME:
     case PacketType.NOISE_HANDSHAKE:
     case PacketType.PING:
     case PacketType.PONG:

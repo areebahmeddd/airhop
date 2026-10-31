@@ -353,14 +353,14 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// handleCapturedBuffer can tell that apart from a talker who has gone
   /// quiet, so the burst has to be ended from here instead.
   ///
-  /// Deliberately only the failures JS cannot see for itself. A call, Siri,
-  /// or a switch to another app all leave AppState, and message-thread.tsx
-  /// already ends the hold on that, by the same route a user's release
-  /// takes, which also delivers the voice note. Observing interruptions here
-  /// too would race that better ending and sometimes win, turning a note that
-  /// would have been sent into one that is dropped. What is left is hardware
-  /// going away while the app stays in the foreground, which nothing above
-  /// this layer can observe.
+  /// A call, Siri, or a switch to another app usually leave AppState, and
+  /// message-thread.tsx ends the hold on that by the same route a user's
+  /// release takes, which also delivers the voice note. An interruption is
+  /// therefore acted on only after a grace, and only if that ending has not
+  /// already come: a call ringing in as a banner interrupts the session with
+  /// the app still active, and nothing else would end the burst. Otherwise
+  /// these are hardware going away while the app stays in the foreground,
+  /// which nothing above this layer can observe.
   ///
   /// Each observer is scoped to this engine and this session rather than to
   /// every notification of its kind, and carries the generation of the
@@ -397,7 +397,26 @@ final class AirhopVoiceModule: RCTEventEmitter {
         else { return }
         self?.failCapture(generation, "Microphone disconnected")
       })
+
+    // The session was taken, most often by a call: the microphone stops with
+    // no error. failCapture is a no-op once a release has stopped the capture.
+    captureObservers.append(
+      center.addObserver(
+        forName: AVAudioSession.interruptionNotification,
+        object: session,
+        queue: .main
+      ) { [weak self] note in
+        guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+          AVAudioSession.InterruptionType(rawValue: raw) == .began
+        else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.interruptionGrace) {
+          self?.failCapture(generation, "Microphone interrupted")
+        }
+      })
   }
+
+  /// Time for AppState to end the hold first, which keeps the voice note.
+  private static let interruptionGrace: TimeInterval = 1
 
   /// A capture that died on its own rather than one the user stopped.
   ///

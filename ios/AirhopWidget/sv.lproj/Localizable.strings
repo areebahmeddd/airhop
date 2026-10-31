@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-sv/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetooth av · skannar inte";
+"widget_label" = "Peers inom räckhåll";
+"widget_description" = "Peers inom räckhåll och när de räknades";
+"widget_nobody" = "ingen inom räckhåll";
+"widget_as_of" = "kl. %1$@";
+"widget_paused" = "Meshen pausad";
+"widget_unset" = "Öppna Airhop";
+"widget_stale" = "Öppna Airhop för att uppdatera";

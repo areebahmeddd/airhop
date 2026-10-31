@@ -212,14 +212,30 @@ describe("location channel flood limit", () => {
     );
   }
 
-  function chat(n: number, pubkey = "b".repeat(64)): Event {
+  // Unrelated text per message, so only the rate limits are in play and not the
+  // spam filter's near-copy check.
+  function distinctText(n: number): string {
+    let seed = n + 1;
+    let out = "";
+    for (let i = 0; i < 24; i++) {
+      seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648;
+      out += String.fromCharCode(97 + (seed % 26));
+      if (i % 6 === 5) out += " ";
+    }
+    return out.trim();
+  }
+
+  // `ageSeconds` dates a history event in the past. A real replay is a
+  // conversation spread over time, and the spam filter judges each message at
+  // the time it was sent.
+  function chat(n: number, pubkey = "b".repeat(64), ageSeconds = 0): Event {
     return {
       id: n.toString(16).padStart(64, "0"),
       pubkey,
-      created_at: Math.floor(Date.now() / 1000),
+      created_at: Math.floor(Date.now() / 1000) - ageSeconds,
       kind: 20000,
       tags: [],
-      content: `message ${n}`,
+      content: distinctText(n),
       sig: "",
     };
   }
@@ -236,7 +252,9 @@ describe("location channel flood limit", () => {
     const room = subs.find((s) => s.kinds.includes(20000));
     expect(room).toBeDefined();
 
-    for (let i = 0; i < 20; i++) room!.onEvent(chat(i));
+    for (let i = 0; i < 20; i++) {
+      room!.onEvent(chat(i, undefined, (20 - i) * 60));
+    }
     expect(useChatStore.getState().messages["#city"]).toHaveLength(20);
 
     room!.onEose?.();
@@ -256,12 +274,33 @@ describe("location channel flood limit", () => {
       // Relays still connecting over Tor, well past the grace.
       jest.setSystemTime(Date.now() + 30_000);
 
-      for (let i = 0; i < 20; i++) room!.onEvent(chat(i));
+      for (let i = 0; i < 20; i++) {
+        room!.onEvent(chat(i, undefined, (20 - i) * 60));
+      }
       expect(useChatStore.getState().messages["#city"]).toHaveLength(20);
       service.stop();
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  // bitchat hides a public message over its spam filter's 1200 characters a
+  // minute, so Airhop does too, and the same text from a third identity.
+  it("hides spam the way bitchat's filter does", async () => {
+    const subs: Subscription[] = [];
+    const service = newService(subs);
+    await service.refresh();
+    const room = subs.find((s) => s.kinds.includes(20000))!;
+    room.onEose?.();
+
+    room.onEvent({ ...chat(1), content: distinctText(1).repeat(60) });
+    const copy = "free sats for everyone at the corner shop";
+    for (const [i, pubkey] of ["c", "d", "e", "f"].entries()) {
+      room.onEvent({ ...chat(10 + i, pubkey.repeat(64)), content: copy });
+    }
+    const shown = useChatStore.getState().messages["#city"] ?? [];
+    expect(shown.map((m) => m.text)).toEqual([copy, copy, copy]);
+    service.stop();
   });
 
   it("limits a flood ferried by a gateway carrier", async () => {

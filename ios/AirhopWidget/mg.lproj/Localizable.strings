@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-mg/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Vonoina ny Bluetooth · tsy mikaroka";
+"widget_label" = "Teboka ao anatin'ny fetra";
+"widget_description" = "Teboka ao anatin'ny fetra, sy ny fotoana nanisana azy";
+"widget_nobody" = "tsy misy ao anatin'ny fetra";
+"widget_as_of" = "tamin'ny %1$@";
+"widget_paused" = "Miato ny harato";
+"widget_unset" = "Sokafy ny Airhop";
+"widget_stale" = "Sokafy ny Airhop hanavaozana";

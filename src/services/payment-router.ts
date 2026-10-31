@@ -400,8 +400,10 @@ async function payAsToken(params: {
     memo: params.memo,
     counterparty: params.peerID,
     // Only what the user was shown: the pool can change while a dialog is
-    // open, and an exact quote gone inexact would overpay unasked.
+    // open, and an exact quote gone inexact, or an inexact one gone larger,
+    // would overpay unasked.
     allowInexact: !quote.exact,
+    ...(quote.exact ? {} : { maxSpend: quote.spend }),
   });
 
   const route = deliverTokenToPeer({

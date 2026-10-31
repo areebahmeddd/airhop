@@ -15,17 +15,13 @@
 
 import { useT, type TranslationKey } from "@i18n";
 import { syncBootStart } from "@services/boot-sync";
-import {
-  locationPermissionState,
-  requestLocationPermission,
-} from "@services/location-service";
-import { getMeshService } from "@services/mesh-service";
+import { turnOnLocation } from "@services/turn-on-location";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import { HIT_SLOP, useThemeColors } from "@ui/theme";
 import React, { useState } from "react";
-import { Linking, Platform, Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import {
   GroupDivider,
   SettingLinkRow,
@@ -133,6 +129,8 @@ export default function ConnectivityGroup({
   const T = useT();
   const torEnabled = useSettingsStore((s) => s.torEnabled);
   const liveVoiceEnabled = useSettingsStore((s) => s.liveVoiceEnabled);
+  const liveVideoEnabled = useSettingsStore((s) => s.liveVideoEnabled);
+  const setLiveVideoEnabled = useSettingsStore((s) => s.setLiveVideoEnabled);
   const setLiveVoiceEnabled = useSettingsStore((s) => s.setLiveVoiceEnabled);
   const backgroundMeshEnabled = useSettingsStore(
     (s) => s.backgroundMeshEnabled,
@@ -212,33 +210,6 @@ export default function ConnectivityGroup({
     }
   }
 
-  async function grantLocation(): Promise<void> {
-    // A refusal the OS will not ask about again (iOS after the first "Don't
-    // Allow") makes the request a silent no-op, so Grant would do nothing.
-    // Settings is the only place left to change it; the resume re-reads it.
-    const current = await locationPermissionState();
-    if (!current.granted && !current.canAskAgain) {
-      void Linking.openSettings().catch(() => undefined);
-      return;
-    }
-    const granted = current.granted || (await requestLocationPermission());
-    useMeshStateStore.getState().setLocationGranted(granted);
-    if (!granted) return;
-    // Act on the grant, do not just record it.
-    //
-    // This row exists because the bridge needs a location cell, and recording
-    // the grant without re-resolving anything left the bridge inert until a
-    // pull-to-refresh or a relaunch: the user granted exactly what was asked for
-    // and nothing happened. refreshGeoChannels re-resolves the location
-    // channels and the bridge's rendezvous cell, and the bridge re-announces
-    // once it has one so mesh-only neighbours learn it.
-    //
-    // retryRadios matters on Android 11 and below, where the mesh's own
-    // permission IS location, so this grant can unblock the radios too.
-    getMeshService()?.refreshGeoChannels();
-    getMeshService()?.retryRadios();
-  }
-
   const confirm =
     pending === null ? null : CONFIRM[pending.key][pending.next ? "on" : "off"];
   const copy =
@@ -308,6 +279,19 @@ export default function ConnectivityGroup({
         />
         <GroupDivider />
         <SettingRow
+          id="live-video"
+          icon="video"
+          label={T("settings.conn.live_video")}
+          description={T("settings.conn.live_video_desc")}
+          control={
+            <SettingSwitch
+              value={liveVideoEnabled}
+              onValueChange={setLiveVideoEnabled}
+            />
+          }
+        />
+        <GroupDivider />
+        <SettingRow
           id="mesh-bridge"
           icon="git-merge"
           label={T("settings.conn.bridge")}
@@ -329,7 +313,7 @@ export default function ConnectivityGroup({
               description={T("settings.conn.bridge_needs_location_desc")}
               control={
                 <Pressable
-                  onPress={() => void grantLocation()}
+                  onPress={() => void turnOnLocation()}
                   hitSlop={HIT_SLOP}
                   accessibilityRole="button"
                   accessibilityLabel={T("settings.conn.grant_location")}

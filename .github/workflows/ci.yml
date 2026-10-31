@@ -46,7 +46,7 @@ jobs:
 
       # Verify the committed Gradle wrapper matches the official release.
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
 
       - name: Set up JavaScript toolchain
         uses: ./.github/actions/setup-js
@@ -221,7 +221,7 @@ jobs:
       - name: Check Swift formatting
         run: |
           set -euo pipefail
-          swift format --in-place --recursive ios/Airhop ios/Tests ios/Package.swift
+          swift format --in-place --recursive ios/Airhop ios/AirhopWidget ios/Tests ios/Package.swift
           git diff --exit-code -- ios
 
       - name: Run Swift unit tests
@@ -229,7 +229,7 @@ jobs:
 
       # CocoaPods and its gems come from Gemfile.lock.
       - name: Set up Ruby and CocoaPods
-        uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
+        uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
         with:
           ruby-version: "3.4"
           bundler-cache: true

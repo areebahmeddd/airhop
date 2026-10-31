@@ -18,6 +18,7 @@ import { useSettingsStore } from "@store/settings-store";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Platform } from "react-native";
+import type { LiveVideoSendSummary } from "./live-video-sender";
 import { getMeshService, type IngressFault } from "./mesh-service";
 
 export interface DiagnosticsSnapshot {
@@ -25,6 +26,7 @@ export interface DiagnosticsSnapshot {
   app: string;
   platform: string;
   device: string;
+  timeZone: string;
   transports: {
     bluetooth: string;
     lan: string;
@@ -44,12 +46,19 @@ export interface DiagnosticsSnapshot {
     powerSaving: boolean;
     clockSkewed: boolean;
   };
+  liveVideo: {
+    sending: LiveVideoSendSummary | null;
+    receiving: number;
+  };
   settings: {
+    wifiAware: boolean;
     lanTransport: boolean;
     geoRelayDiscovery: boolean;
     customRelays: number;
     torBridgeMode: string;
     liveVoice: boolean;
+    liveVideo: boolean;
+    spamFilter: boolean;
   };
   // Absent only if the native module itself is missing. Empty where the
   // platform refused to hand back a log.
@@ -65,38 +74,45 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
   const lines = [
     "Airhop diagnostics",
     `Generated: ${s.generatedAt}`,
+    `Time zone: ${s.timeZone}`,
     `App: ${s.app}`,
     `Platform: ${s.platform}`,
     `Device: ${s.device}`,
     "",
     "Transports",
-    `  Bluetooth: ${s.transports.bluetooth} · ${s.transports.links.ble} links`,
-    `  Local network: ${s.transports.lan} · ${s.transports.links.lan} links`,
-    `  Wi-Fi Aware: ${s.transports.wifiAware} · ${s.transports.links.wifi} links`,
+    `  Bluetooth: ${s.transports.bluetooth} · ${linkCount(s.transports.links.ble)}`,
+    `  Wi-Fi Aware: ${s.transports.wifiAware} · ${linkCount(s.transports.links.wifi)}`,
+    `  Local network: ${s.transports.lan} · ${linkCount(s.transports.links.lan)}`,
     `  Nostr: ${s.transports.nostr}`,
-    `  Ingress faults: ${ingressFaultLine(s.transports.ingressFaults, s.transports.lastIngressFault)}`,
     "",
     "Mesh",
     `  Reachable peers: ${s.mesh.reachablePeers}`,
     `  Presence: ${s.mesh.presence}`,
-    `  Internet: ${yes(s.mesh.internet)}`,
-    `  Tor: ${s.mesh.tor}`,
-    `  Gateway: ${yes(s.mesh.gateway)}`,
-    `  Bridge: ${s.mesh.bridge}`,
+    `  Internet fallback: ${yes(s.mesh.internet)}`,
+    `  Mesh bridge: ${s.mesh.bridge}`,
+    `  Internet gateway: ${yes(s.mesh.gateway)}`,
+    `  Tor routing: ${s.mesh.tor}`,
     `  Power saving: ${yes(s.mesh.powerSaving)}`,
     `  Clock skewed: ${yes(s.mesh.clockSkewed)}`,
+    `  Ingress faults: ${ingressFaultLine(s.transports.ingressFaults, s.transports.lastIngressFault)}`,
+    "",
+    "Live video",
+    ...liveVideoLines(s.liveVideo),
     "",
     "Settings",
+    `  Wi-Fi Aware transport: ${yes(s.settings.wifiAware)}`,
     `  Local network transport: ${yes(s.settings.lanTransport)}`,
-    `  Relay discovery: ${yes(s.settings.geoRelayDiscovery)}`,
+    `  Geo-relay discovery: ${yes(s.settings.geoRelayDiscovery)}`,
     `  Custom relays: ${s.settings.customRelays}`,
     `  Tor bridge mode: ${s.settings.torBridgeMode}`,
     `  Live voice: ${yes(s.settings.liveVoice)}`,
+    `  Live video: ${yes(s.settings.liveVideo)}`,
+    `  Spam filter: ${yes(s.settings.spamFilter)}`,
     "",
   ];
   if (s.wifiTransport !== undefined && s.wifiTransport.trim().length > 0) {
     lines.push(
-      "Wi-Fi Aware transport",
+      "Wi-Fi Aware details",
       ...s.wifiTransport
         .trimEnd()
         .split("\n")
@@ -115,6 +131,51 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     );
   }
   return lines.join("\n") + "\n";
+}
+
+// The report is English by design, so the plural is settled here.
+function linkCount(n: number): string {
+  return n === 1 ? "1 link" : `${String(n)} links`;
+}
+
+const QUALITY_LABEL: Record<LiveVideoSendSummary["quality"], string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};
+
+// In the studio's own words for the signal meter, so a report and a
+// screenshot of the studio describe a stream the same way.
+function liveVideoLines(state: DiagnosticsSnapshot["liveVideo"]): string[] {
+  const receiving =
+    state.receiving === 1 ? "1 stream" : `${String(state.receiving)} streams`;
+  const send = state.sending;
+  if (send === null) return ["  Sending: no", `  Receiving: ${receiving}`];
+  const signal = send.skipping
+    ? "too slow for video, sending sound only"
+    : send.congested
+      ? "falling behind"
+      : "keeping up";
+  return [
+    `  Sending: ${QUALITY_LABEL[send.quality]} for ${String(Math.floor(send.elapsedMs / 1000))} s, microphone ${send.withSound ? "on" : "off"}`,
+    `  Video bitrate: ${String(Math.round(send.videoBitrate / 1000))} kbps, paced to ${String(send.packetBudget)} packets a second`,
+    `  Signal: ${signal}`,
+    `  Receiving: ${receiving}`,
+  ];
+}
+
+/**
+ * @public Exported for its test. getTimezoneOffset is minutes behind UTC, so
+ * the sign flips.
+ */
+export function timeZoneLabel(offsetMinutes: number): string {
+  if (offsetMinutes === 0) return "UTC";
+  const ahead = -offsetMinutes;
+  const abs = Math.abs(ahead);
+  const hours = Math.floor(abs / 60);
+  const minutes = abs % 60;
+  const sign = ahead > 0 ? "+" : "-";
+  return `UTC${sign}${String(hours)}${minutes === 0 ? "" : `:${String(minutes).padStart(2, "0")}`}`;
 }
 
 // A packet type names the handler to look at; none means the frame never
@@ -160,6 +221,11 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
     wifi: 0,
   };
   const ingress = getMeshService()?.getIngressFaults();
+  // No mesh yet reads as idle, the way the link counts above do.
+  const liveVideo = getMeshService()?.getLiveVideoState() ?? {
+    sending: null,
+    receiving: 0,
+  };
   const tor = !settings.torEnabled
     ? "off"
     : mesh.torActive
@@ -177,13 +243,16 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
     () => undefined,
   );
 
+  const now = new Date();
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: now.toISOString(),
     app: APP_VERSION,
     platform: platformLabel(),
     device: deviceLabel(),
+    timeZone: timeZoneLabel(now.getTimezoneOffset()),
     transports: {
-      bluetooth: mesh.bleBlocker,
+      // bleBlocker names what stops the mesh, so "none" means it is running.
+      bluetooth: mesh.bleBlocker === "none" ? "active" : mesh.bleBlocker,
       lan: mesh.lanState,
       wifiAware: mesh.wifiFastPath,
       nostr: mesh.nostrConnected ? "connected" : "not connected",
@@ -201,12 +270,16 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       powerSaving: mesh.powerSaving,
       clockSkewed: mesh.clockSkewed,
     },
+    liveVideo,
     settings: {
+      wifiAware: settings.wifiAwareEnabled,
       lanTransport: settings.lanTransportEnabled,
       geoRelayDiscovery: settings.geoRelayDiscovery,
       customRelays: settings.customRelays.length,
       torBridgeMode: settings.torBridgeMode,
       liveVoice: settings.liveVoiceEnabled,
+      liveVideo: settings.liveVideoEnabled,
+      spamFilter: settings.spamFilterEnabled,
     },
     log,
     wifiTransport,

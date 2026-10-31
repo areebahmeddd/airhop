@@ -2239,3 +2239,109 @@ test("N25 a deposit held past the freshness window is dropped, not published", a
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+test("N26 a location post the radio carried reaches the cell once the relays are back", async () => {
+  // Only the Bluetooth leg went out, so the composer shows it sent and offers
+  // no Retry. The relay copy is owed to everyone in the cell out of range.
+  const s = (scenario = new Scenario({
+    id: "N26",
+    title: "a post held for the relays is published when they connect",
+    seed: 726,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11), relay);
+  const bob = SimDevice.create(s.world, android("bob", 22), relay);
+  // In the cell, nowhere near either of them.
+  const carol = SimDevice.create(s.world, android("carol", 33), relay);
+  const cast = [alice, bob, carol];
+  radio.add(alice);
+  radio.add(bob);
+  for (const d of cast) locations().place(d.id, PLACES.bengaluru);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(s.world, () => alice.peerCount() === 1, 30_000);
+  for (const d of cast) d.joinChannel(CELL_CHANNEL);
+  s.check(
+    "every phone resolved the city cell",
+    await cellsResolved(s, cast, CELL_CHANNEL),
+  );
+
+  relay.setOffline("alice", true);
+  const text = "the north road is flooded";
+  const status = alice.send(CELL_CHANNEL, text);
+  s.check("the radio leg reads as sent", status === "sent", status);
+  await advanceFor(s.world, 10_000);
+  s.check("no relay has it yet", !publishedText(relay, text));
+
+  relay.setOffline("alice", false);
+  s.check(
+    "it reaches the relays once they connect",
+    await waitForCoarse(s.world, () => publishedText(relay, text), 120_000),
+  );
+  s.check(
+    "and someone in the cell out of radio range",
+    await waitForCoarse(
+      s.world,
+      () => carol.texts(CELL_CHANNEL).includes(text),
+      60_000,
+    ),
+  );
+  const copies = bob.texts(CELL_CHANNEL).filter((t) => t === text).length;
+  s.check("the neighbour holds it once", copies === 1, `copies=${copies}`);
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N27 deleting a notice after a relaunch still retracts its relay copy", async () => {
+  // The post's Nostr event ID must outlive the process, or a delete after a
+  // restart leaves the copy up for internet readers until it expires.
+  const s = (scenario = new Scenario({
+    id: "N27",
+    title: "a bridged notice is retracted after a relaunch",
+    seed: 727,
+  }));
+  const relay = new RelayFabric(s.world);
+  const lone = SimDevice.create(s.world, android("lone", 11), relay);
+  locations().place(lone.id, PLACES.bengaluru);
+  s.track(lone);
+  lone.launch();
+  lone.joinChannel(CELL_CHANNEL);
+  await cellsResolved(s, [lone], CELL_CHANNEL);
+  await waitForCoarse(s.world, () => relay.connectionCount("lone") > 0, 60_000);
+
+  const cell = lone.channelGeohash(CELL_CHANNEL) ?? "";
+  const text = "lost dog near the station";
+  s.check("the notice was posted", lone.postNotice(text, cell));
+  await waitForCoarse(
+    s.world,
+    () => relay.eventsOfKind(1).some((e) => e.content === text),
+    60_000,
+  );
+  const eventID = relay.eventsOfKind(1).find((e) => e.content === text)?.id;
+  s.check("its Nostr copy is on the relays", eventID !== undefined);
+
+  // Long enough for the relays to accept it, which is when its ID is kept.
+  await advanceFor(s.world, 5_000);
+  lone.relaunch();
+  await waitForCoarse(s.world, () => relay.connectionCount("lone") > 0, 60_000);
+  const posts = lone.store("boardStore").getState().posts as {
+    content: string;
+  }[];
+  const post = posts.find((p) => p.content === text);
+  const mesh = lone.mesh as unknown as {
+    deleteBoardPost: (post: unknown) => boolean;
+  };
+  s.check("the notice was deleted", mesh.deleteBoardPost(post));
+  const retracted = await waitForCoarse(
+    s.world,
+    () =>
+      relay
+        .eventsOfKind(5)
+        .some((e) => e.tags.some((t) => t[0] === "e" && t[1] === eventID)),
+    60_000,
+  );
+  s.check("and a deletion names its relay copy", retracted);
+  s.expectNone("process health", noCrashes([lone]));
+  s.assert(true);
+});

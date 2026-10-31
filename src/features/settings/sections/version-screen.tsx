@@ -316,7 +316,7 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
   return (
     <View style={shared.container}>
       <SubHeader title={T("settings.about.version")} onBack={onBack} />
-      <SettingsScroll>
+      <SettingsScroll fill>
         <Pressable style={styles.hero} onPress={flap.onTap} accessible={false}>
           <Animated.View style={{ transform: [{ translateY: flap.hop }] }}>
             <PixelBird

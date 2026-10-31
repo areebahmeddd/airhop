@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "तपाईंका कुञ्जी बन्न सकेनन्",
   "onboarding.identity.failed_body":
     "यो यन्त्रले Airhop लाई तिनलाई सुरक्षित रूपमा राख्न दिएन। फेरि प्रयास गर्नुहोस्, वा फोन पुनः सुरु गरेर Airhop फेरि खोल्नुहोस्।",
-  "onboarding.identity.steps_a11y": "चरण: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "चरण: {first}। {second}। {third}। {fourth}।",
   "onboarding.identity.step.x25519": "स्थिर X25519 कुञ्जी जोडी बन्दै",
   "onboarding.identity.step.ed25519": "Ed25519 हस्ताक्षर कुञ्जी जोडी बन्दै",
   "onboarding.identity.step.keychain":
@@ -90,8 +91,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "मेशमा तपाईंको नाम",
   "onboarding.username.peer_id": "पियर पहिचान",
-  "onboarding.username.card_a11y":
-    "मेशमा तपाईंको नाम {username} हो। पियर पहिचान {peerID}। {props}।",
+  "onboarding.username.card_full_a11y":
+    "मेशमा तपाईंको नाम {username} हो। पियर पहिचान {peerID}। एल्गोरिदम: {algorithm}। भण्डारण: {storage}। खाता चाहिन्छ: {account}।",
   "onboarding.username.explanation":
     "यो प्रयोगकर्ता नाम तपाईंको सार्वजनिक कुञ्जीबाट निश्चित रूपमा निस्कन्छ। तपाईंको पियर पहिचान देख्ने हरेक यन्त्रमा यो उही हुन्छ।",
   "onboarding.username.cta": "Airhop भित्र जानुहोस्",
@@ -158,7 +159,7 @@ export const strings: Strings = {
     "नजिकका यन्त्र भेट्टाउँछ र तिनका बीच सन्देश पुर्‍याउँछ। मेश यसरी नै बन्छ, र यो इन्टरनेटबिना काम गर्छ।",
   "onboarding.primer.location.title": "स्थान",
   "onboarding.primer.location.body":
-    "तपाईंलाई नजिकका क्षेत्रका च्यानलमा राख्छ, एउटा टोलदेखि पूरै क्षेत्रसम्म। Airhop ले तपाईंलाई कहिल्यै पछ्याउँदैन न त तपाईंको ठ्याक्कै स्थान यन्त्रबाहिर पठाउँछ।",
+    "तपाईंलाई नजिकका क्षेत्रका च्यानलमा राख्छ, एउटा टोलदेखि पूरै क्षेत्रसम्म। Airhop ले तपाईंलाई कहिल्यै पछ्याउँदैन, र तपाईंको ठ्याक्कै स्थान तपाईंले कसैलाई आफ्नो स्थान पठाउँदा मात्र यन्त्रबाहिर जान्छ।",
   "onboarding.primer.notifications.title": "सूचना",
   "onboarding.primer.notifications.body":
     "एप बन्द हुँदा पनि नयाँ सन्देशका सूचना पाउनुहोस्। सूचना तपाईंकै यन्त्रमा स्थानीय रूपमा बन्छन्, कुनै सर्भरको संलग्नताबिना।",
@@ -169,6 +170,9 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "ब्लुटुथ पहुँच",
   "permission.bluetooth.purpose": "मेशमार्फत नजिकका यन्त्र पत्ता लगाउन",
+  "permission.location.label": "स्थान पहुँच",
+  "permission.location.purpose":
+    "ब्लुटुथको दायराभन्दा पर स्थान च्यानलसम्म पुग्न",
   "permission.open_settings": "सेटिङ खोल्नुहोस्",
   "permission.not_now": "अहिले होइन",
   "permission.blocked_title": "{label} बन्द छ",
@@ -229,8 +233,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "दायरामा",
   "chat.dm.row_hint": "थप विकल्पका लागि दुई पटक थिचेर समाउनुहोस्",
   "chat.channels.row_hint": "थप विकल्पका लागि दुई पटक थिचेर समाउनुहोस्",
-  "chat.dm.you_prefix": "तपाईं:",
-  "chat.draft_prefix": "मस्यौदा:",
+  "chat.draft_preview": "मस्यौदा: {draft}",
   "chat.dm.none": "कुनै सिधा सन्देश छैन",
   "chat.dm.none_desc":
     "गुप्तीकृत सिधा सन्देश सुरु गर्न मेश ट्याबमा गएर कुनै पियर थिच्नुहोस्।",
@@ -248,6 +251,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} का थप विकल्प",
   "chat.dm.remove_contact_short": "सम्पर्क हटाउनुहोस्",
   "chat.dm.block_short": "सम्पर्क रोक्नुहोस्",
+  "chat.dm.signing_key_refused":
+    "कसैले {name} का लागि फरक कुञ्जी दियो, र Airhop ले त्यसलाई अस्वीकार गर्‍यो। यो च्याटले पहिलेकै कुञ्जी राख्छ।",
   "chat.dm.delete_short": "च्याट मेटाउनुहोस्",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -329,6 +334,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "त्यो कक्ष खुल्न सकेन। केही बेरमा फेरि प्रयास गर्नुहोस्।",
   "chat.jump.title": "कुनै ठाउँमा जानुहोस्",
+  "chat.jump.globe": "ग्लोबमा छान्नुहोस्",
+  "chat.jump.globe_note": "जुनसुकै ठाउँतिर घुमाउनुहोस्। इन्टरनेटबिना चल्छ।",
   "chat.jump.saved": "सुरक्षित ठाउँ",
   "chat.jump.nearby": "नजिकै",
   "chat.jump.anywhere":
@@ -361,6 +368,17 @@ export const strings: Strings = {
   "chat.jump.go": "जानुहोस्",
   "chat.jump.how":
     "geohash भेट्न: कुनै स्थान च्यानल खोल्नुहोस् > यसको नाम थिच्नुहोस् > त्यहीँबाट प्रतिलिपि गर्नुहोस्।",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "घुमाउन तान्नुहोस् · जुम गर्न चिम्टाउनुहोस् · केन्द्रित गर्न ट्याप गर्नुहोस्",
+  "chat.globe.zoom_in": "कक्ष छान्न जुम इन गर्नुहोस्",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell} मा जानुहोस्",
+  "chat.globe.larger": "ठूलो कक्ष",
+  "chat.globe.smaller": "सानो कक्ष",
+  "chat.globe.label": "ग्लोब, केन्द्रमा {cell}",
+  "chat.globe.adjust": "कक्षको आकार बदल्न माथि वा तल स्वाइप गर्नुहोस्",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -435,6 +453,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "सार्वजनिक च्यानल",
   "chat.thread.notices": "यो च्यानलका नोटिस",
   "chat.thread.invite": "यो च्यानलमा कसैलाई निम्त्याउनुहोस्",
+  "chat.thread.location_off": "स्थान बन्द · नजिकका मानिससम्म मात्र पुग्दै",
   "chat.thread.not_in_range": "नजिकै छैनन्। इन्टरनेटबाट पुर्‍याउँदै।",
   "chat.thread.not_nearby":
     "नजिकै छैनन्। उनीहरू दायरामा फर्केपछि वा अनलाइन भएपछि हामी पुर्‍याउनेछौँ।",
@@ -462,7 +481,7 @@ export const strings: Strings = {
   "chat.thread.message": "सन्देश",
   "chat.thread.message_placeholder": "सन्देश…",
   "chat.thread.length_full": "सन्देश भरियो",
-  "chat.thread.waiting_for": "{name} फर्कने पर्खाइमा · {percent}%",
+  "chat.thread.waiting_for": "{name} फर्कने पर्खाइमा · {percent}",
   "chat.transfer.progress": "{total} मध्ये {done}",
   "chat.transfer.speed": "{size}/से",
   "chat.transfer.left": "{time} बाँकी",
@@ -514,7 +533,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "तपाईंले स्क्रिन तस्बिर खिच्नुभयो",
   "chat.screenshot.you_took_private":
     "तपाईंले स्क्रिन तस्बिर खिच्नुभयो · कसैलाई भनिएन",
-  "chat.screenshot.heads_up": "सावधान",
   "chat.screenshot.peer_took": "{name} ले स्क्रिन तस्बिर खिचे",
   "chat.screenshot.notified_dm":
     "{name} लाई तपाईंले यो कुराकानीको स्क्रिन तस्बिर खिच्नुभयो भनी जानकारी गराइयो।",
@@ -528,7 +546,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "{name} को प्रोफाइल हेर्नुहोस्",
   "chat.bubble.forwarded": "फरवार्ड गरिएको",
   "chat.bubble.attachment": "संलग्नक",
-  "chat.bubble.a11y": "{sender}: {body}। थप विकल्पका लागि थिचिराख्नुहोस्।",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "थप विकल्पका लागि दुई पटक थिचेर समाउनुहोस्",
+  "chat.bubble.more_options": "थप विकल्प",
+  "chat.bubble.open_link": "{link} खोल्नुहोस्",
+  "chat.bubble.status_delivered": "पुगेको",
+  "chat.bubble.status_read": "पढिएको",
   "chat.bubble.failed_retry": "पठाउन सकिएन। फेरि प्रयास गर्न थिच्नुहोस्।",
 
   // ---- Chats: message actions and info ----
@@ -556,6 +579,8 @@ export const strings: Strings = {
   "chat.attach.camera": "क्यामेरा",
   "chat.attach.camera_desc": "तस्बिर वा भिडियो खिच्नुहोस्",
   "chat.attach.camera_desc_photo": "फोटो खिच्नुहोस्",
+  "chat.attach.video": "भिडियो रेकर्ड गर्नुहोस्",
+  "chat.attach.video_desc": "छोटो क्लिप रेकर्ड गर्नुहोस्",
   "chat.attach.library": "तस्बिर ग्यालरी",
   "chat.attach.library_desc": "आफ्नो ग्यालरीबाट छान्नुहोस्",
   "chat.attach.document": "कागजात",
@@ -566,6 +591,9 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "आफ्नो वालेटबाट Cashu का sat पठाउनुहोस्",
   "chat.attach.location": "स्थान",
   "chat.attach.location_desc": "तपाईं अहिले कहाँ हुनुहुन्छ पठाउनुहोस्",
+  "chat.attach.live": "लाइभ जानुहोस्",
+  "chat.attach.live_desc":
+    "आफ्नो क्यामेरा नजिकका मानिसहरूलाई स्ट्रिम गर्नुहोस्",
   "chat.attach.title": "जोड्नुहोस्",
 
   // ---- Chat: location pin ----
@@ -625,6 +653,20 @@ export const strings: Strings = {
   "chat.attach.caption": "क्याप्सन लेख्नुहोस्…",
   "chat.attach.send": "संलग्नक पठाउनुहोस्",
   "chat.attach.generic": "संलग्नक",
+  "chat.video_prep.preparing": "भिडियो तयार हुँदैछ",
+  "chat.video_prep.waiting": "भिडियो तयार गर्न पर्खाइमा",
+  "chat.video_prep.cancel": "यो भिडियो तयार गर्न रोक्नुहोस्",
+  "chat.video_prep.too_large": "यो भिडियो पठाउन मिल्ने गरी सानो बनाउन सकिएन।",
+  "chat.video_prep.unreadable":
+    "यो भिडियो खोल्न सकिएन। अर्को प्रयास गर्नुहोस्।",
+  "chat.video_prep.failed":
+    "त्यो भिडियो तयार गर्दा केही बिग्रियो। फेरि प्रयास गर्नुहोस्।",
+  "chat.video_prep.interrupted":
+    "भिडियो तयार हुनुअघि नै तपाईंले Airhop छोड्नुभयो। फेरि पठाएर हेर्नुहोस्।",
+  "chat.trim.play": "पूर्वावलोकन चलाउनुहोस्",
+  "chat.trim.pause": "पूर्वावलोकन रोक्नुहोस्",
+  "chat.trim.start": "क्लिपको सुरु",
+  "chat.trim.end": "क्लिपको अन्त्य",
   "chat.media.view_full": "तस्बिर पूरै स्क्रिनमा हेर्नुहोस्",
   "chat.media.gone_photo": "तस्बिर यो यन्त्रमा छैन",
   "chat.media.gone_video": "भिडियो यो यन्त्रमा छैन",
@@ -639,6 +681,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "त्यो फाइल",
   "chat.media.pause_voice": "आवाज टिपोट रोक्नुहोस्",
   "chat.media.play_voice": "आवाज टिपोट बजाउनुहोस्",
+  "chat.media.pause_video": "भिडियो रोक्नुहोस्",
+  "chat.media.play_video": "भिडियो बजाउनुहोस्",
   "chat.media.voice_position": "आवाज टिपोटमा ठाउँ",
   "chat.media.voice_scrub": "त्यो बिन्दुमा जान धर्काहरूमा थिच्नुहोस्",
   "chat.media.image": "तस्बिर",
@@ -677,6 +721,50 @@ export const strings: Strings = {
   "chat.voice.limit_reached": "दुई मिनेटको सीमा पुग्यो, पठाउन छाड्नुहोस्",
   "chat.voice.limit_sent": "दुई मिनेटको सीमा पुग्यो, टिपोट पठाइयो",
   "chat.voice.stop_send": "रेकर्डिङ रोकेर पठाउनुहोस्",
+  "chat.video_note.hold": "भिडियो नोट रेकर्ड गर्न थिचिराख्नुहोस्",
+  "chat.video_note.a11y_toggle":
+    "रेकर्डिङ सुरु वा बन्द गर्न दुई पटक ट्याप गर्नुहोस्।",
+  "chat.video_note.not_recorded": "भिडियो नोट रेकर्ड भएन",
+  "chat.video_note.limit_sent": "समय सकियो, भिडियो नोट पठाइयो",
+  "chat.video_note.a11y": "भिडियो नोट, आवाजका लागि दुई पटक ट्याप गर्नुहोस्",
+  "chat.video_note.sound_on": "आवाज खोल्नुहोस्",
+  "chat.video_note.sound_off": "आवाज बन्द गर्नुहोस्",
+  "chat.live_video.preview": "लाइभ भिडियो",
+  "chat.live_video.badge": "लाइभ",
+  "chat.live_video.reconnecting": "फेरि जोडिँदै…",
+  "chat.live_video.a11y":
+    "{name} लाइभमा हुनुहुन्छ। हेर्न दुई पटक ट्याप गर्नुहोस्।",
+  "chat.live_video.live_from": "{name} लाइभमा हुनुहुन्छ",
+  "chat.live_video.sound": "आवाज",
+  "chat.live_video.ended": "लाइभ सकियो",
+  "chat.live_video.title": "लाइभ भिडियो",
+  "chat.live_video.go_live": "लाइभ जानुहोस्",
+  "chat.live_video.end": "अन्त्य गर्नुहोस्",
+  "chat.live_video.end_title": "लाइभ भिडियो अन्त्य गर्ने?",
+  "chat.live_video.end_body":
+    "अन्त्य गर्दा रेकर्डिङ यही च्याटमा रहन्छ। खारेज गर्दा हेरिरहेका सबैलाई यो मेटाउन भनिन्छ।",
+  "chat.live_video.discard": "खारेज गर्नुहोस्",
+  "chat.live_video.keep": "स्ट्रिम जारी राख्नुहोस्",
+  "chat.live_video.audience_room": "ब्लुटुथ दायराभित्रका सबैले हेर्न सक्छन्।",
+  "chat.live_video.audience_dm": "केवल {name} ले हेर्न सक्नुहुन्छ।",
+  "chat.live_video.nobody": "अहिले हेर्नका लागि दायराभित्र कोही छैन।",
+  "chat.live_video.quality_low": "कम",
+  "chat.live_video.quality_medium": "मध्यम",
+  "chat.live_video.quality_high": "उच्च",
+  "chat.live_video.quality_low_hint": "धेरै हप टाढाका मानिसहरूसम्म पुग्छ",
+  "chat.live_video.quality_medium_hint": "एक वा दुई हप टाढाका मानिसहरूका लागि",
+  "chat.live_video.quality_high_hint": "ठ्याक्कै तपाईंको छेउका मानिसहरूका लागि",
+  "chat.live_video.signal_good": "गति मिलाइरहेको छ",
+  "chat.live_video.signal_weak": "पछि पर्दैछ",
+  "chat.live_video.signal_poor": "भिडियोका लागि धेरै ढिलो, आवाज मात्र पठाइँदैछ",
+  "chat.live_video.mic": "माइक्रोफोन",
+  "chat.live_video.no_sound": "आवाज छैन",
+  "chat.live_video.flip": "क्यामेरा बदल्नुहोस्",
+  "chat.live_video.camera_failed": "क्यामेरा खोल्न सकिएन",
+  "chat.live_video.camera_lost": "क्यामेरा रोकियो, त्यसैले स्ट्रिम सकियो",
+  "chat.live_video.failed": "लाइभ जान सकिएन",
+  "chat.live_video.kept_here":
+    "फाइलका रूपमा पठाउन धेरै लामो छ। हेर्ने सबैसँग आफ्नै प्रति रहन्छ।",
   "chat.voice.lift_lock": "हात छाडेर रेकर्ड गर्न माथि सार्नुहोस्",
   "chat.voice.live_speaking": "{name} बोल्दै हुनुहुन्छ",
   "chat.voice.live_ended": "सकियो",
@@ -692,6 +780,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "माइक्रोफोन पहुँच",
   "chat.perm.mic_live_purpose": "नजिकका मानिससँग कुरा गर्न",
   "chat.perm.mic_note_purpose": "आवाज टिपोट रेकर्ड गर्न",
+  "chat.perm.video_note_purpose": "भिडियो नोट रेकर्ड गर्न",
+  "chat.perm.live_video_purpose": "लाइभ जान",
   "chat.perm.recording_stopped": "रेकर्डिङ रोकियो",
   "chat.perm.record_failed":
     "रेकर्डिङ सुरु हुन सकेन। माइक्रोफोनका अनुमति जाँच्नुहोस्।",
@@ -820,6 +910,10 @@ export const strings: Strings = {
   "chat.notices.post": "नोटिस टाँस्नुहोस्",
   "chat.notices.post_short": "टाँस्नुहोस्",
   "chat.notices.delete": "नोटिस मेटाउनुहोस्",
+  "chat.notices.delete_title": "यो नोटिस मेटाउने?",
+  "chat.notices.delete_body":
+    "यो भएका सबैलाई यसलाई हटाउन अनुरोध गरिन्छ। यो फिर्ता गर्न सकिँदैन।",
+  "chat.notices.permanent": "स्थायी",
   "chat.notices.fades_soon": "चाँडै मेटिन्छ",
   "chat.notices.1_day": "1 दिन",
   "chat.notices.3_days": "3 दिन",
@@ -887,6 +981,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name} लाई फरवार्ड गर्न मिल्दैन",
   "chat.forward.too_long_for_dm":
     "प्रत्यक्ष सन्देशका लागि धेरै लामो छ। यसको सट्टा च्यानल वा समूहमा फरवार्ड गर्नुहोस्।",
+  "chat.forward.too_long_for_public":
+    "सार्वजनिक कोठाका लागि धेरै लामो छ, त्यहाँ यो स्प्यामका रूपमा लुकाइनेछ। बरु समूहमा फर्वार्ड गर्नुहोस्।",
   "chat.forward.channels": "च्यानल",
   "chat.forward.groups": "समूह",
   "chat.forward.locations": "स्थान",
@@ -895,6 +991,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "फरवार्ड गरिएन",
   "chat.forward.app_row_body":
     "यो लाइन कुनै व्यक्तिबाट होइन, Airhop बाट आएको हो, त्यसैले फरवार्ड गर्ने केही छैन।",
+  "chat.forward.has_ecash":
+    "यसमा ecash छ, र जसले पहिले लिन्छ पैसा उसैको हुन्छ, त्यसैले यो फरवार्ड गरिँदैन।",
+  "chat.forward.public_title": "{name} मा फरवार्ड गर्ने?",
+  "chat.forward.public_mesh_body":
+    "नजिकै जो कोहीले यसलाई त्यहाँ पढ्न सक्छ, र यो फिर्ता लिन सकिँदैन।",
+  "chat.forward.public_geo_body":
+    "यो क्षेत्रमा जो कोहीले यसलाई त्यहाँ पढ्न सक्छ, सार्वजनिक इन्टरनेट रिलेमा पनि, र यो फिर्ता लिन सकिँदैन।",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "मेश सुरु हुँदै…",
@@ -909,7 +1012,8 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "स्थान बन्द · पियर भेट्न Android लाई यो चाहिन्छ",
   "mesh.banner.paused": "मेश रोकिएको · तपाईं टाढा हुनुहुन्छ",
-  "mesh.banner.location_off": "स्थान बन्द · स्थान च्यानल उपलब्ध छैनन्",
+  "mesh.banner.location_off":
+    "स्थान बन्द · स्थान च्यानल नजिकसम्म मात्र पुग्छन्",
   "mesh.banner.battery_saver": "ब्याट्री बचत · कम पटक खोज्दै",
   "mesh.banner.wipe_incomplete":
     "सफाइ अधुरो · केही डेटा बाँकी हुन सक्छ, फेरि खोल्दा पुनः प्रयास हुन्छ",
@@ -936,7 +1040,10 @@ export const strings: Strings = {
   "mesh.banner.hint.app_settings": "प्रणाली सेटिङमा Airhop का अनुमति खोल्छ",
   "mesh.banner.hint.battery_settings": "यो फोनको पृष्ठभूमि गतिविधि सेटिङ खोल्छ",
   "mesh.banner.hint.tor_settings": "Airhop को Tor सेटिङ खोल्छ",
+  "mesh.banner.hint.enable_location":
+    "स्थान पहुँच माग्छ, वा सेटिङमा यसलाई कसरी अनुमति दिने भनेर बुझाउँछ",
   "mesh.banner.dismiss": "हटाउनुहोस्: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "यो टिपोट सधैँका लागि लुकाउँछ",
 
   // ---- Mesh: radar ----
@@ -1166,6 +1273,8 @@ export const strings: Strings = {
     "{mint} ले {units} जारी गर्छ। यसका कुञ्जी यो यन्त्रमा राखिएका छन्, त्यसैले यसका टोकन अब इन्टरनेटबिना पनि जाँच्न सकिन्छ।",
   "wallet.mint.remove_plain":
     "{mint} लाई आफ्नो वालेटबाट हटाउने? यसका राखिएका कुञ्जी पनि जान्छन्, त्यसैले यसका टोकन अब अफलाइन जाँच्न सकिँदैन।",
+  "wallet.mint.remove_holdings":
+    "{mint} सँग छ:\n{holdings}\nहटाउँदा यी सबै यो यन्त्रबाट मेटिन्छन्। पहिले झिक्नुहोस् वा पठाउनुहोस्।",
   "wallet.mint.title": "टकसार",
   "wallet.mint.none_desc":
     "टकसारले तपाईंको ecash जारी गर्छ र साट्छ। Lightning बाट टप अप गर्न वा यसका टोकन लिन एउटा थप्नुहोस्।",
@@ -1516,6 +1625,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "पहिल्यै खर्च भइसकेको",
   "wallet.err.change_pending": "तिरियो, फिर्ता बाँकी",
   "wallet.svc.mint_unreachable": "टकसारसम्म पुग्न सकिएन।",
+  "wallet.svc.mint_http_error": "टकसारले त्रुटिसहित जवाफ दियो (HTTP {status})।",
   "wallet.svc.tor_ios": "iOS मा टकसारका अनुरोध Tor बाट जाँदैनन्।",
   "wallet.svc.tor_ios_body":
     "iOS मा Tor ले Nostr मात्र ढाक्छ, त्यसैले यो अनुरोध टकसारसम्म खुला सञ्जालबाट पुग्थ्यो र तपाईंको IP यो ecash सँग जोड्थ्यो। सेटिङमा {setting} खोल्नुहोस्, वा पहिले Tor बन्द गर्नुहोस्। मेशबाट ecash पठाउने र लिने काम भने चलिरहन्छ।",
@@ -1617,6 +1727,10 @@ export const strings: Strings = {
     "तपाईंका सिक्काले अफलाइन ठ्याक्कै {amount} {unit} बनाउन सक्दैनन्।",
   "wallet.svc.inexact_detail":
     "तपाईंले पठाउन सक्ने सबैभन्दा सानो टोकन {spend} {unit} हो। अफलाइनमा फिर्ता हुँदैन, त्यसैले थप {extra} {unit} पाउनेलाई नै जान्छ।",
+  "wallet.svc.spend_changed":
+    "अब यो पठाउन {spend} {unit} लाग्छ, तपाईंले स्वीकार गरेभन्दा बढी।",
+  "wallet.svc.spend_changed_body":
+    "तपाईंले निर्णय गर्दै गर्दा तपाईंका सिक्का बदलिए। केही पठाइएन। नयाँ रकम हेर्न फेरि प्रयास गर्नुहोस्।",
   "wallet.svc.no_single_mint":
     "कुनै एउटै टकसारसँग {amount} {unit} छैन। फरक टकसारका ecash एउटै टोकनमा जोड्न सकिँदैन: पहिले एउटै टकसारमा जोड्नुहोस्, वा छुट्टाछुट्टै रकममा पठाउनुहोस्।",
   "wallet.svc.have_tried_send":
@@ -1646,6 +1760,10 @@ export const strings: Strings = {
     "अरू केही पठाइएको छैन। टकसारले नतिजा पुष्टि नगरेसम्म सिक्का रोकिएका छन्। भुक्तानी भएको भए, लक गरिएको टोकन हस्तान्तरणका लागि गतिविधिमा देखिन्छ। नभए सिक्का फिर्ता आउँछन्।",
   "wallet.svc.send_spent_by_swap":
     "यो टोकन लिइनुअघि नै यी सिक्का साटिएर तपाईंको वालेटमा फर्किए, त्यसैले अब यसलाई लिन सकिँदैन। रकम तपाईंको ब्यालेन्समा छ।",
+  "wallet.svc.payment_in_doubt_body":
+    "टकसारले नतिजा पुष्टि नगरेसम्म सिक्का रोकिएका छन्, र अर्को रिफ्रेशमा यो फेरि जाँचिन्छ। त्यतिन्जेल यो बिल फेरि नतिर्नुहोस्।",
+  "wallet.svc.mint_removed":
+    "तपाईंले यो टकसार हटाउनुभयो, त्यसैले यसलाई अब ट्र्याक गरिँदैन।",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR बाट प्रमाणित",
@@ -1688,7 +1806,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "त्यो bitchat कोडको म्याद सकियो। उनीहरूलाई आफ्नो QR फेरि खोल्न भन्नुहोस्।",
   "contacts.scan.tampered":
-    "यो QR कोड अमान्य छ: यसको पियर पहिचान यसका कुञ्जीसँग मिल्दैन। यसमा छेडछाड भएको हुन सक्छ।",
+    "यो QR कोड अमान्य छ: यसका कुञ्जी जाँचमा खरो उत्रिँदैनन्। यसमा छेडछाड भएको हुन सक्छ।",
   "contacts.scan.key_conflict":
     "तपाईंसँग उनीहरूको फरक कुञ्जी पहिले नै छ, त्यसैले केही बदलिएन। त्यसलाई बदल्न उनीहरूको कोड आमनेसामने स्क्यान गर्नुहोस्।",
   "contacts.scan.already_added": "पहिल्यै तपाईंका सम्पर्कमा छ",
@@ -1711,7 +1829,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "यो QR अरू कसैको हो। {name} लाई आफ्नै कोड देखाउन भन्नुहोस्।",
   "contacts.verify.tampered_body":
-    "यो QR मा छेडछाड भएको देखिन्छ: यसको पहिचान यसको कुञ्जीसँग मिल्दैन।",
+    "यो QR मा छेडछाड भएको देखिन्छ: यसका कुञ्जी जाँचमा खरो उत्रिँदैनन्।",
   "contacts.verify.choose_title": "तपाईं कसरी जाँच्न चाहनुहुन्छ?",
   "contacts.verify.choose_body":
     "दुवैले यो फोनका कुञ्जी साँच्चै {name} कै हुन् भन्ने पक्का गर्छन्।",
@@ -1824,6 +1942,8 @@ export const strings: Strings = {
   "settings.diag.share": "निदान साझा गर्नुहोस्",
   "settings.diag.share_desc":
     "बग रिपोर्टका लागि जडान र सेटिङका विवरण। सन्देश, नाम र कुञ्जी समावेश हुँदैनन्।",
+  "settings.diag.share_fallback":
+    "साझेदारी खोल्न सकिएन। बरु रिपोर्ट प्रतिलिपि गरियो।",
   "settings.section.storage_desc": "प्रयोग र क्यास",
   "settings.section.appearance": "रूप",
   "settings.section.appearance_desc": "थिम, फन्ट र भाषा",
@@ -1869,6 +1989,9 @@ export const strings: Strings = {
   "settings.general.show_media": "मिडिया आफैँ देखाउनुहोस्",
   "settings.general.show_media_desc":
     "तस्बिर र भिडियो च्याटमै देखिन्छन्, वा एक थिचाइपछि खुल्छन्",
+  "settings.general.spam_filter": "स्प्याम फिल्टर",
+  "settings.general.spam_filter_desc":
+    "धेरै छिटो पोस्ट गर्ने, आफैंलाई दोहोर्‍याउने वा लिङ्कले भरिदिनेहरूका सार्वजनिक सन्देश लुकाउँछ। निजी सन्देश कहिल्यै फिल्टर हुँदैनन्।",
   "settings.general.reset": "सेटिङ रिसेट गर्नुहोस्",
   "settings.general.media_retention": "मिडिया यति समय राख्नुहोस्",
   "settings.general.media_retention_desc":
@@ -1885,7 +2008,7 @@ export const strings: Strings = {
     "रोजाइहरूलाई पूर्वनिर्धारितमा फर्काउँछ, तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नछोई",
   "settings.general.reset_title": "सेटिङ रिसेट गर्ने?",
   "settings.general.reset_body":
-    "रोजाइहरू पूर्वनिर्धारितमा फर्कन्छन्, जसमा रूप, भाषा, सूचना, पठाएको फिर्ता, र जडान (इन्टरनेट, Tor, गेटवे, पुल, रिले) पर्छन्। Airhop लक, मिडिया कति समय राखिन्छ, र तपाईंको स्थिति जस्तो सेट गर्नुभएको छ त्यस्तै रहन्छन्। तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नछोइकनै रहन्छन्।",
+    "रोजाइहरू पूर्वनिर्धारितमा फर्कन्छन्, जसमा रूप, भाषा, सूचना, पठाएको फिर्ता, र जडान (गेटवे, मेश पुल, रिले) पर्छन्। Airhop लक, मिडिया कति समय राखिन्छ, इन्टरनेटको स्विच, Tor र यसका ब्रिज, र तपाईंको स्थिति जस्तो सेट गर्नुभएको छ त्यस्तै रहन्छन्। तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नछोइकनै रहन्छन्।",
   "settings.general.reset_confirm": "रिसेट गर्नुहोस्",
 
   // ---- Settings: privacy and security ----
@@ -2020,6 +2143,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "प्रत्यक्ष आवाज बन्द गर्ने?",
   "settings.conn.live_voice_off_body":
     "माइक थिचिराख्दा बरु आवाज टिपोट रेकर्ड हुन्छ। छाड्दा त्यो पठिन्छ, र नबजाएसम्म कसैले सुन्दैन।",
+  "settings.conn.live_video": "लाइभ भिडियो",
+  "settings.conn.live_video_desc":
+    "आफ्नो क्यामेरा नजिकका मानिसहरूलाई स्ट्रिम गर्नुहोस्, र उनीहरूको हेर्नुहोस्",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor बाटो",
   "settings.conn.tor_desc":
@@ -2035,6 +2161,10 @@ export const strings: Strings = {
     "Tor अझै जोडिएको छैन। यो खुला रहन्छ र प्रयास गरिरहन्छ; मेश ट्याबले भन्नेछ कि यो कहिले बाटो दिँदै छ, वा यो सञ्जालले रोकेको छ कि।",
   "settings.conn.tor_failed":
     "Tor सुरु गर्न सकिएन। केही बेरपछि फेरि प्रयास गर्नुहोस्।",
+  "settings.conn.tor_bad_bridges":
+    "Tor ले यी ब्रिज लाइन प्रयोग गर्न सकेन। तिनलाई जाँच्नुहोस्, वा अर्को जडान छान्नुहोस्।",
+  "settings.conn.tor_port_busy":
+    "Tor लाई चाहिने पोर्ट अर्को एपले प्रयोग गरिरहेको छ, प्रायः Tor चलाउने अर्को एप। त्यसलाई बन्द गर्नुहोस्, अनि फेरि प्रयास गर्नुहोस्।",
   "settings.tor.status": "Tor स्थिति",
   "settings.tor.connection": "जडान",
   "settings.tor.mode_off": "सिधा",
@@ -2046,7 +2176,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "तपाईंले Tor चलाएको लुकाउँछ। Snowflake भन्दा छिटो, तर यी ब्रिज सार्वजनिक छन् र केही नेटवर्कले रोक्छन्।",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "सामान्य वेबसाइट भ्रमणजस्तो देखिएर तपाईंले Tor प्रयोग गरेको लुकाउँछ। अरूभन्दा रोक्न गाह्रो।",
   "settings.tor.mode_custom": "आफ्ना ब्रिज",
@@ -2180,6 +2310,8 @@ export const strings: Strings = {
   "settings.language.pending": "अर्को पटक खोल्दा",
   "settings.language.pending_a11y":
     "{value}, तपाईंले अर्को पटक Airhop खोल्दा लागू हुन्छ",
+  "settings.language.phone": "फोनको भाषा",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "अहिले पुनः खोल्नुहोस्",
   "settings.language.rtl_title": "पूरा गर्न Airhop फेरि खोल्नुहोस्",
   "settings.language.rtl_body":
@@ -2196,7 +2328,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "मेश रोकिएको, न खोजी न प्रसारण",
   "settings.status.invisible": "अदृश्य",
   "settings.status.invisible_desc":
-    "ब्लुटुथ खोजीबाट लुकेको, तपाईं जोडिने फोनले अझै तपाईंलाई देख्छन्",
+    "ब्लुटुथमा प्रसारण गरिँदैन, तर यो फोन ब्लुटुथ वा Wi-Fi बाट जोडिएका फोनले अझै तपाईंलाई देख्छन्",
   "settings.status.title": "स्थिति",
   "settings.status.set_a11y": "स्थिति {value} बनाउनुहोस्",
   "settings.status.edit": "स्थिति बदल्नुहोस्",
@@ -2475,6 +2607,11 @@ export const plurals: Plurals = {
     one: "{count} सन्देश फरवार्ड गर्नुहोस्",
     other: "{count} सन्देश फरवार्ड गर्नुहोस्",
   },
+  "chat.forward.too_many_public": {
+    one: "सार्वजनिक कोठाले एक जनाका लगातार {count} सन्देश मात्र देखाउँछ, त्यसैले बाँकी हराउँछन्। एक पटकमा थोरै फरवार्ड गर्नुहोस्।",
+    other:
+      "सार्वजनिक कोठाले एक जनाका लगातार {count} सन्देश मात्र देखाउँछ, त्यसैले बाँकी हराउँछन्। एक पटकमा थोरै फरवार्ड गर्नुहोस्।",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} जना बोल्दै",
     other: "{count} जना बोल्दै",
@@ -2558,14 +2695,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} सँग {count} सिक्कामा {balance} {unit} छ। हटाउँदा त्यो ब्यालेन्स यो यन्त्रबाट सधैँका लागि मेटिन्छ र यसको ब्याकअप छैन। पहिले ब्यालेन्स झिक्नुहोस् वा पठाउनुहोस्।",
-    other:
-      "{mint} सँग {count} सिक्कामा {balance} {unit} छ। हटाउँदा त्यो ब्यालेन्स यो यन्त्रबाट सधैँका लागि मेटिन्छ र यसको ब्याकअप छैन। पहिले ब्यालेन्स झिक्नुहोस् वा पठाउनुहोस्।",
-  },
   "wallet.mint.split_across": {
     one: "ब्यालेन्स {count} टकसारमा बाँडिएको छ। यसलाई एउटैमा सार्नुहोस्।",
     other: "ब्यालेन्स {count} टकसारमा बाँडिएको छ। यसलाई एउटैमा सार्नुहोस्।",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{mint} मा {count} भुक्तानी अझै टुङ्गिएको छैन। टकसार हटाउँदा त्यो छोडिन्छ, त्यसले अझै फिर्ता ल्याउन सक्ने सबैसँगै।",
+    other:
+      "{mint} मा {count} भुक्तानी अझै टुङ्गिएका छैनन्। टकसार हटाउँदा ती छोडिन्छन्, तिनले अझै फिर्ता ल्याउन सक्ने सबैसँगै।",
   },
 
   // ---- Wallet: Lightning ----
@@ -2579,6 +2716,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "{mints} बाट {count} नखर्चिएको सिक्का फिर्ता आयो।",
     other: "{mints} बाट {count} नखर्चिएका सिक्का फिर्ता आए।",
+  },
+  "wallet.backup.already_held": {
+    one: "भेटिएको {count} सिक्का पहिल्यै यो वालेटमा छ, त्यसैले फेरि गनिएन।",
+    other:
+      "भेटिएका {count} सिक्का पहिल्यै यो वालेटमा छन्, त्यसैले फेरि गनिएनन्।",
   },
   "wallet.backup.already_spent": {
     one: "{count} सिक्का भेटियो तर त्यो पहिले नै खर्च भइसकेको थियो, त्यसैले केही जम्मा भएन। यो सामान्य हो: तपाईंले कहिल्यै खर्च गरेको हरेक सिक्का टकसारले राख्ने अभिलेखमा रहिरहन्छ।",

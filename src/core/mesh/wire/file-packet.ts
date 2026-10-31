@@ -32,15 +32,17 @@ export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
 // reassembly times out on idle, not on total duration.
 export const MAX_SENT_IMAGE_BYTES = 256 * 1024; // 256 KiB
 
-// Longest video the camera will record, in seconds.
-//
-// A recording is sent exactly as it comes off the camera: `quality` in
-// expo-image-picker applies to stills, and there is no transcoder in the app, so
-// length is the only lever on size. At the 1 MiB ceiling a longer clip would be
-// refused after the user had already shot it, which is the worst moment to say
-// no. A picked video is still checked against the ceiling at pick time, since
-// nothing bounds what is already in the library.
+// Longest video the camera will record, in seconds. A recording is shrunk
+// before it is sent (video-prepare.ts), so this bounds the picture rather than
+// the file: 15 s still keeps sound and 10 fps at bitchat's 100 KiB, where a
+// minute drops to a silent 6 fps.
 export const MAX_VIDEO_SECONDS = 15;
+
+// The largest video a bitchat phone is sent: bitchat-ios's
+// LiveVideoLimits.maxVideoFileBytes, which both its clips and a finished live
+// stream are fitted to. A video for the Bluetooth room, or for a DM to anyone
+// not known to run Airhop, is shrunk under it.
+export const MAX_BITCHAT_VIDEO_BYTES = 100 * 1024; // 100 KiB
 
 // The largest transfer that reliably completes inside bitchat's 30-second
 // assembly window, with room for the retries a busy link forces. At the ~20ms
@@ -72,6 +74,42 @@ export function wireMediaName(
   extension: "jpg" | "m4a",
 ): string {
   return `${kind === "image" ? "img" : "voice"}_${uuidV4()}.${extension}`;
+}
+
+// A round video note is an ordinary video file, marked only by its name, so
+// bitchat and older builds show it as a plain video and nothing on the wire
+// changes. Never bitchat's `video_<16 hex>.mp4`: that names a finished live
+// stream, and a bitchat receiver would try to swap it into a live bubble.
+const VIDEO_NOTE_NAME = /^note_[0-9a-f-]{36}(?: \(\d+\))?\.mp4$/i;
+
+export function videoNoteName(): string {
+  return `note_${uuidV4()}.mp4`;
+}
+
+// The receiver may have suffixed a repeat arrival, as "name (1).mp4".
+export function isVideoNoteName(name: string | undefined): boolean {
+  return name !== undefined && VIDEO_NOTE_NAME.test(name);
+}
+
+// A shrunk video, named the way bitchat names its clips. No client reads the
+// name; it only has to stay clear of `video_`, below.
+export function videoClipName(): string {
+  return `clip_${uuidV4()}.mp4`;
+}
+
+// A finished live stream, resent as a file: `video_` and the stream ID as 16
+// lowercase hex. The name is the whole link between the file and the live
+// bubble it replaces, on every client.
+const LIVE_VIDEO_NAME = /^video_([0-9a-f]{16})(?: \(\d+\))?\.mp4$/i;
+
+export function liveVideoFileName(streamIDHex: string): string {
+  return `video_${streamIDHex.toLowerCase()}.mp4`;
+}
+
+// The stream a file finishes, or null for any other file.
+export function liveVideoStreamOf(name: string | undefined): string | null {
+  const match = name === undefined ? null : LIVE_VIDEO_NAME.exec(name);
+  return match === null ? null : match[1].toLowerCase();
 }
 
 // The wire name for an attachment.
@@ -481,6 +519,12 @@ export function encodeFilePacket(p: FilePacket): Uint8Array | null {
   return out;
 }
 
+// A u32 or u64 field as a number. Precise to 2^53, far past any size that
+// matters here.
+function bigEndian(bytes: Uint8Array): number {
+  return bytes.reduce((v, byte) => v * 256 + byte, 0);
+}
+
 // Decode a bitchat TLV blob. Tolerates bitchat's legacy encodings (fileSize
 // len 8, content len 2). Returns null when malformed or over the size cap.
 export function decodeFilePacket(data: Uint8Array): FilePacket | null {
@@ -526,7 +570,12 @@ export function decodeFilePacket(data: Uint8Array): FilePacket | null {
         fileName = dec.decode(value);
         break;
       case TLV_FILESIZE:
-        // value is the declared size; we trust the content bytes themselves.
+        // The content bytes are what is kept, but a declared size over the
+        // ceiling is refused outright, as bitchat-ios does, so all three
+        // clients reject the same packet.
+        if ((len === 4 || len === 8) && bigEndian(value) > MAX_FILE_BYTES) {
+          return null;
+        }
         break;
       case TLV_MIMETYPE:
         mimeType = dec.decode(value);

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home screen widget, at least 2 by 2 cells (110dp square below API 31).
+
+     The mark, then the reading: count, caption, and the time on a line of its
+     own and the full width, so neither a long caption nor a narrow cell can
+     ellipsize it away. View order is reading order, so TalkBack, reading the
+     tappable card as one item, says "3, peers in range, as of 14:05".
+
+     The count's box takes the height left over and autosizes into it, so a
+     small cell or a large system font steps the number down the scale rather
+     than clipping it. With no count, the message takes that space instead.
+
+     RemoteViews inflates only FrameLayout, LinearLayout, ImageView, TextView and
+     a few more; anything else shows "Can't load widget" with no crash in the
+     log. Colours resolve in the launcher against the system theme, which is why
+     the count and message states are separate views rather than one view
+     recoloured from code. Spacing follows src/ui/theme.ts: md-base padding, xs
+     and 2xs between lines.
+
+     The defaults are the "Open Airhop" state, which is also what the picker's
+     preview shows from API 31: no count, so no invented one. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/mesh_widget_background"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+  <ImageView
+      android:id="@+id/mesh_widget_mark"
+      android:layout_width="22dp"
+      android:layout_height="12dp"
+      android:layout_gravity="start"
+      android:importantForAccessibility="no"
+      android:src="@drawable/mesh_widget_mark"/>
+
+  <!-- Display figure, as the wallet balance is drawn: bold, leading pulled to
+       the size, slight negative tracking. Tabular so the width holds while the
+       count changes. -->
+  <TextView
+      android:id="@+id/mesh_widget_count"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:autoSizePresetSizes="@array/mesh_widget_count_sizes"
+      android:autoSizeTextType="uniform"
+      android:fontFamily="sans-serif"
+      android:fontFeatureSettings="tnum"
+      android:gravity="bottom|start"
+      android:includeFontPadding="false"
+      android:letterSpacing="-0.02"
+      android:maxLines="1"
+      android:textAlignment="viewStart"
+      android:textColor="@color/mesh_widget_ink"
+      android:textSize="30sp"
+      android:textStyle="bold"
+      android:visibility="gone"/>
+
+  <TextView
+      android:id="@+id/mesh_widget_caption"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:textAlignment="viewStart"
+      android:textColor="@color/mesh_widget_ink_secondary"
+      android:textSize="13sp"
+      android:visibility="gone"/>
+
+  <TextView
+      android:id="@+id/mesh_widget_as_of"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:ellipsize="end"
+      android:fontFeatureSettings="tnum"
+      android:maxLines="1"
+      android:textAlignment="viewStart"
+      android:textColor="@color/mesh_widget_ink_secondary"
+      android:textSize="11sp"
+      android:visibility="gone"/>
+
+  <!-- With no count, the message is the content, so it takes the ink and
+       FontSize.base the caption only supports. -->
+  <TextView
+      android:id="@+id/mesh_widget_message"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:ellipsize="end"
+      android:gravity="bottom|start"
+      android:maxLines="3"
+      android:text="@string/widget_unset"
+      android:textAlignment="viewStart"
+      android:textColor="@color/mesh_widget_ink"
+      android:textSize="15sp"/>
+</LinearLayout>

@@ -5,6 +5,13 @@
 // so the oldest go until both hold.
 import type { Packet } from "../wire/packet-codec";
 
+// A received packet also holds its wire form, and a crafted DEFLATE stream can
+// be far larger than the payload it inflates to, so the larger of the two is
+// what the packet actually costs.
+function retainedBytes(packet: Packet): number {
+  return Math.max(packet.payload.length, packet.wirePayload?.bytes.length ?? 0);
+}
+
 export class PacketStore {
   // Insertion-ordered, so the first key is always the oldest.
   private readonly packets = new Map<string, Packet>();
@@ -18,10 +25,10 @@ export class PacketStore {
   // Store under `key`, as the newest. A packet that could never fit the budget
   // is refused rather than emptying the store to make room for it.
   insert(key: string, packet: Packet): void {
-    if (packet.payload.length > this.byteBudget) return;
+    if (retainedBytes(packet) > this.byteBudget) return;
     this.remove(key);
     this.packets.set(key, packet);
-    this.bytes += packet.payload.length;
+    this.bytes += retainedBytes(packet);
     while (this.packets.size > this.capacity || this.bytes > this.byteBudget) {
       const oldest = this.packets.keys().next().value;
       if (oldest === undefined) break;
@@ -37,7 +44,7 @@ export class PacketStore {
     const packet = this.packets.get(key);
     if (packet === undefined) return;
     this.packets.delete(key);
-    this.bytes -= packet.payload.length;
+    this.bytes -= retainedBytes(packet);
   }
 
   removeWhere(drop: (packet: Packet) => boolean): void {

@@ -368,22 +368,64 @@ const PLACEHOLDER = /\{(\w+)\}/g;
 export const ISOLATE_FIRST = "\u2068";
 export const ISOLATE_POP = "\u2069";
 
-// Strips the isolates back out, for callers that compare rendered text rather
-// than showing it. See `@utils/chat-search`.
+// A line built only from values, such as "{sender}: {preview}", has no strong
+// character of its own, since isolates are skipped when a paragraph picks its
+// direction, so it falls back to left to right and an Arabic notification reads
+// "preview :sender". Such a template is led with the mark for its language's
+// direction (RLM or LRM). By language rather than layout: a notification or a
+// share leaves the app's frame, and the language is what the line is written
+// in. `directionMark` in `layout.ts` is the layout's, for a line assembled in
+// JSX.
+const RLM = "\u200f";
+const LRM = "\u200e";
+const STRONG_LETTER = /\p{L}/u;
+const VALUE_ONLY = new Map<string, boolean>();
+
+function isValueOnly(template: string): boolean {
+  let valueOnly = VALUE_ONLY.get(template);
+  if (valueOnly === undefined) {
+    // A template with no placeholder is the catalog's own text, a glyph or a
+    // separator, and is left as written.
+    PLACEHOLDER.lastIndex = 0;
+    valueOnly =
+      PLACEHOLDER.test(template) &&
+      !STRONG_LETTER.test(template.replace(PLACEHOLDER, ""));
+    VALUE_ONLY.set(template, valueOnly);
+  }
+  return valueOnly;
+}
+
+// Strips the isolates and direction mark `t()` adds back out, for callers that
+// compare rendered text rather than showing it, and before text leaves the
+// screen (sent, shared, stored). See `@utils/chat-search`.
+//
+// Isolates go wherever they are. A direction mark goes only at the start, the
+// one place `interpolate` writes it: an LRM or RLM further in is one a person
+// typed into a message to steer their own text, and copying the message keeps
+// it.
+const LEADING_MARK = /^[\u200e\u200f]/;
+const ISOLATES = /[\u2068\u2069]/g;
+
 export function stripIsolates(text: string): string {
-  return text.replace(/[\u2068\u2069]/g, "");
+  return text.replace(LEADING_MARK, "").replace(ISOLATES, "");
 }
 
 // A value's own bidi controls are stripped first: an isolate or override inside
 // it can only fight the isolate around it, and a pop would close it early and
 // let an override reorder the rest of the sentence.
-function interpolate(template: string, vars?: TranslationVars): string {
+function interpolate(
+  template: string,
+  language: LanguageCode,
+  vars?: TranslationVars,
+): string {
   if (vars === undefined) return template;
-  return template.replace(PLACEHOLDER, (match, name: string) => {
+  const filled = template.replace(PLACEHOLDER, (match, name: string) => {
     const value = vars[name];
     if (value === undefined) return match;
     return `${ISOLATE_FIRST}${stripInvisibles(String(value))}${ISOLATE_POP}`;
   });
+  if (!isValueOnly(template)) return filled;
+  return `${isRTL(language) ? RLM : LRM}${filled}`;
 }
 
 // ---- Translators ----
@@ -444,7 +486,7 @@ function getT(language: LanguageCode): Translator {
   if (translator === undefined) {
     translator = Object.assign(
       (key: TranslationKey, vars?: TranslationVars): string =>
-        interpolate(catalogFor(language).strings[key], vars),
+        interpolate(catalogFor(language).strings[key], language, vars),
       { language },
     );
     TRANSLATORS.set(language, translator);
@@ -468,7 +510,7 @@ function getTPlural(language: LanguageCode): PluralTranslator {
         (count === 1 ? forms["=1"] : undefined) ??
         forms[selectPlural(language, count)] ??
         forms.other;
-      return interpolate(template, {
+      return interpolate(template, language, {
         count: formatCount(language, count),
         ...vars,
       });

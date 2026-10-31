@@ -54,7 +54,11 @@ export default function AlertModal(): React.JSX.Element {
       // the screen's SafeAreaView, so it has to bake the inset in itself).
       sheetStyle={[styles.sheet, { paddingBottom: Spacing.xl + insets.bottom }]}
     >
-      <Text style={styles.title}>{title}</Text>
+      {/* A header, so a screen reader opening the alert says what it is
+          about before reading the buttons. */}
+      <Text style={styles.title} accessibilityRole="header">
+        {title}
+      </Text>
       {message ? <Text style={styles.message}>{message}</Text> : null}
       <View style={styles.actions}>
         {ordered.map((button, i) => {

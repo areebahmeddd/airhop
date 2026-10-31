@@ -102,7 +102,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Airhop uses the camera to scan a contact's QR code, and to capture photos and videos to share with nearby peers.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Airhop uses the microphone to record voice notes and to carry live voice to nearby peers.</string>
+	<string>Airhop uses the microphone to record voice and video notes and to carry live voice to nearby peers.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Airhop accesses your photo library to share images and videos over the mesh.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

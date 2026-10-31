@@ -45,19 +45,19 @@
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <!-- Android 13+ (API 33) runtime permission for WiFi Aware discovery. The
        same-platform WiFi fast path is optional, so a denial never blocks the
-       BLE mesh. On API <=32 the location permissions above already cover it.
+       BLE mesh. Below API 33 Aware needs fine location instead, which is asked
+       for only on API <=30, where BLE needs it, so Android 12 and 12L go
+       without the fast path rather than see a location prompt for it.
 
        neverForLocation for the same reason as BLUETOOTH_SCAN: a WiFi Aware peer
        handle is an opaque discovery token, not a position. bitchat/android
        declares the flag here too. -->
   <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:usesPermissionFlags="neverForLocation"/>
-  <!-- Android 17 gates local network access behind a runtime permission, and a
-       WiFi Aware data path is a raw socket over a link-local IPv6 address, so
-       it counts. Opt-in on Android 16 and enforced for apps targeting 17, which
-       this one does not yet - declared now so the targetSdk bump does not
-       silently break the fast path. It sits in the NEARBY_DEVICES group beside
-       NEARBY_WIFI_DEVICES, so granting one covers the other and the user sees
-       no second dialog. -->
+  <!-- Android 17 drops local network traffic without this, including the
+       Wi-Fi Aware data path (link-local IPv6) and the LAN transport. Once
+       declared it must be granted at any target SDK, so ble-permissions.ts
+       requests it on API 37+, in the Nearby devices group the Bluetooth
+       permissions already use. -->
   <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
   <!-- Android 13+ runtime permission for local message notifications -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
@@ -70,10 +70,15 @@
        updating itself by any other route. -->
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+  <!-- No broad media access. From API 33 the image picker is the system photo
+       picker and every media library call saves without reading, so neither
+       asks for these, and Play removes apps that hold them without a core
+       need. Stripped from what the libraries merge in: expo-media-library's
+       partial-access grant, and expo-screen-capture's READ_MEDIA_IMAGES, which
+       on API 33 only is how it sees a screenshot, so the screenshot notice is
+       silent on Android 13. -->
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" tools:node="remove"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
@@ -93,6 +98,11 @@
   <!-- The same-platform fast path is optional; phones without it run on the
        BLE mesh. -->
   <uses-feature android:name="android.hardware.wifi.aware" android:required="false"/>
+  <!-- react-native-skia declares Vulkan 1.1 required, which would hide the
+       whole app from every phone without it for the sake of one screen. The
+       globe picker checks Skia.gpu.isAvailable and offers the geohash field
+       alone where Skia cannot draw. -->
+  <uses-feature android:name="android.hardware.vulkan.version" tools:node="remove"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
@@ -174,6 +184,23 @@
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
       </intent-filter>
+    </receiver>
+    <!-- The home screen widget. exported=true because the system widget host
+         delivers APPWIDGET_UPDATE from outside the app; the other three are
+         protected broadcasts, so nothing but the system can send them. -->
+    <receiver
+      android:name="org.onemindlabs.airhop.widget.AirhopMeshWidget"
+      android:exported="true"
+      android:label="@string/widget_label">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+        <action android:name="android.intent.action.TIME_SET"/>
+        <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+        <action android:name="android.intent.action.LOCALE_CHANGED"/>
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/mesh_widget_info"/>
     </receiver>
   </application>
 </manifest>

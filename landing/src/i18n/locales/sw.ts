@@ -171,9 +171,9 @@ const strings: Strings = {
     "Viungo vya mwaliko kwa chumba, au orodha iliyotiwa saini ya hadi watu 16.",
   "home.features.messaging.board.name": "Ubao wa matangazo",
   "home.features.messaging.board.line": "Matangazo yaliyobandikwa eneo fulani hadi siku saba.",
-  "home.features.messaging.voice.name": "Sauti ya moja kwa moja",
+  "home.features.messaging.voice.name": "Sauti na video ya moja kwa moja",
   "home.features.messaging.voice.line":
-    "Shikilia kipaza sauti na uzungumze na yeyote aliye ndani ya masafa, kama redio ya mkononi.",
+    "Shikilia kipaza sauti uzungumze, au tangaza moja kwa moja kwa kamera, kwa yeyote aliye ndani ya masafa.",
   "home.features.messaging.notes.name": "Ujumbe wa sauti",
   "home.features.messaging.notes.line": "Sauti iliyorekodiwa, haraka kuliko kuandika maelekezo.",
   "home.features.messaging.files.name": "Picha, video na faili",

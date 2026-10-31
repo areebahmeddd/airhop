@@ -7,7 +7,11 @@
 // both Chats sub-tabs, so App.tsx mounts the chooser alongside this list.
 
 import { t, tPlural, useT, useTPlural, type TranslationKey } from "@i18n";
-import { directionMark, trailingSwipeActions } from "@i18n/layout";
+import {
+  chevronForward,
+  directionMark,
+  trailingSwipeActions,
+} from "@i18n/layout";
 import { fillRichText, useRichText } from "@i18n/rich-text";
 import { held } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
@@ -453,7 +457,7 @@ export default function ChannelList({
       isMuted ? t("chat.a11y.muted") : null,
       isPinned ? t("chat.a11y.pinned") : null,
       draft.length > 0
-        ? `${t("chat.draft_prefix")} ${draft}`
+        ? t("chat.draft_preview", { draft })
         : last
           ? t("chat.sender_preview", {
               sender: last.isMine ? t("chat.you") : last.senderNickname,
@@ -532,11 +536,18 @@ export default function ChannelList({
           {/* Foot line: preview + unread badge */}
           <View style={styles.channelRowFoot}>
             {draft.length > 0 ? (
-              <Text style={styles.channelPreview} numberOfLines={1}>
-                <Text style={styles.channelPreviewDraft}>
-                  {T("chat.draft_prefix")}{" "}
-                </Text>
-                {draft}
+              // One template, so a language can put the draft where its
+              // grammar wants it: the template's own words carry the draft
+              // emphasis and the draft itself reads as any preview does.
+              <Text
+                style={[styles.channelPreview, styles.channelPreviewDraft]}
+                numberOfLines={1}
+              >
+                {fillRichText(T("chat.draft_preview"), {
+                  draft: (
+                    <Text style={styles.channelPreviewDraftBody}>{draft}</Text>
+                  ),
+                })}
               </Text>
             ) : last ? (
               <Text style={styles.channelPreview} numberOfLines={1}>
@@ -656,7 +667,7 @@ export default function ChannelList({
               <View style={styles.sectionHeaderSpacer} />
               <View style={styles.trailingIconBtn}>
                 <Feather
-                  name={isCollapsed ? "chevron-right" : "chevron-down"}
+                  name={isCollapsed ? chevronForward : "chevron-down"}
                   size={14}
                   color={Colors.textMuted}
                 />
@@ -986,6 +997,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     channelPreviewDraft: {
       color: Colors.textPrimary,
       fontWeight: FontWeight.semibold,
+    },
+    channelPreviewDraftBody: {
+      color: Colors.textSecondary,
+      fontWeight: FontWeight.regular,
     },
     channelPreviewEmpty: {
       fontSize: FontSize.sm,

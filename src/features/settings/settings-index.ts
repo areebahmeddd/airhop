@@ -41,11 +41,13 @@ export type SettingId =
   | "background"
   | "auto-start-boot"
   | "live-voice"
+  | "live-video"
   | "mesh-bridge"
   | "gateway"
   | "transfer"
   | "wipe"
   | "undo"
+  | "spam-filter"
   | "media-quality"
   | "media-retention"
   | "show-media"
@@ -139,6 +141,14 @@ export const SETTINGS_INDEX = [
     sectionKey: HUB,
     icon: "mic",
     target: { kind: "row", view: "root", id: "live-voice" },
+  },
+  {
+    key: "live-video",
+    labelKey: "settings.conn.live_video",
+    descriptionKey: "settings.conn.live_video_desc",
+    sectionKey: HUB,
+    icon: "video",
+    target: { kind: "row", view: "root", id: "live-video" },
   },
   {
     key: "mesh-bridge",
@@ -302,6 +312,14 @@ export const SETTINGS_INDEX = [
     sectionKey: "settings.section.general",
     icon: "rotate-ccw",
     target: { kind: "row", view: "general", id: "undo" },
+  },
+  {
+    key: "spam-filter",
+    labelKey: "settings.general.spam_filter",
+    descriptionKey: "settings.general.spam_filter_desc",
+    sectionKey: "settings.section.general",
+    icon: "filter",
+    target: { kind: "row", view: "general", id: "spam-filter" },
   },
   {
     key: "media-quality",

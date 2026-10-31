@@ -184,8 +184,38 @@ export async function getPinLocation(): Promise<PinFix | null> {
   }
 }
 
-// Drop the cached fix. Called on panic wipe so a stale position can't outlive
-// the identity that observed it.
+let hereCache: PinFix | null = null;
+let hereInFlight: Promise<PinFix | null> | null = null;
+let hereGeneration = 0;
+
+// Where the reader is now, for measuring the distance to a received pin. Held
+// to the bounds a sent pin is: a distance drawn from an hour-old or
+// cell-tower fix would point confidently at the wrong place, where null lets
+// the card say it has no fix. Shared while the fix is younger than a pin may
+// be, and in flight once, so a thread of cards costs one fix.
+export async function getFreshLocation(): Promise<Coords | null> {
+  if (!(await hasLocationPermission())) {
+    hereCache = null;
+    return null;
+  }
+  if (hereCache !== null && Date.now() - hereCache.takenAtMs < PIN_MAX_AGE_MS) {
+    return hereCache;
+  }
+  const generation = hereGeneration;
+  hereInFlight ??= getPinLocation().finally(() => {
+    hereInFlight = null;
+  });
+  const fix = await hereInFlight;
+  // A wipe while the fix was coming must not have it land in the new cache.
+  if (generation !== hereGeneration) return null;
+  hereCache = fix;
+  return fix;
+}
+
+// Drop the cached fixes. Called on panic wipe so a stale position can't
+// outlive the identity that observed it.
 export function clearLocationCache(): void {
   cached = null;
+  hereCache = null;
+  hereGeneration += 1;
 }

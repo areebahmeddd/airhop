@@ -4,7 +4,11 @@
 // The count is substituted, so the banner carries directional isolates.
 // Compared without them: pinning them here would test `interpolate`.
 import { stripIsolates } from "@i18n";
-import { computeMeshBanners, type MeshBannerInputs } from "../mesh-state-store";
+import {
+  computeMeshBanners,
+  locationOffBanner,
+  type MeshBannerInputs,
+} from "../mesh-state-store";
 
 // A healthy, fully-online baseline. Individual tests override one field.
 const HEALTHY: MeshBannerInputs = {
@@ -270,6 +274,30 @@ describe("computeMeshBanners", () => {
       bridgePeopleAcross: 4,
     });
     expect(banners.map((b) => b.key)).toEqual([]);
+  });
+
+  // The location channels still run over Bluetooth without a grant, so the note
+  // says how far they reach rather than calling them unavailable, and offers the
+  // grant itself rather than a trip to Settings.
+  it("says location channels reach nearby only, and offers to turn it on", () => {
+    const banner = computeMeshBanners({
+      ...HEALTHY,
+      locationGranted: false,
+    })[0];
+    expect(banner).toEqual({
+      key: "location",
+      label: "Location off · location channels reach nearby only",
+      tone: "caution",
+      action: { label: "Turn on", kind: "enable-location" },
+    });
+  });
+
+  it("builds the in-room note with the same tone and way out", () => {
+    const banner = locationOffBanner("Any label");
+    expect(banner.label).toBe("Any label");
+    expect(banner.tone).toBe("caution");
+    expect(banner.action?.kind).toBe("enable-location");
+    expect(banner.dismissible).toBeUndefined();
   });
 
   it("stacks location, Nostr and Tor together when all apply", () => {

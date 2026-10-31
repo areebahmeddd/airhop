@@ -61,7 +61,7 @@ Check for:
 - A send path that puts a packet of a signed type on the air without `signPacket`: **FAIL**
 - A receive path that acts on a signed type without `verifyPacket` against the sender's resolved key: **FAIL**
 - An unsigned kind trusted on its outer sender ID: **FAIL**
-- A `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME` or `BOARD_POST` relayed, or deduplicated, before `mayRelay` passes it: **FAIL**
+- A `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` or `BOARD_POST` relayed, or deduplicated, before `mayRelay` passes it: **FAIL**
 - Anything tracked in `gossip-sync.ts` for serving before its handler accepted it, or served from a store another kind can evict: **FAIL**
 - A relay of a packet addressed to this node or sent under its own ID, or a relay TTL above what `relayDecision` allows: **FAIL**
 - Any UI render path (`src/features/`) that displays a message before signature verification: **FAIL**

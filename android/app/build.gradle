@@ -131,6 +131,14 @@ android {
     }
 }
 
+// The camera's document scanner, which nothing calls (no scanDocumentAsync). The
+// prebuilt expo-camera module depends on it whatever
+// expo.camera.document-scanner-enabled says, and checks for the class before
+// using it. Barcode scanning stays, for QR codes.
+configurations.configureEach {
+    exclude group: "com.google.android.gms", module: "play-services-mlkit-document-scanner"
+}
+
 dependencies {
     // Versioned by the React Native Gradle plugin.
     implementation("com.facebook.react:react-android")
@@ -139,6 +147,18 @@ dependencies {
     // libs/. A file, not a Maven coordinate: this repository produces and
     // hashes the artifact.
     implementation(files("libs/IPtProxy.aar"))
+
+    // Live video's camera (AirhopVideoModule). expo-camera uses CameraX too, and
+    // its artifacts align on one version, so this also sets the QR scanner's.
+    implementation("androidx.camera:camera-core:1.6.2")
+    implementation("androidx.camera:camera-camera2:1.6.2")
+    implementation("androidx.camera:camera-lifecycle:1.6.2")
+    implementation("androidx.camera:camera-view:1.6.2")
+
+    // Shrinking a video before it is sent (VideoTranscoder). Media3's modules
+    // must share one version, so these follow the one expo-video pins.
+    implementation("androidx.media3:media3-transformer:1.9.1")
+    implementation("androidx.media3:media3-effect:1.9.1")
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";

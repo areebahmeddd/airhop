@@ -170,8 +170,9 @@ const strings: Strings = {
     "Liên kết mời vào phòng, hoặc một danh sách có chữ ký tối đa 16 người.",
   "home.features.messaging.board.name": "Bảng tin",
   "home.features.messaging.board.line": "Thông báo ghim vào một khu vực tối đa bảy ngày.",
-  "home.features.messaging.voice.name": "Thoại trực tiếp",
-  "home.features.messaging.voice.line": "Giữ micro và nói với bất kỳ ai trong tầm, như bộ đàm.",
+  "home.features.messaging.voice.name": "Thoại và video trực tiếp",
+  "home.features.messaging.voice.line":
+    "Giữ micro để nói, hoặc phát trực tiếp bằng camera, tới bất kỳ ai trong tầm.",
   "home.features.messaging.notes.name": "Tin nhắn thoại",
   "home.features.messaging.notes.line": "Âm thanh đã ghi, nhanh hơn gõ chỉ đường.",
   "home.features.messaging.files.name": "Ảnh, video và tệp",

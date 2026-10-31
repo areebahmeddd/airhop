@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Airhop mark in the home screen widget's corner, 2dp per cell.
+
+     Generated from landing/public/brand/airhop-icon.svg, which is a pure grid of
+     56px cells on a 1024px canvas, like notification_icon.xml. Here the
+     viewport is the mark's own bounding box, 11 cells by 6, one unit per cell,
+     so the drawable carries no letterboxing to offset in the layout.
+
+     Filled with the widget's ink rather than tinted from the layout: this is
+     not a mask like the notification icon, and values-night swaps the colour.
+     The mark is mirror-symmetric, so right-to-left needs no flipped copy. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="12dp"
+    android:viewportWidth="11"
+    android:viewportHeight="6">
+  <path
+      android:fillColor="@color/mesh_widget_ink"
+      android:pathData="M0,0h1v1h-1zM1,0h1v1h-1zM9,0h1v1h-1zM10,0h1v1h-1zM1,1h1v1h-1zM2,1h1v1h-1zM8,1h1v1h-1zM9,1h1v1h-1zM2,2h1v1h-1zM3,2h1v1h-1zM5,2h1v1h-1zM7,2h1v1h-1zM8,2h1v1h-1zM3,3h1v1h-1zM4,3h1v1h-1zM5,3h1v1h-1zM6,3h1v1h-1zM7,3h1v1h-1zM4,4h1v1h-1zM5,4h1v1h-1zM6,4h1v1h-1zM5,5h1v1h-1z"/>
+</vector>

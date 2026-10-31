@@ -172,9 +172,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "Tablón de anuncios",
   "home.features.messaging.board.line":
     "Avisos fijados a una zona durante un máximo de siete días.",
-  "home.features.messaging.voice.name": "Voz en directo",
+  "home.features.messaging.voice.name": "Voz y vídeo en directo",
   "home.features.messaging.voice.line":
-    "Mantén pulsado el micro y habla con quien esté al alcance, estilo walkie-talkie.",
+    "Mantén pulsado el micro para hablar, o emite en directo con la cámara, a quien esté al alcance.",
   "home.features.messaging.notes.name": "Notas de voz",
   "home.features.messaging.notes.line": "Audio grabado, más rápido que escribir indicaciones.",
   "home.features.messaging.files.name": "Fotos, vídeo y archivos",

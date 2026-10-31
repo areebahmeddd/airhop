@@ -237,6 +237,35 @@ describe("LinkRegistry", () => {
       });
     });
 
+    it("fastestLinks() keeps one link per peer, its fastest", () => {
+      links.open("ble", "c:1");
+      links.open("ble", "p:1");
+      links.open("lan", "lan-in-1");
+      links.open("ble", "c:2");
+      links.bind("c:1", "peer-a");
+      links.bind("p:1", "peer-a");
+      links.bind("lan-in-1", "peer-a");
+      links.bind("c:2", "peer-b");
+
+      expect(links.fastestLinks()).toEqual([
+        { id: "lan-in-1", kind: "lan" },
+        { id: "c:2", kind: "ble" },
+      ]);
+    });
+
+    it("fastestLinks() keeps every link no peer has announced on", () => {
+      links.open("ble", "c:1");
+      links.open("ble", "p:9");
+      links.open("wifi", "wifi-1");
+      links.bind("c:1", "peer-a");
+      links.bind("wifi-1", "peer-a");
+
+      expect(links.fastestLinks()).toEqual([
+        { id: "wifi-1", kind: "wifi" },
+        { id: "p:9", kind: "ble" },
+      ]);
+    });
+
     it("reports nothing for an unknown peer", () => {
       expect(links.linkFor("peer-a")).toBeUndefined();
       expect(links.linksFor("peer-a")).toEqual([]);
@@ -384,6 +413,22 @@ describe("LinkRegistry", () => {
       await expect(links.broadcast("AAAA")).resolves.toBe(false);
     });
 
+    it("broadcastFastest() writes each peer's fastest link and counts refusals", async () => {
+      links.open("ble", "c:1");
+      links.open("lan", "lan-out-1");
+      links.open("ble", "c:2");
+      links.bind("c:1", "peer-a");
+      links.bind("lan-out-1", "peer-a");
+      links.bind("c:2", "peer-b");
+      rec.fail("c:2");
+
+      await expect(links.broadcastFastest("AAAA")).resolves.toEqual({
+        sent: 1,
+        refused: 1,
+      });
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["lan-out-1"]);
+    });
+
     it("a refused write never closes the link", async () => {
       links.open("ble", "c:1");
       rec.fail("c:1");
@@ -420,6 +465,92 @@ describe("LinkRegistry", () => {
       await Promise.resolve();
 
       expect(rec.writes).toHaveLength(0);
+    });
+  });
+
+  // Two phones that meet each dial the other, so a Bluetooth neighbour is
+  // usually two links. Writing both doubles the airtime of everything flooded,
+  // and relaying down the second one echoes a packet back to its sender.
+  describe("dual-role fanout", () => {
+    beforeEach(() => {
+      links.open("ble", "c:a");
+      links.open("ble", "p:a");
+      links.open("ble", "c:b");
+      links.open("ble", "p:b");
+      links.bind("c:a", "peer-a");
+      links.bind("p:a", "peer-a");
+      links.bind("c:b", "peer-b");
+      links.bind("p:b", "peer-b");
+    });
+
+    it("broadcast() writes once per peer, on its most recently bound link", async () => {
+      links.open("ble", "c:new");
+
+      await links.broadcast("AAAA");
+
+      // And still every link nobody has announced on.
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["p:a", "p:b", "c:new"]);
+    });
+
+    it("relay() sends nothing back to the peer it came from, on either link", async () => {
+      links.relay("AAAA", "c:a");
+      await Promise.resolve();
+
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["p:b"]);
+    });
+
+    it("a refused write falls back to the peer's other link", async () => {
+      rec.fail("p:a");
+
+      await expect(links.broadcast("AAAA", { kind: "ble" })).resolves.toBe(
+        true,
+      );
+
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["p:b", "c:a"]);
+    });
+
+    it("everyLink writes every link, so a second link still hears an announce", async () => {
+      await links.broadcast("AAAA", { everyLink: true });
+
+      expect(rec.writes.map((w) => w.linkID)).toEqual([
+        "c:a",
+        "p:a",
+        "c:b",
+        "p:b",
+      ]);
+    });
+
+    it("keeps one copy per transport for a peer held on two", async () => {
+      links.open("lan", "lan-out-1");
+      links.bind("lan-out-1", "peer-a");
+
+      await links.broadcast("AAAA");
+
+      expect(rec.writes.map((w) => w.linkID)).toEqual([
+        "p:a",
+        "p:b",
+        "lan-out-1",
+      ]);
+    });
+
+    it("excludes the ingress peer on every transport", async () => {
+      links.open("lan", "lan-out-1");
+      links.bind("lan-out-1", "peer-a");
+
+      await links.broadcast("AAAA", { kind: "lan", exclude: "c:a" });
+
+      expect(rec.writes).toHaveLength(0);
+    });
+
+    it("fanoutLinks() names the first link of every write", () => {
+      expect(links.fanoutLinks({ kind: "ble", exclude: "p:b" })).toEqual([
+        "p:a",
+      ]);
+      links.unbind("peer-a");
+      expect(links.fanoutLinks({ kind: "ble", exclude: "p:b" })).toEqual([
+        "c:a",
+        "p:a",
+      ]);
     });
   });
 });

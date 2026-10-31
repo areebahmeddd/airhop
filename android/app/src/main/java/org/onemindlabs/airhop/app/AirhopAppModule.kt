@@ -1,6 +1,6 @@
 // AirhopAppModule: process-level operations that belong to no radio.
 //
-// Four of them, each here because only this process can do it. Restart, since
+// Five of them, each here because only this process can do it. Restart, since
 // layout direction moves only on a fresh process and a warm start recreates
 // the Activity under a surviving JS context. Recent log, since Android lets a
 // process read its own logcat lines and nobody else's. APK copy, since sharing
@@ -8,12 +8,16 @@
 // Ring alert, since a notification sounds once and from Android 15 repeated
 // ones from the same app get quieter, while the foreground service already
 // holds the process up for a ringtone and vibration loop the way the telecom
-// stack rings a call.
+// stack rings a call. And what the app shows outside itself: the mesh snapshot
+// on the background notice and the home screen widget, and the notice's
+// settings page. The service's start and stop stay with the radios in
+// AirhopBLEModule.
 //
 // Policy stays in TypeScript: this file decides nothing about when to ring or
 // for how long, only honours ringer mode and Do Not Disturb, and stops when
-// JS says so or the duration runs out. Mirrors AirhopAppModule.swift, which
-// rejects everything but the log.
+// JS says so or the duration runs out. It counts no peers either, only passes
+// on what JS counted. Mirrors AirhopAppModule.swift, which runs the log and the
+// mesh snapshot and rejects the rest.
 package org.onemindlabs.airhop.app
 
 import android.app.NotificationManager
@@ -38,6 +42,9 @@ import com.facebook.react.bridge.ReactMethod
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import org.onemindlabs.airhop.service.AirhopForegroundService
+import org.onemindlabs.airhop.widget.AirhopMeshWidget
+import org.onemindlabs.airhop.widget.MeshSnapshot
 
 private const val TAG = "AirhopAppModule"
 
@@ -57,8 +64,11 @@ private val LOG_TAGS =
         "AirhopTorModule",
         "AirhopIPtProxy",
         "AirhopVoiceModule",
+        "AirhopVideoModule",
         "AirhopForegroundService",
+        "AirhopBootService",
         "AirhopAppModule",
+        "AirhopMeshWidget",
         "AndroidRuntime",
     )
 
@@ -134,6 +144,57 @@ class AirhopAppModule(private val reactContext: ReactApplicationContext) :
             .putBoolean(KEY_AUTO_START, enabled)
             .apply()
         promise.resolve(null)
+    }
+
+    // The one reading the background notice and the home screen widget share.
+    // Kept while the service is down, so a later start opens on this count.
+    @ReactMethod
+    fun setMeshSnapshot(
+        count: Double,
+        meshOn: Boolean,
+        bluetoothOff: Boolean,
+        atMs: Double,
+        promise: Promise,
+    ) {
+        val snapshot = MeshSnapshot.of(count.toInt(), meshOn, bluetoothOff, atMs.toLong())
+        if (snapshot == null) {
+            promise.reject("INVALID", "Not a snapshot: count $count, at $atMs")
+            return
+        }
+        try {
+            AirhopForegroundService.setReading(snapshot.count, snapshot.bluetoothOff)
+            AirhopMeshWidget.publish(reactContext.applicationContext, snapshot)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.w(TAG, "Mesh snapshot not published: ${e.message}")
+            promise.reject("PUBLISH_FAILED", e.message, e)
+        }
+    }
+
+    // For the panic wipe: the widget back to "Open Airhop" and the notice's
+    // count to zero, since both outlive the identity in this process.
+    @ReactMethod
+    fun clearMeshSnapshot(promise: Promise) {
+        try {
+            AirhopForegroundService.setReading(0, false)
+            AirhopMeshWidget.clear(reactContext.applicationContext)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.w(TAG, "Mesh snapshot not cleared: ${e.message}")
+            promise.reject("CLEAR_FAILED", e.message, e)
+        }
+    }
+
+    // The background notice's system settings page, to quiet or hide it.
+    @ReactMethod
+    fun openBackgroundNoticeSettings(promise: Promise) {
+        try {
+            AirhopForegroundService.openChannelSettings(reactContext)
+            promise.resolve(true)
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not open notification settings: ${e.message}")
+            promise.resolve(false)
+        }
     }
 
     // Copies this build's own APK into the cache and hands back a file:// URI

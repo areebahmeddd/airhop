@@ -164,9 +164,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "방 초대 링크, 또는 최대 16명의 서명된 명단.",
   "home.features.messaging.board.name": "게시판",
   "home.features.messaging.board.line": "한 지역에 최대 7일 동안 붙어 있는 공지.",
-  "home.features.messaging.voice.name": "실시간 음성",
+  "home.features.messaging.voice.name": "실시간 음성과 영상",
   "home.features.messaging.voice.line":
-    "마이크를 누른 채 범위 안의 누구와도 이야기합니다. 무전기처럼.",
+    "마이크를 눌러 말하거나 카메라로 라이브를 켜세요. 범위 안의 누구에게나 닿습니다.",
   "home.features.messaging.notes.name": "음성 메모",
   "home.features.messaging.notes.line": "녹음된 음성. 길 안내를 입력하는 것보다 빠릅니다.",
   "home.features.messaging.files.name": "사진, 영상, 파일",

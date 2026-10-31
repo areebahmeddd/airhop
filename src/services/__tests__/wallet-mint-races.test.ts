@@ -458,7 +458,6 @@ describe("restoring a different phrase", () => {
     await restoreFromRecoveryPhrase({
       phrase: generateRecoveryPhrase(),
       mintUrls: [fabric.url],
-      unit: UNIT,
     });
 
     // The new words cannot rebuild these, so they read as uncovered until a

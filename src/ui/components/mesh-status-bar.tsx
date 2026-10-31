@@ -1,8 +1,8 @@
 // MeshStatusBar component.
 // A stack of slim contextual banners surfacing Mesh-tab state: a deliberate
 // pause (Away), hard blockers (Bluetooth off, permission), and calm notes
-// (location off, relaying via Nostr, Tor on, gateway on). Shown only on the
-// Mesh tab.
+// (location off, relaying via Nostr, Tor on, gateway on). Shown on the Mesh
+// tab, and inside a location channel for its one note (location off).
 //
 // Each banner carries a semantic tone, surfaced only as the color of the leading
 // dot so distinct network states read at a glance: red = blocker, amber = a
@@ -22,6 +22,7 @@ import type {
 } from "@store/mesh-state-store";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useAnnounce } from "../hooks/use-announce";
 import {
   FontSize,
   FontWeight,
@@ -98,6 +99,8 @@ function actionHint(kind: BannerAction): string {
       return t("mesh.banner.hint.battery_settings");
     case "open-tor-settings":
       return t("mesh.banner.hint.tor_settings");
+    case "enable-location":
+      return t("mesh.banner.hint.enable_location");
   }
 }
 
@@ -111,6 +114,8 @@ export default function MeshStatusBar({
   // is what makes them re-read on a language change rather than relying on an
   // ancestor to re-render.
   void useLanguage();
+  // The live region below is Android's; this is VoiceOver's.
+  useAnnounce(banners.map((banner) => banner.label).join("\n"));
   if (banners.length === 0) return null;
 
   return (
@@ -173,7 +178,10 @@ export default function MeshStatusBar({
               // the target to the 44pt floor.
               hitSlop={hitSlopFor(RESUME_PILL_HEIGHT)}
               accessibilityRole="button"
-              accessibilityLabel={`${banner.action.label}: ${banner.label}`}
+              accessibilityLabel={t("mesh.banner.action_a11y", {
+                action: banner.action.label,
+                banner: banner.label,
+              })}
               accessibilityHint={actionHint(banner.action.kind)}
             >
               <Text

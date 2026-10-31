@@ -34,29 +34,30 @@ export function applyMention(draft: string, nickname: string): string {
   );
 }
 
-// Whether `text` mentions `nickname` as a whole @token (case-insensitive).
+// Whether `text` mentions `nickname` as a whole @token, case-insensitively.
+// A mention is the one message that gets past a muted conversation.
 //
-// Drives two things from services/notification-pipeline: a mention is the only
-// message allowed past a muted conversation, and it gets its own notification
-// copy rather than the room's.
+// It must start a word, so "ali@example.com" is no mention, and it ends at any
+// script's punctuation ("。", "،", "।"), so "@ana" never matches "@anabelle".
 //
-// The closing boundary is every script's punctuation, not ASCII's: Japanese
-// writes "。", Arabic "،", Hindi "।", Burmese "။". Inverting `\p{L}\p{N}_`
-// covers all of them and still refuses a prefix, since the character after
-// "@ana" in "@anabelle" is a letter.
-//
-// The opening boundary stays whitespace-or-start. Relaxing it would read
-// "ali@example.com" as a mention of "example", and nothing separates that from a
-// mention typed mid-sentence. The cost is that Chinese and Japanese need the
-// mention at a word start; Slack and Discord draw the same line.
-export function mentionsNickname(text: string, nickname: string): boolean {
+// In a location channel bitchat writes "@name#abcd", the end of that person's
+// cell key, since names there repeat. With `ownSuffix`, a different suffix is
+// a namesake; with none on either side, the name decides.
+export function mentionsNickname(
+  text: string,
+  nickname: string,
+  ownSuffix: string | null = null,
+): boolean {
   const target = normalizeNickname(nickname);
   if (target.length === 0) return false;
   const re = new RegExp(
-    `(?:^|\\s)@${escapeRegExp(target)}(?=$|[^\\p{L}\\p{N}_])`,
-    "iu",
+    `(?:^|\\s)@${escapeRegExp(target)}(?:#([0-9a-f]{4}))?(?=$|[^\\p{L}\\p{N}_])`,
+    "giu",
   );
-  // The text is normalized but NOT trimmed: only its encoding needs
-  // canonicalizing, and trimming a message body is not this function's business.
-  return re.test(text.normalize("NFC"));
+  for (const match of text.normalize("NFC").matchAll(re)) {
+    const suffix = match[1]?.toLowerCase();
+    if (suffix === undefined || ownSuffix === null) return true;
+    if (suffix === ownSuffix.toLowerCase()) return true;
+  }
+  return false;
 }

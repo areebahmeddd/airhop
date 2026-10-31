@@ -167,9 +167,9 @@ const strings: Strings = {
     "Запрошення до кімнати або підписаний список до 16 учасників.",
   "home.features.messaging.board.name": "Дошка оголошень",
   "home.features.messaging.board.line": "Оголошення, закріплені за місцевістю до семи днів.",
-  "home.features.messaging.voice.name": "Живий голос",
+  "home.features.messaging.voice.name": "Живий голос і відео",
   "home.features.messaging.voice.line":
-    "Утримуйте мікрофон і говоріть з усіма поблизу, як по рації.",
+    "Утримуйте мікрофон, щоб говорити, або ведіть пряму трансляцію з камери для всіх поблизу.",
   "home.features.messaging.notes.name": "Голосові нотатки",
   "home.features.messaging.notes.line": "Записаний звук, швидше, ніж набирати вказівки.",
   "home.features.messaging.files.name": "Фото, відео та файли",

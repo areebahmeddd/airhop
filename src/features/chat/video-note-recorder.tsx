@@ -1,0 +1,598 @@
+// Hold-to-record round video notes, the camera's twin of the voice-note mic.
+//
+// Hold the button to record from the front camera into a round preview, let go
+// to send, slide toward the start of the row to cancel, or lift to lock and
+// finish hands-free. A ring fills as the note runs out, and it sends itself
+// when the ring closes. The finished clip goes out as an ordinary video file
+// (see videoNoteName), so nothing on the wire changes.
+//
+// Self-contained on purpose: the mic's state machine also drives live voice,
+// and a second recorder threaded through it would put both at risk. The thread
+// renders the button, the overlay and, in the same recording bar a voice note
+// uses, the timer and controls (`bar`); it is handed a finished file.
+
+import { MIN_BURST_KEEP_MS } from "@core/mesh/voice/voice-capture";
+import { MAX_FILE_BYTES, MAX_VIDEO_SECONDS } from "@core/mesh/wire/file-packet";
+import { t, useT } from "@i18n";
+import { isRTLLayout } from "@i18n/layout";
+import { acknowledged, armed, held, released } from "@platform/haptics";
+import { ensurePermission } from "@platform/permissions";
+import { Feather } from "@react-native-vector-icons/feather/static";
+import { MIN_TOUCH, Radius, useThemeColors } from "@ui/theme";
+import { Camera, CameraView } from "expo-camera";
+import * as FileSystem from "expo-file-system";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  AppState,
+  Platform,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from "react-native";
+import {
+  GestureDetector,
+  usePanGesture,
+  type PanGestureConfig,
+} from "react-native-gesture-handler";
+import Animated, {
+  Easing,
+  useAnimatedProps,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  type AnimatedStyle,
+} from "react-native-reanimated";
+import Svg, { Circle } from "react-native-svg";
+import { scheduleOnRN } from "react-native-worklets";
+import {
+  CANCEL_SLIDE_DISARM,
+  CANCEL_SLIDE_DISTANCE,
+  LOCK_SLIDE_DISTANCE,
+} from "./hold-gesture";
+import { activateOnly } from "./screen-reader-actions";
+
+// The bitrate the camera is asked for. With the platform's own AAC track on
+// top, a full-length note lands near 700 KB, inside the 1 MiB file ceiling;
+// the file-size stop below is the backstop for a device that overshoots.
+const VIDEO_BITRATE = 250_000;
+
+// Preview and ring geometry, in points.
+const PREVIEW_SIZE = 220;
+const RING_WIDTH = 4;
+const RING_SIZE = PREVIEW_SIZE + RING_WIDTH * 4;
+const RING_RADIUS = (RING_SIZE - RING_WIDTH) / 2;
+const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
+
+// Matches the compose row's 40 pt buttons.
+const BUTTON_SIZE = 40;
+
+// How often the recorder reports progress. Fine enough for a smooth ring.
+const PROGRESS_INTERVAL_S = 0.1;
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+export interface RecordedVideoNote {
+  uri: string;
+  durationMs: number;
+  sizeBytes: number | undefined;
+  // True when the ring closed rather than the user letting go.
+  atLimit: boolean;
+}
+
+type Phase = "idle" | "opening" | "recording" | "locked";
+
+// What the thread's recording bar shows while a note records.
+export interface VideoNoteBar {
+  // Locked or started from a screen reader: no finger is down, so the bar
+  // offers cancel and send instead of the slide hint.
+  handsFree: boolean;
+  cancelArmed: boolean;
+  canLock: boolean;
+  seconds: number;
+  hintStyle: AnimatedStyle<ViewStyle>;
+  cancel: () => void;
+  send: () => void;
+}
+
+// How a recording ends, decided before the recorder's promise settles.
+type Outcome = "send" | "cancel";
+
+interface Options {
+  enabled: boolean;
+  // The compose row's height: the overlay stops above it, so the button under
+  // the finger stays in view as it slides.
+  bottomInset: number;
+  onRecorded: (note: RecordedVideoNote) => void;
+  onToast: (message: string) => void;
+  // Each press, before the microphone opens.
+  onStart: () => void;
+}
+
+export function useVideoNoteRecorder({
+  enabled,
+  bottomInset,
+  onRecorded,
+  onToast,
+  onStart,
+}: Options): {
+  button: React.JSX.Element;
+  overlay: React.JSX.Element | null;
+  bar: VideoNoteBar | null;
+  active: boolean;
+} {
+  const T = useT();
+  const Colors = useThemeColors();
+  const styles = useMemo(() => createStyles(Colors), [Colors]);
+
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [cancelArmed, setCancelArmed] = useState(false);
+  const [elapsedSecs, setElapsedSecs] = useState(0);
+
+  const cameraRef = useRef<CameraView | null>(null);
+  // Every press takes a number; anything that resolves for an older one is
+  // stale. A permission prompt or a slow camera can outlast a quick tap.
+  const holdSeq = useRef(0);
+  const phaseRef = useRef<Phase>("idle");
+  const outcomeRef = useRef<Outcome | null>(null);
+  // Whether the progress handler has already repeated a stop; see finish.
+  const stopResentRef = useRef(false);
+  const startedAtRef = useRef(0);
+  // Started from a screen reader, which has no hold: record straight into the
+  // hands-free state.
+  const startLockedRef = useRef(false);
+  const lastSizeRef = useRef<number | undefined>(undefined);
+  const onRecordedRef = useRef(onRecorded);
+  const onToastRef = useRef(onToast);
+  const onStartRef = useRef(onStart);
+  useEffect(() => {
+    onRecordedRef.current = onRecorded;
+    onToastRef.current = onToast;
+    onStartRef.current = onStart;
+  });
+
+  const slide = useSharedValue(0);
+  const cancelArmedShared = useSharedValue(false);
+  const lockedShared = useSharedValue(false);
+  const lockAvailable = useSharedValue(false);
+  const progress = useSharedValue(0);
+
+  const setPhaseBoth = useCallback((next: Phase): void => {
+    phaseRef.current = next;
+    setPhase(next);
+  }, []);
+
+  const reset = useCallback((): void => {
+    setPhaseBoth("idle");
+    setCancelArmed(false);
+    setElapsedSecs(0);
+    progress.set(0);
+    lockAvailable.set(false);
+    lockedShared.set(false);
+    outcomeRef.current = null;
+    stopResentRef.current = false;
+    lastSizeRef.current = undefined;
+    startLockedRef.current = false;
+  }, [setPhaseBoth, progress, lockAvailable, lockedShared]);
+
+  const begin = useCallback(async (): Promise<void> => {
+    if (!enabled || phaseRef.current !== "idle") return;
+    held();
+    onStartRef.current();
+    const hold = ++holdSeq.current;
+    const purpose = { purpose: t("chat.perm.video_note_purpose") };
+    const camera = await ensurePermission(
+      Camera.getCameraPermissionsAsync,
+      Camera.requestCameraPermissionsAsync,
+      { label: t("chat.perm.camera_label"), ...purpose },
+    );
+    if (!camera || hold !== holdSeq.current) return;
+    const mic = await ensurePermission(
+      Camera.getMicrophonePermissionsAsync,
+      Camera.requestMicrophonePermissionsAsync,
+      { label: t("chat.perm.mic_label"), ...purpose },
+    );
+    if (!mic || hold !== holdSeq.current) return;
+    // The camera opens on mount; recording starts once it reports ready.
+    setPhaseBoth("opening");
+  }, [enabled, setPhaseBoth]);
+
+  // A release, a cancel or the ring closing all end here, by stopping the
+  // recorder; its promise then settles in startRecording below.
+  const finish = useCallback(
+    (outcome: Outcome): void => {
+      holdSeq.current += 1;
+      const current = phaseRef.current;
+      if (current === "idle") return;
+      if (current === "opening") {
+        // Let go before the camera was ready: a tap, not a note.
+        reset();
+        if (outcome === "send") onToastRef.current(t("chat.video_note.hold"));
+        return;
+      }
+      // The first decision stands. A release inside expo-camera's start gap
+      // (phase "recording", recorder not yet running) asks a recorder that
+      // has not started to stop, so it keeps going; a later tap must not turn
+      // that cancel into a send. The progress handler re-issues the stop.
+      if (outcomeRef.current !== null) return;
+      const tooShort = Date.now() - startedAtRef.current < MIN_BURST_KEEP_MS;
+      outcomeRef.current = tooShort ? "cancel" : outcome;
+      if (tooShort && outcome === "send") {
+        onToastRef.current(t("chat.video_note.hold"));
+      }
+      cameraRef.current?.stopRecording();
+    },
+    [reset],
+  );
+
+  const startRecording = useCallback(async (): Promise<void> => {
+    const camera = cameraRef.current;
+    if (camera === null || phaseRef.current !== "opening") return;
+    if (startLockedRef.current) {
+      lockedShared.set(true);
+      setPhaseBoth("locked");
+    } else {
+      setPhaseBoth("recording");
+      lockAvailable.set(true);
+    }
+    startedAtRef.current = Date.now();
+    let uri: string | undefined;
+    try {
+      const result = await camera.recordAsync({
+        maxDuration: MAX_VIDEO_SECONDS,
+        maxFileSize: MAX_FILE_BYTES,
+        progressUpdateInterval: PROGRESS_INTERVAL_S,
+        // iOS honours videoBitrate only with an explicit codec.
+        ...(Platform.OS === "ios" ? { codec: "avc1" as const } : {}),
+      });
+      uri = result?.uri;
+    } catch {
+      uri = undefined;
+    }
+    const durationMs = Date.now() - startedAtRef.current;
+    // Null outcome: the recorder stopped on its own, at a limit or because the
+    // camera went away (the app backgrounded). Either way the note was meant.
+    const outcome = outcomeRef.current ?? "send";
+    const atLimit = outcomeRef.current === null;
+    const sizeBytes = lastSizeRef.current;
+    reset();
+    if (uri === undefined) {
+      if (outcome === "send") {
+        onToastRef.current(t("chat.video_note.not_recorded"));
+      }
+      return;
+    }
+    if (outcome === "cancel" || durationMs < MIN_BURST_KEEP_MS) {
+      discard(uri);
+      return;
+    }
+    const file = new FileSystem.File(uri);
+    onRecordedRef.current({
+      uri,
+      durationMs,
+      sizeBytes: file.exists ? file.size : sizeBytes,
+      atLimit,
+    });
+  }, [setPhaseBoth, lockAvailable, lockedShared, reset]);
+
+  const lock = useCallback((): void => {
+    held();
+    setCancelArmed(false);
+    setPhaseBoth("locked");
+  }, [setPhaseBoth]);
+
+  const reportCancelArmed = useCallback((isArmed: boolean): void => {
+    setCancelArmed(isArmed);
+    if (isArmed) armed();
+    else released();
+  }, []);
+
+  const release = useCallback(
+    (cancelled: boolean): void => {
+      setCancelArmed(false);
+      released();
+      finish(cancelled ? "cancel" : "send");
+    },
+    [finish],
+  );
+
+  const beginFromGesture = useCallback((): void => {
+    void begin();
+  }, [begin]);
+
+  // A hold-and-slide has no screen-reader form, so it is a toggle there,
+  // straight into the hands-free state.
+  const toggleFromScreenReader = useCallback((): void => {
+    if (phaseRef.current === "idle") {
+      startLockedRef.current = true;
+      void begin();
+    } else {
+      finish("send");
+    }
+  }, [begin, finish]);
+
+  // Same shape as the mic's hold: a Pan with no minimum distance, ended on
+  // every finalize (release, system cancellation, a call), on the UI thread.
+  const config = useMemo<PanGestureConfig>(
+    () => ({
+      minDistance: 0,
+      shouldCancelWhenOutside: false,
+      onBegin: () => {
+        "worklet";
+        slide.set(0);
+        cancelArmedShared.set(false);
+        lockedShared.set(false);
+        scheduleOnRN(beginFromGesture);
+      },
+      onUpdate: (e) => {
+        "worklet";
+        if (lockedShared.get()) return;
+        if (
+          lockAvailable.get() &&
+          slide.get() === 0 &&
+          -e.translationY >= LOCK_SLIDE_DISTANCE
+        ) {
+          lockedShared.set(true);
+          slide.set(withTiming(0));
+          scheduleOnRN(lock);
+          return;
+        }
+        const travel = isRTLLayout ? e.translationX : -e.translationX;
+        const slid = Math.min(Math.max(travel, 0), CANCEL_SLIDE_DISTANCE);
+        slide.set(slid);
+        const next = cancelArmedShared.get()
+          ? slid > CANCEL_SLIDE_DISARM
+          : slid >= CANCEL_SLIDE_DISTANCE;
+        if (next === cancelArmedShared.get()) return;
+        cancelArmedShared.set(next);
+        scheduleOnRN(reportCancelArmed, next);
+      },
+      onFinalize: () => {
+        "worklet";
+        // A locked note belongs to the overlay's buttons now.
+        if (lockedShared.get()) return;
+        const cancelled = cancelArmedShared.get();
+        cancelArmedShared.set(false);
+        slide.set(withTiming(0));
+        scheduleOnRN(release, cancelled);
+      },
+    }),
+    [
+      slide,
+      cancelArmedShared,
+      lockedShared,
+      lockAvailable,
+      beginFromGesture,
+      lock,
+      reportCancelArmed,
+      release,
+    ],
+  );
+  const gesture = usePanGesture(config);
+
+  // Leaving the app ends the note as a release would, the same ending a voice
+  // note gets. Leaving the thread unmounts the camera, which settles the
+  // recorder the same way.
+  const finishRef = useRef(finish);
+  useEffect(() => {
+    finishRef.current = finish;
+  });
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      // Background, not inactive: iOS reports inactive for Control Center,
+      // which leaves the camera recording.
+      if (state === "background") finishRef.current("send");
+    });
+    return () => sub.remove();
+  }, []);
+
+  const buttonSlideStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: (isRTLLayout ? 1 : -1) * slide.get() },
+      { scale: 1 - 0.15 * (slide.get() / CANCEL_SLIDE_DISTANCE) },
+    ],
+  }));
+
+  const hintStyle = useAnimatedStyle(() => ({
+    opacity: 1 - 0.5 * (slide.get() / CANCEL_SLIDE_DISTANCE),
+  }));
+
+  const ringProps = useAnimatedProps(() => ({
+    strokeDashoffset: RING_LENGTH * (1 - progress.get()),
+  }));
+
+  const active = phase !== "idle";
+
+  const button = (
+    <GestureDetector gesture={gesture}>
+      {/* A padded wrapper, as the mic has: gesture handlers ignore hitSlop. */}
+      <View
+        style={styles.target}
+        pointerEvents={phase === "locked" ? "none" : "auto"}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={T("chat.video_note.hold")}
+        accessibilityHint={T("chat.video_note.a11y_toggle")}
+        // The double tap arrives differently on each platform; see
+        // screen-reader-actions.ts.
+        accessibilityActions={activateOnly(Platform.OS)}
+        onAccessibilityTap={toggleFromScreenReader}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName === "activate") {
+            toggleFromScreenReader();
+          }
+        }}
+      >
+        <Animated.View
+          style={[
+            styles.button,
+            active && styles.buttonActive,
+            cancelArmed && styles.buttonActive,
+            buttonSlideStyle,
+          ]}
+        >
+          <Feather
+            name={cancelArmed ? "trash-2" : "video"}
+            size={16}
+            color={active ? Colors.danger : Colors.textMuted}
+          />
+        </Animated.View>
+      </View>
+    </GestureDetector>
+  );
+
+  const overlay = active ? (
+    <View
+      style={[styles.overlay, { bottom: bottomInset }]}
+      // Held, the finger is on the button below and must stay there; locked,
+      // the thread under it waits until the bar's cancel or send.
+      pointerEvents={phase === "locked" ? "auto" : "box-none"}
+    >
+      <View style={styles.ringBox} pointerEvents="none">
+        <View style={styles.preview}>
+          <CameraView
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            facing="front"
+            mode="video"
+            mirror
+            videoQuality="480p"
+            videoBitrate={VIDEO_BITRATE}
+            onCameraReady={() => void startRecording()}
+            onRecordingProgress={({ duration, fileSize }) => {
+              // Progress is the first sign the recorder really runs. An ending
+              // decided before then had its stop land on nothing; repeat it
+              // now that it can take, once per recording.
+              if (outcomeRef.current !== null && !stopResentRef.current) {
+                stopResentRef.current = true;
+                cameraRef.current?.stopRecording();
+              }
+              lastSizeRef.current = fileSize;
+              setElapsedSecs(Math.floor(duration));
+              // Whichever runs out first, time or the file ceiling.
+              progress.set(
+                withTiming(
+                  Math.min(
+                    1,
+                    Math.max(
+                      duration / MAX_VIDEO_SECONDS,
+                      fileSize / MAX_FILE_BYTES,
+                    ),
+                  ),
+                  {
+                    duration: PROGRESS_INTERVAL_S * 1000,
+                    easing: Easing.linear,
+                  },
+                ),
+              );
+            }}
+            onMountError={() => {
+              reset();
+              onToastRef.current(t("chat.video_note.not_recorded"));
+            }}
+          />
+        </View>
+        <Svg
+          width={RING_SIZE}
+          height={RING_SIZE}
+          style={StyleSheet.absoluteFill}
+        >
+          <AnimatedCircle
+            cx={RING_SIZE / 2}
+            cy={RING_SIZE / 2}
+            r={RING_RADIUS}
+            // White, not the recording red: red on the dimmed light chat
+            // holds about 1.4:1, white about 3.4:1 (WCAG 1.4.11 asks 3:1).
+            stroke={Colors.onStatus}
+            strokeWidth={RING_WIDTH}
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray={RING_LENGTH}
+            animatedProps={ringProps}
+            // Starts at twelve o'clock, as a clock hand would.
+            transform={`rotate(-90 ${RING_SIZE / 2} ${RING_SIZE / 2})`}
+          />
+        </Svg>
+      </View>
+    </View>
+  ) : null;
+
+  const bar: VideoNoteBar | null = active
+    ? {
+        handsFree: phase === "locked",
+        cancelArmed,
+        canLock: phase === "recording" && !cancelArmed,
+        seconds: elapsedSecs,
+        hintStyle,
+        cancel: () => finish("cancel"),
+        send: () => {
+          acknowledged();
+          finish("send");
+        },
+      }
+    : null;
+
+  return { button, overlay, bar, active };
+}
+
+// The recorder writes to the camera's own cache; a discarded note goes now
+// rather than waiting for the retention sweep, which never sees that folder.
+function discard(uri: string): void {
+  try {
+    const file = new FileSystem.File(uri);
+    if (file.exists) file.delete();
+  } catch {
+    return;
+  }
+}
+
+function createStyles(Colors: ReturnType<typeof useThemeColors>) {
+  return StyleSheet.create({
+    target: {
+      padding: (MIN_TOUCH - BUTTON_SIZE) / 2,
+      margin: -(MIN_TOUCH - BUTTON_SIZE) / 2,
+      flexShrink: 0,
+    },
+    button: {
+      width: BUTTON_SIZE,
+      height: BUTTON_SIZE,
+      borderRadius: Radius.full,
+      borderWidth: 1.5,
+      borderColor: Colors.borderStrong,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 1,
+    },
+    buttonActive: {
+      backgroundColor: Colors.dangerDim,
+      borderColor: Colors.danger,
+    },
+    overlay: {
+      position: "absolute",
+      top: 0,
+      start: 0,
+      end: 0,
+      backgroundColor: Colors.overlay,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    ringBox: {
+      width: RING_SIZE,
+      height: RING_SIZE,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    preview: {
+      width: PREVIEW_SIZE,
+      height: PREVIEW_SIZE,
+      borderRadius: Radius.full,
+      overflow: "hidden",
+      backgroundColor: "#000",
+    },
+  });
+}

@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-sw/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetooth imezimwa · haichanganui";
+"widget_label" = "Peer walio ndani ya masafa";
+"widget_description" = "Peer walio ndani ya masafa, na wakati walipohesabiwa";
+"widget_nobody" = "hakuna aliye ndani ya masafa";
+"widget_as_of" = "kufikia %1$@";
+"widget_paused" = "Mesh imesitishwa";
+"widget_unset" = "Fungua Airhop";
+"widget_stale" = "Fungua Airhop ili kuonyesha upya";

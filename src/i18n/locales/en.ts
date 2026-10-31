@@ -119,7 +119,8 @@ export const strings = {
   "onboarding.identity.failed_heading": "Couldn’t create your keys",
   "onboarding.identity.failed_body":
     "This device wouldn’t let Airhop store them securely. Try again, or restart your phone and reopen Airhop.",
-  "onboarding.identity.steps_a11y": "Steps: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Steps: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "Generating X25519 static key pair",
   "onboarding.identity.step.ed25519": "Generating Ed25519 signing key pair",
   "onboarding.identity.step.keychain": "Storing keys in OS Keychain",
@@ -128,8 +129,8 @@ export const strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Your name on the mesh",
   "onboarding.username.peer_id": "Peer ID",
-  "onboarding.username.card_a11y":
-    "Your name on the mesh is {username}. Peer ID {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Your name on the mesh is {username}. Peer ID {peerID}. Algorithm: {algorithm}. Storage: {storage}. Account required: {account}.",
   "onboarding.username.explanation":
     "This username is deterministically derived from your public key. It is the same on every device that sees your peer ID.",
   "onboarding.username.cta": "Enter Airhop",
@@ -195,7 +196,7 @@ export const strings = {
     "Finds nearby devices and relays messages between them. This creates the mesh and works without an internet connection.",
   "onboarding.primer.location.title": "Location",
   "onboarding.primer.location.body":
-    "Places you in nearby area channels, from a block to a region. Airhop never tracks you or sends your precise location off your device.",
+    "Places you in nearby area channels, from a block to a region. Airhop never tracks you, and your precise location leaves your device only when you send someone a location pin.",
   "onboarding.primer.notifications.title": "Notifications",
   "onboarding.primer.notifications.body":
     "Receive alerts for new messages even when the app is closed. Notifications are created locally on your device, with no server involvement.",
@@ -206,6 +207,9 @@ export const strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "Bluetooth access",
   "permission.bluetooth.purpose": "discover nearby devices over the mesh",
+  "permission.location.label": "Location access",
+  "permission.location.purpose":
+    "reach location channels beyond Bluetooth range",
   "permission.open_settings": "Open Settings",
   "permission.not_now": "Not now",
   "permission.blocked_title": "{label} is off",
@@ -265,8 +269,7 @@ export const strings = {
   "chat.dm.in_range": "in range",
   "chat.dm.row_hint": "Double tap and hold for more options",
   "chat.channels.row_hint": "Double tap and hold for more options",
-  "chat.dm.you_prefix": "You:",
-  "chat.draft_prefix": "Draft:",
+  "chat.draft_preview": "Draft: {draft}",
   "chat.dm.none": "No direct messages",
   "chat.dm.none_desc":
     "Go to the Mesh tab and tap a peer to start an encrypted DM.",
@@ -284,6 +287,8 @@ export const strings = {
   "chat.dm.more_options": "More options for {name}",
   "chat.dm.remove_contact_short": "Remove contact",
   "chat.dm.block_short": "Block contact",
+  "chat.dm.signing_key_refused":
+    "Someone presented a different key for {name}, and Airhop refused it. This chat keeps the key it already had.",
   "chat.dm.delete_short": "Delete chat",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -364,6 +369,8 @@ export const strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "Could not open that cell. Try again in a moment.",
   "chat.jump.title": "Go to a place",
+  "chat.jump.globe": "Pick on the globe",
+  "chat.jump.globe_note": "Spin to any place. Works offline.",
   "chat.jump.saved": "Saved places",
   "chat.jump.nearby": "Nearby",
   "chat.jump.anywhere":
@@ -396,6 +403,16 @@ export const strings = {
   "chat.jump.go": "Go",
   "chat.jump.how":
     "To find a geohash: open a location channel > tap its name > copy it from there.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "Drag to spin · pinch to zoom · tap to focus",
+  "chat.globe.zoom_in": "Zoom in to choose a cell",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Go to {cell}",
+  "chat.globe.larger": "Larger cell",
+  "chat.globe.smaller": "Smaller cell",
+  "chat.globe.label": "Globe, centered on {cell}",
+  "chat.globe.adjust": "Swipe up or down to change the cell size",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -470,6 +487,7 @@ export const strings = {
   "chat.thread.public_channel": "Public channel",
   "chat.thread.notices": "Notices for this channel",
   "chat.thread.invite": "Invite someone to this channel",
+  "chat.thread.location_off": "Location off · reaching people nearby only",
   "chat.thread.not_in_range": "Not nearby. Delivering over the internet.",
   "chat.thread.not_nearby":
     "Not nearby. We’ll deliver when they’re back in range or online.",
@@ -497,7 +515,7 @@ export const strings = {
   "chat.thread.message": "Message",
   "chat.thread.message_placeholder": "Message…",
   "chat.thread.length_full": "Message is full",
-  "chat.thread.waiting_for": "Waiting for {name} to return · {percent}%",
+  "chat.thread.waiting_for": "Waiting for {name} to return · {percent}",
   "chat.transfer.progress": "{done} of {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} left",
@@ -549,7 +567,6 @@ export const strings = {
     "Bridging to nearby areas · tap for nearby only",
   "chat.screenshot.you_took": "You took a screenshot",
   "chat.screenshot.you_took_private": "You took a screenshot · nobody was told",
-  "chat.screenshot.heads_up": "Heads up",
   "chat.screenshot.peer_took": "{name} took a screenshot",
   "chat.screenshot.notified_dm":
     "{name} was notified that you took a screenshot of this conversation.",
@@ -563,7 +580,12 @@ export const strings = {
   "chat.bubble.view_profile": "View {name}’s profile",
   "chat.bubble.forwarded": "Forwarded",
   "chat.bubble.attachment": "attachment",
-  "chat.bubble.a11y": "{sender}: {body}. Long press for more options.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "Double tap and hold for more options",
+  "chat.bubble.more_options": "More options",
+  "chat.bubble.open_link": "Open {link}",
+  "chat.bubble.status_delivered": "Delivered",
+  "chat.bubble.status_read": "Read",
   "chat.bubble.failed_retry": "Failed to send. Tap to retry.",
 
   // ---- Chats: message actions and info ----
@@ -590,6 +612,8 @@ export const strings = {
   "chat.attach.camera": "Camera",
   "chat.attach.camera_desc": "Take a photo or video",
   "chat.attach.camera_desc_photo": "Take a photo",
+  "chat.attach.video": "Record video",
+  "chat.attach.video_desc": "Record a short clip",
   "chat.attach.library": "Photo library",
   "chat.attach.library_desc": "Choose from your library",
   "chat.attach.document": "Document",
@@ -600,6 +624,8 @@ export const strings = {
   "chat.attach.ecash_desc": "Send Cashu sats from your wallet",
   "chat.attach.location": "Location",
   "chat.attach.location_desc": "Send where you are right now",
+  "chat.attach.live": "Go live",
+  "chat.attach.live_desc": "Stream your camera to people nearby",
   "chat.attach.title": "Attach",
 
   // ---- Chat: location pin ----
@@ -660,6 +686,21 @@ export const strings = {
   "chat.attach.caption": "Add a caption…",
   "chat.attach.send": "Send attachment",
   "chat.attach.generic": "Attachment",
+  "chat.video_prep.preparing": "Preparing video",
+  "chat.video_prep.waiting": "Waiting to prepare video",
+  "chat.video_prep.cancel": "Stop preparing this video",
+  "chat.video_prep.too_large":
+    "This video could not be made small enough to send.",
+  "chat.video_prep.unreadable":
+    "This video could not be opened. Try another one.",
+  "chat.video_prep.failed":
+    "Something went wrong preparing that video. Try again.",
+  "chat.video_prep.interrupted":
+    "You left Airhop before the video was ready. Try sending it again.",
+  "chat.trim.play": "Play preview",
+  "chat.trim.pause": "Pause preview",
+  "chat.trim.start": "Start of the clip",
+  "chat.trim.end": "End of the clip",
   "chat.media.view_full": "View photo full screen",
   "chat.media.gone_photo": "Photo not on this device",
   "chat.media.gone_video": "Video not on this device",
@@ -675,6 +716,8 @@ export const strings = {
   "chat.media.kind_file": "file",
   "chat.media.pause_voice": "Pause voice note",
   "chat.media.play_voice": "Play voice note",
+  "chat.media.pause_video": "Pause video",
+  "chat.media.play_video": "Play video",
   "chat.media.voice_position": "Voice note position",
   "chat.media.voice_scrub": "Tap along the bars to jump to that point",
   "chat.media.image": "Image",
@@ -715,6 +758,48 @@ export const strings = {
   "chat.voice.limit_reached": "Two minute limit reached, release to send",
   "chat.voice.limit_sent": "Two minute limit reached, note sent",
   "chat.voice.stop_send": "Stop recording and send",
+  "chat.video_note.hold": "Hold to record a video note",
+  "chat.video_note.a11y_toggle": "Double tap to start or stop recording.",
+  "chat.video_note.not_recorded": "Video note didn’t record",
+  "chat.video_note.limit_sent": "Time’s up, video note sent",
+  "chat.video_note.a11y": "Video note, double tap for sound",
+  "chat.video_note.sound_on": "Turn sound on",
+  "chat.video_note.sound_off": "Turn sound off",
+  "chat.live_video.preview": "Live video",
+  "chat.live_video.badge": "Live",
+  "chat.live_video.reconnecting": "Reconnecting…",
+  "chat.live_video.a11y": "{name} is live. Double tap to watch.",
+  "chat.live_video.live_from": "{name} is live",
+  "chat.live_video.sound": "Sound",
+  "chat.live_video.ended": "Stream ended",
+  "chat.live_video.title": "Live video",
+  "chat.live_video.go_live": "Go live",
+  "chat.live_video.end": "End",
+  "chat.live_video.end_title": "End live video?",
+  "chat.live_video.end_body":
+    "Ending keeps the recording in this chat. Discarding tells everyone watching to drop it.",
+  "chat.live_video.discard": "Discard",
+  "chat.live_video.keep": "Keep streaming",
+  "chat.live_video.audience_room": "Everyone in Bluetooth range can watch.",
+  "chat.live_video.audience_dm": "Only {name} can watch.",
+  "chat.live_video.nobody": "Nobody is in range to watch right now.",
+  "chat.live_video.quality_low": "Low",
+  "chat.live_video.quality_medium": "Medium",
+  "chat.live_video.quality_high": "High",
+  "chat.live_video.quality_low_hint": "Reaches people several hops away",
+  "chat.live_video.quality_medium_hint": "For people one or two hops away",
+  "chat.live_video.quality_high_hint": "For people right next to you",
+  "chat.live_video.signal_good": "Keeping up",
+  "chat.live_video.signal_weak": "Falling behind",
+  "chat.live_video.signal_poor": "Too slow for video, sending sound only",
+  "chat.live_video.mic": "Microphone",
+  "chat.live_video.no_sound": "No sound",
+  "chat.live_video.flip": "Switch camera",
+  "chat.live_video.camera_failed": "Couldn’t open the camera",
+  "chat.live_video.camera_lost": "The camera stopped, so the stream ended",
+  "chat.live_video.failed": "Couldn’t go live",
+  "chat.live_video.kept_here":
+    "Too long to send as a file. Everyone who watched keeps their own copy.",
   "chat.voice.lift_lock": "Slide up to record hands-free",
   "chat.voice.live_speaking": "{name} speaking",
   "chat.voice.live_ended": "Ended",
@@ -730,6 +815,8 @@ export const strings = {
   "chat.perm.mic_label": "Microphone access",
   "chat.perm.mic_live_purpose": "talk to people nearby",
   "chat.perm.mic_note_purpose": "record a voice note",
+  "chat.perm.video_note_purpose": "record a video note",
+  "chat.perm.live_video_purpose": "go live",
   "chat.perm.recording_stopped": "Recording stopped",
   "chat.perm.record_failed":
     "Could not start recording. Check microphone permissions.",
@@ -857,6 +944,10 @@ export const strings = {
   "chat.notices.post": "Post notice",
   "chat.notices.post_short": "Post",
   "chat.notices.delete": "Delete notice",
+  "chat.notices.delete_title": "Delete this notice?",
+  "chat.notices.delete_body":
+    "Everyone who has it is asked to remove it. You cannot undo this.",
+  "chat.notices.permanent": "Permanent",
   "chat.notices.fades_soon": "fades soon",
   "chat.notices.1_day": "1 day",
   "chat.notices.3_days": "3 days",
@@ -922,6 +1013,8 @@ export const strings = {
   "chat.forward.cant_send_to": "Can’t forward to {name}",
   "chat.forward.too_long_for_dm":
     "Too long for a direct message. Forward it to a channel or group instead.",
+  "chat.forward.too_long_for_public":
+    "Too long for a public room, where it would be hidden as spam. Forward it to a group instead.",
   "chat.forward.channels": "Channels",
   "chat.forward.groups": "Groups",
   "chat.forward.locations": "Locations",
@@ -930,6 +1023,13 @@ export const strings = {
   "chat.forward.app_row": "Not forwarded",
   "chat.forward.app_row_body":
     "This line is from Airhop, not from a person, so there is nothing to pass on.",
+  "chat.forward.has_ecash":
+    "This holds ecash, and whoever claims it first keeps the money, so it is not forwarded.",
+  "chat.forward.public_title": "Forward to {name}?",
+  "chat.forward.public_mesh_body":
+    "Anyone nearby can read it there, and it cannot be taken back.",
+  "chat.forward.public_geo_body":
+    "Anyone in this area can read it there, including on public internet relays, and it cannot be taken back.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Starting the mesh…",
@@ -944,7 +1044,8 @@ export const strings = {
   "mesh.banner.location_off_android":
     "Location off · Android needs it to find peers",
   "mesh.banner.paused": "Mesh paused · you’re away",
-  "mesh.banner.location_off": "Location off · location channels unavailable",
+  "mesh.banner.location_off":
+    "Location off · location channels reach nearby only",
   "mesh.banner.battery_saver": "Battery saver · scanning less often",
   "mesh.banner.wipe_incomplete":
     "Wipe incomplete · some data may remain, reopening retries",
@@ -974,7 +1075,10 @@ export const strings = {
   "mesh.banner.hint.battery_settings":
     "Opens this phone’s background activity settings",
   "mesh.banner.hint.tor_settings": "Opens Airhop’s Tor settings",
+  "mesh.banner.hint.enable_location":
+    "Asks for location access, or explains how to allow it in Settings",
   "mesh.banner.dismiss": "Dismiss: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Hides this note for good",
 
   // ---- Mesh: radar ----
@@ -1202,6 +1306,8 @@ export const strings = {
     "{mint} issues {units}. Its keys are cached on this device, so tokens from it can now be verified even with no internet.",
   "wallet.mint.remove_plain":
     "Remove {mint} from your wallet? Its cached keys go too, so tokens from it can no longer be verified offline.",
+  "wallet.mint.remove_holdings":
+    "{mint} holds:\n{holdings}\nRemoving it deletes all of this from this device. Withdraw or send it first.",
   "wallet.mint.title": "Mints",
   "wallet.mint.none_desc":
     "A mint issues and redeems your ecash. Add one to top up over Lightning or to accept tokens from it.",
@@ -1551,6 +1657,8 @@ export const strings = {
   "wallet.err.already_spent": "Already spent",
   "wallet.err.change_pending": "Paid, change pending",
   "wallet.svc.mint_unreachable": "Could not reach the mint.",
+  "wallet.svc.mint_http_error":
+    "The mint answered with an error (HTTP {status}).",
   "wallet.svc.tor_ios": "Mint requests do not go through Tor on iOS.",
   "wallet.svc.tor_ios_body":
     "On iOS, Tor only covers Nostr, so this request would reach the mint over the clear net and link your IP to this ecash. Turn on {setting} in Settings, or turn Tor off first. Sending and receiving ecash over the mesh still works.",
@@ -1653,6 +1761,10 @@ export const strings = {
     "Your coins cannot make exactly {amount} {unit} offline.",
   "wallet.svc.inexact_detail":
     "The smallest token you can send is {spend} {unit}. Offline there is no change, so the extra {extra} {unit} goes to the recipient.",
+  "wallet.svc.spend_changed":
+    "This send would now take {spend} {unit}, more than you agreed to.",
+  "wallet.svc.spend_changed_body":
+    "Your coins changed while you were deciding. Nothing was sent. Try again to see the new amount.",
   "wallet.svc.no_single_mint":
     "No single mint holds {amount} {unit}. Ecash from different mints cannot be combined into one token: consolidate at one mint first, or send in separate amounts.",
   "wallet.svc.have_tried_send":
@@ -1681,6 +1793,10 @@ export const strings = {
     "Nothing else was sent. The coins are held until the mint confirms the outcome. If it went through, the locked token appears in Activity for you to hand over. If not, the coins come back.",
   "wallet.svc.send_spent_by_swap":
     "These coins were swapped back into your wallet before this token was claimed, so it can no longer be claimed. The value is in your balance.",
+  "wallet.svc.payment_in_doubt_body":
+    "The coins are held until the mint confirms the outcome, which is checked again on the next refresh. Do not pay this invoice again until then.",
+  "wallet.svc.mint_removed":
+    "You removed this mint, so this is no longer tracked.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verified via QR",
@@ -1723,7 +1839,7 @@ export const strings = {
   "contacts.scan.bitchat_expired":
     "That bitchat code has expired. Ask them to open their QR again.",
   "contacts.scan.tampered":
-    "This QR code is invalid: its peer ID doesn’t match its keys. It may have been tampered with.",
+    "This QR code is invalid: its keys don’t check out. It may have been tampered with.",
   "contacts.scan.key_conflict":
     "You already hold a different key for them, so nothing changed. Scan their code in person to replace it.",
   "contacts.scan.already_added": "Already in your contacts",
@@ -1746,7 +1862,7 @@ export const strings = {
   "contacts.verify.different_body":
     "This QR belongs to someone else. Ask {name} to show their own code.",
   "contacts.verify.tampered_body":
-    "This QR looks tampered with: its ID doesn’t match its key.",
+    "This QR looks tampered with: its keys don’t check out.",
   "contacts.verify.choose_title": "How do you want to check?",
   "contacts.verify.choose_body":
     "Both confirm that the keys on this phone really belong to {name}.",
@@ -1855,6 +1971,8 @@ export const strings = {
   "settings.diag.share": "Share diagnostics",
   "settings.diag.share_desc":
     "Transport and settings details for a bug report. Messages, names, and keys are excluded.",
+  "settings.diag.share_fallback":
+    "Couldn’t open sharing. Report copied instead.",
   "settings.section.storage_desc": "Usage and cache",
   "settings.section.appearance": "Appearance",
   "settings.section.appearance_desc": "Theme, font, and language",
@@ -1898,6 +2016,9 @@ export const strings = {
   "settings.general.show_media": "Show media automatically",
   "settings.general.show_media_desc":
     "Photos and videos appear in the chat, or stay behind a tap",
+  "settings.general.spam_filter": "Spam filter",
+  "settings.general.spam_filter_desc":
+    "Hides public messages from people who post too fast, repeat themselves or flood links. Private messages are never filtered.",
   "settings.general.reset": "Reset settings",
   "settings.general.media_retention": "Keep media for",
   "settings.general.media_retention_desc":
@@ -1914,7 +2035,7 @@ export const strings = {
     "Puts preferences back to their defaults, leaving your identity, messages, contacts and wallet untouched",
   "settings.general.reset_title": "Reset settings?",
   "settings.general.reset_body":
-    "Preferences go back to their defaults, including appearance, language, notifications, undo send, and connectivity (internet, Tor, gateway, bridge, relays). App lock, how long media is kept, and your status stay as set. Your identity, messages, contacts, and wallet are untouched.",
+    "Preferences go back to their defaults, including appearance, language, notifications, undo send, and connectivity (gateway, bridge, relays). App lock, how long media is kept, the internet switch, Tor and its bridges, and your status stay as set. Your identity, messages, contacts, and wallet are untouched.",
   "settings.general.reset_confirm": "Reset",
 
   // ---- Settings: privacy and security ----
@@ -2046,6 +2167,9 @@ export const strings = {
   "settings.conn.live_voice_off_title": "Turn off live voice?",
   "settings.conn.live_voice_off_body":
     "Holding the mic records a voice note instead. It sends when you let go, and nobody hears it until they play it.",
+  "settings.conn.live_video": "Live video",
+  "settings.conn.live_video_desc":
+    "Stream your camera to people nearby, and watch theirs",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor routing",
   "settings.conn.tor_desc": "Route Nostr traffic through Tor for extra privacy",
@@ -2060,6 +2184,10 @@ export const strings = {
   "settings.conn.tor_timeout":
     "Tor has not connected yet. It stays on and keeps trying; the Mesh tab will say when it is routing, or if this network is blocking it.",
   "settings.conn.tor_failed": "Could not start Tor. Try again in a moment.",
+  "settings.conn.tor_bad_bridges":
+    "Tor could not use these bridge lines. Check them, or choose another connection.",
+  "settings.conn.tor_port_busy":
+    "Another app is using the port Tor needs, often another app running Tor. Close it, then try again.",
   "settings.tor.status": "Tor status",
   "settings.tor.connection": "Connection",
   "settings.tor.mode_off": "Direct",
@@ -2071,7 +2199,7 @@ export const strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Hides that you use Tor. Faster than Snowflake, but these bridges are public and some networks block them.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Hides that you use Tor by looking like an ordinary website visit. Harder to block than the others.",
   "settings.tor.mode_custom": "Custom bridges",
@@ -2205,6 +2333,8 @@ export const strings = {
   "settings.language.pending": "On next open",
   "settings.language.pending_a11y":
     "{value}, applies the next time you open Airhop",
+  "settings.language.phone": "Phone language",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Reopen now",
   "settings.language.rtl_title": "Reopen Airhop to finish",
   "settings.language.rtl_body":
@@ -2221,7 +2351,7 @@ export const strings = {
   "settings.status.away_desc": "Mesh paused, not scanning or advertising",
   "settings.status.invisible": "Invisible",
   "settings.status.invisible_desc":
-    "Hidden from Bluetooth scans, still seen by phones you connect to",
+    "Not advertised over Bluetooth, but phones it links to over Bluetooth or Wi-Fi still see you",
   "settings.status.title": "Status",
   "settings.status.set_a11y": "Set status to {value}",
   "settings.status.edit": "Edit status",
@@ -2506,6 +2636,11 @@ export const plurals = {
     one: "Forward {count} message",
     other: "Forward {count} messages",
   },
+  "chat.forward.too_many_public": {
+    one: "A public room shows only {count} message in a row from one person, so the rest would be lost. Forward fewer at a time.",
+    other:
+      "A public room shows only {count} messages in a row from one person, so the rest would be lost. Forward fewer at a time.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} speaking",
     other: "{count} speaking",
@@ -2589,14 +2724,14 @@ export const plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} holds {balance} {unit} in {count} coin. Removing it deletes that balance from this device permanently and there is no backup. Withdraw or send the balance first.",
-    other:
-      "{mint} holds {balance} {unit} in {count} coins. Removing it deletes that balance from this device permanently and there is no backup. Withdraw or send the balance first.",
-  },
   "wallet.mint.split_across": {
     one: "Balance split across {count} mint. Move it to one.",
     other: "Balance split across {count} mints. Move it to one.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{count} payment at {mint} has not settled yet. Removing the mint abandons it, with anything it would still bring back.",
+    other:
+      "{count} payments at {mint} have not settled yet. Removing the mint abandons them, with anything they would still bring back.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2610,6 +2745,11 @@ export const plurals = {
   "wallet.backup.recovered": {
     one: "Recovered {count} unspent coin from {mints}.",
     other: "Recovered {count} unspent coins from {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "{count} coin found is already in this wallet, so it was not counted again.",
+    other:
+      "{count} coins found are already in this wallet, so they were not counted again.",
   },
   "wallet.backup.already_spent": {
     one: "{count} coin was found but already spent, so nothing was credited. That is normal: every coin you have ever spent still appears in the records the mint keeps.",

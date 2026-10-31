@@ -12,8 +12,8 @@
 // first launch, no third party learning who is asking for relays, and no fetch
 // to fail offline (which is exactly when this app matters most).
 //
-// Upstream: .github/workflows/sync-relays.yml proposes a daily refresh of the
-// vendored CSV from permissionlesstech/georelays, as a pull request for review.
+// Upstream: .github/workflows/sync-relays.yml proposes a weekly refresh of the
+// vendored CSV from georelays, as a pull request for review.
 //
 // Rows are canonicalized, not copied: the feed lists many hosts twice, bare and
 // with an explicit :443, and those are one relay. The CSV stays byte-identical
@@ -97,8 +97,6 @@ fs.writeFileSync(
 // file unreachable from the app.
 //
 // Regenerate with: node scripts/generate-relays.js
-//
-// ${relays.length} relays.
 
 export interface GeoRelay {
   url: string;

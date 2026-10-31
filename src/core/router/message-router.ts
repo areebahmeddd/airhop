@@ -476,17 +476,35 @@ export function decodeMeshPublicPayload(payload: Uint8Array): string | null {
   }
 }
 
-// [channel_len u8][channel][msg_id_len u8][msg_id][text], all UTF-8.
+// [channel_len u8][channel][msg_id_len u8][msg_id][cell_len u8][cell][text],
+// all UTF-8.
+//
+// `cell` is the geohash a location level (#block, #city) was written in, empty
+// for any other channel and from a sender with no fix. A level names a
+// different place to every phone, and gossip serves a public message for hours
+// to whoever it meets, so without the cell a phone that moved would hand one
+// block's history to the next. It is sent in the clear: the same message's
+// Nostr copy carries the same ID and names the cell in its public "g" tag, and
+// a hash of a geohash is reversed by enumerating a few billion cells, so hiding
+// it here would hide nothing.
 export function encodeAirhopChannelPayload(
   channel: string,
   text: string,
   msgId: string,
+  cell = "",
 ): Uint8Array {
   const chBytes = new TextEncoder().encode(channel.slice(0, 64));
   const idBytes = new TextEncoder().encode(msgId.slice(0, 32));
+  const cellBytes = new TextEncoder().encode(cell.slice(0, 12));
   const textBytes = new TextEncoder().encode(text);
   const buf = new Uint8Array(
-    1 + chBytes.length + 1 + idBytes.length + textBytes.length,
+    1 +
+      chBytes.length +
+      1 +
+      idBytes.length +
+      1 +
+      cellBytes.length +
+      textBytes.length,
   );
   let off = 0;
   buf[off++] = chBytes.length;
@@ -495,13 +513,16 @@ export function encodeAirhopChannelPayload(
   buf[off++] = idBytes.length;
   buf.set(idBytes, off);
   off += idBytes.length;
+  buf[off++] = cellBytes.length;
+  buf.set(cellBytes, off);
+  off += cellBytes.length;
   buf.set(textBytes, off);
   return buf;
 }
 
 export function decodeAirhopChannelPayload(
   payload: Uint8Array,
-): { channel: string; text: string; msgId: string } | null {
+): { channel: string; text: string; msgId: string; cell: string } | null {
   if (payload.length < 1) return null;
   const chLen = payload[0];
   if (1 + chLen + 1 > payload.length) return null;
@@ -509,12 +530,17 @@ export function decodeAirhopChannelPayload(
 
   let off = 1 + chLen;
   const idLen = payload[off++];
-  if (off + idLen > payload.length) return null;
+  if (off + idLen + 1 > payload.length) return null;
   const msgId = new TextDecoder().decode(payload.slice(off, off + idLen));
   off += idLen;
 
+  const cellLen = payload[off++];
+  if (off + cellLen > payload.length) return null;
+  const cell = new TextDecoder().decode(payload.slice(off, off + cellLen));
+  off += cellLen;
+
   const text = new TextDecoder().decode(payload.slice(off));
-  return { channel, text, msgId };
+  return { channel, text, msgId, cell };
 }
 
 // 16 hex chars from 8 random bytes: short enough to stay cheap on the wire,
@@ -560,17 +586,21 @@ export class MessageRouter {
   // `timestampMs` defaults to now; callers pass an explicit value when the same
   // timestamp must be reused elsewhere (the mesh bridge derives a content-stable
   // ID from sender+timestamp+content, and it must match on both transports).
+  //
+  // `cell` is the geohash a location level was written in (see
+  // encodeAirhopChannelPayload); the mesh room ignores it.
   sendChannelMessage(
     channel: string,
     text: string,
     msgId: string,
     timestampMs: number = Date.now(),
+    cell = "",
   ): void {
     const type = channelPacketType(channel);
     const payload =
       type === PacketType.CHANNEL_MSG
         ? encodeMeshPublicPayload(text)
-        : encodeAirhopChannelPayload(channel, text, msgId);
+        : encodeAirhopChannelPayload(channel, text, msgId, cell);
     const senderIDBytes = hexToBytes(this.identity.peerID);
 
     const packet: Packet = {

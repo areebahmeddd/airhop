@@ -50,14 +50,6 @@ RCT_EXTERN_METHOD(setBackgroundServiceEnabled:(BOOL)enabled
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-// Android's background notice; iOS shows none.
-RCT_EXTERN_METHOD(setBackgroundPeerCount:(double)count
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(openBackgroundNoticeSettings:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-
 RCT_EXTERN_METHOD(writeToLink:(NSString *)linkID
                   dataBase64:(NSString *)dataBase64
                   resolver:(RCTPromiseResolveBlock)resolve

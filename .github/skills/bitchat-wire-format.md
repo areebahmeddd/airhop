@@ -81,7 +81,7 @@ No nonce field; deduplication is content-addressed (`computePacketId`, bitchat's
 
 ## Packet Type Registry
 
-Everything up to `0x29` is bitchat's. bitchat allocates forward and has reached `0x2C` (`0x2A` and `0x2B` reserved for courier spray-ack, `0x2C` `announceV2`), so Airhop's extensions start at `0x50`. `conformance.test.ts` parses bitchat's `MessageType.swift` and fails if its frontier comes within 16 of an Airhop type; `DR_ENCRYPTED` (`0x12`, never assigned by bitchat) is the one listed exemption. bitchat-android implements only `0x01` to `0x03`, `0x10`, `0x11`, `0x20` to `0x22` and `0x29`.
+Everything below `0x50` except `0x12` is bitchat's. bitchat allocates forward and has reached `0x2D` (`0x2A` and `0x2B` reserved for courier spray-ack, `0x2C` `announceV2`, `0x2D` live video, which Airhop sends and plays), so Airhop's extensions start at `0x50`. `conformance.test.ts` parses bitchat's `MessageType.swift` and fails if its frontier comes within 16 of an Airhop type; `DR_ENCRYPTED` (`0x12`, never assigned by bitchat) is the one listed exemption. bitchat-android implements only `0x01` to `0x03`, `0x10`, `0x11`, `0x20` to `0x22` and `0x29`.
 
 A bitchat node never interprets a type it does not know, but it relays it: the unknown case falls through to `scheduleRelayIfNeeded`, and `RelayController.decide` treats it as an ordinary broadcast. An Airhop-only type therefore crosses a mesh of bitchat phones, invisible to their users. Two projects giving one number two meanings is the risk, not relaying.
 
@@ -103,10 +103,11 @@ A bitchat node never interprets a type it does not know, but it relays it: the u
 | `PING` / `PONG`      | `0x26` / `0x27` | Unicast           | Directed echo (nonce + origin TTL)                        |
 | `NOSTR_CARRIER`      | `0x28`          | Broadcast/Unicast | Gateway-ferried signed Nostr event                        |
 | `VOICE_FRAME`        | `0x29`          | Broadcast         | Live push-to-talk burst, signed                           |
+| `VIDEO_FRAME`        | `0x2D`          | Broadcast         | Live video packet (LIVE_VIDEO_V1), signed                 |
 | `CHANNEL_ENC`        | `0x50`          | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop only)         |
 | `CHANNEL_MSG_AIRHOP` | `0x51`          | Broadcast         | Named public channel, a location cell (Airhop only)       |
 
-Retired, never to be reused: `0x30 VIDEO_FRAME` (a same-platform Wi-Fi path, so never cross-platform; video ships as a file) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
+Retired, never to be reused: `0x30 VIDEO_FRAME` (Airhop's old same-platform Wi-Fi path, never cross-platform; live video is bitchat's `0x2D`) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
 
 Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitchat-ios `PacketPayloadLimits`. A new type needing more than a v1 frame has to be added there before it ships, or receivers drop it.
 
@@ -114,14 +115,14 @@ Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitch
 
 The packet type decides the payload, so neither form carries a marker byte.
 
-| Channel      | Type   | Payload                                      |
-| ------------ | ------ | -------------------------------------------- |
-| `#bluetooth` | `0x02` | The message text as UTF-8, nothing else      |
-| Any other    | `0x51` | `[chLen u8][channel][idLen u8][msgId][text]` |
+| Channel      | Type   | Payload                                                        |
+| ------------ | ------ | -------------------------------------------------------------- |
+| `#bluetooth` | `0x02` | The message text as UTF-8, nothing else                        |
+| Any other    | `0x51` | `[chLen u8][channel][idLen u8][msgId][cellLen u8][cell][text]` |
 
 bitchat's mesh has one public room, and `BLEPublicMessageHandler` renders the whole payload as the body, so `#bluetooth` sends and accepts the bare form. It needs no message ID: bitchat-ios derives one from sender, timestamp and content (`MeshMessageIdentity.stableID`), and Airhop's `bridgeStableID` matches it. The payload is decoded strictly; invalid UTF-8 is dropped, not rendered as replacement characters.
 
-Location cells travel under `0x51`, where both bitchat clients see an unknown type and relay it. Catch-up comes from its own gossip-sync bit, 24, which bitchat masks off ([PROTOCOLS section 5.2](../../docs/spec/PROTOCOLS.md#52-sync-type-bits)).
+Location cells travel under `0x51`, where both bitchat clients see an unknown type and relay it. `cell` is the geohash a location level was written in (empty otherwise, or with no fix), and a receiver drops a level message only when both cells are known and differ ([PROTOCOLS section 3.7](../../docs/spec/PROTOCOLS.md#37-public-channel-messages)). Catch-up comes from its own gossip-sync bit, 24, which bitchat masks off ([PROTOCOLS section 5.2](../../docs/spec/PROTOCOLS.md#52-sync-type-bits)).
 
 ## ANNOUNCE TLV
 
@@ -151,6 +152,7 @@ The plaintext of `NOISE_ENCRYPTED` is `[type u8][body]` (`NoisePayloadType`). bi
 | `0x03`        | `DELIVERED`                         | `0x21`           | `AUTHENTICATED_PEER_STATE`                                  |
 | `0x06`/`0x07` | `GROUP_INVITE` / `GROUP_KEY_UPDATE` | `0x22`           | `CONTACT_CARD` (Airhop)                                     |
 | `0x08`        | `VOICE_FRAME`                       | `0x50` to `0x53` | `LOCATION_PIN`, `RING`, `RING_ACK`, `RING_REFUSED` (Airhop) |
+| `0x0A`        | `VIDEO_FRAME`                       |                  |                                                             |
 
 - `PRIVATE_MESSAGE` fields have one-byte lengths, so message ID and content are each capped at 255 UTF-8 bytes on all three clients.
 - A DM attachment goes only sealed as `0x20`, and only to a peer that proved capability bit 8 inside its `0x21`. The cleartext directed `FILE_TRANSFER` is still received, never sent.

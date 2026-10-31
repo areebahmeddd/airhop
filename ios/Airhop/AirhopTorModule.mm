@@ -13,7 +13,8 @@ RCT_EXTERN_METHOD(startTor:(NSString *)bridgeLines
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(stopTor:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(stopTor:(BOOL)keepHeld
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(wipeTorState:(RCTPromiseResolveBlock)resolve

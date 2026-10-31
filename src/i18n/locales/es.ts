@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "No se pudieron crear tus claves",
   "onboarding.identity.failed_body":
     "Este dispositivo no dejó que Airhop las guardara de forma segura. Inténtalo de nuevo o reinicia el teléfono y vuelve a abrir Airhop.",
-  "onboarding.identity.steps_a11y": "Pasos: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Pasos: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519":
     "Generando el par de claves estáticas X25519",
   "onboarding.identity.step.ed25519":
@@ -92,8 +93,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Tu nombre en la malla",
   "onboarding.username.peer_id": "ID de par",
-  "onboarding.username.card_a11y":
-    "Tu nombre en la malla es {username}. ID de par {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Tu nombre en la malla es {username}. ID de par {peerID}. Algoritmo: {algorithm}. Almacenamiento: {storage}. Cuenta necesaria: {account}.",
   "onboarding.username.explanation":
     "Este nombre de usuario se deriva de forma determinista de tu clave pública. Es el mismo en todos los dispositivos que vean tu ID de par.",
   "onboarding.username.cta": "Entrar en Airhop",
@@ -162,7 +163,7 @@ export const strings: Strings = {
     "Encuentra dispositivos cercanos y retransmite mensajes entre ellos. Así se crea la malla, y funciona sin conexión a internet.",
   "onboarding.primer.location.title": "Ubicación",
   "onboarding.primer.location.body":
-    "Te sitúa en los canales de las zonas cercanas, desde una manzana hasta una región. Airhop nunca te rastrea ni envía tu ubicación exacta fuera del dispositivo.",
+    "Te sitúa en los canales de las zonas cercanas, desde una manzana hasta una región. Airhop nunca te rastrea, y tu ubicación exacta solo sale de tu dispositivo cuando le envías tu ubicación a alguien.",
   "onboarding.primer.notifications.title": "Notificaciones",
   "onboarding.primer.notifications.body":
     "Recibe avisos de mensajes nuevos incluso con la app cerrada. Las notificaciones se crean en tu dispositivo, sin que intervenga ningún servidor.",
@@ -173,6 +174,9 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "Acceso al Bluetooth",
   "permission.bluetooth.purpose": "descubrir dispositivos cercanos en la malla",
+  "permission.location.label": "Acceso a la ubicación",
+  "permission.location.purpose":
+    "llegar a los canales de ubicación más allá del alcance del Bluetooth",
   "permission.open_settings": "Abrir ajustes",
   "permission.not_now": "Ahora no",
   "permission.blocked_title": "{label} está desactivado",
@@ -233,8 +237,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "al alcance",
   "chat.dm.row_hint": "Toca dos veces y mantén para ver más opciones",
   "chat.channels.row_hint": "Toca dos veces y mantén para ver más opciones",
-  "chat.dm.you_prefix": "Tú:",
-  "chat.draft_prefix": "Borrador:",
+  "chat.draft_preview": "Borrador: {draft}",
   "chat.dm.none": "No hay mensajes directos",
   "chat.dm.none_desc":
     "Ve a la pestaña Malla y toca un par para empezar un mensaje directo cifrado.",
@@ -252,6 +255,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "Más opciones para {name}",
   "chat.dm.remove_contact_short": "Quitar el contacto",
   "chat.dm.block_short": "Bloquear el contacto",
+  "chat.dm.signing_key_refused":
+    "Alguien presentó una clave distinta para {name} y Airhop la rechazó. Este chat conserva la clave que ya tenía.",
   "chat.dm.delete_short": "Eliminar el chat",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -337,6 +342,9 @@ export const strings: Strings = {
   "chat.jump.failed":
     "No se pudo abrir esa celda. Inténtalo dentro de un momento.",
   "chat.jump.title": "Ir a un lugar",
+  "chat.jump.globe": "Elegir en el globo",
+  "chat.jump.globe_note":
+    "Gíralo hacia cualquier lugar. Funciona sin conexión.",
   "chat.jump.saved": "Lugares guardados",
   "chat.jump.nearby": "Cerca",
   "chat.jump.anywhere":
@@ -368,6 +376,18 @@ export const strings: Strings = {
   "chat.jump.go": "Ir",
   "chat.jump.how":
     "Para encontrar un geohash: abre un canal de ubicación > toca su nombre > cópialo de ahí.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Arrastra para girar · pellizca para ampliar · toca para centrar",
+  "chat.globe.zoom_in": "Acerca para elegir una celda",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "Ir a {cell}",
+  "chat.globe.larger": "Celda más grande",
+  "chat.globe.smaller": "Celda más pequeña",
+  "chat.globe.label": "Globo, centrado en {cell}",
+  "chat.globe.adjust":
+    "Desliza hacia arriba o hacia abajo para cambiar el tamaño de la celda",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -442,6 +462,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Canal público",
   "chat.thread.notices": "Avisos de este canal",
   "chat.thread.invite": "Invitar a alguien a este canal",
+  "chat.thread.location_off":
+    "Ubicación desactivada · solo llega a quien está cerca",
   "chat.thread.not_in_range": "No está cerca. Entregando por internet.",
   "chat.thread.not_nearby":
     "No está cerca. Lo entregaremos cuando vuelva al alcance o se conecte.",
@@ -469,7 +491,7 @@ export const strings: Strings = {
   "chat.thread.message": "Mensaje",
   "chat.thread.message_placeholder": "Mensaje…",
   "chat.thread.length_full": "El mensaje está lleno",
-  "chat.thread.waiting_for": "Esperando a que vuelva {name} · {percent} %",
+  "chat.thread.waiting_for": "Esperando a que vuelva {name} · {percent}",
   "chat.transfer.progress": "{done} de {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "quedan {time}",
@@ -522,7 +544,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Has hecho una captura de pantalla",
   "chat.screenshot.you_took_private":
     "Has hecho una captura de pantalla · no se avisó a nadie",
-  "chat.screenshot.heads_up": "Atención",
   "chat.screenshot.peer_took": "{name} ha hecho una captura de pantalla",
   "chat.screenshot.notified_dm":
     "Se avisó a {name} de que hiciste una captura de esta conversación.",
@@ -536,7 +557,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "Ver el perfil de {name}",
   "chat.bubble.forwarded": "Reenviado",
   "chat.bubble.attachment": "adjunto",
-  "chat.bubble.a11y": "{sender}: {body}. Mantén pulsado para ver más opciones.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "Toca dos veces y mantén para ver más opciones",
+  "chat.bubble.more_options": "Más opciones",
+  "chat.bubble.open_link": "Abrir {link}",
+  "chat.bubble.status_delivered": "Entregado",
+  "chat.bubble.status_read": "Leído",
   "chat.bubble.failed_retry": "No se pudo enviar. Toca para reintentar.",
 
   // ---- Chats: message actions and info ----
@@ -564,6 +590,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Cámara",
   "chat.attach.camera_desc": "Haz una foto o un vídeo",
   "chat.attach.camera_desc_photo": "Hacer una foto",
+  "chat.attach.video": "Grabar vídeo",
+  "chat.attach.video_desc": "Graba un clip corto",
   "chat.attach.library": "Galería de fotos",
   "chat.attach.library_desc": "Elige de tu galería",
   "chat.attach.document": "Documento",
@@ -574,6 +602,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Envía sats de Cashu desde tu cartera",
   "chat.attach.location": "Ubicación",
   "chat.attach.location_desc": "Envía dónde estás ahora mismo",
+  "chat.attach.live": "Emitir en directo",
+  "chat.attach.live_desc": "Transmite tu cámara a la gente cercana",
   "chat.attach.title": "Adjuntar",
 
   // ---- Chat: location pin ----
@@ -634,6 +664,20 @@ export const strings: Strings = {
   "chat.attach.caption": "Añade un pie…",
   "chat.attach.send": "Enviar el adjunto",
   "chat.attach.generic": "Adjunto",
+  "chat.video_prep.preparing": "Preparando vídeo",
+  "chat.video_prep.waiting": "Esperando para preparar el vídeo",
+  "chat.video_prep.cancel": "Dejar de preparar este vídeo",
+  "chat.video_prep.too_large":
+    "No se pudo reducir este vídeo lo suficiente para enviarlo.",
+  "chat.video_prep.unreadable": "No se pudo abrir este vídeo. Prueba con otro.",
+  "chat.video_prep.failed":
+    "Algo salió mal al preparar ese vídeo. Inténtalo de nuevo.",
+  "chat.video_prep.interrupted":
+    "Saliste de Airhop antes de que el vídeo estuviera listo. Vuelve a enviarlo.",
+  "chat.trim.play": "Reproducir vista previa",
+  "chat.trim.pause": "Pausar vista previa",
+  "chat.trim.start": "Inicio del clip",
+  "chat.trim.end": "Final del clip",
   "chat.media.view_full": "Ver la foto a pantalla completa",
   "chat.media.gone_photo": "La foto no está en este dispositivo",
   "chat.media.gone_video": "El vídeo no está en este dispositivo",
@@ -649,6 +693,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "ese archivo",
   "chat.media.pause_voice": "Pausar la nota de voz",
   "chat.media.play_voice": "Reproducir la nota de voz",
+  "chat.media.pause_video": "Pausar el vídeo",
+  "chat.media.play_video": "Reproducir el vídeo",
   "chat.media.voice_position": "Posición de la nota de voz",
   "chat.media.voice_scrub":
     "Toca a lo largo de las barras para saltar a ese punto",
@@ -691,6 +737,52 @@ export const strings: Strings = {
     "Límite de dos minutos alcanzado, suelta para enviar",
   "chat.voice.limit_sent": "Límite de dos minutos alcanzado, nota enviada",
   "chat.voice.stop_send": "Detener la grabación y enviar",
+  "chat.video_note.hold": "Mantén pulsado para grabar una nota de vídeo",
+  "chat.video_note.a11y_toggle":
+    "Toca dos veces para iniciar o detener la grabación.",
+  "chat.video_note.not_recorded": "La nota de vídeo no se grabó",
+  "chat.video_note.limit_sent": "Se acabó el tiempo, nota de vídeo enviada",
+  "chat.video_note.a11y": "Nota de vídeo, toca dos veces para el sonido",
+  "chat.video_note.sound_on": "Activar el sonido",
+  "chat.video_note.sound_off": "Desactivar el sonido",
+  "chat.live_video.preview": "Vídeo en directo",
+  "chat.live_video.badge": "En directo",
+  "chat.live_video.reconnecting": "Reconectando…",
+  "chat.live_video.a11y": "{name} está en directo. Toca dos veces para verlo.",
+  "chat.live_video.live_from": "{name} está en directo",
+  "chat.live_video.sound": "Sonido",
+  "chat.live_video.ended": "Emisión finalizada",
+  "chat.live_video.title": "Vídeo en directo",
+  "chat.live_video.go_live": "Emitir",
+  "chat.live_video.end": "Terminar",
+  "chat.live_video.end_title": "¿Terminar el vídeo en directo?",
+  "chat.live_video.end_body":
+    "Al terminar, la grabación se queda en este chat. Al descartarla, se pide a quienes miran que la borren.",
+  "chat.live_video.discard": "Descartar",
+  "chat.live_video.keep": "Seguir emitiendo",
+  "chat.live_video.audience_room":
+    "Cualquiera en el alcance de Bluetooth puede verlo.",
+  "chat.live_video.audience_dm": "Solo {name} puede verlo.",
+  "chat.live_video.nobody": "Ahora mismo no hay nadie en alcance para verlo.",
+  "chat.live_video.quality_low": "Baja",
+  "chat.live_video.quality_medium": "Media",
+  "chat.live_video.quality_high": "Alta",
+  "chat.live_video.quality_low_hint": "Llega a gente a varios saltos",
+  "chat.live_video.quality_medium_hint": "Para gente a uno o dos saltos",
+  "chat.live_video.quality_high_hint": "Para gente justo a tu lado",
+  "chat.live_video.signal_good": "Va al día",
+  "chat.live_video.signal_weak": "Se está retrasando",
+  "chat.live_video.signal_poor":
+    "Demasiado lento para vídeo, solo se envía el sonido",
+  "chat.live_video.mic": "Micrófono",
+  "chat.live_video.no_sound": "Sin sonido",
+  "chat.live_video.flip": "Cambiar de cámara",
+  "chat.live_video.camera_failed": "No se pudo abrir la cámara",
+  "chat.live_video.camera_lost":
+    "La cámara se detuvo, así que la emisión terminó",
+  "chat.live_video.failed": "No se pudo emitir en directo",
+  "chat.live_video.kept_here":
+    "Es demasiado largo para enviarlo como archivo. Quienes lo vieron conservan su propia copia.",
   "chat.voice.lift_lock": "Desliza hacia arriba para grabar sin manos",
   "chat.voice.live_speaking": "{name} está hablando",
   "chat.voice.live_ended": "Finalizado",
@@ -706,6 +798,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Acceso al micrófono",
   "chat.perm.mic_live_purpose": "hablar con quien esté cerca",
   "chat.perm.mic_note_purpose": "grabar una nota de voz",
+  "chat.perm.video_note_purpose": "grabar una nota de vídeo",
+  "chat.perm.live_video_purpose": "emitir en directo",
   "chat.perm.recording_stopped": "Grabación detenida",
   "chat.perm.record_failed":
     "No se pudo iniciar la grabación. Revisa los permisos del micrófono.",
@@ -838,6 +932,10 @@ export const strings: Strings = {
   "chat.notices.post": "Publicar el aviso",
   "chat.notices.post_short": "Publicar",
   "chat.notices.delete": "Eliminar el aviso",
+  "chat.notices.delete_title": "¿Eliminar este aviso?",
+  "chat.notices.delete_body":
+    "Se pedirá a todos los que lo tengan que lo quiten. No puedes deshacerlo.",
+  "chat.notices.permanent": "Permanente",
   "chat.notices.fades_soon": "desaparece pronto",
   "chat.notices.1_day": "1 día",
   "chat.notices.3_days": "3 días",
@@ -905,6 +1003,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "No se puede reenviar a {name}",
   "chat.forward.too_long_for_dm":
     "Demasiado largo para un mensaje directo. Reenvíalo a un canal o grupo.",
+  "chat.forward.too_long_for_public":
+    "Demasiado largo para una sala pública, donde se ocultaría como spam. Reenvíalo a un grupo.",
   "chat.forward.channels": "Canales",
   "chat.forward.groups": "Grupos",
   "chat.forward.locations": "Ubicaciones",
@@ -913,6 +1013,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "No reenviado",
   "chat.forward.app_row_body":
     "Esta línea es de Airhop, no de una persona, así que no hay nada que reenviar.",
+  "chat.forward.has_ecash":
+    "Esto contiene ecash, y quien lo reclame primero se queda con el dinero, así que no se reenvía.",
+  "chat.forward.public_title": "¿Reenviar a {name}?",
+  "chat.forward.public_mesh_body":
+    "Cualquiera que esté cerca podrá leerlo allí, y no se podrá retirar.",
+  "chat.forward.public_geo_body":
+    "Cualquiera en esta zona podrá leerlo allí, también en relés públicos de internet, y no se podrá retirar.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Iniciando la malla…",
@@ -931,7 +1038,7 @@ export const strings: Strings = {
     "Ubicación desactivada · Android la necesita para encontrar pares",
   "mesh.banner.paused": "Malla en pausa · estás ausente",
   "mesh.banner.location_off":
-    "Ubicación desactivada · canales de ubicación no disponibles",
+    "Ubicación desactivada · los canales de ubicación solo llegan a quien está cerca",
   "mesh.banner.battery_saver":
     "Ahorro de batería · se busca con menos frecuencia",
   "mesh.banner.wipe_incomplete":
@@ -966,7 +1073,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "Abre los ajustes de actividad en segundo plano de este teléfono",
   "mesh.banner.hint.tor_settings": "Abre los ajustes de Tor de Airhop",
+  "mesh.banner.hint.enable_location":
+    "Pide acceso a la ubicación o explica cómo permitirlo en los ajustes",
   "mesh.banner.dismiss": "Descartar: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Oculta este aviso para siempre",
 
   // ---- Mesh: radar ----
@@ -1201,6 +1311,8 @@ export const strings: Strings = {
     "{mint} emite {units}. Sus claves están guardadas en este dispositivo, así que sus tokens ya se pueden verificar incluso sin internet.",
   "wallet.mint.remove_plain":
     "¿Quitar {mint} de tu cartera? Sus claves guardadas también se van, así que sus tokens ya no se podrán verificar sin conexión.",
+  "wallet.mint.remove_holdings":
+    "{mint} guarda:\n{holdings}\nQuitarla borra todo esto de este dispositivo. Retíralo o envíalo primero.",
   "wallet.mint.title": "Casas de moneda",
   "wallet.mint.none_desc":
     "Una casa de moneda emite y canjea tu ecash. Añade una para recargar por Lightning o aceptar sus tokens.",
@@ -1558,6 +1670,8 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Ya gastado",
   "wallet.err.change_pending": "Pagado, cambio pendiente",
   "wallet.svc.mint_unreachable": "No se pudo contactar con la casa de moneda.",
+  "wallet.svc.mint_http_error":
+    "La casa de moneda respondió con un error (HTTP {status}).",
   "wallet.svc.tor_ios":
     "En iOS, las peticiones a la casa de moneda no pasan por Tor.",
   "wallet.svc.tor_ios_body":
@@ -1673,6 +1787,10 @@ export const strings: Strings = {
     "Tus monedas no pueden formar exactamente {amount} {unit} sin conexión.",
   "wallet.svc.inexact_detail":
     "El token más pequeño que puedes enviar es de {spend} {unit}. Sin conexión no hay cambio, así que los {extra} {unit} de más van al destinatario.",
+  "wallet.svc.spend_changed":
+    "Este envío ahora costaría {spend} {unit}, más de lo que aceptaste.",
+  "wallet.svc.spend_changed_body":
+    "Tus monedas cambiaron mientras lo decidías. No se envió nada. Inténtalo de nuevo para ver el nuevo importe.",
   "wallet.svc.no_single_mint":
     "Ninguna casa de moneda tiene por sí sola {amount} {unit}. El ecash de casas distintas no se puede combinar en un solo token: consolida antes en una, o envíalo en cantidades separadas.",
   "wallet.svc.have_tried_send":
@@ -1701,6 +1819,10 @@ export const strings: Strings = {
     "No se envió nada más. Las monedas quedan retenidas hasta que la casa de moneda confirme el resultado. Si se realizó, el token bloqueado aparece en Actividad para que lo entregues. Si no, las monedas vuelven.",
   "wallet.svc.send_spent_by_swap":
     "Estas monedas se canjearon de vuelta a tu cartera antes de que se reclamara este token, así que ya no se puede reclamar. El valor está en tu saldo.",
+  "wallet.svc.payment_in_doubt_body":
+    "Las monedas quedan retenidas hasta que la casa de moneda confirme el resultado, que se vuelve a comprobar en la próxima actualización. No pagues esta factura otra vez hasta entonces.",
+  "wallet.svc.mint_removed":
+    "Quitaste esta casa de moneda, así que esto ya no se sigue.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "Verificado por QR",
@@ -1744,7 +1866,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "Ese código de bitchat ha caducado. Pídele que vuelva a abrir su QR.",
   "contacts.scan.tampered":
-    "Este código QR no es válido: su ID de par no coincide con sus claves. Puede que lo hayan manipulado.",
+    "Este código QR no es válido: sus claves no superan la comprobación. Puede que lo hayan manipulado.",
   "contacts.scan.key_conflict":
     "Ya tienes otra clave para esta persona, así que no ha cambiado nada. Escanea su código en persona para sustituirla.",
   "contacts.scan.already_added": "Ya está en tus contactos",
@@ -1767,7 +1889,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "Este QR pertenece a otra persona. Pide a {name} que muestre su propio código.",
   "contacts.verify.tampered_body":
-    "Este QR parece manipulado: su ID no coincide con su clave.",
+    "Este QR parece manipulado: sus claves no superan la comprobación.",
   "contacts.verify.choose_title": "¿Cómo quieres comprobarlo?",
   "contacts.verify.choose_body":
     "Ambos métodos confirman que las claves de este teléfono son realmente de {name}.",
@@ -1884,6 +2006,8 @@ export const strings: Strings = {
   "settings.diag.share": "Compartir diagnóstico",
   "settings.diag.share_desc":
     "Estado de transportes y ajustes para un informe de error. Nunca mensajes, nombres ni claves.",
+  "settings.diag.share_fallback":
+    "No se pudo abrir Compartir. Se copió el informe.",
   "settings.section.storage_desc": "Uso y caché",
   "settings.section.appearance": "Apariencia",
   "settings.section.appearance_desc": "Tema, fuente e idioma",
@@ -1929,6 +2053,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Mostrar los medios automáticamente",
   "settings.general.show_media_desc":
     "Las fotos y los vídeos aparecen en el chat, o se quedan tras un toque",
+  "settings.general.spam_filter": "Filtro de spam",
+  "settings.general.spam_filter_desc":
+    "Oculta los mensajes públicos de quienes publican demasiado rápido, se repiten o inundan de enlaces. Los mensajes privados nunca se filtran.",
   "settings.general.reset": "Restablecer los ajustes",
   "settings.general.media_retention": "Conservar los medios durante",
   "settings.general.media_retention_desc":
@@ -1945,7 +2072,7 @@ export const strings: Strings = {
     "Devuelve las preferencias a su valor por defecto y deja intactos tu identidad, tus mensajes, tus contactos y tu cartera",
   "settings.general.reset_title": "¿Restablecer los ajustes?",
   "settings.general.reset_body":
-    "Las preferencias vuelven a sus valores por defecto, incluidos la apariencia, el idioma, las notificaciones, deshacer el envío y la conectividad (internet, Tor, pasarela, puente, relés). El bloqueo de Airhop, el tiempo que se conservan los medios y tu estado se quedan como los tengas. Tu identidad, tus mensajes, tus contactos y tu cartera quedan intactos.",
+    "Las preferencias vuelven a sus valores por defecto, incluidos la apariencia, el idioma, las notificaciones, deshacer el envío y la conectividad (pasarela, puente de malla, relés). El bloqueo de Airhop, el tiempo que se conservan los medios, el interruptor de internet, Tor y sus puentes, y tu estado se quedan como los tengas. Tu identidad, tus mensajes, tus contactos y tu cartera quedan intactos.",
   "settings.general.reset_confirm": "Restablecer",
 
   // ---- Settings: privacy and security ----
@@ -2083,6 +2210,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "¿Desactivar la voz en directo?",
   "settings.conn.live_voice_off_body":
     "Mantener pulsado el micrófono grabará una nota de voz. Se envía al soltar, y nadie la oye hasta que la reproduce.",
+  "settings.conn.live_video": "Vídeo en directo",
+  "settings.conn.live_video_desc":
+    "Transmite tu cámara a la gente cercana y mira la suya",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Enrutado por Tor",
   "settings.conn.tor_desc":
@@ -2099,6 +2229,10 @@ export const strings: Strings = {
     "Tor aún no se ha conectado. Sigue activo e intentándolo; la pestaña Malla dirá cuándo está enrutando, o si esta red lo está bloqueando.",
   "settings.conn.tor_failed":
     "No se pudo iniciar Tor. Inténtalo de nuevo en un momento.",
+  "settings.conn.tor_bad_bridges":
+    "Tor no pudo usar estas líneas de puente. Revísalas o elige otra conexión.",
+  "settings.conn.tor_port_busy":
+    "Otra app está usando el puerto que necesita Tor, a menudo otra app que ejecuta Tor. Ciérrala e inténtalo de nuevo.",
   "settings.tor.status": "Estado de Tor",
   "settings.tor.connection": "Conexión",
   "settings.tor.mode_off": "Directa",
@@ -2110,7 +2244,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Oculta que usas Tor. Más rápido que Snowflake, pero estos puentes son públicos y algunas redes los bloquean.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Oculta que usas Tor haciéndolo parecer una visita normal a un sitio web. Más difícil de bloquear que las demás.",
   "settings.tor.mode_custom": "Puentes propios",
@@ -2246,6 +2380,8 @@ export const strings: Strings = {
   "settings.language.pending": "Al abrir de nuevo",
   "settings.language.pending_a11y":
     "{value}, se aplicará la próxima vez que abras Airhop",
+  "settings.language.phone": "Idioma del teléfono",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Reabrir ahora",
   "settings.language.rtl_title": "Vuelve a abrir Airhop para terminar",
   "settings.language.rtl_body":
@@ -2262,7 +2398,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Malla en pausa, sin buscar ni anunciarse",
   "settings.status.invisible": "Invisible",
   "settings.status.invisible_desc":
-    "Oculto a las búsquedas por Bluetooth, aún visible para los teléfonos a los que te conectas",
+    "No se anuncia por Bluetooth, pero los teléfonos con los que se enlaza por Bluetooth o Wi-Fi aún te ven",
   "settings.status.title": "Estado",
   "settings.status.set_a11y": "Poner el estado en {value}",
   "settings.status.edit": "Editar el estado",
@@ -2564,6 +2700,12 @@ export const plurals: Plurals = {
     many: "Reenviar {count} mensajes",
     other: "Reenviar {count} mensajes",
   },
+  "chat.forward.too_many_public": {
+    one: "Una sala pública solo muestra {count} mensaje seguido de una misma persona, así que el resto se perdería. Reenvía menos a la vez.",
+    many: "Una sala pública solo muestra {count} mensajes seguidos de una misma persona, así que el resto se perdería. Reenvía menos a la vez.",
+    other:
+      "Una sala pública solo muestra {count} mensajes seguidos de una misma persona, así que el resto se perdería. Reenvía menos a la vez.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} hablando",
     many: "{count} hablando",
@@ -2666,16 +2808,16 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} guarda {balance} {unit} en {count} moneda. Quitarla borra ese saldo de este dispositivo de forma permanente y no hay copia de seguridad. Retira o envía el saldo primero.",
-    many: "{mint} guarda {balance} {unit} en {count} monedas. Quitarla borra ese saldo de este dispositivo de forma permanente y no hay copia de seguridad. Retira o envía el saldo primero.",
-    other:
-      "{mint} guarda {balance} {unit} en {count} monedas. Quitarla borra ese saldo de este dispositivo de forma permanente y no hay copia de seguridad. Retira o envía el saldo primero.",
-  },
   "wallet.mint.split_across": {
     one: "Saldo repartido entre {count} casa de moneda. Muévelo a una.",
     many: "Saldo repartido entre {count} casas de moneda. Muévelo a una.",
     other: "Saldo repartido entre {count} casas de moneda. Muévelo a una.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{count} pago en {mint} aún no se ha liquidado. Quitar la casa de moneda lo abandona, junto con todo lo que todavía podría devolver.",
+    many: "{count} pagos en {mint} aún no se han liquidado. Quitar la casa de moneda los abandona, junto con todo lo que todavía podrían devolver.",
+    other:
+      "{count} pagos en {mint} aún no se han liquidado. Quitar la casa de moneda los abandona, junto con todo lo que todavía podrían devolver.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2691,6 +2833,12 @@ export const plurals: Plurals = {
     one: "Se recuperó {count} moneda sin gastar de {mints}.",
     many: "Se recuperaron {count} monedas sin gastar de {mints}.",
     other: "Se recuperaron {count} monedas sin gastar de {mints}.",
+  },
+  "wallet.backup.already_held": {
+    one: "{count} moneda encontrada ya está en esta cartera, así que no se ha vuelto a contar.",
+    many: "{count} monedas encontradas ya están en esta cartera, así que no se han vuelto a contar.",
+    other:
+      "{count} monedas encontradas ya están en esta cartera, así que no se han vuelto a contar.",
   },
   "wallet.backup.already_spent": {
     one: "Se encontró {count} moneda, pero ya estaba gastada, así que no se acreditó nada. Es normal: todas las monedas que has gastado siguen apareciendo en los registros que guarda la casa de moneda.",

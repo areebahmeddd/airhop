@@ -177,6 +177,7 @@ import {
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
   revalidateTorRouting,
+  setTorBridgeMode,
   setTorRouting,
 } from "../tor-routing";
 import { TorWebSocket } from "../tor-websocket";
@@ -243,6 +244,19 @@ describe("enabling Tor on iOS", () => {
     await setTorRouting(false);
 
     expect(socketFactory).toHaveBeenLastCalledWith(DIRECT_SOCKET);
+  });
+
+  // A bridge change restarts Arti. A relay pool rebuilt in that gap has to fail
+  // on the Tor socket, never open on the direct one.
+  it("keeps the Tor socket through a bridge change", async () => {
+    await setTorRouting(true);
+    mockTorEnabled = true;
+    socketFactory.mockClear();
+
+    await setTorBridgeMode("snowflake");
+
+    expect(mockStopTor).toHaveBeenCalled();
+    expect(socketFactory).not.toHaveBeenCalledWith(DIRECT_SOCKET);
   });
 
   it("stays fail-closed, and keeps Arti, when the bootstrap times out", async () => {

@@ -113,7 +113,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                 // a direct route for a user who asked not to have one.
                 Log.e(TAG, "pluggable transports did not start")
                 emitStatus()
-                promise.reject("tor_transport_failed", "pluggable transports did not start")
+                promise.reject(TorStartFailure.TRANSPORT, "pluggable transports did not start")
                 return@execute
             }
 
@@ -140,7 +140,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                 // Traffic stays held: a toggle unwinds through stopTor, and a
                 // start at launch stays failed closed, even when another app
                 // holds the port.
-                promise.reject("tor_start_failed", "arti start failed (rc=$rc)")
+                promise.reject(TorStartFailure.codeFor(rc), "arti start failed (rc=$rc)")
                 return@execute
             }
             AirhopTorProxy.route(SOCKS_PORT)
@@ -149,9 +149,12 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // Stop Arti and put traffic back on a direct connection.
+    // Stop Arti and put traffic back on a direct connection, unless `keepHeld`:
+    // a bridge change starts again straight after, and a request in that gap
+    // (a wallet call to a mint) must fail rather than leave on the clear net.
+    // The next startTor or stopTor moves it on.
     @ReactMethod
-    fun stopTor(promise: Promise) {
+    fun stopTor(keepHeld: Boolean, promise: Promise) {
         attemptEpoch.incrementAndGet()
         stopPolling()
         worker.execute {
@@ -161,7 +164,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
             AirhopTorProxy.hold()
             ArtiNative.stop()
             AirhopIPtProxy.stop()
-            AirhopTorProxy.route(null)
+            if (!keepHeld) AirhopTorProxy.route(null)
             emitStatus()
             promise.resolve(null)
         }

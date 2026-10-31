@@ -29,4 +29,17 @@ RCT_EXTERN_METHOD(startRingAlert:(double)durationMs
 RCT_EXTERN_METHOD(stopRingAlert:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(setMeshSnapshot:(double)count
+                  meshOn:(BOOL)meshOn
+                  bluetoothOff:(BOOL)bluetoothOff
+                  atMs:(double)atMs
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(clearMeshSnapshot:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(openBackgroundNoticeSettings:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

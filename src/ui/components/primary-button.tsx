@@ -76,7 +76,10 @@ export default function PrimaryButton({
           variant === "outline" && styles.labelOutline,
           disabled && styles.labelDisabled,
         ]}
-        numberOfLines={1}
+        // Two lines, not one: at a large text size "Pay {amount} {unit}" or a
+        // Tamil label outgrows the width, and a truncated action is unreadable
+        // (WCAG 1.4.4). The pill grows from BUTTON_HEIGHT to fit the second.
+        numberOfLines={2}
       >
         {label}
       </Text>
@@ -90,6 +93,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.accent,
       borderRadius: Radius.full,
       paddingVertical: Spacing["md-base"],
+      // Keeps a wrapped label clear of the full radius, which curves into the
+      // corners of a two-line pill.
+      paddingHorizontal: Spacing.lg,
       minHeight: BUTTON_HEIGHT,
       alignItems: "center",
       justifyContent: "center",
@@ -120,6 +126,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textInverse,
       letterSpacing: 0.1,
+      textAlign: "center",
     },
     labelOutline: {
       color: Colors.textPrimary,

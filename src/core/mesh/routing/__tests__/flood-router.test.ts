@@ -4,7 +4,12 @@
 // with itself, so the delay matters as much as the decision. TTL and the
 // duplicate check are what bound how far and how long a packet travels.
 import { encodeBoardWire, signBoardPost } from "../../wire/board-packet";
-import { Flags, PacketType, type Packet } from "../../wire/packet-codec";
+import {
+  computePacketId,
+  Flags,
+  PacketType,
+  type Packet,
+} from "../../wire/packet-codec";
 import { FloodRouter, relayDecision, relayLimit } from "../flood-router";
 
 const LOCAL = new Uint8Array(8).fill(0xaa);
@@ -47,6 +52,18 @@ describe("FloodRouter", () => {
       const packet = makePacket(0x01);
       router.receive(packet, (p) => sent.push(p));
       expect(router.receive(packet, (p) => sent.push(p))).toBe(false);
+    });
+
+    // A sync reply refused for want of its author's key is offered again
+    // under the same ID once the key is pinned.
+    it("takes a forgotten packet as new again, and only that one", () => {
+      const forgotten = makePacket(0x01);
+      const kept = makePacket(0x02);
+      router.receive(forgotten, () => undefined);
+      router.receive(kept, () => undefined);
+      router.forget([computePacketId(forgotten)]);
+      expect(router.receive(forgotten, () => undefined)).toBe(true);
+      expect(router.receive(kept, () => undefined)).toBe(false);
     });
 
     it("schedules relay after jitter (10-40 ms at the default degree of 0)", () => {
@@ -124,6 +141,32 @@ describe("FloodRouter", () => {
       expect(router.receive(packet, (p) => sent.push(p))).toBe(false);
       jest.advanceTimersByTime(300);
       expect(sent.length).toBe(0);
+    });
+  });
+
+  // A 1 MiB file is over two thousand fragment IDs. Sharing the 1,000-entry
+  // set with messages would push a message out long before its five minutes,
+  // and its late copy would be handled and relayed a second time.
+  describe("fragments", () => {
+    it("do not crowd message IDs out of the dedup set", () => {
+      const message = makePacket(0x01);
+      router.originate(message);
+      for (let i = 0; i < 2_000; i++) {
+        router.originate({
+          ...makePacket(0x00),
+          type: PacketType.FRAGMENT,
+          payload: new Uint8Array([i & 0xff, i >> 8]),
+        });
+      }
+
+      expect(router.receive(message, () => undefined)).toBe(false);
+    });
+
+    it("are still deduplicated among themselves", () => {
+      const fragment = { ...makePacket(0x01), type: PacketType.FRAGMENT };
+      router.originate(fragment);
+
+      expect(router.receive(fragment, () => undefined)).toBe(false);
     });
   });
 
@@ -362,11 +405,15 @@ describe("relayDecision", () => {
     },
   );
 
-  test.each(DEGREES)("broadcast fragments and voice at degree %i", (deg) => {
-    const ttl = deg >= 6 ? 4 : 6;
-    expectRelay(pkt(PacketType.FRAGMENT), deg, ttl, STREAM);
-    expectRelay(pkt(PacketType.VOICE_FRAME), deg, ttl, STREAM);
-  });
+  test.each(DEGREES)(
+    "broadcast fragments, voice and video at degree %i",
+    (deg) => {
+      const ttl = deg >= 6 ? 4 : 6;
+      expectRelay(pkt(PacketType.FRAGMENT), deg, ttl, STREAM);
+      expectRelay(pkt(PacketType.VOICE_FRAME), deg, ttl, STREAM);
+      expectRelay(pkt(PacketType.VIDEO_FRAME), deg, ttl, STREAM);
+    },
+  );
 
   // A recipient only makes these types directed; broadcast, they are clamped
   // like anything else, and a recipient on another type changes nothing.

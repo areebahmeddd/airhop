@@ -57,16 +57,21 @@ import {
 import { giftWrapSince, unwrapDm, wrapDm } from "@core/nostr/gift-wrap";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { validatedDifficulty } from "@core/nostr/nostr-pow";
-import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
+import { ProcessedEvents } from "@core/nostr/processed-events";
 import { sharedRowID } from "@core/nostr/shared-row-id";
 import {
   publicContentKey,
   PublicMessageLimiter,
 } from "@core/router/public-message-limiter";
+import { SpamFilter } from "@core/spam/spam-filter";
 import { t } from "@i18n";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
-import { hasStoredMessage, useChatStore } from "@store/chat-store";
+import {
+  hasStoredMessage,
+  MAX_PER_CHANNEL,
+  useChatStore,
+} from "@store/chat-store";
 import { useLocationNotesStore } from "@store/location-notes-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
@@ -78,6 +83,7 @@ import { finalizeEvent, type Event as NostrEvent } from "nostr-tools";
 import { noteUrgentNotice } from "./board-alerts";
 import { getCoarseLocation, type Coords } from "./location-service";
 import { ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
+import { ReadAckQueue } from "./read-ack-queue";
 
 import {
   geohashChannel,
@@ -292,7 +298,7 @@ export class GeohashChannelService {
   // field here, because an in-memory Map does not survive a relaunch. See the
   // note on that field for what a reply does without it.
   // Read receipts owed over geo DM, keyed by the peer's Nostr pubkey.
-  private readonly pendingGeoDmReadAcks = new Map<string, Set<string>>();
+  private readonly pendingGeoDmReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
 
   // Last resolved position. Retained so refresh() can detect a cell change.
   private coords: Coords | null = null;
@@ -310,14 +316,21 @@ export class GeohashChannelService {
   private readonly identities = new Map<string, GeohashIdentity>();
   // One presence broadcaster per geohash, since each signs with its own key.
   private readonly presenceByGeohash = new Map<string, GeohashPresence>();
-  private readonly openedGiftWraps = new OpenedGiftWraps();
+  // Wraps already opened, this launch or an earlier one: each cell's DM
+  // subscription replays the last day every time it opens.
+  private readonly openedGiftWraps = new ProcessedEvents(
+    "geo-dm",
+    GEO_DM_LOOKBACK_SECONDS,
+  );
 
   // Mesh<->internet bridge hooks, injected by MeshService. Undefined in tests
   // and in an internet-only build.
   private readonly gateway?: GatewayHooks;
 
-  // Shared with the mesh room: one budget per text across transports.
+  // Shared with the mesh room: one budget per sender and text across
+  // transports.
   private readonly publicLimiter: PublicMessageLimiter;
+  private readonly spamFilter: SpamFilter;
 
   constructor(
     client: NostrClient,
@@ -325,11 +338,13 @@ export class GeohashChannelService {
     nickname: string,
     gateway?: GatewayHooks,
     publicLimiter: PublicMessageLimiter = new PublicMessageLimiter(),
+    spamFilter: SpamFilter = new SpamFilter(),
   ) {
     this.client = client;
     this.nickname = nickname;
     this.gateway = gateway;
     this.publicLimiter = publicLimiter;
+    this.spamFilter = spamFilter;
     this.geohashSeed = deriveGeohashSeed(signingPrivKey);
     // Load the vendored relay directory synchronously. It is kept current by a
     // weekly CI sync from bitchat's reviewed list (see geo-relay-source.ts); we
@@ -531,11 +546,13 @@ export class GeohashChannelService {
 
   // Publish a message to a geo channel's Nostr cell. Returns false when there
   // is no cell to publish to, so the caller knows the message went out over
-  // BLE only.
+  // BLE only. `onUndelivered` gets the signed event when no relay took it, for
+  // a caller that will put it out again (republishOwnEvent).
   async publish(
     channel: string,
     text: string,
     msgId: string,
+    onUndelivered?: (event: NostrEvent, geohash: string) => void,
   ): Promise<boolean> {
     const geohash = this.channelGeohash.get(channel);
     if (geohash === undefined) return false;
@@ -559,8 +576,19 @@ export class GeohashChannelService {
       // hand it our signed event to publish on our behalf. The BLE broadcast of
       // this same message still happened, so this is additive, not a failure.
       this.gateway?.uplink(event, geohash);
+      onUndelivered?.(event, geohash);
     }
     return delivered;
+  }
+
+  // Put one of our own channel events out again, unchanged, so relays and
+  // receivers that already hold it see the same event. Resolves whether a
+  // relay accepted it.
+  republishOwnEvent(event: NostrEvent, geohash: string): Promise<boolean> {
+    return this.client.publish(event, this.relaysForGeohash(geohash)).then(
+      () => true,
+      () => false,
+    );
   }
 
   // Everyone who has posted in this channel recently, newest first.
@@ -736,10 +764,11 @@ export class GeohashChannelService {
   }
 
   // Retract a previously bridged note with a NIP-09 deletion (kind 5), signed
-  // by the same per-cell key that published it.
-  async deleteBoardNote(geohash: string, eventID: string): Promise<void> {
+  // by the same per-cell key that published it. Resolves whether a relay
+  // accepted it, so a caller can try again rather than lose the retraction.
+  async deleteBoardNote(geohash: string, eventID: string): Promise<boolean> {
     const relays = this.relaysForGeohash(geohash);
-    if (relays.length === 0) return;
+    if (relays.length === 0) return false;
     try {
       const event = finalizeEvent(
         {
@@ -751,8 +780,9 @@ export class GeohashChannelService {
         this.identityFor(geohash).privKey,
       );
       await this.client.publish(event, relays);
+      return true;
     } catch {
-      // Best-effort: the board tombstone already suppresses the mesh copy.
+      return false;
     }
   }
 
@@ -801,14 +831,17 @@ export class GeohashChannelService {
     // Flood-limited like the relay path, as in bitchat-ios: the carrier is
     // unsigned, so anyone in radio range can ferry fresh self-signed events at
     // any rate.
-    if (
-      !hasStoredMessage(channel, id) &&
+    if (hasStoredMessage(channel, id)) {
+      // Never hidden, but still judged; see SpamFilter.check.
+      this.isSpam(event, id);
+    } else if (
       !this.publicLimiter.allow(
         `nostr:${event.pubkey}`,
         publicContentKey(event.content),
         validatedDifficulty(event.id, event.tags),
         Date.now(),
-      )
+      ) ||
+      this.isSpam(event, id)
     ) {
       return;
     }
@@ -822,6 +855,19 @@ export class GeohashChannelService {
         Math.min(event.created_at, Math.floor(Date.now() / 1000)) * 1000,
       isMine: false,
     });
+  }
+
+  // The spam filter runs on backfill too: its buckets run on message time, so
+  // an hour of history arriving at once is judged as it was sent.
+  private isSpam(event: NostrEvent, rowID: string): boolean {
+    return (
+      this.spamFilter.check(
+        `nostr:${event.pubkey}`,
+        rowID,
+        event.content,
+        event.created_at * 1000,
+      ) !== "allowed"
+    );
   }
 
   // ---- Geohash direct messages ----
@@ -853,13 +899,12 @@ export class GeohashChannelService {
   }
 
   // Send an end-to-end encrypted DM to a participant's per-geohash pubkey, from
-  // our own per-geohash identity for that cell. Returns false if the content is
-  // too long for one PrivateMessagePacket.
+  // our own per-geohash identity for that cell. Returns false when no relay is
+  // live or the content is too long for one PrivateMessagePacket, as the main
+  // identity's DM path does, so the caller's outbox keeps it queued.
   //
-  // True is optimistic, as for any Nostr DM: no relay has answered yet. If none
-  // accepts it, the message is parked in the outbox under the same keys a
-  // Nostr-only send queues with, so the retry sweep routes it back here and the
-  // bubble resolves through the outbox rather than claiming a send that died.
+  // True is optimistic, as for any Nostr DM: no relay has answered yet.
+  // `onRelayAnswer` hears whether one accepted it.
   //
   // The envelope carries a random sender ID and no recipient, never our mesh
   // peer ID, matching bitchat. That ID does not rotate per cell, so it would let
@@ -869,23 +914,13 @@ export class GeohashChannelService {
     recipientPubkey: string,
     messageID: string,
     text: string,
-    queuedAtMs = Date.now(),
+    onRelayAnswer?: (accepted: boolean) => void,
   ): boolean {
+    // The DM relays, not any relay: a geo DM goes to those alone.
+    if (!this.client.isDMConnected) return false;
     const envelope = encodeBitchatDmEnvelope(null, null, messageID, text);
     if (envelope === null) return false;
-    this.publishGeoWrap(geohash, recipientPubkey, envelope, () => {
-      const recipientPeerID = `nostr_${recipientPubkey}`;
-      const evicted = useOutboxStore.getState().enqueue({
-        id: messageID,
-        recipientPeerID,
-        channel: `dm:${recipientPeerID}`,
-        text,
-        createdAtMs: queuedAtMs,
-      });
-      for (const msg of evicted) {
-        useChatStore.getState().setMessageStatus(msg.channel, msg.id, "failed");
-      }
-    });
+    this.publishGeoWrap(geohash, recipientPubkey, envelope, onRelayAnswer);
     this.registerGeoDmPeer(recipientPubkey, geohash);
     return true;
   }
@@ -917,7 +952,9 @@ export class GeohashChannelService {
       geohash,
       recipientPubkey,
       encodeBitchatCardEnvelope(null, null, card),
-      onRejected,
+      (accepted) => {
+        if (!accepted) onRejected?.();
+      },
     );
     this.registerGeoDmPeer(recipientPubkey, geohash);
   }
@@ -930,10 +967,8 @@ export class GeohashChannelService {
   // Flush queued read receipts for a geo-DM conversation when its thread opens.
   sendGeoReadReceipts(pubkey: string): void {
     const geohash = this.geohashForGeoDmPeer(pubkey);
-    const pending = this.pendingGeoDmReadAcks.get(pubkey);
-    if (geohash === undefined || pending === undefined || pending.size === 0)
-      return;
-    for (const messageID of pending) {
+    if (geohash === undefined) return;
+    for (const messageID of this.pendingGeoDmReadAcks.take(pubkey)) {
       this.publishGeoWrap(
         geohash,
         pubkey,
@@ -945,22 +980,36 @@ export class GeohashChannelService {
         ),
       );
     }
-    pending.clear();
+  }
+
+  // Owe a read receipt for a message already in a geo-DM thread, which only
+  // the mesh layer's launch-time rebuild of unread rows needs.
+  oweGeoReadReceipt(pubkey: string, messageID: string): void {
+    this.pendingGeoDmReadAcks.add(pubkey, messageID);
+  }
+
+  // Forget receipts owed to conversations `keep` says are gone, deleted or
+  // blocked, as the mesh layer does for its own queues.
+  retainGeoReadReceipts(keep: (pubkey: string) => boolean): void {
+    this.pendingGeoDmReadAcks.retain(keep);
   }
 
   // Gift-wrap `envelope` from our per-cell identity to `recipientPubkey` and
   // publish it to the default relays (matching bitchat's geo-DM transport).
-  // `onRejected` runs when no relay accepted it; receipts pass none, since a
+  // `onAnswer` hears whether any relay accepted it; receipts pass none, since a
   // lost one has nothing to retry.
   private publishGeoWrap(
     geohash: string,
     recipientPubkey: string,
     envelope: string,
-    onRejected?: () => void,
+    onAnswer?: (accepted: boolean) => void,
   ): void {
     const identity = this.identityFor(geohash);
     const { event } = wrapDm(envelope, identity.privKey, recipientPubkey);
-    void this.client.publish(event).catch(() => onRejected?.());
+    void this.client.publish(event).then(
+      () => onAnswer?.(true),
+      () => onAnswer?.(false),
+    );
   }
 
   // Handle an inbound gift wrap on a cell's DM inbox.
@@ -996,21 +1045,28 @@ export class GeohashChannelService {
     // Re-bound only while this is still a pseudonymous conversation. Completing
     // a card exchange deliberately drops the cell (once the thread is durable,
     // where we met is a location breadcrumb with nothing left to serve), and a
-    // late message on the old rail must not quietly write it back.
-    if (channel === pseudonymous) {
-      this.registerGeoDmPeer(dm.senderPubkey, geohash);
-    }
+    // late message on the old rail must not quietly write it back. Nor may a
+    // receipt, or a message the user's delete refused: deleting the thread
+    // dropped the cell too.
+    const bindCell = (): void => {
+      if (channel === pseudonymous) {
+        this.registerGeoDmPeer(dm.senderPubkey, geohash);
+      }
+    };
 
+    // A receipt is what the outbox entry waits for, as on every DM transport.
     if (env.type === NoisePayloadType.DELIVERED) {
       useChatStore
         .getState()
         .setMessageStatus(channel, env.messageID, "delivered", Date.now());
+      useOutboxStore.getState().resolve(env.messageID);
       return;
     }
     if (env.type === NoisePayloadType.READ_RECEIPT) {
       useChatStore
         .getState()
         .setMessageStatus(channel, env.messageID, "read", Date.now());
+      useOutboxStore.getState().resolve(env.messageID);
       return;
     }
     // They chose to tell us who they durably are. Accepting it is what turns a
@@ -1022,6 +1078,8 @@ export class GeohashChannelService {
     // binding check would be worse than silence.
     if (env.type === NoisePayloadType.CONTACT_CARD) {
       if (env.body !== undefined) {
+        // Before the card: completing the exchange drops the cell again.
+        bindCell();
         this.gateway?.onContactCard(
           env.body,
           dm.senderPubkey,
@@ -1048,8 +1106,7 @@ export class GeohashChannelService {
       return;
     }
 
-    useChatStore.getState().addChannel(channel);
-    useChatStore.getState().addMessage({
+    const held = useChatStore.getState().addMessage({
       id: env.messageID,
       channel,
       senderID: `nostr_${dm.senderPubkey}`,
@@ -1065,7 +1122,9 @@ export class GeohashChannelService {
       isMine: false,
     });
 
-    // Acknowledge delivery now; queue the read receipt for thread open.
+    // Acknowledge delivery now, even for a message the user's clear refused
+    // (see addMessage). Only a row the user can open brings the thread and its
+    // cell back, and owes a read receipt for when it opens.
     this.publishGeoWrap(
       geohash,
       dm.senderPubkey,
@@ -1076,10 +1135,10 @@ export class GeohashChannelService {
         env.messageID,
       ),
     );
-    const pending =
-      this.pendingGeoDmReadAcks.get(dm.senderPubkey) ?? new Set<string>();
-    pending.add(env.messageID);
-    this.pendingGeoDmReadAcks.set(dm.senderPubkey, pending);
+    if (!held) return;
+    bindCell();
+    useChatStore.getState().addChannel(channel);
+    this.pendingGeoDmReadAcks.add(dm.senderPubkey, env.messageID);
   }
 
   // ---- Private ----
@@ -1139,15 +1198,18 @@ export class GeohashChannelService {
 
         const nowMs = Date.now();
         backfillUntilMs ??= nowMs + BACKFILL_GRACE_MS;
-        if (
-          nowMs >= backfillUntilMs &&
-          !hasStoredMessage(channel, id) &&
-          !this.publicLimiter.allow(
-            `nostr:${event.pubkey}`,
-            publicContentKey(event.content),
-            validatedDifficulty(event.id, event.tags),
-            nowMs,
-          )
+        if (hasStoredMessage(channel, id)) {
+          // Never hidden, but still judged; see SpamFilter.check.
+          this.isSpam(event, id);
+        } else if (
+          (nowMs >= backfillUntilMs &&
+            !this.publicLimiter.allow(
+              `nostr:${event.pubkey}`,
+              publicContentKey(event.content),
+              validatedDifficulty(event.id, event.tags),
+              nowMs,
+            )) ||
+          this.isSpam(event, id)
         ) {
           return;
         }

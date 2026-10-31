@@ -585,7 +585,12 @@ export async function raiseRingNotification(
 // moment "Hide previews" is switched on. They were rendered with the sender and
 // the text or amount, and the lock screen keeps showing them whatever the
 // setting now says. Not the nearby notice, which names nobody.
+//
+// The iOS ring pulses still to come go too: each was scheduled with the
+// sender's name already in it. That ring ends early, which is the price of not
+// naming anyone after being told not to.
 export async function dismissPreviewNotifications(): Promise<void> {
+  await cancelScheduledRings();
   let presented: Notifications.Notification[];
   try {
     presented = await Notifications.getPresentedNotificationsAsync();
@@ -614,21 +619,12 @@ export async function dismissPreviewNotifications(): Promise<void> {
 // mesh, but on iOS a ring is a series of pulses already scheduled with the OS,
 // which would keep sounding after the user said no more rings.
 export async function endAllRingAlerts(): Promise<void> {
-  let scheduled: Notifications.NotificationRequest[] = [];
+  await cancelScheduledRings();
   let presented: Notifications.Notification[] = [];
   try {
-    scheduled = await Notifications.getAllScheduledNotificationsAsync();
     presented = await Notifications.getPresentedNotificationsAsync();
   } catch {
-    // No scheduler or tray on this platform.
-  }
-  for (const request of scheduled) {
-    if (!request.identifier.startsWith("ring_")) continue;
-    try {
-      await Notifications.cancelScheduledNotificationAsync(request.identifier);
-    } catch {
-      // Already fired.
-    }
+    // No tray on this platform.
   }
   for (const n of presented) {
     if (!isRingNotification(n)) continue;
@@ -636,6 +632,25 @@ export async function endAllRingAlerts(): Promise<void> {
       await Notifications.dismissNotificationAsync(n.request.identifier);
     } catch {
       // Already gone.
+    }
+  }
+}
+
+// The iOS ring pulses scheduled and not yet fired.
+async function cancelScheduledRings(): Promise<void> {
+  let scheduled: Notifications.NotificationRequest[];
+  try {
+    scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  } catch {
+    // No scheduler on this platform.
+    return;
+  }
+  for (const request of scheduled) {
+    if (!request.identifier.startsWith("ring_")) continue;
+    try {
+      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+    } catch {
+      // Already fired.
     }
   }
 }

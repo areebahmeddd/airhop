@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-ka/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "ბლუთუზი გამორთულია · სკანირება არ მიმდინარეობს";
+"widget_label" = "მიღწევადი კვანძები";
+"widget_description" = "მიღწევადი კვანძები და დრო, როცა დაითვალეს";
+"widget_nobody" = "მიღწევადი არავინაა";
+"widget_as_of" = "%1$@-ისთვის";
+"widget_paused" = "მეში შეჩერებულია";
+"widget_unset" = "გახსენი Airhop";
+"widget_stale" = "გახსენი Airhop განსაახლებლად";

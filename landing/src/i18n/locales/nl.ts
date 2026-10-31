@@ -171,9 +171,9 @@ const strings: Strings = {
     "Uitnodigingslinks voor een ruimte, of een ondertekende lijst van maximaal 16.",
   "home.features.messaging.board.name": "Prikbord",
   "home.features.messaging.board.line": "Mededelingen die tot zeven dagen aan een gebied hangen.",
-  "home.features.messaging.voice.name": "Live spraak",
+  "home.features.messaging.voice.name": "Live spraak en video",
   "home.features.messaging.voice.line":
-    "Houd de microfoon ingedrukt en praat met iedereen binnen bereik, als een walkietalkie.",
+    "Houd de microfoon ingedrukt om te praten, of ga live met de camera, voor iedereen binnen bereik.",
   "home.features.messaging.notes.name": "Spraakberichten",
   "home.features.messaging.notes.line": "Opgenomen audio, sneller dan een route uittypen.",
   "home.features.messaging.files.name": "Foto's, video en bestanden",

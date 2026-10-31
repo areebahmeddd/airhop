@@ -29,42 +29,46 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 
 ## Where Things Live
 
-| Thing                                                          | Location                                           |
-| -------------------------------------------------------------- | -------------------------------------------------- |
-| Crypto (Noise XX and X, identity, Double Ratchet, keychain)    | `src/core/crypto/`                                 |
-| Wire format: the packet frame and every payload                | `src/core/mesh/wire/`                              |
-| Mesh routing, dedup, fragmentation, source routes              | `src/core/mesh/routing/`                           |
-| Open links per radio, and the writes that go down them         | `src/core/mesh/links/`                             |
-| GCS gossip sync                                                | `src/core/mesh/sync/`                              |
-| Announces and nickname normalization                           | `src/core/mesh/discovery/`                         |
-| Private-channel and private-group crypto                       | `src/core/mesh/rooms/`                             |
-| Courier (store-and-forward) envelopes and one-time prekeys     | `src/core/mesh/courier/`                           |
-| Live push-to-talk capture and playback                         | `src/core/mesh/voice/`                             |
-| Which transport a message leaves on                            | `src/core/router/`                                 |
-| Base64 shared across the protocol                              | `src/core/encoding/`                               |
-| Device transfer: the code, handshake and bundle (pure)         | `src/core/move/`                                   |
-| Device transfer: what moves, and both phones' sides            | `src/services/move-*.ts`                           |
-| Nostr (client, gift wrap, geo-relays, presence, courier relay) | `src/core/nostr/`                                  |
-| Payments: tokens, DLEQ, NIP-61, seed (pure)                    | `src/core/payments/`                               |
-| Runtime wiring: mesh, wallet, Tor, anything touching a mint    | `src/services/`                                    |
-| Which peers the LAN transport dials, and the cap on it         | `src/services/lan-dial-policy.ts`                  |
-| Screen logic                                                   | `src/features/`                                    |
-| UI components, hooks, theme tokens                             | `src/ui/`                                          |
-| Thin wrappers over OS APIs (permissions, haptics)              | `src/platform/`                                    |
-| State management (Zustand over MMKV)                           | `src/store/`                                       |
-| UI copy: the catalog, the runtime, right-to-left helpers       | `src/i18n/`                                        |
-| Stateless helpers                                              | `src/utils/`                                       |
-| Generated and static tables (relays, bridges, licenses)        | `src/data/`                                        |
-| Bundled relay list, refreshed by CI                            | `assets/data/nostr_relays.csv`                     |
-| Native module specs (hand-maintained, interop layer)           | `src/bridge/`                                      |
-| Root component and tab state machine                           | `src/app/`                                         |
-| Whole-app lifecycle and simulation suites                      | `src/__tests__/`                                   |
-| Native unit tests (the pure pieces beside each module)         | `android/app/src/test/`, `ios/Tests/`              |
-| iOS native                                                     | `ios/`                                             |
-| Android native                                                 | `android/`                                         |
-| Embedded Tor client (Rust, both platforms)                     | `native/arti/`                                     |
-| Pluggable transports (Go, both platforms)                      | `native/iptproxy/`                                 |
-| Every protocol constant                                        | [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md) |
+| Thing                                                            | Location                                           |
+| ---------------------------------------------------------------- | -------------------------------------------------- |
+| Crypto (Noise XX and X, identity, Double Ratchet, keychain)      | `src/core/crypto/`                                 |
+| Wire format: the packet frame and every payload                  | `src/core/mesh/wire/`                              |
+| Mesh routing, dedup, fragmentation, source routes                | `src/core/mesh/routing/`                           |
+| Open links per radio, and the writes that go down them           | `src/core/mesh/links/`                             |
+| GCS gossip sync                                                  | `src/core/mesh/sync/`                              |
+| Announces and nickname normalization                             | `src/core/mesh/discovery/`                         |
+| Private-channel and private-group crypto                         | `src/core/mesh/rooms/`                             |
+| Courier (store-and-forward) envelopes and one-time prekeys       | `src/core/mesh/courier/`                           |
+| Live push-to-talk capture and playback                           | `src/core/mesh/voice/`                             |
+| Live video packets, erasure code, and a sent video's shrink plan | `src/core/mesh/video/`                             |
+| Which transport a message leaves on                              | `src/core/router/`                                 |
+| Which public messages are hidden as spam                         | `src/core/spam/`                                   |
+| Base64 shared across the protocol                                | `src/core/encoding/`                               |
+| Device transfer: the code, handshake and bundle (pure)           | `src/core/move/`                                   |
+| Device transfer: what moves, and both phones' sides              | `src/services/move-*.ts`                           |
+| Nostr (client, gift wrap, geo-relays, presence, courier relay)   | `src/core/nostr/`                                  |
+| Payments: tokens, DLEQ, NIP-61, seed (pure)                      | `src/core/payments/`                               |
+| Runtime wiring: mesh, wallet, Tor, anything touching a mint      | `src/services/`                                    |
+| Which peers the LAN transport dials, and the cap on it           | `src/services/lan-dial-policy.ts`                  |
+| Screen logic                                                     | `src/features/`                                    |
+| UI components, hooks, theme tokens                               | `src/ui/`                                          |
+| Thin wrappers over OS APIs (permissions, haptics)                | `src/platform/`                                    |
+| State management (Zustand over MMKV)                             | `src/store/`                                       |
+| UI copy: the catalog, the runtime, right-to-left helpers         | `src/i18n/`                                        |
+| Stateless helpers                                                | `src/utils/`                                       |
+| Generated and static tables (relays, bridges, licenses)          | `src/data/`                                        |
+| Bundled relay list, refreshed by CI                              | `assets/data/nostr_relays.csv`                     |
+| Globe picker geometry (Natural Earth, as bitchat bundles it)     | `assets/data/world/`, `src/data/world-geometry.ts` |
+| Globe picker projection, camera and detail rules (pure)          | `src/utils/globe-*.ts`                             |
+| Native module specs (hand-maintained, interop layer)             | `src/bridge/`                                      |
+| Root component and tab state machine                             | `src/app/`                                         |
+| Whole-app lifecycle and simulation suites                        | `src/__tests__/`                                   |
+| Native unit tests (the pure pieces beside each module)           | `android/app/src/test/`, `ios/Tests/`              |
+| iOS native                                                       | `ios/`                                             |
+| Android native                                                   | `android/`                                         |
+| Embedded Tor client (Rust, both platforms)                       | `native/arti/`                                     |
+| Pluggable transports (Go, both platforms)                        | `native/iptproxy/`                                 |
+| Every protocol constant                                          | [`docs/spec/PROTOCOLS.md`](docs/spec/PROTOCOLS.md) |
 
 [`src/README.md`](src/README.md) describes each `src/` layer and how to run its tests.
 
@@ -90,14 +94,14 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 - Never change the `packet-codec.ts` byte layout without bumping the protocol version and keeping a decode path for the old one.
 - Never change the BLE Service UUID (`F47B5E2D...`) or Characteristic UUID (`A1B2C3D4...`). A change partitions the network.
 - Never change peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`, defined once in `src/core/crypto/peer-id.ts`). Gossip sync and DM addressing depend on it.
-- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2C`, with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
+- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical, and so is `0x2D`, sent and played exactly as bitchat does (LIVE_VIDEO_V1). [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
 - A protocol change ships only after a message exchange across Airhop, bitchat-ios and bitchat-android.
 
 ### Native Code
 
 - Swift lives in `ios/`, Kotlin in `android/`. They expose **raw bytes** to TypeScript: no protocol logic, no routing decisions, no crypto.
-- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopTorSocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, and `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot; these are services, not modules.
-- `AirhopAppModule` diverges by platform: iOS rejects `restart`, `setAutoStartOnBoot`, `copyApkToCache`, `startRingAlert` and `stopRingAlert`, since it can relaunch nothing, has no boot receiver, has no sideloading to share an APK into, and has no ringtone loop outside CallKit.
+- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopVideoModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopTorSocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot, and the `AirhopMeshWidget` home screen widget; these are services and receivers, not modules.
+- `AirhopAppModule` diverges by platform: iOS rejects `restart`, `setAutoStartOnBoot`, `copyApkToCache`, `startRingAlert` and `stopRingAlert`, since it can relaunch nothing, has no boot receiver, has no sideloading to share an APK into, and has no ringtone loop outside CallKit. `setMeshSnapshot` runs on both: the home screen widget is the Kotlin `AirhopMeshWidget` on Android and the `AirhopWidget` extension on iOS, which share their rules (`MeshWidgetState.kt`, `MeshWidgetState.swift`) and their copy (`npm run i18n:native`).
 - `native/arti/` (Rust) and `native/iptproxy/` (Go) are the one exception to "raw bytes only": a Tor client and its pluggable transports, each owning a SOCKS5 listener and its own lifecycle. They still know nothing about mesh packets, routing or message encryption, and both platforms build the same sources.
 
 ### Build Order
@@ -124,7 +128,7 @@ Two kinds of files are pinned and checked in CI. Both fail the build rather than
 - `en.ts` is the source catalog; every other locale is generated from a translation map and checked against it. Adding a language is a new file, never a sweep of every screen.
 - Placeholders are named (`{count}`), never positional. Plurals go through `tPlural`, never `count === 1` at a call site.
 - **Some strings must never be translated** because they cross the wire: the `username.ts` word lists, the transmitted `/hug` and `/slap` text (bitchat matches it as an English substring), slash command tokens, channel names. Read [`i18n.md`](.github/skills/i18n.md) before touching any of them.
-- **Text is not ASCII.** `t()` wraps every substituted value in a directional isolate, so build sentences with a placeholder rather than concatenation, and strip with `stripIsolates` before comparing its output. Normalize to NFC before matching, match a word boundary with `[^\p{L}\p{N}_]`, and never call `toLocaleString` (use the formatters in `src/utils/format.ts`).
+- **Text is not ASCII.** `t()` wraps every substituted value in a directional isolate, so build sentences with a placeholder rather than concatenation, and strip with `stripIsolates` before comparing its output. Normalize to NFC before matching, match a word boundary with `[^\p{L}\p{M}\p{N}_]`, and never call `toLocaleString` (use the formatters in `src/utils/format.ts`).
 - Layout uses logical properties (`marginStart`, `start`, `textAlignEnd` from `src/i18n/layout.ts`), never `marginLeft` / `left` / `textAlign: "right"`. Arabic, Persian and Urdu ship, so a physical side is a visible bug rather than a latent one. ESLint rejects the physical margin, padding and border properties and `textAlign: "left" | "right"`.
 - **No em dashes**, in copy, comments or docs, and no `--` standing in for one. Use a comma, parentheses or a full stop.
 - **Byte sizes follow IEC 80000-13, everywhere, copy included.** `KiB` / `MiB` are 1024-based, `KB` / `MB` are 1000-based, and the label must match the arithmetic. Every size Airhop controls is a power of two (the 1 MiB file cap, the 512 KiB photo budget, the 16 KiB envelope) and `formatBytes` divides by 1024, so all of it reads `KiB` / `MiB`. Decimal units stay only for genuinely decimal figures, such as an observed camera file size.

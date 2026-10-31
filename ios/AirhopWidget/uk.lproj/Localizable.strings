@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-uk/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetooth вимкнено · не скануємо";
+"widget_label" = "Піри в радіусі";
+"widget_description" = "Піри в радіусі та час, коли їх пораховано";
+"widget_nobody" = "нікого в радіусі";
+"widget_as_of" = "на %1$@";
+"widget_paused" = "Mesh призупинено";
+"widget_unset" = "Відкрийте Airhop";
+"widget_stale" = "Відкрийте Airhop, щоб оновити";

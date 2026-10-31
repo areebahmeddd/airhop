@@ -10,8 +10,16 @@
 // is deleted again here, with its prekeys. One a deleted install left behind
 // (./install-marker) is deleted with every other secret. If the keychain still
 // refuses, launch treats it as absent with the keys reported as surviving.
+//
+// Onboarding's write of a new identity lives here too, beside those deletes,
+// since it is the last point where an old identity's prekeys can be dropped.
 
-import { type Identity, loadIdentity } from "@core/crypto/identity";
+import {
+  generateIdentity,
+  type Identity,
+  loadIdentity,
+  saveIdentity,
+} from "@core/crypto/identity";
 import {
   deleteSecret,
   KEYCHAIN_ITEMS,
@@ -66,6 +74,28 @@ export async function readLaunchIdentity(): Promise<LaunchIdentity> {
   ).catch(() => false);
   if (deleted) clearCondemnedIdentity();
   return { kind: "absent", keysRemain: !deleted };
+}
+
+// Generate an identity and write it, for onboarding. Resolves to its peer ID,
+// and rejects when any keychain step is refused, which onboarding offers to
+// retry.
+//
+// The prekey item is deleted first: `LocalPrekeyStore` adopts any blob it
+// finds, so one a refused delete or a reinstall left behind would be published
+// in a bundle signed by the new key, linking the two identities. No mesh runs
+// during onboarding, so unlike the launch sweep no batch can be in flight.
+export async function writeNewIdentity(): Promise<string> {
+  const identity = await generateIdentity();
+  await deleteSecret(KEYCHAIN_ITEMS.localPrekeys);
+  // Recorded before the save, so a crash between the two cannot leave a new
+  // identity that the next launch takes for a reinstall's leftover. Launch has
+  // already cleared any leftover before onboarding shows.
+  markInstallHadIdentity();
+  await saveIdentity(identity);
+  // A refused wipe's condemned flag names the old identity, so the next launch
+  // must not delete this one.
+  clearCondemnedIdentity();
+  return identity.peerID;
 }
 
 // Every secret goes with a leftover identity, the wallet's keys and recovery

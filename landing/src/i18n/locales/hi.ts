@@ -169,9 +169,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "कमरे के लिए आमंत्रण लिंक, या 16 तक की हस्ताक्षरित सूची।",
   "home.features.messaging.board.name": "सूचना पट्ट",
   "home.features.messaging.board.line": "किसी इलाक़े पर सात दिन तक टँगी रहने वाली सूचनाएँ।",
-  "home.features.messaging.voice.name": "लाइव आवाज़",
+  "home.features.messaging.voice.name": "लाइव आवाज़ और वीडियो",
   "home.features.messaging.voice.line":
-    "माइक दबाए रखें और सीमा के भीतर किसी से भी बात करें, वॉकी-टॉकी की तरह।",
+    "माइक दबाकर बात करें, या कैमरे से लाइव जाएँ, सीमा के भीतर किसी के भी लिए।",
   "home.features.messaging.notes.name": "वॉइस नोट",
   "home.features.messaging.notes.line": "रिकॉर्ड किया गया ऑडियो, रास्ता टाइप करने से तेज़।",
   "home.features.messaging.files.name": "फ़ोटो, वीडियो और फ़ाइलें",

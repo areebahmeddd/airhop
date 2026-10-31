@@ -99,7 +99,10 @@ jest.mock("@services/panic-wipe", () => ({
   panicWipe: () => Promise.resolve({ keysDestroyed: true }),
 }));
 
-jest.mock("@services/move-marker", () => ({ clearMoveMarker: () => {} }));
+const mockClearMoveMarker = jest.fn();
+jest.mock("@services/move-marker", () => ({
+  clearMoveMarker: () => mockClearMoveMarker(),
+}));
 
 // Reanimated has no native half under jest, so the sheet is its contents while
 // open, and a handoff runs at once.
@@ -127,6 +130,7 @@ let appStateListener: ((state: AppStateStatus) => void) | null = null;
 
 beforeEach(() => {
   mockCancel.mockReset();
+  mockClearMoveMarker.mockReset();
   mockGetPermission.mockClear();
   mockRequestPermission.mockClear();
   mockOnScanned = null;
@@ -149,9 +153,11 @@ afterEach(() => {
 async function renderFlow({
   onErased = () => {},
   onResumeMesh = () => {},
+  onUnconfirmedAway = () => {},
 }: {
   onErased?: (keysDestroyed: boolean) => void;
   onResumeMesh?: () => void;
+  onUnconfirmedAway?: () => void;
 } = {}): Promise<ReturnType<typeof render>> {
   return render(
     <SafeAreaProvider initialMetrics={METRICS}>
@@ -160,6 +166,7 @@ async function renderFlow({
         onClose={() => {}}
         onResumeMesh={onResumeMesh}
         onErased={onErased}
+        onUnconfirmedAway={onUnconfirmedAway}
       />
     </SafeAreaProvider>,
   );
@@ -207,12 +214,19 @@ describe("leaving the screen mid-transfer", () => {
     expect(onErased).toHaveBeenCalledWith(true);
   });
 
-  it("keeps this phone on an unconfirmed end, as the next launch would", async () => {
+  // The new phone may hold the identity, so this one stays off the mesh with
+  // its "sent" marker, and the shell asks, as the next launch would.
+  it("hands an unconfirmed end to the shell to ask, without rejoining", async () => {
     mockStoredPermission = GRANTED;
     mockHookPermission = GRANTED;
     const onErased = jest.fn();
     const onResumeMesh = jest.fn();
-    const view = await renderFlow({ onErased, onResumeMesh });
+    const onUnconfirmedAway = jest.fn();
+    const view = await renderFlow({
+      onErased,
+      onResumeMesh,
+      onUnconfirmedAway,
+    });
     await pressContinue();
     await act(async () => {
       mockOnScanned?.({ data: "move-code" });
@@ -220,9 +234,52 @@ describe("leaving the screen mid-transfer", () => {
     await view.unmount();
 
     mockSenderChange?.({ phase: "unconfirmed" });
+    mockSenderChange?.({ phase: "unconfirmed" });
 
-    expect(onResumeMesh).toHaveBeenCalledTimes(1);
+    expect(onUnconfirmedAway).toHaveBeenCalledTimes(1);
+    expect(onResumeMesh).not.toHaveBeenCalled();
+    expect(mockClearMoveMarker).not.toHaveBeenCalled();
     expect(onErased).not.toHaveBeenCalled();
+  });
+
+  // The question was already on screen when a link switched tabs: nobody
+  // answered it, so the shell asks instead.
+  it("hands an unanswered unconfirmed end to the shell when the screen goes", async () => {
+    mockStoredPermission = GRANTED;
+    mockHookPermission = GRANTED;
+    const onResumeMesh = jest.fn();
+    const onUnconfirmedAway = jest.fn();
+    const view = await renderFlow({ onResumeMesh, onUnconfirmedAway });
+    await pressContinue();
+    await act(async () => {
+      mockOnScanned?.({ data: "move-code" });
+    });
+    await act(async () => {
+      mockSenderChange?.({ phase: "unconfirmed" });
+    });
+    await view.unmount();
+
+    expect(onUnconfirmedAway).toHaveBeenCalledTimes(1);
+    expect(onResumeMesh).not.toHaveBeenCalled();
+    expect(mockClearMoveMarker).not.toHaveBeenCalled();
+  });
+
+  it("hands a finished erase to the shell when the screen goes before Done", async () => {
+    mockStoredPermission = GRANTED;
+    mockHookPermission = GRANTED;
+    const onErased = jest.fn();
+    const view = await renderFlow({ onErased });
+    await pressContinue();
+    await act(async () => {
+      mockOnScanned?.({ data: "move-code" });
+    });
+    await act(async () => {
+      mockSenderChange?.({ phase: "done", keysDestroyed: true });
+    });
+    await view.unmount();
+
+    expect(onErased).toHaveBeenCalledTimes(1);
+    expect(onErased).toHaveBeenCalledWith(true);
   });
 });
 

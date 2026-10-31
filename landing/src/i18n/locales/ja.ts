@@ -167,9 +167,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "ルームへの招待リンク、または最大 16 人の署名済みリスト。",
   "home.features.messaging.board.name": "掲示板",
   "home.features.messaging.board.line": "最大 7 日間、その地域に貼り出される告知。",
-  "home.features.messaging.voice.name": "ライブ音声",
+  "home.features.messaging.voice.name": "ライブ音声と映像",
   "home.features.messaging.voice.line":
-    "マイクを押している間、圏内の相手と話せます。トランシーバーのように。",
+    "マイクを押して話すか、カメラでライブ配信。圏内の相手に届きます。",
   "home.features.messaging.notes.name": "ボイスメモ",
   "home.features.messaging.notes.line": "録音した音声。道順を打ち込むより速い。",
   "home.features.messaging.files.name": "写真・動画・ファイル",

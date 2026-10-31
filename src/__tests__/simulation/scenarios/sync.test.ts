@@ -121,14 +121,23 @@ function signedPublicMessage(
 
 // Text that DEFLATE cannot shrink back under one frame, so a message carrying
 // it has to travel as fragments over Bluetooth.
-function incompressible(world: Scenario["world"], length: number): string {
-  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+function incompressible(
+  world: Scenario["world"],
+  length: number,
+  alphabet = "abcdefghijklmnopqrstuvwxyz0123456789",
+): string {
   let out = "";
+  const chars = Array.from(alphabet);
   for (let i = 0; i < length; i++) {
-    out += alphabet[world.rng.int(0, alphabet.length - 1)];
+    out += chars[world.rng.int(0, chars.length - 1)];
   }
   return out;
 }
+
+// Four bytes a character, drawn from thousands, so DEFLATE gains little.
+const CJK_EXTENSION_B = Array.from({ length: 4_096 }, (_, i) =>
+  String.fromCodePoint(0x20000 + i),
+).join("");
 
 // Fragments of `inner`, cut the way a Bluetooth sender cuts them, as frames
 // ready to put on the air.
@@ -783,8 +792,10 @@ test("S09 a bitchat transfer that outlasts the window still completes", async ()
   }
 
   // Under the 30s idle timeout, so only the freshness window is in play.
+  // Kept inside the public spam filter's 1200 characters, and made of
+  // four-byte characters so it still runs to enough fragments.
   const gapMs = 25_000;
-  const text = incompressible(s.world, 6_000);
+  const text = incompressible(s.world, 1_150, CJK_EXTENSION_B);
   const frames = bitchatFragments(
     signedPublicMessage(alice, channel, text, s.world.wallClock(), "slow"),
   );
@@ -1510,6 +1521,75 @@ test("S18 an author that relaunched can serve its own message again", async () =
   );
   s.check(
     "dave got the message from alice herself",
+    caughtUp,
+    `dave thread = [${dave.texts(channel).join(" | ")}]`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("S19 history refused for want of its author's key is taken once the author is heard", async () => {
+  // dave cannot verify alice until he hears her announce, so he refuses her
+  // history and remembers its IDs. Once her key is pinned the IDs come off his
+  // filters and bob offers them again under the same packet IDs, which dave's
+  // deduplicator still holds from the first offer. Unless that forgets them
+  // too, every round's offer is dropped as a duplicate for five minutes.
+  const s = (scenario = new Scenario({
+    id: "S19",
+    title: "backfill after the author's key arrives",
+    seed: 190,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "dave"]);
+  const [alice, bob, dave] = devices;
+  radio.setTopology([["alice", "bob"]]);
+  for (const d of devices) d.launch();
+  const channel = MESH_PUBLIC_CHANNEL;
+  for (const d of devices) d.joinChannel(channel);
+  await waitForCoarse(
+    s.world,
+    () => bob.peers().includes(alice.peerID),
+    45_000,
+  );
+
+  const said = ["north gate", "south gate", "east gate"];
+  for (const text of said) alice.send(channel, text);
+  s.check(
+    "bob heard alice",
+    await waitFor(
+      s.world,
+      () => said.every((t) => bob.texts(channel).includes(t)),
+      20_000,
+    ),
+  );
+
+  s.world.say("TOPOLOGY_CHANGE", "alice leaves; her announce ages out");
+  radio.setTopology([]);
+  await s.world.advance(3 * 60_000);
+
+  s.world.say("TOPOLOGY_CHANGE", "dave arrives next to bob");
+  radio.setTopology([["bob", "dave"]]);
+  await waitForCoarse(s.world, () => bob.peers().includes(dave.peerID), 45_000);
+  // Offered and refused: dave has never heard alice.
+  await s.world.advance(20_000);
+  s.check(
+    "dave refused what he could not verify",
+    !said.some((t) => dave.texts(channel).includes(t)),
+  );
+
+  s.world.say("TOPOLOGY_CHANGE", "alice comes back beside bob");
+  radio.setTopology([
+    ["alice", "bob"],
+    ["bob", "dave"],
+  ]);
+  // Her announce reaches dave through bob, then a round or two.
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => said.every((t) => dave.texts(channel).includes(t)),
+    60_000,
+  );
+  s.check(
+    "dave takes alice's history well inside the dedup window",
     caughtUp,
     `dave thread = [${dave.texts(channel).join(" | ")}]`,
   );

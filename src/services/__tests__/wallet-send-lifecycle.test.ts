@@ -148,6 +148,28 @@ describe("preparing a send", () => {
     expect(reservedTotal()).toBe(16);
   });
 
+  it("refuses to spend more than the user agreed to when the coins changed meanwhile", async () => {
+    // The confirm offered 12 from a 4 and an 8. While it was open a refresh
+    // re-issued the coins as one 16, so the same send now takes 16.
+    useWalletStore.getState().clearAll();
+    useWalletStore.getState().addMint(MINT, { units: [UNIT] });
+    useWalletStore.getState().addProofs(MINT, UNIT, proofsOf([16]));
+
+    await expect(
+      prepareSend({ amount: 10, allowInexact: true, maxSpend: 12 }),
+    ).rejects.toMatchObject({ code: "inexact" });
+    expect(spendable()).toBe(16);
+    expect(reservedTotal()).toBe(0);
+
+    // What was agreed to still goes through.
+    const prepared = await prepareSend({
+      amount: 10,
+      allowInexact: true,
+      maxSpend: 16,
+    });
+    expect(prepared.spend).toBe(16);
+  });
+
   it("refuses a send larger than the balance", async () => {
     await expect(prepareSend({ amount: 10_000 })).rejects.toBeInstanceOf(
       WalletError,

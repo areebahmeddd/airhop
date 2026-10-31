@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Airhop በአቅራቢያ ላሉ አቻዎች መገኘትዎን ለማሳወቅ ብሉቱዝን ይጠቀማል።";
 "NSLocalNetworkUsageDescription" = "Airhop ለከፍተኛ መጠን ማስተላለፎች (ቪዲዮ፣ ትላልቅ ፋይሎች) በአቅራቢያ ካሉ መሣሪያዎች ጋር በቀጥታ ለመገናኘት የአካባቢ አውታረ መረብን ይጠቀማል።";
 "NSCameraUsageDescription" = "Airhop የእውቂያን QR ኮድ ለመቃኘት እንዲሁም በአቅራቢያ ካሉ አቻዎች ጋር ለሚጋሩት ፎቶና ቪዲዮ ለማንሳት ካሜራውን ይጠቀማል።";
-"NSMicrophoneUsageDescription" = "Airhop የድምፅ መልእክቶችን ለመቅዳት እና በአቅራቢያ ላሉ አቻዎች ቀጥታ ድምፅ ለማድረስ ማይክሮፎኑን ይጠቀማል።";
+"NSMicrophoneUsageDescription" = "Airhop የድምፅ እና የቪዲዮ መልእክቶችን ለመቅዳት እና በአቅራቢያ ላሉ አቻዎች ቀጥታ ድምፅ ለማድረስ ማይክሮፎኑን ይጠቀማል።";
 "NSPhotoLibraryUsageDescription" = "Airhop ምስሎችንና ቪዲዮዎችን በሜሹ ላይ ለመጋራት የፎቶ ቤተ-መጻሕፍትዎን ይጠቀማል።";
 "NSPhotoLibraryAddUsageDescription" = "Airhop እርስዎ ለማስቀመጥ ሲመርጡ እና የQR ኮድዎን ሲያወርዱ ፎቶዎችንና ቪዲዮዎችን ወደ ፎቶ ቤተ-መጻሕፍትዎ ያስቀምጣል።";
 "NSFaceIDUsageDescription" = "Airhop አንተ መሆንህን ለማረጋገጥ Face IDን ይጠቀማል፦ የመተግበሪያ መቆለፊያ ሲበራ መተግበሪያውን ለመክፈት፣ እና የመልሶ ማግኛ ሐረግህን ከማሳየቱ ወይም ማንነትህን ወደ አዲስ ስልክ ከማዛወሩ በፊት።";

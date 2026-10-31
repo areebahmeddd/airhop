@@ -43,14 +43,19 @@ import {
 } from "./notification-service";
 
 let stops: (() => void)[] | null = null;
-// The local user's nickname, for mentions. A getter handed over by whoever
-// started the pipeline, since this module cannot reach the mesh.
+// Our nickname and per-channel mention suffix, from whoever started the
+// pipeline, since this module cannot reach the mesh.
 let ownNickname: () => string = () => "";
+let ownMentionSuffix: (channel: string) => string | null = () => null;
 
-// Idempotent: a second call only refreshes the nickname getter, so every path
-// that brings a mesh up may call it without stacking listeners.
-export function startNotificationPipeline(nickname: () => string): void {
+// Idempotent: a second call only refreshes the getters, so every path that
+// brings a mesh up may call it without stacking listeners.
+export function startNotificationPipeline(
+  nickname: () => string,
+  mentionSuffix: (channel: string) => string | null = () => null,
+): void {
   ownNickname = nickname;
+  ownMentionSuffix = mentionSuffix;
   if (stops !== null) return;
 
   // Whether a banner is owed depends on the app being in front, and nothing
@@ -87,7 +92,8 @@ export function startNotificationPipeline(nickname: () => string): void {
     // mention: even a muted channel pings and logs a bell entry when it is you
     // being addressed by name.
     const mentionsMe =
-      !msg.isSystem && mentionsNickname(msg.text, ownNickname());
+      !msg.isSystem &&
+      mentionsNickname(msg.text, ownNickname(), ownMentionSuffix(msg.channel));
     // A muted conversation otherwise stays silent: no system notification, no
     // haptic, and no bell entry. Its unread still shows on its own row.
     if (isMuted && !mentionsMe) return;
@@ -204,5 +210,6 @@ export function stopNotificationPipeline(): void {
   const current = stops;
   stops = null;
   ownNickname = () => "";
+  ownMentionSuffix = () => null;
   current?.forEach((stop) => stop());
 }

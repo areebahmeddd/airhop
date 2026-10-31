@@ -7,12 +7,12 @@
 // Nearest-relay selection uses the Haversine great-circle formula. The caller
 // provides GPS coordinates; this module returns the N nearest relay URLs.
 
-// Relays to publish/subscribe per geohash cell. Matches bitchat's
-// TransportConfig.nostrGeoRelayCount so both clients converge on the same set.
-// Canonical here rather than in each service, because NostrClient sizes its
-// per-call relay ceiling from it: if the two drift apart the extra relays get
-// trimmed away again.
-export const GEO_RELAY_COUNT = 5;
+// Relays to publish to and subscribe on per geohash cell: the 5 nearest plus
+// the next 5 as warm backups, both ways, as bitchat routes (GeoRelayRouting.md).
+// Backups carry traffic even while the primaries work, so two people on
+// opposite sides of a partial outage still share a relay. NostrClient sizes
+// its per-call ceiling from this, so it lives here and nowhere else.
+export const GEO_RELAY_COUNT = 10;
 
 // How many relays a user may add by hand. A ceiling rather than a preference:
 // every custom relay is an extra socket held open alongside the cell's
@@ -124,7 +124,11 @@ export class GeoRelayDirectory {
 
   // The N nearest relays to (lat, lng), or the well-known set when the directory
   // is empty, so a cell is never left with nowhere to publish.
-  nearestRelays(lat: number, lng: number, count: number = 5): string[] {
+  nearestRelays(
+    lat: number,
+    lng: number,
+    count: number = GEO_RELAY_COUNT,
+  ): string[] {
     const pool = this.entries.length > 0 ? this.entries : FALLBACK_RELAYS;
 
     const sorted = pool
@@ -149,7 +153,7 @@ export class GeoRelayDirectory {
   closestRelaysToGeohash(
     geohash: string,
     decodeCenter: (hash: string) => { lat: number; lng: number },
-    count: number = 5,
+    count: number = GEO_RELAY_COUNT,
   ): string[] {
     const center = decodeCenter(geohash);
     return this.nearestRelays(center.lat, center.lng, count);

@@ -8,6 +8,8 @@ import {
   ATTEMPT_MIN_INTERVAL_MS,
   MAX_PENDING_PER_PEER,
   MAX_SEND_ATTEMPTS,
+  NOSTR_REPUBLISH_INTERVAL_MS,
+  nostrResendDue,
   OUTBOX_TTL_MS,
   useOutboxStore,
 } from "../outbox-store";
@@ -210,5 +212,72 @@ describe("expiry", () => {
     expect(enqueue("a-next", PEER_A).map((m) => m.id)).toEqual(["a0"]);
     // A duplicate id evicts nothing.
     expect(enqueue("a-next", PEER_A)).toEqual([]);
+  });
+});
+
+// A copy on a relay is a message the recipient can still fetch for the whole
+// inbox lookback, however long they stay offline.
+describe("a message a relay holds", () => {
+  it("is not given up when the attempt cap runs out", () => {
+    const now = Date.now();
+    enqueue("held", PEER_A, now);
+    state().markNostrSent("held", now);
+    state().markRelayAccepted("held");
+    for (let i = 0; i < MAX_SEND_ATTEMPTS; i++) {
+      state().markAttempted("held", now + i * ATTEMPT_MIN_INTERVAL_MS);
+    }
+
+    expect(state().evictExpired(now)).toEqual([]);
+    expect(state().forPeer(PEER_A)).toHaveLength(1);
+  });
+
+  it("still ages out with the TTL, as the inbox stops looking for it", () => {
+    const now = Date.now();
+    enqueue("held", PEER_A, now - OUTBOX_TTL_MS - 1);
+    state().markRelayAccepted("held");
+
+    expect(
+      state()
+        .evictExpired(now)
+        .map((m) => m.id),
+    ).toEqual(["held"]);
+  });
+
+  it("survives a relay copy going out with its fields intact", () => {
+    const now = Date.now();
+    enqueue("m1", PEER_A, now);
+    state().markNostrSent("m1", now);
+    state().markRelayAccepted("m1");
+    expect(state().forPeer(PEER_A)[0]).toMatchObject({
+      nostrSentMs: now,
+      relayAccepted: true,
+      attempts: 0,
+    });
+  });
+});
+
+describe("relay resend pacing", () => {
+  it("is due for a message that never went to relays", () => {
+    enqueue("m1", PEER_A);
+    expect(nostrResendDue(state().forPeer(PEER_A)[0], Date.now())).toBe(true);
+  });
+
+  it("waits the attempt spacing after a copy no relay accepted", () => {
+    const now = Date.now();
+    enqueue("m1", PEER_A, now);
+    state().markNostrSent("m1", now);
+    const msg = state().forPeer(PEER_A)[0];
+    expect(nostrResendDue(msg, now + ATTEMPT_MIN_INTERVAL_MS - 1)).toBe(false);
+    expect(nostrResendDue(msg, now + ATTEMPT_MIN_INTERVAL_MS)).toBe(true);
+  });
+
+  it("waits a day after a copy a relay accepted", () => {
+    const now = Date.now();
+    enqueue("m1", PEER_A, now);
+    state().markNostrSent("m1", now);
+    state().markRelayAccepted("m1");
+    const msg = state().forPeer(PEER_A)[0];
+    expect(nostrResendDue(msg, now + ATTEMPT_MIN_INTERVAL_MS)).toBe(false);
+    expect(nostrResendDue(msg, now + NOSTR_REPUBLISH_INTERVAL_MS)).toBe(true);
   });
 });

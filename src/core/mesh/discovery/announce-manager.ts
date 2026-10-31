@@ -88,6 +88,8 @@ const TLV_NOISE_PUB = 0x02;
 const TLV_SIGNING_PUB = 0x03;
 const TLV_CAPABILITIES = 0x05; // bitchat capabilities bitfield (little-endian)
 const TLV_BRIDGE_GEOHASH = 0x06; // bitchat bridge cell (decoded, ignored)
+// A geohash is at most 12 characters; bitchat-ios writes and reads no longer cell.
+const MAX_GEOHASH_BYTES = 12;
 const TLV_NOSTR_PUB = 0x07; // Airhop extension: secp256k1 X-only Nostr pubkey
 
 // Bitle's own TLV, read but never written (bitleproject/bitle, noise_handshake.c).
@@ -253,9 +255,10 @@ export function encodeAnnouncePayload(
 
   // Bridge rendezvous cell (TLV 0x06): a bridge gateway advertises the geohash
   // cell it ferries so mesh-only peers know which cell to deposit into. Only
-  // written when set (a non-bridging peer omits it, like bitchat).
-  if (bridgeGeohash !== undefined && bridgeGeohash.length > 0) {
-    const cellBytes = new TextEncoder().encode(bridgeGeohash.slice(0, 12));
+  // written when set, and left out rather than cut when longer than a geohash
+  // can be, as bitchat-ios does: a cut cell names a different place.
+  const cellBytes = new TextEncoder().encode(bridgeGeohash ?? "");
+  if (cellBytes.length > 0 && cellBytes.length <= MAX_GEOHASH_BYTES) {
     writeTlv(buf, TLV_BRIDGE_GEOHASH, cellBytes);
   }
 
@@ -305,7 +308,9 @@ export function decodeAnnouncePayload(
         capabilities = decodeCapabilities(value);
         break;
       case TLV_BRIDGE_GEOHASH:
-        bridgeGeohash = new TextDecoder().decode(value);
+        if (value.length <= MAX_GEOHASH_BYTES) {
+          bridgeGeohash = new TextDecoder().decode(value);
+        }
         break;
       case TLV_NOSTR_PUB:
         if (value.length === 32) nostrPubKey = value;

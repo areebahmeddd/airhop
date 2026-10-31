@@ -170,9 +170,9 @@ const strings: Strings = {
     "მოსაწვევი ბმულები ოთახისთვის, ან ხელმოწერილი სია 16 კაცამდე.",
   "home.features.messaging.board.name": "საინფორმაციო დაფა",
   "home.features.messaging.board.line": "ზონაზე მიმაგრებული განცხადებები შვიდ დღემდე.",
-  "home.features.messaging.voice.name": "ცოცხალი ხმა",
+  "home.features.messaging.voice.name": "ცოცხალი ხმა და ვიდეო",
   "home.features.messaging.voice.line":
-    "დააჭირეთ მიკროფონს და ესაუბრეთ ყველას, ვინც მიწვდომაშია, რაციასავით.",
+    "დააჭირეთ მიკროფონს და ილაპარაკეთ, ან გადაეცით პირდაპირ კამერით, ყველას, ვინც მიწვდომაშია.",
   "home.features.messaging.notes.name": "ხმოვანი ჩანაწერები",
   "home.features.messaging.notes.line": "ჩაწერილი აუდიო, მიმართულებების აკრეფაზე სწრაფი.",
   "home.features.messaging.files.name": "ფოტოები, ვიდეო და ფაილები",

@@ -163,9 +163,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "ลิงก์เชิญเข้าห้อง หรือรายชื่อที่ลงนามได้สูงสุด 16 คน",
   "home.features.messaging.board.name": "กระดานประกาศ",
   "home.features.messaging.board.line": "ประกาศที่ปักไว้ในพื้นที่หนึ่งได้นานถึงเจ็ดวัน",
-  "home.features.messaging.voice.name": "เสียงสด",
+  "home.features.messaging.voice.name": "เสียงและวิดีโอสด",
   "home.features.messaging.voice.line":
-    "กดไมค์ค้างแล้วพูดกับใครก็ได้ที่อยู่ในระยะ เหมือนวิทยุสื่อสาร",
+    "กดไมค์ค้างเพื่อพูด หรือไลฟ์ผ่านกล้อง ถึงใครก็ได้ที่อยู่ในระยะ",
   "home.features.messaging.notes.name": "ข้อความเสียง",
   "home.features.messaging.notes.line": "เสียงที่บันทึกไว้ เร็วกว่าพิมพ์บอกทาง",
   "home.features.messaging.files.name": "รูป วิดีโอ และไฟล์",

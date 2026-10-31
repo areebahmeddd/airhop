@@ -63,6 +63,29 @@ describe("public message payloads", () => {
     expect(decoded!.msgId).toBe("abc123");
   });
 
+  test("a location level carries the cell it was written in", () => {
+    const decoded = decodeAirhopChannelPayload(
+      encodeAirhopChannelPayload("#block", "here", "id1", "9q8yyk8"),
+    );
+    expect(decoded).toEqual({
+      channel: "#block",
+      text: "here",
+      msgId: "id1",
+      cell: "9q8yyk8",
+    });
+    expect(
+      decodeAirhopChannelPayload(encodeAirhopChannelPayload("#a", "t", "i"))
+        ?.cell,
+    ).toBe("");
+  });
+
+  test("returns null when the cell length overruns the payload", () => {
+    // chLen=1 "#", idLen=0, cellLen=9 with two bytes following.
+    expect(
+      decodeAirhopChannelPayload(new Uint8Array([1, 35, 0, 9, 57, 113])),
+    ).toBeNull();
+  });
+
   test("both decoders return null for an empty payload", () => {
     expect(decodeMeshPublicPayload(new Uint8Array(0))).toBeNull();
     expect(decodeAirhopChannelPayload(new Uint8Array(0))).toBeNull();

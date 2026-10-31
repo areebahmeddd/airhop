@@ -12,6 +12,7 @@ import type { NostrClient } from "../../nostr/nostr-client";
 import {
   KIND_NUTZAP,
   KIND_NUTZAP_INFO,
+  acceptsUnit,
   fetchNutzapInfo,
   parseNutzap,
   parseNutzapInfo,
@@ -85,6 +86,28 @@ describe("parseNutzapInfo", () => {
       }),
     );
     expect(info?.p2pkPubkey).toBe("02" + "cd".repeat(32));
+  });
+
+  it("keeps the units a mint is listed for, and takes any unit when none is named", () => {
+    // NIP-61 makes the trailing units optional. Where they are given, coins
+    // of another unit at that mint are refused by the recipient's wallet.
+    const USD_ONLY = "https://usd.example.com";
+    const info = parseNutzapInfo(
+      event({
+        kind: KIND_NUTZAP_INFO,
+        tags: [
+          ["mint", USD_ONLY, "USD"],
+          ["mint", MINT],
+          ["pubkey", P2PK],
+        ],
+      }),
+    );
+    expect(info).not.toBeNull();
+    if (info === null) return;
+    expect(info.mintUnits).toEqual({ [USD_ONLY]: ["usd"] });
+    expect(acceptsUnit(info, USD_ONLY, "sat")).toBe(false);
+    expect(acceptsUnit(info, USD_ONLY, "usd")).toBe(true);
+    expect(acceptsUnit(info, MINT, "sat")).toBe(true);
   });
 
   it("never falls back to the author's Nostr key when the pubkey tag is missing or malformed", () => {

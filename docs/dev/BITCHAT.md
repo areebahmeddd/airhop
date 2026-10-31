@@ -231,9 +231,8 @@ On bitchat-ios:
 ### 4.5 Relay Network
 
 - **300+ relays** worldwide (as of mid-2026).
-- The `georelays` repository tracks and geolocates all bitchat-capable relays.
-- The iOS app bundles a `nostr_relays.csv` fallback and fetches live updates from `georelays`.
-- The `GeoRelayDirectory` selects the closest relay(s) to a geohash coordinate for location channels.
+- The `georelays` repository tracks and geolocates all bitchat-capable relays. A reviewed copy lives in the bitchat repo as `relays/online_relays_gps.csv`, and both bitchat clients route by that file (`docs/GeoRelayRouting.md`).
+- The `GeoRelayDirectory` routes a location channel to the 5 relays nearest the cell plus the next 5 as warm backups, for both publishing and subscribing, with ties broken by relay URL.
 
 ### 4.6 Geohash Location Channels
 
@@ -249,7 +248,7 @@ Location channels are Nostr channels scoped by [geohash](https://en.wikipedia.or
 
 Each geohash level gets its own Nostr identity (derived from the base identity + geohash string), and messages are published to the closest geographic relay(s) for that precision level.
 
-Beyond these location-derived levels, a user can teleport to any cell by entering its geohash directly (2 to 12 characters). A teleported cell uses the same per-geohash identity and relay selection but runs over Nostr only, since nobody in Bluetooth range is in it, and its messages carry a `t=teleport` tag so other clients list the sender as teleported rather than nearby.
+Beyond these location-derived levels, a user can teleport to any cell by entering its geohash directly (2 to 12 characters) or by picking it on an offline globe drawn from bundled Natural Earth geometry, where the cell under the crosshair is the selection and zooming sets its precision. A teleported cell uses the same per-geohash identity and relay selection but runs over Nostr only, since nobody in Bluetooth range is in it, and its messages carry a `t=teleport` tag so other clients list the sender as teleported rather than nearby.
 
 Presence heartbeats (kind 20001) are broadcast only to **region, province, and city** precision levels; the app explicitly refuses to broadcast presence at neighborhood/block level for privacy reasons.
 
@@ -429,11 +428,13 @@ A "gateway" device can bridge the BLE mesh to the Nostr internet:
 
 ### 8.3 Video
 
-**Status: Not explicitly supported.**
-
-- No video MIME type appears in `MimeType.swift` or `MimeType.kt`.
-- `mp4` audio is supported but not video.
-- This is a gap. No video transmission mechanism exists.
+**Status: Live video written on both platforms, in review.** The released
+builds carry video only as a file. The live video work in review defines
+LIVE_VIDEO_V1 (`docs/LIVE_VIDEO_V1.md`): `VIDEO_FRAME` (`0x2D`) in the room and
+Noise payload `0x0A` in a DM, H.264 Constrained Baseline with AAC-LC audio,
+packets of at most 352 bytes protected by Reed-Solomon parity, and a final
+`video_<id>.mp4` that replaces viewers' live copy when it fits 100 KiB. Clips
+and gallery videos are transcoded to fit and named `clip_*.mp4`.
 
 ### 8.4 Push-to-Talk / Live Voice Streaming
 
@@ -647,10 +648,10 @@ The `bitchat/georelays` folder is a **standalone toolchain** for discovering, fi
 
 ### Automation
 
-A GitHub Actions workflow runs the full pipeline daily and commits the results. The apps fetch the latest `nostr_relays.csv` at runtime from:
+A GitHub Actions workflow runs the full pipeline daily and commits the results to `georelays`. The bitchat clients fetch the reviewed copy at runtime from:
 
 ```text
-https://raw.githubusercontent.com/permissionlesstech/georelays/refs/heads/main/nostr_relays.csv
+https://raw.githubusercontent.com/permissionlesstech/bitchat/refs/heads/main/relays/online_relays_gps.csv
 ```
 
 ### Usage in the App
@@ -806,7 +807,6 @@ No forensic recovery is possible after panic wipe without the Keychain, which is
 
 | Gap                                    | Severity | Notes                                                                   |
 | -------------------------------------- | -------- | ----------------------------------------------------------------------- |
-| **No video support**                   | High     | No packet type, no codec, BLE bandwidth insufficient (~18 KiB/s)        |
 | **No video calling**                   | High     | Architecturally infeasible over BLE; would require internet path        |
 | **Courier envelopes = text only**      | Medium   | 16 KiB cap; images cannot be physically relayed                         |
 | **Nostr path = text only**             | Medium   | Media does not ride Nostr                                               |

@@ -61,6 +61,7 @@ I built this at a 24-hour hackathon (July 2026) during my final year of undergra
 | 📎 **Sharing**    | Photos & videos           | Send photos and videos over the mesh. Photos support PNG, JPEG, GIF and WebP up to 512 KiB; videos support MP4 and MOV up to 1 MiB           |
 |                   | Voice notes               | Send a recorded voice note over the mesh in AAC, 16 kHz mono, up to 512 KiB                                                                  |
 |                   | Live voice                | Hold the mic to talk to people in range, walkie-talkie style; recordings land in chat as voice notes                                         |
+|                   | Live video                | Go live from the camera to people in range or one contact                                                                                    |
 |                   | File transfer             | Send any file format over the mesh, including documents and archives, up to 1 MiB per file                                                   |
 |                   | Store-and-forward courier | Messages are delivered automatically when a route becomes available, sealed to a one-time prekey for forward secrecy                         |
 | 🔒 **Identity**   | No-account identity       | Identity is an Ed25519 key pair stored only on your device                                                                                   |
@@ -114,7 +115,7 @@ Airhop chooses a transport per message. Bluetooth is the only one that needs no 
 
 |                   | BLE mesh                                               | LAN (mDNS + TCP)                        | Wi-Fi Aware                                | Nostr relays                    | Courier                                  |
 | ----------------- | ------------------------------------------------------ | --------------------------------------- | ------------------------------------------ | ------------------------------- | ---------------------------------------- |
-| Carries           | Everything, including live voice                       | Everything BLE carries                  | Everything BLE carries, same platform only | DMs and location channels       | Sealed text envelopes, up to 16 KiB each |
+| Carries           | Everything, including live voice and video             | Everything BLE carries                  | Everything BLE carries, same platform only | DMs and location channels       | Sealed text envelopes, up to 16 KiB each |
 | Needs internet    | No                                                     | No, but everyone must be on one network | No                                         | Yes                             | No                                       |
 | iPhone to Android | Yes                                                    | Yes                                     | No                                         | Yes                             | Yes                                      |
 | Range             | 30 to 50 m indoors, up to 100 m line of sight, per hop | Wherever the network reaches            | ~30 m                                      | Global                          | Wherever the carrier walks               |
@@ -188,10 +189,10 @@ npm install
 
 1. Install [Xcode](https://developer.apple.com/xcode) from the Mac App Store, which also installs the iOS Simulator and base build tools
 2. Open Xcode at least once and let it install any additional required components when prompted
-3. Go to **Xcode** then **Settings** then **Locations**, and select **Xcode 27** in the **Command Line Tools** dropdown
-4. Go to **Xcode** then **Settings** then **Components**, and install the **iOS 27** platform if it is not already installed
+3. Go to **Xcode** then **Settings** then **Locations**, and select **Xcode 26** in the **Command Line Tools** dropdown
+4. Go to **Xcode** then **Settings** then **Components**, and install the **iOS 26** platform if it is not already installed
 5. Run `bundle install` from the project root to get the CocoaPods version `Gemfile.lock` pins, then `bundle exec pod install --project-directory=ios`
-6. Launch an **iPhone 17 Pro** simulator from the device dropdown, then run `npm run ios`
+6. Launch an **iPhone 16 Pro** simulator from the device dropdown, then run `npm run ios`
 
 > The first `npm run ios` builds the native app from scratch and can take several minutes. Later runs are much faster.
 
@@ -215,11 +216,11 @@ npm run ios
 1. Install [Android Studio](https://developer.android.com/studio) from the official site, which also installs the Android SDK and base build tools
 2. Open Android Studio at least once and let the setup wizard install any additional required components when prompted
 3. Click the gear icon and open **Settings**, then go to **Languages & Frameworks** then **Android SDK**
-4. On the **SDK Platforms** tab, tick **Android 17.0 (API 37.0)**, then click **Apply**
+4. On the **SDK Platforms** tab, tick **Android 16.0 (API 36.0)**, then click **Apply**
 5. On the **SDK Tools** tab, confirm **Android SDK Build-Tools**, **Android SDK Platform-Tools**, and **Android Emulator** are installed
 6. Copy the SDK path shown at the top of the **Android SDK** page into an `ANDROID_HOME` environment variable, or into `android/local.properties` as `sdk.dir=<path>`, since Gradle looks there for it
 7. Open the virtual device manager: **More Actions** then **Virtual Device Manager** from the Welcome screen, or **View** then **Tool Windows** then **Device Manager** if a project is already open
-8. Click **Create Device**, choose a **Pixel 10 Pro** profile, select one of the API levels just installed, then click **Finish**
+8. Click **Create Device**, choose a **Pixel 9 Pro** profile, select one of the API levels just installed, then click **Finish**
 9. Launch the emulator from the device list, then run `npm run android`
 
 > The first `npm run android` builds the native app from scratch and can take several minutes. Later runs are much faster.
@@ -249,8 +250,8 @@ cd .. && npm run android
 | [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md)      | System architecture, design decisions, and stack rationale       |
 | [PROTOCOLS.md](docs/spec/PROTOCOLS.md)            | Wire format, BLE UUIDs, and protocol specifications              |
 | [BITCHAT.md](docs/dev/BITCHAT.md)                 | Bitchat codebase deep dive and implementation reference          |
-| [PROGRESS.md](docs/dev/PROGRESS.md)               | Current build, development milestones, and security analysis     |
-| [SECURITY-REVIEW.md](docs/dev/SECURITY-REVIEW.md) | Findings, fixes, accepted risks and upstream gaps                |
+| [PROGRESS.md](docs/dev/PROGRESS.md)               | Current build and development milestones                         |
+| [SECURITY-REVIEW.md](docs/dev/SECURITY-REVIEW.md) | Threat model, attacks tested, findings, fixes and accepted risks |
 | [GLOSSARY.md](docs/dev/GLOSSARY.md)               | Definitions of technical terms used throughout the documentation |
 | [CONTRIBUTING.md](CONTRIBUTING.md)                | Development workflow and pull request guidelines                 |
 | [SECURITY.md](SECURITY.md)                        | Security policy and vulnerability reporting                      |

@@ -5,6 +5,10 @@
 let mockResponseListener: ((r: unknown) => void) | null = null;
 const mockDismiss = jest.fn<Promise<void>, [string]>(() => Promise.resolve());
 let mockPresented: { request: { identifier: string } }[] = [];
+let mockScheduled: { identifier: string }[] = [];
+const mockCancelScheduled = jest.fn<Promise<void>, [string]>(() =>
+  Promise.resolve(),
+);
 
 jest.mock("expo-notifications", () => ({
   setNotificationHandler: jest.fn(),
@@ -19,7 +23,8 @@ jest.mock("expo-notifications", () => ({
   dismissNotificationAsync: (id: string) => mockDismiss(id),
   dismissAllNotificationsAsync: jest.fn(() => Promise.resolve()),
   cancelAllScheduledNotificationsAsync: jest.fn(() => Promise.resolve()),
-  cancelScheduledNotificationAsync: jest.fn(() => Promise.resolve()),
+  getAllScheduledNotificationsAsync: () => Promise.resolve(mockScheduled),
+  cancelScheduledNotificationAsync: (id: string) => mockCancelScheduled(id),
   setBadgeCountAsync: jest.fn(() => Promise.resolve()),
   AndroidImportance: { HIGH: 4, LOW: 2, MAX: 5 },
   AndroidNotificationVisibility: { PRIVATE: 0, PUBLIC: 1 },
@@ -135,6 +140,24 @@ describe("dismissPreviewNotifications", () => {
       "msg_dm_abc",
       "payment_1_1",
       "ring_dm_abc",
+    ]);
+  });
+
+  // Each iOS pulse was scheduled with the sender's name in it.
+  test("cancels the ring pulses still to come, and nothing else scheduled", async () => {
+    mockPresented = [];
+    mockScheduled = [
+      { identifier: "ring_dm_abc_1" },
+      { identifier: "ring_dm_abc_2" },
+      { identifier: "something_else" },
+    ];
+    mockCancelScheduled.mockClear();
+
+    await dismissPreviewNotifications();
+
+    expect(mockCancelScheduled.mock.calls.map((c) => c[0]).sort()).toEqual([
+      "ring_dm_abc_1",
+      "ring_dm_abc_2",
     ]);
   });
 });

@@ -173,9 +173,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "Bulletin board",
   "home.features.messaging.board.line":
     "Mga paskil na nakadikit sa isang lugar nang hanggang pitong araw.",
-  "home.features.messaging.voice.name": "Live na boses",
+  "home.features.messaging.voice.name": "Live na boses at video",
   "home.features.messaging.voice.line":
-    "Pindutin ang mikropono at makipag-usap sa sinumang nasa saklaw, parang walkie-talkie.",
+    "Pindutin ang mikropono para makipag-usap, o mag-live sa camera, sa sinumang nasa saklaw.",
   "home.features.messaging.notes.name": "Voice note",
   "home.features.messaging.notes.line": "Naitalang audio, mas mabilis kaysa mag-type ng direksyon.",
   "home.features.messaging.files.name": "Larawan, video at file",

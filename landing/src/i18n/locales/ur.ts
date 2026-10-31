@@ -167,9 +167,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "کمرے کے لیے دعوتی لنک، یا 16 تک کی دستخط شدہ فہرست۔",
   "home.features.messaging.board.name": "اطلاعاتی بورڈ",
   "home.features.messaging.board.line": "کسی علاقے پر سات دن تک لگے رہنے والے اعلانات۔",
-  "home.features.messaging.voice.name": "براہ راست آواز",
+  "home.features.messaging.voice.name": "براہ راست آواز اور ویڈیو",
   "home.features.messaging.voice.line":
-    "مائیک دبائے رکھیں اور حد کے اندر کسی سے بھی بات کریں، واکی ٹاکی کی طرح۔",
+    "مائیک دبا کر بات کریں، یا کیمرے سے براہ راست نشر کریں، حد کے اندر کسی کے لیے بھی۔",
   "home.features.messaging.notes.name": "صوتی پیغامات",
   "home.features.messaging.notes.line": "ریکارڈ شدہ آواز، راستہ ٹائپ کرنے سے تیز۔",
   "home.features.messaging.files.name": "تصاویر، ویڈیو اور فائلیں",

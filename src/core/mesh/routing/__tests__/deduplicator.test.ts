@@ -28,6 +28,14 @@ describe("Deduplicator", () => {
       expect(dedup.has(packetId(0x01))).toBe(true);
     });
 
+    it("delete() forgets one ID and leaves the rest", () => {
+      dedup.add(packetId(0x01));
+      dedup.add(packetId(0x02));
+      dedup.delete(packetId(0x01));
+      expect(dedup.has(packetId(0x01))).toBe(false);
+      expect(dedup.has(packetId(0x02))).toBe(true);
+    });
+
     it("different packetIDs are tracked independently", () => {
       dedup.add(packetId(0x01));
       expect(dedup.has(packetId(0x01))).toBe(true);

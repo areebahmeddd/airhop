@@ -1,9 +1,11 @@
 // Turning two coordinates into something a person can act on.
 //
-// There is no map, by decision. Tiles are an HTTP call to somebody's server on
-// every pan: a fingerprint, a dependency, and a grey square in exactly the
-// conditions this app exists for. Opening the pin in a maps app stays available
-// as a handoff the user chooses, which is a different thing.
+// There are no map tiles, by decision. A tile is an HTTP call to somebody's
+// server on every pan: a fingerprint, a dependency, and a grey square in
+// exactly the conditions this app exists for. So a pin gets no map, and the
+// one map-like surface, the globe that picks a location channel, draws bundled
+// geometry instead. Opening the pin in a maps app stays available as a handoff
+// the user chooses, which is a different thing.
 
 const EARTH_RADIUS_M = 6_371_000;
 

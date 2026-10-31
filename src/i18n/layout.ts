@@ -36,11 +36,13 @@ export function contentTextAlign(text: string): "auto" | "left" | "right" {
   return "auto";
 }
 
-// The mark for the layout's direction (RLM or LRM), to lead a line whose
-// template is only isolated values, such as "{sender}: {preview}". Isolates
-// are skipped when a paragraph picks its direction, so such a line has no
-// strong character of its own and falls back to left to right: an Arabic list
-// row would read backwards around its colon. The mark gives it the UI's.
+// The mark for the layout's direction (RLM or LRM), to lead a line assembled
+// in JSX from values alone, such as a stored preview. Isolates are skipped when
+// a paragraph picks its direction, so such a line has no strong character of
+// its own and falls back to left to right: an Arabic list row would read
+// backwards around its colon. The mark gives it the UI's. A catalog template
+// made only of values, such as "{sender}: {preview}", gets its language's mark
+// from `t()` itself.
 export const directionMark: string = isRTLLayout ? "\u200F" : "\u200E";
 
 // Neither platform mirrors icon artwork and Feather has no logical names, so a

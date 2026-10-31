@@ -25,6 +25,7 @@ import { applyPresence } from "@services/presence-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
+import { Platform } from "react-native";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell, makeIdentity } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
@@ -68,6 +69,7 @@ function androidDevice(os: DeviceOS): AndroidBleModule {
 
 describe("teardown, replacement and races", () => {
   let app: AppShell | null = null;
+  let androidOS: { restore: () => void } | null = null;
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -77,6 +79,8 @@ describe("teardown, replacement and races", () => {
   afterEach(() => {
     app?.teardown();
     app = null;
+    androidOS?.restore();
+    androidOS = null;
     installNativeBle(null);
     jest.clearAllTimers();
     jest.useRealTimers();
@@ -514,6 +518,8 @@ describe("teardown, replacement and races", () => {
 
   test("S32 Battery Saver turns the radios down on a healthy battery", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    // An Android-only event, which the mesh subscribes to only there.
+    androidOS = jest.replaceProperty(Platform, "OS", "android");
     const v = new Verdict("S32", "the OS power switch is honoured", os);
     const native = androidDevice(os);
 

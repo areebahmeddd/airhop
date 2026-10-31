@@ -7,9 +7,7 @@
 // callbacks by design, which the rule would flag as a mutation bug.
 /* eslint-disable react-hooks/immutability */
 
-import { useT } from "@i18n";
 import { crossedThreshold } from "@platform/haptics";
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
@@ -111,7 +109,6 @@ export default function BottomSheet({
   scrollable = false,
   scrimColor,
 }: Props): React.JSX.Element | null {
-  const T = useT();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const { height: screenHeight } = useWindowDimensions();
@@ -317,6 +314,11 @@ export default function BottomSheet({
             { paddingBottom: Math.max(keyboardHeight, insets.bottom) },
           ]}
           pointerEvents={closing ? "none" : "auto"}
+          // The scrim is no stop for a screen reader (below), so these are how
+          // one closes the sheet without a Close button: VoiceOver's two-finger
+          // scrub here, and TalkBack's back through the Modal's request.
+          accessibilityViewIsModal
+          onAccessibilityEscape={dismiss}
         >
           <Animated.View
             style={[
@@ -338,8 +340,12 @@ export default function BottomSheet({
             onPress={(e) =>
               handleScrimPress(e.nativeEvent.pageX, e.nativeEvent.pageY)
             }
-            accessibilityRole="button"
-            accessibilityLabel={T("common.close")}
+            // Full screen and first in the tree, so as an element it is where
+            // VoiceOver lands when the sheet opens, ahead of the sheet itself.
+            // A touch target only.
+            accessible={false}
+            importantForAccessibility="no"
+            accessibilityElementsHidden
           />
           {scrollable ? (
             sheet

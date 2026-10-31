@@ -334,11 +334,19 @@ export class IosBleModule implements BleNativeModule {
     this.radioPort?.radiosChanged();
   }
 
-  // RCTEventEmitter drops an event with no listeners; iOS has no equivalent of
-  // the Android crash.
+  // RCTEventEmitter.sendEventWithName: dropped with no JS runtime, and dropped
+  // while the module's listener count is zero. Only the module's own
+  // addListener raises that count, which NativeEventEmitter calls and
+  // DeviceEventEmitter never does, so a subscription that skips the module
+  // hears nothing here, as on a phone. iOS has no equivalent of the Android
+  // crash.
   private emitEvent(name: string, body: Record<string, unknown>): void {
     if (!this.os.jsRuntimeReady) {
       this.os.log("native", "EVENT_DROPPED_NO_JS", name);
+      return;
+    }
+    if (this.listenerCount === 0) {
+      this.os.log("native", "EVENT_DROPPED_NO_LISTENERS", name);
       return;
     }
     DeviceEventEmitter.emit(name, body);
@@ -363,12 +371,16 @@ export class IosBleModule implements BleNativeModule {
     return rejectWith("UNKNOWN_LINK", `No active link with ID ${linkID}`);
   }
 
-  addListener(): void {
-    /* RCTEventEmitter contract */
+  // RCTEventEmitter's addListener: / removeListeners:, one count for every
+  // event the module raises.
+  private listenerCount = 0;
+
+  addListener(_eventName: string): void {
+    this.listenerCount++;
   }
 
-  removeListeners(): void {
-    /* RCTEventEmitter contract */
+  removeListeners(count: number): void {
+    this.listenerCount = Math.max(0, this.listenerCount - count);
   }
 
   // ---- shared radio medium ----

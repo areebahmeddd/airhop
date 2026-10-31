@@ -173,9 +173,9 @@ const strings: Strings = {
     "Rohy fanasana ho an'ny efitrano, na lisitra voasonia hatramin'ny 16.",
   "home.features.messaging.board.name": "Takelaka filazana",
   "home.features.messaging.board.line": "Filazana mipetaka amin'ny faritra hatramin'ny fito andro.",
-  "home.features.messaging.voice.name": "Feo mivantana",
+  "home.features.messaging.voice.name": "Feo sy horonan-tsary mivantana",
   "home.features.messaging.voice.line":
-    "Tazony ny mikrô ary miresaha amin'izay ao anatin'ny fetra, toy ny radiô.",
+    "Tazony ny mikrô hiresahana, na mandefasa mivantana amin'ny fakantsary, ho an'izay ao anatin'ny fetra.",
   "home.features.messaging.notes.name": "Naoty feo",
   "home.features.messaging.notes.line":
     "Feo voarakitra, haingana kokoa noho ny manoratra toromarika.",

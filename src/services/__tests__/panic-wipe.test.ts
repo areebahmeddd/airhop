@@ -10,16 +10,26 @@ import {
   resetWalletStorage,
   WALLET_STORAGE_ID,
 } from "@store/wallet-store";
+import {
+  clearBackgroundNotice,
+  stopBackgroundNotice,
+} from "../background-notice";
 import { wipeCacheDirectory } from "../file-transfer-service";
 import { stopNotificationPipeline } from "../notification-pipeline";
 import { dismissAllNotifications } from "../notification-service";
 import { setNutzapWatcher } from "../nutzap-watcher-handle";
 import { MMKV_STORE_IDS, panicWipe } from "../panic-wipe";
+import { cancelAllVideoPreparation } from "../video-prepare";
 import {
   currentWipeGeneration,
   isCurrentWipeGeneration,
 } from "../wipe-generation";
-import { endPanicWipe, isPanicWipePending } from "../wipe-marker";
+import {
+  clearCondemnedIdentity,
+  endPanicWipe,
+  isIdentityCondemned,
+  isPanicWipePending,
+} from "../wipe-marker";
 
 // wipeAllSecrets reaches the Keychain/Keystore; mock it out in tests. Only that
 // one export: KEYCHAIN_ITEMS is read at module scope by wallet-store and
@@ -36,6 +46,11 @@ jest.mock("../file-transfer-service", () => ({
   wipeCacheDirectory: jest.fn().mockResolvedValue(undefined),
 }));
 
+// A video being shrunk is stopped by the wipe; only the order matters here.
+jest.mock("../video-prepare", () => ({
+  cancelAllVideoPreparation: jest.fn().mockResolvedValue(undefined),
+}));
+
 // Dismissing the tray reaches expo-notifications, which registers push
 // listeners at import. Mocked so this stays a unit test of the wipe and does not
 // depend on a notifications runtime.
@@ -47,6 +62,13 @@ jest.mock("../notification-service", () => ({
 // whether the wipe stops it matters here.
 jest.mock("../notification-pipeline", () => ({
   stopNotificationPipeline: jest.fn(),
+}));
+
+// The notice and the widget reach a native module; only whether the wipe stops
+// the count and clears what was shown matters here.
+jest.mock("../background-notice", () => ({
+  stopBackgroundNotice: jest.fn(),
+  clearBackgroundNotice: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Provide a full in-memory MMKV implementation so Zustand's persist middleware
@@ -197,11 +219,80 @@ describe("panicWipe", () => {
     );
   });
 
+  test("clears MMKV without waiting for a keychain that has not answered", async () => {
+    // A stalled Keystore must not hold the messages on disk for its deadline.
+    let answer: (() => void) | undefined;
+    mockClearKeys.mockReturnValue(
+      new Promise<void>((resolve) => {
+        answer = resolve;
+      }),
+    );
+
+    const wipe = panicWipe();
+    await Promise.resolve();
+
+    expect(clearedPartitions()).toEqual(
+      expect.arrayContaining([...MMKV_STORE_IDS]),
+    );
+    expect(isPanicWipePending()).toBe(true);
+    answer?.();
+    await expect(wipe).resolves.toEqual({ keysDestroyed: true });
+  });
+
+  test("condemns a surviving identity once the keychain refuses, after MMKV", async () => {
+    // The flag lives outside every cleared partition, so it is still there for
+    // the next launch even though it is written after they are cleared.
+    mockClearKeys.mockRejectedValue(new Error("keychain locked"));
+
+    await panicWipe();
+
+    expect(isIdentityCondemned()).toBe(true);
+    clearCondemnedIdentity();
+  });
+
+  test("empties the cache before the tray, widget and Tor steps", async () => {
+    // Media is message content; the native steps can each take their deadline.
+    const order: string[] = [];
+    (wipeCacheDirectory as jest.Mock).mockImplementationOnce(() => {
+      order.push("cache");
+      return Promise.resolve();
+    });
+    (dismissAllNotifications as jest.Mock).mockImplementationOnce(() => {
+      order.push("tray");
+      return Promise.resolve();
+    });
+    (clearBackgroundNotice as jest.Mock).mockImplementationOnce(() => {
+      order.push("widget");
+      return Promise.resolve();
+    });
+
+    await panicWipe();
+
+    expect(order).toEqual(["cache", "tray", "widget"]);
+  });
+
   test("empties the whole cache directory, not just prefixed attachments", async () => {
     // Prefix matching would miss sent documents, sent videos, in-budget images
     // and the saved QR card.
     await panicWipe();
     expect(wipeCacheDirectory).toHaveBeenCalledTimes(1);
+  });
+
+  test("stops a video being shrunk before it empties the cache", async () => {
+    // A shrunk file finished after the cache was emptied would survive it.
+    const order: string[] = [];
+    (cancelAllVideoPreparation as jest.Mock).mockImplementationOnce(() => {
+      order.push("video");
+      return Promise.resolve();
+    });
+    (wipeCacheDirectory as jest.Mock).mockImplementationOnce(() => {
+      order.push("cache");
+      return Promise.resolve();
+    });
+
+    await panicWipe();
+
+    expect(order).toEqual(["video", "cache"]);
   });
 
   test("reports the keys as destroyed on success", async () => {
@@ -314,6 +405,38 @@ describe("panicWipe", () => {
 
     expect(stop).toHaveBeenCalledTimes(1);
     expect(stoppedBeforeClear).toBe(true);
+  });
+
+  test("stops counting peers before clearing anything, then clears the widget", async () => {
+    // A recount after the widget is cleared would write a fresh reading for
+    // the destroyed identity in place of "Open Airhop".
+    const stop = stopBackgroundNotice as jest.Mock;
+    const clear = clearBackgroundNotice as jest.Mock;
+    stop.mockClear();
+    clear.mockClear();
+    let stoppedBeforeClear = false;
+    let clearedBeforeStoresCleared = false;
+    mockClearAll.mockImplementationOnce(() => {
+      stoppedBeforeClear = stop.mock.calls.length > 0;
+      clearedBeforeStoresCleared = clear.mock.calls.length > 0;
+    });
+
+    await panicWipe();
+
+    expect(stop).toHaveBeenCalledTimes(1);
+    expect(stoppedBeforeClear).toBe(true);
+    // Last, with the tray: the keys and partitions go first.
+    expect(clearedBeforeStoresCleared).toBe(false);
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  test("finishes when the widget cannot be cleared", async () => {
+    // A native side that refuses, or a build without the module.
+    (clearBackgroundNotice as jest.Mock).mockRejectedValueOnce(
+      new Error("refused"),
+    );
+    await expect(panicWipe()).resolves.toEqual({ keysDestroyed: true });
+    expect(isPanicWipePending()).toBe(false);
   });
 
   test("wipes every sensitive persisted store, including the activity feed", () => {

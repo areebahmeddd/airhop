@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mesh-сеть</string>
   <string name="mesh_channel_description">Держит сеть Airhop активной в фоне</string>
   <string name="mesh_notification_title">Сеть Airhop работает</string>
@@ -10,4 +10,18 @@
     <item quantity="many">%1$s узлов в зоне действия</item>
     <item quantity="other">%1$s узла в зоне действия</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth выключен · не сканируем</string>
+  <string name="widget_label">Узлы в зоне действия</string>
+  <string name="widget_description">Узлы в зоне действия и время, когда их сосчитали</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">узел в зоне действия</item>
+    <item quantity="few">узла в зоне действия</item>
+    <item quantity="many">узлов в зоне действия</item>
+    <item quantity="other">узла в зоне действия</item>
+  </plurals>
+  <string name="widget_nobody">никого в зоне действия</string>
+  <string name="widget_as_of">на %1$s</string>
+  <string name="widget_paused">Сеть приостановлена</string>
+  <string name="widget_unset">Откройте Airhop</string>
+  <string name="widget_stale">Откройте Airhop, чтобы обновить</string>
 </resources>

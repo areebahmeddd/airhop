@@ -1,6 +1,6 @@
 // One hostile relay must not be able to hide an event that honest relays carry.
 //
-// nostr-tools 2.25.2 records an event ID as seen before it verifies the event,
+// nostr-tools 2.25.4 records an event ID as seen before it verifies the event,
 // in one set shared by every relay a pool call spans, and writes a reconnect's
 // `since` into one filter object shared the same way. Left to it, a relay that
 // sends a bad-signature copy under a genuine ID suppresses the real event from
@@ -206,6 +206,31 @@ describe("a subscription across several relays", () => {
     expect(honestReqs.length).toBeGreaterThan(0);
     for (const { filters } of honestReqs) {
       expect(filters[0].since).toBe(SINCE);
+    }
+    client.close();
+  });
+
+  it("keeps a relay's since in the present after it delivered a validly signed far-future event", async () => {
+    const client = new NostrClient({ relays: [] });
+    client.subscribe(
+      [{ kinds: [1], since: SINCE }],
+      () => undefined,
+      undefined,
+      [HONEST],
+    );
+    await settle();
+
+    const farFuture = Math.floor(Date.now() / 1000) + 10 * 365 * 24 * 3600;
+    socketFor(HONEST).push(signed("later", farFuture));
+    socketFor(HONEST).drop();
+    await settle(10_001);
+
+    const reqs = socketFor(HONEST).reqs;
+    expect(reqs.length).toBeGreaterThan(0);
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    for (const { filters } of reqs) {
+      expect(filters[0].since).toBeGreaterThanOrEqual(SINCE);
+      expect(filters[0].since).toBeLessThanOrEqual(nowSeconds);
     }
     client.close();
   });

@@ -81,7 +81,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "Anahtarların oluşturulamadı",
   "onboarding.identity.failed_body":
     "Bu cihaz, Airhop'un anahtarları güvenli biçimde saklamasına izin vermedi. Yeniden dene ya da telefonu yeniden başlatıp Airhop'u tekrar aç.",
-  "onboarding.identity.steps_a11y": "Adımlar: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "Adımlar: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519":
     "Statik X25519 anahtar çifti oluşturuluyor",
   "onboarding.identity.step.ed25519":
@@ -93,8 +94,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "Mesh üzerindeki adın",
   "onboarding.username.peer_id": "Eş kimliği",
-  "onboarding.username.card_a11y":
-    "Mesh üzerindeki adın {username}. Eş kimliği {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "Mesh üzerindeki adın {username}. Eş kimliği {peerID}. Algoritma: {algorithm}. Saklama: {storage}. Hesap gerekir: {account}.",
   "onboarding.username.explanation":
     "Bu kullanıcı adı, açık anahtarından belirlenimci biçimde türetilir. Eş kimliğini gören her cihazda aynıdır.",
   "onboarding.username.cta": "Airhop'a gir",
@@ -163,7 +164,7 @@ export const strings: Strings = {
     "Yakındaki cihazları bulur ve mesajları aralarında aktarır. Mesh böyle kurulur ve internet bağlantısı olmadan çalışır.",
   "onboarding.primer.location.title": "Konum",
   "onboarding.primer.location.body":
-    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumunu cihazının dışına göndermez.",
+    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumun cihazından yalnızca birine konum işareti gönderdiğinde çıkar.",
   "onboarding.primer.notifications.title": "Bildirimler",
   "onboarding.primer.notifications.body":
     "Uygulama kapalıyken bile yeni mesajlar için uyarı al. Bildirimler cihazında yerel olarak oluşturulur, hiçbir sunucu işin içinde değildir.",
@@ -175,6 +176,9 @@ export const strings: Strings = {
   "permission.bluetooth.label": "Bluetooth erişimi",
   "permission.bluetooth.purpose":
     "mesh üzerinden yakındaki cihazları keşfetmek",
+  "permission.location.label": "Konum erişimi",
+  "permission.location.purpose":
+    "Bluetooth menzilinin ötesindeki konum kanallarına ulaşmak",
   "permission.open_settings": "Ayarlar'ı aç",
   "permission.not_now": "Şimdi değil",
   "permission.blocked_title": "{label} kapalı",
@@ -235,8 +239,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "menzilde",
   "chat.dm.row_hint": "Diğer seçenekler için iki kez dokunup basılı tut",
   "chat.channels.row_hint": "Diğer seçenekler için iki kez dokunup basılı tut",
-  "chat.dm.you_prefix": "Sen:",
-  "chat.draft_prefix": "Taslak:",
+  "chat.draft_preview": "Taslak: {draft}",
   "chat.dm.none": "Doğrudan mesaj yok",
   "chat.dm.none_desc":
     "Şifreli bir doğrudan mesaj başlatmak için Mesh sekmesine gidip bir eşe dokun.",
@@ -254,6 +257,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} için diğer seçenekler",
   "chat.dm.remove_contact_short": "Kişiyi kaldır",
   "chat.dm.block_short": "Kişiyi engelle",
+  "chat.dm.signing_key_refused":
+    "Biri {name} için farklı bir anahtar sundu ve Airhop bunu reddetti. Bu sohbet mevcut anahtarını korur.",
   "chat.dm.delete_short": "Sohbeti sil",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -335,6 +340,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "O hücre açılamadı. Birazdan yeniden dene.",
   "chat.jump.title": "Bir yere git",
+  "chat.jump.globe": "Küre üzerinde seç",
+  "chat.jump.globe_note": "Herhangi bir yere döndür. Çevrimdışı çalışır.",
   "chat.jump.saved": "Kayıtlı yerler",
   "chat.jump.nearby": "Yakında",
   "chat.jump.anywhere":
@@ -366,6 +373,18 @@ export const strings: Strings = {
   "chat.jump.go": "Git",
   "chat.jump.how":
     "Geohash bulmak için: bir konum kanalı aç > adına dokun > oradan kopyala.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint":
+    "Döndürmek için sürükle · yakınlaştırmak için kıstır · odaklamak için dokun",
+  "chat.globe.zoom_in": "Hücre seçmek için yakınlaştır",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell} hücresine git",
+  "chat.globe.larger": "Daha büyük hücre",
+  "chat.globe.smaller": "Daha küçük hücre",
+  "chat.globe.label": "Küre, merkezde {cell}",
+  "chat.globe.adjust":
+    "Hücre boyutunu değiştirmek için yukarı veya aşağı kaydır",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable": "Her üyeye ulaşılamadı. Yakındayken yeniden dene.",
@@ -439,6 +458,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "Herkese açık kanal",
   "chat.thread.notices": "Bu kanalın duyuruları",
   "chat.thread.invite": "Bu kanala birini davet et",
+  "chat.thread.location_off":
+    "Konum kapalı · yalnızca yakındakilere ulaşılıyor",
   "chat.thread.not_in_range":
     "Yakında değil. İnternet üzerinden teslim ediliyor.",
   "chat.thread.not_nearby":
@@ -467,7 +488,7 @@ export const strings: Strings = {
   "chat.thread.message": "Mesaj",
   "chat.thread.message_placeholder": "Mesaj…",
   "chat.thread.length_full": "Mesaj doldu",
-  "chat.thread.waiting_for": "{name} kişisinin dönmesi bekleniyor · %{percent}",
+  "chat.thread.waiting_for": "{name} kişisinin dönmesi bekleniyor · {percent}",
   "chat.transfer.progress": "{done} / {total}",
   "chat.transfer.speed": "{size}/s",
   "chat.transfer.left": "{time} kaldı",
@@ -520,7 +541,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "Ekran görüntüsü aldın",
   "chat.screenshot.you_took_private":
     "Ekran görüntüsü aldın · kimseye söylenmedi",
-  "chat.screenshot.heads_up": "Dikkat",
   "chat.screenshot.peer_took": "{name} ekran görüntüsü aldı",
   "chat.screenshot.notified_dm":
     "{name} kişisine bu konuşmanın ekran görüntüsünü aldığın bildirildi.",
@@ -534,7 +554,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "{name} kişisinin profilini görüntüle",
   "chat.bubble.forwarded": "İletildi",
   "chat.bubble.attachment": "ek",
-  "chat.bubble.a11y": "{sender}: {body}. Diğer seçenekler için basılı tut.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "Diğer seçenekler için iki kez dokunup basılı tut",
+  "chat.bubble.more_options": "Diğer seçenekler",
+  "chat.bubble.open_link": "{link} bağlantısını aç",
+  "chat.bubble.status_delivered": "Teslim edildi",
+  "chat.bubble.status_read": "Okundu",
   "chat.bubble.failed_retry": "Gönderilemedi. Yeniden denemek için dokun.",
 
   // ---- Chats: message actions and info ----
@@ -561,6 +586,8 @@ export const strings: Strings = {
   "chat.attach.camera": "Kamera",
   "chat.attach.camera_desc": "Fotoğraf ya da video çek",
   "chat.attach.camera_desc_photo": "Fotoğraf çek",
+  "chat.attach.video": "Video kaydet",
+  "chat.attach.video_desc": "Kısa bir klip kaydet",
   "chat.attach.library": "Fotoğraf galerisi",
   "chat.attach.library_desc": "Galerinden seç",
   "chat.attach.document": "Belge",
@@ -571,6 +598,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "Cüzdanından Cashu satı gönder",
   "chat.attach.location": "Konum",
   "chat.attach.location_desc": "Şu anda nerede olduğunu gönder",
+  "chat.attach.live": "Canlı yayına geç",
+  "chat.attach.live_desc": "Kameranı yakındaki kişilere yayınla",
   "chat.attach.title": "Ekle",
 
   // ---- Chat: location pin ----
@@ -631,6 +660,19 @@ export const strings: Strings = {
   "chat.attach.caption": "Bir açıklama ekle…",
   "chat.attach.send": "Eki gönder",
   "chat.attach.generic": "Ek",
+  "chat.video_prep.preparing": "Video hazırlanıyor",
+  "chat.video_prep.waiting": "Video hazırlanmayı bekliyor",
+  "chat.video_prep.cancel": "Bu videoyu hazırlamayı durdur",
+  "chat.video_prep.too_large": "Bu video gönderilecek kadar küçültülemedi.",
+  "chat.video_prep.unreadable": "Bu video açılamadı. Başka bir tane dene.",
+  "chat.video_prep.failed":
+    "O video hazırlanırken bir şeyler ters gitti. Tekrar dene.",
+  "chat.video_prep.interrupted":
+    "Video hazır olmadan Airhop'tan ayrıldın. Yeniden göndermeyi dene.",
+  "chat.trim.play": "Önizlemeyi oynat",
+  "chat.trim.pause": "Önizlemeyi duraklat",
+  "chat.trim.start": "Klibin başı",
+  "chat.trim.end": "Klibin sonu",
   "chat.media.view_full": "Fotoğrafı tam ekran görüntüle",
   "chat.media.gone_photo": "Fotoğraf bu cihazda yok",
   "chat.media.gone_video": "Video bu cihazda yok",
@@ -646,6 +688,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "o dosyayı",
   "chat.media.pause_voice": "Sesli notu duraklat",
   "chat.media.play_voice": "Sesli notu oynat",
+  "chat.media.pause_video": "Videoyu duraklat",
+  "chat.media.play_video": "Videoyu oynat",
   "chat.media.voice_position": "Sesli nottaki konum",
   "chat.media.voice_scrub": "O noktaya atlamak için çubuklar boyunca dokun",
   "chat.media.image": "Görüntü",
@@ -688,6 +732,51 @@ export const strings: Strings = {
     "İki dakika sınırına ulaşıldı, göndermek için bırak",
   "chat.voice.limit_sent": "İki dakika sınırına ulaşıldı, not gönderildi",
   "chat.voice.stop_send": "Kaydı durdur ve gönder",
+  "chat.video_note.hold": "Görüntülü not kaydetmek için basılı tut",
+  "chat.video_note.a11y_toggle":
+    "Kaydı başlatmak veya durdurmak için iki kez dokun.",
+  "chat.video_note.not_recorded": "Görüntülü not kaydedilemedi",
+  "chat.video_note.limit_sent": "Süre doldu, görüntülü not gönderildi",
+  "chat.video_note.a11y": "Görüntülü not, ses için iki kez dokun",
+  "chat.video_note.sound_on": "Sesi aç",
+  "chat.video_note.sound_off": "Sesi kapat",
+  "chat.live_video.preview": "Canlı video",
+  "chat.live_video.badge": "Canlı",
+  "chat.live_video.reconnecting": "Yeniden bağlanıyor…",
+  "chat.live_video.a11y": "{name} canlı yayında. İzlemek için iki kez dokun.",
+  "chat.live_video.live_from": "{name} canlı yayında",
+  "chat.live_video.sound": "Ses",
+  "chat.live_video.ended": "Yayın sona erdi",
+  "chat.live_video.title": "Canlı video",
+  "chat.live_video.go_live": "Canlı yayına geç",
+  "chat.live_video.end": "Bitir",
+  "chat.live_video.end_title": "Canlı video bitirilsin mi?",
+  "chat.live_video.end_body":
+    "Bitirirsen kayıt bu sohbette kalır. Atarsan izleyen herkesten silmesi istenir.",
+  "chat.live_video.discard": "At",
+  "chat.live_video.keep": "Yayına devam et",
+  "chat.live_video.audience_room": "Bluetooth menzilindeki herkes izleyebilir.",
+  "chat.live_video.audience_dm": "Yalnızca {name} izleyebilir.",
+  "chat.live_video.nobody": "Şu anda menzilde izleyecek kimse yok.",
+  "chat.live_video.quality_low": "Düşük",
+  "chat.live_video.quality_medium": "Orta",
+  "chat.live_video.quality_high": "Yüksek",
+  "chat.live_video.quality_low_hint": "Birkaç atlama ötedeki kişilere ulaşır",
+  "chat.live_video.quality_medium_hint":
+    "Bir veya iki atlama ötedeki kişiler için",
+  "chat.live_video.quality_high_hint": "Hemen yanındaki kişiler için",
+  "chat.live_video.signal_good": "Yetişiyor",
+  "chat.live_video.signal_weak": "Geride kalıyor",
+  "chat.live_video.signal_poor":
+    "Video için çok yavaş, yalnızca ses gönderiliyor",
+  "chat.live_video.mic": "Mikrofon",
+  "chat.live_video.no_sound": "Ses yok",
+  "chat.live_video.flip": "Kamerayı değiştir",
+  "chat.live_video.camera_failed": "Kamera açılamadı",
+  "chat.live_video.camera_lost": "Kamera durdu, bu yüzden yayın bitti",
+  "chat.live_video.failed": "Canlı yayına geçilemedi",
+  "chat.live_video.kept_here":
+    "Dosya olarak göndermek için çok uzun. İzleyen herkes kendi kopyasını saklar.",
   "chat.voice.lift_lock": "Eller serbest kaydetmek için yukarı kaydır",
   "chat.voice.live_speaking": "{name} konuşuyor",
   "chat.voice.live_ended": "Bitti",
@@ -703,6 +792,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "Mikrofon erişimi",
   "chat.perm.mic_live_purpose": "yakındaki insanlarla konuşmak",
   "chat.perm.mic_note_purpose": "bir sesli not kaydetmek",
+  "chat.perm.video_note_purpose": "görüntülü not kaydetmek",
+  "chat.perm.live_video_purpose": "canlı yayına geçmek",
   "chat.perm.recording_stopped": "Kayıt durduruldu",
   "chat.perm.record_failed":
     "Kayıt başlatılamadı. Mikrofon izinlerini denetle.",
@@ -833,6 +924,10 @@ export const strings: Strings = {
   "chat.notices.post": "Duyuru as",
   "chat.notices.post_short": "As",
   "chat.notices.delete": "Duyuruyu sil",
+  "chat.notices.delete_title": "Bu duyuru silinsin mi?",
+  "chat.notices.delete_body":
+    "Duyuru kimde varsa ondan kaldırması istenir. Bu geri alınamaz.",
+  "chat.notices.permanent": "Kalıcı",
   "chat.notices.fades_soon": "yakında solar",
   "chat.notices.1_day": "1 gün",
   "chat.notices.3_days": "3 gün",
@@ -901,6 +996,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name} kişisine iletilemiyor",
   "chat.forward.too_long_for_dm":
     "Doğrudan mesaj için çok uzun. Bunun yerine bir kanala veya gruba ilet.",
+  "chat.forward.too_long_for_public":
+    "Herkese açık bir oda için çok uzun, orada spam olarak gizlenir. Bunun yerine bir gruba ilet.",
   "chat.forward.channels": "Kanallar",
   "chat.forward.groups": "Gruplar",
   "chat.forward.locations": "Konumlar",
@@ -909,6 +1006,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "İletilmedi",
   "chat.forward.app_row_body":
     "Bu satır bir kişiden değil, Airhop'tan geliyor, bu yüzden iletilecek bir şey yok.",
+  "chat.forward.has_ecash":
+    "Bunda ecash var ve onu ilk alan parayı kendine ayırır, bu yüzden iletilmez.",
+  "chat.forward.public_title": "{name} odasına iletilsin mi?",
+  "chat.forward.public_mesh_body":
+    "Yakındaki herkes onu orada okuyabilir ve geri alınamaz.",
+  "chat.forward.public_geo_body":
+    "Bu alandaki herkes onu orada okuyabilir, herkese açık internet aktarıcılarında da görünür ve geri alınamaz.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "Mesh başlatılıyor…",
@@ -924,7 +1028,8 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "Konum kapalı · Android eşleri bulmak için buna ihtiyaç duyuyor",
   "mesh.banner.paused": "Mesh duraklatıldı · uzaktasın",
-  "mesh.banner.location_off": "Konum kapalı · konum kanalları kullanılamıyor",
+  "mesh.banner.location_off":
+    "Konum kapalı · konum kanalları yalnızca yakına ulaşıyor",
   "mesh.banner.battery_saver": "Pil tasarrufu · daha seyrek tarama",
   "mesh.banner.wipe_incomplete":
     "Temizlik yarım kaldı · bazı veriler kalmış olabilir, yeniden açılınca tekrar denenir",
@@ -953,7 +1058,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "Bu telefonun arka plan etkinliği ayarlarını açar",
   "mesh.banner.hint.tor_settings": "Airhop'un Tor ayarlarını açar",
+  "mesh.banner.hint.enable_location":
+    "Konum erişimi ister ya da Ayarlar'da nasıl izin verileceğini açıklar",
   "mesh.banner.dismiss": "Kapat: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "Bu notu kalıcı olarak gizler",
 
   // ---- Mesh: radar ----
@@ -1185,6 +1293,8 @@ export const strings: Strings = {
     "{mint} {units} çıkarıyor. Anahtarları bu cihazda tutuluyor, bu yüzden ondan gelen jetonlar artık internetsizken bile doğrulanabilir.",
   "wallet.mint.remove_plain":
     "{mint} cüzdanından kaldırılsın mı? Saklanan anahtarları da gider, bu yüzden ondan gelen jetonlar artık çevrimdışı doğrulanamaz.",
+  "wallet.mint.remove_holdings":
+    "{mint} şunları tutuyor:\n{holdings}\nKaldırmak bunların hepsini bu cihazdan siler. Önce çek ya da gönder.",
   "wallet.mint.title": "Darphaneler",
   "wallet.mint.none_desc":
     "Darphane ecash'ini çıkarır ve bozar. Lightning ile yüklemek veya onun jetonlarını kabul etmek için bir tane ekle.",
@@ -1537,6 +1647,8 @@ export const strings: Strings = {
   "wallet.err.already_spent": "Zaten harcandı",
   "wallet.err.change_pending": "Ödendi, para üstü bekliyor",
   "wallet.svc.mint_unreachable": "Darphaneye ulaşılamadı.",
+  "wallet.svc.mint_http_error":
+    "Darphane bir hatayla yanıt verdi (HTTP {status}).",
   "wallet.svc.tor_ios": "iOS'ta darphane istekleri Tor üzerinden gitmez.",
   "wallet.svc.tor_ios_body":
     "iOS'ta Tor yalnızca Nostr'ı kapsar, bu yüzden bu istek darphaneye açık ağ üzerinden ulaşır ve IP adresini bu ecash ile ilişkilendirir. Ayarlar'da {setting} seçeneğini aç ya da önce Tor'u kapat. Mesh üzerinden ecash gönderip almak çalışmayı sürdürür.",
@@ -1645,6 +1757,10 @@ export const strings: Strings = {
     "Jetonların çevrimdışı olarak tam {amount} {unit} yapamıyor.",
   "wallet.svc.inexact_detail":
     "Gönderebileceğin en küçük jeton {spend} {unit}. Çevrimdışıyken para üstü yoktur, bu yüzden fazladan {extra} {unit} alıcıya gider.",
+  "wallet.svc.spend_changed":
+    "Bu gönderim artık {spend} {unit} tutuyor, onayladığından fazla.",
+  "wallet.svc.spend_changed_body":
+    "Sen karar verirken jetonların değişti. Hiçbir şey gönderilmedi. Yeni tutarı görmek için yeniden dene.",
   "wallet.svc.no_single_mint":
     "Tek başına {amount} {unit} tutan bir darphane yok. Farklı darphanelerden gelen ecash tek bir jetonda birleştirilemez: önce tek bir darphanede birleştir ya da ayrı tutarlar hâlinde gönder.",
   "wallet.svc.have_tried_send":
@@ -1673,6 +1789,10 @@ export const strings: Strings = {
     "Başka bir şey gönderilmedi. Darphane sonucu onaylayana kadar paralar bekletiliyor. Ödeme gerçekleştiyse kilitli token, teslim etmen için Etkinlik'te görünür. Gerçekleşmediyse paralar geri gelir.",
   "wallet.svc.send_spent_by_swap":
     "Bu paralar, jeton alınmadan önce cüzdanına geri takas edildi, bu yüzden artık alınamaz. Tutar bakiyende.",
+  "wallet.svc.payment_in_doubt_body":
+    "Darphane sonucu onaylayana kadar paralar bekletiliyor; bu, bir sonraki yenilemede yeniden kontrol edilir. O zamana kadar bu faturayı yeniden ödeme.",
+  "wallet.svc.mint_removed":
+    "Bu darphaneyi kaldırdın, bu yüzden bu artık izlenmiyor.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR ile doğrulandı",
@@ -1715,7 +1835,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "O bitchat kodunun süresi dolmuş. QR kodlarını yeniden açmalarını iste.",
   "contacts.scan.tampered":
-    "Bu QR kod geçersiz: eş kimliği anahtarlarıyla uyuşmuyor. Kurcalanmış olabilir.",
+    "Bu QR kod geçersiz: anahtarları doğrulanamıyor. Kurcalanmış olabilir.",
   "contacts.scan.key_conflict":
     "Bu kişi için zaten farklı bir anahtarın var, bu yüzden hiçbir şey değişmedi. Değiştirmek için kodunu yüz yüze tara.",
   "contacts.scan.already_added": "Zaten kişilerinde",
@@ -1738,7 +1858,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "Bu QR başka birine ait. {name} kişisinden kendi kodunu göstermesini iste.",
   "contacts.verify.tampered_body":
-    "Bu QR kurcalanmış görünüyor: kimliği anahtarıyla uyuşmuyor.",
+    "Bu QR kurcalanmış görünüyor: anahtarları doğrulanamıyor.",
   "contacts.verify.choose_title": "Nasıl denetlemek istersin?",
   "contacts.verify.choose_body":
     "İkisi de bu telefondaki anahtarların gerçekten {name} kişisine ait olduğunu doğrular.",
@@ -1852,6 +1972,8 @@ export const strings: Strings = {
   "settings.diag.share": "Tanılamayı paylaş",
   "settings.diag.share_desc":
     "Hata raporu için bağlantı ve ayar ayrıntıları. Mesajlar, adlar ve anahtarlar hariç tutulur.",
+  "settings.diag.share_fallback":
+    "Paylaşım açılamadı. Bunun yerine rapor kopyalandı.",
   "settings.section.storage_desc": "Kullanım ve önbellek",
   "settings.section.appearance": "Görünüm",
   "settings.section.appearance_desc": "Tema, yazı tipi ve dil",
@@ -1896,6 +2018,9 @@ export const strings: Strings = {
   "settings.general.show_media": "Medyayı otomatik göster",
   "settings.general.show_media_desc":
     "Fotoğraflar ve videolar sohbette görünür ya da bir dokunuşun ardında bekler",
+  "settings.general.spam_filter": "Spam filtresi",
+  "settings.general.spam_filter_desc":
+    "Çok hızlı yazan, kendini tekrarlayan veya bağlantı yağdıran kişilerin herkese açık mesajlarını gizler. Özel mesajlar asla filtrelenmez.",
   "settings.general.reset": "Ayarları sıfırla",
   "settings.general.media_retention": "Medyayı şu kadar sakla",
   "settings.general.media_retention_desc":
@@ -1912,7 +2037,7 @@ export const strings: Strings = {
     "Tercihleri varsayılanlarına döndürür; kimliğine, mesajlarına, kişilerine ve cüzdanına dokunmaz",
   "settings.general.reset_title": "Ayarlar sıfırlansın mı?",
   "settings.general.reset_body":
-    "Görünüm, dil, bildirimler, göndermeyi geri alma ve bağlantı (internet, Tor, geçit, köprü, aktarıcılar) dahil tercihler varsayılanlarına döner. Airhop kilidi, medyanın ne kadar saklanacağı ve durumun ayarladığın gibi kalır. Kimliğin, mesajların, kişilerin ve cüzdanın dokunulmadan kalır.",
+    "Görünüm, dil, bildirimler, göndermeyi geri alma ve bağlantı (geçit, mesh köprüsü, aktarıcılar) dahil tercihler varsayılanlarına döner. Airhop kilidi, medyanın ne kadar saklanacağı, internet anahtarı, Tor ve köprüleri ile durumun ayarladığın gibi kalır. Kimliğin, mesajların, kişilerin ve cüzdanın dokunulmadan kalır.",
   "settings.general.reset_confirm": "Sıfırla",
 
   // ---- Settings: privacy and security ----
@@ -2048,6 +2173,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "Canlı ses kapatılsın mı?",
   "settings.conn.live_voice_off_body":
     "Mikrofonu basılı tutmak bunun yerine sesli not kaydeder. Bıraktığında gönderilir ve oynatana kadar kimse duymaz.",
+  "settings.conn.live_video": "Canlı video",
+  "settings.conn.live_video_desc":
+    "Kameranı yakındaki kişilere yayınla ve onlarınkini izle",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor yönlendirmesi",
   "settings.conn.tor_desc":
@@ -2063,6 +2191,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "Tor henüz bağlanmadı. Açık kalır ve denemeyi sürdürür; Mesh sekmesi yönlendirmenin başladığını ya da bu ağın engellediğini söyleyecek.",
   "settings.conn.tor_failed": "Tor başlatılamadı. Birazdan yeniden dene.",
+  "settings.conn.tor_bad_bridges":
+    "Tor bu köprü satırlarını kullanamadı. Satırları kontrol et ya da başka bir bağlantı seç.",
+  "settings.conn.tor_port_busy":
+    "Tor'un ihtiyaç duyduğu bağlantı noktasını başka bir uygulama kullanıyor, çoğu zaman Tor çalıştıran başka bir uygulama. Onu kapat, sonra yeniden dene.",
   "settings.tor.status": "Tor durumu",
   "settings.tor.connection": "Bağlantı",
   "settings.tor.mode_off": "Doğrudan",
@@ -2074,7 +2206,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor kullandığını gizler. Snowflake'ten hızlıdır, ancak bu köprüler herkese açıktır ve bazı ağlar engeller.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "Sıradan bir web sitesi ziyareti gibi görünerek Tor kullandığını gizler. Diğerlerinden daha zor engellenir.",
   "settings.tor.mode_custom": "Kendi köprülerin",
@@ -2210,6 +2342,8 @@ export const strings: Strings = {
   "settings.language.pending": "Bir sonraki açılışta",
   "settings.language.pending_a11y":
     "{value}, Airhop'u bir sonraki açışında geçerli olur",
+  "settings.language.phone": "Telefon dili",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "Şimdi yeniden aç",
   "settings.language.rtl_title": "Bitirmek için Airhop'u yeniden aç",
   "settings.language.rtl_body":
@@ -2226,7 +2360,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "Mesh duraklatıldı, tarama ve yayın yok",
   "settings.status.invisible": "Görünmez",
   "settings.status.invisible_desc":
-    "Bluetooth taramalarında gizli, bağlandığın telefonlar seni hâlâ görür",
+    "Bluetooth üzerinden yayın yapmaz, ama bu telefonun Bluetooth ya da Wi-Fi ile bağlandığı telefonlar seni yine görür",
   "settings.status.title": "Durum",
   "settings.status.set_a11y": "Durumu {value} yap",
   "settings.status.edit": "Durumu düzenle",
@@ -2506,6 +2640,11 @@ export const plurals: Plurals = {
     one: "{count} mesajı ilet",
     other: "{count} mesajı ilet",
   },
+  "chat.forward.too_many_public": {
+    one: "Herkese açık bir oda bir kişiden art arda yalnızca {count} mesaj gösterir, bu yüzden kalanı kaybolur. Bir seferde daha az ilet.",
+    other:
+      "Herkese açık bir oda bir kişiden art arda yalnızca {count} mesaj gösterir, bu yüzden kalanı kaybolur. Bir seferde daha az ilet.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} kişi konuşuyor",
     other: "{count} kişi konuşuyor",
@@ -2589,14 +2728,14 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint}, {count} jeton içinde {balance} {unit} tutuyor. Kaldırmak bu bakiyeyi bu cihazdan kalıcı olarak siler ve yedeği yoktur. Önce bakiyeyi çek ya da gönder.",
-    other:
-      "{mint}, {count} jeton içinde {balance} {unit} tutuyor. Kaldırmak bu bakiyeyi bu cihazdan kalıcı olarak siler ve yedeği yoktur. Önce bakiyeyi çek ya da gönder.",
-  },
   "wallet.mint.split_across": {
     one: "Bakiye {count} darphaneye bölünmüş. Tek bir yere taşı.",
     other: "Bakiye {count} darphaneye bölünmüş. Tek bir yere taşı.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{mint} üzerindeki {count} ödeme henüz sonuçlanmadı. Darphaneyi kaldırırsan bu ödemeden, hâlâ geri getirebileceği her şeyle birlikte vazgeçmiş olursun.",
+    other:
+      "{mint} üzerindeki {count} ödeme henüz sonuçlanmadı. Darphaneyi kaldırırsan bu ödemelerden, hâlâ geri getirebilecekleri her şeyle birlikte vazgeçmiş olursun.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2610,6 +2749,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "{mints} kaynağından {count} harcanmamış jeton kurtarıldı.",
     other: "{mints} kaynağından {count} harcanmamış jeton kurtarıldı.",
+  },
+  "wallet.backup.already_held": {
+    one: "Bulunan {count} jeton zaten bu cüzdanda, bu yüzden yeniden sayılmadı.",
+    other:
+      "Bulunan {count} jeton zaten bu cüzdanda, bu yüzden yeniden sayılmadı.",
   },
   "wallet.backup.already_spent": {
     one: "{count} jeton bulundu ama zaten harcanmıştı, bu yüzden hiçbir şey yazılmadı. Bu normaldir: şimdiye kadar harcadığın her jeton darphanenin tuttuğu kayıtlarda görünmeye devam eder.",

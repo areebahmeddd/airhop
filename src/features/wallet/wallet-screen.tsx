@@ -57,6 +57,7 @@ import {
   getRecoveryPhrase,
   hostOf,
   markBackupVerified,
+  mintHoldings,
   mintNetworkBlock,
   payLightningInvoice,
   prepareSend,
@@ -64,6 +65,7 @@ import {
   quoteSend,
   reconcile,
   refreshAccount,
+  removeMint,
   restoreFromRecoveryPhrase,
   settleReclaim,
   staleFeeDays,
@@ -91,6 +93,7 @@ import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import CopyGlyph from "@ui/components/copy-glyph";
 import PixelBird, { BIRD_ROWS } from "@ui/components/pixel-bird";
+import PrimaryButton from "@ui/components/primary-button";
 import UpperText from "@ui/components/upper-text";
 import { useBirdFlap } from "@ui/hooks/use-bird-flap";
 import { useCopy } from "@ui/hooks/use-copy";
@@ -514,6 +517,11 @@ export default function WalletScreen({
 
   // The service carries the "why" in `detail`; this only picks the title.
   const reportError = useCallback((err: unknown, fallbackTitle: string) => {
+    // A code's title ("Mint refused") would contradict "nobody knows yet".
+    if (err instanceof WalletError && err.inDoubt) {
+      showAlert(err.message, err.detail ?? "");
+      return;
+    }
     if (err instanceof WalletError) {
       const titles: Record<string, string> = {
         locked: t("wallet.err.locked"),
@@ -714,6 +722,8 @@ export default function WalletScreen({
             unit: primary.unit,
             memo: sendMemo.trim() || undefined,
             allowInexact,
+            // The alert named this spend; a re-quote taking more is refused.
+            ...(allowInexact ? { maxSpend: quote.spend } : {}),
           });
           setShowSend(false);
           setSendAmount("");
@@ -1104,24 +1114,40 @@ export default function WalletScreen({
     ]);
   }
 
+  // Removal takes every unit at the mint and abandons its unsettled payments,
+  // so the confirm counts them all, not the one row that was tapped.
   function handleRemoveMint(account: AccountBalance): void {
-    const hasValue = account.balance > 0 || account.reserved > 0;
-    const balanceShown = amountParts(account.balance, account.unit);
+    const mint = hostOf(account.mintUrl);
+    const { held, pending } = mintHoldings(account.mintUrl);
+    const hasValue = held.length > 0 || pending > 0;
+    const parts = [
+      ...(held.length > 0
+        ? [
+            t("wallet.mint.remove_holdings", {
+              mint,
+              holdings: held
+                .map((h) =>
+                  t("wallet.ln.amount_unit", amountParts(h.amount, h.unit)),
+                )
+                .join("\n"),
+            }),
+          ]
+        : []),
+      ...(pending > 0
+        ? [tPlural("wallet.mint.remove_pending", pending, { mint })]
+        : []),
+    ];
     showAlert(
-      hasValue ? t("wallet.mint.remove_with_balance") : t("wallet.mint.remove"),
-      hasValue
-        ? tPlural("wallet.mint.remove_body", account.proofCount, {
-            mint: hostOf(account.mintUrl),
-            balance: balanceShown.amount,
-            unit: balanceShown.unit,
-          })
-        : t("wallet.mint.remove_plain", { mint: hostOf(account.mintUrl) }),
+      held.length > 0
+        ? t("wallet.mint.remove_with_balance")
+        : t("wallet.mint.remove"),
+      hasValue ? parts.join("\n\n") : t("wallet.mint.remove_plain", { mint }),
       [
         { text: T("common.cancel"), style: "cancel" },
         {
           text: hasValue ? t("wallet.mint.delete_anyway") : T("common.remove"),
           style: "destructive",
-          onPress: () => useWalletStore.getState().removeMint(account.mintUrl),
+          onPress: () => removeMint(account.mintUrl),
         },
       ],
     );
@@ -1274,10 +1300,11 @@ export default function WalletScreen({
     setBusy("restore");
     setRestoreResult(null);
     try {
+      // Every unit at every mint: a unit left out keeps its coins hidden and
+      // its counters behind what the mint has signed.
       const result = await restoreFromRecoveryPhrase({
         phrase: input,
         mintUrls: mintList.map((m) => m.url),
-        unit: primary.unit,
         onProgress: (progress) =>
           setRestoreProgress(
             t("wallet.backup.restore_progress", {
@@ -2112,7 +2139,10 @@ export default function WalletScreen({
           ]}
         />
         <Pressable
-          style={styles.modalCancel}
+          style={({ pressed }) => [
+            styles.modalCancel,
+            pressed && styles.neutralPressed,
+          ]}
           onPress={() => setChooser(null)}
           accessibilityRole="button"
           accessibilityLabel={T("common.cancel")}
@@ -2159,7 +2189,10 @@ export default function WalletScreen({
           ]}
         />
         <Pressable
-          style={styles.modalCancel}
+          style={({ pressed }) => [
+            styles.modalCancel,
+            pressed && styles.neutralPressed,
+          ]}
           onPress={() => setChooser(null)}
           accessibilityRole="button"
           accessibilityLabel={T("common.cancel")}
@@ -2292,7 +2325,11 @@ export default function WalletScreen({
           )}
 
           <Pressable
-            style={[styles.modalConfirm, styles.pillWithIcon]}
+            style={({ pressed }) => [
+              styles.modalConfirm,
+              styles.pillWithIcon,
+              pressed && styles.accentPressed,
+            ]}
             onPress={() => switchSheet(() => setShowAddMint(true))}
             accessibilityRole="button"
             accessibilityLabel={T("wallet.mint.add")}
@@ -2301,7 +2338,10 @@ export default function WalletScreen({
             <Text style={styles.modalConfirmText}>{T("wallet.mint.add")}</Text>
           </Pressable>
           <Pressable
-            style={styles.modalCancel}
+            style={({ pressed }) => [
+              styles.modalCancel,
+              pressed && styles.neutralPressed,
+            ]}
             onPress={() => setShowMints(false)}
             accessibilityRole="button"
             accessibilityLabel={T("common.done")}
@@ -2745,7 +2785,10 @@ export default function WalletScreen({
         </ScrollView>
         <View style={styles.modalActions}>
           <Pressable
-            style={styles.modalConfirm}
+            style={({ pressed }) => [
+              styles.modalConfirm,
+              pressed && styles.accentPressed,
+            ]}
             onPress={() => pending && markDelivered(pending.txId)}
             accessibilityRole="button"
             accessibilityLabel={T("wallet.send.mark_delivered")}
@@ -2755,7 +2798,10 @@ export default function WalletScreen({
             </Text>
           </Pressable>
           <Pressable
-            style={styles.modalCancel}
+            style={({ pressed }) => [
+              styles.modalCancel,
+              pressed && styles.neutralPressed,
+            ]}
             onPress={() => setPending(null)}
             accessibilityRole="button"
             accessibilityLabel={T("wallet.send.keep_pending")}
@@ -2922,7 +2968,10 @@ export default function WalletScreen({
             <View style={styles.modalActions}>
               {depositExpired && (
                 <Pressable
-                  style={styles.modalConfirm}
+                  style={({ pressed }) => [
+                    styles.modalConfirm,
+                    pressed && styles.accentPressed,
+                  ]}
                   disabled={busy !== null}
                   onPress={() => {
                     const amount = deposit.amount;
@@ -2939,7 +2988,10 @@ export default function WalletScreen({
               )}
               {/* Borderless, so it does not read as a peer of the actions above. */}
               <Pressable
-                style={styles.modalDismiss}
+                style={({ pressed }) => [
+                  styles.modalDismiss,
+                  pressed && styles.neutralPressed,
+                ]}
                 onPress={() => setShowDeposit(false)}
                 accessibilityRole="button"
                 accessibilityLabel={T("common.close")}
@@ -3135,7 +3187,10 @@ export default function WalletScreen({
               />
             ) : (
               <Pressable
-                style={styles.modalCancel}
+                style={({ pressed }) => [
+                  styles.modalCancel,
+                  pressed && styles.neutralPressed,
+                ]}
                 onPress={closeBackupSheet}
                 accessibilityRole="button"
                 accessibilityLabel={T("common.done")}
@@ -3284,6 +3339,11 @@ export default function WalletScreen({
                   })
                 : T("wallet.backup.nothing_recovered")}
             </Text>
+            {restoreResult.alreadyHeld > 0 && (
+              <Text style={styles.modalSubtitle}>
+                {TP("wallet.backup.already_held", restoreResult.alreadyHeld)}
+              </Text>
+            )}
             {restoreResult.alreadySpent > 0 && (
               <Text style={styles.modalSubtitle}>
                 {TP("wallet.backup.already_spent", restoreResult.alreadySpent)}
@@ -3299,7 +3359,10 @@ export default function WalletScreen({
               </Text>
             )}
             <Pressable
-              style={styles.modalCancel}
+              style={({ pressed }) => [
+                styles.modalCancel,
+                pressed && styles.neutralPressed,
+              ]}
               onPress={() => {
                 setShowRestore(false);
                 setRestoreResult(null);
@@ -3404,7 +3467,10 @@ export default function WalletScreen({
           </Text>
         )}
         <Pressable
-          style={styles.modalCancel}
+          style={({ pressed }) => [
+            styles.modalCancel,
+            pressed && styles.neutralPressed,
+          ]}
           onPress={() => setQrToken(null)}
           accessibilityRole="button"
           accessibilityLabel={T("common.done")}
@@ -3455,7 +3521,10 @@ export default function WalletScreen({
         )}
         <View style={styles.modalActions}>
           <Pressable
-            style={styles.modalCancel}
+            style={({ pressed }) => [
+              styles.modalCancel,
+              pressed && styles.neutralPressed,
+            ]}
             onPress={() => setShowPeerPicker(false)}
             accessibilityRole="button"
             accessibilityLabel={T("common.cancel")}
@@ -3534,26 +3603,12 @@ function SheetActions({
 }): React.JSX.Element {
   return (
     <View style={styles.modalActions}>
-      <Pressable
-        style={[
-          styles.modalConfirm,
-          confirmDisabled && styles.modalConfirmDisabled,
-        ]}
+      <PrimaryButton
+        label={confirmLabel}
         onPress={onConfirm}
         disabled={confirmDisabled}
-        accessibilityRole="button"
-        accessibilityLabel={confirmLabel}
-      >
-        <Text style={styles.modalConfirmText}>{confirmLabel}</Text>
-      </Pressable>
-      <Pressable
-        style={styles.modalCancel}
-        onPress={onCancel}
-        accessibilityRole="button"
-        accessibilityLabel={cancelLabel}
-      >
-        <Text style={styles.modalCancelText}>{cancelLabel}</Text>
-      </Pressable>
+      />
+      <PrimaryButton label={cancelLabel} onPress={onCancel} variant="outline" />
     </View>
   );
 }
@@ -4504,6 +4559,14 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textPrimary,
       fontWeight: FontWeight.semibold,
     },
+    // The pressed states every sheet button shares: a neutral fill darkens,
+    // the accent fill dims, as PrimaryButton's two variants do.
+    neutralPressed: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    accentPressed: {
+      opacity: PRESSED_OPACITY,
+    },
     modalDismiss: {
       width: "100%",
       minHeight: BUTTON_HEIGHT,
@@ -4526,9 +4589,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.full,
       alignItems: "center",
       justifyContent: "center",
-    },
-    modalConfirmDisabled: {
-      opacity: DISABLED_OPACITY,
     },
     modalConfirmText: {
       fontSize: FontSize.base,

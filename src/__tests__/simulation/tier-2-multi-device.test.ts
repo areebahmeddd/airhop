@@ -852,6 +852,215 @@ test("B09 an internet DM shows the contact's name and is acknowledged once", asy
   s.assert();
 });
 
+// What alice's QR scan of bob's card leaves behind: a verified contact with
+// his durable npub, so a DM to him can go over the relays.
+function scanCard(s: Scenario, alice: SimDevice, bob: SimDevice): void {
+  (
+    alice.mesh as unknown as {
+      addVerifiedContact: (card: unknown, opts: unknown) => boolean;
+    }
+  ).addVerifiedContact(
+    {
+      peerID: bob.peerID,
+      noisePubKey: bob.identity.noiseStaticPubKey,
+      signingPubKey: bob.identity.signingPubKey,
+      nickname: "bob",
+      nostrPubKey: hexToBytes(bob.nostrPubkey),
+    },
+    { inPerson: true },
+  );
+  (alice.store("contactsStore").getState().addContact as (c: unknown) => void)({
+    peerID: bob.peerID,
+    noisePubKeyHex: bytesToHex(bob.identity.noiseStaticPubKey),
+    signingPubKeyHex: bytesToHex(bob.identity.signingPubKey),
+    nickname: "bob",
+    addedAtMs: s.world.wallClock(),
+    source: "qr",
+    verifiedAtMs: s.world.wallClock(),
+    nostrPubkeyHex: bob.nostrPubkey,
+  });
+}
+
+function outboxIDs(d: SimDevice): string[] {
+  return (d.store("outboxStore").getState().pending as { id: string }[]).map(
+    (m) => m.id,
+  );
+}
+
+// Every copy of `text` bob shows, across all his threads.
+function copiesOf(d: SimDevice, text: string): number {
+  return Object.values(d.allMessages())
+    .flat()
+    .filter((m) => m.text === text).length;
+}
+
+test("B09b an internet DM to someone offline waits on the relay, never fails, and lands once", async () => {
+  // A relay holds a gift wrap for days, and the inbox reads a week back, so a
+  // recipient who stays offline is not a failed send. The message stays queued
+  // for the receipt, keeps its tick, is not republished on every sweep, and
+  // survives a relaunch.
+  const s = (scenario = new Scenario({
+    id: "B09b",
+    title: "internet DM to an offline contact",
+    seed: 91,
+  }));
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(
+    s.world,
+    { id: "alice", platform: "android", seedByte: 11, internetEnabled: true },
+    relay,
+  );
+  const bob = SimDevice.create(
+    s.world,
+    { id: "bob", platform: "ios", seedByte: 22, internetEnabled: true },
+    relay,
+  );
+  s.track(alice, bob);
+  alice.launch();
+  await waitFor(s.world, () => relay.connectionCount("alice") > 0, 20_000);
+  // Bob's keys exist once his app has run; then his phone goes dark.
+  bob.launch();
+  scanCard(s, alice, bob);
+  const bobNpub = bob.nostrPubkey;
+  bob.kill();
+
+  const thread = `dm:${bob.peerID}`;
+  const wrapsToBob = (): number =>
+    relay
+      .eventsOfKind(1059)
+      .filter((e) => e.tags.some((t) => t[0] === "p" && t[1] === bobNpub))
+      .length;
+  const status = (): string | undefined =>
+    alice.messages(thread).find((m) => m.text === "are you there")?.status;
+
+  alice.send(thread, "are you there");
+  const msgID = alice
+    .messages(thread)
+    .find((m) => m.text === "are you there")?.id;
+  await waitFor(s.world, () => wrapsToBob() > 0, 20_000);
+  s.check(
+    "it waits in the outbox for bob's receipt",
+    msgID !== undefined && outboxIDs(alice).includes(msgID),
+  );
+
+  // Half an hour of sweeps, announces and foregrounds with bob offline.
+  await s.world.advance(30 * 60_000, 1_000);
+  s.check(
+    "a relay holding it is not asked again on every sweep",
+    wrapsToBob() === 1,
+    `wraps=${String(wrapsToBob())}`,
+  );
+  s.check(
+    "its bubble keeps the tick, never failed",
+    status() === "sent",
+    `status=${String(status())}`,
+  );
+
+  alice.kill();
+  alice.relaunch();
+  await waitFor(s.world, () => relay.connectionCount("alice") > 0, 20_000);
+  s.check(
+    "a relaunch keeps it queued",
+    msgID !== undefined && outboxIDs(alice).includes(msgID),
+  );
+
+  bob.relaunch();
+  const landed = await waitFor(
+    s.world,
+    () => copiesOf(bob, "are you there") > 0,
+    60_000,
+  );
+  s.check("bob fetches it from the relay when he comes online", landed);
+  const acked = await waitFor(
+    s.world,
+    () => msgID !== undefined && !outboxIDs(alice).includes(msgID),
+    60_000,
+  );
+  s.check("his receipt resolves alice's entry", acked);
+  s.check(
+    "and her bubble says delivered",
+    status() === "delivered" || status() === "read",
+    `status=${String(status())}`,
+  );
+  s.check(
+    "bob shows it once",
+    copiesOf(bob, "are you there") === 1,
+    `copies=${String(copiesOf(bob, "are you there"))}`,
+  );
+
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+test("B09c a DM a relay holds goes over Bluetooth when they walk into range, and shows once", async () => {
+  // Bob has no internet, so the relay copy waits. When he walks into range the
+  // next flush prefers the radio, and the relay copy he fetches later
+  // collapses on its message id.
+  const s = (scenario = new Scenario({
+    id: "B09c",
+    title: "relay-queued DM delivered over BLE",
+    seed: 92,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(
+    s.world,
+    { id: "alice", platform: "android", seedByte: 11, internetEnabled: true },
+    relay,
+  );
+  const bob = SimDevice.create(
+    s.world,
+    { id: "bob", platform: "android", seedByte: 22, internetEnabled: false },
+    relay,
+  );
+  radio.add(alice);
+  radio.add(bob);
+  s.track(alice, bob);
+  radio.setIsolated(bob.id, true);
+  alice.launch();
+  bob.launch();
+  await waitFor(s.world, () => relay.connectionCount("alice") > 0, 20_000);
+  scanCard(s, alice, bob);
+
+  const thread = `dm:${bob.peerID}`;
+  alice.send(thread, "walk this way");
+  const msgID = alice
+    .messages(thread)
+    .find((m) => m.text === "walk this way")?.id;
+  await s.world.advance(5_000);
+  s.check(
+    "the relay copy waits in the outbox",
+    msgID !== undefined && outboxIDs(alice).includes(msgID),
+  );
+
+  radio.setIsolated(bob.id, false);
+  const overRadio = await waitFor(
+    s.world,
+    () => copiesOf(bob, "walk this way") > 0,
+    60_000,
+  );
+  s.check("bob gets it over Bluetooth", overRadio);
+  const acked = await waitFor(
+    s.world,
+    () => msgID !== undefined && !outboxIDs(alice).includes(msgID),
+    30_000,
+  );
+  s.check("his radio receipt resolves the entry", acked);
+
+  bob.setSetting("internetEnabled", true);
+  await waitFor(s.world, () => relay.connectionCount("bob") > 0, 20_000);
+  await s.world.advance(20_000);
+  s.check(
+    "the relay copy he fetches later collapses into the one he has",
+    copiesOf(bob, "walk this way") === 1,
+    `copies=${String(copiesOf(bob, "walk this way"))}`,
+  );
+
+  s.expectNone("rendered once", exactlyOnce([alice, bob]));
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
 test("B10 a frame that lands after its link closed does not bring the peer back", async () => {
   // Android delivers GATT callbacks on binder threads, so a frame and the
   // disconnect after it can reach JS in either order. Reopening the link for

@@ -24,6 +24,11 @@ import {
   FileTransferService,
   INCOMING_FILE_PREFIX,
 } from "../file-transfer-service";
+import { sweepMediaIfDue } from "../media-retention";
+
+// When the sweep is due is media-retention.test.ts; here only that a received
+// file asks.
+jest.mock("../media-retention", () => ({ sweepMediaIfDue: jest.fn() }));
 
 // The service only touches expo-file-system on the RECEIVE path: one flat
 // in-memory cache directory, named files, and a switch to make writes fail.
@@ -732,6 +737,16 @@ describe("receiving a file", () => {
     expect(names).toHaveLength(1);
     expect(names[0].startsWith(INCOMING_FILE_PREFIX)).toBe(true);
     expect(useChatStore.getState().messages["#bluetooth"]).toHaveLength(1);
+  });
+
+  // A phone receiving in the background for weeks never returns to the app,
+  // where the retention sweep otherwise runs.
+  it("asks for the retention sweep as a received file is stored", async () => {
+    (sweepMediaIfDue as jest.Mock).mockClear();
+    useChatStore.getState().addChannel("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    expect(sweepMediaIfDue).toHaveBeenCalledTimes(1);
   });
 
   // The shown name is the sender's word; nothing in it may disguise what it is.

@@ -80,7 +80,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "உங்கள் சாவிகளை உருவாக்க முடியவில்லை",
   "onboarding.identity.failed_body":
     "அவற்றைப் பாதுகாப்பாக வைத்திருக்க இந்தச் சாதனம் Airhop ஐ அனுமதிக்கவில்லை. மீண்டும் முயலுங்கள், அல்லது தொலைபேசியை மறுதொடக்கம் செய்து Airhop ஐ மீண்டும் திறங்கள்.",
-  "onboarding.identity.steps_a11y": "படிகள்: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "படிகள்: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519":
     "நிலையான X25519 சாவி இணை உருவாக்கப்படுகிறது",
   "onboarding.identity.step.ed25519":
@@ -92,8 +93,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "மெஷில் உங்கள் பெயர்",
   "onboarding.username.peer_id": "பியர் அடையாளம்",
-  "onboarding.username.card_a11y":
-    "மெஷில் உங்கள் பெயர் {username}. பியர் அடையாளம் {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "மெஷில் உங்கள் பெயர் {username}. பியர் அடையாளம் {peerID}. நெறிமுறை: {algorithm}. சேமிப்பு: {storage}. கணக்கு தேவை: {account}.",
   "onboarding.username.explanation":
     "இந்தப் பயனர் பெயர் உங்கள் பொதுச் சாவியிலிருந்து உறுதியாகப் பெறப்படுகிறது. உங்கள் பியர் அடையாளத்தைக் காணும் ஒவ்வொரு சாதனத்திலும் இது ஒன்றாகவே இருக்கும்.",
   "onboarding.username.cta": "Airhop இல் நுழையுங்கள்",
@@ -165,7 +166,7 @@ export const strings: Strings = {
     "அருகிலுள்ள சாதனங்களைக் கண்டறிந்து அவற்றுக்கு இடையே செய்திகளைக் கடத்துகிறது. மெஷ் இப்படித்தான் உருவாகிறது, இணையம் இல்லாமலும் இது இயங்கும்.",
   "onboarding.primer.location.title": "இடம்",
   "onboarding.primer.location.body":
-    "ஒரு தெருவிலிருந்து ஒரு பகுதி வரை, அருகிலுள்ள பகுதிச் சேனல்களில் உங்களை வைக்கிறது. Airhop உங்களை ஒருபோதும் கண்காணிப்பதில்லை, உங்கள் சரியான இடத்தைச் சாதனத்திற்கு வெளியே அனுப்புவதுமில்லை.",
+    "ஒரு தெருவிலிருந்து ஒரு பகுதி வரை, அருகிலுள்ள பகுதிச் சேனல்களில் உங்களை வைக்கிறது. Airhop உங்களை ஒருபோதும் கண்காணிப்பதில்லை, நீங்கள் ஒருவருக்கு இடக் குறியை அனுப்பும்போது மட்டுமே உங்கள் சரியான இடம் சாதனத்தை விட்டு வெளியேறும்.",
   "onboarding.primer.notifications.title": "அறிவிப்புகள்",
   "onboarding.primer.notifications.body":
     "செயலி மூடியிருந்தாலும் புதிய செய்திகளுக்கான அறிவிப்புகளைப் பெறுங்கள். அறிவிப்புகள் உங்கள் சாதனத்திலேயே உருவாக்கப்படுகின்றன, எந்தச் சேவையகமும் சம்பந்தப்படுவதில்லை.",
@@ -176,6 +177,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "புளூடூத் அணுகல்",
   "permission.bluetooth.purpose": "மெஷ் வழியாக அருகிலுள்ள சாதனங்களைக் கண்டறிய",
+  "permission.location.label": "இட அணுகல்",
+  "permission.location.purpose": "புளூடூத் வரம்பைத் தாண்டி இடச் சேனல்களை அடைய",
   "permission.open_settings": "அமைப்புகளைத் திற",
   "permission.not_now": "இப்போது வேண்டாம்",
   "permission.blocked_title": "{label} முடக்கப்பட்டுள்ளது",
@@ -238,8 +241,7 @@ export const strings: Strings = {
   "chat.dm.row_hint": "மேலும் தேர்வுகளுக்கு இருமுறை தட்டிப் பிடித்திருங்கள்",
   "chat.channels.row_hint":
     "மேலும் தேர்வுகளுக்கு இருமுறை தட்டிப் பிடித்திருங்கள்",
-  "chat.dm.you_prefix": "நீங்கள்:",
-  "chat.draft_prefix": "வரைவு:",
+  "chat.draft_preview": "வரைவு: {draft}",
   "chat.dm.none": "நேரடிச் செய்திகள் இல்லை",
   "chat.dm.none_desc":
     "குறியாக்கம் செய்யப்பட்ட நேரடிச் செய்தியைத் தொடங்க மெஷ் தாவலுக்குச் சென்று ஒரு பியரைத் தட்டுங்கள்.",
@@ -257,6 +259,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "{name} க்கான மேலும் தேர்வுகள்",
   "chat.dm.remove_contact_short": "தொடர்பை அகற்று",
   "chat.dm.block_short": "தொடர்பைத் தடு",
+  "chat.dm.signing_key_refused":
+    "யாரோ {name}-க்கு வேறு சாவியைக் காட்டினார், Airhop அதை மறுத்தது. இந்த அரட்டை ஏற்கெனவே இருந்த சாவியையே வைத்திருக்கிறது.",
   "chat.dm.delete_short": "அரட்டையை நீக்கு",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -342,6 +346,9 @@ export const strings: Strings = {
   "chat.jump.failed":
     "அந்தக் கட்டத்தைத் திறக்க முடியவில்லை. சற்று நேரத்தில் மீண்டும் முயலுங்கள்.",
   "chat.jump.title": "ஓர் இடத்துக்குச் செல்",
+  "chat.jump.globe": "உலக உருண்டையில் தேர்ந்தெடு",
+  "chat.jump.globe_note":
+    "எந்த இடத்துக்கும் சுழற்று. இணையம் இல்லாமலும் இயங்கும்.",
   "chat.jump.saved": "சேமித்த இடங்கள்",
   "chat.jump.nearby": "அருகில்",
   "chat.jump.anywhere":
@@ -374,6 +381,16 @@ export const strings: Strings = {
   "chat.jump.go": "செல்",
   "chat.jump.how":
     "geohash ஐக் கண்டறிய: ஓர் இடச் சேனலைத் திறங்கள் > அதன் பெயரைத் தட்டுங்கள் > அங்கிருந்து நகலெடுங்கள்.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "சுழற்ற இழு · பெரிதாக்கக் கிள்ளு · மையப்படுத்தத் தட்டு",
+  "chat.globe.zoom_in": "கட்டத்தைத் தேர்ந்தெடுக்கப் பெரிதாக்கு",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "{cell}-க்குச் செல்",
+  "chat.globe.larger": "பெரிய கட்டம்",
+  "chat.globe.smaller": "சிறிய கட்டம்",
+  "chat.globe.label": "உலக உருண்டை, மையத்தில் {cell}",
+  "chat.globe.adjust": "கட்டத்தின் அளவை மாற்ற மேலே அல்லது கீழே தேய்",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -449,6 +466,8 @@ export const strings: Strings = {
   "chat.thread.public_channel": "பொது சேனல்",
   "chat.thread.notices": "இந்தச் சேனலின் பலகைப் பதிவுகள்",
   "chat.thread.invite": "இந்தச் சேனலுக்கு ஒருவரை அழை",
+  "chat.thread.location_off":
+    "இடம் முடக்கம் · அருகிலுள்ளவர்களை மட்டுமே அடைகிறது",
   "chat.thread.not_in_range":
     "அருகில் இல்லை. இணையம் வழியாகச் சேர்ப்பிக்கப்படுகிறது.",
   "chat.thread.not_nearby":
@@ -478,7 +497,7 @@ export const strings: Strings = {
   "chat.thread.message_placeholder": "செய்தி…",
   "chat.thread.length_full": "செய்தி நிரம்பிவிட்டது",
   "chat.thread.waiting_for":
-    "{name} திரும்புவதற்குக் காத்திருக்கிறது · {percent}%",
+    "{name} திரும்புவதற்குக் காத்திருக்கிறது · {percent}",
   "chat.transfer.progress": "{total} இல் {done}",
   "chat.transfer.speed": "{size}/வி",
   "chat.transfer.left": "{time} மீதம்",
@@ -533,7 +552,6 @@ export const strings: Strings = {
   "chat.screenshot.you_took": "நீங்கள் திரைப்பிடிப்பு எடுத்தீர்கள்",
   "chat.screenshot.you_took_private":
     "நீங்கள் திரைப்பிடிப்பு எடுத்தீர்கள் · யாருக்கும் சொல்லப்படவில்லை",
-  "chat.screenshot.heads_up": "கவனம்",
   "chat.screenshot.peer_took": "{name} திரைப்பிடிப்பு எடுத்தார்",
   "chat.screenshot.notified_dm":
     "இந்த உரையாடலின் திரைப்பிடிப்பை நீங்கள் எடுத்ததாக {name} க்குத் தெரிவிக்கப்பட்டது.",
@@ -547,8 +565,13 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "{name} இன் சுயவிவரத்தைப் பார்",
   "chat.bubble.forwarded": "முன்னனுப்பப்பட்டது",
   "chat.bubble.attachment": "இணைப்பு",
-  "chat.bubble.a11y":
-    "{sender}: {body}. மேலும் தேர்வுகளுக்கு நீண்ட நேரம் அழுத்துங்கள்.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint":
+    "மேலும் தேர்வுகளுக்கு இருமுறை தட்டிப் பிடித்திருங்கள்",
+  "chat.bubble.more_options": "மேலும் தேர்வுகள்",
+  "chat.bubble.open_link": "{link} ஐத் திற",
+  "chat.bubble.status_delivered": "சேர்ப்பிக்கப்பட்டது",
+  "chat.bubble.status_read": "படிக்கப்பட்டது",
   "chat.bubble.failed_retry": "அனுப்ப முடியவில்லை. மீண்டும் முயலத் தட்டுங்கள்.",
 
   // ---- Chats: message actions and info ----
@@ -576,6 +599,8 @@ export const strings: Strings = {
   "chat.attach.camera": "கேமரா",
   "chat.attach.camera_desc": "புகைப்படமோ வீடியோவோ எடு",
   "chat.attach.camera_desc_photo": "புகைப்படம் எடுக்கவும்",
+  "chat.attach.video": "வீடியோ பதிவுசெய்",
+  "chat.attach.video_desc": "சிறிய கிளிப்பைப் பதிவுசெய்யுங்கள்",
   "chat.attach.library": "புகைப்படத் தொகுப்பு",
   "chat.attach.library_desc": "உங்கள் தொகுப்பிலிருந்து தேர்ந்தெடுங்கள்",
   "chat.attach.document": "ஆவணம்",
@@ -587,6 +612,9 @@ export const strings: Strings = {
   "chat.attach.location": "இடம்",
   "chat.attach.location_desc":
     "நீங்கள் இப்போது எங்கே இருக்கிறீர்கள் என்பதை அனுப்புங்கள்",
+  "chat.attach.live": "நேரலைக்குச் செல்",
+  "chat.attach.live_desc":
+    "அருகிலுள்ளவர்களுக்கு உங்கள் கேமராவை நேரலையாக்குங்கள்",
   "chat.attach.title": "இணை",
 
   // ---- Chat: location pin ----
@@ -648,6 +676,21 @@ export const strings: Strings = {
   "chat.attach.caption": "விளக்கம் சேருங்கள்…",
   "chat.attach.send": "இணைப்பை அனுப்பு",
   "chat.attach.generic": "இணைப்பு",
+  "chat.video_prep.preparing": "வீடியோ தயாராகிறது",
+  "chat.video_prep.waiting": "வீடியோவைத் தயாரிக்கக் காத்திருக்கிறது",
+  "chat.video_prep.cancel": "இந்த வீடியோவைத் தயாரிப்பதை நிறுத்து",
+  "chat.video_prep.too_large":
+    "இந்த வீடியோவை அனுப்பும் அளவுக்குச் சிறியதாக்க முடியவில்லை.",
+  "chat.video_prep.unreadable":
+    "இந்த வீடியோவைத் திறக்க முடியவில்லை. வேறொன்றை முயலுங்கள்.",
+  "chat.video_prep.failed":
+    "அந்த வீடியோவைத் தயாரிப்பதில் ஏதோ தவறாகிவிட்டது. மீண்டும் முயலுங்கள்.",
+  "chat.video_prep.interrupted":
+    "வீடியோ தயாராகும் முன்பே Airhop-ஐ விட்டு வெளியேறினீர்கள். மீண்டும் அனுப்ப முயலுங்கள்.",
+  "chat.trim.play": "முன்னோட்டத்தை இயக்கு",
+  "chat.trim.pause": "முன்னோட்டத்தை இடைநிறுத்து",
+  "chat.trim.start": "கிளிப்பின் தொடக்கம்",
+  "chat.trim.end": "கிளிப்பின் முடிவு",
   "chat.media.view_full": "புகைப்படத்தை முழுத் திரையில் பார்",
   "chat.media.gone_photo": "புகைப்படம் இந்தச் சாதனத்தில் இல்லை",
   "chat.media.gone_video": "வீடியோ இந்தச் சாதனத்தில் இல்லை",
@@ -663,6 +706,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "அந்தக் கோப்பை",
   "chat.media.pause_voice": "குரல் குறிப்பை இடைநிறுத்து",
   "chat.media.play_voice": "குரல் குறிப்பை இயக்கு",
+  "chat.media.pause_video": "வீடியோவை இடைநிறுத்து",
+  "chat.media.play_video": "வீடியோவை இயக்கு",
   "chat.media.voice_position": "குரல் குறிப்பில் இடம்",
   "chat.media.voice_scrub":
     "அந்தப் புள்ளிக்குச் செல்லக் கோடுகளின் மேல் தட்டுங்கள்",
@@ -706,6 +751,54 @@ export const strings: Strings = {
   "chat.voice.limit_sent":
     "இரண்டு நிமிட வரம்பு எட்டப்பட்டது, குறிப்பு அனுப்பப்பட்டது",
   "chat.voice.stop_send": "பதிவை நிறுத்தி அனுப்பு",
+  "chat.video_note.hold": "வீடியோ குறிப்பைப் பதிவுசெய்ய அழுத்திப் பிடிக்கவும்",
+  "chat.video_note.a11y_toggle":
+    "பதிவைத் தொடங்க அல்லது நிறுத்த இருமுறை தட்டவும்.",
+  "chat.video_note.not_recorded": "வீடியோ குறிப்பு பதிவாகவில்லை",
+  "chat.video_note.limit_sent":
+    "நேரம் முடிந்தது, வீடியோ குறிப்பு அனுப்பப்பட்டது",
+  "chat.video_note.a11y": "வீடியோ குறிப்பு, ஒலிக்கு இருமுறை தட்டவும்",
+  "chat.video_note.sound_on": "ஒலியை இயக்கு",
+  "chat.video_note.sound_off": "ஒலியை முடக்கு",
+  "chat.live_video.preview": "நேரலை வீடியோ",
+  "chat.live_video.badge": "நேரலை",
+  "chat.live_video.reconnecting": "மீண்டும் இணைக்கிறது…",
+  "chat.live_video.a11y":
+    "{name} நேரலையில் உள்ளார். பார்க்க இருமுறை தட்டுங்கள்.",
+  "chat.live_video.live_from": "{name} நேரலையில் உள்ளார்",
+  "chat.live_video.sound": "ஒலி",
+  "chat.live_video.ended": "நேரலை முடிந்தது",
+  "chat.live_video.title": "நேரலை வீடியோ",
+  "chat.live_video.go_live": "நேரலைக்குச் செல்",
+  "chat.live_video.end": "முடி",
+  "chat.live_video.end_title": "நேரலை வீடியோவை முடிக்கவா?",
+  "chat.live_video.end_body":
+    "முடித்தால் பதிவு இந்த உரையாடலிலேயே இருக்கும். நிராகரித்தால் பார்க்கும் அனைவரிடமும் அதை அழிக்கச் சொல்லப்படும்.",
+  "chat.live_video.discard": "நிராகரி",
+  "chat.live_video.keep": "நேரலையைத் தொடர்",
+  "chat.live_video.audience_room":
+    "புளூடூத் வரம்பில் உள்ள அனைவரும் பார்க்கலாம்.",
+  "chat.live_video.audience_dm": "{name} மட்டுமே பார்க்க முடியும்.",
+  "chat.live_video.nobody": "இப்போது பார்க்க வரம்பில் யாரும் இல்லை.",
+  "chat.live_video.quality_low": "குறைவு",
+  "chat.live_video.quality_medium": "நடுத்தரம்",
+  "chat.live_video.quality_high": "அதிகம்",
+  "chat.live_video.quality_low_hint": "பல ஹாப் தொலைவில் உள்ளவர்களை அடையும்",
+  "chat.live_video.quality_medium_hint":
+    "ஒன்று அல்லது இரண்டு ஹாப் தொலைவில் உள்ளவர்களுக்கு",
+  "chat.live_video.quality_high_hint": "உங்கள் அருகிலேயே உள்ளவர்களுக்கு",
+  "chat.live_video.signal_good": "சரியாகச் செல்கிறது",
+  "chat.live_video.signal_weak": "பின்தங்குகிறது",
+  "chat.live_video.signal_poor":
+    "வீடியோவுக்கு மிக மெதுவாக உள்ளது, ஒலி மட்டும் அனுப்பப்படுகிறது",
+  "chat.live_video.mic": "மைக்ரோஃபோன்",
+  "chat.live_video.no_sound": "ஒலி இல்லை",
+  "chat.live_video.flip": "கேமராவை மாற்று",
+  "chat.live_video.camera_failed": "கேமராவைத் திறக்க முடியவில்லை",
+  "chat.live_video.camera_lost": "கேமரா நின்றதால் நேரலை முடிந்தது",
+  "chat.live_video.failed": "நேரலைக்குச் செல்ல முடியவில்லை",
+  "chat.live_video.kept_here":
+    "கோப்பாக அனுப்ப மிக நீளமானது. பார்த்த ஒவ்வொருவரிடமும் அவரவர் நகல் இருக்கும்.",
   "chat.voice.lift_lock": "கை விடுவித்துப் பதிவுசெய்ய மேலே நகர்த்துங்கள்",
   "chat.voice.live_speaking": "{name} பேசுகிறார்",
   "chat.voice.live_ended": "முடிந்தது",
@@ -721,6 +814,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "ஒலிவாங்கி அணுகல்",
   "chat.perm.mic_live_purpose": "அருகிலுள்ளவர்களுடன் பேச",
   "chat.perm.mic_note_purpose": "ஒரு குரல் குறிப்பைப் பதிவுசெய்ய",
+  "chat.perm.video_note_purpose": "வீடியோ குறிப்பைப் பதிவுசெய்ய",
+  "chat.perm.live_video_purpose": "நேரலைக்குச் செல்ல",
   "chat.perm.recording_stopped": "பதிவு நிறுத்தப்பட்டது",
   "chat.perm.record_failed":
     "பதிவைத் தொடங்க முடியவில்லை. ஒலிவாங்கி அனுமதிகளைச் சரிபாருங்கள்.",
@@ -855,6 +950,10 @@ export const strings: Strings = {
   "chat.notices.post": "பலகைப் பதிவை இடு",
   "chat.notices.post_short": "இடு",
   "chat.notices.delete": "பலகைப் பதிவை நீக்கு",
+  "chat.notices.delete_title": "இந்தப் பலகைப் பதிவை நீக்கவா?",
+  "chat.notices.delete_body":
+    "இதை வைத்திருக்கும் அனைவரும் இதை அகற்றுமாறு கேட்கப்படுவார்கள். இதைச் செயல்தவிர்க்க முடியாது.",
+  "chat.notices.permanent": "நிரந்தரம்",
   "chat.notices.fades_soon": "விரைவில் மறையும்",
   "chat.notices.1_day": "1 நாள்",
   "chat.notices.3_days": "3 நாட்கள்",
@@ -926,6 +1025,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "{name} க்கு முன்னனுப்ப முடியாது",
   "chat.forward.too_long_for_dm":
     "நேரடிச் செய்திக்கு மிக நீளமானது. அதற்குப் பதிலாக ஒரு சேனல் அல்லது குழுவுக்கு முன்னனுப்புங்கள்.",
+  "chat.forward.too_long_for_public":
+    "பொது அறைக்கு மிக நீளம், அங்கு இது ஸ்பேமாக மறைக்கப்படும். பதிலாக ஒரு குழுவிற்கு அனுப்புங்கள்.",
   "chat.forward.channels": "சேனல்கள்",
   "chat.forward.groups": "குழுக்கள்",
   "chat.forward.locations": "இடங்கள்",
@@ -934,6 +1035,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "முன்னனுப்பப்படவில்லை",
   "chat.forward.app_row_body":
     "இந்த வரி ஒரு நபரிடமிருந்து அல்ல, Airhop இடமிருந்து வந்தது, எனவே முன்னனுப்ப எதுவும் இல்லை.",
+  "chat.forward.has_ecash":
+    "இதில் ecash உள்ளது, முதலில் பெறுபவரே பணத்தை வைத்துக்கொள்வார், எனவே இது முன்னனுப்பப்படாது.",
+  "chat.forward.public_title": "{name} க்கு முன்னனுப்பவா?",
+  "chat.forward.public_mesh_body":
+    "அருகிலுள்ள எவரும் அங்கே இதைப் படிக்கலாம், இதைத் திரும்பப்பெற முடியாது.",
+  "chat.forward.public_geo_body":
+    "இந்தப் பகுதியில் உள்ள எவரும் அங்கே இதைப் படிக்கலாம், பொது இணைய ரிலேக்கள் வழியாகவும் கூட, இதைத் திரும்பப்பெற முடியாது.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "மெஷ் தொடங்குகிறது…",
@@ -951,7 +1059,8 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "இடம் முடக்கம் · பியர்களைக் கண்டறிய Android க்கு இது தேவை",
   "mesh.banner.paused": "மெஷ் இடைநிறுத்தம் · நீங்கள் வெளியே இருக்கிறீர்கள்",
-  "mesh.banner.location_off": "இடம் முடக்கம் · இடச் சேனல்கள் கிடைக்கவில்லை",
+  "mesh.banner.location_off":
+    "இடம் முடக்கம் · இடச் சேனல்கள் அருகில் மட்டுமே சென்றடையும்",
   "mesh.banner.battery_saver": "மின்கல சேமிப்பு · குறைவாகத் தேடுகிறது",
   "mesh.banner.wipe_incomplete":
     "அழிப்பு முழுமையடையவில்லை · சில தரவு மிஞ்சியிருக்கலாம், மீண்டும் திறக்கும்போது முயலப்படும்",
@@ -985,7 +1094,10 @@ export const strings: Strings = {
   "mesh.banner.hint.battery_settings":
     "இந்தத் தொலைபேசியின் பின்னணிச் செயல்பாட்டு அமைப்புகளைத் திறக்கிறது",
   "mesh.banner.hint.tor_settings": "Airhop இன் Tor அமைப்புகளைத் திறக்கிறது",
+  "mesh.banner.hint.enable_location":
+    "இட அணுகலைக் கேட்கிறது, அல்லது அமைப்புகளில் அதை எப்படி அனுமதிப்பது என விளக்குகிறது",
   "mesh.banner.dismiss": "நிராகரி: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "இந்தக் குறிப்பை நிரந்தரமாக மறைக்கிறது",
 
   // ---- Mesh: radar ----
@@ -1221,6 +1333,8 @@ export const strings: Strings = {
     "{mint} {units} ஐ வழங்குகிறது. அதன் சாவிகள் இந்தச் சாதனத்தில் சேமிக்கப்பட்டுள்ளன, எனவே அதன் டோக்கன்களை இணையம் இல்லாமலும் இப்போது சரிபார்க்கலாம்.",
   "wallet.mint.remove_plain":
     "{mint} ஐ உங்கள் பணப்பையிலிருந்து அகற்றவா? அதன் சேமித்த சாவிகளும் சேர்ந்து போகும், எனவே அதன் டோக்கன்களை இனி ஆஃப்லைனில் சரிபார்க்க முடியாது.",
+  "wallet.mint.remove_holdings":
+    "{mint} இடம் உள்ளவை:\n{holdings}\nஅகற்றினால் இவை அனைத்தும் இந்தச் சாதனத்திலிருந்து அழிந்துவிடும். முதலில் எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
   "wallet.mint.title": "நாணயச்சாலைகள்",
   "wallet.mint.none_desc":
     "நாணயச்சாலை உங்கள் ecash-ஐ வெளியிட்டுப் பணமாக்குகிறது. Lightning மூலம் நிரப்ப அல்லது அதன் டோக்கன்களை ஏற்க ஒன்றைச் சேருங்கள்.",
@@ -1583,6 +1697,8 @@ export const strings: Strings = {
   "wallet.err.already_spent": "ஏற்கெனவே செலவழிக்கப்பட்டது",
   "wallet.err.change_pending": "செலுத்தப்பட்டது, மீதி நிலுவையில்",
   "wallet.svc.mint_unreachable": "நாணயச்சாலையை அடைய முடியவில்லை.",
+  "wallet.svc.mint_http_error":
+    "நாணயச்சாலை ஒரு பிழையுடன் பதிலளித்தது (HTTP {status}).",
   "wallet.svc.tor_ios":
     "iOS இல் நாணயச்சாலைக் கோரிக்கைகள் Tor வழியாகச் செல்வதில்லை.",
   "wallet.svc.tor_ios_body":
@@ -1700,6 +1816,10 @@ export const strings: Strings = {
     "உங்கள் நாணயங்களால் ஆஃப்லைனில் சரியாக {amount} {unit} ஆக்க முடியாது.",
   "wallet.svc.inexact_detail":
     "நீங்கள் அனுப்பக்கூடிய மிகச் சிறிய டோக்கன் {spend} {unit}. ஆஃப்லைனில் மீதி இல்லை, எனவே கூடுதல் {extra} {unit} பெறுநருக்கே செல்லும்.",
+  "wallet.svc.spend_changed":
+    "இந்த அனுப்புதலுக்கு இப்போது {spend} {unit} ஆகும், நீங்கள் ஒப்புக்கொண்டதைவிட அதிகம்.",
+  "wallet.svc.spend_changed_body":
+    "நீங்கள் முடிவெடுத்துக்கொண்டிருந்தபோது உங்கள் நாணயங்கள் மாறிவிட்டன. எதுவும் அனுப்பப்படவில்லை. புதிய தொகையைப் பார்க்க மீண்டும் முயலுங்கள்.",
   "wallet.svc.no_single_mint":
     "எந்த ஒரு நாணயச்சாலையிலும் {amount} {unit} இல்லை. வெவ்வேறு நாணயச்சாலைகளின் ecash ஐ ஒரே டோக்கனாக இணைக்க முடியாது: முதலில் ஒரே நாணயச்சாலையில் ஒன்றிணையுங்கள், அல்லது தனித்தனித் தொகைகளாக அனுப்புங்கள்.",
   "wallet.svc.have_tried_send":
@@ -1729,6 +1849,10 @@ export const strings: Strings = {
     "வேறு எதுவும் அனுப்பப்படவில்லை. முடிவை நாணயச்சாலை உறுதிசெய்யும்வரை நாணயங்கள் நிறுத்திவைக்கப்படும். பணம் சென்றிருந்தால், பூட்டிய டோக்கன் ஒப்படைப்பதற்காக செயல்பாடு பகுதியில் தோன்றும். இல்லையெனில் நாணயங்கள் திரும்பும்.",
   "wallet.svc.send_spent_by_swap":
     "இந்த டோக்கன் பெறப்படுவதற்கு முன்பே இந்த நாணயங்கள் உங்கள் பணப்பைக்கு மாற்றப்பட்டுவிட்டன, எனவே அதை இனி பெற முடியாது. தொகை உங்கள் இருப்பில் உள்ளது.",
+  "wallet.svc.payment_in_doubt_body":
+    "முடிவை நாணயச்சாலை உறுதிசெய்யும்வரை நாணயங்கள் நிறுத்திவைக்கப்படும், அடுத்த புதுப்பிப்பில் இது மீண்டும் சரிபார்க்கப்படும். அதுவரை இந்தப் பட்டியலை மீண்டும் செலுத்தாதீர்கள்.",
+  "wallet.svc.mint_removed":
+    "இந்த நாணயச்சாலையை நீங்கள் அகற்றிவிட்டீர்கள், எனவே இது இனி கண்காணிக்கப்படாது.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "QR வழியாகச் சரிபார்க்கப்பட்டது",
@@ -1774,7 +1898,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "அந்த bitchat குறியீட்டின் காலம் முடிந்துவிட்டது. அவர்களின் QR ஐ மீண்டும் திறக்கச் சொல்லுங்கள்.",
   "contacts.scan.tampered":
-    "இந்த QR குறியீடு செல்லாதது: அதன் பியர் அடையாளம் அதன் சாவிகளுடன் பொருந்தவில்லை. இதில் மாற்றம் செய்யப்பட்டிருக்கலாம்.",
+    "இந்த QR குறியீடு செல்லாதது: அதன் சாவிகள் சரிபார்ப்பில் தேறவில்லை. இதில் மாற்றம் செய்யப்பட்டிருக்கலாம்.",
   "contacts.scan.key_conflict":
     "அவர்களுக்கான வேறொரு சாவி ஏற்கெனவே உங்களிடம் உள்ளது, எனவே எதுவும் மாறவில்லை. அதை மாற்ற, அவர்களின் குறியீட்டை நேரில் ஸ்கேன் செய்யுங்கள்.",
   "contacts.scan.already_added": "ஏற்கெனவே உங்கள் தொடர்புகளில் உள்ளது",
@@ -1797,7 +1921,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "இந்த QR வேறொருவருக்கு உரியது. {name} ஐத் தன் சொந்தக் குறியீட்டைக் காட்டச் சொல்லுங்கள்.",
   "contacts.verify.tampered_body":
-    "இந்த QR மாற்றப்பட்டதுபோல் தெரிகிறது: அதன் அடையாளம் அதன் சாவியுடன் பொருந்தவில்லை.",
+    "இந்த QR மாற்றப்பட்டதுபோல் தெரிகிறது: அதன் சாவிகள் சரிபார்ப்பில் தேறவில்லை.",
   "contacts.verify.choose_title": "எப்படிச் சரிபார்க்க விரும்புகிறீர்கள்?",
   "contacts.verify.choose_body":
     "இந்தத் தொலைபேசியில் உள்ள சாவிகள் உண்மையிலேயே {name} இனுடையவை என்பதை இரண்டுமே உறுதிப்படுத்தும்.",
@@ -1917,6 +2041,8 @@ export const strings: Strings = {
   "settings.diag.share": "கண்டறிதலைப் பகிர்",
   "settings.diag.share_desc":
     "பிழை அறிக்கைக்கான இணைப்பு மற்றும் அமைப்பு விவரங்கள். செய்திகள், பெயர்கள் மற்றும் விசைகள் சேர்க்கப்படாது.",
+  "settings.diag.share_fallback":
+    "பகிர்வைத் திறக்க முடியவில்லை. அதற்குப் பதிலாக அறிக்கை நகலெடுக்கப்பட்டது.",
   "settings.section.storage_desc": "பயன்பாடும் தற்காலிகச் சேமிப்பும்",
   "settings.section.appearance": "தோற்றம்",
   "settings.section.appearance_desc": "தீம், எழுத்துரு, மொழி",
@@ -1962,6 +2088,9 @@ export const strings: Strings = {
   "settings.general.show_media": "ஊடகத்தைத் தானாகக் காட்டு",
   "settings.general.show_media_desc":
     "புகைப்படங்களும் வீடியோக்களும் அரட்டையிலேயே தோன்றும், அல்லது ஒரு தட்டலுக்குப் பின் இருக்கும்",
+  "settings.general.spam_filter": "ஸ்பேம் வடிகட்டி",
+  "settings.general.spam_filter_desc":
+    "மிக வேகமாக இடுபவர்கள், திரும்பத் திரும்பச் சொல்பவர்கள் அல்லது இணைப்புகளைக் குவிப்பவர்களின் பொதுச் செய்திகளை மறைக்கிறது. தனிப்பட்ட செய்திகள் ஒருபோதும் வடிகட்டப்படாது.",
   "settings.general.reset": "அமைப்புகளை மீட்டமை",
   "settings.general.media_retention": "ஊடகத்தை இத்தனை நாள் வைத்திரு",
   "settings.general.media_retention_desc":
@@ -1978,7 +2107,7 @@ export const strings: Strings = {
     "உங்கள் அடையாளம், செய்திகள், தொடர்புகள், பணப்பை ஆகியவற்றைத் தொடாமல், விருப்பங்களை அவற்றின் இயல்பு நிலைக்குத் திருப்புகிறது",
   "settings.general.reset_title": "அமைப்புகளை மீட்டமைக்கவா?",
   "settings.general.reset_body":
-    "தோற்றம், மொழி, அறிவிப்புகள், அனுப்பியதைத் திரும்பப்பெறல், இணைப்பு (இணையம், Tor, நுழைவாயில், பாலம், ரிலேக்கள்) உட்பட விருப்பங்கள் இயல்பு நிலைக்குத் திரும்பும். Airhop பூட்டு, ஊடகம் எவ்வளவு காலம் வைக்கப்படும், உங்கள் நிலை ஆகியவை நீங்கள் அமைத்தபடியே இருக்கும். உங்கள் அடையாளம், செய்திகள், தொடர்புகள், பணப்பை ஆகியவை தொடப்படாமல் இருக்கும்.",
+    "தோற்றம், மொழி, அறிவிப்புகள், அனுப்பியதைத் திரும்பப்பெறல், இணைப்பு (நுழைவாயில், மெஷ் பாலம், ரிலேக்கள்) உட்பட விருப்பங்கள் இயல்பு நிலைக்குத் திரும்பும். Airhop பூட்டு, ஊடகம் எவ்வளவு காலம் வைக்கப்படும், இணைய நிலைமாற்றி, Tor மற்றும் அதன் பாலங்கள், உங்கள் நிலை ஆகியவை நீங்கள் அமைத்தபடியே இருக்கும். உங்கள் அடையாளம், செய்திகள், தொடர்புகள், பணப்பை ஆகியவை தொடப்படாமல் இருக்கும்.",
   "settings.general.reset_confirm": "மீட்டமை",
 
   // ---- Settings: privacy and security ----
@@ -2124,6 +2253,9 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "நேரடிக் குரலை முடக்கவா?",
   "settings.conn.live_voice_off_body":
     "ஒலிவாங்கியை அழுத்திப் பிடித்தால் அதற்குப் பதிலாகக் குரல் குறிப்பு பதிவாகும். விடும்போது அது அனுப்பப்படும், இயக்கும் வரை யாரும் கேட்க மாட்டார்கள்.",
+  "settings.conn.live_video": "நேரலை வீடியோ",
+  "settings.conn.live_video_desc":
+    "அருகிலுள்ளவர்களுக்கு உங்கள் கேமராவை நேரலையாக்குங்கள், அவர்களுடையதையும் பாருங்கள்",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor திசைவழி",
   "settings.conn.tor_desc":
@@ -2140,6 +2272,10 @@ export const strings: Strings = {
     "Tor இன்னும் இணைக்கப்படவில்லை. அது இயக்கத்திலேயே இருந்து முயன்றுகொண்டிருக்கும்; எப்போது திசைவழி தொடங்குகிறது, அல்லது இந்த வலையமைப்பு அதைத் தடுக்கிறதா என்பதை மெஷ் தாவல் சொல்லும்.",
   "settings.conn.tor_failed":
     "Tor ஐத் தொடங்க முடியவில்லை. சிறிது நேரத்தில் மீண்டும் முயற்சிக்கவும்.",
+  "settings.conn.tor_bad_bridges":
+    "இந்தப் பாலம் வரிகளை Tor ஆல் பயன்படுத்த முடியவில்லை. அவற்றைச் சரிபாருங்கள், அல்லது வேறு இணைப்பைத் தேர்ந்தெடுங்கள்.",
+  "settings.conn.tor_port_busy":
+    "Tor க்குத் தேவையான போர்ட்டை வேறொரு செயலி பயன்படுத்துகிறது, பெரும்பாலும் Tor ஐ இயக்கும் வேறொரு செயலி. அதை மூடிவிட்டு, மீண்டும் முயலுங்கள்.",
   "settings.tor.status": "Tor நிலை",
   "settings.tor.connection": "இணைப்பு",
   "settings.tor.mode_off": "நேரடி",
@@ -2151,7 +2287,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "நீங்கள் Tor பயன்படுத்துவதை மறைக்கிறது. Snowflake ஐ விட வேகமானது, ஆனால் இந்தப் பாலங்கள் பொதுவானவை, சில நெட்வொர்க்குகள் தடுக்கின்றன.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "சாதாரண இணையதள வருகை போலத் தோன்றி நீங்கள் Tor பயன்படுத்துவதை மறைக்கிறது. மற்றவற்றை விட தடுப்பது கடினம்.",
   "settings.tor.mode_custom": "சொந்தப் பாலங்கள்",
@@ -2289,6 +2425,8 @@ export const strings: Strings = {
   "settings.language.pending": "அடுத்த முறை திறக்கும்போது",
   "settings.language.pending_a11y":
     "{value}, நீங்கள் அடுத்த முறை Airhop ஐத் திறக்கும்போது பொருந்தும்",
+  "settings.language.phone": "தொலைபேசி மொழி",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "இப்போது மீண்டும் திற",
   "settings.language.rtl_title": "முடிக்க Airhop ஐ மீண்டும் திறங்கள்",
   "settings.language.rtl_body":
@@ -2306,7 +2444,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "மெஷ் இடைநிறுத்தம், தேடலோ அறிவிப்போ இல்லை",
   "settings.status.invisible": "கண்ணுக்குப் புலப்படாதது",
   "settings.status.invisible_desc":
-    "புளூடூத் தேடலில் மறைந்திருக்கும், நீங்கள் இணையும் தொலைபேசிகள் இன்னும் உங்களைப் பார்க்கும்",
+    "புளூடூத் வழியாக அறிவிக்கப்படாது, ஆனால் இது புளூடூத் அல்லது Wi-Fi வழியாக இணையும் தொலைபேசிகள் இன்னும் உங்களைப் பார்க்கும்",
   "settings.status.title": "நிலை",
   "settings.status.set_a11y": "நிலையை {value} ஆக அமை",
   "settings.status.edit": "நிலையை மாற்று",
@@ -2600,6 +2738,11 @@ export const plurals: Plurals = {
     one: "{count} செய்தியை முன்னனுப்பு",
     other: "{count} செய்திகளை முன்னனுப்பு",
   },
+  "chat.forward.too_many_public": {
+    one: "ஒரு பொது அறை ஒருவரிடமிருந்து தொடர்ச்சியாக {count} செய்தியை மட்டுமே காட்டும், எனவே மீதமுள்ளவை இழக்கப்படும். ஒரே நேரத்தில் குறைவாக முன்னனுப்புங்கள்.",
+    other:
+      "ஒரு பொது அறை ஒருவரிடமிருந்து தொடர்ச்சியாக {count} செய்திகளை மட்டுமே காட்டும், எனவே மீதமுள்ளவை இழக்கப்படும். ஒரே நேரத்தில் குறைவாக முன்னனுப்புங்கள்.",
+  },
   "chat.voice.live_speaking_count": {
     one: "{count} பேர் பேசுகிறார்",
     other: "{count} பேர் பேசுகிறார்கள்",
@@ -2684,15 +2827,15 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    one: "{mint} இடம் {count} நாணயத்தில் {balance} {unit} உள்ளது. அகற்றினால் அந்த இருப்பு இந்தச் சாதனத்திலிருந்து நிரந்தரமாக அழிந்துவிடும், அதற்குக் காப்புப்பிரதி இல்லை. முதலில் இருப்பை எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
-    other:
-      "{mint} இடம் {count} நாணயங்களில் {balance} {unit} உள்ளது. அகற்றினால் அந்த இருப்பு இந்தச் சாதனத்திலிருந்து நிரந்தரமாக அழிந்துவிடும், அதற்குக் காப்புப்பிரதி இல்லை. முதலில் இருப்பை எடுத்துக்கொள்ளுங்கள் அல்லது அனுப்புங்கள்.",
-  },
   "wallet.mint.split_across": {
     one: "இருப்பு {count} நாணயச்சாலையில் பிரிந்துள்ளது. அதை ஒன்றுக்கு நகர்த்துங்கள்.",
     other:
       "இருப்பு {count} நாணயச்சாலைகளில் பிரிந்துள்ளது. அதை ஒன்றுக்கு நகர்த்துங்கள்.",
+  },
+  "wallet.mint.remove_pending": {
+    one: "{mint} இல் {count} பணம் செலுத்துதல் இன்னும் நிறைவடையவில்லை. நாணயச்சாலையை அகற்றினால் அது கைவிடப்படும், அது இன்னும் திருப்பித் தரக்கூடிய எதனுடனும் சேர்த்து.",
+    other:
+      "{mint} இல் {count} பணம் செலுத்துதல்கள் இன்னும் நிறைவடையவில்லை. நாணயச்சாலையை அகற்றினால் அவை கைவிடப்படும், அவை இன்னும் திருப்பித் தரக்கூடிய எதனுடனும் சேர்த்து.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2706,6 +2849,11 @@ export const plurals: Plurals = {
   "wallet.backup.recovered": {
     one: "{mints} இடமிருந்து செலவழிக்கப்படாத {count} நாணயம் மீட்கப்பட்டது.",
     other: "{mints} இடமிருந்து செலவழிக்கப்படாத {count} நாணயங்கள் மீட்கப்பட்டன.",
+  },
+  "wallet.backup.already_held": {
+    one: "கண்டறியப்பட்ட {count} நாணயம் ஏற்கெனவே இந்தப் பணப்பையில் உள்ளது, எனவே அது மீண்டும் கணக்கிடப்படவில்லை.",
+    other:
+      "கண்டறியப்பட்ட {count} நாணயங்கள் ஏற்கெனவே இந்தப் பணப்பையில் உள்ளன, எனவே அவை மீண்டும் கணக்கிடப்படவில்லை.",
   },
   "wallet.backup.already_spent": {
     one: "{count} நாணயம் கிடைத்தது, ஆனால் அது ஏற்கெனவே செலவழிக்கப்பட்டுவிட்டது, எனவே எதுவும் வரவு வைக்கப்படவில்லை. இது இயல்பானதே: நீங்கள் எப்போதேனும் செலவழித்த ஒவ்வொரு நாணயமும் நாணயச்சாலை வைத்திருக்கும் பதிவுகளில் இருந்துகொண்டே இருக்கும்.",

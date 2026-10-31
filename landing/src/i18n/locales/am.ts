@@ -154,8 +154,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "ለክፍል የግብዣ አገናኞች፣ ወይም እስከ 16 ሰዎች የተፈረመ ዝርዝር።",
   "home.features.messaging.board.name": "የማስታወቂያ ሰሌዳ",
   "home.features.messaging.board.line": "እስከ ሰባት ቀናት ድረስ በአንድ አካባቢ ተለጥፈው የሚቆዩ ማስታወቂያዎች።",
-  "home.features.messaging.voice.name": "ቀጥታ ድምጽ",
-  "home.features.messaging.voice.line": "ማይክሮፎኑን ተጭነው በክልሉ ውስጥ ካለ ማንኛውም ሰው ጋር ይነጋገሩ፣ እንደ ዋኪቶኪ።",
+  "home.features.messaging.voice.name": "ቀጥታ ድምጽ እና ቪዲዮ",
+  "home.features.messaging.voice.line":
+    "ማይክሮፎኑን ተጭነው ይነጋገሩ፣ ወይም በካሜራ ቀጥታ ያስተላልፉ፣ በክልሉ ውስጥ ላለ ማንኛውም ሰው።",
   "home.features.messaging.notes.name": "የድምጽ መልእክቶች",
   "home.features.messaging.notes.line": "የተቀዳ ድምጽ፣ አቅጣጫ ከመተየብ ይፈጥናል።",
   "home.features.messaging.files.name": "ፎቶዎች፣ ቪዲዮና ፋይሎች",

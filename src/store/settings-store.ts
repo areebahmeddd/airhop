@@ -73,6 +73,10 @@ interface SettingsState {
   mediaRetentionDays: MediaRetentionDays;
   // Whether holding the mic streams live or records a voice note.
   liveVoiceEnabled: boolean;
+  // Whether live video is offered, and streams from others are shown.
+  liveVideoEnabled: boolean;
+  // Hides public flood, copy and link spam; see core/spam.
+  spamFilterEnabled: boolean;
   // Whether notifications hide the sender and message body on the lock screen.
   hideNotificationPreviews: boolean;
   // Master switch for Ring, regardless of each contact's allowRing grant.
@@ -133,6 +137,8 @@ interface SettingsState {
   setUploadQuality: (quality: UploadQuality) => void;
   setMediaRetentionDays: (days: MediaRetentionDays) => void;
   setLiveVoiceEnabled: (enabled: boolean) => void;
+  setLiveVideoEnabled: (enabled: boolean) => void;
+  setSpamFilterEnabled: (enabled: boolean) => void;
   setHideNotificationPreviews: (hide: boolean) => void;
   setRingAlertsEnabled: (enabled: boolean) => void;
   setAppLockEnabled: (enabled: boolean) => void;
@@ -174,6 +180,8 @@ const DEFAULTS = {
   uploadQuality: "high",
   mediaRetentionDays: 7,
   liveVoiceEnabled: true,
+  liveVideoEnabled: true,
+  spamFilterEnabled: true,
   hideNotificationPreviews: true,
   ringAlertsEnabled: true,
   appLockEnabled: false,
@@ -253,6 +261,12 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setLiveVoiceEnabled(enabled) {
         set({ liveVoiceEnabled: enabled });
+      },
+      setLiveVideoEnabled(enabled) {
+        set({ liveVideoEnabled: enabled });
+      },
+      setSpamFilterEnabled(enabled) {
+        set({ spamFilterEnabled: enabled });
       },
       setHideNotificationPreviews(hide) {
         set({ hideNotificationPreviews: hide });

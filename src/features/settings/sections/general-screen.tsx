@@ -22,8 +22,6 @@ import {
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { syncAutoStartOnBoot } from "@services/boot-sync";
 import { sweepMediaNow } from "@services/media-retention";
-import { getMeshService } from "@services/mesh-service";
-import { setTorRouting } from "@services/tor-routing";
 import { showAlert } from "@store/alert-store";
 import {
   MEDIA_RETENTION_DAY_OPTIONS,
@@ -94,7 +92,7 @@ const QUALITY_META: Record<
   UploadQuality,
   { labelKey: TranslationKey; descriptionKey: TranslationKey }
 > = {
-  // Every photo is fitted to the same 512 KiB budget before it is sent, so this
+  // Every photo is fitted to the same 256 KiB budget before it is sent, so this
   // is not a size dial: it is how much detail to try to keep inside that
   // budget. Low reaches a sendable file in one pass and gets moving sooner,
   // High holds on to detail and may take a couple of passes to fit.
@@ -133,11 +131,21 @@ const RETENTION_DESCRIPTION: Record<MediaRetentionDays, TranslationKey> = {
 //                        to pick up the phone an open app.
 //   mediaRetentionDays   the default is the shortest window, so resetting it
 //                        could only delete media at the next sweep.
+//   tor*, internetEnabled  someone who chose Tor, its bridges or no internet at
+//                        all would otherwise be put on the clear net by a tap
+//                        meant to fix the theme.
 const KEPT_BY_RESET = [
   "stayInvisible",
   "appLockEnabled",
   "appLockDelaySeconds",
   "mediaRetentionDays",
+  "torEnabled",
+  // Goes with torEnabled: it records a native start that never answered, and
+  // clearing it under a kept Tor would retry the start that crashed.
+  "torStartPending",
+  "torBridgeMode",
+  "torBridgeLines",
+  "internetEnabled",
 ] as const;
 
 // The unshipped features. Each row states what it will do rather than linking
@@ -176,6 +184,8 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
   const styles = useSharedStyles();
   const undoSendSeconds = useSettingsStore((s) => s.undoSendSeconds);
   const setUndoSendSeconds = useSettingsStore((s) => s.setUndoSendSeconds);
+  const spamFilterEnabled = useSettingsStore((s) => s.spamFilterEnabled);
+  const setSpamFilterEnabled = useSettingsStore((s) => s.setSpamFilterEnabled);
   const autoDownloadMedia = useSettingsStore((s) => s.autoDownloadMedia);
   const setAutoDownloadMedia = useSettingsStore((s) => s.setAutoDownloadMedia);
   const uploadQuality = useSettingsStore((s) => s.uploadQuality);
@@ -186,15 +196,10 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
   const [showRetentionSheet, setShowRetentionSheet] = useState(false);
 
   function doReset(): void {
-    // reset() flips the persisted values back to defaults, but the connectivity
-    // runtime needs a nudge to match. Tor teardown is explicit (and only when it
-    // was actually on, to avoid a needless Nostr restart); the now-default
-    // internet-on state is (re)applied so the transport matches. Gateway and
-    // bridge react to their own settings via MeshService subscriptions.
-    const torWasOn = useSettingsStore.getState().torEnabled;
+    // Gateway and bridge react to their own settings via MeshService
+    // subscriptions; Tor and the internet switch are kept, so nothing else in
+    // the runtime has to follow.
     useSettingsStore.getState().reset(KEPT_BY_RESET);
-    if (torWasOn) void setTorRouting(false);
-    getMeshService()?.applyInternetEnabled(true);
     // Lives outside this store; AirhopBootReceiver reads it with no JS up.
     syncAutoStartOnBoot(false);
   }
@@ -280,6 +285,19 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                 </Text>
               }
               onPress={() => setShowUndoSheet(true)}
+            />
+            <GroupDivider />
+            <SettingRow
+              id="spam-filter"
+              icon="filter"
+              label={T("settings.general.spam_filter")}
+              description={T("settings.general.spam_filter_desc")}
+              control={
+                <SettingSwitch
+                  value={spamFilterEnabled}
+                  onValueChange={setSpamFilterEnabled}
+                />
+              }
             />
           </View>
         </View>

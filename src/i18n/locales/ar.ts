@@ -79,7 +79,8 @@ export const strings: Strings = {
   "onboarding.identity.failed_heading": "تعذّر إنشاء مفاتيحك",
   "onboarding.identity.failed_body":
     "لم يسمح هذا الجهاز لـ Airhop بتخزينها بأمان. حاول مرة أخرى، أو أعد تشغيل هاتفك ثم افتح Airhop من جديد.",
-  "onboarding.identity.steps_a11y": "الخطوات: {steps}",
+  "onboarding.identity.steps_list_a11y":
+    "الخطوات: {first}. {second}. {third}. {fourth}.",
   "onboarding.identity.step.x25519": "جارٍ إنشاء زوج مفاتيح X25519 الثابت",
   "onboarding.identity.step.ed25519": "جارٍ إنشاء مفتاح التوقيع Ed25519",
   "onboarding.identity.step.keychain":
@@ -89,8 +90,8 @@ export const strings: Strings = {
   // ---- Onboarding: your identity ----
   "onboarding.username.label": "اسمك على الشبكة",
   "onboarding.username.peer_id": "معرّف النظير",
-  "onboarding.username.card_a11y":
-    "اسمك على الشبكة هو {username}. معرّف النظير {peerID}. {props}.",
+  "onboarding.username.card_full_a11y":
+    "اسمك على الشبكة هو {username}. معرّف النظير {peerID}. الخوارزمية: {algorithm}. التخزين: {storage}. حساب مطلوب: {account}.",
   "onboarding.username.explanation":
     "هذا الاسم مشتق حتميًا من مفتاحك العام. وهو نفسه على كل جهاز يرى معرّف النظير الخاص بك.",
   "onboarding.username.cta": "ادخل إلى Airhop",
@@ -155,7 +156,7 @@ export const strings: Strings = {
     "يعثر على الأجهزة القريبة ويمرّر الرسائل بينها. هذا ما يصنع الشبكة، ويعمل دون اتصال بالإنترنت.",
   "onboarding.primer.location.title": "الموقع",
   "onboarding.primer.location.body":
-    "يضعك في قنوات المناطق القريبة، من الحي إلى الإقليم. لا يتتبعك Airhop أبدًا ولا يرسل موقعك الدقيق خارج جهازك.",
+    "يضعك في قنوات المناطق القريبة، من الحي إلى الإقليم. لا يتتبعك Airhop أبدًا، ولا يغادر موقعك الدقيق جهازك إلا حين ترسل موقعك إلى شخص ما.",
   "onboarding.primer.notifications.title": "الإشعارات",
   "onboarding.primer.notifications.body":
     "تصلك تنبيهات بالرسائل الجديدة حتى عندما يكون التطبيق مغلقًا. تُنشأ الإشعارات محليًا على جهازك، دون أي خادم.",
@@ -166,6 +167,8 @@ export const strings: Strings = {
   // ---- Permissions: the ask, and the dead end ----
   "permission.bluetooth.label": "الوصول إلى البلوتوث",
   "permission.bluetooth.purpose": "العثور على الأجهزة القريبة عبر الشبكة",
+  "permission.location.label": "الوصول إلى الموقع",
+  "permission.location.purpose": "الوصول إلى قنوات الموقع خارج نطاق البلوتوث",
   "permission.open_settings": "فتح الإعدادات",
   "permission.not_now": "ليس الآن",
   "permission.blocked_title": "{label} معطّل",
@@ -226,8 +229,7 @@ export const strings: Strings = {
   "chat.dm.in_range": "ضمن النطاق",
   "chat.dm.row_hint": "اضغط مرتين مع الاستمرار لمزيد من الخيارات",
   "chat.channels.row_hint": "اضغط مرتين مع الاستمرار لمزيد من الخيارات",
-  "chat.dm.you_prefix": "أنت:",
-  "chat.draft_prefix": "مسودة:",
+  "chat.draft_preview": "مسودة: {draft}",
   "chat.dm.none": "لا توجد رسائل مباشرة",
   "chat.dm.none_desc":
     "انتقل إلى تبويب الشبكة واضغط على نظير لبدء رسالة مباشرة مشفّرة.",
@@ -244,6 +246,8 @@ export const strings: Strings = {
   "chat.dm.more_options": "خيارات أخرى لـ {name}",
   "chat.dm.remove_contact_short": "إزالة جهة الاتصال",
   "chat.dm.block_short": "حظر جهة الاتصال",
+  "chat.dm.signing_key_refused":
+    "قدّم أحدهم مفتاحاً مختلفاً لـ {name}، ورفضه Airhop. تحتفظ هذه المحادثة بالمفتاح الذي كان لديها.",
   "chat.dm.delete_short": "حذف المحادثة",
 
   // ---- Chats: vocabulary shared by both lists ----
@@ -322,6 +326,8 @@ export const strings: Strings = {
   // ---- Chats: go to a place ----
   "chat.jump.failed": "تعذّر فتح تلك الخلية. حاول بعد قليل.",
   "chat.jump.title": "اذهب إلى مكان",
+  "chat.jump.globe": "اختر على الكرة الأرضية",
+  "chat.jump.globe_note": "أدِرها إلى أي مكان. تعمل دون إنترنت.",
   "chat.jump.saved": "الأماكن المحفوظة",
   "chat.jump.nearby": "بالجوار",
   "chat.jump.anywhere": "افتح قناة موقع عامة في أي مكان، حتى مكان لست فيه.",
@@ -352,6 +358,16 @@ export const strings: Strings = {
   "chat.jump.go": "اذهب",
   "chat.jump.how":
     "للعثور على جيوهاش: افتح قناة موقع > اضغط على اسمها > انسخه من هناك.",
+
+  // ---- Chats: globe picker ----
+  "chat.globe.hint": "اسحب للتدوير · اقرص للتكبير · انقر للتركيز",
+  "chat.globe.zoom_in": "كبّر لاختيار خلية",
+  "chat.globe.coverage": "{level} · ~{size}",
+  "chat.globe.go_to": "اذهب إلى {cell}",
+  "chat.globe.larger": "خلية أكبر",
+  "chat.globe.smaller": "خلية أصغر",
+  "chat.globe.label": "الكرة الأرضية، مركزها {cell}",
+  "chat.globe.adjust": "اسحب لأعلى أو لأسفل لتغيير حجم الخلية",
 
   // ---- Chats: private groups ----
   "chat.group.unreachable":
@@ -426,6 +442,7 @@ export const strings: Strings = {
   "chat.thread.public_channel": "قناة عامة",
   "chat.thread.notices": "إعلانات هذه القناة",
   "chat.thread.invite": "دعوة شخص إلى هذه القناة",
+  "chat.thread.location_off": "الموقع معطّل · الوصول إلى القريبين فقط",
   "chat.thread.not_in_range": "ليس بالجوار. جارٍ التسليم عبر الإنترنت.",
   "chat.thread.not_nearby":
     "ليس بالجوار. سنسلّم الرسالة عند عودته إلى النطاق أو اتصاله بالإنترنت.",
@@ -453,7 +470,7 @@ export const strings: Strings = {
   "chat.thread.message": "رسالة",
   "chat.thread.message_placeholder": "رسالة…",
   "chat.thread.length_full": "الرسالة ممتلئة",
-  "chat.thread.waiting_for": "بانتظار عودة {name} · {percent}٪",
+  "chat.thread.waiting_for": "بانتظار عودة {name} · {percent}",
   "chat.transfer.progress": "{done} من {total}",
   "chat.transfer.speed": "{size}/ث",
   "chat.transfer.left": "متبقٍ {time}",
@@ -503,7 +520,6 @@ export const strings: Strings = {
     "يجري التجسير إلى المناطق القريبة · اضغط للجوار فقط",
   "chat.screenshot.you_took": "التقطت لقطة شاشة",
   "chat.screenshot.you_took_private": "التقطت لقطة شاشة · لم يُبلَّغ أحد",
-  "chat.screenshot.heads_up": "تنبيه",
   "chat.screenshot.peer_took": "التقط {name} لقطة شاشة",
   "chat.screenshot.notified_dm":
     "أُبلغ {name} بأنك التقطت لقطة شاشة لهذه المحادثة.",
@@ -517,7 +533,12 @@ export const strings: Strings = {
   "chat.bubble.view_profile": "عرض ملف {name}",
   "chat.bubble.forwarded": "معاد توجيهها",
   "chat.bubble.attachment": "مرفق",
-  "chat.bubble.a11y": "{sender}: {body}. اضغط مطولًا لمزيد من الخيارات.",
+  "chat.bubble.a11y": "{sender}: {body}",
+  "chat.bubble.a11y_hint": "اضغط مرتين مع الاستمرار لمزيد من الخيارات",
+  "chat.bubble.more_options": "مزيد من الخيارات",
+  "chat.bubble.open_link": "فتح {link}",
+  "chat.bubble.status_delivered": "سُلّمت",
+  "chat.bubble.status_read": "قُرئت",
   "chat.bubble.failed_retry": "فشل الإرسال. اضغط لإعادة المحاولة.",
 
   // ---- Chats: message actions and info ----
@@ -544,6 +565,8 @@ export const strings: Strings = {
   "chat.attach.camera": "الكاميرا",
   "chat.attach.camera_desc": "التقط صورة أو فيديو",
   "chat.attach.camera_desc_photo": "التقط صورة",
+  "chat.attach.video": "تسجيل فيديو",
+  "chat.attach.video_desc": "سجّل مقطعًا قصيرًا",
   "chat.attach.library": "مكتبة الصور",
   "chat.attach.library_desc": "اختر من مكتبتك",
   "chat.attach.document": "مستند",
@@ -554,6 +577,8 @@ export const strings: Strings = {
   "chat.attach.ecash_desc": "أرسل ساتس Cashu من محفظتك",
   "chat.attach.location": "الموقع",
   "chat.attach.location_desc": "أرسل مكانك الآن",
+  "chat.attach.live": "بث مباشر",
+  "chat.attach.live_desc": "بث الكاميرا للأشخاص القريبين",
   "chat.attach.title": "إرفاق",
 
   // ---- Chat: location pin ----
@@ -613,6 +638,19 @@ export const strings: Strings = {
   "chat.attach.caption": "أضف تعليقًا…",
   "chat.attach.send": "إرسال المرفق",
   "chat.attach.generic": "مرفق",
+  "chat.video_prep.preparing": "جارٍ تجهيز الفيديو",
+  "chat.video_prep.waiting": "بانتظار تجهيز الفيديو",
+  "chat.video_prep.cancel": "أوقف تجهيز هذا الفيديو",
+  "chat.video_prep.too_large": "تعذّر تصغير هذا الفيديو بما يكفي لإرساله.",
+  "chat.video_prep.unreadable": "تعذّر فتح هذا الفيديو. جرّب فيديو آخر.",
+  "chat.video_prep.failed":
+    "حدث خطأ ما أثناء تجهيز ذلك الفيديو. حاول مرة أخرى.",
+  "chat.video_prep.interrupted":
+    "غادرت Airhop قبل أن يجهز الفيديو. حاول إرساله مرة أخرى.",
+  "chat.trim.play": "شغّل المعاينة",
+  "chat.trim.pause": "أوقف المعاينة مؤقتًا",
+  "chat.trim.start": "بداية المقطع",
+  "chat.trim.end": "نهاية المقطع",
   "chat.media.view_full": "عرض الصورة بملء الشاشة",
   "chat.media.gone_photo": "الصورة ليست على هذا الجهاز",
   "chat.media.gone_video": "الفيديو ليس على هذا الجهاز",
@@ -627,6 +665,8 @@ export const strings: Strings = {
   "chat.media.kind_file": "الملف",
   "chat.media.pause_voice": "إيقاف الملاحظة الصوتية مؤقتًا",
   "chat.media.play_voice": "تشغيل الملاحظة الصوتية",
+  "chat.media.pause_video": "إيقاف الفيديو مؤقتًا",
+  "chat.media.play_video": "تشغيل الفيديو",
   "chat.media.voice_position": "الموضع في الملاحظة الصوتية",
   "chat.media.voice_scrub": "اضغط على الأعمدة للانتقال إلى تلك النقطة",
   "chat.media.image": "صورة",
@@ -666,6 +706,48 @@ export const strings: Strings = {
   "chat.voice.limit_reached": "بلغت حد الدقيقتين، أفلت للإرسال",
   "chat.voice.limit_sent": "بلغت حد الدقيقتين، أُرسلت الملاحظة",
   "chat.voice.stop_send": "إيقاف التسجيل والإرسال",
+  "chat.video_note.hold": "اضغط مطولاً لتسجيل ملاحظة فيديو",
+  "chat.video_note.a11y_toggle": "انقر مرتين لبدء التسجيل أو إيقافه.",
+  "chat.video_note.not_recorded": "لم تُسجَّل ملاحظة الفيديو",
+  "chat.video_note.limit_sent": "انتهى الوقت، أُرسلت ملاحظة الفيديو",
+  "chat.video_note.a11y": "ملاحظة فيديو، انقر مرتين للصوت",
+  "chat.video_note.sound_on": "تفعيل الصوت",
+  "chat.video_note.sound_off": "تعطيل الصوت",
+  "chat.live_video.preview": "فيديو مباشر",
+  "chat.live_video.badge": "مباشر",
+  "chat.live_video.reconnecting": "جارٍ إعادة الاتصال…",
+  "chat.live_video.a11y": "{name} يبث مباشرة. انقر مرتين للمشاهدة.",
+  "chat.live_video.live_from": "{name} يبث مباشرة",
+  "chat.live_video.sound": "الصوت",
+  "chat.live_video.ended": "انتهى البث",
+  "chat.live_video.title": "فيديو مباشر",
+  "chat.live_video.go_live": "ابدأ البث",
+  "chat.live_video.end": "إنهاء",
+  "chat.live_video.end_title": "إنهاء الفيديو المباشر؟",
+  "chat.live_video.end_body":
+    "الإنهاء يُبقي التسجيل في هذه المحادثة. أما التجاهل فيطلب من كل من يشاهد حذفه.",
+  "chat.live_video.discard": "تجاهل",
+  "chat.live_video.keep": "متابعة البث",
+  "chat.live_video.audience_room": "يمكن لكل من في نطاق البلوتوث المشاهدة.",
+  "chat.live_video.audience_dm": "يمكن لـ {name} وحده المشاهدة.",
+  "chat.live_video.nobody": "لا أحد في النطاق للمشاهدة الآن.",
+  "chat.live_video.quality_low": "منخفضة",
+  "chat.live_video.quality_medium": "متوسطة",
+  "chat.live_video.quality_high": "عالية",
+  "chat.live_video.quality_low_hint": "تصل إلى أشخاص على بُعد عدة قفزات",
+  "chat.live_video.quality_medium_hint": "لأشخاص على بُعد قفزة أو قفزتين",
+  "chat.live_video.quality_high_hint": "لأشخاص بجانبك مباشرة",
+  "chat.live_video.signal_good": "يواكب",
+  "chat.live_video.signal_weak": "يتأخر",
+  "chat.live_video.signal_poor": "بطيء جدًا للفيديو، يُرسَل الصوت فقط",
+  "chat.live_video.mic": "الميكروفون",
+  "chat.live_video.no_sound": "بلا صوت",
+  "chat.live_video.flip": "تبديل الكاميرا",
+  "chat.live_video.camera_failed": "تعذّر فتح الكاميرا",
+  "chat.live_video.camera_lost": "توقفت الكاميرا، فانتهى البث",
+  "chat.live_video.failed": "تعذّر بدء البث المباشر",
+  "chat.live_video.kept_here":
+    "أطول من أن يُرسَل كملف. يحتفظ كل من شاهد بنسخته الخاصة.",
   "chat.voice.lift_lock": "اسحب لأعلى للتسجيل دون استخدام اليدين",
   "chat.voice.live_speaking": "{name} يتحدث",
   "chat.voice.live_ended": "انتهى",
@@ -681,6 +763,8 @@ export const strings: Strings = {
   "chat.perm.mic_label": "الوصول إلى الميكروفون",
   "chat.perm.mic_live_purpose": "التحدث إلى من هم بالجوار",
   "chat.perm.mic_note_purpose": "تسجيل ملاحظة صوتية",
+  "chat.perm.video_note_purpose": "لتسجيل ملاحظة فيديو",
+  "chat.perm.live_video_purpose": "لبدء بث مباشر",
   "chat.perm.recording_stopped": "توقف التسجيل",
   "chat.perm.record_failed": "تعذّر بدء التسجيل. تحقق من أذونات الميكروفون.",
 
@@ -805,6 +889,10 @@ export const strings: Strings = {
   "chat.notices.post": "نشر الإعلان",
   "chat.notices.post_short": "نشر",
   "chat.notices.delete": "حذف الإعلان",
+  "chat.notices.delete_title": "حذف هذا الإعلان؟",
+  "chat.notices.delete_body":
+    "سيُطلب من كل من لديه إزالته. لا يمكنك التراجع عن ذلك.",
+  "chat.notices.permanent": "دائم",
   "chat.notices.fades_soon": "يختفي قريبًا",
   "chat.notices.1_day": "يوم واحد",
   "chat.notices.3_days": "3 أيام",
@@ -870,6 +958,8 @@ export const strings: Strings = {
   "chat.forward.cant_send_to": "تعذّرت إعادة التوجيه إلى {name}",
   "chat.forward.too_long_for_dm":
     "أطول من أن تُرسل كرسالة مباشرة. أعد توجيهها إلى قناة أو مجموعة بدلًا من ذلك.",
+  "chat.forward.too_long_for_public":
+    "طويلة جداً لغرفة عامة، إذ ستُخفى كرسالة مزعجة. أعد توجيهها إلى مجموعة بدلاً من ذلك.",
   "chat.forward.channels": "القنوات",
   "chat.forward.groups": "المجموعات",
   "chat.forward.locations": "المواقع",
@@ -878,6 +968,13 @@ export const strings: Strings = {
   "chat.forward.app_row": "لم تتم إعادة التوجيه",
   "chat.forward.app_row_body":
     "هذا السطر من Airhop وليس من شخص، فلا يوجد ما يُعاد توجيهه.",
+  "chat.forward.has_ecash":
+    "تحمل هذه الرسالة نقدًا إلكترونيًا، ومن يستلمه أولًا يحتفظ بالمال، لذا لا يُعاد توجيهها.",
+  "chat.forward.public_title": "إعادة التوجيه إلى {name}؟",
+  "chat.forward.public_mesh_body":
+    "يمكن لأي شخص قريب قراءتها هناك، ولا يمكن استرجاعها.",
+  "chat.forward.public_geo_body":
+    "يمكن لأي شخص في هذه المنطقة قراءتها هناك، بما في ذلك عبر مُرحِّلات الإنترنت العامة، ولا يمكن استرجاعها.",
 
   // ---- Mesh: status banner ----
   "mesh.banner.starting": "جارٍ تشغيل الشبكة…",
@@ -892,7 +989,8 @@ export const strings: Strings = {
   "mesh.banner.location_off_android":
     "الموقع معطّل · يحتاجه Android للعثور على النظراء",
   "mesh.banner.paused": "الشبكة متوقفة · أنت غائب",
-  "mesh.banner.location_off": "الموقع معطّل · قنوات الموقع غير متاحة",
+  "mesh.banner.location_off":
+    "الموقع معطّل · قنوات الموقع تصل إلى القريبين فقط",
   "mesh.banner.battery_saver": "موفّر الطاقة · بحث أقل تكرارًا",
   "mesh.banner.wipe_incomplete":
     "المسح غير مكتمل · قد تبقى بعض البيانات، وتُعاد المحاولة عند إعادة الفتح",
@@ -919,7 +1017,10 @@ export const strings: Strings = {
   "mesh.banner.hint.app_settings": "يفتح أذونات Airhop في إعدادات النظام",
   "mesh.banner.hint.battery_settings": "يفتح إعدادات نشاط الخلفية لهذا الهاتف",
   "mesh.banner.hint.tor_settings": "يفتح إعدادات Tor في Airhop",
+  "mesh.banner.hint.enable_location":
+    "يطلب الوصول إلى الموقع، أو يشرح كيفية السماح به من الإعدادات",
   "mesh.banner.dismiss": "إخفاء: {label}",
+  "mesh.banner.action_a11y": "{action}: {banner}",
   "mesh.banner.hint.dismiss": "يخفي هذه الملاحظة نهائيًا",
 
   // ---- Mesh: radar ----
@@ -1144,6 +1245,8 @@ export const strings: Strings = {
     "{mint} تصدر {units}. مفاتيحها مخزّنة على هذا الجهاز، فأصبح بالإمكان التحقق من التوكنات الصادرة عنها حتى دون إنترنت.",
   "wallet.mint.remove_plain":
     "إزالة {mint} من محفظتك؟ ستُزال مفاتيحها المخزّنة معها، فلن يعود بالإمكان التحقق من توكناتها دون اتصال.",
+  "wallet.mint.remove_holdings":
+    "تحمل {mint}:\n{holdings}\nإزالتها تحذف كل ذلك من هذا الجهاز. اسحبه أو أرسله أولًا.",
   "wallet.mint.title": "دور السك",
   "wallet.mint.none_desc":
     "دار السك تُصدر نقدك الإلكتروني وتستردّه. أضف واحدة لتشحن عبر Lightning أو لتقبل التوكنات الصادرة عنها.",
@@ -1485,6 +1588,7 @@ export const strings: Strings = {
   "wallet.err.already_spent": "منفق بالفعل",
   "wallet.err.change_pending": "مدفوعة، والباقي معلّق",
   "wallet.svc.mint_unreachable": "تعذّر الوصول إلى دار السك.",
+  "wallet.svc.mint_http_error": "ردّت دار السك بخطأ (HTTP {status}).",
   "wallet.svc.tor_ios": "طلبات دار السك لا تمر عبر Tor على iOS.",
   "wallet.svc.tor_ios_body":
     "على iOS لا يغطي Tor سوى Nostr، فسيصل هذا الطلب إلى دار السك عبر الشبكة المكشوفة ويربط عنوان IP الخاص بك بهذا النقد الإلكتروني. شغّل {setting} من الإعدادات، أو عطّل Tor أولًا. إرسال النقد الإلكتروني واستقباله عبر الشبكة ما زالا يعملان.",
@@ -1584,6 +1688,10 @@ export const strings: Strings = {
     "لا تستطيع عملاتك تكوين {amount} {unit} بالضبط دون اتصال.",
   "wallet.svc.inexact_detail":
     "أصغر توكن يمكنك إرساله هو {spend} {unit}. وبلا اتصال لا يوجد باقٍ، فالـ {extra} {unit} الإضافية تذهب إلى المستلم.",
+  "wallet.svc.spend_changed":
+    "سيكلّف هذا الإرسال الآن {spend} {unit}، أي أكثر مما وافقت عليه.",
+  "wallet.svc.spend_changed_body":
+    "تغيّرت عملاتك بينما كنت تقرر. لم يُرسل أي شيء. حاول مرة أخرى لترى المبلغ الجديد.",
   "wallet.svc.no_single_mint":
     "لا توجد دار سك واحدة تحمل {amount} {unit}. لا يمكن دمج النقد الإلكتروني من دور سك مختلفة في توكن واحد: جمّعه في دار واحدة أولًا، أو أرسله بمبالغ منفصلة.",
   "wallet.svc.have_tried_send": "لديك {total} {unit}، وحاولت إرسال {amount}.",
@@ -1611,6 +1719,9 @@ export const strings: Strings = {
     "لم يُرسل أي شيء آخر. العملات محجوزة حتى تؤكد دار السك النتيجة. إن تمّ الدفع، يظهر التوكن المقفل في «النشاط» لتسلّمه. وإن لم يتم، تعود العملات.",
   "wallet.svc.send_spent_by_swap":
     "استُبدلت هذه العملات عائدةً إلى محفظتك قبل استلام هذا التوكن، فلم يعد بالإمكان استلامه. القيمة موجودة في رصيدك.",
+  "wallet.svc.payment_in_doubt_body":
+    "العملات محجوزة حتى تؤكد دار السك النتيجة، ويُعاد التحقق منها عند التحديث التالي. لا تدفع هذه الفاتورة مرة أخرى حتى ذلك الحين.",
+  "wallet.svc.mint_removed": "أزلت دار السك هذه، لذا لم يعد هذا متتبَّعًا.",
 
   // ---- Contacts: add and share ----
   "contacts.qr.verified": "موثّق عبر رمز الاستجابة السريعة",
@@ -1653,7 +1764,7 @@ export const strings: Strings = {
   "contacts.scan.bitchat_expired":
     "انتهت صلاحية رمز bitchat ذاك. اطلب منهم فتح رمزهم مرة أخرى.",
   "contacts.scan.tampered":
-    "رمز الاستجابة السريعة هذا غير صالح: معرّف النظير فيه لا يطابق مفاتيحه. ربما جرى العبث به.",
+    "رمز الاستجابة السريعة هذا غير صالح: مفاتيحه لا تجتاز التحقق. ربما جرى العبث به.",
   "contacts.scan.key_conflict":
     "لديك مسبقًا مفتاح مختلف لهم، لذا لم يتغيّر شيء. امسح رمزهم وجهًا لوجه لاستبداله.",
   "contacts.scan.already_added": "موجود في جهات اتصالك بالفعل",
@@ -1676,7 +1787,7 @@ export const strings: Strings = {
   "contacts.verify.different_body":
     "هذا الرمز يخص شخصًا آخر. اطلب من {name} أن يعرض رمزه هو.",
   "contacts.verify.tampered_body":
-    "يبدو أن هذا الرمز عُبث به: معرّفه لا يطابق مفتاحه.",
+    "يبدو أن هذا الرمز عُبث به: مفاتيحه لا تجتاز التحقق.",
   "contacts.verify.choose_title": "كيف تريد التحقق؟",
   "contacts.verify.choose_body":
     "كلاهما يؤكد أن المفاتيح على هذا الهاتف تخص {name} فعلًا.",
@@ -1787,6 +1898,8 @@ export const strings: Strings = {
   "settings.diag.share": "مشاركة بيانات التشخيص",
   "settings.diag.share_desc":
     "حالة النقل والإعدادات لتقرير خلل. لا رسائل ولا أسماء ولا مفاتيح أبداً.",
+  "settings.diag.share_fallback":
+    "تعذّر فتح المشاركة. نُسخ التقرير بدلاً من ذلك.",
   "settings.section.storage_desc": "الاستخدام والتخزين المؤقت",
   "settings.section.appearance": "المظهر",
   "settings.section.appearance_desc": "المظهر والخط واللغة",
@@ -1831,6 +1944,9 @@ export const strings: Strings = {
   "settings.general.show_media": "عرض الوسائط تلقائيًا",
   "settings.general.show_media_desc":
     "تظهر الصور ومقاطع الفيديو في المحادثة، أو تبقى خلف ضغطة",
+  "settings.general.spam_filter": "مرشّح الرسائل المزعجة",
+  "settings.general.spam_filter_desc":
+    "يخفي الرسائل العامة ممن ينشرون بسرعة كبيرة أو يكررون أنفسهم أو يغرقون المحادثة بالروابط. لا تُرشَّح الرسائل الخاصة أبداً.",
   "settings.general.reset": "إعادة ضبط الإعدادات",
   "settings.general.media_retention": "الاحتفاظ بالوسائط لمدة",
   "settings.general.media_retention_desc":
@@ -1847,7 +1963,7 @@ export const strings: Strings = {
     "يعيد التفضيلات إلى قيمها الافتراضية، مع ترك هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس",
   "settings.general.reset_title": "إعادة ضبط الإعدادات؟",
   "settings.general.reset_body":
-    "تعود التفضيلات إلى قيمها الافتراضية، بما فيها المظهر، واللغة، والإشعارات، والتراجع عن الإرسال، والاتصال (الإنترنت، Tor، البوابة، الجسر، المُرحِّلات). أما قفل Airhop، ومدة الاحتفاظ بالوسائط، وحالتك فتبقى كما ضبطتها. هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس.",
+    "تعود التفضيلات إلى قيمها الافتراضية، بما فيها المظهر، واللغة، والإشعارات، والتراجع عن الإرسال، والاتصال (البوابة، جسر الشبكة، المُرحِّلات). أما قفل Airhop، ومدة الاحتفاظ بالوسائط، ومفتاح الإنترنت، وTor وجسوره، وحالتك فتبقى كما ضبطتها. هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس.",
   "settings.general.reset_confirm": "إعادة الضبط",
 
   // ---- Settings: privacy and security ----
@@ -1978,6 +2094,8 @@ export const strings: Strings = {
   "settings.conn.live_voice_off_title": "تعطيل الصوت المباشر؟",
   "settings.conn.live_voice_off_body":
     "الضغط المستمر على الميكروفون يسجّل ملاحظة صوتية بدلًا من ذلك. تُرسل عندما تفلت، ولا يسمعها أحد حتى يشغّلها.",
+  "settings.conn.live_video": "فيديو مباشر",
+  "settings.conn.live_video_desc": "بث الكاميرا للأشخاص القريبين، ومشاهدة بثهم",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "توجيه Tor",
   "settings.conn.tor_desc": "وجّه حركة Nostr عبر Tor لخصوصية إضافية",
@@ -1991,6 +2109,10 @@ export const strings: Strings = {
   "settings.conn.tor_timeout":
     "لم يتصل Tor بعد. يبقى مفعّلًا ويواصل المحاولة؛ وسيخبرك تبويب الشبكة متى بدأ التوجيه، أو إن كانت هذه الشبكة تحجبه.",
   "settings.conn.tor_failed": "تعذّر بدء Tor. أعد المحاولة بعد قليل.",
+  "settings.conn.tor_bad_bridges":
+    "تعذّر على Tor استخدام أسطر الجسور هذه. تحقق منها، أو اختر اتصالًا آخر.",
+  "settings.conn.tor_port_busy":
+    "تطبيق آخر يستخدم المنفذ الذي يحتاجه Tor، وغالبًا ما يكون تطبيقًا آخر يشغّل Tor. أغلقه، ثم حاول مرة أخرى.",
   "settings.tor.status": "حالة Tor",
   "settings.tor.connection": "الاتصال",
   "settings.tor.mode_off": "مباشر",
@@ -2002,7 +2124,7 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "يخفي استخدامك لـ Tor. أسرع من Snowflake، لكن هذه الجسور علنية وبعض الشبكات تحجبها.",
-  "settings.tor.mode_webtunnel": "webtunnel",
+  "settings.tor.mode_webtunnel": "WebTunnel",
   "settings.tor.mode_webtunnel_desc":
     "يخفي استخدامك لـ Tor بجعله يبدو كزيارة عادية لموقع ويب. حظره أصعب من غيره.",
   "settings.tor.mode_custom": "جسور مخصصة",
@@ -2135,6 +2257,8 @@ export const strings: Strings = {
   "settings.language.pending": "عند الفتح القادم",
   "settings.language.pending_a11y":
     "{value}، تُطبَّق في المرة القادمة التي تفتح فيها Airhop",
+  "settings.language.phone": "لغة الهاتف",
+  "settings.language.name_endonym_a11y": "{name} ({endonym})",
   "settings.language.rtl_restart": "إعادة الفتح الآن",
   "settings.language.rtl_title": "أعد فتح Airhop لإتمام التبديل",
   "settings.language.rtl_body":
@@ -2151,7 +2275,7 @@ export const strings: Strings = {
   "settings.status.away_desc": "الشبكة متوقفة، لا بحث ولا بث",
   "settings.status.invisible": "خفي",
   "settings.status.invisible_desc":
-    "مخفي عن البحث عبر البلوتوث، ولا تزال الهواتف التي تتصل بها تراك",
+    "لا بث عبر البلوتوث، لكن الهواتف المتصلة بهذا الهاتف عبر البلوتوث أو Wi-Fi لا تزال تراك",
   "settings.status.title": "الحالة",
   "settings.status.set_a11y": "ضبط الحالة على {value}",
   "settings.status.edit": "تعديل الحالة",
@@ -2481,6 +2605,15 @@ export const plurals: Plurals = {
     many: "إعادة توجيه {count} رسالة",
     other: "إعادة توجيه {count} رسالة",
   },
+  "chat.forward.too_many_public": {
+    zero: "لا تعرض الغرفة العامة إلا {count} رسالة متتالية من الشخص الواحد، فيضيع الباقي. أعد توجيه عدد أقل في كل مرة.",
+    one: "لا تعرض الغرفة العامة إلا {count} رسالة متتالية من الشخص الواحد، فيضيع الباقي. أعد توجيه عدد أقل في كل مرة.",
+    two: "لا تعرض الغرفة العامة إلا رسالتين متتاليتين من الشخص الواحد، فيضيع الباقي. أعد توجيه عدد أقل في كل مرة.",
+    few: "لا تعرض الغرفة العامة إلا {count} رسائل متتالية من الشخص الواحد، فيضيع الباقي. أعد توجيه عدد أقل في كل مرة.",
+    many: "لا تعرض الغرفة العامة إلا {count} رسالةً متتالية من الشخص الواحد، فيضيع الباقي. أعد توجيه عدد أقل في كل مرة.",
+    other:
+      "لا تعرض الغرفة العامة إلا {count} رسالة متتالية من الشخص الواحد، فيضيع الباقي. أعد توجيه عدد أقل في كل مرة.",
+  },
   "chat.voice.live_speaking_count": {
     zero: "{count} يتحدثون",
     one: "{count} يتحدث",
@@ -2636,15 +2769,6 @@ export const plurals: Plurals = {
   },
 
   // ---- Wallet: mints ----
-  "wallet.mint.remove_body": {
-    zero: "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    one: "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    two: "تحمل {mint} مبلغ {balance} {unit} في عملتين. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    few: "تحمل {mint} مبلغ {balance} {unit} في {count} عملات. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    many: "تحمل {mint} مبلغ {balance} {unit} في {count} عملةً. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-    other:
-      "تحمل {mint} مبلغ {balance} {unit} في {count} عملة. إزالتها تحذف ذلك الرصيد من هذا الجهاز نهائيًا ولا توجد نسخة احتياطية. اسحب الرصيد أو أرسله أولًا.",
-  },
   "wallet.mint.split_across": {
     zero: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
     one: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
@@ -2652,6 +2776,15 @@ export const plurals: Plurals = {
     few: "الرصيد موزّع على {count} دور سك. انقله إلى واحدة.",
     many: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
     other: "الرصيد موزّع على {count} دار سك. انقله إلى واحدة.",
+  },
+  "wallet.mint.remove_pending": {
+    zero: "هناك {count} دفعة لدى {mint} لم تُسوَّ بعد. إزالة دار السك تتخلى عنها، مع كل ما كانت ستعيده.",
+    one: "هناك {count} دفعة لدى {mint} لم تُسوَّ بعد. إزالة دار السك تتخلى عنها، مع كل ما كانت ستعيده.",
+    two: "هناك دفعتان لدى {mint} لم تُسوَّيا بعد. إزالة دار السك تتخلى عنهما، مع كل ما كانتا ستعيدانه.",
+    few: "هناك {count} دفعات لدى {mint} لم تُسوَّ بعد. إزالة دار السك تتخلى عنها، مع كل ما كانت ستعيده.",
+    many: "هناك {count} دفعةً لدى {mint} لم تُسوَّ بعد. إزالة دار السك تتخلى عنها، مع كل ما كانت ستعيده.",
+    other:
+      "هناك {count} دفعة لدى {mint} لم تُسوَّ بعد. إزالة دار السك تتخلى عنها، مع كل ما كانت ستعيده.",
   },
 
   // ---- Wallet: Lightning ----
@@ -2673,6 +2806,15 @@ export const plurals: Plurals = {
     few: "استُعيدت {count} عملات غير منفقة من {mints}.",
     many: "استُعيدت {count} عملةً غير منفقة من {mints}.",
     other: "استُعيدت {count} عملة غير منفقة من {mints}.",
+  },
+  "wallet.backup.already_held": {
+    zero: "عُثر على {count} عملة موجودة بالفعل في هذه المحفظة، فلم تُحتسب مرة أخرى.",
+    one: "عُثر على {count} عملة موجودة بالفعل في هذه المحفظة، فلم تُحتسب مرة أخرى.",
+    two: "عُثر على عملتين موجودتين بالفعل في هذه المحفظة، فلم تُحتسبا مرة أخرى.",
+    few: "عُثر على {count} عملات موجودة بالفعل في هذه المحفظة، فلم تُحتسب مرة أخرى.",
+    many: "عُثر على {count} عملةً موجودة بالفعل في هذه المحفظة، فلم تُحتسب مرة أخرى.",
+    other:
+      "عُثر على {count} عملة موجودة بالفعل في هذه المحفظة، فلم تُحتسب مرة أخرى.",
   },
   "wallet.backup.already_spent": {
     zero: "عُثر على {count} عملة لكنها منفقة بالفعل، فلم يُضَف شيء. وهذا طبيعي: كل عملة أنفقتها يومًا تبقى ظاهرة في السجلات التي تحتفظ بها دار السك.",
