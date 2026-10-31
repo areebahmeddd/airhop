@@ -39,10 +39,12 @@ import {
 import { useSettingsStore } from "@store/settings-store";
 import * as FileSystem from "expo-file-system";
 import {
+  CACHE_FILE_PREFIX,
   enforceIncomingQuota,
   INCOMING_FILE_PREFIX,
 } from "./file-transfer-service";
 import { trackLiveVideoWork } from "./live-video-work";
+import { sweepMediaIfDue } from "./media-retention";
 
 // LIVE_VIDEO_V1's resource bounds. Every one caps what a hostile sender in
 // range can make this phone hold.
@@ -64,6 +66,16 @@ const TICK_MS = 40;
 // How long a stream that ended is remembered, so its END copies and stray
 // late packets cannot open it again.
 const FINISHED_MEMORY = 64;
+
+// A live recording as this receiver and the sender name theirs:
+// airhop_in_<ms>_video_<id>.mp4 and airhop_<ms>_video_<id>.mp4, stamped when
+// the stream opened.
+const LIVE_CAPTURE_NAME = new RegExp(
+  `^${CACHE_FILE_PREFIX}(?:in_)?([0-9]+)_video_[0-9a-f]{${String(STREAM_ID_BYTES * 2)}}[.]mp4$`,
+);
+// Anything stamped before this was opened by an earlier process, so nothing
+// in this one is still writing it.
+const PROCESS_LOADED_AT_MS = Date.now();
 
 export function liveVideoRowID(senderPeerID: string, streamID: string): string {
   return `live-video-${senderPeerID}-${streamID}`;
@@ -128,7 +140,10 @@ export class LiveVideoReceiver {
   }
 
   // Rows left live by a process that died cannot come back: their stream is
-  // either over or will reopen with a fresh START.
+  // either over or will reopen with a fresh START. Nor can the partial
+  // recordings behind them, sent or received, which no row points at any more
+  // and which would otherwise sit unplayable against the received-media quota
+  // until retention, as bitchat-ios sweeps its own at start.
   dropStaleRows(): void {
     const chat = useChatStore.getState();
     for (const [channel, list] of Object.entries(chat.messages)) {
@@ -136,6 +151,7 @@ export class LiveVideoReceiver {
         if (m.liveVideo !== undefined) chat.removeMessage(channel, m.id);
       }
     }
+    dropOrphanCaptures();
   }
 
   // One VideoBurstPacket from `senderPeerID`, already authenticated: signed and
@@ -518,6 +534,10 @@ export class LiveVideoReceiver {
         .then((r) => r ?? null)
         .catch(() => null);
       if (result !== null && result !== undefined) {
+        // The age bound beside the size bound: a phone left receiving in the
+        // background never returns to the app, where the sweep otherwise runs.
+        // Throttled to 12 h.
+        sweepMediaIfDue();
         enforceIncomingQuota(0);
         attachment = {
           type: "video",
@@ -649,5 +669,34 @@ function deleteFile(uri: string): void {
     if (file.exists) file.delete();
   } catch {
     // Already gone; the retention sweep takes whatever a failure leaves.
+  }
+}
+
+// Live recordings an earlier process left with no message holding them. A
+// recording made in this process is never touched, whether or not a row has
+// it yet: its stream may still be finishing.
+function dropOrphanCaptures(): void {
+  const held = new Set<string>();
+  for (const list of Object.values(useChatStore.getState().messages)) {
+    for (const m of list) {
+      const uri = m.attachment?.uri;
+      if (uri !== undefined) held.add(uri.slice(uri.lastIndexOf("/") + 1));
+    }
+  }
+  try {
+    const dir = new FileSystem.Directory(FileSystem.Paths.cache);
+    if (!dir.exists) return;
+    for (const entry of dir.list()) {
+      if (!(entry instanceof FileSystem.File) || held.has(entry.name)) continue;
+      const stamp = LIVE_CAPTURE_NAME.exec(entry.name);
+      if (stamp === null || Number(stamp[1]) >= PROCESS_LOADED_AT_MS) continue;
+      try {
+        entry.delete();
+      } catch {
+        // Open elsewhere, or already gone; retention takes it later.
+      }
+    }
+  } catch {
+    // An unreadable cache directory; the retention sweep tries again.
   }
 }

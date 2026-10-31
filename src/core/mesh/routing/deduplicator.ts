@@ -53,6 +53,11 @@ export class Deduplicator {
     this.seen.set(key, Date.now());
   }
 
+  // Forget one ID, so the next copy of that packet is handled as new.
+  delete(packetId: Uint8Array): void {
+    this.seen.delete(packetIdKey(packetId));
+  }
+
   // Number of currently tracked entries (including potentially expired ones).
   get size(): number {
     return this.seen.size;

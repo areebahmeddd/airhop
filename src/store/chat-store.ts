@@ -258,7 +258,10 @@ interface ChatState {
   // bookkeeping (and the record of which cell we met in) has no one left to
   // serve.
   clearGeoCardExchange: (pubkey: string) => void;
-  addMessage: (msg: ChatMessage) => void;
+  // True when the thread holds the row afterwards, new or already there. False
+  // when it is refused as older than the thread's last clear, or trimmed on
+  // arrival, so an inbound path knows not to recreate the conversation.
+  addMessage: (msg: ChatMessage) => boolean;
   // Advance an outgoing message's delivery status (never downgrades). `atMs`
   // stamps the delivered/read time for the Message info sheet.
   setMessageStatus: (
@@ -556,7 +559,7 @@ export const useChatStore = create<ChatState>()(
           msg.timestampMs <
             Math.min(clearedAt, Date.now()) - CLEARED_CLOCK_SKEW_MS
         ) {
-          return;
+          return false;
         }
         // Decide this before the set() runs: was it already present? Observers
         // must fire exactly once for a new message and never for a duplicate
@@ -637,6 +640,7 @@ export const useChatStore = create<ChatState>()(
         if (stored && !isDuplicate && !msg.isMine && !msg.ring) {
           for (const fn of inboundListeners) fn(msg);
         }
+        return stored;
       },
 
       setMessageStatus(channel, id, status, atMs) {

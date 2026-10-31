@@ -25,7 +25,10 @@ import {
   type LiveVideoQuality,
   type LiveVideoQualityName,
 } from "@core/mesh/video/live-video-quality";
-import { STREAM_ID_BYTES } from "@core/mesh/video/video-burst-packet";
+import {
+  STREAM_ID_BYTES,
+  type LiveVideoConfig,
+} from "@core/mesh/video/video-burst-packet";
 import { VideoStreamPacketizer } from "@core/mesh/video/video-stream-packetizer";
 import {
   liveVideoFileName,
@@ -97,6 +100,9 @@ interface Deps {
 export class LiveVideoSendSession {
   readonly streamID: string;
   private readonly packetizer: VideoStreamPacketizer;
+  // The packetizer's own config, which it reads on every START, so a sound
+  // track withdrawn here reaches viewers with the next one.
+  private readonly streamConfig: LiveVideoConfig;
   private readonly pacer: LiveVideoPacer;
   private readonly congestion: LiveVideoCongestionController;
   private readonly recordingKey: string;
@@ -138,15 +144,16 @@ export class LiveVideoSendSession {
     const id = randomBytes(STREAM_ID_BYTES);
     this.streamID = bytesToHex(id);
     this.recordingKey = `send:${this.streamID}`;
+    this.streamConfig = {
+      width: quality.width,
+      height: quality.height,
+      fps: quality.fps,
+      bitrateKbps: Math.round(quality.videoBitrate / 1000),
+      hasAudio: deps.audio !== null,
+    };
     this.packetizer = new VideoStreamPacketizer(
       id,
-      {
-        width: quality.width,
-        height: quality.height,
-        fps: quality.fps,
-        bitrateKbps: Math.round(quality.videoBitrate / 1000),
-        hasAudio: deps.audio !== null,
-      },
+      this.streamConfig,
       quality.fec,
     );
     const budget = deps.packetBudget;
@@ -258,10 +265,16 @@ export class LiveVideoSendSession {
     const audio = this.deps.audio;
     if (audio === null || this.stopping !== null) return;
     // The microphone is a bonus: a stream that cannot get one goes on silent.
+    //
+    // The first START already promised sound, and viewers offer a sound toggle
+    // on it. A keyframe always carries a fresh START, so asking for one now
+    // tells every viewer, Airhop or bitchat, within a frame.
     await audio
       .startCapture((frame) => this.onAudio(frame))
       .catch(() => {
         this.withSound = false;
+        this.streamConfig.hasAudio = false;
+        NativeAirhopVideo?.requestKeyframe();
       });
     // Stopped while it was opening, after end() had closed it.
     if (this.stopping !== null) await audio.stopCapture();

@@ -5,9 +5,10 @@
 // Nostr and courier are transports in MessageRouter's sense but hold no
 // sockets, so they are not this file's concern.
 //
-// It holds links and answers questions about them. It decides nothing: which
-// packet goes where, what makes a peer count as direct, and what a refused
-// write means all stay in services/mesh-service.ts.
+// It holds links and answers questions about them. The one thing it decides
+// is which of a peer's links a broadcast goes down, a link-table question.
+// Which packet goes where, what makes a peer count as direct, and what a
+// refused write means all stay in services/mesh-service.ts.
 //
 // Two things a change here must keep. One question gets one answer covering
 // every transport, never an answer per transport for the caller to combine.
@@ -51,11 +52,15 @@ export type LinkWriteFn = (linkID: string, dataBase64: string) => Promise<void>;
 
 // Not exported: callers pass an object literal.
 interface BroadcastOptions {
-  // Restrict to one transport, as the periodic ANNOUNCE does.
+  // Restrict to one transport.
   readonly kind?: TransportKind;
-  // Skip one link. This is the relay rule: bytes are never written back down
-  // the link they arrived on.
+  // The link the bytes arrived on, for a relay. Nothing goes back down it, nor
+  // to the peer bound to it on any other link: that peer already holds them.
   readonly exclude?: string;
+  // Every link rather than one per bound peer, for our own direct announce
+  // alone. The announce is what binds a link to its peer, so a peer's second
+  // link that never hears one stays unbound and takes a copy of everything.
+  readonly everyLink?: boolean;
 }
 
 export class LinkRegistry {
@@ -310,6 +315,53 @@ export class LinkRegistry {
     return this.writers[kind](linkID, dataBase64);
   }
 
+  // The writes one broadcast makes, each a list of links tried in turn until
+  // one takes the bytes: per transport, one per bound peer, on its most
+  // recently bound link with its others behind it, and one per link nobody has
+  // announced on, since that could be anyone.
+  //
+  // One per peer because Bluetooth is dual-role: two phones that meet each dial
+  // the other, and writing both links doubles the airtime of everything the
+  // mesh floods for a copy the far deduplicator throws away. As bitchat-ios
+  // (BLEFanoutSelector). Per transport, so a peer also held on LAN keeps
+  // getting its Bluetooth copy as before.
+  private fanout(options: BroadcastOptions): string[][] {
+    const ingressPeer =
+      options.exclude === undefined
+        ? undefined
+        : this.peerByLink.get(options.exclude);
+    const writes: string[][] = [];
+    for (const kind of TRANSPORT_KINDS) {
+      if (options.kind !== undefined && kind !== options.kind) continue;
+      const covered = new Set<string>();
+      for (const linkID of this.linkIDs(kind)) {
+        if (linkID === options.exclude) continue;
+        const peerID = this.peerByLink.get(linkID);
+        if (peerID === undefined) {
+          writes.push([linkID]);
+          continue;
+        }
+        if (peerID === ingressPeer) continue;
+        if (options.everyLink === true) {
+          writes.push([linkID]);
+          continue;
+        }
+        if (covered.has(peerID)) continue;
+        covered.add(peerID);
+        const peerLinks = this.linksByPeer.get(peerID) ?? [linkID];
+        writes.push(peerLinks.filter((id) => this.kindByLink.get(id) === kind));
+      }
+    }
+    return writes;
+  }
+
+  // The first link of every write a broadcast with these options would make,
+  // so a caller pacing a long stream can tell beforehand that nobody is left
+  // to take it.
+  fanoutLinks(options: BroadcastOptions = {}): readonly string[] {
+    return this.fanout(options).map((links) => links[0]);
+  }
+
   // Resolves to whether at least one link took the bytes. Most callers ignore
   // that; the fragment pacer cannot, because a refused write it does not retry
   // is a file the far side can never finish.
@@ -322,10 +374,7 @@ export class LinkRegistry {
     dataBase64: string,
     options: BroadcastOptions = {},
   ): Promise<boolean> {
-    const targets = this.linkIDs(options.kind).filter(
-      (linkID) => linkID !== options.exclude,
-    );
-    return (await this.writeCounted(targets, dataBase64)).sent > 0;
+    return (await this.writeCounted(this.fanout(options), dataBase64)).sent > 0;
   }
 
   // Down `fastestLinks()`, counting the links that took the bytes and the ones
@@ -335,28 +384,41 @@ export class LinkRegistry {
     dataBase64: string,
   ): Promise<{ sent: number; refused: number }> {
     return this.writeCounted(
-      this.fastestLinks().map((link) => link.id),
+      this.fastestLinks().map((link) => [link.id]),
       dataBase64,
     );
   }
 
   private async writeCounted(
-    linkIDs: readonly string[],
+    writes: readonly (readonly string[])[],
     dataBase64: string,
   ): Promise<{ sent: number; refused: number }> {
     const results = await Promise.all(
-      linkIDs.map((linkID) =>
-        this.send(linkID, dataBase64).then(
-          () => true,
-          () => false,
-        ),
-      ),
+      writes.map((linkIDs) => this.writeFirst(linkIDs, dataBase64)),
     );
     const sent = results.filter(Boolean).length;
     return { sent, refused: results.length - sent };
   }
 
-  // Onward to every link except the one the bytes arrived on. A packet does not
+  // Down the first of a peer's links that takes the bytes. A refused Bluetooth
+  // write is usually one full queue, and the peer's other link has its own.
+  // The first attempt starts synchronously, so a broadcast's writes still all
+  // leave in the same tick.
+  private async writeFirst(
+    linkIDs: readonly string[],
+    dataBase64: string,
+  ): Promise<boolean> {
+    for (const linkID of linkIDs) {
+      const took = await this.send(linkID, dataBase64).then(
+        () => true,
+        () => false,
+      );
+      if (took) return true;
+    }
+    return false;
+  }
+
+  // Onward to everyone but the peer the bytes arrived from. A packet does not
   // need to go back to the peer it just came from, and doing so is how a
   // two-node mesh spins.
   relay(dataBase64: string, ingressLinkID: string): void {

@@ -555,6 +555,95 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
     expect(reassembled!.payload).toEqual(packet.payload);
   });
 
+  test("fresh junk streams evict each other, not a transfer still arriving", () => {
+    // Anyone in range can open a slot with one tiny final fragment. Evicting
+    // the slot started first would let 128 of them cancel every transfer in
+    // progress; a live stream refreshes far faster than that, so evicting the
+    // slot idle longest takes junk first.
+    const identity = makeIdentity();
+    const packet = makeLargePacket(FRAG_DATA_SIZE * 3, identity);
+    const frags = fragmentPacket(packet, identity);
+    const manager = new FragmentManager();
+    const senderID = frags[0].senderID;
+    let reassembled: Packet | null = null;
+    const deliver = (from: Uint8Array, payload: Uint8Array): void => {
+      manager.receive(from, payload, (p) => {
+        reassembled = p;
+      });
+    };
+    const junk = (i: number): void => {
+      const other = new Uint8Array(8);
+      other[0] = i & 0xff;
+      other[1] = (i >> 8) & 0xff;
+      deliver(
+        other,
+        spoofFragment(other, 1, 2, PacketType.CHANNEL_MSG, new Uint8Array(1)),
+      );
+    };
+
+    deliver(senderID, frags[0].payload);
+    for (let i = 1; i < 128; i++) junk(i);
+    expect(manager.size).toBe(128);
+    deliver(senderID, frags[1].payload);
+    junk(128);
+
+    expect(manager.size).toBe(128);
+    for (const f of frags.slice(2)) deliver(senderID, f.payload);
+    expect(reassembled).not.toBeNull();
+    expect(reassembled!.payload).toEqual(packet.payload);
+  });
+
+  test("past the overall byte budget new bytes are refused, nothing evicted", () => {
+    // Each slot is capped by its type, but 128 of them topped up inside the
+    // idle timeout would still hold over a hundred MiB. Reaching the budget
+    // refuses; freeing room by dropping a stream would be an eviction
+    // primitive again.
+    const identity = makeIdentity();
+    const packet = makeLargePacket(FRAG_DATA_SIZE * 3, identity);
+    const frags = fragmentPacket(packet, identity);
+    const manager = new FragmentManager();
+    const senderID = frags[0].senderID;
+    let reassembled: Packet | null = null;
+    const progress = jest.fn();
+    const deliver = (from: Uint8Array, payload: Uint8Array): void => {
+      manager.receive(
+        from,
+        payload,
+        (p) => {
+          reassembled = p;
+        },
+        progress,
+      );
+    };
+    const mebibyteStream = (i: number): void => {
+      const other = new Uint8Array(8).fill(0x40 + i);
+      deliver(
+        other,
+        spoofFragment(
+          other,
+          0,
+          4,
+          PacketType.FILE_TRANSFER,
+          new Uint8Array(1024 * 1024),
+        ),
+      );
+    };
+
+    deliver(senderID, frags[0].payload);
+    for (let i = 0; i < 7; i++) mebibyteStream(i);
+    expect(manager.size).toBe(8);
+    progress.mockClear();
+
+    mebibyteStream(7);
+    expect(progress).not.toHaveBeenCalled();
+    expect(manager.size).toBe(8);
+
+    // The room left is still there for the transfer already under way.
+    for (const f of frags.slice(1)) deliver(senderID, f.payload);
+    expect(reassembled).not.toBeNull();
+    expect(reassembled!.payload).toEqual(packet.payload);
+  });
+
   // A stream is sized by the type its fragments claim, so one labelled as an
   // announce cannot buffer a file's worth of memory.
   test("a stream cannot buffer past the frame its claimed type allows", () => {

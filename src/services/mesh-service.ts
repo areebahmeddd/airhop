@@ -19,6 +19,7 @@ import NativeAirhopWiFi from "@bridge/NativeAirhopWiFi";
 import {
   decodeContactCard,
   encodeContactCard,
+  encodeQRContent,
   type ContactCard,
 } from "@core/crypto/contact-exchange";
 import {
@@ -208,7 +209,10 @@ import {
   wrapDm,
 } from "@core/nostr/gift-wrap";
 import { NostrClient } from "@core/nostr/nostr-client";
-import { OpenedGiftWraps } from "@core/nostr/opened-gift-wraps";
+import {
+  flushProcessedEvents,
+  ProcessedEvents,
+} from "@core/nostr/processed-events";
 import { sharedRowID } from "@core/nostr/shared-row-id";
 import {
   decodeAirhopChannelPayload,
@@ -233,7 +237,11 @@ import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { stopRingAlert } from "@platform/ring-alert";
 import { useActivityStore } from "@store/activity-store";
 import { useBlockedStore } from "@store/blocked-store";
-import { isLivePost, useBoardStore } from "@store/board-store";
+import {
+  isLivePost,
+  useBoardStore,
+  type PendingBridgedDelete,
+} from "@store/board-store";
 import { useChannelMembersStore } from "@store/channel-members-store";
 import {
   hasStoredMessage,
@@ -274,7 +282,7 @@ import {
   verifyEvent,
   type Event as NostrEvent,
 } from "nostr-tools";
-import { DeviceEventEmitter, type EventSubscription } from "react-native";
+import { Platform, type EventSubscription } from "react-native";
 import { setAudioForPlayback, setAudioForRecording } from "./audio-session";
 import { noteUrgentNotice } from "./board-alerts";
 import { BridgeService } from "./bridge-service";
@@ -297,6 +305,7 @@ import {
   type LiveVideoSendSummary,
 } from "./live-video-sender";
 import { trackLiveVideoWork } from "./live-video-work";
+import { nativeEvents } from "./native-events";
 import { ringVerdict, ROOM_REPLAY_WINDOW_MS } from "./notification-policy";
 import { rebindNutzapWatcher } from "./nutzap-watcher-handle";
 import { PrivateChannelService } from "./private-channel-service";
@@ -419,6 +428,10 @@ const HEX_32 = /^[0-9a-f]{64}$/;
 // Cap on each per-session record of ids seen or sent, dropping the oldest.
 const MAX_REMEMBERED_IDS = 2000;
 
+// Owners whose prekey bundle is held awaiting their announce. bitchat-ios's
+// pendingPrekeyBundleCap.
+const PENDING_PREKEY_BUNDLE_CAP = 64;
+
 // How stale a live-voice frame may be before it is treated as a straggler or a
 // replay rather than something anyone should start hearing. Matches bitchat's
 // TransportConfig.pttPublicFrameMaxAgeSeconds (30s).
@@ -508,6 +521,11 @@ export const UPLINK_EVENTS_PER_MINUTE_PER_DEPOSITOR = 10;
 // the bag and crowd everyone else out.
 export const MAX_QUEUED_UPLINKS = 20;
 export const MAX_QUEUED_UPLINKS_PER_DEPOSITOR = 5;
+// Our own room posts held for a relay (holdRelayPost), on the same bounds as
+// a gateway's bag: no more than it holds, and no older than a carried event
+// receivers would still take, past which the conversation has moved on.
+const MAX_HELD_RELAY_POSTS = MAX_QUEUED_UPLINKS;
+const HELD_RELAY_POST_MAX_AGE_MS = CARRIER_MAX_EVENT_AGE_SECONDS * 1000;
 // Event IDs each gateway loop-prevention set remembers, as bitchat-ios
 // GatewayService.Limits.maxTrackedEventIDs. The sets only have to outlast the
 // 15-minute freshness window at the downlink budget (450 events), and relay
@@ -563,10 +581,6 @@ export class MeshService {
   // Broadcast a packet over every connected BLE link. Captured from the
   // constructor's broadcastFn so board posts reach the mesh like any broadcast.
   private broadcastPacket!: (packet: Packet) => void;
-  // Bridged Nostr event ids by board postID hex, for merged deletes. In-memory
-  // only: after a relaunch a delete still tombstones the board copy, but the
-  // Nostr copy is left to expire with relay retention (matches bitchat).
-  private readonly bridgedBoardEventIDs = new Map<string, string>();
   // Outstanding mesh pings by nonce hex, awaiting a pong (RTT/hops probe).
   private readonly pendingPings = new Map<
     string,
@@ -598,6 +612,14 @@ export class MeshService {
     geohash: string;
     event: NostrEvent;
   }[] = [];
+  // Our own room posts owed a relay copy. Here rather than in the room
+  // services, which a pool rebuild (a network change, a Tor toggle) replaces.
+  private heldRelayPosts: {
+    heldAtMs: number;
+    publish: () => Promise<boolean>;
+  }[] = [];
+  // NIP-09 retractions awaiting a relay's answer, by the event they retract.
+  private readonly bridgedDeletesInFlight = new Set<string>();
   private readonly rebroadcastEventIDs = new BoundedIdSet(GATEWAY_ID_SET_CAP);
   // Sliding 60s window of downlink-rebroadcast timestamps, bounding BLE airtime.
   private downlinkSendTimes: number[] = [];
@@ -676,12 +698,15 @@ export class MeshService {
   // Flushed when the session comes up.
 
   // Wire message ids received from a peer over the mesh that still owe a read
-  // receipt, sent when the user opens that conversation. Ephemeral: read
-  // receipts are best-effort and need not survive a restart.
+  // receipt, sent when the user opens that conversation. In memory, and
+  // rebuilt from the unread rows at launch (oweReadReceiptsForUnread).
   private readonly pendingReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
   // Read receipts owed over Nostr, keyed by the sender's Nostr pubkey hex.
   // Flushed when the user opens that conversation.
   private readonly pendingNostrReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
+  // Receipts for messages already read that had no route to go by, keyed by
+  // peer ID. See sendUnroutedReadReceipts.
+  private readonly unroutedReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
 
   // Fragment reassembly: collects FRAGMENT packets into full packets.
   private readonly fragmentManager = new FragmentManager();
@@ -696,6 +721,11 @@ export class MeshService {
   // for asynchronous first contact.
   private readonly localPrekeys = new LocalPrekeyStore();
   private readonly peerPrekeys = new PeerPrekeyStore();
+  // Bundles that arrived before their owner's announce, latest per owner, held
+  // until an announce pins the key they verify against (onPrekeyBundle). A
+  // bundle and its announce race each other through relays, and bundles are
+  // never synced, so one dropped here may not come again.
+  private readonly pendingPrekeyBundles = new Map<string, Packet>();
 
   // Gossip reconciliation. Peers periodically broadcast a compact GCS filter of
   // the packet IDs they've seen; anyone holding something absent from that
@@ -741,6 +771,9 @@ export class MeshService {
   private audibleChannel: string | null = null;
   // Whether the user is recording a voice or video note. See setNoteRecording.
   private noteRecording = false;
+  // Incoming bursts the user silenced by playing something else, kept quiet
+  // until they end. See silenceLiveVoice.
+  private readonly silencedBursts = new Set<string>();
   // Live video. The receiver runs whenever the mesh does (a device without the
   // native video module never builds one); a send session exists only while
   // this user is live, and holds the microphone while it does.
@@ -861,7 +894,7 @@ export class MeshService {
       // be able to catch up on messages we originated, not just relayed ones.
       this.gossip.track(packet);
       const raw = encodePacket(packet);
-      // Every open link, every radio.
+      // Every neighbour, every radio.
       if (raw.length <= MAX_BLE_FRAME) {
         return this.links.broadcast(bytesToBase64(raw));
       }
@@ -1006,14 +1039,20 @@ export class MeshService {
       // Every link, on every transport. A peer heard from less often than
       // REACHABLE_TTL_MS is dropped, and the repeat is also what makes the link
       // binding certain: the announce sent at link-up can be suppressed by a
-      // relayed copy arriving first. Two links to one peer means two copies and
-      // the deduplicator drops one.
+      // relayed copy arriving first.
+      //
+      // So this is the one broadcast that goes on every link rather than once
+      // per neighbour (see everyLink), as bitchat-ios skips its per-peer
+      // collapse for direct announces. Two links to one peer means two copies
+      // and the deduplicator drops one.
       //
       // A refused write is NOT a disconnect. The stack refuses for ordinary
       // reasons (its queue is full, the GATT server is mid-setup, another
       // transfer has the link busy) and the link is fine a moment later.
       // Teardown belongs to the disconnect event.
-      void this.links.broadcast(bytesToBase64(encodePacket(packet)));
+      void this.links.broadcast(bytesToBase64(encodePacket(packet)), {
+        everyLink: true,
+      });
     };
     this.announceManager.start(
       this.identity,
@@ -1182,6 +1221,7 @@ export class MeshService {
     // hear their ANNOUNCE this session. Presence is NOT seeded from contacts:
     // being a saved contact is not evidence of being nearby.
     this.hydrateContactNostrKeys();
+    this.oweReadReceiptsForUnread();
     // When a contact is created (typically the moment you first DM a nearby
     // peer), bind their npub from the registry if we already heard it. Their
     // ANNOUNCE may have arrived before the contact existed, and without this
@@ -1234,6 +1274,12 @@ export class MeshService {
     this.outboxSweepTimer = setInterval(() => {
       this.expireQueuedMail();
       this.retryDueOverRelays();
+      // The connect edge fires on the first relay up, which may be a location
+      // relay with no DM relay yet, or come before a rebuilt location service
+      // has its cell again. These retry until their relay answers.
+      this.sendUnroutedReadReceiptsOverNostr();
+      this.flushHeldRelayPosts();
+      this.retryBridgedDeletes();
       this.refreshCourierDropsIfDayChanged();
       // The only reaper that runs without a new handshake to store, which a
       // pair stranded by a lost msg3 never has.
@@ -1249,9 +1295,14 @@ export class MeshService {
     // one silently stops redeeming incoming payments for the session.
     rebindNutzapWatcher();
 
-    // BLE event listeners.
+    // Native event listeners, each through the module that raises it, or iOS
+    // never sends them (see native-events.ts). Removed in stop(), which lets
+    // iOS stop sending too.
+    const bleEvents = nativeEvents(AirhopBLE);
+    const wifiEvents = nativeEvents(NativeAirhopWiFi);
+    const lanEvents = nativeEvents(NativeAirhopLAN);
     this.subs = [
-      DeviceEventEmitter.addListener(
+      bleEvents.addListener(
         "AirhopBLE.linkConnected",
         ({ linkID }: { linkID: string; role: string; rssi: number }) => {
           this.bleClosedAt.delete(linkID);
@@ -1294,7 +1345,7 @@ export class MeshService {
         },
       ),
 
-      DeviceEventEmitter.addListener(
+      bleEvents.addListener(
         "AirhopBLE.linkDisconnected",
         ({ linkID }: { linkID: string }) => {
           const now = Date.now();
@@ -1306,13 +1357,13 @@ export class MeshService {
         },
       ),
 
-      DeviceEventEmitter.addListener(
+      bleEvents.addListener(
         "AirhopBLE.packetReceived",
         ({ linkID, dataBase64 }: { linkID: string; dataBase64: string }) => {
-          // A frame proves the link is up. stop() forgets every Bluetooth link
-          // because their disconnects go unheard while stopped, but a central
-          // link can outlive that natively, and its connect event is long past.
-          // Idempotent for a link already held.
+          // A frame proves the link is up. Its connect event can go unheard:
+          // one raised while the mesh was stopped had no listener, and stop()
+          // forgets every Bluetooth link for the same reason. Idempotent for a
+          // link already held.
           //
           // Except a frame that lost the race with its own disconnect (see
           // LATE_FRAME_MS). Its bytes are still handled, but reopening the link
@@ -1330,33 +1381,17 @@ export class MeshService {
       // the banner text and the decision about what to do next. Restarting the
       // radios from here loops on iOS: a restart builds a new CBManager, which
       // reports its state right back into this handler.
-      DeviceEventEmitter.addListener(
+      bleEvents.addListener(
         "AirhopBLE.adapterStateChanged",
         ({ enabled }: { enabled: boolean }) => {
           this.radio.onAdapterChanged(enabled);
         },
       ),
 
-      // Battery moved enough to possibly change how hard the radios should run.
-      // Android only, and deliberately infrequent: native filters out the
-      // per-percent noise before it reaches the bridge.
-      DeviceEventEmitter.addListener("AirhopBLE.powerStateChanged", () => {
-        this.radio.onPowerStateChanged();
-      }),
-
-      // The platform refused a scan after accepting the request. Handed to the
-      // reconciler, which owns both the belief and the retry that corrects it.
-      DeviceEventEmitter.addListener(
-        "AirhopBLE.scanFailed",
-        ({ errorCode }: { errorCode: number }) => {
-          this.radio.onScanFailed(errorCode);
-        },
-      ),
-
       // Signal strength for the Mesh tab. Native emits this per link, so it has
       // to be mapped back to a peerID, which is only known once that peer's
       // ANNOUNCE has arrived, hence the silent drop for unmapped links.
-      DeviceEventEmitter.addListener(
+      bleEvents.addListener(
         "AirhopBLE.rssiUpdated",
         ({ linkID, rssi }: { linkID: string; rssi: number }) => {
           const peerID = this.links.peerOf(linkID);
@@ -1366,13 +1401,37 @@ export class MeshService {
       ),
     ];
 
+    // Android only. iOS's supportedEvents does not list them, and
+    // RCTEventEmitter's addListener raises a red box in a debug build for an
+    // event the module does not declare.
+    if (Platform.OS === "android") {
+      this.subs.push(
+        // Battery moved enough to possibly change how hard the radios should
+        // run. Deliberately infrequent: native filters out the per-percent
+        // noise before it reaches the bridge.
+        bleEvents.addListener("AirhopBLE.powerStateChanged", () => {
+          this.radio.onPowerStateChanged();
+        }),
+
+        // The platform refused a scan after accepting the request. Handed to
+        // the reconciler, which owns both the belief and the retry that
+        // corrects it.
+        bleEvents.addListener(
+          "AirhopBLE.scanFailed",
+          ({ errorCode }: { errorCode: number }) => {
+            this.radio.onScanFailed(errorCode);
+          },
+        ),
+      );
+    }
+
     this.subs.push(
       // The fast path became unusable, or usable again.
       //
       // Android reports both edges, off the framework's WiFi Aware state
       // broadcast, so turning WiFi back on recovers immediately. iOS reports
       // only the falling edge, and the controller's retry ladder recovers it.
-      DeviceEventEmitter.addListener(
+      wifiEvents.addListener(
         "AirhopWiFi.availabilityChanged",
         ({
           available,
@@ -1391,7 +1450,7 @@ export class MeshService {
           }
         },
       ),
-      DeviceEventEmitter.addListener(
+      wifiEvents.addListener(
         "AirhopWiFi.linkConnected",
         ({ linkID }: { linkID: string }) => {
           this.links.open("wifi", linkID);
@@ -1420,13 +1479,13 @@ export class MeshService {
             .catch(() => {});
         },
       ),
-      DeviceEventEmitter.addListener(
+      wifiEvents.addListener(
         "AirhopWiFi.linkDisconnected",
         ({ linkID }: { linkID: string }) => {
           this.onLinkGone(linkID);
         },
       ),
-      DeviceEventEmitter.addListener(
+      wifiEvents.addListener(
         "AirhopWiFi.packetReceived",
         ({ linkID, dataBase64 }: { linkID: string; dataBase64: string }) => {
           this.handleRaw(linkID, dataBase64);
@@ -1435,7 +1494,7 @@ export class MeshService {
     );
 
     this.subs.push(
-      DeviceEventEmitter.addListener(
+      lanEvents.addListener(
         "AirhopLAN.availabilityChanged",
         ({ available }: { available: boolean }) => {
           this.lan.onAvailabilityChanged(available);
@@ -1448,19 +1507,19 @@ export class MeshService {
           }
         },
       ),
-      DeviceEventEmitter.addListener(
+      lanEvents.addListener(
         "AirhopLAN.peerDiscovered",
         ({ serviceName }: { serviceName: string }) => {
           this.lan.onPeerDiscovered(serviceName);
         },
       ),
-      DeviceEventEmitter.addListener(
+      lanEvents.addListener(
         "AirhopLAN.peerLost",
         ({ serviceName }: { serviceName: string }) => {
           this.lan.onPeerLost(serviceName);
         },
       ),
-      DeviceEventEmitter.addListener(
+      lanEvents.addListener(
         "AirhopLAN.linkConnected",
         ({ linkID }: { linkID: string }) => {
           this.links.open("lan", linkID);
@@ -1481,14 +1540,14 @@ export class MeshService {
             .catch(() => {});
         },
       ),
-      DeviceEventEmitter.addListener(
+      lanEvents.addListener(
         "AirhopLAN.linkDisconnected",
         ({ linkID }: { linkID: string }) => {
           this.onLinkGone(linkID);
           this.lan.setLinkCount(this.links.size("lan"));
         },
       ),
-      DeviceEventEmitter.addListener(
+      lanEvents.addListener(
         "AirhopLAN.packetReceived",
         ({ linkID, dataBase64 }: { linkID: string; dataBase64: string }) => {
           this.handleRaw(linkID, dataBase64);
@@ -1658,8 +1717,8 @@ export class MeshService {
   // Relay one packet onward, following a source route when the sender planned
   // one through us and flooding when they did not.
   //
-  // `ingressLinkID` is never written back to: a packet does not need to be sent
-  // to the peer it just came from, and doing so is how a two-node mesh spins.
+  // Nothing is written back to the peer the packet came from, on any of its
+  // links: it does not need it, and doing so is how a two-node mesh spins.
   //
   // Returns nothing; a refused write is not a dead link (the stack says the
   // same thing when its queue is simply full), so teardown stays with the
@@ -1741,7 +1800,7 @@ export class MeshService {
   // A packet longer than one Bluetooth frame, written as fragments: the radio
   // truncates or refuses a longer write, so it would never arrive. bitchat's BLE
   // service splits every packet the same way. To one link, or to every
-  // Bluetooth link when none is given, less `excludeLinkID`. Spaced as file
+  // Bluetooth neighbour when none is given, less `excludeLinkID`. Spaced as file
   // fragments are, since they share the radio's write queue. Wi-Fi and LAN
   // carry the packet whole.
   //
@@ -1759,8 +1818,11 @@ export class MeshService {
     if (linkID !== undefined && this.links.kindOf(linkID) === undefined) {
       return false;
     }
+    // The same fanout the broadcast below makes, so a relay whose only other
+    // Bluetooth link is the ingress peer's second one paces nothing.
     const anyBluetooth = (): boolean =>
-      this.links.linkIDs("ble").some((id) => id !== excludeLinkID);
+      this.links.fanoutLinks({ kind: "ble", exclude: excludeLinkID }).length >
+      0;
     if (linkID === undefined && !anyBluetooth()) return false;
     let delivered = true;
     const fragments = fragmentPacket(packet, {
@@ -1850,9 +1912,15 @@ export class MeshService {
       // Fragments carry the parent packet's TTL and recipient, never its
       // route, so one addressed to us stops here (relayDecision) rather than
       // being echoed back out over every other link.
-      this.floodRouter.receive(packet, (relay) => {
+      //
+      // A duplicate stops here too. It is either our own fragment echoed back
+      // (writeFragments originates each), which would rebuild and decode our own
+      // packet, or a late copy after completion, which would open an orphan
+      // assembly and hold a reassembly slot until it expires.
+      const isNew = this.floodRouter.receive(packet, (relay) => {
         this.relayPacket(relay, linkID);
       });
+      if (!isNew) return;
       this.fragmentManager.receive(
         packet.senderID,
         packet.payload,
@@ -1869,7 +1937,10 @@ export class MeshService {
     const isNew = this.floodRouter.receive(packet, (relay) => {
       this.relayPacket(relay, linkID);
     });
-    if (!isNew) return;
+    if (!isNew) {
+      this.bindSecondLink(packet, linkID);
+      return;
+    }
 
     // A sync reply is advertised as held whatever the handler makes of it, so
     // the peer does not offer one we refuse again every round.
@@ -1915,6 +1986,31 @@ export class MeshService {
       default:
         return true;
     }
+  }
+
+  // A neighbour's announce reaches both links of a dual-linked pair as the
+  // same bytes, and the copy on the second link is a duplicate, dropped before
+  // onAnnounce could bind it. That link would stay unbound until the next
+  // announce happened to arrive on it first. So a duplicate direct announce on
+  // an unbound held link binds it, but only to a peer already direct over
+  // another link, and only once it verifies against that peer's held key:
+  // anything less is a claim onAnnounce has not vetted. Unbound links are
+  // rare, so the signature check costs little.
+  private bindSecondLink(packet: Packet, linkID: string): void {
+    if (packet.type !== PacketType.ANNOUNCE || packet.ttl !== ANNOUNCE_TTL) {
+      return;
+    }
+    if (
+      this.links.kindOf(linkID) === undefined ||
+      this.links.peerOf(linkID) !== undefined
+    ) {
+      return;
+    }
+    const peerID = bytesToHex(packet.senderID);
+    if (!this.links.directPeers().includes(peerID)) return;
+    const key = this.knownSigningKey(peerID);
+    if (key === undefined || !verifyPacket(packet, key)) return;
+    this.links.bind(linkID, peerID);
   }
 
   // A packet rebuilt from fragments, held to the rules handleFrame applies to
@@ -2096,17 +2192,20 @@ export class MeshService {
   // attributed to her and presented as live.
   //
   // Live voice and video share bitchat-ios's admission
-  // (authenticatedLiveFrameSender): broadcast, not our own, inside 30 s, then
-  // the signature. 30 s is generous next to the couple of seconds a frame
-  // needs to cross the mesh, and tight enough that a stream cannot outlive the
-  // moment it was sent.
+  // (authenticatedLiveFrameSender): broadcast, not our own, no more than 30 s
+  // old, then the signature. 30 s is generous next to the couple of seconds a
+  // frame needs to cross the mesh, and tight enough that a stream cannot
+  // outlive the moment it was sent.
+  //
+  // Only the past is bounded here, as bitchat-ios bounds it. A frame dated
+  // ahead is left to the two-minute guard every packet and every reassembled
+  // one already passed (PACKET_MAX_SKEW_MS), so a talker whose clock runs fast
+  // is heard and relayed here as at a bitchat-ios hop rather than cut off.
   private liveFrameIsAuthentic(packet: Packet): boolean {
     const senderID = bytesToHex(packet.senderID);
     if (senderID === this.identity.peerID) return false;
     if (!isBroadcast(packet)) return false;
-    if (Math.abs(Date.now() - packet.timestamp) > PTT_FRAME_MAX_AGE_MS) {
-      return false;
-    }
+    if (Date.now() - packet.timestamp > PTT_FRAME_MAX_AGE_MS) return false;
     return this.senderIsAuthentic(packet, senderID);
   }
 
@@ -2117,7 +2216,10 @@ export class MeshService {
     // background the app or leave the thread in the middle of a burst, and the
     // audio should stop there rather than play on to the end.
     this.pttPlayback = new NativeAudioPlayback(
-      () => this.audibleChannel !== null && !this.noteRecording,
+      () =>
+        this.audibleChannel !== null &&
+        !this.noteRecording &&
+        !this.liveVoiceSilenced(),
       (level) => this.reportPttLevel({ inbound: level }),
       () => {
         // The speaker is quiet, so hand the audio session back: the same
@@ -2253,6 +2355,32 @@ export class MeshService {
   // walkie-talkie does.
   setNoteRecording(recording: boolean): void {
     this.noteRecording = recording;
+  }
+
+  // Silence the live voice playing now, for a note or a video the user just
+  // started, as bitchat-ios stops a burst when a note starts: one sound at a
+  // time, and the user chose the newer one. Queued audio goes too. The bursts
+  // heard at this moment stay quiet to their end (they still show as talking,
+  // and each still arrives as a voice note); a burst that starts later is
+  // heard as usual. A no-op with nothing playing.
+  silenceLiveVoice(): void {
+    const sessions = this.pttPlayer?.activeSessions ?? [];
+    for (const { burstIDHex } of sessions) {
+      this.silencedBursts.add(burstIDHex);
+      this.pttPlayback?.stopSession(burstIDHex);
+    }
+  }
+
+  // Whether a burst silenced by silenceLiveVoice is still going. Forgets them
+  // once none is, so the next burst is heard.
+  private liveVoiceSilenced(): boolean {
+    if (this.silencedBursts.size === 0) return false;
+    const sessions = this.pttPlayer?.activeSessions ?? [];
+    if (sessions.some((s) => this.silencedBursts.has(s.burstIDHex))) {
+      return true;
+    }
+    this.silencedBursts.clear();
+    return false;
   }
 
   // Open the mic and start streaming a burst to everyone in range. Returns
@@ -2406,6 +2534,7 @@ export class MeshService {
     this.pttPlayback?.close();
     this.pttPlayer = null;
     this.pttPlayback = null;
+    this.silencedBursts.clear();
     // Tell the UI the floor is free. Without this the mic button would keep
     // saying somebody is talking after the sessions that said so are gone,
     // because the activity report is normally driven by inbound frames and
@@ -3738,14 +3867,14 @@ export class MeshService {
   }
 
   // Send a delivery/read receipt back to a message's sender over the Double
-  // Ratchet link. Silently no-ops without a session or a message id, so it is
-  // safe to call optimistically.
+  // Ratchet link. Returns false, having sent nothing, without a session or a
+  // message id, so it is safe to call optimistically.
   private sendReceipt(
     peerID: string,
     type: typeof DmPayloadType.DELIVERED | typeof DmPayloadType.READ_RECEIPT,
     messageId: string,
-  ): void {
-    if (!messageId) return;
+  ): boolean {
+    if (!messageId) return false;
     // Airhop-to-Airhop: the Double Ratchet link carries receipts with forward
     // secrecy. bitchat (and any Noise-only peer) has no ratchet, so fall back to
     // a receipt over the plain Noise session in bitchat's format. The type-byte
@@ -3759,44 +3888,56 @@ export class MeshService {
     // here.
     if (state !== undefined && canEncrypt(state)) {
       this.sendDRMessage(peerID, encodeDmReceipt(type, messageId), state);
-      return;
+      return true;
     }
-    this.router.sendNoiseReceipt(peerID, type, messageId);
+    return this.router.sendNoiseReceipt(peerID, type, messageId);
   }
 
   // Flush queued read receipts for a conversation, called when the user opens
-  // it. Best-effort: a peer we can't reach simply never sees the blue ticks.
-  // Covers both the BLE (Double Ratchet / Noise) queue and the Nostr queue, so a
-  // DM that arrived over the internet is acknowledged over the internet.
+  // it. Covers both the BLE (Double Ratchet / Noise) queue and the Nostr queue,
+  // so a DM that arrived over the internet is acknowledged over the internet. A
+  // receipt with no route at all waits for the peer's next one.
   sendReadReceipts(peerID: string): void {
-    // Nostr read acks: the conversation is keyed either by the sender's Nostr
-    // pubkey (nostr_... thread) or by a real peerID whose contact, or last
-    // announce, carries an npub.
-    const nostrPubkey = peerID.startsWith("nostr_")
-      ? peerID.slice("nostr_".length)
-      : (useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex ??
-        this.registry.nostrPubkeyFor(peerID));
+    const nostrPubkey = this.receiptNostrPubkey(peerID);
 
     // A message read after its sender left range has no mesh route for its
-    // receipt, so it goes over Nostr, as bitchat-ios routes one.
+    // receipt, so it goes over Nostr, as bitchat-ios routes one. Only with a
+    // DM relay live: a client with none publishes into a dead pool and the
+    // receipt is gone, where queued it goes the moment either route returns.
     const overMesh = this.registry.isReachable(peerID);
     for (const messageId of this.pendingReadAcks.take(peerID)) {
-      if (overMesh) {
-        this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId);
-      } else if (nostrPubkey !== undefined && nostrPubkey.length > 0) {
+      if (
+        overMesh &&
+        this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId)
+      ) {
+        continue;
+      }
+      if (
+        nostrPubkey !== undefined &&
+        nostrPubkey.length > 0 &&
+        this.dmRelaysConnected
+      ) {
         this.publishNostrAck(
           nostrPubkey,
           NoisePayloadType.READ_RECEIPT,
           messageId,
         );
+      } else {
+        this.unroutedReadAcks.add(peerID, messageId);
       }
+    }
+    // In range with no session (a relaunch drops them): open one, whose
+    // completion flushes what waits for it.
+    if (overMesh && this.unroutedReadAcks.has(peerID)) {
+      this.ensureNoiseSession(peerID);
     }
 
     if (nostrPubkey !== undefined) {
       // Geohash DMs ack from the per-cell identity; everything else from the
       // main Nostr identity. The two ack queues are disjoint, so flushing both
-      // is safe.
+      // is safe. With no DM relay live they stay owed, for the next opening.
       this.geoChannels?.sendGeoReadReceipts(nostrPubkey);
+      if (!this.dmRelaysConnected) return;
       for (const messageId of this.pendingNostrReadAcks.take(nostrPubkey)) {
         this.publishNostrAck(
           nostrPubkey,
@@ -3814,6 +3955,7 @@ export class MeshService {
   private dropReadAcksOfClosedThreads(channels: readonly string[]): void {
     const open = new Set(channels);
     this.pendingReadAcks.retain((peerID) => open.has(`dm:${peerID}`));
+    this.unroutedReadAcks.retain((peerID) => open.has(`dm:${peerID}`));
     this.pendingNostrReadAcks.retain((pubkey) => {
       const peerID = this.nostrPubkeyToPeerID.get(pubkey);
       return (
@@ -3821,6 +3963,85 @@ export class MeshService {
         (peerID !== undefined && open.has(`dm:${peerID}`))
       );
     });
+    // A geo DM may have been folded into its sender's durable thread.
+    const chat = useChatStore.getState();
+    this.geoChannels?.retainGeoReadReceipts((pubkey) =>
+      open.has(chat.resolveChannel(`dm:nostr_${pubkey}`)),
+    );
+  }
+
+  // Receipts that found no route when their thread was read, sent the moment
+  // this peer has one again. bitchat-ios likewise holds a receipt until the
+  // handshake completes.
+  private sendUnroutedReadReceipts(peerID: string): void {
+    if (!this.unroutedReadAcks.has(peerID)) return;
+    if (!this.registry.isReachable(peerID)) return;
+    for (const messageId of this.unroutedReadAcks.take(peerID)) {
+      if (!this.sendReceipt(peerID, DmPayloadType.READ_RECEIPT, messageId)) {
+        this.unroutedReadAcks.add(peerID, messageId);
+      }
+    }
+    if (this.unroutedReadAcks.has(peerID)) this.ensureNoiseSession(peerID);
+  }
+
+  // Where a read receipt for this thread goes over Nostr: the thread is keyed
+  // either by the sender's Nostr pubkey (nostr_... thread) or by a real peerID
+  // whose contact, or last announce, carries an npub.
+  private receiptNostrPubkey(peerID: string): string | undefined {
+    return peerID.startsWith("nostr_")
+      ? peerID.slice("nostr_".length)
+      : (useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex ??
+          this.registry.nostrPubkeyFor(peerID));
+  }
+
+  // The same receipts, over Nostr once a DM relay is live, for a sender still
+  // out of radio range. One in range is left to sendUnroutedReadReceipts,
+  // whose session is already on its way.
+  private sendUnroutedReadReceiptsOverNostr(): void {
+    if (!this.dmRelaysConnected) return;
+    for (const peerID of this.unroutedReadAcks.keys()) {
+      if (this.registry.isReachable(peerID)) continue;
+      const nostrPubkey = this.receiptNostrPubkey(peerID);
+      if (nostrPubkey === undefined || nostrPubkey.length === 0) continue;
+      for (const messageId of this.unroutedReadAcks.take(peerID)) {
+        this.publishNostrAck(
+          nostrPubkey,
+          NoisePayloadType.READ_RECEIPT,
+          messageId,
+        );
+      }
+    }
+  }
+
+  // Receipts owed for what arrived before this launch (or before the location
+  // service was rebuilt), derived from the rows still unread rather than kept
+  // as state of their own: an unread message from someone else is exactly a
+  // read receipt not yet sent. Adding one already owed changes nothing.
+  private oweReadReceiptsForUnread(): void {
+    const { messages, unreadCounts, geoDmCells } = useChatStore.getState();
+    const blocked = useBlockedStore.getState();
+    for (const [channel, count] of Object.entries(unreadCounts)) {
+      if (count <= 0 || !channel.startsWith("dm:")) continue;
+      const key = channel.slice("dm:".length);
+      if (blocked.isBlocked(key)) continue;
+      // The count covers the newest rows not ours, system lines included.
+      const unread = (messages[channel] ?? [])
+        .filter((m) => !m.isMine)
+        .slice(-count)
+        .filter((m) => m.isSystem !== true && m.ring !== true);
+      for (const m of unread) {
+        if (!key.startsWith("nostr_")) {
+          this.pendingReadAcks.add(key, m.id);
+          continue;
+        }
+        const pubkey = key.slice("nostr_".length);
+        if (geoDmCells[pubkey] !== undefined) {
+          this.geoChannels?.oweGeoReadReceipt(pubkey, m.id);
+        } else {
+          this.pendingNostrReadAcks.add(pubkey, m.id);
+        }
+      }
+    }
   }
 
   // Build a NOISE_HANDSHAKE unicast packet from our identity.
@@ -3991,6 +4212,7 @@ export class MeshService {
         this.bindNostrPubkey(nostrPubkeyHex, peerID, false);
       }
     }
+    const firstPin = this.registry.pinnedSigningKey(peerID) === undefined;
     this.registry.update({
       peerID,
       noisePubKey: info.noisePubKey,
@@ -4007,6 +4229,20 @@ export class MeshService {
       isDirect: isDirectAnnounce ? true : undefined,
     });
     if (isDirectAnnounce) this.registry.markDirect(peerID);
+    // Sync replies refused for want of this key sit in the declined list, whose
+    // IDs go into our filters, so no peer would offer that history again for
+    // the 6 h window, not even its author. Dropping them lets the next round
+    // backfill it, under the same packet IDs, so the flood router must forget
+    // them too.
+    if (firstPin) {
+      this.floodRouter.forget(this.gossip.forgetDeclinedFrom(peerID));
+    }
+    // A bundle that outran this announce can be checked now.
+    const pendingBundle = this.pendingPrekeyBundles.get(peerID);
+    if (pendingBundle !== undefined) {
+      this.pendingPrekeyBundles.delete(peerID);
+      this.onPrekeyBundle(pendingBundle);
+    }
 
     // Update the Zustand peer store (drives the Mesh tab UI), skipped for a
     // blocked peer so they never appear in the list/radar view.
@@ -4115,11 +4351,14 @@ export class MeshService {
   private courierDropDay = -1;
 
   // Message IDs already opened out of a courier envelope, so the redundant
-  // copies spray-and-wait exists to create collapse into one message. Bounded by
-  // rememberEventID, and per session: an envelope cannot outlive its 24h expiry,
-  // and a duplicate arriving after a relaunch is collapsed by the chat store on
-  // the same id instead.
-  private readonly openedCourierIDs = new Set<string>();
+  // copies spray-and-wait exists to create collapse into one message. Kept
+  // across launches for an envelope's lifetime: the relay drop subscription
+  // replays the last day on every open, and each replay would otherwise be
+  // filed and acknowledged again.
+  private readonly openedCourierIDs = new ProcessedEvents(
+    "courier",
+    ENVELOPE_TTL_MS / 1000,
+  );
 
   // Couriers each outgoing message was given to, and when that round began,
   // keyed by message id. Sealing is randomised and CourierStore.deposit has no
@@ -4169,7 +4408,7 @@ export class MeshService {
     // re-read at the publish below, so the two cannot disagree if anything is
     // ever awaited between them.
     const relayClient =
-      this.relaysConnected && (this.droppedToRelay.get(messageID) ?? 0) <= now
+      this.dmRelaysConnected && (this.droppedToRelay.get(messageID) ?? 0) <= now
         ? this.nostrClient
         : null;
     if (couriers.length === 0 && relayClient === null) return false;
@@ -4474,11 +4713,11 @@ export class MeshService {
       // message, and never collapses a courier copy against the direct copy,
       // which arrives under the sender's id. Both are one comparison here.
       if (this.openedCourierIDs.has(pm.messageID)) return;
-      this.rememberEventID(this.openedCourierIDs, pm.messageID);
+      this.openedCourierIDs.add(pm.messageID);
 
       const channel = `dm:${fromPeerID}`;
-      useChatStore.getState().addChannel(channel);
-      useChatStore.getState().addMessage({
+      // Only a row the user can open may bring a deleted thread back.
+      const held = useChatStore.getState().addMessage({
         id: pm.messageID,
         channel,
         senderID: fromPeerID,
@@ -4491,6 +4730,10 @@ export class MeshService {
         timestampMs: sentAtMs,
         isMine: false,
       });
+      if (held) {
+        useChatStore.getState().addChannel(channel);
+        this.pendingReadAcks.add(fromPeerID, pm.messageID);
+      }
       // Acknowledge it, or the sender's outbox re-sends a message that did
       // arrive on every sweep for as long as the entry lives. Both routes are
       // tried because neither is reliable here: the mesh receipt needs a
@@ -4498,7 +4741,6 @@ export class MeshService {
       // one needs their npub and a relay. Whichever lands clears the sender's
       // hourglass.
       this.sendReceipt(fromPeerID, DmPayloadType.DELIVERED, pm.messageID);
-      this.pendingReadAcks.add(fromPeerID, pm.messageID);
       const senderNpub =
         useContactsStore.getState().getContact(fromPeerID)?.nostrPubkeyHex ??
         this.registry.nostrPubkeyFor(fromPeerID);
@@ -4730,24 +4972,44 @@ export class MeshService {
   private onAirhopChannelMsg(packet: Packet): void {
     const decoded = decodeAirhopChannelPayload(packet.payload);
     if (decoded === null) return;
-    const { channel, text, msgId } = decoded;
+    const { channel, text, msgId, cell } = decoded;
     // The mesh room never travels under this type. Accepting it would give a
     // peer two ways into the same room, only one of which bitchat can see.
     if (channel === BRIDGE_CHANNEL) return;
-    this.acceptPublicMessage(packet, channel, text, (senderID) =>
-      msgId.length > 0
-        ? sharedRowID(msgId, text)
-        : `${senderID}-${String(packet.timestamp)}-${channel}`,
+    this.acceptPublicMessage(
+      packet,
+      channel,
+      text,
+      (senderID) =>
+        msgId.length > 0
+          ? sharedRowID(msgId, text)
+          : `${senderID}-${String(packet.timestamp)}-${channel}`,
+      () => this.inChannelCell(channel, cell),
     );
   }
 
+  // Whether a 0x51 message belongs in this phone's copy of its channel. A
+  // location level (#block) is a different cell for every phone, so the
+  // message names the cell it was written in, and a phone that knows a
+  // different one drops it. Only both cells known and different is a mismatch:
+  // a phone without a location grant still uses the levels over Bluetooth
+  // alone, so a message with no cell, or a receiver with no fix, is shown. A
+  // teleported channel names its cell already, and any other channel has none.
+  private inChannelCell(channel: string, cell: string): boolean {
+    if (!isGeoChannel(channel) || isManualGeoChannel(channel)) return true;
+    const own = this.geoChannels?.geohashFor(channel) ?? null;
+    return own === null || cell.length === 0 || own === cell;
+  }
+
   // Shared tail of both public-message paths: authenticate, check the room is
-  // joined, file it.
+  // joined, file it. `inRoom` is checked after the message is carried for
+  // sync, so a phone outside its room still serves it to those inside.
   private acceptPublicMessage(
     packet: Packet,
     channel: string,
     text: string,
     rowID: (senderID: string) => string,
+    inRoom: () => boolean = () => true,
   ): void {
     const senderID = bytesToHex(packet.senderID);
 
@@ -4786,6 +5048,7 @@ export class MeshService {
     // A private channel only takes sealed messages. A plaintext one under its
     // name would show beneath the encryption lock, from anyone in range.
     if (useChatStore.getState().channelKeys[channel] !== undefined) return;
+    if (!inRoom()) return;
 
     // Public channels are open to anyone in range, so a nickname there is
     // self-asserted and two peers can claim the same one. Suffixing with the
@@ -4918,6 +5181,21 @@ export class MeshService {
       const published = overNostr
         ? this.privateChannels?.publish(channelKey, blob, msgId)
         : undefined;
+      // The radio took it, so the composer shows it sent: the relay copy
+      // members out of range need is owed, not optional. Owed too while Tor
+      // holds the pool down and there is no room service to try.
+      if (meshLinks > 0 && overNostr) {
+        const republish = (): Promise<boolean> =>
+          this.privateChannels?.publish(channelKey, blob, msgId) ??
+          Promise.resolve(false);
+        if (published !== undefined) {
+          void published.then((ok) => {
+            if (!ok) this.holdRelayPost(republish);
+          });
+        } else if (this.torHoldsRelays()) {
+          this.holdRelayPost(republish);
+        }
+      }
       // `overNostr` is the channel's configured reach. Whether a relay is up is
       // a separate question.
       const sent = {
@@ -4940,19 +5218,52 @@ export class MeshService {
     // for no reach. It goes over Nostr only, matching bitchat's Nostr-only
     // location channels.
     const teleported = isManualGeoChannel(channel);
+    // A location level's radio copy names the cell it was written in, so a
+    // phone standing in another one drops it (inChannelCell). With no fix it
+    // names none and every level stays Bluetooth-only.
+    const cell =
+      isGeoChannel(channel) && !teleported
+        ? (this.geoChannels?.geohashFor(channel) ?? "")
+        : "";
     // Share one timestamp with the radio packet so the bridge can derive the
     // same content-stable ID on both transports (radio-copy dedup).
     const timestampMs = Date.now();
     if (!teleported) {
-      this.router.sendChannelMessage(channel, text, msgId, timestampMs);
+      this.router.sendChannelMessage(channel, text, msgId, timestampMs, cell);
     }
     const viaGeo =
       this.geoChannels !== null &&
       isGeoChannel(channel) &&
       this.geoChannels.geohashFor(channel) !== null;
+    // Held for a relay only when the radio took it, as for a private room.
+    const holdUndelivered =
+      !teleported && meshLinks > 0
+        ? (event: NostrEvent, geohash: string) =>
+            this.holdRelayPost(
+              () =>
+                this.geoChannels?.republishOwnEvent(event, geohash) ??
+                Promise.resolve(false),
+            )
+        : undefined;
     const geoPublish = viaGeo
-      ? this.geoChannels?.publish(channel, text, msgId).catch(() => false)
+      ? this.geoChannels
+          ?.publish(channel, text, msgId, holdUndelivered)
+          .catch(() => false)
       : undefined;
+    // Tor holding the pool down leaves no location service to sign with, so
+    // the post is held whole and published with the service rebuilt behind it.
+    if (
+      holdUndelivered !== undefined &&
+      this.geoChannels === null &&
+      isGeoChannel(channel) &&
+      this.torHoldsRelays()
+    ) {
+      this.holdRelayPost(
+        () =>
+          this.geoChannels?.publish(channel, text, msgId).catch(() => false) ??
+          Promise.resolve(false),
+      );
+    }
     // `viaGeo` only says the channel resolves to a cell. Reaching the internet
     // also needs a relay up; with none, `publish` hands the signed event to a
     // gateway peer instead, and that hand-off is what to report. It does the
@@ -5011,6 +5322,13 @@ export class MeshService {
   // and the other location cells) check this before claiming reach.
   get relaysConnected(): boolean {
     return this.nostrClient?.isConnected ?? false;
+  }
+
+  // Whether a default DM relay is live, the only kind a DM, a location DM or a
+  // courier drop goes to. A live location or custom relay is no route for
+  // them (bitchat-ios isDMRelayConnected).
+  private get dmRelaysConnected(): boolean {
+    return this.nostrClient?.isDMConnected ?? false;
   }
 
   // Teleport into a geohash cell the user chose, wherever they physically are.
@@ -5094,7 +5412,10 @@ export class MeshService {
     });
     // The bookkeeping and the cell we met in have nobody left to serve.
     chat.clearGeoCardExchange(pubkey);
-    // Anything queued against the pseudonym now has a durable route.
+    // Anything queued against the pseudonym now has a durable route. Moved
+    // onto it, not left for a retry: with the cell gone, a retry to the cell
+    // key would go out from our main identity and tie it to the pseudonym.
+    this.readdressQueuedMail(pubkey, peerID);
     this.flushOutbox(peerID);
   }
 
@@ -5389,7 +5710,9 @@ export class MeshService {
         .publishBoardNote(geohash, trimmed, nickname, post.expiresAt, urgent)
         .then((eventID) => {
           if (eventID !== null) {
-            this.bridgedBoardEventIDs.set(bytesToHex(post.postID), eventID);
+            useBoardStore
+              .getState()
+              .noteBridgedEvent(bytesToHex(post.postID), eventID);
           }
         });
     }
@@ -5415,14 +5738,39 @@ export class MeshService {
     useBoardStore.getState().ingest({ kind: "tombstone", tombstone });
 
     if (post.geohash.length > 0) {
-      const idHex = bytesToHex(post.postID);
-      const eventID = this.bridgedBoardEventIDs.get(idHex);
+      const eventID = useBoardStore
+        .getState()
+        .queueBridgedDelete(
+          bytesToHex(post.postID),
+          post.geohash,
+          post.expiresAt,
+        );
       if (eventID !== undefined) {
-        this.bridgedBoardEventIDs.delete(idHex);
-        void this.geoChannels?.deleteBoardNote(post.geohash, eventID);
+        this.sendBridgedDelete({ eventID, geohash: post.geohash });
       }
     }
     return true;
+  }
+
+  // Retractions owed since a delete found no relay, tried again as relays
+  // connect and on the outbox sweep.
+  private retryBridgedDeletes(): void {
+    if (this.geoChannels === null || !this.relaysConnected) return;
+    for (const pending of useBoardStore.getState().pendingBridgedDeletes()) {
+      this.sendBridgedDelete(pending);
+    }
+  }
+
+  // Settled only once a relay accepts it. One already in flight is not sent
+  // twice, since the connect edge and the sweep can land together.
+  private sendBridgedDelete({ eventID, geohash }: PendingBridgedDelete): void {
+    const geo = this.geoChannels;
+    if (geo === null || this.bridgedDeletesInFlight.has(eventID)) return;
+    this.bridgedDeletesInFlight.add(eventID);
+    void geo.deleteBoardNote(geohash, eventID).then((accepted) => {
+      this.bridgedDeletesInFlight.delete(eventID);
+      if (accepted) useBoardStore.getState().settleBridgedDelete(eventID);
+    });
   }
 
   private broadcastBoardWire(wire: BoardWire): void {
@@ -5556,15 +5904,30 @@ export class MeshService {
   // key knownSigningKey holds for them. A bundle is what our courier mail to
   // them is sealed to, so accepting one signed by anyone else hands them that
   // mail. Unverifiable bundles are ignored here and still relayed for others.
+  //
+  // One whose owner has no key here yet is held instead, as bitchat-ios holds
+  // it, and retried when an announce pins one (onAnnounce). Our own link-up
+  // sends the announce and the bundle together, so a node two hops away gets
+  // the bundle first about half the time. Evicting the oldest owner, rather
+  // than refusing new ones at the cap, keeps a burst of invented owners from
+  // closing the stash for good.
   private onPrekeyBundle(packet: Packet): void {
     const bundle = decodePrekeyBundle(packet.payload);
     if (bundle === null) return;
-    const ownerPeerID = bytesToHex(sha256(bundle.noiseStaticPublicKey)).slice(
-      0,
-      16,
-    );
+    const ownerPeerID = peerIDFromNoiseKey(bundle.noiseStaticPublicKey);
     if (ownerPeerID === this.identity.peerID) return;
     if (bytesToHex(packet.senderID) !== ownerPeerID) return;
+    if (!this.hasSigningKeyFor(ownerPeerID)) {
+      const held = this.pendingPrekeyBundles.get(ownerPeerID);
+      if (held !== undefined && held.timestamp > packet.timestamp) return;
+      this.pendingPrekeyBundles.delete(ownerPeerID);
+      if (this.pendingPrekeyBundles.size >= PENDING_PREKEY_BUNDLE_CAP) {
+        const oldest = this.pendingPrekeyBundles.keys().next().value;
+        if (oldest !== undefined) this.pendingPrekeyBundles.delete(oldest);
+      }
+      this.pendingPrekeyBundles.set(ownerPeerID, packet);
+      return;
+    }
     if (!this.senderIsAuthentic(packet, ownerPeerID)) return;
     const signingPub = this.knownSigningKey(ownerPeerID);
     if (signingPub === undefined || !verifyPrekeyBundle(bundle, signingPub)) {
@@ -6290,6 +6653,36 @@ export class MeshService {
     }
   }
 
+  // Hold one of our own room posts whose relay copy did not go out while its
+  // radio copy did. The composer shows such a post sent, and nothing else
+  // would put it on the internet, so members out of range would never get it.
+  // Republished as the same message when a relay connects, as bitchat-ios
+  // holds its relay sends; receivers collapse a second copy by row.
+  private holdRelayPost(
+    publish: () => Promise<boolean>,
+    heldAtMs = Date.now(),
+  ): void {
+    if (heldAtMs < Date.now() - HELD_RELAY_POST_MAX_AGE_MS) return;
+    if (this.heldRelayPosts.length >= MAX_HELD_RELAY_POSTS) {
+      this.heldRelayPosts.shift();
+    }
+    this.heldRelayPosts.push({ heldAtMs, publish });
+  }
+
+  // Called when the pool reports a connection and on the outbox sweep. One
+  // that fails again waits for the next, inside the same age bound.
+  private flushHeldRelayPosts(): void {
+    if (!this.relaysConnected || this.heldRelayPosts.length === 0) return;
+    const held = this.heldRelayPosts;
+    this.heldRelayPosts = [];
+    for (const { heldAtMs, publish } of held) {
+      if (heldAtMs < Date.now() - HELD_RELAY_POST_MAX_AGE_MS) continue;
+      void publish().then((ok) => {
+        if (!ok) this.holdRelayPost(publish, heldAtMs);
+      });
+    }
+  }
+
   // Whether this phone carries deposits for its neighbours: the gateway
   // toggle, and the internet switch the toggle depends on.
   private gatewayAcceptsDeposits(): boolean {
@@ -6391,15 +6784,6 @@ export class MeshService {
       Math.abs(Date.now() / 1000 - event.created_at) <=
       CARRIER_MAX_EVENT_AGE_SECONDS
     );
-  }
-
-  // Insertion-ordered, capped id set (drop-oldest).
-  private rememberEventID(set: Set<string>, id: string): void {
-    set.add(id);
-    if (set.size > MAX_REMEMBERED_IDS) {
-      const oldest = set.values().next().value;
-      if (oldest !== undefined) set.delete(oldest);
-    }
   }
 
   // ---- Mesh diagnostics (ping / pong) ----
@@ -6512,6 +6896,19 @@ export class MeshService {
     // A stable id for this message, reused across the mesh envelope, the outbox,
     // and any retry, so a delivery receipt can always be matched to it.
     const msgID = messageID ?? newMessageId();
+
+    // A Nostr key whose thread was folded into a peer's is that peer now. A
+    // send still naming it (one held for undo across a card exchange, say)
+    // goes to them: the cell that let it leave pseudonymously is gone, and
+    // our main identity must never write to a cell key.
+    if (recipientPeerID.startsWith("nostr_")) {
+      const folded = useChatStore
+        .getState()
+        .resolveChannel(`dm:${recipientPeerID}`);
+      if (folded !== `dm:${recipientPeerID}`) {
+        return this.sendDm(folded.slice("dm:".length), text, msgID);
+      }
+    }
 
     // Queued before anything goes out, so a fast receipt cannot beat its entry,
     // and kept until a receipt: "sent" only means it left the device. A flood
@@ -6730,7 +7127,7 @@ export class MeshService {
     messageID: string,
     text: string,
   ): boolean {
-    if (this.nostrClient === null || !this.relaysConnected) return false;
+    if (this.nostrClient === null || !this.dmRelaysConnected) return false;
     // No embedded recipient peer ID: we only know the Nostr pubkey, not the
     // peer's mesh ID, exactly as bitchat's geohash DMs do.
     const envelope = encodeBitchatDmEnvelope(
@@ -6901,6 +7298,13 @@ export class MeshService {
     };
   }
 
+  // The same card as the signed `airhop:v1/` string a QR shows. Signed here,
+  // where the identity already lives, so no screen has to read the signing
+  // key out of the keychain to draw a code.
+  getContactQR(): string {
+    return encodeQRContent(this.getContactCard(), this.identity.signingPrivKey);
+  }
+
   // Register an identity learned out-of-band (QR) so a DM route can be
   // set up without waiting to hear the peer's ANNOUNCE.
   //
@@ -7022,6 +7426,12 @@ export class MeshService {
     useChatStore
       .getState()
       .mergeChannel(`dm:nostr_${nostrPubkeyHex}`, `dm:${peerID}`);
+    this.readdressQueuedMail(nostrPubkeyHex, peerID);
+  }
+
+  // Move mail queued for a Nostr key onto the peer that key turned out to be,
+  // in the thread it was folded into.
+  private readdressQueuedMail(nostrPubkeyHex: string, peerID: string): void {
     const outbox = useOutboxStore.getState();
     for (const msg of outbox.forPeer(`nostr_${nostrPubkeyHex}`)) {
       outbox.resolve(msg.id);
@@ -7090,6 +7500,7 @@ export class MeshService {
   // and re-queued only if delivery still fails, so a flush can never duplicate
   // a message that did go out.
   private flushOutbox(peerID: string): void {
+    this.sendUnroutedReadReceipts(peerID);
     const outbox = useOutboxStore.getState();
     this.reportDroppedMail(outbox.evictExpired());
     const queued = outbox.forPeer(peerID);
@@ -7116,8 +7527,7 @@ export class MeshService {
       }
       const hadDirectLink = this.links.hasPeer(peerID);
       const result = this.trySendDm(peerID, msg.text, msg.id, nostrDue);
-      // Keep it queued, recording the attempt, whenever the retry did not
-      // establish delivery:
+      // Keep it queued whenever the retry did not establish delivery:
       //
       //   handshaking  the session still does not exist, and the handshake
       //                may never answer
@@ -7127,7 +7537,14 @@ export class MeshService {
       // Resolving on either would let the sweep flood into an empty room,
       // clear the entry, and lose the message before the recipient came back.
       // A delivery receipt is what clears it.
-      if (result === "handshaking" || (result === "sent" && !hadDirectLink)) {
+      //
+      // Only the flood is charged as an attempt. Under a handshake the words
+      // never left the device, so charging it would fail a message to a peer
+      // in range whose handshake is slow to answer within minutes, where
+      // bitchat-ios keeps it. The outbox's week (OUTBOX_TTL_MS) still bounds
+      // it, and the handshake limiter paces the handshakes it asks for.
+      if (result === "handshaking") continue;
+      if (result === "sent" && !hadDirectLink) {
         outbox.markAttempted(msg.id);
         continue;
       }
@@ -7223,7 +7640,7 @@ export class MeshService {
   // (MAX_SEND_ATTEMPTS). A peer with no npub has no relay route, so a sweep
   // with nothing due touches nothing.
   private retryDueOverRelays(): void {
-    if (!this.relaysConnected) return;
+    if (!this.dmRelaysConnected) return;
     const now = Date.now();
     const due = new Set<string>();
     for (const msg of useOutboxStore.getState().pending) {
@@ -7324,6 +7741,16 @@ export class MeshService {
     // nobody the inbox did not already attribute to this peer.
     const blocked = useBlockedStore.getState();
     if (blocked.isBlocked(peerID)) {
+      // So does the pseudonym a location DM knew them by, once a card exchange
+      // folded that thread into theirs: the cell key routes to no mapping, and
+      // their location DMs and posts would otherwise still get through.
+      for (const [from, to] of Object.entries(
+        useChatStore.getState().channelRedirects,
+      )) {
+        if (to === `dm:${peerID}` && from.startsWith("dm:nostr_")) {
+          nostrPubs.add(from.slice("dm:nostr_".length));
+        }
+      }
       for (const nostrPub of nostrPubs) {
         blocked.blockAlias(`nostr_${nostrPub}`, peerID);
       }
@@ -7391,8 +7818,13 @@ export class MeshService {
       this.appForeground = foreground;
       if (this.running) this.applyLocalTransportPrefs();
       this.geoChannels?.setForeground(foreground);
+      this.bridgeService.setForeground(foreground);
     }
-    if (!foreground) return;
+    if (!foreground) {
+      // Off screen the OS may stop giving us cycles before the write timer runs.
+      flushProcessedEvents();
+      return;
+    }
     // Coming back to the app is the strongest signal we get that the world may
     // have moved, because the usual reason someone left was to change it:
     // Settings is where Bluetooth, WiFi, mobile data and airplane mode live.
@@ -7473,6 +7905,12 @@ export class MeshService {
         // now. Same trigger bitchat uses (ChatViewModelBootstrapper watches
         // NostrRelayManager.isConnected and flushes both services).
         this.flushQueuedUplinks();
+        // And our own room posts the radio carried while the relays were down.
+        this.flushHeldRelayPosts();
+        // Receipts read while offline, and notice retractions that found no
+        // relay.
+        this.sendUnroutedReadReceiptsOverNostr();
+        this.retryBridgedDeletes();
         // And our own mail. Relays coming up IS a new route appearing, and it
         // is the exact trigger bitchat flushes on; without it a queued DM
         // waits for a peer's ANNOUNCE or the 45-second sweep with the relay it
@@ -7492,7 +7930,8 @@ export class MeshService {
 
     // Location-scoped channels. Constructed unconditionally: it resolves its
     // own position and stays inert if permission was never granted, so the
-    // location prompt is never forced on someone who only wants BLE.
+    // service needs no grant to exist; the shell asks for location at launch
+    // (app.tsx startMeshDependents).
     // Signed with per-geohash derived keys, NOT our main Nostr identity. See
     // geohash-identity.ts. Passing the Ed25519 signing key lets the service
     // derive its own seed without a second stored secret.
@@ -7512,6 +7951,8 @@ export class MeshService {
     );
     this.geoChannels.setForeground(this.appForeground);
     void this.geoChannels.refresh();
+    // A new service starts with no geo-DM receipts owed.
+    this.oweReadReceiptsForUnread();
 
     // Private channels bridged over Nostr (the "Bluetooth + Internet" reach).
     // Subscribes to every joined ble+nostr private channel and re-syncs whenever
@@ -7623,7 +8064,12 @@ export class MeshService {
     this.broadcastPacket(pkt);
   }
 
-  private readonly openedGiftWraps = new OpenedGiftWraps();
+  // Wraps already opened, this launch or an earlier one: the subscription
+  // replays the whole lookback every time it opens.
+  private readonly openedGiftWraps = new ProcessedEvents(
+    "dm",
+    INBOX_LOOKBACK_SECONDS,
+  );
 
   // Subscribe to gift-wrap DMs (kind 1059) addressed to our Nostr pubkey. Split
   // out so it can be re-run after the pool is rebuilt for a Tor toggle: the old
@@ -7705,8 +8151,7 @@ export class MeshService {
             return;
           }
 
-          useChatStore.getState().addChannel(channel);
-          useChatStore.getState().addMessage({
+          const held = useChatStore.getState().addMessage({
             id: env.messageID,
             channel,
             senderID: senderKey,
@@ -7723,13 +8168,17 @@ export class MeshService {
             isMine: false,
           });
 
-          // Acknowledge delivery over Nostr, and remember to send a read receipt
-          // when the user opens this conversation.
+          // Acknowledge delivery over Nostr, even for a message the user's
+          // clear refused (see addMessage), since this wrap is a send the
+          // sender is waiting on. A read receipt is owed only for a row the
+          // user can open, and only that row may bring the thread back.
           this.publishNostrAck(
             dm.senderPubkey,
             NoisePayloadType.DELIVERED,
             env.messageID,
           );
+          if (!held) return;
+          useChatStore.getState().addChannel(channel);
           this.pendingNostrReadAcks.add(dm.senderPubkey, env.messageID);
         } catch {
           // Invalid or misdirected gift wrap: drop silently.
@@ -7757,6 +8206,15 @@ export class MeshService {
   private internetTransportAllowed(): boolean {
     if (!useSettingsStore.getState().internetEnabled) return false;
     return !useMeshStateStore.getState().nostrBlockedByTor;
+  }
+
+  // The user wants the internet and only Tor is keeping it down: starting, or
+  // held after a failed start. A relay copy owed now goes out once Tor carries.
+  private torHoldsRelays(): boolean {
+    return (
+      useSettingsStore.getState().internetEnabled &&
+      useMeshStateStore.getState().nostrBlockedByTor
+    );
   }
 
   // Collect courier mail parked for us on relays (kind 1401). bitchat clients
@@ -7879,6 +8337,8 @@ export class MeshService {
 
   stop(): void {
     this.running = false;
+    // The inboxes are closing, so nothing they recorded should wait on a timer.
+    flushProcessedEvents();
 
     // Say goodbye first, then take the radios down, with a short grace between
     // the two so the farewell actually leaves.
@@ -8033,12 +8493,12 @@ export class MeshService {
     this.lanPrefUnsub = null;
     this.wifiPrefUnsub?.();
     this.wifiPrefUnsub = null;
-    // Forget the LAN and WiFi links just closed. Unlike a BLE central link,
-    // which survives a stopped scan, each is a socket the transport's stop
-    // destroys, and link IDs are never reissued. The native disconnect events
-    // cannot clean up either: the subscriptions were removed above. Left
-    // populated, a peer would be routed down a dead socket after Away and back,
-    // and DMs would fail silently until their next ANNOUNCE re-mapped it.
+    // Forget the LAN and WiFi links just closed. Each is a socket the
+    // transport's stop destroys, and link IDs are never reissued. The native
+    // disconnect events cannot clean up: the subscriptions were removed above,
+    // and without one iOS does not even send them. Left populated, a peer
+    // would be routed down a dead socket after Away and back, and DMs would
+    // fail silently until their next ANNOUNCE re-mapped it.
     this.links.closeAll("lan");
     this.links.closeAll("wifi");
     // Bluetooth links close with the radios, after the grace (see
@@ -8070,13 +8530,13 @@ export class MeshService {
   }
 
   // Once the radios are down. Stopping the advertiser closes the GATT server
-  // and every peripheral link with it, and a link that drops while we are
-  // stopped is never reported to anyone, so one kept is written to long after
-  // it is gone. A central link can survive the stop natively; the packet
-  // listener re-opens it on its first frame.
+  // and every peripheral link with it, and stopping the scan disconnects every
+  // central link, but their disconnect events find no listener while we are
+  // stopped, so a link kept here would be written to long after it is gone.
   private closeBluetoothLinks(): void {
     this.links.closeAll("ble");
-    // So a surviving central link's first frame after a restart still reopens it.
+    // So a link whose connect event went unheard still reopens on its first
+    // frame after a restart (the packet listener).
     this.bleClosedAt.clear();
   }
 

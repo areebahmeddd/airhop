@@ -55,6 +55,7 @@ import { safeFileName } from "@utils/safe-file-name";
 import { stripInvisibles } from "@utils/strip-invisibles";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
+import { sweepMediaIfDue } from "./media-retention";
 
 // ---- Types ----
 
@@ -335,8 +336,9 @@ function deleteIfExpired(
 //
 // Covers outgoing as well as incoming: both are written under the same prefix,
 // and a photo you sent is exactly as sensitive as one you received. Scheduled by
-// services/media-retention: at launch, and throttled on each return to the app,
-// since a foreground service can keep the process alive for weeks.
+// services/media-retention: at launch, and throttled on each return to the app
+// and each received file, since a foreground service can keep the process alive
+// for weeks.
 //
 // A file whose age cannot be read is kept. The alternative is deleting user
 // content on the strength of a missing timestamp, and on Android
@@ -1105,6 +1107,10 @@ export class FileTransferService {
       `${INCOMING_FILE_PREFIX}${String(Date.now())}_${safeName}`,
     );
     try {
+      // The age bound beside the size bound. A phone left receiving in the
+      // background for weeks never comes back to the app, where the sweep
+      // otherwise runs; throttled, so nearly every arrival skips it.
+      sweepMediaIfDue();
       enforceIncomingQuota(fp.content.length);
       file.create({ overwrite: true, intermediates: true });
       // Sync on purpose: from the duplicate and joined-room checks above to

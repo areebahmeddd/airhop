@@ -43,14 +43,22 @@ jest.mock("expo-file-system", () => {
   }
   class Directory {
     get exists(): boolean {
-      return false;
+      return mockCache.size > 0;
     }
     list(): unknown[] {
-      return [];
+      return [...mockCache].map((name) =>
+        Object.assign(new File(name), {
+          delete: () => mockDeleted.push(name),
+        }),
+      );
     }
   }
   return { File, Directory, Paths: { cache: {} } };
 });
+
+// What the cache directory lists, and what was deleted from it.
+const mockCache = new Set<string>();
+const mockDeleted: string[] = [];
 
 const native = NativeAirhopVideo as unknown as Record<string, jest.Mock>;
 const SENDER = "a1b2c3d4e5f60718";
@@ -474,5 +482,40 @@ describe("LiveVideoReceiver", () => {
     });
     setup().receiver.dropStaleRows();
     expect(row("live-video-stale")).toBeUndefined();
+  });
+
+  test("partial recordings an earlier process left behind are deleted, and nothing else", () => {
+    const earlier = Date.now() - 60_000;
+    const later = Date.now() + 60_000;
+    const kept = `airhop_in_${earlier}_video_0102030405060708.mp4`;
+    useChatStore.getState().addMessage({
+      id: "finished-recording",
+      channel: ROOM,
+      senderID: SENDER,
+      senderNickname: "alice",
+      text: "",
+      timestampMs: Date.now(),
+      isMine: false,
+      attachment: {
+        type: "video",
+        uri: `file:///cache/${kept}`,
+        name: "video_0102030405060708.mp4",
+        mimeType: "video/mp4",
+      },
+    });
+    const received = `airhop_in_${earlier}_video_1112131415161718.mp4`;
+    const sent = `airhop_${earlier}_video_2122232425262728.mp4`;
+    const thisProcess = `airhop_in_${later}_video_3132333435363738.mp4`;
+    const photo = `airhop_in_${earlier}_photo.jpg`;
+    for (const name of [kept, received, sent, thisProcess, photo]) {
+      mockCache.add(name);
+    }
+    try {
+      setup().receiver.dropStaleRows();
+      expect(mockDeleted.sort()).toEqual([received, sent].sort());
+    } finally {
+      mockCache.clear();
+      mockDeleted.length = 0;
+    }
   });
 });

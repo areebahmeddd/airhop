@@ -31,7 +31,7 @@ export type PresenceStatus = "online" | "away" | "invisible";
 // distinct network state rather than a generic weight, so the Mesh tab reads at
 // a glance:
 //   danger   a hard blocker to fix now (red), Bluetooth off, permission
-//   caution  a feature is unavailable (amber), location off
+//   caution  a feature is off or limited (amber), location off
 //   relay    traffic carried over the internet (blue), Nostr relay
 //   tor      internet traffic onion-routed (purple), Tor on
 //   gateway  this device relaying for others (teal), internet gateway
@@ -145,7 +145,10 @@ export type BannerAction =
   // the brands that actually need it; see utils/battery-optimization.ts.
   | "open-background-limits"
   // Airhop's own Tor screen, where a blocked or held Tor is resolved.
-  | "open-tor-settings";
+  | "open-tor-settings"
+  // Ask for foreground location, or explain the way to Settings once the OS
+  // will no longer ask. See services/turn-on-location.ts.
+  | "enable-location";
 
 export interface MeshBanner {
   // Stable identity for React keys and de-duplication.
@@ -428,6 +431,18 @@ function hasOtherLocalTransport(inputs: MeshBannerInputs): boolean {
   );
 }
 
+// The location-off note, for the Mesh tab and for the inside of a location
+// channel. Only the wording differs between the two, so one builder keeps the
+// tone and the way out from drifting apart.
+export function locationOffBanner(label: string): MeshBanner {
+  return {
+    key: "location",
+    label,
+    tone: "caution",
+    action: { label: t("mesh.banner.action.turn_on"), kind: "enable-location" },
+  };
+}
+
 // One blocker, one banner, one way out.
 //
 // Every branch names the specific thing that is wrong rather than a category,
@@ -634,14 +649,10 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     });
   }
 
-  // Location is informational: the BLE mesh works without it, only the location
-  // (geohash) channels need it.
+  // Location is informational: the BLE mesh works without it, and the location
+  // channels still run over Bluetooth, reaching only people nearby.
   if (!inputs.locationGranted) {
-    banners.push({
-      key: "location",
-      label: t("mesh.banner.location_off"),
-      tone: "caution",
-    });
+    banners.push(locationOffBanner(t("mesh.banner.location_off")));
   }
 
   // Not a fault: the phone is low or in Battery Saver, and the app has turned

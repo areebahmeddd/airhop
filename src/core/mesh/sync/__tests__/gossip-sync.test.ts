@@ -6,6 +6,7 @@
 // be readable by an app it was not compiled with.
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   computePacketId,
   decodePacket,
@@ -744,6 +745,36 @@ describe("GossipSync: replies not kept", () => {
     const later = Date.now() + 31_000;
     gs.prune(later);
     expect(advertised(later)).toBe(0);
+  });
+
+  // Most often refused because the author's announce had not reached us. Once
+  // their key is pinned the history would verify, so it must be asked for
+  // again rather than stay hidden for the whole window.
+  test("are offered again once their author is known, others' are not", () => {
+    const requester = new GossipSync();
+    const responder = new GossipSync();
+    const absent = makePacket(PacketType.CHANNEL_MSG, 60_000, Uint8Array.of(1));
+    const other = makePacket(
+      PacketType.CHANNEL_MSG,
+      60_000,
+      Uint8Array.of(2),
+      2,
+    );
+    for (const packet of [absent, other]) {
+      responder.track(packet);
+      requester.noteReply({ ...packet, ttl: 0, isRSR: true });
+    }
+    const offered = (): Packet[] =>
+      responder.handleFilter(
+        requester.buildFilterPacket(identity, PEER, MESSAGE_ROUND),
+      );
+    expect(offered()).toHaveLength(0);
+
+    // The IDs come back for the caller's deduplicator, which still holds them.
+    const forgotten = requester.forgetDeclinedFrom(bytesToHex(absent.senderID));
+    expect(forgotten).toEqual([computePacketId({ ...absent, ttl: 0 })]);
+
+    expect(offered().map((p) => p.payload)).toEqual([Uint8Array.of(1)]);
   });
 });
 

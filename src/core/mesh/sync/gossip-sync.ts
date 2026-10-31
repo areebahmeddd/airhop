@@ -628,7 +628,7 @@ export class GossipSync {
     this.boards,
   ];
   // Sync replies we were handed and did not keep, by packet ID. See noteReply.
-  private readonly declined = new Map<string, FilterEntry>();
+  private readonly declined = new Map<string, DeclinedEntry>();
   private timer: ReturnType<typeof setInterval> | null = null;
   // Set while started, for requests made between ticks.
   private session: {
@@ -768,11 +768,28 @@ export class GossipSync {
       type: packet.type,
       timestamp: packet.timestamp,
       id,
+      sender: bytesToHex(packet.senderID),
     });
     for (const oldest of this.declined.keys()) {
       if (this.declined.size <= DECLINED_CAPACITY) break;
       this.declined.delete(oldest);
     }
+  }
+
+  // This author's key was just pinned, so the replies refused for want of it
+  // would now verify. Off our filters, peers offer them again on the next
+  // round; left on, the author's history stays hidden for the whole window,
+  // even from the author. Returns the forgotten packet IDs, which the caller's
+  // deduplicator still holds: left there, the copies peers offer again are
+  // dropped as already seen and noted as declined all over again.
+  forgetDeclinedFrom(peerID: string): Uint8Array[] {
+    const forgotten: Uint8Array[] = [];
+    for (const [key, entry] of this.declined) {
+      if (entry.sender !== peerID) continue;
+      this.declined.delete(key);
+      forgotten.push(entry.id);
+    }
+    return forgotten;
   }
 
   private *packets(): Generator<Packet> {
@@ -917,6 +934,11 @@ interface FilterEntry {
   type: PacketType;
   timestamp: number;
   id: Uint8Array;
+}
+
+// Plus who wrote it, so their entries can go once their key is known.
+interface DeclinedEntry extends FilterEntry {
+  sender: string;
 }
 
 // ---- Helpers ----

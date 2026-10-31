@@ -550,3 +550,19 @@ describe("what goes down a downlink", () => {
     expect(decodeNostrCarrier(r.downlinks[0])?.geohash).toBe(CELL);
   });
 });
+
+describe("the presence heartbeat", () => {
+  // It names a precision-6 cell, so it goes only while someone is looking.
+  it("is not sent in the background, and resumes on screen", async () => {
+    const r = rig();
+    r.bridge.setForeground(false);
+    await online(r);
+    await jest.advanceTimersByTimeAsync(10 * 60_000);
+    const heartbeats = (): number =>
+      r.client.published.filter((e) => e.kind === 20001).length;
+    expect(heartbeats()).toBe(0);
+
+    r.bridge.setForeground(true);
+    expect(heartbeats()).toBe(1);
+  });
+});

@@ -232,6 +232,11 @@ export class BridgeService {
   private readonly participants = new Map<string, number>(); // pubkey -> lastSeenMs
   private presenceTimer: ReturnType<typeof setTimeout> | null = null;
   private lastPresenceAtMs = 0;
+  // The heartbeat names a precision-6 cell, finer than location presence ever
+  // goes, so it is sent only while on screen, as geohash presence is and as
+  // bitchat-ios is by being suspended. Carrying deposits and downlinks needs
+  // no heartbeat and goes on in the background.
+  private foreground = true;
 
   constructor(
     signingPrivKey: Uint8Array,
@@ -318,6 +323,12 @@ export class BridgeService {
     this.queuedUplinks = [];
     this.participants.clear();
     this.emitStatus();
+  }
+
+  setForeground(foreground: boolean): void {
+    if (this.foreground === foreground) return;
+    this.foreground = foreground;
+    if (foreground) this.publishPresence();
   }
 
   // Internet switched off: deposits were accepted on the promise of putting
@@ -754,7 +765,7 @@ export class BridgeService {
   private publishPresence(): void {
     const client = this.client;
     if (!this.enabled || client === null || this.activeCell === null) return;
-    if (!this.hooks.relaysConnected()) return;
+    if (!this.foreground || !this.hooks.relaysConnected()) return;
     const now = Date.now();
     if (now - this.lastPresenceAtMs < PRESENCE_MIN_INTERVAL_MS) return;
     this.lastPresenceAtMs = now;

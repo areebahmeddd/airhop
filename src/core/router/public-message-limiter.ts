@@ -5,7 +5,9 @@
 
 import { POW_BYPASS_BITS } from "@core/nostr/nostr-pow";
 
-const SENDER_CAPACITY = 5;
+// How many public messages one sender may post in a row before the one-a-second
+// refill applies. The forward sheet caps a bulk public forward at it.
+export const SENDER_CAPACITY = 5;
 const SENDER_REFILL_PER_SEC = 1;
 const CONTENT_CAPACITY = 3;
 const CONTENT_REFILL_PER_SEC = 0.5;

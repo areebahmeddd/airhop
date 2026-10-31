@@ -1528,3 +1528,72 @@ test("S18 an author that relaunched can serve its own message again", async () =
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+test("S19 history refused for want of its author's key is taken once the author is heard", async () => {
+  // dave cannot verify alice until he hears her announce, so he refuses her
+  // history and remembers its IDs. Once her key is pinned the IDs come off his
+  // filters and bob offers them again under the same packet IDs, which dave's
+  // deduplicator still holds from the first offer. Unless that forgets them
+  // too, every round's offer is dropped as a duplicate for five minutes.
+  const s = (scenario = new Scenario({
+    id: "S19",
+    title: "backfill after the author's key arrives",
+    seed: 190,
+  }));
+  const { radio, devices } = phones(s, ["alice", "bob", "dave"]);
+  const [alice, bob, dave] = devices;
+  radio.setTopology([["alice", "bob"]]);
+  for (const d of devices) d.launch();
+  const channel = MESH_PUBLIC_CHANNEL;
+  for (const d of devices) d.joinChannel(channel);
+  await waitForCoarse(
+    s.world,
+    () => bob.peers().includes(alice.peerID),
+    45_000,
+  );
+
+  const said = ["north gate", "south gate", "east gate"];
+  for (const text of said) alice.send(channel, text);
+  s.check(
+    "bob heard alice",
+    await waitFor(
+      s.world,
+      () => said.every((t) => bob.texts(channel).includes(t)),
+      20_000,
+    ),
+  );
+
+  s.world.say("TOPOLOGY_CHANGE", "alice leaves; her announce ages out");
+  radio.setTopology([]);
+  await s.world.advance(3 * 60_000);
+
+  s.world.say("TOPOLOGY_CHANGE", "dave arrives next to bob");
+  radio.setTopology([["bob", "dave"]]);
+  await waitForCoarse(s.world, () => bob.peers().includes(dave.peerID), 45_000);
+  // Offered and refused: dave has never heard alice.
+  await s.world.advance(20_000);
+  s.check(
+    "dave refused what he could not verify",
+    !said.some((t) => dave.texts(channel).includes(t)),
+  );
+
+  s.world.say("TOPOLOGY_CHANGE", "alice comes back beside bob");
+  radio.setTopology([
+    ["alice", "bob"],
+    ["bob", "dave"],
+  ]);
+  // Her announce reaches dave through bob, then a round or two.
+  const caughtUp = await waitForCoarse(
+    s.world,
+    () => said.every((t) => dave.texts(channel).includes(t)),
+    60_000,
+  );
+  s.check(
+    "dave takes alice's history well inside the dedup window",
+    caughtUp,
+    `dave thread = [${dave.texts(channel).join(" | ")}]`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});

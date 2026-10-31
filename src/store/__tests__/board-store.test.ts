@@ -7,6 +7,7 @@ import {
   type BoardWire,
 } from "@core/mesh/wire/board-packet";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { createMMKV } from "react-native-mmkv";
 import { isLivePost, useBoardStore } from "../board-store";
 
@@ -167,5 +168,56 @@ describe("isLivePost", () => {
     expect(useBoardStore.getState().ingest(post(stale), now)).toBe("rejected");
     expect(isLivePost(live, now)).toBe(true);
     expect(useBoardStore.getState().ingest(post(live), now)).toBe("accepted");
+  });
+});
+
+// A bridged notice's NIP-09 retraction stays owed until a relay accepts it, so
+// a delete made offline still reaches the relays later, across a relaunch.
+describe("bridged retractions", () => {
+  const now = Date.now();
+
+  beforeEach(() => {
+    useBoardStore.getState().clearAll();
+  });
+
+  function bridged(): BoardPost {
+    const p = makePost(author(), { createdAt: now - 1000 });
+    useBoardStore.getState().ingest(post(p), now);
+    useBoardStore.getState().noteBridgedEvent(bytesToHex(p.postID), "event-1");
+    return p;
+  }
+
+  it("is owed from the delete until a relay settles it", () => {
+    const p = bridged();
+    const id = bytesToHex(p.postID);
+    expect(
+      useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt),
+    ).toBe("event-1");
+    // The bridged mapping is gone; the retraction is not.
+    expect(
+      useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt),
+    ).toBeUndefined();
+    expect(useBoardStore.getState().pendingBridgedDeletes(now)).toEqual([
+      { eventID: "event-1", geohash: p.geohash },
+    ]);
+    useBoardStore.getState().settleBridgedDelete("event-1");
+    expect(useBoardStore.getState().pendingBridgedDeletes(now)).toEqual([]);
+  });
+
+  it("is dropped once the note would have expired on its own", () => {
+    const p = bridged();
+    const id = bytesToHex(p.postID);
+    useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt);
+    expect(
+      useBoardStore.getState().pendingBridgedDeletes(p.expiresAt + 1),
+    ).toEqual([]);
+  });
+
+  it("goes with a panic wipe", () => {
+    const p = bridged();
+    const id = bytesToHex(p.postID);
+    useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt);
+    useBoardStore.getState().clearAll();
+    expect(useBoardStore.getState().pendingBridgedDeletes(now)).toEqual([]);
   });
 });

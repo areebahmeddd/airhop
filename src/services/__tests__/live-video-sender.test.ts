@@ -204,8 +204,9 @@ describe("LiveVideoSendSession", () => {
       startCapture: jest.fn(() => Promise.reject(new Error("mic taken"))),
       stopCapture: jest.fn(() => Promise.resolve()),
     };
+    const sent: Uint8Array[] = [];
     const s = new LiveVideoSendSession(LIVE_VIDEO_QUALITIES.low, {
-      send: () => undefined,
+      send: (p) => sent.push(p),
       audio: audio as unknown as NativeAudioCapture,
       onFailure: () => undefined,
       packetBudget: BLE_PACKET_BUDGET,
@@ -215,6 +216,17 @@ describe("LiveVideoSendSession", () => {
     await s.start();
     expect(s.isRunning).toBe(true);
     expect(s.summary().withSound).toBe(false);
+    // Viewers were told there is sound before the microphone failed. The
+    // keyframe asked for brings a START that tells them otherwise.
+    expect(native.requestKeyframe).toHaveBeenCalled();
+    encoded(0, true);
+    await advance(200);
+    const starts = sent
+      .map((p) => decodeVideoBurstPacket(p))
+      .filter((p) => p?.kind === "start")
+      .map((p) => (p?.kind === "start" ? p.config.hasAudio : null));
+    expect(starts[0]).toBe(true);
+    expect(starts[starts.length - 1]).toBe(false);
     const stopping = s.stop(true);
     await advance(200);
     await stopping;

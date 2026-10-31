@@ -175,6 +175,12 @@ export function relayDecision(
 
 export class FloodRouter {
   private readonly dedup = new Deduplicator();
+  // Fragments in a set of their own. One 1 MiB file is over two thousand of
+  // them, which in the shared set would push every message ID out in about
+  // half a minute instead of five. bitchat-ios keeps fragments out of its
+  // message dedup entirely; a set is still needed here, since fragments are
+  // relayed and a loop must end.
+  private readonly fragmentDedup = new Deduplicator();
 
   // `getDegree` is our current neighbour count, which the relay policy scales
   // with. It defaults to 0 (sparse), which keeps the router usable in tests
@@ -197,8 +203,9 @@ export class FloodRouter {
   // through the provided send function.
   receive(packet: Packet, send: SendFn): boolean {
     const pid = computePacketId(packet);
-    if (this.dedup.has(pid)) return false;
-    this.dedup.add(pid);
+    const dedup = this.dedupFor(packet);
+    if (dedup.has(pid)) return false;
+    dedup.add(pid);
 
     const decision = relayDecision(packet, this.getDegree(), this.localPeerID);
     if (decision !== null) {
@@ -219,15 +226,31 @@ export class FloodRouter {
   // copy arriving later over another radio is dropped rather than handled twice.
   admit(packet: Packet): boolean {
     const pid = computePacketId(packet);
-    if (this.dedup.has(pid)) return false;
-    this.dedup.add(pid);
+    const dedup = this.dedupFor(packet);
+    if (dedup.has(pid)) return false;
+    dedup.add(pid);
     return true;
   }
 
   // Originate a packet from this node. Records the ID so we do not relay
   // our own broadcasts back to ourselves.
   originate(packet: Packet): void {
-    this.dedup.add(computePacketId(packet));
+    this.dedupFor(packet).add(computePacketId(packet));
+  }
+
+  // Let whole packets already seen be handled again. For sync replies refused
+  // only for want of their author's key: once it is pinned, peers offer them
+  // again under the same IDs, which would otherwise be dropped as duplicates
+  // for the rest of the dedup window. Never fragment IDs, which a re-offered
+  // packet does not reuse (its fragments carry a fresh stream ID).
+  forget(packetIds: readonly Uint8Array[]): void {
+    for (const pid of packetIds) this.dedup.delete(pid);
+  }
+
+  private dedupFor(packet: Packet): Deduplicator {
+    return packet.type === PacketType.FRAGMENT
+      ? this.fragmentDedup
+      : this.dedup;
   }
 
   private scheduleRelay(

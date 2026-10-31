@@ -67,6 +67,7 @@ import { getStorage } from "@store/mmkv";
 import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell } from "../harness/app-shell";
 import { installNativeBle, installNativeWifi } from "../harness/bridge-shim";
@@ -152,6 +153,7 @@ function androidDevice(os: DeviceOS): AndroidBleModule {
 
 describe("cold start and permissions", () => {
   let app: AppShell | null = null;
+  let androidOS: { restore: () => void } | null = null;
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -161,6 +163,8 @@ describe("cold start and permissions", () => {
   afterEach(() => {
     app?.teardown();
     app = null;
+    androidOS?.restore();
+    androidOS = null;
     installNativeBle(null);
     installNativeWifi(null);
     jest.clearAllTimers();
@@ -586,6 +590,8 @@ describe("cold start and permissions", () => {
 
   test("S11 the platform refuses a scan after accepting it", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    // An Android-only event, which the mesh subscribes to only there.
+    androidOS = jest.replaceProperty(Platform, "OS", "android");
     const v = new Verdict(
       "S11",
       "onScanFailed arrives long after startScan resolved, the only radio failure the reconciler cannot see for itself",
