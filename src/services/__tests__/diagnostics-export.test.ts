@@ -17,6 +17,7 @@ jest.mock("../mesh-service", () => ({ getMeshService: () => null }));
 import { useChatStore } from "@store/chat-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
+import { PermissionsAndroid, Platform } from "react-native";
 import {
   buildDiagnosticsReport,
   getDiagnosticsReport,
@@ -234,6 +235,24 @@ describe("buildDiagnosticsReport", () => {
     );
   });
 
+  it("lists each mesh permission by name and grant, after the settings", () => {
+    const report = buildDiagnosticsReport({
+      ...SNAPSHOT,
+      permissions: [
+        { permission: "android.permission.BLUETOOTH_SCAN", granted: true },
+        {
+          permission: "android.permission.ACCESS_LOCAL_NETWORK",
+          granted: false,
+        },
+      ],
+    });
+    expect(report).toContain(
+      "  Spam filter: on\n\nPermissions\n  BLUETOOTH_SCAN: granted\n  ACCESS_LOCAL_NETWORK: not granted\n",
+    );
+    // iOS reads none of them.
+    expect(buildDiagnosticsReport(SNAPSHOT)).not.toContain("Permissions");
+  });
+
   // A count alone cannot be acted on, so the last fault names where to look.
   it("names the last ingress fault by error and packet type", () => {
     expect(buildDiagnosticsReport(SNAPSHOT)).toContain("Ingress faults: 0\n");
@@ -261,6 +280,31 @@ describe("buildDiagnosticsReport", () => {
     expect(await getDiagnosticsReport()).toContain(
       "  Bluetooth: adapter-off · ",
     );
+  });
+
+  // Android 17 drops Wi-Fi Aware and LAN sockets without local network access,
+  // so an Android 17 report must say whether it is held.
+  it("reads every mesh grant on Android 17 without prompting", async () => {
+    const os = jest.replaceProperty(Platform, "OS", "android");
+    const version = jest.spyOn(Platform, "Version", "get").mockReturnValue(37);
+    const check = jest
+      .spyOn(PermissionsAndroid, "check")
+      .mockImplementation(
+        async (p) => p !== "android.permission.ACCESS_LOCAL_NETWORK",
+      );
+    const request = jest.spyOn(PermissionsAndroid, "requestMultiple");
+    try {
+      const report = await getDiagnosticsReport();
+      expect(report).toContain(
+        "Permissions\n  BLUETOOTH_SCAN: granted\n  BLUETOOTH_ADVERTISE: granted\n  BLUETOOTH_CONNECT: granted\n  NEARBY_WIFI_DEVICES: granted\n  ACCESS_LOCAL_NETWORK: not granted\n",
+      );
+      expect(request).not.toHaveBeenCalled();
+    } finally {
+      check.mockRestore();
+      request.mockRestore();
+      version.mockRestore();
+      os.restore();
+    }
   });
 
   // What keeps the bundle safe to hand to a stranger: whatever the stores

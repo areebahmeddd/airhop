@@ -1,5 +1,6 @@
 // A support bundle the user hands over themselves: transport state, the
-// relevant switches, and the process's own recent log.
+// relevant switches, the mesh's permission grants on Android, and the
+// process's own recent log.
 //
 // A file offered to the share sheet, never sent on its own, and there is no
 // endpoint to send it to: an app whose pitch is that nothing leaves the phone
@@ -12,6 +13,7 @@ import NativeAirhopWiFi from "@bridge/NativeAirhopWiFi";
 import type { TransportKind } from "@core/mesh/links/link-registry";
 import { APP_VERSION } from "@data/app-info";
 import { t } from "@i18n";
+import { blePermissionGrants } from "@platform/ble-permissions";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
@@ -60,6 +62,9 @@ export interface DiagnosticsSnapshot {
     liveVideo: boolean;
     spamFilter: boolean;
   };
+  // Android only. A transport that is up with no links is most often a grant
+  // missing here, which the user cannot see anywhere else.
+  permissions?: { permission: string; granted: boolean }[];
   // Absent only if the native module itself is missing. Empty where the
   // platform refused to hand back a log.
   log?: string;
@@ -110,6 +115,16 @@ export function buildDiagnosticsReport(s: DiagnosticsSnapshot): string {
     `  Spam filter: ${yes(s.settings.spamFilter)}`,
     "",
   ];
+  if (s.permissions !== undefined) {
+    lines.push(
+      "Permissions",
+      ...s.permissions.map(
+        (p) =>
+          `  ${p.permission.replace("android.permission.", "")}: ${p.granted ? "granted" : "not granted"}`,
+      ),
+      "",
+    );
+  }
   if (s.wifiTransport !== undefined && s.wifiTransport.trim().length > 0) {
     lines.push(
       "Wi-Fi Aware details",
@@ -210,7 +225,7 @@ function platformLabel(): string {
   return `iOS ${String(Platform.Version)}`;
 }
 
-// Everything the report needs, read once. The native log is the only await.
+// Everything the report needs, read once. Only the native reads are awaited.
 async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
   const mesh = useMeshStateStore.getState();
   const settings = useSettingsStore.getState();
@@ -242,6 +257,8 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
   const wifiTransport = await NativeAirhopWiFi?.dumpState?.().catch(
     () => undefined,
   );
+  const permissions =
+    (await blePermissionGrants().catch(() => null)) ?? undefined;
 
   const now = new Date();
   return {
@@ -281,6 +298,7 @@ async function collectDiagnostics(): Promise<DiagnosticsSnapshot> {
       liveVideo: settings.liveVideoEnabled,
       spamFilter: settings.spamFilterEnabled,
     },
+    permissions,
     log,
     wifiTransport,
   };

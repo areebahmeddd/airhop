@@ -68,6 +68,50 @@ function requiredBlePermissions(): Permission[] {
   return [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
 }
 
+// Extras for the Wi-Fi Aware fast path, asked for in the same run of dialogs
+// as the required ones but never failing the gate: Wi-Fi is an accelerator,
+// and the mesh must run without it.
+//
+// NEARBY_WIFI_DEVICES is API 33+. Below that Aware discovery needs fine
+// location, which is asked for only on API <=30, where BLE needs it too. On
+// API 31 and 32 Aware goes without rather than raise a location prompt for an
+// accelerator, and wifi-controller.ts stops retrying the refusal.
+//
+// ACCESS_LOCAL_NETWORK is API 37+. Declared in the manifest, it loses the
+// implicit grant older targets get, and Android 17 drops the Wi-Fi Aware and
+// LAN sockets without it. It shares the Bluetooth permissions' group, so it
+// adds no dialog.
+function optionalBlePermissions(apiLevel: number): Permission[] {
+  const optional: Permission[] = [];
+  if (apiLevel >= 33) {
+    optional.push("android.permission.NEARBY_WIFI_DEVICES" as Permission);
+  }
+  if (apiLevel >= LOCAL_NETWORK_MIN_API) {
+    optional.push("android.permission.ACCESS_LOCAL_NETWORK" as Permission);
+  }
+  return optional;
+}
+
+// Every permission the gate asks for and whether it is held, read without
+// prompting, for the diagnostics report. Null on iOS, where the gate asks for
+// nothing and no API reads the local network grant.
+export async function blePermissionGrants(): Promise<
+  { permission: string; granted: boolean }[] | null
+> {
+  if (Platform.OS !== "android") return null;
+  const all = [
+    ...requiredBlePermissions(),
+    ...optionalBlePermissions(androidApiLevel()),
+  ];
+  const granted = await Promise.all(
+    all.map((p) => PermissionsAndroid.check(p)),
+  );
+  return all.map((permission, i) => ({
+    permission,
+    granted: granted[i] ?? false,
+  }));
+}
+
 // Read the current grant WITHOUT prompting, for app resume, where the user may
 // have just granted in Settings. Re-requesting there is either a no-op or a
 // prompt thrown at someone who did not ask, and both leave the mesh dead until
@@ -101,27 +145,7 @@ export async function ensureBlePermissions(): Promise<BlePermissionResult> {
   const apiLevel = androidApiLevel();
   const locationRequired = apiLevel < NEVER_FOR_LOCATION_MIN_API;
 
-  // Optional extras for the WiFi Aware fast path, batched here so the user
-  // answers one run of dialogs rather than two, but kept OUT of `required`:
-  // WiFi is an accelerator, the mesh must run without it, and a denial here
-  // never fails the gate.
-  //
-  // NEARBY_WIFI_DEVICES is API 33+. Below that Aware discovery needs fine
-  // location, which is asked for only on API <=30, where BLE needs it too. On
-  // API 31 and 32 Aware goes without rather than raise a location prompt for
-  // an accelerator, and wifi-controller.ts stops retrying the refusal.
-  //
-  // ACCESS_LOCAL_NETWORK is API 37+. Declared in the manifest, it loses the
-  // implicit grant older targets get, and Android 17 drops the Wi-Fi Aware and
-  // LAN sockets without it. It shares the Bluetooth permissions' group, so it
-  // adds no dialog.
-  const optional: Permission[] = [];
-  if (apiLevel >= 33) {
-    optional.push("android.permission.NEARBY_WIFI_DEVICES" as Permission);
-  }
-  if (apiLevel >= LOCAL_NETWORK_MIN_API) {
-    optional.push("android.permission.ACCESS_LOCAL_NETWORK" as Permission);
-  }
+  const optional = optionalBlePermissions(apiLevel);
 
   // Fast path: skip the prompt when there is nothing left to ask for.
   //
