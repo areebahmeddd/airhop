@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Ang iyong pagkakakilanlan ay isang pares ng susing {ed25519} na nilikha sa iyong device at nakaimbak sa {ios_keychain} o {android_keystore}. Walang account, walang pagpaparehistro, at walang anumang dumadaan sa server, ibig sabihin puwede itong gamitin bilang pansamantalang app na walang naiiwang anumang makakaugnay sa iyo matapos itong burahin.",
   "home.about.body.crypto":
-    "Bawat sesyon ay gumagamit ng protokol na {noise} para sa napatunayang handshake. Ang mga nakaimbak na mensahe ay gumagamit ng algoritmong {ratchet}, ibig sabihin kahit makompromiso ang iyong device sa hinaharap, mananatiling hindi mabasa ang iyong mga lumang mensahe. Ang panic wipe ay sumisira sa lahat ng susi at mensahe sa wala pang isang segundo.",
+    "Bawat sesyon ay gumagamit ng protokol na {noise} para sa napatunayang handshake. Ang mga live na direktang mensahe sa pagitan ng mga telepono na may Airhop ay gumagamit ng algoritmong {ratchet}, ibig sabihin kahit tumagas ang isang susi sa hinaharap, hindi nito mabubuksan ang mga mensaheng naipadala na. Ang panic wipe ay sumisira sa lahat ng susi at mensahe sa wala pang isang segundo.",
   "home.about.body.internet":
     "Kapag ikaw at ang iyong kontak ay wala na sa saklaw ng Bluetooth, ang mga relay ng {nostr} ang nagsisilbing tulay sa internet, gamit ang mga direktang mensaheng nakabalot sa anyong {nip17}, kaya umaabot sa buong mundo ang mesh tuwing pareho kayong online. Available ang suporta sa {tor} sa iOS at Android, sa pamamagitan ng {arti}, may mga bridge na {obfs4}, {snowflake} at {webtunnel} para sa mga network na humaharang sa Tor.",
   "home.about.optional.title": "May mga opsyonal na tampok ang Airhop na puwede mong buksan:",

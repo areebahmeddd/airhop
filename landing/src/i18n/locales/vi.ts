@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Danh tính của bạn là một cặp khóa {ed25519} được tạo trên thiết bị của bạn và lưu trong {ios_keychain} hoặc {android_keystore}. Không có tài khoản, không đăng ký, và không có gì chạm tới máy chủ nào, tức là có thể dùng như một ứng dụng dùng một lần, sau khi xóa không để lại gì dẫn ngược về bạn.",
   "home.about.body.crypto":
-    "Mỗi phiên dùng giao thức {noise} cho bước bắt tay có xác thực. Tin nhắn đã lưu dùng thuật toán {ratchet}, tức là ngay cả khi thiết bị của bạn bị xâm nhập về sau, những tin nhắn cũ vẫn không đọc được. Xóa khẩn cấp hủy mọi khóa và tin nhắn trong chưa đầy một giây.",
+    "Mỗi phiên dùng giao thức {noise} cho bước bắt tay có xác thực. Tin nhắn trực tiếp theo thời gian thực giữa các điện thoại dùng Airhop dùng thuật toán {ratchet}, tức là khóa bị lộ về sau cũng không mở được những tin nhắn đã gửi. Xóa khẩn cấp hủy mọi khóa và tin nhắn trong chưa đầy một giây.",
   "home.about.body.internet":
     "Khi bạn và người liên hệ ở ngoài tầm Bluetooth, các relay {nostr} đóng vai trò cầu nối qua internet, dùng tin nhắn trực tiếp được bọc theo định dạng {nip17}, nhờ vậy mạng mesh vươn ra toàn cầu mỗi khi cả hai đều trực tuyến. Hỗ trợ {tor} có trên cả iOS và Android, qua {arti}, kèm bridge {obfs4}, {snowflake} và {webtunnel} cho những mạng chặn Tor.",
   "home.about.optional.title": "Airhop có những tính năng tùy chọn mà bạn có thể bật:",

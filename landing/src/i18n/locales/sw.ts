@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Utambulisho wako ni jozi ya funguo za {ed25519} inayotengenezwa kwenye kifaa chako na kuhifadhiwa katika {ios_keychain} au {android_keystore}. Hakuna akaunti, hakuna usajili, wala kitu chochote kinachogusa seva, yaani inaweza kutumika kama programu ya matumizi ya mara moja isiyoacha chochote kinachokuelekea baada ya kufutwa.",
   "home.about.body.crypto":
-    "Kila kipindi hutumia itifaki ya {noise} kwa uthibitishaji wa awali. Ujumbe uliohifadhiwa hutumia algoriti ya {ratchet}, yaani hata kama kifaa chako kitavamiwa baadaye, ujumbe wako wa zamani hubaki usiosomeka. Ufutaji wa dharura huharibu funguo na ujumbe wote kwa chini ya sekunde moja.",
+    "Kila kipindi hutumia itifaki ya {noise} kwa uthibitishaji wa awali. Ujumbe wa moja kwa moja kati ya simu za Airhop hutumia algoriti ya {ratchet}, yaani hata ufunguo ukivuja baadaye, hauwezi kufungua ujumbe uliokwisha tumwa. Ufutaji wa dharura huharibu funguo na ujumbe wote kwa chini ya sekunde moja.",
   "home.about.body.internet":
     "Wewe na mwenzako mkiwa nje ya masafa ya Bluetooth, vipeperushi vya {nostr} hufanya kazi kama daraja kupitia intaneti, vikitumia ujumbe wa moja kwa moja uliofungashwa kwa muundo wa {nip17}, hivyo mesh hufika dunia nzima kila mnapokuwa mtandaoni nyote wawili. Msaada wa {tor} upo kwenye iOS na Android, kupitia {arti}, na madaraja ya {obfs4}, {snowflake} na {webtunnel} kwa mitandao inayozuia Tor.",
   "home.about.optional.title": "Airhop ina vipengele vya hiari unavyoweza kuwasha:",

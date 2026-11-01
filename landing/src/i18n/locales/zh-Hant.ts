@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "你的身分是一組在本機產生的 {ed25519} 金鑰，保存在 {ios_keychain} 或 {android_keystore} 之中。沒有帳號，沒有註冊，也沒有任何東西會接觸伺服器，也就是說它可以當作一次性應用程式使用，刪除後不會留下任何指向你的線索。",
   "home.about.body.crypto":
-    "每個工作階段都使用 {noise} 協定完成經過驗證的交握。已儲存的訊息使用 {ratchet} 演算法，也就是說即使你的裝置日後遭到入侵，過去的訊息依然無法解讀。緊急抹除會在一秒內銷毀所有金鑰與訊息。",
+    "每個工作階段都使用 {noise} 協定完成經過驗證的交握。Airhop 手機之間的即時私訊使用 {ratchet} 演算法，也就是說即使金鑰日後外洩，也無法開啟已傳送的訊息。緊急抹除會在一秒內銷毀所有金鑰與訊息。",
   "home.about.body.internet":
     "當你和聯絡人都超出 Bluetooth 範圍時，{nostr} 中繼會作為透過網際網路的橋樑，使用 {nip17} 形式包裝的私訊，因此只要你們雙方都在線上，網狀網路就能延伸到全世界。{tor} 支援在 iOS 與 Android 上皆可使用，透過 {arti} 實作，並為封鎖 Tor 的網路提供 {obfs4}、{snowflake} 與 {webtunnel} 橋接。",
   "home.about.optional.title": "Airhop 提供了一些可以自行開啟的功能：",

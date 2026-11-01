@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Je identiteit is een {ed25519}-sleutelpaar dat op je apparaat wordt aangemaakt en bewaard in {ios_keychain} of {android_keystore}. Er zijn geen accounts, geen registraties en niets dat een server raakt, oftewel je kunt de app als wegwerp-app gebruiken die na verwijdering niets achterlaat dat naar jou leidt.",
   "home.about.body.crypto":
-    "Elke sessie gebruikt het {noise}-protocol voor een geauthenticeerde handshake. Opgeslagen berichten gebruiken het {ratchet}-algoritme, oftewel zelfs als je apparaat later gecompromitteerd raakt, blijven je oude berichten onleesbaar. Noodwissen vernietigt alle sleutels en berichten in minder dan een seconde.",
+    "Elke sessie gebruikt het {noise}-protocol voor een geauthenticeerde handshake. Live directe berichten tussen Airhop-telefoons gebruiken het {ratchet}-algoritme, oftewel een sleutel die later uitlekt, kan al verzonden berichten niet openen. Noodwissen vernietigt alle sleutels en berichten in minder dan een seconde.",
   "home.about.body.internet":
     "Als jij en een contact buiten Bluetooth-bereik zijn, dienen {nostr}-relays als brug via internet, met directe berichten ingepakt volgens {nip17}, zodat de mesh wereldwijd reikt zodra jullie allebei online zijn. Ondersteuning voor {tor} is er op iOS en Android, via {arti}, met {obfs4}-, {snowflake}- en {webtunnel}-bridges voor netwerken die Tor blokkeren.",
   "home.about.optional.title": "Airhop heeft optionele functies die je kunt inschakelen:",

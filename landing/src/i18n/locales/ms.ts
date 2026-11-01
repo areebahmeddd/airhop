@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Identiti anda ialah pasangan kunci {ed25519} yang dijana pada peranti anda dan disimpan dalam {ios_keychain} atau {android_keystore}. Tiada akaun, tiada pendaftaran, dan tiada apa-apa yang menyentuh mana-mana pelayan, iaitu ia boleh digunakan sebagai aplikasi sekali guna yang tidak meninggalkan apa-apa yang menjejaki anda selepas dipadamkan.",
   "home.about.body.crypto":
-    "Setiap sesi menggunakan protokol {noise} untuk jabat tangan yang disahkan. Mesej yang disimpan menggunakan algoritma {ratchet}, iaitu walaupun peranti anda dikompromi kemudian, mesej lama anda kekal tidak boleh dibaca. Pemadaman kecemasan memusnahkan semua kunci dan mesej dalam masa kurang satu saat.",
+    "Setiap sesi menggunakan protokol {noise} untuk jabat tangan yang disahkan. Mesej terus langsung antara telefon Airhop menggunakan algoritma {ratchet}, iaitu kunci yang bocor kemudian tidak dapat membuka mesej yang telah dihantar. Pemadaman kecemasan memusnahkan semua kunci dan mesej dalam masa kurang satu saat.",
   "home.about.body.internet":
     "Apabila anda dan kenalan anda berada di luar jangkauan Bluetooth, geganti {nostr} bertindak sebagai jambatan melalui internet, menggunakan mesej terus yang dibalut mengikut format {nip17}, jadi rangkaian mesh meluas ke seluruh dunia setiap kali anda berdua dalam talian. Sokongan {tor} tersedia pada iOS dan Android, melalui {arti}, dengan jambatan {obfs4}, {snowflake} dan {webtunnel} untuk rangkaian yang menyekat Tor.",
   "home.about.optional.title": "Airhop mempunyai ciri pilihan yang boleh anda hidupkan:",

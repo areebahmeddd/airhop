@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Kimliğiniz, cihazınızda üretilen ve {ios_keychain} ya da {android_keystore} içinde saklanan bir {ed25519} anahtar çiftidir. Hesap yok, kayıt yok ve herhangi bir sunucuya dokunan hiçbir şey yok; yani silindikten sonra size geri götürecek hiçbir iz bırakmayan tek kullanımlık bir uygulama olarak kullanılabilir.",
   "home.about.body.crypto":
-    "Her oturum, kimliği doğrulanmış bir el sıkışma için {noise} protokolünü kullanır. Saklanan mesajlar {ratchet} algoritmasını kullanır; yani cihazınız daha sonra ele geçirilse bile geçmiş mesajlarınız okunamaz kalır. Acil silme, tüm anahtarları ve mesajları bir saniyeden kısa sürede yok eder.",
+    "Her oturum, kimliği doğrulanmış bir el sıkışma için {noise} protokolünü kullanır. Airhop telefonları arasındaki canlı doğrudan mesajlar {ratchet} algoritmasını kullanır; yani daha sonra sızan bir anahtar, önceden gönderilmiş mesajları açamaz. Acil silme, tüm anahtarları ve mesajları bir saniyeden kısa sürede yok eder.",
   "home.about.body.internet":
     "Siz ve bir kişiniz Bluetooth menzilinin dışındayken {nostr} röleleri internet üzerinden köprü görevi görür; {nip17} biçiminde paketlenmiş doğrudan mesajlar kullanılır, böylece ikiniz de çevrimiçi olduğunuzda mesh ağı dünya geneline uzanır. {tor} desteği hem iOS'ta hem de Android'de {arti} ile mevcuttur; Tor’u engelleyen ağlar için {obfs4}, {snowflake} ve {webtunnel} köprüleri de var.",
   "home.about.optional.title": "Airhop'ta açabileceğiniz isteğe bağlı özellikler var:",

@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Tu identidad es un par de claves {ed25519} generado en tu dispositivo y guardado en {ios_keychain} o {android_keystore}. No hay cuentas ni registros, y nada que toque ningún servidor, es decir, se puede usar como app desechable que no deja nada que apunte a ti una vez eliminada.",
   "home.about.body.crypto":
-    "Cada sesión usa el protocolo {noise} para un handshake autenticado. Los mensajes almacenados usan el algoritmo {ratchet}, es decir, aunque tu dispositivo se vea comprometido más adelante, tus mensajes anteriores siguen siendo ilegibles. El borrado de pánico destruye todas las claves y mensajes en menos de un segundo.",
+    "Cada sesión usa el protocolo {noise} para un handshake autenticado. Los mensajes directos en vivo entre teléfonos con Airhop usan el algoritmo {ratchet}, es decir, una clave filtrada más adelante no permite abrir los mensajes ya enviados. El borrado de pánico destruye todas las claves y mensajes en menos de un segundo.",
   "home.about.body.internet":
     "Cuando tú y un contacto estáis fuera del alcance de Bluetooth, los relés de {nostr} sirven de puente por internet, usando mensajes directos envueltos con el formato {nip17}, así que la red mesh se extiende globalmente siempre que ambos estéis en línea. También hay soporte de {tor} en iOS y Android, mediante {arti}, con puentes {obfs4}, {snowflake} y {webtunnel} para las redes que bloquean Tor.",
   "home.about.optional.title": "Airhop tiene funciones opcionales que puedes activar:",
