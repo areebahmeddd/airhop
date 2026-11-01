@@ -1,20 +1,23 @@
 // A WebSocket that never connects.
 //
-// These are BLE lifecycle tests, but starting the mesh also builds the Nostr
-// transport, and nostr-tools' SimplePool will happily open real sockets to
-// relay.damus.io and friends from inside CI. That is wrong on three counts: a
-// unit test must not depend on the internet, the connections outlive the test
-// (Jest reported 32 open handles and force-killed the worker), and a relay
-// being slow would make an unrelated assertion flake.
+// For the lifecycle tests, and for a simulated phone with no relay fabric.
+// Starting the mesh also builds the Nostr transport, and nostr-tools'
+// SimplePool will happily open real sockets to relay.damus.io and friends from
+// inside CI. That is wrong on four counts: a test must not depend on the
+// internet, the connections outlive the test (Jest reported 32 open handles and
+// force-killed the worker), a relay being slow would make an unrelated
+// assertion flake, and on Node 22 a refused one kills the worker outright
+// (nostr-tools closes the socket from its error handler, and that WebSocket
+// fires the error again from close, until the stack runs out).
 //
 // Swapping the implementation rather than disabling the internet setting keeps
 // the code path honest: buildNostrTransport still runs, the pool is still
-// created, reconnect logic still schedules - the sockets simply fail to open,
-// which is exactly what a phone with no signal sees.
+// created, reconnect logic still schedules, and the sockets simply fail to
+// open, which is exactly what a phone with no signal sees.
 
 import { useWebSocketImplementation } from "nostr-tools/pool";
 
-class OfflineWebSocket {
+export class OfflineWebSocket {
   static readonly CONNECTING = 0;
   static readonly OPEN = 1;
   static readonly CLOSING = 2;

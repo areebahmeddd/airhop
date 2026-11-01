@@ -33,6 +33,7 @@ import type {
   WifiNativeModule,
 } from "../../harness/bridge-shim";
 import type { IosBleModule } from "../../harness/ios-native";
+import { OfflineWebSocket } from "../../harness/offline-socket";
 import type { AndroidPermission, DeviceOS, Platform } from "../../harness/os";
 import { eventRouter } from "./event-router";
 import type { LanPort } from "./lan-fabric";
@@ -1788,13 +1789,13 @@ function buildSandbox(
     // Swap the socket BEFORE mesh-service can build a pool. nostr-tools keeps
     // the implementation in module scope, and this registry's copy is this
     // phone's alone, so each device gets a socket bound to its own identity in
-    // the relay fabric.
-    if (relay !== undefined) {
-      const pool = require(P.nostrPool) as {
-        useWebSocketImplementation: (impl: unknown) => void;
-      };
-      pool.useWebSocketImplementation(relay.socketClassFor(spec.id));
-    }
+    // the relay fabric, or one that never connects when there is none.
+    const pool = require(P.nostrPool) as {
+      useWebSocketImplementation: (impl: unknown) => void;
+    };
+    pool.useWebSocketImplementation(
+      relay !== undefined ? relay.socketClassFor(spec.id) : OfflineWebSocket,
+    );
 
     // Bind this phone's position into its own copy of the location mock, so
     // named geohash channels resolve to a real cell. Without it they resolve to
