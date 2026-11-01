@@ -1,9 +1,9 @@
 //! The C ABI, consumed by `ios/Airhop/AirhopTorManager.swift`.
 //!
-//! A small set of functions and one plain struct. There are no callbacks or
+//! A small set of functions and no structs. There are no callbacks or
 //! allocations that cross the FFI boundary, so no corresponding free function
 //! is required. Swift polls `airhop_tor_status`, which acquires a lock and
-//! copies the status, while the manager handles all other decisions.
+//! packs the status, while the manager handles all other decisions.
 //!
 //! The header is generated from this file by cbindgen (`cbindgen.toml`) rather
 //! than hand-written, so the two cannot drift.

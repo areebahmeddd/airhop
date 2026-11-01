@@ -33,7 +33,7 @@ EXPECTED_ABIS=(arm64-v8a armeabi-v7a x86_64)
 info() { printf '\033[0;36m==>\033[0m %s\n' "$*"; }
 fail() { printf '\033[0;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# ---- Preconditions --------------------------------------------------------
+# ---- Preconditions ----
 #
 # Verify the toolchain before building so a mismatched compiler or NDK cannot
 # produce an artifact that differs from CI.
@@ -64,7 +64,7 @@ ndk_revision="$(sed -n 's/^Pkg.Revision *= *//p' "$ANDROID_NDK_HOME/source.prope
 READELF="$(ls "$ANDROID_NDK_HOME"/toolchains/llvm/prebuilt/*/bin/llvm-readelf 2>/dev/null | head -1 || true)"
 [ -x "$READELF" ] || fail "llvm-readelf not found under the NDK; cannot verify segment alignment"
 
-# ---- Toolchain ------------------------------------------------------------
+# ---- Toolchain ----
 
 export TZ=UTC
 export LC_ALL=C.UTF-8
@@ -93,7 +93,7 @@ info "Installing gomobile and gobind"
 go install golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
 gomobile init
 
-# ---- Build ----------------------------------------------------------------
+# ---- Build ----
 
 info "Building $GOMOBILE_TARGETS"
 mkdir -p "$LIBS_DIR"
@@ -118,7 +118,7 @@ gomobile bind \
 # second artifact nothing links.
 rm -f "$LIBS_DIR/IPtProxy-sources.jar"
 
-# ---- Verify ---------------------------------------------------------------
+# ---- Verify ----
 
 STAGING="$REPO_ROOT/.native-build/iptproxy-verify"
 rm -rf "$STAGING"
@@ -179,7 +179,7 @@ done
 
 rm -rf "$STAGING"
 
-# ---- Record ---------------------------------------------------------------
+# ---- Record ----
 
 info "Writing SHA256SUMS"
 # Relative to the repository root, matching native/arti's manifests.

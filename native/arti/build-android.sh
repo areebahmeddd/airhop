@@ -27,7 +27,7 @@ declare -A ABI_FOR_TARGET=(
 info() { printf '\033[0;36m==>\033[0m %s\n' "$*"; }
 fail() { printf '\033[0;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# ---- Preconditions --------------------------------------------------------
+# ---- Preconditions ----
 #
 # Verify the toolchain before building so a mismatched compiler or NDK cannot
 # produce an artifact that differs from CI.
@@ -48,7 +48,7 @@ ndk_revision="$(sed -n 's/^Pkg.Revision *= *//p' "$ANDROID_NDK_HOME/source.prope
 READELF="$(ls "$ANDROID_NDK_HOME"/toolchains/llvm/prebuilt/*/bin/llvm-readelf 2>/dev/null | head -1 || true)"
 [ -x "$READELF" ] || fail "llvm-readelf not found under the NDK; cannot verify segment alignment"
 
-# ---- Reproducibility ------------------------------------------------------
+# ---- Reproducibility ----
 #
 # Remap local paths and fix build metadata so the same source produces the same
 # artifact across build machines.
@@ -69,7 +69,7 @@ if [ "${1:-}" = "--clean" ]; then
   rm -rf "$SCRIPT_DIR/target"
 fi
 
-# ---- Test -----------------------------------------------------------------
+# ---- Test ----
 #
 # Before the ABIs: a client that cannot start is not worth cross compiling three
 # times. The checks after the build read the finished library rather than calling
@@ -84,7 +84,7 @@ info "Running the crate's tests on the host"
   cargo test --locked
 )
 
-# ---- Build ----------------------------------------------------------------
+# ---- Build ----
 
 for target in "${!ABI_FOR_TARGET[@]}"; do
   abi="${ABI_FOR_TARGET[$target]}"
@@ -106,7 +106,7 @@ for target in "${!ABI_FOR_TARGET[@]}"; do
   [ -f "$out/$LIB_NAME" ] || fail "$abi: cargo-ndk produced no $LIB_NAME"
 done
 
-# ---- Verify ---------------------------------------------------------------
+# ---- Verify ----
 
 # JNI entry points declared by ArtiNative.kt.
 EXPECTED_SYMBOLS=(
@@ -143,7 +143,7 @@ for abi in "${ABI_FOR_TARGET[@]}"; do
   fi
 done
 
-# ---- Record ---------------------------------------------------------------
+# ---- Record ----
 
 info "Writing SHA256SUMS"
 (

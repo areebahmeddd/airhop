@@ -9,6 +9,7 @@ The app gets a SOCKS5 listener on `127.0.0.1:39050` and a status word. There is 
 ```text
 src/lib.rs             client lifecycle, bootstrap events, dormancy, isolation
 src/socks.rs           the SOCKS5 server
+src/bridges.rs         bridge lines and the transports they name
 src/ffi_c.rs           C ABI, consumed by ios/Airhop/AirhopTorManager.swift
 src/ffi_jni.rs         JNI, consumed by android .../tor/ArtiNative.kt
 
