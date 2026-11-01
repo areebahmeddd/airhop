@@ -1,7 +1,6 @@
-// Obj-C++ bridge: exposes AirhopLANModule (Swift) to the React Native bridge.
-// Same pattern as AirhopWiFiModule.mm, and the same method set as
-// AirhopLANModule.kt on Android, so one spec (src/bridge/NativeAirhopLAN.ts)
-// covers both platforms.
+// Objective-C bridge for AirhopLANModule.swift, on AirhopBLEModule.mm's pattern,
+// with the same method set as AirhopLANModule.kt, so one spec
+// (src/bridge/NativeAirhopLAN.ts) covers both platforms.
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 

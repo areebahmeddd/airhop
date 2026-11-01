@@ -7,7 +7,8 @@
 import Foundation
 
 enum Framing {
-  // One 64 KiB file chunk plus the length prefix.
+  // The longest body a reader accepts (PROTOCOLS.md); senders stop prefixBytes
+  // short of it.
   static let maxFrame = 65_544
   static let prefixBytes = 4
 

@@ -11,19 +11,22 @@ that exposes it to the React Native bridge.
 
 | File                      | Holds                                                                    |
 | ------------------------- | ------------------------------------------------------------------------ |
-| `AirhopAppModule.swift`   | Process-level: recent log for diagnostics; the Android-only calls reject |
+| `AirhopAppModule.swift`   | Process-level: recent log, widget snapshot; Android-only calls reject    |
 | `AirhopBLEModule.swift`   | GATT server and central, the mesh's radio                                |
 | `AirhopWiFiModule.swift`  | The Wi-Fi Aware fast path (iOS 26, paired devices only)                  |
 | `AirhopWiFiPairing.swift` | The system pairing sheet that transport needs                            |
 | `AirhopLANModule.swift`   | Bonjour discovery and TCP links on one network                           |
 | `AirhopVoiceModule.swift` | AAC-LC capture and playback for push-to-talk                             |
+| `AirhopVideoModule.swift` | Live video, recording and the transcode; codecs in `AirhopVideoMedia`    |
 | `AirhopTorModule.swift`   | The bridge face of the embedded Tor client                               |
 | `AirhopTorManager.swift`  | Boots Arti and owns its SOCKS5 proxy                                     |
 | `AirhopTorSocket.swift`   | A WebSocket that rides that proxy, for relay connections                 |
 | `AirhopIPtProxy.swift`    | The pluggable transports Arti dials to reach a bridge                    |
 | `AirhopLog.swift`         | One `os_log` category per module, read back into the export              |
 | `*.lproj/`                | Permission and service strings, checked against `src/i18n/` in CI        |
-| `Transport/`              | `Framing` and `AwareDial`, the pure pieces under test (see Tests)         |
+| `Transport/`              | `Framing`, `AwareDial` and `LongWrite`, pure and under test (see Tests)  |
+| `VideoSurfaces/`          | Which surfaces a live stream draws on, pure and under test               |
+| `VideoTranscode/`         | The pass that shrinks a video, and filmstrip stills, under test          |
 
 The TypeScript side of every contract is in `src/bridge/`.
 
@@ -31,6 +34,7 @@ Elsewhere:
 
 | Path                      | Holds                                                    |
 | ------------------------- | -------------------------------------------------------- |
+| `AirhopWidget/`           | The home screen widget extension, and its `State/`       |
 | `Frameworks/`             | The Tor client and its transports, built under `native/` |
 | `Podfile`, `Podfile.lock` | React Native and Expo pods; the lock is checked in CI    |
 | `Package.swift`, `Tests/` | The Swift test harness, see below                        |
@@ -53,10 +57,11 @@ one written by any CocoaPods other than the pinned version.
 
 ## Tests
 
-The pure pieces, `Framing`, `AwareDial` and `LongWrite`, compile twice: into the app, and
-into a Swift package rooted here (`Package.swift`) that exists only so they
-can be tested without a simulator or a scheme. Anything that touches a radio is
-covered by the simulator under `src/__tests__/` and by devices.
+The pure pieces (`Transport/`, `VideoSurfaces/`, `VideoTranscode/` and the
+widget's `State/`) compile twice: into the app, and into a Swift package rooted
+here (`Package.swift`) that exists only so they can be tested without a simulator
+or a scheme. Anything that touches a radio is covered by the simulator under
+`src/__tests__/` and by devices.
 
 ```sh
 swift test --package-path ios
@@ -70,7 +75,7 @@ package's source root, so it can be tested the same way.
 swift-format, as shipped with Xcode, checked in CI.
 
 ```sh
-swift format --in-place --recursive Airhop Tests Package.swift
+swift format --in-place --recursive Airhop AirhopWidget Tests Package.swift
 git diff --exit-code -- .    # what CI checks: the formatter changed nothing
 ```
 

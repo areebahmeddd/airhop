@@ -1,8 +1,8 @@
 // AirhopWiFiPairing: the system pairing sheet the Wi-Fi Aware transport needs.
 //
-// iOS ONLY, and a module of its own rather than more methods on
+// iOS only, and a module of its own rather than more methods on
 // AirhopWiFiModule: that contract is the transport, which both platforms
-// implement in full, and pairing is a precondition to HAVING links here rather
+// implement in full, and pairing is a precondition to having links here rather
 // than a property of a link.
 //
 // Events emitted to TypeScript:
@@ -196,8 +196,8 @@ final class AirhopWiFiPairing: RCTEventEmitter {
   /// than stacking a second sheet over the first.
   private var presented: UIViewController?
   /// The Cancel button's teardown, kept so a swipe can run it too. A
-  /// `formSheet` is pull-dismissible, and without this the guard above stayed
-  /// armed against a screen already gone: every later tap did nothing.
+  /// `formSheet` is pull-dismissible, and without this the guard above would
+  /// stay armed against a screen already gone, and every later tap do nothing.
   private var onDismiss: (() -> Void)?
 
   @objc override static func requiresMainQueueSetup() -> Bool { false }

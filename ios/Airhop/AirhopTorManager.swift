@@ -1,10 +1,7 @@
-// AirhopTorManager.swift
-//
 // Arti-based Tor integration for Airhop.
 //
 // Boots the embedded Tor client from native/arti and exposes its SOCKS5 proxy
-// on 127.0.0.1:39050. NostrClient and anything else internet-bound routes
-// through that port; nothing else in the app talks to Tor.
+// on 127.0.0.1:39050. AirhopTorSocket is the one path through that port.
 //
 // Binary dependency: ios/Frameworks/arti.xcframework, built by
 // native/arti/build-apple.sh from native/arti/src. The header beside the
@@ -18,14 +15,14 @@ import OSLog
   import Network
 #endif
 
-// ---- Arti FFI ---------------------------------------------------------------
+// MARK: - Arti FFI
 //
 // Cheap and non-blocking. See native/arti/src/ffi_c.rs for the contract and the
 // error codes.
 //
 // Bound by symbol rather than through a bridging header, which keeps the Xcode
-// target free of a modulemap for a handful of functions. A missing symbol is a link
-// error; what the linker cannot catch is one present in a device slice and
+// target free of a modulemap for a handful of functions. A missing symbol is a
+// link error; what the linker cannot catch is one present in a device slice and
 // absent from a simulator slice, which build-apple.sh checks for.
 
 @_silgen_name("airhop_tor_start")
@@ -110,7 +107,7 @@ struct ArtiStatus {
   }
 }
 
-// ---- Notification names -----------------------------------------------------
+// MARK: - Notification names
 
 extension Notification.Name {
   /// Posted once Arti is running, never before. AirhopTorModule relays Arti's
@@ -127,7 +124,7 @@ extension Notification.Name {
   public static let AirhopTorDidStall = Notification.Name("AirhopTorDidStall")
 }
 
-// ---- SOCKS endpoint ---------------------------------------------------------
+// MARK: - SOCKS endpoint
 
 /// Outside the manager because AirhopTorSocket reads it off the main actor, and
 /// the manager is @MainActor. Both sides read these, so the port cannot drift.
@@ -139,12 +136,9 @@ enum AirhopTorEndpoint {
   static let socksPort = 39050
 }
 
-// ---- TorManager -------------------------------------------------------------
+// MARK: - TorManager
 
 /// Manages the Arti Tor client lifecycle for Airhop.
-///
-/// Access the singleton via `AirhopTorManager.shared`.
-/// All @Published properties are safe to observe from the main thread.
 @MainActor
 public final class AirhopTorManager: ObservableObject {
   public static let shared = AirhopTorManager()
@@ -454,7 +448,7 @@ public final class AirhopTorManager: ObservableObject {
   /// Waits for Arti to be down before deleting, because a directory removed
   /// under a running client is one the client is free to rewrite.
   func wipeState() async {
-    // Revoke auto-start consent FIRST, or the wipe does not stick. A live
+    // Revoke auto-start consent first, or the wipe does not stick. A live
     // NWPathMonitor calls ensureRunningOnForeground() on every satisfied
     // path update and its only gate is this flag, so a Wi-Fi to cellular
     // handover seconds later would restart Arti and repopulate exactly the
@@ -500,11 +494,11 @@ public final class AirhopTorManager: ObservableObject {
 
   /// Mirror Arti's status into the published properties.
   ///
-  /// Polling, not a callback, because a callback from a Rust thread
-  /// into Swift would need its own lifetime rules and the thing being watched
-  /// changes a handful of times a minute. The interval is what keeps it cheap:
-  /// once a second while something is happening, once every ten seconds when
-  /// nothing is. The same cadence as AirhopTorModule.kt.
+  /// Polling, not a callback, because a callback from a Rust thread into Swift
+  /// would need its own lifetime rules and the thing being watched changes a
+  /// handful of times a minute. The interval is what keeps it cheap: once a
+  /// second while something is happening, once every ten seconds when nothing
+  /// is. The same cadence as AirhopTorModule.kt.
   ///
   /// A stall is reported once and the poll goes on while Arti runs: Arti keeps
   /// retrying after a blockage, and a bridge can land well past the deadline.

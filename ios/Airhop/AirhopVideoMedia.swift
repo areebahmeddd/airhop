@@ -2,8 +2,8 @@
 // AirhopVideoModule. An H.264 encoder, an MP4 writer and the Annex B to AVCC
 // plumbing between the wire's bytes and CoreMedia's.
 //
-// Ported from bitchat-ios's live video media layer, which is public domain, so
-// a stream encoded here decodes in bitchat and its recording is the same MP4.
+// Ported from bitchat-ios's live video media layer, so a stream encoded here
+// decodes in bitchat and its recording is the same MP4.
 // The wire carries Annex B with 4-byte start codes and SPS + PPS in-band on
 // every IDR; CoreMedia wants length-prefixed NAL units and a format
 // description built from those parameter sets.

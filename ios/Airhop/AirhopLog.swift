@@ -4,8 +4,8 @@
 //
 // A logged value needs `privacy: .public` to survive a release build: the
 // unified log redacts interpolated values by default. Mark public only what
-// cannot identify a peer, device, or key, the bar AirhopBLEModule.kt's
-// linkID meets on Android.
+// cannot identify a peer, device, or key, the bar AirhopBLEModule.kt holds its
+// linkID to on Android.
 import Foundation
 import OSLog
 

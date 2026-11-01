@@ -24,10 +24,9 @@ Pod::Spec.new do |s|
 
   # System libraries the Rust links against.
   #
-  # sqlite3 is very likely redundant now: the crate is built with arti-client's
+  # sqlite3 is very likely redundant: the crate is built with arti-client's
   # `static-sqlite`, and the Android library produced from the same source has no
-  # undefined sqlite symbols at all. It is kept until a macOS build confirms the
-  # same there, because linking a library nothing references costs nothing while
-  # removing one that is needed breaks the build for whoever runs it next.
+  # undefined sqlite symbols. Kept until a macOS build confirms the same there,
+  # because linking a library nothing references costs nothing.
   s.libraries = 'resolv', 'z', 'sqlite3'
 end

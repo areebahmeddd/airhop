@@ -1,8 +1,4 @@
-// AirhopTorModule.mm
-//
 // Objective-C bridge for AirhopTorModule.swift.
-// Registers the module with React Native and declares all exported methods
-// so the RN codegen can include them in the JS bundle.
 
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>

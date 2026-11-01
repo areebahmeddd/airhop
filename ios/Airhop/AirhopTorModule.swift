@@ -1,8 +1,4 @@
-// AirhopTorModule.swift
-//
-// React Native TurboModule exposing AirhopTorManager to JavaScript.
-// This is a separate native module from AirhopBLEModule. Tor and BLE
-// are independent concerns and should not share a module boundary.
+// React Native module exposing AirhopTorManager to JavaScript.
 //
 // Bridge file: AirhopTorModule.mm
 // TypeScript spec: src/bridge/NativeAirhopTor.ts
@@ -13,7 +9,7 @@ import React
 @objc(AirhopTorModule)
 final class AirhopTorModule: RCTEventEmitter {
 
-  // The single JS event emitted when Tor status changes.
+  // The single JS event, matching the Android module.
   static let torStatusEvent = "TorStatusChanged"
 
   private var hasListeners = false
@@ -25,7 +21,6 @@ final class AirhopTorModule: RCTEventEmitter {
   }
 
   override static func requiresMainQueueSetup() -> Bool {
-    // Init touches no UI; run on any thread.
     return false
   }
 
@@ -171,9 +166,9 @@ final class AirhopTorModule: RCTEventEmitter {
     let status = ArtiStatus.current
     return [
       "isReady": status.ready,
-      // Running, not yet carrying traffic, and not stuck. Blocked is
-      // not "starting": the banner has to be able to say the
-      // network refused rather than spinning forever.
+      // Running, not yet carrying traffic, and not stuck. Blocked is not
+      // "starting": the banner has to be able to say the network refused
+      // rather than spinning forever.
       "isStarting": status.running && !status.ready && !status.blocked,
       "port": status.ready ? AirhopTorEndpoint.socksPort : 0,
       "progress": status.progress,
@@ -189,8 +184,8 @@ final class AirhopTorModule: RCTEventEmitter {
     resolve(AirhopTorModule.statusPayload())
   }
 
-  /// Block until Arti is bootstrapped and SOCKS-ready (or timeout expires).
-  /// Resolves with `true` if ready, `false` on timeout.
+  /// Resolves `true` once Arti is bootstrapped and SOCKS-ready, `false` on
+  /// timeout or as soon as it is known not to be coming.
   @objc
   func awaitTorReady(
     _ timeoutSeconds: Double,

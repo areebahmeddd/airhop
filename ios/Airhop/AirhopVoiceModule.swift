@@ -14,8 +14,9 @@
 // so neither the JS thread nor the UI can be stalled by audio work.
 //
 // Events emitted to TypeScript:
-//   AirhopVoice.frame         { dataBase64 }
-//   AirhopVoice.captureError  { message }
+//   AirhopVoice.frame          { dataBase64, level }
+//   AirhopVoice.playbackLevel  { level }
+//   AirhopVoice.captureError   { message }
 import AVFoundation
 import Foundation
 import OSLog
@@ -128,8 +129,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   // release path calls setAudioForPlayback). So the second hold and every one
   // after it would capture nothing while reporting success: the burst goes
   // live on the far side and no audio ever follows. bitchat-ios recreates
-  // its capture engine for the same reason (the `engine` comment in its
-  // PTTCaptureEngine.swift).
+  // its capture engine for the same reason.
   private var captureEngine = AVAudioEngine()
   // Whether `captureEngine`'s input unit has been instantiated by us. Reading
   // `inputNode` on an engine that was never armed instantiates it against
@@ -265,7 +265,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
     // Simulator does not offer it: asking for it there fails the whole
     // setCategory call, so live voice would be dead on every simulator run
     // rather than merely routing to the Mac's own mic. bitchat guards the
-    // same way; see their AudioSessionCoordinator.swift.
+    // same way.
     #if targetEnvironment(simulator)
       let options: AVAudioSession.CategoryOptions = [.duckOthers, .defaultToSpeaker]
     #else
@@ -898,7 +898,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// Why the microphone stopped, for a burst that ended without the user
   /// letting go. The string is diagnostic rather than copy: JS ignores it and
   /// shows its own translated line, the same way the Kotlin module's messages
-  /// are never rendered. See voice-audio.ts and message-thread.tsx.
+  /// are never rendered. See voice-audio-backend.ts and message-thread.tsx.
   private func emitCaptureError(_ message: String) {
     guard bridge != nil else { return }
     sendEvent(withName: VoiceEvent.captureError, body: ["message": message])

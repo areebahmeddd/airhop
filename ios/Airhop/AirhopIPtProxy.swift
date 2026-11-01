@@ -1,5 +1,3 @@
-// AirhopIPtProxy.swift
-//
 // The pluggable transports Arti dials to reach a bridge, built from
 // native/iptproxy.
 //
@@ -11,7 +9,7 @@
 // listener and, for Snowflake, contacts a broker over the network. Callers run
 // it off the main thread, the same way they do Arti's own start.
 //
-// Mirrors android .../tor/AirhopIPtProxy.kt.
+// Mirrors AirhopIPtProxy.kt on Android.
 
 import Foundation
 import IPtProxy

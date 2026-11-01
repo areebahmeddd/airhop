@@ -1,7 +1,7 @@
 // AirhopWiFiModule: Wi-Fi Aware high-bandwidth transport for Airhop (iOS).
 //
-// Apple's WiFiAware framework, iOS 26+. Same three methods, four events and
-// rejection codes as AirhopWiFiModule.kt, so services/wifi-controller.ts drives
+// Apple's WiFiAware framework, iOS 26+. The same methods, events and rejection
+// codes as AirhopWiFiModule.kt, so services/wifi-controller.ts drives
 // both platforms without knowing which. No protocol or routing logic here: raw
 // bytes to TypeScript, as AirhopBLEModule does.
 //

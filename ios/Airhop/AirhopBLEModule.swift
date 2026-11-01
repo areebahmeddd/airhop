@@ -17,15 +17,14 @@ import UIKit
 // MARK: - Constants
 
 private enum BLEConst {
-  // mainnet UUIDs per PROTOCOLS.md - must never change without a version bump
+  // Fixed by PROTOCOLS.md. Changing either partitions the network.
   static let serviceUUID = CBUUID(string: "F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C")
   static let characteristicUUID = CBUUID(string: "A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D")
 
-  // State restoration identifiers - required for background BLE operation
+  // State restoration identifiers, required for background BLE operation.
   static let centralRestorationKey = "airhop.ble.central"
   static let peripheralRestorationKey = "airhop.ble.peripheral"
 
-  // RSSI poll interval
   static let rssiIntervalSec: TimeInterval = 5.0
 }
 
@@ -90,43 +89,37 @@ final class AirhopBLEModule: RCTEventEmitter {
   // Per-link RSSI pollers.
   //
   // DispatchSourceTimer, not Timer. These are created from CoreBluetooth
-  // delegate callbacks, which arrive on `queue` - a DispatchQueue with no run
-  // loop - and Timer.scheduledTimer schedules onto the CURRENT run loop. There
-  // isn't one, so every timer was created, retained, and never fired: signal
-  // strength has never reached the UI on iOS. A dispatch timer needs no run
-  // loop and fires on the queue CoreBluetooth expects to be called from.
+  // delegate callbacks, which arrive on `queue`, a DispatchQueue with no run
+  // loop, and Timer.scheduledTimer schedules onto the current run loop, so it
+  // would never fire. A dispatch timer needs no run loop and fires on the queue
+  // CoreBluetooth expects to be called from.
   private var rssiTimers: [String: DispatchSourceTimer] = [:]
   // Notifies that updateValue() refused because the transmit queue was full.
-  // Flushed from peripheralManagerIsReady(toUpdateSubscribers:); without this
-  // every fragment dropped under load would silently vanish mid-transfer.
+  // Flushed from peripheralManagerIsReady(toUpdateSubscribers:), so a fragment
+  // refused under load does not vanish mid-transfer.
   private var pendingNotifies: [(data: Data, central: CBCentral)] = []
 
   // How many refused notifications may be held before the peripheral role
   // starts reporting WRITE_BUSY instead of accepting more.
   //
-  // A fragment is at most one BLE frame (~469 bytes of payload), so the
-  // ceiling is roughly 120 KiB: enough to ride out the bursts CoreBluetooth
-  // routinely refuses mid-transfer, far short of letting one bad link consume
-  // memory in proportion to how badly it is behaving.
+  // A notification is at most one BLE frame (512 bytes), so the ceiling is
+  // 128 KiB: enough to ride out the bursts CoreBluetooth routinely refuses
+  // mid-transfer, far short of letting one bad link consume memory in proportion
+  // to how badly it is behaving.
   //
   // Global rather than per-central, deliberately. CoreBluetooth caps
   // simultaneous centrals in the single digits, so the worst case is one
-  // struggling peer eating headroom its neighbours would rarely need at the
-  // same moment - and the cost of getting that wrong is backpressure, which is
-  // the correct response anyway. A per-central map would buy fairness nobody
-  // can observe.
+  // struggling peer eating headroom its neighbours would rarely need at the same
+  // moment, and the cost of that is backpressure, which is the correct response
+  // anyway.
   private static let maxPendingNotifies = 256
 
-  // What the app WANTS, kept apart from what CoreBluetooth is currently doing.
+  // What the app wants, kept apart from what CoreBluetooth is currently doing.
   //
-  // These used to be a single pair of "isAdvertising"/"isScanning" flags that
-  // tried to be both at once, and the confusion cost us the peripheral role
-  // entirely: powering Bluetooth off left isAdvertising set to true, and on
-  // the way back `if isAdvertising { return }` skipped rebuilding the service,
-  // so the device stayed invisible to every peer until the app was force-quit.
-  //
-  // Intent survives a power cycle. Actual state never does - it is re-derived
-  // from the manager's own state on every callback.
+  // Intent survives a power cycle. Actual state never does: it is re-derived
+  // from the manager's own state on every callback. One flag doing both would,
+  // on the way back from a power cycle, believe the service was still up and
+  // skip rebuilding it, leaving the device invisible to every peer.
   private var wantScanning = false
   private var wantAdvertising = false
   private var actuallyScanning = false
@@ -135,13 +128,9 @@ final class AirhopBLEModule: RCTEventEmitter {
   // advertise. Cleared on poweredOff, because CoreBluetooth discards it.
   private var serviceRegistered = false
 
-  // Last value reported to JS, so an unchanged state is never sent twice.
-  //
-  // Previously every centralManagerDidUpdateState emitted adapterStateChanged;
-  // the mesh read that as a radio change and restarted the radios; the restart
-  // constructed a new CBCentralManager; that manager reported its state...
-  // Fourteen central and fourteen peripheral managers were created in ten
-  // seconds on an idle phone, each reusing the same restore identifier.
+  // Last value reported to JS, so an unchanged state is never sent twice. The
+  // mesh reads adapterStateChanged as a radio change and restarts the radios, so
+  // a repeat would feed back into another state callback.
   private var lastReportedEnabled: Bool?
 
   // Shared, not per-instance: AirhopBLERestoration may create the managers
@@ -225,12 +214,9 @@ final class AirhopBLEModule: RCTEventEmitter {
   // MARK: Peripheral (advertising)
 
   // Both managers are created exactly once, on first use, and kept for the
-  // life of the process.
-  //
-  // They used to be constructed inside startScanning/startAdvertising, which
-  // the mesh calls on every retry - so each retry allocated a fresh manager
-  // against the same restore identifier, which CoreBluetooth treats as an
-  // error, and abandoned the old one mid-connection.
+  // life of the process. The mesh calls startScanning/startAdvertising on every
+  // retry, and a fresh manager against the same restore identifier is an error
+  // to CoreBluetooth and abandons the old one mid-connection.
   private func ensureCentralManager() -> CBCentralManager {
     if let existing = centralManager { return existing }
     // Adopt the manager the app delegate built at launch rather than
@@ -286,10 +272,10 @@ final class AirhopBLEModule: RCTEventEmitter {
 
   // Reconcile CoreBluetooth with what the app wants.
   //
-  // Every entry point - a JS call, a state callback, a service being added -
-  // ends here rather than issuing commands of its own. That is what makes the
-  // module idempotent: running it twice with nothing changed does nothing, so
-  // no caller has to know what any other caller already did.
+  // Every entry point (a JS call, a state callback, a service being added) ends
+  // here rather than issuing commands of its own. That is what makes the module
+  // idempotent: running it twice with nothing changed does nothing, so no caller
+  // has to know what any other caller already did.
   //
   // Must be called on `queue`.
   private func applyState() {
@@ -350,23 +336,17 @@ final class AirhopBLEModule: RCTEventEmitter {
 
   private func startAdvertisingNow() {
     guard let manager = peripheralManager, manager.state == .poweredOn else { return }
-    // Service UUID only. The local name is deliberately NOT advertised.
+    // Service UUID only. A local name would be a stable identifier broadcast to
+    // every passive scanner in radio range, and nothing would read it: the iOS
+    // central here dedups on the CBPeripheral identifier, and the Android
+    // central reads the 8-byte peer ID out of scan-response service data.
     //
-    // It used to carry this device's peer ID, and nothing ever read it:
-    // the iOS central here dedups on the CBPeripheral identifier, and the
-    // Android central reads the 8-byte peer ID out of scan-response service
-    // data and never looks at the name. So it was a stable identifier
-    // broadcast to every passive scanner in radio range, in exchange for
-    // nothing.
+    // bitchat-ios does the same (BLERadioController.advertisementData()). It
+    // costs the ability to dedup an iPhone before connecting to it, which the
+    // mesh tolerates: one peer on two links.
     //
-    // bitchat-ios reaches the same conclusion in BLERadioController
-    // .advertisementData(), whose entire body is the service UUID under the
-    // comment "No Local Name for privacy." Matching it costs the ability to
-    // dedup an iPhone before connecting to it, which is a cost bitchat
-    // already accepts: the mesh tolerates one peer on two links.
-    //
-    // The localName parameter stays on the bridge method. Android still
-    // uses it, and the two platforms keep one signature.
+    // The localName parameter stays on the bridge method, since Android uses it
+    // and the two platforms keep one signature.
     manager.startAdvertising([
       CBAdvertisementDataServiceUUIDsKey: [BLEConst.serviceUUID]
     ])
@@ -382,8 +362,7 @@ final class AirhopBLEModule: RCTEventEmitter {
   ) {
     queue.async { [weak self] in
       guard let self else { return }
-      // Accepted for signature parity with Android, unused here: this
-      // platform advertises the service UUID alone. See startAdvertisingNow.
+      // Unused here; see startAdvertisingNow.
       _ = localName
       let manager = self.ensurePeripheralManager()
 
@@ -501,18 +480,12 @@ final class AirhopBLEModule: RCTEventEmitter {
   // Everything the device will tell us about whether BLE can run right now,
   // matching the Android module field for field.
   //
-  // This replaces isAdapterEnabled(), which read `centralManager?.state` - and
-  // the central manager was only constructed inside startScanning, which the
-  // mesh calls AFTER asking. The answer was therefore false on every cold
-  // launch regardless of the real radio, and the Mesh tab opened by announcing
-  // "Bluetooth off · mesh unavailable" on a perfectly healthy iPhone.
-  //
-  // Constructing the manager here fixes that at the source: it is the same
-  // single instance everything else uses, and asking about the radio is a
-  // legitimate reason to bring it up. CBManager.authorization is a static
-  // property and needs no manager at all, so a denied permission is reported
-  // as denied rather than as an absent radio - the two send the user to
-  // completely different places.
+  // Brings up the central manager, the same single instance everything else
+  // uses: the mesh asks before it scans, and without a manager the answer on
+  // every cold launch would be "Bluetooth off" on a healthy iPhone.
+  // CBManager.authorization is a static property and needs no manager at all, so
+  // a denied permission is reported as denied rather than as an absent radio,
+  // which send the user to different places.
   @objc
   func getRadioState(
     _ resolve: @escaping RCTPromiseResolveBlock,
@@ -549,8 +522,8 @@ final class AirhopBLEModule: RCTEventEmitter {
       }
 
       // A .unknown manager state means CoreBluetooth has not reported yet,
-      // which is not the same as unsupported - so `supported` stays true
-      // until the platform actually says otherwise.
+      // which is not the same as unsupported, so `supported` stays true until
+      // the platform actually says otherwise.
       resolve([
         "supported": manager.state != .unsupported,
         "poweredOn": manager.state == .poweredOn,
@@ -560,11 +533,6 @@ final class AirhopBLEModule: RCTEventEmitter {
         // shared blocker logic to weigh: `locationRequiredForScan` false
         // is what stops it inventing a blocker that cannot apply on this
         // platform, and the toggle beside it is then never read.
-        //
-        // `preciseLocation` used to sit here too and is gone from the
-        // contract: Android stopped needing it once BLUETOOTH_SCAN
-        // asserted neverForLocation, and a fact only one platform ever
-        // produced a meaningful value for is a fact worth deleting.
         "locationRequiredForScan": false,
         "locationServicesEnabled": true,
         // Android-only inputs to the power policy. CoreBluetooth
@@ -603,10 +571,9 @@ final class AirhopBLEModule: RCTEventEmitter {
 
   // Android turns the scan rate, advertise rate, TX power and RSSI cadence
   // down together as the battery falls. CoreBluetooth offers none of those
-  // knobs - it decides scan scheduling itself and already throttles background
-  // BLE hard on the app's behalf - so there is nothing here to apply. Declared
-  // so the shared reconciler has one code path rather than a platform branch,
-  // and so a future duty-cycling policy has somewhere to land.
+  // knobs: it decides scan scheduling itself and already throttles background
+  // BLE hard on the app's behalf. Declared so the shared reconciler has one code
+  // path rather than a platform branch.
   @objc
   func setPowerMode(
     _ mode: String,
@@ -618,9 +585,8 @@ final class AirhopBLEModule: RCTEventEmitter {
 
   // Android runs a foreground service to survive backgrounding. On iOS the
   // equivalent is granted declaratively through UIBackgroundModes
-  // (bluetooth-central / bluetooth-peripheral, already in Info.plist), so
-  // there is nothing to start or stop - but the method exists so the shared
-  // reconciler has one code path rather than a platform branch.
+  // (bluetooth-central / bluetooth-peripheral, in Info.plist), so there is
+  // nothing to start or stop. Declared for the same reason as setPowerMode.
   @objc
   func setBackgroundServiceEnabled(
     _ enabled: Bool,
@@ -650,25 +616,23 @@ final class AirhopBLEModule: RCTEventEmitter {
       // Central role: write to a remote peripheral's characteristic
       if let peripheral = self.centralLinks[linkID] {
         guard self.readyCentralLinks.contains(linkID),
-          let characteristic = self.discoverCharacteristic(on: peripheral)
+          let characteristic = self.cachedCharacteristic(on: peripheral)
         else {
           reject("NOT_READY", "Link \(linkID) is not notifying yet", nil)
           return
         }
         // A .withoutResponse write larger than the negotiated limit is
-        // silently DISCARDED by CoreBluetooth. Mesh fragments are 469 B
+        // silently discarded by CoreBluetooth. Mesh frames run up to 512 B
         // and the unacknowledged limit is often smaller, so fall back to
         // an acknowledged write rather than losing the packet.
         let maxUnacked = peripheral.maximumWriteValueLength(for: .withoutResponse)
         let writeType: CBCharacteristicWriteType =
           data.count <= maxUnacked ? .withoutResponse : .withResponse
-        // CoreBluetooth also discards an unacknowledged write issued
-        // while its transmit queue is full, and says so ONLY through
-        // canSendWriteWithoutResponse. Reporting the refusal (as the
-        // Android module already does) is what lets the fragment pacer
-        // hold the chunk and offer it again; writing regardless is how a
-        // file transfer reached 100% here while the far side sat on a
-        // stream missing a fragment it can never ask for.
+        // CoreBluetooth also discards an unacknowledged write issued while its
+        // transmit queue is full, and says so only through
+        // canSendWriteWithoutResponse. Reporting the refusal, as the Android
+        // module does, lets the fragment pacer hold the chunk and offer it again;
+        // otherwise the far side is left missing a fragment it can never ask for.
         if writeType == .withoutResponse && !peripheral.canSendWriteWithoutResponse {
           reject("WRITE_BUSY", "BLE transmit queue full for link \(linkID)", nil)
           return
@@ -678,7 +642,7 @@ final class AirhopBLEModule: RCTEventEmitter {
         return
       }
 
-      // Peripheral role: notify ONLY this link's central. Passing nil here
+      // Peripheral role: notify only this link's central. Passing nil here
       // would fan the packet out to every subscribed central, and a unicast DM
       // would leak to unrelated peers and waste airtime.
       if let central = self.peripheralLinks[linkID],
@@ -695,20 +659,16 @@ final class AirhopBLEModule: RCTEventEmitter {
         // CoreBluetooth signals readiness, rather than dropping a
         // fragment the far side can never reassemble without.
         //
-        // Bounded, and this is the point. The queue used to be an
-        // unbounded array that always reported success, so a congested
-        // link during a large attachment grew it without limit while the
-        // sender's pacer, seeing nothing but successes, kept pushing at
-        // full speed. bitchat solves it the same way
-        // (BLEOutboundNotificationBuffer, capped at
-        // blePendingNotificationsCapCount): queue, because a brief burst
-        // is better smoothed than bounced, but refuse once the buffer
-        // says the link is not keeping up.
+        // Bounded, or a congested link grows it without limit while the
+        // sender's pacer, seeing nothing but successes, keeps pushing at full
+        // speed. bitchat does the same (BLEOutboundNotificationBuffer, capped
+        // at blePendingNotificationsCapCount): queue, because a brief burst is
+        // better smoothed than bounced, but refuse once the buffer says the
+        // link is not keeping up.
         //
-        // WRITE_BUSY past the cap is the same code the central role
-        // above returns and the same one Android returns, so the pacer
-        // needs no per-platform branch: it backs off, which is exactly
-        // what a full queue means.
+        // WRITE_BUSY past the cap is the same code the central role above
+        // returns and the same one Android returns, so the pacer needs no
+        // per-platform branch.
         if self.pendingNotifies.count >= Self.maxPendingNotifies {
           reject(
             "WRITE_BUSY",
@@ -725,8 +685,7 @@ final class AirhopBLEModule: RCTEventEmitter {
     }
   }
 
-  // Helper: find the cached characteristic for a connected peripheral
-  private func discoverCharacteristic(on peripheral: CBPeripheral) -> CBCharacteristic? {
+  private func cachedCharacteristic(on peripheral: CBPeripheral) -> CBCharacteristic? {
     return peripheral.services?
       .first(where: { $0.uuid == BLEConst.serviceUUID })?
       .characteristics?
@@ -749,9 +708,6 @@ final class AirhopBLEModule: RCTEventEmitter {
 extension AirhopBLEModule: CBCentralManagerDelegate {
 
   func centralManagerDidUpdateState(_ central: CBCentralManager) {
-    // Report only a CHANGE. Reporting every callback is what turned a state
-    // update into a radio-restart into a new manager into another state
-    // update - the loop that allocated fourteen managers in ten seconds.
     reportAdapterState(central.state == .poweredOn)
 
     switch central.state {
@@ -774,8 +730,8 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
       // CoreBluetooth has already invalidated every peripheral we hold and
       // has left poweredOn, so issuing cancelPeripheralConnection now would
       // be rejected as API misuse. Retire the state locally instead, and
-      // tell JS - which otherwise keeps addressing links that cannot carry
-      // anything, and discovers it one silently discarded write at a time.
+      // tell JS, which otherwise keeps addressing links that cannot carry
+      // anything.
       retireAllCentralLinks()
       actuallyScanning = false
 
@@ -803,7 +759,6 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     }
   }
 
-  // Emit an adapter change once, and only when it actually changed.
   private func reportAdapterState(_ enabled: Bool) {
     guard lastReportedEnabled != enabled else { return }
     lastReportedEnabled = enabled
@@ -837,7 +792,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     // dials every advertiser it sees exhausts the controller and thrashes;
     // flood routing reaches the rest of the room through the links it has.
     guard centralLinks.count < Self.maxCentralLinks else { return }
-    // Retain BEFORE connecting. CoreBluetooth does not hold a strong
+    // Retain before connecting. CoreBluetooth does not hold a strong
     // reference during the attempt, so a peripheral that is only referenced
     // locally gets deallocated and the connection silently never completes.
     peripheral.delegate = self
@@ -888,7 +843,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     centralLinks[linkID] = peripheral
     overdueDials.remove(linkID)
     armCentralDeadline(linkID, dialing: false)
-    // linkConnected is deliberately NOT emitted here: the characteristic is
+    // linkConnected is deliberately not emitted here: the characteristic is
     // not discovered yet, so any write JS makes in response would fail. It
     // is emitted from didUpdateNotificationStateFor once the link can
     // actually carry traffic (mirrors the Android CCCD-confirmed gating).
@@ -1030,9 +985,8 @@ extension AirhopBLEModule: CBPeripheralDelegate {
       body: ["linkID": linkID, "dataBase64": data.base64EncodedString()])
   }
 
-  // Modern RSSI callback. The old peripheralDidUpdateRSSI(_:error:) pairs with
-  // the deprecated `peripheral.rssi` property and never fired here, so signal
-  // strength was permanently unavailable to the UI.
+  // Not peripheralDidUpdateRSSI(_:error:), which pairs with the deprecated
+  // `peripheral.rssi` property and never fires here.
   func peripheral(
     _ peripheral: CBPeripheral,
     didReadRSSI RSSI: NSNumber,
@@ -1050,15 +1004,8 @@ extension AirhopBLEModule: CBPeripheralDelegate {
 
 extension AirhopBLEModule: CBPeripheralManagerDelegate {
 
-  // The method that used to make an iPhone invisible for the rest of its
-  // session.
-  //
-  // It was `guard state == .poweredOn else { return }` followed by
-  // `if isAdvertising { return }`. Powering Bluetooth off took the first
-  // branch, so nothing was cleaned up and isAdvertising stayed true; powering
-  // it back on took the second, so the service was never re-added and
-  // advertising never restarted. Every state now does its own work, and the
-  // decision about whether to advertise belongs to applyState().
+  // Every state does its own cleanup, and the decision about whether to
+  // advertise belongs to applyState(). See wantAdvertising.
   func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
     switch peripheral.state {
     case .poweredOn:

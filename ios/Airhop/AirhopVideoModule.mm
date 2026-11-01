@@ -1,7 +1,6 @@
-// Obj-C++ bridge: exposes AirhopVideoModule and its two view managers (Swift)
-// to React Native. Same pattern as AirhopVoiceModule.mm, and the same method
-// set as AirhopVideoModule.kt on Android, so one spec
-// (src/bridge/NativeAirhopVideo.ts) covers both platforms.
+// Objective-C bridge for AirhopVideoModule.swift and its two view managers, on
+// AirhopBLEModule.mm's pattern, with the same method set as AirhopVideoModule.kt,
+// so one spec (src/bridge/NativeAirhopVideo.ts) covers both platforms.
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 #import <React/RCTViewManager.h>
