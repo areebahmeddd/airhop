@@ -8,55 +8,123 @@ it rather than restating it. What is planned and when is in
 
 ## Table of Contents
 
-1. [Feature Matrix](#1-feature-matrix)
+1. [At a Glance](#1-at-a-glance)
 2. [Identity](#2-identity)
 3. [Transport Stack](#3-transport-stack)
-4. [Messaging Protocol](#4-messaging-protocol)
+4. [Running in the Background](#4-running-in-the-background)
 5. [Encryption](#5-encryption)
-6. [Channels and Groups](#6-channels-and-groups)
-7. [Payments](#7-payments)
-8. [Privacy and Tor](#8-privacy-and-tor)
-9. [Threat Model](#9-threat-model)
-10. [Localization](#10-localization)
-11. [Codebase Layout](#11-codebase-layout)
-12. [Native Modules](#12-native-modules)
-13. [Decision Log](#13-decision-log)
+6. [Messaging](#6-messaging)
+7. [Channels and Groups](#7-channels-and-groups)
+8. [Payments](#8-payments)
+9. [Privacy and Tor](#9-privacy-and-tor)
+10. [On the Device](#10-on-the-device)
+11. [Threat Model](#11-threat-model)
+12. [Localization](#12-localization)
+13. [Codebase Layout](#13-codebase-layout)
+14. [Native Modules](#14-native-modules)
+15. [Decision Log](#15-decision-log)
 
-## 1. Feature Matrix
+## 1. At a Glance
 
-| Feature                   | Offline (BLE)            | Online (Nostr)      | Notes                                                                                                                                                                                            |
-| ------------------------- | ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Peer discovery            | Yes, announce broadcasts | Yes, kind 20001     | Peers show on the mesh radar and in the location cell                                                                                                                                            |
-| Public channels           | Yes, TTL flood           | Yes, kind 20000     | `#bluetooth` is the mesh room; the location channels `#block` to `#region` run on both transports                                                                                                |
-| Private channels          | Yes, sealed `0x50`       | Optional, same blob | Airhop only. Key rides an invite link, no member cap                                                                                                                                             |
-| Private groups            | Yes, sealed `0x25`       | No                  | bitchat compatible. Creator-signed roster, max 16, Bluetooth only                                                                                                                                |
-| Private DMs               | Yes, Noise XX (+DR)      | Yes, NIP-17 wrap    | Delivery and read receipts on every path. Double Ratchet only between Airhop peers                                                                                                               |
-| Bulletin board            | Yes, signed `0x23`       | Yes, kind 1 mirror  | Public and signed, 1 to 7 day expiry, gossip catch-up. A location cell can also take a permanent Nostr note. An urgent post also writes one line into the chat it belongs to                     |
-| Voice notes               | Yes, as a file           | No                  | Recorded AAC, not live                                                                                                                                                                           |
-| Live push-to-talk         | Yes, `0x29` bursts       | No                  | AAC-LC 16 kHz mono, 350 ms jitter buffer. Also shipped by bitchat, so it works between the two                                                                                                   |
-| Video sharing             | Yes, as a file           | No                  | Shrunk to fit its recipient, played inline, round video notes held to record                                                                                                                     |
-| Live video                | Yes, `0x2D` streams      | No                  | H.264 and AAC-LC with erasure-coded packets, as bitchat ships it, so streams cross between the two. Sent from the attach menu, watched live in the chat or full screen, kept as a recording      |
-| File transfer             | Yes, per-type caps       | No                  | Sends 512 KiB photos and voice, 1 MiB otherwise, as bitchat-ios does. Both accept 1 MiB of any type, bitchat-ios's decoder ceiling. Received files share a 100 MiB budget, oldest out first      |
-| Location pin              | Yes, sealed `0x50`       | No                  | One point in a DM, sent once. No live sharing, no map, never couriered                                                                                                                           |
-| Ring                      | Yes, sealed `0x51`       | No                  | Airhop only. A doorbell for someone in range: opt-in per contact, proven per session, rings for 45 s or until answered, and every refusal is answered so the sender is never left guessing       |
-| Store-and-forward courier | Yes, sealed envelope     | Yes, parked drop    | 24 hour life, as bitchat carriers enforce. Sealed to a one-time prekey for forward secrecy                                                                                                       |
-| Contact verification      | Yes, QR or safety number | n/a                 | Two ways in: a camera scan, or reading a six-word safety number to each other. `source` records how keys arrived, `verification` whether a human checked. Only an in-person scan may re-pin keys |
-| Panic wipe                | Yes                      | Yes                 | Panic button on Profile. Destroys keys, messages, groups, board, prekeys                                                                                                                         |
-| Payments (Cashu)          | Yes, token in a message  | Yes, NIP-61 nutzap  | Transfer works offline, redemption needs internet                                                                                                                                                |
-| Lightning                 | No                       | Yes                 | Top up or cash out through a mint the user chooses (NUT-04 / NUT-05)                                                                                                                             |
-| Wallet recovery           | No                       | Yes                 | A 12-word phrase rebuilds the balance from the mints that signed it (NUT-13 / NUT-09)                                                                                                            |
-| LAN mesh                  | Yes, mDNS + TCP          | No                  | Same wire format as Bluetooth. Runs the whole mesh over a shared Wi-Fi network or a phone hotspot, iPhone to Android unlike Wi-Fi Aware                                                          |
-| Wi-Fi Aware               | Yes, NAN                 | No                  | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                                                                          |
-| Internet gateway          | Relays for others        | Yes                 | Off by default. Carries public location traffic for offline peers                                                                                                                                |
-| Mesh bridge               | Relays for others        | Yes                 | Off by default. Joins two Bluetooth islands' `#bluetooth` rooms through a Nostr rendezvous cell                                                                                                  |
-| Tor routing               | n/a                      | Yes                 | Embedded Arti on both. BLE is local, so nothing to route                                                                                                                                         |
-| Relay discovery           | n/a                      | Yes                 | Bundled CSV from georelays, refreshed weekly                                                                                                                                                     |
-| bitchat compatibility     | Yes                      | Yes                 | Same wire format both directions. Airhop-only types are ignored by bitchat                                                                                                                       |
+Airhop is offline-first, end-to-end encrypted messaging over a Bluetooth mesh,
+with Wi-Fi Aware and LAN links beside it, Nostr for internet reach, embedded Tor
+and a Cashu wallet.
+
+### Ground rules
+
+- **Offline first.** The radios work with no internet, server or account. Nostr
+  extends their reach, and the feature matrix below says what needs it.
+- **bitchat wire compatible.** Airhop nodes appear as ordinary peers to bitchat
+  devices, and bitchat relays Airhop's extension packet types without
+  interpreting them. The [byte layout](PROTOCOLS.md#2-packet-frame-layout), the
+  [packet type registry](PROTOCOLS.md#3-packet-type-registry) and the
+  [routing constants](PROTOCOLS.md#4-routing-constants) are in PROTOCOLS.md.
+- **Protocol in TypeScript, bytes in native.** One TypeScript core runs the
+  protocol on both platforms. Native modules move raw bytes and make no protocol
+  or routing decision.
+
+### System overview
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                        SCREENS  (src/features, src/ui)                   │
+│  Chats · DMs · Location channels · Groups · Board · Wallet · Profile     │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │ Zustand stores (src/store, MMKV)
+┌────────────────────────────────────▼─────────────────────────────────────┐
+│                     MESH SERVICE  (src/services)                         │
+│  sendDm ladder: Double Ratchet over a link -> Noise session over the     │
+│  mesh -> Nostr gift wrap -> courier; the outbox holds it until a receipt │
+│  Also: wallet-service (the only mint caller), tor-routing, bridge,       │
+│  geohash channels, device transfer                                       │
+└──────────┬─────────────────────────────────────────────┬─────────────────┘
+           │                                             │
+┌──────────▼───────────────────────────┐   ┌─────────────▼─────────────────┐
+│  PROTOCOL CORE  (src/core, pure TS)  │   │  NOSTR  (src/core/nostr)      │
+│  crypto: Noise XX / X, Double        │   │  NIP-17/59 gift wrap,         │
+│    Ratchet, Ed25519, @noble only     │   │  bitchat nip44-v2 envelope    │
+│  mesh/wire: packet codec, TLVs       │   │  NostrClient: 10 nearest geo  │
+│  mesh/routing: FloodRouter, dedup,   │   │    relays + up to 5 custom    │
+│    fragments, source routes          │   │    per cell; up to 5 for DMs  │
+│  mesh/sync: GossipSync (GCS)         │   │  GeoRelayDirectory: ~300      │
+│  mesh/courier, discovery, rooms,     │   │    relays, bundled            │
+│    voice, video; payments (Cashu)    │   │  Through Arti when Tor is on  │
+│  mesh/links: LinkRegistry picks one  │   └───────────────────────────────┘
+│    link: Wi-Fi Aware > LAN > BLE     │
+└──────────┬───────────────────────────┘
+           │ TurboModules (src/bridge), raw bytes only
+┌──────────▼───────────────────────────────────────────────────────────────┐
+│                  NATIVE MODULES  (android/, ios/, native/)               │
+│  AirhopBLEModule   CoreBluetooth / BluetoothGatt                         │
+│  AirhopLANModule   Network framework / NsdManager (mDNS)                 │
+│  AirhopWiFiModule  Wi-Fi Aware (Android API 29+, iOS 26+)                │
+│  AirhopVoiceModule AAC capture and playback                              │
+│  AirhopVideoModule H.264 camera, surface decode, MP4 record, transcode   │
+│  AirhopTorModule   Arti (Rust), obfs4, Snowflake, WebTunnel (Go)         │
+│  AirhopAppModule   restart, boot start, ring alert, APK share            │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+Dependencies point down only: screens read stores and call the mesh service,
+the service drives the core and the bridge, and the core imports nothing
+native.
+
+### Feature matrix
+
+| Feature                                              | Offline (BLE)             | Online (Nostr)      | Notes                                                                                                                                   |
+| ---------------------------------------------------- | ------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [Private DMs](#direct-messages)                      | Yes, Noise XX (+DR)       | Yes, NIP-17 wrap    | Delivery and read receipts on every path. Double Ratchet only between Airhop peers                                                      |
+| [Public channels](#public-channels)                  | Yes, TTL flood            | Yes, kind 20000     | `#bluetooth` is the mesh room; the location channels `#block` to `#region` run on both transports                                       |
+| [Private channels](#private-channels-airhop-only)    | Yes, sealed `0x50` packet | Optional, same blob | Airhop only. Key rides an invite link, no member cap                                                                                    |
+| [Private groups](#private-groups-bitchat-compatible) | Yes, sealed `0x25` packet | No                  | bitchat compatible. Creator-signed roster, max 16, Bluetooth only                                                                       |
+| [Bulletin board](#bulletin-board)                    | Yes, signed `0x23` packet | Yes, kind 1 mirror  | Public notices with a 1 to 7 day expiry                                                                                                 |
+| [Store-and-forward courier](#store-and-forward)      | Yes, sealed envelope      | Yes, parked drop    | 24 hour life, as bitchat carriers enforce. Sealed to a one-time prekey for forward secrecy                                              |
+| [Location pin](#pins-and-rings)                      | Yes, `0x50` Noise payload | No                  | One point in a DM, sent once                                                                                                            |
+| [Ring](#pins-and-rings)                              | Yes, `0x51` Noise payload | No                  | Airhop only. A doorbell for someone in range                                                                                            |
+| [Voice notes](#attachments)                          | Yes, as a file            | No                  | Recorded AAC, not live                                                                                                                  |
+| [Video sharing](#attachments)                        | Yes, as a file            | No                  | Shrunk to fit its recipient, played inline                                                                                              |
+| [File transfer](#attachments)                        | Yes, per-type caps        | No                  | 1 MiB at most, any type                                                                                                                 |
+| [Live push-to-talk](#live-voice-and-video)           | Yes, `0x29` bursts        | No                  | Works between Airhop and bitchat                                                                                                        |
+| [Live video](#live-voice-and-video)                  | Yes, `0x2D` streams       | No                  | Works between Airhop and bitchat                                                                                                        |
+| [Peer discovery](#3-transport-stack)                 | Yes, announce broadcasts  | Yes, kind 20001     | Peers show on the mesh radar and in the location cell                                                                                   |
+| [LAN mesh](#lan-transport)                           | Yes, mDNS + TCP           | No                  | Same wire format as Bluetooth. Runs the whole mesh over a shared Wi-Fi network or a phone hotspot, iPhone to Android unlike Wi-Fi Aware |
+| [Wi-Fi Aware](#wi-fi-aware)                          | Yes, NAN                  | No                  | Faster file transfers between two Android devices, or two iPhones. Not across platforms                                                 |
+| [Internet gateway](#gateway-and-bridge)              | Relays for others         | Yes                 | Off by default. Carries public location traffic for offline peers                                                                       |
+| [Mesh bridge](#gateway-and-bridge)                   | Relays for others         | Yes                 | Off by default. Joins two Bluetooth islands' `#bluetooth` rooms through a Nostr rendezvous cell                                         |
+| [Relay discovery](#nostr)                            | n/a                       | Yes                 | Bundled CSV from georelays, refreshed weekly                                                                                            |
+| [Tor routing](#tor)                                  | n/a                       | Yes                 | Embedded Arti on both. BLE is local, so nothing to route                                                                                |
+| [Payments (Cashu)](#why-cashu)                       | Yes, token in a message   | Yes, NIP-61 nutzap  | Transfer works offline, redemption needs internet                                                                                       |
+| [Lightning](#wallet-operations)                      | No                        | Yes                 | Top up or cash out through a mint the user chooses (NUT-04 / NUT-05)                                                                    |
+| [Wallet recovery](#recovery)                         | No                        | Yes                 | A 12-word phrase rebuilds the balance from the mints that signed it (NUT-13 / NUT-09)                                                   |
+| [Contact verification](#verifying-a-contact)         | Yes, QR or safety number  | n/a                 | A camera scan, or reading a six-word safety number to each other                                                                        |
+| [Panic wipe](#panic-wipe)                            | Yes                       | Yes                 | Panic button on Profile. Destroys keys, messages, groups, board, prekeys                                                                |
+| [bitchat compatibility](#ground-rules)               | Yes                       | Yes                 | Same wire format both directions. Airhop-only types are ignored by bitchat                                                              |
 
 ## 2. Identity
 
 An Airhop identity is a key pair generated on the device, stored in the OS
-keychain, and never transmitted to any server. There are no accounts.
+keychain, and never transmitted to any server. There are no accounts. How the
+keys are stored is under [Key storage](#key-storage).
 
 ### Key pair
 
@@ -69,15 +137,17 @@ Identity
 ```
 
 Nostr uses secp256k1, so the Ed25519 signing key cannot serve as an `npub`. The
-Nostr key is derived from it by HKDF (`deriveNostrPrivKey`), which gives one root
-identity a single stable Nostr identity across mesh, relays and payments with no
-link to a phone number or email. Location channels derive a further per-geohash
-secp256k1 identity, so lurking in a cell, presence heartbeats included, cannot
-be linked to another cell or to this identity. Posting can: every location
-message and note carries the mesh name, which derives from the peer ID, a post
-made in place also goes over Bluetooth signed by the mesh key under the same
-message ID, and the default DM relays see one connection ask for this npub's
-inbox and every joined cell's.
+Nostr key is derived from it by HKDF (`deriveNostrPrivKey`), which gives one
+root identity a single stable Nostr identity across mesh, relays and payments
+with no link to a phone number or email.
+
+Location channels derive a further per-geohash secp256k1 identity, so by that
+key, lurking in a cell, presence heartbeats included, cannot be linked to
+another cell or to this identity. Posting links them: every location message and
+note carries the mesh name, which derives from the peer ID, and a post made in
+place also goes over Bluetooth, signed by the mesh key under the same message
+ID. The default DM relays can link them too, since they see one connection ask
+for this npub's inbox and every joined cell's.
 
 ### Names
 
@@ -96,24 +166,26 @@ characters on arrival ([PROTOCOLS.md section 3.5](PROTOCOLS.md#35-nicknames-are-
 so it cannot reverse the text after it or hide a difference from a name it
 imitates.
 
-Your generated nickname is fixed after setup. Real identity is confirmed
-separately, two ways:
+A generated nickname is fixed after setup. Either person may assign the other a
+local nickname once their keys are held. That label never leaves the device and
+never touches the cryptographic identity, and the sheet keeps showing the name
+the peer chose beside it.
+
+### Verifying a contact
+
+A name does not prove who holds the key. That is confirmed separately, two ways:
 
 - **Scanning their QR in person.** The camera witnesses the exchange, so this is
   also the only route allowed to re-pin keys already bound to a peer ID.
 - **Comparing a safety number.** Six words derived from both parties' Noise and
   signing keys, identical on both phones, read to each other over a channel they
   trust. Confirms keys already held rather than importing any, so it grants no
-  re-pinning power and needs none. This is what lets somebody you can only reach
-  by call or radio be verified at all.
+  re-pinning power and needs none. This is what lets someone reachable only by
+  call or radio be verified at all.
 
 Both earn the same badge. `source` records how the keys arrived (`qr`, `link` or
 `manual`), `verification` records whether a human has checked them; they are
 independent, so a contact learned from a link can be verified on a call.
-
-Either person may assign the other a local nickname once their keys are held.
-That label never leaves the device and never touches the cryptographic identity,
-and the sheet keeps showing the name the peer chose beside it.
 
 ### Anti-impersonation
 
@@ -132,238 +204,6 @@ and the sheet keeps showing the name the peer chose beside it.
   session, then a saved contact's, then the first announce's pin. See
   [Signing-key substitution](#countermeasures) in the threat model.
 
-### Key storage
-
-| Secret                 | Storage                       | Backed by                         |
-| ---------------------- | ----------------------------- | --------------------------------- |
-| `noiseStaticPrivKey`   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| `signingPrivKey`       | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Wallet AES-256 key     | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Nutzap P2PK privkey    | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Recovery phrase        | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| One-time prekey keys   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Cashu proofs           | `react-native-mmkv` (AES-256) | File encrypted with the key above |
-| Noise and DR sessions  | Memory only                   | Not persisted                     |
-| Group and channel keys | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
-| Message history        | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
-
-All six go through `src/core/crypto/keychain.ts`, as five items (the two
-identity keys share one); nothing else calls `expo-secure-store` directly. The
-module exports a union type of the item names, so a caller cannot write a secret
-outside the registry. The one-time prekeys are a single blob because MMKV
-appends: a consumed key deleted there lingers in the file until a rewrite, and
-forward secrecy rests on it being gone.
-
-That registry is what the panic wipe walks, since `expo-secure-store` has no
-delete-all. A secret stored under an ad-hoc key would survive the wipe. Every
-item is attempted even after one fails, and anything left behind is reported as
-`keysDestroyed: false` rather than as success.
-
-Items are written `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY` rather than the
-`WHEN_UNLOCKED` default. `AFTER_FIRST_UNLOCK` because iOS relaunches the app on a
-BLE event after termination and that relaunch must load the identity to join the
-mesh; `WHEN_UNLOCKED` refuses the read on a locked phone. `THIS_DEVICE_ONLY`
-because the default class is included in encrypted iCloud and iTunes backups and
-restorable onto another device. The trade is that the keychain is unreadable
-between boot and the first unlock.
-
-So launch tells three answers apart: an identity, none, or no answer. A read
-that throws, or has not answered in 8 s, is unreadable rather than absent: it
-shows a screen that retries (again by itself each time the app comes to the
-front), and it neither onboards nor sweeps anything. Read as "no identity",
-the same answer would send a returning user through onboarding, which then
-writes a new identity over the old one once the keychain wakes, and iOS gives
-exactly that answer to a background relaunch before the first unlock.
-
-iOS keeps Keychain items when the app is deleted, while the app's own storage
-goes with it, so a reinstall would boot the old identity with none of its
-history. An install records that it has had an identity (on onboarding, on a
-transfer arriving, and on every boot) in a partition the panic wipe leaves alone.
-An identity found by an install with no such record, and none of the long-lived
-stores an install from an earlier build would have, is a leftover: launch wipes
-every keychain item, the wallet's with it, and onboards. The check runs only on
-an identity the keychain actually returned, so a relaunch before the first unlock
-never reaches it. Android removes the Keystore keys with the app, so there it
-never fires.
-
-A panic wipe whose keychain delete was refused marks the identity condemned, in
-the wipe marker's own partition rather than one the wipe clears. Launch deletes
-a condemned identity again and never boots it; the mark clears only when that
-delete succeeds or a new identity (onboarding, or a transfer arriving) takes
-its place.
-
-The launch sweep that deletes secrets with no identity to own them leaves two
-items alone. The one-time prekeys, because the mesh can publish a batch right
-after onboarding, and a delete landing late would drop keys peers are already
-sealing to. And the wallet's file key, because the wallet partition opens at
-launch on every install, identity or not, and deleting its key under it would
-leave the wallet unreadable on the next launch. The panic wipe deletes both.
-
-### Storage key names
-
-Three families of string, all at `v1`.
-
-| Family                    | Shape                        | Example                 | Renaming costs                      |
-| ------------------------- | ---------------------------- | ----------------------- | ----------------------------------- |
-| Keychain item             | `airhop.<domain>.<thing>.v1` | `airhop.wallet.p2pk.v1` | The secret becomes unreachable      |
-| HKDF domain separator     | `airhop-<purpose>-v1`        | `airhop-dr-root-v1`     | Every key derived from it changes   |
-| Persisted store / MMKV id | `<name>-store`               | `wallet-store`          | The user's data becomes unreachable |
-
-The third family has names outside the convention: `airhop-chat`,
-`wallet-state` (beside the `wallet-store` partition), `activity`,
-`group-invite-outbox`, `panic-wipe-marker` and `move-marker`. They stay as they
-are. A persisted name is the address of the data, not a label on it, so
-renaming one points the next launch at a file that has never been written while
-the old data stays on disk with nothing referencing it. No store declares a
-`migrate`. Changing these safely means a per-store migration that reads the old
-name and writes the new, shipped at least one release before the old name is
-dropped.
-
-### Wallet partition
-
-Cashu proofs are bearer instruments, so `wallet-store` is the one MMKV partition
-opened with an explicit `encryptionKey`. MMKV encrypts it with AES-256 in CFB
-mode, under a 32-character key holding 192 random bits (24 random bytes,
-base64-encoded), generated on first run and held in the keychain. That buys
-confidentiality only: MMKV's CRC detects corruption, not tampering, which the
-threat model accepts because writing the app's files needs the same access
-that reads the keychain.
-
-The key is fetched asynchronously, so the store cannot exist at module scope:
-`bootstrapWalletStorage()` opens it, and the `zustand/persist` adapter reads
-only through that open partition. A write with no open partition is dropped
-rather than written anywhere else. If the keychain refuses, the wallet reports
-itself locked rather than opening unencrypted, and no proof reaches plaintext
-disk.
-
-The panic wipe empties an open partition with `clearAll`, since `deleteMMKV`
-would free the native instance under a write still in flight, and uses
-`deleteMMKV` only when nothing opened it. Either way the same wipe destroys the
-key, so what stays on disk cannot be read. MMKV keeps one native instance per id
-for the life of the process and hands it back to every later open with the key
-it was first opened under, so a reopen after a wipe in the same session
-(re-onboarding, or a transfer arriving) re-keys it with `encrypt` onto the key
-the keychain now holds.
-
-### Data at rest
-
-Outside the keychain, only the wallet partition carries a key of Airhop's own.
-The rest (the other MMKV stores, message history included, Arti's state, and
-attachments in the cache directory) relies on the OS: iOS Data Protection and
-Android file-based encryption, keyed to the device passcode, with the same
-after-first-unlock availability as the keychain items. A second key held in this
-phone's keychain would add nothing against someone who can read the app's files
-on an unlocked phone, since they can use the keychain too, and it would make
-every store open asynchronously, as the wallet does.
-
-One partition holds no content at all. `nostr-processed-events` records which
-gift wraps and courier messages this identity has already opened (public event
-and message IDs with the time each was recorded, kept for the inbox's lookback
-plus an hour, at most 5,000 per inbox), because relays replay a whole lookback
-on every subscribe and each replay would otherwise be filed and acknowledged
-again, as bitchat-ios's `NostrProcessedEventStore` prevents. Which IDs a phone
-opened says who writes to it, so the panic wipe clears it, and a transfer moves
-it with the chat history.
-
-What such a key would stop is a copy leaving the phone, and that is closed at
-the source instead. Nothing is backed up or transferred:
-
-- **iOS:** `AppDelegate` marks `Documents/mmkv` and `Application Support/airhop`
-  (Arti's guards and consensus) excluded from iCloud and iTunes backup on every
-  launch, before JS runs. The cache directory is never backed up.
-- **Android:** `allowBackup="false"`, plus `data_extraction_rules.xml` excluding
-  every domain from cloud backup and device-to-device transfer. On Android 12+,
-  `allowBackup` alone leaves device-to-device transfer on for some
-  manufacturers.
-
-Nothing is lost by it. A restored copy would not bring Airhop back, since the
-identity is a this-device-only keychain item, so a backup only ever copied the
-data off the phone. Moving to a new phone is an in-app transfer that moves the
-identity rather than cloning it, described next.
-
-### Moving to a new phone
-
-Profile, Transfer to a new phone, on the old phone; Transfer from another phone
-on the new phone's welcome screen. The new phone shows a QR code, the old phone
-scans it, and everything crosses one TCP connection on the local network: the
-same Wi-Fi, or a hotspot either phone serves. No internet, no server, no file.
-The wire format is [PROTOCOLS.md section 11](PROTOCOLS.md#11-device-transfer).
-
-The exact keys move, so nothing on the wire changes. The peer ID, the username,
-the npub, every geohash pseudonym and every safety number are derived from the
-two private keys and come out identical. Contacts see the old phone say goodbye
-and the same identity come back, and a verified contact stays verified, because
-the keys they checked are the keys that arrived. No protocol version bump, and
-bitchat peers notice nothing.
-
-It is a move, not a copy. Two phones holding one identity would each answer its
-handshakes and remotes would flip their session between them, so the old phone
-erases itself (the panic wipe) once the new one confirms it has everything.
-
-| What                         | Moves | Why                                                                         |
-| ---------------------------- | ----- | --------------------------------------------------------------------------- |
-| Noise and signing keys       | Yes   | They are the identity. Written last on the new phone                        |
-| Contacts, blocks, groups     | Yes   | Group epoch keys included, so the creator can still rotate                  |
-| Rooms and their keys         | Yes   | Private channel keys ride in the chat store                                 |
-| Chat history and outbox      | Yes   | Unless the person switches history off; the rooms still move                |
-| Wallet, phrase, P2PK key     | Yes   | The wallet lands under the new phone's own file key                         |
-| Settings                     | Yes   | Less the ones describing the old phone (`DEVICE_SETTINGS`)                  |
-| One-time prekey private keys | No    | Never leave the phone that made them; the new phone publishes a fresh batch |
-| Noise and ratchet sessions   | No    | Memory only. Renegotiated on first contact, as after any restart            |
-| Carried courier mail, board  | No    | Other people's mail, and public posts the mesh gossips back                 |
-| Media files, Tor state       | No    | Attachments render as "not on this device"; Tor state is this phone's own   |
-
-`src/services/move-snapshot.ts` holds this table as code, typed against the
-panic wipe's registry, so a store added later does not compile until someone
-decides whether it moves.
-
-The sequence, and where it can stop:
-
-1. The old phone asks the OS to confirm the owner (Face ID, fingerprint or
-   passcode) before any key is read. A phone with no lock at all has no owner
-   to ask, and the confirmation after the scan still stands.
-2. The new phone listens on a free port and shows a code carrying a one-time
-   X25519 key, a random token and its addresses.
-3. The old phone dials only an address on the subnet of one of its own local
-   interfaces, and runs Noise XX as initiator with its identity key, the token
-   as prologue, its mesh still running. It refuses any responder whose key is
-   not the one it scanned; the new phone learns the identity by possession.
-   Both phones then show the same six words, derived from the handshake.
-4. The person taps They match on the new phone, which sends `CONFIRM`, and
-   Transfer on the old one, in either order. Only with both does the old phone
-   write a `sending` marker, stop the mesh (its goodbye retires remotes'
-   sessions) and send the bundle, moving the marker to `sent` just before the
-   last message. Cancel on the new phone turns that connection away and
-   replaces the code, since whoever answered has read it.
-5. The new phone holds the bundle whole, checks it, then writes under a
-   `receiving` marker: every partition, the wallet, its secrets, and the
-   identity last, each read back. One-time prekeys an earlier identity left on
-   the phone are deleted, so the arriving identity never publishes them. It
-   marks `committed` and sends the commit.
-6. The old phone erases itself and says so. The new phone clears its marker.
-
-| Stopped at                        | On relaunch                                                                 |
-| --------------------------------- | --------------------------------------------------------------------------- |
-| New phone mid-install             | `receiving`: wiped like an interrupted panic wipe, back to welcome          |
-| Old phone before the stream ended | `sending`: nothing can have moved, so it clears and starts as usual         |
-| Old phone after, with no commit   | `sent`: asks. Neither phone can know which holds the identity               |
-| New phone committed, no release   | `committed`: asks the person to check the old phone before joining the mesh |
-
-The question does not wait for a relaunch: an unconfirmed outcome that arrives
-after the transfer screen has closed keeps the `sent` marker and the mesh down,
-and the shell asks at once.
-
-If the person keeps both phones anyway (Keep using this phone, after the new one
-had committed), the mesh says so. An announce under this phone's own peer ID,
-signed with its key, stamped after this run started and not one this run sent,
-can only be this identity on another phone, and both phones raise a Mesh banner
-until the other goes quiet for five minutes.
-
-A backup file was the alternative and was turned down. A file is a copy by
-construction: restorable twice, brute-forceable offline, and a backup to compel,
-which VISION.md rules out. The wallet's recovery phrase stays the answer for a
-lost phone.
-
 ## 3. Transport Stack
 
 Messages route through the best available transport with no user involvement.
@@ -377,7 +217,7 @@ Local radios, used together:
   LAN          - same Wi-Fi network or hotspot, opt-in
   BLE mesh     - always, and the only radio that relays across strangers
 
-Internet, when no radio reaches the recipient:
+When no radio reaches the recipient:
   Nostr relays - DMs by gift-wrap, location channels by kind 20000
   Courier      - sealed mail carried by nearby phones, and parked on relays
 ```
@@ -389,21 +229,22 @@ write per neighbour per radio: two phones that meet over Bluetooth each dial
 the other and hold two links, so the link registry picks the one most recently
 bound to that peer, and a relay writes nothing to any link of the peer it heard
 the packet from. Only this phone's own direct announce goes down every link,
-since the announce is what binds a link to its peer. Duplicates
-are collapsed by the seen set and by a sender-generated message ID, so a message
-is displayed once however many radios delivered it.
+since the announce is what binds a link to its peer. Duplicates are collapsed by
+the seen set and by a sender-generated message ID, so a message is displayed once
+however many radios delivered it.
 
 A packet addressed to a peer is different. When the peer holds a direct link to
 this phone, it goes down that one link, choosing Wi-Fi Aware, then LAN, then
 Bluetooth; the point of the faster radios is to move an attachment that
 Bluetooth would have to fragment into hundreds of writes. With no direct link,
-it floods through any neighbour with the recipient ID set, bounded by TTL, and
-only the recipient acts on it. How a DM falls back from there to the internet
-and to couriers is under [Direct messages](#direct-messages).
+it floods through any neighbour with the recipient ID set, at full TTL, and only
+the recipient decrypts it, forwarding nothing addressed to itself. How a DM falls
+back from there to the internet and to couriers is under
+[Direct messages](#direct-messages).
 
 ### BLE mesh
 
-Identical to bitchat's design:
+Follows bitchat's design:
 
 - Dual-role: every device is both GATT Central (scanner) and GATT Peripheral (advertiser)
 - Service UUID `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`, bitchat-compatible
@@ -414,12 +255,119 @@ Identical to bitchat's design:
 - Up to 128 concurrent reassemblies and 8 MiB across them; a full table evicts the one idle longest
 - Range of roughly 30 to 50 m per hop, so 7 hops reaches about 350 m
 
+### Wi-Fi Aware
+
+Both platforms run Wi-Fi Aware, the Wi-Fi Alliance's NAN: the same service name,
+the same length-prefixed frames, one TypeScript contract
+(`src/bridge/NativeAirhopWiFi.ts`) and one reconciler
+(`src/services/wifi-controller.ts`). Its links sit in the same link registry as
+Bluetooth's.
+
+> [!IMPORTANT]
+> It is not a cross-platform path. Apple requires a paired device for every data
+> path and refuses an open one; Android cannot complete Apple's pairing. So this
+> is an Android-to-Android or iPhone-to-iPhone accelerator, and anything crossing
+> platforms uses Bluetooth, LAN or Nostr.
+
+| Platform | Framework                                                                                | Floor             |
+| -------- | ---------------------------------------------------------------------------------------- | ----------------- |
+| Android  | [`WifiAwareManager`](https://developer.android.com/develop/connectivity/wifi/wifi-aware) | API 29            |
+| iOS      | [`WiFiAware`](https://developer.apple.com/documentation/WiFiAware) on Network framework  | iOS 26, iPhone 12 |
+
+Neither has a power policy of its own. `src/services/power-policy.ts` scales
+the BLE radios and leaves this one alone: the OS withdraws Aware under battery
+saver, which arrives as `availabilityChanged(false)` and the controller's retry
+ladder.
+
+An attachment crosses at link speed. The 467-byte fragments stay, since the
+receiver reassembles by index and the next hop may be Bluetooth, but the gap
+between them (25 ms for a DM, 30 ms for a broadcast) goes: it exists because the
+BLE stack drops writes handed over faster than it can make them, and a socket
+has flow control of its own. `src/services/file-transfer-service.ts` paces on
+one question, whether anything on the path touches the Bluetooth radio.
+
+**Android.** The peer's address is a link-local IPv6 in `WifiAwareNetworkInfo`,
+which does not exist below 29, so the module is not registered there and
+TypeScript reads its absence as unsupported. Android 17 drops the socket without
+`ACCESS_LOCAL_NETWORK`, which is declared and requested at launch on API 37+.
+Below API 33 discovery needs fine location, which Airhop asks for only on API 30
+and below, so Android 12 and 12L go without it: a permission refusal is retried
+for about 16 s, then left until a grant or the next start.
+
+Three framework facts decide the module's shape. A subscriber is told about a
+peer once: the framework subscribes with `MATCH_ONCE` and match expiry off, so
+`onServiceDiscovered` fires a single time per peer per subscribe session.
+Follow-up messages are best effort and arrive dropped, reordered or twice. And a
+data path that is released, replaced or lost destroys every socket on it, which
+the far side sees as `ECONNABORTED`.
+
+So connecting is a per-peer state machine driven by a 15 s maintenance tick
+rather than a chain of reactions to callbacks. A peer is keyed by the 8-byte
+instance ID it advertises beside its tiebreak token and keeps the handles both
+discovery sessions issued for it. The connect request carries an attempt epoch:
+a repeat gets another ready, a newer one replaces what the last attempt left.
+The request (12 s), the data path (30 s) and the connect (750 ms to settle, then
+three tries) each have a deadline, and a failure returns the peer to idle with a
+backoff of 3 s doubling to a minute. The lower token dials at once and the other
+side dials after 20 s if nothing has happened, since discovery is often
+one-directional; crossed dials are settled by the same tokens on both ends.
+bitchat-android reaches the same place with a maintenance loop and explicit role
+reversal.
+
+A hello naming the sender is the first frame on every socket, both ways, so an
+accepted socket is attributed to its peer and a peer holds one link, the newest.
+After it both ends send a zero-length heartbeat every 8 s and close after 30 s of
+silence, or after 5 s with no hello at all. An accepted socket whose interface
+can be named must be on an Aware one (`aware_data*`), at most four wait for
+their hello at once, and a link is reported to TypeScript only after its first
+hello, an inbound one only from a peer this side holds a responder path for.
+That ties a socket to a path it opened; it does not stop a hello naming the
+real peer on that path. The frame and write-stall deadlines are the
+[LAN transport](#lan-transport)'s, from one shared reader.
+
+Discovery is reopened under the same attach, keeping the links, after a session
+the framework ended (with a rebuild if it keeps happening), after three idle
+minutes with no link, and when a peer has failed four attempts over two minutes.
+`availabilityChanged(false)` means the radio is gone or the attach must be
+rebuilt, nothing less, so the JS ladder is a backstop rather than the recovery
+path.
+
+The ladder also carries a breaker: three sessions the framework ends within
+three minutes of attaching, inside a quarter of an hour, pause the transport for
+the session, because on some phones opening a data path resets the Wi-Fi chip
+and a plain retry would drop the router connection once a minute for as long as
+the app runs. A radio the user switched off never counts; the drop names which
+it was. The transport has a switch on the Network screen, on by default, and
+flipping it is what clears the breaker.
+
+The module keeps its own event log and peer table for Diagnostics
+(`dumpState()`), because Samsung retail builds drop every informational logcat
+line.
+
+**iOS.** The module needs the `com.apple.developer.wifi-aware` entitlement, a
+managed capability, and the service under `WiFiAwareServices` in `Info.plist`.
+
+The browser reports a device once and stays silent while it remains in range, so
+a link that ends is redialled by both sides after 2 s, doubling to a minute, and
+the tiebreak collapses the pair. Three constraints are Apple's, and each shapes
+the code:
+
+| Constraint                                                                                                                                        | Consequence                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No unpaired mode. Every target a listener or browser can name comes from the app's paired list, and the only way into that list is a system sheet | A pairing gate in the controller, a second native module for the sheet (`AirhopWiFiPairing`), and an `unpaired` state that is reported rather than retried, because only a pairing changes it |
+| Discovery is symmetric and there is no `serviceSpecificInfo` to break a tie with before connecting                                                | An 8-byte token exchanged as the first frame of every connection. Both ends keep the one whose initiator holds the lower token, and the loser is closed before TypeScript hears of it         |
+| `NetworkConnection` has no cancel; a connection ends when its last reference is dropped                                                           | One task per link owns its connection for the link's life. Closing means cancelling that task, and the framework owns liveness, so there is no heartbeat                                      |
+
+Pairing is two-sided, like Bluetooth pairing: one phone browses and the other
+advertises at the same moment. That is a user-visible cost with no one-tap
+version to build, so it lives on one screen (Settings, Network) that says which
+half each person is playing.
+
 ### LAN transport
 
 Wi-Fi Aware is a radio protocol rather than a way of using a network: two phones
 on the same router cannot reach each other over it, and it cannot cross
-platforms, because Apple demands a paired data path that Android cannot
-complete. So an iPhone and an Android sharing a Wi-Fi network have no local path
+platforms. So an iPhone and an Android sharing a Wi-Fi network have no local path
 between them, which is the gap on a ship, in a hotel, at a conference, or
 anywhere with Wi-Fi and no route out.
 
@@ -481,6 +429,8 @@ connection left `.waiting` by a network that drops peer traffic is treated as a
 failed dial, since Network framework would otherwise wait for a better path
 forever.
 
+Five things still limit it:
+
 | Constraint            | Consequence                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Client isolation      | Most guest and venue Wi-Fi blocks peer-to-peer traffic at the access point, and it cannot be detected before trying. The UI has to say "No Airhop devices on this network" rather than spin                                                                                                                                                                                                                                                    |
@@ -489,112 +439,19 @@ forever.
 | Local network refusal | A permission refusal is retried for about 2 s, then left to a resume, the switch or the next start. On iOS a refused browse still lets the listener come up, so the transport reads available and dies a moment later; resetting the retries on that edge would republish every couple of seconds for good                                                                                                                                     |
 | Hotspot hosts         | A phone sharing its connection serves the network rather than joins it, so `ConnectivityManager` has no `Network` for it. Availability is read off the interfaces instead. Android has served mDNS on that interface since 13; below that the host sees an empty network, which reads the same as client isolation                                                                                                                             |
 
-### Same-platform Wi-Fi
-
-Both platforms run Wi-Fi Aware, the Wi-Fi Alliance's NAN: the same service name,
-the same length-prefixed frames, one TypeScript contract
-(`src/bridge/NativeAirhopWiFi.ts`) and one reconciler
-(`src/services/wifi-controller.ts`). Its links sit in the same link registry as
-Bluetooth's.
-
-> [!IMPORTANT]
-> It is not a cross-platform path. Apple requires a paired device for every data
-> path and refuses an open one; Android cannot complete Apple's pairing. So this
-> is an Android-to-Android or iPhone-to-iPhone accelerator, and anything crossing
-> platforms uses Bluetooth, LAN or Nostr.
-
-| Platform | Framework                                                                                | Floor             | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| -------- | ---------------------------------------------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Android  | [`WifiAwareManager`](https://developer.android.com/develop/connectivity/wifi/wifi-aware) | API 29            | The peer's address is a link-local IPv6 in `WifiAwareNetworkInfo`, which does not exist below 29, so the module is not registered there and TypeScript reads its absence as unsupported. Android 17 drops the socket without `ACCESS_LOCAL_NETWORK`, which is declared and requested at launch on API 37+. Below API 33 discovery needs fine location, which Airhop asks for only on API 30 and below, so Android 12 and 12L go without it: a permission refusal is retried for about 16 s, then left until a grant or the next start |
-| iOS      | [`WiFiAware`](https://developer.apple.com/documentation/WiFiAware) on Network framework  | iOS 26, iPhone 12 | Needs the `com.apple.developer.wifi-aware` entitlement, a managed capability, and the service under `WiFiAwareServices` in `Info.plist`                                                                                                                                                                                                                                                                                                                                                                                               |
-
-Neither has a power policy of its own. `src/services/power-policy.ts` scales
-the BLE radios and leaves this one alone: the OS withdraws Aware under battery
-saver, which arrives as `availabilityChanged(false)` and the controller's retry
-ladder.
-
-An attachment crosses at link speed. The 467-byte fragments stay, since the
-receiver reassembles by index and the next hop may be Bluetooth, but the gap
-between them (25 ms for a DM, 30 ms for a broadcast) goes: it exists because the
-BLE stack drops writes handed over faster than it can make them, and a socket
-has flow control of its own. `src/services/file-transfer-service.ts` paces on
-one question, whether anything on the path touches the Bluetooth radio.
-
-**Android.** Three framework facts decide the module's shape. A subscriber is
-told about a peer once: the framework subscribes with `MATCH_ONCE` and match
-expiry off, so `onServiceDiscovered` fires a single time per peer per subscribe
-session. Follow-up messages are best effort and arrive dropped, reordered or
-twice. And a data path that is released, replaced or lost destroys every socket
-on it, which the far side sees as `ECONNABORTED`.
-
-So connecting is a per-peer state machine driven by a 15 s maintenance tick
-rather than a chain of reactions to callbacks. A peer is keyed by the 8-byte
-instance ID it advertises beside its tiebreak token and keeps the handles both
-discovery sessions issued for it. The connect request carries an attempt epoch:
-a repeat gets another ready, a newer one replaces what the last attempt left.
-The request (12 s), the data path (30 s) and the connect (750 ms to settle, then
-three tries) each have a deadline, and a failure returns the peer to idle with a
-backoff of 3 s doubling to a minute. The lower token dials at once and the other
-side dials after 20 s if nothing has happened, since discovery is often
-one-directional; crossed dials are settled by the same tokens on both ends.
-bitchat-android reaches the same place with a maintenance loop and explicit role
-reversal.
-
-A hello naming the sender is the first frame on every socket, both ways, so an
-accepted socket is attributed to its peer and a peer holds one link, the newest.
-After it both ends send a zero-length heartbeat every 8 s and close after 30 s of
-silence, or after 5 s with no hello at all. An accepted socket whose interface
-can be named must be on an Aware one (`aware_data*`), at most four wait for
-their hello at once, and a link is reported to TypeScript only after its first
-hello, an inbound one only from a peer this side holds a responder path for.
-That ties a socket to a path it opened; it does not stop a hello naming the
-real peer on that path. The frame and write-stall deadlines are the LAN
-transport's, from one shared reader.
-
-Discovery is reopened under the same attach, keeping the links, after a session
-the framework ended (with a rebuild if it keeps happening), after three idle
-minutes with no link, and when a peer has failed four attempts over two minutes.
-`availabilityChanged(false)` means the radio is gone or the attach must be
-rebuilt, nothing less, so the JS ladder is a backstop rather than the recovery
-path. The ladder also carries a breaker: three sessions the framework ends
-within three minutes of attaching, inside a quarter of an hour, pause the
-transport for the session, because on some phones opening a data path resets
-the Wi-Fi chip and a plain retry would drop the router connection once a minute
-for as long as the app runs. A radio the user switched off never counts; the
-drop names which it was. The transport has a switch on the Network screen, on
-by default, and flipping it is what clears the breaker. The module keeps its
-own event log and peer table for Diagnostics (`dumpState()`), because Samsung
-retail builds drop every informational logcat line.
-
-**iOS.** The browser reports a device once and stays silent while it remains in
-range, so a link that ends is redialled by both sides after 2 s, doubling to a
-minute, and the tiebreak collapses the pair. Three constraints are Apple's, and
-each shapes the code:
-
-| Constraint                                                                                                                                        | Consequence                                                                                                                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| No unpaired mode. Every target a listener or browser can name comes from the app's paired list, and the only way into that list is a system sheet | A pairing gate in the controller, a second native module for the sheet (`AirhopWiFiPairing`), and an `unpaired` state that is reported rather than retried, because only a pairing changes it |
-| Discovery is symmetric and there is no `serviceSpecificInfo` to break a tie with before connecting                                                | An 8-byte token exchanged as the first frame of every connection. Both ends keep the one whose initiator holds the lower token, and the loser is closed before TypeScript hears of it         |
-| `NetworkConnection` has no cancel; a connection ends when its last reference is dropped                                                           | One task per link owns its connection for the link's life. Closing means cancelling that task, and the framework owns liveness, so there is no heartbeat                                      |
-
-Pairing is two-sided, like Bluetooth pairing: one phone browses and the other
-advertises at the same moment. That is a user-visible cost with no one-tap
-version to build, so it lives on one screen (Settings, Network) that says which
-half each person is playing.
-
 ### Nostr
 
-- 300+ public relays from georelays (`nostr_relays.csv`, the directory both bitchat clients are built from), taken weekly at the snapshot bitchat-ios's own sync takes, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
-- A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (five primaries and five warm backups, used for both publishing and subscribing, as bitchat routes), plus up to five the user adds. DMs use a pool of well-known relays, at most five
-- NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
-- Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
-- A publish goes to every relay in its set and counts as sent on the first acceptance, so no single relay is load-bearing
-- Each relay is subscribed and queried on its own, and an event ID counts as seen only once its signature has verified. nostr-tools records the ID first, so across relays one hostile relay's forged copy would hide the genuine event every other relay delivers
-- nostr-tools retries a relay that drops, but never one whose first connect fails, so a pool is built only when it has a route: with Tor on, it waits for the circuit
-- Connectivity is read from the sockets themselves, on every question and on a 5 s poll, because nostr-tools reports a socket dropping, and its own reconnect, to no hook. Every consumer (the gateway capability, the banners, the uplink flush) follows those edges. A DM, a location DM and a courier drop are published only to the default DM relays, so they count a route only while one of those is live (`isDMConnected`, bitchat-ios `isDMRelayConnected`); a live location or custom relay alone is not one
-- Every subscribe replays the inbox's lookback, so gift wraps and courier mail already opened are recorded across launches (`nostr-processed-events`, [Data at rest](#data-at-rest)) and a relaunch neither files nor acknowledges them again
-- A network coming back is one debounced event (`src/services/reachability.ts`), not a wait on a timer: it rebuilds the pool when the network it was built on has gone or no relay is live, re-checks Tor, retries queued mail and settles wallet leftovers. The wallet's pass also starts, unthrottled, the moment the internet switch goes back on or the iOS Tor block lifts. A nudge only; nothing refuses to connect because the OS reports no network, since the mesh is offline-first and a captive portal reads as connected
-- Tor off by default on both platforms, behind one toggle ([section 8](#tor))
+- **Relay list.** 300+ public relays from georelays (`nostr_relays.csv`, the directory both bitchat clients are built from), taken weekly at the snapshot bitchat-ios's own sync takes, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
+- **Choosing relays.** A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (five primaries and five warm backups, used for both publishing and subscribing, as bitchat routes), plus up to five the user adds. DMs use a pool of well-known relays, at most five
+- **DMs.** NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
+- **Channels and presence.** Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
+- **Publishing.** A publish goes to every relay in its set and counts as sent on the first acceptance, so no single relay is load-bearing
+- **Subscribing.** Each relay is subscribed and queried on its own, and an event ID counts as seen only once its signature has verified. nostr-tools records the ID first, so across relays one hostile relay's forged copy would hide the genuine event every other relay delivers
+- **First connect.** nostr-tools retries a relay that drops, but never one whose first connect fails, so a pool is built only when it has a route: with Tor on, it waits for the circuit
+- **Connectivity.** It is read from the sockets themselves, on every question and on a 5 s poll, because nostr-tools reports a socket dropping, and its own reconnect, to no hook. Every consumer (the gateway capability, the banners, the uplink flush) follows those edges. A DM, a location DM and a courier drop are published only to the default DM relays, so they count a route only while one of those is live (`isDMConnected`, bitchat-ios `isDMRelayConnected`); a live location or custom relay alone is not one
+- **Replays.** Every subscribe replays the inbox's lookback, so gift wraps and courier mail already opened are recorded across launches (`nostr-processed-events`, [Data at rest](#data-at-rest)) and a relaunch neither files nor acknowledges them again
+- **Network return.** A network coming back is one debounced event (`src/services/reachability.ts`), not a wait on a timer: it rebuilds the pool when the network it was built on has gone or no relay is live, re-checks Tor, retries queued mail and settles wallet leftovers. The wallet's pass also starts, unthrottled, the moment the internet switch goes back on or the iOS Tor block lifts. A nudge only; nothing refuses to connect because the OS reports no network, since the mesh is offline-first and a captive portal reads as connected
+- **Tor.** Off by default on both platforms, behind one toggle ([section 9](#tor))
 
 ### Gateway and bridge
 
@@ -603,33 +460,115 @@ Both are off by default, both are bitchat-ios's designs, and both ride the
 `NOSTR_CARRIER` packet, whose rules are
 [PROTOCOLS.md section 3.9](PROTOCOLS.md#39-gateway-carrier).
 
-- **Internet gateway.** A mesh-only phone hands its signed location-channel
-  message to a nearby gateway, which publishes it to the cell's relays; the
-  gateway also puts that cell's relay traffic onto the mesh. A gateway
-  advertises the role only while its internet switch, its toggle and a live
-  relay all hold, so a gateway that loses signal withdraws at once rather than
-  drawing deposits into a dead pool; deposits that arrive while its relays are
-  unreachable are held, bounded per depositor, and flushed on reconnect.
-  Turning presence to Away switches the gateway off, since a stopped mesh can
-  relay for nobody.
-- **Mesh bridge.** Two crowds out of Bluetooth range of each other share one
-  `#bluetooth` room: each bridge republishes its island's public messages to a
-  Nostr rendezvous cell of about 1.2 km, and renders the other island's into its
-  own room. Mesh-only phones reach the rendezvous through a nearby bridge. Both
-  copies of a message key the same timeline row on a content-derived ID, and the
-  signed radio copy replaces a bridged one when it arrives, because the ID the
-  bridged row carries is an unsigned hint. The bridge signs under its own
-  derived key, never the phone's `#neighborhood` one, and listens to the cells
-  around its own so two crowds astride a cell edge still meet. Receiving bridged
-  messages is passive and needs neither the toggle nor the internet. With
-  several bridges on one island, each holds a remote message for a random
-  moment before sending it onto the mesh, and stands down if another got there
-  first. The bridge's presence heartbeat names its 6-character cell, finer than
-  location presence ever goes, so it is sent only while the app is on screen;
-  carrying deposits and downlinks goes on in the background.
+**Internet gateway.** A mesh-only phone hands its signed location-channel
+message to a nearby gateway, which publishes it to the cell's relays; the
+gateway also puts that cell's relay traffic onto the mesh. A gateway advertises
+the role only while its internet switch, its toggle and a live relay all hold,
+so a gateway that loses signal withdraws at once rather than drawing deposits
+into a dead pool; deposits that arrive while its relays are unreachable are
+held, bounded per depositor, and flushed on reconnect. Turning presence to Away
+switches the gateway off, since a stopped mesh can relay for nobody.
+
+**Mesh bridge.** Two crowds out of Bluetooth range of each other share one
+`#bluetooth` room: each bridge republishes its island's public messages to a
+Nostr rendezvous cell of about 1.2 km, and renders the other island's into its
+own room. Mesh-only phones reach the rendezvous through a nearby bridge.
+Receiving bridged messages is passive and needs neither the toggle nor the
+internet.
+
+Both copies of a message key the same timeline row on a content-derived ID, and
+the signed radio copy replaces a bridged one when it arrives, because the ID the
+bridged row carries is an unsigned hint. With several bridges on one island,
+each holds a remote message for a random moment before sending it onto the mesh,
+and stands down if another got there first.
+
+The bridge signs under its own derived key, never the phone's `#neighborhood`
+one, and listens to the cells around its own so two crowds astride a cell edge
+still meet. Its presence heartbeat names its 6-character cell, finer than
+location presence ever goes, so it is sent only while the app is on screen;
+carrying deposits and downlinks goes on in the background.
 
 Private traffic never takes either path. DMs, groups, private channels and media
 stay on the radios, or go to relays sealed from this phone's own connection.
+
+## 4. Running in the Background
+
+The mesh only works if it keeps running off screen, so the app needs a process
+that stays alive and radios that do not drain the battery doing it.
+
+### Background execution
+
+| Platform | Mechanism                                           | Result                                             |
+| -------- | --------------------------------------------------- | -------------------------------------------------- |
+| iOS      | `UIBackgroundModes: bluetooth-central`              | Receives BLE data while backgrounded               |
+| iOS      | `UIBackgroundModes: bluetooth-peripheral`           | Keeps advertising, though not visibly to Android   |
+| iOS      | `CBCentralManagerOptionRestoreIdentifierKey`        | Relaunches the app on a BLE event after suspension |
+| Android  | `AirhopForegroundService` (persistent notification) | Survives Doze and battery optimization             |
+| Android  | `Airhop.KeepAlive` headless JS task                 | Keeps JS timers running while that service runs    |
+| Android  | `FOREGROUND_SERVICE_CONNECTED_DEVICE`               | Required for that service on Android 14+           |
+| Android  | `neverForLocation` on `BLUETOOTH_SCAN`              | Delivers scan results without a location grant     |
+
+With background running off, leaving the screen stands down Bluetooth, Wi-Fi
+Aware and LAN, which would otherwise advertise a frozen phone.
+
+**iOS.** Under the scene life cycle launch options are always nil, so the app
+delegate creates the restorable managers on every launch once Bluetooth is
+authorized, and `willRestoreState` marks a Bluetooth relaunch. iOS may relaunch
+without a scene, so that signal starts React Native in a view no window holds
+yet, which the scene adopts when the person opens the app.
+
+A backgrounded iPhone is not discoverable from Android. Once the app leaves the
+foreground, CoreBluetooth moves the service UUID into the advertisement's
+overflow area, where only another iOS device scanning for that exact UUID can
+see it. iPhone-to-iPhone still works, iPhone-to-Android discovery stops until
+the app is reopened, and an already connected link keeps carrying traffic.
+Android has no equivalent restriction, since the foreground service keeps it
+advertising normally.
+
+**Android.** The service belongs to the mesh, not to Bluetooth
+(`src/services/radio-controller.ts`). It runs while the background preference
+allows and something local has work: Bluetooth scanning, LAN up, or Wi-Fi Aware
+running. It also holds through what the OS hands back unprompted (Bluetooth or
+location toggled off, airplane mode, Aware withdrawn by doze or battery saver),
+since only a living process can resume. A refused permission or missing hardware
+releases it. The `connectedDevice` type is granted against `CHANGE_WIFI_STATE`
+too, so it starts with Bluetooth refused. Auto-start is synced to native as
+auto-start and background running together.
+
+Its notice shows how many peers are in range
+(`src/services/background-notice.ts`), pushed once a burst settles, since
+Android drops faster updates, and re-posted only while it still shows: one
+swiped away on Android 14+ stays away until the service next starts. It has a
+channel of its own, so Settings opens that channel's system page to quiet or
+hide it while message alerts carry on.
+
+React Native pauses JS timers on Android once no Activity is resumed, unless
+a headless JS task is running. The mesh is timer-driven (announces, relay
+jitter, gossip sync, the throttled chat write, Nostr's inbound queue), so
+`AirhopBLEModule` holds one open-ended task for exactly as long as the
+foreground service runs. Without it a backgrounded phone would still receive
+and notify, but stop announcing, relaying and saving.
+
+The scan flag is what makes the rest deliver. Android treats a BLE scan as a
+location access unless the manifest says otherwise, and an app counts as
+foreground for location only with a visible activity or a `location`-typed
+foreground service. A `connectedDevice` service does not qualify, so without the
+flag a backgrounded phone would hold its process up, keep its notification, and
+be handed no scan results.
+
+bitchat solves this with `ACCESS_BACKGROUND_LOCATION` and a `location` service
+type. Airhop asserts `neverForLocation` instead, which is accurate here: a scan
+result is read for its service UUID, its 8-byte peer ID and its RSSI, none of
+which is a position. From API 31 that removes the coupling entirely. API 26 to 30
+keeps it, since the flag does not exist there; `getRadioState` reports which
+regime applies through `locationRequiredForScan`, read only by `blockerFor`.
+
+Location is still requested on every launch until it is granted, after the mesh
+has started and before notifications, for the location channels only. Bluetooth
+and the mesh never wait on it. A denial leaves the location channels
+Bluetooth-only, and a "Location off" banner on the Mesh tab and inside a
+location channel says so, each with Turn on (`src/services/turn-on-location.ts`):
+it asks again while the OS still will, and otherwise points to Settings.
 
 ### Radio power policy (Android)
 
@@ -707,124 +646,19 @@ is waiting on the scan.
 > would only raise a "scanning less often" note for a change nothing here can
 > make.
 
-## 4. Messaging Protocol
-
-### Wire format
-
-Airhop is wire-compatible with bitchat in both directions. Airhop nodes appear as
-ordinary peers to bitchat devices, and bitchat relays Airhop's extension packet
-types without interpreting them. [PROTOCOLS.md](PROTOCOLS.md) holds the
-[byte layout](PROTOCOLS.md#2-packet-frame-layout), the
-[packet type registry](PROTOCOLS.md#3-packet-type-registry), the
-[routing constants](PROTOCOLS.md#4-routing-constants) and every other protocol
-constant.
-
-### Routing
-
-| Traffic          | Method                                                                                                                                                            |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public channel   | TTL flood; every peer rebroadcasts with TTL decremented, clamped by its neighbour count                                                                           |
-| Direct message   | Down one direct link when there is one; otherwise flooded with a recipient ID at full depth. Only the recipient decrypts, and it forwards nothing addressed to it |
-| Courier envelope | Spray-and-wait; trusted peers carry sealed blobs for offline peers                                                                                                |
-
-### Direct messages
-
-`MeshService.sendDm` walks one ladder, top to bottom, for every DM and every
-outbox retry:
-
-1. **Double Ratchet over the mesh**, when a ratchet with a sending chain exists
-   and any link reaches the peer, directly or through a neighbour.
-2. **Noise XX handshake**, when the peer is reachable over the mesh but has no
-   session. The text waits in the outbox, which the completed handshake
-   flushes at once.
-3. **The Noise session over the mesh**, the path bitchat peers take.
-4. **Nostr gift-wrap**, when no radio reaches the peer, an npub is known (the
-   saved contact's first, else the one the peer announced) and a default DM
-   relay is live.
-5. **Courier**, when nothing reaches them now
-   ([Store-and-forward](#store-and-forward)).
-
-The mesh tiers come first on purpose: when a radio already reaches the peer,
-using a relay would spend data and hand a third party the metadata for a hop
-this phone can make itself. A peer counts as reachable only while heard within
-the router's window (45 s on a direct link, 60 s through the mesh), so a flood
-to someone who has left does not keep the message from reaching Nostr or a
-courier.
-
-Every DM sits in the outbox until a delivery or read receipt names it, whichever
-tier carried it: a flood has nothing to acknowledge it, even a direct link can
-carry a packet sealed under a session the other side has lost, and a relay
-holds a gift wrap for a recipient who may stay offline for days. A retry reuses
-the message ID and the recipient collapses duplicates, so a peer who walks into
-range while a relay holds their copy gets it over the radio. The outbox caps
-each recipient's queue, and a message it evicts shows as failed rather than
-waiting forever. A retry that finds the recipient in range but still
-handshaking costs no attempt, as in bitchat-ios, since nothing left the phone;
-the message waits out the outbox week. A flood with no direct link is charged.
-
-A relay copy is paced: republished daily once a relay accepted it, every two
-minutes while none has, and retried by the 45 s outbox sweep as well as by
-announces, foregrounds and reconnects. It is never charged against the attempt
-cap, and a copy a relay accepted never shows as failed, since the recipient's
-inbox reads the full seven-day outbox lifetime back. One every relay refused
-drops back to queued.
-
-Receipts use the same ID on every path. The recipient answers each DM with a
-delivery receipt, and owes a read receipt until the thread is opened (bounded
-per conversation). Owed receipts are not stored: each launch rebuilds them from
-the unread rows from others. A read receipt goes back over the mesh when the
-sender is still reachable, and over Nostr when they have left, as bitchat-ios
-routes it; couriered mail owes one like any other DM. One that finds no route
-when the thread opens (in range with no session, or out of range with no
-Nostr) waits for that peer's next route, and in range a handshake is started
-for it, as bitchat-ios holds receipts until the handshake.
-
-A DM arriving over Nostr or by courier brings a deleted thread back only when
-the chat store keeps the row. One the thread's clear refuses is still
-acknowledged as delivered, since the sender waits on it, but owes no read
-receipt and recreates nothing.
-
-Blocking a contact also blocks the location pseudonym a card exchange folded
-into their thread. A card exchange that merges a pseudonymous thread moves its
-queued mail onto the contact, and a send still naming the folded key goes to
-the contact, so this phone's main identity never writes to a cell key.
-
-Attachments, location pins and rings are narrower. A DM attachment goes only
-sealed inside the Noise session, over a direct link, to a peer that has proven
-it can read one, and is acknowledged under bitchat's stable media ID
-([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). A pin or a ring
-needs a link and a session, and is refused rather than queued without them. A
-group invite or key update with no link waits for the peer's next announce.
-
-### Room messages
-
-A channel or group message carries its ID on the wire, and a retry resends it
-under the same ID, so a neighbour who got the first copy collapses the second.
-Its bubble reports what actually carried it: a relay post shows sent only once a
-relay has accepted it, and a message still queued when the app was killed shows
-failed with Retry at the next launch, since only the in-memory gossip store held
-it. A post marked nearby-only keeps that on the message, so no retry bridges it
-to the internet. A location post, or a private-room post set to reach Nostr,
-whose radio copy went out but whose relay copy did not shows sent and is held:
-the next time the relay pool connects it is republished under the same message
-ID (a location post as the identical signed event), at most 20 held, for at most
-15 minutes. One no radio took is not held, and fails with Retry. `#bluetooth`
-messages carry no ID on the wire, so a retry after
-a kill can show twice to a neighbour who had the first copy.
-
-### Store-and-forward
-
-When no transport reaches a DM's recipient, the sender seals it with Noise X to
-the recipient's one-time prekey (or static key, when no bundle under a week old
-is held) and deposits the envelope with up to four directly linked couriers,
-and as a drop on Nostr when a relay is connected. A courier carries it for at
-most 24 hours and hands it over, or sprays copies to other trusted carriers, as
-it meets people. The recipient dedupes the copies on the sender's message ID
-and acknowledges it like any DM. The deposit, carrying and envelope rules, and
-the recipient tag's known linkability, are in
-[PROTOCOLS.md section 6](PROTOCOLS.md#6-store-and-forward-courier-constants).
-
 ## 5. Encryption
+
+What protects each kind of traffic:
+
+| Traffic               | Protection                                                                                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live DM session       | Noise XX: mutual auth, forward secrecy per session                                                                                                        |
+| Live DM, Airhop peers | Double Ratchet inside that session: forward secrecy per message                                                                                           |
+| Courier envelope      | Noise X one-way seal to a one-time prekey, or to the recipient's static key when no fresh one is held                                                     |
+| Nostr DM              | bitchat's `nip44-v2` inside a NIP-17-shaped gift-wrap ([PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)) |
+| Private channel       | XChaCha20-Poly1305 under the key in the invite link                                                                                                       |
+| Private group         | ChaCha20-Poly1305 under the current epoch key                                                                                                             |
+| Public channel        | Plaintext plus Ed25519 signature, readable by every peer                                                                                                  |
 
 ### Sessions: Noise XX
 
@@ -846,7 +680,7 @@ Sessions live in memory and are kept across link drops, since resuming one is
 far cheaper than a fresh handshake and radios drop links constantly. Four rules
 keep the two ends on the same session:
 
-- **Inbound handshakes are rate-limited:** 10 a minute per claimed peer, and 30
+- **Inbound handshakes are rate-limited.** 10 a minute per claimed peer, and 30
   a minute in total for first messages, the one unauthenticated message that
   creates state. A second or third message is read on a copy of the pending
   handshake, so one that fails to verify leaves the genuine exchange intact.
@@ -878,12 +712,11 @@ courier mail does not use it.
 - A `DR_ENCRYPTED` packet is signed, and the signature is checked before the ratchet is touched. Decryption then runs on a copy of the state, kept only once the message authenticates, so a forgery leaves the ratchet exactly as it was
 - A message that fails to decrypt is discarded, as the Signal specification requires; an out-of-step pair recovers through the session convergence above. More than 1000 lost messages in one chain (`MAX_SKIP`) leave the pair out of step until a restart or a LEAVE, the same trade bitchat-ios makes, since healing on that error would bring back the replay teardown
 
-X3DH is not used, since the Noise handshake already seeds the ratchet.
-
-The seed is the handshake's exporter secret, a third HKDF output of `split()`
-alongside the two transport keys, descending from the Noise chaining key. Both
-sides already hold it, so it costs no extra round trips, and because the chaining
-key absorbs ephemeral DH outputs whose private halves are destroyed at split, it
+X3DH is not used, since the Noise handshake already seeds the ratchet. The seed
+is the handshake's exporter secret, a third HKDF output of `split()` alongside
+the two transport keys, descending from the Noise chaining key. Both sides
+already hold it, so it costs no extra round trips, and because the chaining key
+absorbs ephemeral DH outputs whose private halves are destroyed at split, it
 cannot be reconstructed from long-term keys. It must not be the transcript hash:
 `mixHash` absorbs only bytes that went over the wire, so that value is public to
 anyone who captured the handshake, and handshakes flood the mesh at TTL 7. Nor a
@@ -904,17 +737,156 @@ prekey.
 - The signature covers every packet field except the TTL, the solicited-response flag and the signature itself ([PROTOCOLS.md section 2](PROTOCOLS.md#2-packet-frame-layout))
 - Replay is bounded by a millisecond timestamp plus a deduplicator that rejects any packet ID already seen. There is no nonce field. Every packet is held to a ±2 minute freshness window at ingress, with gossip-sync replies judged by their own rules, and live voice to 30 seconds. The deduplicator is per device and cannot speak for a phone that never heard the original
 
-### Summary
+### Not every packet is signed
 
-| Traffic               | Protection                                                                                                                                                |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live DM session       | Noise XX: mutual auth, forward secrecy per session                                                                                                        |
-| Live DM, Airhop peers | Double Ratchet inside that session: forward secrecy per message                                                                                           |
-| Public channel        | Plaintext plus Ed25519 signature, readable by every peer                                                                                                  |
-| Courier envelope      | Noise X one-way seal to a one-time prekey, or to the recipient's static key when no fresh one is held                                                     |
-| Nostr DM              | bitchat's `nip44-v2` inside a NIP-17-shaped gift-wrap ([PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)) |
+Noise handshake messages are unsigned, matching bitchat, because the peer may
+not hold this phone's signing key yet and the handshake authenticates itself.
+Messages inside a Noise session carry no redundant signature, since the session
+already authenticates them. A ratchet message is the exception: its header
+travels in the clear and steers the ratchet, so `DR_ENCRYPTED` is sent signed
+and the signature is checked before the ratchet is touched. Fragments are
+unsigned, since the reassembled packet is verified. Signatures are required
+where a claimed sender is otherwise unverifiable: announces, public and private
+channel messages, attachments, voice frames, board posts, sync requests, LEAVE,
+and gateway and bridge deposits.
 
-## 6. Channels and Groups
+## 6. Messaging
+
+Direct messages take the most paths, so they lead here. The other kinds cross the
+same transports with narrower rules.
+
+### Direct messages
+
+`MeshService.sendDm` walks one ladder, top to bottom, for every DM and every
+outbox retry:
+
+1. **Double Ratchet over the mesh**, when a ratchet with a sending chain exists
+   and any link reaches the peer, directly or through a neighbour.
+2. **Noise XX handshake**, when the peer is reachable over the mesh but has no
+   session. The text waits in the outbox, which the completed handshake
+   flushes at once.
+3. **The Noise session over the mesh**, the path bitchat peers take.
+4. **Nostr gift-wrap**, when no radio reaches the peer, an npub is known (the
+   saved contact's first, else the one the peer announced) and a default DM
+   relay is live.
+5. **Courier**, when nothing reaches them now
+   ([Store-and-forward](#store-and-forward)).
+
+The mesh tiers come first on purpose: when a radio already reaches the peer,
+using a relay would spend data and hand a third party the metadata for a hop
+this phone can make itself. A peer counts as reachable only while heard within
+the router's window (45 s on a direct link, 60 s through the mesh), so a flood
+to someone who has left does not keep the message from reaching Nostr or a
+courier.
+
+**Outbox.** Every DM sits in the outbox until a delivery or read receipt names it, whichever
+tier carried it: a flood has nothing to acknowledge it, even a direct link can
+carry a packet sealed under a session the other side has lost, and a relay
+holds a gift wrap for a recipient who may stay offline for days. A retry reuses
+the message ID and the recipient collapses duplicates, so a peer who walks into
+range while a relay holds their copy gets it over the radio. The outbox caps
+each recipient's queue, and a message it evicts shows as failed rather than
+waiting forever. A retry that finds the recipient in range but still
+handshaking costs no attempt, as in bitchat-ios, since nothing left the phone;
+the message waits out the outbox week. A flood with no direct link does cost one.
+
+**Relay copies.** A relay copy is paced: republished daily once a relay accepted it, every two
+minutes while none has, and retried by the 45 s outbox sweep as well as by
+announces, foregrounds and reconnects. It is never charged against the attempt
+cap, and a copy a relay accepted never shows as failed, since the recipient's
+inbox reads the full seven-day outbox lifetime back. One every relay refused
+drops back to queued.
+
+**Receipts.** They use the same ID on every path. The recipient answers each DM with a
+delivery receipt, and owes a read receipt until the thread is opened (bounded
+per conversation). Owed receipts are not stored: each launch rebuilds them from
+the unread rows from others. A read receipt goes back over the mesh when the
+sender is still reachable, and over Nostr when they have left, as bitchat-ios
+routes it; couriered mail owes one like any other DM. One that finds no route
+when the thread opens (in range with no session, or out of range with no
+Nostr) waits for that peer's next route, and in range a handshake is started
+for it, as bitchat-ios holds receipts until the handshake.
+
+**Deleted threads.** A DM arriving over Nostr or by courier brings a deleted
+thread back only when the chat store keeps the row. A row the thread's clear
+refuses is still acknowledged as delivered, since the sender waits on it, but
+owes no read receipt and recreates nothing.
+
+**Folded threads.** Blocking a contact also blocks the location pseudonym a card exchange folded
+into their thread. A card exchange that merges a pseudonymous thread moves its
+queued mail onto the contact, and a send still naming the folded key goes to
+the contact, so this phone's main identity never writes to a cell key.
+
+**Attachments, pins and rings.** These are narrower. A DM attachment goes only
+sealed inside the Noise session, over a direct link, to a peer that has proven
+it can read one, and is acknowledged under bitchat's stable media ID
+([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). A pin or a ring
+needs a link and a session, and is refused rather than queued without them. A
+group invite or key update with no link waits for the peer's next announce.
+
+### Store-and-forward
+
+When no transport reaches a DM's recipient, the sender seals it with Noise X to
+the recipient's one-time prekey (or static key, when no bundle under a week old
+is held) and deposits the envelope with up to four directly linked couriers,
+and as a drop on Nostr when a relay is connected. A courier carries it for at
+most 24 hours and hands it over, or sprays copies to other trusted carriers, as
+it meets people. The recipient dedupes the copies on the sender's message ID
+and acknowledges it like any DM. The deposit, carrying and envelope rules, and
+the recipient tag's known linkability, are in
+[PROTOCOLS.md section 6](PROTOCOLS.md#6-store-and-forward-courier-constants).
+
+### Bulletin board
+
+Signed public notices (`0x23`) that outlive a conversation. Each post carries an
+expiry its author chose, 1 to 7 days, and catches up over gossip sync. It mirrors
+to Nostr as kind 1, and a location cell can also take a permanent note. An urgent
+post also writes one line into the chat it belongs to.
+
+### Attachments
+
+A file in a public room crosses as one signed packet (`0x22`), split into
+fragments on Bluetooth ([PROTOCOLS.md section 3.2](PROTOCOLS.md#32-file-packet-payload)).
+A DM attachment goes sealed inside the Noise session
+([Direct messages](#direct-messages)). Airhop sends photos at 256 KiB, voice notes
+at 512 KiB and anything else at 1 MiB, and accepts 1 MiB of any type, bitchat-ios's
+decoder ceiling. Received files share a 100 MiB budget, oldest out first.
+
+Voice notes are recorded AAC, not live. A video is shrunk to fit its recipient
+and played inline, and a round video note is held to record.
+
+### Live voice and video
+
+Live push-to-talk (`0x29`) is AAC-LC at 16 kHz mono, played through a 350 ms
+jitter buffer. Live video (`0x2D`) is H.264 and AAC-LC with erasure-coded packets,
+sent from the attach menu, watched live in the chat or full screen, and kept as a
+recording. In a DM each rides a Noise payload instead of its own packet type.
+Both are bitchat's formats, so bursts and streams cross between the two, and
+neither is gossip-synced, since stale media is worthless. The formats are in
+[PROTOCOLS.md section 3.1](PROTOCOLS.md#31-voice-burst-payload) and
+[section 3.10](PROTOCOLS.md#310-live-video).
+
+### Pins and rings
+
+A location pin is one point in a DM, sent once: no live sharing, no map, never
+couriered ([PROTOCOLS.md section 3.8](PROTOCOLS.md#38-location-pin)). A ring is a
+doorbell for someone in range. It is opt-in per contact and proven per session,
+rings for 45 s or until answered, and every refusal is answered so the sender is
+never left guessing ([PROTOCOLS.md section 3.3](PROTOCOLS.md#ring-0x51-to-0x53)).
+
+### Gossip sync
+
+A phone that rejoins catches up from its neighbours through GCS gossip sync, the
+mechanism bitchat uses. It sends a link peer a filter of the packets it holds, and
+the peer answers with what the filter lacks, at TTL 0 so a catch-up cannot
+re-flood the mesh. Public and group messages are served for 6 hours, board posts
+until they expire and announces for 60 s. The constants are in
+[PROTOCOLS.md section 5](PROTOCOLS.md#5-gossip-sync-constants).
+
+## 7. Channels and Groups
+
+Rooms come in three kinds: public channels anyone can join, private channels
+joined by a link, and private groups with a signed roster.
 
 ### Public channels
 
@@ -929,6 +901,36 @@ are two kinds:
 
 Both keep a 6 hour public message window, reconciled by gossip sync on connect.
 Moderation is a client-side block list; muted peer IDs are not surfaced.
+
+### One channel, two transports
+
+A location channel exists on both transports at once:
+
+1. BLE mesh, relaying through nearby devices, as the Airhop-only `0x51` packet type
+   ([PROTOCOLS.md section 3.7](PROTOCOLS.md#37-public-channel-messages))
+2. Nostr when internet is available, through relays chosen near the cell, as
+   bitchat publishes it
+
+`#bluetooth` stays on the radios unless a mesh bridge joins two islands
+([Gateway and bridge](#gateway-and-bridge)).
+
+### Teleported cells
+
+When a user opens a location channel by its geohash rather than by being there,
+nobody in Bluetooth range is in it, so it runs over Nostr only. Its messages
+carry a `t=teleport` tag, and bitchat lists the sender as teleported rather than
+nearby.
+
+The cell is picked on a globe or typed as its geohash, as in bitchat. The globe
+draws Natural Earth geometry bundled with the app, the same files bitchat ships,
+so it works offline and asks no one anything: no map tiles, no map SDK, and no
+place-name lookup for wherever it is pointed, since each of those would tell a
+third party where the user is looking. The cell under the crosshair is the
+selection and the zoom sets its precision, by bitchat's rules, so the same view
+picks the same cell in both apps. A picked cell takes the same path as a typed
+one, which decides between the user's own named channel and a teleport. The
+globe renders with Skia on the UI thread; a phone whose GPU Skia cannot use
+(no Vulkan 1.1 on Android) is offered the geohash field alone.
 
 ### Private channels (Airhop only)
 
@@ -951,42 +953,35 @@ link exists, so nobody can forward their way in.
 - Rotating the key bumps the epoch; older epochs are refused
 - A group pins the `creatorFingerprint` it was created with, and a state naming a different creator is refused even at a higher epoch
 
+### Room messages
+
+A channel or group message carries its ID on the wire, and a retry resends it
+under the same ID, so a neighbour who got the first copy collapses the second.
+`#bluetooth` messages carry no ID on the wire, so a retry after a kill can show
+twice to a neighbour who had the first copy.
+
+A message's bubble reports what actually carried it: a relay post shows sent
+only once a relay has accepted it, and a message still queued when the app was
+killed shows failed with Retry at the next launch, since only the in-memory
+gossip store held it. A post marked nearby-only keeps that on the message, so no
+retry bridges it to the internet.
+
+A location post, or a private-room post set to reach Nostr, whose radio copy
+went out but whose relay copy did not shows sent and is held: the next time the
+relay pool connects it is republished under the same message ID (a location post
+as the identical signed event), at most 20 held, for at most 15 minutes. One no
+radio took is not held, and fails with Retry.
+
 ### NIP-29 was not used
 
 Relay-hosted groups put membership enforcement on a relay, which makes a server
-the authority on who may speak. Both models above keep that decision on the
-devices holding the keys.
+the authority on who may speak. Private channels and groups keep that decision
+on the devices holding the keys.
 
-### One channel, two transports
+## 8. Payments
 
-A location channel exists on both transports at once:
-
-1. BLE mesh, relaying through nearby devices, as the Airhop-only `0x51` type
-   ([PROTOCOLS.md section 3.7](PROTOCOLS.md#37-public-channel-messages))
-2. Nostr when internet is available, through relays chosen near the cell, as
-   bitchat publishes it
-
-Reconnecting after time offline reconciles the gap through GCS gossip sync, the
-mechanism bitchat uses. `#bluetooth` stays on the radios unless a mesh bridge
-joins two islands ([Gateway and bridge](#gateway-and-bridge)).
-
-A teleported cell is the exception. When a user opens a location channel by its
-geohash rather than by being there, nobody in Bluetooth range is in it, so it runs
-over Nostr only. Its messages carry a `t=teleport` tag, and bitchat lists the
-sender as teleported rather than nearby.
-
-The cell is picked on a globe or typed as its geohash, as in bitchat. The globe
-draws Natural Earth geometry bundled with the app, the same files bitchat ships,
-so it works offline and asks no one anything: no map tiles, no map SDK, and no
-place-name lookup for wherever it is pointed, since each of those would tell a
-third party where the user is looking. The cell under the crosshair is the
-selection and the zoom sets its precision, by bitchat's rules, so the same view
-picks the same cell in both apps. A picked cell takes the same path as a typed
-one, which decides between the user's own named channel and a teleport. The
-globe renders with Skia on the UI thread; a phone whose GPU Skia cannot use
-(no Vulkan 1.1 on Android) is offered the geohash field alone.
-
-## 7. Payments
+The wallet holds Cashu ecash, which moves like a message and reaches Lightning
+through a mint.
 
 ### Why Cashu
 
@@ -997,14 +992,48 @@ the mint cannot link issuance to redemption. That fits a mesh app.
 - Only the mint knows whether a proof is spent, so a received token is confirmed by a swap once the mint is reachable.
 - Redemption to Lightning needs the mint, and so the internet.
 
+### Wallet tab
+
+- **Balance card:** the primary unit's spendable balance, with unconfirmed, reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
+- **Receive** lists scan a QR code, paste a token and top up over Lightning. **Send** lists create a token, zap a Nostr contact and pay a Lightning invoice. The rail is a choice inside the verb.
+- **Scan** reads a token, a bolt11 invoice or an npub and opens the sheet that handles it, filled in. It never claims or pays by itself.
+- **`cashu:` links.** Airhop registers NUT-00's scheme and token QRs carry it, so a camera scan opens Receive filled in, never claimed. Airhop's own hand-off bounced back (no other wallet) opens Share.
+- **A mint not yet held** is never added silently: Receive and a chat card's Claim ask first, and adding it needs internet once. Until its keysets are cached, a chat card reads the token's metadata.
+- **Removing a mint** gives up every unit held there: its proofs and reservations go, and its unsettled rows close as failed (mint removed) with their stored outputs, so no later pass contacts it or adds it back. The confirm lists each unit's holdings and how many payments are unsettled.
+- **Recovery phrase row:** the backup's status, opening its sheet.
+- **Activity:** sends still waiting to be claimed lead with their actions, then the latest 3 transactions, expandable.
+
+### Wallet operations
+
+| Operation   | Behaviour                                                                                                                                                                                                                                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Balance     | Spendable proofs per (mint, unit), with unverified and reserved amounts shown apart from the headline                                                                                                                                                                                                             |
+| Deposit     | bolt11 from the mint (NUT-04), polled while the sheet is open and reconciled on next launch                                                                                                                                                                                                                       |
+| Withdraw    | Pay a bolt11 from ecash (NUT-05), quoted with the routing reserve first, unused reserve returned as change                                                                                                                                                                                                        |
+| Send        | Build a token from held proofs, fee-aware so the recipient can claim the amount asked                                                                                                                                                                                                                             |
+| Receive     | Paste, scan or claim from a message. Swapped at once when the mint is reachable; otherwise stored unverified and swapped automatically by `reconcile` when it is (up to two accounts per pass). Coins locked to someone else, or whose keysets contradict the token's unit, are refused before anything is stored |
+| Pay         | The [`payPerson` ladder](#paying-a-person)                                                                                                                                                                                                                                                                        |
+| Refresh     | NUT-07 state check, then this wallet's own coins outside the recovery phrase as one swap, then each offline receipt as its own swap (oldest first, eight per refresh). A refused receipt is removed and kept as a token on its failed row; one worth no more than its fee waits                                   |
+| Backup      | The 12-word phrase (NUT-13, NUT-09), with the uncovered remainder shown                                                                                                                                                                                                                                           |
+| Consolidate | A token names one mint, so two mints' ecash never combine. `consolidateMints` moves it instead: the destination mint issues an invoice and the source pays it, for one routing fee and no other app                                                                                                               |
+| History     | Every send, receive, deposit, withdrawal, nutzap and swap, with status                                                                                                                                                                                                                                            |
+
+### Fiat units
+
+A Cashu amount is an integer in the unit's smallest denomination (NUT-00), so
+150 in a `usd` keyset is 1.50 USD. `formatAmount` scales a three-letter fiat
+unit by its minor digits (two, or none for ISO 4217 zero-decimal currencies such
+as JPY) and labels it with the code. Only `sat` switches to BTC, and no exchange
+rate is ever applied.
+
 ### Token in a message
 
 A payment is a message whose body is a token string. Whatever carries text
 carries it (encrypted in a DM, always signed), and the recipient sees a payment
 card. A token with DLEQ witnesses runs past the 255-byte message cap of the
-Noise, Nostr and courier paths, so only the Airhop-to-Airhop ratchet carries
-it; anywhere else the payment ladder below picks another rail, and a queued
-token says where it can go.
+Noise, Nostr and courier paths, so only the Airhop-to-Airhop ratchet carries it;
+anywhere else the [payment ladder](#paying-a-person) picks another rail, and a
+queued token says where it can go.
 
 A `cashuB` token names a v2 keyset by an 8-byte short id that only the mint's
 keyset list expands. When a token from a held mint names a keyset newer than the
@@ -1037,12 +1066,12 @@ Every entry point that pays somebody (DM attach menu, contact sheet, Mesh peer
 sheet, Wallet Zap) calls `payPerson` in `services/payment-router.ts`, which
 walks one ladder:
 
-| Order | Rail   | When                                                                                       | Reclaimable |
-| ----- | ------ | ------------------------------------------------------------------------------------------ | ----------- |
-| 1     | Radio  | A direct BLE or Wi-Fi link exists (`hasDirectLink`)                                        | Yes         |
-| 2     | Nutzap | No radio link, their Nostr key and `kind:10019` are known, and we hold value at their mint | No          |
-| 3     | Token  | Otherwise. `sendDm` picks Nostr gift-wrap, a courier or the outbox                         | Yes         |
-| 4     | Manual | Nothing carried it, so the token returns for the user to hand over                         | Yes         |
+| Order | Rail   | When                                                                                                 | Reclaimable |
+| ----- | ------ | ---------------------------------------------------------------------------------------------------- | ----------- |
+| 1     | Radio  | A direct BLE or Wi-Fi link exists (`hasDirectLink`)                                                  | Yes         |
+| 2     | Nutzap | No radio link, their Nostr key and `kind:10019` are known, and this wallet holds value at their mint | No          |
+| 3     | Token  | Otherwise. `sendDm` picks Nostr gift-wrap, a courier or the outbox                                   | Yes         |
+| 4     | Manual | Nothing carried it, so the token returns for the user to hand over                                   | Yes         |
 
 Radio leads so a person in front of you does not wait on a mint, and so it
 works with no internet. A nutzap beats a token because locked proofs are the
@@ -1051,6 +1080,32 @@ recipient's whether or not they come online.
 - **One confirm.** The user is asked once, after the rail is known, and the question says whether the payment can be undone. A nutzap that fails to lock falls through to a token without asking again, unless the token was priced from a stale fee schedule, which is then said in a second confirm. An inexact token amount asks its overpay question in place of the confirm. A send is priced again as it is built, and refused if a background pass has made it cost more than the confirm showed.
 - **One commitment.** Proofs are reserved (rails 1, 3, 4) or P2PK-locked (rail 2), never both. A failure before committing falls through; after committing, only delivery retries. A lock whose request may have reached the mint stops the ladder.
 - **Finality is reported.** `PayResult.final` is true only for nutzaps, and the result names the rail and whether Activity will offer the money back.
+
+### Recovery
+
+A 12-word BIP-39 phrase is generated when the wallet first opens and kept in the
+keychain beside the identity keys, so every proof the wallet creates uses NUT-13
+deterministic secrets. NUT-09 restore re-derives them on any device and asks
+each mint which it signed, so the balance is rebuilt from the mint's records,
+not a backup file.
+
+The backup itself starts off, because "covered" is a promise about the person,
+not the crypto: `backupEnabled` records that the user has seen the words and
+`backupVerified` that they proved they wrote them down. The recovery phrase row
+reads safe only with both, since a phrase never copied out looks protected and
+is not.
+
+| Coverage |                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------- |
+| Covers   | Ecash derived from the phrase, at mints the user re-adds                                    |
+| Excludes | The Airhop identity, chats, contacts and the mint list                                      |
+| Excludes | Coins received and not yet swapped, which carry the sender's secrets until `refreshAccount` |
+
+- The keychain is the source of truth. If the phrase is confirmed missing, startup clears `backupEnabled` and every `derived` mark, then seeds a fresh phrase. If the keychain refuses the write, secrets fall back to random and nothing claims coverage. A phrase the keychain would not read, or one that no longer parses, is never replaced: the phrase and its flags stay as they are, new coins use random secrets for the session, and the next refresh re-issues them under the phrase.
+- `StoredProof.derived` marks what the phrase can rebuild, and the UI shows the uncovered remainder.
+- Backup cannot be turned off, since deleting a phrase coins derive from deletes the coins. Only the panic wipe removes it.
+- The words are shown only after the OS confirms the owner (Face ID, fingerprint or passcode), the check a transfer asks for, since they move every coin to any phone without a trace. A phone with no screen lock has no owner to ask and shows them.
+- The per-keyset counter only moves forward, and restore pushes it past everything the mint has signed, for every unit at every named mint. A reused counter recreates a signed secret and the mint refuses the swap (NUT-00 10002) with the inputs untouched. The wallet then scans the account's active keysets forward from the counter (NUT-09, gap 200), moves the counters past what it finds and retries the claim, nutzap or lock once; a refresh leaves its coins pending for the next pass. Counters reset when the phrase changes, and a mint added while a phrase is active is scanned the same way, so its counters start past what the phrase already used there.
 
 ### Mint network gate
 
@@ -1082,73 +1137,20 @@ a banner and disables what would fail.
 
 Two limits hold regardless. DLEQ proves the mint signed a proof, not that the
 sender has not spent it. And a reclaimed send races the recipient until the mint
-is reached. Online, reclaiming swaps the coins at once, as cashu.me does by
-receiving its own token, so the copy handed out stops working; if the recipient
-redeemed it first, the send is marked completed rather than shown as balance.
-Offline, the coins come back unconfirmed until the reconcile pass or a refresh
-reaches the mint: it swaps them, or finds the recipient redeemed them first and
-marks the send completed the same way, with the chat card and bubble following.
-The UI says so before reclaiming.
+is reached.
 
-### Recovery
+Online, reclaiming swaps the coins at once, as cashu.me does by receiving its
+own token, so the copy handed out stops working; if the recipient redeemed it
+first, the send is marked completed rather than shown as balance. Offline, the
+coins come back unconfirmed until the reconcile pass or a refresh reaches the
+mint: it swaps them, or finds the recipient redeemed them first and marks the
+send completed the same way, with the chat card and bubble following. The UI
+says so before reclaiming.
 
-A 12-word BIP-39 phrase is generated when the wallet first opens and kept in the
-keychain beside the identity keys, so every proof the wallet creates uses NUT-13
-deterministic secrets. NUT-09 restore re-derives them on any device and asks
-each mint which it signed, so the balance is rebuilt from the mint's records,
-not a backup file. What starts off is the backup, because "covered" is a promise
-about the person, not the crypto: `backupEnabled` records that the user has seen
-the words and `backupVerified` that they proved they wrote them down. The
-recovery phrase row reads safe only with both, since a phrase never copied out
-looks protected and is not.
+## 9. Privacy and Tor
 
-| Coverage |                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------- |
-| Covers   | Ecash derived from the phrase, at mints the user re-adds                                    |
-| Excludes | The Airhop identity, chats, contacts and the mint list                                      |
-| Excludes | Coins received and not yet swapped, which carry the sender's secrets until `refreshAccount` |
-
-- The keychain is the source of truth. If the phrase is confirmed missing, startup clears `backupEnabled` and every `derived` mark, then seeds a fresh phrase. If the keychain refuses the write, secrets fall back to random and nothing claims coverage. A phrase the keychain would not read, or one that no longer parses, is never replaced: the phrase and its flags stay as they are, new coins use random secrets for the session, and the next refresh re-issues them under the phrase.
-- `StoredProof.derived` marks what the phrase can rebuild, and the UI shows the uncovered remainder.
-- Backup cannot be turned off, since deleting a phrase coins derive from deletes the coins. Only the panic wipe removes it.
-- The words are shown only after the OS confirms the owner (Face ID, fingerprint or passcode), the check a transfer asks for, since they move every coin to any phone without a trace. A phone with no screen lock has no owner to ask and shows them.
-- The per-keyset counter only moves forward, and restore pushes it past everything the mint has signed, for every unit at every named mint. A reused counter recreates a signed secret and the mint refuses the swap (NUT-00 10002) with the inputs untouched. The wallet then scans the account's active keysets forward from the counter (NUT-09, gap 200), moves the counters past what it finds and retries the claim, nutzap or lock once; a refresh leaves its coins pending for the next pass. Counters reset when the phrase changes, and a mint added while a phrase is active is scanned the same way, so its counters start past what the phrase already used there.
-
-### Fiat units
-
-A Cashu amount is an integer in the unit's smallest denomination (NUT-00), so
-150 in a `usd` keyset is 1.50 USD. `formatAmount` scales a three-letter fiat
-unit by its minor digits (two, or none for ISO 4217 zero-decimal currencies such
-as JPY) and labels it with the code. Only `sat` switches to BTC, and no exchange
-rate is ever applied.
-
-### Wallet tab
-
-- **Balance card:** the primary unit's spendable balance, with unconfirmed, reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
-- **Receive** lists scan a QR code, paste a token and top up over Lightning. **Send** lists create a token, zap a Nostr contact and pay a Lightning invoice. The rail is a choice inside the verb.
-- **Scan** reads a token, a bolt11 invoice or an npub and opens the sheet that handles it, filled in. It never claims or pays by itself.
-- **`cashu:` links.** Airhop registers NUT-00's scheme and token QRs carry it, so a camera scan opens Receive filled in, never claimed. Our own hand-off bounced back (no other wallet) opens Share.
-- **A mint not yet held** is never added silently: Receive and a chat card's Claim ask first, and adding it needs internet once. Until its keysets are cached, a chat card reads the token's metadata.
-- **Removing a mint** gives up every unit held there: its proofs and reservations go, and its unsettled rows close as failed (mint removed) with their stored outputs, so no later pass contacts it or adds it back. The confirm lists each unit's holdings and how many payments are unsettled.
-- **Recovery phrase row:** the backup's status, opening its sheet.
-- **Activity:** sends still waiting to be claimed lead with their actions, then the latest 3 transactions, expandable.
-
-### Wallet operations
-
-| Operation   | Behaviour                                                                                                                                                                                                                                                                                                         |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Balance     | Spendable proofs per (mint, unit), with unverified and reserved amounts shown apart from the headline                                                                                                                                                                                                             |
-| Deposit     | bolt11 from the mint (NUT-04), polled while the sheet is open and reconciled on next launch                                                                                                                                                                                                                       |
-| Withdraw    | Pay a bolt11 from ecash (NUT-05), quoted with the routing reserve first, unused reserve returned as change                                                                                                                                                                                                        |
-| Send        | Build a token from held proofs, fee-aware so the recipient can claim the amount asked                                                                                                                                                                                                                             |
-| Receive     | Paste, scan or claim from a message. Swapped at once when the mint is reachable; otherwise stored unverified and swapped automatically by `reconcile` when it is (up to two accounts per pass). Coins locked to someone else, or whose keysets contradict the token's unit, are refused before anything is stored |
-| Pay         | The `payPerson` ladder                                                                                                                                                                                                                                                                                            |
-| Refresh     | NUT-07 state check, then this wallet's own coins outside the recovery phrase as one swap, then each offline receipt as its own swap (oldest first, eight per refresh). A refused receipt is removed and kept as a token on its failed row; one worth no more than its fee waits                                   |
-| Backup      | The 12-word phrase (NUT-13, NUT-09), with the uncovered remainder shown                                                                                                                                                                                                                                           |
-| Consolidate | A token names one mint, so two mints' ecash never combine. `consolidateMints` moves it instead: the destination mint issues an invoice and the source pays it, for one routing fee and no other app                                                                                                               |
-| History     | Every send, receive, deposit, withdrawal, nutzap and swap, with status                                                                                                                                                                                                                                            |
-
-## 8. Privacy and Tor
+What Airhop reveals to others, how findable a phone is, and how its internet
+traffic leaves it.
 
 ### Metadata minimization
 
@@ -1183,11 +1185,11 @@ since it is set in the picker rather than among the preferences.
 ### Tor
 
 Both platforms embed [Arti](https://gitlab.torproject.org/tpo/core/arti), the
-Tor Project's Rust client, built from `native/arti/`: one crate, one SOCKS5
-listener on `127.0.0.1:39050`, two thin FFI faces. There is no `tor` binary, no
-`torrc`, no control port and no third-party app. Off by default on both. Tor
-covers internet traffic only; BLE, Wi-Fi Aware and LAN are local radios and have
-nothing to route.
+Tor Project's Rust client, [built](#building-the-tor-client) from
+`native/arti/`: one crate, one SOCKS5 listener on `127.0.0.1:39050`, two thin
+FFI faces. There is no `tor` binary, no `torrc`, no control port and no
+third-party app. Off by default on both. Tor covers internet traffic only; BLE,
+Wi-Fi Aware and LAN are local radios and have nothing to route.
 
 #### Coverage
 
@@ -1201,17 +1203,22 @@ a choice. React Native on Android is OkHttp end to end, so installing the proxy
 into `OkHttpClientProvider` at application start covers `fetch` and WebSocket at
 once, and a process-wide default `ProxySelector` covers every other OkHttp
 client built without a selector of its own (expo-file-system's downloads among
-them) and `HttpURLConnection`. Only `http`, `https`, `ws` and `wss` are routed:
-the LAN, Wi-Fi Aware and transfer sockets ask the same selector, and sent to
-Arti, which refuses local addresses, all three would break. Anything else, and
-web traffic while Tor is off, gets the system's own answer, so a proxy the user
-set for their Wi-Fi still applies. The clients React Native builds share one
-connection pool, and a change of route empties it and refuses a request riding
-a connection opened before the change. The same factory drops React
-Native's `AppName/versionName` User-Agent for OkHttp's generic one, so no server
-can tell Airhop's releases apart. System services such as the geocoder run
-in another process and are outside any app proxy, so no place name is looked up
-while the internet is off or Tor is on or wanted, on either platform.
+them) and `HttpURLConnection`.
+
+Only `http`, `https`, `ws` and `wss` are routed: the LAN, Wi-Fi Aware and
+transfer sockets ask the same selector, and sent to Arti, which refuses local
+addresses, all three would break. Anything else, and web traffic while Tor is
+off, gets the system's own answer, so a proxy the user set for their Wi-Fi still
+applies.
+
+The clients React Native builds share one connection pool, and a change of route
+empties it and refuses a request riding a connection opened before the change.
+The same factory drops React Native's `AppName/versionName` User-Agent for
+OkHttp's generic one, so no server can tell Airhop's releases apart.
+
+System services such as the geocoder run in another process and are outside any
+app proxy, so no place name is looked up while the internet is off or Tor is on
+or wanted, on either platform.
 
 iOS has no equivalent hook, so nostr-tools is handed a WebSocket that speaks
 SOCKS5 and everything else stays outside the tunnel. That is why a Cashu mint
@@ -1267,13 +1274,13 @@ that screen, and the mesh runs normally throughout. Four things lead there:
   straight to a public relay.
 
 Only turning Tor off, or a start the native client accepts (Try again, or a
-bridge change), leaves it.
-Turning the internet switch off and on again lands back in it.
+bridge change), leaves the held state. Turning the internet switch off and on
+again lands back in it.
 
 #### Bridges
 
-Settings, Tor, Connection hides that Tor is in use: a bridge is an unlisted
-entry point, and the transport in front of it disguises the connection.
+The Connection setting (Settings, Tor) hides that Tor is in use: a bridge is an
+unlisted entry point, and the transport in front of it disguises the connection.
 
 | Connection | What it hides                             | Cost                                   |
 | ---------- | ----------------------------------------- | -------------------------------------- |
@@ -1306,19 +1313,161 @@ rather than inviting a retry that cannot help.
 Reset settings keeps Tor, the bridge mode, custom bridge lines and the internet
 switch, so a tap meant to fix the theme never puts a Tor user on the clear net.
 
-#### Building the Tor client
+## 10. On the Device
 
-The binaries are committed, and both are built here rather than vendored.
-`native/arti/build-in-container.sh` produces the Android libraries inside a
-pinned container (Rust, NDK, Debian snapshot and `Cargo.lock` all fixed by
-`TOOLCHAIN.env`), and `native/arti/build-apple.sh` produces the xcframework on
-macOS. `scripts/verify-vendored.js` hashes every committed binary, and the
-`SHA256SUMS` files the build scripts write, against `vendor.lock.json`, so a
-binary cannot change without a recorded rebuild, and it refuses an executable
-or archive anywhere else in the tree. That does not prove a binary corresponds
-to its source; rebuilding it does. The Android container build is reproducible
-(run it twice from clean and `SHA256SUMS.android` must not move), and
-`build-native.yml` rebuilds both platforms in CI.
+What Airhop keeps on the phone, how it is protected there, and the two ways it
+leaves: destroyed by a panic wipe, or moved to a new phone.
+
+### Key storage
+
+| Secret                 | Storage                       | Backed by                         |
+| ---------------------- | ----------------------------- | --------------------------------- |
+| `noiseStaticPrivKey`   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| `signingPrivKey`       | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Wallet AES-256 key     | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Nutzap P2PK privkey    | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Recovery phrase        | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| One-time prekey keys   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Cashu proofs           | `react-native-mmkv` (AES-256) | File encrypted with the key above |
+| Noise and DR sessions  | Memory only                   | Not persisted                     |
+| Group and channel keys | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
+| Message history        | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
+
+The six `expo-secure-store` secrets go through `src/core/crypto/keychain.ts`, as
+five items (the two identity keys share one); nothing else calls
+`expo-secure-store` directly. The module exports a union type of the item names,
+so a caller cannot write a secret outside the registry. The one-time prekeys are
+a single blob because MMKV appends: a consumed key deleted there lingers in the
+file until a rewrite, and forward secrecy rests on it being gone.
+
+That registry is what the [panic wipe](#panic-wipe) walks, since
+`expo-secure-store` has no delete-all. A secret stored under an ad-hoc key would
+survive the wipe. Every item is attempted even after one fails, and anything
+left behind is reported as `keysDestroyed: false` rather than as success.
+
+Items are written `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY` rather than the
+`WHEN_UNLOCKED` default. `AFTER_FIRST_UNLOCK` because iOS relaunches the app on a
+BLE event after termination and that relaunch must load the identity to join the
+mesh; `WHEN_UNLOCKED` refuses the read on a locked phone. `THIS_DEVICE_ONLY`
+because the default class is included in encrypted iCloud and iTunes backups and
+restorable onto another device. The trade is that the keychain is unreadable
+between boot and the first unlock.
+
+#### At launch
+
+Since the keychain can be unreadable, launch tells three answers apart: an
+identity, none, or no answer. A read that throws, or has not answered in 8 s, is
+unreadable rather than absent: it shows a screen that retries (again by itself
+each time the app comes to the front), and it neither onboards nor sweeps anything. Read as "no identity",
+the same answer would send a returning user through onboarding, which then
+writes a new identity over the old one once the keychain wakes, and iOS gives
+exactly that answer to a background relaunch before the first unlock.
+
+iOS keeps Keychain items when the app is deleted, while the app's own storage
+goes with it, so a reinstall would boot the old identity with none of its
+history. An install records that it has had an identity (on onboarding, on a
+transfer arriving, and on every boot) in a partition the panic wipe leaves alone.
+An identity found by an install with no such record, and none of the long-lived
+stores an install from an earlier build would have, is a leftover: launch wipes
+every keychain item, the wallet's with it, and onboards. The check runs only on
+an identity the keychain actually returned, so a relaunch before the first unlock
+never reaches it. Android removes the Keystore keys with the app, so there it
+never fires.
+
+A panic wipe whose keychain delete was refused marks the identity condemned, in
+the wipe marker's own partition rather than one the wipe clears. Launch deletes
+a condemned identity again and never boots it; the mark clears only when that
+delete succeeds or a new identity (onboarding, or a transfer arriving) takes
+its place.
+
+The launch sweep that deletes secrets with no identity to own them leaves two
+items alone. The one-time prekeys, because the mesh can publish a batch right
+after onboarding, and a delete landing late would drop keys peers are already
+sealing to. And the wallet's file key, because the wallet partition opens at
+launch on every install, identity or not, and deleting its key under it would
+leave the wallet unreadable on the next launch. The panic wipe deletes both.
+
+### Storage key names
+
+Three families of string, all at `v1`.
+
+| Family                    | Shape                        | Example                 | Renaming costs                      |
+| ------------------------- | ---------------------------- | ----------------------- | ----------------------------------- |
+| Keychain item             | `airhop.<domain>.<thing>.v1` | `airhop.wallet.p2pk.v1` | The secret becomes unreachable      |
+| HKDF domain separator     | `airhop-<purpose>-v1`        | `airhop-dr-root-v1`     | Every key derived from it changes   |
+| Persisted store / MMKV id | `<name>-store`               | `wallet-store`          | The user's data becomes unreachable |
+
+The third family has names outside the convention: `airhop-chat`,
+`wallet-state` (beside the `wallet-store` partition), `activity`,
+`group-invite-outbox`, `nostr-processed-events`, `panic-wipe-marker`,
+`install-marker` and `move-marker`. They stay as they are. A persisted name is
+the address of the data, not a label on it, so renaming one points the next
+launch at a file that has never been written while the old data stays on disk
+with nothing referencing it. No store declares a `migrate`. Changing these safely
+means a per-store migration that reads the old name and writes the new, shipped
+at least one release before the old name is dropped.
+
+### Wallet partition
+
+Cashu proofs are bearer instruments, so `wallet-store` is the one MMKV partition
+opened with an explicit `encryptionKey`. MMKV encrypts it with AES-256 in CFB
+mode, under a 32-character key holding 192 random bits (24 random bytes,
+base64-encoded), generated on first run and held in the keychain. That buys
+confidentiality only: MMKV's CRC detects corruption, not tampering, which the
+threat model accepts because writing the app's files needs the same access
+that reads the keychain.
+
+The key is fetched asynchronously, so the store cannot exist at module scope:
+`bootstrapWalletStorage()` opens it, and the `zustand/persist` adapter reads
+only through that open partition. A write with no open partition is dropped
+rather than written anywhere else. If the keychain refuses, the wallet reports
+itself locked rather than opening unencrypted, and no proof reaches plaintext
+disk.
+
+The panic wipe empties an open partition with `clearAll`, since `deleteMMKV`
+would free the native instance under a write still in flight, and uses
+`deleteMMKV` only when nothing opened it. Either way the same wipe destroys the
+key, so what stays on disk cannot be read. MMKV keeps one native instance per id
+for the life of the process and hands it back to every later open with the key
+it was first opened under, so a reopen after a wipe in the same session
+(re-onboarding, or a transfer arriving) re-keys it with `encrypt` onto the key
+the keychain now holds.
+
+### Data at rest
+
+Outside the keychain, only the wallet partition carries a key of Airhop's own.
+The rest (the other MMKV stores, message history included, Arti's state, and
+attachments in the cache directory) relies on the OS: iOS Data Protection and
+Android file-based encryption, keyed to the device passcode, with the same
+after-first-unlock availability as the keychain items. A second key held in this
+phone's keychain would add nothing against someone who can read the app's files
+on an unlocked phone, since they can use the keychain too, and it would make
+every store open asynchronously, as the wallet does.
+
+What such a key would stop is a copy leaving the phone, and that is closed at
+the source instead. Nothing is backed up or transferred:
+
+- **iOS:** `AppDelegate` marks `Documents/mmkv` and `Application Support/airhop`
+  (Arti's guards and consensus) excluded from iCloud and iTunes backup on every
+  launch, before JS runs. The cache directory is never backed up.
+- **Android:** `allowBackup="false"`, plus `data_extraction_rules.xml` excluding
+  every domain from cloud backup and device-to-device transfer. On Android 12+,
+  `allowBackup` alone leaves device-to-device transfer on for some
+  manufacturers.
+
+Nothing is lost by it. A restored copy would not bring Airhop back, since the
+identity is a this-device-only keychain item, so a backup only ever copied the
+data off the phone. Moving to a new phone is an in-app transfer that moves the
+identity rather than cloning it, [described below](#moving-to-a-new-phone).
+
+One partition holds no content at all. `nostr-processed-events` records which
+gift wraps and courier messages this identity has already opened (public event
+and message IDs with the time each was recorded, kept for the inbox's lookback
+plus an hour, at most 5,000 per inbox), because relays replay a whole lookback
+on every subscribe and each replay would otherwise be filed and acknowledged
+again, as bitchat-ios's `NostrProcessedEventStore` prevents. Which IDs a phone
+opened says who writes to it, so the panic wipe clears it, and a transfer moves
+it with the chat history.
 
 ### App lock
 
@@ -1394,7 +1543,93 @@ Wi-Fi Aware pairings on iOS live in the system's paired list, and Apple offers
 no API to remove one. Photos saved to the gallery belong to the system's photo
 library, not the app.
 
-## 9. Threat Model
+### Moving to a new phone
+
+It starts from Profile, Transfer to a new phone, on the old phone, and Transfer
+from another phone on the new phone's welcome screen. The new phone shows a QR
+code, the old phone scans it, and everything crosses one TCP connection on the
+local network: the same Wi-Fi, or a hotspot either phone serves. No internet, no
+server, no file. The wire format is [PROTOCOLS.md section
+11](PROTOCOLS.md#11-device-transfer).
+
+The exact keys move, so nothing on the wire changes. The peer ID, the username,
+the npub, every geohash pseudonym and every safety number are derived from the
+two private keys and come out identical. Contacts see the old phone say goodbye
+and the same identity come back, and a verified contact stays verified, because
+the keys they checked are the keys that arrived. No protocol version bump, and
+bitchat peers notice nothing.
+
+It is a move, not a copy. Two phones holding one identity would each answer its
+handshakes and remotes would flip their session between them, so the old phone
+erases itself (the panic wipe) once the new one confirms it has everything.
+
+| What                         | Moves | Why                                                                         |
+| ---------------------------- | ----- | --------------------------------------------------------------------------- |
+| Noise and signing keys       | Yes   | They are the identity. Written last on the new phone                        |
+| Contacts, blocks, groups     | Yes   | Group epoch keys included, so the creator can still rotate                  |
+| Rooms and their keys         | Yes   | Private channel keys ride in the chat store                                 |
+| Chat history and outbox      | Yes   | Unless the person switches history off; the rooms still move                |
+| Wallet, phrase, P2PK key     | Yes   | The wallet lands under the new phone's own file key                         |
+| Settings                     | Yes   | Less the ones describing the old phone (`DEVICE_SETTINGS`)                  |
+| One-time prekey private keys | No    | Never leave the phone that made them; the new phone publishes a fresh batch |
+| Noise and ratchet sessions   | No    | Memory only. Renegotiated on first contact, as after any restart            |
+| Carried courier mail, board  | No    | Other people's mail, and public posts the mesh gossips back                 |
+| Media files, Tor state       | No    | Attachments render as "not on this device"; Tor state is this phone's own   |
+
+`src/services/move-snapshot.ts` holds this table as code, typed against the
+panic wipe's registry, so a store added later does not compile until someone
+decides whether it moves.
+
+The sequence, and where it can stop:
+
+1. The old phone asks the OS to confirm the owner (Face ID, fingerprint or
+   passcode) before any key is read. A phone with no lock at all has no owner
+   to ask, and the confirmation after the scan still stands.
+2. The new phone listens on a free port and shows a code carrying a one-time
+   X25519 key, a random token and its addresses.
+3. The old phone dials only an address on the subnet of one of its own local
+   interfaces, and runs Noise XX as initiator with its identity key, the token
+   as prologue, its mesh still running. It refuses any responder whose key is
+   not the one it scanned; the new phone learns the identity by possession.
+   Both phones then show the same six words, derived from the handshake.
+4. The person taps They match on the new phone, which sends `CONFIRM`, and
+   Transfer on the old one, in either order. Only with both does the old phone
+   write a `sending` marker, stop the mesh (its goodbye retires remotes'
+   sessions) and send the bundle, moving the marker to `sent` just before the
+   last message. Cancel on the new phone turns that connection away and
+   replaces the code, since whoever answered has read it.
+5. The new phone holds the bundle whole, checks it, then writes under a
+   `receiving` marker: every partition, the wallet, its secrets, and the
+   identity last, each read back. One-time prekeys an earlier identity left on
+   the phone are deleted, so the arriving identity never publishes them. It
+   marks `committed` and sends the commit.
+6. The old phone erases itself and says so. The new phone clears its marker.
+
+If it stops partway, a marker decides what the next launch does:
+
+| Stopped at                        | On relaunch                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------- |
+| New phone mid-install             | `receiving`: wiped like an interrupted panic wipe, back to welcome          |
+| Old phone before the stream ended | `sending`: nothing can have moved, so it clears and starts as usual         |
+| Old phone after, with no commit   | `sent`: asks. Neither phone can know which holds the identity               |
+| New phone committed, no release   | `committed`: asks the person to check the old phone before joining the mesh |
+
+The question does not wait for a relaunch: an unconfirmed outcome that arrives
+after the transfer screen has closed keeps the `sent` marker and the mesh down,
+and the shell asks at once.
+
+If the person keeps both phones anyway (Keep using this phone, after the new one
+had committed), the mesh says so. An announce under this phone's own peer ID,
+signed with its key, stamped after this run started and not one this run sent,
+can only be this identity on another phone, and both phones raise a Mesh banner
+until the other goes quiet for five minutes.
+
+A backup file was the alternative and was turned down. A file is a copy by
+construction: restorable twice, brute-forceable offline, and a backup to compel,
+which VISION.md rules out. The wallet's recovery phrase stays the answer for a
+lost phone.
+
+## 11. Threat Model
 
 ### The attacker
 
@@ -1405,78 +1640,110 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 
 ### Countermeasures
 
-| Threat                             | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Message forgery                    | Ed25519 signature verified against the key bound to the claimed sender. A missing key or missing SIGNED flag is a failed check, never a skipped one                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| System-line spoofing               | A peer's `* … *` text renders as an action only when it is exactly the `/hug` or `/slap` template with the wire sender as actor and a single name as target. Anything else is a normal bubble under their name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Identity impersonation             | `peerID == SHA-256(noiseStaticPubKey)[0:16]`, enforced on announces and completed Noise sessions, so a peer ID cannot be claimed without its key                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Signing-key substitution           | Three tiers, strongest first, for every signature check: a key proven inside a Noise session (payload `0x21`), then a saved contact's key (verified or not), then the first announce's TOFU pin. After a restart the registry is empty, and an announce whose key contradicts a saved contact's is refused whole, so the contact tier is the durable pin. A proof may correct a pin or an unverified contact's key an attacker won the race for, dropping prekey bundles taken under the wrong one and the Nostr key that came with it, and is refused against a verified contact's. No announce can overwrite a proven key, only an in-person QR scan re-pins a verified one, and stranger pins are not persisted |
-| Nostr key claim in an announce     | The npub a peer names for itself is a forwarding address for that peer, nothing more: first claim stands, no claim folds a thread keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may. A card from a QR, a link or a pasted code is signed by the signing key it names, so its Nostr key cannot be swapped by whoever passes it on. An announced npub is written onto a saved contact only when a session proof or the contact's own key stands behind the announce. See [PROTOCOLS.md section 3.3](PROTOCOLS.md#nostr-keys-a-peer-names-for-itself)                                                                                                                          |
-| Capability downgrade               | Announced bits are a discovery hint and never authorise a change in how Airhop sends. Encrypted private media is selected only on an authenticated capability, and a DM attachment never falls back to cleartext, so nobody in radio range can force one into the clear                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Replay                             | Content-derived packet IDs, a deduplicator, and a ±2 minute freshness window on every packet at ingress, so stale packets are neither relayed nor acted on. A packet tagged `IS_RSR` is judged on the sync rules alone, fresh or not: TTL 0, from the peer bound to the link a request went to in the last 30 s, and a type sync serves within the age it serves it for (announces 60 s, public and group messages 6 h, board posts 7 days). Live voice and video frames are also refused once 30 s old                                                                                                                                                                                                            |
-| Replayed session traffic           | A Noise or Double Ratchet packet that fails to decrypt is discarded and never tears down a session, so a genuine packet replayed after it has left the dedup window cannot evict working keys or spend the handshake budget                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Sync amplification                 | `REQUEST_SYNC` is never relayed, and is answered only when it is the link peer's own: TTL 0, from the peer bound to that link, signed by it. It and every packet answering one ride at TTL 0, so a rejoining peer's catch-up cannot re-flood the mesh. Responses to one peer are capped at 8 per 30 s. Each kind of packet has its own store (public messages 1000, group 200, board 200, one announce per peer) and only accepted packets are kept, so forgeries neither evict real history nor get served                                                                                                                                                                                                        |
-| Handshake flood                    | Inbound handshakes are capped at 10 a minute per claimed peer and 30 a minute in total for first messages, and pending ones expire. A reply is read on a copy of the pending handshake, so a forged one cannot end the genuine exchange                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Man-in-the-middle (session)        | Noise XX mutual authentication, with the authenticated static key required to derive the peer ID it claims                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Traffic analysis (Nostr)           | NIP-17 gift-wrap hides sender, recipient and content from the relay; Tor hides the IP; geohash channels use per-cell keys, though posting links them ([Key pair](#key-pair))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Traffic analysis (BLE)             | Private payloads (Noise, Double Ratchet and private channels) are encrypted and padded to fixed buckets, so their length says little about the message. Public traffic is plaintext by design, and headers are always in the clear (see [Out of scope](#out-of-scope))                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Relay censorship                   | Several relays are queried in parallel, so any single relay failure is transparent                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Forged departure                   | A LEAVE is checked against the signing key held for its sender before the relay decision, so an unverifiable one is neither acted on nor passed to nodes that may check less strictly. See [PROTOCOLS.md section 3.6](PROTOCOLS.md#36-leave-files-board-posts-and-voice-are-verified-before-they-are-relayed)                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Public spam                        | bitchat's spam filter, ported with its limits: per sender 6 messages then one per 10 s, 1200 characters and 2 links a minute, and near-copies hidden whether one sender repeats a text or many identities spread it, with disguises folded away first. Runs on message time, so backfill is judged as it was sent. Local only: a hidden message is still relayed, and the user can switch it off                                                                                                                                                                                                                                                                                                                   |
-| Sybil flooding                     | TTL bounds propagation. The registry and radar are capped with oldest-first eviction that never drops a peer holding a real BLE link                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| Relay abuse                        | A forged file, board post, voice frame or LEAVE is dropped before it is relayed; nothing addressed to this phone or sent under its own ID is relayed by it. A receiving card is shown only for a sender whose key is held, at most three at once, unnamed in public rooms                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Gateway abuse                      | A gateway publishes only a fresh location-channel note tagged for the carrier's cell, from a depositor whose packet signature verifies, within a per-depositor rate. Every carried event is checked against its own signature, and a bridged row gives way to the signed radio copy                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Key compromise (session)           | Noise XX forward secrecy, so past sessions stay safe if a static key later leaks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Key compromise (DM history)        | Double Ratchet per-message keys seeded from the Noise exporter secret rather than the public transcript hash, so the chain is not derivable by observers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Malicious relay injecting messages | A relay cannot produce the sender's signature, and forwarding is separate from delivery                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Confused-deputy delivery           | Directed packets are relayed but rendered only by the addressee, so a relay never surfaces someone else's private content                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Group takeover                     | A group keeps the creator it was created with, and a state naming a different creator is refused even at a higher epoch. Enforced in two places, since a group state can either update or delete a group: the store pins it for every write, and `groupStateAction` pins it before the removal branch, which never reaches the store                                                                                                                                                                                                                                                                                                                                                                               |
-| Group eviction by a stranger       | A group ID travels in the clear on every group message so relays can carry it. Without the ordering above, anyone who saw one could craft a self-signed state naming themselves creator with a roster omitting the victim, and the victim's client would destroy its own key and drop the room. The creator pin is checked first                                                                                                                                                                                                                                                                                                                                                                                   |
-| Picked-up unlocked phone           | The optional app lock: the phone's own screen lock before anything shows, from launch and after the chosen time away. Sheets stand down beneath it, and nothing behind it counts as read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Hostile payment source             | Ecash is redeemed only from a mint the user added, before or when a token asks, and incoming proofs are DLEQ-verified before anything is stored; offline, a token reads as genuine only when every coin carries a witness that verifies                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Cashu double-spend                 | The mint enforces this with blind-signature tracking; the receiver redeems promptly, and on its own once the mint is reachable                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| Storage exhaustion                 | Received media shares a 100 MiB budget, oldest out first, and sent media is not counted, so anyone who announced once cannot fill the phone a file at a time                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Physical device seizure            | Panic wipe by triple-tap, with keys in the keychain, hardware-backed on modern devices. Attachments are swept on a schedule (General, Keep media for: 7 days by default, 14 or 30 by choice, with no unbounded option), so a stored photo does not outlive its conversation                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Cloud backup or phone transfer     | Nothing on either platform is backed up or moved by the OS, so a backup held by Apple or Google holds no history, contacts or keys. See [Data at rest](#data-at-rest)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Identity lifted by a transfer      | Started only after the OS confirms the owner. The old phone dials only an address on one of its own local subnets, and reaches only the phone whose code it scanned (Noise XX pinned to the key in the code, the token as prologue); nothing is advertised on the network. Both phones show six words from the handshake, and nothing freezes or installs until the person confirms them on the new phone, so a third phone that read the code and connected first is turned away. The old phone erases itself once the new phone commits. A transfer that ends unconfirmed freezes the old phone rather than let two run one identity. See [Moving to a new phone](#moving-to-a-new-phone)                        |
-| Screen surveillance                | Notification previews can be withheld (Settings, Security), since the system renders them on the lock screen. The app-switcher snapshot is covered on both platforms, hung off leaving the app rather than losing focus so a system dialog never raises it; Android needs API 33, leaving 26 to 32 exposed. Screenshots stay possible on purpose, and one taken inside a chat is announced to the other side rather than blocked, except on Android 13, where detecting one needs a media read permission Airhop does not hold                                                                                                                                                                                     |
+#### Identity and forgery
+
+| Threat                         | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Message forgery                | Ed25519 signature verified against the key bound to the claimed sender. A missing key or missing SIGNED flag is a failed check, never a skipped one                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| System-line spoofing           | A peer's `* … *` text renders as an action only when it is exactly the `/hug` or `/slap` template with the wire sender as actor and a single name as target. Anything else is a normal bubble under their name                                                                                                                                                                                                                                                                                                                                                                            |
+| Identity impersonation         | `peerID == SHA-256(noiseStaticPubKey)[0:16]`, enforced on announces and completed Noise sessions, so a peer ID cannot be claimed without its key                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Signing-key substitution       | Three tiers of trust, below                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Nostr key claim in an announce | The npub a peer names for itself is a forwarding address for that peer, nothing more: first claim stands, no claim folds a thread keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may. A card from a QR, a link or a pasted code is signed by the signing key it names, so its Nostr key cannot be swapped by whoever passes it on. An announced npub is written onto a saved contact only when a session proof or the contact's own key stands behind the announce. See [PROTOCOLS.md section 3.3](PROTOCOLS.md#nostr-keys-a-peer-names-for-itself) |
+| Capability downgrade           | Announced bits are a discovery hint and never authorize a change in how Airhop sends. Encrypted private media is selected only on an authenticated capability, and a DM attachment never falls back to cleartext, so nobody in radio range can force one into the clear                                                                                                                                                                                                                                                                                                                   |
+| Man-in-the-middle (session)    | Noise XX mutual authentication, with the authenticated static key required to derive the peer ID it claims                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+
+Signing keys come in three tiers, strongest first, for every signature check: a
+key proven inside a Noise session (payload `0x21`), then a saved contact's key
+(verified or not), then the first announce's TOFU pin. After a restart the
+registry is empty, and an announce whose key contradicts a saved contact's is
+refused whole, so the contact tier is the durable pin. A proof may correct a pin
+or an unverified contact's key an attacker won the race for, dropping prekey
+bundles taken under the wrong one and the Nostr key that came with it, and is
+refused against a verified contact's. No announce can overwrite a proven key,
+only an in-person QR scan re-pins a verified one, and stranger pins are not
+persisted.
+
+#### Replay and sessions
+
+| Threat                      | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Replay                      | Content-derived packet IDs, a deduplicator, and a ±2 minute freshness window on every packet at ingress, so stale packets are neither relayed nor acted on. A packet tagged `IS_RSR` is judged on the sync rules alone, fresh or not: TTL 0, from the peer bound to the link a request went to in the last 30 s, and a type sync serves within the age it serves it for (announces 60 s, public and group messages 6 h, board posts 7 days). Live voice and video frames are also refused once 30 s old |
+| Replayed session traffic    | A Noise or Double Ratchet packet that fails to decrypt is discarded and never tears down a session, so a genuine packet replayed after it has left the dedup window cannot evict working keys or spend the handshake budget                                                                                                                                                                                                                                                                             |
+| Handshake flood             | Inbound handshakes are rate-limited and pending ones expire ([Sessions: Noise XX](#sessions-noise-xx))                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Key compromise (session)    | Noise XX forward secrecy, so past sessions stay safe if a static key later leaks                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Key compromise (DM history) | Double Ratchet per-message keys seeded from the Noise exporter secret rather than the public transcript hash, so the chain is not derivable by observers                                                                                                                                                                                                                                                                                                                                                |
+
+#### Abuse of the mesh
+
+| Threat                   | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sync amplification       | `REQUEST_SYNC` is never relayed, and is answered only when it is the link peer's own: TTL 0, from the peer bound to that link, signed by it. It and every packet answering one ride at TTL 0, so a rejoining peer's catch-up cannot re-flood the mesh. Responses to one peer are capped at 8 per 30 s. Each kind of packet has its own store (public messages 1000, group 200, board 200, one announce per peer) and only accepted packets are kept, so forgeries neither evict real history nor get served |
+| Forged departure         | A LEAVE is checked against the signing key held for its sender before the relay decision, so an unverifiable one is neither acted on nor passed to nodes that may check less strictly. See [PROTOCOLS.md section 3.6](PROTOCOLS.md#36-leave-files-board-posts-and-voice-are-verified-before-they-are-relayed)                                                                                                                                                                                               |
+| Public spam              | bitchat's spam filter, ported with its limits: per sender 6 messages then one per 10 s, 1200 characters and 2 links a minute, and near-copies hidden whether one sender repeats a text or many identities spread it, with disguises folded away first. Runs on message time, so backfill is judged as it was sent. Local only: a hidden message is still relayed, and the user can switch it off                                                                                                            |
+| Sybil flooding           | TTL bounds propagation. The registry and radar are capped with oldest-first eviction that never drops a peer holding a real BLE link                                                                                                                                                                                                                                                                                                                                                                        |
+| Relay abuse              | A forged file, board post, voice frame or LEAVE is dropped before it is relayed; nothing addressed to this phone or sent under its own ID is relayed by it. A receiving card is shown only for a sender whose key is held, at most three at once, unnamed in public rooms                                                                                                                                                                                                                                   |
+| Confused-deputy delivery | Directed packets are relayed but rendered only by the addressee, so a relay never surfaces someone else's private content                                                                                                                                                                                                                                                                                                                                                                                   |
+| Storage exhaustion       | Received media shares a 100 MiB budget, oldest out first, and sent media is not counted, so anyone who announced once cannot fill the phone a file at a time                                                                                                                                                                                                                                                                                                                                                |
+| Traffic analysis (BLE)   | Private payloads (Noise, Double Ratchet and private channels) are encrypted and padded to fixed buckets, so their length says little about the message. Public traffic is plaintext by design, and headers are always in the clear (see [Out of scope](#out-of-scope))                                                                                                                                                                                                                                      |
+
+#### Relays and the internet
+
+| Threat                             | Countermeasure                                                                                                                                                                                                                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Traffic analysis (Nostr)           | NIP-17 gift-wrap hides sender, recipient and content from the relay; Tor hides the IP; geohash channels use per-cell keys, though posting links them ([Key pair](#key-pair))                                                                                                        |
+| Relay censorship                   | Several relays are queried in parallel, so any single relay failure is transparent                                                                                                                                                                                                  |
+| Malicious relay injecting messages | A relay cannot produce the sender's signature, and forwarding is separate from delivery                                                                                                                                                                                             |
+| Gateway abuse                      | A gateway publishes only a fresh location-channel note tagged for the carrier's cell, from a depositor whose packet signature verifies, within a per-depositor rate. Every carried event is checked against its own signature, and a bridged row gives way to the signed radio copy |
+
+#### Groups
+
+| Threat                       | Countermeasure                                                                                                                                                                                                                                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Group takeover               | A group keeps the creator it was created with, and a state naming a different creator is refused even at a higher epoch. Enforced in two places, since a group state can either update or delete a group: the store pins it for every write, and `groupStateAction` pins it before the removal branch, which never reaches the store |
+| Group eviction by a stranger | A group ID travels in the clear on every group message so relays can carry it. Without the ordering above, anyone who saw one could craft a self-signed state naming themselves creator with a roster omitting the victim, and the victim's client would destroy its own key and drop the room. The creator pin is checked first     |
+
+#### Payments
+
+| Threat                 | Countermeasure                                                                                                                                                                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hostile payment source | Ecash is redeemed only from a mint the user added, before or when a token asks, and incoming proofs are DLEQ-verified before anything is stored; offline, a token reads as genuine only when every coin carries a witness that verifies |
+| Cashu double-spend     | The mint enforces this with blind-signature tracking; the receiver redeems promptly, and on its own once the mint is reachable                                                                                                          |
+
+#### The device
+
+| Threat                         | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Picked-up unlocked phone       | The optional app lock: the phone's own screen lock before anything shows, from launch and after the chosen time away. Sheets stand down beneath it, and nothing behind it counts as read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Physical device seizure        | Panic wipe by triple-tap, with keys in the keychain, hardware-backed on modern devices. Attachments are swept on a schedule (General, Keep media for: 7 days by default, 14 or 30 by choice, with no unbounded option), so a stored photo does not outlive its conversation                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Screen surveillance            | Notification previews can be withheld (Settings, Security), since the system renders them on the lock screen. The app-switcher snapshot is covered on both platforms, hung off leaving the app rather than losing focus so a system dialog never raises it; Android needs API 33, leaving 26 to 32 exposed. Screenshots stay possible on purpose, and one taken inside a chat is announced to the other side rather than blocked, except on Android 13, where detecting one needs a media read permission Airhop does not hold                                                                                                                                                              |
+| Cloud backup or phone transfer | Nothing on either platform is backed up or moved by the OS, so a backup held by Apple or Google holds no history, contacts or keys. See [Data at rest](#data-at-rest)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Identity lifted by a transfer  | Started only after the OS confirms the owner. The old phone dials only an address on one of its own local subnets, and reaches only the phone whose code it scanned (Noise XX pinned to the key in the code, the token as prologue); nothing is advertised on the network. Both phones show six words from the handshake, and nothing freezes or installs until the person confirms them on the new phone, so a third phone that read the code and connected first is turned away. The old phone erases itself once the new phone commits. A transfer that ends unconfirmed freezes the old phone rather than let two run one identity. See [Moving to a new phone](#moving-to-a-new-phone) |
 
 ### Out of scope
 
+Known limits Airhop does not defend against:
+
 - **Physical proximity.** BLE mesh reveals that you are near certain peers.
+- **A stable peer ID.** It derives from the long-term Noise key and does not rotate, so the same device is linkable across sessions until the identity is regenerated. Per-cell geohash identities are unlinkable only while lurking ([Key pair](#key-pair)).
+- **Who you are talking to on the mesh.** Packet headers carry sender and recipient IDs in the clear, as bitchat's do.
+- **Traffic timing correlation.** An observer watching several BLE radios could infer communication patterns.
+- **Authorship of a broadcast, some of the time.** A packet this phone authored leaves with a TTL drawn from the three values at and below the relay ceiling for its class at this phone's degree: 5 to 7 when sparse, 4 to 6 at mid degree (5 to 7 for an urgent board post), 3 to 5 when dense; live voice and public files follow the fragment ceiling (5 to 7, or 3 to 5 dense). This covers channel messages, group messages, board posts, public files, and live voice with one draw per burst. Relays at the same degree emit at most one below the ceiling, so the lower two values look relayed and about a third of authored packets stay attributable. A dense originator whose neighbours are sparse starts up to two hops short of what they would carry. Announces and directed traffic keep 7.
+- **Courier mail linkability.** The courier recipient tag is keyed on the recipient's public Noise key, which every announce broadcasts, so anyone in radio range can compute a peer's tags for any day and follow their mail. Inherited from bitchat, which documents the same flaw. Fixing it needs a coordinated v2 tag. See [PROTOCOLS.md section 6.3](PROTOCOLS.md#63-recipient-tag-and-seal).
 - **A location you chose to send.** A location pin carries real coordinates. It is encrypted inside the recipient's Noise session, so no relay can read it, but the recipient holds it and can do what they like with it, including screenshotting it. Sent only on an explicit tap, to one contact, never automatically, never as a reply in kind, and never forwarded onward by the app.
-- **A stable peer ID.** It derives from the long-term Noise key and does not rotate, so the same device is linkable across sessions until the identity is regenerated. Per-cell geohash identities are unlinkable only while lurking: a post carries the mesh name, an in-place post goes over Bluetooth under the mesh key, and the default DM relays see the npub's and every joined cell's inbox on one connection ([Key pair](#key-pair)).
+- **Location inside a file sent unchanged.** JPEG and WebP photos and every picked or recorded video are always re-encoded, which drops their metadata, GPS included, and one the encoder cannot open is refused rather than sent as it is. A document, and a GIF or PNG small enough to fit, are sent byte for byte, with whatever location they hold.
 - **Attachment confidentiality in a public room.** A photo posted to `#bluetooth` is signed but not encrypted, exactly like the text beside it. A private attachment is sealed inside the recipient's Noise session ([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). Media stays restricted to `#bluetooth` and mesh DMs, and is never bridged.
 - **The fact that Tor is in use, on a direct connection.** The first hop then goes to a publicly listed relay and deep packet inspection sees it. A bridge closes this and is a setting rather than the default, because it costs speed. See [Bridges](#bridges).
-- **Location inside a file sent unchanged.** JPEG and WebP photos and every picked or recorded video are always re-encoded, which drops their metadata, GPS included, and one the encoder cannot open is refused rather than sent as it is. A document, and a GIF or PNG small enough to fit, are sent byte for byte, with whatever location they hold.
-- **Traffic timing correlation.** An observer watching several BLE radios could infer communication patterns.
-- **Courier mail linkability.** The courier recipient tag is keyed on the recipient's public Noise key, which every announce broadcasts, so anyone in radio range can compute a peer's tags for any day and follow their mail. Inherited from bitchat, which documents the same flaw. Fixing it needs a coordinated v2 tag. See [PROTOCOLS.md section 6.3](PROTOCOLS.md#63-recipient-tag-and-seal).
-- **Authorship of a broadcast, some of the time.** A packet this phone authored leaves with a TTL drawn from the three values at and below the relay ceiling for its class at this phone's degree: 5 to 7 when sparse, 4 to 6 at mid degree (5 to 7 for an urgent board post), 3 to 5 when dense; live voice and public files follow the fragment ceiling (5 to 7, or 3 to 5 dense). This covers channel messages, group messages, board posts, public files, and live voice with one draw per burst. Relays at the same degree emit at most one below the ceiling, so the lower two values look relayed and about a third of authored packets stay attributable. A dense originator whose neighbours are sparse starts up to two hops short of what they would carry. Announces and directed traffic keep 7.
-- **Who you are talking to on the mesh.** Packet headers carry sender and recipient IDs in the clear, as bitchat's do.
-- **A compromised OS.** All guarantees are void.
 - **Mint trust.** Cashu requires trusting the mint to honour redemption.
+- **A compromised OS.** All guarantees are void.
 
-### Not every packet is signed
-
-Noise handshake messages are unsigned, matching bitchat, because the peer may
-not hold this phone's signing key yet and the handshake authenticates itself.
-Messages inside a Noise session carry no redundant signature, since the session
-already authenticates them. A ratchet message is the exception: its header
-travels in the clear and steers the ratchet, so `DR_ENCRYPTED` is sent signed
-and the signature is checked before the ratchet is touched. Fragments are
-unsigned, since the reassembled packet is verified. Signatures are required
-where a claimed sender is otherwise unverifiable: announces, public and private
-channel messages, attachments, voice frames, board posts, sync requests, LEAVE,
-and gateway and bridge deposits.
-
-## 10. Localization
+## 12. Localization
 
 Airhop ships in 35 languages. Every user-facing string lives in one catalog per
 language under `src/i18n/locales/`, compiled into the bundle and byte-identical
 on every device. Working reference:
 [`.github/skills/i18n.md`](../../.github/skills/i18n.md).
 
-### Why this sits in the spec
+### Why it matters
 
 The app is scoped to blackouts, protests and disasters. The languages spoken
 there are Persian, Arabic, Urdu, Hindi, Bengali, Punjabi, Tamil, Indonesian,
@@ -1501,7 +1768,7 @@ silent: nothing looks broken, and the feature simply does not work.
 | Translation happens at display, never at storage | A `t()` result written into MMKV freezes in the language of the day it was stored. Chat rows, bell entries and wallet failures persist a key and its variables, and translate on render                                                                                                                                                                                                           |
 | A right-to-left switch waits for the next launch | React Native fixes layout direction at process start and iOS has no sanctioned self-restart, so the preference is stored and applied next launch. Both facts it depends on are read rather than assumed: `I18nManager.isRTL` for the direction in force, `frameLanguage` for the language it belongs to                                                                                           |
 | Every substituted value is bidi-isolated         | A placeholder holds text of unknown direction. Unisolated, the bidirectional algorithm resolves the punctuation around it against whichever way that text reads, so an Arabic name in an English sentence drags the comma to the wrong side. One wrap in `interpolate` covers every key. The isolates are display machinery, so text that is stored, shared or sent to a peer is stripped of them |
-| Word boundaries are Unicode, not ASCII           | A closing `[\s.,!?;:]` is the punctuation of a third of these languages, so "@name。" has to count as a mention or it passes no mute and raises no notification. Comparisons normalise to NFC, since two keyboards spell the same accented character differently                                                                                                                                  |
+| Word boundaries are Unicode, not ASCII           | A closing `[\s.,!?;:]` is the punctuation of a third of these languages, so "@name。" has to count as a mention or it passes no mute and raises no notification. Comparisons normalize to NFC, since two keyboards spell the same accented character differently                                                                                                                                  |
 | Case follows the app, alignment the text         | `textTransform` upper-cases with no locale on iOS and the device's on Android, so capitals go through `upperCase` in the reading language. A message aligns by its own first letter, since iOS aligns a paragraph running against the UI to its own start and Android to the layout's                                                                                                             |
 | One digit system, locale grouping                | Every number the app renders uses Latin digits, prose counts included, and `catalog.test.ts` forbids a catalog its own. Grouping still follows the locale, which is the half that helps: Hindi and Tamil group by lakh                                                                                                                                                                            |
 | Strings the OS renders stay where it reads them  | Passing them through the app would mean a native shim on both platforms for a permission dialog and a notification. `npm run i18n:native` holds them to the shipped set instead                                                                                                                                                                                                                   |
@@ -1530,8 +1797,8 @@ Activity for a language change while keeping the JS context alive.
 Picking a language explicitly pins the app and leaves the OS-rendered strings on
 the system value. Writing through to `LocaleManager.setApplicationLocales` would
 close that gap and is not done: it recreates the Activity underneath a live
-mesh, in-flight transfers and possibly live voice, for five notification
-strings.
+mesh, in-flight transfers and possibly live voice, for the notice's and the
+widget's few strings.
 
 ### What never gets translated
 
@@ -1540,7 +1807,7 @@ interop bug rather than a cosmetic one. The full list lives in the skill file,
 enforced by `catalog.test.ts` and the audit. The ones that matter here:
 
 - **The username word lists** (`src/utils/username.ts`). A generated name must resolve identically on every device, and in bitchat.
-- **The transmitted `/hug` and `/slap` text and the screenshot notice.** bitchat-ios recognises them by their English words. A received screenshot notice is stored as a keyed row, so each reader sees it in their own language.
+- **The transmitted `/hug` and `/slap` text and the screenshot notice.** bitchat-ios recognizes them by their English words. A received screenshot notice is stored as a keyed row, so each reader sees it in their own language.
 
 Terms of Service and Privacy Policy stay in English, with the reader chrome
 around them translated. English is the authoritative version.
@@ -1555,11 +1822,11 @@ Text is identical everywhere because it is compiled in. Three things are not:
 
 | Varies                                        | Handling                                                                                                                                                                                                                                                     |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `Intl` date and number output, per OS and OEM | Centralised in `src/utils/format.ts`, formatted in the app's language rather than the device's, with cached formatters and Latin digits throughout                                                                                                           |
+| `Intl` date and number output, per OS and OEM | Centralized in `src/utils/format.ts`, formatted in the app's language rather than the device's, with cached formatters and Latin digits throughout                                                                                                           |
 | Font glyph coverage for non-Latin scripts     | JetBrains Mono covers Latin, Greek and Cyrillic and none of the other scripts shipped, so the monospace face is reserved for machine data: a value from a formatter or a constant may use it, a value through a catalog key is prose                         |
 | Cached reverse-geocoded place names           | The OS geocoder answers in the device's language. Both native APIs accept a locale and `expo-location` exposes neither, and a native shim for a room-header label is not worth it, so `place-names-store.ts` keys its cache on that language and re-resolves |
 
-## 11. Codebase Layout
+## 13. Codebase Layout
 
 Anything that compiles to JS lives in `src/`. Anything that touches hardware
 lives in `android/` or `ios/`.
@@ -1572,7 +1839,7 @@ lives in `android/` or `ios/`.
 | `native/iptproxy/` | The obfs4, Snowflake and WebTunnel transports in Go, and the pinned build that produces them |
 | `src/app/`         | The root component and the four-tab state machine                                            |
 | `src/bridge/`      | Native module specs, the only place native and TypeScript meet                               |
-| `src/core/`        | The protocol in pure TypeScript: crypto, mesh, nostr, payments, routing, move                |
+| `src/core/`        | The protocol in pure TypeScript: crypto, encoding, mesh, nostr, payments, router, spam, move |
 | `src/services/`    | Long-lived runtime wiring, chiefly the mesh service that owns the radios                     |
 | `src/features/`    | Screens and screen-level logic                                                               |
 | `src/store/`       | Zustand state with MMKV persistence                                                          |
@@ -1580,61 +1847,15 @@ lives in `android/` or `ios/`.
 | `src/platform/`    | Thin wrappers over OS APIs: permissions, haptics, battery settings                           |
 | `src/utils/`       | Stateless helpers, free of side effects                                                      |
 | `src/i18n/`        | Translation runtime, plural rules and every bundled catalog                                  |
-| `src/data/`        | Generated tables: the relay directory and the built-in Tor bridge lines                      |
+| `src/data/`        | Generated and static tables: relays, Tor bridges, licenses, releases, globe geometry         |
 | `src/__tests__/`   | Whole-app suites: the device harness, lifecycle, and the simulator                           |
-| `assets/data/`     | The relay list the directory is generated from, refreshed by CI                              |
-
-### System overview
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                        SCREENS  (src/features, src/ui)                   │
-│  Chats · DMs · Location channels · Groups · Board · Wallet · Profile     │
-└────────────────────────────────────┬─────────────────────────────────────┘
-                                     │ Zustand stores (src/store, MMKV)
-┌────────────────────────────────────▼─────────────────────────────────────┐
-│                     MESH SERVICE  (src/services)                         │
-│  sendDm ladder: Double Ratchet over a link -> Noise session over the     │
-│  mesh -> Nostr gift wrap -> courier; the outbox holds it until a receipt │
-│  Also: wallet-service (the only mint caller), tor-routing, bridge,       │
-│  geohash channels, device transfer                                       │
-└──────────┬─────────────────────────────────────────────┬─────────────────┘
-           │                                             │
-┌──────────▼───────────────────────────┐   ┌─────────────▼─────────────────┐
-│  PROTOCOL CORE  (src/core, pure TS)  │   │  NOSTR  (src/core/nostr)      │
-│  crypto: Noise XX / X, Double        │   │  NIP-17/59 gift wrap,         │
-│    Ratchet, Ed25519, @noble only     │   │  bitchat nip44-v2 envelope    │
-│  mesh/wire: packet codec, TLVs       │   │  NostrClient: 10 nearest geo  │
-│  mesh/routing: FloodRouter, dedup,   │   │    relays + up to 5 custom    │
-│    fragments, source routes          │   │    per cell; up to 5 for DMs  │
-│  mesh/sync: GossipSync (GCS)         │   │  GeoRelayDirectory: ~300      │
-│  mesh/courier, discovery, rooms,     │   │    relays, bundled            │
-│    voice; payments (Cashu)           │   │  Through Arti when Tor is on  │
-│  mesh/links: LinkRegistry picks one  │   └───────────────────────────────┘
-│    link: Wi-Fi Aware > LAN > BLE     │
-└──────────┬───────────────────────────┘
-           │ TurboModules (src/bridge), raw bytes only
-┌──────────▼───────────────────────────────────────────────────────────────┐
-│                  NATIVE MODULES  (android/, ios/, native/)               │
-│  AirhopBLEModule   CoreBluetooth / BluetoothGatt                         │
-│  AirhopLANModule   Network framework / NsdManager (mDNS)                 │
-│  AirhopWiFiModule  Wi-Fi Aware (Android API 29+, iOS 26+)                │
-│  AirhopVoiceModule AAC capture and playback                              │
-│  AirhopVideoModule H.264 camera, surface decode, MP4 record, transcode   │
-│  AirhopTorModule   Arti (Rust), obfs4, Snowflake, WebTunnel (Go)         │
-│  AirhopAppModule   restart, boot start, ring alert, APK share            │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
-Dependencies point down only: screens read stores and call the mesh service,
-the service drives the core and the bridge, and the core imports nothing
-native. The native layer moves bytes and makes no protocol or routing decision.
+| `assets/data/`     | The relay list the directory is generated from, refreshed by CI, and the globe's geometry    |
 
 ### Inside the mesh engine
 
 `src/core/mesh/` is the one subsystem large enough to be grouped further, into
-`wire/`, `routing/`, `links/`, `sync/`, `discovery/`, `rooms/`, `courier/` and
-`voice/`. Two of them carry rules worth stating here:
+`wire/`, `routing/`, `links/`, `sync/`, `discovery/`, `rooms/`, `courier/`,
+`voice/` and `video/`. Two of them carry rules worth stating here:
 
 - `wire/` is the byte layout [PROTOCOLS.md](PROTOCOLS.md) describes, so a diff
   that changes the wire format shows up under one directory.
@@ -1646,11 +1867,6 @@ native. The native layer moves bytes and makes no protocol or routing decision.
 
 ### Module boundaries
 
-A module specifier that leaves its top-level layer is written as a path alias
-(`@core/mesh/wire/packet-codec`); one that stays inside the layer stays
-relative. Aliases live in `tsconfig.json` and are mirrored in `package.json`
-for jest.
-
 `src/core/` imports nothing native, so the whole protocol is testable in CI
 without a phone: the wire format, the handshakes and the routing. The radios
 stay unproven until a field test.
@@ -1658,6 +1874,11 @@ stay unproven until a field test.
 The native layer exposes an identical TypeScript interface on both platforms, so
 a fix in gossip sync fixes iOS and Android at once and protocol changes ship
 together.
+
+A module specifier that leaves its top-level layer is written as a path alias
+(`@core/mesh/wire/packet-codec`); one that stays inside the layer stays
+relative. Aliases live in `tsconfig.json` and are mirrored in `package.json`
+for jest.
 
 ### Builds and CI
 
@@ -1671,24 +1892,40 @@ the APK and AAB unsigned in one job, with no secrets, and signs them in a second
 job that checks out nothing and runs only the SDK's build tools, refusing any
 signer but the release certificate pinned in the workflow.
 
-iOS is automated up to signing. `ci.yml` compiles an unsigned Release build on a
-macOS runner, so native and release-only breakage fails the same pull request
-Android does. Distribution credentials do not exist, so the `ios-release` job in
-`release.yml` is a placeholder and the shipped `.ipa` is produced by hand from
-Xcode.
+iOS is automated up to review submission. `ci.yml` compiles an unsigned Release
+build on a macOS runner, so native and release-only breakage fails the same pull
+request Android does. The `ios-release` job in `release.yml` signs with the
+distribution certificate, uploads to TestFlight through fastlane and pushes the
+listing; submitting for review is done by hand.
 
 Neither platform uses EAS: its main draws are prebuild and managed credentials,
 and this project does not run prebuild.
 
+### Building the Tor client
+
+The Tor client's binaries are committed, but built here rather than vendored, on
+both platforms. `native/arti/build-in-container.sh` produces the Android
+libraries inside a pinned container (Rust, NDK, Debian snapshot and `Cargo.lock`
+all fixed by `TOOLCHAIN.env`), and `native/arti/build-apple.sh` produces the
+xcframework on macOS.
+
+`scripts/verify-vendored.js` hashes every committed binary, and the `SHA256SUMS`
+files the build scripts write, against `vendor.lock.json`, so a binary cannot
+change without a recorded rebuild, and it refuses an executable or archive
+anywhere else in the tree. That does not prove a binary corresponds to its
+source; rebuilding it does. The Android container build is reproducible (run it
+twice from clean and `SHA256SUMS.android` must not move), and `build-native.yml`
+rebuilds both platforms in CI.
+
 ### Toolchain versions
 
 Language and build-tool versions, separate from the npm dependencies in
-`package.json`. Some are ours to pick; the rest arrive with React Native or
+`package.json`. Some are free to pick; the rest arrive with React Native or
 Expo and move only when those do.
 
 Android:
 
-| Tool                  | Version         | Pinned in                                    | Ours to bump                 |
+| Tool                  | Version         | Pinned in                                    | Free to bump                 |
 | --------------------- | --------------- | -------------------------------------------- | ---------------------------- |
 | JDK (Temurin)         | `21`            | `setup-android/action.yml`                   | Yes, within what AGP accepts |
 | Gradle                | `9.4.1`         | `android/gradle/wrapper/`, checksum included | Yes                          |
@@ -1705,7 +1942,7 @@ switches, so that bump is a migration.
 
 Apple:
 
-| Tool                | Version  | Pinned in                            | Ours to bump                     |
+| Tool                | Version  | Pinned in                            | Free to bump                     |
 | ------------------- | -------- | ------------------------------------ | -------------------------------- |
 | Swift language mode | `5.0`    | `SWIFT_VERSION` in `project.pbxproj` | Yes, but mode 6 is a migration   |
 | swift-tools-version | `5.9`    | `ios/Package.swift`                  | Yes, in step with the mode       |
@@ -1714,15 +1951,15 @@ Apple:
 
 The Tor client and its transports, all in `native/arti/TOOLCHAIN.env`:
 
-| Tool        | Version         | Note                                              |
-| ----------- | --------------- | ------------------------------------------------- |
-| Rust        | `1.98.1`        |                                                   |
-| Arti client | `0.47.0`        |                                                   |
-| cbindgen    | `0.29.4`        | Generates `arti.h`                                |
-| Go          | `1.26.9`        |                                                   |
-| IPtProxy    | `5.7.0`         | Release and commit, so a tag cannot move under us |
-| gomobile    | pinned commit   | Upstream would otherwise resolve `@latest`        |
-| NDK         | `28.2.13676358` | r28 aligns to the 16 KiB Play requires            |
+| Tool        | Version         | Note                                                     |
+| ----------- | --------------- | -------------------------------------------------------- |
+| Rust        | `1.98.1`        |                                                          |
+| Arti client | `0.47.0`        |                                                          |
+| cbindgen    | `0.29.4`        | Generates `arti.h`                                       |
+| Go          | `1.26.9`        |                                                          |
+| IPtProxy    | `5.7.0`         | Release and commit, so a tag cannot move under the build |
+| gomobile    | pinned commit   | Upstream would otherwise resolve `@latest`               |
+| NDK         | `28.2.13676358` | r28 aligns to the 16 KiB Play requires                   |
 
 One value, several files. Each carries a comment saying so, and a mismatch fails
 a build rather than drifting quietly:
@@ -1739,7 +1976,7 @@ Changing anything under `native/` means rebuilding the committed binaries and
 re-recording their hashes in the same commit (`node scripts/verify-vendored.js
 --write`); see `native/README.md`.
 
-## 12. Native Modules
+## 14. Native Modules
 
 Hardware requires native code. Routing, crypto, Nostr and payments do not, and
 native code is harder to test, keep consistent across platforms and reason about.
@@ -1748,7 +1985,7 @@ So there is one module per hardware or OS capability and no more.
 | Module                    | Platform | Capability                                                                                                                                                                                                                    |
 | ------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AirhopBLEModule`         | Both     | BLE GATT Peripheral and Central, radio state, power mode                                                                                                                                                                      |
-| `AirhopVoiceModule`       | Both     | AAC-LC capture and playback for voice notes and PTT                                                                                                                                                                           |
+| `AirhopVoiceModule`       | Both     | AAC-LC capture and playback for live push-to-talk; voice notes record through `expo-audio`                                                                                                                                    |
 | `AirhopVideoModule`       | Both     | Live video's camera and H.264 encoder, decoding onto a native surface, the MP4 a stream is recorded into, and re-encoding a video to the trimmed part and a smaller size before it is sent, with the trimmer's preview frames |
 | `AirhopWiFiModule`        | Both     | Wi-Fi Aware same-platform fast path                                                                                                                                                                                           |
 | `AirhopLANModule`         | Both     | mDNS discovery, its TCP links, and the transfer socket                                                                                                                                                                        |
@@ -1771,7 +2008,7 @@ the same surface. Bytes cross base64-encoded, the only representation both
 runtimes agree on safely. The full per-module contract is in
 [`.github/skills/native-boundary.md`](../../.github/skills/native-boundary.md).
 
-`src/bridge/NativeAirhopBLE.ts` is the largest, at ten methods:
+`src/bridge/NativeAirhopBLE.ts` has ten methods:
 
 1. `startAdvertising` / `stopAdvertising`: GATT Peripheral
 2. `startScanning` / `stopScanning`: GATT Central. Stopping the scan also disconnects every link this phone dialled, pending dials included, as bitchat-ios does when it stops, so stopping the mesh leaves no central link up to carry a neighbour's traffic, or a new identity's announce after a wipe. Duty cycling and power changes keep their links; Invisible only stops advertising
@@ -1781,7 +2018,7 @@ runtimes agree on safely. The full per-module contract is in
 6. `requestEnableBluetooth` / `openLocationSettings`: one-tap fixes for the Mesh banner
 7. `setBackgroundServiceEnabled`: hold the process up, independent of advertising
 
-What that service's notice says is not a radio's business. `AirhopAppModule`
+What the foreground service's notice says is not a radio's business. `AirhopAppModule`
 takes it in `setMeshSnapshot`, one reading of the reachable count, whether the
 mesh runs, whether Bluetooth is off, and when. The notice and the home screen
 widget on both platforms draw it, and `clearMeshSnapshot` puts them back for
@@ -1791,8 +2028,8 @@ the background, and the widget retires a reading after an hour rather than
 Android's 15 minutes. On Android an alarm redraws the widget when its reading
 turns stale, so a killed process cannot leave an old count up.
 
-Nothing about Tor is asked of it. `AirhopTorModule` owns that and answers
-directly; a radio module reporting on Tor would be a boundary violation.
+Nothing about Tor is asked of the BLE module. `AirhopTorModule` owns that and
+answers directly; a radio module reporting on Tor would be a boundary violation.
 
 Native calls back with eight events: `packetReceived`, `linkConnected`,
 `linkDisconnected`, `rssiUpdated`, `adapterStateChanged`, `powerStateChanged`,
@@ -1829,81 +2066,7 @@ reaches the transport.
 Anything richer would put protocol knowledge on the native side, which this
 design exists to prevent.
 
-### Background execution
-
-| Platform | Mechanism                                           | Result                                             |
-| -------- | --------------------------------------------------- | -------------------------------------------------- |
-| iOS      | `UIBackgroundModes: bluetooth-central`              | Receives BLE data while backgrounded               |
-| iOS      | `UIBackgroundModes: bluetooth-peripheral`           | Keeps advertising, though not visibly to Android   |
-| iOS      | `CBCentralManagerOptionRestoreIdentifierKey`        | Relaunches the app on a BLE event after suspension |
-| Android  | `AirhopForegroundService` (persistent notification) | Survives Doze and battery optimization             |
-| Android  | `Airhop.KeepAlive` headless JS task                 | Keeps JS timers running while that service runs    |
-| Android  | `FOREGROUND_SERVICE_CONNECTED_DEVICE`               | Required for that service on Android 14+           |
-| Android  | `neverForLocation` on `BLUETOOTH_SCAN`              | Delivers scan results without a location grant     |
-
-Under the iOS scene life cycle launch options are always nil, so the app
-delegate creates the restorable managers on every launch once Bluetooth is
-authorized, and `willRestoreState` marks a Bluetooth relaunch. iOS may relaunch
-without a scene, so that signal starts React Native in a view no window holds
-yet, which the scene adopts when the person opens the app.
-
-React Native pauses JS timers on Android once no Activity is resumed, unless
-a headless JS task is running. The mesh is timer-driven (announces, relay
-jitter, gossip sync, the throttled chat write, Nostr's inbound queue), so
-`AirhopBLEModule` holds one open-ended task for exactly as long as the
-foreground service runs. Without it a backgrounded phone would still receive
-and notify, but stop announcing, relaying and saving.
-
-The service belongs to the mesh, not to Bluetooth (`src/services/radio-controller.ts`).
-It runs while the background preference allows and something local has work:
-Bluetooth scanning, LAN up, or Wi-Fi Aware running. It also holds through what
-the OS hands back unprompted (Bluetooth or location toggled off, airplane mode,
-Aware withdrawn by doze or battery saver), since only a living process can
-resume. A refused permission or missing hardware releases it. The
-`connectedDevice` type is granted against `CHANGE_WIFI_STATE` too, so it starts
-with Bluetooth refused.
-
-Its notice shows how many peers are in range
-(`src/services/background-notice.ts`), pushed once a burst settles, since
-Android drops faster updates, and re-posted only while it still shows: one
-swiped away on Android 14+ stays away until the service next starts. It has a
-channel of its own, so Settings opens that channel's system page to quiet or
-hide it while message alerts carry on.
-
-With background running off, leaving the screen stands down Bluetooth, Wi-Fi
-Aware and LAN, which would otherwise advertise a frozen phone. Auto-start is
-synced to native as auto-start and background running together.
-
-The scan flag is what makes the rest deliver. Android treats a BLE scan as a
-location access unless the manifest says otherwise, and an app counts as
-foreground for location only with a visible activity or a `location`-typed
-foreground service. A `connectedDevice` service does not qualify, so without the
-flag a backgrounded phone would hold its process up, keep its notification, and
-be handed no scan results.
-
-bitchat solves this with `ACCESS_BACKGROUND_LOCATION` and a `location` service
-type. Airhop asserts `neverForLocation` instead, which is accurate here: a scan
-result is read for its service UUID, its 8-byte peer ID and its RSSI, none of
-which is a position. From API 31 that removes the coupling entirely. API 26 to 30
-keeps it, since the flag does not exist there; `getRadioState` reports which
-regime applies through `locationRequiredForScan`, read only by `blockerFor`.
-
-Location is still requested on every launch until it is granted, after the mesh
-has started and before notifications, for the location channels only. Bluetooth
-and the mesh never wait on it. A denial leaves the location channels
-Bluetooth-only, and a "Location off" banner on the Mesh tab and inside a
-location channel says so, each with Turn on (`src/services/turn-on-location.ts`):
-it asks again while the OS still will, and otherwise points to Settings.
-
-A backgrounded iPhone is not discoverable from Android. Once the app leaves the
-foreground, CoreBluetooth moves the service UUID into the advertisement's
-overflow area, where only another iOS device scanning for that exact UUID can
-see it. iPhone-to-iPhone still works, iPhone-to-Android discovery stops until
-the app is reopened, and an already connected link keeps carrying traffic.
-Android has no equivalent restriction, since the foreground service keeps it
-advertising normally.
-
-## 13. Decision Log
+## 15. Decision Log
 
 ### Nostr over Matrix, XMPP or Signal
 

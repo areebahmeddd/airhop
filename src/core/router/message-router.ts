@@ -1,7 +1,7 @@
 // Message router: the peer registry and the Noise-sealed DM send, with Nostr
 // and courier fallbacks for when no session reaches the peer. The full DM
 // ladder (Double Ratchet first, then this, then the outbox) lives in
-// MeshService.trySendDm; ARCHITECTURE.md section 4 describes it.
+// MeshService.trySendDm; ARCHITECTURE.md section 6 describes it.
 //
 // The router does not own a network connection. BLE and Courier are injected
 // as plain callbacks. The optional Nostr and WiFi send functions are injected at

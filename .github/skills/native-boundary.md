@@ -9,7 +9,7 @@ description: >
 
 # Native Boundary
 
-What Swift and Kotlin may do, what they must leave to TypeScript, and the shape every native contract takes. The module inventory and background execution are in [ARCHITECTURE.md section 12](../../docs/spec/ARCHITECTURE.md#12-native-modules).
+What Swift and Kotlin may do, what they must leave to TypeScript, and the shape every native contract takes. The module inventory is in [ARCHITECTURE.md section 14](../../docs/spec/ARCHITECTURE.md#14-native-modules), and background execution in [section 4](../../docs/spec/ARCHITECTURE.md#4-running-in-the-background).
 
 ## Key Files
 

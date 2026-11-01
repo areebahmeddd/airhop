@@ -229,7 +229,7 @@ Private communication should be understandable, not merely trusted. v2.0.0 redes
 
 - **Probability:** High. iOS suspends background apps aggressively.
 - **Impact:** Once Airhop leaves the foreground, CoreBluetooth moves its service UUID into the advertisement's overflow area, so Android stops discovering the iPhone until the app is reopened. Links already open keep carrying traffic, and iPhone-to-iPhone discovery continues.
-- **Mitigation:** State restoration relaunches the app on a BLE event, the LAN transport carries the mesh on a shared network, and the limitation is documented rather than hidden ([ARCHITECTURE.md section 12](../spec/ARCHITECTURE.md#background-execution)).
+- **Mitigation:** State restoration relaunches the app on a BLE event, the LAN transport carries the mesh on a shared network, and the limitation is documented rather than hidden ([ARCHITECTURE.md section 4](../spec/ARCHITECTURE.md#background-execution)).
 
 ### Risk 2: Android BLE and Battery Managers
 

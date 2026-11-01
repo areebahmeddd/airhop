@@ -78,7 +78,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md)**: Nostr private direct messages, wrapped in gift wrap so relays see neither sender, recipient nor content.
 
-**[NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md)**: Relay-managed groups. Not used, because it puts membership enforcement on a relay ([ARCHITECTURE.md section 6](../spec/ARCHITECTURE.md#nip-29-was-not-used)).
+**[NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md)**: Relay-managed groups. Not used, because it puts membership enforcement on a relay ([ARCHITECTURE.md section 7](../spec/ARCHITECTURE.md#nip-29-was-not-used)).
 
 **[NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md)**: Nostr's versioned encryption standard: ChaCha20 with an HMAC-SHA256 tag. bitchat's variant, which Airhop implements byte for byte, uses XChaCha20-Poly1305 instead.
 

@@ -35,7 +35,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 
 ### v0.5.0: Foundation
 
-- [x] Expo bare workflow, TypeScript strict, Jest over `src/core/`, folder layout per [ARCHITECTURE.md section 11](../spec/ARCHITECTURE.md#11-codebase-layout)
+- [x] Expo bare workflow, TypeScript strict, Jest over `src/core/`, folder layout per [ARCHITECTURE.md section 13](../spec/ARCHITECTURE.md#13-codebase-layout)
 - [x] `AirhopBLEModule`: dual-role GATT on both platforms (`CBPeripheralManager` + `CBCentralManager`, `BluetoothGattServer` + `BluetoothLeScanner`), exposed through `src/bridge/NativeAirhopBLE.ts`
 - [x] `AirhopForegroundService.kt` (`connectedDevice` type), started with the mesh, so the process, BLE and the Nostr socket survive backgrounding
 - [x] `src/core/mesh/wire/packet-codec.ts`: binary encode and decode, matching [PROTOCOLS.md](../spec/PROTOCOLS.md#2-packet-frame-layout) byte for byte
