@@ -1,12 +1,11 @@
 // AirhopForegroundService: keeps the BLE mesh alive when the app is backgrounded.
 //
-// Android aggressively terminates background processes to save battery. A
-// foreground service with a persistent notification is the only reliable way to
-// keep BluetoothLeScanner and BluetoothGattServer active while the app is not
+// A foreground service with a persistent notification is the only reliable way
+// to keep BluetoothLeScanner and BluetoothGattServer active while the app is not
 // in the foreground.
 //
-// The service itself is intentionally thin - it only manages the notification
-// and the service lifecycle. BLE logic remains in AirhopBLEModule.
+// Thin on purpose: it only manages the notification and the service lifecycle.
+// BLE logic remains in AirhopBLEModule.
 package org.onemindlabs.airhop.service
 
 import android.app.ForegroundServiceStartNotAllowedException
@@ -53,13 +52,11 @@ class AirhopForegroundService : Service() {
     // in the manifest, and it must be one the app currently holds a permission
     // for. ServiceCompat handles the version split.
     //
-    // The catch is not defensive padding: startForegroundService() can succeed
-    // and this call still throw a moment later, when the app has slipped into
-    // the background in between (Android 12+) or lost the Bluetooth permission
-    // the connectedDevice type is granted against. That throw would take the
-    // whole app down for something that is only ever an optimisation - the mesh
-    // runs fine in the foreground either way - so it is caught and the service
-    // simply stands down.
+    // startForegroundService() can succeed and this call still throw a moment
+    // later, when the app has slipped into the background in between (Android
+    // 12+) or lost the Bluetooth permission the connectedDevice type is granted
+    // against. The mesh runs fine in the foreground either way, so the service
+    // stands down rather than take the whole app with it.
     private fun promoteToForeground() {
         try {
             val shown = reading
@@ -98,10 +95,9 @@ class AirhopForegroundService : Service() {
         if (intent?.action == ACTION_STOP) {
             // Hand the shutdown to JS when there is a JS to hand it to, so the
             // mesh comes down the same way the in-app Status picker brings it
-            // down (radios, relays, presence). Its stopAdvertising() call ends
-            // up back here and stops this service - but we stop unconditionally
-            // anyway: the notification has to disappear the moment it is
-            // tapped, whether or not anything answered.
+            // down (radios, relays, presence). Stopped here unconditionally as
+            // well: the notification has to disappear the moment it is tapped,
+            // whether or not anything answered.
             AirhopBLEModule.requestMeshStop()
             detach()
             ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
@@ -112,8 +108,8 @@ class AirhopForegroundService : Service() {
         // the running JS runtime: it holds the process up so BLE and the relay
         // socket survive backgrounding. If the OS kills the process, letting
         // Android resurrect the service alone would put a "mesh active"
-        // notification on screen with no mesh behind it - which is exactly the
-        // state that leaves force-stop as the only way out.
+        // notification on screen with no mesh behind it, leaving force-stop as
+        // the only way out.
         return START_NOT_STICKY
     }
 
@@ -155,7 +151,7 @@ class AirhopForegroundService : Service() {
         synchronized(lock) { if (running === this) running = null }
     }
 
-    // MARK: - Notification
+    // ---- Notification ----
 
     private fun buildNotification(shown: Reading): Notification {
         val launchIntent =
@@ -171,8 +167,7 @@ class AirhopForegroundService : Service() {
             )
 
         // An ongoing notification the user cannot dismiss needs a way out that
-        // isn't force-stop. Without this the only exits are Settings or killing
-        // the app, and neither is something a person should have to discover.
+        // isn't force-stop or Settings.
         val stopIntent =
             PendingIntent.getService(
                 this,

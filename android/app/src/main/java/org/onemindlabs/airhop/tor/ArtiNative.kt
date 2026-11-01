@@ -126,9 +126,9 @@ object ArtiNative {
 
     @JvmStatic fun stop(): Int = if (isAvailable) nativeStop() else ERR_NOT_RUNNING
 
-    // Dormancy, not a stop, for the app leaving the foreground. Android
-    // keeps the process alive through the foreground service, so without this a
-    // backgrounded Airhop refreshes a consensus all day on a battery.
+    // Dormancy, not a stop, for the app leaving the foreground. Android keeps the
+    // process alive through the foreground service, so without this a backgrounded
+    // Airhop refreshes a consensus all day on a battery.
     @JvmStatic
     fun setDormant(dormant: Boolean): Int =
         if (isAvailable) nativeSetDormant(dormant) else ERR_NOT_RUNNING

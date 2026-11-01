@@ -1,12 +1,3 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in /usr/local/Cellar/android-sdk/24.3.3/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
-
 # react-native-reanimated
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
@@ -38,13 +29,11 @@
 
 # Drop debug logging from release builds.
 #
-# Airhop modules log only at i/w/e; d/v logs come from bundled libraries like RN, Expo, Fresco.
-# This rule prevents their d/v logs from filling the shared buffer on release devices.
-# Minification alone doesn't remove Log calls; this applies only to the optimizing ProGuard config.
-# Calls are removed, though some string-building/concatenation may remain and cost CPU.
+# Nearly all d/v logs come from bundled libraries (React Native, Expo, Fresco),
+# and they would otherwise fill the shared buffer on release devices. Minification
+# alone keeps Log calls; this needs the optimizing ProGuard config. The calls go,
+# though string building around them may remain.
 -assumenosideeffects class android.util.Log {
     public static int d(...);
     public static int v(...);
 }
-
-# Add any project specific keep options here:

@@ -17,8 +17,9 @@
 // a mic grabbed by a phone call can never stall the JS thread or the UI.
 //
 // Events emitted to TypeScript:
-//   AirhopVoice.frame         { dataBase64 }
-//   AirhopVoice.captureError  { message }
+//   AirhopVoice.frame          { dataBase64, level }
+//   AirhopVoice.playbackLevel  { level }
+//   AirhopVoice.captureError   { message }
 package org.onemindlabs.airhop.voice
 
 import android.content.Context
@@ -48,7 +49,6 @@ import java.util.concurrent.atomic.AtomicInteger
 
 private const val TAG = "AirhopVoiceModule"
 
-// Events emitted to TypeScript.
 private const val EVT_FRAME = "AirhopVoice.frame"
 private const val EVT_CAPTURE_ERROR = "AirhopVoice.captureError"
 private const val EVT_PLAYBACK_LEVEL = "AirhopVoice.playbackLevel"
@@ -141,7 +141,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
 
     override fun getName(): String = "AirhopVoice"
 
-    // ---- Capture state -------------------------------------------------------
+    // ---- Capture state ----
 
     private val capturing = AtomicBoolean(false)
 
@@ -179,13 +179,13 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     // describes. See rmsLevel.
     @Volatile private var captureLevel = 0.0
 
-    // ---- Playback state ------------------------------------------------------
+    // ---- Playback state ----
 
     private val playback = PlaybackBursts(MAX_QUEUED_FRAMES)
 
     private var listenerCount = 0
 
-    // ---- Audio focus ---------------------------------------------------------
+    // ---- Audio focus ----
     //
     // Transient and may-duck for the length of a burst, either way round: music
     // dips under a talker rather than stopping, and a call taking focus is heard
@@ -221,7 +221,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         runCatching { audioManager?.abandonAudioFocusRequest(request) }
     }
 
-    // ---- Capture -------------------------------------------------------------
+    // ---- Capture ----
 
     @ReactMethod
     fun startCapture(promise: Promise) {
@@ -444,7 +444,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Playback ------------------------------------------------------------
+    // ---- Playback ----
 
     @ReactMethod
     fun startPlayback(promise: Promise) {
@@ -636,7 +636,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Lifecycle -----------------------------------------------------------
+    // ---- Lifecycle ----
 
     override fun invalidate() {
         captureGeneration.incrementAndGet()
@@ -655,7 +655,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         listenerCount = maxOf(0, listenerCount - count)
     }
 
-    // ---- Events --------------------------------------------------------------
+    // ---- Events ----
 
     private fun emitFrame(frame: ByteArray) {
         emitEvent(

@@ -2,8 +2,8 @@
 // and the scaler that rotates it upright, centre-crops it to the stream's 3:4
 // and downsamples it into the encoder's input image.
 //
-// Ported from bitchat-android's YuvFrames, which is public domain. Index maps
-// are cached per source geometry, so the steady state is one gather per pixel.
+// Ported from bitchat-android's YuvFrames. Index maps are cached per source
+// geometry, so the steady state is one gather per pixel.
 package org.onemindlabs.airhop.video
 
 import android.media.Image

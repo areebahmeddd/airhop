@@ -84,7 +84,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
 
     private fun dataDir(): File = File(reactContext.filesDir, DATA_DIR)
 
-    // MARK: - JS-callable methods
+    // ---- JS-callable methods ----
 
     // Resolves once startup has been initiated, not once Tor is usable; use
     // awaitTorReady for that.
@@ -203,10 +203,8 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         promise.resolve(null)
     }
 
-    // Dormancy, not a stop. The foreground service keeps the process
-    // alive, so without this a backgrounded Airhop refreshes a consensus all
-    // day on a battery. A stop would drop the guards and cost a fresh bootstrap
-    // on every return.
+    // Dormancy (see ArtiNative.setDormant), not a stop, which would drop the
+    // guards and cost a fresh bootstrap on every return.
     @ReactMethod
     fun setAppForeground(foreground: Boolean, promise: Promise) {
         worker.execute {
@@ -263,15 +261,15 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         listenerCount = maxOf(0, listenerCount - count.toInt())
     }
 
-    // MARK: - Status reporting
+    // ---- Status reporting ----
 
     private fun statusMap(): WritableNativeMap {
         val status = ArtiNative.status()
         return WritableNativeMap().apply {
             putBoolean("isReady", status.ready)
-            // Running, not yet carrying traffic, and not stuck. Blocked is
-            // not "starting": the banner has to be able to say the
-            // network refused rather than spinning forever.
+            // Running, not yet carrying traffic, and not stuck. Blocked is not
+            // "starting": the banner has to be able to say the network refused
+            // rather than spinning forever.
             putBoolean("isStarting", status.running && !status.ready && !status.blocked)
             // Matches iOS: the port is reported only once it is usable, so a
             // caller cannot read a port out of a status and dial into a circuit

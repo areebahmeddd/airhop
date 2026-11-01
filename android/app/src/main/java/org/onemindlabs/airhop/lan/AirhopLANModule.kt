@@ -1,5 +1,3 @@
-package org.onemindlabs.airhop.lan
-
 // The LAN transport: mDNS discovery over ordinary TCP.
 //
 // The only transport that reaches an iPhone from an Android phone over
@@ -21,6 +19,7 @@ package org.onemindlabs.airhop.lan
 // the same framing, heartbeat and read loop, its own listener and events, and
 // no mDNS. Each link knows which socket it belongs to, so stopLAN never cuts a
 // transfer and neither can write to the other's connections.
+package org.onemindlabs.airhop.lan
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -48,6 +47,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.Inet4Address
 import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
@@ -236,7 +236,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     private var resolvingName: String? = null
     private val resolveLock = Any()
 
-    // ---- Lifecycle -----------------------------------------------------------
+    // ---- Lifecycle ----
 
     @ReactMethod
     fun startLAN(instanceName: String, promise: Promise) {
@@ -479,7 +479,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         )
     }
 
-    // ---- Discovery -----------------------------------------------------------
+    // ---- Discovery ----
 
     private fun registerService(nsd: NsdManager, name: String) {
         val generation = sessionGeneration.get()
@@ -614,7 +614,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         )
     }
 
-    // ---- Links ---------------------------------------------------------------
+    // ---- Links ----
 
     @ReactMethod
     fun connectToPeer(serviceName: String, promise: Promise) {
@@ -638,10 +638,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             ioExecutor.execute {
                 try {
                     val socket = Socket()
-                    socket.connect(
-                        java.net.InetSocketAddress(peer.host, peer.port),
-                        CONNECT_TIMEOUT_MS,
-                    )
+                    socket.connect(InetSocketAddress(peer.host, peer.port), CONNECT_TIMEOUT_MS)
                     val id = "lan-out-${linkCounter.incrementAndGet()}"
                     if (registerLink(id, socket, serviceName, generation = generation)) {
                         promise.resolve(null)
@@ -932,7 +929,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Transfer ------------------------------------------------------------
+    // ---- Transfer ----
 
     // IPv4 address and prefix length on the interfaces hasLocalNetwork counts:
     // a served hotspot included, cellular not. The prefix is reported, not
@@ -1038,10 +1035,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             ioExecutor.execute {
                 val socket = Socket()
                 try {
-                    socket.connect(
-                        java.net.InetSocketAddress(host, port.toInt()),
-                        CONNECT_TIMEOUT_MS,
-                    )
+                    socket.connect(InetSocketAddress(host, port.toInt()), CONNECT_TIMEOUT_MS)
                 } catch (e: Exception) {
                     runCatching { socket.close() }
                     promise.reject("CONNECT_FAILED", e.message, e)
@@ -1075,7 +1069,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         promise.resolve(null)
     }
 
-    // ---- Required NativeEventEmitter contract --------------------------------
+    // ---- Required NativeEventEmitter contract ----
 
     @ReactMethod
     fun addListener(@Suppress("UNUSED_PARAMETER") eventName: String) {

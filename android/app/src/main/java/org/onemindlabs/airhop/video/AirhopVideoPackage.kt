@@ -1,6 +1,5 @@
 // Registers AirhopVideoModule and live video's two views with the React Native
-// bridge. Referenced from MainApplication.kt's getPackages() list alongside
-// the other Airhop packages.
+// bridge.
 package org.onemindlabs.airhop.video
 
 import com.facebook.react.ReactPackage
@@ -13,8 +12,6 @@ import com.facebook.react.uimanager.annotations.ReactProp
 
 class AirhopVideoPackage : ReactPackage {
 
-    // Deprecated in the New Architecture, and still what the interop layer
-    // reads until these modules move to Codegen; same position as the others.
     @Suppress("OVERRIDE_DEPRECATION")
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
         listOf(AirhopVideoModule(reactContext))

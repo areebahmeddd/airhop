@@ -1,5 +1,4 @@
 // Registers AirhopWiFiModule with the React Native bridge.
-// Referenced from MainApplication.kt's getPackages() list alongside AirhopBLEPackage.
 package org.onemindlabs.airhop.wifi
 
 import android.os.Build
@@ -10,9 +9,6 @@ import com.facebook.react.uimanager.ViewManager
 
 class AirhopWiFiPackage : ReactPackage {
 
-    // ReactPackage.createNativeModules is deprecated in New Architecture (use codegen
-    // TurboModules),
-    // but legacy interop still requires it until AirhopWiFiModule is fully migrated.
     @Suppress("OVERRIDE_DEPRECATION")
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         // The data path needs API 29: the peer's address is a link-local IPv6

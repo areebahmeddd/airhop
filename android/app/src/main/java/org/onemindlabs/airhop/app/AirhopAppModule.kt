@@ -1,7 +1,7 @@
 // AirhopAppModule: process-level operations that belong to no radio.
 //
-// Five of them, each here because only this process can do it. Restart, since
-// layout direction moves only on a fresh process and a warm start recreates
+// Each is here because only this process can do it. Restart, since layout
+// direction moves only on a fresh process and a warm start recreates
 // the Activity under a surviving JS context. Recent log, since Android lets a
 // process read its own logcat lines and nobody else's. APK copy, since sharing
 // the app to a phone without it means handing over the install file itself.
@@ -139,7 +139,7 @@ class AirhopAppModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun setAutoStartOnBoot(enabled: Boolean, promise: Promise) {
         reactContext.applicationContext
-            .getSharedPreferences(BOOT_PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .getSharedPreferences(BOOT_PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
             .putBoolean(KEY_AUTO_START, enabled)
             .apply()

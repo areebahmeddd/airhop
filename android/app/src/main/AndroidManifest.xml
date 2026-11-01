@@ -4,7 +4,7 @@
        when a location channel is opened. FINE is not capped at API 30: #block
        is geohash precision 7 (~150 m) and a coarse fix snaps to a far larger
        grid, so a coarse-only build would place people in the wrong cell. On
-       API <=30 both are still required for BLE; utils/ble-permissions.ts
+       API <=30 both are still required for BLE; platform/ble-permissions.ts
        knows the difference. -->
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -50,7 +50,7 @@
        without the fast path rather than see a location prompt for it.
 
        neverForLocation for the same reason as BLUETOOTH_SCAN: a WiFi Aware peer
-       handle is an opaque discovery token, not a position. bitchat/android
+       handle is an opaque discovery token, not a position. bitchat-android
        declares the flag here too. -->
   <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:usesPermissionFlags="neverForLocation"/>
   <!-- Android 17 drops local network traffic without this, including the
@@ -86,7 +86,7 @@
        required feature and infers requirements from permissions: CAMERA
        implies an autofocus camera and RECORD_AUDIO a microphone, neither of
        which the mesh needs, while nothing implies Bluetooth LE, the one thing
-       it cannot run without. bitchat/android declares the same set. -->
+       it cannot run without. bitchat-android declares the same set. -->
   <uses-feature android:name="android.hardware.bluetooth" android:required="true"/>
   <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
   <!-- QR scanning and capture are optional: a contact can be added from a link
@@ -151,7 +151,8 @@
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
-      <!-- Airhop deep links: airhop://channel/<name>, airhop://peer/<id> -->
+      <!-- Airhop deep links: airhop://channel/<name>, airhop://peer/<id>,
+           airhop://mesh -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>

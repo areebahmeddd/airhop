@@ -67,13 +67,12 @@ import org.onemindlabs.airhop.service.AirhopForegroundService
 
 private const val TAG = "AirhopBLEModule"
 
-// BLE constants per PROTOCOLS.md - must never change without a version bump.
+// Fixed by PROTOCOLS.md. Changing either partitions the network.
 private val SERVICE_UUID = UUID.fromString("F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C")
 private val CHARACTERISTIC_UUID = UUID.fromString("A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D")
-// Standard CCCD descriptor UUID required for BLE notifications
+// The standard CCCD descriptor, which BLE notifications require.
 private val CCCD_UUID = UUID.fromString("00002902-0000-1000-8000-00805F9B34FB")
 
-// Event names emitted to TypeScript
 private const val EVT_PACKET_RECEIVED = "AirhopBLE.packetReceived"
 private const val EVT_LINK_CONNECTED = "AirhopBLE.linkConnected"
 private const val EVT_LINK_DISCONNECTED = "AirhopBLE.linkDisconnected"
@@ -88,6 +87,8 @@ private const val EVT_SCAN_FAILED = "AirhopBLE.scanFailed"
 // The user tapped "Stop mesh" on the background notification. Handled in JS so
 // the shutdown is the same one the Status picker performs.
 private const val EVT_MESH_STOP_REQUESTED = "AirhopBLE.meshStopRequested"
+// Battery level, the charger, or the OS Battery Saver switch moved.
+private const val EVT_POWER_STATE = "AirhopBLE.powerStateChanged"
 
 // Must match TASK_KEY in src/services/keep-alive.ts.
 private const val KEEP_ALIVE_TASK = "Airhop.KeepAlive"
@@ -102,14 +103,12 @@ private const val REQUEST_ENABLE_BT = 0xB1E
 
 // Ceiling on simultaneous central-role (GATT client) links.
 //
-// Matches bitchat-ios TransportConfig.bleMaxCentralLinks = 6. This is a
-// hardware limit dressed up as a policy: an Android controller typically
-// supports around seven concurrent GATT client connections, and connectGatt
-// past that fails with status 133. Without a cap, a phone in a crowded room
-// tries to dial every advertiser it sees, fails most of them, and retries on
-// every scan callback - which burns the radio, drains the battery and
-// destabilises the links that DID connect. Refusing the dial is strictly better
-// than making it and losing it.
+// Matches bitchat-ios TransportConfig.bleMaxCentralLinks = 6. An Android
+// controller typically supports around seven concurrent GATT client
+// connections, and connectGatt past that fails with status 133. Uncapped, a
+// phone in a crowded room dials every advertiser it sees, fails most of them and
+// retries on every scan callback, which burns the radio and destabilises the
+// links that did connect.
 //
 // The mesh does not need every peer to be a direct neighbour: flood routing
 // with TTL 7 reaches the rest of the room through the six it has.
@@ -117,10 +116,10 @@ private const val MAX_CENTRAL_LINKS = 6
 
 // How hard to run the radios.
 //
-// Mechanism only - the decision lives in TypeScript (services/power-policy.ts),
-// which is where "whether to run the radios at all" already lives and where it
-// can be unit tested. This enum is the vocabulary the two sides share, and the
-// numbers are the ones bitchat-android's PowerProfileResolver arrived at.
+// Mechanism only. The decision lives in TypeScript (services/power-policy.ts),
+// beside "whether to run the radios at all", where it can be unit tested. This
+// enum is the vocabulary the two sides share, and the numbers are the ones
+// bitchat-android's PowerProfileResolver arrived at.
 //
 // The five knobs move together on purpose. A duty-cycled LOW_POWER scan next to
 // a LOW_LATENCY advertise at full TX power saves almost nothing: the advertiser
@@ -195,8 +194,8 @@ private const val DEFAULT_ATT_MTU = 23
 private const val ATT_WRITE_OVERHEAD = 3
 
 // The largest frame this app puts on the radio, mirroring MAX_BLE_FRAME in
-// core/mesh/fragment-manager.ts. Ceiling on long-write reassembly: a peer that
-// keeps preparing chunks past this must not grow the buffer to meet it.
+// core/mesh/routing/fragment-manager.ts. Ceiling on long-write reassembly: a peer
+// that keeps preparing chunks past this must not grow the buffer to meet it.
 private const val MAX_BLE_FRAME = 512
 
 // How far the battery must move before it is worth telling JS about. Android
@@ -204,9 +203,6 @@ private const val MAX_BLE_FRAME = 512
 // be a bridge crossing per percent for a decision whose thresholds are ten
 // points apart.
 private const val BATTERY_REPORT_STEP = 5
-
-// Battery level, the charger, or the OS Battery Saver switch moved.
-private const val EVT_POWER_STATE = "AirhopBLE.powerStateChanged"
 
 class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -236,26 +232,21 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 null
             }
 
-    // GATT server (peripheral role)
     private var gattServer: BluetoothGattServer? = null
     private var characteristic: BluetoothGattCharacteristic? = null
 
-    // link maps: linkID -> connection object
-    // Peripheral-role links are remote devices that connected to our GATT server.
+    // Peripheral-role links: remote devices connected to our GATT server.
     private val peripheralLinks = ConcurrentHashMap<String, BluetoothDevice>()
     // A central can rewrite its CCCD at will, so a link is announced once per
     // connection (each announce resends our ANNOUNCE and prekeys) and a
     // disable only pauses notifying.
     private val notifyingLinks: MutableSet<String> = ConcurrentHashMap.newKeySet()
     private val announcedLinks: MutableSet<String> = ConcurrentHashMap.newKeySet()
-    // Central-role links are GATT clients we connected to as central.
+    // Central-role links: peripherals we dialled as a GATT client.
     private val centralLinks = ConcurrentHashMap<String, BluetoothGatt>()
-    // Negotiated ATT MTU per central link. A write without response cannot
-    // exceed MTU-3, and the stack truncates rather than refusing, so a frame
-    // over that budget silently mangles every fragment of a transfer.
-    // Recorded here so the write path can pick a type that can
-    // actually carry the frame. Absent means negotiation has not answered yet,
-    // in which case the BLE default applies.
+    // Negotiated ATT MTU per central link, so the write path can pick a type that
+    // can actually carry the frame (see writeToLink). Absent means negotiation has
+    // not answered yet, in which case the BLE default applies.
     private val centralMtu = ConcurrentHashMap<String, Int>()
 
     // Advertised peerIDs (hex) we already have (or are opening) a central link
@@ -287,18 +278,15 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // is unreliable on many controllers).
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    // ---- Device monitoring ---------------------------------------------------
+    // ---- Device monitoring ----
     //
-    // BLE connection slots are scarce: an Android controller manages roughly
-    // seven simultaneous GATT client connections and refuses the rest with
-    // status 133. A slot held by something that will not talk is a neighbour we
-    // cannot reach.
+    // A connection slot (see MAX_CENTRAL_LINKS) held by something that will not
+    // talk is a neighbour we cannot reach.
     //
-    // Three failure modes from bitchat-android's DeviceMonitoringManager
-    // (docs/device_manager.md), each of which looks healthy to the adapter:
-    // a device that connects and never speaks, one that goes silent mid-session
-    // (BLE supervision timeouts are long), and one that disconnects with an
-    // error repeatedly.
+    // Three failure modes from bitchat-android's DeviceMonitoringManager, each of
+    // which looks healthy to the adapter: a device that connects and never speaks,
+    // one that goes silent mid-session (BLE supervision timeouts are long), and
+    // one that disconnects with an error repeatedly.
     //
     // Lives in native rather than TypeScript because it is about connection
     // lifetime and needs no knowledge of packets. "Did any byte arrive" is
@@ -361,8 +349,6 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
 
     private fun noteLinkOpened(linkID: String) {
         Log.i(TAG, "BLE link up (${linkRole(linkID)})")
-        // Seeded at open so the first-traffic deadline is measured from the
-        // moment the link came up, not from the first byte that never arrives.
         lastHeardAt[linkID] = System.currentTimeMillis()
         everSpoke.remove(linkID)
     }
@@ -403,10 +389,6 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                     val now = System.currentTimeMillis()
                     for ((linkID, heardAt) in lastHeardAt) {
                         val silentFor = now - heardAt
-                        // A device that has never spoken is a prober and gets the
-                        // short window. One that spoke and then stopped is a peer
-                        // that walked away, and gets the 60s reachability window
-                        // before its slot is reclaimed.
                         val limit =
                             if (everSpoke.contains(linkID)) inactivityTimeoutMs
                             else firstTrafficDeadlineMs
@@ -476,12 +458,10 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
 
     private var listenerCount = 0
 
-    // Watches the OS Bluetooth toggle so the UI can report "Bluetooth off"
-    // instead of silently showing an empty mesh forever.
     // The last state we told JS about, so an unchanged report is never sent
-    // twice. On its own this is a small economy; combined with the reconciler in
-    // radio-controller.ts it is what makes an adapter event unable to trigger a
-    // restart that triggers another adapter event.
+    // twice. Combined with the reconciler in radio-controller.ts, this is what
+    // keeps an adapter event from triggering a restart that triggers another
+    // adapter event.
     @Volatile private var lastReportedEnabled: Boolean? = null
 
     // Current radio effort. Starts BALANCED so a mesh that comes up before JS
@@ -511,9 +491,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 charging = isCharging
 
                 // Only speak up when the number has moved enough to possibly change
-                // a decision, or the charger went in or out. No policy here - the
-                // thresholds that matter live in TypeScript - only a filter on how
-                // chatty this gets.
+                // a decision, or the charger went in or out. The thresholds that
+                // matter live in TypeScript; this only filters how chatty it gets.
                 val movedEnough =
                     lastReportedBattery < 0 ||
                         kotlin.math.abs(percent - lastReportedBattery) >= BATTERY_REPORT_STEP
@@ -577,15 +556,10 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             }
         }
 
-    // Registered in initialize(), NOT in init{}.
-    //
-    // init{} runs inside createNativeModules, during ReactHost construction,
-    // before the JS bundle has loaded. A Bluetooth toggle in that window reached
-    // emitEvent() with no runtime to receive it, which threw
-    // IllegalStateException on the main thread - the thread a BroadcastReceiver
-    // is delivered on, with nothing above it to catch. That was a hard crash on
-    // the splash screen, and the same path fired again whenever Android
-    // destroyed the Activity while the foreground service kept the process.
+    // Registered in initialize(), not init{}, which runs inside
+    // createNativeModules during ReactHost construction, before the JS bundle has
+    // loaded. A Bluetooth toggle in that window would reach emitEvent() with no
+    // runtime to receive it.
     //
     // initialize() runs once the catalyst instance exists. The guards in
     // emitEvent() cover the rest, because "a runtime exists" can stop being true
@@ -604,12 +578,6 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
 
     private val activityEventListener: ActivityEventListener =
         object : BaseActivityEventListener() {
-            // `activity` is non-null in this overload: BaseActivityEventListener
-            // declares it that way, and the nullable-Activity variant is the
-            // deprecated two-arg form. Getting this wrong is a silent no-op at
-            // runtime rather than a crash - the method simply never overrides
-            // anything and is never called - so the compiler catching it is the
-            // only signal there would have been.
             override fun onActivityResult(
                 activity: Activity,
                 requestCode: Int,
@@ -693,15 +661,14 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Duty-cycled scanning -------------------------------------------------
+    // ---- Duty-cycled scanning ----
     //
     // In the low-power modes the scanner runs in bursts instead of continuously:
-    // a couple of seconds on, half a minute off. That is where nearly all of the
-    // background saving comes from, and it is invisible above this line - JS
-    // asked for "scanning", and scanning is what it gets, at whatever rate the
+    // a couple of seconds on, half a minute off. It is invisible above this line:
+    // JS asked for "scanning", and scanning is what it gets, at whatever rate the
     // current mode affords.
     //
-    // Deliberately NOT reported as a link or adapter change: a peer discovered
+    // Deliberately not reported as a link or adapter change: a peer discovered
     // in the next burst behaves exactly as one discovered a moment later under a
     // continuous scan, and telling JS the radio stopped would have the
     // reconciler try to "fix" a state that is working as intended.
@@ -772,8 +739,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // down, or Metro is reloading). Everything below is driven from TypeScript,
     // so without JS the radios have nobody to hand packets to and the "mesh
     // active" notification is claiming something that is no longer true. Leaving
-    // them up burns battery and, worse, makes the app look wedged on reopen -
-    // an ongoing notification over a mesh that can't answer.
+    // them up burns battery and makes the app look wedged on reopen: an ongoing
+    // notification over a mesh that can't answer.
     override fun invalidate() {
         if (receiverRegistered) {
             try {
@@ -877,8 +844,6 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         characteristic = null
     }
 
-    // Only ever announce a CHANGE. Re-announcing the current state is what let a
-    // state callback become a restart become another state callback.
     private fun emitAdapterState(enabled: Boolean) {
         if (lastReportedEnabled == enabled) return
         lastReportedEnabled = enabled
@@ -892,12 +857,10 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
 
     // Everything the device will tell us about whether BLE can run right now.
     //
-    // Replaces isAdapterEnabled(), which answered one quarter of the question.
-    // On Android the rest is what actually bites: on API <=30 a granted scan
-    // permission with the OS location toggle off produces a scan that starts
-    // cleanly, reports no error, and returns results to nobody. That was
-    // indistinguishable from "nobody is nearby" and had no banner, so the radar
-    // span forever.
+    // More than the adapter's on/off, because on API <=30 a granted scan permission
+    // with the OS location toggle off produces a scan that starts cleanly, reports
+    // no error, and returns results to nobody, which is indistinguishable from
+    // "nobody is nearby" without a banner saying so.
     @ReactMethod
     fun getRadioState(promise: Promise) {
         val result = WritableNativeMap()
@@ -941,7 +904,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // reported back through the same BleBlocker the banner reads.
     //
     // Answers for what the mesh needs at this API level, which is the same list
-    // utils/ble-permissions.ts requests. The two must stay in step.
+    // platform/ble-permissions.ts requests. The two must stay in step.
     private fun currentAuthorization(): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // neverForLocation means location is not part of this from API 31:
@@ -972,7 +935,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // keeps deciding what blocks the mesh and stays testable without a device.
     private fun locationRequiredForScan(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
 
-    // The OS-wide location toggle, which is NOT the location permission. Only
+    // The OS-wide location toggle, which is not the location permission. Only
     // load-bearing while locationRequiredForScan() is true. From API 28 there is
     // a direct query; below that the provider list is the only signal.
     private fun locationServicesEnabled(): Boolean =
@@ -1078,11 +1041,10 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
 
     // Hold the process up while the mesh is running.
     //
-    // Split out of startAdvertising/stopAdvertising, which is where it used to
-    // live. Tying it to advertising meant "Invisible" - which stops advertising
-    // and keeps scanning and relaying - also ended background operation, and it
-    // meant a foreground notification reading "Airhop mesh active" was raised
-    // from a startAdvertising() call that had not actually started anything.
+    // Not tied to advertising: "Invisible" stops advertising but keeps scanning
+    // and relaying, so background operation has to outlive it, and a notification
+    // reading "Airhop mesh active" should not rest on a startAdvertising() call
+    // that may not have started anything.
     @ReactMethod
     fun setBackgroundServiceEnabled(enabled: Boolean, promise: Promise) {
         try {
@@ -1106,13 +1068,10 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // Periodic RSSI polling. onReadRemoteRssi only fires in response to an
-    // explicit readRemoteRssi() call, so without this poller the rssiUpdated
-    // event could never be emitted and signal strength stayed unavailable to
-    // the UI. The cadence comes from the current power mode: signal strength
-    // only feeds the radar's ring placement, so polling every link every five
-    // seconds on a pocketed phone was paying a radio round trip per peer for a
-    // screen nobody is looking at.
+    // onReadRemoteRssi only fires in response to an explicit readRemoteRssi(), so
+    // rssiUpdated depends on this poller. The cadence comes from the current power
+    // mode: signal strength only feeds the radar's ring placement, which is not
+    // worth a radio round trip per peer every five seconds on a pocketed phone.
     private var rssiPollingActive = false
     private val rssiPoller =
         object : Runnable {
@@ -1139,7 +1098,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         mainHandler.removeCallbacks(rssiPoller)
     }
 
-    // MARK: - Advertising (Peripheral role)
+    // ---- Advertising (peripheral role) ----
 
     // `localName` carries our 16-hex-char peerID (Airhop passes identity.peerID).
     // We advertise its first 8 bytes as scan-response service data rather than
@@ -1147,14 +1106,11 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // lets scanners identify/de-dup us before connecting.
     @ReactMethod
     fun startAdvertising(serviceUUID: String, localName: String, promise: Promise) {
-        // Refuse loudly when we cannot actually advertise.
-        //
-        // The platform advertiser accepts startAdvertising() against an adapter
-        // that is off or a permission that has not settled, reports nothing, and
-        // does nothing. Resolving the promise there told the caller the mesh was
-        // up when it was not - and since the caller swallowed errors anyway,
-        // there was no state in which anyone noticed. The reconciler now retries
-        // on rejection, so an honest refusal is what makes recovery automatic.
+        // Refuse loudly when we cannot actually advertise. The platform advertiser
+        // accepts startAdvertising() against an adapter that is off or a permission
+        // that has not settled, reports nothing, and does nothing. The reconciler
+        // retries on rejection, so an honest refusal is what makes recovery
+        // automatic.
         val bt = adapter
         if (bt == null) {
             promise.reject("UNSUPPORTED", "This device has no Bluetooth adapter")
@@ -1181,9 +1137,6 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             localPeerIDHex = localName
             setupGattServer()
             beginAdvertising()
-            // The foreground service is NOT started here any more. It is tied to
-            // the mesh running, not to advertising, and is driven explicitly
-            // through setBackgroundServiceEnabled() - see the note there.
             promise.resolve(null)
         } catch (e: SecurityException) {
             promise.reject(
@@ -1201,8 +1154,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     @Volatile private var advertisingActive = false
 
     // Start (or restart) advertising at the current power mode's rate and TX
-    // power. Split out of startAdvertising so setPowerMode can re-apply it
-    // without repeating the precondition checks, which have already passed.
+    // power. Apart from startAdvertising so setPowerMode can re-apply it without
+    // repeating the precondition checks, which have already passed.
     private fun beginAdvertising() {
         val advertiser = adapter?.bluetoothLeAdvertiser ?: return
 
@@ -1268,17 +1221,15 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             announcedLinks.clear()
             // Half-written long writes go with their links.
             preparedWrites.clear()
-            // Deliberately does NOT touch the foreground service. This is also
-            // the path "Invisible" takes, and that state still scans and relays,
-            // so tearing the service down here silently ended background
-            // operation for a mesh that was very much still working.
+            // Leaves the foreground service alone: "Invisible" takes this path
+            // too. See setBackgroundServiceEnabled.
             promise.resolve(null)
         } catch (e: Exception) {
             promise.reject("BLE_ERROR", "Failed to stop advertising: ${e.message}", e)
         }
     }
 
-    // MARK: - Scanning (Central role)
+    // ---- Scanning (central role) ----
 
     @ReactMethod
     fun startScanning(serviceUUIDs: ReadableArray, promise: Promise) {
@@ -1359,7 +1310,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // MARK: - I/O
+    // ---- I/O ----
 
     @ReactMethod
     fun writeToLink(linkID: String, dataBase64: String, promise: Promise) {
@@ -1379,15 +1330,15 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 return
             }
             try {
-                // Surface a refused write instead of resolving regardless. The
-                // stack rejects writes once its internal queue is full, and
-                // silently resolving there meant whole fragments vanished
-                // mid-transfer with the sender believing they went out.
-                // An unacknowledged write is capped at MTU-3 and the stack
-                // TRUNCATES past it rather than reporting an error, so anything
-                // that does not fit goes as a default (acknowledged) write, which
-                // the stack splits into a long write. Matches what the iOS module
-                // already does with maximumWriteValueLength.
+                // A refused write is reported, not resolved: the stack rejects
+                // writes once its internal queue is full, and the sender must not
+                // believe a fragment went out that vanished mid-transfer.
+                //
+                // An unacknowledged write is capped at MTU-3 and the stack truncates
+                // past it rather than reporting an error, so anything that does not
+                // fit goes as a default (acknowledged) write, which the stack splits
+                // into a long write. The iOS module does the same with
+                // maximumWriteValueLength.
                 val mtu = centralMtu[linkID] ?: DEFAULT_ATT_MTU
                 val fitsUnacked = data.size <= mtu - ATT_WRITE_OVERHEAD
                 val writeType =
@@ -1421,7 +1372,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             return
         }
 
-        // Peripheral role: notify all subscribed centrals or a specific device
+        // Peripheral role: notify the central on this link
         peripheralLinks[linkID]?.let { device ->
             if (!notifyingLinks.contains(linkID)) {
                 promise.reject("NOT_SUBSCRIBED", "Central on $linkID has notifications off")
@@ -1433,12 +1384,9 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 return
             }
             try {
-                // Report a refused notify instead of resolving regardless, for
-                // the same reason the central path above does: the stack rejects
-                // a notification when its queue is full, and swallowing that
-                // meant whole fragments vanished mid-transfer with the sender
-                // believing they had gone out. WRITE_BUSY is the same code the
-                // central path returns, so the caller needs no second branch.
+                // A refused notify is reported for the same reason as a refused
+                // write above, under the same code, so the caller needs no second
+                // branch.
                 val accepted =
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         gattServer?.notifyCharacteristicChanged(device, char, false, data) ==
@@ -1512,27 +1460,25 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // MARK: - Background notification hand-off
+    // ---- Background notification hand-off ----
 
     companion object {
         // The module instance backing the live JS runtime, or null if there
         // isn't one. The background notification's "Stop mesh" action is
         // handled by a Service, which has no bridge of its own; this is how it
         // reaches JS so the teardown runs through the one code path that knows
-        // how to shut a mesh down (see services/presence.ts).
+        // how to shut a mesh down (see services/presence-service.ts).
         @Volatile private var live: AirhopBLEModule? = null
 
-        // Ask JS to stop the mesh. Returns false when there is no JS to ask -
-        // the process outlived its React context - and the caller then has to
-        // clean up on its own rather than waiting for a reply that can't come.
+        // Ask JS to stop the mesh. Returns false when there is no JS to ask (the
+        // process outlived its React context), having brought the radios down
+        // here, since no reply is coming.
         fun requestMeshStop(): Boolean {
             val module = live
             if (module == null || !module.reactContext.hasActiveReactInstance()) {
-                // No JS to ask. The notification is about to disappear either
-                // way, so the radios have to come down here or they keep
-                // scanning and advertising with nothing behind them - a
-                // "stopped" mesh that is still draining the battery, and no
-                // remaining UI anywhere that can stop it.
+                // The notification is about to disappear either way, so the radios
+                // have to come down or they keep scanning and advertising with
+                // nothing behind them and no UI left that can stop them.
                 forceStopRadios()
                 return false
             }
@@ -1579,7 +1525,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // MARK: - NativeEventEmitter contract
+    // ---- NativeEventEmitter contract ----
 
     @ReactMethod
     fun addListener(eventName: String) {
@@ -1591,13 +1537,12 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         listenerCount = maxOf(0, listenerCount - count.toInt())
     }
 
-    // MARK: - GATT server setup
+    // ---- GATT server setup ----
 
     private fun setupGattServer() {
         if (gattServer != null) return
-        // Nullable since the adapter became lazy: no Bluetooth service on this
-        // device means no GATT server, and the callers above have already
-        // rejected with UNSUPPORTED by the time we could get here.
+        // Null with no Bluetooth service on this device, and the callers above have
+        // already rejected with UNSUPPORTED by then.
         val manager = bluetoothManager ?: return
 
         val char =
@@ -1626,29 +1571,24 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         gattServer?.addService(service)
     }
 
-    // MARK: - Event emitter helpers
+    // ---- Event emitter helpers ----
 
-    // Reaching JS from native, safely.
-    //
-    // This is the single most important guard in the file. Every caller below
-    // runs on a thread the OS owns and we do not: BroadcastReceiver.onReceive is
-    // the main thread, the GATT callbacks are binder threads, and none of them
-    // has an exception handler above it. An uncaught throw on any of them kills
-    // the process.
+    // Reaching JS from native, safely. Every caller below runs on a thread the OS
+    // owns: BroadcastReceiver.onReceive is the main thread, the GATT callbacks are
+    // binder threads, and none of them has an exception handler above it, so an
+    // uncaught throw on any of them kills the process.
     //
     // Under bridgeless React Native (newArchEnabled=true) getJSModule throws
     // IllegalStateException whenever no runtime is attached, and there are three
     // ordinary windows where that is true: before the JS bundle has finished
     // loading, after Android destroys the Activity while the foreground service
-    // keeps the process, and during a dev reload. Previously this method had
-    // neither a check nor a catch, so a Bluetooth toggle in any of those windows
-    // was a crash rather than a dropped event.
+    // keeps the process, and during a dev reload.
     //
-    // Both a check AND a catch, deliberately: hasActiveReactInstance() can stop
+    // Both a check and a catch, deliberately: hasActiveReactInstance() can stop
     // being true between the test and the call, so the check saves the common
     // case and the catch covers the race. A dropped event is always the right
-    // outcome here - there is by definition nobody to deliver it to, and the
-    // reconciler re-reads the real state on the next resume.
+    // outcome here: there is nobody to deliver it to, and the reconciler re-reads
+    // the real state on the next resume.
     private fun emitEvent(name: String, body: WritableNativeMap) {
         if (!reactContext.hasActiveReactInstance()) return
         try {
@@ -1660,7 +1600,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // MARK: - Callbacks
+    // ---- Callbacks ----
 
     private val advertiseCallback =
         object : AdvertiseCallback() {
@@ -1786,9 +1726,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             // Handles both shapes of inbound write. A frame over MTU-3 cannot go
             // unacknowledged, so the sender falls back to an acknowledged write and
             // the stack turns that into the ATT long-write procedure: PREPARE
-            // requests at successive offsets, then one EXECUTE. iOS does the same.
-            // Treating each PREPARE as a whole packet corrupted every attachment
-            // fragment on any controller granting under a 515-byte MTU.
+            // requests at successive offsets, then one EXECUTE. iOS does the same. A
+            // PREPARE is a chunk, never a whole packet.
             override fun onCharacteristicWriteRequest(
                 device: BluetoothDevice,
                 requestId: Int,
@@ -1827,8 +1766,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                             }
                         }
                     // A prepare response echoes offset and bytes verbatim; the
-                    // client compares and aborts on mismatch, so the previous
-                    // (0, null) reply failed every long write on its own.
+                    // client compares and aborts on mismatch.
                     if (responseNeeded) {
                         gattServer?.sendResponse(device, requestId, status, offset, value)
                     }
@@ -1957,7 +1895,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 val linkID = "c:${gatt.device.address}"
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     noteLinkOpened(linkID)
-                    // Negotiate a larger MTU BEFORE service discovery or any I/O.
+                    // Negotiate a larger MTU before service discovery or any I/O.
                     // At the default 23-byte MTU, ANNOUNCE/handshake writes silently
                     // truncate and nothing works. Service discovery is deferred to
                     // onMtuChanged. The 200 ms settle matches bitchat and improves
@@ -1980,7 +1918,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                     try {
                         gatt.close()
                     } catch (e: Exception) {
-                        /* already closed */
+                        // Already closed.
                     }
                     emitEvent(
                         EVT_LINK_DISCONNECTED,

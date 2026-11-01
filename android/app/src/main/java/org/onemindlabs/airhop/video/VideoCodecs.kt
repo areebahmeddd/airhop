@@ -1,10 +1,9 @@
 // The MediaCodec and MediaMuxer pieces behind AirhopVideoModule: Annex B
 // helpers, an H.264 encoder fed with camera YUV, and an MP4 writer.
 //
-// Ported from bitchat-android's live video codecs, which are public domain, so
-// a stream encoded here decodes in bitchat and its recording is the same MP4.
-// The wire carries Annex B with 4-byte start codes and SPS + PPS in-band on
-// every IDR.
+// Ported from bitchat-android's live video codecs, so a stream encoded here
+// decodes in bitchat and its recording is the same MP4. The wire carries Annex B
+// with 4-byte start codes and SPS + PPS in-band on every IDR.
 package org.onemindlabs.airhop.video
 
 import android.media.MediaCodec
@@ -97,11 +96,9 @@ internal object VideoNal {
 
 internal class EncodedVideoFrame(val annexB: ByteArray, val ptsUs: Long, val keyframe: Boolean)
 
-/**
- * H.264 Constrained Baseline fed with YUV pictures through `getInputImage`, which works for every
- * flexible-YUV encoder whatever its native layout. [encode] and [drain] may run on different
- * threads, as MediaCodec allows.
- */
+// H.264 Constrained Baseline fed with YUV pictures through `getInputImage`, which
+// works for every flexible-YUV encoder whatever its native layout. `encode` and
+// `drain` may run on different threads, as MediaCodec allows.
 internal class H264Encoder(
     val width: Int,
     val height: Int,
@@ -229,7 +226,7 @@ internal class H264Encoder(
     }
 
     // Pulls what output there is; true once end of stream was seen. Keyframes
-    // reach [onFrame] with SPS and PPS in front, as the wire wants them.
+    // reach `onFrame` with SPS and PPS in front, as the wire wants them.
     fun drain(waitUs: Long, onFrame: (EncodedVideoFrame) -> Unit): Boolean {
         val info = MediaCodec.BufferInfo()
         while (true) {
@@ -284,11 +281,9 @@ internal class H264Encoder(
     }
 }
 
-/**
- * MediaMuxer around already-encoded H.264 and raw AAC. Nothing is written before a keyframe with
- * SPS and PPS, which sets the track format; a sample at or before its track's last pts is dropped.
- * Never throws.
- */
+// MediaMuxer around already-encoded H.264 and raw AAC. Nothing is written before
+// a keyframe with SPS and PPS, which sets the track format; a sample at or before
+// its track's last pts is dropped. Never throws.
 internal class Mp4Writer(
     val file: File,
     private val width: Int,

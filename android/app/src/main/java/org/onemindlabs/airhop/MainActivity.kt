@@ -9,9 +9,8 @@ import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Set the theme to AppTheme BEFORE onCreate to support
-        // coloring the background, status bar, and navigation bar.
-        // This is required for expo-splash-screen.
+        // Before onCreate, as expo-splash-screen requires: the theme colors the
+        // background, status bar and navigation bar.
         setTheme(R.style.AppTheme)
         super.onCreate(null)
 
@@ -27,10 +26,6 @@ class MainActivity : ReactActivity() {
         }
     }
 
-    /**
-     * Returns the name of the main component registered from JavaScript. This is used to schedule
-     * rendering of the component.
-     */
     override fun getMainComponentName(): String = "main"
 
     override fun createReactActivityDelegate(): ReactActivityDelegate =
@@ -39,24 +34,17 @@ class MainActivity : ReactActivity() {
             object : DefaultReactActivityDelegate(this, mainComponentName) {},
         )
 
-    /**
-     * Align the back button behavior with Android S where moving root activities to background
-     * instead of finishing activities.
-     *
-     * @see <a
-     *   href="https://developer.android.com/reference/android/app/Activity#onBackPressed()">onBackPressed</a>
-     */
+    // Below Android S, back on a root activity would finish it. Match S and later,
+    // which move it to the background, and whose default does more than
+    // moveTaskToBack, so it is left to run there.
     override fun invokeDefaultOnBackPressed() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
             if (!moveTaskToBack(false)) {
-                // For non-root activities, use the default implementation to finish them.
                 super.invokeDefaultOnBackPressed()
             }
             return
         }
 
-        // Use the default back button implementation on Android S
-        // because it's doing more than [Activity.moveTaskToBack] in fact.
         super.invokeDefaultOnBackPressed()
     }
 }

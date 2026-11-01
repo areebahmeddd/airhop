@@ -25,6 +25,9 @@ class MainApplication : Application(), ReactApplication {
         ExpoReactHostFactory.getDefaultReactHost(
             context = applicationContext,
             packageList =
+                // These reach JS through the New Architecture's interop layer, which
+                // still reads the ReactPackage overrides each one suppresses a
+                // deprecation on, until the modules move to Codegen.
                 PackageList(this).packages.apply {
                     add(AirhopBLEPackage())
                     add(AirhopWiFiPackage())
