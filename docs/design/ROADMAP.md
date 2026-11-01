@@ -32,7 +32,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** Accepts 1 MiB of any type, checked as a packet is decoded; bitchat-ios keeps the photos and voice notes it sends under 512 KiB. Live video (LIVE_VIDEO_V1, `0x2D`) is written on both platforms and in review, not yet released.
 
-**Airhop:** Matches the ceiling and the send budgets, and does not raise them: bitchat-ios rejects a packet past the ceiling while decoding it, so a higher one would break interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the extension, and the fragment layer splits it for the radio. Video rides that path, shrunk first to bitchat's own 100 KiB clip budget wherever a bitchat phone may receive it, and plays inline on both platforms; a bitchat peer receives an ordinary video file, round video notes included. Live video follows LIVE_VIDEO_V1 exactly, so streams cross between the two: the Low preset costs about the airtime of a live voice burst, erasure-coded packets absorb loss, and a stream that fits 100 KiB is resent as a file.
+**Airhop:** Matches the ceiling and the send budgets, and does not raise them: bitchat-ios rejects a packet past the ceiling while decoding it, so a higher one would break interop in both directions. One packet per file, a MIME allow-list, magic bytes checked against the declared type, and the fragment layer splits it for the radio. Video rides that path, shrunk first to bitchat's own 100 KiB clip budget wherever a bitchat phone may receive it, and plays inline on both platforms; a bitchat peer receives an ordinary video file, round video notes included. Live video follows LIVE_VIDEO_V1 exactly, so streams cross between the two: the Low preset costs about the airtime of a live voice burst, erasure-coded packets absorb loss, and a stream that fits 100 KiB is resent as a file.
 
 ### Gap 6: Cashu Wallet
 
@@ -44,7 +44,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** The protocol work is excellent. The app around it is hard to use.
 
-**Airhop:** This is priority one, and has been from day one. It follows the conventions Apple's Human Interface Guidelines and Material Design agree on, so it behaves the way people expect a messaging app to, and it reads in 35 languages.
+**Airhop:** This is priority one. It follows the conventions Apple's Human Interface Guidelines and Material Design agree on, so it behaves the way people expect a messaging app to, and it reads in 35 languages.
 
 ## 2. Version Targets
 
@@ -235,7 +235,7 @@ Private communication should be understandable, not merely trusted. v2.0.0 redes
 
 - **Probability:** Medium. OEM BLE stacks differ, and many OEM battery managers kill background apps.
 - **Impact:** Dual-role GATT or the background mesh fails on some devices.
-- **Mitigation:** The foreground service holds the process; the battery optimization flow deep-links to the right setting on 10 OEM skins. Field reports from the Samsung testers drive the Wi-Fi Aware and BLE quirk handling. Device checks stay manual, since the simulation models the OS contract rather than the silicon.
+- **Mitigation:** The foreground service holds the process; the battery optimization flow flags 10 OEM skins and deep-links to the right setting where one exists. Field reports from the Samsung testers drive the Wi-Fi Aware and BLE quirk handling. Device checks stay manual, since the simulation models the OS contract rather than the silicon.
 
 ### Risk 3: Crypto Cost on Old Phones
 

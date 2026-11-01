@@ -16,7 +16,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **Location channel**: A public room scoped to a geohash cell and carried over Nostr, from `#region` down to `#block`.
 
-**One-time prekey**: A single-use X25519 key a phone publishes in advance, signed, in a prekey bundle (packet type `0x24`) gossiped over the mesh. A courier envelope is sealed to one, so mail left with a carrier stays safe if the recipient's long-term key leaks later.
+**One-time prekey**: A single-use X25519 key a phone publishes in advance, signed, in a prekey bundle (packet type `0x24`) flooded over the mesh. A courier envelope is sealed to one, so mail left with a carrier stays safe if the recipient's long-term key leaks later.
 
 **Peer ID**: A phone's 8-byte mesh address, `hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`. It stays the same until a panic wipe replaces the identity.
 
@@ -28,7 +28,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: Signal's per-message key agreement, which gives each message its own key so one leaked key exposes no other message. Airhop runs it on live DMs between two Airhop phones, seeded from and bound to their Noise session. Courier mail gets its forward secrecy from one-time prekeys instead.
 
-**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve signature scheme. Packets are signed with the sender's Ed25519 key, and a signature is verified before a packet is displayed or acted on; `LEAVE`, files, board posts and voice frames are also verified before they are relayed.
+**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve signature scheme. Packets are signed with the sender's Ed25519 key, and a signature is verified before a packet is displayed or acted on; `LEAVE`, files, board posts, and voice and video frames are also verified before they are relayed.
 
 **[HKDF](https://datatracker.ietf.org/doc/html/rfc5869)**: HMAC-based Key Derivation Function. Derives keys from Diffie-Hellman outputs inside Noise, the Double Ratchet and the Nostr DM construction.
 
@@ -56,7 +56,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: An eviction policy that drops the least recently used entry when a cache is full. The packet deduplication seen-set uses it (1,000 entries, 5 minutes).
 
-**[MultipeerConnectivity](https://developer.apple.com/documentation/multipeerconnectivity)**: Apple's older peer-to-peer framework, over the proprietary AWDL radio. Airhop does not use it; the iOS fast path is Apple's standards-based `WiFiAware` framework. The name appears in early commits.
+**[MultipeerConnectivity](https://developer.apple.com/documentation/multipeerconnectivity)**: Apple's older peer-to-peer framework, over the proprietary AWDL radio. Airhop does not use it; the iOS fast path is Apple's standards-based `WiFiAware` framework.
 
 **[NFC (Near Field Communication)](https://en.wikipedia.org/wiki/Near-field_communication)**: Tap-to-exchange radio with a range of a few centimeters. Not used: contact exchange is a camera QR scan (`add-contact-screen.tsx`), which gives the same in-person guarantee and works on every phone.
 

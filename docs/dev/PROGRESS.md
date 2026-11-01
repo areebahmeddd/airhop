@@ -73,7 +73,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 ### v0.8.0: Identity and Forward Secrecy
 
 - [x] `src/core/crypto/double-ratchet.ts`: Signal Double Ratchet, per-message forward secrecy. The root key comes from the Noise XX **exporter secret**, so it cannot be rebuilt from long-lived keys or from the public handshake bytes
-- [x] One-time prekey bundles (`src/core/mesh/wire/prekey-bundle.ts`, `src/core/mesh/courier/prekey-store.ts`) gossiped as `0x24`, never published to Nostr. **X3DH is not used**: the handshake already seeds the ratchet ([ARCHITECTURE.md section 5](../spec/ARCHITECTURE.md#5-encryption))
+- [x] One-time prekey bundles (`src/core/mesh/wire/prekey-bundle.ts`, `src/core/mesh/courier/prekey-store.ts`) flooded as `0x24`, never published to Nostr. **X3DH is not used**: the handshake already seeds the ratchet ([ARCHITECTURE.md section 5](../spec/ARCHITECTURE.md#5-encryption))
 - [x] `src/core/crypto/contact-exchange.ts`: binary contact card over the `airhop:v1/<base64url>` QR scheme, signed by the card's own signing key, peer ID checked against the keys it carries; a card arriving by link is recorded unverified
 - [x] `src/utils/username.ts`: deterministic adjective-noun-suffix name from the peer ID, 128-entry word lists
 - [x] `src/services/panic-wipe.ts`: clears every keychain item, all MMKV partitions, the media cache, the notification tray and Arti's data directory, and reports whether the keys were destroyed. `wipe-marker.ts` records the intent first, so a wipe killed mid-run finishes on the next launch
@@ -85,7 +85,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] `src/services/lan-controller.ts`: link lifecycle, registered beside BLE and Wi-Fi Aware, off by default behind `lanTransportEnabled`
 - [x] `src/services/lan-dial-policy.ts`: the ring that caps LAN at 8 links per phone
 - [x] Video and any other allowed file type shared as attachments, played inline. A video is trimmed to the part chosen on the caption sheet, at most a minute, and shrunk first, to bitchat-ios's 100 KiB clip budget wherever a bitchat phone may receive it and to the 1 MiB ceiling for another Airhop phone (`src/core/mesh/video/transcode-plan.ts`, `src/services/video-prepare.ts`, `src/features/chat/video-trimmer.tsx`, one native pass on each platform)
-- [x] Battery optimization flow (`src/platform/battery-optimization.ts`: OEM deep links for 10 skins, standard Android fallback)
+- [x] Battery optimization flow (`src/platform/battery-optimization.ts`: OEM deep links, standard Android fallback)
 
 ### v0.9.5: Localization
 
