@@ -28,10 +28,10 @@ Report violations by opening a [GitHub issue](https://github.com/areebahmeddd/ai
 
 ## Enforcement Guidelines
 
-1. **Warning** - A private written warning for a first or minor violation.
-2. **Temporary Restriction** - A time-limited suspension from participating in discussions or submitting contributions.
-3. **Temporary Ban** - A suspension from all project spaces with conditions for reinstatement.
-4. **Permanent Ban** - Permanent removal, reserved for repeated serious violations.
+1. **Warning**: A private written warning for a first or minor violation.
+2. **Temporary Restriction**: A time-limited suspension from participating in discussions or submitting contributions.
+3. **Temporary Ban**: A suspension from all project spaces with conditions for reinstatement.
+4. **Permanent Ban**: Permanent removal, reserved for repeated serious violations.
 
 ## Scope
 

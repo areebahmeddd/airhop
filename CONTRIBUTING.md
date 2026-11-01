@@ -82,5 +82,5 @@ Before opening any pull request:
 - [ ] `npm run coverage` passes with zero failures
 - [ ] `docs/dev/PROGRESS.md` updated if a milestone was completed or a decision was made
 - [ ] `docs/design/ROADMAP.md` updated if a feature was added, removed, or reprioritized
-- [ ] If touching `src/core/` or `android/` or `ios/`: invoke `@architect` agent for review
-- [ ] If touching `src/core/crypto/`, key storage, or packet signing: invoke `@security-review` agent
+- [ ] If touching `src/core/`, `android/`, `ios/` or `native/`: invoke `@architect` agent for review
+- [ ] If touching `src/core/crypto/`, key storage, packet signing or device transfer: invoke `@security-review` agent

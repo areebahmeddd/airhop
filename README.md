@@ -138,7 +138,7 @@ Timing intervals:
 
 | Behaviour                  | Interval                     | Why                                                                 |
 | -------------------------- | ---------------------------- | ------------------------------------------------------------------- |
-| Presence broadcast         | 4 s alone, 15-30 s           | Fast while alone so devices meet quickly, then backs off            |
+| Presence broadcast         | On a new link, then 15-30 s  | Silent with nobody linked, so a lone phone spends nothing on it     |
 | Gossip sync                | 1 s on a new link, then 15 s | Lets a peer returning from out of range catch up on missed messages |
 | Direct peer timeout        | 45 s                         | Handles unreported link drops beyond broadcast                      |
 | Mesh peer timeout          | 60 s                         | Relayed peers get longer, since multi-hop packets arrive late       |
