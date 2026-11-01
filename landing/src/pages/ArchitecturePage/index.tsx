@@ -55,7 +55,7 @@ const TOC = [
   {
     act: "Beyond the mesh",
     items: [
-      { id: "bridge", label: "Internet layer" },
+      { id: "bridge", label: "The internet layer" },
       { id: "tor", label: "The onion router" },
     ],
   },
@@ -65,6 +65,7 @@ const TOC = [
       { id: "wallet", label: "The wallet" },
       { id: "ai", label: "The AI assistant" },
       { id: "social", label: "Social bridges" },
+      { id: "defaults", label: "Off until you turn it on" },
     ],
   },
   {
@@ -459,7 +460,7 @@ export default function ArchitecturePage() {
                   [
                     "Ed25519",
                     "A signature scheme",
-                    "Signs what you post. Every phone checks it before showing anything, and checks files, board posts, voice and departures before relaying them too",
+                    "Signs what you post. Every phone checks it before showing anything, and checks files, board posts, voice, video and departures before relaying them too",
                   ],
                   [
                     "X25519",
@@ -953,6 +954,14 @@ export default function ArchitecturePage() {
                 ]}
               />
 
+              <p>
+                One ordering property matters before you deploy any of this: a relay does not make
+                two strangers reachable, it makes their announces reachable. A public message is
+                checked against a signing key learned from an ANNOUNCE, so a message sent before
+                that announce has crossed the relay is dropped at the far end. That is correct
+                behavior, and in the field it looks exactly like a delivery bug.
+              </p>
+
               <h3 className="text-ink pt-2 text-base font-bold">Bitle relay hardware</h3>
               <p>
                 <TextLink href="https://bitle.org">Bitle</TextLink> is firmware for an ESP32 relay
@@ -967,33 +976,30 @@ export default function ArchitecturePage() {
                 run against real nodes. That run is on the{" "}
                 <TextLink href={REPO_LINKS.roadmapDoc}>roadmap</TextLink>.
               </p>
-
-              <p>
-                One ordering property matters before you deploy any of this: a relay does not make
-                two strangers reachable, it makes their announces reachable. A public message is
-                checked against a signing key learned from an ANNOUNCE, so a message sent before
-                that announce has crossed the relay is dropped at the far end. That is correct
-                behavior, and in the field it looks exactly like a delivery bug.
-              </p>
             </Section>
 
             <Section
               id="lifecycle"
               eyebrow="The system · 07"
               title="Status and lifecycle"
-              lede="A mesh only exists while the radios are on. Phones are built to switch radios off, so most of this section is about staying alive without wasting your battery."
+              lede="A mesh only exists while the radios are on, and phones are built to switch radios off. This section covers how a phone stays on the mesh, how it leaves, and how everything on it can be destroyed."
             >
               <Figure caption="Three presence states, and exactly what each one does to the radios.">
                 <PresenceStates />
               </Figure>
+
+              <p>
+                Invisible survives a relaunch and a start at boot, since it is a choice about being
+                seen. Away lasts until you change it or the app restarts.
+              </p>
 
               <Table
                 head={["Behavior", "Interval", "Why"]}
                 rows={[
                   [
                     "Presence broadcast",
-                    "4 s alone, then 15 to 30 s",
-                    "Fast while alone so devices meet quickly, then it backs off",
+                    "On a new link, then 15 to 30 s",
+                    "Silent with nobody linked, so a lone phone spends nothing on it",
                   ],
                   ["Gossip sync", "1 s on a new link, then 15 s", "Lets a returning peer catch up"],
                   ["Direct peer timeout", "45 s", "Handles unreported link drops beyond broadcast"],
@@ -1005,9 +1011,9 @@ export default function ArchitecturePage() {
 
               <p>
                 On Android the mesh survives backgrounding through a foreground service, which is
-                what the notification you cannot swipe away actually is. Without it the system would
-                suspend the app within minutes. It carries a Stop mesh button that shuts the radios
-                down cleanly, which is the same thing as switching to Away.
+                what the ongoing notification actually is. Without it the system would suspend the
+                app within minutes. It carries a Stop mesh button that shuts the radios down
+                cleanly, which is the same thing as switching to Away.
               </p>
 
               <Note label="A backgrounded iPhone is invisible to Android">
@@ -1017,11 +1023,6 @@ export default function ArchitecturePage() {
                 link keeps carrying traffic, but iPhone-to-Android discovery stops until the app is
                 reopened. This is a platform behavior and cannot be fixed in application code.
               </Note>
-
-              <p>
-                Invisible survives a relaunch and a start at boot, since it is a choice about being
-                seen. Away lasts until you change it or the app restarts.
-              </p>
 
               <p>
                 <strong className="text-ink">Panic wipe is the terminal transition.</strong> From
@@ -1061,11 +1062,11 @@ export default function ArchitecturePage() {
                 </TextLink>
                 , the same algorithm Signal uses, ratcheting a new key for every message. Its root
                 key is seeded from the handshake's exporter secret, which is why Airhop does not
-                need X3DH: the key agreement has already happened. Not the transcript hash, which
-                anyone who captured the handshake already holds, and not the two static keys, which
-                stay derivable forever. The exporter secret descends from a chaining key that
-                absorbed ephemeral keys destroyed when the handshake ended, so the root key cannot
-                be recomputed later from long-lived keys alone.
+                need X3DH: the key agreement has already happened. The exporter secret descends from
+                a chaining key that absorbed ephemeral keys destroyed when the handshake ended, so
+                the root key cannot be recomputed later from long-lived keys alone. The transcript
+                hash would not do, since anyone who captured the handshake holds it, and neither
+                would the two static keys, which stay derivable forever.
               </p>
 
               <Figure caption="Every message type and what actually protects it.">
@@ -1247,7 +1248,7 @@ export default function ArchitecturePage() {
                   ["Packet", "0x29, broadcast", "0x08 inside Noise"],
                   ["Who hears it", "Everyone in range", "One person"],
                   ["Protected by", "Ed25519 signature", "The Noise session"],
-                  ["Relayed", "Yes, up to 5 to 7 hops", "Yes, like any DM"],
+                  ["Relayed", "Yes, up to 7 hops, 5 in a crowd", "Yes, like any DM"],
                 ]}
               />
 
@@ -1351,7 +1352,7 @@ export default function ArchitecturePage() {
               </Figure>
 
               <p>
-                The sender paces itself to the route. Each neighbour gets one copy, on its fastest
+                The sender paces itself to the route. Each neighbor gets one copy, on its fastest
                 link, so the stream is held to{" "}
                 <strong className="text-ink">24 packets a second</strong> only while someone in
                 range has nothing faster than Bluetooth; when everyone also shares Wi-Fi Aware or a
@@ -1366,7 +1367,7 @@ export default function ArchitecturePage() {
                   ["Packet", "0x2D, broadcast", "0x0A inside Noise"],
                   ["Who can watch", "Everyone in range", "One person"],
                   ["Protected by", "Ed25519 signature", "The Noise session"],
-                  ["Relayed", "Yes, up to 5 to 7 hops", "No, it needs a direct link"],
+                  ["Relayed", "Yes, up to 7 hops, 5 in a crowd", "No, it needs a direct link"],
                 ]}
               />
 
@@ -1548,6 +1549,15 @@ export default function ArchitecturePage() {
                 never tied together by a shared circuit.
               </p>
 
+              <Note label="Why iOS blocks mint traffic under Tor">
+                Arti on iOS wraps the Nostr socket, so an HTTP call to a mint would go around it and
+                expose your IP alongside your coins. Instead of leaking that quietly, Airhop refuses
+                mint requests entirely while Tor is on and tells you why. Allow mint traffic over
+                clear net, a Settings switch shown while Tor is on, lifts that if you decide the
+                trade is acceptable. Sending and receiving ecash over Bluetooth never touches a
+                mint, so that keeps working either way.
+              </Note>
+
               <p>
                 <strong className="text-ink">Failing closed is structural, not timed.</strong> Arti
                 has no clearnet path at all, so a request made before the first circuit exists fails
@@ -1574,7 +1584,7 @@ export default function ArchitecturePage() {
                   ["Direct", "Your address, from the relay", "Nothing. The default"],
                   [
                     "obfs4",
-                    "That you use Tor, behind a stream of uniformly random bytes with no protocol structure to recognise",
+                    "That you use Tor, behind a stream of uniformly random bytes with no protocol structure to recognize",
                     "Its bridge lines are public, so a determined censor blocks them",
                   ],
                   [
@@ -1629,15 +1639,6 @@ export default function ArchitecturePage() {
                 slower than a direct connection, and only earns that on a network which blocks or
                 watches for Tor.
               </p>
-
-              <Note label="Why iOS blocks mint traffic under Tor">
-                Arti on iOS wraps the Nostr socket, so an HTTP call to a mint would go around it and
-                expose your IP alongside your coins. Instead of leaking that quietly, Airhop refuses
-                mint requests entirely while Tor is on and tells you why. Allow mint traffic over
-                clear net, a Settings switch shown while Tor is on, lifts that if you decide the
-                trade is acceptable. Sending and receiving ecash over Bluetooth never touches a
-                mint, so that keeps working either way.
-              </Note>
 
               <p>
                 <strong className="text-ink">
@@ -1788,10 +1789,14 @@ export default function ArchitecturePage() {
                 for anyone who never connects an account, and the wire format, the mesh and the
                 encryption stay as described above.
               </Note>
+            </Section>
 
-              <h3 className="text-ink pt-2 text-base font-bold">
-                Everything that is off until you turn it on
-              </h3>
+            <Section
+              id="defaults"
+              eyebrow="Optional features · 18"
+              title="Off until you turn it on"
+              lede="What each optional feature does on a fresh install."
+            >
               <Table
                 head={["Feature", "State on a fresh install"]}
                 rows={[
@@ -1828,7 +1833,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="modules"
-              eyebrow="For developers · 18"
+              eyebrow="For developers · 19"
               title="Module map"
               lede="Around 250 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
             >
@@ -1842,7 +1847,7 @@ export default function ArchitecturePage() {
                   ["core/crypto/", "identity, noise-xx, noise-x, double-ratchet, contact-exchange"],
                   [
                     "core/mesh/",
-                    "wire (packet-codec, board-packet), routing (flood-router, deduplicator, fragment-manager), sync (gossip-sync), courier (courier-store, prekey-store), discovery (announce-manager), rooms (group-protocol, channel-crypto), links (link-registry), voice",
+                    "wire (packet-codec, board-packet), routing (flood-router, deduplicator, fragment-manager), sync (gossip-sync), courier (courier-store, prekey-store), discovery (announce-manager), rooms (group-protocol, channel-crypto), links (link-registry), voice, video",
                   ],
                   [
                     "core/nostr/",
@@ -1873,7 +1878,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="wire"
-              eyebrow="For developers · 19"
+              eyebrow="For developers · 20"
               title="Wire format"
               lede="Byte-for-byte identical to bitchat v2. This is what makes an Airhop phone and a bitchat phone join the same mesh with no translation layer and no configuration."
             >
@@ -1953,7 +1958,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="threat"
-              eyebrow="For developers · 20"
+              eyebrow="For developers · 21"
               title="Threat model"
               lede="What the design defends against, and the seven things it does not."
             >
