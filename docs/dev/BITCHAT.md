@@ -2,7 +2,7 @@
 
 How the bitchat apps work, for Airhop contributors who need to match or compare against them. Everything here describes bitchat, not Airhop: for Airhop's own design see [ARCHITECTURE.md](../spec/ARCHITECTURE.md), and for its wire constants [PROTOCOLS.md](../spec/PROTOCOLS.md). Where the two disagree on a wire detail, bitchat-ios is the source of truth.
 
-**Checked against:** bitchat-ios 1.7.1 and bitchat-android 2.0.2 (local checkouts), September 2026  
+**Checked against:** bitchat-ios 1.8.0 and bitchat-android 2.2.0 (local checkouts), November 2026  
 **Scope:** bitchat-ios, bitchat-android, and the georelays toolchain  
 **Whitepaper:** version 2.0 (July 6, 2026), `WHITEPAPER.md` in the bitchat-ios repository
 
@@ -120,6 +120,7 @@ Every BLE packet is a compact binary structure:
 - **Signatures** (Ed25519) exclude the TTL byte so relays can decrement it without invalidating them.
 - Packets are **padded** toward uniform sizes to defeat traffic analysis.
 - **Raw [DEFLATE](https://datatracker.ietf.org/doc/html/rfc1951) compression** is applied to message payloads before they are sent (`CompressionUtil.swift` uses `COMPRESSION_ZLIB`; `CompressionUtil.kt` uses `Deflater` in raw, headerless mode).
+- **Receivers cap each packet's decoded payload by type**, compressed or not: about 1.13 MiB for `fileTransfer` and `noiseEncrypted` (10 MiB on bitchat-android), 128 KiB for messages and groups, 64 KiB for courier and carrier envelopes, 8 KiB for `requestSync`, 1,280 bytes for a fragment and 4 KiB for other control types. A declared expansion above 1032:1 is rejected.
 
 ### 3.3 Controlled Flood Routing
 
@@ -160,7 +161,7 @@ Packets exceeding the link MTU are split into **469-byte fragments**:
 
 - Each fragment carries an 8-byte fragment ID plus index/total header.
 - Fragments relay independently through the mesh.
-- Reassembly happens at each receiving node (up to **128 concurrent assemblies**, **30 s timeout**, **1 MiB cap**).
+- Reassembly happens at each receiving node (up to **128 concurrent assemblies**, **30 s timeout**). bitchat-ios caps an assembly at the largest frame its claimed type can decode from, and bitchat-android caps every assembly at **1 MiB**.
 
 ### 3.6 Presence & Discovery
 
@@ -231,8 +232,8 @@ On bitchat-ios:
 ### 4.5 Relay Network
 
 - **300+ relays** worldwide (as of mid-2026).
-- The `georelays` repository tracks and geolocates all bitchat-capable relays. A reviewed copy lives in the bitchat repo as `relays/online_relays_gps.csv`, and both bitchat clients route by that file (`docs/GeoRelayRouting.md`).
-- The `GeoRelayDirectory` routes a location channel to the 5 relays nearest the cell plus the next 5 as warm backups, for both publishing and subscribing, with ties broken by relay URL.
+- The `georelays` repository tracks and geolocates all bitchat-capable relays. A reviewed copy lives in the bitchat-ios repo as `relays/online_relays_gps.csv`, which bitchat-ios fetches at runtime. bitchat-android fetches `nostr_relays.csv` from `georelays` directly.
+- The `GeoRelayDirectory` routes a location channel to the 5 relays nearest the cell, for both publishing and subscribing. bitchat-ios breaks distance ties by relay host; bitchat-android has no explicit tie-break.
 
 ### 4.6 Geohash Location Channels
 
@@ -248,7 +249,7 @@ Location channels are Nostr channels scoped by [geohash](https://en.wikipedia.or
 
 Each geohash level gets its own Nostr identity (derived from the base identity + geohash string), and messages are published to the closest geographic relay(s) for that precision level.
 
-Beyond these location-derived levels, a user can teleport to any cell by entering its geohash directly (2 to 12 characters) or by picking it on an offline globe drawn from bundled Natural Earth geometry, where the cell under the crosshair is the selection and zooming sets its precision. A teleported cell uses the same per-geohash identity and relay selection but runs over Nostr only, since nobody in Bluetooth range is in it, and its messages carry a `t=teleport` tag so other clients list the sender as teleported rather than nearby.
+Beyond these location-derived levels, a user can teleport to any cell by entering its geohash directly (1 to 12 characters) or by picking it on an offline globe drawn from bundled Natural Earth geometry, where the cell under the crosshair is the selection and zooming sets its precision. A teleported cell uses the same per-geohash identity and relay selection but runs over Nostr only, since nobody in Bluetooth range is in it, and its messages carry a `t=teleport` tag so other clients list the sender as teleported rather than nearby.
 
 Presence heartbeats (kind 20001) are broadcast only to **region, province, and city** precision levels; the app explicitly refuses to broadcast presence at neighborhood/block level for privacy reasons.
 
@@ -355,7 +356,7 @@ The most novel mechanism. When no transport can deliver:
 
 ### 6.3 Gossip Sync (Public History)
 
-- Public broadcast messages are **cached (1,000 packets)** and reconciled between peers every **~15 seconds**.
+- Public broadcast messages are **cached (1,000 packets, and 8 MiB of payload on bitchat-ios)** and reconciled between peers every **~15 seconds**.
 - Uses **[Golomb-Coded Set](https://en.wikipedia.org/wiki/Golomb_coding) (GCS) filters** (like Bitcoin's compact block filters): each side advertises what it holds, the other returns what is missing.
 - Messages stay sync-able for **6 hours** (fragments and file transfers: 15 minutes).
 - Cache persists to disk so a device that walks between two partitions, or relaunches later, serves the room's recent history.
@@ -363,7 +364,7 @@ The most novel mechanism. When no transport can deliver:
 ### 6.4 Nostr Mailboxes
 
 - Gift-wrapped private messages rest on Nostr relays indefinitely (subject to relay policy).
-- On reconnect, clients **re-subscribe with a 24-hour lookback**, covering the both-devices-offline case.
+- On reconnect, clients **re-subscribe with a lookback** (24 hours on bitchat-ios, 48 hours on bitchat-android), covering the both-devices-offline case.
 - This is the fallback for mutual favorites when the BLE mesh and courier system both fail.
 
 ## 7. Channel Types & Routing Logic
@@ -388,7 +389,7 @@ The `MessageRouter` selects transport in this order:
 
 ### 7.3 Group / Channel Chats
 
-bitchat-ios 1.7.1 has one public mesh room (`#mesh`) plus the location channels, and IRC-style commands in `CommandProcessor.swift`: `/m` (`/msg`), `/w` (`/who`), `/clear`, `/hug`, `/slap`, `/block`, `/unblock`, `/group`, `/fav`, `/unfav`, `/ping`, `/trace`, `/pay`, `/drop` and `/help`. There are no named or password-protected channels. Private groups (`/group`, `Services/Groups/`) are mesh-only and sealed to their members.
+bitchat-ios 1.8.0 has one public mesh room (`#mesh`) plus the location channels, and IRC-style commands in `CommandProcessor.swift`: `/m` (`/msg`), `/w` (`/who`), `/clear`, `/hug`, `/slap`, `/block`, `/unblock`, `/group`, `/fav`, `/unfav`, `/ping`, `/trace`, `/pay`, `/drop` and `/help`. There are no named or password-protected channels. Private groups (`/group`, `Services/Groups/`) are mesh-only and sealed to their members.
 
 ### 7.4 Gateway Mode
 
@@ -462,7 +463,7 @@ Scopes:
 - **No delivery acks, no retransmit** for individual frames (live audio; reliability is the fallback voice note).
 - Bandwidth math: BLE mesh moves ~18 KiB/s per link; voice needs ~2 KiB/s; fits with margin.
 
-`VoiceRecorder` and `VoiceVisualizer` cover the recorded voice-note fallback. Live push-to-talk ships on both bitchat platforms: `voiceFrame` (`0x29`) is one of the few types above `0x22` that the Android `MessageType` registry implements, so a live burst crosses between them.
+`VoiceRecorder` and `VoiceVisualizer` cover the recorded voice-note fallback. Live push-to-talk ships on both bitchat platforms: `voiceFrame` (`0x29`) is the only type above `0x22` that the Android `MessageType` registry implements, so a live burst crosses between them.
 
 ### 8.5 Video Calling
 
@@ -485,9 +486,9 @@ The design is in `docs/PUSH-TO-TALK-DESIGN.md` in the bitchat-ios repository and
 
 - `AVAudioEngine` input tap -> `PTTInputResampler` -> `PTTFrameEncoder` -> packetizer -> BLE.
 - Simultaneously writes to `.m4a` for finalized note delivery (no remux needed).
-- 8 concurrent receive assemblies max, 384 KiB per burst cap, 30 s stale cleanup.
-- Flood protection: drop inbound frames beyond ~2× realtime per sender.
-- Playback: `VoiceBurstAssembler` feeding `PTTBurstPlayer` with 350 ms jitter buffer.
+- 8 concurrent receive assemblies max, 384 KiB per burst cap, and a burst with no frames for 3 s counts as ended.
+- Flood protection: drop inbound frames beyond ~3× realtime per sender.
+- Playback: `ChatLiveVoiceCoordinator` feeding `PTTBurstPlayer` with 350 ms jitter buffer.
 
 ## 10. iOS Codebase Walkthrough
 
@@ -501,7 +502,7 @@ bitchat/ios/bitchat/
 │   └── voice/         # PTTAudioCodec, PTTCaptureEngine, PTTBurstPlayer, VoiceRecorder
 ├── Identity/          # IdentityModels.swift, SecureIdentityStateManager.swift
 ├── Models/            # BitchatMessage, BitchatPeer, NoisePayload, ReadReceipt
-├── Noise/             # NoiseProtocol, NoiseSession, NoiseSessionManager, NoiseEncryptionService
+├── Noise/             # NoiseProtocol, NoiseSession, NoiseSessionManager, SecureNoiseSession
 ├── Nostr/             # NIP-17, GeoRelayDirectory, NostrIdentity, NostrRelayManager
 ├── Protocols/         # (shared protocol definitions)
 ├── Services/
@@ -511,6 +512,7 @@ bitchat/ios/bitchat/
 │   ├── Gateway/       # BridgeService, GatewayService (mesh->Nostr bridge)
 │   ├── Groups/        # GroupProtocol, GroupStore
 │   ├── Prekeys/       # PrekeyBundleStore, LocalPrekeyStore
+│   ├── NoiseEncryptionService.swift # Noise crypto operations
 │   ├── MessageRouter.swift   # Central routing logic
 │   ├── NostrTransport.swift  # Nostr as a Transport impl
 │   ├── Transport.swift       # Transport protocol + events
@@ -522,27 +524,27 @@ bitchat/ios/bitchat/
 
 ### Key Classes
 
-| Class/File                     | Role                                                          |
-| ------------------------------ | ------------------------------------------------------------- |
-| `AppRuntime.swift`             | Composition root - wires all services on launch               |
-| `BLEService.swift`             | CoreBluetooth dual-role mesh engine (central + peripheral)    |
-| `MessageRouter.swift`          | Routes messages across transports + outbox + courier          |
-| `NostrTransport.swift`         | Nostr as a `Transport` protocol implementation                |
-| `NostrRelayManager.swift`      | Manages WebSocket connections to Nostr relays                 |
-| `GeoRelayDirectory.swift`      | Geohash -> nearest relay lookup; fetches `nostr_relays.csv`   |
-| `GossipSyncManager.swift`      | GCS-based public message history reconciliation               |
-| `CourierStore.swift`           | Holds sealed courier envelopes for third-party peers          |
-| `MessageOutboxStore.swift`     | Per-peer sent message queue (24h, 100/peer)                   |
-| `NoiseSession.swift`           | Per-peer Noise XX state machine                               |
-| `NoiseEncryptionService.swift` | Crypto operations: handshake, encrypt/decrypt, key management |
-| `NostrProtocol.swift`          | NIP-17/NIP-59 gift-wrap implementation                        |
-| `GeohashPresenceService.swift` | Broadcasts kind 20001 presence to geohash channels            |
-| `BLEConnectionScheduler.swift` | RSSI-gated connection candidate management                    |
-| `BLEScanDutyPolicy.swift`      | Adaptive scan duty cycling for battery                        |
-| `BLEFanoutSelector.swift`      | Deterministic broadcast subsetting                            |
-| `BLEFragmentHandler.swift`     | Fragment assembly and re-injection                            |
-| `BLEAnnounceHandler.swift`     | Peer discovery via signed announcements                       |
-| `GatewayService.swift`         | Bridges mesh `nostrCarrier` packets to Nostr internet         |
+| Class/File                     | Role                                                             |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `AppRuntime.swift`             | Composition root - wires all services on launch                  |
+| `BLEService.swift`             | CoreBluetooth dual-role mesh engine (central + peripheral)       |
+| `MessageRouter.swift`          | Routes messages across transports + outbox + courier             |
+| `NostrTransport.swift`         | Nostr as a `Transport` protocol implementation                   |
+| `NostrRelayManager.swift`      | Manages WebSocket connections to Nostr relays                    |
+| `GeoRelayDirectory.swift`      | Geohash -> nearest relay lookup; fetches `online_relays_gps.csv` |
+| `GossipSyncManager.swift`      | GCS-based public message history reconciliation                  |
+| `CourierStore.swift`           | Holds sealed courier envelopes for third-party peers             |
+| `MessageOutboxStore.swift`     | Per-peer sent message queue (24h, 100/peer)                      |
+| `NoiseSession.swift`           | Per-peer Noise XX state machine                                  |
+| `NoiseEncryptionService.swift` | Crypto operations: handshake, encrypt/decrypt, key management    |
+| `NostrProtocol.swift`          | NIP-17/NIP-59 gift-wrap implementation                           |
+| `GeohashPresenceService.swift` | Broadcasts kind 20001 presence to geohash channels               |
+| `BLEConnectionScheduler.swift` | RSSI-gated connection candidate management                       |
+| `BLEScanDutyPolicy.swift`      | Adaptive scan duty cycling for battery                           |
+| `BLEFanoutSelector.swift`      | Deterministic broadcast subsetting                               |
+| `BLEFragmentHandler.swift`     | Fragment assembly and re-injection                               |
+| `BLEAnnounceHandler.swift`     | Peer discovery via signed announcements                          |
+| `GatewayService.swift`         | Bridges mesh `nostrCarrier` packets to Nostr internet            |
 
 ### iOS-Specific Features
 
@@ -648,7 +650,7 @@ The `bitchat/georelays` folder is a **standalone toolchain** for discovering, fi
 
 ### Automation
 
-A GitHub Actions workflow runs the full pipeline daily and commits the results to `georelays`. The bitchat clients fetch the reviewed copy at runtime from:
+A GitHub Actions workflow runs the full pipeline daily and commits the results to `georelays`. bitchat-ios fetches the reviewed copy at runtime from the URL below; bitchat-android fetches `nostr_relays.csv` from `georelays` directly:
 
 ```text
 https://raw.githubusercontent.com/permissionlesstech/bitchat/refs/heads/main/relays/online_relays_gps.csv
@@ -674,18 +676,18 @@ The iOS `GeoRelayDirectory` class:
 
 Android is explicitly designed for **100% protocol compatibility** with iOS. Key shared elements:
 
-| Element                    | Value                                                    |
-| -------------------------- | -------------------------------------------------------- |
-| BLE Service UUID (mainnet) | `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`                   |
-| BLE Characteristic UUID    | `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D`                   |
-| Peer ID format             | First 16 hex chars of Noise identity SHA-256 fingerprint |
-| TTL                        | 7 hops default                                           |
-| Packet types               | Shared `MessageType` enum (same byte values)             |
-| Announcement format        | Same binary layout (AnnouncementPacket)                  |
-| Deduplication              | Same 5-minute window, same key derivation                |
-| Fragment size              | 469 bytes on both platforms                              |
+| Element                    | Value                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| BLE Service UUID (mainnet) | `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`                                                               |
+| BLE Characteristic UUID    | `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D`                                                               |
+| Peer ID format             | First 16 hex chars of Noise identity SHA-256 fingerprint                                             |
+| TTL                        | 7 hops default                                                                                       |
+| Packet types               | Shared `MessageType` enum (same byte values)                                                         |
+| Announcement format        | Same binary layout (AnnouncementPacket)                                                              |
+| Deduplication              | Same 5-minute window over sender, timestamp, type and payload; the hash form differs and stays local |
+| Fragment size              | 469 bytes on both platforms                                                                          |
 
-A future Rust implementation is mentioned in changelog references, also targeting the same protocol.
+bitchat-android's former `CHANGELOG.md`, removed before 2.0.2, mentioned a Rust implementation of the same protocol.
 
 ## 14. Distance Limitations
 
@@ -789,7 +791,7 @@ This makes it valuable for **protests, disaster zones, events, and remote areas*
 
 ### Panic Wipe
 
-Triple-tap the app logo -> **immediately erases**:
+Triple-tap the app logo and confirm the dialog -> **erases**:
 
 - Identity keys (Keychain)
 - Favorites list
@@ -856,7 +858,7 @@ From the whitepaper's "Future Work" section and the code as checked out.
 ### Other Observations
 
 1. **Android Tor integration**: shipped. `ArtiTorManager.kt` brought Android to parity with the iOS Arti integration.
-2. **Rust client compatibility**: changelog mentions Rust as a third platform target.
+2. **Rust client compatibility**: bitchat-android's former `CHANGELOG.md`, removed before 2.0.2, mentioned a Rust implementation.
 3. **Wi-Fi Aware transport (bitchat-android)**: implemented in `wifi-aware/`, off unless enabled in debug settings.
 4. **Bulletin board**: shipped on bitchat-ios as `BoardPackets.swift` (`0x23`). Not in the bitchat-android type registry.
 5. **Gateway and bridge**: `GatewayService` and `BridgeService` on bitchat-ios, `TransportBridgeService` on bitchat-android (section 7.4).
@@ -878,7 +880,7 @@ From the whitepaper's "Future Work" section and the code as checked out.
 | Key Storage    | iOS Keychain                                                                     |
 | Persistence    | File system (AES-ChaChaPoly encrypted), UserDefaults                             |
 | Geolocation    | DB-IP database via `georelays`                                                   |
-| Min OS         | iOS (latest, universal with macOS)                                               |
+| Min OS         | iOS 16.0, macOS 13.0 (universal)                                                 |
 
 ### Android
 
@@ -929,7 +931,7 @@ The outbox is the sender's own queue and never goes on the wire. Courier envelop
 | Fragment size                 | 469 bytes                      | Per-fragment chunk (BLE MTU limited)                  |
 | Max concurrent assemblies     | 128                            | Fragment reassembly slots                             |
 | Fragment timeout              | 30 s                           | Abandon incomplete fragment sets                      |
-| Fragment size cap             | 1 MiB                          | Reassembled payload hard limit                        |
+| Fragment assembly cap         | 1 MiB Android, by type iOS     | Reassembled payload hard limit                        |
 | Outbox TTL                    | 24 h                           | Max retention for queued DMs                          |
 | Outbox per-peer cap           | 100 messages                   |                                                       |
 | Outbox retry cap              | 8 attempts                     | After 8 failures: drop + notify user                  |
@@ -942,13 +944,13 @@ The outbox is the sender's own queue and never goes on the wire. Courier envelop
 | Gossip sync interval          | 15 s                           | Public message reconciliation cadence                 |
 | Gossip public message window  | 6 h                            | How long messages stay sync-able                      |
 | Gossip fragment/file window   | 15 min                         | Shorter window for transfers                          |
-| Gossip cache size             | 1,000 packets                  |                                                       |
-| Nostr lookback on reconnect   | 24 h                           |                                                       |
+| Gossip cache size             | 1,000 packets, 8 MiB on iOS    |                                                       |
+| Nostr lookback on reconnect   | 24 h iOS, 48 h Android         |                                                       |
 | Announce neighbor list        | 10 peers                       | Topology carried in each announce                     |
 | BLE PTT burst content budget  | 210 bytes                      | Voice frame fits in 256-byte padding bucket           |
 | PTT max burst duration        | 120 s                          |                                                       |
 | PTT jitter buffer             | 350 ms                         | Before starting live playback                         |
 
-_This document reflects bitchat-ios 1.7.1 and bitchat-android 2.0.2. For how Airhop
+_This document reflects bitchat-ios 1.8.0 and bitchat-android 2.2.0. For how Airhop
 behaves, read `src/` and [ARCHITECTURE.md](../spec/ARCHITECTURE.md). The bitchat
 protocol is public domain (Unlicense). Airhop is MIT licensed._
