@@ -156,10 +156,10 @@ function headerSizeFor(version: number): number | null {
 //
 // Padding hides plaintext length behind ciphertext length. On a type whose size
 // is already public it buys nothing and costs airtime on a ~18 KiB/s radio: a
-// 30-byte PING becomes 256 bytes, and a ~309-byte voice burst becomes 512, past
-// the fragment frame budget and most negotiated MTUs. Voice is the one type where
-// that cost is a broken feature rather than wasted bytes, since the 210-byte
-// burst budget exists to keep it out of the fragment scheduler.
+// 41-byte PING becomes 256 bytes, and a 298-byte voice burst becomes 512, the
+// whole fragment frame budget and past most negotiated MTUs. Voice is the one
+// type where that cost is a broken feature rather than wasted bytes, since the
+// 210-byte burst budget exists to keep it out of the fragment scheduler.
 export function padsBLEFrame(type: PacketType): boolean {
   switch (type) {
     // Noise transport and handshake frames: ciphertext length is message

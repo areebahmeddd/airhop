@@ -18,7 +18,7 @@ export const enum PacketType {
   REQUEST_SYNC = 0x21, // GCS filter gossip request (link-local, TTL 0)
   FILE_TRANSFER = 0x22, // Binary file / audio / image payload
   BOARD_POST = 0x23, // Signed geohash/mesh bulletin-board post or tombstone
-  PREKEY_BUNDLE = 0x24, // Signed batch of one-time prekeys (gossiped)
+  PREKEY_BUNDLE = 0x24, // Signed batch of one-time prekeys (flooded, not synced)
   GROUP_MESSAGE = 0x25, // Group-encrypted broadcast (cleartext group ID + AEAD)
   PING = 0x26, // Directed mesh echo request (nonce + origin TTL)
   PONG = 0x27, // Directed mesh echo reply (echoed nonce + origin TTL)

@@ -4361,13 +4361,13 @@ export class MeshService {
   );
 
   // Couriers each outgoing message was given to, and when that round began,
-  // keyed by message id. Sealing is randomised and CourierStore.deposit has no
-  // content dedupe, so without this the retry sweep would hand a FRESH envelope
-  // to the same carriers every pass, exhausting their per-depositor quota (2
-  // for a non-contact), after which every later deposit from this device is
-  // refused for every recipient. A round lasts one envelope lifetime and takes
-  // at most MAX_COURIERS_PER_MESSAGE carriers; mail still queued after that
-  // starts a fresh round, since every copy of the last one has expired.
+  // keyed by message id. Sealing is randomised and CourierStore.deposit merges
+  // only identical bytes, so without this the retry sweep would hand a fresh
+  // envelope to the same carriers every pass, exhausting their per-depositor
+  // quota (2 for a non-contact), after which every later deposit from this
+  // device is refused for every recipient. A round lasts one envelope lifetime
+  // and takes at most MAX_COURIERS_PER_MESSAGE carriers; mail still queued after
+  // that starts a fresh round, since every copy of the last one has expired.
   private readonly courieredTo = new Map<
     string,
     { startedAtMs: number; couriers: Set<string> }
@@ -7481,7 +7481,7 @@ export class MeshService {
 
   // Offer every queued DM for a recipient out of reach to whatever carriers
   // are in range now. Cheap when it cannot help: sendViaCourier skips carriers
-  // a message already went to, and a relay drop happens once per message.
+  // a message already went to, and a relay drop is renewed only once it lapses.
   private courierQueuedMail(): void {
     for (const msg of useOutboxStore.getState().pending) {
       const peerID = msg.recipientPeerID;

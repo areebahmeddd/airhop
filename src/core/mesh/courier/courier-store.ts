@@ -9,9 +9,9 @@
 //
 // This module owns the envelope and the bag it sits in: wire format, routing
 // tag, trust tiers, pool bounds, spray budget. Sealing and packet building stay
-// in mesh-service, which seals ONCE per message and addresses the same bytes to
-// every courier. That is what lets `deposit` recognise the copies as one
-// envelope, so nothing here may re-seal.
+// in mesh-service, which seals once per send pass and addresses the same bytes
+// to every courier in it. That is what lets `deposit` recognise the copies as
+// one envelope, so nothing here may re-seal.
 //
 // Envelope wire format (COURIER_ENV payload, and a kind 1401 drop's content):
 // TLVs of [type u8][length u16 BE][value], as bitchat's CourierEnvelope.
@@ -396,8 +396,9 @@ export class CourierStore {
 
     // Identical ciphertext is the same envelope. Merging keeps spray-and-wait a
     // splitting scheme rather than a minting one, and duplicates are guaranteed
-    // rather than exotic: a sender seals ONCE and hands the same bytes to every
-    // courier, so any two of them meeting already hold what the other offers.
+    // rather than exotic: a sender seals once per pass and hands the same bytes
+    // to every courier in it, so any two of them meeting already hold what the
+    // other offers.
     // A second entry would carry its own budget and its own sprayedTo, letting
     // one message fill the bag and the mesh-wide copy count grow per encounter.
     //
