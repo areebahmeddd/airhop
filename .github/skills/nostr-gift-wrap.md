@@ -79,7 +79,7 @@ content: base64(CourierEnvelope TLV), as bitchat-ios createCourierDropEvent
 ```
 
 - Signed by a throwaway key minted per publish, never the device identity: the envelope authenticates its sender inside the Noise X seal, and a stable publisher key would make every drop attributable to one npub. The key is not a parameter, so no caller can pass the identity.
-- Published once per message with `copies` 1, since a relay copy goes to the recipient, never to another carrier.
+- One live drop per message, renewed once it lapses, with `copies` 1, since a relay copy goes to the recipient, never to another carrier.
 - The `x` tag is the envelope's daily recipient tag (see [`courier-envelopes.md`](courier-envelopes.md)). It is not unlinkable: anyone holding the peer's static key computes it for any day.
 - **Subscription:** `{ kinds: [1401], "#x": candidateTags (yesterday, today, tomorrow), since: now - 24 h, limit: 100 }`, renewed when the UTC day rolls over. The limit is bitchat-ios's `courierDrops`; there is no paging with `until`, since a flood can outrun any page budget and every junk page costs Schnorr checks.
 - NIP-40 relays expire the event; a drop whose expiry has passed is ignored.

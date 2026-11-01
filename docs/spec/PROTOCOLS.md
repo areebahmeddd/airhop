@@ -163,12 +163,13 @@ breaks the protocol in opposite directions.
 | **Outbound frame**   | `NOISE_ENCRYPTED`, `NOISE_HANDSHAKE`, and the Airhop-only `DR_ENCRYPTED` / `CHANNEL_ENC` | Only where ciphertext length reveals plaintext length. Matches bitchat's `BLEOutboundPacketPolicy.padsBLEFrame`, extended to the two Airhop private types bitchat never interprets.                        |
 
 Padding is PKCS#7 to the smallest of 256, 512, 1024 or 2048 bytes that fits
-the frame plus 16. It is skipped when more than 255 pad bytes would be needed,
-so a frame over 2032 bytes goes unpadded. The same rule applies on every radio.
+the frame plus 16. A frame over 2032 bytes fits no block, and one needing more
+than 255 pad bytes (241 to 256, 497 to 768, 1009 to 1792) is also sent unpadded.
+The same rule applies on every radio.
 
 Padding every frame is not a safe default. It buys nothing for a type whose
 size is already public and costs real airtime on a radio of about 18 KiB/s: a
-30-byte `PING` becomes 256 bytes, and the largest live voice packet (298 bytes)
+41-byte `PING` becomes 256 bytes, and the largest live voice packet (298 bytes)
 becomes exactly 512, the whole fragment frame budget.
 
 Decoders accept both forms (decode as-is, then retry after stripping PKCS#7), so
@@ -346,8 +347,8 @@ come from bitchat-ios's `VideoTranscoder.plan` (`transcode-plan.ts`): at most
 60 s is kept, the first minute unless the sender trims another part, sound stays at 12 kbps only while the whole budget reaches
 30 kbps, and size and frame rate step down with the bitrate. A picked or recorded
 video is always re-encoded, which strips its location as the photo resize does; a
-video note or a forward is re-encoded only when it does not fit. Nothing on the
-wire changes.
+video note or a forward is re-encoded only when it does not fit or, for a
+recipient not known to run Airhop, is not an MP4. Nothing on the wire changes.
 
 | Type          | Send cap |
 | ------------- | -------- |
@@ -370,9 +371,9 @@ extension, else `application/octet-stream`, which is always accepted and renders
 as a document. On receive, the declared type is checked against the file's magic
 bytes, so a file cannot lie about what it is. Video is held to MP4 and
 QuickTime, recognised by an ISO BMFF box name at bytes 4 to 7. The received
-file is stored under a name reduced to `[A-Za-z0-9._-]` and 64 characters, with
-an extension taken from the checked type rather than the sender's name (an
-octet-stream keeps the sender's).
+file is stored under a name reduced to the letters, marks and digits of any
+script plus `._-`, and to 128 UTF-8 bytes, with an extension taken from the
+checked type rather than the sender's name (an octet-stream keeps the sender's).
 
 ### 3.3 Noise inner payload types
 
@@ -403,10 +404,11 @@ forward, so the reasoning that puts Airhop's packet types at `0x50` applies
 here. `0x22` sits below that line and stays there, since moving it would break
 every shipped build for no gain.
 
-The same payloads travel over Nostr inside bitchat's `bitchat1:` envelope
-([section 7.1](#71-the-nostr-dm-construction-is-not-the-published-nip-44)),
-except `0x20`, `0x21`, `0x50` and `0x51` to `0x53`, which the Nostr decoder
-refuses: private media, session proofs, pins and rings are mesh only.
+Only `0x01`, `0x02`, `0x03` and `0x22` travel over Nostr, inside bitchat's
+`bitchat1:` envelope
+([section 7.1](#71-the-nostr-dm-construction-is-not-the-published-nip-44)). The
+Nostr decoder refuses every other type: private media, session proofs, pins and
+rings are mesh only.
 
 #### Private media (`0x20`)
 
@@ -654,7 +656,7 @@ right default: a relay carries traffic for peers whose signing keys it has never
 seen, and demanding a key before forwarding would break multi-hop delivery for
 exactly the strangers the mesh exists to reach.
 
-Four types are the exception, as in bitchat-ios, which handles them before it
+Five types are the exception, as in bitchat-ios, which handles them before it
 schedules a relay and relays only what its handler accepted. Each costs nothing
 to forge under any peer ID in earshot, and forwarding one already refused spends
 the room's airtime and carries the attack onward to any node that checks less
@@ -694,7 +696,7 @@ checking it safe rather than merely strict:
 
 The cost is a legitimate leave from a peer whose key is held in neither place.
 That is bounded: `LEAVE` rides `ttl 3` while announces flood at `ttl 7` every
-15 to 30 s once connected (4 s while isolated) and on every link-up, so a peer
+15 to 30 s once connected and on every link-up, so a peer
 close enough for their leave to arrive is one whose announce almost certainly
 already did. Worst case their row lingers until it ages out, which is what an
 ungraceful departure does anyway.
@@ -754,8 +756,7 @@ verified, kept for sync and relayed whatever its cell, so a phone outside the
 room still serves it to those inside. The cell travels in the clear on purpose:
 the Nostr copy carries the same message ID and names the cell in its public `g`
 tag, and a hash of a geohash is reversed by enumerating the cells. bitchat
-relays `0x51` without reading it; Airhop builds from before the field misparse
-it, and only testers run those.
+relays `0x51` without reading it.
 
 **Every other public channel carries its own type, because bitchat reaches those
 channels a different way.** bitchat has the same location channels Airhop does,
@@ -946,7 +947,7 @@ what they rebuilt.
 | Constant                                       | Value                                                                                                                                                                                                       | Source                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Default TTL                                    | `7`                                                                                                                                                                                                         | `TransportConfig.swift`                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Origin TTL, authored broadcasts                | `ceiling-2` to `ceiling`                                                                                                                                                                                    | Drawn per packet, per burst for voice. The ceiling is the relay cap below for the packet's class at this phone's degree: the broadcast one, or the stream one for live voice and public files (which cross Bluetooth as fragments). Announces, prekey bundles, gateway carriers and directed traffic stay `7`                                                                                                                                                                     |
+| Origin TTL, authored broadcasts                | `ceiling-2` to `ceiling`                                                                                                                                                                                    | Drawn per packet, per burst for voice, per stream for video. The ceiling is the relay cap below for the packet's class at this phone's degree: the broadcast one, or the stream one for live voice and video and public files (which cross Bluetooth as fragments). Announces, prekey bundles, gateway carriers and directed traffic stay `7`                                                                                                                                     |
 | Relay jitter, broadcasts                       | `10–40`, `60–150`, `80–180`, `100–220 ms`                                                                                                                                                                   | By degree (≤ 2, 3–5, 6–9, 10+), `RelayController`                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Broadcast relay TTL                            | `min(ttl, 7)` at degree ≤ 2; `min(ttl, 6)` at 3–5 (`7` for announces and urgent board posts); `min(ttl, 5)` at ≥ 6; then one less                                                                           | `RelayController.decide`                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Directed relay                                 | `min(ttl, 7)` less one; `10–35 ms` for handshakes, `20–60 ms` otherwise                                                                                                                                     | Handshakes, and `NOISE_ENCRYPTED`, `DR_ENCRYPTED` (Airhop), `COURIER_ENV`, `PING`, `PONG`, `NOSTR_CARRIER` and `FRAGMENT` with a recipient                                                                                                                                                                                                                                                                                                                                        |
@@ -960,7 +961,7 @@ what they rebuilt.
 | Max payload length                             | per type                                                                                                                                                                                                    | Declared and decompressed: 1280 B fragments, 4 KiB control, 8 KiB sync, 64 KiB envelopes, 128 KiB messages and unknown types, the framed-file cap for files and `NOISE_ENCRYPTED` (`payload-limits.ts`, mirrors bitchat-ios). A public message over 65,535 bytes is still relayed and synced, but never shown                                                                                                                                                                     |
 | Dedup LRU size                                 | `1000 entries`                                                                                                                                                                                              | Seen packet IDs (16 bytes each). Fragments have a second set of the same size and expiry, so file traffic cannot shorten the message window; bitchat-ios keeps fragments out of its dedup entirely                                                                                                                                                                                                                                                                                |
 | Dedup expiry window                            | `5 minutes`                                                                                                                                                                                                 | Packet ID expiry in the dedup cache                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| Stream relay (live voice, broadcast fragments) | `8–25 ms`, TTL cap `7` / `5`                                                                                                                                                                                | Sparse / dense (degree ≥ 6), `bleFragmentRelay*` in `TransportConfig`                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Stream relay (live media, broadcast fragments) | `8–25 ms`, TTL cap `7` / `5`                                                                                                                                                                                | Sparse / dense (degree ≥ 6), `bleFragmentRelay*` in `TransportConfig`                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Voice jitter buffer                            | `350 ms`                                                                                                                                                                                                    | Buffered before live playback starts                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Concurrent voice bursts                        | `8`                                                                                                                                                                                                         | Inbound assembly cap per device                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
@@ -1014,8 +1015,9 @@ possible at all.
   since bitchat stamps a reply's fragments with the time of the packet inside,
   and the reassembled packet is then held to its own. The flag alone is a
   sender's claim; the pending request is the receiver's own record.
-- A packet without `IS_RSR` is held to the ±2 minute window whatever its TTL.
-  Neither kind may be dated more than the skew ahead.
+- A packet without `IS_RSR` is held to the ±2 minute window whatever its TTL,
+  except a fragment of a stream already being assembled, which only the future
+  bound applies to. Neither kind may be dated more than the skew ahead.
 - A response longer than a Bluetooth frame arrives as fragments, and the window
   applies to the reassembled packet. It passes when it dates from no earlier
   than the stream's first fragment less the skew (a slow transfer of a packet
@@ -1169,8 +1171,9 @@ anywhere and stays in the sender's outbox instead. `noise-payload.test.ts`
 pins these bytes.
 
 The message ID is what makes the rest work. Spray-and-wait puts several copies
-on the mesh by design, each resealed by its carrier, so no envelope-derived
-identity can collapse them; the recipient dedupes on the sender's ID, and can
+on the mesh by design, and the sender seals afresh on each later pass, so no
+envelope-derived identity can collapse them; the recipient dedupes on the
+sender's ID, and can
 acknowledge the message, and later mark it read, because it has one to name.
 
 ### 6.3 Recipient tag and seal
@@ -1246,11 +1249,9 @@ about the structure and excludes the cipher. Inside the rumor, the content is
 bitchat's `bitchat1:` envelope around a Noise inner payload
 ([section 3.3](#33-noise-inner-payload-types)).
 
-bitchat reached the same conclusion about its own docs and relabelled them
-([#1437](https://github.com/permissionlesstech/bitchat/pull/1437), split and
-landed as #1480). An implementer who reads "NIP-44" and reaches for a standard
-library produces DMs that no bitchat or Airhop peer can read, and the failure is
-silent at both ends.
+An implementer who reads "NIP-44" and reaches for a standard library produces
+DMs that no bitchat or Airhop peer can read, and the failure is silent at both
+ends.
 
 ## 8. Identity & Nostr Constants
 
@@ -1261,7 +1262,7 @@ silent at both ends.
 | Nostr presence kind  | `20001` (geohash heartbeat: a `g` tag and an empty body, sent to the cell's geo relays, skipped when it has none, and only while the app is on screen)                                                                                                                                                                                                                      |
 | Nostr DM rumor kind  | `14` (NIP-17 unsigned inner event; refused unless a well-formed kind 14 whose `pubkey` is the seal's signer)                                                                                                                                                                                                                                                                |
 | Nostr seal kind      | `13` (NIP-17 seal, signed by the real sender, encrypts the rumor to the recipient)                                                                                                                                                                                                                                                                                          |
-| Nostr gift wrap kind | `1059` (NIP-17 outer envelope, signed by an ephemeral key). Ours are randomized ±15 min, as bitchat-ios. Inbound `since` reaches 48 h past the rumor lookback (NIP-17 backdating)                                                                                                                                                                                           |
+| Nostr gift wrap kind | `1059` (NIP-17 outer envelope, signed by an ephemeral key). Ours are randomized ±15 min, as bitchat-ios. Inbound `since` reaches 48 h 15 min past the rumor lookback (NIP-17 backdating)                                                                                                                                                                                    |
 | Location note kind   | `1` (a board post mirrored to a cell's relays, with a NIP-40 expiry matching the post; a permanent note has no expiry and no mesh copy)                                                                                                                                                                                                                                     |
 | Nostr courier drop   | `1401` (store-and-forward envelope; `#x` tag = recipient tag hex; NIP-40 expiry). Fetched 24 h back, `limit` 100, as bitchat-ios                                                                                                                                                                                                                                            |
 | Nutzap event kind    | `9321` (NIP-61; `proof` tag per proof, with `dleq` including `r` when the mint issued one; `u` = mint; `unit`, default sat). Airhop subscribes with `#p` and `#u` (the mints it holds)                                                                                                                                                                                      |

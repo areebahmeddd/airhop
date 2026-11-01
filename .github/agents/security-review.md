@@ -54,7 +54,7 @@ Check for:
 
 ### 3. Packet Signing & Verification
 
-**Rule:** Every outgoing packet is signed, except the types bitchat leaves unsigned (Noise handshakes and transport, fragments, ping, pong and carrier broadcasts). A group message from bitchat arrives unsigned and authenticates inside its ciphertext, so its handler keys on the inner signing key, never the outer sender ID. Every signed incoming packet is verified before display or action, and one that fails is dropped silently. The codec only encodes and decodes: `signPacket` and `verifyPacket` are called by `mesh-service.ts`. Relaying is separate: a relay forwards bytes it may not be able to check, except `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME` and `BOARD_POST`, which are verified before the relay decision (`mayRelay`).
+**Rule:** Every outgoing packet is signed, except the types bitchat leaves unsigned (Noise handshakes and transport, fragments, ping, pong and carrier broadcasts). A group message from bitchat arrives unsigned and authenticates inside its ciphertext, so its handler keys on the inner signing key, never the outer sender ID. Every signed incoming packet is verified before display or action, and one that fails is dropped silently. The codec only encodes and decodes: `signPacket` and `verifyPacket` are called by `mesh-service.ts`. Relaying is separate: a relay forwards bytes it may not be able to check, except `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` and `BOARD_POST`, which are verified before the relay decision (`mayRelay`).
 
 Check for:
 

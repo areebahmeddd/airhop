@@ -107,7 +107,7 @@ A bitchat node never interprets a type it does not know, but it relays it: the u
 | `CHANNEL_ENC`        | `0x50`          | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop only)         |
 | `CHANNEL_MSG_AIRHOP` | `0x51`          | Broadcast         | Named public channel, a location cell (Airhop only)       |
 
-Retired, never to be reused: `0x30 VIDEO_FRAME` (Airhop's old same-platform Wi-Fi path, never cross-platform; live video is bitchat's `0x2D`) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
+Retired, never to be reused: `0x30 VIDEO_FRAME` (live video is bitchat's `0x2D`) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
 
 Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitchat-ios `PacketPayloadLimits`. A new type needing more than a v1 frame has to be added there before it ships, or receivers drop it.
 
@@ -158,7 +158,7 @@ The plaintext of `NOISE_ENCRYPTED` is `[type u8][body]` (`NoisePayloadType`). bi
 - A DM attachment goes only sealed as `0x20`, and only to a peer that proved capability bit 8 inside its `0x21`. The cleartext directed `FILE_TRANSFER` is still received, never sent.
 - A sealed photo or voice note is keyed by `privateMediaStableID` (`media-<32 hex>`, from sender, recipient and an `img_<UUID>.jpg` or `voice_<UUID>.m4a` name), and the receiver answers with a `DELIVERED` naming it.
 - Capabilities in `0x21` are authoritative; announced bits are a hint that chooses wording, never how to send.
-- Airhop's own Noise payload types start at `0x50`; `0x22` predates the rule.
+- Airhop's own Noise payload types start at `0x50`; `0x22` is the one exception.
 
 A Nostr DM carries the same bytes: an unsigned `NOISE_ENCRYPTED` packet holding a Noise payload, base64url behind `bitchat1:` (`bitchat-envelope.ts`, see [`nostr-gift-wrap.md`](nostr-gift-wrap.md)).
 

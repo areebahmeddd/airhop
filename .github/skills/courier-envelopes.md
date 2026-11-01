@@ -63,7 +63,7 @@ TLV with 2-byte big-endian lengths, byte-identical to bitchat-ios `CourierEnvelo
 | `0x04` | copies       | Spray budget; omitted when 1, clamped to 1 to 8 on decode |
 | `0x05` | prekeyID     | u32 BE. Present = v2, sealed to that one-time prekey      |
 
-With `0x05` absent the envelope is v1, sealed to the static key and byte-identical to the pre-prekey format. A v1-only decoder skips `0x05`, still carries the envelope, and cannot open one addressed to it; that degradation is intended.
+With `0x05` absent the envelope is v1, sealed to the static key. A v1-only decoder skips `0x05`, still carries the envelope, and cannot open one addressed to it; that degradation is intended.
 
 **Recipient tag** = `HMAC-SHA256(key = recipient static Noise key, "bitchat-courier-tag-v1" || epochDay u32 BE)[0:16]`, always from the **static** key, v1 or v2, or carriers stop recognising mail. Matching tries yesterday's, today's and tomorrow's (`candidateTags`). Anyone who heard one announce can compute a peer's tags for any day: do not call courier mail unlinkable.
 
@@ -114,12 +114,12 @@ The recipient dedupes copies on the sender's message ID, which also collapses a 
 
 ## Sending
 
-The sender seals **once** per message and addresses the same bytes to every courier, which is what lets carriers merge copies.
+The sender seals **once** per send pass and addresses the same bytes to every courier in it, which is what lets carriers merge copies.
 
 - **Couriers** are directly linked, announced peers with a known Noise key, up to 4 per message, skipping any it already went to. Each gets the full budget of 4 copies (bitchat's `courierInitialCopies`); splitting it would starve busy rooms, and merging on deposit keeps the total bounded.
 - **Delivery** is a directed `COURIER_ENV` down the courier's own link, or flooded when it is a hop away. Only a write accepted onto that exact peer's link counts as taken.
-- **Relay drop.** When relays are up, a copy with `copies: 1` is parked as kind 1401 once per message, whether or not a courier was in range.
-- **Retries.** `courierQueuedMail` offers every queued DM for an unreachable recipient to whatever carriers are in range, on the events that matter (a peer appearing, a resume, a reconnect), so mail written with nobody near leaves with the first phone that walks up.
+- **Relay drop.** When relays are up, a copy with `copies: 1` is parked as kind 1401, one live drop per message renewed once it lapses, whether or not a courier was in range.
+- **Retries.** `courierQueuedMail` offers every queued DM for an unreachable recipient to whatever carriers are in range on a direct announce, and `flushOutbox` retries the courier on a resume or a reconnect, so mail written with nobody near leaves with the first phone that walks up.
 
 `sendViaCourier` returns true only when a courier took it; a relay drop alone is not "carried by a friend".
 
