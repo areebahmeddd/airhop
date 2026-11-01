@@ -154,9 +154,10 @@ export default function PrivacyPage() {
               <li>
                 A screenshot notice, in private conversations only. Taking a screenshot in a direct
                 message, private group, or private channel tells the people in it that you did,
-                under your display name. In the public mesh room and location channels nothing is
-                sent, because announcing it there would record that you were present. The screenshot
-                itself is never sent.
+                under your display name. Android 13 is the exception: it cannot detect a screenshot
+                without a media permission Airhop does not hold, so no notice is sent there. In the
+                public mesh room and location channels nothing is sent, because announcing it there
+                would record that you were present. The screenshot itself is never sent.
               </li>
               <li>
                 Approximate Bluetooth signal strength (radio metadata visible to any nearby
@@ -250,7 +251,8 @@ export default function PrivacyPage() {
             <h2 className="text-ink text-base font-semibold">Location channels (optional)</h2>
             <p className="text-[15px] leading-[1.75]">
               Location channels let you talk to people in the same area. Location permission is
-              optional and only requested when you use them.
+              optional and only requested when you use them. Android 11 and older are the exception:
+              they also require it to scan for Bluetooth, and Airhop reads no position for that.
             </p>
             <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
               <li>
@@ -264,8 +266,10 @@ export default function PrivacyPage() {
                 smaller area.
               </li>
               <li>
-                Each cell uses a separate identity derived on your device, so your activity in one
-                area cannot be linked to another, or to your main identity.
+                Each cell uses a separate key derived on your device, so by that key the cells you
+                only read cannot be linked to one another, or to your main identity. A post is
+                different: it carries your display name, and one made from inside the cell also goes
+                over Bluetooth under your main identity, so posting links that cell to you.
               </li>
               <li>
                 Revoking location permission stops the app resolving your cell. Location channels
@@ -419,8 +423,8 @@ export default function PrivacyPage() {
                 No cryptographic protection prevents a recipient from copying, screenshotting, or
                 forwarding a message after reading it.
               </strong>{" "}
-              Airhop tells the other side when you screenshot a private conversation, but that is a
-              courtesy notice, not a control.
+              Airhop tells the other side when you screenshot a private conversation, where the
+              phone can detect it, but that is a courtesy notice, not a control.
             </p>
           </section>
 
