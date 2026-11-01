@@ -328,7 +328,7 @@ function collect(file) {
 //
 //   Template literals, since the scanner bails on any line holding `${`.
 //
-//   String literals INSIDE an interpolation, the blind spot that bail creates.
+//   String literals inside an interpolation, the blind spot that bail creates.
 //   Prose in a conditional between two spans sits on a line already given up on:
 //   `${urgent ? "Urgent notice · " : "Notice · "}${content}`.
 //

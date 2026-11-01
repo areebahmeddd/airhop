@@ -62,7 +62,7 @@ function registryCodes() {
 const errors = [];
 const codes = registryCodes();
 
-// MARK: - iOS
+// ---- iOS ----
 
 // Read, not listed, so a permission added to the plist fails here until
 // it is translated.
@@ -131,7 +131,7 @@ for (const code of lprojs) {
   }
 }
 
-// MARK: - Android
+// ---- Android ----
 
 // European Portuguese sits at the bare `pt`, not at `pt-rPT`.
 //
@@ -399,7 +399,7 @@ for (const file of xmlFiles) {
   }
 }
 
-// MARK: - iOS widget
+// ---- iOS widget ----
 
 const WIDGET = path.join(ROOT, "ios", "AirhopWidget");
 const WRITE = process.argv.includes("--write");
@@ -516,7 +516,7 @@ for (const code of codes) {
   }
 }
 
-// MARK: - Report
+// ---- Report ----
 
 if (errors.length > 0) {
   console.error(errors.join("\n"));

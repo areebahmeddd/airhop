@@ -13,8 +13,8 @@
 // own instructions.
 //
 // The completeness rule, which is the part that is easy to get wrong.
-// `sha256sum -c` only checks the files the manifest LISTS. A build compiles
-// every file PRESENT. So a hostile copy passes a hash check by ADDING a file
+// `sha256sum -c` only checks the files the manifest lists. A build compiles
+// every file present. So a hostile copy passes a hash check by adding a file
 // rather than modifying one, and the added file is compiled in. Verifying the
 // hashes is therefore only half the check; the other half is proving no extra
 // files exist. The manifest header spells that out, because a verification step

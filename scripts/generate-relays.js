@@ -7,7 +7,7 @@
 // the file would be unreachable from the app.
 //
 // The CSV is vendored in this repo at assets/data/nostr_relays.csv and is the
-// single source of truth at runtime. Airhop does NOT fetch a relay list at
+// single source of truth at runtime. Airhop does not fetch a relay list at
 // runtime from any third-party URL. Bundling it means no network dependency on
 // first launch, no third party learning who is asking for relays, and no fetch
 // to fail offline (which is exactly when this app matters most).
