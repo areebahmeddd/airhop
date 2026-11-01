@@ -13,7 +13,7 @@ export function RouterLadder() {
       n: "2",
       label: "Nostr DM",
       note: "NIP-17 gift wrap",
-      cond: "no radio reaches them; Nostr key known; relay connected",
+      cond: "no radio reaches them; Nostr key known; DM relay live",
       res: "goes over the internet, shown as sent",
     },
     {

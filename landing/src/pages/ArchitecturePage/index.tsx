@@ -595,8 +595,9 @@ export default function ArchitecturePage() {
               </p>
               <p>
                 Location channels go one step further and derive a fresh secp256k1 identity per
-                geohash cell. Being present in one cell therefore cannot be correlated with being
-                present in another.
+                geohash cell. Reading one cell therefore cannot be correlated with reading another.
+                Posting can: a post carries your mesh name, and one sent where you stand also goes
+                over Bluetooth under your mesh key.
               </p>
 
               <Table
@@ -937,7 +938,10 @@ export default function ArchitecturePage() {
               <Table
                 head={["Rule", "What a relay does"]}
                 rows={[
-                  ["Forward", "Every unseen packet, on every link except the one it arrived on"],
+                  [
+                    "Forward",
+                    "Every unseen packet, once to each neighbor, never back to the one it came from",
+                  ],
                   ["TTL", "Decrement before forwarding, drop at 1"],
                   ["Deduplication", "On packet ID, so a ring of relays forwards each packet once"],
                   ["Fragments", "Passed along individually, only the addressee reassembles"],
@@ -1023,10 +1027,10 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">Panic wipe is the terminal transition.</strong> From
                 the Profile screen, one tap asks for confirmation and three quick taps skip it. It
                 deletes every Keychain and Keystore entry, clears every MMKV partition, empties the
-                cache directory (and tmp on iOS), deletes Tor's state and clears delivered
-                notifications, in under a second. The wallet file is emptied and its key destroyed,
-                so what stays on disk cannot be read. Two things are beyond its reach: photos saved
-                to the gallery, and Wi-Fi Aware pairings in the iPhone's own list.
+                cache directory (and tmp on iOS), clears delivered notifications and deletes Tor's
+                state, in under a second. The wallet file is emptied and its key destroyed, so what
+                stays on disk cannot be read. Two things are beyond its reach: photos saved to the
+                gallery, and Wi-Fi Aware pairings in the iPhone's own list.
               </p>
             </Section>
 
@@ -1826,7 +1830,7 @@ export default function ArchitecturePage() {
               id="modules"
               eyebrow="For developers · 18"
               title="Module map"
-              lede="Around 200 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
+              lede="Around 250 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
             >
               <Figure caption="The layering rule. src/core is the whole protocol and imports nothing native, which is what makes it testable in CI without a phone.">
                 <ModuleMap />
@@ -1900,8 +1904,8 @@ export default function ArchitecturePage() {
 
               <h3 className="text-ink pt-2 text-base font-bold">Packet types</h3>
               <p>
-                Everything up to <C>0x29</C> except <C>0x12</C> is bitchat-defined and shared.
-                bitchat allocates forward and has reached <C>0x2c</C>, so Airhop's own types start
+                Everything up to <C>0x2D</C> except <C>0x12</C> is bitchat-defined and shared.
+                bitchat allocates forward and has reached <C>0x2D</C>, so Airhop's own types start
                 at <C>0x50</C>, well clear of the values bitchat is still handing out. A type one
                 side does not recognize is relayed, not read, so an Airhop extension crosses a mesh
                 of bitchat phones without ever being shown to their users.
@@ -2041,7 +2045,7 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">A linkable device.</strong> Your peer ID comes from
                 your long-term key, so it does not rotate. The same phone is recognizable across
                 sessions until you regenerate the identity. Only the per-area location identities
-                are throwaway.
+                are throwaway, and only until you post in that area.
                 <br />
                 <br />
                 <strong className="text-ink">Attachments in a public room.</strong> A photo, file or
