@@ -4,7 +4,7 @@
 //   bitchat://verify?...    a bitchat verification QR, signed and time-boxed
 //
 // Shared by adding and verifying, so a bitchat user's code is read the same
-// way on both. A bitchat code that is recognised and refused says why: through
+// way on both. A bitchat code that is recognized and refused says why: through
 // a viewfinder an expired one looks exactly like an unreadable one.
 
 import { parseBitchatVerifyQr } from "@core/crypto/bitchat-verify-qr";

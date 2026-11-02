@@ -84,7 +84,7 @@ export function notifiesOnScreenshot(
 }
 
 // Why media is off here, in one sentence, for the disabled attach and mic
-// buttons. Showing them greyed rather than hiding them answers "where did the
+// buttons. Showing them grayed rather than hiding them answers "where did the
 // plus go" before it is asked, and this is what they say when tapped. Returns
 // null wherever media IS allowed, so a caller can key off this one call.
 export function mediaBlockedReason(channel: string): string | null {

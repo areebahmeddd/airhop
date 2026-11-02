@@ -25,7 +25,7 @@ const MAX_BYTES = 1024 * 1024;
 const MAX_COUNT_DELTA = 0.2;
 const MIN_RETAINED = 0.7;
 
-// Hosts named per direction before the list is summarised instead.
+// Hosts named per direction before the list is summarized instead.
 const MAX_LISTED_HOSTS = 40;
 
 // RFC 1123 host. Rejects schemes, paths, credentials, wildcards and non-ASCII,

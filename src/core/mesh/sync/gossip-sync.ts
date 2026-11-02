@@ -602,7 +602,7 @@ export interface GossipSyncWiring {
   sendToPeer: SendToPeerFn;
   // Peers we currently hold a link to, by peerID.
   getPeers: () => readonly string[];
-  // Told about every request we send, so the receive path can recognise a
+  // Told about every request we send, so the receive path can recognize a
   // solicited response. See request-sync-manager.ts.
   onRequest: (peerID: string) => void;
   // Once a tick, before any request, for state that ages on the same clock.
@@ -671,7 +671,7 @@ export class GossipSync {
     this.session = null;
   }
 
-  // Every round at once to one peer, for a neighbour just met, as bitchat-ios
+  // Every round at once to one peer, for a neighbor just met, as bitchat-ios
   // scheduleInitialSyncToPeer. Waiting for the tick leaves a phone that keeps
   // relaunching with no history, and a holder that relaunches loses it for
   // good. Two requests, well inside the eight a responder answers.
@@ -757,7 +757,7 @@ export class GossipSync {
   // author whose announce this node never heard and so cannot verify: nothing
   // here is ever served, but the ID goes into our own filters, or every peer
   // we ask would offer it again every round for as long as it stays servable.
-  // Only replies are remembered, so only a neighbour we asked could plant an
+  // Only replies are remembered, so only a neighbor we asked could plant an
   // ID here, and it could as easily withhold the packet.
   noteReply(packet: Packet): void {
     if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;

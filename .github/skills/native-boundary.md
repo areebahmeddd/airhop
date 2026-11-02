@@ -33,7 +33,7 @@ Native does **not**:
 - parse packet headers, or check TTL, flags or type;
 - make routing decisions, or know what a peer ID is;
 - encrypt, decrypt or sign;
-- decide whom to dial. LAN native reports mDNS names and opens the sockets it is told to (`lan-controller.ts`, `lan-dial-policy.ts`); `AirhopLANModule.localSubnets` reports interface addresses and judges nothing, and `isOnLocalSubnet` in `src/core/move/local-subnet.ts` decides whether a transfer code's address may be dialled.
+- decide whom to dial. LAN native reports mDNS names and opens the sockets it is told to (`lan-controller.ts`, `lan-dial-policy.ts`); `AirhopLANModule.localSubnets` reports interface addresses and judges nothing, and `isOnLocalSubnet` in `src/core/move/local-subnet.ts` decides whether a transfer code's address may be dialed.
 
 The exceptions are `native/arti/` and `native/iptproxy/`: a Tor client and its pluggable transports, each owning a SOCKS5 listener and its own lifecycle. They still know nothing about packets, routing or encryption, and both platforms build the same sources.
 

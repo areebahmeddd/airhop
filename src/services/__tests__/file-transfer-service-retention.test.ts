@@ -230,7 +230,7 @@ describe("sweepExpiredAttachments", () => {
     expect(freed).toBe(77);
   });
 
-  it("honours a caller-supplied window", () => {
+  it("honors a caller-supplied window", () => {
     const file = put({ name: "airhop_x.jpg", ageMs: 2 * DAY });
     sweepExpiredAttachments(NOW, 1 * DAY);
     expect(file.deleted).toBe(true);

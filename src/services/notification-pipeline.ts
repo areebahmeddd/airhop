@@ -8,7 +8,7 @@
 // boot-start), stopped by the panic wipe.
 //
 // Everything a handler consults is read when the event arrives, so a mute, a
-// setting or the open thread changed while it runs is honoured. What needs
+// setting or the open thread changed while it runs is honored. What needs
 // React stays in app.tsx: the navigators a tapped notification routes through,
 // and which thread is on screen.
 //

@@ -247,7 +247,7 @@ export function useVideoNoteRecorder({
         maxDuration: MAX_VIDEO_SECONDS,
         maxFileSize: MAX_FILE_BYTES,
         progressUpdateInterval: PROGRESS_INTERVAL_S,
-        // iOS honours videoBitrate only with an explicit codec.
+        // iOS honors videoBitrate only with an explicit codec.
         ...(Platform.OS === "ios" ? { codec: "avc1" as const } : {}),
       });
       uri = result?.uri;
@@ -293,10 +293,10 @@ export function useVideoNoteRecorder({
   }, []);
 
   const release = useCallback(
-    (cancelled: boolean): void => {
+    (canceled: boolean): void => {
       setCancelArmed(false);
       released();
-      finish(cancelled ? "cancel" : "send");
+      finish(canceled ? "cancel" : "send");
     },
     [finish],
   );
@@ -356,10 +356,10 @@ export function useVideoNoteRecorder({
         "worklet";
         // A locked note belongs to the overlay's buttons now.
         if (lockedShared.get()) return;
-        const cancelled = cancelArmedShared.get();
+        const canceled = cancelArmedShared.get();
         cancelArmedShared.set(false);
         slide.set(withTiming(0));
-        scheduleOnRN(release, cancelled);
+        scheduleOnRN(release, canceled);
       },
     }),
     [

@@ -181,7 +181,7 @@ class AirhopForegroundService : Service() {
             .setContentText(peerLine(shown))
             // The same drawable the manifest points expo-notifications at, so
             // the notice sitting in the shade all day and a notice about a
-            // message are recognisably one app.
+            // message are recognizably one app.
             .setSmallIcon(R.drawable.notification_icon)
             .setColor(ContextCompat.getColor(this, R.color.notification_icon_color))
             .setOngoing(true)

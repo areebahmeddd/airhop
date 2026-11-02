@@ -74,7 +74,7 @@ hitSlopFor(32); // a 32pt glyph stays 32pt on screen and 44pt to a thumb
 padding: (MIN_TOUCH - SIZE) / 2, margin: -(MIN_TOUCH - SIZE) / 2; // where hitSlop cannot reach
 ```
 
-Grow **height only** when targets are adjacent. Two 44pt-wide targets whose centres are 24pt apart overlap, and view order decides the winner rather than the finger, which is worse than the small target was.
+Grow **height only** when targets are adjacent. Two 44pt-wide targets whose centers are 24pt apart overlap, and view order decides the winner rather than the finger, which is worse than the small target was.
 
 ## Concentric Radius
 

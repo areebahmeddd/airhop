@@ -55,7 +55,7 @@ function msg(overrides: Partial<ChatMessage>): ChatMessage {
 }
 
 describe("isDirectMessage", () => {
-  it("recognises the dm: prefix", () => {
+  it("recognizes the dm: prefix", () => {
     expect(isDirectMessage("dm:abc")).toBe(true);
     expect(isDirectMessage("#city")).toBe(false);
   });
@@ -161,7 +161,7 @@ describe("notificationContentFor", () => {
     ).toBe("group:abc123");
   });
 
-  it("summarises an attachment when there is no text", () => {
+  it("summarizes an attachment when there is no text", () => {
     const content = notificationContentFor(
       msg({ text: "", attachment: { type: "image", uri: "x" } }),
     );
@@ -205,7 +205,7 @@ describe("notificationContentFor with previews hidden", () => {
     expect(content.body).not.toContain("hi all");
   });
 
-  it("an attachment is not summarised either", () => {
+  it("an attachment is not summarized either", () => {
     // A "📷 Photo" body still discloses that a photo arrived, and from whom
     // once combined with the title.
     const content = notificationContentFor(

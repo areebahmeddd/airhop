@@ -6,8 +6,8 @@
 //
 // The properties that matter:
 //   * Nothing is published until the user turns it on AND the mesh is up.
-//   * Turning it off stops publishing, not just dialling.
-//   * Who gets dialled is the ring's answer, capped, and never dialled twice.
+//   * Turning it off stops publishing, not just dialing.
+//   * Who gets dialed is the ring's answer, capped, and never dialed twice.
 //   * A device that cannot run it is asked once, not polled forever.
 
 const mockStartLAN = jest.fn<Promise<void>, [string]>();
@@ -100,7 +100,7 @@ describe("consent", () => {
     expect(lan.isStarted).toBe(true);
   });
 
-  test("turning it off stops publishing, not just dialling", async () => {
+  test("turning it off stops publishing, not just dialing", async () => {
     const lan = running();
     await settle();
 
@@ -166,7 +166,7 @@ describe("the published name", () => {
   });
 });
 
-describe("dialling", () => {
+describe("dialing", () => {
   function discover(lan: LANController, names: readonly string[]): void {
     for (const serviceName of names) lan.onPeerDiscovered(serviceName);
   }
@@ -242,12 +242,12 @@ describe("dialling", () => {
     await settle();
     discover(lan, ["9000000000000000"]);
     await settle(SETTLED);
-    const dialled = mockConnectToPeer.mock.calls.length;
+    const dialed = mockConnectToPeer.mock.calls.length;
 
     lan.setEnabled(false);
     await settle(60_000);
 
-    expect(mockConnectToPeer.mock.calls.length).toBe(dialled);
+    expect(mockConnectToPeer.mock.calls.length).toBe(dialed);
   });
 
   test("ignores our own record coming back off the network", async () => {

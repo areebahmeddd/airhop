@@ -7,7 +7,7 @@
 
        Split light/dark, because the shade follows the system theme rather than
        the app's, and a single value has to be legible on both. Airhop's ink on a
-       light shade; its background colour on a dark one. -->
+       light shade; its background color on a dark one. -->
   <color name="notification_icon_color">#111111</color>
   <!-- The home screen widget, which also follows the system theme. The
        surface, textPrimary and textSecondary tokens of src/ui/theme.ts, so the

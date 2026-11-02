@@ -36,7 +36,7 @@ export function hasWiFiPairing(): boolean {
 // without the screen reaching through MeshService for it.
 let active: WiFiPairingWatcher | null = null;
 
-// Labels and colours are read here because native owns no user-facing content
+// Labels and colors are read here because native owns no user-facing content
 // and no visual value. `colors` comes from the caller, a component holding
 // `useThemeColors()`, so the launcher answers the theme setting.
 //

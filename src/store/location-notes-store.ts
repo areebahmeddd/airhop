@@ -9,7 +9,7 @@
 // the two, preferring the board copy of a bridged note.
 //
 // A geohash notice exists twice, and the two copies are retracted by different
-// mechanisms, so both are honoured here:
+// mechanisms, so both are honored here:
 //
 //   the board post    a signed BOARD_POST tombstone flooded over BLE, applied
 //                     by `suppressBridged` (board-store calls it)
@@ -31,7 +31,7 @@ export interface LocationNote {
   content: string;
   isUrgent: boolean;
 
-  // The matched `g` tag, which can be a neighbour of the subscribed cell.
+  // The matched `g` tag, which can be a neighbor of the subscribed cell.
   geohash: string;
 
   createdAtMs: number;
@@ -66,7 +66,7 @@ export function noticeAuthor(nickname: string | undefined): string {
 }
 
 // Whether the note is the bridged copy this fingerprint describes. The geohash
-// must match exactly: the subscription also surfaces neighbouring cells, where
+// must match exactly: the subscription also surfaces neighboring cells, where
 // a same-text note is a different notice.
 export function matchesBridged(
   fingerprint: BridgedNoticeFingerprint,
@@ -116,7 +116,7 @@ export const useLocationNotesStore = create<NoticesState>((set, get) => ({
     if (get().seenIDs[note.id]) return; // O(1) duplicate rejection
     const now = Date.now();
     if (note.expiresAtMs !== undefined && note.expiresAtMs <= now) return;
-    // Already retracted. A relay need not honour a NIP-09 deletion, and a
+    // Already retracted. A relay need not honor a NIP-09 deletion, and a
     // tombstone never reaches relays at all, so the note will be served again
     // and the check belongs on the way in.
     if (get().suppressed.some((f) => matchesBridged(f, note))) {

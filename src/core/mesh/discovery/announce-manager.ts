@@ -193,7 +193,7 @@ function writeTlv(buf: number[], type: number, value: Uint8Array): void {
 // The nickname TLV budget, in BYTES of UTF-8 (see the layout note at the top).
 const MAX_NICKNAME_BYTES = 32;
 
-// Never writes TLV 0x04 (neighbour IDs): the list would hand any passive
+// Never writes TLV 0x04 (neighbor IDs): the list would hand any passive
 // listener the local adjacency graph.
 export function encodeAnnouncePayload(
   identity: Identity,

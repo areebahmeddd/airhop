@@ -1,4 +1,4 @@
-// Runtime behaviour: catalog resolution, interpolation, plural selection, and
+// Runtime behavior: catalog resolution, interpolation, plural selection, and
 // the rule that decides which language is actually on screen.
 //
 // The hooks are not exercised here: they are thin wrappers over the same `getT`

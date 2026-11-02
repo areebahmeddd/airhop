@@ -22,7 +22,7 @@ const SETTLE_MS = 2_500;
 interface Reading {
   reachable: boolean;
   // Android reports a network before it has validated internet on it, then
-  // again once it has. A relay dialled in between fails and is dropped, so
+  // again once it has. A relay dialed in between fails and is dropped, so
   // validation is an edge of its own. Connecting is one too, because where the
   // validation probe is blocked the second report never comes.
   validated: boolean;

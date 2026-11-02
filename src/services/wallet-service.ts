@@ -1,6 +1,6 @@
 // Wallet service: the single place that talks to Cashu mints, so the rules that
 // protect real money live here rather than in each screen. A screen that
-// open-codes "pick proofs, serialise, delete them" loses the value on any crash
+// open-codes "pick proofs, serialize, delete them" loses the value on any crash
 // between the delete and the delivery.
 //
 // Guarantees:
@@ -389,7 +389,7 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
 // Refuse a mint call that would leak this device's IP while the user believes
 // they are on Tor. iOS routes only the Nostr WebSocket through Arti, so a plain
 // fetch would go in the clear and tell the mint exactly who is swapping which
-// proofs. Android's OkHttp client carries the proxy, so the request is tunnelled
+// proofs. Android's OkHttp client carries the proxy, so the request is tunneled
 // or fails closed, and refusing there would take the wallet away to prevent a
 // leak that cannot happen.
 //
@@ -421,7 +421,7 @@ function assertMintNetworkAllowed(): void {
 }
 
 // Why a mint call would be refused right now, or null when it would go out, so
-// the screen can grey an action out and say why before it is tapped.
+// the screen can gray an action out and say why before it is tapped.
 export function mintNetworkBlock(): "internet-off" | "tor" | null {
   if (internetOff()) return "internet-off";
   if (Platform.OS !== "ios" || !torClaimed()) return null;
@@ -664,7 +664,7 @@ function persistMintSnapshot(
 // gone), the seed and the nutzap key (both from the wiped keychain). Bumping
 // the epoch stops in-flight work from writing back.
 //
-// A reconcile pass on the wire cannot be cancelled, but dropping its handle
+// A reconcile pass on the wire cannot be canceled, but dropping its handle
 // stops later callers joining it. A kept seed would go on deriving proofs from a
 // phrase the user can no longer see, and a kept P2PK key would put the previous
 // identity's pubkey into the next kind 10019 after re-onboarding.
@@ -1482,7 +1482,7 @@ async function receiveTokenOnce(
   const url = normalizeMintUrl(info.mintUrl);
   const record = store.mints[url];
 
-  // Only mints the user chose, or a stranger's token could enrol an unvetted
+  // Only mints the user chose, or a stranger's token could enroll an unvetted
   // mint and leave this wallet holding its paper. Refusing consumes nothing:
   // add the mint and receive again. The nutzap path enforces the same rule.
   if (record === undefined) {
@@ -1495,7 +1495,7 @@ async function receiveTokenOnce(
 
   const { signingKey } = await screenLocks(info);
 
-  // With no network, DLEQ is the only defence against a forged token.
+  // With no network, DLEQ is the only defense against a forged token.
   const dleq = verifyTokenOffline(
     info.token,
     record?.keysetCache as KeyChainCache | undefined,
@@ -1844,7 +1844,7 @@ export async function quoteSend(params: {
     const spend = selected.reduce((s, p) => s + p.amount, 0);
     // `matchStored` silently drops proofs it cannot map. Trusted blindly, that
     // quotes `exact: true` with a short or empty list and a negative fee, and
-    // `prepareSend` reserves nothing, serialises a worthless token and reports
+    // `prepareSend` reserves nothing, serializes a worthless token and reports
     // the payment sent; nothing downstream can tell. Throw into the catch,
     // which re-selects with our own selector: the same path as a cold cache,
     // so no new failure mode.
@@ -1891,7 +1891,7 @@ export async function quoteSend(params: {
   }
 }
 
-// Reserve the proofs, serialise the token and open a pending transaction.
+// Reserve the proofs, serialize the token and open a pending transaction.
 // Nothing is destroyed until `confirmSend`; the token is kept for re-sharing.
 export async function prepareSend(params: {
   amount: number;
@@ -2885,7 +2885,7 @@ async function restoreSwapOutputs(
     outputs: outputs.map((output) => output.blindedMessage),
   });
 
-  // The mint returns only the subset it recognises: pair by blinded message.
+  // The mint returns only the subset it recognizes: pair by blinded message.
   const indexByBlinded = new Map(
     outputs.map((output, index) => [output.blindedMessage.B_, index]),
   );
@@ -3076,7 +3076,7 @@ async function runReconcilePass(): Promise<void> {
   }
 
   // Unanswered swaps, before the send check: until replayed, their value is
-  // unaccounted for, not merely mislabelled.
+  // unaccounted for, not merely mislabeled.
   let replayed = 0;
   for (const tx of state.history) {
     if (tx.status !== "pending" || tx.swapPreview === undefined) continue;
@@ -4191,7 +4191,7 @@ async function peekNutzapKey(): Promise<void> {
 
 // Whether a chat card says "Locked" rather than offering Claim. Display only:
 // a Claim tap runs the full check in `receiveToken`, so an unknown key errs
-// towards Claim.
+// toward Claim.
 export function tokenLockedToOthers(info: TokenInfo): boolean {
   if (nutzapKeySeen === undefined) return false;
   const key = nutzapKeySeen ?? undefined;

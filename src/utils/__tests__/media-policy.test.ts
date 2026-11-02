@@ -38,7 +38,7 @@ describe("canSendMedia", () => {
   });
 });
 
-// The greyed attach and mic buttons say this when tapped, so every blocked
+// The grayed attach and mic buttons say this when tapped, so every blocked
 // context has to give its OWN reason. A private channel told "it would never
 // arrive" (the location-channel reason) would be simply wrong, and the named
 // location channels are `#`-prefixed exactly like a private channel, so that

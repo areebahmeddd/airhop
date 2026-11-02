@@ -100,8 +100,8 @@ describe("parseBitchatVerifyQr", () => {
     );
   });
 
-  // Normalised after the signature is checked, which covers the bytes as sent.
-  it("normalises a signed nickname where it enters", () => {
+  // Normalized after the signature is checked, which covers the bytes as sent.
+  it("normalizes a signed nickname where it enters", () => {
     const out = parseBitchatVerifyQr(
       makeQr({ nick: " M\u202Eo\u200Bm\n(verified)" }),
       NOW,

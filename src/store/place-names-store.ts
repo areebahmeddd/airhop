@@ -89,7 +89,7 @@ export const usePlaceNamesStore = create<PlaceNamesState>()(
         if (get().names[key] !== undefined || inFlight.has(key)) return;
         // The geocoder is a system service (Play services, Apple's daemons), so
         // neither the internet switch nor the Tor proxy reaches it: the cell's
-        // centre would go out from this device's own address. Nothing is
+        // center would go out from this device's own address. Nothing is
         // marked in flight, so a later call looks the cell up once allowed.
         if (internetOff() || torClaimed()) return;
         inFlight.add(key);

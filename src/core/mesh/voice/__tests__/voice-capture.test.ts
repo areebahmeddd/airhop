@@ -406,9 +406,9 @@ describe("burst close is the talker's decision", () => {
       const { packets, session, feed, releaseStop } = flushingSession();
       await session.startPtt();
       hold(feed);
-      const cancelling = session.cancelPtt();
+      const canceling = session.cancelPtt();
       releaseStop();
-      await cancelling;
+      await canceling;
 
       expect(session.finalizedRecording()).toBeNull();
       expect(kinds(packets)).not.toContain("end");

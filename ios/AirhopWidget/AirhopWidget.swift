@@ -6,7 +6,7 @@
 // and the Mesh tab cannot disagree. MeshWidgetState.swift decides what a
 // snapshot means; Android draws the same states from the same rules.
 //
-// Drawn to match the Android widget and the app: theme.ts colours, the pixel
+// Drawn to match the Android widget and the app: theme.ts colors, the pixel
 // mark, the count as the app draws a display figure. The extension targets
 // iOS 17, the first with containerBackground and disfavoredLocations; on iOS 16
 // the app runs and the widget is simply not offered.
@@ -132,7 +132,7 @@ struct MeshWidgetView: View {
     .accessibilityElement(children: .combine)
     .containerBackground(Palette.surface, for: .widget)
     // app.tsx answers it by switching to the Mesh tab, the screen this
-    // summarises.
+    // summarizes.
     .widgetURL(URL(string: "airhop://mesh"))
   }
 }

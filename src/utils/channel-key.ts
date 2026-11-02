@@ -1,7 +1,7 @@
 // The channel-key format, as pure string handling.
 //
 // A channel is identified by a prefixed key: `dm:<peerID>`, `group:<id>`,
-// `geohash:<gh>` for a teleported cell, or a bare `#name`. Recognising and
+// `geohash:<gh>` for a teleported cell, or a bare `#name`. Recognizing and
 // building those keys needs no service, no store and no network, so it lives
 // here where every layer can import it. Keeping the geohash predicates inside
 // geohash-channel-service made utils/ depend on services/, which inverts the

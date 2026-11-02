@@ -221,7 +221,7 @@ export function unwrapDm(
 
   // The rumor's own clock has to be plausible.
   //
-  // The gift wrap's outer timestamp is randomised by design (NIP-17), so the
+  // The gift wrap's outer timestamp is randomized by design (NIP-17), so the
   // inner rumor's `created_at` is the only claim about when this was sent, and
   // nothing signs it into a window. A relay, or the sender, can date it
   // arbitrarily. Threads sort by time, so a far-future rumor pins itself to the

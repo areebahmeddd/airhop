@@ -33,7 +33,7 @@ internal object AwareDial {
 
     // The tiebreak token is regenerated per attach so it never identifies the
     // device across sessions; the instance id is per process so a peer is
-    // recognised while its app runs and unlinkable once it restarts. Both
+    // recognized while its app runs and unlinkable once it restarts. Both
     // travel in serviceSpecificInfo, token first.
     const val TOKEN_BYTES = 8
     const val INSTANCE_BYTES = 8
@@ -86,7 +86,7 @@ internal object AwareDial {
         return instanceFrom(frame, HELLO_MAGIC.size + 1)
     }
 
-    // Lower token dials first. A tie is a 1-in-2^64 coincidence, and dialling
+    // Lower token dials first. A tie is a 1-in-2^64 coincidence, and dialing
     // on it beats both sides waiting; so does a peer whose token is unknown.
     fun prefersInitiator(mine: ByteArray, theirs: ByteArray?): Boolean {
         if (theirs == null) return true

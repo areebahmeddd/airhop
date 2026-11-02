@@ -1,6 +1,6 @@
 // How the picker's view moves and what it selects, ported from bitchat-ios's
 // GlobeStateTests and GeohashPickerTargetTests. The selection must be the cell
-// under the screen centre, so these pin encodes against fixed views.
+// under the screen center, so these pin encodes against fixed views.
 
 import { encodeGeohash, geohashCenter } from "../geohash-grid";
 import {
@@ -51,7 +51,7 @@ describe("startTarget", () => {
 });
 
 describe("selection", () => {
-  it("follows the view centre once laid out", () => {
+  it("follows the view center once laid out", () => {
     const c = makeCamera({ lat: 48.2, lon: 16.4, precision: 4 }, false);
     expect(c.selected).toBe("");
     expect(setViewport(c, BASE, SCREEN)).toBe(true);

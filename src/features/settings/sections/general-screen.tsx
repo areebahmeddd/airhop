@@ -320,7 +320,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
               }
             />
             <GroupDivider />
-            {/* Here, not in Privacy & security: its neighbours there are about
+            {/* Here, not in Privacy & security: its neighbors there are about
                 what leaves this device, and this is about what stays on it. */}
             <SettingLinkRow
               id="media-retention"

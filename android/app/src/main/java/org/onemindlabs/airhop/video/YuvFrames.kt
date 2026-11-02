@@ -1,5 +1,5 @@
 // Camera pictures into the encoder: a YUV 4:2:0 frame held as plain arrays,
-// and the scaler that rotates it upright, centre-crops it to the stream's 3:4
+// and the scaler that rotates it upright, center-crops it to the stream's 3:4
 // and downsamples it into the encoder's input image.
 //
 // Ported from bitchat-android's YuvFrames. Index maps are cached per source
@@ -192,7 +192,7 @@ internal class YuvScaler(private val targetWidth: Int, private val targetHeight:
         val rotation = ((source.rotationDegrees % 360) + 360) % 360
         val uprightWidth = if (rotation == 90 || rotation == 270) source.height else source.width
         val uprightHeight = if (rotation == 90 || rotation == 270) source.width else source.height
-        // Centre-crop the upright picture to the target's aspect, then sample.
+        // Center-crop the upright picture to the target's aspect, then sample.
         val scale =
             minOf(uprightWidth.toDouble() / targetWidth, uprightHeight.toDouble() / targetHeight)
         val offsetX = (uprightWidth - targetWidth * scale) / 2.0

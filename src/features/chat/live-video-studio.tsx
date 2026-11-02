@@ -156,22 +156,22 @@ export default function LiveVideoStudio({
   // stream will have.
   useEffect(() => {
     if (phaseRef.current !== "preview") return;
-    let cancelled = false;
+    let canceled = false;
     setCameraReady(false);
     LiveVideoSendSession.openCamera(
       LIVE_VIDEO_QUALITIES[quality],
       facingRef.current,
     )
       .then(() => {
-        if (!cancelled) setCameraReady(true);
+        if (!canceled) setCameraReady(true);
       })
       .catch(() => {
-        if (cancelled) return;
+        if (canceled) return;
         callbacks.current.onToast(t("chat.live_video.camera_failed"));
         callbacks.current.onClose();
       });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [quality]);
 

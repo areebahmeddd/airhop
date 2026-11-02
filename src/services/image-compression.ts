@@ -43,7 +43,7 @@ import {
 // transfer minutes nobody sees.
 const MAX_EDGE = 1600;
 
-// Below this, JPEG artefacts are visible on a phone screen, so no rung goes
+// Below this, JPEG artifacts are visible on a phone screen, so no rung goes
 // under it however low the starting quality is. The edge shrinks instead.
 const MIN_QUALITY = 0.3;
 
@@ -135,7 +135,7 @@ async function fitToBudget(
 ): Promise<PreparedImage | null> {
   const original: PreparedImage = {
     uri,
-    // Resolved, never assumed. Defaulting an unlabelled file to image/jpeg
+    // Resolved, never assumed. Defaulting an unlabeled file to image/jpeg
     // would put that on the wire for a PNG, and the receiver checks the
     // declared type against the file's magic bytes: it would throw the photo
     // away for lying about itself.
@@ -150,7 +150,7 @@ async function fitToBudget(
   // The type is also checked against the bytes. A caller may have renamed the
   // file (`.png` on a JPEG) and passed no usable type, so the type came from
   // the name; the receiver compares the declared type with the magic bytes and
-  // drops a mismatch, so a mislabelled file is re-encoded into a JPEG that is
+  // drops a mismatch, so a mislabeled file is re-encoded into a JPEG that is
   // what it says.
   if (
     SENT_AS_IS.has(original.mimeType) &&

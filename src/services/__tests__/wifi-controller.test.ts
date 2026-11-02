@@ -546,7 +546,7 @@ describe("the pairing gate", () => {
   });
 
   test("treats a native unpaired refusal the same way, without a retry ladder", async () => {
-    // Defence in depth: the gate above should have caught this, so reaching
+    // Defense in depth: the gate above should have caught this, so reaching
     // native at all means the two disagreed. The response is the same either
     // way, and it must not become a poll.
     mockStartWiFi.mockImplementation(() => rejectWith("WIFI_AWARE_UNPAIRED"));

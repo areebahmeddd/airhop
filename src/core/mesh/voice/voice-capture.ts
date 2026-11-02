@@ -131,7 +131,7 @@ export interface VoiceCaptureConfig {
   // Best-effort, like the broadcast path: a frame that cannot go out right now
   // is simply not sent. See emit().
   onDmPayload?: (payload: Uint8Array) => void;
-  // Our neighbour count, which a public burst's TTL follows (see
+  // Our neighbor count, which a public burst's TTL follows (see
   // origin-ttl.ts). 0 (sparse) when not given.
   getDegree?: () => number;
 }
@@ -338,7 +338,7 @@ export class VoiceCaptureSession {
   }
 
   // The burst as a standalone, playable file, or null when nothing was
-  // captured. Read after stopPtt; cancelPtt discards it, because a cancelled
+  // captured. Read after stopPtt; cancelPtt discards it, because a canceled
   // burst should leave nothing behind even though the live audio already
   // played on the far side.
   finalizedRecording(): Uint8Array | null {

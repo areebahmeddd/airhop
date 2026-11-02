@@ -40,7 +40,7 @@ private const val KEY_MESH_ON = "mesh_on"
 private const val KEY_BLUETOOTH_OFF = "bluetooth_off"
 private const val KEY_AT_MS = "at_ms"
 
-// app.tsx answers it by switching to the Mesh tab, the screen this summarises.
+// app.tsx answers it by switching to the Mesh tab, the screen this summarizes.
 private const val MESH_LINK = "airhop://mesh"
 
 // Sent only to this provider, by the alarm `scheduleStale` sets.
@@ -147,7 +147,7 @@ class AirhopMeshWidget : AppWidgetProvider() {
         // process would otherwise leave up until the 30-minute update. Inexact
         // and not a wakeup: it needs no exact-alarm permission, and lands by the
         // time the screen is on to show it. One alarm, replaced by every draw and
-        // cancelled once nothing on screen can age.
+        // canceled once nothing on screen can age.
         private fun scheduleStale(context: Context, atMs: Long?) {
             val alarms = context.getSystemService(AlarmManager::class.java) ?: return
             val pending =

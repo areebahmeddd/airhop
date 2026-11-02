@@ -145,7 +145,7 @@ private const val CONNECT_RETRY_MS = 750L
 private const val CONNECT_ATTEMPTS = 3
 private const val CONNECT_TIMEOUT_MS = 7_000
 
-// How long the side the tiebreak did not pick waits before dialling itself.
+// How long the side the tiebreak did not pick waits before dialing itself.
 // Discovery is often one-directional (fact 1), so the preferred side may never
 // have matched us.
 private const val RESPONDER_GRACE_MS = 20_000L
@@ -196,7 +196,7 @@ private const val SESSION_TERMINATIONS_LIMIT = 3
 private const val SESSION_TERMINATIONS_WINDOW_MS = 2 * 60_000L
 
 // After a link closes, the far side is releasing its half of the path at the
-// same moment; dialling into that is the connect that aborts.
+// same moment; dialing into that is the connect that aborts.
 private const val REDIAL_DELAY_MS = 2_000L
 
 private const val PEER_STALE_MS = 5 * 60_000L
@@ -1064,7 +1064,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         peer.token = token
         subscribeHandles[peerHandle] = instance
         logI(
-            "Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialling" else "waiting for its dial"}"
+            "Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialing" else "waiting for its dial"}"
         )
         if (
             peer.state == DialState.IDLE && prefersInitiator(peer) && now() >= peer.nextAttemptAtMs
@@ -1088,7 +1088,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         peer.role = Role.INITIATOR
         peer.stateSinceMs = now()
         val messageId = sendCounter.getAndIncrement()
-        logI("Dialling ${peer.instance.take(8)}, epoch ${peer.epoch}, attempt ${peer.attempts + 1}")
+        logI("Dialing ${peer.instance.take(8)}, epoch ${peer.epoch}, attempt ${peer.attempts + 1}")
         try {
             pendingSends[messageId] = peer.instance
             session.sendMessage(
@@ -1209,7 +1209,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             }
             DialState.REQUESTED,
             DialState.PATH_PENDING -> {
-                // Both dialled at once. The tokens settle it the same way on
+                // Both dialed at once. The tokens settle it the same way on
                 // both ends: the lower keeps its attempt, the higher yields.
                 if (peer.role == Role.INITIATOR) {
                     if (prefersInitiator(peer)) return
@@ -1222,7 +1222,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             DialState.IDLE -> {}
         }
 
-        logI("Peer ${instance.take(8)} dialling us, epoch $epoch, opening our side")
+        logI("Peer ${instance.take(8)} dialing us, epoch $epoch, opening our side")
         peer.state = DialState.PATH_PENDING
         peer.role = Role.RESPONDER
         peer.stateSinceMs = now()

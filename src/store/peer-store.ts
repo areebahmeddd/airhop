@@ -40,7 +40,7 @@ interface PeerState {
   // Record a fresh RSSI reading for an already-known peer. No-op for unknown
   // peers: a signal reading alone doesn't tell us their identity.
   updateRssi: (peerID: string, rssi: number) => void;
-  // Bind or release a peer's direct-neighbour standing from the LINK lifecycle
+  // Bind or release a peer's direct-neighbor standing from the LINK lifecycle
   // rather than from announce contents. A link is physical: it cannot be
   // claimed, only held.
   setDirect: (peerID: string, isDirect: boolean) => void;

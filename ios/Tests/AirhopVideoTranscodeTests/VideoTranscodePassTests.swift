@@ -185,7 +185,7 @@ final class VideoTranscodePassTests: XCTestCase {
 
     do {
       _ = try await pass.run { _ in }
-      XCTFail("a cancelled pass finished")
+      XCTFail("a canceled pass finished")
     } catch let error as VideoTranscodeError {
       XCTAssertEqual(error, .cancelled)
     }
@@ -203,7 +203,7 @@ final class VideoTranscodePassTests: XCTestCase {
       _ = try await pass.run { fraction in
         if fraction > 0.2 { pass.cancel() }
       }
-      XCTFail("a cancelled pass finished")
+      XCTFail("a canceled pass finished")
     } catch let error as VideoTranscodeError {
       XCTAssertEqual(error, .cancelled)
     }

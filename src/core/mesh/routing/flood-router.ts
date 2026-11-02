@@ -27,7 +27,7 @@ import { Deduplicator } from "./deduplicator";
 // bitchat-ios TransportConfig.messageTTLDefault. Anything higher is clamped.
 const DEFAULT_TTL = 7;
 
-// Neighbour count at which the mesh counts as dense, bitchat-ios
+// Neighbor count at which the mesh counts as dense, bitchat-ios
 // TransportConfig.bleHighDegreeThreshold.
 const HIGH_DEGREE_THRESHOLD = 6;
 
@@ -60,7 +60,7 @@ export interface RelayDecision {
 
 // The highest TTL a relay at this degree lets a broadcast of this class leave
 // with, before its own hop is taken off. Shared with originTtl, so what this
-// node authors starts inside the range its neighbours' relays produce.
+// node authors starts inside the range its neighbors' relays produce.
 //
 // Live media floods like a fragment, a stream that a dense graph must
 // contain; announces and urgent board posts get a hop more than other traffic
@@ -105,7 +105,7 @@ function randomInt(min: number, max: number): number {
 }
 
 // Ordinary broadcast jitter, by degree. Sparse relays go almost at once so a
-// packet is not cancelled before it spreads; dense ones wait, so someone
+// packet is not canceled before it spreads; dense ones wait, so someone
 // else's relay usually wins and duplicate suppression does the rest.
 function broadcastDelayMs(degree: number): number {
   if (degree <= 2) return randomInt(10, 40);
@@ -182,7 +182,7 @@ export class FloodRouter {
   // relayed and a loop must end.
   private readonly fragmentDedup = new Deduplicator();
 
-  // `getDegree` is our current neighbour count, which the relay policy scales
+  // `getDegree` is our current neighbor count, which the relay policy scales
   // with. It defaults to 0 (sparse), which keeps the router usable in tests
   // without a live peer count.
   constructor(

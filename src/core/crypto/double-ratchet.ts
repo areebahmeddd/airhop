@@ -195,7 +195,7 @@ export function initReceiver(
 
 // Whether this ratchet can encrypt yet.
 //
-// A receiver-initialised state has NO sending chain: the Double Ratchet gives
+// A receiver-initialized state has NO sending chain: the Double Ratchet gives
 // it one only when it performs a DH ratchet step, which happens on the first
 // message it receives. So the side that answered the handshake cannot send
 // until the side that started it has spoken. That is the algorithm working

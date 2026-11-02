@@ -2,7 +2,7 @@
 //
 // A Golomb-coded set is compact enough to gossip over BLE, which is the only
 // reason catch-up is affordable at all. The encoding is shared with bitchat, so
-// these pin the bytes as much as the behaviour: a filter this app builds must
+// these pin the bytes as much as the behavior: a filter this app builds must
 // be readable by an app it was not compiled with.
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -271,7 +271,7 @@ describe("GossipSync: link-local contract", () => {
     }
   });
 
-  // ttl and isRSR are both normalised out of the signing preimage, so retagging
+  // ttl and isRSR are both normalized out of the signing preimage, so retagging
   // a stored packet must leave its original signature verifiable. If this ever
   // breaks, every sync response becomes an unverifiable packet the requester
   // drops: a silent, total failure of catch-up.
@@ -899,7 +899,7 @@ describe("GossipSync: one request per round", () => {
   });
 });
 
-describe("GossipSync: a neighbour just met", () => {
+describe("GossipSync: a neighbor just met", () => {
   test("is asked every round at once, each registered before it is sent", () => {
     jest.useFakeTimers();
     try {

@@ -379,7 +379,7 @@ describe("FragmentManager reassembly timeout", () => {
     expect(reassembled).toBeNull();
   });
 
-  test("continues() recognises only a live stream, without starting one", () => {
+  test("continues() recognizes only a live stream, without starting one", () => {
     // The receive path admits a late fragment on this answer, so it must say
     // no to a stream it has never seen, and asking must not create one.
     jest.useFakeTimers();
@@ -644,7 +644,7 @@ describe("a spoofed fragment cannot damage somebody else's transfer", () => {
     expect(reassembled!.payload).toEqual(packet.payload);
   });
 
-  // A stream is sized by the type its fragments claim, so one labelled as an
+  // A stream is sized by the type its fragments claim, so one labeled as an
   // announce cannot buffer a file's worth of memory.
   test("a stream cannot buffer past the frame its claimed type allows", () => {
     const manager = new FragmentManager();

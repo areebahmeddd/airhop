@@ -272,7 +272,7 @@ export async function publishNutzap(params: {
 // Fires once per event. Relays replay, so the caller dedupes (wallet-store
 // tracks settled ids). `mintUrls` are the exact strings our kind 10019 lists:
 // NIP-61's `#u` filter, so relays never hand over nutzaps from mints we have
-// not signalled, and a compliant sender's `u` tag matches byte for byte.
+// not signaled, and a compliant sender's `u` tag matches byte for byte.
 export function subscribeNutzaps(
   myPubkey: string,
   mintUrls: string[],

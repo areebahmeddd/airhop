@@ -25,7 +25,7 @@
 //
 // Bluetooth first, and LAN last: couriers are the first few `directPeers()`,
 // and a phone on a busy network holds more LAN peers than Bluetooth ones. A
-// Bluetooth neighbour walks away with the mail; a LAN peer is only reachable
+// Bluetooth neighbor walks away with the mail; a LAN peer is only reachable
 // while the network is.
 export const TRANSPORT_KINDS = ["ble", "wifi", "lan"] as const;
 
@@ -103,7 +103,7 @@ export class LinkRegistry {
   // not this file's business.
   //
   // Nothing is returned while the peer still holds another link. It has not
-  // gone anywhere, and reporting a departure would retire a live neighbour's
+  // gone anywhere, and reporting a departure would retire a live neighbor's
   // session state and drop it off the radar until its next announce.
   close(linkID: string): string | undefined {
     this.kindByLink.delete(linkID);
@@ -185,7 +185,7 @@ export class LinkRegistry {
     return this.kindByLink.get(linkID);
   }
 
-  // The strict test. A peer reachable only by flooding through a neighbour is
+  // The strict test. A peer reachable only by flooding through a neighbor is
   // not here: a flood is a hope, a link is a route.
   hasPeer(peerID: string): boolean {
     return this.linksByPeer.has(peerID);
@@ -221,7 +221,7 @@ export class LinkRegistry {
   // One link per announced peer, its fastest, plus every link no peer has
   // announced on yet, since that could be anyone. What a live stream goes down:
   // a peer held on Bluetooth and LAN takes the LAN copy alone, and the
-  // Bluetooth airtime goes to neighbours with nothing faster.
+  // Bluetooth airtime goes to neighbors with nothing faster.
   fastestLinks(): readonly Link[] {
     const links: Link[] = [];
     const seen = new Set<string>();
@@ -276,7 +276,7 @@ export class LinkRegistry {
   // bitchat, whose degree is `peerRegistry.connectedCount`:
   //
   //   * Peers, because Bluetooth is dual-role. Two phones that meet each dial
-  //     the other, so one neighbour is two links, and counting links reads a
+  //     the other, so one neighbor is two links, and counting links reads a
   //     room as twice as crowded as it is.
   //   * Bluetooth, because the delay exists for radio contention. Every phone
   //     in earshot hears a packet at the same instant and rebroadcasting

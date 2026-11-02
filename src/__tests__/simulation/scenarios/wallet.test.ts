@@ -331,7 +331,7 @@ test("W04 an undelivered send is reclaimable rather than lost", async () => {
   s.check("a token was prepared", token !== null);
   // Offline there is no change: the wallet cannot make exactly 100 out of
   // {256, 32, 8, 4}, so it spends the smallest set that covers it and the
-  // difference goes to the recipient. That is the documented behaviour, and the
+  // difference goes to the recipient. That is the documented behavior, and the
   // number to assert is "something left the balance and is accounted for", not
   // a figure that assumes change exists.
   const reserved = alice.reservedBalance();
@@ -1179,7 +1179,7 @@ test("W13 Tor on iOS blocks mint traffic instead of leaking it", async () => {
   s.check(
     "Tor up on iOS blocks mint traffic",
     iphone.mintNetworkBlocked(),
-    "the UI greys the buttons off this",
+    "the UI grays the buttons off this",
   );
 
   // Blocked means refused: the withdrawal must not reach the network or deduct
@@ -1209,7 +1209,7 @@ test("W13 Tor on iOS blocks mint traffic instead of leaking it", async () => {
 });
 
 test("W14 a tampered token is refused in a dead zone, a real one is not", async () => {
-  // The offline forgery check, the only defence with no mint to ask. It needs
+  // The offline forgery check, the only defense with no mint to ask. It needs
   // the mint to issue NUT-12 witnesses: without one every verdict is
   // "unchecked", and a forgery looks like a legitimate offline transfer.
   const s = (scenario = new Scenario({
@@ -1518,13 +1518,13 @@ test("W25 a token cannot relabel sats as dollars", async () => {
     return;
   }
   const decoded = getDecodedToken(genuine, []);
-  const relabelled = getEncodedToken({ ...decoded, unit: "usd" });
+  const relabeled = getEncodedToken({ ...decoded, unit: "usd" });
 
   for (const online of [false, true]) {
     mint.setConditions({ offline: !online });
-    const refused = await bob.receiveTokenResult(relabelled);
+    const refused = await bob.receiveTokenResult(relabeled);
     s.check(
-      `the relabelled token is refused ${online ? "online" : "in a dead zone"}`,
+      `the relabeled token is refused ${online ? "online" : "in a dead zone"}`,
       refused === null,
       refused === null ? "refused" : `outcome=${refused.outcome}`,
     );
@@ -1553,7 +1553,7 @@ test("W25 a token cannot relabel sats as dollars", async () => {
 });
 
 test("W28 a token from before a key rotation still pays", async () => {
-  // Mints rotate keys and keep honouring the old ones as inputs. NUT-01 serves
+  // Mints rotate keys and keep honoring the old ones as inputs. NUT-01 serves
   // keys for active keysets only, so after a refresh the old keyset is listed
   // with no keys cached. That is a gap in what this phone knows, not evidence
   // of forgery.
@@ -1624,7 +1624,7 @@ test("W15 an unpaid invoice mints nothing, however hard the user taps", async ()
   // Tapping "I've paid" before the payment settles, or after it failed. The
   // mint has had no money, so the only correct outcome is a refusal. Minting
   // here would create coins backed by nothing, and the wallet would show a
-  // balance that no mint will honour.
+  // balance that no mint will honor.
   const s = (scenario = new Scenario({
     id: "W15",
     title: "claiming a deposit whose invoice was never paid",
@@ -1732,7 +1732,7 @@ test("W16 a balance the mint has already spent does not linger", async () => {
     `held ${String(held.length)} proofs, expected ${String(survivors.length)}`,
   );
   s.check(
-    "and keeps everything the mint still honours",
+    "and keeps everything the mint still honors",
     alice.balance() === surviving,
     `balance=${alice.balance()} expected=${String(surviving)}`,
   );

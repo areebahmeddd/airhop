@@ -198,7 +198,7 @@ interface ChatState {
   // Both halves are needed before the two threads may be folded into one, and
   // the reason is attribution rather than tidiness. Merging is what switches our
   // replies from the pseudonymous per-cell rail onto the durable one, and the
-  // durable inbox recognises a sender only by a Nostr key it already knows.
+  // durable inbox recognizes a sender only by a Nostr key it already knows.
   // (It cannot do otherwise: the envelope carries a sender peer ID, but that
   // field is unauthenticated, so trusting it would let anyone file a message
   // into anyone's thread.)
@@ -425,7 +425,7 @@ const mmkvStorage = {
 // Coalesce persistence: a write costs the size of the whole store, not the size
 // of what changed.
 //
-// zustand/persist serialises the entire persisted slice on every set(), which
+// zustand/persist serializes the entire persisted slice on every set(), which
 // here is every channel and thread, up to 200 messages each, JSON-stringified
 // and handed to MMKV synchronously on the JS thread. One arriving message pays
 // for the room's entire history.
@@ -478,7 +478,7 @@ export function flushChatPersistence(): void {
 // leaves it armed is a wipe with a queued write of the data it destroyed.
 //
 // The current call order happens to be safe, since clearing the store replaces
-// the snapshot before any timer can run. Cancelling first makes it true by
+// the snapshot before any timer can run. Canceling first makes it true by
 // construction instead of by accident.
 export function dropPendingChatPersistence(): void {
   if (writeTimer !== null) {

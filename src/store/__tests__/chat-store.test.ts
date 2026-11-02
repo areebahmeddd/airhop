@@ -497,7 +497,7 @@ describe("joinPrivateChannel key clashes", () => {
 
 // Persistence throttling.
 //
-// Writes are coalesced because zustand/persist serialises the WHOLE store on
+// Writes are coalesced because zustand/persist serializes the WHOLE store on
 // every set(), so one arriving message costs a full JSON encode of every
 // thread. The throttle makes that once per window instead of once per message.
 // What it introduces is a window in which a complete plaintext snapshot lives

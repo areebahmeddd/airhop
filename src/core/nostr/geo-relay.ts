@@ -26,7 +26,7 @@ export interface RelayEntry {
   lng: number; // decimal degrees
 }
 
-// Haversine distance in kilometres between two (lat, lng) points.
+// Haversine distance in kilometers between two (lat, lng) points.
 export function haversineKm(
   lat1: number,
   lng1: number,
@@ -144,7 +144,7 @@ export class GeoRelayDirectory {
     return sorted.slice(0, count).map((e) => e.url);
   }
 
-  // Relays nearest the CENTRE of a geohash cell, not the user's own position.
+  // Relays nearest the CENTER of a geohash cell, not the user's own position.
   //
   // This distinction is essential: every participant in a cell must converge on
   // the same relay set. Selecting by personal position would give two people in
@@ -170,7 +170,7 @@ export class GeoRelayDirectory {
 // the custom relays alone, trading interop for control.
 //
 // Off with none is unreachable while the store holds RELAY_SOURCE_INVARIANT; the
-// branch stays as the last defence against a cell with no relays, which fails
+// branch stays as the last defense against a cell with no relays, which fails
 // silently.
 export function mergeGeoRelays(
   nearest: readonly string[],

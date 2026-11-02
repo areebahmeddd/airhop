@@ -137,7 +137,7 @@ Messages propagate through a **deterministic controlled flood** (not pure floodi
 
 - LRU cache of **1,000 entries** with **5-minute expiry**.
 - Keyed on: sender + timestamp + type + payload digest.
-- A scheduled relay is **cancelled** when a duplicate arrives first from another relay.
+- A scheduled relay is **canceled** when a duplicate arrives first from another relay.
 
 **Jitter:**
 

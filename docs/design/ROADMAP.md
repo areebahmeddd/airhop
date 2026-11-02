@@ -169,7 +169,7 @@ Nothing typed into it leaves the phone, and it does not touch the mesh protocol,
 - [ ] Device fit: a model the phone lacks the memory or storage for is shown but cannot be downloaded
 - [ ] Pure logic (device fit, context window, prompt) in `src/core/ai/`, the engine and model files in `src/services/`
 - [ ] Chat UI in `src/features/ai/`: streamed answers, stop, and history kept on the phone, cleared by the panic wipe
-- [ ] A bad answer reported by email from inside the app, since Google Play requires in-app reporting for generative AI and Airhop has no server to receive it; every answer labelled as AI-generated, as the EU AI Act requires
+- [ ] A bad answer reported by email from inside the app, since Google Play requires in-app reporting for generative AI and Airhop has no server to receive it; every answer labeled as AI-generated, as the EU AI Act requires
 
 **Milestone:** A phone gets a model once, by download or from a nearby phone, then answers questions with no connection at all while the mesh keeps running.
 

@@ -15,7 +15,7 @@
 //
 // Neither of those is a state the app can detect from the inside, because a
 // promise that will never settle is indistinguishable from one that is about to.
-// The only defence is a deadline.
+// The only defense is a deadline.
 //
 // A timeout is NOT an error here. Every caller has a defensible answer for "we
 // do not know yet" - re-onboard, ask again later, let the reconciler read the

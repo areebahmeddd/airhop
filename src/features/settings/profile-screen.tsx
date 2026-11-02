@@ -542,7 +542,7 @@ export default function ProfileScreen({
 
   // The same card the QR encodes, as text, for when there is no camera between
   // the two people. Copy only: the string is ~250 characters, so the box shows
-  // enough to recognise and the glyph does the work.
+  // enough to recognize and the glyph does the work.
   function handleCopyContactCode(): void {
     copyContactCode(qrValue);
   }
@@ -1015,7 +1015,7 @@ export default function ProfileScreen({
             {T("settings.qr.title")}
           </Text>
           <View style={styles.qrLarge}>
-            {/* Level H (30% recoverable) pays for the modules the centre mark
+            {/* Level H (30% recoverable) pays for the modules the center mark
                 covers, so a smudged or angled scan still reads. */}
             <QRCode
               value={qrValue}

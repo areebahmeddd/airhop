@@ -446,7 +446,7 @@ pub fn stop() -> i32 {
     // is all it takes. Holding the lock makes that start wait for the teardown
     // instead, bounded by the timeout below.
     //
-    // Android serialises these calls on one thread anyway; iOS does not, which
+    // Android serializes these calls on one thread anyway; iOS does not, which
     // is why the lock is held here rather than in either app.
     let mut guard = match state().lock() {
         Ok(g) => g,

@@ -55,7 +55,7 @@ const CONTENT_MAX = 512;
 
 // Drawn height of the Urgent pill and an expiry chip. They sit side by side, so
 // they grow to the touch floor in height only: sideways slop would overlap a
-// neighbour and let view order, not the finger, pick the target.
+// neighbor and let view order, not the finger, pick the target.
 const CONTROL_HEIGHT = 26;
 const { top: CONTROL_SLOP_V } = hitSlopFor(CONTROL_HEIGHT);
 const CONTROL_SLOP = {
@@ -521,7 +521,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
       borderRadius: Radius.full,
-      // Transparent when inactive, so selecting changes the border's colour
+      // Transparent when inactive, so selecting changes the border's color
       // and never the control's geometry.
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: "transparent",

@@ -112,7 +112,7 @@ test("a network coming back nudges the mesh and Tor once, after it settles", asy
   expect(mockReconcileIfDue).toHaveBeenCalledTimes(1);
 });
 
-// Android: connected first, validated a few seconds later. A relay dialled in
+// Android: connected first, validated a few seconds later. A relay dialed in
 // between fails and is dropped, so the validation nudges again.
 test("a network validating after it connected nudges again", async () => {
   await watch(WIFI);

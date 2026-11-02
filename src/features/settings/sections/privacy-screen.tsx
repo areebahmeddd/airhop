@@ -110,7 +110,7 @@ const SECTIONS: LegalSection[] = [
       {
         bullets: [
           "**What a mint can see.** Your IP address, the amounts you deposit and withdraw, and when. Mints are third parties whose retention and privacy practices are outside this project's control.",
-          "**What a mint cannot see.** Who you are, who you paid, or which coins you deposited became which coins you spent. Cashu signs tokens blindly, so that link is severed by the maths rather than by policy.",
+          "**What a mint cannot see.** Who you are, who you paid, or which coins you deposited became which coins you spent. Cashu signs tokens blindly, so that link is severed by the math rather than by policy.",
           '**Tor.** On Android, Tor covers mint traffic along with the app\'s other web requests. On iOS, Tor only wraps Nostr connections, so **mint requests are blocked while Tor is on** unless you turn on "Allow mint traffic over clear net" in Settings. Mesh payments are unaffected either way.',
           "**Nutzaps are public.** A NIP-61 nutzap is an unencrypted Nostr event. The ecash is locked to the recipient so nobody else can spend it, but relays and observers can see that one public key paid another, and the amount. The encrypted-message fallback does not have this property.",
           "**Recovery phrase.** Created automatically when the wallet is first set up, so coins can be recovered from the start. It is stored only in your device's secure storage, is never transmitted, is never shown to a mint, and is displayed only after Face ID, a fingerprint or your passcode confirms it is you. Anyone who obtains it can spend your balance.",

@@ -65,7 +65,7 @@ TLV with 2-byte big-endian lengths, byte-identical to bitchat-ios `CourierEnvelo
 
 With `0x05` absent the envelope is v1, sealed to the static key. A v1-only decoder skips `0x05`, still carries the envelope, and cannot open one addressed to it; that degradation is intended.
 
-**Recipient tag** = `HMAC-SHA256(key = recipient static Noise key, "bitchat-courier-tag-v1" || epochDay u32 BE)[0:16]`, always from the **static** key, v1 or v2, or carriers stop recognising mail. Matching tries yesterday's, today's and tomorrow's (`candidateTags`). Anyone who heard one announce can compute a peer's tags for any day: do not call courier mail unlinkable.
+**Recipient tag** = `HMAC-SHA256(key = recipient static Noise key, "bitchat-courier-tag-v1" || epochDay u32 BE)[0:16]`, always from the **static** key, v1 or v2, or carriers stop recognizing mail. Matching tries yesterday's, today's and tomorrow's (`candidateTags`). Anyone who heard one announce can compute a peer's tags for any day: do not call courier mail unlinkable.
 
 **Plaintext** is a typed Noise `PRIVATE_MESSAGE` (`0x01`), whose message ID and content are each capped at 255 UTF-8 bytes. bitchat refuses any other payload type. A message too long to encode has no courier form and stays in the outbox.
 

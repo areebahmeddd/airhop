@@ -93,8 +93,8 @@ interface Props {
 // recency when it isn't (a peer heard via a multi-hop relay has no RSSI of its
 // own, since we never had a direct radio link to measure).
 //
-// The rings are labelled by signal strength rather than distance. RSSI swings
-// tens of dB with orientation, bodies, walls and radio, so any metre figure
+// The rings are labeled by signal strength rather than distance. RSSI swings
+// tens of dB with orientation, bodies, walls and radio, so any meter figure
 // derived from it would be invented.
 const RSSI_STRONG = -60; // dBm, roughly same-room
 const RSSI_MEDIUM = -80; // dBm, beyond that it's the edge of usable range
@@ -114,7 +114,7 @@ const RING_LABEL_KEYS: [TranslationKey, TranslationKey, TranslationKey] = [
 
 // Cardinal letters as data rather than four near-identical JSX blocks with four
 // different hand-tuned offset pairs. Each offset is relative to the canvas
-// centre and expressed against the outer ring radius, so the set stays put if
+// center and expressed against the outer ring radius, so the set stays put if
 // the ring fractions above are ever retuned.
 const COMPASS: {
   label: string;
@@ -135,7 +135,7 @@ const SELF_SIZE = 42;
 // nothing and leave a blank Mesh tab.
 const MIN_CANVAS = 180;
 
-// And a ceiling. Android 16 stopped honouring an orientation lock above 600dp
+// And a ceiling. Android 16 stopped honoring an orientation lock above 600dp
 // and Android 17 removed the opt-out, so a foldable's inner screen hands this
 // view ~850dp and an uncapped dial pushes the caption behind the tab bar. A
 // phone gives ~390dp, so the cap is inert there.
@@ -161,7 +161,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   // An endlessly expanding ring is the textbook vestibular trigger, and it
   // carries nothing the status line below the dial does not already say in
   // words. So under "reduce motion" the sweep does not run at all (WCAG 2.3.3)
-  // and the centre tap answers with a haptic instead of a wave.
+  // and the center tap answers with a haptic instead of a wave.
   const reducedMotion = useReducedMotion();
   // The sonar means "a scan is running". It sweeps when one is, and stops when
   // one is not, whichever of the three reasons applies. Anything else is the
@@ -189,7 +189,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     if (reducedMotion) {
       // The wave is the whole feedback for this tap, so with motion off the
       // touch still has to land somewhere. A selection tick is the quietest
-      // acknowledgement the OS offers, which suits an action that is
+      // acknowledgment the OS offers, which suits an action that is
       // deliberately cosmetic anyway.
       acknowledged();
       return;
@@ -227,7 +227,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   // rather than left frozen mid-bloom: a stalled half-drawn ring reads as the
   // app having hung, an empty dial reads as switched off, which is the truth.
   // The line under the radar says which of the three reasons it is, and the
-  // centre tap keeps its own one-shot wave so the screen still answers a touch.
+  // center tap keeps its own one-shot wave so the screen still answers a touch.
   useEffect(() => {
     if (!scanning || reducedMotion) {
       ring1.setValue(0);
@@ -319,7 +319,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   const outerR = C * RING_FR[2];
 
   // Every wave is a circle the size of the outer ring, scaled up from the
-  // centre as it fades. The tap wave peaks a little brighter than the ambient
+  // center as it fades. The tap wave peaks a little brighter than the ambient
   // ones so a touch reads over the sweep.
   const waveBox = {
     width: outerR * 2,
@@ -623,7 +623,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     // Physical marginLeft on purpose: the radar maps real positions and never
     // mirrors. The label is 16pt wider than its avatar, pulled back by half to
-    // centre over it.
+    // center over it.
     peerLabel: {
       fontSize: FontSize["2xs"],
       color: Colors.textMuted,

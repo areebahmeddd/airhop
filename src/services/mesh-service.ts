@@ -461,7 +461,7 @@ const LATE_FRAME_MS = 5_000;
 
 // How many different peers must look out of time before we blame our own clock.
 // Two separates "that peer is replaying" from "everyone disagrees with us", and
-// is low enough to catch it in a room with only a couple of neighbours.
+// is low enough to catch it in a room with only a couple of neighbors.
 const CLOCK_SKEW_PEER_THRESHOLD = 2;
 
 // The other phone announces every 4 to 30 seconds and not every one reaches us,
@@ -651,7 +651,7 @@ export class MeshService {
   private outboxSweepTimer: ReturnType<typeof setInterval> | null = null;
   private lastOutboxRetryMs = 0;
   private outboxRetryTimer: ReturnType<typeof setTimeout> | null = null;
-  // A sync request owed to a neighbour just met, by peer.
+  // A sync request owed to a neighbor just met, by peer.
   private readonly initialSyncTimers = new Map<
     string,
     ReturnType<typeof setTimeout>
@@ -893,7 +893,7 @@ export class MeshService {
       // be able to catch up on messages we originated, not just relayed ones.
       this.gossip.track(packet);
       const raw = encodePacket(packet);
-      // Every neighbour, every radio.
+      // Every neighbor, every radio.
       if (raw.length <= MAX_BLE_FRAME) {
         return this.links.broadcast(bytesToBase64(raw));
       }
@@ -940,11 +940,11 @@ export class MeshService {
       // TTL are already on the packet, every node relays it (handleFrame), and
       // only the addressee's handler claims it. File transfers are excluded:
       // they are far too large to flood and stay a direct-link feature. No-op
-      // when we have no neighbour to relay through.
+      // when we have no neighbor to relay through.
       //
-      // Any neighbour, on any transport, not Bluetooth alone: a phone may hold
+      // Any neighbor, on any transport, not Bluetooth alone: a phone may hold
       // LAN links and no Bluetooth at all, and past the LAN cap not everyone
-      // is a direct neighbour, so a DM to someone a hop away still has a relay.
+      // is a direct neighbor, so a DM to someone a hop away still has a relay.
       if (
         this.links.size() > 0 &&
         packet.type !== PacketType.FILE_TRANSFER &&
@@ -1030,7 +1030,7 @@ export class MeshService {
       // relayed copy arriving first.
       //
       // So this is the one broadcast that goes on every link rather than once
-      // per neighbour (see everyLink), as bitchat-ios skips its per-peer
+      // per neighbor (see everyLink), as bitchat-ios skips its per-peer
       // collapse for direct announces. Two links to one peer means two copies
       // and the deduplicator drops one.
       //
@@ -1168,7 +1168,7 @@ export class MeshService {
         sendToPeer: (peerID, packet) => {
           this.unicastFn(peerID, packet);
         },
-        // Direct neighbours only. A peer reachable across three hops cannot
+        // Direct neighbors only. A peer reachable across three hops cannot
         // answer a link-local (ttl 0) request, so asking it wastes a write and
         // registers a pending request that can never be satisfied.
         getPeers: () => [...this.links.directPeers()],
@@ -1303,7 +1303,7 @@ export class MeshService {
           // and a room of phones meeting at once would saturate the air.
           //
           // The packet is still sent on the new link every time, so a new
-          // neighbour always learns us immediately; only the re-origination is
+          // neighbor always learns us immediately; only the re-origination is
           // throttled. Inside the window the SAME bytes go out, so every relay's
           // deduplicator suppresses the flood instead of amplifying it.
           this.links
@@ -1739,7 +1739,7 @@ export class MeshService {
     }
     // Arrived whole over Wi-Fi or LAN and too long for a Bluetooth frame: whole
     // onward where it fits, cut up where it does not, or every Bluetooth
-    // neighbour refuses it and the mesh splits along the radio boundary.
+    // neighbor refuses it and the mesh splits along the radio boundary.
     const b64 = bytesToBase64(raw);
     void this.links.broadcast(b64, { kind: "wifi", exclude: ingressLinkID });
     void this.links.broadcast(b64, { kind: "lan", exclude: ingressLinkID });
@@ -1764,7 +1764,7 @@ export class MeshService {
   }
 
   // A link closed on any transport. A peer whose last link this was is no
-  // longer a direct neighbour, whichever radio carried it, and everything
+  // longer a direct neighbor, whichever radio carried it, and everything
   // scoped to the link session goes with it. A peer we still hold another
   // link to has not left.
   private onLinkGone(linkID: string): void {
@@ -1788,7 +1788,7 @@ export class MeshService {
   // A packet longer than one Bluetooth frame, written as fragments: the radio
   // truncates or refuses a longer write, so it would never arrive. bitchat's BLE
   // service splits every packet the same way. To one link, or to every
-  // Bluetooth neighbour when none is given, less `excludeLinkID`. Spaced as file
+  // Bluetooth neighbor when none is given, less `excludeLinkID`. Spaced as file
   // fragments are, since they share the radio's write queue. Wi-Fi and LAN
   // carry the packet whole.
   //
@@ -1976,7 +1976,7 @@ export class MeshService {
     }
   }
 
-  // A neighbour's announce reaches both links of a dual-linked pair as the
+  // A neighbor's announce reaches both links of a dual-linked pair as the
   // same bytes, and the copy on the second link is a duplicate, dropped before
   // onAnnounce could bind it. That link would stay unbound until the next
   // announce happened to arrive on it first. So a duplicate direct announce on
@@ -2172,8 +2172,8 @@ export class MeshService {
   // something.
   //
   // Live means live. A signature proves who spoke, never when: the signing
-  // preimage normalises ttl and isRSR, so a burst captured off the air replays
-  // byte-for-byte and verifies perfectly. The deduplicator is no defence: its
+  // preimage normalizes ttl and isRSR, so a burst captured off the air replays
+  // byte-for-byte and verifies perfectly. The deduplicator is no defense: its
   // window is five minutes and its state is per device, so it does nothing for
   // a phone that never heard the original. Without this, someone could record
   // Alice in one room and play her voice out of strangers' phones days later,
@@ -2429,7 +2429,7 @@ export class MeshService {
           // Capture died on its own: a call took the mic, or the encoder gave
           // up. End the burst so the far side gets an END rather than silence.
           //
-          // Only while it is still the open burst: once released or cancelled,
+          // Only while it is still the open burst: once released or canceled,
           // that path owns the recording, and ending it again here would stop
           // whichever burst holds the slot now.
           if (this.pttCapture !== capture) return;
@@ -2465,12 +2465,12 @@ export class MeshService {
   // Everyone in range already heard this as it was spoken. The file is for
   // everyone else: a peer who was out of range, one who arrived late, and the
   // chat itself, which would otherwise have no record that anything was said.
-  // Returns null when nothing was captured or the burst was cancelled.
+  // Returns null when nothing was captured or the burst was canceled.
   async stopVoiceBurst(): Promise<{
     bytes: Uint8Array;
     durationMs: number;
     // Which burst this recording is of. The note is named after it, which is
-    // what lets a listener's live bubble and this file be recognised as the
+    // what lets a listener's live bubble and this file be recognized as the
     // same thing rather than shown twice. See sendLiveBurstAsNote.
     burstIDHex: string;
   } | null> {
@@ -2610,8 +2610,8 @@ export class MeshService {
     const dmPeer = channel.startsWith("dm:") ? channel.slice(3) : null;
     const ttl = originTtl(PacketType.VIDEO_FRAME, this.links.degree());
     // Wi-Fi Aware and LAN carry far more than Bluetooth. A room stream goes to
-    // each neighbour on its fastest link, so it is held to Bluetooth's pace
-    // only while some neighbour has nothing faster. Decided once: a neighbour
+    // each neighbor on its fastest link, so it is held to Bluetooth's pace
+    // only while some neighbor has nothing faster. Decided once: a neighbor
     // arriving later on Bluetooth alone is met by refused writes instead.
     const overBluetooth =
       dmPeer === null
@@ -3666,7 +3666,7 @@ export class MeshService {
       return;
     }
 
-    // A whole file, sealed to us. The two accepted values are canonicalised
+    // A whole file, sealed to us. The two accepted values are canonicalized
     // here: 0x20 is what every current client sends and what we emit, and 0x09
     // is the value prerelease bitchat-ios builds shipped. Accepting the alias
     // costs nothing and those builds exist; emitting it is what we never do.
@@ -3743,7 +3743,7 @@ export class MeshService {
     const pm = decodePrivateMessagePacket(payload.body);
     if (pm === null) return;
 
-    // bitchat's favourite notice is control text, not a message. Acknowledged,
+    // bitchat's favorite notice is control text, not a message. Acknowledged,
     // as bitchat acknowledges it, so the sender stops retrying; never shown.
     if (isFavoriteControl(pm.content)) {
       this.sendReceipt(senderID, DmPayloadType.DELIVERED, pm.messageID);
@@ -3869,7 +3869,7 @@ export class MeshService {
     // values are shared (0x02 read, 0x03 delivered), so no remapping is needed.
     const state = this.ratchetFor(peerID);
     // canEncrypt, not merely "a ratchet exists". The side that ANSWERED the
-    // Noise handshake is initialised as a receiver and has no sending chain
+    // Noise handshake is initialized as a receiver and has no sending chain
     // until the initiator's first ratchet message arrives, so encrypting would
     // throw. Read receipts are sent the moment a thread is opened, so opening a
     // DM you were invited into, before replying, is the likeliest way to get
@@ -4165,14 +4165,14 @@ export class MeshService {
     this.gossip.track(packet);
 
     if (isDirectAnnounce) {
-      const newNeighbour = !this.links.directPeers().includes(peerID);
+      const newNeighbor = !this.links.directPeers().includes(peerID);
       // The binding is what lets a send prefer the higher-throughput radio for
       // attachments and DR messages.
       this.links.bind(linkID, peerID);
-      if (newNeighbour) this.scheduleInitialSync(peerID);
+      if (newNeighbor) this.scheduleInitialSync(peerID);
       // Direct standing follows the LINK, not the announce that revealed it.
       // Inferred from packet.ttl alone it would depend on which announce
-      // happened to arrive first, so a genuine neighbour could be recorded as
+      // happened to arrive first, so a genuine neighbor could be recorded as
       // indirect and then trimmed out of the radar by a flood of invented
       // peers. A held link is physical and cannot be claimed by anybody else.
       usePeerStore.getState().setDirect(peerID, true);
@@ -4240,7 +4240,7 @@ export class MeshService {
         nickname: info.nickname,
         lastSeenMs: Date.now(),
         noisePubKeyHex: bytesToHex(info.noisePubKey),
-        // Carried through so the radar can protect real neighbours when it has
+        // Carried through so the radar can protect real neighbors when it has
         // to trim: an announce relayed across the mesh is cheap to fake in
         // bulk, one that arrived over a link we hold is not.
         isDirect: isDirectAnnounce,
@@ -4262,7 +4262,7 @@ export class MeshService {
       this.flushPendingGroupInvites(peerID);
       // And hand them any envelopes we're carrying for third parties.
       this.sprayCourierTo(peerID, isDirectAnnounce);
-      // A new neighbour is also a new carrier for mail we owe people nobody
+      // A new neighbor is also a new carrier for mail we owe people nobody
       // here reaches, as bitchat-ios's courierBecameAvailable.
       if (isDirectAnnounce) this.courierQueuedMail();
       // A saved contact on a link we hold gets a session now rather than on
@@ -4323,7 +4323,7 @@ export class MeshService {
 
   // How many couriers one message is deposited with. Distinct from the spray
   // budget stamped on the envelope (COURIER_INITIAL_COPIES), despite both being
-  // four: this bounds how many neighbours are asked to carry, that bounds how
+  // four: this bounds how many neighbors are asked to carry, that bounds how
   // far each copy travels.
   private static readonly MAX_COURIERS_PER_MESSAGE = 4;
 
@@ -4349,7 +4349,7 @@ export class MeshService {
   );
 
   // Couriers each outgoing message was given to, and when that round began,
-  // keyed by message id. Sealing is randomised and CourierStore.deposit merges
+  // keyed by message id. Sealing is randomized and CourierStore.deposit merges
   // only identical bytes, so without this the retry sweep would hand a fresh
   // envelope to the same carriers every pass, exhausting their per-depositor
   // quota (2 for a non-contact), after which every later deposit from this
@@ -4509,7 +4509,7 @@ export class MeshService {
 
   // The static key to seal a peer's courier mail to, whether or not they are
   // reachable: the key an announce pinned, else a saved contact's, as
-  // bitchat-ios reads its favourites (CourierDirectory.noiseKey). A contact's
+  // bitchat-ios reads its favorites (CourierDirectory.noiseKey). A contact's
   // key must derive to the ID, as for contactSigningKey.
   private courierSealKey(peerID: string): Uint8Array | undefined {
     const pinned = this.registry.noiseKeyFor(peerID);
@@ -4618,7 +4618,7 @@ export class MeshService {
     //
     // The quota is charged to `packet.senderID`, an unauthenticated header
     // field. Unverified, any peer in range could put a known peer's ID on an
-    // envelope and spend that peer's storage allowance, or, at the favourite
+    // envelope and spend that peer's storage allowance, or, at the favorite
     // tier, a contact's larger one.
     //
     // bitchat gates the same way in acceptCourierDeposit before its store is
@@ -5202,7 +5202,7 @@ export class MeshService {
     // Nostr for the built-in location channels.
     //
     // A teleported cell (geohash:<gh>) is a REMOTE place: nobody in Bluetooth
-    // range is in it, so a BLE broadcast would only leak the cell to neighbours
+    // range is in it, so a BLE broadcast would only leak the cell to neighbors
     // for no reach. It goes over Nostr only, matching bitchat's Nostr-only
     // location channels.
     const teleported = isManualGeoChannel(channel);
@@ -5323,7 +5323,7 @@ export class MeshService {
   // Adds it as a joined channel (persisted, and it shows under Your Rooms), then
   // refreshes so its Nostr subscription comes up immediately. Returns the
   // channel key so the caller can open the thread. The geohash is assumed
-  // already validated/normalised by the caller.
+  // already validated/normalized by the caller.
   joinGeohash(geohash: string): string {
     const channel = geohashChannel(geohash);
     useChatStore.getState().addChannel(channel);
@@ -6595,7 +6595,7 @@ export class MeshService {
 
     // Record it as ours before publishing: when our own relay subscription
     // echoes it back, the downlink rebroadcaster must not push it onto the mesh
-    // again (the originating peer and its neighbours already hold the BLE copy).
+    // again (the originating peer and its neighbors already hold the BLE copy).
     this.publishedEventIDs.add(event.id);
     this.geoChannels?.publishCarriedEvent(event, carrier.geohash);
   }
@@ -6671,7 +6671,7 @@ export class MeshService {
     }
   }
 
-  // Whether this phone carries deposits for its neighbours: the gateway
+  // Whether this phone carries deposits for its neighbors: the gateway
   // toggle, and the internet switch the toggle depends on.
   private gatewayAcceptsDeposits(): boolean {
     const { gatewayEnabled, internetEnabled } = useSettingsStore.getState();
@@ -6980,11 +6980,11 @@ export class MeshService {
     const drState = this.ratchetFor(recipientPeerID);
     const hasDirectLink = this.links.hasPeer(recipientPeerID);
     // A directed encrypted packet reaches the peer over the mesh either by a
-    // direct link (unicast) or, lacking one, by flooding through a neighbour who
+    // direct link (unicast) or, lacking one, by flooding through a neighbor who
     // relays it on (multi-hop, bitchat-style). With no direct link AND no
-    // neighbour to relay through, the mesh cannot help, so we fall to Nostr.
-    // Every radio, not Bluetooth alone: a neighbour reachable only on the WiFi
-    // fast path is still a neighbour to hand the packet to, and counting it out
+    // neighbor to relay through, the mesh cannot help, so we fall to Nostr.
+    // Every radio, not Bluetooth alone: a neighbor reachable only on the WiFi
+    // fast path is still a neighbor to hand the packet to, and counting it out
     // spends the internet on a hop this node can make itself.
     const canReachMesh = hasDirectLink || this.links.size() > 0;
     // Every mesh tier needs the peer heard within the registry TTL, as
@@ -7047,14 +7047,14 @@ export class MeshService {
 
     // Priority 3: an established Noise session over the mesh. Comes BEFORE the
     // internet on purpose: when a radio already reaches this peer (directly, or
-    // multi-hop through a neighbour), using a relay instead would spend data and
+    // multi-hop through a neighbor), using a relay instead would spend data and
     // hand a third party the metadata for a hop we can make ourselves. The
     // messageID rides inside the bitchat PrivateMessagePacket so receipts resolve
     // to the right bubble.
     //
     // Gated on `canReachMesh` like Priority 1: the packet is recipient-addressed
     // and TTL-bounded, so with no direct link the unicast floods it for a relay
-    // to carry (multi-hop). With no direct link AND no neighbour, the mesh can't
+    // to carry (multi-hop). With no direct link AND no neighbor, the mesh can't
     // help, so this is skipped and Nostr takes over.
     if (peer?.session !== undefined && canReachMesh) {
       // Only "sent" means it actually went out. A payload too long for one
@@ -7881,7 +7881,7 @@ export class MeshService {
         if (!connected) {
           // Withdraw the gateway claim now rather than at the next tick. The
           // capability is gated on live relays, and an offline gateway would
-          // otherwise go on being chosen by its neighbours for up to thirty
+          // otherwise go on being chosen by its neighbors for up to thirty
           // seconds. The connect path below re-announces for the other edge.
           this.announceManager.announceNow();
           // And the bridge banner, whose "active" depends on live relays.
@@ -8010,7 +8010,7 @@ export class MeshService {
         useMeshStateStore
           .getState()
           .setBridgeState(status.active, status.peopleAcross),
-      // As bitchat-ios does on onActiveCellChanged: mesh-only neighbours
+      // As bitchat-ios does on onActiveCellChanged: mesh-only neighbors
       // compose for the cell they last heard, so a new one goes out now.
       onActiveCellChanged: () => this.announceManager.announceNow(),
     });
@@ -8086,7 +8086,7 @@ export class MeshService {
           // thread into theirs (bindNostrPubkey).
           const nostrKey = `nostr_${dm.senderPubkey}`;
           const senderKey = peerID ?? nostrKey;
-          // Blocking has to be honoured on the internet path too, otherwise a
+          // Blocking has to be honored on the internet path too, otherwise a
           // blocked peer simply switches to Nostr and keeps reaching you (and
           // re-creates the conversation you deleted). Both forms, because the
           // peerID mapping does not outlive the block (forgetPeer drops it),

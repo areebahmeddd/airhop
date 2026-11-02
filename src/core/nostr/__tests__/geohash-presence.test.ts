@@ -95,7 +95,7 @@ describe("presence", () => {
       expect(block.startsWith(city)).toBe(true);
     });
 
-    // The relay set is chosen from the decoded centre, so the centre has to
+    // The relay set is chosen from the decoded center, so the center has to
     // land back in the cell it came from.
     it("round-trips a geohash back to within its own cell", () => {
       const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);

@@ -1,6 +1,6 @@
 // Teleport to a geohash: open a public location channel for a cell you are not
 // physically in. The user picks the cell on the globe or types its geohash, we
-// normalise and validate it exactly as bitchat does, then hand it to
+// normalize and validate it exactly as bitchat does, then hand it to
 // mesh-service, which joins the cell as a `geohash:<gh>` channel and brings up
 // its Nostr subscription. The channel then appears under Your Rooms and
 // interoperates with bitchat clients in the same cell.
@@ -57,11 +57,11 @@ const NAME_LOOKUP_DEBOUNCE_MS = 500;
 
 const REMOVE_ICON_SIZE = 15;
 
-// Keyed the way `geohashNeighbours` names the eight cells. The chip shows the
+// Keyed the way `geohashNeighbors` names the eight cells. The chip shows the
 // short point; the label is a whole sentence per direction, since the
 // direction word takes a different case or preposition in most languages.
 const DIRECTION_KEYS: Record<
-  NeighbourDirection,
+  NeighborDirection,
   { short: TranslationKey; open: TranslationKey }
 > = {
   N: { short: "chat.jump.dir.n", open: "chat.jump.open_n" },
@@ -108,7 +108,7 @@ export function GeohashJumpSheet({
   // its first read.
   const canPick = visible && globeAvailable();
 
-  // The cell this phone is standing in, at neighbourhood precision. Null with
+  // The cell this phone is standing in, at neighborhood precision. Null with
   // no location grant, which is why every part of this sheet that uses it is
   // conditional rather than assumed.
   const homeCell = visible
@@ -118,8 +118,8 @@ export function GeohashJumpSheet({
   // The eight cells touching yours, one tap each: people most often want the
   // next street or the next town over. The globe and the field cover anywhere
   // further.
-  const neighbours = useMemo(
-    () => (homeCell ? geohashNeighbours(homeCell) : []),
+  const neighbors = useMemo(
+    () => (homeCell ? geohashNeighbors(homeCell) : []),
     [homeCell],
   );
 
@@ -137,9 +137,8 @@ export function GeohashJumpSheet({
   // once ever, since the store caches a cell's name forever.
   useEffect(() => {
     if (!visible) return;
-    for (const n of neighbours)
-      usePlaceNamesStore.getState().resolve(n.geohash);
-  }, [visible, neighbours]);
+    for (const n of neighbors) usePlaceNamesStore.getState().resolve(n.geohash);
+  }, [visible, neighbors]);
 
   // The typed cell, once it is long enough to mean somewhere. Debounced:
   // resolving on every keystroke would geocode "r", "rd", "rdr" and so on,
@@ -313,13 +312,13 @@ export function GeohashJumpSheet({
       )}
       {error !== null && <Text style={styles.error}>{error}</Text>}
 
-      {neighbours.length > 0 && (
+      {neighbors.length > 0 && (
         <View style={styles.saved}>
           <UpperText style={styles.savedLabel}>
             {T("chat.jump.nearby")}
           </UpperText>
           <View style={styles.nearbyWrap}>
-            {neighbours.map((n) => (
+            {neighbors.map((n) => (
               <Pressable
                 key={n.geohash}
                 style={({ pressed }) => [

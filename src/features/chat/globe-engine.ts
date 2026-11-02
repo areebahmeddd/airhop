@@ -204,7 +204,7 @@ export function stepPrecision(
 
 // ---- Touch ----
 //
-// One handler for every touch rather than stacked recognisers, as both bitchat
+// One handler for every touch rather than stacked recognizers, as both bitchat
 // globes do: the centroid of all fingers pans, their spread pinches, in the
 // same gesture, and a quick tap focuses at once while a second tap close
 // behind it also zooms. Waiting to rule out a double tap would make every
@@ -405,7 +405,7 @@ export function touchesUp(
   engine: SharedValue<GlobeEngine>,
   touch: SharedValue<TouchState>,
   e: GestureTouchEvent,
-  cancelled: boolean,
+  canceled: boolean,
 ): void {
   "worklet";
   const now = performance.now();
@@ -424,7 +424,7 @@ export function touchesUp(
   const g = engine.value;
   g.interacting = false;
   let next: Tween | null = null;
-  if (!cancelled) {
+  if (!canceled) {
     const isTap =
       !t.multi &&
       !t.dragStarted &&

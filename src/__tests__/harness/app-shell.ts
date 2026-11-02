@@ -4,7 +4,7 @@
 //
 // A copy, not the production functions: they live in a component module that
 // cannot load without React Native's UI. So it can drift, and anything not
-// listed as modelled may already differ. What it models:
+// listed as modeled may already differ. What it models:
 //
 //   startMeshWithPermissions  ask, record the blocker, prime Tor, start, tell
 //                             the new mesh which side of the screen it is on,
@@ -17,7 +17,7 @@
 //   bootStart                 the headless task's checks, start and off-screen
 //                             power, with no prompts
 //   setAppState               every AppState edge reaches setAppForeground
-//                             ("inactive" is not modelled); "active" re-checks
+//                             ("inactive" is not modeled); "active" re-checks
 //                             the radios
 //   meshStopRequested         applyPresence("away")
 //

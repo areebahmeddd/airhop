@@ -90,7 +90,7 @@ mkdir -p "$FRAMEWORKS_DIR"
 rm -rf "$XCFRAMEWORK"
 
 # Flags match build-android.sh, which explains each. Both platforms must get the
-# same transport behaviour, and one set of flags is what keeps that true.
+# same transport behavior, and one set of flags is what keeps that true.
 gomobile bind \
   -target="$GOMOBILE_TARGETS" \
   -iosversion="$IOS_MIN_VERSION" \

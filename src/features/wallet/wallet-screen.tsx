@@ -219,12 +219,12 @@ export default function WalletScreen({
     // The encrypted store hydrates asynchronously, so the banner clears
     // itself. Settles once: with no keychain the wallet stays locked for good.
     if (!locked) return;
-    let cancelled = false;
+    let canceled = false;
     void whenWalletHydrated().then(() => {
-      if (!cancelled) setLocked(!isWalletStorageReady());
+      if (!canceled) setLocked(!isWalletStorageReady());
     });
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [locked]);
 
@@ -1427,7 +1427,7 @@ export default function WalletScreen({
   // nothing: `reconcile` claims a late payment on the next launch or pull.
   useEffect(() => {
     if (!deposit || !showDeposit || depositExpired) return;
-    let cancelled = false;
+    let canceled = false;
     // A round trip can outlast the interval; two claims on one quote make the
     // loser report a spurious error.
     let inFlight = false;
@@ -1441,7 +1441,7 @@ export default function WalletScreen({
             deposit.unit,
             deposit.quoteId,
           );
-          if (cancelled || minted <= 0) return;
+          if (canceled || minted <= 0) return;
           // Usually paid from another app, so the buzz says it landed.
           succeeded();
           setDeposit(null);
@@ -1461,7 +1461,7 @@ export default function WalletScreen({
       })();
     }, DEPOSIT_POLL_MS);
     return () => {
-      cancelled = true;
+      canceled = true;
       clearInterval(timer);
     };
   }, [deposit, showDeposit, depositExpired]);
@@ -3843,7 +3843,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       lineHeight: LineHeight.sm,
     },
     // The accent inverts with the theme, so text uses textInverse and dims by
-    // opacity: the grey tokens are tuned for the page, not this fill.
+    // opacity: the gray tokens are tuned for the page, not this fill.
     balanceCard: {
       backgroundColor: Colors.accent,
       borderRadius: Radius.xl,

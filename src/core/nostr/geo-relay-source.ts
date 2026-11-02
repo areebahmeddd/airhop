@@ -4,7 +4,7 @@
 // relays.ts, generated from assets/data/nostr_relays.csv by
 // scripts/generate-relays.js) and does NOT fetch it at runtime. That keeps
 // first launch network-free, never tells a third party who is asking for relays
-// (a deanonymisation vector, especially under Tor), and works offline, which is
+// (a deanonymization vector, especially under Tor), and works offline, which is
 // exactly when this app matters most.
 //
 // It is georelays (nostr_relays.csv), the directory bitchat's clients are built

@@ -47,7 +47,7 @@ export interface BlePermissionResult {
 }
 
 // Platform.Version is the API level (number) on Android, but the typings allow
-// a string, so it is normalised in one place rather than at four call sites.
+// a string, so it is normalized in one place rather than at four call sites.
 function androidApiLevel(): number {
   return typeof Platform.Version === "number"
     ? Platform.Version

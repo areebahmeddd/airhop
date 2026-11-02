@@ -79,7 +79,7 @@ export interface VideoToSend {
 
 export type VideoPrepFailure =
   // Stopped from its progress card, or by a panic wipe.
-  | "cancelled"
+  | "canceled"
   // Stopped because the app went to the background (iOS).
   | "interrupted"
   // Still over budget after the retry.
@@ -173,13 +173,13 @@ export async function prepareVideoForSend(
 }
 
 export function cancelVideoPreparation(id: string): void {
-  stop(id, "cancelled");
+  stop(id, "canceled");
 }
 
 // For the panic wipe: stop everything, and settle once no pass can write
 // another byte.
 export async function cancelAllVideoPreparation(): Promise<void> {
-  for (const id of [...jobs.keys()]) stop(id, "cancelled");
+  for (const id of [...jobs.keys()]) stop(id, "canceled");
   await queue;
 }
 
@@ -277,7 +277,7 @@ async function transcode(job: Job, video: VideoToSend): Promise<PreparedVideo> {
     // A file finished after a wipe began would be the one thing to survive it.
     if (job.stopped !== null || !isCurrentWipeGeneration(generation)) {
       discard(output);
-      return { ok: false, reason: job.stopped ?? "cancelled" };
+      return { ok: false, reason: job.stopped ?? "canceled" };
     }
     if (result.sizeBytes <= budget) {
       const name = isVideoNoteName(video.name)

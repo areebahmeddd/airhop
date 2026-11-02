@@ -66,7 +66,7 @@
        way to get a fix. It only opens the installer; the user confirms in a
        system dialog, "Install unknown apps" must be allowed, and Android
        refuses an APK not signed by the release key. Strip it, and the download
-       path with it, from any Play-distributed flavour: Play forbids an app
+       path with it, from any Play-distributed flavor: Play forbids an app
        updating itself by any other route. -->
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>

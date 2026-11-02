@@ -241,7 +241,7 @@ describe("Signature coverage (relay TTL compat)", () => {
     };
   }
 
-  test("TTL=0 still verifies (TTL normalised to 0 during signing)", () => {
+  test("TTL=0 still verifies (TTL normalized to 0 during signing)", () => {
     const p = makePacket(7);
     p.signature = signPacket(p, privKey);
     p.ttl = 0;

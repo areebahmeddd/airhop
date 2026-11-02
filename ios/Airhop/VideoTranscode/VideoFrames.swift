@@ -1,7 +1,7 @@
 // Stills for the trimmer's filmstrip: one small upright JPEG per requested
 // time. A filmstrip needs a picture near each time, not the exact frame, so the
 // generator may take the nearest keyframe, which decodes without its
-// neighbours and keeps a long 4K source quick to strip.
+// neighbors and keeps a long 4K source quick to strip.
 import AVFoundation
 import Foundation
 import ImageIO

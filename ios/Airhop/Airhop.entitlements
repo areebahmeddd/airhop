@@ -14,7 +14,7 @@
       <string>Subscribe</string>
     </array>
     <!-- Time Sensitive notifications, for the Ring alert (notification-service.ts).
-         iOS honours the interruption level only when the App ID carries this
+         iOS honors the interruption level only when the App ID carries this
          capability; without it a ring still arrives as an ordinary
          notification. Critical alerts are not requested: they bypass the
          silent switch and Apple grants them to nobody. -->

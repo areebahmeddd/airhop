@@ -1,6 +1,6 @@
 // The seam between the platform-agnostic PTT stack and the native audio module.
 //
-// What matters here is the fallback behaviour: every one of these paths is a
+// What matters here is the fallback behavior: every one of these paths is a
 // case where live voice is unavailable or dies mid-burst, and in each of them
 // the app has to keep working rather than hang, throw, or leave the speaker
 // open. The audio itself needs devices; these are the decisions around it.

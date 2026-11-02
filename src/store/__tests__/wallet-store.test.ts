@@ -69,7 +69,7 @@ function tx(overrides: Partial<WalletTx> = {}): WalletTx {
 // ---- Account keys ----
 
 describe("account keys", () => {
-  it("normalises trailing slashes and host case to one mint", () => {
+  it("normalizes trailing slashes and host case to one mint", () => {
     expect(normalizeMintUrl("https://Mint.Example.com/")).toBe(MINT);
     expect(normalizeMintUrl("https://mint.example.com")).toBe(MINT);
   });

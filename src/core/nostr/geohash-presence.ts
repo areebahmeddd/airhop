@@ -130,7 +130,7 @@ export interface PresenceConfig {
 // Whether presence may be broadcast into a cell of this precision.
 //
 // A heartbeat is a public statement that you are inside a cell. At precision 6
-// and finer that cell is a neighbourhood, a block, a building; region, province
+// and finer that cell is a neighborhood, a block, a building; region, province
 // and city are coarse enough that "someone is here" says little about who.
 //
 // The spec states the UI consequence: a fine-grained channel showing "0 people"
@@ -278,7 +278,7 @@ export class GeohashPresence {
   }
 }
 
-// How long to wait before the next round of heartbeats. Randomised 40-80s per
+// How long to wait before the next round of heartbeats. Randomized 40-80s per
 // the spec: a fixed cadence is itself a fingerprint, and the average of 60s is
 // what keeps a peer inside everyone else's five-minute online window with room
 // for a missed round.

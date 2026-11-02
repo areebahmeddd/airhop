@@ -1,6 +1,6 @@
 // Place names are a best-effort nicety layered on top of a feature that must
-// work with no network at all. These pin the failure behaviour, because that is
-// the behaviour that actually ships in a blackout: a lookup that cannot happen
+// work with no network at all. These pin the failure behavior, because that is
+// the behavior that actually ships in a blackout: a lookup that cannot happen
 // must leave the cell unnamed and silent, never throw, never block, and never
 // cache a wrong answer that would stick around after connectivity returns.
 
@@ -35,7 +35,7 @@ beforeEach(() => {
 });
 
 // The geocoder is a system service outside every switch the app has: it sends
-// the cell's centre from the device's own address, Tor or not.
+// the cell's center from the device's own address, Tor or not.
 describe("the clear-net gate", () => {
   it.each([
     [

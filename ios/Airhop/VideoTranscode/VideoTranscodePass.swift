@@ -7,8 +7,8 @@
 // composition and the writer both carry BT.709, which is what makes
 // AVFoundation tone map an HDR (HLG, Dolby Vision) source to SDR rather than
 // pass HDR values through as if they were SDR; the order matters, since a
-// 10-bit to 8-bit cut before the colour conversion bands. The pass reports
-// progress and can be cancelled, leaving no file behind. And the writer gets no
+// 10-bit to 8-bit cut before the color conversion bands. The pass reports
+// progress and can be canceled, leaving no file behind. And the writer gets no
 // metadata, so the source's location, device and dates stay behind.
 //
 // No React import, so `swift test` covers it on any Mac.
@@ -256,8 +256,8 @@ final class VideoTranscodePass {
   }
 
   // Upright frames at the planned size and frame rate: the composition applies
-  // the track's transform, scales to fill and centre-crops, and renders in
-  // BT.709 SDR whatever the source's colour.
+  // the track's transform, scales to fill and center-crops, and renders in
+  // BT.709 SDR whatever the source's color.
   private func makeComposition(
     track: AVAssetTrack, naturalSize: CGSize, transform: CGAffineTransform,
     assetDuration: CMTime
@@ -328,7 +328,7 @@ final class VideoTranscodePass {
   }
 
   // Copies samples until the reader runs dry, passes the kept length, or is
-  // cancelled, driven by the input's own readiness; leaves `group` once.
+  // canceled, driven by the input's own readiness; leaves `group` once.
   private func pump(
     _ output: AVAssetReaderOutput,
     into input: AVAssetWriterInput,

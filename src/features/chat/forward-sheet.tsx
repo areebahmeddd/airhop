@@ -54,19 +54,19 @@ interface Props {
   // send would leave a bubble here and reach nobody, and in a mixed selection
   // the text would arrive without it.
   //
-  // Blocked rooms stay on screen, greyed, and say why when tapped. Same rule
+  // Blocked rooms stay on screen, grayed, and say why when tapped. Same rule
   // as the composer's attach button: a target that vanishes leaves people
   // wondering whether they are in the wrong place.
   carriesMedia?: boolean;
   // The text of every plain text message in the selection. A DM holds far less
-  // than a channel, so a long one greys the DM targets the same way media
-  // greys a room that refuses it.
+  // than a channel, so a long one grays the DM targets the same way media
+  // grays a room that refuses it.
   texts?: readonly string[];
   // Whether any picked message (or caption) holds an ecash token, which is
   // forwarded nowhere; see forwardRefusal.
   carriesEcash?: boolean;
   // How many messages are picked. A public room drops a burst past
-  // PUBLIC_FORWARD_BURST at every receiver, so a larger one greys it.
+  // PUBLIC_FORWARD_BURST at every receiver, so a larger one grays it.
   count?: number;
 }
 

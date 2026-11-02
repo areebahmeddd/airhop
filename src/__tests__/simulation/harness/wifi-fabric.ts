@@ -9,7 +9,7 @@
 // to model badly-behaved: it has an MTU ceiling, RSSI, loss and jitter, and the
 // app's correctness depends on coping with all of it. A WiFi link is a socket:
 // it is either up or it is not, it carries a whole frame, and it is orders of
-// magnitude faster. Modelling loss and MTU here would be inventing failure modes
+// magnitude faster. Modeling loss and MTU here would be inventing failure modes
 // the transport does not have.
 //
 // Two rules it DOES model, because both are real constraints and both are easy

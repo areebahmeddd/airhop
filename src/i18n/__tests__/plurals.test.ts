@@ -23,7 +23,7 @@ function everyInteger(): number[] {
 
 describe("plural rules match CLDR", () => {
   it("covers every language in the picker", () => {
-    // A language with no rule takes the `other` fallback and mispluralises
+    // A language with no rule takes the `other` fallback and mispluralizes
     // every count on every screen.
     const missing = Object.keys(LANGUAGES).filter(
       (code) => !CODES.includes(code),

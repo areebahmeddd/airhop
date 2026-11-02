@@ -789,7 +789,7 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
     `LEAVE frames before=${leaveFramesBefore} after=${radio.countOfType(PacketType.LEAVE)}`,
   );
 
-  // The other half: a real departure must still be honoured, or the rule above
+  // The other half: a real departure must still be honored, or the rule above
   // is just a way to break presence.
   //
   // Driven through the actual "user goes Away" path rather than an injected
@@ -818,7 +818,7 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
 test("C09b a genuine old LEAVE dressed as a sync reply is refused", async () => {
   // The freshness window stops a replayed LEAVE, except through the one path
   // allowed to carry old packets: a reply to our own sync request. Every
-  // neighbour is asked every round, so a neighbour holding a recording of
+  // neighbor is asked every round, so a neighbor holding a recording of
   // alice's goodbye could tag it IS_RSR and end her session with us. Only the
   // types sync serves pass as replies, and LEAVE is not one.
   const s = (scenario = new Scenario({

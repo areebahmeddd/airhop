@@ -98,7 +98,7 @@ export interface Packet {
   ttl: number;
   // Flags byte. Use Flags.* constants. HAS_RECIPIENT / HAS_ROUTE / IS_RSR /
   // COMPRESSED are all derived by the encoder from the struct fields; only
-  // SIGNED is honoured as an input (set it before signPacket).
+  // SIGNED is honored as an input (set it before signPacket).
   flags: number;
   senderID: Uint8Array; // 8 bytes
   recipientID: Uint8Array; // 8 bytes (all-zeros = broadcast)

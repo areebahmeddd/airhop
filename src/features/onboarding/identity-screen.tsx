@@ -118,18 +118,18 @@ export default function IdentityScreen({
     //
     // The minimum applies to the failure too: an error screen in 80ms reads as
     // a validation error the user caused rather than as attempted work.
-    let cancelled = false;
+    let canceled = false;
     Promise.all([writeNewIdentity(), delay(MIN_DISPLAY_MS)])
       .then(([peerID]) => {
-        if (!cancelled) onComplete(peerID);
+        if (!canceled) onComplete(peerID);
       })
       .catch(async () => {
         await delay(MIN_DISPLAY_MS);
-        if (!cancelled) setFailed(true);
+        if (!canceled) setFailed(true);
       });
 
     return () => {
-      cancelled = true;
+      canceled = true;
       spinner.stop();
     };
   }, [onComplete, spinAnim, attempt]);

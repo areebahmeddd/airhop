@@ -136,7 +136,7 @@ Notes on the numbers:
 
 Timing intervals:
 
-| Behaviour                  | Interval                     | Why                                                                 |
+| Behavior                   | Interval                     | Why                                                                 |
 | -------------------------- | ---------------------------- | ------------------------------------------------------------------- |
 | Presence broadcast         | On a new link, then 15-30 s  | Silent with nobody linked, so a lone phone spends nothing on it     |
 | Gossip sync                | 1 s on a new link, then 15 s | Lets a peer returning from out of range catch up on missed messages |
@@ -257,7 +257,7 @@ cd .. && npm run android
 | [SECURITY.md](SECURITY.md)                        | Security policy and vulnerability reporting                      |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)          | Community standards and expectations                             |
 
-## Acknowledgements
+## Acknowledgments
 
 Airhop would not exist without the work of the bitchat community. Thank you to everyone who built the foundation this project stands on. Their work is released into the public domain under the [Unlicense](https://github.com/permissionlesstech/bitchat/blob/main/LICENSE).
 

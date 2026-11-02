@@ -1,5 +1,5 @@
 // Which rooms a forward may go to, beyond the media and length rules. Pure, so
-// the forward sheet's greying and the thread's backstop apply one rule.
+// the forward sheet's graying and the thread's backstop apply one rule.
 
 import { mayContainToken } from "@core/payments/cashu";
 import { SENDER_CAPACITY } from "@core/router/public-message-limiter";

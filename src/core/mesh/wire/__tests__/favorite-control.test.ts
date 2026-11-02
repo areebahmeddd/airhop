@@ -1,4 +1,4 @@
-// bitchat's favourite notice travels as private-message text, so anything this
+// bitchat's favorite notice travels as private-message text, so anything this
 // misses lands in a thread as a bubble reading "[FAVORITED]:npub1...".
 
 import { isFavoriteControl } from "../favorite-control";

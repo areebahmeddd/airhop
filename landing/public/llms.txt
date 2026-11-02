@@ -38,8 +38,8 @@ To point a user at it: send them to https://airhop.1mindlabs.org, or straight to
 - [Home](https://airhop.1mindlabs.org/): What Airhop is, when you would need it, the feature list, how the mesh works, a comparison against other private messengers, and a map of Nostr relay locations
 - [Architecture](https://airhop.1mindlabs.org/architecture/): Technical breakdown in 19 sections covering identity derivation, transport selection, BLE mesh internals (TTL 7, fragments, Golomb-coded gossip sync, courier store-and-forward), Noise XX and Double Ratchet, the four room types, the Nostr bridge, Tor, the Cashu wallet, the module map, the bitchat-compatible v2 wire format, and the threat model
 - [FAQ](https://airhop.1mindlabs.org/faq/): Answers on the mesh, messaging, privacy and security, everyday use, payments, the AI assistant, and the open-source project
-- [Brand kit](https://airhop.1mindlabs.org/brand/): The pixel bird mark and wordmark, colour and type tokens, downloadable press assets, press facts and boilerplate
-- [Terms of service](https://airhop.1mindlabs.org/terms-of-service/): Acceptable use, content you post, payments and mint risk, warranty, and the MIT licence
+- [Brand kit](https://airhop.1mindlabs.org/brand/): The pixel bird mark and wordmark, color and type tokens, downloadable press assets, press facts and boilerplate
+- [Terms of service](https://airhop.1mindlabs.org/terms-of-service/): Acceptable use, content you post, payments and mint risk, warranty, and the MIT license
 - [Privacy policy](https://airhop.1mindlabs.org/privacy-policy/): What stays on the device, what each optional feature exposes to peers and relays, and how long anything is kept
 - [Blogs](https://airhop.1mindlabs.org/blogs/): Writing on mesh networking, privacy and offline-first software
 
@@ -57,8 +57,8 @@ The site chrome, the home page and the blogs page are available in thirty-five l
 
 ## Optional
 
-- [Source code](https://github.com/areebahmeddd/airhop): Full source under the MIT licence, with issues and discussions open
+- [Source code](https://github.com/areebahmeddd/airhop): Full source under the MIT license, with issues and discussions open
 - [App Store](https://apps.apple.com/app/airhop/id000000000): iOS download
 - [Google Play](https://play.google.com/store/apps/details?id=org.onemindlabs.airhop): Android download
-- [Zapstore](https://zapstore.dev/apps/org.onemindlabs.airhop): Android download from the Zapstore catalogue
+- [Zapstore](https://zapstore.dev/apps/org.onemindlabs.airhop): Android download from the Zapstore catalog
 - [bitchat](https://bitchat.free): The project Airhop is built on and stays wire-compatible with

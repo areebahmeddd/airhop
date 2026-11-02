@@ -42,7 +42,7 @@ export default function UsernameScreen({
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Same "centre if it fits, scroll if it does not" container as the
+      {/* Same "center if it fits, scroll if it does not" container as the
           welcome screen. This card is the tallest fixed block in onboarding, so
           on a short viewport it is the CTA underneath that would be clipped. */}
       <ScrollView

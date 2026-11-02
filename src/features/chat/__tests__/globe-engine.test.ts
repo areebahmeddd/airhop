@@ -203,7 +203,7 @@ describe("touches", () => {
     expect(engine.value.camera.precision).toBe(precision);
   });
 
-  it("ends the motion when the touch is cancelled", () => {
+  it("ends the motion when the touch is canceled", () => {
     const { engine, touch } = laidOut("u2edk", true);
     runFrames();
     const down = [{ id: 1, x: 200, y: 400 }];

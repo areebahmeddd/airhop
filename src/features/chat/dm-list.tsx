@@ -305,7 +305,7 @@ export default function DmList({
               accessibilityLabel={rowLabel}
               accessibilityHint={t("chat.dm.row_hint")}
             >
-              {/* Avatar with presence dot (green in range, grey otherwise) */}
+              {/* Avatar with presence dot (green in range, gray otherwise) */}
               <Avatar
                 username={username}
                 peerID={peerID}

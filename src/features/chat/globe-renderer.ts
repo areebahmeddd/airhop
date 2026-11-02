@@ -2,7 +2,7 @@
 //
 // A port of bitchat-ios's GlobeRenderer, in its order: water, graticule, land
 // fills, coastlines, borders, the limb, city dots and names, the selected cell
-// and its eight neighbours with their labels, then the crosshair. It leaves out
+// and its eight neighbors with their labels, then the crosshair. It leaves out
 // bitchat's decoration (a starfield, an atmosphere glow, gradient shading),
 // which Airhop's flat monochrome has no place for; the limb is a hairline
 // instead. Lakes are filled as water, where bitchat paints the Caspian as land.
@@ -10,7 +10,7 @@
 // The paints arrive ready (globe-view.tsx), widths included; only alpha is
 // changed here, per label and per city as they fade toward the limb.
 
-import { geohashBounds, geohashNeighbours } from "@utils/geohash-grid";
+import { geohashBounds, geohashNeighbors } from "@utils/geohash-grid";
 import type { Camera } from "@utils/globe-camera";
 import {
   clipPolygon,
@@ -385,10 +385,10 @@ function drawCells(
   const { lat: cLat, lon: cLon, selected } = f.camera;
   if (selected.length === 0) return;
   const cells = [selected];
-  for (const n of geohashNeighbours(selected)) {
+  for (const n of geohashNeighbors(selected)) {
     if (!cells.includes(n.geohash)) cells.push(n.geohash);
   }
-  // Neighbours first, so the selected outline is never painted over.
+  // Neighbors first, so the selected outline is never painted over.
   cells.reverse();
   const pts: DiscRing = { x: [], y: [], front: [], length: 0 };
   for (const cell of cells) {
@@ -477,7 +477,7 @@ function drawCells(
   }
 }
 
-// Four ticks round a dot at the screen centre, bitchat's mark. Static rather
+// Four ticks round a dot at the screen center, bitchat's mark. Static rather
 // than pulsing at rest: the selection does not need announcing twice.
 function drawCrosshair(
   canvas: SkCanvas,
@@ -515,7 +515,7 @@ export function renderGlobe(
     const seg = [0, 0, 0, 0];
     const projector = makeProjector(f.camera.lat, f.camera.lon);
     // Past this the disc covers the whole screen, and a circle that large
-    // only costs the rasteriser precision.
+    // only costs the rasterizer precision.
     const coverRadius = Math.sqrt(cx * cx + cy * cy) + 2;
     const discCoversScreen = r > coverRadius;
 

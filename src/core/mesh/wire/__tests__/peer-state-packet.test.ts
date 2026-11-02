@@ -113,7 +113,7 @@ describe("malformed input is refused whole", () => {
 
   // Two byte strings meaning one value is a fingerprinting handle and a place
   // for implementations to disagree, so the packet is refused rather than the
-  // field quietly normalised.
+  // field quietly normalized.
   test("a non-minimal capability encoding is ignored", () => {
     const nonMinimal = new Uint8Array([
       0x01,

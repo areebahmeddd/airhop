@@ -238,7 +238,7 @@ describe("enabling Tor on Android", () => {
 
   test("never swaps the WebSocket implementation", async () => {
     // The whole point of the Android design. A shim here would replace working
-    // relay sockets with ones dialling a native module that does not exist.
+    // relay sockets with ones dialing a native module that does not exist.
     await setTorRouting(true);
     expect(mockUseWebSocketImplementation).not.toHaveBeenCalled();
   });
@@ -309,7 +309,7 @@ describe("enabling Tor on Android", () => {
     expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
-  // A relay dialled before the circuit fails its first connect and is never
+  // A relay dialed before the circuit fails its first connect and is never
   // retried, so the pool is held down for the bootstrap and rebuilt after it.
   test("holds the relay pool until the circuit is ready", async () => {
     let blockedWhileBootstrapping = false;

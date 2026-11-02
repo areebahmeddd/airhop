@@ -71,7 +71,7 @@ const ARRIVED_COOLDOWN_MS = 3_000;
 const RING_CHANNEL_ID = "ring_alert";
 
 // iOS cannot loop a sound outside a call, so a ring there is a chain of local
-// notifications with the default sound, cancelled together when the ring is
+// notifications with the default sound, canceled together when the ring is
 // answered. Three: enough to be a ring rather than a ping, few enough that a
 // phone left on a desk is not still buzzing a minute later.
 const IOS_RING_PULSE_SECONDS = [0, 15, 30];
@@ -92,7 +92,7 @@ let configured = false;
 let responseSub: Notifications.EventSubscription | null = null;
 // When the last nearby notice went out, for the cooldown. Module state, not
 // persisted: a relaunch is already a rare event, and starting a fresh app run
-// with a clean cooldown is the behaviour a user would expect anyway.
+// with a clean cooldown is the behavior a user would expect anyway.
 let lastNearbyNotifiedAtMs: number | null = null;
 let lastArrivedAtMs = 0;
 // One notice per payment, never replacing another: the counter separates two
@@ -103,7 +103,7 @@ let paymentSeq = 0;
 // Stable per-conversation notification id, so repeated messages from the same
 // chat collapse into (and update) one notification rather than stacking, and so
 // opening the chat can dismiss exactly that one. Notification ids must be
-// simple strings, hence the sanitising.
+// simple strings, hence the sanitizing.
 function channelToId(channel: string): string {
   return `msg_${channel.replace(/[^a-zA-Z0-9]/g, "_")}`;
 }

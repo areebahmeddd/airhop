@@ -108,7 +108,7 @@ const hex = (b: Uint8Array | null | undefined): Hex | null =>
 const expand = (s: Hex | null | undefined): Hex | null =>
   s == null ? null : bytesToHex(bytes(s));
 
-// Runs every case of `kind` through `body`, honouring SKIPPED and DIVERGES.
+// Runs every case of `kind` through `body`, honoring SKIPPED and DIVERGES.
 function replay<I, E>(
   kind: string,
   body: (input: I, expected: E, name: string) => void,
@@ -377,7 +377,7 @@ interface AnnounceFields {
 const capsAsAirhopReads = (caps: number | null): number =>
   caps === null ? 0 : caps > Number.MAX_SAFE_INTEGER ? 2 ** 48 - 1 : caps;
 
-// TLV 0x04 neighbours are not compared: Airhop skips them on decode.
+// TLV 0x04 neighbors are not compared: Airhop skips them on decode.
 function expectAnnounce(payload: Hex, e: AnnounceFields): void {
   const a = decodeAnnouncePayload(bytes(payload), new Uint8Array(8));
   expect(a).not.toBeNull();

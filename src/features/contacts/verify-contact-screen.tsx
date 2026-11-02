@@ -82,7 +82,7 @@ export default function VerifyContactScreen({
 
   const contact = useContactsStore((s) => s.contacts[peerID]);
 
-  // The six words both phones show, identical on each side. Memoised because
+  // The six words both phones show, identical on each side. Memoized because
   // the words must not flicker while somebody is reading them aloud.
   const words = useMemo(() => {
     const ourCard = getMeshService()?.getContactCard();

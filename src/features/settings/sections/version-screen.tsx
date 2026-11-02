@@ -202,7 +202,7 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
   // "Install unknown apps" when that is not yet allowed for Airhop.
   //
   // Returns whether the installer opened, so a device that cannot show one says
-  // so rather than leaving a tap with nothing behind it. A cancelled install
+  // so rather than leaving a tap with nothing behind it. A canceled install
   // keeps the file, and the button stays on "Install".
   async function launchInstaller(file: File): Promise<boolean> {
     try {

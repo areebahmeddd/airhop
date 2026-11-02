@@ -293,7 +293,7 @@ describe("formatTokenSummary", () => {
     expect(formatTokenSummary(info(21_500, "sat"))).toBe("21,500 sat");
   });
 
-  it("summarises a fiat token in major units", () => {
+  it("summarizes a fiat token in major units", () => {
     expect(formatTokenSummary(info(250, "usd"))).toBe("2.50 USD");
   });
 });

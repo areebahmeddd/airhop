@@ -76,7 +76,7 @@ describe("bearingDegrees", () => {
 describe("compassPoint", () => {
   // Sectors are centred on their labels, so due north reads "n" from either
   // side of 0.
-  it("centres each sector on its label", () => {
+  it("centers each sector on its label", () => {
     expect(compassPoint(0)).toBe("n");
     expect(compassPoint(20)).toBe("n");
     expect(compassPoint(340)).toBe("n");
@@ -93,20 +93,20 @@ describe("compassPoint", () => {
 });
 
 describe("roundedDistance", () => {
-  // A phone fix is good to tens of metres, so "183 m" claims confidence the
+  // A phone fix is good to tens of meters, so "183 m" claims confidence the
   // reading does not have.
-  it("rounds to ten metres under a kilometre", () => {
+  it("rounds to ten meters under a kilometer", () => {
     expect(roundedDistance(183)).toEqual({ value: 180, unit: "m" });
     expect(roundedDistance(7)).toEqual({ value: 10, unit: "m" });
     expect(roundedDistance(0)).toEqual({ value: 0, unit: "m" });
   });
 
-  it("switches to kilometres at a kilometre", () => {
+  it("switches to kilometers at a kilometer", () => {
     expect(roundedDistance(1000)).toEqual({ value: 1, unit: "km" });
     expect(roundedDistance(1740000)).toEqual({ value: 1740, unit: "km" });
   });
 
-  it("keeps one decimal place in kilometres", () => {
+  it("keeps one decimal place in kilometers", () => {
     expect(roundedDistance(1250)).toEqual({ value: 1.3, unit: "km" });
   });
 });

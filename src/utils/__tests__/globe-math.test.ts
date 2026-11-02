@@ -81,7 +81,7 @@ describe("projection", () => {
     }
   });
 
-  it("normalises longitude into [-180, 180]", () => {
+  it("normalizes longitude into [-180, 180]", () => {
     expect(normalizeLon(190)).toBe(-170);
     expect(normalizeLon(-190)).toBe(170);
     expect(normalizeLon(540)).toBe(180);

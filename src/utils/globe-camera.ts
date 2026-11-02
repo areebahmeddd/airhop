@@ -3,7 +3,7 @@
 //
 // A port of bitchat-ios's GlobeState with its constants, so a gesture moves
 // the globe the same distance in both apps. The selection is always the cell
-// under the screen centre at the current precision; nothing selects by where
+// under the screen center at the current precision; nothing selects by where
 // a finger landed. Plain data and worklets: the camera lives in a shared value
 // on the UI thread, and the tests drive the same functions on JS.
 
@@ -218,7 +218,7 @@ function makeTween(
 
 export function applyTween(c: Camera, tween: Tween, t: number): void {
   "worklet";
-  // The target is always reachable: a polar cell's centre can lie past the
+  // The target is always reachable: a polar cell's center can lie past the
   // drag limit, and clamping it would land the flight on another cell.
   c.lat = clampedLat(
     tween.startLat + (tween.endLat - tween.startLat) * t,

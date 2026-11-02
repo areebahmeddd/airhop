@@ -194,8 +194,8 @@ export default function BottomSheet({
   function handleScrimPress(x: number, y: number): void {
     const start = scrimPressStart.current;
     scrimPressStart.current = null;
-    const travelled = start === null ? 0 : Math.hypot(x - start.x, y - start.y);
-    if (!(travelled > DRAG_SLOP)) dismiss();
+    const traveled = start === null ? 0 : Math.hypot(x - start.x, y - start.y);
+    if (!(traveled > DRAG_SLOP)) dismiss();
   }
 
   useEffect(() => {

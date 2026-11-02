@@ -7,7 +7,7 @@
 //
 // Framing and the read loop are the same shapes AirhopWiFiModule uses,
 // deliberately: both carry the same length-prefixed Airhop packets and a bug
-// fixed in one should be recognisable in the other.
+// fixed in one should be recognizable in the other.
 //
 // Three things differ from that module, each deliberately:
 //
@@ -15,7 +15,7 @@
 //     `NetworkConnection<TCP>`. Wi-Fi Aware needs iOS 26 regardless; this must
 //     run on the app's floor, and Bonjour over Network framework has been there
 //     since iOS 12. No availability gate anywhere below.
-//   * Discovery and dialling are split, because Bonjour returns the whole
+//   * Discovery and dialing are split, because Bonjour returns the whole
 //     network and who to dial is a decision. TypeScript makes it
 //     (services/lan-dial-policy.ts) and this opens what it is told to.
 //   * No token tiebreak. The Wi-Fi module needs one because Apple's discovery is
@@ -140,7 +140,7 @@ private enum LANFailure: Error {
 private final class LANTransport {
   private struct Link {
     let connection: NWConnection
-    /// The peer this link was dialled for, or nil for one we accepted. An
+    /// The peer this link was dialed for, or nil for one we accepted. An
     /// accepted connection is anonymous until its peer announces, and
     /// nothing here needs the name for anything but answering "already
     /// connected" to a repeat dial.
@@ -358,7 +358,7 @@ private final class LANTransport {
   }
 
   /// The farewell (a LEAVE, a voice or video END) is handed over in the same
-  /// tick as the stop, and cancelling a connection can discard what it has not
+  /// tick as the stop, and canceling a connection can discard what it has not
   /// sent: the peer would keep us listed for a minute and hold a session we
   /// cleared. Each link closes once its sends are processed, or at the
   /// deadline. On `queue`.
@@ -400,7 +400,7 @@ private final class LANTransport {
     browser.stateUpdateHandler = { [weak self, weak browser] state in
       guard let self else { return }
       self.queue.async {
-        // As for the listener: a cancelled browser must not end the next run.
+        // As for the listener: a canceled browser must not end the next run.
         guard let browser, self.browser === browser else { return }
         switch state {
         case .failed(let error):
@@ -545,7 +545,7 @@ private final class LANTransport {
         case .cancelled:
           if !settled {
             settled = true
-            onReady?(.connectFailed("cancelled"))
+            onReady?(.connectFailed("canceled"))
           }
           self.retire(linkID)
         default:
@@ -626,7 +626,7 @@ private final class LANTransport {
       // Counted so a stop can wait for it; see closeAfterSends.
       link.pendingSends += 1
       self.links[linkID] = link
-      // `NWConnection.send` serialises on its own: frames queued from one
+      // `NWConnection.send` serializes on its own: frames queued from one
       // connection go out in order and cannot interleave, which is what
       // the Wi-Fi module needs a SerialSender to guarantee.
       link.connection.send(
@@ -663,7 +663,7 @@ private final class LANTransport {
   }
 
   /// Forget a link and tell TypeScript. Idempotent: a connection can report
-  /// failed and then cancelled, and only the first of those retires it.
+  /// failed and then canceled, and only the first of those retires it.
   private func retire(_ linkID: String) {
     guard let link = links.removeValue(forKey: linkID) else { return }
     // Only if it still points here: a newer link may have claimed the name,
@@ -690,7 +690,7 @@ private enum MoveEvent {
 private final class MoveTransport {
   private struct Connection {
     let connection: NWConnection
-    /// Accepted rather than dialled, for the inbound cap.
+    /// Accepted rather than dialed, for the inbound cap.
     let inbound: Bool
     var ready = false
     var lastReadAt = ProcessInfo.processInfo.systemUptime
@@ -850,14 +850,14 @@ private final class MoveTransport {
             settled = true
             onReady?(nil, .connectFailed(String(describing: error)))
           }
-          // As in LANTransport.adopt: cancelled, or the connection and this
+          // As in LANTransport.adopt: canceled, or the connection and this
           // handler hold each other.
           connection.cancel()
           self.retire(id)
         case .cancelled:
           if !settled {
             settled = true
-            onReady?(nil, .connectFailed("cancelled"))
+            onReady?(nil, .connectFailed("canceled"))
           }
           self.retire(id)
         default:

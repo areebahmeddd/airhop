@@ -12,9 +12,9 @@
 
      RemoteViews inflates only FrameLayout, LinearLayout, ImageView, TextView and
      a few more; anything else shows "Can't load widget" with no crash in the
-     log. Colours resolve in the launcher against the system theme, which is why
+     log. Colors resolve in the launcher against the system theme, which is why
      the count and message states are separate views rather than one view
-     recoloured from code. Spacing follows src/ui/theme.ts: md-base padding, xs
+     recolored from code. Spacing follows src/ui/theme.ts: md-base padding, xs
      and 2xs between lines.
 
      The defaults are the "Open Airhop" state, which is also what the picker's

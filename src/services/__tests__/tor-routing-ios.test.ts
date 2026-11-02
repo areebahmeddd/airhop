@@ -508,7 +508,7 @@ describe("bootstrap reporting on iOS", () => {
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("idle");
   });
 
-  it("says nothing about a bootstrap the user has already cancelled", async () => {
+  it("says nothing about a bootstrap the user has already canceled", async () => {
     mockTorEnabled = true;
     primeTorRoutingOnStartup();
     await Promise.resolve();

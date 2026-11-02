@@ -519,7 +519,7 @@ export class RadioController {
         locationRequiredForScan: state.locationRequiredForScan,
         locationServicesEnabled: state.locationServicesEnabled,
         // Native reports -1 when it has nothing to say (iOS, or Android before
-        // the first battery broadcast). Normalised to null here so the policy
+        // the first battery broadcast). Normalized to null here so the policy
         // has one "unknown" to reason about instead of a magic number.
         batteryPercent: state.batteryPercent < 0 ? null : state.batteryPercent,
         charging: state.charging,

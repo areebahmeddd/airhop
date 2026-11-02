@@ -16,7 +16,7 @@ import {
 } from "@core/nostr/geohash-identity";
 import { encodeGeohash } from "@core/nostr/geohash-presence";
 import type { NostrClient } from "@core/nostr/nostr-client";
-import { geohashNeighbours } from "@utils/geohash-grid";
+import { geohashNeighbors } from "@utils/geohash-grid";
 import {
   finalizeEvent,
   generateSecretKey,
@@ -34,7 +34,7 @@ import {
   type BridgeStatus,
 } from "../bridge-service";
 
-// Bengaluru, so the cell is one the relay directory has neighbours for.
+// Bengaluru, so the cell is one the relay directory has neighbors for.
 const mockCoords = { lat: 12.9716, lng: 77.5946 };
 jest.mock("../location-service", () => ({
   getCoarseLocation: () => Promise.resolve(mockCoords),
@@ -214,7 +214,7 @@ describe("the rendezvous identity", () => {
     );
   });
 
-  it("still recognises its own events after a restart", async () => {
+  it("still recognizes its own events after a restart", async () => {
     // A fresh instance has an empty published-ID cache, so only the derived
     // key can tell that a relay backfill is ours.
     const before = rig();
@@ -235,12 +235,12 @@ describe("the rendezvous identity", () => {
     expect(after.downlinks).toHaveLength(0);
 
     // And the location-channel key for the cell is somebody else to it.
-    const neighbourhoodKey = deriveGeohashIdentity(
+    const neighborhoodKey = deriveGeohashIdentity(
       deriveGeohashSeed(before.signingKey),
       CELL,
     ).privKey;
     after.client.deliver(
-      remoteMessage("signed with the channel key", { key: neighbourhoodKey }),
+      remoteMessage("signed with the channel key", { key: neighborhoodKey }),
     );
     expect(after.injected.map((m) => m.text)).toEqual([
       "signed with the channel key",
@@ -248,21 +248,21 @@ describe("the rendezvous identity", () => {
   });
 });
 
-describe("the neighbour ring", () => {
-  it("subscribes to the own cell and its eight neighbours", async () => {
+describe("the neighbor ring", () => {
+  it("subscribes to the own cell and its eight neighbors", async () => {
     const r = rig();
     await online(r);
     const cells = r.client.live?.filters[0]["#r"] ?? [];
     expect(new Set(cells)).toEqual(
-      new Set([CELL, ...geohashNeighbours(CELL).map((n) => n.geohash)]),
+      new Set([CELL, ...geohashNeighbors(CELL).map((n) => n.geohash)]),
     );
     expect(cells).toHaveLength(9);
   });
 
-  it("hears a neighbouring cell and ignores a far one", async () => {
+  it("hears a neighboring cell and ignores a far one", async () => {
     const r = rig();
     await online(r);
-    const next = geohashNeighbours(CELL)[0].geohash;
+    const next = geohashNeighbors(CELL)[0].geohash;
     r.client.deliver(remoteMessage("across the street", { cell: next }));
     r.client.deliver(remoteMessage("across the world", { cell: "u4pruy" }));
     expect(r.injected.map((m) => m.text)).toEqual(["across the street"]);

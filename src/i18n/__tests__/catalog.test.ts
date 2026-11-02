@@ -179,7 +179,7 @@ describe("plural categories", () => {
 describe("do not translate", () => {
   // These strings are not copy: they cross the wire, or an identity derives from
   // them, so a translated variant is an interop bug. bitchat-ios matches an
-  // incoming emote by its English substring, and is itself fully localised while
+  // incoming emote by its English substring, and is itself fully localized while
   // still keeping these as English literals. See docs/spec/ARCHITECTURE.md.
   //
   // Two rules, and the difference matters.
@@ -189,7 +189,7 @@ describe("do not translate", () => {
   const MUST_BE_ABSENT = ["hugs", "slaps", "around a bit with a large trout"];
 
   // VERBATIM: protocol identifiers that legitimately sit inside translated prose.
-  // Not forbidden, frozen. Localising "#bluetooth" or "/hug" produces a sentence
+  // Not forbidden, frozen. Localizing "#bluetooth" or "/hug" produces a sentence
   // naming a channel or command that does not exist.
   const MUST_BE_VERBATIM = [
     "#bluetooth",

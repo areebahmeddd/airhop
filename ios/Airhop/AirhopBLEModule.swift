@@ -72,13 +72,13 @@ final class AirhopBLEModule: RCTEventEmitter {
   private var nextCentralAttempt: UInt64 = 0
   // Off screen a dial is never expired: iOS completes a pending connect when
   // the peer comes back and wakes the app, which is how the mesh reconnects in
-  // a pocket. Dials whose deadline passed meanwhile are cancelled on return to
+  // a pocket. Dials whose deadline passed meanwhile are canceled on return to
   // the foreground, as bitchat-ios's BLERadioController does. Both on `queue`.
   private var appActive = true
   private var overdueDials: Set<String> = []
   // A scan without duplicates reports each peer once, so a central link that
   // drops on screen is not found again until the scan restarts. One restart
-  // per interval at most, so a peer that keeps failing is redialled at that
+  // per interval at most, so a peer that keeps failing is redialed at that
   // pace rather than in a loop. bitchat-ios scans with duplicates on screen
   // to the same end. On `queue`.
   private static let rescanDelaySec: TimeInterval = 5
@@ -109,7 +109,7 @@ final class AirhopBLEModule: RCTEventEmitter {
   //
   // Global rather than per-central, deliberately. CoreBluetooth caps
   // simultaneous centrals in the single digits, so the worst case is one
-  // struggling peer eating headroom its neighbours would rarely need at the same
+  // struggling peer eating headroom its neighbors would rarely need at the same
   // moment, and the cost of that is backpressure, which is the correct response
   // anyway.
   private static let maxPendingNotifies = 256
@@ -182,7 +182,7 @@ final class AirhopBLEModule: RCTEventEmitter {
       }
       self.overdueDials.removeAll()
       // A scan without duplicates reports each peer once, so a peer whose dial
-      // was cancelled is found again only by a fresh scan, as in bitchat-ios.
+      // was canceled is found again only by a fresh scan, as in bitchat-ios.
       self.restartScan()
     }
   }
@@ -449,9 +449,9 @@ final class AirhopBLEModule: RCTEventEmitter {
     }
   }
 
-  // Also cancels every link this side dialled, pending dials included, as
+  // Also cancels every link this side dialed, pending dials included, as
   // bitchat-ios's BLEService does when it stops. Otherwise an Away phone stays
-  // connected to its neighbours and is woken by their traffic, and after a
+  // connected to its neighbors and is woken by their traffic, and after a
   // panic wipe the new identity announces down the connection that carried
   // the old one's LEAVE. Invisible only stops advertising, so it keeps them.
   @objc
@@ -470,7 +470,7 @@ final class AirhopBLEModule: RCTEventEmitter {
           central.cancelPeripheralConnection(peripheral)
         }
       }
-      // Reported here rather than left to didDisconnect: a cancelled pending
+      // Reported here rather than left to didDisconnect: a canceled pending
       // connect may never call back.
       self.retireAllCentralLinks()
       resolve(nil)
@@ -738,7 +738,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     case .unauthorized:
       // The user denied Bluetooth. Distinct from the radio being off, and
       // reported as such so the banner sends them to Settings rather than
-      // to a Control Centre toggle that is already on.
+      // to a Control Center toggle that is already on.
       retireAllCentralLinks()
       actuallyScanning = false
 
@@ -827,7 +827,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     centralAttempts.removeValue(forKey: linkID)
     AirhopLog.ble.notice("BLE link timed out before ready (central)")
     centralManager?.cancelPeripheralConnection(peripheral)
-    // A cancelled pending connect may never call back.
+    // A canceled pending connect may never call back.
     centralLinks.removeValue(forKey: linkID)
     rssiTimers[linkID]?.cancel()
     rssiTimers.removeValue(forKey: linkID)

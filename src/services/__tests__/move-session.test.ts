@@ -455,7 +455,7 @@ describe("device transfer, end to end", () => {
     r.receiver.dispose();
   });
 
-  it("cancelled on the new phone mid-stream: nothing moves, the old phone runs again", async () => {
+  it("canceled on the new phone mid-stream: nothing moves, the old phone runs again", async () => {
     const r = await rig();
     // Park the first chunk (frames 0-1 are the handshake, 2 the offer), so the
     // cancel lands while the stream is still coming in.
@@ -587,7 +587,7 @@ describe("device transfer, end to end", () => {
     expect(r.resumed).not.toHaveBeenCalled();
   });
 
-  it("cancelled on the old phone mid-stream: it runs again, the new phone says so", async () => {
+  it("canceled on the old phone mid-stream: it runs again, the new phone says so", async () => {
     const r = await rig();
     r.bus.intercept = (from, index) =>
       from === "old" && index === 3 ? "hold" : "deliver";
@@ -606,7 +606,7 @@ describe("device transfer, end to end", () => {
     ).toBe(true);
     expect(r.receiverStates[r.receiverStates.length - 1]).toEqual({
       phase: "failed",
-      reason: "cancelled",
+      reason: "canceled",
     });
     expect(r.oldPhone.marker.readMoveMarker()).toBeNull();
     expect(await identityOf(r.oldPhone)).toBe(r.peerID);
@@ -642,7 +642,7 @@ describe("device transfer, end to end", () => {
     r.receiver.dispose();
   });
 
-  it("cancelled while connecting: the old phone leaves nothing listening", async () => {
+  it("canceled while connecting: the old phone leaves nothing listening", async () => {
     const r = await rig();
     const sender = r.send();
     // Before the identity read and the subnet check have answered.
@@ -751,7 +751,7 @@ describe("device transfer, the words both phones show", () => {
     ).toBe(true);
     expect(r.senderStates[r.senderStates.length - 1]).toEqual({
       phase: "failed",
-      reason: "cancelled",
+      reason: "canceled",
     });
     const first = r.receiverStates.find((s) => s.phase === "waiting");
     const next = r.receiverStates[r.receiverStates.length - 1];
@@ -780,7 +780,7 @@ describe("device transfer, the words both phones show", () => {
     );
     expect(r.receiverStates[r.receiverStates.length - 1]).toEqual({
       phase: "failed",
-      reason: "cancelled",
+      reason: "canceled",
     });
     expect(r.resumed).not.toHaveBeenCalled();
     expect(r.oldPhone.mesh.destroyMeshService).not.toHaveBeenCalled();

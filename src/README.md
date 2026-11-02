@@ -139,13 +139,13 @@ The test suite follows four principles:
 | `core/router/`   | Peer registry and transport selection                                  | Native transports                         |
 | `core/spam/`     | Rate buckets, near-copy and disguise detection, bitchat's test cases   | None                                      |
 | `i18n/`          | Catalog completeness, plural rules, right-to-left layout helpers       | None                                      |
-| `services/`      | Per-service behaviour: payments, geohash channels, transfers, policy   | Physical radios (simulated)               |
+| `services/`      | Per-service behavior: payments, geohash channels, transfers, policy    | Physical radios (simulated)               |
 | `store/`         | State transitions and persistence shape                                | MMKV persistence (mocked)                 |
 | `platform/`      | OEM battery-settings URI resolution, device-owner authentication       | OS dialogs                                |
 | `utils/`         | Stateless utilities                                                    | None                                      |
 | `__tests__/`     | Whole-app lifecycle and multi-device simulation                        | Physical radios (simulated)               |
 
-Most of the application's behavioural coverage is in `src/__tests__/`, because
+Most of the application's behavioral coverage is in `src/__tests__/`, because
 those suites exercise the system as a whole rather than any single component.
 
 ### Multi-device simulation

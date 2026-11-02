@@ -57,7 +57,7 @@ export const NoisePayloadType = {
   // bitchat drops a payload type it does not know, which is correct for a
   // client with no concept of a location pin.
   LOCATION_PIN: 0x50,
-  // A "come check your messages" alert, its acknowledgement, and its refusal.
+  // A "come check your messages" alert, its acknowledgment, and its refusal.
   // Bodies in ring-payload.ts. Airhop-only: bitchat drops an unknown
   // NoisePayload type, and the action is never offered toward a peer whose
   // proven capability bits (peer-state-packet.ts) lack it.

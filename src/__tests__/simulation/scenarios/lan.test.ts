@@ -108,7 +108,7 @@ test("L01 nothing is published until the user turns the transport on", async () 
   await s.world.advance(20_000);
 
   s.check(
-    "neither phone dialled anything",
+    "neither phone dialed anything",
     lan.dialsAttempted === 0,
     `dials=${lan.dialsAttempted}`,
   );
@@ -214,7 +214,7 @@ test("L03 a crowded network does not become a full mesh", async () => {
     `links=${lan.linkCount()} of a possible ${(specs.length * (specs.length - 1)) / 2}`,
   );
   // Exactly the cap, not merely under it: the ring gives every phone eight
-  // neighbours at this size, so a cap that silently collapsed to one or two
+  // neighbors at this size, so a cap that silently collapsed to one or two
   // would still pass a "no more than eight" check.
   s.check(
     "every phone holds exactly the cap",
@@ -252,7 +252,7 @@ test("L03b a message relays across the LAN ring with no Bluetooth anywhere", asy
   const channel = "#bluetooth";
   for (const d of devices) d.joinChannel(channel);
 
-  // The ring wraps, so the first and last phones are neighbours. Pick a peer
+  // The ring wraps, so the first and last phones are neighbors. Pick a peer
   // the ring genuinely leaves two hops away rather than assuming one.
   const [first] = devices;
   const last = devices.find(
@@ -411,7 +411,7 @@ test("L06 a LAN peer stays on the radar with no Bluetooth to keep it there", asy
     () => a.canSendLiveVoice(`dm:${b.peerID}`),
     40_000,
   );
-  s.check("and live voice is offered to a LAN-only neighbour", sessioned);
+  s.check("and live voice is offered to a LAN-only neighbor", sessioned);
 
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);

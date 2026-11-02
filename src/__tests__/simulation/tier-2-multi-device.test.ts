@@ -99,7 +99,7 @@ function phones(
 test("B01 a message crosses a chain of phones that cannot hear each other", async () => {
   const s = (scenario = new Scenario({
     id: "B01",
-    title: "five phones in a line, only neighbours in range",
+    title: "five phones in a line, only neighbors in range",
     seed: 7,
   }));
   const { radio, devices } = phones(s, 5);
@@ -108,7 +108,7 @@ test("B01 a message crosses a chain of phones that cannot hear each other", asyn
 
   const linked = await waitFor(s.world, () => radio.linkCount() === 4);
   s.check(
-    "exactly the neighbouring links came up",
+    "exactly the neighboring links came up",
     linked,
     `links=[${radio.linkedPairs().join(", ")}]`,
   );

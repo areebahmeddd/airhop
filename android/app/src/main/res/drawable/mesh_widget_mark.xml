@@ -7,7 +7,7 @@
      so the drawable carries no letterboxing to offset in the layout.
 
      Filled with the widget's ink rather than tinted from the layout: this is
-     not a mask like the notification icon, and values-night swaps the colour.
+     not a mask like the notification icon, and values-night swaps the color.
      The mark is mirror-symmetric, so right-to-left needs no flipped copy. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="22dp"

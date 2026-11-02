@@ -22,7 +22,7 @@ import type { ChatMessage } from "@store/chat-store";
 
 // How long without any confirmation before it is worth saying.
 //
-// Matched to the outbox's own TTL, which is the app's existing judgement about
+// Matched to the outbox's own TTL, which is the app's existing judgment about
 // when a message stops being worth chasing ("a week-old 'hi' is noise, not a
 // message"). Shorter would fire on an ordinary holiday; much longer and the
 // answer arrives too late to act on. A week of sending into silence is a fact

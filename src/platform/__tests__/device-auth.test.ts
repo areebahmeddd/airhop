@@ -35,7 +35,7 @@ describe("confirmDeviceOwner", () => {
     });
   });
 
-  test("a cancelled or locked-out prompt is refused", async () => {
+  test("a canceled or locked-out prompt is refused", async () => {
     mockLevel.mockResolvedValue(1);
     mockAuthenticate.mockResolvedValue({
       success: false,

@@ -231,7 +231,7 @@ describe("payload ceiling", () => {
   });
 });
 
-// The bound is a resource limit, not a behaviour change: an unbounded inflate
+// The bound is a resource limit, not a behavior change: an unbounded inflate
 // reaches the same verdict, it just pays for the whole expansion first. No
 // correctness assertion can tell the two apart, so this measures the cost.
 //

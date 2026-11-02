@@ -83,7 +83,7 @@ export function deriveGeohashIdentity(
 // Display name convention shared with bitchat: the self-asserted nickname is
 // suffixed with the last 4 hex chars of the pubkey, so two people who pick the
 // same nickname in a public channel remain distinguishable. Nicknames here are
-// untrusted decoration; the pubkey is the identity. Normalised as an announced
+// untrusted decoration; the pubkey is the identity. Normalized as an announced
 // name is, so a bidi override cannot reorder the suffix that tells them apart.
 export function geohashDisplayName(
   pubkeyHex: string,

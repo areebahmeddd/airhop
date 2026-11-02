@@ -483,7 +483,7 @@ describe("teardown, replacement and races", () => {
     await os.advance(5000);
 
     v.check(
-      "scanning survived the cancelled stop",
+      "scanning survived the canceled stop",
       native.scanning,
       "the teardown scheduled by the earlier Away fired after the user came back",
     );
@@ -496,7 +496,7 @@ describe("teardown, replacement and races", () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     // An Android-only event, which the mesh subscribes to only there.
     androidOS = jest.replaceProperty(Platform, "OS", "android");
-    const v = new Verdict("S32", "the OS power switch is honoured", os);
+    const v = new Verdict("S32", "the OS power switch is honored", os);
     const native = androidDevice(os);
 
     app = new AppShell({ os });

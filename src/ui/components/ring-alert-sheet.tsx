@@ -121,11 +121,11 @@ export default function RingAlertSheet(): React.JSX.Element {
       return;
     }
     let pulse: ReturnType<typeof setInterval> | null = null;
-    let cancelled = false;
+    let canceled = false;
     // Haptics only where the loop could not start, so a phone in silent mode
     // still says something under the thumb.
     void startRingAlert(remainingMs).then((ringing) => {
-      if (ringing || cancelled) return;
+      if (ringing || canceled) return;
       ringPulse();
       pulse = setInterval(ringPulse, PULSE_INTERVAL_MS);
     });
@@ -150,7 +150,7 @@ export default function RingAlertSheet(): React.JSX.Element {
       if (next === "active" && Date.now() >= endsAtMs) expire();
     });
     return () => {
-      cancelled = true;
+      canceled = true;
       if (pulse !== null) clearInterval(pulse);
       clearTimeout(timeout);
       moved.remove();

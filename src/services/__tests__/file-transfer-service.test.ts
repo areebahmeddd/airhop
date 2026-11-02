@@ -415,7 +415,7 @@ describe("radio backpressure", () => {
     expect(outcome).toHaveBeenCalledWith(true);
   });
 
-  it("does not resurrect a transfer cancelled mid-flight", async () => {
+  it("does not resurrect a transfer canceled mid-flight", async () => {
     const { service } = makeService(false);
     const outcome = jest.fn();
 
@@ -776,7 +776,7 @@ describe("receiving a file", () => {
   });
 
   // A DM is addressed by recipient ID and never tagged, so a tag naming one is
-  // a forgery: it would put the file in that contact's thread, unlabelled.
+  // a forgery: it would put the file in that contact's thread, unlabeled.
   it("refuses a public file tagged with a direct message thread", async () => {
     const contact = "dm:99aa99aa99aa99aa";
     useChatStore.getState().addChannel(contact);

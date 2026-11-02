@@ -7,7 +7,7 @@
 //
 // Framing, the accept loop, the read loop and the link registry are the same
 // shapes AirhopWiFiModule uses, deliberately: both carry the same length-
-// prefixed Airhop packets, so a bug fixed in one is recognisable in the other.
+// prefixed Airhop packets, so a bug fixed in one is recognizable in the other.
 // What differs is above the socket. Aware connects to whatever it finds; this
 // connects only where it is told to, because mDNS returns everyone and
 // connecting to everyone is a full mesh. That decision lives in TypeScript
@@ -173,7 +173,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         val output: OutputStream,
         // A transfer connection rather than a mesh link.
         val move: Boolean,
-        // Accepted rather than dialled, for the inbound caps.
+        // Accepted rather than dialed, for the inbound caps.
         val inbound: Boolean,
         val writeLock: Any = Any(),
     ) {

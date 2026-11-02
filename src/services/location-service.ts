@@ -23,7 +23,7 @@ export interface Coords {
 }
 
 // Re-check position at most this often. Geohash cells are large, so polling
-// harder would just drain battery for no behavioural change.
+// harder would just drain battery for no behavioral change.
 const REFRESH_MS = 5 * 60 * 1000;
 
 // A live fix that never comes would stall every geohash channel.
@@ -136,7 +136,7 @@ const PIN_MAX_AGE_MS = 60_000;
 const PIN_FIX_TIMEOUT_MS = 15_000;
 
 export interface PinFix extends Coords {
-  // Horizontal accuracy in metres, when the OS gives one.
+  // Horizontal accuracy in meters, when the OS gives one.
   accuracyM?: number;
   // When the fix was taken, which is what the pin reports, not when it is sent.
   takenAtMs: number;

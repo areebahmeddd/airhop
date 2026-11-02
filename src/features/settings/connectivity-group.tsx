@@ -111,7 +111,7 @@ const CONFIRM: Record<ToggleKey, { on: ConfirmCopy; off: ConfirmCopy }> = {
 
 // Which switch was tapped and where it was headed. Held until the confirm is
 // answered; the switches themselves keep showing the persisted value, so a
-// cancelled confirm needs nothing undone.
+// canceled confirm needs nothing undone.
 interface Pending {
   key: ToggleKey;
   next: boolean;

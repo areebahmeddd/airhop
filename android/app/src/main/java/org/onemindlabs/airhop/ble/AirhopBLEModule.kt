@@ -110,7 +110,7 @@ private const val REQUEST_ENABLE_BT = 0xB1E
 // retries on every scan callback, which burns the radio and destabilises the
 // links that did connect.
 //
-// The mesh does not need every peer to be a direct neighbour: flood routing
+// The mesh does not need every peer to be a direct neighbor: flood routing
 // with TTL 7 reaches the rest of the room through the six it has.
 private const val MAX_CENTRAL_LINKS = 6
 
@@ -242,7 +242,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // disable only pauses notifying.
     private val notifyingLinks: MutableSet<String> = ConcurrentHashMap.newKeySet()
     private val announcedLinks: MutableSet<String> = ConcurrentHashMap.newKeySet()
-    // Central-role links: peripherals we dialled as a GATT client.
+    // Central-role links: peripherals we dialed as a GATT client.
     private val centralLinks = ConcurrentHashMap<String, BluetoothGatt>()
     // Negotiated ATT MTU per central link, so the write path can pick a type that
     // can actually carry the frame (see writeToLink). Absent means negotiation has
@@ -281,7 +281,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     // ---- Device monitoring ----
     //
     // A connection slot (see MAX_CENTRAL_LINKS) held by something that will not
-    // talk is a neighbour we cannot reach.
+    // talk is a neighbor we cannot reach.
     //
     // Three failure modes from bitchat-android's DeviceMonitoringManager, each of
     // which looks healthy to the adapter: a device that connects and never speaks,
@@ -817,7 +817,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
         stopRssiPolling()
         // The adapter took the scan and the advertiser down with it, so the
-        // duty-cycle timer has nothing left to toggle. Cancelling it here is
+        // duty-cycle timer has nothing left to toggle. Canceling it here is
         // what stops a burst firing against a dead radio on the way out.
         stopScanCycle()
         advertisingActive = false
@@ -1291,9 +1291,9 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // Also drops every link this side dialled, pending dials included, as
+    // Also drops every link this side dialed, pending dials included, as
     // bitchat-ios does when it stops. Otherwise an Away phone, or one off screen
-    // with background running off, stays connected to its neighbours, and after
+    // with background running off, stays connected to its neighbors, and after
     // a panic wipe the new identity announces down the connection that carried
     // the old one's LEAVE. Duty cycling and power changes go through
     // stopScanCycle and keep their links; Invisible only stops advertising.
@@ -1632,7 +1632,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 if (isBlocked(device.address)) return
 
                 // At capacity: stay a peripheral to this one. It can still dial us,
-                // and we still hear it relayed through the neighbours we do have.
+                // and we still hear it relayed through the neighbors we do have.
                 if (centralLinks.size >= MAX_CENTRAL_LINKS) return
 
                 // Identify the remote by its advertised peerID (scan-response service

@@ -10,7 +10,7 @@
 // This module owns the envelope and the bag it sits in: wire format, routing
 // tag, trust tiers, pool bounds, spray budget. Sealing and packet building stay
 // in mesh-service, which seals once per send pass and addresses the same bytes
-// to every courier in it. That is what lets `deposit` recognise the copies as
+// to every courier in it. That is what lets `deposit` recognize the copies as
 // one envelope, so nothing here may re-seal.
 //
 // Envelope wire format (COURIER_ENV payload, and a kind 1401 drop's content):
@@ -33,7 +33,7 @@ import { base64ToBytes, bytesToBase64 } from "../../encoding/base64";
 // the other side, and anything we fail to enforce is a slot someone else can
 // take from us.
 const POOL_SIZE = 40;
-// Verified-tier mail can never crowd out favourites' share of the pool.
+// Verified-tier mail can never crowd out favorites' share of the pool.
 const VERIFIED_POOL_SIZE = 20;
 // How long an envelope is worth carrying, matching CourierEnvelope
 // .maxLifetimeSeconds. Exported because mesh-service stamps the envelopes it
@@ -269,7 +269,7 @@ interface StoredEnvelope {
   copies: number;
   prekeyID?: number;
   // Noise static keys (hex) this envelope has already been handed to, so a
-  // repeat announce from the same neighbour cannot spend budget on a copy they
+  // repeat announce from the same neighbor cannot spend budget on a copy they
   // already hold. Per-entry, and it dies with the entry.
   sprayedTo: Set<string>;
   // When this was last flooded toward its recipient, heard only through
@@ -307,7 +307,7 @@ export class CourierStore {
   //
   // MMKV rather than the keychain: an envelope is someone else's ciphertext,
   // sealed to a key this device does not hold. Wiped on panic all the same (see
-  // MMKV_STORE_IDS), since holding a neighbour's mail is evidence about who was
+  // MMKV_STORE_IDS), since holding a neighbor's mail is evidence about who was
   // standing near whom.
   constructor(mmkvId = "courier-store") {
     this.storage = getStorage(mmkvId);
@@ -542,7 +542,7 @@ export class CourierStore {
   //   copies < 2   nothing to halve; a carry-only copy is the end of its branch
   //   sprayedTo    once per peer, not once per announce. Announces arrive
   //                continuously, so without it a budget decays 4 -> 2 -> 1
-  //                against one neighbour without ever reaching a new carrier.
+  //                against one neighbor without ever reaching a new carrier.
   //                bitchat tracks the same set
   //   depositor    they handed us this envelope, so they demonstrably hold it.
   //                Spraying it back spends half a budget on a hop that delivers
@@ -620,17 +620,17 @@ export class CourierStore {
 
   // Which envelope to drop to make room for `incoming`, or -1 to refuse it.
   //
-  // Verified mail is evicted before favourite mail, oldest first. The tier of
+  // Verified mail is evicted before favorite mail, oldest first. The tier of
   // the INCOMING envelope matters too: a verified arrival may never displace a
-  // favourite, because that would let anyone who has merely announced push a
+  // favorite, because that would let anyone who has merely announced push a
   // contact's mail out of a full pool. bitchat states the same rule: evict a
-  // favourite only when the incoming envelope is itself a favourite, otherwise
+  // favorite only when the incoming envelope is itself a favorite, otherwise
   // reject.
   //
   // Not one score over tier and age: that always returns an index for a
-  // non-empty pool, which would make the "pool full, all favourites" refusal
+  // non-empty pool, which would make the "pool full, all favorites" refusal
   // at the call site unreachable and let a verified envelope displace a
-  // favourite.
+  // favorite.
   private findEvictionCandidate(incoming: CourierTier): number {
     let bestIdx = -1;
     let bestAge = -1;
@@ -647,7 +647,7 @@ export class CourierStore {
     }
     if (bestIdx !== -1) return bestIdx;
 
-    // Nothing but favourites left. Only another favourite may take a slot.
+    // Nothing but favorites left. Only another favorite may take a slot.
     if (incoming !== "favorite") return -1;
     for (let i = 0; i < this.envelopes.length; i++) {
       const age = Date.now() - this.envelopes[i].storedAt;

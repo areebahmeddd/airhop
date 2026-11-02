@@ -27,12 +27,12 @@ export const MAX_LAN_LINKS = 8;
 // Sort every name, our own included, into one ring; link to the
 // `MAX_LAN_LINKS / 2` peers either side. Both ends compute the same ring from
 // the same list, so they agree without negotiating, and each dials only the
-// pairs sorting after its own name so nobody dials a peer already dialling
+// pairs sorting after its own name so nobody dials a peer already dialing
 // them.
 //
 // A ring rather than "everyone dials the lowest N", which would point the room
 // at a few phones: a star with hot spots, not a mesh. Below the cap the ring
-// wraps and every peer is a neighbour, which is right for a hotspot.
+// wraps and every peer is a neighbor, which is right for a hotspot.
 export function dialTargets(
   selfName: string,
   discovered: readonly string[],
@@ -44,12 +44,12 @@ export function dialTargets(
 
   const selfIndex = ring.indexOf(selfName);
   const reach = Math.max(1, Math.floor(maxLinks / 2));
-  const neighbours = new Set<string>();
+  const neighbors = new Set<string>();
   for (let offset = 1; offset <= reach; offset++) {
-    neighbours.add(ring[(selfIndex + offset) % size]);
-    neighbours.add(ring[(((selfIndex - offset) % size) + size) % size]);
+    neighbors.add(ring[(selfIndex + offset) % size]);
+    neighbors.add(ring[(((selfIndex - offset) % size) + size) % size]);
   }
-  neighbours.delete(selfName);
+  neighbors.delete(selfName);
 
-  return [...neighbours].filter((name) => name > selfName).sort();
+  return [...neighbors].filter((name) => name > selfName).sort();
 }

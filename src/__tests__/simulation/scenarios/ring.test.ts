@@ -187,7 +187,7 @@ test("RG04 a refused ring is answered with the reason, never left ringing", asyn
   await waitFor(s.world, () => alice.peerAcceptsRing(bob.peerID), 10_000);
 
   // A ring inside the receiver's cooldown: alice rings, bob accepts; a wiped
-  // or reinstalled alice (modelled by clearing her ring store) rings again.
+  // or reinstalled alice (modeled by clearing her ring store) rings again.
   const first = alice.ring(bob.peerID);
   s.check("first ring went out", first !== null);
   await waitFor(s.world, () => bob.ringsReceived(`dm:${alice.peerID}`) === 1);

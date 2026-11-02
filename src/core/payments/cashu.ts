@@ -463,7 +463,7 @@ export function verifyTokenOffline(
     }
     const keyset = keyChain.getKeyset(proof.id);
     // An inactive keyset is listed without keys (NUT-01 serves only active
-    // ones); the mint still honours it, so this is no evidence of forgery.
+    // ones); the mint still honors it, so this is no evidence of forgery.
     if (!keyset.hasKeys) {
       keysMissing = true;
       continue;

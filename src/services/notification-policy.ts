@@ -27,7 +27,7 @@ export function isDirectMessage(channel: string): boolean {
   return channel.startsWith("dm:");
 }
 
-// One-line preview of an attachment, mirroring how WhatsApp/Signal summarise a
+// One-line preview of an attachment, mirroring how WhatsApp/Signal summarize a
 // media message in the notification and chat list.
 export function attachmentSummary(attachment: ChatAttachment): string {
   switch (attachment.type) {

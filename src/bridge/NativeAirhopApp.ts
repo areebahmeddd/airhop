@@ -39,7 +39,7 @@ export interface Spec extends TurboModule {
   //   UNSUPPORTED     iOS has no sideloading to share an APK into
   copyApkToCache(): Promise<string>;
   // Loop the default ringtone and a vibration pattern for up to durationMs,
-  // honouring ringer mode and Do Not Disturb. Resolves true when anything
+  // honoring ringer mode and Do Not Disturb. Resolves true when anything
   // audible or tactile started, false when the phone is set to stay quiet.
   // Calling it again restarts the clock.
   //

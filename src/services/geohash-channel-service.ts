@@ -145,7 +145,7 @@ export function isGeoChannel(channel: string): boolean {
   return channel in GEO_CHANNEL_PRECISION || isManualGeoChannel(channel);
 }
 
-// Canonicalise raw user input into a geohash: lowercase, drop a leading #,
+// Canonicalize raw user input into a geohash: lowercase, drop a leading #,
 // discard anything outside the alphabet, cap at 12 chars. Mirrors bitchat's
 // LocationStateManager.normalizeGeohash so both accept the same strings.
 export function normalizeGeohash(raw: string): string {
@@ -228,7 +228,7 @@ const GEO_NOTE_LOOKBACK_SECONDS = 7 * 24 * 60 * 60;
 
 // Deletions are asked for by author, and this caps how many authors one filter
 // may name. Ordered by when we last heard from them, so the cap drops the
-// authors whose notes are oldest, which are the ones nearest to ageing out of
+// authors whose notes are oldest, which are the ones nearest to aging out of
 // the window above anyway.
 const MAX_DELETION_AUTHORS = 128;
 
@@ -461,7 +461,7 @@ export class GeohashChannelService {
     return encodeGeohash(coords.lat, coords.lng, precision);
   }
 
-  // The relays carrying a given geohash cell, chosen from the cell's CENTRE so
+  // The relays carrying a given geohash cell, chosen from the cell's CENTER so
   // every participant (Airhop or bitchat) converges on the same set. bitchat
   // selects relays exactly this way (GeoRelayDirectory.closestRelays), so
   // routing our geohash traffic through these relays instead of the default DM
@@ -684,7 +684,7 @@ export class GeohashChannelService {
     const unique = this.broadcastableCells();
     for (let i = 0; i < unique.length; i++) {
       if (i > 0) await GeohashChannelService.wait(decorrelationDelayMs());
-      // The timer may have been cancelled while we were spacing the round out.
+      // The timer may have been canceled while we were spacing the round out.
       if (this.heartbeatTimer === null) return;
       await this.presenceFor(unique[i])
         .publishHeartbeat(unique[i], this.relaysForGeohash(unique[i]))
@@ -907,7 +907,7 @@ export class GeohashChannelService {
   //
   // The envelope carries a random sender ID and no recipient, never our mesh
   // peer ID, matching bitchat. That ID does not rotate per cell, so it would let
-  // a correspondent who meets us in two neighbourhoods link the two.
+  // a correspondent who meets us in two neighborhoods link the two.
   sendGeoDm(
     geohash: string,
     recipientPubkey: string,
@@ -1089,7 +1089,7 @@ export class GeohashChannelService {
     }
     if (env.type !== NoisePayloadType.PRIVATE_MESSAGE) return;
 
-    // bitchat's favourite notice is control text: acknowledged, as bitchat
+    // bitchat's favorite notice is control text: acknowledged, as bitchat
     // acknowledges it, and never shown.
     if (isFavoriteControl(env.content)) {
       this.publishGeoWrap(
@@ -1263,7 +1263,7 @@ export class GeohashChannelService {
       ],
       (event) => {
         // Only an author whose note we KEPT is worth asking about: our own
-        // bridged copies and notes tagged to a neighbouring cell are both
+        // bridged copies and notes tagged to a neighboring cell are both
         // dropped by handleLocationNote, and a deletion for either could never
         // apply to anything on screen.
         if (this.handleLocationNote(event, geohash, identity.pubKeyHex)) {

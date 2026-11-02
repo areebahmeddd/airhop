@@ -48,7 +48,7 @@ const AVATAR_SIZE = 72;
 
 const FAILURE_BODY: Record<ReceiverFailure, TranslationKey> = {
   incompatible: "onboarding.transfer.failed_incompatible",
-  cancelled: "onboarding.transfer.failed_cancelled",
+  canceled: "onboarding.transfer.failed_cancelled",
   interrupted: "onboarding.transfer.failed_interrupted",
   storage: "onboarding.transfer.failed_storage",
   unavailable: "onboarding.transfer.failed_unavailable",

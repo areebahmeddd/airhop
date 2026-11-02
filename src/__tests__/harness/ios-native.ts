@@ -390,7 +390,7 @@ export class IosBleModule implements BleNativeModule {
   // The rule that costs iPhone-to-Android discovery: once the app leaves the
   // foreground CoreBluetooth moves the service UUID into the advertisement
   // overflow area and drops the local name, so only another iOS device scanning
-  // for that exact UUID can still see it. Modelled here rather than in the
+  // for that exact UUID can still see it. Modeled here rather than in the
   // medium because it is a property of THIS radio, and the medium only has to
   // ask whether the far side is an iPhone.
   get discoverable(): boolean {

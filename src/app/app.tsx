@@ -779,7 +779,7 @@ function AppContent(): React.JSX.Element {
   // triggered from Profile, or resumed at launch after the last session died
   // partway through one.
   //
-  // Seeded in the initialiser rather than an effect, so a launch with a wipe to
+  // Seeded in the initializer rather than an effect, so a launch with a wipe to
   // finish renders the wiping screen on its first frame.
   //
   // An unfinished incoming transfer is finished the same way: wiped.
@@ -1204,7 +1204,7 @@ function AppContent(): React.JSX.Element {
   // Foreground/background tracking for the screen. Whether a banner is owed is
   // tracked by the notification pipeline itself, since it runs with no screen.
   useEffect(() => {
-    // No setAppActive here: the useState initialiser above already read
+    // No setAppActive here: the useState initializer above already read
     // AppState, and the listener below carries every change after it.
     //
     // Re-read the permissions whenever we come to the foreground: the user may
@@ -1540,7 +1540,7 @@ function AppContent(): React.JSX.Element {
     setProfilePopSignal((n) => n + 1);
   }, [isInThread, isSearching]);
 
-  // Swipe across the content area. Two behaviours, decided by where you are:
+  // Swipe across the content area. Two behaviors, decided by where you are:
   //
   //   at a tab's root   step through tabs, in the order the tab bar shows them
   //   inside a section  go back to its parent, and never change tab
@@ -2083,7 +2083,7 @@ function AppContent(): React.JSX.Element {
                         {T("nav.tab.wallet")}
                       </Text>
                       <View style={styles.headerControls}>
-                        {/* The wallet's actions are labelled on the screen
+                        {/* The wallet's actions are labeled on the screen
                             itself; the header only explains what ecash is. */}
                         <Pressable
                           style={({ pressed }) => [
@@ -2490,10 +2490,10 @@ const EDGE_BACK_ZONE = 44;
 const HEADER_ICON_SIZE = 32;
 
 // Shared by the three count badges (tab, bell, segment), which are the same
-// 16pt circle holding the same 10pt digit and must centre it identically.
+// 16pt circle holding the same 10pt digit and must center it identically.
 //
 // includeFontPadding is Android-only and on by default: the box reserves
-// ascender and descender room a digit never uses, so a numeral that centres on
+// ascender and descender room a digit never uses, so a numeral that centers on
 // iOS sits low on Android.
 const BADGE_DIGIT = {
   includeFontPadding: false,
@@ -2591,7 +2591,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 1,
       minWidth: 0,
       // Transparent when inactive so switching segments changes the border's
-      // colour and never the control's geometry.
+      // color and never the control's geometry.
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: "transparent",
     },

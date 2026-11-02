@@ -71,7 +71,7 @@ test("LC01 a #block message stays out of the next block, and a phone with no fix
   const bob = SimDevice.create(s.world, phone("bob", 22), relay);
   const dave = SimDevice.create(s.world, phone("dave", 44), relay);
   const cast = [alice, carol, bob, dave];
-  // In radio range of each other, but bob stands a kilometre north: the same
+  // In radio range of each other, but bob stands a kilometer north: the same
   // city, another block. Dave has no fix.
   locations().place(alice.id, PLACES.bengaluru);
   locations().place(carol.id, PLACES.bengaluru);

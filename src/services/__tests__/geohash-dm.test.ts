@@ -386,7 +386,7 @@ describe("the live-cell signal", () => {
 // Keeping someone met under a location pseudonym.
 //
 // Their cell key and our peer ID are unlinkable by design (that is what stops
-// relays following anyone between neighbourhoods), so nothing but the person
+// relays following anyone between neighborhoods), so nothing but the person
 // choosing to say "this is also me" can ever join the two. These pin the wire
 // half of that choice: the card goes out gift-wrapped from our PER-CELL key, so
 // a relay learns nothing new, and it arrives as a card rather than a message.

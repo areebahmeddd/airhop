@@ -161,21 +161,21 @@ describe("speed and ETA", () => {
 });
 
 describe("cancel", () => {
-  it("marks a transfer cancelled then auto-dismisses it", () => {
+  it("marks a transfer canceled then auto-dismisses it", () => {
     jest.useFakeTimers();
     begin("t1", 1000);
     state().cancel("t1");
-    expect(state().transfers["t1"].status).toBe("cancelled");
+    expect(state().transfers["t1"].status).toBe("canceled");
     jest.advanceTimersByTime(1500);
     expect(state().transfers["t1"]).toBeUndefined();
   });
 
-  it("stops progress once cancelled", () => {
+  it("stops progress once canceled", () => {
     jest.useFakeTimers();
     begin("t1", 1000);
     state().cancel("t1");
     state().advance("t1", 500);
-    // A cancelled transfer must not keep advancing.
+    // A canceled transfer must not keep advancing.
     expect(state().transfers["t1"].transferredBytes).toBe(0);
   });
 });
@@ -252,15 +252,15 @@ describe("reconcile (stall watchdog)", () => {
     expect(state().transfers["t1"].transferredBytes).toBe(500);
   });
 
-  it("leaves finished, failed and cancelled transfers alone", () => {
+  it("leaves finished, failed and canceled transfers alone", () => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));
     begin("done", 100);
     begin("failed", 100);
-    begin("cancelled", 100);
+    begin("canceled", 100);
     state().finish("done");
     state().fail("failed");
-    state().cancel("cancelled");
+    state().cancel("canceled");
     const before = state().transfers;
 
     jest.setSystemTime(new Date("2026-01-01T00:02:00Z"));
@@ -271,7 +271,7 @@ describe("reconcile (stall watchdog)", () => {
     expect(state().transfers).toBe(before);
     expect(state().transfers["done"].status).toBe("done");
     expect(state().transfers["failed"].status).toBe("failed");
-    expect(state().transfers["cancelled"].status).toBe("cancelled");
+    expect(state().transfers["canceled"].status).toBe("canceled");
   });
 });
 

@@ -468,7 +468,7 @@ describe("LinkRegistry", () => {
     });
   });
 
-  // Two phones that meet each dial the other, so a Bluetooth neighbour is
+  // Two phones that meet each dial the other, so a Bluetooth neighbor is
   // usually two links. Writing both doubles the airtime of everything flooded,
   // and relaying down the second one echoes a packet back to its sender.
   describe("dual-role fanout", () => {

@@ -77,7 +77,7 @@ export const wifiBridge = {
   removeListeners: (n: number): void => currentWifi?.removeListeners(n),
 };
 
-// The LAN transport. Unlike WiFi Aware, discovery and dialling are separate:
+// The LAN transport. Unlike WiFi Aware, discovery and dialing are separate:
 // mDNS finds everyone on the network and who to connect to is a decision, so
 // the module reports what it sees and opens the sockets it is told to.
 export interface LanNativeModule {

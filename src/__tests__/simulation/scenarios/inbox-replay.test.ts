@@ -61,7 +61,7 @@ const online = (id: string, seedByte: number): DeviceSpec => ({
 });
 
 // Gift wraps on the relays addressed to this Nostr key: every DM, receipt and
-// acknowledgement anyone sent it.
+// acknowledgment anyone sent it.
 function wrapsTo(relay: RelayFabric, pubkey: string): number {
   return relay
     .eventsOfKind(GIFT_WRAP_KIND)

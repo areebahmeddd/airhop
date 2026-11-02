@@ -1,7 +1,7 @@
-// Geohash geometry: a cell's box and centre, the cells touching it, and the
-// encoder. The globe picker draws a cell and its neighbours with it, the jump
+// Geohash geometry: a cell's box and center, the cells touching it, and the
+// encoder. The globe picker draws a cell and its neighbors with it, the jump
 // sheet offers the cells around yours as one-tap destinations, and the mesh
-// bridge listens on a cell's neighbours as well as the cell.
+// bridge listens on a cell's neighbors as well as the cell.
 //
 // A geohash is a grid by construction, so all of this is arithmetic on the
 // string: no map, no tile server, and nothing that tells a third party which
@@ -21,7 +21,7 @@ export interface GeohashBounds {
 }
 
 // The box a geohash covers, and with it the cell's size, which is what the
-// neighbour walk steps by. An empty string is the whole world.
+// neighbor walk steps by. An empty string is the whole world.
 export function geohashBounds(gh: string): GeohashBounds {
   "worklet";
   let minLat = -90;
@@ -50,7 +50,7 @@ export function geohashBounds(gh: string): GeohashBounds {
   return { minLat, maxLat, minLon, maxLon };
 }
 
-// The centre of a cell, for naming it or pointing relays at it.
+// The center of a cell, for naming it or pointing relays at it.
 export function geohashCenter(gh: string): { lat: number; lon: number } {
   "worklet";
   const b = geohashBounds(gh);
@@ -113,10 +113,10 @@ export function encodeGeohash(
 //
 // Walking the grid by arithmetic rather than by table: step half a cell past the
 // edge in each direction and re-encode at the same precision. It is a few more
-// operations than the classic border/neighbour lookup tables, and it cannot get
+// operations than the classic border/neighbor lookup tables, and it cannot get
 // the wrap-around at the poles or the date line wrong, which those tables
 // famously do.
-const NEIGHBOUR_DIRECTIONS = [
+const NEIGHBOR_DIRECTIONS = [
   "N",
   "NE",
   "E",
@@ -126,9 +126,9 @@ const NEIGHBOUR_DIRECTIONS = [
   "W",
   "NW",
 ] as const;
-export type NeighbourDirection = (typeof NEIGHBOUR_DIRECTIONS)[number];
+export type NeighborDirection = (typeof NEIGHBOR_DIRECTIONS)[number];
 
-const OFFSETS: Record<NeighbourDirection, [number, number]> = {
+const OFFSETS: Record<NeighborDirection, [number, number]> = {
   N: [1, 0],
   NE: [1, 1],
   E: [0, 1],
@@ -139,9 +139,9 @@ const OFFSETS: Record<NeighbourDirection, [number, number]> = {
   NW: [1, -1],
 };
 
-export function geohashNeighbours(
+export function geohashNeighbors(
   gh: string,
-): { direction: NeighbourDirection; geohash: string }[] {
+): { direction: NeighborDirection; geohash: string }[] {
   "worklet";
   if (gh.length === 0) return [];
   const b = geohashBounds(gh);
@@ -149,10 +149,10 @@ export function geohashNeighbours(
   const lonStep = b.maxLon - b.minLon;
   const { lat, lon } = geohashCenter(gh);
 
-  const out: { direction: NeighbourDirection; geohash: string }[] = [];
-  for (const direction of NEIGHBOUR_DIRECTIONS) {
+  const out: { direction: NeighborDirection; geohash: string }[] = [];
+  for (const direction of NEIGHBOR_DIRECTIONS) {
     const [dLat, dLon] = OFFSETS[direction];
-    // Clamp latitude: there is no cell north of the pole, so that neighbour
+    // Clamp latitude: there is no cell north of the pole, so that neighbor
     // simply does not exist rather than wrapping to nonsense.
     const nextLat = lat + dLat * latStep;
     if (nextLat > 90 || nextLat < -90) continue;
@@ -160,8 +160,8 @@ export function geohashNeighbours(
     let nextLon = lon + dLon * lonStep;
     if (nextLon > 180) nextLon -= 360;
     if (nextLon < -180) nextLon += 360;
-    const neighbour = encodeGeohash(nextLat, nextLon, gh.length);
-    if (neighbour !== gh) out.push({ direction, geohash: neighbour });
+    const neighbor = encodeGeohash(nextLat, nextLon, gh.length);
+    if (neighbor !== gh) out.push({ direction, geohash: neighbor });
   }
   return out;
 }

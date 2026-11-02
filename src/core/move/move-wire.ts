@@ -72,7 +72,7 @@ function withType(type: number, body: Uint8Array): Uint8Array {
   return out;
 }
 
-// The exact bytes both sides hash for the commit digest, so neither re-serialises.
+// The exact bytes both sides hash for the commit digest, so neither re-serializes.
 export function encodeOfferBody(offer: MoveOffer): Uint8Array {
   return utf8.encode(JSON.stringify(offer));
 }

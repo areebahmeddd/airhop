@@ -359,7 +359,7 @@ describe("relay selection determinism", () => {
   });
 
   it("gives two people in one cell an identical relay set", () => {
-    // The load-bearing interop property. Both users decode the CELL CENTRE,
+    // The load-bearing interop property. Both users decode the CELL CENTER,
     // not their own position, so their relay sets must match exactly.
     const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
     const ghOther = encodeGeohash(LONDON_NEARBY.lat, LONDON_NEARBY.lng, 5);

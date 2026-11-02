@@ -50,7 +50,7 @@ import type { SettingId } from "./settings-index";
 
 // Circle diameters for the two round shapes in the shared sheet vocabulary: the
 // icon medallion at the top of a confirm sheet, and an option row's leading dot.
-// Named so their radii cannot drift off centre.
+// Named so their radii cannot drift off center.
 const SHEET_ICON_SIZE = 48;
 const OPTION_DOT_SIZE = 34;
 
@@ -354,7 +354,7 @@ export function SettingLinkRow({
 // off-track. The off-track uses borderStrong so the control keeps a visible
 // outline on a surface-colored row.
 // A disabled switch is dimmed rather than recolored, so it still reads as on
-// or off at a glance. RN greys the control inconsistently across platforms,
+// or off at a glance. RN grays the control inconsistently across platforms,
 // so the opacity is set here.
 // It is named after its row unless told otherwise. Disabled goes into the
 // accessibility state on both platforms: RN's Switch puts it there on Android

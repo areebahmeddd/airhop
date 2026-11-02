@@ -99,7 +99,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       minHeight: BUTTON_HEIGHT,
       alignItems: "center",
       justifyContent: "center",
-      // A transparent border when enabled, so disabling changes only its colour,
+      // A transparent border when enabled, so disabling changes only its color,
       // never the button's geometry.
       borderWidth: 1,
       borderColor: "transparent",
@@ -116,7 +116,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.surfacePressed,
     },
     // Disabled keeps a visible border: the raised fill barely differs from the
-    // onboarding background, so without it the pill reads as stray grey text.
+    // onboarding background, so without it the pill reads as stray gray text.
     disabled: {
       backgroundColor: Colors.surfaceRaised,
       borderColor: Colors.border,

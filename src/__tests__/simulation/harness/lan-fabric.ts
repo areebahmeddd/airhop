@@ -15,7 +15,7 @@
 //   3. Client isolation exists. Most venue WiFi passes mDNS and drops the TCP,
 //      and nothing in the app can detect it before trying.
 //
-// Deliberately NOT modelled: MTU, loss, per-hop latency. A LAN link is a TCP
+// Deliberately NOT modeled: MTU, loss, per-hop latency. A LAN link is a TCP
 // socket, up or not, carrying whole frames. Same reasoning WifiFabric records.
 
 import type { World } from "./world";
@@ -124,7 +124,7 @@ export class LanFabric {
   }
 
   // Make a network behave the way most guest WiFi does: mDNS crosses, TCP does
-  // not. Cannot be detected before dialling, which is the point.
+  // not. Cannot be detected before dialing, which is the point.
   setClientIsolation(network: string, isolated: boolean): void {
     if (isolated) this.isolated.add(network);
     else this.isolated.delete(network);
@@ -203,7 +203,7 @@ export class LanFabric {
     });
   }
 
-  // A device dialled a peer it was told about. This is the only way a link
+  // A device dialed a peer it was told about. This is the only way a link
   // comes up: the fabric never decides.
   private onConnect(fromID: string, serviceName: string): void {
     if (this.disposed) return;

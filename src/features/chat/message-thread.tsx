@@ -498,7 +498,7 @@ const COMPOSE_ATTACH_SIZE = 36;
 const COMPOSE_BUTTON_SIZE = 40;
 const JUMP_BUTTON_SIZE = 36;
 // A transfer card's X glyph and a voice note's play circle, both kept small so
-// the card and the bubble stay compact. Their neighbours (the percentage, the
+// the card and the bubble stay compact. Their neighbors (the percentage, the
 // waveform) sit further away than the slop reaches.
 const TRANSFER_CLOSE_SIZE = 16;
 const VOICE_PLAY_SIZE = 32;
@@ -514,8 +514,8 @@ const HEADER_ICON_SIZE = 32;
 // strings here would freeze in whichever language the app started in.
 //
 // `cmd` is NOT a key and is never translated: it is the token the parser
-// matches, and the text these emotes transmit is recognised as an English
-// substring by bitchat on receipt. Only the hint describing it is localised.
+// matches, and the text these emotes transmit is recognized as an English
+// substring by bitchat on receipt. Only the hint describing it is localized.
 const SLASH_COMMANDS: {
   cmd: string;
   emoji: string;
@@ -537,11 +537,11 @@ function activeSlashQuery(draft: string): string | null {
 // system row, and destroys the real message content.
 
 // Fixed bar heights for the voice-note waveform. A constant, not a literal in
-// the render, so the playhead maths below has one length to divide by.
+// the render, so the playhead math below has one length to divide by.
 const VOICE_WAVE_BARS = [6, 12, 8, 16, 10, 14, 8, 6, 12, 10, 8, 14];
 
 // What to call the attachment inside a resend request. Its own map rather than
-// the transfer labels, which are capitalised for a progress card; this is a
+// the transfer labels, which are capitalized for a progress card; this is a
 // word mid-sentence.
 const RESEND_KIND_KEY: Record<ChatAttachment["type"], TranslationKey> = {
   image: "chat.media.kind_photo",
@@ -938,7 +938,7 @@ function TransferProgressList({
               : T("chat.status.received")
             : t.status === "failed"
               ? T("chat.status.failed")
-              : t.status === "cancelled"
+              : t.status === "canceled"
                 ? T("chat.status.canceled")
                 : t.status === "stalled"
                   ? T("chat.status.waiting")
@@ -1183,7 +1183,7 @@ function createTransferStyles(Colors: ReturnType<typeof useThemeColors>) {
 //
 // Answered during render rather than in an effect: `exists` is a synchronous
 // stat, and an effect would render one frame of a working bubble first. Only
-// the bubbles on screen are mounted, and the answer is memoised per file.
+// the bubbles on screen are mounted, and the answer is memoized per file.
 function useAttachmentPresent(uri: string): boolean {
   return useMemo(() => attachmentPresent(uri), [uri]);
 }
@@ -1393,7 +1393,7 @@ function ImageAttachment({
         // The file is not readable. Overwhelmingly this means retention, the
         // received-media quota or Clear removed it, so every thread eventually
         // scrolls back into this state. Rendering the frame anyway would leave
-        // a blank grey box with nothing to explain it, which reads as the app
+        // a blank gray box with nothing to explain it, which reads as the app
         // being broken rather than as the photo having expired.
         if (alive) setFailedUri(uri);
       },
@@ -1519,7 +1519,7 @@ function VoiceNoteBubble({
           color={Colors.textPrimary}
         />
       </Pressable>
-      {/* Decorative bars, not a real waveform: the file is never analysed.
+      {/* Decorative bars, not a real waveform: the file is never analyzed.
           They carry position only. */}
       <Pressable
         style={styles.attachVoiceWave}
@@ -1690,7 +1690,7 @@ export default function MessageThread({
   // (encrypted text; media would broadcast in the clear). Matches bitchat.
   const mediaAllowed = canSendMedia(channel);
   // Non-null exactly when media is off here. The attach and mic buttons stay on
-  // screen but greyed, and say this when tapped: a control that vanishes leaves
+  // screen but grayed, and say this when tapped: a control that vanishes leaves
   // people wondering whether the app is broken or they are in the wrong place.
   const mediaBlocked = mediaBlockedReason(channel);
   function explainMediaBlocked(): void {
@@ -1716,14 +1716,14 @@ export default function MessageThread({
   const isPrivate = useChatStore((s) => s.channelKeys[channel] !== undefined);
   useEffect(() => {
     if (!isGeo) return;
-    let cancelled = false;
+    let canceled = false;
     void (async () => {
-      if (!cancelled && (await hasLocationPermission())) {
+      if (!canceled && (await hasLocationPermission())) {
         getMeshService()?.refreshGeoChannels();
       }
     })();
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [isGeo, channel]);
 
@@ -2091,7 +2091,7 @@ export default function MessageThread({
   // re-render a thread of hundreds of bubbles.
   const cancelSlide = useSharedValue(0);
   // Whether letting go now cancels. Decided on the UI thread beside the travel
-  // it derives from; the React copy is for the hint's text, glyph and colour and
+  // it derives from; the React copy is for the hint's text, glyph and color and
   // flips at most twice per hold.
   const cancelArmedShared = useSharedValue(false);
   // Whether THIS hold can be locked, and whether it already was.
@@ -2199,7 +2199,7 @@ export default function MessageThread({
   // The sender's side of the same: a send the wallet has settled as redeemed.
   const walletHistory = useWalletStore((s) => s.history);
   // A V4 token names its keyset by a short id, and the v2 form cannot be
-  // decoded without the full id to map it back to. Memoised on `mints` because
+  // decoded without the full id to map it back to. Memoized on `mints` because
   // the list is rebuilt each call and every message render reads it.
   const mints = useWalletStore((s) => s.mints);
   const keysetRefs = useMemo(() => keysetRefsOf(mints), [mints]);
@@ -2373,7 +2373,7 @@ export default function MessageThread({
     [msgs, selectedIds],
   );
   // Same rule for length: a DM target that cannot hold one of the picked
-  // messages whole is greyed rather than taking a trimmed or partial forward.
+  // messages whole is grayed rather than taking a trimmed or partial forward.
   const selectedTexts = useMemo(
     () =>
       msgs
@@ -2548,7 +2548,7 @@ export default function MessageThread({
   }, []);
 
   // Open a second bottom sheet once the first has finished sliding out. One
-  // pending handoff at a time, and cancelled when the thread goes away: two of
+  // pending handoff at a time, and canceled when the thread goes away: two of
   // these racing would open the wrong sheet, or open one over a thread the user
   // has already left. The action sheet's own close is what this is waiting on,
   // so the delay tracks that animation.
@@ -2805,7 +2805,7 @@ export default function MessageThread({
   useEffect(() => {
     const subscription = ScreenCapture.addScreenshotListener(() => {
       // bitchat's fixed English, never the sender's language: a bitchat
-      // reader recognises the notice by that wording, and an Airhop reader
+      // reader recognizes the notice by that wording, and an Airhop reader
       // turns it into a line in their own (`inboundText`).
       const text = screenshotNotice(localNickname);
       const service = getMeshService();
@@ -2962,7 +2962,7 @@ export default function MessageThread({
           useChatStore.getState().channelKeys[msgChannel] !== undefined
         ) {
           // A location cell's audience is everyone in it, reached over the
-          // internet. A Bluetooth neighbour arriving later will sync the packet,
+          // internet. A Bluetooth neighbor arriving later will sync the packet,
           // but the cell itself never sees it, so this is as far as it goes.
           //
           // A private channel's sealed packet is never kept for sync and its
@@ -2972,7 +2972,7 @@ export default function MessageThread({
           if (announce) showNoReachStatus();
         } else {
           // A public mesh room's audience IS whoever is in range, and the packet
-          // stays a gossip candidate for six hours, so the next neighbour to
+          // stays a gossip candidate for six hours, so the next neighbor to
           // turn up gets it. Same reasoning as the group branch above: this is
           // waiting, not broken, and painting it red would be the harsher of
           // two lies.
@@ -3227,7 +3227,7 @@ export default function MessageThread({
     // that too (file-transfer-service drops a packet tagged for a room that
     // refuses media). Sending anyway would leave a bubble here that reaches
     // nobody, so refuse at the source. The composer disables its attach button
-    // and the forward sheet greys the target, both with the reason; this is the
+    // and the forward sheet grays the target, both with the reason; this is the
     // backstop that keeps any future caller from reopening the hole.
     if (!canSendMedia(targetChannel)) return;
     const caption = options?.caption?.trim() ?? "";
@@ -3309,7 +3309,7 @@ export default function MessageThread({
             caption: caption || undefined,
           },
           // Settled once every fragment has actually been taken by the radio,
-          // or once the transfer has given up or been cancelled. The bubble
+          // or once the transfer has given up or been canceled. The bubble
           // stays on its clock face until then: a photo is thousands of paced
           // writes, not one, and calling it sent the moment it is queued is
           // what let a transfer the radio never carried look delivered.
@@ -3419,10 +3419,10 @@ export default function MessageThread({
     return getMeshService()?.peerRunsAirhop(targetChannel.slice(3)) === true;
   }
 
-  // Cancelled from its card says nothing: the user is the one who stopped it.
+  // Canceled from its card says nothing: the user is the one who stopped it.
   function reportVideoPrepFailure(reason: VideoPrepFailure): void {
-    if (reason === "cancelled") return;
-    const body: Record<Exclude<VideoPrepFailure, "cancelled">, string> = {
+    if (reason === "canceled") return;
+    const body: Record<Exclude<VideoPrepFailure, "canceled">, string> = {
       interrupted: t("chat.video_prep.interrupted"),
       too_large: t("chat.video_prep.too_large"),
       unreadable: t("chat.video_prep.unreadable"),
@@ -3462,7 +3462,7 @@ export default function MessageThread({
   // the reader where they are instead of walking them into a thread to look at
   // a message that never arrived.
   function forwardMessage(source: ChatMessage, targetChannel: string): boolean {
-    // The forward sheet greys every room for ecash; this is the backstop for
+    // The forward sheet grays every room for ecash; this is the backstop for
     // any other caller (see forward-rules.ts).
     if (!forwardAllowed(targetChannel, [source])) return false;
     // A place is addressed to one person, so it does not travel on. Forwarding
@@ -3524,7 +3524,7 @@ export default function MessageThread({
       );
       return true;
     }
-    // The forward sheet greys a DM that cannot hold the text; this is the
+    // The forward sheet grays a DM that cannot hold the text; this is the
     // backstop for any other caller. Refused rather than cut: see
     // forwardTextFits.
     const sealed =
@@ -3626,7 +3626,7 @@ export default function MessageThread({
   // that bubble says. For a location peer that carried name is the only source
   // there is: their nickname rides the `n` tag on channel messages, and nothing
   // records it until a conversation with them opens, so resolving from the
-  // pubkey alone would print "anon#last4" beneath a bubble labelled
+  // pubkey alone would print "anon#last4" beneath a bubble labeled
   // "NeverDie#0c08".
   //
   // A mesh peer still resolves normally, because there a local nickname the user
@@ -4314,10 +4314,10 @@ export default function MessageThread({
     setHandsFreeRecording(true);
   }, []);
 
-  const finishTalk = useCallback((cancelled: boolean): void => {
+  const finishTalk = useCallback((canceled: boolean): void => {
     setCancelArmed(false);
     released();
-    void (cancelled ? talkRef.current.cancel() : talkRef.current.end());
+    void (canceled ? talkRef.current.cancel() : talkRef.current.end());
   }, []);
 
   // Hold the mic to talk, slide back to cancel.
@@ -4386,10 +4386,10 @@ export default function MessageThread({
           lockedShared.value = false;
           return;
         }
-        const cancelled = cancelArmedShared.value;
+        const canceled = cancelArmedShared.value;
         cancelArmedShared.value = false;
         cancelSlide.value = withTiming(0, { duration: Duration.base });
-        scheduleOnRN(finishTalk, cancelled);
+        scheduleOnRN(finishTalk, canceled);
       },
     }),
     [
@@ -4869,7 +4869,7 @@ export default function MessageThread({
       );
       // audio/mp4 is bitchat's name for AAC-in-MP4, which is what the recorder
       // produces. "audio/x-m4a" is not on either client's allow-list, so a
-      // note labelled that way is refused on arrival while looking sent here.
+      // note labeled that way is refused on arrival while looking sent here.
       const file = new FileSystem.File(uri);
       const sizeBytes = file.exists ? file.size : undefined;
       const send = (): void =>
@@ -6245,7 +6245,7 @@ export default function MessageThread({
 
       {/* Red in both directions: the accent is near-black or near-white, so an
           accent-tinted LIVE reads as ordinary chrome. The two states never
-          appear at once, so nothing needs a second colour. */}
+          appear at once, so nothing needs a second color. */}
       {!selecting &&
         liveTalker !== null &&
         !isPTTActive &&
@@ -6288,7 +6288,7 @@ export default function MessageThread({
       <View onLayout={(e) => setComposeAreaHeight(e.nativeEvent.layout.height)}>
         {!selecting && (
           <View style={styles.composeBar}>
-            {/* Attach. Always present, greyed where media cannot be delivered, so
+            {/* Attach. Always present, grayed where media cannot be delivered, so
             the bar keeps its shape and the reason is one tap away. */}
             <Pressable
               style={[
@@ -6319,7 +6319,7 @@ export default function MessageThread({
               // budget that additionally clamps DMs in handleDraftChange. Kept so
               // a runaway paste cannot build a packet nothing will carry.
               maxLength={2000}
-              // Autocorrect, spellcheck and capitalisation stay at the platform
+              // Autocorrect, spellcheck and capitalization stay at the platform
               // defaults. A switch here would promise more than it can deliver:
               // the learned dictionary belongs to the OS, so turning it off only
               // stops future learning in this one field.
@@ -6429,7 +6429,7 @@ export default function MessageThread({
                       >
                         {/* The mic, until the slide turns it into a discard. The
                       radio glyph already means "the mesh" elsewhere (peer list,
-                      radar, network settings), so state is carried by colour:
+                      radar, network settings), so state is carried by color:
 
                         muted  hold records a voice note
                         accent hold goes out live
@@ -6521,7 +6521,7 @@ export default function MessageThread({
                 <Feather name="lock" size={13} color={Colors.textMuted} />
               </View>
             )}
-            {/* A voice note can be cancelled before anyone hears it; a live burst
+            {/* A voice note can be canceled before anyone hears it; a live burst
               already played on the other phone. The sender must tell at once. */}
             {/* Past the ceiling nothing goes out, so the badge says it ended and
               drops the red: letting go is all that is left. LIVE stays

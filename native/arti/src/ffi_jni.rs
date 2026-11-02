@@ -2,7 +2,7 @@
 //! `android/app/src/main/java/org/onemindlabs/airhop/tor/ArtiNative.kt`.
 //!
 //! The same operations the C ABI exposes, in the shape JNI wants. Nothing
-//! platform-specific happens above this file, so a behaviour difference between
+//! platform-specific happens above this file, so a behavior difference between
 //! the two phones can only come from the app layer, never from Tor.
 //!
 //! There is no log callback: `status` reports the same thing as data, so
@@ -10,7 +10,7 @@
 //! across threads.
 //!
 //! Every entry point runs inside `crate::catch_panic`: unwinding into a JNI
-//! frame is undefined behaviour.
+//! frame is undefined behavior.
 
 use jni::objects::{JClass, JString};
 use jni::sys::{jboolean, jint, jstring, JNI_TRUE};

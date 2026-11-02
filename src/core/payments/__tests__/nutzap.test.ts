@@ -294,7 +294,7 @@ describe("fetchNutzapInfo", () => {
     expect(info?.p2pkPubkey).toBe(lower);
   });
 
-  it("honours a newer event that opts out, rather than an older valid one", async () => {
+  it("honors a newer event that opts out, rather than an older valid one", async () => {
     const optOut = event({
       kind: KIND_NUTZAP_INFO,
       created_at: 300,

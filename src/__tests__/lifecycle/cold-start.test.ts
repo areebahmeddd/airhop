@@ -157,7 +157,7 @@ describe("cold start and permissions", () => {
     });
     const v = new Verdict(
       "S01",
-      "first install, everything allowed, stack honours the grant 600ms later",
+      "first install, everything allowed, stack honors the grant 600ms later",
       os,
     );
     const native = androidDevice(os);

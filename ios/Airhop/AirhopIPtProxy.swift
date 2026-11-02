@@ -90,7 +90,7 @@ final class AirhopIPtProxy: @unchecked Sendable {
     for transport in transports {
       if !running.contains(transport) {
         do {
-          // No upstream proxy: Arti is the only thing dialling these.
+          // No upstream proxy: Arti is the only thing dialing these.
           try controller.start(transport.rawValue, proxy: "")
         } catch {
           AirhopLog.iptProxy.error("\(transport.rawValue, privacy: .public) did not start")
@@ -155,7 +155,7 @@ final class AirhopIPtProxy: @unchecked Sendable {
     // Logging off. The log records bridge addresses, which is the most
     // incriminating thing this device could write down, and nothing reads it.
     //
-    // The initialiser returns nil rather than throwing when it cannot set up
+    // The initializer returns nil rather than throwing when it cannot set up
     // its directory, so a nil here is a real failure.
     guard
       let created = IPtProxyController(

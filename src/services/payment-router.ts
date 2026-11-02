@@ -93,7 +93,7 @@ export interface PayPersonParams {
   recipientName?: string;
 }
 
-// Null when the user cancelled or the wallet refused; errors are alerted here.
+// Null when the user canceled or the wallet refused; errors are alerted here.
 export async function payPerson(
   params: PayPersonParams,
 ): Promise<PayResult | null> {
@@ -655,7 +655,7 @@ export function reportWalletError(err: unknown): void {
 }
 
 // Receive a token, asking before adding a mint the wallet has never used: never
-// silently (a stranger's token could enrol an unvetted mint), never refused
+// silently (a stranger's token could enroll an unvetted mint), never refused
 // outright (the recipient could not take the payment). Null when declined.
 export async function receiveTrustingMint(
   raw: string,

@@ -86,7 +86,7 @@ export default function ContactInfoSheet({
 
   // Our own name, for the echo in the thread. Derived the same way the thread
   // derives it, so a payment started here and one started from the composer put
-  // an identically labelled bubble in the same conversation.
+  // an identically labeled bubble in the same conversation.
   const localNickname = useMemo(() => {
     const id = getMeshService()?.getPeerID();
     return id !== undefined && id.length >= 4

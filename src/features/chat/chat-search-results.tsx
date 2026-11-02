@@ -63,7 +63,7 @@ import {
 // freeze in the language the app started in.
 //
 // Each empty state is its own sentence rather than the label spliced into one:
-// a label is a capitalised plural, and the noun's gender, number and case all
+// a label is a capitalized plural, and the noun's gender, number and case all
 // change the words around it.
 const MEDIA_FILTERS: {
   key: MediaFilter;

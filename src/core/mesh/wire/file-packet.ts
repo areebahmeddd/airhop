@@ -116,7 +116,7 @@ export function liveVideoStreamOf(name: string | undefined): string | null {
 //
 // The name is not cosmetic: the receiver writes it to disk, and the photo
 // library and the audio player both read the type off the extension rather than
-// the MIME that travelled beside it. iOS rejects a save outright when there is
+// the MIME that traveled beside it. iOS rejects a save outright when there is
 // none (expo-media-library EmptyFileExtensionException).
 //
 // A supplied name is kept and only gains an extension if it had none. A missing
@@ -166,7 +166,7 @@ export function ensureFileExtension(name: string, mimeType: string): string {
 }
 
 // One preferred spelling per MIME type, the inverse of MIME_BY_EXTENSION.
-// `bin` for anything unrecognised: an extension the OS does not know still
+// `bin` for anything unrecognized: an extension the OS does not know still
 // beats none, which is the case that fails hard.
 const EXTENSION_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -215,7 +215,7 @@ function uuidV4(): string {
 // ---- MIME allow-list (bitchat MimeType.allowed, plus video for Airhop) ----
 
 // bitchat accepts every one of these, including video, but only renders images
-// and voice notes: MimeType resolves an unrecognised type through
+// and voice notes: MimeType resolves an unrecognized type through
 // application/octet-stream (whose UTType is public.data, which everything
 // conforms to), and BitchatMessage.mediaKind only surfaces .image and .voice.
 // So a video or a document reaches a bitchat peer and lands as a plain
@@ -244,7 +244,7 @@ const BITCHAT_ALLOWED_MIME = new Set([
 ]);
 
 // The video Airhop sends (EXTENSION_BY_MIME); bitchat-ios sends none. Anything
-// else labelled video/* would go to the OS player unchecked.
+// else labeled video/* would go to the OS player unchecked.
 const AIRHOP_VIDEO_MIME = new Set(["video/mp4", "video/quicktime"]);
 
 export function isAllowedMime(mime: string | undefined): boolean {

@@ -666,7 +666,7 @@ test("W-F08 losing WiFi mid-conversation falls back to Bluetooth", async () => {
 // W-F04 proves a photo crosses WiFi with the BLE topology deliberately empty.
 // That is a real property, but it is not the configuration anybody is ever in:
 // two phones close enough to hold a WiFi link are close enough to be Bluetooth
-// neighbours too, so the shipped case has BOTH radios up and the interesting
+// neighbors too, so the shipped case has BOTH radios up and the interesting
 // question is which one the file takes.
 //
 // The risk being guarded is specific and has a precedent. bitchat shipped its
@@ -698,7 +698,7 @@ test("W-F09 with both radios up, a DM attachment still takes the fast path", asy
     radio.add(d);
     wifi.add(d);
   }
-  // Both radios reach: BLE neighbours AND a WiFi link. This is the shipped
+  // Both radios reach: BLE neighbors AND a WiFi link. This is the shipped
   // configuration, and the one no other scenario in this file covers.
   radio.setTopology([["a", "b"]]);
   s.track(a, b);

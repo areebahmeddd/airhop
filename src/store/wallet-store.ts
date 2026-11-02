@@ -13,7 +13,7 @@
 //                           that the sender has not spent it elsewhere.
 //                           Counted in the balance, shown apart, and redeemed
 //                           first, one receipt at a time.
-//   reserved                serialised into a token for a send not yet
+//   reserved                serialized into a token for a send not yet
 //                           confirmed. Out of the balance so one coin cannot
 //                           go to two people.
 // Reserving moves, never deletes, and the token string stays on the tx, so a
@@ -126,7 +126,7 @@ export interface StoredMint {
   keysetCacheAtMs?: number;
   // Raw `/v1/info`, for `loadMintFromCache` on an offline cold start.
   infoResponse?: unknown;
-  // NUT-02 input fee, parts per thousand, for offline fee maths.
+  // NUT-02 input fee, parts per thousand, for offline fee math.
   feePpkByKeysetId?: Record<string, number>;
   lastSeenMs?: number;
 }
@@ -502,7 +502,7 @@ export function whenWalletHydrated(): Promise<void> {
 // can hold a request open for minutes) would persist the destroyed wallet into
 // a fresh file under a fresh key. Only hydration and `initWalletService` open
 // it. A write racing a bootstrap waits, then checks the handle is still the
-// current one, honouring a reset in between.
+// current one, honoring a reset in between.
 async function openHandle(): Promise<MMKVLike | null> {
   if (instance !== null) return instance;
   const pending = ready;
@@ -626,7 +626,7 @@ export function selectAccounts(
 // requires, since an unresolved id means the proof can be neither verified nor
 // fee-priced. The unit is what a token's own label is checked against.
 // Decoding is offline, so the answer comes from here, not the mint. Takes
-// `mints` so a component can memoise on it; the fresh array would re-render on
+// `mints` so a component can memoize on it; the fresh array would re-render on
 // every store write.
 export function keysetRefsOf(
   mints: Record<string, StoredMint>,

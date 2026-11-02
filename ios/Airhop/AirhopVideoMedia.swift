@@ -413,7 +413,7 @@ struct VideoEncodedFrame {
   let keyframe: Bool
 }
 
-/// Real-time H.264 Constrained Baseline. Any picture is centre-cropped and
+/// Real-time H.264 Constrained Baseline. Any picture is center-cropped and
 /// scaled to width x height NV12 by a pixel transfer session first, so the
 /// camera's frames need no resizing of their own.
 ///
@@ -493,7 +493,7 @@ final class VideoH264Encoder {
       VTCompressionSessionInvalidate(session)
       return nil
     }
-    // Trim keeps the aspect ratio and crops to fill: a centre crop.
+    // Trim keeps the aspect ratio and crops to fill: a center crop.
     Self.set(transferSession, kVTPixelTransferPropertyKey_ScalingMode, kVTScalingMode_Trim)
 
     var createdPool: CVPixelBufferPool?

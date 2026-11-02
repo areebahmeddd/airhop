@@ -352,7 +352,7 @@ export default function ChannelInfoSheet({
 
   // One unified member list for all channel kinds. A group's signed roster, a
   // geo cell's active participants, a private channel's proven key-holders, or
-  // the nearby BLE peers all normalise to the same shape and render identically
+  // the nearby BLE peers all normalize to the same shape and render identically
   // (You row, chat action, search). This is a roster, so it lists and counts
   // you: a group roster already has you, and the others-only lists gain a "You"
   // row. The header's "nearby" and "active" are presence, and count others only.

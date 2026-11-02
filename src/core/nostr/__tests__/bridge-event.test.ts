@@ -100,7 +100,7 @@ describe("parseBridgeEvent", () => {
   });
 
   // The `n` tag is whatever the signer wrote, and it is shown as a name.
-  test("normalises the nickname tag where it enters", () => {
+  test("normalizes the nickname tag where it enters", () => {
     const ev = createBridgeMeshEvent({
       content: "hi",
       cell: "u4pruy",

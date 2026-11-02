@@ -39,7 +39,7 @@ describe("standard base64", () => {
   });
 });
 
-describe("base64 error behaviour", () => {
+describe("base64 error behavior", () => {
   // A throwing decoder and a null-returning one, kept separate and named so a
   // call site says which failure it expects.
   it("base64ToBytes throws on malformed input", () => {
@@ -99,7 +99,7 @@ describe("base64url", () => {
   });
 });
 
-describe("base64url error behaviour", () => {
+describe("base64url error behavior", () => {
   it("base64UrlToBytes throws on malformed input", () => {
     expect(() => base64UrlToBytes("!!!!")).toThrow();
   });

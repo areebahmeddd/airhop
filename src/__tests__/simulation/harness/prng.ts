@@ -15,7 +15,7 @@ export class Prng {
   private s3: number;
 
   constructor(readonly seed: number) {
-    // splitmix64-style expansion so neighbouring seeds do not produce
+    // splitmix64-style expansion so neighboring seeds do not produce
     // correlated streams. Seed 1 and seed 2 must look nothing alike.
     let x = seed >>> 0 || 0x9e3779b9;
     const next = (): number => {

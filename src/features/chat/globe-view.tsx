@@ -80,7 +80,7 @@ function makeInk(Colors: ReturnType<typeof useThemeColors>): GlobeInk {
     border: paint(Colors.globeBorder, 1, 1.2 * px),
     graticule: paint(Colors.globeGraticule, 1, px),
     limb: paint(Colors.borderStrong, 1, px),
-    // Neighbours are textMuted, which clears 3:1 against both water and land
+    // Neighbors are textMuted, which clears 3:1 against both water and land
     // in either theme; the selected cell is the only accent on the globe.
     gridFill: paint(Colors.textMuted, 0.05),
     gridStroke: paint(Colors.textMuted, 1, 1.6 * px),

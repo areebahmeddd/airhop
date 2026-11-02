@@ -9,7 +9,7 @@
 //! than hand-written, so the two cannot drift.
 //!
 //! Every entry point runs inside `crate::catch_panic`: unwinding into a Swift
-//! frame is undefined behaviour.
+//! frame is undefined behavior.
 
 use std::ffi::{c_char, c_int, CStr};
 

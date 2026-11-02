@@ -1,5 +1,5 @@
 // Cashu core: detection, decoding and its bounds, fee-aware selection,
-// serialisation and the QR hand-off.
+// serialization and the QR hand-off.
 //
 // Real tokens are built with cashu-ts and round-tripped, rather than hand-rolled
 // fixtures, so the tests fail if the library's wire format moves under us.
@@ -173,7 +173,7 @@ describe("decodeToken", () => {
 describe("a token's unit against its keysets", () => {
   const SAT_KEYSET = { id: KEYSET, unit: "sat" };
 
-  it("refuses sat coins labelled as dollars", () => {
+  it("refuses sat coins labeled as dollars", () => {
     const token = realToken([150], undefined, "usd");
     expect(decodeToken(token, [SAT_KEYSET])).toBeNull();
     expect(readToken(token, [SAT_KEYSET])).toEqual({
@@ -379,7 +379,7 @@ describe("decodeToken bounds", () => {
   });
 
   it("rejects an over-long mint URL", () => {
-    // A mint URL is displayed and dialled, so an unbounded one is both a
+    // A mint URL is displayed and dialed, so an unbounded one is both a
     // layout problem and a request the user never intended.
     expect(
       decodeToken(encodedToken(`https://${"a".repeat(600)}.com`, [4])),
@@ -532,7 +532,7 @@ describe("selectProofsForAmount", () => {
   });
 });
 
-// ---- Serialisation ----
+// ---- Serialization ----
 
 describe("buildToken", () => {
   it("round-trips through decodeToken", () => {

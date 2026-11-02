@@ -47,7 +47,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
 
     override fun getName(): String = NAME
 
-    // Start, stop and wipe are serialised onto one thread. Each blocks (a start
+    // Start, stop and wipe are serialized onto one thread. Each blocks (a start
     // builds the client and binds the port, a stop waits for the runtime to wind
     // down) and running two at once is never meaningful.
     private val worker = Executors.newSingleThreadExecutor { r ->

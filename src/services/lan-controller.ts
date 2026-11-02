@@ -13,7 +13,7 @@
 // ordinary infrastructure, which on a workplace or venue network is an
 // attendance list, so `setEnabled` gates everything and defaults to off.
 //
-// Dialling. mDNS returns the whole network, so who to connect to is a decision
+// Dialing. mDNS returns the whole network, so who to connect to is a decision
 // rather than a consequence. lan-dial-policy.ts makes it; native opens the
 // sockets it is told to.
 
@@ -37,9 +37,9 @@ const PERMISSION_RETRIES = 2;
 // flapping. Below it the retry ladder keeps climbing.
 const STABLE_RUN_MS = 60_000;
 
-// How long to wait after a discovery before dialling.
+// How long to wait after a discovery before dialing.
 //
-// mDNS answers arrive in a burst, one per device. Dialling on the first means
+// mDNS answers arrive in a burst, one per device. Dialing on the first means
 // planning a ring of two, then replanning as each further answer lands.
 // Settling first costs half a second nobody is watching and produces one
 // correct plan instead of N wrong ones.
@@ -49,7 +49,7 @@ const DISCOVERY_SETTLE_MS = 500;
 //
 // A TCP link can drop while the peer's mDNS record stays visible, which is no
 // discovery change at all, so without this a hiccup loses that peer until it
-// restarts. Matched to the gossip sync interval. Re-dialling a live peer is
+// restarts. Matched to the gossip sync interval. Re-dialing a live peer is
 // free: `connectToPeer` is idempotent, and which names are linked stays with
 // native.
 const DIAL_REVIEW_MS = 15_000;
@@ -140,8 +140,8 @@ export class LANController {
   private readonly discovered = new Set<string>();
   // Dials currently in flight, so a pass that lands while one is open does not
   // start a second. Emptied when each settles, either way: a name that stays
-  // here after its dial finished is a peer that can never be dialled again.
-  private readonly dialling = new Set<string>();
+  // here after its dial finished is a peer that can never be dialed again.
+  private readonly dialing = new Set<string>();
 
   private linkCount = 0;
 
@@ -250,7 +250,7 @@ export class LANController {
 
   onPeerLost(serviceName: string): void {
     this.discovered.delete(serviceName);
-    this.dialling.delete(serviceName);
+    this.dialing.delete(serviceName);
     this.scheduleSettle();
   }
 
@@ -285,7 +285,7 @@ export class LANController {
 
   private forgetNetwork(): void {
     this.discovered.clear();
-    this.dialling.clear();
+    this.dialing.clear();
     this.linkCount = 0;
   }
 
@@ -321,10 +321,10 @@ export class LANController {
     if (!this.started || !this.wanted) return;
     const targets = dialTargets(this.instanceName, [...this.discovered]);
     for (const name of targets) {
-      if (this.dialling.has(name)) continue;
-      this.dialling.add(name);
+      if (this.dialing.has(name)) continue;
+      this.dialing.add(name);
       const settle = (): void => {
-        this.dialling.delete(name);
+        this.dialing.delete(name);
       };
       NativeAirhopLAN?.connectToPeer(name).then(settle, () => {
         // A refused connect is usually client isolation, which never clears,
@@ -435,7 +435,7 @@ export class LANController {
       return;
     }
 
-    // Anything discovered while starting still needs dialling, and from here on
+    // Anything discovered while starting still needs dialing, and from here on
     // the plan is walked again periodically.
     this.scheduleSettle();
     this.scheduleReview();

@@ -1,6 +1,6 @@
 // The money between "send" and "they got it".
 //
-// A send moves proofs into a reservation and serialises them into a token, all
+// A send moves proofs into a reservation and serializes them into a token, all
 // offline. It resolves by `confirmSend` (drop the reservation), `reclaimSend`
 // (put it back) or neither (pending, its token kept to share again). Coins are
 // always in exactly one place. The cases follow real taps, including two sends
@@ -270,7 +270,7 @@ describe("two sends at once", () => {
   });
 
   it("makes the loser retry even when the balance covers both", async () => {
-    // Two coins, but both sends quoted the same one. Serialising them costs a
+    // Two coins, but both sends quoted the same one. Serializing them costs a
     // retry, which is the deliberate trade.
     useWalletStore.getState().clearAll();
     useWalletStore.getState().addMint(MINT, { units: [UNIT] });

@@ -87,7 +87,7 @@ describe("settings index", () => {
     const missing: string[] = [];
     for (const entry of ENTRIES) {
       // A row's label is on the screen it points at; everything else is
-      // labelled by the screen its section names.
+      // labeled by the screen its section names.
       const view =
         entry.target.kind === "row"
           ? entry.target.view

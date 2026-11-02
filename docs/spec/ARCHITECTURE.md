@@ -223,9 +223,9 @@ When no radio reaches the recipient:
 ```
 
 The radios are not a priority ladder for broadcast traffic. A broadcast goes
-out to every neighbour on every radio, and a packet that enters on one radio is
+out to every neighbor on every radio, and a packet that enters on one radio is
 relayed out on the others, because no node knows the mesh topology. It is one
-write per neighbour per radio: two phones that meet over Bluetooth each dial
+write per neighbor per radio: two phones that meet over Bluetooth each dial
 the other and hold two links, so the link registry picks the one most recently
 bound to that peer, and a relay writes nothing to any link of the peer it heard
 the packet from. Only this phone's own direct announce goes down every link,
@@ -237,7 +237,7 @@ A packet addressed to a peer is different. When the peer holds a direct link to
 this phone, it goes down that one link, choosing Wi-Fi Aware, then LAN, then
 Bluetooth; the point of the faster radios is to move an attachment that
 Bluetooth would have to fragment into hundreds of writes. With no direct link,
-it floods through any neighbour with the recipient ID set, at full TTL, and only
+it floods through any neighbor with the recipient ID set, at full TTL, and only
 the recipient decrypts it, forwarding nothing addressed to itself. How a DM falls
 back from there to the internet and to couriers is under
 [Direct messages](#direct-messages).
@@ -248,8 +248,8 @@ Follows bitchat's design:
 
 - Dual-role: every device is both GATT Central (scanner) and GATT Peripheral (advertiser)
 - Service UUID `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`, bitchat-compatible
-- TTL at most 7, decremented per relay and clamped by neighbour count as bitchat-ios does ([PROTOCOLS.md section 4](PROTOCOLS.md#4-routing-constants))
-- Jitter of 10 to 220 ms before relay, by neighbour count (8 to 25 ms for live voice and fragments), which prevents cascade storms
+- TTL at most 7, decremented per relay and clamped by neighbor count as bitchat-ios does ([PROTOCOLS.md section 4](PROTOCOLS.md#4-routing-constants))
+- Jitter of 10 to 220 ms before relay, by neighbor count (8 to 25 ms for live voice and fragments), which prevents cascade storms
 - Dedup against a 1000-entry seen set of packet IDs, each expiring after 5 minutes, with fragments in a second set of their own so file traffic cannot shorten the window
 - Fragments of 467 data bytes inside a 512-byte frame, the BLE write ceiling
 - Up to 128 concurrent reassemblies and 8 MiB across them; a full table evicts the one idle longest
@@ -348,7 +348,7 @@ line.
 managed capability, and the service under `WiFiAwareServices` in `Info.plist`.
 
 The browser reports a device once and stays silent while it remains in range, so
-a link that ends is redialled by both sides after 2 s, doubling to a minute, and
+a link that ends is redialed by both sides after 2 s, doubling to a minute, and
 the tiebreak collapses the pair. Three constraints are Apple's, and each shapes
 the code:
 
@@ -356,7 +356,7 @@ the code:
 | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | No unpaired mode. Every target a listener or browser can name comes from the app's paired list, and the only way into that list is a system sheet | A pairing gate in the controller, a second native module for the sheet (`AirhopWiFiPairing`), and an `unpaired` state that is reported rather than retried, because only a pairing changes it |
 | Discovery is symmetric and there is no `serviceSpecificInfo` to break a tie with before connecting                                                | An 8-byte token exchanged as the first frame of every connection. Both ends keep the one whose initiator holds the lower token, and the loser is closed before TypeScript hears of it         |
-| `NetworkConnection` has no cancel; a connection ends when its last reference is dropped                                                           | One task per link owns its connection for the link's life. Closing means cancelling that task, and the framework owns liveness, so there is no heartbeat                                      |
+| `NetworkConnection` has no cancel; a connection ends when its last reference is dropped                                                           | One task per link owns its connection for the link's life. Closing means canceling that task, and the framework owns liveness, so there is no heartbeat                                       |
 
 Pairing is two-sided, like Bluetooth pairing: one phone browses and the other
 advertises at the same moment. That is a user-visible cost with no one-tap
@@ -391,9 +391,9 @@ from it only by the radio refusing the links.
 So LAN caps at 8, sized against bitchat's `bleMaxCentralLinks` of 6, which keeps
 a LAN room reading the way a Bluetooth room does to every constant tuned for
 Bluetooth density. Names are sorted into one ring and a device links to the four
-either side of it, dialling only those sorting after its own so no pair is
-dialled twice. Both ends compute the same ring, so they agree without
-negotiating, and below the cap the ring wraps and everyone is a neighbour, which
+either side of it, dialing only those sorting after its own so no pair is
+dialed twice. Both ends compute the same ring, so they agree without
+negotiating, and below the cap the ring wraps and everyone is a neighbor, which
 is right for a hotspot. `src/services/lan-dial-policy.ts` holds the rule as a
 pure function; the native modules open the sockets they are told to.
 
@@ -761,7 +761,7 @@ same transports with narrower rules.
 outbox retry:
 
 1. **Double Ratchet over the mesh**, when a ratchet with a sending chain exists
-   and any link reaches the peer, directly or through a neighbour.
+   and any link reaches the peer, directly or through a neighbor.
 2. **Noise XX handshake**, when the peer is reachable over the mesh but has no
    session. The text waits in the outbox, which the completed handshake
    flushes at once.
@@ -876,7 +876,7 @@ never left guessing ([PROTOCOLS.md section 3.3](PROTOCOLS.md#ring-0x51-to-0x53))
 
 ### Gossip sync
 
-A phone that rejoins catches up from its neighbours through GCS gossip sync, the
+A phone that rejoins catches up from its neighbors through GCS gossip sync, the
 mechanism bitchat uses. It sends a link peer a filter of the packets it holds, and
 the peer answers with what the filter lacks, at TTL 0 so a catch-up cannot
 re-flood the mesh. Public and group messages are served for 6 hours, board posts
@@ -956,9 +956,9 @@ link exists, so nobody can forward their way in.
 ### Room messages
 
 A channel or group message carries its ID on the wire, and a retry resends it
-under the same ID, so a neighbour who got the first copy collapses the second.
+under the same ID, so a neighbor who got the first copy collapses the second.
 `#bluetooth` messages carry no ID on the wire, so a retry after a kill can show
-twice to a neighbour who had the first copy.
+twice to a neighbor who had the first copy.
 
 A message's bubble reports what actually carried it: a relay post shows sent
 only once a relay has accepted it, and a message still queued when the app was
@@ -1005,7 +1005,7 @@ the mint cannot link issuance to redemption. That fits a mesh app.
 
 ### Wallet operations
 
-| Operation   | Behaviour                                                                                                                                                                                                                                                                                                         |
+| Operation   | Behavior                                                                                                                                                                                                                                                                                                          |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Balance     | Spendable proofs per (mint, unit), with unverified and reserved amounts shown apart from the headline                                                                                                                                                                                                             |
 | Deposit     | bolt11 from the mint (NUT-04), polled while the sheet is open and reconciled on next launch                                                                                                                                                                                                                       |
@@ -1727,13 +1727,13 @@ Known limits Airhop does not defend against:
 - **A stable peer ID.** It derives from the long-term Noise key and does not rotate, so the same device is linkable across sessions until the identity is regenerated. Per-cell geohash identities are unlinkable only while lurking ([Key pair](#key-pair)).
 - **Who you are talking to on the mesh.** Packet headers carry sender and recipient IDs in the clear, as bitchat's do.
 - **Traffic timing correlation.** An observer watching several BLE radios could infer communication patterns.
-- **Authorship of a broadcast, some of the time.** A packet this phone authored leaves with a TTL drawn from the three values at and below the relay ceiling for its class at this phone's degree: 5 to 7 when sparse, 4 to 6 at mid degree (5 to 7 for an urgent board post), 3 to 5 when dense; live voice and public files follow the fragment ceiling (5 to 7, or 3 to 5 dense). This covers channel messages, group messages, board posts, public files, and live voice with one draw per burst. Relays at the same degree emit at most one below the ceiling, so the lower two values look relayed and about a third of authored packets stay attributable. A dense originator whose neighbours are sparse starts up to two hops short of what they would carry. Announces and directed traffic keep 7.
+- **Authorship of a broadcast, some of the time.** A packet this phone authored leaves with a TTL drawn from the three values at and below the relay ceiling for its class at this phone's degree: 5 to 7 when sparse, 4 to 6 at mid degree (5 to 7 for an urgent board post), 3 to 5 when dense; live voice and public files follow the fragment ceiling (5 to 7, or 3 to 5 dense). This covers channel messages, group messages, board posts, public files, and live voice with one draw per burst. Relays at the same degree emit at most one below the ceiling, so the lower two values look relayed and about a third of authored packets stay attributable. A dense originator whose neighbors are sparse starts up to two hops short of what they would carry. Announces and directed traffic keep 7.
 - **Courier mail linkability.** The courier recipient tag is keyed on the recipient's public Noise key, which every announce broadcasts, so anyone in radio range can compute a peer's tags for any day and follow their mail. Inherited from bitchat, which documents the same flaw. Fixing it needs a coordinated v2 tag. See [PROTOCOLS.md section 6.3](PROTOCOLS.md#63-recipient-tag-and-seal).
 - **A location you chose to send.** A location pin carries real coordinates. It is encrypted inside the recipient's Noise session, so no relay can read it, but the recipient holds it and can do what they like with it, including screenshotting it. Sent only on an explicit tap, to one contact, never automatically, never as a reply in kind, and never forwarded onward by the app.
 - **Location inside a file sent unchanged.** JPEG and WebP photos and every picked or recorded video are always re-encoded, which drops their metadata, GPS included, and one the encoder cannot open is refused rather than sent as it is. A document, and a GIF or PNG small enough to fit, are sent byte for byte, with whatever location they hold.
 - **Attachment confidentiality in a public room.** A photo posted to `#bluetooth` is signed but not encrypted, exactly like the text beside it. A private attachment is sealed inside the recipient's Noise session ([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). Media stays restricted to `#bluetooth` and mesh DMs, and is never bridged.
 - **The fact that Tor is in use, on a direct connection.** The first hop then goes to a publicly listed relay and deep packet inspection sees it. A bridge closes this and is a setting rather than the default, because it costs speed. See [Bridges](#bridges).
-- **Mint trust.** Cashu requires trusting the mint to honour redemption.
+- **Mint trust.** Cashu requires trusting the mint to honor redemption.
 - **A compromised OS.** All guarantees are void.
 
 ## 12. Localization
@@ -2011,7 +2011,7 @@ runtimes agree on safely. The full per-module contract is in
 `src/bridge/NativeAirhopBLE.ts` has ten methods:
 
 1. `startAdvertising` / `stopAdvertising`: GATT Peripheral
-2. `startScanning` / `stopScanning`: GATT Central. Stopping the scan also disconnects every link this phone dialled, pending dials included, as bitchat-ios does when it stops, so stopping the mesh leaves no central link up to carry a neighbour's traffic, or a new identity's announce after a wipe. Duty cycling and power changes keep their links; Invisible only stops advertising
+2. `startScanning` / `stopScanning`: GATT Central. Stopping the scan also disconnects every link this phone dialed, pending dials included, as bitchat-ios does when it stops, so stopping the mesh leaves no central link up to carry a neighbor's traffic, or a new identity's announce after a wipe. Duty cycling and power changes keep their links; Invisible only stops advertising
 3. `writeToLink`: raw bytes to a connected peer
 4. `getRadioState`: support, power, authorization, location and battery in one answer
 5. `setPowerMode`: how hard to run the radios
@@ -2117,5 +2117,5 @@ not go through the HTTP stack at all.
 
 - Noise XX gives forward secrecy per session, with a new key on each reconnect
 - It does not give per-message forward secrecy within a session
-- Double Ratchet rotates keys per message, so one message's key does not expose its neighbours
+- Double Ratchet rotates keys per message, so one message's key does not expose its neighbors
 - Offline mail does not ride it: a courier envelope is sealed with Noise X to a one-time prekey, which gives it forward secrecy of its own and is what bitchat reads

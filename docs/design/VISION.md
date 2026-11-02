@@ -84,7 +84,7 @@ What each feature is for, and when someone would actually reach for it.
 - Geo-relay discovery. Location channels pick relays near that place, so people in one city converge on the same ones.
 - Mesh bridge. Joins your local `#bluetooth` room to another crowd too far away to reach by radio.
 - Internet gateway. Off by default. Turn it on and your phone carries public location traffic for nearby people who have no connection of their own.
-- Tor. Built in on both platforms, with nothing else to install, and off until you turn it on. Once on, every relay connection is dialled through it, so operators never see your IP and nothing falls back to the clear.
+- Tor. Built in on both platforms, with nothing else to install, and off until you turn it on. Once on, every relay connection is dialed through it, so operators never see your IP and nothing falls back to the clear.
 
 ### Optional
 

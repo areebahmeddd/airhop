@@ -117,7 +117,7 @@ function passSizes(...sizes: number[]): void {
   }
 }
 
-// A pass that runs until cancelled, then rejects as native does.
+// A pass that runs until canceled, then rejects as native does.
 function hangingPass(): { started: Promise<string> } {
   let markStarted: (key: string) => void = () => undefined;
   const started = new Promise<string>((resolve) => (markStarted = resolve));
@@ -370,7 +370,7 @@ describe("prepareVideoForSend", () => {
       fraction: 0.4,
     });
     cancelVideoPreparation(prep.id);
-    expect(await result).toEqual({ ok: false, reason: "cancelled" });
+    expect(await result).toEqual({ ok: false, reason: "canceled" });
     expect(native.cancelTranscode).toHaveBeenCalledWith(key);
     expect(useVideoPrepStore.getState().preps).toEqual({});
   });
@@ -429,7 +429,7 @@ describe("prepareVideoForSend", () => {
     expect((await second).ok).toBe(true);
   });
 
-  test("a waiting video cancelled never starts", async () => {
+  test("a waiting video canceled never starts", async () => {
     const pass = hangingPass();
     const first = prepareVideoForSend(video());
     await pass.started;
@@ -439,8 +439,8 @@ describe("prepareVideoForSend", () => {
     cancelVideoPreparation(waiting.id);
     await cancelAllVideoPreparation();
 
-    expect(await second).toEqual({ ok: false, reason: "cancelled" });
-    expect(await first).toEqual({ ok: false, reason: "cancelled" });
+    expect(await second).toEqual({ ok: false, reason: "canceled" });
+    expect(await first).toEqual({ ok: false, reason: "canceled" });
     expect(native.transcodeVideo).toHaveBeenCalledTimes(1);
   });
 
@@ -451,7 +451,7 @@ describe("prepareVideoForSend", () => {
 
     await cancelAllVideoPreparation();
 
-    expect(await result).toEqual({ ok: false, reason: "cancelled" });
+    expect(await result).toEqual({ ok: false, reason: "canceled" });
   });
 
   test("a file finished after a wipe began is not kept", async () => {
@@ -465,7 +465,7 @@ describe("prepareVideoForSend", () => {
 
     expect(await prepareVideoForSend(video())).toEqual({
       ok: false,
-      reason: "cancelled",
+      reason: "canceled",
     });
     expect([...mockFiles.keys()]).toEqual([]);
     expect(adoptIntoAttachmentCache).not.toHaveBeenCalled();

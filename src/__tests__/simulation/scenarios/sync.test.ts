@@ -169,7 +169,7 @@ function phones(
 test("SY01 catching up after a partition does not re-flood the mesh", async () => {
   // Sync responses must not carry their original ttl. The requester's flood
   // router would see each one as new, which it is, and forward it to every
-  // other neighbour, who would forward it again. One phone rejoining after a
+  // other neighbor, who would forward it again. One phone rejoining after a
   // partition would push the entire archive across the mesh, and the symptom
   // is a room that gets slower the longer it runs.
   const s = (scenario = new Scenario({
@@ -459,7 +459,7 @@ test("SY04 a route planned by another node is followed, not flooded", async () =
   const { radio, devices } = phones(s, ["alice", "bob", "carol", "dave"]);
   const [alice, bob, carol] = devices;
 
-  // Bob has TWO onward neighbours. With one, following a route and flooding
+  // Bob has TWO onward neighbors. With one, following a route and flooding
   // look identical from the air and the test could not tell them apart.
   radio.setTopology([
     ["alice", "bob"],
@@ -472,7 +472,7 @@ test("SY04 a route planned by another node is followed, not flooded", async () =
     () => radio.linkCount() === 3,
     45_000,
   );
-  s.check("bob has two onward neighbours", linked);
+  s.check("bob has two onward neighbors", linked);
 
   // Which link each of bob's writes went down, beside what it was.
   const bobWrites: { linkID: string; packet: Packet }[] = [];
@@ -517,7 +517,7 @@ test("SY04 a route planned by another node is followed, not flooded", async () =
     `saw ${String(forwarded.length)} forwards`,
   );
   s.check(
-    "bob forwarded it exactly once, not to every neighbour",
+    "bob forwarded it exactly once, not to every neighbor",
     forwarded.length === 1,
     `saw ${String(forwarded.length)} forwards; a flood would be 2 (carol and dave)`,
   );
@@ -1058,8 +1058,8 @@ test("SY11 a sync request is answered only when it is the link peer's own", asyn
 });
 
 // Carol, having met alice, now alone with mallory, who she asks for a sync on
-// every round: the neighbour whose replies are exempt from the window.
-async function askedNeighbour(s: Scenario): Promise<{
+// every round: the neighbor whose replies are exempt from the window.
+async function askedNeighbor(s: Scenario): Promise<{
   radio: RadioFabric;
   alice: SimDevice;
   carol: SimDevice;
@@ -1105,7 +1105,7 @@ test("SY12 a sync reply is taken only inside the window it would be served for",
     title: "old IS_RSR replays against the message window",
     seed: 112,
   }));
-  const { radio, alice, carol, mallory, channel } = await askedNeighbour(s);
+  const { radio, alice, carol, mallory, channel } = await askedNeighbor(s);
   const now = s.world.wallClock();
   const reply = (text: string, ageMs: number): void => {
     radio.injectTo(
@@ -1144,7 +1144,7 @@ test("SY13 a sync reply carrying TTL is refused", async () => {
     title: "IS_RSR with TTL headroom",
     seed: 113,
   }));
-  const { radio, alice, carol, mallory, channel } = await askedNeighbour(s);
+  const { radio, alice, carol, mallory, channel } = await askedNeighbor(s);
   const at = s.world.wallClock() - 10 * 60_000;
   radio.injectTo(
     carol.id,
@@ -1176,7 +1176,7 @@ test("SY14 a stale packet at TTL 0 without IS_RSR is refused", async () => {
     title: "TTL 0 is not a sync reply",
     seed: 114,
   }));
-  const { radio, alice, carol, mallory, channel } = await askedNeighbour(s);
+  const { radio, alice, carol, mallory, channel } = await askedNeighbor(s);
   const at = s.world.wallClock() - 10 * 60_000;
   radio.injectTo(
     carol.id,
@@ -1345,7 +1345,7 @@ test("SY15 a flood of forged messages neither crowds out real history nor rides 
 test("SY16 history a newcomer cannot verify is offered once, not every round", async () => {
   // A newcomer keeps only what it verified, and it cannot verify someone who
   // stopped announcing before it arrived. If what it could not keep were not
-  // remembered, every neighbour would offer it again every round, for as long
+  // remembered, every neighbor would offer it again every round, for as long
   // as the history stays servable.
   const s = (scenario = new Scenario({
     id: "SY16",

@@ -465,7 +465,7 @@ async function emptyDirectory(
 }
 
 // Both resolve to whether the RADIO ACCEPTED the packet, not whether anyone
-// received it (there are no per-fragment acknowledgements on this wire). A
+// received it (there are no per-fragment acknowledgments on this wire). A
 // false is the transport saying "my write queue is full, do not hand me another
 // one yet", which is the difference between pacing and losing a file: a refused
 // fragment that is not offered again is a stream the far side can never
@@ -623,7 +623,7 @@ export class FileTransferService {
     sealFile?: SealFileFn,
     usesBleRadio?: UsesBleRadioFn,
     isReachable?: IsReachableFn,
-    // Our neighbour count, which a public file's TTL follows (see
+    // Our neighbor count, which a public file's TTL follows (see
     // origin-ttl.ts). 0 (sparse) when not given.
     getDegree: () => number = () => 0,
     ackPrivateFile?: AckPrivateFileFn,
@@ -676,7 +676,7 @@ export class FileTransferService {
       const tx = this.outbound.get(transferId);
       // Delete the accounting BEFORE clearing the queue: a fragment already
       // awaiting the radio checks for it on the way back, and its absence is
-      // what stops a cancelled transfer requeueing itself.
+      // what stops a canceled transfer requeueing itself.
       this.outbound.delete(transferId);
       for (let i = this.outQueue.length - 1; i >= 0; i--) {
         if (this.outQueue[i].transferId === transferId) {
@@ -716,7 +716,7 @@ export class FileTransferService {
     const recipientPeerID = isDM ? channel.slice(3) : "";
     // Type first, then name: both sides read the type off the extension once
     // the file is on disk, so the name follows the MIME. Never the picker's raw
-    // value, since an empty or unrecognised type is dropped on arrival.
+    // value, since an empty or unrecognized type is dropped on arrival.
     const mimeType = resolveMimeType(meta.mimeType, meta.name || undefined);
     const fileName = wireFileName(meta.type, meta.name, mimeType);
 
@@ -904,7 +904,7 @@ export class FileTransferService {
       // Not part of a tracked transfer, so there is no card to fail and nobody
       // waiting on it. Drop it rather than retrying forever.
     } else if (tx === undefined) {
-      // Cancelled while this fragment was in flight. Its accounting is already
+      // Canceled while this fragment was in flight. Its accounting is already
       // gone, so requeueing would resurrect a transfer the user stopped.
     } else {
       tx.refusals += 1;

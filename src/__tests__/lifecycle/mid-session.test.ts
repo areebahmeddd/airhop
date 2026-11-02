@@ -56,7 +56,7 @@ function resetStores(): void {
   useOutboxStore.setState({ pending: [] });
 }
 
-// A signed ANNOUNCE from `peer`, as a neighbour sends one the moment a link
+// A signed ANNOUNCE from `peer`, as a neighbor sends one the moment a link
 // comes up. Without it the mesh has never heard of anyone on the link, and a
 // scenario about losing a peer has no peer to lose.
 function announceFrom(peer: Identity, nickname: string): string {
@@ -263,7 +263,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     native.fabricDeliver(linkID, announceFrom(friend, "friend"));
     await os.advance(200);
     v.check(
-      "the friend is a direct neighbour before the outage",
+      "the friend is a direct neighbor before the outage",
       isDirectPeer(friend.peerID),
       "precondition: without a known peer the outage changes nothing",
     );
@@ -319,7 +319,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     });
     await os.advance(200);
     v.check(
-      "both friends are direct neighbours before the outage",
+      "both friends are direct neighbors before the outage",
       friends.every((f) => isDirectPeer(f.peerID)),
       "precondition: without known peers the outage changes nothing",
     );

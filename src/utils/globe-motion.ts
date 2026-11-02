@@ -2,7 +2,7 @@
 //
 // A port of bitchat-ios's GlobeMotionDetail and GlobeMotionGovernor, with its
 // thresholds. Detail drops while the globe moves on a slow phone and comes
-// back once it rests. The selected cell, its neighbours and the city dots are
+// back once it rests. The selected cell, its neighbors and the city dots are
 // never shed: they are cheap next to the land, and making them vanish under a
 // finger reads as a rendering bug.
 //

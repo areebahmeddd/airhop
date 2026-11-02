@@ -80,7 +80,7 @@ export default function SendEcashSheet({
     } finally {
       setSending(false);
     }
-    // Cancelled, or refused with its own alert already on screen.
+    // Canceled, or refused with its own alert already on screen.
     if (!result) return;
 
     reset();

@@ -279,7 +279,7 @@ interface Keyset {
 export class MintFabric {
   readonly url: string;
   // Oldest first; the last is the active one. Earlier keysets are listed as
-  // inactive after a rotation and still honoured as inputs, as NUT-02 says.
+  // inactive after a rotation and still honored as inputs, as NUT-02 says.
   private readonly keysets: Keyset[] = [];
   private readonly keysetVersion: 0 | 1;
   // Every proof secret the mint has signed, and whether it has been spent.
@@ -287,7 +287,7 @@ export class MintFabric {
   private readonly quotes = new Map<string, FabricQuote>();
   // Every blinded message the mint has ever signed, keyed by B_. NUT-09 restore
   // is exactly a lookup in this table: the wallet re-derives its blinded
-  // messages from the seed and asks "which of these do you recognise".
+  // messages from the seed and asks "which of these do you recognize".
   private readonly signedByB = new Map<
     string,
     { id: string; amount: number; C_: string; dleq: { e: string; s: string } }
@@ -361,7 +361,7 @@ export class MintFabric {
 
   // A key rotation: a new active keyset signs from now on, and the old one is
   // listed inactive with no keys in `/v1/keys` (NUT-01 serves active keysets
-  // only), fetchable by id and still honoured as an input.
+  // only), fetchable by id and still honored as an input.
   rotateKeyset(): void {
     this.keysets.push(
       this.buildKeyset(`airhop-sim-mint-r${String(this.keysets.length)}`),
@@ -600,7 +600,7 @@ export class MintFabric {
       version: "sim/1.0",
       nuts: {
         // `description: true` is what lets a mint quote carry a memo. Moving a
-        // balance between mints needs it: the destination invoice is labelled
+        // balance between mints needs it: the destination invoice is labeled
         // so the transfer is identifiable in history, and cashu-ts refuses to
         // send a description to a mint that has not advertised support.
         "4": {

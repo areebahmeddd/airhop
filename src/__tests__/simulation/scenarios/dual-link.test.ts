@@ -1,7 +1,7 @@
-// Tier L: two Bluetooth links to one neighbour.
+// Tier L: two Bluetooth links to one neighbor.
 //
 // Two phones that meet each scan, each see the other and each dial, so on
-// hardware a neighbour is usually two links. Fanout goes per peer, not per
+// hardware a neighbor is usually two links. Fanout goes per peer, not per
 // link: a flood written down both costs twice the airtime for a copy the far
 // deduplicator discards, and a relay down the second one hands the sender its
 // own packet back.
@@ -89,7 +89,7 @@ test("DL01 a dual-linked line writes each flood once per neighbor, with no echo"
 
   const linked = await waitFor(s.world, () => radio.linkCount() === 4, 30_000);
   s.check(
-    "each neighbouring pair holds two links",
+    "each neighboring pair holds two links",
     linked,
     `${radio.linkCount()}`,
   );
@@ -157,7 +157,7 @@ test("DL01 a dual-linked line writes each flood once per neighbor, with no echo"
 
 test("DL02 a duplicate direct announce binds the link it arrives on, if it verifies", async () => {
   // Our announce goes down every link as the same bytes, so the copy on a
-  // neighbour's second link is a duplicate of the one on its first. Dropped
+  // neighbor's second link is a duplicate of the one on its first. Dropped
   // as one before the announce handler binds it, that link would stay
   // unattributed until some later announce happened to reach it first. The
   // packet ID leaves the signature out, so a duplicate is bound only once it

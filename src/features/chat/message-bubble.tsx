@@ -191,7 +191,7 @@ function MessageBubble({
 
   // A round video note stands on its own, as it does in every messenger that
   // has one: a circle inside a bubble reads as a picture of a circle. Its time
-  // and ticks keep the bubble's colour in a pill beneath it.
+  // and ticks keep the bubble's color in a pill beneath it.
   const bare =
     item.attachment?.type === "video" &&
     isVideoNoteName(item.attachment.name) &&
@@ -601,7 +601,7 @@ function renderMessageText(
 
 const MENTION_SUFFIX_STYLE: TextStyle = { fontWeight: FontWeight.regular };
 
-// Render message text with @mentions emphasised and URLs tappable, the way
+// Render message text with @mentions emphasized and URLs tappable, the way
 // every chat app does. A mention is an "@" at a word start followed by nickname
 // characters; anything else (an email's "@", a lone "@") is left plain.
 // Highlighting is syntactic, so it does not need the roster. A link opens in

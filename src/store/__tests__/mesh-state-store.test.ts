@@ -75,7 +75,7 @@ describe("computeMeshBanners", () => {
 
   // Bluetooth off is only a blocker when it leaves nothing. Said over a working
   // LAN or WiFi Aware link it is false, and a red banner over a working mesh is
-  // how people learn to ignore the colour.
+  // how people learn to ignore the color.
   it("softens Bluetooth-off while another local transport carries the mesh", () => {
     for (const inputs of [
       { lanState: "active" as const },
@@ -459,7 +459,7 @@ describe("clock skew banner", () => {
 });
 
 // The WiFi Aware fast path, which is an accelerator and never a blocker. It gets
-// a note only when the user could act on it, and never a colour that suggests
+// a note only when the user could act on it, and never a color that suggests
 // something is broken: every message still sends over Bluetooth.
 describe("the WiFi fast-path note", () => {
   it("says nothing when the fast path is running", () => {

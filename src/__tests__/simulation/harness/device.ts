@@ -474,7 +474,7 @@ export class SimDevice {
   // ---- lifecycle ----
 
   // Tapping the icon. The JS bundle finishes loading, then the app starts the
-  // mesh. Native events raised before this had nowhere to go, which is modelled
+  // mesh. Native events raised before this had nowhere to go, which is modeled
   // faithfully by the OS's jsRuntimeReady flag.
   launch(): void {
     if (this.launched) return;
@@ -827,7 +827,7 @@ export class SimDevice {
     return this.mesh?.getChannelGeohash(channel) ?? null;
   }
 
-  // Whether this phone has heard a neighbour advertise the gateway capability
+  // Whether this phone has heard a neighbor advertise the gateway capability
   // (ANNOUNCE TLV 0x05). A phone with no signal can only ask for help once it
   // knows somebody is offering it, so scenarios wait on this rather than on
   // mere peer discovery.
@@ -1109,7 +1109,7 @@ export class SimDevice {
     }
   }
 
-  // Build a token for `amount`. Returns the serialised token, or null if it
+  // Build a token for `amount`. Returns the serialized token, or null if it
   // could not be built. `allowInexact` mirrors the sheet's "send anyway".
   async prepareSend(amount: number): Promise<string | null> {
     const mint = this.firstMintUrl();
@@ -1275,7 +1275,7 @@ export class SimDevice {
     return this.accounts().reduce((a, b) => a + b.unverified, 0);
   }
 
-  // Set aside against a send that has been serialised but not confirmed.
+  // Set aside against a send that has been serialized but not confirmed.
   reservedBalance(): number {
     return this.accounts().reduce((a, b) => a + b.reserved, 0);
   }

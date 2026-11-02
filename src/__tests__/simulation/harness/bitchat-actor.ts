@@ -244,11 +244,11 @@ export class BitchatActor implements RadioNode {
   // Signing keys learned from verified announces, which is the only thing that
   // binds a peerID to an identity.
   private readonly peerKeys = new Map<string, Uint8Array>();
-  // In-progress fragment reassembly, keyed by sender and stream. Modelled on
+  // In-progress fragment reassembly, keyed by sender and stream. Modeled on
   // BLEFragmentAssemblyBuffer.swift, including the detail that matters most:
   // `startedAtMs` is stamped once and never refreshed, so the window is measured
   // from the first fragment rather than the last. That is bitchat's real
-  // behaviour, and the reason a large Airhop transfer can be dropped on arrival
+  // behavior, and the reason a large Airhop transfer can be dropped on arrival
   // however well the radio is doing.
   private readonly assemblies = new Map<
     string,
@@ -576,7 +576,7 @@ export class BitchatActor implements RadioNode {
   //
   // Every frame goes out with the all-0xFF recipient sentinel that
   // bitchat-android writes with HAS_RECIPIENT set, which is the encoding a
-  // receiver has to recognise as broadcast on top of the omitted-field form
+  // receiver has to recognize as broadcast on top of the omitted-field form
   // that bitchat-ios and Airhop emit.
   sendVoiceBurst(dataPackets = 3): void {
     const burstID = new Uint8Array(8).fill(0xa0 + (dataPackets & 0x0f));
@@ -701,7 +701,7 @@ export class BitchatActor implements RadioNode {
   //
   // Directed at the gateway, carrying a `toGateway` carrier. The event is
   // Schnorr-signed by the caller (the scenario supplies it), because a gateway
-  // that published unsigned events on a neighbour's say-so would be an open
+  // that published unsigned events on a neighbor's say-so would be an open
   // proxy: bitchat verifies before publishing and so must Airhop.
   depositWithGateway(
     gatewayPeerID: string,

@@ -11,7 +11,7 @@
 // data path Android cannot complete. Being plain IP, this does not care which
 // phone anyone owns.
 //
-// Discovery and dialling are split, unlike AirhopWiFi where native connects to
+// Discovery and dialing are split, unlike AirhopWiFi where native connects to
 // whatever it finds. mDNS finds EVERYONE on the network, and connecting to
 // everyone is a full mesh whose cost grows with the square of the room. Who to
 // dial is therefore a decision, and decisions live in TypeScript: native

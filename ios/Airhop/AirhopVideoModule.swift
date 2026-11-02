@@ -471,7 +471,7 @@ final class AirhopVideoModule: RCTEventEmitter {
         }
         resolve(["sizeBytes": Double(result.sizeBytes), "durationMs": result.durationMs])
       } catch VideoTranscodeError.cancelled {
-        reject("CANCELLED", "transcode cancelled", nil)
+        reject("CANCELLED", "transcode canceled", nil)
       } catch {
         // Domain and code only: an NSError's description carries the file path.
         let nsError = error as NSError

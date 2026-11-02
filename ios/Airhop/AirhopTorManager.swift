@@ -403,7 +403,7 @@ public final class AirhopTorManager: ObservableObject {
     let stop = Task.detached(priority: .userInitiated) {
       if let previous { await previous.value }
       _ = airhop_tor_stop()
-      // After Arti, so nothing is left dialling a transport that has gone.
+      // After Arti, so nothing is left dialing a transport that has gone.
       AirhopIPtProxy.shared.stop()
     }
     pendingStop = stop

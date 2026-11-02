@@ -21,7 +21,7 @@ const mock = SecureStore as unknown as {
 
 const ALL_ITEMS = Object.values(KEYCHAIN_ITEMS) as KeychainItem[];
 
-// Also restores default behaviour, so a test that stubs a failing delete does
+// Also restores default behavior, so a test that stubs a failing delete does
 // not leak it into the next one.
 beforeEach(() => {
   mock.__reset();

@@ -1,7 +1,7 @@
 // A place, rendered inside a message bubble.
 //
 // No map, by design. Tiles are an HTTP call to somebody's server: a
-// fingerprint, a dependency, and a grey square in exactly the conditions this
+// fingerprint, a dependency, and a gray square in exactly the conditions this
 // app exists for. What a person in a crowd needs is a direction and a distance,
 // which is what this draws.
 //

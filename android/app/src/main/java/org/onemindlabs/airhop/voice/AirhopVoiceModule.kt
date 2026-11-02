@@ -129,7 +129,7 @@ private const val PLAYOUT_SLACK_MS = 200L
 private const val PLAYOUT_POLL_MS = 10L
 
 // VOICE_COMMUNICATION routes to the earpiece/speaker the way a call does and
-// ducks other apps, which is the behaviour a walkie-talkie wants.
+// ducks other apps, which is the behavior a walkie-talkie wants.
 private fun voiceAttributes(): AudioAttributes =
     AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
@@ -241,7 +241,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     try {
                         // The previous capture may still be releasing the microphone
                         // and its encoder. Opening AudioRecord on top of it fails to
-                        // initialise, so wait it out: here on the new audio thread,
+                        // initialize, so wait it out: here on the new audio thread,
                         // never on the caller, which is the mic button's own release
                         // path.
                         runCatching { previous?.join(CAPTURE_HANDOFF_TIMEOUT_MS) }

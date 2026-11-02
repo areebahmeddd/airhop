@@ -2,7 +2,7 @@
 // precision, what a typed geohash is accepted as, where the presence heartbeat
 // goes and when, and how a flood in a cell is limited.
 //
-// The cell maths and relay selection underneath live in core and are pinned by
+// The cell math and relay selection underneath live in core and are pinned by
 // geohash-presence.test.ts and geo-relay.test.ts.
 
 import { KIND_PRESENCE } from "@core/nostr/geohash-presence";
@@ -56,7 +56,7 @@ describe("which channels are geo channels", () => {
 });
 
 describe("teleport: typed geohashes", () => {
-  it("normalises user input the way bitchat does", () => {
+  it("normalizes user input the way bitchat does", () => {
     // Lowercase, drop a leading #, discard out-of-alphabet chars, cap at 12.
     expect(normalizeGeohash("#TDR1K")).toBe("tdr1k");
     expect(normalizeGeohash("  u4pruy  ")).toBe("u4pruy");

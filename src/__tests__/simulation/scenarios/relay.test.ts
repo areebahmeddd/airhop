@@ -327,7 +327,7 @@ test("R04 relays in a loop do not trade a packet forever", async () => {
     );
   }
   s.check(
-    "duplicates were recognised rather than forwarded",
+    "duplicates were recognized rather than forwarded",
     a.seen.droppedDuplicate +
       b.seen.droppedDuplicate +
       c.seen.droppedDuplicate >
@@ -457,7 +457,7 @@ test("R08 a forged board post, file, voice or video frame is relayed by no one",
   // bitchat-ios checks these before it relays them, and relays only what its
   // handler accepted. Carried unchecked, each costs its forger nothing and
   // every relay the airtime; a file arriving whole is cut into hundreds of
-  // Bluetooth fragments per neighbour.
+  // Bluetooth fragments per neighbor.
   const s = (scenario = new Scenario({
     id: "R08",
     title: "the relay checks before it spends airtime",

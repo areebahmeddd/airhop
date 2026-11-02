@@ -120,7 +120,7 @@ export const MMKV_STORE_IDS = [
   "prekey-store",
   // courier-store holds sealed envelopes carried for other people. Unreadable
   // here (each is Noise X to a key this device does not hold), but a bag of a
-  // neighbour's mail is evidence this phone stood next to whoever deposited it,
+  // neighbor's mail is evidence this phone stood next to whoever deposited it,
   // and a recipient tag names who it is for to anyone who heard that person
   // announce.
   "courier-store",
@@ -196,7 +196,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
 
   // 0d. Cancel any chat write still inside its throttle window, before
   //     anything is cleared. A pending write holds a plaintext snapshot of
-  //     every thread and is armed to put it back on disk. Cancelled rather than
+  //     every thread and is armed to put it back on disk. Canceled rather than
   //     flushed: these bytes must not reach disk again.
   dropPendingChatPersistence();
   // The same for the inbox IDs waiting to be written, which say who writes to

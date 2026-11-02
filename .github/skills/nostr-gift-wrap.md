@@ -16,7 +16,7 @@ How a DM, a receipt or parked courier mail crosses the internet when no radio re
 | Path                                 | Holds                                                                                            |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | `src/core/nostr/gift-wrap.ts`        | `wrapDm`, `unwrapDm`, `deriveNostrPrivKey`                                                       |
-| `src/core/nostr/bitchat-nip44.ts`    | bitchat's `nip44-v2` encryption, even-Y key normalisation                                        |
+| `src/core/nostr/bitchat-nip44.ts`    | bitchat's `nip44-v2` encryption, even-Y key normalization                                        |
 | `src/core/nostr/bitchat-envelope.ts` | The `bitchat1:` content: DM, receipt and contact card                                            |
 | `src/core/nostr/courier-relay.ts`    | `publishCourierDrop`, `subscribeCourierDrops` (kind 1401)                                        |
 | `src/core/nostr/nostr-client.ts`     | `NostrClient`: pool, per-relay subscriptions, `isConnected`, `isDMConnected`                     |
@@ -46,8 +46,8 @@ content (a bitchat1: envelope)
 ```
 
 - **Cipher.** Both layers use `bitchatNip44Encrypt`: XChaCha20-Poly1305, key `HKDF(compressed ECDH point, salt empty, info "nip44-v2")`, no padding, framed `"v2:" + base64url(nonce24 || ciphertext || tag)`. It is not NIP-44 and must stay byte-identical to bitchat's, since the event signature covers the ciphertext. Reaching for `nip44` in nostr-tools produces DMs no bitchat or Airhop peer can open, silently at both ends.
-- **Keys.** Private keys are normalised to even Y before ECDH, and decrypt tries both parities of the sender's x-only key, as bitchat does.
-- **Timestamps.** Seal and wrap `created_at` are randomised ±15 minutes (bitchat's window, not NIP-59's two days). The rumor keeps the real send time.
+- **Keys.** Private keys are normalized to even Y before ECDH, and decrypt tries both parities of the sender's x-only key, as bitchat does.
+- **Timestamps.** Seal and wrap `created_at` are randomized ±15 minutes (bitchat's window, not NIP-59's two days). The rumor keeps the real send time.
 - **The throwaway key** is new for every wrap, so relays see neither sender nor linkage between wraps.
 
 ### Receive (`unwrapDm`)

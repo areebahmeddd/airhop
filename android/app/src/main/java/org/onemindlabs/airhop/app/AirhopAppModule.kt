@@ -14,7 +14,7 @@
 // AirhopBLEModule.
 //
 // Policy stays in TypeScript: this file decides nothing about when to ring or
-// for how long, only honours ringer mode and Do Not Disturb, and stops when
+// for how long, only honors ringer mode and Do Not Disturb, and stops when
 // JS says so or the duration runs out. It counts no peers either, only passes
 // on what JS counted. Mirrors AirhopAppModule.swift, which runs the log and the
 // mesh snapshot and rejects the rest.

@@ -69,7 +69,7 @@ const FAILURE_BODY: Record<SenderFailure, TranslationKey> = {
   permission: "settings.transfer.failed_permission",
   "wrong-phone": "settings.transfer.failed_wrong_phone",
   incompatible: "settings.transfer.failed_incompatible",
-  cancelled: "settings.transfer.failed_cancelled",
+  canceled: "settings.transfer.failed_cancelled",
   storage: "settings.transfer.failed_storage",
   interrupted: "settings.transfer.failed_interrupted",
 };
@@ -580,7 +580,7 @@ export default function TransferOutFlow({
           title: T("settings.transfer.failed_title"),
           body: T(FAILURE_BODY[state.reason]),
           footnote:
-            state.reason === "cancelled"
+            state.reason === "canceled"
               ? undefined
               : T("settings.transfer.unchanged"),
           actions: (

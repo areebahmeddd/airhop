@@ -150,7 +150,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   // Only ever touched on `captureQueue`, alongside the rest of capture setup
   // and teardown, so it needs no lock of its own.
   private var captureObservers: [NSObjectProtocol] = []
-  // Serialises capture setup/teardown against the render thread's tap.
+  // Serializes capture setup/teardown against the render thread's tap.
   private let captureQueue = DispatchQueue(label: "org.onemindlabs.airhop.voice.capture")
   // The capture's AAC converter, kept so a release can drain it. Set and read
   // on `captureQueue`, used under `encoderLock`, which the tap holds too.
@@ -258,7 +258,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   }
 
   /// Play-and-record with speaker default and ducking, matching the walkie
-  /// behaviour the design asks for: other audio dips rather than stops.
+  /// behavior the design asks for: other audio dips rather than stops.
   private func configureSession() throws {
     let session = AVAudioSession.sharedInstance()
     // HFP is the only Bluetooth profile that carries a microphone, and the

@@ -22,7 +22,7 @@ export const Colors = {
   borderStrong: "#C8C8C8", // prominent borders
 
   // ---- Text ----
-  // The three greys are contrast-checked against all four surfaces text sits
+  // The three grays are contrast-checked against all four surfaces text sits
   // on (bg, surface, surfaceRaised for inputs and inactive segments, and
   // theirBubble), in both palettes, so every one clears WCAG 2.2 AA (4.5:1)
   // for normal text. Ratios against theirBubble #EBEBEB, the worst of the four
@@ -102,7 +102,7 @@ export const Colors = {
   bridgeDim: "rgba(79,70,229,0.09)",
 
   // ---- Globe picker ----
-  // Two greys for water and land and nothing more: the accent is the selected
+  // Two grays for water and land and nothing more: the accent is the selected
   // cell's alone. Land against water is too close to read as an edge, so the
   // coastline carries the shapes and clears 3:1 against the water (WCAG
   // 1.4.11). Borders and the graticule are orientation and stay quieter.
@@ -139,7 +139,7 @@ export const DarkColors = {
   // Checked on the same four surfaces as the light palette. The worst is
   // theirBubble #232323, which is also the lightest: textPrimary 14.4:1,
   // textSecondary 6.5:1, textMuted 4.55:1 (5.7 on bg, 5.2 on surface, 4.8 on
-  // surfaceRaised). A grey tuned on bg alone, such as #787878 at 4.46, falls to
+  // surfaceRaised). A gray tuned on bg alone, such as #787878 at 4.46, falls to
   // 3.6 on a bubble. Muted sits closer to secondary here than in light; the
   // step between them still reads.
   textPrimary: "#F5F5F5",
@@ -327,7 +327,7 @@ export const Radius = {
 // reads as a shape (so the control's affordance survives) while clearly not
 // inviting a tap.
 // WCAG exempts inactive controls from the 4.5:1 text rule (1.4.3), which is why
-// this is allowed to be a dim rather than a colour change, but every disabled
+// this is allowed to be a dim rather than a color change, but every disabled
 // control also carries accessibilityState.disabled so it is never dim ALONE.
 export const DISABLED_OPACITY = 0.4;
 

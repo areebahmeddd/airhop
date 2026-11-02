@@ -5,7 +5,7 @@
 //
 // Media3 Transformer does the work on the GPU: it decodes whatever the phone
 // can (HEVC and 10-bit included), applies the track's rotation, tone maps HDR
-// to SDR (API 29+), drops frames to the target rate and scales with a centre
+// to SDR (API 29+), drops frames to the target rate and scales with a center
 // crop. A portrait picture is encoded portrait, so its pixels are upright with
 // no rotation flag, as bitchat-ios writes it. Source metadata is stripped at the
 // muxer, since Transformer otherwise copies the source's location into the
@@ -125,7 +125,7 @@ internal class VideoTranscoder(context: Context) {
     }
 
     // Nearest keyframe to each time: a filmstrip needs a picture near it, not
-    // the exact frame, and a keyframe decodes without its neighbours.
+    // the exact frame, and a keyframe decodes without its neighbors.
     fun frames(
         source: String,
         timesMs: List<Long>,
@@ -330,7 +330,7 @@ internal class VideoTranscoder(context: Context) {
         )
     }
 
-    // Transformer leaves a cancelled or failed export's file where it was.
+    // Transformer leaves a canceled or failed export's file where it was.
     private fun fail(pass: Pass, failure: TranscodeFailure) {
         if (current !== pass) return
         pass.output.delete()

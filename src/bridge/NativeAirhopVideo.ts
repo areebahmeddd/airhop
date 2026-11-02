@@ -33,7 +33,7 @@ export type CameraFacing = "front" | "back";
 
 export interface CameraOptions {
   facing: CameraFacing;
-  // The encoded picture, portrait. The camera's frames are centre-cropped and
+  // The encoded picture, portrait. The camera's frames are center-cropped and
   // scaled to it, so the preview shows what viewers get.
   width: number;
   height: number;

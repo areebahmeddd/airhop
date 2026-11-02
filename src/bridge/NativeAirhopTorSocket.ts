@@ -1,4 +1,4 @@
-// The native contract for a WebSocket tunnelled over Arti's SOCKS5 proxy, so
+// The native contract for a WebSocket tunneled over Arti's SOCKS5 proxy, so
 // Nostr relay traffic can go through Tor. React Native's own WebSocket cannot
 // speak SOCKS5, which is why this exists.
 //

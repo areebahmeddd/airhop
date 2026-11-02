@@ -74,7 +74,7 @@ export function selfSimilarityReaches(
 
 // Cross-correlation that tolerates small edits. The first peak is the shift
 // where the most characters match; an insertion or deletion moves the rest of
-// the text to a neighbouring shift, so up to `maxPeaks - 1` further peaks add
+// the text to a neighboring shift, so up to `maxPeaks - 1` further peaks add
 // matches, counting only runs of at least `minRun` and never reusing a
 // character. The score is matches over the longer length.
 export function crossSimilarity(

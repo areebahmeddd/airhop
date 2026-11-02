@@ -1,5 +1,5 @@
 // What a scanned QR code is allowed to mean: the kind the sheet asked for,
-// normalised to the bare form the wallet expects. Kept apart from the scanner
+// normalized to the bare form the wallet expects. Kept apart from the scanner
 // component because the acceptance rule, not the camera, is what can fail in a
 // way a user notices: a scan that silently does nothing, or the wrong kind of
 // string reaching a money path.
@@ -11,7 +11,7 @@ export type ScanTarget = "token" | "invoice" | "any";
 
 export type ScanKind = "token" | "invoice" | "npub";
 
-// The normalised value, or null to keep the camera open and keep looking.
+// The normalized value, or null to keep the camera open and keep looking.
 export function readScan(
   raw: string | undefined,
   target: ScanTarget,
@@ -48,7 +48,7 @@ function bareNpub(raw: string): string | null {
 }
 
 // bolt11 is bech32, so wallets encode it in either case, often behind a
-// `lightning:` scheme; normalised to the lowercase bare form the mint expects.
+// `lightning:` scheme; normalized to the lowercase bare form the mint expects.
 // Only the network prefix is checked (`lnbc` mainnet, `lntb`/`lntbs` testnet,
 // `lnbcrt` regtest), all four accepted: the mint validates the invoice properly,
 // and a stricter local check would only reject invoices that are fine.

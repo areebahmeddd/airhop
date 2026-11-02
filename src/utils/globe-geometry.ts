@@ -315,14 +315,14 @@ export function ringContains(
   return inside;
 }
 
-// Probes in disc units, the centre and a ring around it.
+// Probes in disc units, the center and a ring around it.
 const INVERSION_PROBES = [
   0, 0, -0.5, 0, 0.5, 0, 0, -0.5, 0, 0.5, -0.35, -0.35, 0.35, -0.35, -0.35,
   0.35, 0.35, 0.35,
 ];
 
 // The horizon closure can land on the wrong side for a very large ring, which
-// would fill the whole disc. One probe at the centre is ambiguous for such a
+// would fill the whole disc. One probe at the center is ambiguous for such a
 // ring, so several visible points vote: each is tested against the original
 // ring on the sphere and against the projected fill, and the fill is inverted
 // only when inverting is clearly the better match.

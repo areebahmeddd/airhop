@@ -8,8 +8,8 @@
 // helper sits above its callers, here and in the other globe modules.
 //
 // Disc coordinates are in units of the globe's radius, screen y down, with the
-// view centre at (0, 0). `cosC` is the cosine of a point's angular distance
-// from the view centre, negative on the far side of the sphere.
+// view center at (0, 0). `cosC` is the cosine of a point's angular distance
+// from the view center, negative on the far side of the sphere.
 
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 120_000;
@@ -46,7 +46,7 @@ export function normalizeLon(lon: number): number {
   return x;
 }
 
-// The view centre's sines and cosines, computed once per frame so projecting
+// The view center's sines and cosines, computed once per frame so projecting
 // a prepared point is multiplications only.
 export interface Projector {
   sinLat: number;
@@ -189,7 +189,7 @@ export function zoomForPrecision(
   return Math.min(Math.max(targetRadius / baseRadius, MIN_ZOOM), MAX_ZOOM);
 }
 
-// How far a cell of this precision reaches at its widest, in metres, for the
+// How far a cell of this precision reaches at its widest, in meters, for the
 // readout. bitchat's table (common geohash dimension tables), so both apps
 // quote the same size for the same cell.
 export function cellCoverageMeters(precision: number): number {

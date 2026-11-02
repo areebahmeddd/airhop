@@ -1,4 +1,4 @@
-// How a pull-to-refresh spinner is coloured, in one place for every list.
+// How a pull-to-refresh spinner is colored, in one place for every list.
 //
 // RefreshControl takes a different prop per platform for the same thing and
 // silently ignores the other:

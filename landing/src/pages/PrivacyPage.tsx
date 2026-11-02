@@ -299,7 +299,7 @@ export default function PrivacyPage() {
               <li>
                 <strong>What a mint cannot see.</strong> Who you are, who you paid, or which coins
                 you deposited became which coins you spent. Cashu signs tokens blindly, so that link
-                is severed by the maths rather than by policy.
+                is severed by the math rather than by policy.
               </li>
               <li>
                 <strong>Tor.</strong> On Android, Tor covers mint traffic along with the app's other

@@ -4,7 +4,7 @@
 // a scripted exchange you can write down the expected outcome. For twenty
 // phones, a flapping radio and a lossy relay set you cannot: the number
 // of legal outcomes is enormous, and enumerating them would mean encoding the
-// implementation's behaviour as the expectation, which tests nothing.
+// implementation's behavior as the expectation, which tests nothing.
 //
 // So the assertions here are properties, not outcomes. "Everyone who could hear
 // it ended up with the same messages" is true of a correct system under every
@@ -40,7 +40,7 @@ function key(m: SeenMessage): string {
 // A device is only expected to hold messages it did not write. The sender's own
 // copy is a DIFFERENT row with a DIFFERENT id: message-thread.tsx mints a local
 // id for the optimistic echo, while the wire copy carries the id
-// sendChannelMessage generated. That is correct behaviour (a broadcaster never
+// sendChannelMessage generated. That is correct behavior (a broadcaster never
 // receives its own broadcast back), so comparing raw id sets across devices
 // would report a failure on a perfectly converged room.
 export function convergence(

@@ -100,7 +100,7 @@ joins an iPhone to an Android without the internet.
 mDNS returns every device on the network, so the cap and the choice of whom to
 dial are policy in `src/services/lan-dial-policy.ts`, not native: every device
 sorts the discovered instance names into one ring and links to the four either
-side of itself, dialling only the pairs that sort after its own name so no two
+side of itself, dialing only the pairs that sort after its own name so no two
 devices dial each other. The service type appears in `AirhopLANModule.kt`,
 `AirhopLANModule.swift` and `NSBonjourServices` in `ios/Airhop/Info.plist`, and
 all three must agree.
@@ -135,7 +135,7 @@ Variable sections (in this exact order after the header):
 ```
 
 The TTL an originator stamps depends on the packet class and this phone's
-neighbour count ([section 4](#4-routing-constants)); an `ANNOUNCE` always
+neighbor count ([section 4](#4-routing-constants)); an `ANNOUNCE` always
 starts at 7.
 
 **v1 frames are decoded too.** A v1 header is 14 bytes, with a `u16`
@@ -373,13 +373,13 @@ recipient not known to run Airhop, is not an MP4. Nothing on the wire changes.
 > `conformance.test.ts` reads `maxPayloadBytes` from `FileTransferLimits.swift` in a local bitchat checkout, when one is present, and fails if the caps above no longer fit under the ceiling it implies.
 
 **MIME is resolved, never passed through.** A picker often returns nothing, and
-an empty or unrecognised type is dropped on arrival by both clients, which looks
+an empty or unrecognized type is dropped on arrival by both clients, which looks
 identical to a successful send from the sender's side. The type is taken from
 the declared value when the allow-list admits it, else inferred from the file
 extension, else `application/octet-stream`, which is always accepted and renders
 as a document. On receive, the declared type is checked against the file's magic
 bytes, so a file cannot lie about what it is. Video is held to MP4 and
-QuickTime, recognised by an ISO BMFF box name at bytes 4 to 7. The received
+QuickTime, recognized by an ISO BMFF box name at bytes 4 to 7. The received
 file is stored under a name reduced to the letters, marks and digits of any
 script plus `._-`, and to 128 UTF-8 bytes, with an extension taken from the
 checked type rather than the sender's name (an octet-stream keeps the sender's).
@@ -469,7 +469,7 @@ so it proves possession of the private key.
   against a verified one. Every signature check resolves the sender's key in
   that order: proven, then contact, then the announce pin.
 - Capabilities from `0x21` are authoritative; announced bits are a discovery
-  hint and never authorise a change in how Airhop sends.
+  hint and never authorize a change in how Airhop sends.
 - Decoding is all-or-nothing: an unknown version, a missing or duplicated
   required field, a non-minimal capability encoding or a malformed length
   changes no state.
@@ -529,7 +529,7 @@ couriered, and never sent over Nostr.
   own receipt. Rings from different people queue, one sounding at a time, each
   inside its own window.
 - **Android** loops the default ringtone and vibration from `AirhopAppModule`,
-  honouring ringer mode and Do Not Disturb, and posts one heads-up card when the
+  honoring ringer mode and Do Not Disturb, and posts one heads-up card when the
   app is not in front, at arrival or the moment the app is backgrounded
   mid-ring (Android 15's notification cooldown quiets a second). **iOS**
   schedules time-sensitive notifications, in the foreground too since they are
@@ -543,7 +543,7 @@ couriered, and never sent over Nostr.
 | Cooldown        | `5 min`       | Per person, both sides: the sender's button holds, the receiver refuses (`0x03`)                                   |
 | Staleness       | `2 min`       | By the packet timestamp on arrival; dropped without a reply                                                        |
 | Snooze          | `1 h`         | The overlay's preset. The ring on screen is answered (`0x52`); later ones in the hour get `0x02`                   |
-| iOS pulses      | `0, 15, 30 s` | Inside the window, cancelled together when answered                                                                |
+| iOS pulses      | `0, 15, 30 s` | Inside the window, canceled together when answered                                                                 |
 | Reachability    | `60 s`        | Since the last announce, for the button to show. A send also needs the router's window: `45 s` direct, `60 s` mesh |
 
 #### Capability bits
@@ -591,7 +591,7 @@ Two rules follow, and both match bitchat:
 - **A fragment carries its parent's TTL and recipientID**, never its route.
   Addressed to nobody, bitchat classifies a DM's fragments as public: it
   archives sealed private media in its gossip store, re-offers it to third
-  parties, and floods each fragment to every neighbour instead of sending it
+  parties, and floods each fragment to every neighbor instead of sending it
   down the directed path.
 
 A fragment carrying no data is refused, and so is one other than the last
@@ -618,7 +618,7 @@ Any packet, not only a file, is written as fragments once it passes the frame on
 a Bluetooth link, as bitchat's BLE service does: a group roster of four or more
 members, a long message, a full courier envelope, a gossip sync reply. Wi-Fi and
 LAN links carry it whole, so a relay that received one whole re-cuts it for its
-Bluetooth neighbours. Fragments name the inner packet's author as their
+Bluetooth neighbors. Fragments name the inner packet's author as their
 senderID, as bitchat's do, whoever cut them. A write to one link counts only
 once every fragment is taken: a courier handover is not a handover until then.
 
@@ -715,7 +715,7 @@ leave, then holds the radios up for a short grace (150 ms) before tearing them
 down, because taking the transport down first hands the farewell to something
 already told to shut. The window is one GATT connection interval's worth of
 radio, invisible to the user, and it is the difference between leaving a room at
-once and lingering in it as a ghost until presence ages out. It is cancelled if
+once and lingering in it as a ghost until presence ages out. It is canceled if
 the mesh restarts inside it, and skipped on dispose, so a panic wipe never waits
 on a timer.
 
@@ -797,7 +797,7 @@ offered only to a peer that has proven capability bit 25.
 [0]        u8      version = 1
 [1 to 4]   i32-BE  latitude,  microdegrees (degrees x 1e6)
 [5 to 8]   i32-BE  longitude, microdegrees
-[9 to 10]  u16-BE  horizontal accuracy in metres, 0xFFFF = unknown
+[9 to 10]  u16-BE  horizontal accuracy in meters, 0xFFFF = unknown
 [11 to 18] u64-BE  when the fix was taken, Unix milliseconds
 ```
 
@@ -815,7 +815,7 @@ to be able to say so.
   or no session to carry it is refused outright rather than queued.
 - **Coordinates are refused, not clamped.** A sender chooses these bytes, and
   clamping an out-of-range value would turn nonsense into a plausible point
-  somebody would then walk towards.
+  somebody would then walk toward.
 
 ### 3.9 Gateway carrier
 
@@ -910,7 +910,7 @@ CANCELED 0x04  no body
 keyframes every 2 s. The sender paces to the lower of the preset's rate and the
 route's budget, 24 packets a second with any Bluetooth hop ahead and 300 over
 Wi-Fi Aware or LAN alone, and drops a packet that waited over 1.2 s. A room
-stream goes to each neighbour once, on its fastest link, so only a neighbour
+stream goes to each neighbor once, on its fastest link, so only a neighbor
 with nothing faster than Bluetooth holds it to Bluetooth's budget. Congestion
 control reads the deeper of its pacing queue and the radio's, which Airhop's
 native links show only as refused writes: any refusal counts as a queue at its
@@ -1014,7 +1014,7 @@ packets, so it needs an exemption, and the exemption is what makes the window
 possible at all.
 
 - A response is sent with **`IS_RSR` set and `ttl = 0`**. Both fields are
-  normalised out of the signing preimage, so retagging a stored packet leaves
+  normalized out of the signing preimage, so retagging a stored packet leaves
   its original signature intact.
 - A packet carrying `IS_RSR` is judged on that alone, fresh or not, as
   bitchat-ios judges it. It must have `ttl = 0`, arrive on the link bound to a
@@ -1277,7 +1277,7 @@ ends.
 | Nutzap event kind    | `9321` (NIP-61; `proof` tag per proof, with `dleq` including `r` when the mint issued one; `u` = mint; `unit`, default sat). Airhop subscribes with `#p` and `#u` (the mints it holds)                                                                                                                                                                                      |
 | Wallet info kind     | `10019` (NIP-61; `mint`, `relay`, `pubkey`: an x-only key is locked to as `02` + key). The newest by `created_at`, then lowest id, is used; an unparseable newest one means none. Units listed after a mint URL decide where a nutzap may go (a mint listed only for other units is skipped); a mint listing none takes any                                                 |
 | Channel precisions   | `#block` 7, `#neighborhood` 6, `#city` 5, `#province` 4, `#region` 2 geohash characters                                                                                                                                                                                                                                                                                     |
-| Presence precisions  | 5, 4 and 2 only; never 6 or finer, which would place the phone to within about a kilometre. The one exception is opt-in: a mesh bridge's heartbeat names its 6-character rendezvous cell, and is sent only while the app is on screen                                                                                                                                       |
+| Presence precisions  | 5, 4 and 2 only; never 6 or finer, which would place the phone to within about a kilometer. The one exception is opt-in: a mesh bridge's heartbeat names its 6-character rendezvous cell, and is sent only while the app is on screen                                                                                                                                       |
 | Contact card         | `airhop:v1/` then base64url(`card \|\| sig`), the same string for a QR, a link and a pasted code: the binary card, then a 64-byte Ed25519 signature by the card's own signing key over `"airhop-contact-card-v1" \|\| card`. Without it anyone could swap the Nostr key in a real person's card. Unsigned, failing or with bytes after the card, it is refused. Airhop only |
 | Bridge cell          | 6 characters (about 1.2 km), the rendezvous a mesh bridge publishes `#bluetooth` into; it also listens to the 8 cells around it                                                                                                                                                                                                                                             |
 
@@ -1373,7 +1373,7 @@ infrastructure would hide its own Message button on every other device.
 A relay does not make two strangers reachable. It makes their announces
 reachable, and delivery follows. A public message is verified against a signing
 key learned from an ANNOUNCE, so one sent before that announce has propagated is
-dropped at the far end. This is correct behaviour and reads as a delivery bug in
+dropped at the far end. This is correct behavior and reads as a delivery bug in
 the field.
 
 `simulation/scenarios/relay.test.ts` pins the forwarding rules against a relay
@@ -1462,7 +1462,7 @@ CONFIRM is sent once the person on the new phone says the words match. The old
 phone sends OFFER only after both that and its own Transfer tap, in either
 order: an early CONFIRM is held, not refused, and nothing is frozen while either
 person decides. The new phone treats any message other than ABORT before its
-own confirm as invalid. A decline there sends ABORT (cancelled), closes that
+own confirm as invalid. A decline there sends ABORT (canceled), closes that
 connection, and replaces the code's key and token, since whoever answered has
 read it.
 
@@ -1475,4 +1475,4 @@ newer app version than its own.
 
 The receiver writes nothing before END, commits only after reading everything
 back, and the sender erases itself only on a COMMIT whose digest matches what it
-offered. An ABORT is honoured only before the commit.
+offered. An ABORT is honored only before the commit.

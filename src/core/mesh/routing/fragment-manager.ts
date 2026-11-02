@@ -96,7 +96,7 @@ const MAX_FRAME_OVERHEAD_BYTES =
   V2_HEADER_SIZE + 2 * SENDER_ID_SIZE + 1 + 255 * SENDER_ID_SIZE + 4 + 64 + 255;
 
 // An assembly holds no more than the frame its claimed type could decode to,
-// so a stream labelled as a public message cannot buffer a file's worth of
+// so a stream labeled as a public message cannot buffer a file's worth of
 // memory. Mirrors bitchat-ios PacketPayloadLimits.maxFrameBytes.
 function maxAssemblyBytes(originalType: number): number {
   return maxPayloadBytes(originalType as PacketType) + MAX_FRAME_OVERHEAD_BYTES;

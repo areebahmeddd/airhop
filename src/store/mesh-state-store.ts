@@ -119,7 +119,7 @@ export type LanState =
 //                          looks. Cannot occur from API 31, where the manifest
 //                          asserts neverForLocation on BLUETOOTH_SCAN.
 //   starting               permissions just landed and the stack has not
-//                          honoured them yet. Transient by definition.
+//                          honored them yet. Transient by definition.
 //   none                   nothing is in the way.
 //
 // No member for Android 12+'s "Approximate" location: the mesh does not ask for
@@ -164,7 +164,7 @@ export interface MeshBanner {
   // Only advisories are dismissible. A real blocker is not: hiding "Bluetooth
   // is off" would leave an empty radar with nothing explaining it, which is the
   // state this whole banner system exists to eliminate. Advice about a phone's
-  // background behaviour is different: it is true, it is worth saying once,
+  // background behavior is different: it is true, it is worth saying once,
   // and a user who has read it should not have to read it forever.
   dismissible?: boolean;
 }
@@ -245,7 +245,7 @@ interface MeshStateStore {
   // half pauses.
   //
   // Not a safety gate. Both platforms embed Arti, which has no clearnet path, so
-  // a relay dialled during a dead bootstrap fails rather than falling back and
+  // a relay dialed during a dead bootstrap fails rather than falling back and
   // nothing leaks whether this is set or not. It is raised from the start of
   // every bootstrap, because a relay that fails its first connect is never
   // retried: a pool built before the circuit is dead for good. On a network
@@ -477,7 +477,7 @@ function bleBlockerBanner(
 
     // Red only when it leaves nothing. WiFi Aware and LAN carry the mesh
     // without Bluetooth, so "mesh unavailable" over a working LAN is false, and
-    // a red banner over a working mesh teaches people to ignore the colour. The
+    // a red banner over a working mesh teaches people to ignore the color. The
     // action stays either way: Bluetooth is still worth back for range, for the
     // screen being off, and for the other platform.
     case "adapter-off":
@@ -778,7 +778,7 @@ export function useMeshBanners(): MeshBanner[] {
   // language is a real input to this computation. Subscribing states that
   // outright: without it the banners would still refresh, but only because a
   // parent happened to re-render, which is the kind of coupling that survives
-  // exactly until somebody memoises the parent.
+  // exactly until somebody memoizes the parent.
   void useLanguage();
   const presenceStatus = useMeshStateStore((s) => s.presenceStatus);
   const bleBlocker = useMeshStateStore((s) => s.bleBlocker);

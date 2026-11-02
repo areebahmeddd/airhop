@@ -7,7 +7,7 @@
 // means, which is the point: a medium that understood the protocol could not
 // find a protocol bug.
 //
-// Behaviours modelled here because they are real and they break things:
+// Behaviors modeled here because they are real and they break things:
 //
 //   * Discovery is not instant. A scanner takes a while to see an advertiser,
 //     and a GATT connection takes longer still. Code that assumes a peer is
@@ -128,7 +128,7 @@ const SECOND_PREFIX = "link2:";
 // TransportConfig.bleMaxCentralLinks and the cap both Airhop native modules
 // enforce. Without this the simulation would let 25 phones hold 300
 // simultaneous connections, which is not a network any of this code will ever
-// meet, and would hide the crowd behaviour that actually matters.
+// meet, and would hide the crowd behavior that actually matters.
 const MAX_CENTRAL_LINKS = 6;
 
 export class RadioFabric {
@@ -224,7 +224,7 @@ export class RadioFabric {
   // walking away does.
   setIsolated(deviceID: string, isolated: boolean): void {
     if (this.adjacency === null) {
-      // Materialise the implicit full mesh so one device can be cut from it.
+      // Materialize the implicit full mesh so one device can be cut from it.
       const ids = [...this.devices.keys()];
       const pairs: [string, string][] = [];
       for (let i = 0; i < ids.length; i++) {
@@ -235,10 +235,10 @@ export class RadioFabric {
     const map = this.adjacency;
     if (map === null) return;
     if (isolated) {
-      const neighbours = map.get(deviceID);
-      if (neighbours !== undefined) {
-        for (const other of neighbours) map.get(other)?.delete(deviceID);
-        neighbours.clear();
+      const neighbors = map.get(deviceID);
+      if (neighbors !== undefined) {
+        for (const other of neighbors) map.get(other)?.delete(deviceID);
+        neighbors.clear();
       }
       this.world.say("WALKED_AWAY", deviceID);
     } else {
@@ -260,7 +260,7 @@ export class RadioFabric {
   // Both phones of a pair dial each other, as they do on hardware: each scans,
   // each sees the other, and neither checks for a link the other side opened.
   // A pair then holds two links, one per direction, which is what the fanout
-  // has to collapse to one write per neighbour.
+  // has to collapse to one write per neighbor.
   setDualLinks(on: boolean): void {
     this.dualLinks = on;
     this.world.say("DUAL_LINKS", on ? "on" : "off");
@@ -385,7 +385,7 @@ export class RadioFabric {
     }
   }
 
-  // In dual-link mode, the first link's advertiser dialling its scanner back.
+  // In dual-link mode, the first link's advertiser dialing its scanner back.
   private considerSecondLink(key: string): void {
     if (!this.dualLinks) return;
     const first = this.links.get(key);
@@ -614,7 +614,7 @@ export class RadioFabric {
   // Listen to everything on the air.
   //
   // This is not a test hook so much as a capability anybody within thirty
-  // metres already has: BLE is a broadcast medium, and a passive listener
+  // meters already has: BLE is a broadcast medium, and a passive listener
   // records whatever is transmitted. Scenarios use it to capture traffic and
   // replay it later. Returns an unsubscribe.
   private readonly taps: ((
@@ -637,9 +637,9 @@ export class RadioFabric {
   // room would.
   //
   // Deliberately NOT routed through a SimDevice: an attacker is not running
-  // Airhop, and modelling one as a device would lend it Airhop's own restraint.
+  // Airhop, and modeling one as a device would lend it Airhop's own restraint.
   // This writes straight into the victim's radio over a link it already holds,
-  // which is exactly the capability anybody within thirty metres has.
+  // which is exactly the capability anybody within thirty meters has.
   injectTo(victimID: string, viaPeerID: string, dataBase64: string): boolean {
     const key = pairKey(victimID, viaPeerID);
     const link = this.links.get(key);

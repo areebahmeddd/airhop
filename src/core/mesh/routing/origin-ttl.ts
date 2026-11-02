@@ -12,8 +12,8 @@
 //
 // The ceiling follows this phone's degree: 7 sparse, 6 at mid degree (7 for
 // an urgent board post), 5 dense, and a live stream's 7 or 5. That is
-// what neighbours at the same degree clamp to anyway, so reach is unchanged at
-// the top. The cost is a dense originator whose neighbours are sparse: they
+// what neighbors at the same degree clamp to anyway, so reach is unchanged at
+// the top. The cost is a dense originator whose neighbors are sparse: they
 // would relay at full depth, and it starts up to two hops short of that.
 // Public text, board posts and group messages backfill over gossip; the rest
 // accept it.
