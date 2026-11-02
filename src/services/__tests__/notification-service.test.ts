@@ -13,7 +13,6 @@ const mockCancelScheduled = jest.fn<Promise<void>, [string]>(() =>
 jest.mock("expo-notifications", () => ({
   setNotificationHandler: jest.fn(),
   setNotificationChannelAsync: jest.fn(() => Promise.resolve()),
-  deleteNotificationChannelAsync: jest.fn(() => Promise.resolve()),
   addNotificationResponseReceivedListener: (fn: (r: unknown) => void) => {
     mockResponseListener = fn;
     return { remove: jest.fn() };

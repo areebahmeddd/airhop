@@ -550,9 +550,9 @@ export function applyInternetAvailability(enabled: boolean): void {
 // Ungated on the preference: with nothing running it is a no-op on both
 // platforms.
 export function notifyTorAppForeground(foreground: boolean): void {
-  void NativeAirhopTor?.setAppForeground?.(foreground).catch(() => {
-    // An older native binary without the method. The foreground re-check below
-    // still corrects the claim; what is lost is the dormancy behind it.
+  void NativeAirhopTor?.setAppForeground(foreground).catch(() => {
+    // The foreground re-check below still corrects the claim; what is lost is
+    // the dormancy behind it.
   });
 }
 

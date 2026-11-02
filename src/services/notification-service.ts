@@ -69,7 +69,6 @@ const ARRIVED_COOLDOWN_MS = 3_000;
 // settings at creation, so the earlier PRIVATE channel is deleted at
 // configure time rather than updated.
 const RING_CHANNEL_ID = "ring_alert";
-const RETIRED_RING_CHANNEL_ID = "ring";
 
 // iOS cannot loop a sound outside a call, so a ring there is a chain of local
 // notifications with the default sound, cancelled together when the ring is
@@ -255,13 +254,6 @@ export async function configureNotifications(): Promise<void> {
       });
     } catch {
       // Android will deliver on the default channel instead.
-    }
-    try {
-      await Notifications.deleteNotificationChannelAsync(
-        RETIRED_RING_CHANNEL_ID,
-      );
-    } catch {
-      // Never created on this install, or already gone.
     }
   }
 

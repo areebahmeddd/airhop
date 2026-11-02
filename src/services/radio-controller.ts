@@ -460,8 +460,9 @@ export class RadioController {
     try {
       await AirhopBLE.setPowerMode(mode);
     } catch {
-      // Older native module, or the radio went away mid-call. The mode is
-      // advisory - the mesh runs either way - and the next reconcile retries.
+      // A permission withdrawn or the radio gone mid-call. Native records the
+      // mode before restarting the radios, so only the restart is lost and the
+      // next start runs at it. Advisory either way: the mesh runs regardless.
     }
   }
 
@@ -507,8 +508,7 @@ export class RadioController {
     );
   }
 
-  // Read what the device says about itself, tolerating an older native module
-  // that does not implement the call yet.
+  // Read what the device says about itself.
   private async readFacts(): Promise<RadioFacts> {
     try {
       const state = await AirhopBLE.getRadioState();
@@ -523,9 +523,7 @@ export class RadioController {
         // has one "unknown" to reason about instead of a magic number.
         batteryPercent: state.batteryPercent < 0 ? null : state.batteryPercent,
         charging: state.charging,
-        // Compared rather than read, so a native build without the field
-        // reads as off instead of as undefined.
-        powerSaveMode: state.powerSaveMode === true,
+        powerSaveMode: state.powerSaveMode,
       };
     } catch {
       // Unreadable this instant. "unknown" reads as "starting", which retries,

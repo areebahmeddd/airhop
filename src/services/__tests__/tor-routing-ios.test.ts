@@ -577,9 +577,7 @@ describe("app lifecycle on iOS", () => {
     expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 
-  // An older native binary without the method must not take the resume down
-  // with it.
-  it("survives a native module that does not implement it", () => {
+  it("survives a native call that rejects", () => {
     mockSetAppForeground.mockRejectedValue(new Error("unrecognized selector"));
     expect(() => {
       notifyTorAppForeground(true);
