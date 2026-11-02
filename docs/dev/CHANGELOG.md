@@ -2,15 +2,6 @@
 
 All notable changes are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0.10 · Albatross (2026-10-19)
-
-### What's New
-
-- feat: upgrade to Expo SDK 58 and React Native 0.88 (by @areebahmeddd) [75cd869]
-- fix: improve background service reliability; add optional app lock (by @areebahmeddd) [792c580]
-
-**Full changelog:** [v1.0.9..v1.0.10](https://github.com/areebahmeddd/airhop/compare/v1.0.9..v1.0.10)
-
 ## v1.0.9 · Albatross (2026-09-27)
 
 ### What's New (Security Update)

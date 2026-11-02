@@ -2,9 +2,9 @@
   "expo": {
     "name": "Airhop",
     "slug": "airhop",
-    "version": "1.0.10",
+    "version": "1.0.9",
     "extra": {
-      "releaseDate": "2026-10-19"
+      "releaseDate": "2026-09-27"
     }
   }
 }
