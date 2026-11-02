@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Je identiteit is een {ed25519}-sleutelpaar dat op je apparaat wordt aangemaakt en bewaard in {ios_keychain} of {android_keystore}. Er zijn geen accounts, geen registraties en niets dat een server raakt, oftewel je kunt de app als wegwerp-app gebruiken die na verwijdering niets achterlaat dat naar jou leidt.",
   "home.about.body.crypto":
-    "Elke sessie gebruikt het {noise}-protocol voor een geauthenticeerde handshake. Opgeslagen berichten gebruiken het {ratchet}-algoritme, oftewel zelfs als je apparaat later gecompromitteerd raakt, blijven je oude berichten onleesbaar. Noodwissen vernietigt alle sleutels en berichten in minder dan een seconde.",
+    "Elke sessie gebruikt het {noise}-protocol voor een geauthenticeerde handshake. Live directe berichten tussen Airhop-telefoons gebruiken het {ratchet}-algoritme, oftewel een sleutel die later uitlekt, kan al verzonden berichten niet openen. Noodwissen vernietigt alle sleutels en berichten in minder dan een seconde.",
   "home.about.body.internet":
     "Als jij en een contact buiten Bluetooth-bereik zijn, dienen {nostr}-relays als brug via internet, met directe berichten ingepakt volgens {nip17}, zodat de mesh wereldwijd reikt zodra jullie allebei online zijn. Ondersteuning voor {tor} is er op iOS en Android, via {arti}, met {obfs4}-, {snowflake}- en {webtunnel}-bridges voor netwerken die Tor blokkeren.",
   "home.about.optional.title": "Airhop heeft optionele functies die je kunt inschakelen:",
@@ -171,9 +171,9 @@ const strings: Strings = {
     "Uitnodigingslinks voor een ruimte, of een ondertekende lijst van maximaal 16.",
   "home.features.messaging.board.name": "Prikbord",
   "home.features.messaging.board.line": "Mededelingen die tot zeven dagen aan een gebied hangen.",
-  "home.features.messaging.voice.name": "Live spraak",
+  "home.features.messaging.voice.name": "Live spraak en video",
   "home.features.messaging.voice.line":
-    "Houd de microfoon ingedrukt en praat met iedereen binnen bereik, als een walkietalkie.",
+    "Houd de microfoon ingedrukt om te praten, of ga live met de camera, voor iedereen binnen bereik.",
   "home.features.messaging.notes.name": "Spraakberichten",
   "home.features.messaging.notes.line": "Opgenomen audio, sneller dan een route uittypen.",
   "home.features.messaging.files.name": "Foto's, video en bestanden",

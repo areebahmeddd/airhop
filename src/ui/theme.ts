@@ -1,6 +1,6 @@
 // Design tokens.
 //
-// Monochromatic light palette. One interactive accent (near-black). Semantic
+// Monochromatic palettes, light and dark, with one interactive accent. Semantic
 // colors used strictly for meaning, never decoration.
 //
 // Rule: if a color does not communicate information, it should not exist.
@@ -22,19 +22,20 @@ export const Colors = {
   borderStrong: "#C8C8C8", // prominent borders
 
   // ---- Text ----
-  // The three greys are contrast-checked against both light surfaces they ever
-  // sit on (bg #F8F8F8 and surface #FFFFFF) at the smallest size each is used
-  // at, so every one of them clears WCAG 2.2 AA (4.5:1) for normal text.
-  // Ratios against #F8F8F8, the worse of the two:
-  //   textPrimary   #111111  ->  17.4:1  (AAA)
-  //   textSecondary #565656  ->   7.0:1  (AAA)
-  //   textMuted     #6F6F6F  ->   4.8:1  (AA)
-  // Lighter greys fail: a #666666 / #8A8A8A pair puts every timestamp, scope
-  // line, placeholder and section label at 3.2:1, under AA. Darken rather than
+  // The three grays are contrast-checked against all four surfaces text sits
+  // on (bg, surface, surfaceRaised for inputs and inactive segments, and
+  // theirBubble), in both palettes, so every one clears WCAG 2.2 AA (4.5:1)
+  // for normal text. Ratios against theirBubble #EBEBEB, the worst of the four
+  // (bg, surface and surfaceRaised are 5.1, 5.4 and 4.8 for textMuted):
+  //   textPrimary   #111111  ->  15.8:1  (AAA)
+  //   textSecondary #565656  ->   6.2:1  (AA)
+  //   textMuted     #6A6A6A  ->   4.5:1  (AA)
+  // The page alone is not enough: #6F6F6F clears bg and puts a timestamp at
+  // 4.2 on a bubble and a placeholder at 4.4 in an input. Darken rather than
   // restructure, keeping the same hue and the same three-step hierarchy.
   textPrimary: "#111111", // headings, primary content
   textSecondary: "#565656", // supporting text
-  textMuted: "#6F6F6F", // timestamps, placeholders, labels
+  textMuted: "#6A6A6A", // timestamps, placeholders, labels
   textInverse: "#FFFFFF", // text on near-black (accent) surfaces
   onStatus: "#FFFFFF", // glyph on a saturated status fill (online, offline, danger)
   //
@@ -54,7 +55,7 @@ export const Colors = {
   // ---- Selection ----
   // Highlight behind selected text in an input. Never `accent`: that is a solid
   // near-black, and a text field paints the selection as an opaque block behind
-  // the glyphs, so selecting a whole message hid the text under a slab. Enough
+  // the glyphs, so selecting a whole message hides the text under a slab. Enough
   // alpha to show the run, little enough to keep every glyph readable.
   selection: "rgba(17,17,17,0.18)",
 
@@ -76,6 +77,9 @@ export const Colors = {
   syncingDim: "rgba(217,119,6,0.10)", // caution banner bg (location off)
   danger: "#DC2626", // destructive actions, panic wipe
   dangerDim: "rgba(220,38,38,0.08)",
+  // A red fill carrying white text (onStatus), such as the LIVE pill: 4.8:1.
+  // Its own token because `danger` is tuned as ink, see the dark palette.
+  dangerFill: "#DC2626",
   success: "#16A34A",
 
   // ---- Trust indicators ----
@@ -97,8 +101,23 @@ export const Colors = {
   bridge: "#4F46E5", // public mesh chat stitched across islands (bridge)
   bridgeDim: "rgba(79,70,229,0.09)",
 
+  // ---- Globe picker ----
+  // Two grays for water and land and nothing more: the accent is the selected
+  // cell's alone. Land against water is too close to read as an edge, so the
+  // coastline carries the shapes and clears 3:1 against the water (WCAG
+  // 1.4.11). Borders and the graticule are orientation and stay quieter.
+  globeWater: "#FFFFFF",
+  globeLand: "#E8E8E8",
+  globeCoast: "#8F8F8F",
+  globeBorder: "#C4C4C4",
+  globeGraticule: "#EEEEEE",
+
   // ---- Overlays ----
   overlay: "rgba(0,0,0,0.45)",
+  // Behind white text and glyphs laid over a photo or video. At 0.6 white
+  // text holds 4.5:1 even over a white picture; `overlay`, which dims a
+  // screen behind a sheet, does not in this theme.
+  mediaScrim: "rgba(0,0,0,0.6)",
 } as const;
 
 // Dark variant, same keys as Colors so a screen swaps the whole palette by
@@ -117,9 +136,15 @@ export const DarkColors = {
   borderStrong: "#3D3D3D",
 
   // ---- Text ----
+  // Checked on the same four surfaces as the light palette. The worst is
+  // theirBubble #232323, which is also the lightest: textPrimary 14.4:1,
+  // textSecondary 6.5:1, textMuted 4.55:1 (5.7 on bg, 5.2 on surface, 4.8 on
+  // surfaceRaised). A gray tuned on bg alone, such as #787878 at 4.46, falls to
+  // 3.6 on a bubble. Muted sits closer to secondary here than in light; the
+  // step between them still reads.
   textPrimary: "#F5F5F5",
   textSecondary: "#A6A6A6",
-  textMuted: "#787878",
+  textMuted: "#8A8A8A",
   textInverse: "#111111",
   onStatus: "#FFFFFF",
 
@@ -146,6 +171,9 @@ export const DarkColors = {
   syncingDim: "rgba(245,158,11,0.16)",
   danger: "#EF4444",
   dangerDim: "rgba(239,68,68,0.15)",
+  // Dark `danger` is lifted to read as ink on near-black (5.2:1 on bg), which
+  // leaves white text on it at 3.8:1. A fill keeps the light palette's red.
+  dangerFill: "#DC2626",
   success: "#22C55E",
 
   // ---- Trust indicators ----
@@ -165,8 +193,18 @@ export const DarkColors = {
   bridge: "#6366F1",
   bridgeDim: "rgba(99,102,241,0.16)",
 
+  // ---- Globe picker ----
+  // Same roles as the light palette. Land is lifted above the water rather
+  // than sunk below it, and the coast still clears 3:1 on the water.
+  globeWater: "#161616",
+  globeLand: "#262626",
+  globeCoast: "#6A6A6A",
+  globeBorder: "#3A3A3A",
+  globeGraticule: "#1D1D1D",
+
   // ---- Overlays ----
   overlay: "rgba(0,0,0,0.6)",
+  mediaScrim: "rgba(0,0,0,0.6)",
 } as const;
 
 // A 4pt grid, with in-between steps named for the two they sit between. Each
@@ -212,7 +250,7 @@ export const FontSize = {
 
 // One line height per text size, so a size cannot drift across screens. Body
 // sizes sit near 1.5x, the display size near 1.05x. The "Tight" pair is for a
-// single glyph centred in a fixed pill: a badge digit, a dismiss cross.
+// single glyph centered in a fixed pill: a badge digit, a dismiss cross.
 export const LineHeight = {
   "2xsTight": 12,
   "2xs": 15,
@@ -241,8 +279,9 @@ export const MaxFontScale = {
 // dismissal and a toast fade read as the same app moving rather than three
 // components each guessing.
 //
-// Anything built on these must also respect the OS "reduce motion" switch. Use
-// reanimated's `useReducedMotion()` at the call site (WCAG 2.3.3).
+// Anything built on these must also respect the OS "reduce motion" switch
+// (WCAG 2.3.3). Reanimated does so on its own; `Animated` goes through
+// `useReducedMotion()` in ui/hooks/use-reduced-motion.ts.
 export const Duration = {
   base: 180, // fades, enters
   slow: 220, // sheet dismiss, list reorder
@@ -259,12 +298,12 @@ export const FontWeight = {
   bold: "700" as const,
 };
 
-// Monospace family for keys, geohashes, IDs, and wallet amounts. Points at the
-// bundled JetBrains Mono (loaded in App.tsx); if the font ever fails to load,
-// the platform substitutes its own monospace, so text never disappears.
+// Monospace family for keys, geohashes, IDs, and wallet amounts: the system
+// monospace by default, or the bundled JetBrains Mono (loaded in app.tsx). If
+// that font ever fails to load, the platform substitutes its own monospace, so
+// text never disappears.
 export const FontFamily = {
-  // Resolved live from the user's Appearance choice via the single MONO_FONTS
-  // table (one source of truth, so adding a font can't mismap here). Read at
+  // Resolved live from the user's Appearance choice through MONO_FONTS. Read at
   // style-build time; useThemeColors below recomputes styles when it changes.
   get mono(): string {
     return MONO_FONTS[useSettingsStore.getState().monoFont].family;
@@ -289,12 +328,12 @@ export const Radius = {
 // reads as a shape (so the control's affordance survives) while clearly not
 // inviting a tap.
 // WCAG exempts inactive controls from the 4.5:1 text rule (1.4.3), which is why
-// this is allowed to be a dim rather than a colour change, but every disabled
+// this is allowed to be a dim rather than a color change, but every disabled
 // control also carries accessibilityState.disabled so it is never dim ALONE.
 export const DISABLED_OPACITY = 0.4;
 
 // The press treatment for a surface with nothing neutral to darken: an accent
-// button, whose fill IS the accent so darkening it would mean recolouring the
+// button, whose fill IS the accent so darkening it would mean recoloring the
 // label too, and a bare icon and label such as a tab or a segment. Everything
 // else darkens to Colors.surfacePressed instead. Applied through Pressable's
 // style callback.

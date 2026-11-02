@@ -13,6 +13,7 @@ import {
   GossipSync,
   IdentityTree,
   InternetGateway,
+  LiveVideoPath,
   MeshBridge,
   ModuleMap,
   NoiseHandshake,
@@ -48,12 +49,13 @@ const TOC = [
       { id: "rooms", label: "Rooms" },
       { id: "attachments", label: "Attachments" },
       { id: "voice", label: "Live voice" },
+      { id: "video", label: "Live video" },
     ],
   },
   {
     act: "Beyond the mesh",
     items: [
-      { id: "bridge", label: "Internet layer" },
+      { id: "bridge", label: "The internet layer" },
       { id: "tor", label: "The onion router" },
     ],
   },
@@ -63,6 +65,7 @@ const TOC = [
       { id: "wallet", label: "The wallet" },
       { id: "ai", label: "The AI assistant" },
       { id: "social", label: "Social bridges" },
+      { id: "defaults", label: "Off until you turn it on" },
     ],
   },
   {
@@ -418,24 +421,19 @@ export default function ArchitecturePage() {
                     "Every phone runs both at once, which is what makes this a mesh and not a star",
                   ],
                   [
-                    "TTL",
-                    "A hop budget stamped on a packet, reduced by one at each relay",
-                    "At most 7, lower in a crowd, and the packet stops when it runs out",
-                  ],
-                  [
                     "Flooding",
                     "Rebroadcasting to everyone in range instead of routing along one chosen path",
                     "The default, because a mesh of strangers cannot agree on a map",
                   ],
                   [
+                    "TTL",
+                    "A hop budget stamped on a packet, reduced by one at each relay",
+                    "At most 7, lower in a crowd, and the packet stops when it runs out",
+                  ],
+                  [
                     "LRU cache",
                     "A fixed-size cache that discards whatever was used least recently",
                     "1000 packet IDs over a 5 minute window, so a looped copy is dropped instead of forwarded",
-                  ],
-                  [
-                    "TLV",
-                    "Type-length-value, a self-describing byte layout that older readers can skip past",
-                    "ANNOUNCE payloads, file transfers and courier envelopes",
                   ],
                   [
                     "Golomb-Coded Set",
@@ -447,6 +445,11 @@ export default function ArchitecturePage() {
                     "Holding a message until a route to the recipient appears",
                     "Courier envelopes, 40 at a time, discarded after 24 hours",
                   ],
+                  [
+                    "TLV",
+                    "Type-length-value, a self-describing byte layout that older readers can skip past",
+                    "ANNOUNCE payloads, file transfers and courier envelopes",
+                  ],
                 ]}
               />
 
@@ -457,12 +460,22 @@ export default function ArchitecturePage() {
                   [
                     "Ed25519",
                     "A signature scheme",
-                    "Signs what you post. Every phone checks it before showing anything, and checks files, board posts, voice and departures before relaying them too",
+                    "Signs what you post. Every phone checks it before showing anything, and checks files, board posts, voice, video and departures before relaying them too",
                   ],
                   [
                     "X25519",
                     "Diffie-Hellman key agreement on Curve25519",
                     "The key exchange inside both Noise patterns",
+                  ],
+                  [
+                    "AEAD",
+                    "Encryption that also detects tampering",
+                    "ChaCha20-Poly1305, and XChaCha20-Poly1305 where a longer nonce is safer",
+                  ],
+                  [
+                    "HKDF",
+                    "Derives many keys from one secret, deterministically",
+                    "Turns the signing key into the Nostr identity and every per-cell identity",
                   ],
                   [
                     "Noise XX",
@@ -478,16 +491,6 @@ export default function ArchitecturePage() {
                     "Forward secrecy",
                     "Past messages stay unreadable even if a key leaks later",
                     "Noise XX gives it once per session, Double Ratchet gives it once per message",
-                  ],
-                  [
-                    "AEAD",
-                    "Encryption that also detects tampering",
-                    "ChaCha20-Poly1305, and XChaCha20-Poly1305 where a longer nonce is safer",
-                  ],
-                  [
-                    "HKDF",
-                    "Derives many keys from one secret, deterministically",
-                    "Turns the signing key into the Nostr identity and every per-cell identity",
                   ],
                   [
                     "Prekey",
@@ -512,6 +515,11 @@ export default function ArchitecturePage() {
                     "Eleven are used, listed in the internet layer section",
                   ],
                   [
+                    "secp256k1",
+                    "The elliptic curve Bitcoin and Nostr both use",
+                    "Your Nostr identity, derived from the signing key, never stored on its own",
+                  ],
+                  [
                     "Gift wrap",
                     "Nested encryption that hides who sent a message and what it says",
                     "Every internet DM, so a relay operator sees only ciphertext from a throwaway key, plus the recipient's key it delivers to",
@@ -525,11 +533,6 @@ export default function ArchitecturePage() {
                     "Geohash",
                     "Coordinates encoded as a short string, which gets coarser as you shorten it",
                     "Scopes location channels, and presence is only broadcast at precision 5 or coarser",
-                  ],
-                  [
-                    "secp256k1",
-                    "The elliptic curve Bitcoin and Nostr both use",
-                    "Your Nostr identity, derived from the signing key, never stored on its own",
                   ],
                 ]}
               />
@@ -559,14 +562,14 @@ export default function ArchitecturePage() {
                     "Nutzaps, so the payment event can be public while the money stays private",
                   ],
                   [
-                    "BIP-39",
-                    "Twelve words that encode a seed",
-                    "The recovery phrase. Created when the wallet is first set up so every coin is derived from it; backup counts as on once you have viewed the words, and as safe once you prove you wrote them down",
-                  ],
-                  [
                     "bolt11",
                     "The Lightning invoice format",
                     "How value moves in and out, the only part that needs the internet",
+                  ],
+                  [
+                    "BIP-39",
+                    "Twelve words that encode a seed",
+                    "The recovery phrase. Created when the wallet is first set up so every coin is derived from it; backup counts as on once you have viewed the words, and as safe once you prove you wrote them down",
                   ],
                 ]}
               />
@@ -593,8 +596,9 @@ export default function ArchitecturePage() {
               </p>
               <p>
                 Location channels go one step further and derive a fresh secp256k1 identity per
-                geohash cell. Being present in one cell therefore cannot be correlated with being
-                present in another.
+                geohash cell. Reading one cell therefore cannot be correlated with reading another.
+                Posting can: a post carries your mesh name, and one sent where you stand also goes
+                over Bluetooth under your mesh key.
               </p>
 
               <Table
@@ -672,7 +676,7 @@ export default function ArchitecturePage() {
                 rows={[
                   [
                     "Carries",
-                    "Everything, including live voice",
+                    "Everything, including live voice and video",
                     "Everything BLE carries",
                     "Everything BLE carries, same platform only",
                     "DMs and location channels",
@@ -935,7 +939,10 @@ export default function ArchitecturePage() {
               <Table
                 head={["Rule", "What a relay does"]}
                 rows={[
-                  ["Forward", "Every unseen packet, on every link except the one it arrived on"],
+                  [
+                    "Forward",
+                    "Every unseen packet, once to each neighbor, never back to the one it came from",
+                  ],
                   ["TTL", "Decrement before forwarding, drop at 1"],
                   ["Deduplication", "On packet ID, so a ring of relays forwards each packet once"],
                   ["Fragments", "Passed along individually, only the addressee reassembles"],
@@ -946,6 +953,14 @@ export default function ArchitecturePage() {
                   ],
                 ]}
               />
+
+              <p>
+                One ordering property matters before you deploy any of this: a relay does not make
+                two strangers reachable, it makes their announces reachable. A public message is
+                checked against a signing key learned from an ANNOUNCE, so a message sent before
+                that announce has crossed the relay is dropped at the far end. That is correct
+                behavior, and in the field it looks exactly like a delivery bug.
+              </p>
 
               <h3 className="text-ink pt-2 text-base font-bold">Bitle relay hardware</h3>
               <p>
@@ -961,33 +976,30 @@ export default function ArchitecturePage() {
                 run against real nodes. That run is on the{" "}
                 <TextLink href={REPO_LINKS.roadmapDoc}>roadmap</TextLink>.
               </p>
-
-              <p>
-                One ordering property matters before you deploy any of this: a relay does not make
-                two strangers reachable, it makes their announces reachable. A public message is
-                checked against a signing key learned from an ANNOUNCE, so a message sent before
-                that announce has crossed the relay is dropped at the far end. That is correct
-                behavior, and in the field it looks exactly like a delivery bug.
-              </p>
             </Section>
 
             <Section
               id="lifecycle"
               eyebrow="The system · 07"
               title="Status and lifecycle"
-              lede="A mesh only exists while the radios are on. Phones are built to switch radios off, so most of this section is about staying alive without wasting your battery."
+              lede="A mesh only exists while the radios are on, and phones are built to switch radios off. This section covers how a phone stays on the mesh, how it leaves, and how everything on it can be destroyed."
             >
               <Figure caption="Three presence states, and exactly what each one does to the radios.">
                 <PresenceStates />
               </Figure>
+
+              <p>
+                Invisible survives a relaunch and a start at boot, since it is a choice about being
+                seen. Away lasts until you change it or the app restarts.
+              </p>
 
               <Table
                 head={["Behavior", "Interval", "Why"]}
                 rows={[
                   [
                     "Presence broadcast",
-                    "4 s alone, then 15 to 30 s",
-                    "Fast while alone so devices meet quickly, then it backs off",
+                    "On a new link, then 15 to 30 s",
+                    "Silent with nobody linked, so a lone phone spends nothing on it",
                   ],
                   ["Gossip sync", "1 s on a new link, then 15 s", "Lets a returning peer catch up"],
                   ["Direct peer timeout", "45 s", "Handles unreported link drops beyond broadcast"],
@@ -999,9 +1011,9 @@ export default function ArchitecturePage() {
 
               <p>
                 On Android the mesh survives backgrounding through a foreground service, which is
-                what the notification you cannot swipe away actually is. Without it the system would
-                suspend the app within minutes. It carries a Stop mesh button that shuts the radios
-                down cleanly, which is the same thing as switching to Away.
+                what the ongoing notification actually is. Without it the system would suspend the
+                app within minutes. It carries a Stop mesh button that shuts the radios down
+                cleanly, which is the same thing as switching to Away.
               </p>
 
               <Note label="A backgrounded iPhone is invisible to Android">
@@ -1013,18 +1025,13 @@ export default function ArchitecturePage() {
               </Note>
 
               <p>
-                Invisible survives a relaunch and a start at boot, since it is a choice about being
-                seen. Away lasts until you change it or the app restarts.
-              </p>
-
-              <p>
                 <strong className="text-ink">Panic wipe is the terminal transition.</strong> From
                 the Profile screen, one tap asks for confirmation and three quick taps skip it. It
                 deletes every Keychain and Keystore entry, clears every MMKV partition, empties the
-                cache directory (and tmp on iOS), deletes Tor's state and clears delivered
-                notifications, in under a second. The wallet file is emptied and its key destroyed,
-                so what stays on disk cannot be read. Two things are beyond its reach: photos saved
-                to the gallery, and Wi-Fi Aware pairings in the iPhone's own list.
+                cache directory (and tmp on iOS), clears delivered notifications and deletes Tor's
+                state, in under a second. The wallet file is emptied and its key destroyed, so what
+                stays on disk cannot be read. Two things are beyond its reach: photos saved to the
+                gallery, and Wi-Fi Aware pairings in the iPhone's own list.
               </p>
             </Section>
 
@@ -1055,11 +1062,11 @@ export default function ArchitecturePage() {
                 </TextLink>
                 , the same algorithm Signal uses, ratcheting a new key for every message. Its root
                 key is seeded from the handshake's exporter secret, which is why Airhop does not
-                need X3DH: the key agreement has already happened. Not the transcript hash, which
-                anyone who captured the handshake already holds, and not the two static keys, which
-                stay derivable forever. The exporter secret descends from a chaining key that
-                absorbed ephemeral keys destroyed when the handshake ended, so the root key cannot
-                be recomputed later from long-lived keys alone.
+                need X3DH: the key agreement has already happened. The exporter secret descends from
+                a chaining key that absorbed ephemeral keys destroyed when the handshake ended, so
+                the root key cannot be recomputed later from long-lived keys alone. The transcript
+                hash would not do, since anyone who captured the handshake holds it, and neither
+                would the two static keys, which stay derivable forever.
               </p>
 
               <Figure caption="Every message type and what actually protects it.">
@@ -1149,9 +1156,15 @@ export default function ArchitecturePage() {
               <Table
                 head={["", "Photo", "Voice note", "Video", "Anything else"]}
                 rows={[
-                  ["Cap", "512 KiB, fitted to 256 KiB", "512 KiB", "1 MiB", "1 MiB"],
-                  ["Resized first", "Yes", "No", "No", "No"],
-                  ["Sent as", "JPEG, or GIF and PNG as they are", "AAC", "MP4 or MOV", "As-is"],
+                  [
+                    "Cap",
+                    "512 KiB, fitted to 256 KiB",
+                    "512 KiB",
+                    "1 MiB, fitted to the recipient",
+                    "1 MiB",
+                  ],
+                  ["Resized first", "Yes", "No", "Yes", "No"],
+                  ["Sent as", "JPEG, or GIF and PNG as they are", "AAC", "MP4", "As-is"],
                 ]}
               />
 
@@ -1163,6 +1176,20 @@ export default function ArchitecturePage() {
                 fits, because that is what strips its metadata, GPS included, and one the encoder
                 cannot open is refused rather than sent as it is. A GIF or PNG that fits goes
                 unchanged, so an animation stays animated and a screenshot stays lossless.
+              </p>
+
+              <p>
+                A video can be any length, but{" "}
+                <strong className="text-ink">up to one minute of it is sent</strong>. Before
+                sending, a trimmer under the preview lets you pick which minute, or any shorter
+                part; left alone, a longer video sends its first minute. That part is then shrunk to
+                whoever receives it, the same way a photo is. Anything a bitchat phone might get, in
+                the Bluetooth room or a DM with someone not known to run Airhop, is fitted to 100
+                KiB, the size bitchat sends its own clips at; another Airhop phone gets the full 1
+                MiB. The picture size, frame rate and sound follow from what that budget affords, so
+                a short clip stays sharp and a full minute becomes a small, silent one. Like a
+                photo, a picked or recorded video is always re-encoded, which strips the location a
+                phone camera writes.
               </p>
 
               <Note label="What the quality setting actually does">
@@ -1221,7 +1248,7 @@ export default function ArchitecturePage() {
                   ["Packet", "0x29, broadcast", "0x08 inside Noise"],
                   ["Who hears it", "Everyone in range", "One person"],
                   ["Protected by", "Ed25519 signature", "The Noise session"],
-                  ["Relayed", "Yes, up to 5 to 7 hops", "Yes, like any DM"],
+                  ["Relayed", "Yes, up to 7 hops, 5 in a crowd", "Yes, like any DM"],
                 ]}
               />
 
@@ -1277,8 +1304,96 @@ export default function ArchitecturePage() {
             </Section>
 
             <Section
+              id="video"
+              eyebrow="The system · 12"
+              title="Live video"
+              lede={
+                <>
+                  Going live streams your camera to everyone in range, or to one person, in{" "}
+                  <TextLink href="https://github.com/permissionlesstech/bitchat/blob/main/docs/LIVE_VIDEO_V1.md">
+                    bitchat's own stream format
+                  </TextLink>
+                  . It is built to lose packets and keep the picture.
+                </>
+              }
+            >
+              <p>
+                A video note is a clip you record and send. Live video starts from the attach menu
+                and goes out as it is filmed: H.264 for the picture and the same AAC-LC as live
+                voice for the sound, cut into packets of{" "}
+                <strong className="text-ink">at most 352 bytes</strong>, so none is ever fragmented.
+                The packet type is bitchat's, 0x2D, and the encoding is too, so a stream from either
+                app plays on the other.
+              </p>
+
+              <Table
+                head={["Quality", "Picture", "Rate", "Meant for"]}
+                rows={[
+                  ["Low", "144 x 192, 8 fps", "18 kbps", "People several hops away"],
+                  ["Medium", "240 x 320, 12 fps", "56 kbps", "One or two hops"],
+                  ["High", "480 x 640, 24 fps", "360 kbps", "Right next to you"],
+                ]}
+              />
+
+              <p>
+                Loss is planned for rather than retried. Each block of packets carries{" "}
+                <TextLink href="https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction">
+                  Reed-Solomon
+                </TextLink>{" "}
+                parity, and any k of its k + r pieces rebuild it, so a lost packet usually costs
+                nothing. When a block cannot be rebuilt the picture freezes instead of smearing, and
+                picks up at the next keyframe, which comes every 2 seconds. The stream's settings
+                ride ahead of every keyframe too, which is what lets someone who walks into range
+                halfway through start watching within a couple of seconds.
+              </p>
+
+              <Figure caption="One stream, two halves. The sender never waits on a viewer, and a viewer never asks for anything back.">
+                <LiveVideoPath />
+              </Figure>
+
+              <p>
+                The sender paces itself to the route. Each neighbor gets one copy, on its fastest
+                link, so the stream is held to{" "}
+                <strong className="text-ink">24 packets a second</strong> only while someone in
+                range has nothing faster than Bluetooth; when everyone also shares Wi-Fi Aware or a
+                local network the limit rises to 300 packets a second. If the queue grows or the
+                radio starts refusing writes, the bitrate backs off, and far enough behind the video
+                is dropped while the sound carries on.
+              </p>
+
+              <Table
+                head={["", "Public room", "Direct message"]}
+                rows={[
+                  ["Packet", "0x2D, broadcast", "0x0A inside Noise"],
+                  ["Who can watch", "Everyone in range", "One person"],
+                  ["Protected by", "Ed25519 signature", "The Noise session"],
+                  ["Relayed", "Yes, up to 7 hops, 5 in a crowd", "No, it needs a direct link"],
+                ]}
+              />
+
+              <Note label="Every stream leaves a recording">
+                Each phone that receives a stream records it, watched or not, and the stream shows
+                in the chat from its first picture. When it ends, that row becomes the recording.{" "}
+                <strong className="text-ink">
+                  A stream that fits 100 KiB is resent as an ordinary file
+                </strong>{" "}
+                and replaces every copy; a longer one stays as each phone rebuilt it. Turning off
+                Live video in settings stops your phone from showing or recording streams.
+              </Note>
+
+              <p>
+                Watching costs only what you look at. A stream is decoded only while its chat is
+                open, it starts silent until you tap it, and only one stream is heard at a time.
+                Live voice keeps the floor: someone talking takes the speaker, and the stream's
+                sound comes back when they stop. Live video is offered in the same two places as
+                live voice, for the same reasons, and a phone follows at most four streams at once,
+                one per sender.
+              </p>
+            </Section>
+
+            <Section
               id="bridge"
-              eyebrow="Beyond the mesh · 12"
+              eyebrow="Beyond the mesh · 13"
               title="The internet layer"
               lede="When Bluetooth range runs out and there is a connection available, the same conversation continues over Nostr relays. No infrastructure anyone here controls. Two features ride this layer: the internet gateway and the mesh bridge."
             >
@@ -1398,7 +1513,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="tor"
-              eyebrow="Beyond the mesh · 13"
+              eyebrow="Beyond the mesh · 14"
               title="The onion router"
               lede="Gift wrap hides who is talking to whom. It does not hide your IP address from the relay. Tor closes that gap. Both platforms run the same embedded client; what differs is how much of the app it covers and how it reaches the network."
             >
@@ -1434,6 +1549,15 @@ export default function ArchitecturePage() {
                 never tied together by a shared circuit.
               </p>
 
+              <Note label="Why iOS blocks mint traffic under Tor">
+                Arti on iOS wraps the Nostr socket, so an HTTP call to a mint would go around it and
+                expose your IP alongside your coins. Instead of leaking that quietly, Airhop refuses
+                mint requests entirely while Tor is on and tells you why. Allow mint traffic over
+                clear net, a Settings switch shown while Tor is on, lifts that if you decide the
+                trade is acceptable. Sending and receiving ecash over Bluetooth never touches a
+                mint, so that keeps working either way.
+              </Note>
+
               <p>
                 <strong className="text-ink">Failing closed is structural, not timed.</strong> Arti
                 has no clearnet path at all, so a request made before the first circuit exists fails
@@ -1460,7 +1584,7 @@ export default function ArchitecturePage() {
                   ["Direct", "Your address, from the relay", "Nothing. The default"],
                   [
                     "obfs4",
-                    "That you use Tor, behind a stream of uniformly random bytes with no protocol structure to recognise",
+                    "That you use Tor, behind a stream of uniformly random bytes with no protocol structure to recognize",
                     "Its bridge lines are public, so a determined censor blocks them",
                   ],
                   [
@@ -1516,15 +1640,6 @@ export default function ArchitecturePage() {
                 watches for Tor.
               </p>
 
-              <Note label="Why iOS blocks mint traffic under Tor">
-                Arti on iOS wraps the Nostr socket, so an HTTP call to a mint would go around it and
-                expose your IP alongside your coins. Instead of leaking that quietly, Airhop refuses
-                mint requests entirely while Tor is on and tells you why. Allow mint traffic over
-                clear net, a Settings switch shown while Tor is on, lifts that if you decide the
-                trade is acceptable. Sending and receiving ecash over Bluetooth never touches a
-                mint, so that keeps working either way.
-              </Note>
-
               <p>
                 <strong className="text-ink">
                   Tor has no effect on the Bluetooth mesh, and cannot.
@@ -1536,7 +1651,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="wallet"
-              eyebrow="Optional features · 14"
+              eyebrow="Optional features · 15"
               title="The wallet"
               lede="Cashu ecash, chosen because it is the only payment system where the transfer itself needs no network at all. A coin is a bearer instrument, and handing one over is just a message, or a QR code on a screen."
             >
@@ -1614,7 +1729,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="ai"
-              eyebrow="Optional features · 15"
+              eyebrow="Optional features · 16"
               title="The AI assistant"
               lede="A small language model running on the phone itself, for when there is no signal and nobody nearby to ask."
             >
@@ -1637,7 +1752,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="social"
-              eyebrow="Optional features · 16"
+              eyebrow="Optional features · 17"
               title="Social bridges"
               lede="An Ed25519 key pair is already enough to be a Bluesky account or a Fediverse actor. Airhop can lend yours to either, without registering anywhere and without touching the mesh."
             >
@@ -1674,10 +1789,14 @@ export default function ArchitecturePage() {
                 for anyone who never connects an account, and the wire format, the mesh and the
                 encryption stay as described above.
               </Note>
+            </Section>
 
-              <h3 className="text-ink pt-2 text-base font-bold">
-                Everything that is off until you turn it on
-              </h3>
+            <Section
+              id="defaults"
+              eyebrow="Optional features · 18"
+              title="Off until you turn it on"
+              lede="What each optional feature does on a fresh install."
+            >
               <Table
                 head={["Feature", "State on a fresh install"]}
                 rows={[
@@ -1714,9 +1833,9 @@ export default function ArchitecturePage() {
 
             <Section
               id="modules"
-              eyebrow="For developers · 17"
+              eyebrow="For developers · 19"
               title="Module map"
-              lede="Around 200 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
+              lede="Around 250 TypeScript files across core, services, store and features, arranged so that dependencies only ever point one direction."
             >
               <Figure caption="The layering rule. src/core is the whole protocol and imports nothing native, which is what makes it testable in CI without a phone.">
                 <ModuleMap />
@@ -1728,7 +1847,7 @@ export default function ArchitecturePage() {
                   ["core/crypto/", "identity, noise-xx, noise-x, double-ratchet, contact-exchange"],
                   [
                     "core/mesh/",
-                    "wire (packet-codec, board-packet), routing (flood-router, deduplicator, fragment-manager), sync (gossip-sync), courier (courier-store, prekey-store), discovery (announce-manager), rooms (group-protocol, channel-crypto), links (link-registry), voice",
+                    "wire (packet-codec, board-packet), routing (flood-router, deduplicator, fragment-manager), sync (gossip-sync), courier (courier-store, prekey-store), discovery (announce-manager), rooms (group-protocol, channel-crypto), links (link-registry), voice, video",
                   ],
                   [
                     "core/nostr/",
@@ -1759,7 +1878,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="wire"
-              eyebrow="For developers · 18"
+              eyebrow="For developers · 20"
               title="Wire format"
               lede="Byte-for-byte identical to bitchat v2. This is what makes an Airhop phone and a bitchat phone join the same mesh with no translation layer and no configuration."
             >
@@ -1790,8 +1909,8 @@ export default function ArchitecturePage() {
 
               <h3 className="text-ink pt-2 text-base font-bold">Packet types</h3>
               <p>
-                Everything up to <C>0x29</C> except <C>0x12</C> is bitchat-defined and shared.
-                bitchat allocates forward and has reached <C>0x2c</C>, so Airhop's own types start
+                Everything up to <C>0x2D</C> except <C>0x12</C> is bitchat-defined and shared.
+                bitchat allocates forward and has reached <C>0x2D</C>, so Airhop's own types start
                 at <C>0x50</C>, well clear of the values bitchat is still handing out. A type one
                 side does not recognize is relayed, not read, so an Airhop extension crosses a mesh
                 of bitchat phones without ever being shown to their users.
@@ -1816,6 +1935,7 @@ export default function ArchitecturePage() {
                   ["PING / PONG", "0x26 / 0x27", "Directed mesh echo, measures hop distance"],
                   ["NOSTR_CARRIER", "0x28", "Gateway-ferried Nostr event"],
                   ["VOICE_FRAME", "0x29", "Live push-to-talk burst"],
+                  ["VIDEO_FRAME", "0x2D", "One packet of a live video stream"],
                   ["CHANNEL_ENC", "0x50", "Private channel · Airhop extension"],
                   [
                     "CHANNEL_MSG_AIRHOP",
@@ -1838,7 +1958,7 @@ export default function ArchitecturePage() {
 
             <Section
               id="threat"
-              eyebrow="For developers · 19"
+              eyebrow="For developers · 21"
               title="Threat model"
               lede="What the design defends against, and the seven things it does not."
             >
@@ -1930,7 +2050,7 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">A linkable device.</strong> Your peer ID comes from
                 your long-term key, so it does not rotate. The same phone is recognizable across
                 sessions until you regenerate the identity. Only the per-area location identities
-                are throwaway.
+                are throwaway, and only until you post in that area.
                 <br />
                 <br />
                 <strong className="text-ink">Attachments in a public room.</strong> A photo, file or

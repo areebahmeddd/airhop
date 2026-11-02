@@ -54,7 +54,7 @@ function encodeCapabilities(bits: number): Uint8Array {
 // Decode with a canonicality check: a trailing zero byte is a non-minimal
 // encoding of the same number. Two byte strings meaning one value is a
 // fingerprinting handle and something implementations can disagree on, so the
-// packet is refused rather than the field normalised.
+// packet is refused rather than the field normalized.
 function decodeCapabilities(value: Uint8Array): number | null {
   if (value.length < 1 || value.length > 8) return null;
   if (value.length > 1 && value[value.length - 1] === 0) return null;

@@ -166,7 +166,7 @@ describe("ANNOUNCE capabilities TLV", () => {
     const decoded = decodeAnnouncePayload(withCap, new Uint8Array(8));
     expect(decoded?.capabilities).toBe(0);
     // Absent entirely, not merely decoding to zero: a peer with no bits has to
-    // look like an old client on the wire (old-client shape).
+    // look like an old client on the wire.
     expect(readTlv(withCap, TLV_CAPABILITIES)).toBeNull();
   });
 

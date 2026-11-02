@@ -2,17 +2,15 @@
 //
 // Two halves, mirroring bitchat's LocalPrekeyStore + PrekeyBundleStore:
 //
-//   LocalPrekeyStore  - our own one-time Curve25519 private prekeys. We publish
-//                       their public halves in a signed bundle (0x24); a sender
-//                       seals courier mail to one, and we open it with the
-//                       matching private key, then consume it. Consumed keys are
-//                       kept for a grace window so in-flight envelopes still open
-//                       before the key is dropped, giving forward secrecy.
+//   LocalPrekeyStore: our own one-time Curve25519 private prekeys. We publish
+//   their public halves in a signed bundle (0x24); a sender seals courier mail
+//   to one, and we open it with the matching private key, then consume it.
+//   Consumed keys are kept for a grace window so in-flight envelopes still open
+//   before the key is dropped, giving forward secrecy.
 //
-//   PeerPrekeyStore   - verified bundles from other peers. When we courier mail
-//                       to a peer we hold a bundle for, we assign one of their
-//                       unused prekeys and seal to it instead of their long-lived
-//                       static key.
+//   PeerPrekeyStore: verified bundles from other peers. When we courier mail to
+//   a peer we hold a bundle for, we assign one of their unused prekeys and seal
+//   to it instead of their long-lived static key.
 //
 // The private prekeys live in one keychain item, as bitchat-ios keeps them in
 // one Keychain blob. Forward secrecy rests on a dropped key being gone, and

@@ -1,6 +1,6 @@
 // Persistent storage for signed bulletin-board posts and their tombstones.
 //
-// Mirrors bitchat BoardStore.swift. Posts are signed public notices designed to
+// Mirrors bitchat-ios's BoardStore. Posts are signed public notices designed to
 // outlive chat: they stay on disk until their author-chosen expiry (max 7 days).
 // Tombstones are retained until the deleted post's original expiry so the delete
 // keeps outrunning stale copies of the post.
@@ -70,16 +70,50 @@ interface BoardState {
   posts: BoardPost[];
   tombstones: StoredTombstone[];
 
-  ingest: (wire: BoardWire, now?: number) => BoardIngestResult;
+  ingest: (
+    wire: BoardWire,
+    now?: number,
+    retainUntilOverride?: number,
+  ) => BoardIngestResult;
   postsForGeohash: (geohash: string) => BoardPost[];
   isOwnPost: (post: BoardPost, mySigningKey: Uint8Array) => boolean;
   prune: (now?: number) => void;
   forgetAuthor: (signingKey: Uint8Array) => void;
+  // The Nostr copy one of our own posts was bridged as, by post ID hex.
+  noteBridgedEvent: (postIDHex: string, eventID: string) => void;
+  // Move that event ID to the retractions owed, returning it for the delete
+  // to try at once. Owed until a relay accepts it or the note expires at
+  // `untilMs` on its own (NIP-40).
+  queueBridgedDelete: (
+    postIDHex: string,
+    geohash: string,
+    untilMs: number,
+  ) => string | undefined;
+  // Retractions still owed, the expired ones dropped.
+  pendingBridgedDeletes: (now?: number) => PendingBridgedDelete[];
+  // A relay accepted this retraction.
+  settleBridgedDelete: (eventID: string) => void;
   clearAll: () => void;
 }
 
 const STORAGE_ID = "board-store";
 const STORAGE_KEY = "entries";
+// Kept beside the posts rather than in memory, so deleting a notice after a
+// relaunch still retracts its Nostr copy (NIP-09) instead of leaving it up
+// until expiry for everyone reading the cell over the internet.
+const BRIDGED_KEY = "bridged";
+// NIP-09 retractions of deleted posts that no relay has accepted yet, kept on
+// disk for the same reason: one tried offline, or while Tor held the pool,
+// would otherwise be lost and leave the note up until it expired.
+const BRIDGED_DELETES_KEY = "bridgedDeletes";
+
+export interface PendingBridgedDelete {
+  eventID: string;
+  geohash: string;
+}
+
+// eventID to the cell it was published in and when the note expires anyway.
+type StoredDeletes = Record<string, { g: string; u: number }>;
 
 const storage = getStorage(STORAGE_ID);
 
@@ -185,6 +219,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
     posts: BoardPost[],
     tombstones: StoredTombstone[],
     now: number,
+    retainUntilOverride?: number,
   ): {
     result: BoardIngestResult;
     posts: BoardPost[];
@@ -229,6 +264,13 @@ export const useBoardStore = create<BoardState>((set, get) => {
           createdAtMs: target.createdAt,
         });
       }
+    } else if (retainUntilOverride !== undefined) {
+      // Restored from disk, as bitchat-ios restores it: the deadline recorded
+      // when the tombstone was first applied stands. Orphan status is not
+      // persisted, so a restored tombstone no longer counts toward the orphan
+      // caps, which bound what one session can take in.
+      retainUntil = Math.min(retainUntilOverride, maxRetain);
+      isOrphan = false;
     } else {
       // Post unknown (tombstone raced ahead); keep it so a late post is
       // suppressed if it arrives later.
@@ -297,7 +339,11 @@ export const useBoardStore = create<BoardState>((set, get) => {
     posts: [],
     tombstones: [],
 
-    ingest(wire: BoardWire, now: number = Date.now()): BoardIngestResult {
+    ingest(
+      wire: BoardWire,
+      now: number = Date.now(),
+      retainUntilOverride?: number,
+    ): BoardIngestResult {
       const pruned = pruneArrays(get().posts, get().tombstones, now);
       let result: BoardIngestResult;
       let nextPosts = pruned.posts;
@@ -313,6 +359,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
           nextPosts,
           nextTombstones,
           now,
+          retainUntilOverride,
         );
         result = r.result;
         nextPosts = r.posts;
@@ -366,12 +413,110 @@ export const useBoardStore = create<BoardState>((set, get) => {
       persist();
     },
 
+    noteBridgedEvent(postIDHex: string, eventID: string): void {
+      // Only posts still held: an expired one has nothing left to delete, and
+      // this keeps the map as small as our own live posts.
+      const live = new Set(get().posts.map((p) => bytesToHex(p.postID)));
+      const bridged = Object.fromEntries(
+        Object.entries(readBridged()).filter(([id]) => live.has(id)),
+      );
+      bridged[postIDHex] = eventID;
+      writeRecord(BRIDGED_KEY, bridged);
+    },
+
+    queueBridgedDelete(
+      postIDHex: string,
+      geohash: string,
+      untilMs: number,
+    ): string | undefined {
+      const bridged = readBridged();
+      const eventID = bridged[postIDHex];
+      if (eventID === undefined) return undefined;
+      delete bridged[postIDHex];
+      writeRecord(BRIDGED_KEY, bridged);
+      const deletes = readDeletes();
+      deletes[eventID] = { g: geohash, u: untilMs };
+      writeRecord(BRIDGED_DELETES_KEY, deletes);
+      return eventID;
+    },
+
+    pendingBridgedDeletes(now: number = Date.now()): PendingBridgedDelete[] {
+      const deletes = readDeletes();
+      const live = Object.fromEntries(
+        Object.entries(deletes).filter(([, d]) => d.u > now),
+      );
+      if (Object.keys(live).length !== Object.keys(deletes).length) {
+        writeRecord(BRIDGED_DELETES_KEY, live);
+      }
+      return Object.entries(live).map(([eventID, d]) => ({
+        eventID,
+        geohash: d.g,
+      }));
+    },
+
+    settleBridgedDelete(eventID: string): void {
+      const deletes = readDeletes();
+      if (deletes[eventID] === undefined) return;
+      delete deletes[eventID];
+      writeRecord(BRIDGED_DELETES_KEY, deletes);
+    },
+
     clearAll(): void {
       set({ posts: [], tombstones: [] });
       storage.remove(STORAGE_KEY);
+      storage.remove(BRIDGED_KEY);
+      storage.remove(BRIDGED_DELETES_KEY);
     },
   };
 });
+
+function readBridged(): Record<string, string> {
+  return readRecord(
+    BRIDGED_KEY,
+    (value): value is string => typeof value === "string",
+  );
+}
+
+function readDeletes(): StoredDeletes {
+  return readRecord(
+    BRIDGED_DELETES_KEY,
+    (value): value is StoredDeletes[string] => {
+      const d = value as { g?: unknown; u?: unknown } | null;
+      return (
+        typeof d === "object" &&
+        d !== null &&
+        typeof d.g === "string" &&
+        typeof d.u === "number"
+      );
+    },
+  );
+}
+
+// A stored JSON object, keeping only the entries whose value passes `isValue`.
+function readRecord<V>(
+  key: string,
+  isValue: (value: unknown) => value is V,
+): Record<string, V> {
+  const raw = storage.getString(key);
+  if (raw === undefined) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return {};
+    return Object.fromEntries(
+      Object.entries(parsed).filter((entry): entry is [string, V] =>
+        isValue(entry[1]),
+      ),
+    );
+  } catch {
+    return {};
+  }
+}
+
+// An empty record is removed rather than stored.
+function writeRecord(key: string, record: object): void {
+  if (Object.keys(record).length === 0) storage.remove(key);
+  else storage.set(key, JSON.stringify(record));
+}
 
 // Load, verify, and re-ingest persisted board entries on module init.
 (function loadFromDisk(): void {
@@ -393,9 +538,6 @@ export const useBoardStore = create<BoardState>((set, get) => {
       continue;
     }
     if (wire === null || !verifyBoardWire(wire)) continue;
-    // Disk restore of a tombstone whose post is long gone: trust the recorded
-    // retention deadline. ingest recomputes it as an orphan otherwise, which is
-    // still safe (capped), so passing through ingest is acceptable.
-    store.ingest(wire, now);
+    store.ingest(wire, now, entry.r ?? undefined);
   }
 })();

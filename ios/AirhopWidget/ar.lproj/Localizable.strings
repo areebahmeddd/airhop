@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-ar/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "البلوتوث معطّل · لا بحث";
+"widget_label" = "النظراء ضمن النطاق";
+"widget_description" = "النظراء ضمن النطاق، ووقت عدّهم";
+"widget_nobody" = "لا أحد ضمن النطاق";
+"widget_as_of" = "آخر تحديث %1$@";
+"widget_paused" = "الشبكة متوقفة";
+"widget_unset" = "افتح Airhop";
+"widget_stale" = "افتح Airhop للتحديث";

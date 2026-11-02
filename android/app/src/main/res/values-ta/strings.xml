@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">மெஷ் நெட்வொர்க்</string>
   <string name="mesh_channel_description">Airhop மெஷைப் பின்னணியில் இயங்கிக்கொண்டே இருக்கச் செய்கிறது</string>
   <string name="mesh_notification_title">Airhop மெஷ் இயங்குகிறது</string>
@@ -8,4 +8,16 @@
     <item quantity="one">வரம்பில் %1$s பியர்</item>
     <item quantity="other">வரம்பில் %1$s பியர்கள்</item>
   </plurals>
+  <string name="mesh_bluetooth_off">புளூடூத் முடக்கம் · தேடவில்லை</string>
+  <string name="widget_label">வரம்பில் உள்ள பியர்கள்</string>
+  <string name="widget_description">வரம்பில் உள்ள பியர்கள், அவை எப்போது எண்ணப்பட்டன</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">வரம்பில் பியர்</item>
+    <item quantity="other">வரம்பில் பியர்கள்</item>
+  </plurals>
+  <string name="widget_nobody">வரம்பில் யாரும் இல்லை</string>
+  <string name="widget_as_of">%1$s நிலவரப்படி</string>
+  <string name="widget_paused">மெஷ் இடைநிறுத்தம்</string>
+  <string name="widget_unset">Airhop ஐத் திறங்கள்</string>
+  <string name="widget_stale">புதுப்பிக்க Airhop ஐத் திறங்கள்</string>
 </resources>

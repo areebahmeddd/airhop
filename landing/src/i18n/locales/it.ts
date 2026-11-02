@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "La tua identità è una coppia di chiavi {ed25519} generata sul tuo dispositivo e conservata in {ios_keychain} o {android_keystore}. Non ci sono account, né registrazioni, né nulla che tocchi un server: si può usare come app usa e getta che, una volta eliminata, non lascia nulla che risalga a te.",
   "home.about.body.crypto":
-    "Ogni sessione usa il protocollo {noise} per un handshake autenticato. I messaggi archiviati usano l'algoritmo {ratchet}: anche se il tuo dispositivo venisse compromesso in seguito, i messaggi passati resterebbero illeggibili. La cancellazione d'emergenza distrugge tutte le chiavi e i messaggi in meno di un secondo.",
+    "Ogni sessione usa il protocollo {noise} per un handshake autenticato. I messaggi diretti in tempo reale tra telefoni con Airhop usano l'algoritmo {ratchet}: anche una chiave trapelata in seguito non permette di aprire i messaggi già inviati. La cancellazione d'emergenza distrugge tutte le chiavi e i messaggi in meno di un secondo.",
   "home.about.body.internet":
     "Quando tu e un contatto siete fuori dalla portata del Bluetooth, i relay {nostr} fanno da ponte via internet, con messaggi diretti incartati nel formato {nip17}, così la rete mesh si estende a tutto il mondo ogni volta che siete entrambi online. Il supporto {tor} è disponibile su iOS e Android, tramite {arti}, con bridge {obfs4}, {snowflake} e {webtunnel} per le reti che bloccano Tor.",
   "home.about.optional.title": "Airhop ha funzioni opzionali che puoi attivare:",
@@ -170,9 +170,9 @@ const strings: Strings = {
     "Link d'invito per una stanza, o un elenco firmato fino a 16 persone.",
   "home.features.messaging.board.name": "Bacheca",
   "home.features.messaging.board.line": "Avvisi affissi a un'area per un massimo di sette giorni.",
-  "home.features.messaging.voice.name": "Voce dal vivo",
+  "home.features.messaging.voice.name": "Voce e video dal vivo",
   "home.features.messaging.voice.line":
-    "Tieni premuto il microfono e parla con chiunque sia a portata, come un walkie-talkie.",
+    "Tieni premuto il microfono per parlare, o vai in diretta con la fotocamera, con chiunque sia a portata.",
   "home.features.messaging.notes.name": "Note vocali",
   "home.features.messaging.notes.line": "Audio registrato, più veloce che scrivere indicazioni.",
   "home.features.messaging.files.name": "Foto, video e file",

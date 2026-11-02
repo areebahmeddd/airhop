@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Airhop</string>
   <string name="expo_system_ui_user_interface_style" translatable="false">automatic</string>
   <!-- The notice Android requires while the mesh runs in the background.
@@ -12,4 +12,23 @@
     <item quantity="one">%1$s peer in range</item>
     <item quantity="other">%1$s peers in range</item>
   </plurals>
+  <!-- Bluetooth switched off with nobody reachable another way: the notice's
+       line and the widget's message, worded as the Mesh tab's radar. -->
+  <string name="mesh_bluetooth_off">Bluetooth off · not scanning</string>
+  <!-- The home screen widget, on the notice's locale rule. The iOS widget's
+       tables are written from these strings by scripts/i18n-check-native.js.
+       The count is drawn on its own line above widget_in_range, so its forms
+       carry no number, hence the ImpliedQuantity suppression in every
+       language. -->
+  <string name="widget_label">Peers in range</string>
+  <string name="widget_description">Peers in range, and when they were counted</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">peer in range</item>
+    <item quantity="other">peers in range</item>
+  </plurals>
+  <string name="widget_nobody">nobody in range</string>
+  <string name="widget_as_of">as of %1$s</string>
+  <string name="widget_paused">Mesh paused</string>
+  <string name="widget_unset">Open Airhop</string>
+  <string name="widget_stale">Open Airhop to refresh</string>
 </resources>

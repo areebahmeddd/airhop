@@ -122,7 +122,7 @@ class Reader {
 }
 
 function base64UrlDecode(input: string): Uint8Array | null {
-  // Normalising to standard base64 then decoding, exactly as the Swift does.
+  // Normalizing to standard base64 then decoding, exactly as the Swift does.
   let s = input.replace(/-/g, "+").replace(/_/g, "/").replace(/=/g, "");
   const rem = s.length % 4;
   if (rem === 1) return null;

@@ -33,7 +33,7 @@ describe("privateMediaStableID", () => {
     );
   });
 
-  it("reads peer IDs case-insensitively, as bitchat normalises them", () => {
+  it("reads peer IDs case-insensitively, as bitchat normalizes them", () => {
     expect(privateMediaStableID(ALICE, BOB.toUpperCase(), IOS_NAME)).toBe(
       privateMediaStableID(ALICE, BOB, IOS_NAME),
     );

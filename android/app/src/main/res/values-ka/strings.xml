@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">მეშ-ქსელი</string>
   <string name="mesh_channel_description">Airhop-ის მეშს ფონურ რეჟიმში აქტიურად ინარჩუნებს</string>
   <string name="mesh_notification_title">Airhop-ის მეში აქტიურია</string>
@@ -8,4 +8,16 @@
     <item quantity="one">%1$s კვანძი მიღწევადია</item>
     <item quantity="other">%1$s კვანძი მიღწევადია</item>
   </plurals>
+  <string name="mesh_bluetooth_off">ბლუთუზი გამორთულია · სკანირება არ მიმდინარეობს</string>
+  <string name="widget_label">მიღწევადი კვანძები</string>
+  <string name="widget_description">მიღწევადი კვანძები და დრო, როცა დაითვალეს</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">კვანძი მიღწევადია</item>
+    <item quantity="other">კვანძი მიღწევადია</item>
+  </plurals>
+  <string name="widget_nobody">მიღწევადი არავინაა</string>
+  <string name="widget_as_of">%1$s-ისთვის</string>
+  <string name="widget_paused">მეში შეჩერებულია</string>
+  <string name="widget_unset">გახსენი Airhop</string>
+  <string name="widget_stale">გახსენი Airhop განსაახლებლად</string>
 </resources>

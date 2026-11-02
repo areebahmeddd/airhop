@@ -73,7 +73,7 @@ object AirhopIPtProxy {
         for (transport in transports) {
             if (!running.contains(transport)) {
                 try {
-                    // No upstream proxy: Arti is the only thing dialling these.
+                    // No upstream proxy: Arti is the only thing dialing these.
                     controller.start(transport.id, "")
                 } catch (e: Throwable) {
                     // Throwable: a libgojni load or link failure arrives as an
@@ -136,7 +136,7 @@ object AirhopIPtProxy {
         // incriminating thing this device could write down, and nothing reads it.
         //
         // First line to touch the generated binding, so gomobile's static
-        // initialiser loads libgojni here. A Go-side nil surfaces as a throw
+        // initializer loads libgojni here. A Go-side nil surfaces as a throw
         // rather than null, and a missing or rejected library as an Error, which
         // is why this catches Throwable. Either has to stop the start rather
         // than reach Arti.
@@ -144,7 +144,7 @@ object AirhopIPtProxy {
             try {
                 Controller(dir.absolutePath, false, false, "ERROR", null)
             } catch (e: Throwable) {
-                Log.e(TAG, "controller did not initialise: ${e.message}")
+                Log.e(TAG, "controller did not initialize: ${e.message}")
                 return null
             }
 

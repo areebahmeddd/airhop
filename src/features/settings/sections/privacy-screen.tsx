@@ -56,7 +56,8 @@ const SECTIONS: LegalSection[] = [
           "A batch of single-use public keys, so someone can leave you a protected message while you are offline. These contain no private information.",
           "Encrypted group traffic, which nearby devices relay but cannot read unless they are members of that group.",
           "Live voice, on unless you turn it off. Holding the mic streams your voice to everyone in Bluetooth range as you speak. A public burst is signed but not encrypted, the same as a room attachment. In a direct message it stays inside that peer's encrypted session. When you let go, the same audio is also sent as an ordinary voice note.",
-          "A screenshot notice, in private conversations only. Taking a screenshot in a direct message, private group, or private channel tells the people in it that you did, under your display name. In the public mesh room and location channels nothing is sent, because announcing it there would record that you were present. The screenshot itself is never sent.",
+          "Live video, on unless you turn it off, and only while you choose to go live. Your camera, and your microphone unless you mute it, stream to everyone in Bluetooth range. Like live voice, a public stream is signed but not encrypted, and in a direct message it stays inside that peer's encrypted session. When it ends, a short stream is also sent as an ordinary video, and everyone who received it keeps a recording.",
+          "A screenshot notice, in private conversations only. Taking a screenshot in a direct message, private group, or private channel tells the people in it that you did, under your display name. Android 13 is the exception: it cannot detect a screenshot without a media permission Airhop does not hold, so no notice is sent there. In the public mesh room and location channels nothing is sent, because announcing it there would record that you were present. The screenshot itself is never sent.",
           "Approximate Bluetooth signal strength (radio metadata visible to any nearby receiver).",
         ],
       },
@@ -90,12 +91,12 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Location channels (optional)",
     paragraphs: [
-      "Location channels let you talk to people in the same area. Location permission is optional and only requested when you use them.",
+      "Location channels let you talk to people in the same area. Location permission is optional and only requested when you use them. Android 11 and older are the exception: they also require it to scan for Bluetooth, and Airhop reads no position for that.",
       {
         bullets: [
           "**Exact coordinates never leave your device** and are never stored. Your position is truncated to a grid cell, and the smallest cell we ever publish is roughly 150 meters across. The one exception is a location pin you choose to send in a direct message, which carries your real coordinates, encrypted to that person.",
           "A cell still reveals an approximate area to peers and relays. A finer cell reveals a smaller area.",
-          "Each cell uses a separate identity derived on your device, so your activity in one area cannot be linked to another, or to your main identity.",
+          "Each cell uses a separate key derived on your device, so by that key the cells you only read cannot be linked to one another, or to your main identity. A post is different: it carries your display name, and one made from inside the cell also goes over Bluetooth under your main identity, so posting links that cell to you.",
           "Revoking location permission stops the app resolving your cell. Location channels then fall back to Bluetooth range only.",
         ],
       },
@@ -109,7 +110,7 @@ const SECTIONS: LegalSection[] = [
       {
         bullets: [
           "**What a mint can see.** Your IP address, the amounts you deposit and withdraw, and when. Mints are third parties whose retention and privacy practices are outside this project's control.",
-          "**What a mint cannot see.** Who you are, who you paid, or which coins you deposited became which coins you spent. Cashu signs tokens blindly, so that link is severed by the maths rather than by policy.",
+          "**What a mint cannot see.** Who you are, who you paid, or which coins you deposited became which coins you spent. Cashu signs tokens blindly, so that link is severed by the math rather than by policy.",
           '**Tor.** On Android, Tor covers mint traffic along with the app\'s other web requests. On iOS, Tor only wraps Nostr connections, so **mint requests are blocked while Tor is on** unless you turn on "Allow mint traffic over clear net" in Settings. Mesh payments are unaffected either way.',
           "**Nutzaps are public.** A NIP-61 nutzap is an unencrypted Nostr event. The ecash is locked to the recipient so nobody else can spend it, but relays and observers can see that one public key paid another, and the amount. The encrypted-message fallback does not have this property.",
           "**Recovery phrase.** Created automatically when the wallet is first set up, so coins can be recovered from the start. It is stored only in your device's secure storage, is never transmitted, is never shown to a mint, and is displayed only after Face ID, a fingerprint or your passcode confirms it is you. Anyone who obtains it can spend your balance.",
@@ -152,7 +153,7 @@ const SECTIONS: LegalSection[] = [
           "**Implementation.** Airhop's own protocol cryptography uses the [@noble](https://github.com/paulmillr/noble-curves) library suite, which has been independently audited by Cure53.",
         ],
       },
-      "**No cryptographic protection prevents a recipient from copying, screenshotting, or forwarding a message after reading it.** Airhop tells the other side when you screenshot a private conversation, but that is a courtesy notice, not a control.",
+      "**No cryptographic protection prevents a recipient from copying, screenshotting, or forwarding a message after reading it.** Airhop tells the other side when you screenshot a private conversation, where the phone can detect it, but that is a courtesy notice, not a control.",
     ],
   },
   {
@@ -179,7 +180,7 @@ const SECTIONS: LegalSection[] = [
           "**Panic wipe.** Erase all local keys, messages, queued mail, cached media, Tor state, notifications, and app data from the Profile screen. Photos you saved to your gallery belong to your phone's photo library and stay there, and on iPhone a Wi-Fi Aware pairing stays in the system's own list until you remove it in the Settings app.",
           "**Feature controls.** Tor routing, the mesh bridge, and the internet gateway can each be turned on or off in settings, and location channels left unjoined. Anything already published to a relay cannot be recalled.",
           "**Wallet.** Remove a mint at any time from the Wallet tab. Removing one deletes the coins held there from this device, so withdraw or send them first. A panic wipe destroys the wallet file, its encryption key, and the recovery phrase together.",
-          "**System permissions.** Bluetooth, location, microphone, camera, photo library, and notification access can each be revoked in your device settings at any time. Camera access is used to scan QR codes and to take photos or videos you choose to send.",
+          "**System permissions.** Bluetooth, location, microphone, camera, photo library, and notification access can each be revoked in your device settings at any time. Camera access is used to scan QR codes, to take photos, videos and video notes you choose to send, and to go live when you choose to.",
         ],
       },
     ],
@@ -208,7 +209,7 @@ export default function PrivacyScreen({ onBack }: Props): React.JSX.Element {
   return (
     <LegalDocScreen
       title="Privacy Policy"
-      lastUpdated="October 19, 2026"
+      lastUpdated="November 1, 2026"
       sections={SECTIONS}
       onBack={onBack}
     />

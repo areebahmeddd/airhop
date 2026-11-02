@@ -12,7 +12,7 @@
 //   - API <=30: ACCESS_FINE_LOCATION, since neverForLocation does not exist and
 //     Android withholds every result without it.
 //
-// Deliberately unlike bitchat/android, which requires location at every level
+// Deliberately unlike bitchat-android, which requires location at every level
 // and so also needs ACCESS_BACKGROUND_LOCATION and a `location` service type:
 // that coupling costs a backgrounded phone every scan result, and anyone on
 // "Approximate" a mesh that finds nobody. The advertisement and the wire
@@ -27,8 +27,11 @@
 import { PermissionsAndroid, Platform, type Permission } from "react-native";
 
 // Below this, BLUETOOTH_SCAN does not exist and a BLE scan is a location
-// access whatever we say about it.
+// access whatever the manifest says about it.
 const NEVER_FOR_LOCATION_MIN_API = 31;
+
+// Android 17.
+const LOCAL_NETWORK_MIN_API = 37;
 
 export interface BlePermissionResult {
   granted: boolean;
@@ -44,7 +47,7 @@ export interface BlePermissionResult {
 }
 
 // Platform.Version is the API level (number) on Android, but the typings allow
-// a string, so it is normalised in one place rather than at four call sites.
+// a string, so it is normalized in one place rather than at four call sites.
 function androidApiLevel(): number {
   return typeof Platform.Version === "number"
     ? Platform.Version
@@ -63,6 +66,50 @@ function requiredBlePermissions(): Permission[] {
   // API <=30: the Bluetooth permissions are install-time, and scanning is
   // coupled to location with no way to say otherwise.
   return [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
+}
+
+// Extras for the Wi-Fi Aware fast path, asked for in the same run of dialogs
+// as the required ones but never failing the gate: Wi-Fi is an accelerator,
+// and the mesh must run without it.
+//
+// NEARBY_WIFI_DEVICES is API 33+. Below that Aware discovery needs fine
+// location, which is asked for only on API <=30, where BLE needs it too. On
+// API 31 and 32 Aware goes without rather than raise a location prompt for an
+// accelerator, and wifi-controller.ts stops retrying the refusal.
+//
+// ACCESS_LOCAL_NETWORK is API 37+. Declared in the manifest, it loses the
+// implicit grant older targets get, and Android 17 drops the Wi-Fi Aware and
+// LAN sockets without it. It shares the Bluetooth permissions' group, so it
+// adds no dialog.
+function optionalBlePermissions(apiLevel: number): Permission[] {
+  const optional: Permission[] = [];
+  if (apiLevel >= 33) {
+    optional.push("android.permission.NEARBY_WIFI_DEVICES" as Permission);
+  }
+  if (apiLevel >= LOCAL_NETWORK_MIN_API) {
+    optional.push("android.permission.ACCESS_LOCAL_NETWORK" as Permission);
+  }
+  return optional;
+}
+
+// Every permission the gate asks for and whether it is held, read without
+// prompting, for the diagnostics report. Null on iOS, where the gate asks for
+// nothing and no API reads the local network grant.
+export async function blePermissionGrants(): Promise<
+  { permission: string; granted: boolean }[] | null
+> {
+  if (Platform.OS !== "android") return null;
+  const all = [
+    ...requiredBlePermissions(),
+    ...optionalBlePermissions(androidApiLevel()),
+  ];
+  const granted = await Promise.all(
+    all.map((p) => PermissionsAndroid.check(p)),
+  );
+  return all.map((permission, i) => ({
+    permission,
+    granted: granted[i] ?? false,
+  }));
 }
 
 // Read the current grant WITHOUT prompting, for app resume, where the user may
@@ -98,25 +145,7 @@ export async function ensureBlePermissions(): Promise<BlePermissionResult> {
   const apiLevel = androidApiLevel();
   const locationRequired = apiLevel < NEVER_FOR_LOCATION_MIN_API;
 
-  // Optional extras for the WiFi Aware fast path, batched here so the user
-  // answers one run of dialogs rather than two, but kept OUT of `required`:
-  // WiFi is an accelerator, the mesh must run without it, and a denial here
-  // never fails the gate.
-  //
-  // NEARBY_WIFI_DEVICES is API 33+. Below that the location permissions cover
-  // Aware discovery already.
-  //
-  // ACCESS_LOCAL_NETWORK is deliberately not here yet. The manifest declares it
-  // so the Aware socket keeps working later, but local network protection is
-  // only enforced for apps targeting Android 17 and this one targets 36. Asking
-  // now would show a dialog that unlocks nothing. Add it in the same commit
-  // that raises targetSdkVersion to 37, and with the persisted marker the fast
-  // path below describes: it carries its own permission group, so a denial
-  // would otherwise be re-prompted on every launch.
-  const optional: Permission[] = [];
-  if (apiLevel >= 33) {
-    optional.push("android.permission.NEARBY_WIFI_DEVICES" as Permission);
-  }
+  const optional = optionalBlePermissions(apiLevel);
 
   // Fast path: skip the prompt when there is nothing left to ask for.
   //

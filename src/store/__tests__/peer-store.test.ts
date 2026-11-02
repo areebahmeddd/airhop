@@ -1,6 +1,4 @@
-// Peer store regression tests.
-//
-// These pin two behaviours that are easy to break because the two writers
+// Peer store: two behaviors that are easy to break because the two writers
 // (ANNOUNCE-driven upsertPeer, RSSI-poll-driven updateRssi) touch the same
 // entry from different sources at different cadences.
 
@@ -33,7 +31,7 @@ function makePeer(overrides: Partial<NearbyPeer> = {}): NearbyPeer {
 describe("upsertPeer", () => {
   it("preserves an existing rssi when an ANNOUNCE update arrives", () => {
     // ANNOUNCE payloads carry no signal reading, so a naive replace would wipe
-    // the value the RSSI poller just wrote (every 30s, in practice).
+    // the value the RSSI poller just wrote.
     state().upsertPeer(makePeer());
     state().updateRssi("aabbccdd00112233", -57);
 
@@ -60,9 +58,9 @@ describe("updateRssi", () => {
   });
 
   it("leaves a peer evictable once its announces stop, despite RSSI polls", () => {
-    // The ghost-peer scenario: the GATT link stays up (so RSSI keeps polling
-    // every 5s) but the peer stops announcing. If a reading counted as
-    // liveness, evictStale could never remove it.
+    // The ghost-peer scenario: the GATT link stays up, so RSSI keeps polling,
+    // but the peer stops announcing. If a reading counted as liveness,
+    // evictStale could never remove it.
     jest.useFakeTimers();
     try {
       jest.setSystemTime(new Date("2026-01-01T00:00:00Z"));

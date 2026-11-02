@@ -42,7 +42,7 @@ describe("battery bands", () => {
   });
 
   // Hysteresis: dropping in is immediate, climbing out needs headroom. This is
-  // ours, not bitchat's - they re-resolve on every 1% step, which on a phone
+  // ours, not bitchat's: they re-resolve on every 1% step, which on a phone
   // hovering at a threshold means a scanner restart every few seconds.
   test("entering a lower band happens immediately", () => {
     expect(bandFor(20, "normal")).toBe("low");
@@ -117,7 +117,7 @@ describe("mode selection", () => {
 
   test("charging in the foreground is the only route to performance", () => {
     expect(modeFor({ ...FOREGROUND, charging: true }).mode).toBe("performance");
-    // On battery, even at 100%, foreground is balanced - fast enough for
+    // On battery, even at 100%, foreground is balanced: fast enough for
     // someone watching the Mesh tab, without being the reason the phone dies.
     expect(modeFor({ ...FOREGROUND, batteryPercent: 100 }).mode).toBe(
       "balanced",

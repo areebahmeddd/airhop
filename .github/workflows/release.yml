@@ -68,6 +68,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Drop the version heading
+        run: sed -i -e '1{/^## /d}' -e '/./,$!d' -e 's/^### /## /' RELEASE_NOTES.md
+
       - name: Append verification instructions
         env:
           TAG: ${{ steps.resolve.outputs.tag }}
@@ -365,6 +368,27 @@ jobs:
       attestations: write
 
     steps:
+      # First, so a missing secret fails in seconds and by name, not as an empty
+      # file deep inside fastlane after the pods are installed.
+      - name: Check release secrets
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IOS_WIDGET_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_WIDGET_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          for name in APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID APP_STORE_CONNECT_KEY_P8 APPLE_TEAM_ID IOS_CERTIFICATE_BASE64 IOS_CERTIFICATE_PASSWORD IOS_PROVISIONING_PROFILE_BASE64 IOS_WIDGET_PROVISIONING_PROFILE_BASE64; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::${name} is not set. See fastlane/README.md for how to make it."
+              exit 1
+            fi
+          done
+
       - name: Checkout the tagged commit
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -380,7 +404,7 @@ jobs:
         run: npm run verify:vendored
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@651ff0d62c5c79bed6d53ec518387aae20e72c1a # v1.329.0
+        uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
         with:
           ruby-version: "3.4"
           bundler-cache: false
@@ -404,17 +428,20 @@ jobs:
           fi
           bundle exec pod install
 
-      # Distribution certificate and App Store profile, like the Android keystore.
-      - name: Decode signing certificate and profile
+      # Distribution certificate and App Store profiles (app + widget), like the Android keystore.
+      - name: Decode signing certificate and profiles
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
           IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IOS_WIDGET_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_WIDGET_PROVISIONING_PROFILE_BASE64 }}
         run: |
           set -euo pipefail
           echo "$IOS_CERTIFICATE_BASE64" | base64 -d > "${RUNNER_TEMP}/airhop-distribution.p12"
           echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -d > "${RUNNER_TEMP}/airhop-appstore.mobileprovision"
+          echo "$IOS_WIDGET_PROVISIONING_PROFILE_BASE64" | base64 -d > "${RUNNER_TEMP}/airhop-widget-appstore.mobileprovision"
           echo "IOS_CERTIFICATE_FILE=${RUNNER_TEMP}/airhop-distribution.p12" >> "$GITHUB_ENV"
           echo "IOS_PROVISIONING_PROFILE_FILE=${RUNNER_TEMP}/airhop-appstore.mobileprovision" >> "$GITHUB_ENV"
+          echo "IOS_WIDGET_PROVISIONING_PROFILE_FILE=${RUNNER_TEMP}/airhop-widget-appstore.mobileprovision" >> "$GITHUB_ENV"
 
       - name: Build and upload to TestFlight
         env:
@@ -422,6 +449,7 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: bundle exec fastlane ios beta
 
       # Apple re-signs for distribution, so this attests the upload, like the AAB.

@@ -14,8 +14,6 @@
 //   0x06  bridge cell        (bitchat; decoded, ignored)
 //   0x07  Nostr secp256k1 pub (32 bytes X-only, Airhop extension, ignored by bitchat)
 //   0xB1  Bitle relay role   (read, never written)
-//
-// Broadcast interval: 15 to 30 seconds while connected, faster while isolated.
 import { hexToBytes } from "@noble/hashes/utils.js";
 import type { Identity } from "../../crypto/identity";
 import {
@@ -25,7 +23,7 @@ import {
   verifyPacket,
   type Packet,
 } from "../wire/packet-codec";
-import { normalizeNickname } from "./nickname";
+import { fitNickname, normalizeNickname } from "./nickname";
 
 // Announce cadence adapts to whether we can currently hear anyone, matching
 // bitchat: a short tick while isolated, so a first link hears from us again
@@ -50,15 +48,16 @@ export const ANNOUNCE_TTL = 7;
 // peer who left hours ago keeps reappearing in the room.
 //
 // Both upstreams bound this, but differently, so this is a choice rather than a
-// port. iOS uses 900s and only looks backwards (BLEPacketFreshnessPolicy:
-// `timestamp < now - maxAge`); Android uses 10 minutes and compares the
-// absolute difference (AnnouncementIdentityValidator MAX_CLOCK_SKEW_MS), which
-// also rejects timestamps from the future.
+// port. bitchat-ios uses 900s and only looks backwards
+// (BLEPacketFreshnessPolicy: `timestamp < now - maxAge`); bitchat-android uses
+// 10 minutes and compares the absolute difference
+// (AnnouncementIdentityValidator MAX_CLOCK_SKEW_MS), which also rejects
+// timestamps from the future.
 //
 // We take 15 minutes AND make it symmetric, which is the union of what the two
 // accept: never tighter than either upstream in the direction it checks, so no
 // announce that a bitchat device would accept is refused here. The forward
-// bound is the cheap half - it costs nothing and stops a peer parking a
+// bound is the cheap half: it costs nothing and stops a peer parking a
 // far-future timestamp, which is the obvious way to make a packet that never
 // goes stale.
 export const ANNOUNCE_MAX_SKEW_MS = 15 * 60 * 1000;
@@ -88,6 +87,8 @@ const TLV_NOISE_PUB = 0x02;
 const TLV_SIGNING_PUB = 0x03;
 const TLV_CAPABILITIES = 0x05; // bitchat capabilities bitfield (little-endian)
 const TLV_BRIDGE_GEOHASH = 0x06; // bitchat bridge cell (decoded, ignored)
+// A geohash is at most 12 characters; bitchat-ios writes and reads no longer cell.
+const MAX_GEOHASH_BYTES = 12;
 const TLV_NOSTR_PUB = 0x07; // Airhop extension: secp256k1 X-only Nostr pubkey
 
 // Bitle's own TLV, read but never written (bitleproject/bitle, noise_handshake.c).
@@ -189,47 +190,9 @@ function writeTlv(buf: number[], type: number, value: Uint8Array): void {
 }
 
 // The nickname TLV budget, in BYTES of UTF-8 (see the layout note at the top).
-const NICKNAME_MAX_BYTES = 32;
+const MAX_NICKNAME_BYTES = 32;
 
-// Code points that cannot end a name, so the cut lands before them: a mark
-// without its base renders on a dotted circle, a joiner splits an emoji. 32
-// bytes is about ten Devanagari characters, so the budget is reached most often
-// in exactly the scripts that write with marks.
-//
-// Duplicated from `truncateToUtf8Bytes` in `@utils/utf8-budget` rather than
-// imported, because `src/core/` depends on nothing above it. Keep them in step.
-const DANGLING_NICKNAME = /[\p{M}\u200D\uFE0E\uFE0F]/u;
-
-// Fit a nickname into the TLV, canonicalized first.
-//
-// Truncation counts UTF-8 bytes and drops whole code points. Slicing the string
-// instead would count UTF-16 units, which is the wrong unit twice over: a name
-// of 32 emoji is 128 bytes, four times the budget, and a slice can land in the
-// middle of a surrogate pair and emit a lone half that decodes to a replacement
-// character on the far side.
-function fitNickname(nickname: string): Uint8Array {
-  const encoder = new TextEncoder();
-  const codePoints = [...normalizeNickname(nickname)];
-  let bytes = encoder.encode(codePoints.join(""));
-  while (bytes.length > NICKNAME_MAX_BYTES) {
-    codePoints.pop();
-    bytes = encoder.encode(codePoints.join(""));
-  }
-  // Only once it fits, and only if something was dropped: a name already inside
-  // the budget is the user's own.
-  if (bytes.length < encoder.encode(normalizeNickname(nickname)).length) {
-    while (
-      codePoints.length > 0 &&
-      DANGLING_NICKNAME.test(codePoints[codePoints.length - 1])
-    ) {
-      codePoints.pop();
-    }
-    bytes = encoder.encode(codePoints.join(""));
-  }
-  return bytes;
-}
-
-// Never writes TLV 0x04 (neighbour IDs): the list would hand any passive
+// Never writes TLV 0x04 (neighbor IDs): the list would hand any passive
 // listener the local adjacency graph.
 export function encodeAnnouncePayload(
   identity: Identity,
@@ -238,7 +201,7 @@ export function encodeAnnouncePayload(
   capabilities = 0,
   bridgeGeohash?: string,
 ): Uint8Array {
-  const nicknameBytes = fitNickname(nickname);
+  const nicknameBytes = fitNickname(nickname, MAX_NICKNAME_BYTES);
   const buf: number[] = [];
 
   writeTlv(buf, TLV_NICKNAME, nicknameBytes);
@@ -253,9 +216,10 @@ export function encodeAnnouncePayload(
 
   // Bridge rendezvous cell (TLV 0x06): a bridge gateway advertises the geohash
   // cell it ferries so mesh-only peers know which cell to deposit into. Only
-  // written when set (a non-bridging peer omits it, like bitchat).
-  if (bridgeGeohash !== undefined && bridgeGeohash.length > 0) {
-    const cellBytes = new TextEncoder().encode(bridgeGeohash.slice(0, 12));
+  // written when set, and left out rather than cut when longer than a geohash
+  // can be, as bitchat-ios does: a cut cell names a different place.
+  const cellBytes = new TextEncoder().encode(bridgeGeohash ?? "");
+  if (cellBytes.length > 0 && cellBytes.length <= MAX_GEOHASH_BYTES) {
     writeTlv(buf, TLV_BRIDGE_GEOHASH, cellBytes);
   }
 
@@ -305,7 +269,9 @@ export function decodeAnnouncePayload(
         capabilities = decodeCapabilities(value);
         break;
       case TLV_BRIDGE_GEOHASH:
-        bridgeGeohash = new TextDecoder().decode(value);
+        if (value.length <= MAX_GEOHASH_BYTES) {
+          bridgeGeohash = new TextDecoder().decode(value);
+        }
         break;
       case TLV_NOSTR_PUB:
         if (value.length === 32) nostrPubKey = value;
@@ -387,11 +353,8 @@ export class AnnounceManager {
     return this.stamped.includes(timestampMs);
   }
 
-  // Start broadcasting ANNOUNCE packets.
-  //
-  // The interval adapts to connectivity: ~4s while isolated (no links), then a
-  // jittered 15-30s once at least one link is up. Pass getLinkCount so the
-  // manager can tell which state it is in on each tick.
+  // Start broadcasting ANNOUNCE packets at the cadence above. Pass getLinkCount
+  // so the manager can tell which state it is in on each tick.
   //
   // Pass nostrPubKey to include TLV 0x07 (constant for the session lifetime).
   // Pass getCapabilities to include TLV 0x05; it is read on every tick so a

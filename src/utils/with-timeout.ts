@@ -3,23 +3,22 @@
 // An unbounded await on the launch path is a way for the app to never open. Two
 // that must always be bounded:
 //
-//   * `readSecret` for the identity, which gates the whole first
-//     render. A Keystore that stalls left a bare background-coloured screen with
-//     no text, no spinner and no way out, and it looked exactly like a hung
-//     splash.
+//   * `readSecret` for the identity, which gates the whole first render. A
+//     Keystore that stalls leaves a bare background-colored screen with no
+//     text, no spinner and no way out, which looks exactly like a hung splash.
 //   * `PermissionsAndroid.requestMultiple`, whose promise is tied to the
 //     permission dialog's activity. The dialog runs in another process, and an
-//     Activity destroyed or recreated while it is up orphans the promise. The
-//     mesh was started after that await, so an orphaned dialog meant a phone
-//     that never scanned and a Mesh tab stuck on "starting" for the session.
+//     Activity destroyed or recreated while it is up orphans the promise. Held
+//     behind that await, the mesh never starts: a phone that never scans and a
+//     Mesh tab stuck on "starting" for the session.
 //
 // Neither of those is a state the app can detect from the inside, because a
 // promise that will never settle is indistinguishable from one that is about to.
-// The only defence is a deadline.
+// The only defense is a deadline.
 //
 // A timeout is NOT an error here. Every caller has a defensible answer for "we
-// do not know yet" - re-onboard, ask again later, let the reconciler read the
-// device itself - so this resolves with a fallback rather than rejecting, and
+// do not know yet" (re-onboard, ask again later, let the reconciler read the
+// device itself), so this resolves with a fallback rather than rejecting, and
 // the caller stays linear. A late-arriving real answer is ignored: whatever the
 // fallback set in motion has already happened, and applying a stale result on
 // top of it is how you get two identities or two prompts.

@@ -6,7 +6,7 @@
     "role": "owner",
     "name": "Areeb Ahmed",
     "email": "hi@areeb.dev",
-    "description": "Independent developer and final-year computer science student in India. I build and maintain Airhop on my own, in the open, under the MIT licence. The project has received no grants, investment or institutional funding to date.",
+    "description": "Independent developer and final-year computer science student in India. I build and maintain Airhop on my own, in the open, under the MIT license. The project has received no grants, investment or institutional funding to date.",
     "webpageUrl": {
       "url": "https://airhop.1mindlabs.org"
     }
@@ -62,7 +62,7 @@
         "guid": "device-lab",
         "status": "active",
         "name": "Device lab",
-        "description": "A few used low-end Android handsets and a pair of ESP32 boards with 915 MHz LoRa radios. Real Bluetooth discovery timing, background execution and OEM battery manager behaviour cannot be verified any other way.",
+        "description": "A few used low-end Android handsets and a pair of ESP32 boards with 915 MHz LoRa radios. Real Bluetooth discovery timing, background execution and OEM battery manager behavior cannot be verified any other way.",
         "amount": 500,
         "currency": "USD",
         "frequency": "one-time",

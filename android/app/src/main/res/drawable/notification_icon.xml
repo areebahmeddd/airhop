@@ -7,15 +7,15 @@
      rect, scaled to the viewport below. No raster densities to keep in step and
      nothing to re-export when a density is added.
 
-     To regenerate: read the rects out of that SVG, normalise them against the
+     To regenerate: read the rects out of that SVG, normalize them against the
      mark's bounding box (11 cells wide by 6 tall), and emit one
      "M<x>,<y>h<c>v<c>h-<c>z" per cell.
 -->
 <!--
      Android renders a notification small icon as a MASK: every non-transparent
-     pixel is painted in the accent colour and the colours in the drawable are
+     pixel is painted in the accent color and the colors in the drawable are
      discarded. That is why this is a white silhouette on transparency, and why
-     an app icon used here comes out as the grey blob this replaces.
+     an app icon used here comes out as the gray blob this replaces.
 
      The mark is 11 cells by 6, so at 2dp per cell it is 22x12 inside the 24dp
      square, with the 1dp inset the platform expects and the remainder as

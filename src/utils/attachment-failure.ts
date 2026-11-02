@@ -10,7 +10,7 @@
 //   - Direct messages only. A DM has one counterparty who deliberately sent
 //     something, so "that didn't arrive" is actionable. Anyone in radio range
 //     can put a malformed packet on the air, so a line per bad packet in a
-//     public room is a spam vector. Same boundary bitchat drew in #1609.
+//     public room is a spam vector. Same boundary bitchat draws.
 //   - One line per sender per minute. A directed packet is also something
 //     anyone in range can send repeatedly. A real failure repeats on retry, and
 //     one line conveys that as well as twenty.
@@ -22,7 +22,7 @@ export type AttachmentFailure =
   // disagrees with the bytes behind it.
   | "malformed"
   // A type outside the allow-list both clients share. Usually a client sending
-  // something we do not render rather than an attack.
+  // something Airhop does not render rather than an attack.
   | "unsupported-type"
   // The declared type and the file's leading bytes disagree, so the file is
   // lying about what it is. Refused before anything reaches disk.

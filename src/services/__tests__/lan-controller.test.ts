@@ -6,8 +6,8 @@
 //
 // The properties that matter:
 //   * Nothing is published until the user turns it on AND the mesh is up.
-//   * Turning it off stops publishing, not just dialling.
-//   * Who gets dialled is the ring's answer, capped, and never dialled twice.
+//   * Turning it off stops publishing, not just dialing.
+//   * Who gets dialed is the ring's answer, capped, and never dialed twice.
 //   * A device that cannot run it is asked once, not polled forever.
 
 const mockStartLAN = jest.fn<Promise<void>, [string]>();
@@ -100,7 +100,7 @@ describe("consent", () => {
     expect(lan.isStarted).toBe(true);
   });
 
-  test("turning it off stops publishing, not just dialling", async () => {
+  test("turning it off stops publishing, not just dialing", async () => {
     const lan = running();
     await settle();
 
@@ -166,7 +166,7 @@ describe("the published name", () => {
   });
 });
 
-describe("dialling", () => {
+describe("dialing", () => {
   function discover(lan: LANController, names: readonly string[]): void {
     for (const serviceName of names) lan.onPeerDiscovered(serviceName);
   }
@@ -242,12 +242,12 @@ describe("dialling", () => {
     await settle();
     discover(lan, ["9000000000000000"]);
     await settle(SETTLED);
-    const dialled = mockConnectToPeer.mock.calls.length;
+    const dialed = mockConnectToPeer.mock.calls.length;
 
     lan.setEnabled(false);
     await settle(60_000);
 
-    expect(mockConnectToPeer.mock.calls.length).toBe(dialled);
+    expect(mockConnectToPeer.mock.calls.length).toBe(dialed);
   });
 
   test("ignores our own record coming back off the network", async () => {
@@ -314,7 +314,7 @@ describe("failures", () => {
     expect(lan.isUnsupported).toBe(false);
   });
 
-  test("keeps trying after a refused permission, since it can be granted", async () => {
+  test("asks again after a refused permission, since a grant can land just after", async () => {
     mockStartLAN.mockImplementation(() => rejectWith("PERMISSION_DENIED"));
     const lan = running();
 
@@ -322,6 +322,70 @@ describe("failures", () => {
 
     expect(mockStartLAN.mock.calls.length).toBeGreaterThan(1);
     expect(lan.failure).toBe("permission");
+  });
+
+  test("stops asking after a refused permission, rather than polling for good", async () => {
+    mockStartLAN.mockImplementation(() => rejectWith("PERMISSION_DENIED"));
+    running();
+
+    await settle(10_000);
+    const asked = mockStartLAN.mock.calls.length;
+    await settle(60_000);
+
+    expect(asked).toBeLessThanOrEqual(3);
+    expect(mockStartLAN).toHaveBeenCalledTimes(asked);
+  });
+
+  test("a resume asks again after the ladder has stopped, and a grant starts it", async () => {
+    mockStartLAN.mockImplementation(() => rejectWith("PERMISSION_DENIED"));
+    const lan = running();
+    await settle(60_000);
+    const asked = mockStartLAN.mock.calls.length;
+
+    // Back from Settings with access granted.
+    mockStartLAN.mockResolvedValue(undefined);
+    lan.refresh();
+    await settle();
+
+    expect(mockStartLAN.mock.calls.length).toBe(asked + 1);
+    expect(lan.isStarted).toBe(true);
+  });
+
+  // iOS reports a Local Network refusal from the browser, after the listener
+  // has already reached ready: the start resolves, the transport says it is
+  // available, then dies, and the next start is the one refused. The
+  // available edge in the middle must not reset the ladder, or this repeats
+  // every couple of seconds for as long as the app runs.
+  test("an iOS refusal that resolves first, then dies, does not loop", async () => {
+    const seen: string[] = [];
+    const lan = new LANController(
+      () => SELF,
+      (s) => seen.push(s),
+    );
+    let refusalPending = false;
+    mockStartLAN.mockImplementation(() => {
+      if (refusalPending) {
+        refusalPending = false;
+        return rejectWith("PERMISSION_DENIED");
+      }
+      setTimeout(() => {
+        lan.onAvailabilityChanged(true);
+        refusalPending = true;
+        lan.onAvailabilityChanged(false);
+      }, 100);
+      return Promise.resolve();
+    });
+    lan.start();
+    lan.setEnabled(true);
+
+    for (let i = 0; i < 10; i++) await settle(10_000);
+    const asked = mockStartLAN.mock.calls.length;
+    for (let i = 0; i < 10; i++) await settle(10_000);
+
+    expect(asked).toBeLessThanOrEqual(4);
+    expect(mockStartLAN).toHaveBeenCalledTimes(asked);
+    expect(lan.isStarted).toBe(false);
+    expect(seen[seen.length - 1]).toBe("permission");
   });
 
   test("recovers when the network goes away and comes back", async () => {

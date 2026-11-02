@@ -68,7 +68,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Mpiara-dakile {ed25519} noforonina teo amin'ny fitaovanao ary tehirizina ao amin'ny {ios_keychain} na {android_keystore} no maha-ianao anao. Tsy misy kaonty, tsy misy fisoratana anarana, ary tsy misy mikasika mpizara na dia iray aza, ka azo ampiasaina ho rindranasa vonjimaika tsy mamela na inona na inona mitondra any aminao rehefa voafafa.",
   "home.about.body.crypto":
-    "Mampiasa ny fitsipika {noise} ho an'ny fifampifankahafantarana voamarina ny fivoriana tsirairay. Ny hafatra voatahiry dia mampiasa ny algoritma {ratchet}, ka na dia lasan'olona aza ny fitaovanao any aoriana, dia mijanona tsy voavaky ny hafatrao taloha. Mandrava ny lakile sy ny hafatra rehetra latsaky ny segondra iray ny famafana maika.",
+    "Mampiasa ny fitsipika {noise} ho an'ny fifampifankahafantarana voamarina ny fivoriana tsirairay. Ny hafatra manokana an-tsehatra eo amin'ny finday Airhop dia mampiasa ny algoritma {ratchet}, ka na dia mivoaka aza ny lakile iray any aoriana, dia tsy afaka manokatra ny hafatra efa nalefa izany. Mandrava ny lakile sy ny hafatra rehetra latsaky ny segondra iray ny famafana maika.",
   "home.about.body.internet":
     "Rehefa lavitra ny fetran'ny Bluetooth ianao sy ny fifandraisanao, dia manjary tetezana amin'ny Internet ny mpanelanelana {nostr}, mampiasa hafatra mivantana voafono araka ny endrika {nip17}, ka miitatra manerantany ny harato rehefa samy an-tserasera ianareo. Misy ny fanohanana ny {tor} amin'ny iOS sy Android, amin'ny {arti}, misy tetezana {obfs4}, {snowflake} sy {webtunnel} ho an’ny tambajotra manakana ny Tor.",
   "home.about.optional.title": "Manana fiasa safidy azonao alefa ny Airhop:",
@@ -173,9 +173,9 @@ const strings: Strings = {
     "Rohy fanasana ho an'ny efitrano, na lisitra voasonia hatramin'ny 16.",
   "home.features.messaging.board.name": "Takelaka filazana",
   "home.features.messaging.board.line": "Filazana mipetaka amin'ny faritra hatramin'ny fito andro.",
-  "home.features.messaging.voice.name": "Feo mivantana",
+  "home.features.messaging.voice.name": "Feo sy horonan-tsary mivantana",
   "home.features.messaging.voice.line":
-    "Tazony ny mikrô ary miresaha amin'izay ao anatin'ny fetra, toy ny radiô.",
+    "Tazony ny mikrô hiresahana, na mandefasa mivantana amin'ny fakantsary, ho an'izay ao anatin'ny fetra.",
   "home.features.messaging.notes.name": "Naoty feo",
   "home.features.messaging.notes.line":
     "Feo voarakitra, haingana kokoa noho ny manoratra toromarika.",

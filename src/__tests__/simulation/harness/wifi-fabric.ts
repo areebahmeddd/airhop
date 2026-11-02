@@ -9,7 +9,7 @@
 // to model badly-behaved: it has an MTU ceiling, RSSI, loss and jitter, and the
 // app's correctness depends on coping with all of it. A WiFi link is a socket:
 // it is either up or it is not, it carries a whole frame, and it is orders of
-// magnitude faster. Modelling loss and MTU here would be inventing failure modes
+// magnitude faster. Modeling loss and MTU here would be inventing failure modes
 // the transport does not have.
 //
 // Two rules it DOES model, because both are real constraints and both are easy
@@ -96,12 +96,10 @@ export class WifiFabric {
 
   // Bring a link up between two devices, as discovery would.
   //
-  // Refuses and says so rather than failing quietly, in two cases. Two different
-  // platforms cannot reach each other even though both speak NAN, because Apple
-  // demands a paired data path that Android cannot complete. And two iPhones
-  // that have not paired have nothing to discover, since Apple's browser only
-  // ever names devices already in the paired list. A scenario that expected
-  // either link is asserting something that cannot happen in the field.
+  // Refuses and says so rather than failing quietly, under the two rules above.
+  // Apple's browser only ever names devices already in the paired list, so two
+  // unpaired iPhones have nothing to discover. A scenario that expected either
+  // link is asserting something that cannot happen in the field.
   link(aID: string, bID: string): boolean {
     if (this.disposed) return false;
     const a = this.nodes.get(aID);

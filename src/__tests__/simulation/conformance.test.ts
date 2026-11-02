@@ -1,7 +1,7 @@
 // bitchat compatibility, tested against bitchat rather than against ourselves.
 //
 // VISION.md principle 6 says Airhop nodes must talk to bitchat nodes, and
-// principle 7 says that when in doubt we do what bitchat does.
+// principle 7 says that when in doubt Airhop does what bitchat does.
 // packet-frame-vectors.test.ts already pins byte offsets, but against Airhop's
 // own constants, which cannot catch a divergence both sides of the assertion
 // share.
@@ -20,9 +20,7 @@
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("./harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -613,7 +611,7 @@ testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
 
   // Airhop sends photos well under the image ceiling because bitchat expires a
   // half-built file this many seconds after its FIRST fragment, not its last.
-  // If upstream ever refreshes that stamp or lengthens the window, our send
+  // If upstream ever refreshes that stamp or lengthens the window, Airhop's send
   // budget is leaving usable headroom on the table and should be revisited.
   const fragmentLifetime = swiftConstant(
     transport,
@@ -639,7 +637,7 @@ testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
   // between two implementations of the same rendezvous: if bitchat tightens a
   // downlink budget and Airhop does not, an Airhop gateway floods a room that
   // bitchat gateways are politely rationing, and nothing in either app reports
-  // it. Read from their two Limits enums rather than from our own header.
+  // it. Read from their two Limits enums rather than from Airhop's own header.
   const bridgeSwift = bitchatSource(
     "bitchat/Services/Gateway/BridgeService.swift",
   );
@@ -813,9 +811,8 @@ testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
   //
   // This guards the day someone raises `MAX_FILE_BYTES`. Nothing in the app
   // would complain: sending works, Android receives, and every attachment to an
-  // iPhone silently stops arriving. Upstream needed a line-by-line read of the
-  // decoder to find that (#1618); failing the build while both numbers live in
-  // one repository is the cheap defence.
+  // iPhone silently stops arriving. Failing the build while both numbers live in
+  // one repository is the cheap defense.
   const iosMaxPayload = swiftConstantExpr(limits, "maxPayloadBytes");
   // Their `maxFramedFileBytes` is a computed closure rather than a literal, so
   // it is rebuilt here from the same terms: payload + TLV envelope + binary
@@ -846,13 +843,12 @@ testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
   );
 
   // Packet type registry, read from bitchat's own enum rather than from a
-  // constant of ours.
+  // constant of Airhop's.
   //
   // Airhop's extensions have to sit clear of bitchat's allocation frontier.
   // bitchat assigns forward, so "the next free value" is the one place an
   // extension must never go: both projects reach for it, and then each side's
   // parser depends on the other's validation to not misread the payload.
-  // Airhop sat on 0x2A/0x2B until upstream reserved them for courier spray-ack.
   //
   // The margin is what makes this a warning rather than a post-mortem. It fails
   // while bitchat is still approaching, leaving room to move before any build

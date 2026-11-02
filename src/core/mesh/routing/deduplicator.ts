@@ -3,15 +3,10 @@
 // Tracks 16-byte packet IDs. A packet whose ID has been seen within the last
 // 5 minutes is a duplicate and must be dropped before relay or display.
 // The cache is bounded to 1000 entries; oldest entries are evicted on overflow.
-//
-// Packet ID is SHA-256(type | senderID | timestamp_u64 | payload)[0:16] per
-// bitchat PacketIdUtil.swift / PacketIdUtil.kt: see packet-codec.computePacketId.
-//
-// Constants per PROTOCOLS.md section 4:
-//   - LRU size:      1000 entries
-//   - Expiry window: 5 minutes
+// Both limits are per PROTOCOLS.md section 4. The ID is
+// packet-codec.computePacketId.
 const MAX_SIZE = 1000;
-const EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+const EXPIRY_MS = 5 * 60 * 1000;
 
 function packetIdKey(id: Uint8Array): string {
   // Hex-encode 16 bytes (32 chars) as a Map key: fast and collision-free.
@@ -51,6 +46,11 @@ export class Deduplicator {
       }
     }
     this.seen.set(key, Date.now());
+  }
+
+  // Forget one ID, so the next copy of that packet is handled as new.
+  delete(packetId: Uint8Array): void {
+    this.seen.delete(packetIdKey(packetId));
   }
 
   // Number of currently tracked entries (including potentially expired ones).

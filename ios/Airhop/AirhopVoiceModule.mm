@@ -1,7 +1,6 @@
-// Obj-C++ bridge: exposes AirhopVoiceModule (Swift) to the React Native bridge.
-// Same pattern as AirhopBLEModule.mm, and the same method set as
-// AirhopVoiceModule.kt on Android, so one spec (src/bridge/NativeAirhopVoice.ts)
-// covers both platforms.
+// Objective-C bridge for AirhopVoiceModule.swift, on AirhopBLEModule.mm's pattern,
+// with the same method set as AirhopVoiceModule.kt, so one spec
+// (src/bridge/NativeAirhopVoice.ts) covers both platforms.
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 

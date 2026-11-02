@@ -406,9 +406,9 @@ export const LANGUAGES: Record<LanguageCode, LanguageSpec> = {
     direction: "ltr",
     script: "latin",
   },
-  // Last, and kept out of LANGUAGE_ORDER below. It is a
-  // debugging instrument, not a language, so it never appears in a
-  // release build and never sorts in among real ones.
+  // Last, and kept out of LANGUAGE_ORDER below. It is a debugging instrument, not
+  // a language, so it never appears in a release build and never sorts in among
+  // real ones.
   "qps-ploc": {
     code: "qps-ploc",
     shortCode: "QPS",

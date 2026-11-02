@@ -33,6 +33,7 @@ import type {
   WifiNativeModule,
 } from "../../harness/bridge-shim";
 import type { IosBleModule } from "../../harness/ios-native";
+import { OfflineWebSocket } from "../../harness/offline-socket";
 import type { AndroidPermission, DeviceOS, Platform } from "../../harness/os";
 import { eventRouter } from "./event-router";
 import type { LanPort } from "./lan-fabric";
@@ -251,7 +252,7 @@ interface StoreLike {
 
 // Invoke a store action across the sandbox boundary.
 //
-// Everything coming out of an isolated registry is `unknown` to us: device A's
+// Everything coming out of an isolated registry is `unknown` here: device A's
 // zustand store is not device B's, and neither is the one this file was
 // compiled against. Rather than lie about the types with a cast at every call
 // site, there is one place that does the check.
@@ -473,7 +474,7 @@ export class SimDevice {
   // ---- lifecycle ----
 
   // Tapping the icon. The JS bundle finishes loading, then the app starts the
-  // mesh. Native events raised before this had nowhere to go, which is modelled
+  // mesh. Native events raised before this had nowhere to go, which is modeled
   // faithfully by the OS's jsRuntimeReady flag.
   launch(): void {
     if (this.launched) return;
@@ -800,15 +801,15 @@ export class SimDevice {
     return entry?.isDirect === true;
   }
 
-  // How many BLE links the SERVICE believes it has, as opposed to how many the
-  // radio actually holds. A gap between the two is a state desynchronisation
-  // and is exactly the kind of bug that makes a healthy phone go silent, so it
-  // is worth being able to see both.
   // See Inner.emitter.
   get eventEmitter(): object {
     return this.inner.emitter;
   }
 
+  // How many BLE links the SERVICE believes it has, as opposed to how many the
+  // radio actually holds. A gap between the two is a state desynchronization
+  // and is exactly the kind of bug that makes a healthy phone go silent, so it
+  // is worth being able to see both.
   bleLinkCount(): number {
     return this.bleLinkIDs().length;
   }
@@ -826,7 +827,7 @@ export class SimDevice {
     return this.mesh?.getChannelGeohash(channel) ?? null;
   }
 
-  // Whether this phone has heard a neighbour advertise the gateway capability
+  // Whether this phone has heard a neighbor advertise the gateway capability
   // (ANNOUNCE TLV 0x05). A phone with no signal can only ask for help once it
   // knows somebody is offering it, so scenarios wait on this rather than on
   // mere peer discovery.
@@ -894,7 +895,7 @@ export class SimDevice {
     return this.mesh?.sendRing(peerID) ?? null;
   }
 
-  // What ring-store says about the last ring we sent this peer.
+  // What ring-store says about the last ring this phone sent this peer.
   ringState(peerID: string): {
     sending: boolean;
     refusal: number | null;
@@ -1108,7 +1109,7 @@ export class SimDevice {
     }
   }
 
-  // Build a token for `amount`. Returns the serialised token, or null if it
+  // Build a token for `amount`. Returns the serialized token, or null if it
   // could not be built. `allowInexact` mirrors the sheet's "send anyway".
   async prepareSend(amount: number): Promise<string | null> {
     const mint = this.firstMintUrl();
@@ -1274,7 +1275,7 @@ export class SimDevice {
     return this.accounts().reduce((a, b) => a + b.unverified, 0);
   }
 
-  // Set aside against a send that has been serialised but not confirmed.
+  // Set aside against a send that has been serialized but not confirmed.
   reservedBalance(): number {
     return this.accounts().reduce((a, b) => a + b.reserved, 0);
   }
@@ -1536,7 +1537,8 @@ export class SimDevice {
     }
   }
 
-  // Announce how to nutzap us (kind 10019) and start redeeming what arrives.
+  // Announce how to nutzap this phone (kind 10019) and start redeeming what
+  // arrives.
   //
   // The app does both of these on launch; the harness does not run it, so
   // a scenario that wants the receive half has to ask for it. Returns false when
@@ -1788,13 +1790,13 @@ function buildSandbox(
     // Swap the socket BEFORE mesh-service can build a pool. nostr-tools keeps
     // the implementation in module scope, and this registry's copy is this
     // phone's alone, so each device gets a socket bound to its own identity in
-    // the relay fabric.
-    if (relay !== undefined) {
-      const pool = require(P.nostrPool) as {
-        useWebSocketImplementation: (impl: unknown) => void;
-      };
-      pool.useWebSocketImplementation(relay.socketClassFor(spec.id));
-    }
+    // the relay fabric, or one that never connects when there is none.
+    const pool = require(P.nostrPool) as {
+      useWebSocketImplementation: (impl: unknown) => void;
+    };
+    pool.useWebSocketImplementation(
+      relay !== undefined ? relay.socketClassFor(spec.id) : OfflineWebSocket,
+    );
 
     // Bind this phone's position into its own copy of the location mock, so
     // named geohash channels resolve to a real cell. Without it they resolve to
@@ -1910,4 +1912,17 @@ function buildSandbox(
 
   if (inner === null) throw new Error("sandbox build produced nothing");
   return inner;
+}
+
+// The prekeys this device holds for the owner of a Noise key.
+export function prekeysHeldFor(
+  device: SimDevice,
+  noiseKey: Uint8Array,
+): string[] {
+  const peers = (
+    device.mesh as unknown as {
+      peerPrekeys: { peers: Record<string, { prekeys: { pub: string }[] }> };
+    }
+  ).peerPrekeys.peers;
+  return (peers[bytesToHex(noiseKey)]?.prekeys ?? []).map((p) => p.pub);
 }

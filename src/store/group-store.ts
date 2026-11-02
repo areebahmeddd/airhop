@@ -147,7 +147,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
       //
       // The epoch guard above orders updates but says nothing about who is
       // allowed to make them, and the caller only checks that a state is signed
-      // by the creator it names - which an attacker satisfies by naming
+      // by the creator it names, which an attacker satisfies by naming
       // themselves. groupID and epoch travel in cleartext in every group
       // message, so both are free to read off the air: anyone could send a
       // self-signed state for a known groupID at a higher epoch and replace the

@@ -71,7 +71,7 @@ internal class FrameReader(
         const val IDLE_LIMIT = 3
 
         // The same thirty seconds, for a whole frame. A full 64 KiB frame then
-        // needs about 2.2 KiB/s, well under Bluetooth.
+        // needs about 2.1 KiB/s, well under Bluetooth.
         const val FRAME_DEADLINE_MS = READ_TIMEOUT_MS.toLong() * IDLE_LIMIT
 
         private val EMPTY = ByteArray(0)

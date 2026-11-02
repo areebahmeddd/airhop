@@ -4,6 +4,7 @@
 import { GEO_RELAYS } from "@data/relays";
 import {
   DEFAULT_DM_RELAYS,
+  GEO_RELAY_COUNT,
   GeoRelayDirectory,
   haversineKm,
   mergeGeoRelays,
@@ -12,6 +13,7 @@ import {
   validateRelayUrl,
 } from "../geo-relay";
 import { decodeGeohash, encodeGeohash } from "../geohash-presence";
+import routingVectors from "./fixtures/geo-relay-routing-vectors.json";
 
 describe("validateRelayUrl", () => {
   test("accepts a bare host and normalizes to wss://", () => {
@@ -357,7 +359,7 @@ describe("relay selection determinism", () => {
   });
 
   it("gives two people in one cell an identical relay set", () => {
-    // The load-bearing interop property. Both users decode the CELL CENTRE,
+    // The load-bearing interop property. Both users decode the CELL CENTER,
     // not their own position, so their relay sets must match exactly.
     const gh = encodeGeohash(LONDON.lat, LONDON.lng, 5);
     const ghOther = encodeGeohash(LONDON_NEARBY.lat, LONDON_NEARBY.lng, 5);
@@ -397,5 +399,28 @@ describe("relay selection determinism", () => {
       5,
     );
     expect(london).not.toEqual(tokyo);
+  });
+});
+
+// bitchat's shared fixture, byte-identical in both its clients. A cell routes
+// to twice its primary count, so these pin the order, the URL tie-break and
+// the small-directory edges every client has to agree on.
+describe("geo relay routing vectors", () => {
+  it.each(routingVectors.cases.map((c, i) => [i, c] as const))(
+    "case %i routes like bitchat",
+    (_i, c) => {
+      const dir = new GeoRelayDirectory();
+      dir.loadEntries(
+        c.entries.map((e) => ({ url: e.host, lat: e.lat, lng: e.lon })),
+      );
+      const count = Math.min(Math.max(c.primaryCount, 0), 5) * 2;
+      expect(
+        dir.closestRelaysToGeohash(c.geohash, decodeGeohash, count),
+      ).toEqual(c.expected);
+    },
+  );
+
+  it("routes a cell to five primaries plus five backups", () => {
+    expect(GEO_RELAY_COUNT).toBe(10);
   });
 });

@@ -11,7 +11,7 @@
 //   [0]        u8      version = 1
 //   [1 to 4]   i32-BE  latitude,  microdegrees (degrees x 1e6)
 //   [5 to 8]   i32-BE  longitude, microdegrees
-//   [9 to 10]  u16-BE  horizontal accuracy in metres, 0xFFFF = unknown
+//   [9 to 10]  u16-BE  horizontal accuracy in meters, 0xFFFF = unknown
 //   [11 to 18] u64-BE  when the fix was taken, Unix milliseconds
 //
 // 19 bytes, so it never approaches a fragment boundary.
@@ -29,7 +29,7 @@ export const LOCATION_PIN_BYTES = 19;
 // No accuracy figure from the OS. Distinct from 0, which claims a perfect fix.
 export const ACCURACY_UNKNOWN = 0xffff;
 
-// Metres. At 5 km the arrow points at a suburb, and a wrong arrow is worse
+// Meters. At 5 km the arrow points at a suburb, and a wrong arrow is worse
 // than no pin, so a coarser fix is refused rather than sent as a tighter one.
 export const MAX_USEFUL_ACCURACY_M = 5000;
 
@@ -38,7 +38,7 @@ const MICRO = 1_000_000;
 export interface LocationPin {
   lat: number; // decimal degrees
   lng: number; // decimal degrees
-  // Horizontal accuracy in metres, or undefined when the OS did not say.
+  // Horizontal accuracy in meters, or undefined when the OS did not say.
   accuracyM?: number;
   // When the fix was taken, Unix milliseconds.
   takenAtMs: number;
@@ -82,7 +82,7 @@ export function decodeLocationPin(data: Uint8Array): LocationPin | null {
   const lat = view.getInt32(1, false) / MICRO;
   const lng = view.getInt32(5, false) / MICRO;
   // Refused rather than clamped. A sender chooses these integers, and clamping
-  // turns nonsense into a plausible point somebody would walk towards.
+  // turns nonsense into a plausible point somebody would walk toward.
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
 
   const rawAccuracy = view.getUint16(9, false);

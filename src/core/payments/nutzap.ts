@@ -24,7 +24,6 @@ import type { Proof, ProofLike } from "@cashu/cashu-ts";
 import { finalizeEvent, type Event } from "nostr-tools";
 import type { NostrClient } from "../nostr/nostr-client";
 
-// Event kinds per PROTOCOLS.md section 8.
 export const KIND_NUTZAP = 9321;
 export const KIND_NUTZAP_INFO = 10019;
 
@@ -35,6 +34,7 @@ const MAX_PROOF_TAG_LENGTH = 4096;
 const MAX_COMMENT_LENGTH = 280;
 const MAX_MINTS = 16;
 const MAX_RELAYS = 16;
+const MAX_UNITS_PER_MINT = 8;
 
 // How far back to look for nutzaps we might have missed while offline. Also
 // how long a settled event is remembered: past this no subscription asks for
@@ -46,6 +46,9 @@ export interface NutzapInfo {
   pubkey: string;
   // In their stated order of preference.
   mintUrls: string[];
+  // The units a mint tag names after its URL, keyed by that URL as written.
+  // NIP-61 makes them optional: a mint absent here takes any unit.
+  mintUnits: Record<string, string[]>;
   // 33-byte compressed secp256k1 key to lock proofs to (hex). An x-only tag
   // arrives here with its "02".
   p2pkPubkey: string;
@@ -141,6 +144,7 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
   if (event.kind !== KIND_NUTZAP_INFO) return null;
 
   const mintUrls: string[] = [];
+  const mintUnits: Record<string, string[]> = {};
   const relays: string[] = [];
   let p2pkPubkey: string | undefined;
 
@@ -148,7 +152,16 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
     const [name, value] = tag;
     if (typeof value !== "string" || value.length === 0) continue;
     if (name === "mint" && mintUrls.length < MAX_MINTS) {
-      if (isHttpUrl(value)) mintUrls.push(value);
+      if (!isHttpUrl(value) || mintUrls.includes(value)) continue;
+      mintUrls.push(value);
+      const units = tag
+        .slice(2, 2 + MAX_UNITS_PER_MINT)
+        .filter(
+          (unit): unit is string =>
+            typeof unit === "string" && /^[a-z0-9]{1,12}$/i.test(unit),
+        )
+        .map((unit) => unit.toLowerCase());
+      if (units.length > 0) mintUnits[value] = units;
     } else if (name === "relay" && relays.length < MAX_RELAYS) {
       if (/^wss?:\/\//i.test(value)) relays.push(value);
     } else if (name === "pubkey" && p2pkPubkey === undefined) {
@@ -162,7 +175,19 @@ export function parseNutzapInfo(event: Event): NutzapInfo | null {
   // would never look for proofs locked to it.
   if (mintUrls.length === 0 || p2pkPubkey === undefined) return null;
 
-  return { pubkey: event.pubkey, mintUrls, p2pkPubkey, relays };
+  return { pubkey: event.pubkey, mintUrls, mintUnits, p2pkPubkey, relays };
+}
+
+// Whether a mint they listed takes coins of this unit. Coins of a unit they
+// did not name are refused by their wallet, so locking them is a gift to
+// nobody.
+export function acceptsUnit(
+  info: NutzapInfo,
+  mintUrl: string,
+  unit: string,
+): boolean {
+  const units = info.mintUnits[mintUrl];
+  return units === undefined || units.includes(unit.toLowerCase());
 }
 
 // NIP-61 senders "MUST prefix the public key they P2PK-lock with 02", since
@@ -246,7 +271,7 @@ export async function publishNutzap(params: {
 // Fires once per event. Relays replay, so the caller dedupes (wallet-store
 // tracks settled ids). `mintUrls` are the exact strings our kind 10019 lists:
 // NIP-61's `#u` filter, so relays never hand over nutzaps from mints we have
-// not signalled, and a compliant sender's `u` tag matches byte for byte.
+// not signaled, and a compliant sender's `u` tag matches byte for byte.
 export function subscribeNutzaps(
   myPubkey: string,
   mintUrls: string[],

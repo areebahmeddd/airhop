@@ -1,16 +1,12 @@
-// Obj-C++ bridge: exposes AirhopBLEModule (Swift) to the React Native bridge.
-// Uses RCT_EXTERN_MODULE so that Codegen and the New Architecture interop layer
-// can both see the module. The Swift class is found automatically via the
-// auto-generated Airhop-Swift.h bridging header.
+// Objective-C bridge for AirhopBLEModule.swift. The Swift class is found through
+// the generated Airhop-Swift.h header.
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 
-// REMAP, not RCT_EXTERN_MODULE. The plain macro passes an empty JS name, so RN
-// falls back to the Objective-C class name and registers this as
-// "AirhopBLEModule" - it only strips an "RCT"/"RK" prefix, never a "Module"
-// suffix. The spec (src/bridge/NativeAirhopBLE.ts) and the Android module both
-// use "AirhopBLE", so the two platforms were registering the same module under
-// different names. Remapping pins the JS name to the one both sides agree on.
+// REMAP, not RCT_EXTERN_MODULE. The plain macro passes an empty JS name, so React
+// Native falls back to the Objective-C class name, stripping an "RCT" or "RK"
+// prefix but never a "Module" suffix. The spec (src/bridge/NativeAirhopBLE.ts) and
+// the Android module both use "AirhopBLE".
 @interface RCT_EXTERN_REMAP_MODULE(AirhopBLE, AirhopBLEModule, RCTEventEmitter)
 
 RCT_EXTERN_METHOD(startAdvertising:(NSString *)serviceUUID
@@ -28,8 +24,8 @@ RCT_EXTERN_METHOD(startScanning:(NSArray<NSString *> *)serviceUUIDs
 RCT_EXTERN_METHOD(stopScanning:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-// Replaces isAdapterEnabled. Reports the radio, the authorization, and (for
-// parity with Android) the two location facts that gate scanning there.
+// The radio, the authorization, and (for parity with Android) the two location
+// facts that gate scanning there.
 RCT_EXTERN_METHOD(getRadioState:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
@@ -48,14 +44,6 @@ RCT_EXTERN_METHOD(setPowerMode:(NSString *)mode
 
 RCT_EXTERN_METHOD(setBackgroundServiceEnabled:(BOOL)enabled
                   resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-
-// Android's background notice; iOS shows none.
-RCT_EXTERN_METHOD(setBackgroundPeerCount:(double)count
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(openBackgroundNoticeSettings:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(writeToLink:(NSString *)linkID

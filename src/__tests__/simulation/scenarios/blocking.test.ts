@@ -25,6 +25,13 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { encodeBitchatDmEnvelope } from "@core/nostr/bitchat-envelope";
+import {
+  deriveGeohashIdentity,
+  deriveGeohashSeed,
+} from "@core/nostr/geohash-identity";
+import { wrapDm } from "@core/nostr/gift-wrap";
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import { noCrashes } from "../harness/invariants";
 import { RadioFabric } from "../harness/radio-fabric";
@@ -322,6 +329,177 @@ test("BL04 couriered mail from a blocked peer still spends its one-time key", as
     "the key it opened under is no longer live",
     live !== undefined && prekeyID !== undefined && !live.includes(prekeyID),
     `prekey=${String(prekeyID)} live=[${String(live)}]`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+const CELL = "u4pruy";
+
+// A location DM pseudonym, folded into a contact's thread by a completed card
+// exchange. Set up through the stores the exchange writes, since a real one
+// needs two phones placed in one cell.
+function foldGeoThread(
+  device: SimDevice,
+  cellKey: string,
+  peerID: string,
+): void {
+  const chat = device.store("chatStore").getState() as unknown as {
+    addChannel: (c: string) => void;
+    setGeoDmCell: (pubkey: string, geohash: string) => void;
+    noteGeoCardExchange: (
+      pubkey: string,
+      half: { theirPeerID?: string; sentMine?: boolean },
+    ) => void;
+  };
+  chat.addChannel(`dm:nostr_${cellKey}`);
+  chat.setGeoDmCell(cellKey, CELL);
+  chat.noteGeoCardExchange(cellKey, { theirPeerID: peerID, sentMine: true });
+  (
+    device.mesh as unknown as {
+      mergeGeoThreadIfMutual: (pubkey: string) => void;
+    }
+  ).mergeGeoThreadIfMutual(cellKey);
+}
+
+test("BL05 blocking a contact also blocks the location pseudonym folded into their thread", async () => {
+  const s = (scenario = new Scenario({
+    id: "BL05",
+    title: "a block covers the cell key a card exchange tied to the peer",
+    seed: 815,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, online("alice", 11), relay);
+  const bob = SimDevice.create(s.world, online("bob", 22), relay);
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  s.check(
+    "they met on the mesh and are both online",
+    await waitForCoarse(
+      s.world,
+      () =>
+        alice.peers().includes(bob.peerID) &&
+        relay.connectionCount("alice") > 0,
+      30_000,
+    ),
+  );
+
+  // Bob's key in the cell where the two of them met.
+  const bobCell = deriveGeohashIdentity(
+    deriveGeohashSeed(ed25519.utils.randomSecretKey()),
+    CELL,
+  );
+  foldGeoThread(alice, bobCell.pubKeyHex, bob.peerID);
+  block(alice, bob.peerID);
+
+  const blocked = alice.store("blockedStore").getState() as unknown as {
+    isBlocked: (key: string) => boolean;
+  };
+  s.check(
+    "the pseudonym is blocked with them",
+    blocked.isBlocked(`nostr_${bobCell.pubKeyHex}`),
+  );
+
+  // Bob writes to alice's pseudonym in that cell, from his.
+  const geo = (
+    alice.mesh as unknown as {
+      geoChannels: {
+        cellPubkeyFor: (geohash: string) => string;
+        handleGeoDm: (event: unknown, geohash: string) => void;
+      };
+    }
+  ).geoChannels;
+  const envelope = encodeBitchatDmEnvelope(
+    null,
+    null,
+    "bl05-cell",
+    "it's me again",
+  );
+  const { event } = wrapDm(
+    envelope ?? "",
+    bobCell.privKey,
+    geo.cellPubkeyFor(CELL),
+  );
+  geo.handleGeoDm(event, CELL);
+  await s.world.advance(5_000);
+  s.check(
+    "nothing from the pseudonym lands anywhere",
+    !heardAnywhere(alice, "it's me again"),
+  );
+  s.check(
+    "and no thread opens for them",
+    !alice.channels().includes(`dm:${bob.peerID}`),
+    `channels=${alice.channels().join(",")}`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("BL06 mail queued for a folded pseudonym moves to the contact and never leaves from our main key", async () => {
+  const s = (scenario = new Scenario({
+    id: "BL06",
+    title: "a card exchange re-addresses the pseudonym's queued mail",
+    seed: 816,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, online("alice", 11), relay);
+  const bob = SimDevice.create(s.world, online("bob", 22), relay);
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  radio.setTopology([]);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () =>
+      relay.connectionCount("alice") > 0 && relay.connectionCount("bob") > 0,
+    30_000,
+  );
+
+  const bobCell = deriveGeohashIdentity(
+    deriveGeohashSeed(ed25519.utils.randomSecretKey()),
+    CELL,
+  );
+  const outbox = alice.store("outboxStore").getState() as unknown as {
+    enqueue: (msg: Record<string, unknown>) => unknown;
+  };
+  outbox.enqueue({
+    id: "bl06-queued",
+    recipientPeerID: `nostr_${bobCell.pubKeyHex}`,
+    channel: `dm:nostr_${bobCell.pubKeyHex}`,
+    text: "written before the exchange",
+    createdAtMs: Date.now(),
+  });
+  foldGeoThread(alice, bobCell.pubKeyHex, bob.peerID);
+  const entry = (
+    alice.store("outboxStore").getState() as unknown as {
+      pending: { id: string; recipientPeerID: string }[];
+    }
+  ).pending.find((m) => m.id === "bl06-queued");
+  s.check(
+    "the queued message now names the contact",
+    entry?.recipientPeerID === bob.peerID,
+    `recipient=${String(entry?.recipientPeerID)}`,
+  );
+
+  // And a send still naming the pseudonym, held for undo across the merge.
+  alice.sendDm(`nostr_${bobCell.pubKeyHex}`, "sent after it", "bl06-late");
+  await s.world.advance(60_000);
+  const toCell = relay
+    .eventsOfKind(1059)
+    .filter((e) =>
+      e.tags.some((t) => t[0] === "p" && t[1] === bobCell.pubKeyHex),
+    ).length;
+  s.check(
+    "nothing is ever written to the cell key from our main identity",
+    toCell === 0,
+    `wraps=${String(toCell)}`,
   );
 
   s.expectNone("process health", noCrashes(cast));

@@ -49,7 +49,7 @@ describe("encodeLocationPin", () => {
 });
 
 describe("round trip", () => {
-  it("keeps a position to within a metre", () => {
+  it("keeps a position to within a meter", () => {
     const decoded = decodeLocationPin(encodeLocationPin(PIN));
     expect(decoded).not.toBeNull();
     // Microdegrees are about 11 cm, so six places is the resolution.

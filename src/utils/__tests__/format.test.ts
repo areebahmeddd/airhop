@@ -9,6 +9,7 @@ import {
   formatAgo,
   formatAmount,
   formatBytes,
+  formatCellSize,
   formatClockTime,
   formatDateSeparator,
   formatDuration,
@@ -164,6 +165,27 @@ describe("formatBytes", () => {
   });
 });
 
+describe("formatCellSize", () => {
+  it("quotes each globe precision at a sensible grain", () => {
+    expect(formatCellSize(5_000_000)).toBe("5,000 km");
+    expect(formatCellSize(156_000)).toBe("156 km");
+    expect(formatCellSize(4_890)).toBe("4.9 km");
+    expect(formatCellSize(153)).toBe("153 m");
+    expect(formatCellSize(4.77)).toBe("4.8 m");
+    expect(formatCellSize(0.074)).toBe("0.07 m");
+  });
+
+  it("writes the decimal separator of the app's language", () => {
+    const before = useSettingsStore.getState().language;
+    useSettingsStore.setState({ language: "de" });
+    try {
+      expect(formatCellSize(1_220)).toBe("1,2 km");
+    } finally {
+      useSettingsStore.setState({ language: before });
+    }
+  });
+});
+
 describe("formatPercent", () => {
   it("places the sign as the app's language does", () => {
     expect(formatPercent(0.5)).toBe("50%");
@@ -264,14 +286,14 @@ describe("formatTokenSummary", () => {
 
   it("renders amount and unit, with the memo when present", () => {
     expect(formatTokenSummary(info(64, "sat"))).toBe("64 sat");
-    expect(formatTokenSummary(info(64, "sat", "beer"))).toBe("64 sat - beer");
+    expect(formatTokenSummary(info(64, "sat", "beer"))).toBe("64 sat · beer");
   });
 
   it("groups a large amount", () => {
     expect(formatTokenSummary(info(21_500, "sat"))).toBe("21,500 sat");
   });
 
-  it("summarises a fiat token in major units", () => {
+  it("summarizes a fiat token in major units", () => {
     expect(formatTokenSummary(info(250, "usd"))).toBe("2.50 USD");
   });
 });

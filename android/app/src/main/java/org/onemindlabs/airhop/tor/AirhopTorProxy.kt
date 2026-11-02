@@ -59,7 +59,7 @@ object AirhopTorProxy {
 
     // The default selector before ours replaced it. Everything that is not web
     // traffic, and web traffic while Tor is off, is answered by it, so a proxy
-    // the user configured for their Wi-Fi is still honoured.
+    // the user configured for their Wi-Fi is still honored.
     @Volatile private var system: ProxySelector? = null
 
     // One pool for every factory-built client, so one eviction covers them

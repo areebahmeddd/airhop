@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Jaringan mesh</string>
   <string name="mesh_channel_description">Menjaga mesh Airhop tetap aktif di latar belakang</string>
   <string name="mesh_notification_title">Mesh Airhop aktif</string>
@@ -7,4 +7,15 @@
   <plurals name="mesh_notification_peers">
     <item quantity="other">%1$s rekan dalam jangkauan</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth mati · tidak memindai</string>
+  <string name="widget_label">Rekan dalam jangkauan</string>
+  <string name="widget_description">Rekan dalam jangkauan, dan kapan mereka dihitung</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="other">rekan dalam jangkauan</item>
+  </plurals>
+  <string name="widget_nobody">tidak ada yang dalam jangkauan</string>
+  <string name="widget_as_of">per %1$s</string>
+  <string name="widget_paused">Mesh dijeda</string>
+  <string name="widget_unset">Buka Airhop</string>
+  <string name="widget_stale">Buka Airhop untuk memperbarui</string>
 </resources>

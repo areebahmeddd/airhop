@@ -33,7 +33,7 @@ EXPECTED_SLICES=(ios-arm64 ios-arm64_x86_64-simulator)
 info() { printf '\033[0;36m==>\033[0m %s\n' "$*"; }
 fail() { printf '\033[0;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# ---- Preconditions --------------------------------------------------------
+# ---- Preconditions ----
 
 [ "$(uname -s)" = "Darwin" ] || fail "build-apple.sh requires macOS"
 command -v go >/dev/null || fail "go is not on PATH"
@@ -49,7 +49,7 @@ actual_go="$(go env GOVERSION)"
 
 [ -d "$FETCHED" ] || fail "sources are missing; run native/iptproxy/fetch-sources.sh first"
 
-# ---- Toolchain ------------------------------------------------------------
+# ---- Toolchain ----
 
 export TZ=UTC
 export LC_ALL=C
@@ -83,14 +83,14 @@ info "Installing gomobile and gobind"
 go install golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
 gomobile init
 
-# ---- Build ----------------------------------------------------------------
+# ---- Build ----
 
 info "Building $GOMOBILE_TARGETS"
 mkdir -p "$FRAMEWORKS_DIR"
 rm -rf "$XCFRAMEWORK"
 
 # Flags match build-android.sh, which explains each. Both platforms must get the
-# same transport behaviour, and one set of flags is what keeps that true.
+# same transport behavior, and one set of flags is what keeps that true.
 gomobile bind \
   -target="$GOMOBILE_TARGETS" \
   -iosversion="$IOS_MIN_VERSION" \
@@ -102,7 +102,7 @@ gomobile bind \
 
 [ -d "$XCFRAMEWORK" ] || fail "gomobile produced no xcframework"
 
-# ---- Verify ---------------------------------------------------------------
+# ---- Verify ----
 
 info "Verifying"
 
@@ -140,7 +140,7 @@ for slice in "${EXPECTED_SLICES[@]}"; do
   info "  $slice: $(du -h "$binary" | cut -f1), no build-machine paths"
 done
 
-# ---- Record ---------------------------------------------------------------
+# ---- Record ----
 
 info "Recording hashes"
 (

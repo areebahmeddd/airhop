@@ -13,18 +13,18 @@ How a DM, a receipt or parked courier mail crosses the internet when no radio re
 
 ## Key Files
 
-| Path                                  | Holds                                                          |
-| ------------------------------------- | -------------------------------------------------------------- |
-| `src/core/nostr/gift-wrap.ts`         | `wrapDm`, `unwrapDm`, `deriveNostrPrivKey`                     |
-| `src/core/nostr/bitchat-nip44.ts`     | bitchat's `nip44-v2` encryption, even-Y key normalisation      |
-| `src/core/nostr/bitchat-envelope.ts`  | The `bitchat1:` content: DM, receipt and contact card          |
-| `src/core/nostr/courier-relay.ts`     | `publishCourierDrop`, `subscribeCourierDrops` (kind 1401)      |
-| `src/core/nostr/nostr-client.ts`      | `NostrClient`: pool, per-relay subscriptions, `isConnected`    |
-| `src/core/nostr/opened-gift-wraps.ts` | Wraps already opened this session                              |
-| `src/core/nostr/geohash-identity.ts`  | Per-cell identity for location channels and their DMs          |
-| `src/services/mesh-service.ts`        | Inbox subscription, `publishNostrAck`, `sendReadReceipts`      |
-| `src/services/tor-routing.ts`         | Whether relay sockets may open at all                          |
-| `bitchat/ios/bitchat/Nostr/`          | Reference: `NostrProtocol.swift`, `NostrEmbeddedBitChat.swift` |
+| Path                                 | Holds                                                                                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `src/core/nostr/gift-wrap.ts`        | `wrapDm`, `unwrapDm`, `deriveNostrPrivKey`                                                       |
+| `src/core/nostr/bitchat-nip44.ts`    | bitchat's `nip44-v2` encryption, even-Y key normalization                                        |
+| `src/core/nostr/bitchat-envelope.ts` | The `bitchat1:` content: DM, receipt and contact card                                            |
+| `src/core/nostr/courier-relay.ts`    | `publishCourierDrop`, `subscribeCourierDrops` (kind 1401)                                        |
+| `src/core/nostr/nostr-client.ts`     | `NostrClient`: pool, per-relay subscriptions, `isConnected`, `isDMConnected`                     |
+| `src/core/nostr/processed-events.ts` | Wraps and courier mail already opened, kept across launches (own MMKV partition, wiped on panic) |
+| `src/core/nostr/geohash-identity.ts` | Per-cell identity for location channels and their DMs                                            |
+| `src/services/mesh-service.ts`       | Inbox subscription, `publishNostrAck`, `sendReadReceipts`                                        |
+| `src/services/tor-routing.ts`        | Whether relay sockets may open at all                                                            |
+| `bitchat/ios/bitchat/Nostr/`         | Reference: `NostrProtocol.swift`, `NostrEmbeddedBitChat.swift`                                   |
 
 ## Keys
 
@@ -46,8 +46,8 @@ content (a bitchat1: envelope)
 ```
 
 - **Cipher.** Both layers use `bitchatNip44Encrypt`: XChaCha20-Poly1305, key `HKDF(compressed ECDH point, salt empty, info "nip44-v2")`, no padding, framed `"v2:" + base64url(nonce24 || ciphertext || tag)`. It is not NIP-44 and must stay byte-identical to bitchat's, since the event signature covers the ciphertext. Reaching for `nip44` in nostr-tools produces DMs no bitchat or Airhop peer can open, silently at both ends.
-- **Keys.** Private keys are normalised to even Y before ECDH, and decrypt tries both parities of the sender's x-only key, as bitchat does.
-- **Timestamps.** Seal and wrap `created_at` are randomised ±15 minutes (bitchat's window, not NIP-59's two days). The rumor keeps the real send time.
+- **Keys.** Private keys are normalized to even Y before ECDH, and decrypt tries both parities of the sender's x-only key, as bitchat does.
+- **Timestamps.** Seal and wrap `created_at` are randomized ±15 minutes (bitchat's window, not NIP-59's two days). The rumor keeps the real send time.
 - **The throwaway key** is new for every wrap, so relays see neither sender nor linkage between wraps.
 
 ### Receive (`unwrapDm`)
@@ -58,7 +58,7 @@ content (a bitchat1: envelope)
 4. `validateEvent(rumor)`, require kind 14, and require `seal.pubkey === rumor.pubkey`. The rumor is unsigned, so this is the only shape check it gets; a missing or non-numeric `created_at` would otherwise slip past every comparison.
 5. Require the rumor's `created_at` within the subscription's lookback (plus 15 minutes) and at most 15 minutes ahead, so nobody chooses where their message lands in a thread.
 
-No recipient tag is checked on the rumor: the seal is encrypted to our key, so a rumor meant for anyone else cannot open. The inbox subscribes to kind 1059 `#p` our key with a 7-day lookback (the sender's outbox lifetime), and skips a wrap ID already opened (`OpenedGiftWraps`) so a relay replaying the window after a reconnect is not decrypted and acknowledged twice. A sender's retry arrives in a new wrap and is acknowledged again.
+No recipient tag is checked on the rumor: the seal is encrypted to our key, so a rumor meant for anyone else cannot open. The inbox subscribes to kind 1059 `#p` our key with a 7-day lookback (the sender's outbox lifetime), and skips a wrap ID already opened (`ProcessedEvents`, persisted for the lookback plus an hour), so a relay replaying the window after a reconnect or a relaunch is neither filed nor acknowledged again. A sender's retry arrives in a new wrap and is acknowledged again.
 
 ## The bitchat1: Envelope
 
@@ -79,16 +79,16 @@ content: base64(CourierEnvelope TLV), as bitchat-ios createCourierDropEvent
 ```
 
 - Signed by a throwaway key minted per publish, never the device identity: the envelope authenticates its sender inside the Noise X seal, and a stable publisher key would make every drop attributable to one npub. The key is not a parameter, so no caller can pass the identity.
-- Published once per message with `copies` 1, since a relay copy goes to the recipient, never to another carrier.
+- One live drop per message, renewed once it lapses, with `copies` 1, since a relay copy goes to the recipient, never to another carrier.
 - The `x` tag is the envelope's daily recipient tag (see [`courier-envelopes.md`](courier-envelopes.md)). It is not unlinkable: anyone holding the peer's static key computes it for any day.
 - **Subscription:** `{ kinds: [1401], "#x": candidateTags (yesterday, today, tomorrow), since: now - 24 h, limit: 100 }`, renewed when the UTC day rolls over. The limit is bitchat-ios's `courierDrops`; there is no paging with `until`, since a flood can outrun any page budget and every junk page costs Schnorr checks.
 - NIP-40 relays expire the event; a drop whose expiry has passed is ignored.
 
 ## Relays and Subscriptions
 
-- **One subscription per relay and filter.** nostr-tools 2.25.2 records an event ID as seen before verifying it, in a set shared across the relays of one call, so a hostile relay's forged copy under a genuine ID would hide every honest relay's copy, and a far-future event from one relay would move the `since` another reconnects with. `NostrClient.subscribe` keeps its own delivered-ID set per call, recorded only after verification, and hands nostr-tools a lookup-only `alreadyHaveEvent`. Collapse back to one call once a release carries nbd-wtf/nostr-tools#560.
-- **Gift-wrap filters keep their `since`.** nostr-tools moves `since` past the newest `created_at` on reconnect, and a wrap's is blurred up to 15 minutes ahead, so relays would withhold newer wraps (`pinGiftWrapSince`).
-- **`isConnected` reads the sockets on every call**, so a gateway that just lost signal stops advertising and publishing into a dead pool.
+- **One subscription per relay and filter.** nostr-tools 2.25.4 records an event ID as seen before verifying it, in a set shared across the relays of one call, so a hostile relay's forged copy under a genuine ID would hide every honest relay's copy, and a far-future event from one relay would move the `since` another reconnects with. `NostrClient.subscribe` keeps its own delivered-ID set per call, recorded only after verification, and hands nostr-tools a lookup-only `alreadyHaveEvent`. Collapse back to one call once a release carries nbd-wtf/nostr-tools#563.
+- **A reconnect's `since` is bounded (`guardSince`).** nostr-tools moves `since` past the newest `created_at` a relay sent, so one validly signed event dated years ahead would have that relay withhold every real event. The write is capped at now, then set back 15 minutes for a sender with a slow clock, and never lands before the requested `since`. Gift-wrap filters keep their `since` outright, since a wrap's `created_at` is blurred 15 minutes either side.
+- **`isConnected` reads the sockets on every call**, so a gateway that just lost signal stops advertising and publishing into a dead pool. `isDMConnected` is true only for a live default DM relay: DM, geo-DM and courier-drop publishes gate on it (bitchat-ios `isDMRelayConnected`), while the gateway capability, the banner and the bridge gate on `isConnected`.
 - **Tor.** Relay sockets open only when `tor-routing.ts` allows. While Tor is wanted and not yet carrying, or held after a failed start, `nostrBlockedByTor` holds the pool: nothing falls back to the clear net.
 
 ## What Not to Do

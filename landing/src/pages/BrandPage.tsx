@@ -14,7 +14,7 @@ const CORE_COLORS = [
   { name: "Body", hex: "#60646C", use: "Supporting copy" },
   { name: "Mute", hex: "#6E7178", use: "Timestamps, labels, placeholders" },
   { name: "Line", hex: "#D9D9E0", use: "Hairline dividers and card borders" },
-  { name: "Border", hex: "#CDCED6", use: "Emphasised borders and focus edges" },
+  { name: "Border", hex: "#CDCED6", use: "Emphasized borders and focus edges" },
   { name: "Raised", hex: "#F0F0F3", use: "Inputs, segmented controls, pills" },
   { name: "Hover", hex: "#E8E8EC", use: "Hover and pressed fills" },
   { name: "Surface", hex: "#FCFCFD", use: "Cards, rows, sheets" },
@@ -26,7 +26,7 @@ const DARK_COLORS = [
   { name: "Body Dark", hex: "#B0B4BA", use: "Supporting copy on dark" },
   { name: "Mute Dark", hex: "#878B94", use: "Timestamps, labels, placeholders on dark" },
   { name: "Line Dark", hex: "#363A3F", use: "Dividers on dark" },
-  { name: "Border Dark", hex: "#43484E", use: "Emphasised borders on dark" },
+  { name: "Border Dark", hex: "#43484E", use: "Emphasized borders on dark" },
   { name: "Raised Dark", hex: "#282A2D", use: "Inputs, segmented controls, pills on dark" },
   { name: "Hover Dark", hex: "#2F3134", use: "Hover and pressed fills on dark" },
   { name: "Surface Dark", hex: "#17181A", use: "Cards on dark" },
@@ -321,9 +321,9 @@ export default function BrandPage() {
               ))}
             </div>
             <p className="text-secondary mt-4 text-xs leading-relaxed">
-              Store screenshots, the feature graphic and the social banners are in{" "}
-              <TextLink href={REPO_LINKS.pressAssets}>press/out</TextLink> in the repository, light
-              and dark.
+              Store screenshots, the feature graphic and the social banners, light and dark, are on
+              the <TextLink href={REPO_LINKS.pressAssets}>press kit branch</TextLink> of the
+              repository.
             </p>
           </Panel>
 

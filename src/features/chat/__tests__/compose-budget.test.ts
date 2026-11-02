@@ -3,7 +3,12 @@
 
 import { MAX_CAPTION_BYTES } from "@core/mesh/wire/file-packet";
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
-import { clampCaption, forwardTextFits } from "../compose-budget";
+import {
+  clampCaption,
+  clampPublicText,
+  forwardTextFits,
+  PUBLIC_MESSAGE_MAX_CHARS,
+} from "../compose-budget";
 
 // utf8-budget.test.ts covers the cut itself; this pins that the caption is
 // held to the caption field's budget.
@@ -20,25 +25,44 @@ describe("forwardTextFits", () => {
   const long = "a".repeat(PRIVATE_MESSAGE_MAX_CONTENT_BYTES + 1);
 
   it("refuses a DM text over the private-message budget", () => {
-    expect(forwardTextFits("dm:aabbccdd00112233", long)).toBe(false);
+    expect(forwardTextFits("dm:aabbccdd00112233", long, false)).toBe(false);
   });
 
   it("counts the budget in bytes", () => {
     // 100 characters of Devanagari are 300 bytes: fine by length, too long
     // on the wire.
     const hindi = "क".repeat(100);
-    expect(forwardTextFits("dm:aabbccdd00112233", hindi)).toBe(false);
+    expect(forwardTextFits("dm:aabbccdd00112233", hindi, false)).toBe(false);
   });
 
   it("accepts a DM text exactly at the budget", () => {
     const exact = "a".repeat(PRIVATE_MESSAGE_MAX_CONTENT_BYTES);
-    expect(forwardTextFits("dm:aabbccdd00112233", exact)).toBe(true);
+    expect(forwardTextFits("dm:aabbccdd00112233", exact, false)).toBe(true);
   });
 
-  it.each(["#mesh", "group:00ff", "geohash:u4pruy"])(
-    "has no budget for %s",
+  it("has no budget for a group or a private channel", () => {
+    const essay = "a".repeat(PUBLIC_MESSAGE_MAX_CHARS + 1);
+    expect(forwardTextFits("group:00ff", essay, false)).toBe(true);
+    expect(forwardTextFits("#team", essay, true)).toBe(true);
+  });
+
+  // bitchat hides a public message over its spam filter's character budget.
+  it.each(["#bluetooth", "#mesh", "geohash:u4pruy"])(
+    "holds the public room %s to the spam filter's limit",
     (channel) => {
-      expect(forwardTextFits(channel, long)).toBe(true);
+      const emoji = "😀".repeat(PUBLIC_MESSAGE_MAX_CHARS);
+      expect(forwardTextFits(channel, emoji, false)).toBe(true);
+      expect(forwardTextFits(channel, `${emoji}a`, false)).toBe(false);
     },
   );
+});
+
+describe("clampPublicText", () => {
+  it("cuts at the limit in code points and leaves shorter text alone", () => {
+    const over = "😀".repeat(PUBLIC_MESSAGE_MAX_CHARS + 5);
+    expect(Array.from(clampPublicText(over))).toHaveLength(
+      PUBLIC_MESSAGE_MAX_CHARS,
+    );
+    expect(clampPublicText("hello")).toBe("hello");
+  });
 });

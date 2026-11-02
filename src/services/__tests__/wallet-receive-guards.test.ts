@@ -117,12 +117,12 @@ beforeEach(async () => {
 
 describe("a token whose label disagrees with its coins", () => {
   it("is refused as the wrong currency and nothing is stored", async () => {
-    // 150 sats relabelled as 150 cents: shown as $1.50 and filed under usd
+    // 150 sats relabeled as 150 cents: shown as $1.50 and filed under usd
     // if the label were believed.
     const { proofs } = await mintedProofs(150);
-    const relabelled = encode(proofs, "usd");
+    const relabeled = encode(proofs, "usd");
 
-    await expect(receiveToken(relabelled)).rejects.toMatchObject({
+    await expect(receiveToken(relabeled)).rejects.toMatchObject({
       code: "forged-token",
     });
     expect(held()).toBe(0);

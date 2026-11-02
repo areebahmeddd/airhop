@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">ਮੈਸ਼ ਨੈੱਟਵਰਕ</string>
   <string name="mesh_channel_description">Airhop ਦਾ ਮੈਸ਼ ਪਿਛੋਕੜ ਵਿੱਚ ਚੱਲਦਾ ਰੱਖਦਾ ਹੈ</string>
   <string name="mesh_notification_title">Airhop ਮੈਸ਼ ਚਾਲੂ</string>
@@ -8,4 +8,16 @@
     <item quantity="one">%1$s ਪੀਅਰ ਪਹੁੰਚ ਵਿੱਚ</item>
     <item quantity="other">%1$s ਪੀਅਰ ਪਹੁੰਚ ਵਿੱਚ</item>
   </plurals>
+  <string name="mesh_bluetooth_off">ਬਲੂਟੁੱਥ ਬੰਦ · ਖੋਜ ਨਹੀਂ ਰਹੇ</string>
+  <string name="widget_label">ਪਹੁੰਚ ਵਿੱਚ ਪੀਅਰ</string>
+  <string name="widget_description">ਪਹੁੰਚ ਵਿੱਚ ਪੀਅਰ, ਅਤੇ ਉਹ ਕਦੋਂ ਗਿਣੇ ਗਏ</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">ਪੀਅਰ ਪਹੁੰਚ ਵਿੱਚ</item>
+    <item quantity="other">ਪੀਅਰ ਪਹੁੰਚ ਵਿੱਚ</item>
+  </plurals>
+  <string name="widget_nobody">ਪਹੁੰਚ ਵਿੱਚ ਕੋਈ ਨਹੀਂ</string>
+  <string name="widget_as_of">%1$s ਤੱਕ</string>
+  <string name="widget_paused">ਮੈਸ਼ ਰੁਕਿਆ</string>
+  <string name="widget_unset">Airhop ਖੋਲ੍ਹੋ</string>
+  <string name="widget_stale">ਤਾਜ਼ਾ ਕਰਨ ਲਈ Airhop ਖੋਲ੍ਹੋ</string>
 </resources>

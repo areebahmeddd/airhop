@@ -1,4 +1,5 @@
 // The new phone's transfer QR: encoding, bounds, and telling it from a card.
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { encodeQRContent } from "../../crypto/contact-exchange";
 import {
   decodeMoveInvite,
@@ -50,13 +51,17 @@ describe("move invite", () => {
   });
 
   it("is told apart from a contact code", () => {
-    const contact = encodeQRContent({
-      peerID: "0011223344556677",
-      noisePubKey: new Uint8Array(32),
-      signingPubKey: new Uint8Array(32),
-      nickname: "sam",
-      nostrPubKey: new Uint8Array(32),
-    });
+    const signingPrivKey = new Uint8Array(32).fill(1);
+    const contact = encodeQRContent(
+      {
+        peerID: "0011223344556677",
+        noisePubKey: new Uint8Array(32),
+        signingPubKey: ed25519.getPublicKey(signingPrivKey),
+        nickname: "sam",
+        nostrPubKey: new Uint8Array(32),
+      },
+      signingPrivKey,
+    );
     expect(isMoveInvite(contact)).toBe(false);
     expect(decodeMoveInvite(contact)).toBeNull();
     expect(isMoveInvite(encodeMoveInvite(invite()))).toBe(true);

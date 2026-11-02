@@ -5,7 +5,7 @@
 // Initials are the thing being replaced: a relay has no name worth abbreviating,
 // and "BI" over a Bitle node says less than an aerial does.
 //
-// Deliberately colourless. Avatar tints itself from the peer ID, which is what
+// Deliberately colorless. Avatar tints itself from the peer ID, which is what
 // makes a crowd of people look like a crowd; equipment should recede instead.
 
 import { Feather } from "@react-native-vector-icons/feather/static";

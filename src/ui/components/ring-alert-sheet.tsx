@@ -1,6 +1,6 @@
 // The Ring alert: the overlay that owns the ringing.
 //
-// Mounted once at the app root like AlertModal, and shown for every ring not
+// Mounted at the app root like AlertModal, and shown for every ring not
 // arriving in the thread on screen, in front or not, so somebody who opens
 // the app mid-ring finds it waiting. Out of the foreground the system tray
 // carries the same ring (raiseRingNotification); rings from other people
@@ -11,6 +11,10 @@
 // Disturb). Only Open and Snooze answer the sender. Closing the sheet
 // silences it and sends nothing, as swiping a call banner away does; the
 // bell row and tray card stay as the record.
+//
+// A full-screen modal (the live video studio) covers the root, and a sheet
+// drawn from the root would ring unseen beneath it, so such a modal mounts a
+// sheet of its own. Only the newest mounted sheet shows and rings.
 import { useT } from "@i18n";
 import { ringPulse } from "@platform/haptics";
 import { startRingAlert, stopRingAlert } from "@platform/ring-alert";
@@ -29,7 +33,13 @@ import {
   RING_SNOOZE_1H_MS,
   useRingStore,
 } from "@store/ring-store";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   AppState,
   Platform,
@@ -52,12 +62,45 @@ import BottomSheet from "./bottom-sheet";
 
 const PULSE_INTERVAL_MS = 900;
 
+// Mounted sheets, oldest first.
+const hosts: symbol[] = [];
+const hostListeners = new Set<() => void>();
+
+function notifyHosts(): void {
+  for (const fn of hostListeners) fn();
+}
+
+function subscribeHosts(fn: () => void): () => void {
+  hostListeners.add(fn);
+  return () => {
+    hostListeners.delete(fn);
+  };
+}
+
+function useIsTopHost(): boolean {
+  const [id] = useState(() => Symbol("ring-host"));
+  useEffect(() => {
+    hosts.push(id);
+    notifyHosts();
+    return () => {
+      hosts.splice(hosts.indexOf(id), 1);
+      notifyHosts();
+    };
+  }, [id]);
+  return useSyncExternalStore(
+    subscribeHosts,
+    () => hosts[hosts.length - 1] === id,
+  );
+}
+
 export default function RingAlertSheet(): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const insets = useSafeAreaInsets();
-  const ring = useIncomingRingStore((s) => s.current);
+  const isTop = useIsTopHost();
+  const current = useIncomingRingStore((s) => s.current);
+  const ring = isTop ? current : null;
   const visible = ring !== null;
   // Ref so the handlers read the latest ring without retriggering on every
   // update.
@@ -78,11 +121,11 @@ export default function RingAlertSheet(): React.JSX.Element {
       return;
     }
     let pulse: ReturnType<typeof setInterval> | null = null;
-    let cancelled = false;
+    let canceled = false;
     // Haptics only where the loop could not start, so a phone in silent mode
     // still says something under the thumb.
     void startRingAlert(remainingMs).then((ringing) => {
-      if (ringing || cancelled) return;
+      if (ringing || canceled) return;
       ringPulse();
       pulse = setInterval(ringPulse, PULSE_INTERVAL_MS);
     });
@@ -107,7 +150,7 @@ export default function RingAlertSheet(): React.JSX.Element {
       if (next === "active" && Date.now() >= endsAtMs) expire();
     });
     return () => {
-      cancelled = true;
+      canceled = true;
       if (pulse !== null) clearInterval(pulse);
       clearTimeout(timeout);
       moved.remove();

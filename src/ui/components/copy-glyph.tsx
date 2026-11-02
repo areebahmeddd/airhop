@@ -26,8 +26,8 @@ const TICK_FROM = 0.8;
 interface Props {
   copied: boolean;
   size: number;
-  // The resting colour of the copy glyph. The tick is always `online` green,
-  // which is the palette's one "this worked" colour.
+  // The resting color of the copy glyph. The tick is always `online` green,
+  // which is the palette's one "this worked" color.
   color: string;
 }
 

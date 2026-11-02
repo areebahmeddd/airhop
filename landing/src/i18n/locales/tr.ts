@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Kimliğiniz, cihazınızda üretilen ve {ios_keychain} ya da {android_keystore} içinde saklanan bir {ed25519} anahtar çiftidir. Hesap yok, kayıt yok ve herhangi bir sunucuya dokunan hiçbir şey yok; yani silindikten sonra size geri götürecek hiçbir iz bırakmayan tek kullanımlık bir uygulama olarak kullanılabilir.",
   "home.about.body.crypto":
-    "Her oturum, kimliği doğrulanmış bir el sıkışma için {noise} protokolünü kullanır. Saklanan mesajlar {ratchet} algoritmasını kullanır; yani cihazınız daha sonra ele geçirilse bile geçmiş mesajlarınız okunamaz kalır. Acil silme, tüm anahtarları ve mesajları bir saniyeden kısa sürede yok eder.",
+    "Her oturum, kimliği doğrulanmış bir el sıkışma için {noise} protokolünü kullanır. Airhop telefonları arasındaki canlı doğrudan mesajlar {ratchet} algoritmasını kullanır; yani daha sonra sızan bir anahtar, önceden gönderilmiş mesajları açamaz. Acil silme, tüm anahtarları ve mesajları bir saniyeden kısa sürede yok eder.",
   "home.about.body.internet":
     "Siz ve bir kişiniz Bluetooth menzilinin dışındayken {nostr} röleleri internet üzerinden köprü görevi görür; {nip17} biçiminde paketlenmiş doğrudan mesajlar kullanılır, böylece ikiniz de çevrimiçi olduğunuzda mesh ağı dünya geneline uzanır. {tor} desteği hem iOS'ta hem de Android'de {arti} ile mevcuttur; Tor’u engelleyen ağlar için {obfs4}, {snowflake} ve {webtunnel} köprüleri de var.",
   "home.about.optional.title": "Airhop'ta açabileceğiniz isteğe bağlı özellikler var:",
@@ -168,9 +168,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "İlan panosu",
   "home.features.messaging.board.line":
     "Bir alana en fazla yedi gün boyunca iliştirilen duyurular.",
-  "home.features.messaging.voice.name": "Canlı ses",
+  "home.features.messaging.voice.name": "Canlı ses ve görüntü",
   "home.features.messaging.voice.line":
-    "Mikrofonu basılı tutun ve menzildeki herkesle konuşun, telsiz gibi.",
+    "Konuşmak için mikrofonu basılı tutun ya da kamerayla canlı yayın açın, menzildeki herkese.",
   "home.features.messaging.notes.name": "Sesli notlar",
   "home.features.messaging.notes.line": "Kaydedilmiş ses, tarif yazmaktan daha hızlı.",
   "home.features.messaging.files.name": "Fotoğraf, video ve dosyalar",

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">เครือข่ายเมช</string>
   <string name="mesh_channel_description">ทำให้เมชของ Airhop ทำงานอยู่เบื้องหลัง</string>
   <string name="mesh_notification_title">เมชของ Airhop กำลังทำงาน</string>
@@ -7,4 +7,15 @@
   <plurals name="mesh_notification_peers">
     <item quantity="other">อยู่ในระยะ %1$s เครื่อง</item>
   </plurals>
+  <string name="mesh_bluetooth_off">บลูทูธปิดอยู่ · ไม่ได้สแกน</string>
+  <string name="widget_label">เครื่องที่อยู่ในระยะ</string>
+  <string name="widget_description">เครื่องที่อยู่ในระยะ และเวลาที่นับ</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="other">เครื่องในระยะ</item>
+  </plurals>
+  <string name="widget_nobody">ไม่มีใครอยู่ในระยะ</string>
+  <string name="widget_as_of">ณ %1$s</string>
+  <string name="widget_paused">เมชหยุดชั่วคราว</string>
+  <string name="widget_unset">เปิด Airhop</string>
+  <string name="widget_stale">เปิด Airhop เพื่อรีเฟรช</string>
 </resources>

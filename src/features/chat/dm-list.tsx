@@ -5,7 +5,8 @@
 // Channels list, so both chat surfaces manage conversations consistently.
 
 import { t, tPlural, useT } from "@i18n";
-import { trailingSwipeActions } from "@i18n/layout";
+import { directionMark, trailingSwipeActions } from "@i18n/layout";
+import { fillRichText } from "@i18n/rich-text";
 import { held } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
@@ -90,8 +91,6 @@ export default function DmList({
     return () => clearInterval(id);
   }, []);
   const [refreshing, setRefreshing] = useState(false);
-  // Swipe left on a DM row for More (clear / delete), the same pattern as the
-  // Channels list, so both chat surfaces manage conversations consistently.
   const [moreOptionsDM, setMoreOptionsDM] = useState<string | null>(null);
   // Which DM's contact-info sheet is open (null when closed).
   const [infoChannel, setInfoChannel] = useState<string | null>(null);
@@ -268,9 +267,14 @@ export default function DmList({
             isMuted ? t("chat.a11y.muted") : null,
             isPinned ? t("chat.a11y.pinned") : null,
             draft.length > 0
-              ? `${T("chat.draft_prefix")} ${draft}`
+              ? T("chat.draft_preview", { draft })
               : last
-                ? `${last.isMine ? `${T("chat.dm.you_prefix")} ` : ""}${messagePreviewText(last)}`
+                ? last.isMine
+                  ? T("chat.sender_preview", {
+                      sender: T("chat.you"),
+                      preview: messagePreviewText(last),
+                    })
+                  : messagePreviewText(last)
                 : T("chat.no_messages"),
             timeLabel,
           ]
@@ -284,12 +288,8 @@ export default function DmList({
                 pressed && styles.rowPressed,
               ]}
               onPress={() => onSelectDM(item)}
-              // Long-press opens the same sheet the swipe does.
-              //
-              // Swipe was the only way in, which is a problem twice over: every
-              // messenger people already use offers long-press as its peer, and
-              // ReanimatedSwipeable exposes no accessibility actions, so with a
-              // screen reader on these options did not exist at all.
+              // Long-press opens the same sheet the swipe does, for the reasons
+              // the channel list gives.
               onLongPress={() => {
                 held();
                 handleSwipeMore(item);
@@ -299,7 +299,7 @@ export default function DmList({
               accessibilityLabel={rowLabel}
               accessibilityHint={t("chat.dm.row_hint")}
             >
-              {/* Avatar with presence dot (green in range, grey otherwise) */}
+              {/* Avatar with presence dot (green in range, gray otherwise) */}
               <Avatar
                 username={username}
                 peerID={peerID}
@@ -346,20 +346,38 @@ export default function DmList({
                 </View>
                 <View style={styles.rowBottom}>
                   {draft.length > 0 ? (
-                    <Text style={styles.preview} numberOfLines={1}>
-                      <Text style={styles.previewDraft}>
-                        {T("chat.draft_prefix")}{" "}
-                      </Text>
-                      {draft}
+                    // Templates, as in the channel list: the words around the
+                    // value are the translator's to place.
+                    <Text
+                      style={[styles.preview, styles.previewDraft]}
+                      numberOfLines={1}
+                    >
+                      {fillRichText(T("chat.draft_preview"), {
+                        draft: (
+                          <Text style={styles.previewDraftBody}>{draft}</Text>
+                        ),
+                      })}
                     </Text>
                   ) : last ? (
                     <Text style={styles.preview} numberOfLines={1}>
                       {last.isMine ? (
-                        <Text style={styles.previewSender}>
-                          {T("chat.dm.you_prefix")}{" "}
-                        </Text>
-                      ) : null}
-                      {messagePreviewText(last)}
+                        <>
+                          {/* Built only from values, so the line takes its
+                              direction from this mark rather than the first
+                              letter of the message. */}
+                          {directionMark}
+                          {fillRichText(T("chat.sender_preview"), {
+                            sender: (
+                              <Text style={styles.previewSender}>
+                                {T("chat.you")}
+                              </Text>
+                            ),
+                            preview: messagePreviewText(last),
+                          })}
+                        </>
+                      ) : (
+                        messagePreviewText(last)
+                      )}
                     </Text>
                   ) : (
                     <Text style={styles.previewEmpty}>
@@ -387,10 +405,8 @@ export default function DmList({
             </Pressable>
           );
 
-          // Swipe left for More, the same interaction as the Channels list, so
-          // both surfaces feel like one consistent app. The wrapper animates the
-          // row settling into place when the list reorders (pin, new activity)
-          // and fading in/out on add/remove.
+          // The wrapper animates the row settling into place when the list
+          // reorders (pin, new activity) and fading in and out on add and remove.
           return (
             <Animated.View
               layout={LinearTransition.duration(Duration.slow)}
@@ -620,9 +636,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       paddingBottom: TAB_BAR_CLEARANCE,
     },
-    // No per-row background, just flat rows directly on the screen background,
-    // divided only by the hairline separator below. Matches the WhatsApp
-    // chat-list look rather than a "card per row" treatment.
     row: {
       flexDirection: "row",
       alignItems: "center",
@@ -631,8 +644,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.md,
       minHeight: 72,
     },
-    // The one press treatment for a row, shared by this list's conversation
-    // rows and its action sheet. See PRESSED_OPACITY in ui/theme.
     rowPressed: {
       backgroundColor: Colors.surfacePressed,
     },
@@ -685,6 +696,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     previewDraft: {
       color: Colors.textPrimary,
       fontWeight: FontWeight.semibold,
+    },
+    previewDraftBody: {
+      color: Colors.textSecondary,
+      fontWeight: FontWeight.regular,
     },
     previewEmpty: {
       fontSize: FontSize.sm,
@@ -748,8 +763,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
     },
-    // Two boxes, neutral actions and destructive ones, so a mis-tap cannot
-    // cross from Mute into Block. Overflow clips the rows to the corners.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,

@@ -37,6 +37,9 @@ const FIRST_STRONG_ISOLATE = String.fromCodePoint(0x2068);
 const POP_ISOLATE = String.fromCodePoint(0x2069);
 const isolated = (value: string): string =>
   FIRST_STRONG_ISOLATE + value + POP_ISOLATE;
+// A line built only from values leads with its language's direction mark, so it
+// reads the right way on a phone whose own direction is the other one.
+const LEFT_TO_RIGHT_MARK = String.fromCodePoint(0x200e);
 
 function msg(overrides: Partial<ChatMessage>): ChatMessage {
   return {
@@ -52,7 +55,7 @@ function msg(overrides: Partial<ChatMessage>): ChatMessage {
 }
 
 describe("isDirectMessage", () => {
-  it("recognises the dm: prefix", () => {
+  it("recognizes the dm: prefix", () => {
     expect(isDirectMessage("dm:abc")).toBe(true);
     expect(isDirectMessage("#city")).toBe(false);
   });
@@ -83,7 +86,7 @@ describe("paymentNotificationContent", () => {
     expect(
       paymentNotificationContent("1.50", "USD", "npub1abc", false),
     ).toEqual({
-      title: `+${isolated("1.50")} ${isolated("USD")}`,
+      title: `${LEFT_TO_RIGHT_MARK}+${isolated("1.50")} ${isolated("USD")}`,
       body: expect.stringContaining(isolated("npub1abc")),
     });
   });
@@ -135,7 +138,7 @@ describe("notificationContentFor", () => {
       notificationContentFor(msg({ channel: "#city", text: "hi all" })),
     ).toEqual({
       title: "#city",
-      body: isolated("alice") + ": " + isolated("hi all"),
+      body: LEFT_TO_RIGHT_MARK + isolated("alice") + ": " + isolated("hi all"),
     });
   });
 
@@ -147,7 +150,7 @@ describe("notificationContentFor", () => {
       ),
     ).toEqual({
       title: "Weekend Crew",
-      body: isolated("alice") + ": " + isolated("meet up"),
+      body: LEFT_TO_RIGHT_MARK + isolated("alice") + ": " + isolated("meet up"),
     });
   });
 
@@ -158,7 +161,7 @@ describe("notificationContentFor", () => {
     ).toBe("group:abc123");
   });
 
-  it("summarises an attachment when there is no text", () => {
+  it("summarizes an attachment when there is no text", () => {
     const content = notificationContentFor(
       msg({ text: "", attachment: { type: "image", uri: "x" } }),
     );
@@ -202,7 +205,7 @@ describe("notificationContentFor with previews hidden", () => {
     expect(content.body).not.toContain("hi all");
   });
 
-  it("an attachment is not summarised either", () => {
+  it("an attachment is not summarized either", () => {
     // A "📷 Photo" body still discloses that a photo arrived, and from whom
     // once combined with the title.
     const content = notificationContentFor(
@@ -362,7 +365,11 @@ describe("notificationContentFor a mention", () => {
       ),
     ).toEqual({
       title: "#city",
-      body: isolated("alice") + ": " + isolated("@bob look at this"),
+      body:
+        LEFT_TO_RIGHT_MARK +
+        isolated("alice") +
+        ": " +
+        isolated("@bob look at this"),
     });
   });
 

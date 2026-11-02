@@ -27,7 +27,7 @@ export function isDirectMessage(channel: string): boolean {
   return channel.startsWith("dm:");
 }
 
-// One-line preview of an attachment, mirroring how WhatsApp/Signal summarise a
+// One-line preview of an attachment, mirroring how WhatsApp/Signal summarize a
 // media message in the notification and chat list.
 export function attachmentSummary(attachment: ChatAttachment): string {
   switch (attachment.type) {
@@ -84,10 +84,9 @@ export function notificationContentFor(
   }
   // A mention is the one message in a busy room actually addressed to you, and
   // it is already the only thing allowed past a mute. Reading identically to
-  // every other line defeated that: the notification the user most needed to
-  // pick out was the one hardest to. Names the sender rather than the room,
-  // since who is asking is the useful half. Matches bitchat's
-  // sendMentionNotification.
+  // every other line would make the notification the user most needs to pick
+  // out the hardest to find. Names the sender rather than the room, since who
+  // is asking is the useful half. Matches bitchat's sendMentionNotification.
   if (mentionsMe) {
     if (hidePreviews) {
       return {
@@ -121,7 +120,7 @@ export function notificationContentFor(
 // A system-tray notification is raised only for an inbound message that arrives
 // while the app is not in the foreground. In the foreground the live unread
 // badges already tell the story, so a banner would just be noise. Local system
-// notices (isSystem) are never externalised.
+// notices (isSystem) are never externalized.
 export function shouldSystemNotify(p: {
   isMine: boolean;
   isSystem?: boolean;
@@ -180,8 +179,6 @@ export function paymentNotificationContent(
     body: t("wallet.nutzap.received_body", { from }),
   };
 }
-
-// Nearby peers
 
 // The floor between two nearby notices. The mesh finding someone is worth
 // knowing about; it is not worth knowing about every time a radio flaps or a

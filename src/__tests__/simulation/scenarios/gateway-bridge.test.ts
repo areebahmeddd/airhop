@@ -82,9 +82,9 @@ import { advanceFor, Scenario, waitForCoarse } from "../harness/scenario";
 
 jest.setTimeout(240_000);
 
-// bitchat's NOSTR_CARRIER. Counting these on the air is how we know a gateway
-// was actually asked to carry something, rather than inferring it from a
-// side effect.
+// bitchat's NOSTR_CARRIER. Counting these on the air is how a scenario knows a
+// gateway was actually asked to carry something, rather than inferring it from
+// a side effect.
 const NOSTR_CARRIER = 0x28;
 // Geohash channel message, the thing a gateway publishes on someone's behalf.
 const KIND_GEOHASH_MESSAGE = 20000;
@@ -179,7 +179,7 @@ async function cellsResolved(
 
 // ---- Internet gateway ----
 
-test("N01 a phone with no signal reaches its city channel through a neighbour", async () => {
+test("N01 a phone with no signal reaches its city channel through a neighbor", async () => {
   const s = (scenario = new Scenario({
     id: "N01",
     title: "gateway uplink: someone else's connection carries the message out",
@@ -247,7 +247,7 @@ test("N01 a phone with no signal reaches its city channel through a neighbour", 
   await settleIn(s, 40_000);
 
   s.check(
-    "it asked a neighbour to carry the message (NOSTR_CARRIER on the air)",
+    "it asked a neighbor to carry the message (NOSTR_CARRIER on the air)",
     radio.countOfType(NOSTR_CARRIER) > carriersBefore,
     `0x28 packets: ${carriersBefore} -> ${radio.countOfType(NOSTR_CARRIER)}`,
   );
@@ -276,20 +276,20 @@ test("N01 a phone with no signal reaches its city channel through a neighbour", 
 test("N02 turning the gateway off stops it carrying for anyone", async () => {
   const s = (scenario = new Scenario({
     id: "N02",
-    title: "the toggle is real: off means the neighbour carries nothing",
+    title: "the toggle is real: off means the neighbor carries nothing",
     seed: 701,
   }));
   const radio = new RadioFabric(s.world);
   const relay = new RelayFabric(s.world);
 
   // Same shape as N01, with the one switch flipped.
-  const neighbour = SimDevice.create(
+  const neighbor = SimDevice.create(
     s.world,
-    { ...android("neighbour", 11), gatewayEnabled: false },
+    { ...android("neighbor", 11), gatewayEnabled: false },
     relay,
   );
   const stranded = SimDevice.create(s.world, android("stranded", 22), relay);
-  const cast = [neighbour, stranded];
+  const cast = [neighbor, stranded];
   for (const d of cast) {
     radio.add(d);
     locations().place(d.id, PLACES.bengaluru);
@@ -299,10 +299,10 @@ test("N02 turning the gateway off stops it carrying for anyone", async () => {
   for (const d of cast) d.launch();
 
   s.check(
-    "the stranded phone found its neighbour",
+    "the stranded phone found its neighbor",
     await waitForCoarse(
       s.world,
-      () => stranded.peers().includes(neighbour.peerID),
+      () => stranded.peers().includes(neighbor.peerID),
       30_000,
     ),
   );
@@ -325,7 +325,7 @@ test("N02 turning the gateway off stops it carrying for anyone", async () => {
     `${leaked.length} leaked events (kind ${KIND_GEOHASH_MESSAGE} total ${eventsBefore} -> ${relay.eventsOfKind(KIND_GEOHASH_MESSAGE).length})`,
   );
   s.check(
-    "and the neighbour never advertised itself as a gateway",
+    "and the neighbor never advertised itself as a gateway",
     !stranded.seesGateway(),
   );
   s.check(
@@ -792,7 +792,7 @@ test.each(COMBINED_ROLE_SEEDS)(
   async (seed) => {
     const s = (scenario = new Scenario({
       id: "N08",
-      title: "one island bridges, and carries for a neighbour with no signal",
+      title: "one island bridges, and carries for a neighbor with no signal",
       seed,
     }));
     const radio = new RadioFabric(s.world);
@@ -867,8 +867,6 @@ test.each(COMBINED_ROLE_SEEDS)(
       150_000,
     );
 
-    // One phone carrying both roles, which is the configuration that matters:
-    // whoever has signal in a group ends up being the bridge and the gateway.
     s.check(
       "the far island received the stranded phone's message",
       localB.texts(BRIDGE_CHANNEL).includes("from the phone with no signal"),
@@ -1250,7 +1248,7 @@ test("N11 a bitchat phone in a bridged room neither breaks nor is broken by it",
   for (const d of airhops) d.launch();
   guest.launch();
   // No join: a bitchat node records every public message it verifies, which is
-  // exactly the behaviour under test.
+  // exactly the behavior under test.
 
   const met = await waitForCoarse(
     s.world,
@@ -1272,7 +1270,7 @@ test("N11 a bitchat phone in a bridged room neither breaks nor is broken by it",
 
   // And the reverse: Airhop's own room traffic still reaches it while the
   // bridge is running. A bridge that broke plain mesh delivery for a bitchat
-  // neighbour would be worse than no bridge.
+  // neighbor would be worse than no bridge.
   bridge.send(MESH_CHANNEL, "hello from airhop");
   const echoed = await waitForCoarse(
     s.world,
@@ -1452,40 +1450,40 @@ test("N16 a phone with the gateway off spends no signature check on a deposit", 
   const radio = new RadioFabric(s.world);
   const relay = new RelayFabric(s.world);
 
-  const neighbour = SimDevice.create(
+  const neighbor = SimDevice.create(
     s.world,
-    { ...android("neighbour", 11), gatewayEnabled: false },
+    { ...android("neighbor", 11), gatewayEnabled: false },
     relay,
   );
-  radio.add(neighbour);
-  locations().place(neighbour.id, PLACES.bengaluru);
+  radio.add(neighbor);
+  locations().place(neighbor.id, PLACES.bengaluru);
   const phone = new BitchatActor(s.world, {
     id: "phone",
     platform: "ios",
     seedByte: 216,
   });
   radio.add(phone);
-  s.track(neighbour);
-  neighbour.launch();
+  s.track(neighbor);
+  neighbor.launch();
   phone.launch();
-  neighbour.joinChannel(CELL_CHANNEL);
+  neighbor.joinChannel(CELL_CHANNEL);
   s.check(
-    "the neighbour resolved its cell",
+    "the neighbor resolved its cell",
     await waitForCoarse(
       s.world,
-      () => neighbour.channelGeohash(CELL_CHANNEL) !== null,
+      () => neighbor.channelGeohash(CELL_CHANNEL) !== null,
       60_000,
     ),
   );
-  const cell = neighbour.channelGeohash(CELL_CHANNEL) ?? "";
+  const cell = neighbor.channelGeohash(CELL_CHANNEL) ?? "";
   await waitForCoarse(
     s.world,
-    () => neighbour.peers().includes(phone.peerID),
+    () => neighbor.peers().includes(phone.peerID),
     30_000,
   );
 
   const refused = signedGeohashNote(cell, "carried by nobody");
-  phone.depositWithGateway(neighbour.peerID, cell, refused);
+  phone.depositWithGateway(neighbor.peerID, cell, refused);
   await advanceFor(s.world, 5_000);
   const refusedID = (JSON.parse(refused) as { id: string }).id;
   s.check(
@@ -1495,15 +1493,15 @@ test("N16 a phone with the gateway off spends no signature check on a deposit", 
 
   // The control: the same path with the gateway on reaches the check and
   // publishes, so the silence above is the gate and not a lost packet.
-  neighbour.setSetting("gatewayEnabled", true);
-  const carried = signedGeohashNote(cell, "carried by the neighbour");
-  phone.depositWithGateway(neighbour.peerID, cell, carried);
+  neighbor.setSetting("gatewayEnabled", true);
+  const carried = signedGeohashNote(cell, "carried by the neighbor");
+  phone.depositWithGateway(neighbor.peerID, cell, carried);
   const published = await waitForCoarse(
     s.world,
     () =>
       relay
         .eventsOfKind(KIND_GEOHASH_MESSAGE)
-        .some((e) => e.content === "carried by the neighbour"),
+        .some((e) => e.content === "carried by the neighbor"),
     30_000,
   );
   s.check("with the gateway on, the deposit was published", published);
@@ -1511,7 +1509,7 @@ test("N16 a phone with the gateway off spends no signature check on a deposit", 
     "and its signature was checked on the way",
     mockVerifiedEventIDs.includes((JSON.parse(carried) as { id: string }).id),
   );
-  s.expectNone("process health", noCrashes([neighbour]));
+  s.expectNone("process health", noCrashes([neighbor]));
   s.assert(true);
 });
 
@@ -1637,7 +1635,7 @@ test("N15 a bridge ignores deposits whose sender it cannot verify", async () => 
 
 // ---- What a channel send reports ----
 
-test("N17 a retried location post is one message to the neighbour who hears both", async () => {
+test("N17 a retried location post is one message to the neighbor who hears both", async () => {
   // The composer retries a failed post under its row's id, so both copies are
   // one message wherever they land rather than a second bubble for anyone who
   // heard the first.
@@ -2237,5 +2235,111 @@ test("N25 a deposit held past the freshness window is dropped, not published", a
   await advanceFor(s.world, 20_000);
   s.check("the stale deposit was not published", !publishedText(relay, text));
   s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N26 a location post the radio carried reaches the cell once the relays are back", async () => {
+  // Only the Bluetooth leg went out, so the composer shows it sent and offers
+  // no Retry. The relay copy is owed to everyone in the cell out of range.
+  const s = (scenario = new Scenario({
+    id: "N26",
+    title: "a post held for the relays is published when they connect",
+    seed: 726,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11), relay);
+  const bob = SimDevice.create(s.world, android("bob", 22), relay);
+  // In the cell, nowhere near either of them.
+  const carol = SimDevice.create(s.world, android("carol", 33), relay);
+  const cast = [alice, bob, carol];
+  radio.add(alice);
+  radio.add(bob);
+  for (const d of cast) locations().place(d.id, PLACES.bengaluru);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(s.world, () => alice.peerCount() === 1, 30_000);
+  for (const d of cast) d.joinChannel(CELL_CHANNEL);
+  s.check(
+    "every phone resolved the city cell",
+    await cellsResolved(s, cast, CELL_CHANNEL),
+  );
+
+  relay.setOffline("alice", true);
+  const text = "the north road is flooded";
+  const status = alice.send(CELL_CHANNEL, text);
+  s.check("the radio leg reads as sent", status === "sent", status);
+  await advanceFor(s.world, 10_000);
+  s.check("no relay has it yet", !publishedText(relay, text));
+
+  relay.setOffline("alice", false);
+  s.check(
+    "it reaches the relays once they connect",
+    await waitForCoarse(s.world, () => publishedText(relay, text), 120_000),
+  );
+  s.check(
+    "and someone in the cell out of radio range",
+    await waitForCoarse(
+      s.world,
+      () => carol.texts(CELL_CHANNEL).includes(text),
+      60_000,
+    ),
+  );
+  const copies = bob.texts(CELL_CHANNEL).filter((t) => t === text).length;
+  s.check("the neighbor holds it once", copies === 1, `copies=${copies}`);
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("N27 deleting a notice after a relaunch still retracts its relay copy", async () => {
+  // The post's Nostr event ID must outlive the process, or a delete after a
+  // restart leaves the copy up for internet readers until it expires.
+  const s = (scenario = new Scenario({
+    id: "N27",
+    title: "a bridged notice is retracted after a relaunch",
+    seed: 727,
+  }));
+  const relay = new RelayFabric(s.world);
+  const lone = SimDevice.create(s.world, android("lone", 11), relay);
+  locations().place(lone.id, PLACES.bengaluru);
+  s.track(lone);
+  lone.launch();
+  lone.joinChannel(CELL_CHANNEL);
+  await cellsResolved(s, [lone], CELL_CHANNEL);
+  await waitForCoarse(s.world, () => relay.connectionCount("lone") > 0, 60_000);
+
+  const cell = lone.channelGeohash(CELL_CHANNEL) ?? "";
+  const text = "lost dog near the station";
+  s.check("the notice was posted", lone.postNotice(text, cell));
+  await waitForCoarse(
+    s.world,
+    () => relay.eventsOfKind(1).some((e) => e.content === text),
+    60_000,
+  );
+  const eventID = relay.eventsOfKind(1).find((e) => e.content === text)?.id;
+  s.check("its Nostr copy is on the relays", eventID !== undefined);
+
+  // Long enough for the relays to accept it, which is when its ID is kept.
+  await advanceFor(s.world, 5_000);
+  lone.relaunch();
+  await waitForCoarse(s.world, () => relay.connectionCount("lone") > 0, 60_000);
+  const posts = lone.store("boardStore").getState().posts as {
+    content: string;
+  }[];
+  const post = posts.find((p) => p.content === text);
+  const mesh = lone.mesh as unknown as {
+    deleteBoardPost: (post: unknown) => boolean;
+  };
+  s.check("the notice was deleted", mesh.deleteBoardPost(post));
+  const retracted = await waitForCoarse(
+    s.world,
+    () =>
+      relay
+        .eventsOfKind(5)
+        .some((e) => e.tags.some((t) => t[0] === "e" && t[1] === eventID)),
+    60_000,
+  );
+  s.check("and a deletion names its relay copy", retracted);
+  s.expectNone("process health", noCrashes([lone]));
   s.assert(true);
 });

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mesh-мережа</string>
   <string name="mesh_channel_description">Тримає mesh Airhop активним у фоні</string>
   <string name="mesh_notification_title">Mesh Airhop працює</string>
@@ -10,4 +10,18 @@
     <item quantity="many">%1$s пірів у радіусі</item>
     <item quantity="other">%1$s піра у радіусі</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth вимкнено · не скануємо</string>
+  <string name="widget_label">Піри в радіусі</string>
+  <string name="widget_description">Піри в радіусі та час, коли їх пораховано</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">пір у радіусі</item>
+    <item quantity="few">піри у радіусі</item>
+    <item quantity="many">пірів у радіусі</item>
+    <item quantity="other">піра у радіусі</item>
+  </plurals>
+  <string name="widget_nobody">нікого в радіусі</string>
+  <string name="widget_as_of">на %1$s</string>
+  <string name="widget_paused">Mesh призупинено</string>
+  <string name="widget_unset">Відкрийте Airhop</string>
+  <string name="widget_stale">Відкрийте Airhop, щоб оновити</string>
 </resources>

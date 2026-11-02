@@ -9,8 +9,8 @@
 //
 // Truncation drops whole code points rather than slicing, since a raw `.slice()`
 // can split a surrogate pair and emit a lone half that decodes to a replacement
-// character. Same rule as `fitNickname` in announce-manager.ts, which fits the
-// 32-byte nickname TLV.
+// character. Same rule as `fitNickname` in core/mesh/discovery/nickname.ts,
+// which fits the announce TLV and the contact card nickname.
 
 const encoder = new TextEncoder();
 

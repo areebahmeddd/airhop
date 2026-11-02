@@ -6,7 +6,7 @@
 // history to their durable identity, and correlate the block/city/region cells
 // they post in as one person. A fresh key per geohash breaks those links.
 //
-// Derivation matches bitchat's shape (bitchat/ios NostrIdentityBridge.swift):
+// Derivation matches bitchat's shape (bitchat-ios's NostrIdentityBridge):
 //
 //   privkey = HMAC-SHA256(seed, utf8(geohash) || u32_be(i))
 //
@@ -63,10 +63,10 @@ export function deriveGeohashIdentity(
   for (let i = 0; i < 10; i++) {
     const input = new Uint8Array(label.length + 4);
     input.set(label, 0);
-    // Big-endian counter (bitchat-ios uses BE here; Android uses LE, which is
-    // a latent divergence on their side. It only matters if i > 0, which
-    // essentially never happens: a random 32-byte HMAC is a valid scalar with
-    // overwhelming probability.)
+    // Big-endian counter, as bitchat-ios. bitchat-android uses LE, a latent
+    // divergence on their side that only matters if i > 0, which essentially
+    // never happens: a random 32-byte HMAC is a valid scalar with overwhelming
+    // probability.
     new DataView(input.buffer).setUint32(label.length, i, false);
 
     const candidate = hmac(sha256, seed, input);
@@ -83,7 +83,7 @@ export function deriveGeohashIdentity(
 // Display name convention shared with bitchat: the self-asserted nickname is
 // suffixed with the last 4 hex chars of the pubkey, so two people who pick the
 // same nickname in a public channel remain distinguishable. Nicknames here are
-// untrusted decoration; the pubkey is the identity. Normalised as an announced
+// untrusted decoration; the pubkey is the identity. Normalized as an announced
 // name is, so a bidi override cannot reorder the suffix that tells them apart.
 export function geohashDisplayName(
   pubkeyHex: string,

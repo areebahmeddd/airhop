@@ -4,10 +4,12 @@
 //
 // A copy, not the production functions: they live in a component module that
 // cannot load without React Native's UI. So it can drift, and anything not
-// listed as modelled may already differ. What it models:
+// listed as modeled may already differ. What it models:
 //
-//   startMeshWithPermissions  ask, record the blocker, prime Tor, start, then
-//                             retryRadios and the dependents, in app.tsx's order
+//   startMeshWithPermissions  ask, record the blocker, prime Tor, start, tell
+//                             the new mesh which side of the screen it is on,
+//                             then retryRadios and the dependents, in app.tsx's
+//                             order
 //   mount                     the foreground effect's resume work on whatever
 //                             mesh exists, then the "boot" launch plan: reuse a
 //                             mesh for the same identity, still running its
@@ -15,7 +17,7 @@
 //   bootStart                 the headless task's checks, start and off-screen
 //                             power, with no prompts
 //   setAppState               every AppState edge reaches setAppForeground
-//                             ("inactive" is not modelled); "active" re-checks
+//                             ("inactive" is not modeled); "active" re-checks
 //                             the radios
 //   meshStopRequested         applyPresence("away")
 //
@@ -44,9 +46,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { DeviceEventEmitter } from "react-native";
 // The real type, not a copy: the annotation below only guards against drift if
-// it points at production. This file redeclared the interface and annotated
-// against its own copy, which is how the literal kept a `needsPreciseLocation`
-// field after the real one dropped it.
+// it points at production.
 import type { BlePermissionResult } from "@platform/ble-permissions";
 import {
   destroyMeshService,
@@ -106,10 +106,9 @@ export async function ensureBlePermissions(
   os: DeviceOS,
   answer: (p: AndroidPermission) => "granted" | "denied" | "blocked",
 ): Promise<BlePermissionResult> {
-  // Annotated, so a field that stops existing on the real type is a compile
-  // error here rather than a stale property nothing reads. This object carried
-  // `needsPreciseLocation` for a while after the real one dropped it, precisely
-  // because an unannotated literal gets no excess-property check.
+  // Annotated, because an unannotated literal gets no excess-property check: a
+  // field that stops existing on the real type is a compile error here rather
+  // than a stale property nothing reads.
   const locationRequired = os.platform === "android" && os.apiLevel < 31;
   const clean: BlePermissionResult = {
     granted: true,
@@ -160,8 +159,8 @@ export interface AppShellOptions {
   answer?: (p: AndroidPermission) => "granted" | "denied" | "blocked";
 }
 
-// The alerts the app would have put on screen. Asserting on these is how we
-// check the UX story a scenario tells, not just whether the radio came up.
+// The alerts the app would have put on screen. Asserting on these is how a
+// scenario checks the UX story it tells, not just whether the radio came up.
 export interface ShownAlert {
   title: string;
   kind: "blocked" | "denied";
@@ -230,6 +229,8 @@ export class AppShell {
     }
     this.os.log("js", "initMeshService");
     initMeshService(this.identity, this.nickname);
+    // The mount effect ran before this mesh existed.
+    getMeshService()?.setAppForeground(this.os.appForeground);
     applyStartupPresence();
     // The nudge for a grant that landed while the mesh was being built.
     getMeshService()?.retryRadios();

@@ -6,7 +6,7 @@
 // It has to be awaitable, which is the only reason this is a store rather than
 // a prop: the thing that needs to wait is startMeshWithPermissions(), a
 // module-level async function with no access to React state. So it follows the
-// same shape as alert-store - transient state here, a component reading it, and
+// same shape as alert-store: transient state here, a component reading it, and
 // a plain function callers can await.
 //
 // Deliberately NOT a gate. It resolves whether the user reads it or not, it is

@@ -59,11 +59,8 @@ describe("packet-compression", () => {
     });
   });
 
-  // Byte-for-byte parity with reference zlib, the implementation behind both
-  // Android's java.util.zip.Deflater(DEFAULT_COMPRESSION, nowrap) and Apple's
-  // COMPRESSION_ZLIB. Matching it is what keeps our signing blob identical to
-  // bitchat's: both sides sign the RE-ENCODED packet and re-compress on verify,
-  // so a different encoder means a signature that will not verify.
+  // Byte-for-byte parity with reference zlib, the implementation behind
+  // bitchat-android's java.util.zip.Deflater(DEFAULT_COMPRESSION, nowrap).
   //
   // The expected bytes are frozen test vectors rather than a live zlib call, so
   // the reference cannot drift with the host's zlib version, and so this suite
@@ -231,7 +228,7 @@ describe("payload ceiling", () => {
   });
 });
 
-// The bound is a resource limit, not a behaviour change: an unbounded inflate
+// The bound is a resource limit, not a behavior change: an unbounded inflate
 // reaches the same verdict, it just pays for the whole expansion first. No
 // correctness assertion can tell the two apart, so this measures the cost.
 //

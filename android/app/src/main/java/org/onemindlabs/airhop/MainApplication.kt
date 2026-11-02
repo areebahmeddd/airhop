@@ -15,6 +15,7 @@ import org.onemindlabs.airhop.ble.AirhopBLEPackage
 import org.onemindlabs.airhop.lan.AirhopLANPackage
 import org.onemindlabs.airhop.tor.AirhopTorPackage
 import org.onemindlabs.airhop.tor.AirhopTorProxy
+import org.onemindlabs.airhop.video.AirhopVideoPackage
 import org.onemindlabs.airhop.voice.AirhopVoicePackage
 import org.onemindlabs.airhop.wifi.AirhopWiFiPackage
 
@@ -24,11 +25,15 @@ class MainApplication : Application(), ReactApplication {
         ExpoReactHostFactory.getDefaultReactHost(
             context = applicationContext,
             packageList =
+                // These reach JS through the New Architecture's interop layer, which
+                // still reads the ReactPackage overrides each one suppresses a
+                // deprecation on, until the modules move to Codegen.
                 PackageList(this).packages.apply {
                     add(AirhopBLEPackage())
                     add(AirhopWiFiPackage())
                     add(AirhopLANPackage())
                     add(AirhopVoicePackage())
+                    add(AirhopVideoPackage())
                     add(AirhopTorPackage())
                     add(AirhopAppPackage())
                 },

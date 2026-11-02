@@ -113,7 +113,7 @@ describe("local nicknames", () => {
 
   // Gated on holding their keys, not on verification. A label never leaves the
   // device and is typed against one specific peer ID, so nobody but the user
-  // can cause one; what it needs is an identity worth labelling.
+  // can cause one; what it needs is an identity worth labeling.
   it("renames anyone whose keys we hold, verified or not", () => {
     for (const source of ["qr", "link", "manual"] as const) {
       state().clearAll();
@@ -152,7 +152,7 @@ describe("local nicknames", () => {
 });
 
 // The merge rules on addContact: a write may fill gaps in a record but never
-// weaken one, whichever of the four screens made it.
+// weaken one, whichever caller made it.
 describe("addContact merges and never weakens", () => {
   const ID = "aabbccdd00112233";
 
@@ -363,7 +363,7 @@ describe("verification is separate from source", () => {
     expect(state().getContact("ffffffffffffffff")).toBeUndefined();
   });
 
-  it("hasKeys answers whether there is an identity worth labelling", () => {
+  it("hasKeys answers whether there is an identity worth labeling", () => {
     expect(hasKeys(undefined)).toBe(false);
     expect(hasKeys(makeContact({ noisePubKeyHex: "" }))).toBe(false);
     expect(hasKeys(makeContact())).toBe(true);

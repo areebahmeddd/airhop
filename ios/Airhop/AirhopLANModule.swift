@@ -7,7 +7,7 @@
 //
 // Framing and the read loop are the same shapes AirhopWiFiModule uses,
 // deliberately: both carry the same length-prefixed Airhop packets and a bug
-// fixed in one should be recognisable in the other.
+// fixed in one should be recognizable in the other.
 //
 // Three things differ from that module, each deliberately:
 //
@@ -15,7 +15,7 @@
 //     `NetworkConnection<TCP>`. Wi-Fi Aware needs iOS 26 regardless; this must
 //     run on the app's floor, and Bonjour over Network framework has been there
 //     since iOS 12. No availability gate anywhere below.
-//   * Discovery and dialling are split, because Bonjour returns the whole
+//   * Discovery and dialing are split, because Bonjour returns the whole
 //     network and who to dial is a decision. TypeScript makes it
 //     (services/lan-dial-policy.ts) and this opens what it is told to.
 //   * No token tiebreak. The Wi-Fi module needs one because Apple's discovery is
@@ -70,6 +70,11 @@ private enum LANLiveness {
   /// lan-dial-policy.ts for the mesh, MAX_MOVE_HOSTS for a transfer.
   static let maxInboundLinks = 16
   static let maxInboundMoves = 4
+  /// How long a stop lets queued sends go out before closing the links, as
+  /// FAREWELL_FLUSH_MS on the Kotlin side. The mesh hands over its LEAVE and
+  /// any voice or video END in the same tick it stops.
+  static let farewellFlush: DispatchTimeInterval = .milliseconds(300)
+  static let farewellPoll: DispatchTimeInterval = .milliseconds(10)
 }
 
 private enum LANEvent {
@@ -135,7 +140,7 @@ private enum LANFailure: Error {
 private final class LANTransport {
   private struct Link {
     let connection: NWConnection
-    /// The peer this link was dialled for, or nil for one we accepted. An
+    /// The peer this link was dialed for, or nil for one we accepted. An
     /// accepted connection is anonymous until its peer announces, and
     /// nothing here needs the name for anything but answering "already
     /// connected" to a repeat dial.
@@ -144,6 +149,8 @@ private final class LANTransport {
     /// Monotonic, so a clock change cannot trip the deadline.
     var lastReadAt = ProcessInfo.processInfo.systemUptime
     var closing = false
+    /// Sends handed to the connection and not yet processed.
+    var pendingSends = 0
   }
 
   private let emit: (String, [String: Any]) -> Void
@@ -226,9 +233,13 @@ private final class LANTransport {
       listener.newConnectionHandler = { [weak self] connection in
         self?.queue.async { self?.adopt(connection, direction: "in") }
       }
-      listener.stateUpdateHandler = { [weak self] state in
+      listener.stateUpdateHandler = { [weak self, weak listener] state in
         guard let self else { return }
         self.queue.async {
+          // A listener a teardown canceled reports `.cancelled` after the
+          // fact, by which time the next start may own the transport; only
+          // the current listener speaks for it.
+          guard let listener, self.listener === listener else { return }
           switch state {
           case .failed(let error):
             // Most often no usable network. Whoever is still waiting
@@ -317,7 +328,7 @@ private final class LANTransport {
   func stop(completion: @escaping () -> Void) {
     queue.async {
       self.settleStart(.unavailable("stopped"))
-      self.teardown()
+      self.teardown(flushing: true)
       completion()
     }
   }
@@ -325,7 +336,11 @@ private final class LANTransport {
   /// Release everything and forget we are running. Callers are already on
   /// `queue`. Keys copied before closing, matching the Kotlin side, so the
   /// loop does not walk a dictionary its own body is emptying.
-  private func teardown() {
+  ///
+  /// `flushing` lets each link's queued sends go out before it closes (see
+  /// closeAfterSends). Everything else stops at once, so a start that follows
+  /// finds nothing running.
+  private func teardown(flushing: Bool = false) {
     liveness?.cancel()
     liveness = nil
     browser?.cancel()
@@ -335,7 +350,26 @@ private final class LANTransport {
     instanceName = nil
     discovered.removeAll()
     linkByName.removeAll()
-    for id in Array(links.keys) { closeLink(id) }
+    if flushing {
+      closeAfterSends(Array(links.keys), deadline: .now() + LANLiveness.farewellFlush)
+    } else {
+      for id in Array(links.keys) { closeLink(id) }
+    }
+  }
+
+  /// The farewell (a LEAVE, a voice or video END) is handed over in the same
+  /// tick as the stop, and canceling a connection can discard what it has not
+  /// sent: the peer would keep us listed for a minute and hold a session we
+  /// cleared. Each link closes once its sends are processed, or at the
+  /// deadline. On `queue`.
+  private func closeAfterSends(_ ids: [String], deadline: DispatchTime) {
+    let waiting = ids.filter { (links[$0]?.pendingSends ?? 0) > 0 }
+    let expired = DispatchTime.now() >= deadline
+    for id in ids where expired || !waiting.contains(id) { closeLink(id) }
+    guard !expired, !waiting.isEmpty else { return }
+    queue.asyncAfter(deadline: .now() + LANLiveness.farewellPoll) { [weak self] in
+      self?.closeAfterSends(waiting, deadline: deadline)
+    }
   }
 
   /// The listener or the browser died under us.
@@ -363,16 +397,30 @@ private final class LANTransport {
       domain: LANConst.domain
     )
     let browser = NWBrowser(for: descriptor, using: parameters)
-    browser.stateUpdateHandler = { [weak self] state in
+    browser.stateUpdateHandler = { [weak self, weak browser] state in
       guard let self else { return }
       self.queue.async {
-        if case .failed(let error) = state {
+        // As for the listener: a canceled browser must not end the next run.
+        guard let browser, self.browser === browser else { return }
+        switch state {
+        case .failed(let error):
           // Browsing is what raises the local network prompt, so a
           // refusal shows up here rather than at start.
           if case .dns(let code) = error, code == kDNSServiceErr_PolicyDenied {
             self.policyDenied = true
           }
           self.reportDead(.unavailable(String(describing: error)))
+        case .waiting(let error):
+          // A refusal can also arrive as waiting, which would otherwise sit
+          // there for good over a transport that resolved as running. Any
+          // other wait is a network still coming up, and the listener says
+          // when there is none.
+          if case .dns(let code) = error, code == kDNSServiceErr_PolicyDenied {
+            self.policyDenied = true
+            self.reportDead(.unavailable(String(describing: error)))
+          }
+        default:
+          break
         }
       }
     }
@@ -489,11 +537,15 @@ private final class LANTransport {
             // trying.
             onReady?(.connectFailed(String(describing: error)))
           }
+          // A failed connection still holds this handler, and the handler
+          // holds the connection, until it is canceled. The `.cancelled`
+          // that follows finds the link already retired.
+          connection.cancel()
           self.retire(linkID)
         case .cancelled:
           if !settled {
             settled = true
-            onReady?(.connectFailed("cancelled"))
+            onReady?(.connectFailed("canceled"))
           }
           self.retire(linkID)
         default:
@@ -530,9 +582,7 @@ private final class LANTransport {
           maximumLength: length
         ) { payload, _, payloadComplete, payloadError in
           self.queue.async {
-            guard payloadError == nil, !payloadComplete, let payload,
-              payload.count == length
-            else {
+            guard payloadError == nil, let payload, payload.count == length else {
               self.closeLink(linkID)
               return
             }
@@ -543,6 +593,13 @@ private final class LANTransport {
                 "dataBase64": payload.base64EncodedString(),
               ]
             )
+            // A peer that closes straight after its last frame, a LEAVE on
+            // the way out, delivers the frame and the FIN together. The frame
+            // is taken first, then the close.
+            if payloadComplete {
+              self.closeLink(linkID)
+              return
+            }
             self.readFrame(linkID: linkID, connection: connection)
           }
         }
@@ -562,11 +619,14 @@ private final class LANTransport {
     completion: @escaping (LANFailure?) -> Void
   ) {
     queue.async {
-      guard let link = self.links[linkID], !link.closing else {
+      guard var link = self.links[linkID], !link.closing else {
         completion(.unknownLink(linkID))
         return
       }
-      // `NWConnection.send` serialises on its own: frames queued from one
+      // Counted so a stop can wait for it; see closeAfterSends.
+      link.pendingSends += 1
+      self.links[linkID] = link
+      // `NWConnection.send` serializes on its own: frames queued from one
       // connection go out in order and cannot interleave, which is what
       // the Wi-Fi module needs a SerialSender to guarantee.
       link.connection.send(
@@ -574,6 +634,10 @@ private final class LANTransport {
         completion: .contentProcessed { [weak self] error in
           guard let self else { return }
           self.queue.async {
+            if var current = self.links[linkID] {
+              current.pendingSends -= 1
+              self.links[linkID] = current
+            }
             if let error {
               // A refused write cannot carry the rest of the
               // transfer either, so tear down here rather than
@@ -589,7 +653,7 @@ private final class LANTransport {
     }
   }
 
-  /// Ask a link to end. Cancelling drives the state handler, whose `.cancelled`
+  /// Ask a link to end. Canceling drives the state handler, whose `.cancelled`
   /// branch calls `retire`, which is what reports it.
   private func closeLink(_ linkID: String) {
     guard var link = links[linkID], !link.closing else { return }
@@ -599,7 +663,7 @@ private final class LANTransport {
   }
 
   /// Forget a link and tell TypeScript. Idempotent: a connection can report
-  /// failed and then cancelled, and only the first of those retires it.
+  /// failed and then canceled, and only the first of those retires it.
   private func retire(_ linkID: String) {
     guard let link = links.removeValue(forKey: linkID) else { return }
     // Only if it still points here: a newer link may have claimed the name,
@@ -626,7 +690,7 @@ private enum MoveEvent {
 private final class MoveTransport {
   private struct Connection {
     let connection: NWConnection
-    /// Accepted rather than dialled, for the inbound cap.
+    /// Accepted rather than dialed, for the inbound cap.
     let inbound: Bool
     var ready = false
     var lastReadAt = ProcessInfo.processInfo.systemUptime
@@ -786,11 +850,14 @@ private final class MoveTransport {
             settled = true
             onReady?(nil, .connectFailed(String(describing: error)))
           }
+          // As in LANTransport.adopt: canceled, or the connection and this
+          // handler hold each other.
+          connection.cancel()
           self.retire(id)
         case .cancelled:
           if !settled {
             settled = true
-            onReady?(nil, .connectFailed("cancelled"))
+            onReady?(nil, .connectFailed("canceled"))
           }
           self.retire(id)
         default:
@@ -853,9 +920,7 @@ private final class MoveTransport {
           maximumLength: length
         ) { payload, _, payloadComplete, payloadError in
           self.queue.async {
-            guard payloadError == nil, !payloadComplete, let payload,
-              payload.count == length
-            else {
+            guard payloadError == nil, let payload, payload.count == length else {
               self.close(id)
               return
             }
@@ -863,6 +928,11 @@ private final class MoveTransport {
               MoveEvent.data,
               ["connectionID": id, "dataBase64": payload.base64EncodedString()]
             )
+            // A last frame can arrive with the FIN; see LANTransport.readFrame.
+            if payloadComplete {
+              self.close(id)
+              return
+            }
             self.readFrame(id: id, connection: connection)
           }
         }

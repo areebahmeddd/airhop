@@ -1,8 +1,4 @@
-// AirhopTorModule.mm
-//
 // Objective-C bridge for AirhopTorModule.swift.
-// Registers the module with React Native and declares all exported methods
-// so the RN codegen can include them in the JS bundle.
 
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
@@ -13,7 +9,8 @@ RCT_EXTERN_METHOD(startTor:(NSString *)bridgeLines
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(stopTor:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(stopTor:(BOOL)keepHeld
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(wipeTorState:(RCTPromiseResolveBlock)resolve

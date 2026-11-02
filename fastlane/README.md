@@ -6,7 +6,7 @@ Store listings for Google Play, the App Store and Zapstore, plus the fastlane la
 
 ```text
 fastlane/
-├── Appfile                  # bundle identifier, team ID
+├── Appfile                  # bundle identifier
 ├── Fastfile                 # ios beta (TestFlight), ios metadata (listing)
 ├── screenshots/en-US/       # App Store, 1290x2796, from press/
 └── metadata/
@@ -55,11 +55,11 @@ Add the file before tagging. Without it the release still builds and the App Sto
 
 ## iOS release
 
-Tagging `vX.Y.Z` runs `ios-release` in `.github/workflows/release.yml` on a macOS runner:
+`scripts/release.sh X.Y.Z` stamps the app and the widget extension with `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` before it commits and tags, so the tag already carries both. Pushing the tag `vX.Y.Z` runs `ios-release` in `.github/workflows/release.yml` on a macOS runner:
 
-1. Stamp `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` from the tag.
-2. Decode the distribution certificate and App Store profile from secrets.
-3. `fastlane ios beta`: import them into a temporary keychain, archive, upload to TestFlight.
+1. Check every secret below is set, so a missing one fails with its name rather than deep inside fastlane.
+2. Decode the distribution certificate and the two App Store profiles, the app's and the widget extension's, from secrets.
+3. `fastlane ios beta`: import them into a temporary keychain, sign both targets for `APPLE_TEAM_ID`, archive, upload to TestFlight.
 4. Attest the IPA and keep it as a workflow artifact for 90 days.
 5. `fastlane ios metadata`: create or update the App Store version, listing and screenshots.
 
@@ -67,16 +67,18 @@ Submitting for review is done by hand in App Store Connect.
 
 ### Secrets
 
-| Secret                            | Holds                                      |
-| --------------------------------- | ------------------------------------------ |
-| `APP_STORE_CONNECT_KEY_ID`        | API key ID                                 |
-| `APP_STORE_CONNECT_ISSUER_ID`     | API key issuer                             |
-| `APP_STORE_CONNECT_KEY_P8`        | base64 of the `.p8`                        |
-| `IOS_CERTIFICATE_BASE64`          | base64 of the Apple Distribution `.p12`    |
-| `IOS_CERTIFICATE_PASSWORD`        | password set when the `.p12` was exported  |
-| `IOS_PROVISIONING_PROFILE_BASE64` | base64 of the App Store `.mobileprovision` |
+| Secret                                   | Holds                                               |
+| ---------------------------------------- | --------------------------------------------------- |
+| `APP_STORE_CONNECT_KEY_ID`               | API key ID                                          |
+| `APP_STORE_CONNECT_ISSUER_ID`            | API key issuer                                      |
+| `APP_STORE_CONNECT_KEY_P8`               | base64 of the `.p8`                                 |
+| `APPLE_TEAM_ID`                          | the 10-character team ID, under Membership details  |
+| `IOS_CERTIFICATE_BASE64`                 | base64 of the Apple Distribution `.p12`             |
+| `IOS_CERTIFICATE_PASSWORD`               | password set when the `.p12` was exported           |
+| `IOS_PROVISIONING_PROFILE_BASE64`        | base64 of the app's App Store `.mobileprovision`    |
+| `IOS_WIDGET_PROVISIONING_PROFILE_BASE64` | base64 of the widget's App Store `.mobileprovision` |
 
-### Making the certificate and profile
+### Making the certificate and profiles
 
 Once, on any machine with `openssl`. Nothing here needs a Mac.
 
@@ -91,14 +93,24 @@ openssl x509 -in distribution.cer -inform DER -out distribution.pem
 openssl pkcs12 -export -inkey distribution.key -in distribution.pem -out airhop-distribution.p12
 ```
 
-The export password becomes `IOS_CERTIFICATE_PASSWORD`. Under Profiles, create an App Store Connect profile for `org.onemindlabs.airhop` with that certificate and download it. base64 both files into the secrets:
+The export password becomes `IOS_CERTIFICATE_PASSWORD`.
+
+The app embeds a widget extension, and the two share an App Group, which is where the app leaves the mesh snapshot the widget draws. Each needs its own App ID and profile:
+
+1. Under Identifiers, App Groups, register `group.org.onemindlabs.airhop`.
+2. On the App ID `org.onemindlabs.airhop`, enable App Groups and select that group, beside the capabilities it already has.
+3. Register the App ID `org.onemindlabs.airhop.widget`, with App Groups enabled and the same group selected. It needs nothing else.
+4. Under Profiles, create an App Store Connect profile for each App ID with the distribution certificate, and download both. The app's profile has to be made after step 2, so it carries the group.
+
+base64 the certificate and both profiles into the secrets:
 
 ```bash
 base64 -w0 airhop-distribution.p12
 base64 -w0 airhop.mobileprovision
+base64 -w0 airhop-widget.mobileprovision
 ```
 
-Both expire; the portal shows the dates. Regenerate the profile whenever a capability is added to the App ID, since the profile pins the entitlement set.
+All three expire; the portal shows the dates. Regenerate a profile whenever a capability is added to its App ID, since the profile pins the entitlement set. The group ID is also written in `ios/Airhop/Airhop.entitlements`, `ios/AirhopWidget/AirhopWidget.entitlements` and `MeshWidgetState.swift`; all four must agree, or the widget reads an empty store and shows "Open Airhop".
 
 ## Adding a language
 

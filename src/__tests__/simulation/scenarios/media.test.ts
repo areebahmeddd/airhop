@@ -4,14 +4,11 @@
 // A photo is one FILE_TRANSFER packet split into fragments that each fit a single
 // BLE write, paced onto the radio 20ms apart. A live voice burst is a stream of
 // small packets that must NOT enter the fragment scheduler. Both share one
-// radio. Every
-// scenario here is about what happens when they share it badly.
+// radio. Every scenario here is about what happens when they share it badly.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("../harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -228,7 +225,7 @@ test("M10 a photo at the send budget arrives, every frame legal", async () => {
   for (const d of devices) d.joinChannel(channel);
 
   // A full-size photo is hundreds of fragments, the path where a sizing mistake
-  // or a stalled assembly actually shows up. 40 KB is only 88.
+  // or a stalled assembly actually shows up.
   const photo = media.jpeg(MAX_SENT_IMAGE_BYTES);
   const accepted = alice.sendAttachment(channel, photo, {
     type: "image",
@@ -548,7 +545,7 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   );
 
   // 4. Channel injection: a genuinely signed broadcast from mallory tagged for
-  //    a room bob never joined. Honouring the tag verbatim would create the
+  //    a room bob never joined. Honoring the tag verbatim would create the
   //    room on the spot to hold it.
   radio.injectTo(
     bob.id,
@@ -571,7 +568,7 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
 
   // 5. A public photo under alice's ID, signed by mallory, arriving whole as it
   //    would over Wi-Fi or LAN. Relaying it would cut it into Bluetooth
-  //    fragments for every other neighbour.
+  //    fragments for every other neighbor.
   radio.injectTo(
     bob.id,
     mallory.id,
@@ -596,7 +593,7 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   );
 
   // The control: a real attachment from alice still arrives. A rule that
-  // dropped everything would pass all four checks above and be worthless. A DM
+  // dropped everything would pass every check above and be worthless. A DM
   // attachment needs a session, which a text opens.
   alice.send(`dm:${bob.peerID}`, "photo coming");
   await waitFor(
@@ -628,9 +625,9 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
 test("M07 a recorded voice burst cannot be replayed later at someone else", async () => {
   // Live voice is the one feature where a signature alone is not enough.
   //
-  // The signing preimage normalises ttl and isRSR, so a captured VOICE_FRAME
+  // The signing preimage normalizes ttl and isRSR, so a captured VOICE_FRAME
   // replays byte-for-byte and verifies perfectly against the real speaker's
-  // announce-bound key. The deduplicator is no defence either: its window is
+  // announce-bound key. The deduplicator is no defense either: its window is
   // five minutes and its state is per device, so it has nothing to say about a
   // phone that never heard the original. Without a freshness bound, someone
   // could record Alice in one room and play her voice out of a stranger's phone
@@ -769,7 +766,7 @@ test("M07 a recorded voice burst cannot be replayed later at someone else", asyn
 test("M05 live push-to-talk reaches the other phone's speaker", async () => {
   const s = (scenario = new Scenario({
     id: "M05",
-    title: "a burst is captured, packetised, relayed, buffered and played",
+    title: "a burst is captured, packetized, relayed, buffered and played",
     seed: 29,
   }));
   const { radio, devices } = room(s, [
@@ -928,7 +925,7 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   bob.openThread(bobThread);
 
   // A DM has to happen first: the Noise session, and therefore the 0x21 proof
-  // that authorises sealing, is established by talking. This is the real
+  // that authorizes sealing, is established by talking. This is the real
   // sequence a person goes through, not a shortcut around it.
   alice.send(aliceThread, "sending you the photo");
   const talked = await waitFor(
@@ -938,7 +935,7 @@ test("M09 a private photo is sealed in the session, not signed in the open", asy
   );
   s.check("a session was established by the first message", talked);
 
-  // Then wait for the thing that actually authorises sealing, rather than
+  // Then wait for the thing that actually authorizes sealing, rather than
   // treating "the text arrived" as a proxy for it. Bob receiving alice's
   // message proves alice's session works; it does NOT prove alice has yet
   // processed bob's 0x21 coming the other way, and that is what she needs.
@@ -1159,18 +1156,17 @@ test("M16 a private photo shows delivered once the other phone has it", async ()
 });
 
 test("M12 a photo Airhop sends is reassembled by a bitchat phone", async () => {
-  // The one claim nothing tested. Byte fixtures prove our file TLV matches
-  // bitchat's layout, and the radio's link limit proves each frame is legal, but
-  // neither says a node playing by bitchat's rules can put the fragments back
-  // together and get the original photo out. That is exactly what was false in
-  // the field: every frame was 45 bytes over the ATT ceiling, so bitchat's
-  // decoder rejected each one and no photo ever arrived, silently, in both
+  // Byte fixtures prove Airhop's file TLV matches bitchat's layout, and the
+  // radio's link limit proves each frame is legal, but neither says a node
+  // playing by bitchat's rules can put the fragments back together and get the
+  // original photo out. bitchat's decoder rejects a frame over the ATT ceiling,
+  // so an oversized fragment means no photo ever arrives, silently, in both
   // directions.
   //
-  // Sent at the real send budget, so this also stands as the guard on it: 256KiB
-  // is about eleven seconds of paced fragments, and bitchat abandons a stream
-  // thirty seconds after its FIRST fragment. Raise the budget far enough and this
-  // scenario reports an expired assembly instead of a photo.
+  // Sent at the real send budget, so this also stands as the guard on it:
+  // 256 KiB is about eleven seconds of paced fragments, and bitchat abandons a
+  // stream thirty seconds after its FIRST fragment. Raise the budget far enough
+  // and this scenario reports an expired assembly instead of a photo.
   const s = (scenario = new Scenario({
     id: "M12",
     title: "Airhop photo, reassembled and decoded by bitchat's rules",
@@ -1300,7 +1296,7 @@ test("M11 a bitchat-android voice burst reaches an Airhop speaker", async () => 
     `${String(bob.voice?.framesPlayed.length ?? 0)} frames played`,
   );
   // The frames that came out of the speaker are the ones the bitchat node put
-  // in, not something the player synthesised to cover a gap.
+  // in, not something the player synthesized to cover a gap.
   s.check(
     "the audio is what was spoken, byte for byte",
     (bob.voice?.framesPlayed ?? []).some(

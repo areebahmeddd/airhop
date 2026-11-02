@@ -28,7 +28,7 @@ export function createExpoFileSystemMock(): unknown {
 
     constructor(base: unknown, name?: string) {
       // Called both as new File(Paths.cache, "name") and, in principle, with a
-      // full uri. Only the first form is used by the app today.
+      // full uri. Only the first form is used by the app.
       const dir = typeof base === "string" ? base : CACHE;
       this.name = name ?? "";
       this.uri = `${dir}${this.name}`;
@@ -148,6 +148,7 @@ const FRAME_INTERVAL_MS = 64;
 // 16kHz mono encoder produces at 1024 samples per frame. Emitting on a clock
 // rather than in a burst is the point: it is what puts voice packets in
 // contention with a file transfer, and contention is the bug surface.
+//
 // The emitter is BOUND from inside the sandbox rather than captured here, and
 // that detail is load-bearing.
 //
@@ -194,8 +195,9 @@ export function createNativeVoiceMock(): {
       if (timer !== null) return;
       timer = setInterval(() => {
         // A raw AAC frame: no ADTS header, as the codec byte fully describes
-        // it (PROTOCOLS.md 3.1). ~40 bytes at 16kbps/64ms, well under the
-        // 210-byte burst cap that keeps voice out of the fragment scheduler.
+        // it (PROTOCOLS.md 3.1). Shorter than the ~130 bytes a real one runs to,
+        // and both well under the 210-byte burst cap that keeps voice out of the
+        // fragment scheduler.
         const frame = new Uint8Array(40);
         frame[0] = 0x21;
         frame[1] = seq & 0xff;
@@ -224,10 +226,10 @@ export function createNativeVoiceMock(): {
       record.playbackStopped++;
     },
     addListener(): void {
-      /* NativeEventEmitter contract */
+      // NativeEventEmitter contract
     },
     removeListeners(): void {
-      /* NativeEventEmitter contract */
+      // NativeEventEmitter contract
     },
     // Called from inside the sandbox with that phone's own event emitter.
     __bindEmitter(

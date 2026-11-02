@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "A sua identidade é um par de chaves {ed25519} gerado no seu dispositivo e guardado no {ios_keychain} ou no {android_keystore}. Não há contas, nem registos, nem nada que toque num servidor, ou seja, pode ser usada como aplicação descartável que não deixa nada a ligar de volta a si depois de eliminada.",
   "home.about.body.crypto":
-    "Cada sessão usa o protocolo {noise} para um handshake autenticado. As mensagens guardadas usam o algoritmo {ratchet}, ou seja, mesmo que o seu dispositivo seja comprometido mais tarde, as suas mensagens antigas continuam ilegíveis. A limpeza de pânico destrói todas as chaves e mensagens em menos de um segundo.",
+    "Cada sessão usa o protocolo {noise} para um handshake autenticado. As mensagens diretas em direto entre telemóveis com Airhop usam o algoritmo {ratchet}, ou seja, uma chave divulgada mais tarde não abre as mensagens já enviadas. A limpeza de pânico destrói todas as chaves e mensagens em menos de um segundo.",
   "home.about.body.internet":
     "Quando você e um contacto estão fora do alcance do Bluetooth, os relays do {nostr} servem de ponte pela Internet, usando mensagens diretas embrulhadas no formato {nip17}, por isso a rede mesh estende-se globalmente sempre que os dois estiverem online. O suporte a {tor} está disponível no iOS e no Android, via {arti}, com bridges {obfs4}, {snowflake} e {webtunnel} para redes que bloqueiam o Tor.",
   "home.about.optional.title": "O Airhop tem funcionalidades opcionais que pode ativar:",
@@ -171,9 +171,9 @@ const strings: Strings = {
     "Links de convite para uma sala, ou uma lista assinada de até 16.",
   "home.features.messaging.board.name": "Quadro de avisos",
   "home.features.messaging.board.line": "Avisos fixados numa área por até sete dias.",
-  "home.features.messaging.voice.name": "Voz ao vivo",
+  "home.features.messaging.voice.name": "Voz e vídeo ao vivo",
   "home.features.messaging.voice.line":
-    "Prima o microfone e fale com quem estiver ao alcance, estilo walkie-talkie.",
+    "Prima o microfone para falar, ou transmita em direto pela câmara, para quem estiver ao alcance.",
   "home.features.messaging.notes.name": "Notas de voz",
   "home.features.messaging.notes.line": "Áudio gravado, mais rápido do que escrever indicações.",
   "home.features.messaging.files.name": "Fotos, vídeo e ficheiros",

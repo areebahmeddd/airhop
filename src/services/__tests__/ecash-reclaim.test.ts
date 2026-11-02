@@ -3,9 +3,8 @@
 // A token send is three things at once: reserved proofs in the wallet, a message
 // in a DM thread, and, when it found no route, an entry in the outbox. The outbox
 // is a promise to deliver: `flushOutbox` sends what is in it as soon as a route
-// appears. Leaving the entry there put the proofs back in the spendable balance
-// while the mesh still held a copy to hand over, so the next route to appear
-// delivered a token the sender had already taken back.
+// appears. An entry left behind would hand over, on the next route, a token whose
+// proofs are back in the sender's spendable balance.
 //
 // These tests pin that invariant, and the DM's own state alongside it, since a
 // bubble stuck on "Sending" is what the user sees go wrong.
@@ -143,7 +142,7 @@ describe("reclaimTokenSend", () => {
     ).toBe("completed");
   });
 
-  it("handles a token that was never addressed to a peer", () => {
+  it("reclaims a token never addressed to a peer, and drops its outbox entry", () => {
     seedQueuedSend({ counterparty: undefined });
 
     expect(reclaimTokenSend(TX)).toBe(true);

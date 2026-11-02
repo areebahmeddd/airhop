@@ -67,7 +67,7 @@ type PermKey =
   | "photos"
   | "microphone";
 
-// What we know about one permission right now.
+// What is known about one permission right now.
 //   granted    the OS has said yes
 //   askable    not granted, but the OS will still show its prompt
 //   blocked    denied for good; only system settings can change it
@@ -134,7 +134,7 @@ const PERMISSIONS: PermMeta[] = [
   },
 ];
 
-// Turn an Expo permission response into our three real states. `canAskAgain`
+// Turn an Expo permission response into the three real states. `canAskAgain`
 // is the only thing that separates "not yet" from "not ever without Settings".
 function toState(p: PermissionLike): PermState {
   if (p.granted) return "granted";
@@ -194,9 +194,9 @@ export default function PermissionsScreen({
           if (Platform.OS !== "android") return "unmanaged";
           if (await hasBlePermissions()) return "granted";
           // Android cannot be asked whether a denial is permanent without an
-          // Activity, so the answer comes from the last request that WAS made -
+          // Activity, so the answer comes from the last request that was made:
           // the store flag the mesh banner already reads. Without it this row
-          // could only ever say "askable", and offered an Allow that the OS
+          // could only ever say "askable", offering an Allow that the OS
           // silently swallows for someone who has refused twice.
           return useMeshStateStore.getState().blePermissionBlocked
             ? "blocked"
@@ -243,15 +243,15 @@ export default function PermissionsScreen({
         case "bluetooth": {
           const result = await ensureBlePermissions();
           // Whether the refusal is permanent is only knowable from the request
-          // itself, so it has to be recorded wherever a request happens - not
+          // itself, so it has to be recorded wherever a request happens, not
           // only on the startup path. Missing it here would leave a stale
           // "blocked" over a permission the user has since granted.
           useMeshStateStore
             .getState()
             .setBlePermissionBlocked(result.blockedForever);
           // Everything else is left to the radio controller. A grant is not the
-          // same as a working radio - Bluetooth may still be off, and on Android
-          // the stack honours a fresh grant a moment after the app can see it -
+          // same as a working radio (Bluetooth may still be off, and on Android
+          // the stack honors a fresh grant a moment after the app can see it),
           // and the controller is the one place that knows how to tell those
           // apart.
           getMeshService()?.retryRadios();
@@ -269,9 +269,9 @@ export default function PermissionsScreen({
           const granted = await requestLocationPermission();
           useMeshStateStore.getState().setLocationGranted(granted);
           // Re-resolve the location channels, exactly as the startup path does
-          // after the same grant. Without it the grant was recorded and nothing
-          // acted on it, so #block and its neighbours stayed empty until the
-          // next app resume - which reads as the permission not having worked.
+          // after the same grant. Without it the grant is recorded and nothing
+          // acts on it, so #block and its neighbors stay empty until the next
+          // app resume, which reads as the permission not having worked.
           if (granted) {
             getMeshService()?.refreshGeoChannels();
             // Android 11 and below: the permission the mesh waits on IS

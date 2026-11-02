@@ -17,7 +17,7 @@ describe("wire values", () => {
   test("authenticatedPeerState is 0x21", () => {
     expect(NoisePayloadType.AUTHENTICATED_PEER_STATE).toBe(0x21);
   });
-  test("privateFile is 0x20, with 0x09 accepted from prerelease iOS", () => {
+  test("privateFile is 0x20, with 0x09 accepted from prerelease bitchat-ios", () => {
     expect(NoisePayloadType.PRIVATE_FILE).toBe(0x20);
     expect(NoisePayloadType.PRIVATE_FILE_LEGACY_ALIAS).toBe(0x09);
   });
@@ -113,7 +113,7 @@ describe("malformed input is refused whole", () => {
 
   // Two byte strings meaning one value is a fingerprinting handle and a place
   // for implementations to disagree, so the packet is refused rather than the
-  // field quietly normalised.
+  // field quietly normalized.
   test("a non-minimal capability encoding is ignored", () => {
     const nonMinimal = new Uint8Array([
       0x01,

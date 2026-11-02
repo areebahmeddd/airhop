@@ -30,9 +30,8 @@ export interface BitchatDmContent {
   type: number; // NoisePayloadType
   messageID: string;
   content: string; // empty for receipts
-  // Raw payload body, for the types that carry bytes rather than text. Only
-  // CONTACT_CARD uses it today; `content` stays the text channel so no existing
-  // caller has to learn about it.
+  // Raw payload body, for the types that carry bytes rather than text: only
+  // CONTACT_CARD. `content` stays the text channel.
   body?: Uint8Array;
 }
 

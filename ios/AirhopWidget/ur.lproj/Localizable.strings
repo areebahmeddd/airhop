@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-ur/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "بلوٹوتھ بند · تلاش نہیں کر رہا";
+"widget_label" = "حدود میں پیئرز";
+"widget_description" = "حدود میں پیئرز، اور انہیں کب گنا گیا";
+"widget_nobody" = "حدود میں کوئی نہیں";
+"widget_as_of" = "%1$@ تک";
+"widget_paused" = "میش موقوف";
+"widget_unset" = "Airhop کھولیں";
+"widget_stale" = "تازہ کرنے کے لیے Airhop کھولیں";

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Red en malla</string>
   <string name="mesh_channel_description">Mantiene la malla de Airhop activa en segundo plano</string>
   <string name="mesh_notification_title">Malla de Airhop activa</string>
@@ -9,4 +9,17 @@
     <item quantity="many">%1$s pares al alcance</item>
     <item quantity="other">%1$s pares al alcance</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth desactivado · sin buscar</string>
+  <string name="widget_label">Pares al alcance</string>
+  <string name="widget_description">Pares al alcance y la hora en que se contaron</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">par al alcance</item>
+    <item quantity="many">pares al alcance</item>
+    <item quantity="other">pares al alcance</item>
+  </plurals>
+  <string name="widget_nobody">nadie al alcance</string>
+  <string name="widget_as_of">a las %1$s</string>
+  <string name="widget_paused">Malla en pausa</string>
+  <string name="widget_unset">Abre Airhop</string>
+  <string name="widget_stale">Abre Airhop para actualizar</string>
 </resources>

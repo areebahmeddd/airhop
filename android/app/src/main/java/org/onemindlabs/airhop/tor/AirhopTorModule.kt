@@ -47,7 +47,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
 
     override fun getName(): String = NAME
 
-    // Start, stop and wipe are serialised onto one thread. Each blocks (a start
+    // Start, stop and wipe are serialized onto one thread. Each blocks (a start
     // builds the client and binds the port, a stop waits for the runtime to wind
     // down) and running two at once is never meaningful.
     private val worker = Executors.newSingleThreadExecutor { r ->
@@ -84,7 +84,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
 
     private fun dataDir(): File = File(reactContext.filesDir, DATA_DIR)
 
-    // MARK: - JS-callable methods
+    // ---- JS-callable methods ----
 
     // Resolves once startup has been initiated, not once Tor is usable; use
     // awaitTorReady for that.
@@ -113,7 +113,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                 // a direct route for a user who asked not to have one.
                 Log.e(TAG, "pluggable transports did not start")
                 emitStatus()
-                promise.reject("tor_transport_failed", "pluggable transports did not start")
+                promise.reject(TorStartFailure.TRANSPORT, "pluggable transports did not start")
                 return@execute
             }
 
@@ -140,7 +140,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                 // Traffic stays held: a toggle unwinds through stopTor, and a
                 // start at launch stays failed closed, even when another app
                 // holds the port.
-                promise.reject("tor_start_failed", "arti start failed (rc=$rc)")
+                promise.reject(TorStartFailure.codeFor(rc), "arti start failed (rc=$rc)")
                 return@execute
             }
             AirhopTorProxy.route(SOCKS_PORT)
@@ -149,9 +149,12 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // Stop Arti and put traffic back on a direct connection.
+    // Stop Arti and put traffic back on a direct connection, unless `keepHeld`:
+    // a bridge change starts again straight after, and a request in that gap
+    // (a wallet call to a mint) must fail rather than leave on the clear net.
+    // The next startTor or stopTor moves it on.
     @ReactMethod
-    fun stopTor(promise: Promise) {
+    fun stopTor(keepHeld: Boolean, promise: Promise) {
         attemptEpoch.incrementAndGet()
         stopPolling()
         worker.execute {
@@ -161,7 +164,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
             AirhopTorProxy.hold()
             ArtiNative.stop()
             AirhopIPtProxy.stop()
-            AirhopTorProxy.route(null)
+            if (!keepHeld) AirhopTorProxy.route(null)
             emitStatus()
             promise.resolve(null)
         }
@@ -200,10 +203,8 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         promise.resolve(null)
     }
 
-    // Dormancy, not a stop. The foreground service keeps the process
-    // alive, so without this a backgrounded Airhop refreshes a consensus all
-    // day on a battery. A stop would drop the guards and cost a fresh bootstrap
-    // on every return.
+    // Dormancy (see ArtiNative.setDormant), not a stop, which would drop the
+    // guards and cost a fresh bootstrap on every return.
     @ReactMethod
     fun setAppForeground(foreground: Boolean, promise: Promise) {
         worker.execute {
@@ -260,15 +261,15 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
         listenerCount = maxOf(0, listenerCount - count.toInt())
     }
 
-    // MARK: - Status reporting
+    // ---- Status reporting ----
 
     private fun statusMap(): WritableNativeMap {
         val status = ArtiNative.status()
         return WritableNativeMap().apply {
             putBoolean("isReady", status.ready)
-            // Running, not yet carrying traffic, and not stuck. Blocked is
-            // not "starting": the banner has to be able to say the
-            // network refused rather than spinning forever.
+            // Running, not yet carrying traffic, and not stuck. Blocked is not
+            // "starting": the banner has to be able to say the network refused
+            // rather than spinning forever.
             putBoolean("isStarting", status.running && !status.ready && !status.blocked)
             // Matches iOS: the port is reported only once it is usable, so a
             // caller cannot read a port out of a status and dial into a circuit

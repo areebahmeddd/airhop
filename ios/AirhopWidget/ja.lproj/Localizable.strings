@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-ja/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetoothがオフです · スキャンしていません";
+"widget_label" = "圏内のピア";
+"widget_description" = "圏内のピアの数と、数えた時刻";
+"widget_nobody" = "圏内に誰もいません";
+"widget_as_of" = "%1$@時点";
+"widget_paused" = "メッシュを一時停止中";
+"widget_unset" = "Airhopを開く";
+"widget_stale" = "Airhopを開いて更新";

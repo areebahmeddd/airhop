@@ -1,4 +1,3 @@
-// TextButton component.
 // The quiet counterpart to PrimaryButton: a label with no fill, for the way out
 // under a primary action (Cancel, Close, Back).
 

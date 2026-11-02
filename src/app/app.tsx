@@ -110,6 +110,8 @@ import {
   primeTorRoutingOnStartup,
   revalidateTorRouting,
 } from "@services/tor-routing";
+import { turnOnLocation } from "@services/turn-on-location";
+import { discardStaleVideoWork } from "@services/video-prepare";
 import {
   initWalletService,
   publishOwnNutzapInfo,
@@ -169,6 +171,7 @@ import {
   type ChannelFilter,
   type DmFilter,
 } from "@utils/chat-filter";
+import { isMeshLink } from "@utils/deep-link";
 import { amountParts } from "@utils/format";
 import { sumUnread } from "@utils/unread";
 import { peerIDToUsername } from "@utils/username";
@@ -286,9 +289,9 @@ let staleSendsSettled = false;
 
 // Request the BLE runtime permissions the OS requires, THEN start the mesh.
 // Without the grant, native startScanning/startAdvertising throw and are
-// swallowed: a silent, total discovery failure. On denial we surface a
-// dialog instead of failing quietly, and still start the service so Nostr
-// (internet) transport keeps working even when BLE is unavailable.
+// swallowed: a silent, total discovery failure. A denial is surfaced rather
+// than left quiet (see applyBlePermissionResult), and the service still starts
+// so Nostr (internet) transport keeps working even when BLE is unavailable.
 async function startMeshWithPermissions(
   identity: Identity,
   nickname: string,
@@ -303,7 +306,7 @@ async function startMeshWithPermissions(
   // than the one it exists to prevent.
   //
   // Android-only in practice, and correctly so: hasBlePermissions() resolves
-  // true on iOS, where CoreBluetooth prompts on first use and carries our own
+  // true on iOS, where CoreBluetooth prompts on first use and carries Airhop's
   // NSBluetoothAlwaysUsageDescription string. That prompt IS the primer there,
   // and iOS has no location coupling to explain away. The sheet still renders
   // correctly on iOS if it is ever shown; it simply is not needed.
@@ -362,6 +365,11 @@ async function startMeshWithPermissions(
     // socket and the Privacy screen reports Tor as off, which is true.
   }
   initMeshService(identity, nickname);
+  // A new mesh assumes the foreground, and the mount effect's AppState report
+  // reached no mesh. On an iOS relaunch into the background (Bluetooth state
+  // restoration) that would run the radios and the location heartbeat as if on
+  // screen until the first AppState change.
+  getMeshService()?.setAppForeground(AppState.currentState !== "background");
   applyStartupPresence();
   // Re-syncs the native auto-start flag on every real launch, in case a
   // toggle's own write was ever missed.
@@ -448,7 +456,10 @@ function startMeshDependents(): void {
   // Arrivals become notifications, bell entries and the badge. Idempotent:
   // a boot start may already have started it for this mesh.
   const nickname = peerIDToUsername(mesh.peerID);
-  startNotificationPipeline(() => nickname);
+  startNotificationPipeline(
+    () => nickname,
+    (channel) => getMeshService()?.mentionSuffixFor(channel) ?? null,
+  );
   startBackgroundNotice();
 
   // A network coming back nudges relays, Tor, queued mail and the wallet.
@@ -567,7 +578,7 @@ function startMeshDependents(): void {
     const granted =
       (await hasLocationPermission()) || (await requestLocationPermission());
     // Reflect the grant on the Mesh banner: without it the location channels
-    // are unavailable, and saying so beats a silently empty channel list.
+    // reach only people nearby, and saying so beats a quietly small room.
     useMeshStateStore.getState().setLocationGranted(granted);
     if (granted) getMeshService()?.refreshGeoChannels();
     await requestNotificationPermission();
@@ -617,6 +628,12 @@ async function handleBannerAction(
     case "open-app-settings":
       await Linking.openSettings().catch(() => undefined);
       break;
+
+    // Shared with the banner inside a location channel, so the two cannot
+    // disagree. It retries the radios itself on a grant.
+    case "enable-location":
+      await turnOnLocation();
+      return;
 
     case "open-background-limits": {
       // Walk the ladder for this device and stop at the first screen that
@@ -749,18 +766,20 @@ function AppContent(): React.JSX.Element {
               },
             },
           ]
-        : undefined,
+        : // Passed rather than left to the alert's default, which would say
+          // OK in the language on screen under a title in the target one.
+          [{ text: inTarget("common.ok") }],
     );
   }, [languagePreference, wantedLanguage]);
 
   // appReady guards against a flash of the welcome screen on every launch.
-  // The identity check is async, so we render nothing until it resolves.
+  // The identity check is async, so nothing renders until it resolves.
   const [appReady, setAppReady] = useState(false);
   // A wipe is destroying this device's data right now. Two ways in, one screen:
   // triggered from Profile, or resumed at launch after the last session died
   // partway through one.
   //
-  // Seeded in the initialiser rather than an effect, so a launch with a wipe to
+  // Seeded in the initializer rather than an effect, so a launch with a wipe to
   // finish renders the wiping screen on its first frame.
   //
   // An unfinished incoming transfer is finished the same way: wiped.
@@ -830,7 +849,6 @@ function AppContent(): React.JSX.Element {
   const [chatView, setChatView] = useState<ChatView>({ kind: "list" });
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<TextInputInstance>(null);
-  // Which message a search result should scroll a thread to on open.
   const [messageTarget, setMessageTarget] = useState<MessageTarget | null>(
     null,
   );
@@ -867,10 +885,10 @@ function AppContent(): React.JSX.Element {
 
   // Android system nav bar: tint its buttons/pill to the theme, the same way the
   // status bar does, so the top and bottom chrome read as one themed surface.
-  // Driven by our in-app theme, not the OS scheme, so forcing dark while the
+  // Driven by the in-app theme, not the OS scheme, so forcing dark while the
   // phone is light still gets light buttons. Under edge-to-edge the bar is
-  // transparent and our content draws behind it, so only the button contrast is
-  // ours to set. No-op on iOS, which has no such bar.
+  // transparent and the app's content draws behind it, so only the button
+  // contrast is left to set. No-op on iOS, which has no such bar.
   //
   // Set imperatively rather than through the declarative <NavigationBar>
   // component, and the difference is the whole point. That component keeps a
@@ -980,7 +998,7 @@ function AppContent(): React.JSX.Element {
               })
               .catch(() => {
                 // Unreachable keychain. It said nothing about data at rest, so
-                // neither do we.
+                // the banner says nothing either.
               });
           }
         }
@@ -1107,13 +1125,15 @@ function AppContent(): React.JSX.Element {
   }, [isInThread, isSearching]);
 
   // Retire attachments past their retention window: at launch here, and on
-  // each return to the app once due (see services/media-retention).
+  // each return to the app once due (see services/media-retention). Half-shrunk
+  // videos a dead process left go too.
   //
   // Runs unconditionally, before any identity check: expired media belongs to
   // nobody, and a launch that ends at the onboarding screen is exactly the
   // launch after a wipe, where leftover files matter most.
   useEffect(() => {
     sweepMediaIfDue();
+    discardStaleVideoWork();
   }, []);
 
   // Settle messages the last process left mid-send, once per JS runtime.
@@ -1183,12 +1203,12 @@ function AppContent(): React.JSX.Element {
   // Foreground/background tracking for the screen. Whether a banner is owed is
   // tracked by the notification pipeline itself, since it runs with no screen.
   useEffect(() => {
-    // No setAppActive here: the useState initialiser above already read
+    // No setAppActive here: the useState initializer above already read
     // AppState, and the listener below carries every change after it.
     //
-    // Re-read the permissions whenever we come to the foreground: the user may
-    // have changed either in system Settings while we were backgrounded, and
-    // coming back is the only signal we get. Bluetooth adapter changes already
+    // Re-read the permissions on every return to the foreground: the user may
+    // have changed either in system Settings while the app was away, and
+    // coming back is the only signal there is. Bluetooth adapter changes already
     // arrive as native events, so they need no polling here.
     //
     // Both are checks, never requests: prompting someone who just walked back
@@ -1214,15 +1234,14 @@ function AppContent(): React.JSX.Element {
       // only on a change. Every blocker that is not a permission (Bluetooth
       // switched off, location services switched off, a grant that has not yet
       // reached the Bluetooth stack) would then come back to a mesh that decided
-      // nothing needed doing. The controller is a
-      // reconciler: it reads the device itself and issues only the calls that
-      // change something, so calling it on every resume is both correct and
-      // free.
+      // nothing needed doing. The controller is a reconciler: it reads the
+      // device itself and issues only the calls that change something, so calling
+      // it on every resume is both correct and free.
       getMeshService()?.retryRadios();
     };
     syncPermissions();
-    // Tell the mesh which side of the screen we are on, for both states: the
-    // radio controller turns the scan rate down when backgrounded, and needs
+    // Tell the mesh which side of the screen the app is on, for both states:
+    // the radio controller turns the scan rate down when backgrounded, and needs
     // the leaving edge as much as the returning one.
     getMeshService()?.setAppForeground(AppState.currentState === "active");
     // Arti too: a boot start put it to sleep before any screen existed.
@@ -1238,11 +1257,11 @@ function AppContent(): React.JSX.Element {
       // drops the radios to power-saver, and every mode change restarts the
       // scanner: the OS permission dialog, the most common way into this state
       // on the very first launch, would bounce the scan off and on underneath
-      // itself. Everything else here still treats it as
-      // "not active", which is right for them: a notification should be raised
-      // and chat state flushed, because the user genuinely is not reading the
-      // screen. The app-switcher cover is not one of them, and is native for
-      // exactly this reason: it hangs off backgrounding, not off focus.
+      // itself. Everything else here still treats it as "not active", which is
+      // right for them: a notification should be raised and chat state flushed,
+      // because the user genuinely is not reading the screen. The app-switcher
+      // cover is not one of them, and is native for exactly this reason: it hangs
+      // off backgrounding, not off focus.
       getMeshService()?.setAppForeground(next !== "background");
       // Arti needs the same signal, and needs it on the "background" boundary
       // rather than on "active": an app switcher or a permission dialog does not
@@ -1252,7 +1271,7 @@ function AppContent(): React.JSX.Element {
       if (next !== "active") {
         // Chat persistence is throttled, so leaving the foreground is the last
         // safe moment to force whatever is still inside that window to disk.
-        // The OS can stop giving us cycles at any point after this.
+        // The OS can stop giving the app cycles at any point after this.
         flushChatPersistence();
       }
       if (next === "active") {
@@ -1362,9 +1381,15 @@ function AppContent(): React.JSX.Element {
   //
   // `cashu:` links follow the same rule into the Wallet: Receive opens filled
   // in, and nothing is redeemed until Receive is tapped.
+  //
+  // airhop://mesh, the home screen widget's tap, only opens the Mesh tab.
   useEffect(() => {
     if (!appReady || onboardingStep !== null) return;
     const handle = (url: string | null): void => {
+      if (url !== null && isMeshLink(url)) {
+        navigateToTabRef.current("mesh");
+        return;
+      }
       const token = cashuLinkToken(url);
       if (url !== null && token !== null) {
         if (isOwnHandoffEcho(url)) {
@@ -1513,7 +1538,7 @@ function AppContent(): React.JSX.Element {
     setProfilePopSignal((n) => n + 1);
   }, [isInThread, isSearching]);
 
-  // Swipe across the content area. Two behaviours, decided by where you are:
+  // Swipe across the content area. Two behaviors, decided by where you are:
   //
   //   at a tab's root   step through tabs, in the order the tab bar shows them
   //   inside a section  go back to its parent, and never change tab
@@ -1621,6 +1646,10 @@ function AppContent(): React.JSX.Element {
               }}
             />
           )}
+          {/* Erase here destroys the identity, so the app lock guards it as it
+              guards the main tabs: this screen can also open mid-session, over
+              an app the lock already covers. */}
+          <LockScreen />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     );
@@ -2052,7 +2081,7 @@ function AppContent(): React.JSX.Element {
                         {T("nav.tab.wallet")}
                       </Text>
                       <View style={styles.headerControls}>
-                        {/* The wallet's actions are labelled on the screen
+                        {/* The wallet's actions are labeled on the screen
                             itself; the header only explains what ecash is. */}
                         <Pressable
                           style={({ pressed }) => [
@@ -2248,6 +2277,11 @@ function AppContent(): React.JSX.Element {
                       // Before the first byte is destroyed, so the wiping
                       // screen covers the whole of it.
                       onWipeStart={() => setWipeInProgress(true)}
+                      // The launch's own question, asked now: the mesh is down
+                      // and the "sent" marker stands until it is answered.
+                      onTransferUnconfirmed={() =>
+                        setTransferRecovery("sender")
+                      }
                       onResumeMesh={() => {
                         // Starting the mesh restores only Invisible; keep an
                         // earlier Away.
@@ -2454,10 +2488,10 @@ const EDGE_BACK_ZONE = 44;
 const HEADER_ICON_SIZE = 32;
 
 // Shared by the three count badges (tab, bell, segment), which are the same
-// 16pt circle holding the same 10pt digit and must centre it identically.
+// 16pt circle holding the same 10pt digit and must center it identically.
 //
 // includeFontPadding is Android-only and on by default: the box reserves
-// ascender and descender room a digit never uses, so a numeral that centres on
+// ascender and descender room a digit never uses, so a numeral that centers on
 // iOS sits low on Android.
 const BADGE_DIGIT = {
   includeFontPadding: false,
@@ -2555,7 +2589,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 1,
       minWidth: 0,
       // Transparent when inactive so switching segments changes the border's
-      // colour and never the control's geometry.
+      // color and never the control's geometry.
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: "transparent",
     },
@@ -2611,7 +2645,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     bellBadge: {
       position: "absolute",
       top: -4,
-      right: -4,
+      end: -4,
       backgroundColor: Colors.accent,
       borderRadius: Radius.full,
       minWidth: 16,
@@ -2649,7 +2683,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.full,
       ...Shadow.high,
     },
-    // The pill itself: a solid surface with a hairline edge.
     tabBar: {
       flexDirection: "row",
       backgroundColor: Colors.surface,
@@ -2688,7 +2721,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     tabDot: {
       position: "absolute",
       top: -1,
-      right: -5,
+      end: -5,
       width: 10,
       height: 10,
       borderRadius: Radius.full,
@@ -2699,7 +2732,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     tabBadge: {
       position: "absolute",
       top: -4,
-      right: -8,
+      end: -8,
       minWidth: 16,
       height: 16,
       borderRadius: Radius.full,
@@ -2722,7 +2755,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     segBadge: {
       position: "absolute",
       top: -5,
-      right: -6,
+      end: -6,
       minWidth: 16,
       height: 16,
       borderRadius: Radius.full,

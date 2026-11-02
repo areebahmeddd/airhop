@@ -7,7 +7,7 @@
 // client, point the app's sockets at it, report honestly, fail closed. What
 // this file exists to pin down is the one place they still differ.
 //
-// **Android installs no WebSocket shim.** iOS swaps nostr-tools' WebSocket for
+// Android installs no WebSocket shim. iOS swaps nostr-tools' WebSocket for
 // TorWebSocket, because React Native's own cannot speak SOCKS5. Android needs no
 // such swap: the proxy is installed one layer lower, into the OkHttp client that
 // `fetch` and WebSocket are both built from, so every socket the app opens is
@@ -25,7 +25,7 @@ const mockGetTorStatus = jest.fn<
   []
 >();
 const mockStartTor = jest.fn<Promise<void>, [string]>();
-const mockStopTor = jest.fn<Promise<void>, []>();
+const mockStopTor = jest.fn<Promise<void>, [boolean]>();
 const mockAwaitTorReady = jest.fn<Promise<boolean>, [number]>();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
 const mockHoldRoute = jest.fn<Promise<void>, []>();
@@ -92,7 +92,7 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
   __esModule: true,
   default: {
     startTor: (lines: string) => mockStartTor(lines),
-    stopTor: () => mockStopTor(),
+    stopTor: (keepHeld: boolean) => mockStopTor(keepHeld),
     getTorStatus: () => mockGetTorStatus(),
     awaitTorReady: (s: number) => mockAwaitTorReady(s),
     setAppForeground: (f: boolean) => mockSetAppForeground(f),
@@ -238,7 +238,7 @@ describe("enabling Tor on Android", () => {
 
   test("never swaps the WebSocket implementation", async () => {
     // The whole point of the Android design. A shim here would replace working
-    // relay sockets with ones dialling a native module that does not exist.
+    // relay sockets with ones dialing a native module that does not exist.
     await setTorRouting(true);
     expect(mockUseWebSocketImplementation).not.toHaveBeenCalled();
   });
@@ -281,6 +281,19 @@ describe("enabling Tor on Android", () => {
     expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
+  // Another Tor client holding the port is not a network blocking Tor, and
+  // waiting will not clear it.
+  test("a port another client holds is reported as such", async () => {
+    mockStartTor.mockRejectedValue(
+      Object.assign(new Error("rc=-5"), { code: "tor_port_busy" }),
+    );
+
+    const result = await setTorRouting(true);
+
+    expect(result).toEqual({ ok: false, reason: "port-busy" });
+    expect(mockStopTor).toHaveBeenCalledWith(false);
+  });
+
   test("consent withdrawn during the bootstrap is not overridden", async () => {
     // Sixty seconds is long enough to toggle Tor back off, or to panic wipe. An
     // enable resolving afterwards must not assert routing over sockets that are
@@ -296,7 +309,7 @@ describe("enabling Tor on Android", () => {
     expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
-  // A relay dialled before the circuit fails its first connect and is never
+  // A relay dialed before the circuit fails its first connect and is never
   // retried, so the pool is held down for the bootstrap and rebuilt after it.
   test("holds the relay pool until the circuit is ready", async () => {
     let blockedWhileBootstrapping = false;
@@ -717,6 +730,30 @@ describe("revalidating on Android", () => {
 
     expect(mockSetTorActive).toHaveBeenLastCalledWith(false);
   });
+
+  test("Tor switched off while the status is in flight claims nothing", async () => {
+    mockTorEnabled = true;
+    mockGetTorStatus.mockImplementation(async () => {
+      mockTorEnabled = false;
+      return status({ isReady: true });
+    });
+
+    await revalidateTorRouting();
+
+    expect(mockSetTorActive).not.toHaveBeenCalledWith(true);
+  });
+
+  test("the internet switched off while the status is in flight blocks nothing", async () => {
+    mockTorEnabled = true;
+    mockGetTorStatus.mockImplementation(async () => {
+      mockInternetEnabled = false;
+      return status({ isReady: false, isStarting: false });
+    });
+
+    await revalidateTorRouting();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
+  });
 });
 
 describe("the master internet switch", () => {
@@ -844,6 +881,43 @@ describe("bridge modes", () => {
       expect.stringContaining("snowflake "),
     );
     expect(mockSetTorBridgeMode).toHaveBeenCalledWith("snowflake");
+  });
+
+  // Routed direct between the stop and the start, a wallet call in the gap
+  // would reach the mint on the device's own address.
+  test("the restart keeps traffic held across the gap", async () => {
+    await setTorRouting(true);
+    jest.clearAllMocks();
+
+    await setTorBridgeMode("snowflake");
+
+    expect(mockStopTor).toHaveBeenCalledTimes(1);
+    expect(mockStopTor).toHaveBeenCalledWith(true);
+  });
+
+  test("bridge lines the client refuses say so, not try again", async () => {
+    await setTorRouting(true);
+    mockStartTor.mockRejectedValue(
+      Object.assign(new Error("rc=-7"), { code: "tor_bridge_rejected" }),
+    );
+
+    const result = await setTorBridgeMode("custom", "obfs4 nonsense");
+
+    expect(result).toEqual({ ok: false, reason: "bad-bridges" });
+    // Still held, as for any refused restart.
+    expect(mockTorEnabled).toBe(true);
+    expect(mockHoldRoute).toHaveBeenCalled();
+  });
+
+  test("transports that will not start are blamed on the bridge lines too", async () => {
+    await setTorRouting(true);
+    mockStartTor.mockRejectedValue(
+      Object.assign(new Error("transports"), { code: "tor_transport_failed" }),
+    );
+
+    const result = await setTorBridgeMode("snowflake");
+
+    expect(result).toEqual({ ok: false, reason: "bad-bridges" });
   });
 
   // Between the old client and the new one there is no Tor, and a pool rebuilt

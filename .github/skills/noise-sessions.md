@@ -78,7 +78,7 @@ The nonce is prepended so the receiver can decrypt out of order (bitchat's `useE
 new[i] = (old[i - bs] << bt) | (old[i - bs - 1] >> (8 - bt))   // bs = shift >> 3, bt = shift & 7
 ```
 
-bitchat-ios and bitchat-android shift right, which forgets recent nonces: after 0 to 100 in order, 93 to 99 decrypt a second time. `NOISE_ENCRYPTED` packets are unsigned and their dedup ID covers a timestamp anyone can restamp, so this window is the only replay guard for session payloads. Do not copy their `markNonceAsSeen`.
+bitchat-ios and bitchat-android shift right, which forgets recent nonces: after 0 to 100 in order, 93 to 99 decrypt a second time. `NOISE_ENCRYPTED` signatures are not checked on receive, and their dedup ID covers a timestamp anyone can restamp, so this window is the only replay guard for session payloads. Do not copy their `markNonceAsSeen`.
 
 ## Double Ratchet
 

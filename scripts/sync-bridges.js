@@ -122,6 +122,18 @@ function validate(transport, lines) {
   }
 }
 
+// Sorted so an unchanged set produces an unchanged file whatever order
+// upstream answered in, and a diff only appears when the set really moved.
+// Moat repeats a line now and then; a copy is one more dial of the same relay,
+// so the set is kept rather than the list. A non-string is left for validate
+// to refuse by name.
+function normalize(lines) {
+  return lines
+    .map((l) => (typeof l === "string" ? l.trim() : l))
+    .sort()
+    .filter((l, i, all) => i === 0 || l !== all[i - 1]);
+}
+
 function render(bridges) {
   const block = (lines) =>
     lines.map((line) => `  ${JSON.stringify(line)},`).join("\n");
@@ -159,12 +171,7 @@ function main() {
     if (!Array.isArray(lines)) {
       fail(`upstream response has no ${transport} list`);
     }
-    // Sorted so an unchanged set produces an unchanged file whatever order
-    // upstream answered in, and a diff only appears when the set really moved.
-    // A non-string is left for validate to refuse by name.
-    bridges[transport] = lines
-      .map((l) => (typeof l === "string" ? l.trim() : l))
-      .sort();
+    bridges[transport] = normalize(lines);
     try {
       validate(transport, bridges[transport]);
     } catch (error) {
@@ -194,4 +201,4 @@ function main() {
 }
 
 if (require.main === module) main();
-else module.exports = { validate };
+else module.exports = { normalize, validate };

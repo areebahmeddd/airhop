@@ -105,12 +105,8 @@ function decryptAndHash(ss: SymState, ciphertext: Uint8Array): Uint8Array {
   return ciphertext.slice();
 }
 
-// Seal `plaintext` from the sender to the recipient.
-//
-// `senderStaticPrivKey`    : 32-byte X25519 private key of the sender
-// `recipientStaticPubKey`  : 32-byte X25519 public key of the recipient
-//
-// Returns the sealed envelope ciphertext.
+// Seal `plaintext` from the sender to the recipient. Both keys are 32-byte
+// X25519.
 export function noiseXSeal(
   senderStaticPrivKey: Uint8Array,
   recipientStaticPubKey: Uint8Array,
@@ -122,7 +118,6 @@ export function noiseXSeal(
   // Pre-message: mix recipient's static pub (known upfront)
   mixHash(ss, recipientStaticPubKey);
 
-  // Generate ephemeral key
   const ePriv = crypto.getRandomValues(new Uint8Array(32));
   const ePub = x25519.getPublicKey(ePriv);
   const senderStaticPub = x25519.getPublicKey(senderStaticPrivKey);
@@ -147,18 +142,13 @@ export function noiseXSeal(
   // payload
   const enc_payload = encryptAndHash(ss, plaintext);
 
-  // Zero ephemeral priv
   ePriv.fill(0);
 
   return concatBytes(ePub, enc_s, enc_payload);
 }
 
-// Open a sealed envelope.
-//
-// `recipientStaticPrivKey` : 32-byte X25519 private key of the recipient
-//
-// Returns `{ plaintext, senderStaticPubKey }`.
-// Throws on authentication failure.
+// Open a sealed envelope with the recipient's 32-byte X25519 private key. Throws
+// on authentication failure.
 export function noiseXOpen(
   recipientStaticPrivKey: Uint8Array,
   envelope: Uint8Array,

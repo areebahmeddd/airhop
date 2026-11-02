@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-am/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "ብሉቱዝ ጠፍቷል · አይታሰስም";
+"widget_label" = "በክልል ውስጥ ያሉ አቻዎች";
+"widget_description" = "በክልል ውስጥ ያሉ አቻዎች፣ እና የተቆጠሩበት ሰዓት";
+"widget_nobody" = "በክልል ውስጥ ማንም የለም";
+"widget_as_of" = "%1$@ ላይ";
+"widget_paused" = "ሜሽ ቆሟል";
+"widget_unset" = "Airhop ን ክፈት";
+"widget_stale" = "ለማደስ Airhop ን ክፈት";

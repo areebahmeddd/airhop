@@ -6,7 +6,8 @@
 
 import { OBFS4_BRIDGE_LINES, SNOWFLAKE_BRIDGE_LINES } from "@data/bridges";
 
-const { validate } = require("../../../scripts/sync-bridges.js") as {
+const { normalize, validate } = require("../../../scripts/sync-bridges.js") as {
+  normalize: (lines: unknown[]) => unknown[];
   validate: (transport: string, lines: unknown[]) => void;
 };
 
@@ -15,6 +16,19 @@ const snowflake = SNOWFLAKE_BRIDGE_LINES.split("\n");
 
 // A well-formed line smuggled behind a good one.
 const SMUGGLED = `${obfs4[0]}\nobfs4 192.0.2.1:443 ${"A".repeat(40)} cert=x iat-mode=0`;
+
+describe("sync-bridges normalize", () => {
+  it("sorts, trims and keeps one copy of a repeated line", () => {
+    expect(normalize([` ${obfs4[1]}`, obfs4[0], obfs4[1], obfs4[0]])).toEqual(
+      [obfs4[0], obfs4[1]].sort(),
+    );
+  });
+
+  it("ships no repeated line", () => {
+    expect(new Set(obfs4).size).toBe(obfs4.length);
+    expect(new Set(snowflake).size).toBe(snowflake.length);
+  });
+});
 
 describe("sync-bridges validate", () => {
   it("accepts the committed bridge lines", () => {

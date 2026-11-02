@@ -65,14 +65,11 @@ const ARRIVED_COOLDOWN_MS = 3_000;
 // get quieter under Android 15's notification cooldown.
 //
 // PUBLIC on the lock screen: the card says "X is ringing you" and nothing
-// else, and hide-previews already blanks the name. Android fixes a channel's
-// settings at creation, so the earlier PRIVATE channel is deleted at
-// configure time rather than updated.
+// else, and hide-previews already blanks the name.
 const RING_CHANNEL_ID = "ring_alert";
-const RETIRED_RING_CHANNEL_ID = "ring";
 
 // iOS cannot loop a sound outside a call, so a ring there is a chain of local
-// notifications with the default sound, cancelled together when the ring is
+// notifications with the default sound, canceled together when the ring is
 // answered. Three: enough to be a ring rather than a ping, few enough that a
 // phone left on a desk is not still buzzing a minute later.
 const IOS_RING_PULSE_SECONDS = [0, 15, 30];
@@ -93,7 +90,7 @@ let configured = false;
 let responseSub: Notifications.EventSubscription | null = null;
 // When the last nearby notice went out, for the cooldown. Module state, not
 // persisted: a relaunch is already a rare event, and starting a fresh app run
-// with a clean cooldown is the behaviour a user would expect anyway.
+// with a clean cooldown is the behavior a user would expect anyway.
 let lastNearbyNotifiedAtMs: number | null = null;
 let lastArrivedAtMs = 0;
 // One notice per payment, never replacing another: the counter separates two
@@ -104,7 +101,7 @@ let paymentSeq = 0;
 // Stable per-conversation notification id, so repeated messages from the same
 // chat collapse into (and update) one notification rather than stacking, and so
 // opening the chat can dismiss exactly that one. Notification ids must be
-// simple strings, hence the sanitising.
+// simple strings, hence the sanitizing.
 function channelToId(channel: string): string {
   return `msg_${channel.replace(/[^a-zA-Z0-9]/g, "_")}`;
 }
@@ -176,9 +173,10 @@ export function setTabNavigator(fn: ((tab: NoticeTab) => void) | null): void {
 
 // Ask for notification permission. Kept separate from configureNotifications so
 // the prompt can be sequenced with the Bluetooth and location prompts in one
-// place (App.startMeshWithPermissions) rather than racing them, which on a fresh
-// install swallowed this prompt and could crash. Denial degrades gracefully: no
-// system notifications, but in-app badges and the foreground haptic still work.
+// place (startMeshDependents in app.tsx) rather than racing them, which on a
+// fresh install swallows this prompt and can crash. Denial degrades gracefully:
+// no system notifications, but in-app badges and the foreground haptic still
+// work.
 // Never throws: a permission-layer failure must not take down mesh startup.
 export async function requestNotificationPermission(): Promise<void> {
   try {
@@ -222,10 +220,10 @@ export async function configureNotifications(): Promise<void> {
   // `void configureNotifications()`, a rejection from any of them does two things
   // at once: it escapes as an unhandled rejection, which the global handler turns
   // into the full-screen error fallback, and it skips the response listener, so
-  // notification taps stop routing for the whole
-  // session. The `configured` latch is set before the first await, so nothing
-  // ever retried. A channel that could not be created costs a default-styled
-  // notification; it should never cost the app its UI.
+  // notification taps stop routing for the whole session. The `configured` latch
+  // is set before the first await, so nothing ever retries. A channel that could
+  // not be created costs a default-styled notification; it should never cost the
+  // app its UI.
   if (Platform.OS === "android") {
     try {
       await Notifications.setNotificationChannelAsync(MESSAGES_CHANNEL_ID, {
@@ -256,13 +254,6 @@ export async function configureNotifications(): Promise<void> {
     } catch {
       // Android will deliver on the default channel instead.
     }
-    try {
-      await Notifications.deleteNotificationChannelAsync(
-        RETIRED_RING_CHANNEL_ID,
-      );
-    } catch {
-      // Never created on this install, or already gone.
-    }
   }
 
   responseSub?.remove();
@@ -274,11 +265,10 @@ export async function configureNotifications(): Promise<void> {
 
   // Launched by tapping a notification while the app was killed.
   //
-  // The synchronous reader, not the deprecated `getLastNotificationResponseAsync`
-  // it replaces. Being synchronous is the better shape here as well as the
-  // supported one: the response is already in memory by the time the module
-  // loads, so awaiting it only opened a window in which the tapped conversation
-  // could be overtaken by whatever tab the app was going to open anyway.
+  // The synchronous reader, not the deprecated `getLastNotificationResponseAsync`:
+  // the response is already in memory by the time the module loads, and awaiting
+  // it would open a window in which the tapped conversation could be overtaken by
+  // whatever tab the app was going to open anyway.
   //
   // Guarded for the same reason as the channels above: routing the tap is a
   // nicety, and losing the listener to it would be a bad trade.
@@ -373,9 +363,9 @@ export async function handleInboundMessage(
 }
 
 // Called whenever the set of nearby peers changes (see notification-pipeline),
-// with the reachable count before and after. Almost every call is a
-// no-op: shouldNotifyNearby only lets through an empty mesh coming alive while
-// the app is in the background, and then only once per cooldown.
+// with the reachable count before and after. Almost every call is a no-op:
+// shouldNotifyNearby only lets through an empty mesh coming alive while the app
+// is in the background, and then only once per cooldown.
 //
 // This is the one background event that is not a message and still worth
 // surfacing. On Android the foreground service keeps the mesh scanning with the
@@ -585,7 +575,12 @@ export async function raiseRingNotification(
 // moment "Hide previews" is switched on. They were rendered with the sender and
 // the text or amount, and the lock screen keeps showing them whatever the
 // setting now says. Not the nearby notice, which names nobody.
+//
+// The iOS ring pulses still to come go too: each was scheduled with the
+// sender's name already in it. That ring ends early, which is the price of not
+// naming anyone after being told not to.
 export async function dismissPreviewNotifications(): Promise<void> {
+  await cancelScheduledRings();
   let presented: Notifications.Notification[];
   try {
     presented = await Notifications.getPresentedNotificationsAsync();
@@ -614,21 +609,12 @@ export async function dismissPreviewNotifications(): Promise<void> {
 // mesh, but on iOS a ring is a series of pulses already scheduled with the OS,
 // which would keep sounding after the user said no more rings.
 export async function endAllRingAlerts(): Promise<void> {
-  let scheduled: Notifications.NotificationRequest[] = [];
+  await cancelScheduledRings();
   let presented: Notifications.Notification[] = [];
   try {
-    scheduled = await Notifications.getAllScheduledNotificationsAsync();
     presented = await Notifications.getPresentedNotificationsAsync();
   } catch {
-    // No scheduler or tray on this platform.
-  }
-  for (const request of scheduled) {
-    if (!request.identifier.startsWith("ring_")) continue;
-    try {
-      await Notifications.cancelScheduledNotificationAsync(request.identifier);
-    } catch {
-      // Already fired.
-    }
+    // No tray on this platform.
   }
   for (const n of presented) {
     if (!isRingNotification(n)) continue;
@@ -636,6 +622,25 @@ export async function endAllRingAlerts(): Promise<void> {
       await Notifications.dismissNotificationAsync(n.request.identifier);
     } catch {
       // Already gone.
+    }
+  }
+}
+
+// The iOS ring pulses scheduled and not yet fired.
+async function cancelScheduledRings(): Promise<void> {
+  let scheduled: Notifications.NotificationRequest[];
+  try {
+    scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  } catch {
+    // No scheduler on this platform.
+    return;
+  }
+  for (const request of scheduled) {
+    if (!request.identifier.startsWith("ring_")) continue;
+    try {
+      await Notifications.cancelScheduledNotificationAsync(request.identifier);
+    } catch {
+      // Already fired.
     }
   }
 }

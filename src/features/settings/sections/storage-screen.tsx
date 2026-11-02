@@ -2,13 +2,13 @@
 // preference, so there is nothing to decide; you come to read a number or to
 // free some space. Media preferences live in General, where taste belongs.
 //
-// Every number here is real, not decorative:
-//   - Storage Usage: MMKV byteSize for chat-store + wallet-store, plus the
-//     on-disk size of cached attachments.
-//   - Network Usage: cumulative BLE/WiFi bytes sent/received this session,
-//     tracked in mesh-service.ts. Resets when the app restarts.
-//   - Cache: the same on-disk attachment total, with a working Clear action
-//     that actually deletes the files.
+// Every number here is real:
+//   - Storage Usage: MMKV byteSize across the partitions, plus the on-disk
+//     size of cached attachments.
+//   - Mesh traffic: bytes sent and received this session, tracked in
+//     mesh-service.ts. Resets when the app restarts.
+//   - Cache: the same on-disk attachment total, with a Clear action that
+//     deletes the files.
 
 import {
   clearAttachmentCache,
@@ -66,9 +66,7 @@ export default function StorageScreen({ onBack }: Props): React.JSX.Element {
   );
 
   // Clearing removes real media from disk, not just disposable temp files, so
-  // confirm first (Panic wipe is the only other destructive action here, and it
-  // confirms too). Nothing to do when the cache is already empty. On success,
-  // acknowledge with the amount freed so the tap has visible feedback.
+  // it confirms first. On success, the amount freed is the tap's feedback.
   function handleClearCache(): void {
     if (stats.cacheBytes === 0) return;
     showAlert(

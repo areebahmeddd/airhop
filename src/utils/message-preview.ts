@@ -76,6 +76,7 @@ function resolve(message: ChatMessage): {
   // than styled text, so the delimiters come off here; the message itself
   // still renders them in the thread.
   if (message.text) return { literal: stripFormatting(message.text) };
+  if (message.liveVideo) return { key: "chat.live_video.preview", literal: "" };
   if (message.attachment) {
     const key = attachmentPreviewKey(message.attachment);
     return key === undefined

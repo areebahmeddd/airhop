@@ -38,7 +38,45 @@
 		EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3B290BAA468A4B78973CE274 /* AirhopBLEModule.mm */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 		F11748452D0307B40044C1D9 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748432D0307B40044C1D9 /* SceneDelegate.swift */; };
+		A1D3C4E5B6074F1288AA0401 /* AirhopVideoModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0402 /* AirhopVideoModule.mm */; };
+		A1D3C4E5B6074F1288AA0403 /* AirhopVideoModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0404 /* AirhopVideoModule.swift */; };
+		A1D3C4E5B6074F1288AA0405 /* AirhopVideoMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0406 /* AirhopVideoMedia.swift */; };
+		A1D3C4E5B6074F1288AA0407 /* AirhopVideoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0408 /* AirhopVideoViews.swift */; };
+		A1D3C4E5B6074F1288AA0409 /* SurfaceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA040A /* SurfaceRegistry.swift */; };
+		A1D3C4E5B6074F1288AA040B /* VideoTranscodePass.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA040C /* VideoTranscodePass.swift */; };
+		A1D3C4E5B6074F1288AA040D /* VideoFrames.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA040E /* VideoFrames.swift */; };
+		A1D3C4E5B6074F1288AA0501 /* MeshWidgetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0511 /* MeshWidgetState.swift */; };
+		A1D3C4E5B6074F1288AA0502 /* MeshWidgetState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0511 /* MeshWidgetState.swift */; };
+		A1D3C4E5B6074F1288AA0503 /* AirhopWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0512 /* AirhopWidget.swift */; };
+		A1D3C4E5B6074F1288AA0504 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0523 /* Localizable.strings */; };
+		A1D3C4E5B6074F1288AA0505 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0524 /* Localizable.stringsdict */; };
+		A1D3C4E5B6074F1288AA0506 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0515 /* PrivacyInfo.xcprivacy */; };
+		A1D3C4E5B6074F1288AA0507 /* AirhopWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1D3C4E5B6074F1288AA0516 /* AirhopWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A1D3C4E5B6074F1288AA0537 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1D3C4E5B6074F1288AA0531;
+			remoteInfo = AirhopWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1D3C4E5B6074F1288AA0535 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1D3C4E5B6074F1288AA0507 /* AirhopWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		000D0CEF937A22045C2E2D0B /* libPods-Airhop.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Airhop.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -112,6 +150,89 @@
 		F11748432D0307B40044C1D9 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = Airhop/SceneDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Airhop-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Airhop-Bridging-Header.h"; path = "Airhop/Airhop-Bridging-Header.h"; sourceTree = "<group>"; };
 		F73C4B2BCE44B84717C4386B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Airhop/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0402 /* AirhopVideoModule.mm */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = sourcecode.cpp.objcpp; name = AirhopVideoModule.mm; path = Airhop/AirhopVideoModule.mm; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0404 /* AirhopVideoModule.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopVideoModule.swift; path = Airhop/AirhopVideoModule.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0406 /* AirhopVideoMedia.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopVideoMedia.swift; path = Airhop/AirhopVideoMedia.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0408 /* AirhopVideoViews.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = AirhopVideoViews.swift; path = Airhop/AirhopVideoViews.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA040A /* SurfaceRegistry.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = SurfaceRegistry.swift; path = Airhop/VideoSurfaces/SurfaceRegistry.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA040C /* VideoTranscodePass.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = VideoTranscodePass.swift; path = Airhop/VideoTranscode/VideoTranscodePass.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA040E /* VideoFrames.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = VideoFrames.swift; path = Airhop/VideoTranscode/VideoFrames.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0511 /* MeshWidgetState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshWidgetState.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0512 /* AirhopWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirhopWidget.swift; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0513 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0514 /* AirhopWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AirhopWidget.entitlements; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0515 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0516 /* AirhopWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AirhopWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1D3C4E5B6074F1288AA0600 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0700 /* en */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0601 /* am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = am; path = am.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0701 /* am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = am; path = am.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0602 /* ar */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0702 /* ar */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ar; path = ar.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0603 /* bn */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = bn; path = bn.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0703 /* bn */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = bn; path = bn.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0604 /* de */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0704 /* de */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = de; path = de.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0605 /* es */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0705 /* es */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = es; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0606 /* fa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fa; path = fa.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0706 /* fa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = fa; path = fa.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0607 /* fil */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fil; path = fil.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0707 /* fil */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = fil; path = fil.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0608 /* fr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0708 /* fr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = fr; path = fr.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0609 /* hi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = hi; path = hi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0709 /* hi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = hi; path = hi.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA060A /* id */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA070A /* id */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = id; path = id.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA060B /* it */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA070B /* it */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = it; path = it.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA060C /* ja */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA070C /* ja */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ja; path = ja.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA060D /* ka */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA070D /* ka */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ka; path = ka.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA060E /* ko */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA070E /* ko */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ko; path = ko.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA060F /* mg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = mg; path = mg.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA070F /* mg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = mg; path = mg.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0610 /* ms */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ms; path = ms.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0710 /* ms */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ms; path = ms.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0611 /* my */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = my; path = my.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0711 /* my */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = my; path = my.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0612 /* ne */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ne; path = ne.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0712 /* ne */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ne; path = ne.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0613 /* nl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0713 /* nl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = nl; path = nl.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0614 /* pa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = pa; path = pa.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0714 /* pa */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = pa; path = pa.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0615 /* pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0715 /* pl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = pl; path = pl.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0616 /* pt-BR */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0716 /* pt-BR */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = "pt-BR"; path = "pt-BR.lproj/Localizable.stringsdict"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0617 /* pt-PT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "pt-PT"; path = "pt-PT.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0717 /* pt-PT */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = "pt-PT"; path = "pt-PT.lproj/Localizable.stringsdict"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0618 /* ru */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0718 /* ru */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ru; path = ru.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0619 /* sv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = sv; path = sv.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0719 /* sv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = sv; path = sv.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA061A /* sw */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = sw; path = sw.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA071A /* sw */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = sw; path = sw.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA061B /* ta */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ta; path = ta.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA071B /* ta */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ta; path = ta.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA061C /* th */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = th; path = th.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA071C /* th */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = th; path = th.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA061D /* tr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA071D /* tr */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = tr; path = tr.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA061E /* uk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA071E /* uk */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = uk; path = uk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA061F /* ur */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = ur; path = ur.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA071F /* ur */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = ur; path = ur.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0620 /* vi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0720 /* vi */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = vi; path = vi.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0621 /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0721 /* zh-Hans */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.stringsdict"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0622 /* zh-Hant */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		A1D3C4E5B6074F1288AA0722 /* zh-Hant */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.stringsdict; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.stringsdict"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +241,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				8FBB5FE8FB9D02456B274AFA /* libPods-Airhop.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1D3C4E5B6074F1288AA0533 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +282,13 @@
 				21FF1C52782B42ACAA2148D2 /* AirhopTorModule.swift */,
 				7C16D0E978324981A4FBA7CA /* AirhopTorSocket.mm */,
 				7AA9349762774591B6A61A72 /* AirhopTorSocket.swift */,
+				A1D3C4E5B6074F1288AA0402 /* AirhopVideoModule.mm */,
+				A1D3C4E5B6074F1288AA0404 /* AirhopVideoModule.swift */,
+				A1D3C4E5B6074F1288AA0406 /* AirhopVideoMedia.swift */,
+				A1D3C4E5B6074F1288AA0408 /* AirhopVideoViews.swift */,
+				A1D3C4E5B6074F1288AA040A /* SurfaceRegistry.swift */,
+				A1D3C4E5B6074F1288AA040C /* VideoTranscodePass.swift */,
+				A1D3C4E5B6074F1288AA040E /* VideoFrames.swift */,
 				B5B7883FE2864809B556B722 /* AirhopVoiceModule.mm */,
 				66E175A8511747A080C246EA /* AirhopVoiceModule.swift */,
 				708D4EAC142B4B5F8FF71CF5 /* AirhopWiFiModule.mm */,
@@ -202,6 +337,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07FAE1A68108700A75B9A /* Airhop */,
+				A1D3C4E5B6074F1288AA0521 /* AirhopWidget */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -217,6 +353,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* Airhop.app */,
+				A1D3C4E5B6074F1288AA0516 /* AirhopWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -238,6 +375,28 @@
 			path = Airhop/Supporting;
 			sourceTree = "<group>";
 		};
+		A1D3C4E5B6074F1288AA0521 /* AirhopWidget */ = {
+			isa = PBXGroup;
+			children = (
+				A1D3C4E5B6074F1288AA0512 /* AirhopWidget.swift */,
+				A1D3C4E5B6074F1288AA0522 /* State */,
+				A1D3C4E5B6074F1288AA0513 /* Info.plist */,
+				A1D3C4E5B6074F1288AA0514 /* AirhopWidget.entitlements */,
+				A1D3C4E5B6074F1288AA0515 /* PrivacyInfo.xcprivacy */,
+				A1D3C4E5B6074F1288AA0523 /* Localizable.strings */,
+				A1D3C4E5B6074F1288AA0524 /* Localizable.stringsdict */,
+			);
+			path = AirhopWidget;
+			sourceTree = "<group>";
+		};
+		A1D3C4E5B6074F1288AA0522 /* State */ = {
+			isa = PBXGroup;
+			children = (
+				A1D3C4E5B6074F1288AA0511 /* MeshWidgetState.swift */,
+			);
+			path = State;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -250,6 +409,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				A1D3C4E5B6074F1288AA0535 /* Embed Foundation Extensions */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
 				2380F1DAC36DDA582AE6CE21 /* [CP] Embed Pods Frameworks */,
@@ -257,11 +417,29 @@
 			buildRules = (
 			);
 			dependencies = (
+				A1D3C4E5B6074F1288AA0536 /* PBXTargetDependency */,
 			);
 			name = Airhop;
 			productName = Airhop;
 			productReference = 13B07F961A680F5B00A75B9A /* Airhop.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A1D3C4E5B6074F1288AA0531 /* AirhopWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1D3C4E5B6074F1288AA0541 /* Build configuration list for PBXNativeTarget "AirhopWidget" */;
+			buildPhases = (
+				A1D3C4E5B6074F1288AA0532 /* Sources */,
+				A1D3C4E5B6074F1288AA0533 /* Frameworks */,
+				A1D3C4E5B6074F1288AA0534 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AirhopWidget;
+			productName = AirhopWidget;
+			productReference = A1D3C4E5B6074F1288AA0516 /* AirhopWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -273,6 +451,9 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1250;
+					};
+					A1D3C4E5B6074F1288AA0531 = {
+						CreatedOnToolsVersion = 26.0;
 					};
 				};
 			};
@@ -324,6 +505,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* Airhop */,
+				A1D3C4E5B6074F1288AA0531 /* AirhopWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -338,6 +520,16 @@
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				347CCEE0477D755AE7F3CBEF /* PrivacyInfo.xcprivacy in Resources */,
 				A17H0P77B140A537DA25BDCF /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1D3C4E5B6074F1288AA0534 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1D3C4E5B6074F1288AA0504 /* Localizable.strings in Resources */,
+				A1D3C4E5B6074F1288AA0505 /* Localizable.stringsdict in Resources */,
+				A1D3C4E5B6074F1288AA0506 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -507,6 +699,7 @@
 				85697010AA2B5354025C23E1 /* ExpoModulesProvider.swift in Sources */,
 				29977927D520A508D19B41F8 /* AirhopAppModule.mm in Sources */,
 				D54F2B294099B57C0347BCA4 /* AirhopAppModule.swift in Sources */,
+				A1D3C4E5B6074F1288AA0501 /* MeshWidgetState.swift in Sources */,
 				EA639344B67649F692464CE6 /* AirhopBLEModule.mm in Sources */,
 				19BB318E597540DBA26683AB /* AirhopBLEModule.swift in Sources */,
 				A1D3C4E5B6074F1288AA0201 /* AirhopIPtProxy.swift in Sources */,
@@ -521,6 +714,13 @@
 				636AA42C669E43DCA266E1F3 /* AirhopTorModule.swift in Sources */,
 				8C58E4B38D9145A688D15229 /* AirhopTorSocket.mm in Sources */,
 				BBBFF42043AE47019FA225ED /* AirhopTorSocket.swift in Sources */,
+				A1D3C4E5B6074F1288AA0401 /* AirhopVideoModule.mm in Sources */,
+				A1D3C4E5B6074F1288AA0403 /* AirhopVideoModule.swift in Sources */,
+				A1D3C4E5B6074F1288AA0405 /* AirhopVideoMedia.swift in Sources */,
+				A1D3C4E5B6074F1288AA0407 /* AirhopVideoViews.swift in Sources */,
+				A1D3C4E5B6074F1288AA0409 /* SurfaceRegistry.swift in Sources */,
+				A1D3C4E5B6074F1288AA040B /* VideoTranscodePass.swift in Sources */,
+				A1D3C4E5B6074F1288AA040D /* VideoFrames.swift in Sources */,
 				04CD453DBC41469BB2CF2595 /* AirhopVoiceModule.mm in Sources */,
 				56B4EC76AA924F30BDF0032B /* AirhopVoiceModule.swift in Sources */,
 				7663466FA96548F1AA63AA78 /* AirhopWiFiModule.mm in Sources */,
@@ -530,7 +730,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1D3C4E5B6074F1288AA0532 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1D3C4E5B6074F1288AA0503 /* AirhopWidget.swift in Sources */,
+				A1D3C4E5B6074F1288AA0502 /* MeshWidgetState.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1D3C4E5B6074F1288AA0536 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1D3C4E5B6074F1288AA0531 /* AirhopWidget */;
+			targetProxy = A1D3C4E5B6074F1288AA0537 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		A17H0PF11FDBB12D087E7F60 /* InfoPlist.strings */ = {
@@ -573,6 +790,90 @@
 				A17H0PAA2D0684DE4D36D991 /* zh-Hant */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		A1D3C4E5B6074F1288AA0523 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A1D3C4E5B6074F1288AA0600 /* en */,
+				A1D3C4E5B6074F1288AA0601 /* am */,
+				A1D3C4E5B6074F1288AA0602 /* ar */,
+				A1D3C4E5B6074F1288AA0603 /* bn */,
+				A1D3C4E5B6074F1288AA0604 /* de */,
+				A1D3C4E5B6074F1288AA0605 /* es */,
+				A1D3C4E5B6074F1288AA0606 /* fa */,
+				A1D3C4E5B6074F1288AA0607 /* fil */,
+				A1D3C4E5B6074F1288AA0608 /* fr */,
+				A1D3C4E5B6074F1288AA0609 /* hi */,
+				A1D3C4E5B6074F1288AA060A /* id */,
+				A1D3C4E5B6074F1288AA060B /* it */,
+				A1D3C4E5B6074F1288AA060C /* ja */,
+				A1D3C4E5B6074F1288AA060D /* ka */,
+				A1D3C4E5B6074F1288AA060E /* ko */,
+				A1D3C4E5B6074F1288AA060F /* mg */,
+				A1D3C4E5B6074F1288AA0610 /* ms */,
+				A1D3C4E5B6074F1288AA0611 /* my */,
+				A1D3C4E5B6074F1288AA0612 /* ne */,
+				A1D3C4E5B6074F1288AA0613 /* nl */,
+				A1D3C4E5B6074F1288AA0614 /* pa */,
+				A1D3C4E5B6074F1288AA0615 /* pl */,
+				A1D3C4E5B6074F1288AA0616 /* pt-BR */,
+				A1D3C4E5B6074F1288AA0617 /* pt-PT */,
+				A1D3C4E5B6074F1288AA0618 /* ru */,
+				A1D3C4E5B6074F1288AA0619 /* sv */,
+				A1D3C4E5B6074F1288AA061A /* sw */,
+				A1D3C4E5B6074F1288AA061B /* ta */,
+				A1D3C4E5B6074F1288AA061C /* th */,
+				A1D3C4E5B6074F1288AA061D /* tr */,
+				A1D3C4E5B6074F1288AA061E /* uk */,
+				A1D3C4E5B6074F1288AA061F /* ur */,
+				A1D3C4E5B6074F1288AA0620 /* vi */,
+				A1D3C4E5B6074F1288AA0621 /* zh-Hans */,
+				A1D3C4E5B6074F1288AA0622 /* zh-Hant */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		A1D3C4E5B6074F1288AA0524 /* Localizable.stringsdict */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A1D3C4E5B6074F1288AA0700 /* en */,
+				A1D3C4E5B6074F1288AA0701 /* am */,
+				A1D3C4E5B6074F1288AA0702 /* ar */,
+				A1D3C4E5B6074F1288AA0703 /* bn */,
+				A1D3C4E5B6074F1288AA0704 /* de */,
+				A1D3C4E5B6074F1288AA0705 /* es */,
+				A1D3C4E5B6074F1288AA0706 /* fa */,
+				A1D3C4E5B6074F1288AA0707 /* fil */,
+				A1D3C4E5B6074F1288AA0708 /* fr */,
+				A1D3C4E5B6074F1288AA0709 /* hi */,
+				A1D3C4E5B6074F1288AA070A /* id */,
+				A1D3C4E5B6074F1288AA070B /* it */,
+				A1D3C4E5B6074F1288AA070C /* ja */,
+				A1D3C4E5B6074F1288AA070D /* ka */,
+				A1D3C4E5B6074F1288AA070E /* ko */,
+				A1D3C4E5B6074F1288AA070F /* mg */,
+				A1D3C4E5B6074F1288AA0710 /* ms */,
+				A1D3C4E5B6074F1288AA0711 /* my */,
+				A1D3C4E5B6074F1288AA0712 /* ne */,
+				A1D3C4E5B6074F1288AA0713 /* nl */,
+				A1D3C4E5B6074F1288AA0714 /* pa */,
+				A1D3C4E5B6074F1288AA0715 /* pl */,
+				A1D3C4E5B6074F1288AA0716 /* pt-BR */,
+				A1D3C4E5B6074F1288AA0717 /* pt-PT */,
+				A1D3C4E5B6074F1288AA0718 /* ru */,
+				A1D3C4E5B6074F1288AA0719 /* sv */,
+				A1D3C4E5B6074F1288AA071A /* sw */,
+				A1D3C4E5B6074F1288AA071B /* ta */,
+				A1D3C4E5B6074F1288AA071C /* th */,
+				A1D3C4E5B6074F1288AA071D /* tr */,
+				A1D3C4E5B6074F1288AA071E /* uk */,
+				A1D3C4E5B6074F1288AA071F /* ur */,
+				A1D3C4E5B6074F1288AA0720 /* vi */,
+				A1D3C4E5B6074F1288AA0721 /* zh-Hans */,
+				A1D3C4E5B6074F1288AA0722 /* zh-Hant */,
+			);
+			name = Localizable.stringsdict;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -782,6 +1083,57 @@
 			};
 			name = Release;
 		};
+		A1D3C4E5B6074F1288AA0542 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AirhopWidget/AirhopWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 10010;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AirhopWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.10;
+				PRODUCT_BUNDLE_IDENTIFIER = org.onemindlabs.airhop.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		A1D3C4E5B6074F1288AA0543 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = AirhopWidget/AirhopWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 10010;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AirhopWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.10;
+				PRODUCT_BUNDLE_IDENTIFIER = org.onemindlabs.airhop.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -799,6 +1151,15 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1D3C4E5B6074F1288AA0541 /* Build configuration list for PBXNativeTarget "AirhopWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1D3C4E5B6074F1288AA0542 /* Debug */,
+				A1D3C4E5B6074F1288AA0543 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

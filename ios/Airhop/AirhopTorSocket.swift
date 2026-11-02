@@ -1,5 +1,3 @@
-// AirhopTorSocket.swift
-//
 // A WebSocket that rides Arti's SOCKS5 proxy so nostr-tools can route relay
 // connections through Tor. React Native's built-in WebSocket cannot speak
 // SOCKS5, so this exposes URLSessionWebSocketTask over a proxied session and
@@ -12,7 +10,7 @@
 //
 // Bridge file: AirhopTorSocket.mm
 // TypeScript spec: src/bridge/NativeAirhopTorSocket.ts
-// JS WebSocket shim: src/core/nostr/tor-websocket.ts
+// JS WebSocket shim: src/services/tor-websocket.ts
 //
 // Security:
 //  - TLS is validated end to end to the relay by URLSession's default trust
@@ -45,15 +43,13 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
   private lazy var delegateQueue: OperationQueue = {
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = 1
-    queue.name = "chat.airhop.torsocket"
+    queue.name = "org.onemindlabs.airhop.torsocket"
     return queue
   }()
 
   private lazy var session: URLSession = {
     let cfg = URLSessionConfiguration.ephemeral
     cfg.waitsForConnectivity = false
-    // Arti's SOCKS5 port (39050), not the standard Tor one. Shared with the
-    // manager so the two stay in lock step if the port ever changes.
     cfg.connectionProxyDictionary = [
       "SOCKSEnable": 1,
       "SOCKSProxy": AirhopTorEndpoint.socksHost,
@@ -182,7 +178,7 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
         @unknown default:
           break
         }
-        self.receive(id)  // keep reading until the socket closes
+        self.receive(id)
       }
     }
   }

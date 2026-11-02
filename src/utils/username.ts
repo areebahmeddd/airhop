@@ -10,10 +10,10 @@
 //
 // Properties:
 //   - Deterministic: same peerID always gives the same username.
-//   - Collision-resistant: 128 x 128 x 65536, about 1 billion unique names.
+//   - 65,536 distinct names: the adjective and noun come from the same two
+//     bytes the suffix shows, so the words add readability, not entropy.
 //   - Human-readable: common English words, no offensive terms.
-//   - Consistent with ARCHITECTURE.md section 2, Identity
-//     ("Adjective + Noun + 4-digit suffix").
+//   - Consistent with ARCHITECTURE.md section 2, Names.
 
 import { safetyNumberIndices } from "@core/crypto/fingerprint";
 
@@ -300,7 +300,7 @@ export function isNostrId(id: string): boolean {
 }
 
 // Short, honest label for a Nostr-only correspondent. They have no Noise-key
-// fingerprint to derive an adjective-noun name from, so we show the tail of
+// fingerprint to derive an adjective-noun name from, so the label is the tail of
 // their public key, npub-style. The last 6 chars disambiguate plenty and this
 // is the single formatting used everywhere a Nostr peer is named.
 export function nostrShortLabel(id: string): string {
@@ -338,7 +338,7 @@ export function peerIDToUsername(peerID: string): string {
 // means two people reading different strings and concluding they were attacked.
 //
 // Adjective and noun alternate rather than drawing from one list. Six nouns
-// read as a list to memorise; "swift falcon amber river" reads as a phrase, and
+// read as a list to memorize; "swift falcon amber river" reads as a phrase, and
 // the pairs are what someone repeats back.
 //
 // Bit extraction lives in core/crypto/fingerprint.ts, where the two devices have

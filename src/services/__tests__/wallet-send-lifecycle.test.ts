@@ -1,6 +1,6 @@
 // The money between "send" and "they got it".
 //
-// A send moves proofs into a reservation and serialises them into a token, all
+// A send moves proofs into a reservation and serializes them into a token, all
 // offline. It resolves by `confirmSend` (drop the reservation), `reclaimSend`
 // (put it back) or neither (pending, its token kept to share again). Coins are
 // always in exactly one place. The cases follow real taps, including two sends
@@ -8,7 +8,6 @@
 //
 // No mint is involved: the offline path is the subject.
 
-// Imports come first in source; Babel hoists jest.mock() calls above them.
 import { getDecodedToken, getEncodedToken, type Token } from "@cashu/cashu-ts";
 import { toProofLike } from "@core/payments/cashu";
 import type { StoredProof } from "@core/payments/stored-proof";
@@ -148,6 +147,28 @@ describe("preparing a send", () => {
     expect(reservedTotal()).toBe(16);
   });
 
+  it("refuses to spend more than the user agreed to when the coins changed meanwhile", async () => {
+    // The confirm offered 12 from a 4 and an 8. While it was open a refresh
+    // re-issued the coins as one 16, so the same send now takes 16.
+    useWalletStore.getState().clearAll();
+    useWalletStore.getState().addMint(MINT, { units: [UNIT] });
+    useWalletStore.getState().addProofs(MINT, UNIT, proofsOf([16]));
+
+    await expect(
+      prepareSend({ amount: 10, allowInexact: true, maxSpend: 12 }),
+    ).rejects.toMatchObject({ code: "inexact" });
+    expect(spendable()).toBe(16);
+    expect(reservedTotal()).toBe(0);
+
+    // What was agreed to still goes through.
+    const prepared = await prepareSend({
+      amount: 10,
+      allowInexact: true,
+      maxSpend: 16,
+    });
+    expect(prepared.spend).toBe(16);
+  });
+
   it("refuses a send larger than the balance", async () => {
     await expect(prepareSend({ amount: 10_000 })).rejects.toBeInstanceOf(
       WalletError,
@@ -248,7 +269,7 @@ describe("two sends at once", () => {
   });
 
   it("makes the loser retry even when the balance covers both", async () => {
-    // Two coins, but both sends quoted the same one. Serialising them costs a
+    // Two coins, but both sends quoted the same one. Serializing them costs a
     // retry, which is the deliberate trade.
     useWalletStore.getState().clearAll();
     useWalletStore.getState().addMint(MINT, { units: [UNIT] });

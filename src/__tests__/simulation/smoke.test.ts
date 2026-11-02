@@ -3,8 +3,7 @@
 // this working, so it is kept small and read as the harness's own unit test.
 
 jest.mock("expo-location", () => ({}));
-// Every phone needs its own event emitter. See harness/event-router.ts: this is
-// the only interception point that reliably catches every resolution path.
+// Every phone needs its own event emitter. See harness/event-router.ts.
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
   (
     require("./harness/event-router") as { routerModule: () => unknown }
@@ -12,7 +11,7 @@ jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
 );
 // The factory bodies must be EAGER, not a lazy `get default()`. A getter fires
 // at call time, which for a sandboxed device is after jest.isolateModules has
-// already closed - so every phone would resolve the OUTER registry's shim and
+// already closed, so every phone would resolve the OUTER registry's shim and
 // share one native module. Resolving here binds each sandbox to its own.
 jest.mock("@bridge/NativeAirhopBLE", () => {
   const shim = require("../harness/bridge-shim");
@@ -134,7 +133,7 @@ describe("simulation harness", () => {
 
     // There is deliberately ONE router object; what must be separate is the
     // listener set behind it. Each phone's subscriptions are filed under its own
-    // id, and nothing may be registered without a device context - an unowned
+    // id, and nothing may be registered without a device context: an unowned
     // listener would receive every phone's events.
     const router = eventRouter();
     expect(router.unownedCount()).toBe(0);

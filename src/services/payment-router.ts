@@ -9,10 +9,10 @@
 //      rail that cannot be taken back.
 //   3. A token over `sendDm` (gift-wrap, courier or outbox). Reclaimable.
 //   4. A token the user hands over themselves. Reclaimable.
-// Rails 3 and 4 reserve proofs rather than spending them, so a send that never
-// lands can be pulled back. Every result says which rail carried it and whether
-// it can be undone: "locked to them forever" and "queued, take it back" are one
-// gesture to the user and very different facts about their money.
+// Every rail but the nutzap reserves proofs rather than spending them, so a send
+// that never lands can be pulled back. Every result says which rail carried it
+// and whether it can be undone: "locked to them forever" and "queued, take it
+// back" are one gesture to the user and very different facts about their money.
 
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
 import { tokenMintUrl } from "@core/payments/cashu";
@@ -93,7 +93,7 @@ export interface PayPersonParams {
   recipientName?: string;
 }
 
-// Null when the user cancelled or the wallet refused; errors are alerted here.
+// Null when the user canceled or the wallet refused; errors are alerted here.
 export async function payPerson(
   params: PayPersonParams,
 ): Promise<PayResult | null> {
@@ -171,7 +171,7 @@ export async function payPerson(
       }
     }
 
-    // Rails 3 and 4.
+    // Rail 1 when they are nearby, otherwise 3 or 4: `sendDm` finds the route.
     return await payAsToken({
       peerID: payee.peerID,
       amount,
@@ -347,7 +347,7 @@ function noteNutzapInThread(
   });
 }
 
-// Rails 3 and 4: an ordinary reserved token, routed by `sendDm`.
+// Rails 1, 3 and 4: an ordinary reserved token, routed by `sendDm`.
 async function payAsToken(params: {
   peerID: string;
   amount: number;
@@ -400,8 +400,10 @@ async function payAsToken(params: {
     memo: params.memo,
     counterparty: params.peerID,
     // Only what the user was shown: the pool can change while a dialog is
-    // open, and an exact quote gone inexact would overpay unasked.
+    // open, and an exact quote gone inexact, or an inexact one gone larger,
+    // would overpay unasked.
     allowInexact: !quote.exact,
+    ...(quote.exact ? {} : { maxSpend: quote.spend }),
   });
 
   const route = deliverTokenToPeer({
@@ -653,7 +655,7 @@ export function reportWalletError(err: unknown): void {
 }
 
 // Receive a token, asking before adding a mint the wallet has never used: never
-// silently (a stranger's token could enrol an unvetted mint), never refused
+// silently (a stranger's token could enroll an unvetted mint), never refused
 // outright (the recipient could not take the payment). Null when declined.
 export async function receiveTrustingMint(
   raw: string,

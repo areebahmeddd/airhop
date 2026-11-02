@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-th/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "บลูทูธปิดอยู่ · ไม่ได้สแกน";
+"widget_label" = "เครื่องที่อยู่ในระยะ";
+"widget_description" = "เครื่องที่อยู่ในระยะ และเวลาที่นับ";
+"widget_nobody" = "ไม่มีใครอยู่ในระยะ";
+"widget_as_of" = "ณ %1$@";
+"widget_paused" = "เมชหยุดชั่วคราว";
+"widget_unset" = "เปิด Airhop";
+"widget_stale" = "เปิด Airhop เพื่อรีเฟรช";

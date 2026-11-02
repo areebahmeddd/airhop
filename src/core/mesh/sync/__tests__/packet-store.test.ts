@@ -36,6 +36,23 @@ describe("PacketStore", () => {
     expect(store.payloadBytes).toBe(8);
   });
 
+  // A small payload can arrive as a much larger DEFLATE stream, and the store
+  // keeps that wire form for relaying, so it is the wire size that counts.
+  test("charges a received packet for its wire bytes when they are larger", () => {
+    const store = new PacketStore(100, 10);
+    const inflated = packet(2, 1);
+    inflated.wirePayload = {
+      bytes: new Uint8Array(8),
+      compressed: true,
+      forPayload: inflated.payload,
+    };
+    store.insert("a", inflated);
+    expect(store.payloadBytes).toBe(8);
+    store.insert("b", packet(4, 2));
+    expect(tags(store)).toEqual([2]);
+    expect(store.payloadBytes).toBe(4);
+  });
+
   test("refuses a packet no budget could hold, keeping what it has", () => {
     const store = new PacketStore(100, 10);
     store.insert("a", packet(4, 1));

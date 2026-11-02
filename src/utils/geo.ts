@@ -1,9 +1,11 @@
 // Turning two coordinates into something a person can act on.
 //
-// There is no map, by decision. Tiles are an HTTP call to somebody's server on
-// every pan: a fingerprint, a dependency, and a grey square in exactly the
-// conditions this app exists for. Opening the pin in a maps app stays available
-// as a handoff the user chooses, which is a different thing.
+// There are no map tiles, by decision. A tile is an HTTP call to somebody's
+// server on every pan: a fingerprint, a dependency, and a gray square in
+// exactly the conditions this app exists for. So a pin gets no map, and the
+// one map-like surface, the globe that picks a location channel, draws bundled
+// geometry instead. Opening the pin in a maps app stays available as a handoff
+// the user chooses, which is a different thing.
 
 const EARTH_RADIUS_M = 6_371_000;
 
@@ -16,10 +18,10 @@ export interface Point {
   lng: number;
 }
 
-// Great-circle distance in metres.
+// Great-circle distance in meters.
 //
 // Haversine, as in geo-relay.ts, kept separate because that one answers in
-// kilometres for sorting a list and this one in metres for a label.
+// kilometers for sorting a list and this one in meters for a label.
 export function distanceMeters(from: Point, to: Point): number {
   const dLat = toRad(to.lat - from.lat);
   const dLng = toRad(to.lng - from.lng);
@@ -67,15 +69,15 @@ const COMPASS: readonly CompassPoint[] = [
 
 export function compassPoint(bearing: number): CompassPoint {
   const normalized = ((bearing % 360) + 360) % 360;
-  // +22.5 so each sector is centred on its label rather than starting at it.
+  // +22.5 so each sector is centered on its label rather than starting at it.
   return COMPASS[Math.floor((normalized + 22.5) / 45) % 8] as CompassPoint;
 }
 
 // Round a distance to a precision the reading supports.
 //
-// A phone fix is good to tens of metres, so "183 m" spends three digits on one
+// A phone fix is good to tens of meters, so "183 m" spends three digits on one
 // digit of truth and reads as authority the number does not have. 10 m under a
-// kilometre, a tenth of a kilometre above it.
+// kilometer, a tenth of a kilometer above it.
 //
 // Value and unit rather than a string, so the caller formats through the i18n
 // number formatter instead of concatenating here.

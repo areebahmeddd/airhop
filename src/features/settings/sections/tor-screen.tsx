@@ -82,6 +82,18 @@ const MODES: {
   },
 ];
 
+const FAILURE_MESSAGES: Record<
+  NonNullable<TorRoutingResult["reason"]>,
+  TranslationKey
+> = {
+  unavailable: "settings.conn.tor_unavailable",
+  timeout: "settings.conn.tor_timeout",
+  "no-bridges": "settings.tor.custom_empty",
+  "bad-bridges": "settings.conn.tor_bad_bridges",
+  "port-busy": "settings.conn.tor_port_busy",
+  error: "settings.conn.tor_failed",
+};
+
 export default function TorScreen({ onBack }: Props): React.JSX.Element {
   const Colors = useThemeColors();
   const styles = useSharedStyles();
@@ -131,19 +143,15 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
     return T("mesh.banner.tor_starting");
   }
 
-  // One message per outcome, and none of them is "try again": a bootstrap that
-  // ran out its deadline may still land, and the status row carries that.
+  // One message per outcome. Only a generic failure says to try again: a
+  // bootstrap that ran out its deadline may still land, and the status row
+  // carries that, while refused bridge lines or a taken port fail the same way
+  // until the user changes something.
   function report(result: TorRoutingResult): void {
     if (result.ok) return;
     showAlert(
       T("settings.conn.tor_short"),
-      result.reason === "unavailable"
-        ? T("settings.conn.tor_unavailable")
-        : result.reason === "timeout"
-          ? T("settings.conn.tor_timeout")
-          : result.reason === "no-bridges"
-            ? T("settings.tor.custom_empty")
-            : T("settings.conn.tor_failed"),
+      T(FAILURE_MESSAGES[result.reason ?? "error"]),
     );
   }
 

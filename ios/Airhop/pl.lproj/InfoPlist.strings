@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Aplikacja Airhop używa Bluetootha, aby ogłaszać twoją obecność pobliskim peerom.";
 "NSLocalNetworkUsageDescription" = "Aplikacja Airhop używa sieci lokalnej, aby przy dużych transferach (wideo, duże pliki) łączyć się bezpośrednio z pobliskimi urządzeniami.";
 "NSCameraUsageDescription" = "Aplikacja Airhop używa aparatu, aby zeskanować kod QR kontaktu oraz robić zdjęcia i filmy do udostępnienia pobliskim peerom.";
-"NSMicrophoneUsageDescription" = "Aplikacja Airhop używa mikrofonu, aby nagrywać notatki głosowe i przekazywać głos na żywo pobliskim peerom.";
+"NSMicrophoneUsageDescription" = "Aplikacja Airhop używa mikrofonu, aby nagrywać notatki głosowe i wideo i przekazywać głos na żywo pobliskim peerom.";
 "NSPhotoLibraryUsageDescription" = "Aplikacja Airhop sięga do twojej galerii zdjęć, aby udostępniać obrazy i filmy przez sieć mesh.";
 "NSPhotoLibraryAddUsageDescription" = "Aplikacja Airhop zapisuje zdjęcia i filmy w twojej galerii, gdy wybierzesz zapis oraz gdy pobierasz swój kod QR.";
 "NSFaceIDUsageDescription" = "Airhop używa Face ID, aby potwierdzić, że to ty: do otwierania aplikacji, gdy blokada aplikacji jest włączona, oraz przed pokazaniem frazy odzyskiwania lub przeniesieniem twojej tożsamości na nowy telefon.";

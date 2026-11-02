@@ -112,6 +112,27 @@ describe("the permission arriving after the mesh started", () => {
     await settle(30_000);
     expect(wifi.isStarted).toBe(true);
   });
+
+  // Android 12 and 12L: discovery needs a location grant Airhop never asks for
+  // there, so the refusal is permanent until the user acts.
+  test("stops polling a refusal that does not clear, until something changes", async () => {
+    mockStartWiFi.mockImplementation(() => rejectWith("PERMISSION_DENIED"));
+    const wifi = new WiFiController();
+
+    wifi.start();
+    await settle(30_000);
+    const attempts = mockStartWiFi.mock.calls.length;
+    expect(attempts).toBeGreaterThan(1);
+
+    await settle(60_000);
+    expect(mockStartWiFi).toHaveBeenCalledTimes(attempts);
+
+    // A grant or a resume lands here, and is worth asking again.
+    mockStartWiFi.mockResolvedValue(undefined);
+    wifi.refresh();
+    await settle();
+    expect(wifi.isStarted).toBe(true);
+  });
 });
 
 describe("a device with no fast path at all", () => {
@@ -525,7 +546,7 @@ describe("the pairing gate", () => {
   });
 
   test("treats a native unpaired refusal the same way, without a retry ladder", async () => {
-    // Defence in depth: the gate above should have caught this, so reaching
+    // Defense in depth: the gate above should have caught this, so reaching
     // native at all means the two disagreed. The response is the same either
     // way, and it must not become a poll.
     mockStartWiFi.mockImplementation(() => rejectWith("WIFI_AWARE_UNPAIRED"));
@@ -663,6 +684,26 @@ describe("a transport that keeps dying right after it starts", () => {
     for (let i = 0; i < 4; i++) {
       jest.advanceTimersByTime(20_000);
       wifi.onAvailabilityChanged(false, "radio");
+      await settle();
+      wifi.onAvailabilityChanged(true);
+      await settle();
+    }
+
+    expect(wifi.isUnstable).toBe(false);
+    expect(wifi.isStarted).toBe(true);
+  });
+
+  // iOS reports a drop with no reason. Its listener and browser failing is not
+  // the chipset quirk the breaker exists for, so it only retries.
+  test("ignores drops that name no reason, however often", async () => {
+    mockStartWiFi.mockResolvedValue(undefined);
+    const wifi = new WiFiController();
+
+    wifi.start();
+    await settle();
+    for (let i = 0; i < 4; i++) {
+      jest.advanceTimersByTime(20_000);
+      wifi.onAvailabilityChanged(false);
       await settle();
       wifi.onAvailabilityChanged(true);
       await settle();

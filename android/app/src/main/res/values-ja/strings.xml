@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">メッシュネットワーク</string>
   <string name="mesh_channel_description">Airhopのメッシュをバックグラウンドで動かし続けます</string>
   <string name="mesh_notification_title">Airhopのメッシュが稼働中</string>
@@ -7,4 +7,15 @@
   <plurals name="mesh_notification_peers">
     <item quantity="other">圏内に%1$s台のピア</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetoothがオフです · スキャンしていません</string>
+  <string name="widget_label">圏内のピア</string>
+  <string name="widget_description">圏内のピアの数と、数えた時刻</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="other">圏内のピア</item>
+  </plurals>
+  <string name="widget_nobody">圏内に誰もいません</string>
+  <string name="widget_as_of">%1$s時点</string>
+  <string name="widget_paused">メッシュを一時停止中</string>
+  <string name="widget_unset">Airhopを開く</string>
+  <string name="widget_stale">Airhopを開いて更新</string>
 </resources>

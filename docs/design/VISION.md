@@ -55,7 +55,8 @@ What each feature is for, and when someone would actually reach for it.
 - Photos and video. Both open in the chat where they land, with no download step.
 - Voice notes. Recorded audio, faster than typing directions.
 - Live voice. Hold the mic and talk to everyone in range, walkie-talkie style. Hands stay on what you are doing.
-- File transfer. Up to 1 MiB, bitchat's limit and about 56 seconds over Bluetooth, from an allow-list of everyday formats.
+- Live video. Show everyone in range, or one person, what you are looking at, in bitchat's own stream format. Everyone who receives it keeps the recording.
+- File transfer. Up to 1 MiB, bitchat's limit and about 56 seconds over Bluetooth, in any format.
 - Store-and-forward courier. When nothing can reach the recipient now, a nearby phone carries the sealed message and hands it over when they eventually meet. The carrier cannot read it, and media never travels this way.
 
 ### Identity
@@ -83,7 +84,7 @@ What each feature is for, and when someone would actually reach for it.
 - Geo-relay discovery. Location channels pick relays near that place, so people in one city converge on the same ones.
 - Mesh bridge. Joins your local `#bluetooth` room to another crowd too far away to reach by radio.
 - Internet gateway. Off by default. Turn it on and your phone carries public location traffic for nearby people who have no connection of their own.
-- Tor. Built in on both platforms, with nothing else to install, and off until you turn it on. Once on, every relay connection is dialled through it, so operators never see your IP and nothing falls back to the clear.
+- Tor. Built in on both platforms, with nothing else to install, and off until you turn it on. Once on, every relay connection is dialed through it, so operators never see your IP and nothing falls back to the clear.
 
 ### Optional
 
@@ -96,7 +97,7 @@ What each feature is for, and when someone would actually reach for it.
 
 ## What We Are Not Building
 
-- **A video call app.** Bluetooth is far too slow at ~18 KiB/s, Wi-Fi Aware does not cross platforms, and LAN needs both people on one network with it switched on. Video is shared as files instead.
+- **A video call app.** Bluetooth is far too slow at ~18 KiB/s, Wi-Fi Aware does not cross platforms, and LAN needs both people on one network with it switched on. Video is shared as files, or streamed one way.
 - **A server.** We operate no relays, mints, or infrastructure. Ever.
 - **A centralized social network.** No profiles hosted on our servers. No search index we control.
 - **A KYC product.** No phone number. No email. No government ID.

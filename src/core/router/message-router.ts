@@ -1,11 +1,11 @@
-// Message router: the peer registry and the Noise-sealed DM send, with Nostr
-// and courier fallbacks for when no session reaches the peer. The full DM
-// ladder (Double Ratchet first, then this, then the outbox) lives in
-// MeshService.trySendDm; ARCHITECTURE.md section 4 describes it.
+// Message router: the peer registry and the Noise-sealed DM send. The full DM
+// ladder (Double Ratchet first, then this, then Nostr, a courier and the outbox)
+// lives in MeshService.trySendDm; ARCHITECTURE.md section 6 describes it.
 //
-// The router does not own a network connection. BLE and Courier are injected
-// as plain callbacks. The optional Nostr and WiFi send functions are injected at
-// construction time so the router stays testable without a live transport.
+// The router does not own a network connection. Broadcast and unicast are
+// injected at construction, so it stays testable without a live transport.
+// Which link a direct packet takes is decided inside `unicast`, beside the link
+// maps, so there is no Wi-Fi tier here to consult the transport a second time.
 
 import { hexToBytes } from "@noble/hashes/utils.js";
 import { type NoiseSession } from "../crypto/noise-xx";
@@ -39,7 +39,7 @@ const DIRECT_PEER_TTL_MS = ANNOUNCE_CONNECTED_MAX_MS * 1.5;
 // Timeout for mesh peers learned via relayed ANNOUNCEs (not directly connected).
 // Longer because relayed packets can take several hops and arrive late.
 // Matches bitchat's 60-second mesh reachability window.
-const PEER_REACHABLE_TTL_MS = 60_000;
+export const PEER_REACHABLE_TTL_MS = 60_000;
 
 // ---- Peer registry ----
 
@@ -53,10 +53,9 @@ export interface PeerEntry {
   // Direct peers use the shorter DIRECT_PEER_TTL_MS; mesh peers use 60s.
   isDirect: boolean;
   // Nostr public key (secp256k1 hex) announced by this peer, if known.
-  // Used as priority-3 transport when direct transports are unavailable.
   nostrPubkey?: string;
   // bitchat capability bits announced by this peer (ANNOUNCE TLV 0x05), if any.
-  // 0/undefined means the peer advertised none (old client or no TLV).
+  // 0/undefined means the peer advertised none.
   //
   // A hint. An announce is self-signed with a key carried in the same announce,
   // so anyone can claim any bits under any peer ID whose Noise key they read off
@@ -96,8 +95,9 @@ const CAPABILITY_BRIDGE = 1 << 7;
 //
 // Reads are TTL-bounded, so a flood never makes a fake peer look reachable,
 // but without a cap the underlying map would grow for the life of the process
-// and every reachablePeers() scan would walk all of it. 200 matches prekey-store.ts, which caps the same class
-// of gossiped, attacker-supplied state the same way.
+// and every reachablePeers() scan would walk all of it. 200 matches
+// prekey-store.ts, which caps the same class of gossiped, attacker-supplied
+// state the same way.
 const MAX_TRACKED_PEERS = 200;
 
 function sameKey(a: Uint8Array, b: Uint8Array): boolean {
@@ -143,13 +143,6 @@ export class PeerRegistry {
       if (!sameKey(existing.noisePubKey, entry.noisePubKey)) return;
     }
 
-    // Session-authenticated state outranks anything an announce carries, and is
-    // never lowered by one. `update()` is the announce path; capabilities that
-    // arrived proven (0x21) stay proven, and a signing key that arrived proven
-    // stays flagged as such. Without this the next announce would quietly
-    // reduce a proof back to a claim, the downgrade bitchat calls out: a public
-    // announce with the bit off must not overwrite session-authenticated state.
-
     // `trusted` is a caller-supplied hint about the source, not peer state, so
     // it is dropped rather than stored.
     const { trusted: _trusted, ...fields } = entry;
@@ -157,10 +150,15 @@ export class PeerRegistry {
       ...fields,
       isDirect: entry.isDirect ?? existing?.isDirect ?? false,
       lastSeenMs: Date.now(),
-      // Preserve the learned Nostr pubkey across BLE re-announces, which do
-      // not carry a nostrPubkey field. Same pattern as session.
+      // A learned Nostr pubkey survives a re-announce that omits TLV 0x07.
       nostrPubkey: entry.nostrPubkey ?? existing?.nostrPubkey,
       capabilities: entry.capabilities ?? existing?.capabilities,
+      // Session-authenticated state outranks anything an announce carries, and
+      // `update()` is the announce path. Capabilities that arrived proven (0x21)
+      // stay proven, and a signing key that arrived proven stays flagged as such.
+      // Otherwise the next announce would quietly reduce a proof back to a claim,
+      // the downgrade bitchat calls out: a public announce with the bit off must
+      // not overwrite session-authenticated state.
       authenticatedCapabilities: existing?.authenticatedCapabilities,
       signingKeyAuthenticated: existing?.signingKeyAuthenticated,
       bridgeGeohash: entry.bridgeGeohash ?? existing?.bridgeGeohash,
@@ -233,7 +231,7 @@ export class PeerRegistry {
   }
 
   // Mark a peer as directly BLE-connected. Called when the BLE native module
-  // fires a linkConnected event for this peerID. Direct peers use DIRECT_PEER_TTL_MS.
+  // fires a linkConnected event for this peerID.
   markDirect(peerID: string): void {
     const e = this.peers.get(peerID);
     if (e) {
@@ -412,21 +410,6 @@ export interface RouterIdentity {
 
 export type BroadcastFn = (packet: Packet) => void;
 export type UnicastFn = (recipientPeerID: string, packet: Packet) => void;
-// Sends a gift-wrapped Nostr DM to a recipient by their secp256k1 pubkey.
-// Implemented by the feature layer; swapped for a test double in unit tests.
-export type NostrSendFn = (
-  recipientNostrPubkey: string,
-  text: string,
-) => Promise<void>;
-
-// There is deliberately no separate WiFiUnicastFn tier here. It would duplicate
-// what the injected `unicast` callback already does: MeshService's unicast checks
-// for an active WiFi link and uses it before falling back to BLE, so a second
-// WiFi check in the router would consult the transport twice.
-//
-// Transport selection belongs in the callback that owns the link maps, not here.
-// The router only decides WHICH tier to use (direct / Nostr / courier); how a
-// direct packet reaches the peer is the transport layer's business.
 
 // bitchat's mesh has one public room, which its UI labels "bluetooth". Airhop
 // names it as a channel so it lists beside the location cells. Source of truth
@@ -476,17 +459,35 @@ export function decodeMeshPublicPayload(payload: Uint8Array): string | null {
   }
 }
 
-// [channel_len u8][channel][msg_id_len u8][msg_id][text], all UTF-8.
+// [channel_len u8][channel][msg_id_len u8][msg_id][cell_len u8][cell][text],
+// all UTF-8.
+//
+// `cell` is the geohash a location level (#block, #city) was written in, empty
+// for any other channel and from a sender with no fix. A level names a
+// different place to every phone, and gossip serves a public message for hours
+// to whoever it meets, so without the cell a phone that moved would hand one
+// block's history to the next. It is sent in the clear: the same message's
+// Nostr copy carries the same ID and names the cell in its public "g" tag, and
+// a hash of a geohash is reversed by enumerating a few billion cells, so hiding
+// it here would hide nothing.
 export function encodeAirhopChannelPayload(
   channel: string,
   text: string,
   msgId: string,
+  cell = "",
 ): Uint8Array {
   const chBytes = new TextEncoder().encode(channel.slice(0, 64));
   const idBytes = new TextEncoder().encode(msgId.slice(0, 32));
+  const cellBytes = new TextEncoder().encode(cell.slice(0, 12));
   const textBytes = new TextEncoder().encode(text);
   const buf = new Uint8Array(
-    1 + chBytes.length + 1 + idBytes.length + textBytes.length,
+    1 +
+      chBytes.length +
+      1 +
+      idBytes.length +
+      1 +
+      cellBytes.length +
+      textBytes.length,
   );
   let off = 0;
   buf[off++] = chBytes.length;
@@ -495,13 +496,16 @@ export function encodeAirhopChannelPayload(
   buf[off++] = idBytes.length;
   buf.set(idBytes, off);
   off += idBytes.length;
+  buf[off++] = cellBytes.length;
+  buf.set(cellBytes, off);
+  off += cellBytes.length;
   buf.set(textBytes, off);
   return buf;
 }
 
 export function decodeAirhopChannelPayload(
   payload: Uint8Array,
-): { channel: string; text: string; msgId: string } | null {
+): { channel: string; text: string; msgId: string; cell: string } | null {
   if (payload.length < 1) return null;
   const chLen = payload[0];
   if (1 + chLen + 1 > payload.length) return null;
@@ -509,12 +513,17 @@ export function decodeAirhopChannelPayload(
 
   let off = 1 + chLen;
   const idLen = payload[off++];
-  if (off + idLen > payload.length) return null;
+  if (off + idLen + 1 > payload.length) return null;
   const msgId = new TextDecoder().decode(payload.slice(off, off + idLen));
   off += idLen;
 
+  const cellLen = payload[off++];
+  if (off + cellLen > payload.length) return null;
+  const cell = new TextDecoder().decode(payload.slice(off, off + cellLen));
+  off += cellLen;
+
   const text = new TextDecoder().decode(payload.slice(off));
-  return { channel, text, msgId };
+  return { channel, text, msgId, cell };
 }
 
 // 16 hex chars from 8 random bytes: short enough to stay cheap on the wire,
@@ -546,10 +555,7 @@ export class MessageRouter {
     private readonly registry: PeerRegistry,
     private readonly broadcast: BroadcastFn,
     private readonly unicast: UnicastFn,
-    // Nostr gift-wrap DM. Optional. When absent, DMs fall through to courier
-    // if no direct session is available.
-    private readonly nostrSend?: NostrSendFn,
-    // Our neighbour count, which the TTL of what we author follows (see
+    // Our neighbor count, which the TTL of what we author follows (see
     // origin-ttl.ts). 0 (sparse) when not given, for tests with no mesh.
     private readonly getDegree: () => number = () => 0,
   ) {}
@@ -560,17 +566,21 @@ export class MessageRouter {
   // `timestampMs` defaults to now; callers pass an explicit value when the same
   // timestamp must be reused elsewhere (the mesh bridge derives a content-stable
   // ID from sender+timestamp+content, and it must match on both transports).
+  //
+  // `cell` is the geohash a location level was written in (see
+  // encodeAirhopChannelPayload); the mesh room ignores it.
   sendChannelMessage(
     channel: string,
     text: string,
     msgId: string,
     timestampMs: number = Date.now(),
+    cell = "",
   ): void {
     const type = channelPacketType(channel);
     const payload =
       type === PacketType.CHANNEL_MSG
         ? encodeMeshPublicPayload(text)
-        : encodeAirhopChannelPayload(channel, text, msgId);
+        : encodeAirhopChannelPayload(channel, text, msgId, cell);
     const senderIDBytes = hexToBytes(this.identity.peerID);
 
     const packet: Packet = {
@@ -605,51 +615,29 @@ export class MessageRouter {
     this.broadcast(packet);
   }
 
-  // Send a direct message.
-  //
-  // Transport selection:
-  //   1. Direct: if the recipient has an active Noise session, encrypt and
-  //      unicast it. The injected `unicast` callback picks the physical
-  //      transport, preferring Wi-Fi Aware, then LAN, then BLE. Both share the same Noise session, which is
-  //      transport-agnostic.
-  //   2. Nostr: if a NostrSendFn was injected and the recipient's Nostr pubkey
-  //      is known, fire-and-forget a gift-wrap DM over the internet. Returns
-  //      'sent-nostr' so the caller can show a pending indicator.
-  //   3. Courier: returns 'needs-courier' so the caller can seal the message
-  //      and hand it to connected peers.
+  // Send a direct message over the Noise session, which is transport-agnostic;
+  // `unicast` picks the link. "needs-courier" means nothing went out, so the
+  // caller tries its next tier.
   sendDm(
     recipientPeerID: string,
     text: string,
     messageID: string,
-  ): "sent" | "sent-nostr" | "needs-courier" {
+  ): "sent" | "needs-courier" {
     const peer = this.registry.get(recipientPeerID);
 
-    // Direct transport. Requires an active Noise session so the payload can be
-    // encrypted end-to-end; the callback below chooses WiFi or BLE. This is the
-    // path a bitchat peer's DM travels: NOISE_ENCRYPTED carrying a bitchat
-    // NoisePayload private message.
+    // This is the path a bitchat peer's DM travels: NOISE_ENCRYPTED carrying a
+    // bitchat NoisePayload private message.
     if (peer?.session !== undefined) {
       const payload = encodeDmPayload(messageID, text, peer.session);
-      // Content longer than one PrivateMessagePacket (255 bytes): fall through
-      // to courier rather than send something bitchat can't parse.
+      // Content longer than one PrivateMessagePacket (255 bytes) falls through
+      // rather than send something bitchat can't parse.
       if (payload !== null) {
         const packet = this.makeNoisePacket(recipientPeerID, payload);
-        // The transport layer owns the WiFi-vs-BLE decision.
         this.unicast(recipientPeerID, packet);
         return "sent";
       }
     }
 
-    // Priority 3: Nostr gift-wrap DM when recipient pubkey is known.
-    if (this.nostrSend !== undefined && peer?.nostrPubkey !== undefined) {
-      void this.nostrSend(peer.nostrPubkey, text).catch(() => {
-        // Delivery failure is handled at the feature layer via Nostr client
-        // events. Silently dropping here keeps the router side-effect-free.
-      });
-      return "sent-nostr";
-    }
-
-    // Priority 3: Courier store-and-forward.
     return "needs-courier";
   }
 
@@ -693,12 +681,11 @@ export class MessageRouter {
 
   // Same as sendNoisePayload, but hands the packet back instead of writing it.
   //
-  // A payload that is small enough to write straight out is the common case and
-  // sendNoisePayload above is the right shape for it. A whole file is not: one
-  // Noise ciphertext of a few hundred kilobytes still has to be split into
-  // single-write frames and paced onto the radio, and that scheduler lives in
-  // file-transfer-service. Returning the packet lets the sealing decision stay
-  // here (it needs the session) while fragmentation stays there.
+  // For a whole file: one Noise ciphertext of a few hundred kilobytes still has
+  // to be split into single-write frames and paced onto the radio, and that
+  // scheduler lives in file-transfer-service. Returning the packet lets the
+  // sealing decision stay here (it needs the session) while fragmentation stays
+  // there.
   //
   // Returns null when no session exists, so the caller can fall back or wait.
   buildNoisePayloadPacket(

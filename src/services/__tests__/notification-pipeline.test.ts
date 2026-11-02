@@ -219,6 +219,20 @@ describe("startNotificationPipeline", () => {
     expect(mockHandleInbound).toHaveBeenCalledTimes(1);
   });
 
+  test("lets a muted channel's mention through only with our suffix", () => {
+    mockChat.mutedChannels = ["#mesh"];
+    startNotificationPipeline(
+      () => "alice",
+      (channel) => (channel === "#mesh" ? "d2c4" : null),
+    );
+
+    arrive(message({ text: "@alice#9c02 hi" }));
+    arrive(message({ id: "m2", text: "@alice#d2c4 hi" }));
+
+    expect(mockHandleInbound).toHaveBeenCalledTimes(1);
+    expect(mockHandleInbound.mock.calls[0][0]).toMatchObject({ id: "m2" });
+  });
+
   test("keeps the icon badge at total unread, writing only on a change", () => {
     startNotificationPipeline(() => "alice");
     expect(mockSetBadge).toHaveBeenLastCalledWith(0);

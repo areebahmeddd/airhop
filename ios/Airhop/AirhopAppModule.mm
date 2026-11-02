@@ -1,10 +1,8 @@
-// AirhopAppModule.mm
-//
 // Objective-C bridge for AirhopAppModule.swift.
 //
 // REMAP, not RCT_EXTERN_MODULE: the plain macro would register this as
-// "AirhopAppModule", the Obj-C class name. The spec (src/bridge/NativeAirhopApp.ts)
-// and the Android module both use "AirhopApp".
+// "AirhopAppModule", the Objective-C class name. The spec
+// (src/bridge/NativeAirhopApp.ts) and the Android module both use "AirhopApp".
 #import <React/RCTBridgeModule.h>
 
 @interface RCT_EXTERN_REMAP_MODULE(AirhopApp, AirhopAppModule, NSObject)
@@ -27,6 +25,19 @@ RCT_EXTERN_METHOD(startRingAlert:(double)durationMs
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(stopRingAlert:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(setMeshSnapshot:(double)count
+                  meshOn:(BOOL)meshOn
+                  bluetoothOff:(BOOL)bluetoothOff
+                  atMs:(double)atMs
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(clearMeshSnapshot:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(openBackgroundNoticeSettings:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 @end

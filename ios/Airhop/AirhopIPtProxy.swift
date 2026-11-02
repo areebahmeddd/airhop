@@ -1,5 +1,3 @@
-// AirhopIPtProxy.swift
-//
 // The pluggable transports Arti dials to reach a bridge, built from
 // native/iptproxy.
 //
@@ -11,7 +9,7 @@
 // listener and, for Snowflake, contacts a broker over the network. Callers run
 // it off the main thread, the same way they do Arti's own start.
 //
-// Mirrors android .../tor/AirhopIPtProxy.kt.
+// Mirrors AirhopIPtProxy.kt on Android.
 
 import Foundation
 import IPtProxy
@@ -92,7 +90,7 @@ final class AirhopIPtProxy: @unchecked Sendable {
     for transport in transports {
       if !running.contains(transport) {
         do {
-          // No upstream proxy: Arti is the only thing dialling these.
+          // No upstream proxy: Arti is the only thing dialing these.
           try controller.start(transport.rawValue, proxy: "")
         } catch {
           AirhopLog.iptProxy.error("\(transport.rawValue, privacy: .public) did not start")
@@ -157,7 +155,7 @@ final class AirhopIPtProxy: @unchecked Sendable {
     // Logging off. The log records bridge addresses, which is the most
     // incriminating thing this device could write down, and nothing reads it.
     //
-    // The initialiser returns nil rather than throwing when it cannot set up
+    // The initializer returns nil rather than throwing when it cannot set up
     // its directory, so a nil here is a real failure.
     guard
       let created = IPtProxyController(

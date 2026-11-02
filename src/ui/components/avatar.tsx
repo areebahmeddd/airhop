@@ -1,4 +1,3 @@
-// Avatar component.
 // A circular badge showing the first two characters of a username,
 // with a background color deterministically derived from the peer ID.
 
@@ -6,9 +5,9 @@ import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { avatarColor, FontWeight, useThemeColors, withAlpha } from "../theme";
 
-// How strongly the peer's hashed colour tints the circle behind its initials.
+// How strongly the peer's hashed color tints the circle behind its initials.
 // Low, so the initials stay the contrasting element and a wall of avatars in a
-// list does not read as a wall of colour.
+// list does not read as a wall of color.
 const TINT_ALPHA = 0.13;
 
 // So a pair like "IL" does not read as one glyph at the sizes drawn here.
@@ -23,7 +22,7 @@ interface Props {
   // showing its full peer color.
   active?: boolean;
   // Presence dot overlaid at the bottom-right, shown only when the peer is
-  // reachable. "offline" draws nothing: absence already says it, and a grey
+  // reachable. "offline" draws nothing: absence already says it, and a gray
   // dot on every offline avatar is noise. Omit for no dot. `ringColor` should
   // match the background the avatar sits on so the dot reads as a badge;
   // defaults to the base background.
@@ -52,7 +51,7 @@ export default function Avatar({
         : Colors.border;
 
   // Presence dot, matching the profile screen's status dot proportions:
-  // ~0.1875 of the avatar, a ~2% border in the background colour, inset ~2%.
+  // ~0.1875 of the avatar, a ~2% border in the background color, inset ~2%.
   const dotSize = Math.max(8, Math.round(size * 0.1875));
   const dotBorder = Math.max(1.5, Math.round(size * 0.02));
   const dotInset = Math.max(1, Math.round(size * 0.02));
@@ -107,8 +106,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       letterSpacing: INITIALS_TRACKING,
       // Tracking is applied after the last glyph too, so the text box measures
-      // wider than it draws and centring it leaves the glyphs half a track
-      // short. Cancelling the trailing space puts them back on centre.
+      // wider than it draws and centering it leaves the glyphs half a track
+      // short. Canceling the trailing space puts them back on center.
       marginEnd: -INITIALS_TRACKING,
     },
   });

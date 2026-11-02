@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Twoja tożsamość to para kluczy {ed25519} generowana na twoim urządzeniu i przechowywana w {ios_keychain} albo {android_keystore}. Nie ma kont, rejestracji ani niczego, co dotyka serwera, czyli można używać aplikacji jak jednorazowej, która po usunięciu nie zostawia nic, co prowadziłoby do ciebie.",
   "home.about.body.crypto":
-    "Każda sesja korzysta z protokołu {noise} do uwierzytelnionego uzgadniania. Zapisane wiadomości korzystają z algorytmu {ratchet}, czyli nawet jeśli twoje urządzenie zostanie później przejęte, dawne wiadomości pozostaną nieczytelne. Awaryjne czyszczenie niszczy wszystkie klucze i wiadomości w niecałą sekundę.",
+    "Każda sesja korzysta z protokołu {noise} do uwierzytelnionego uzgadniania. Wiadomości bezpośrednie na żywo między telefonami z Airhop korzystają z algorytmu {ratchet}, czyli klucz ujawniony później nie otworzy już wysłanych wiadomości. Awaryjne czyszczenie niszczy wszystkie klucze i wiadomości w niecałą sekundę.",
   "home.about.body.internet":
     "Kiedy ty i twój kontakt jesteście poza zasięgiem Bluetootha, przekaźniki {nostr} służą jako most przez internet, z wiadomościami bezpośrednimi zapakowanymi w formacie {nip17}, więc sieć mesh sięga całego świata, kiedy oboje jesteście online. Obsługa {tor} jest dostępna na iOS i Androidzie, przez {arti}, z mostkami {obfs4}, {snowflake} i {webtunnel} dla sieci blokujących Tora.",
   "home.about.optional.title": "Airhop ma opcjonalne funkcje, które możesz włączyć:",
@@ -170,9 +170,9 @@ const strings: Strings = {
     "Linki z zaproszeniem do pokoju albo podpisana lista do 16 osób.",
   "home.features.messaging.board.name": "Tablica ogłoszeń",
   "home.features.messaging.board.line": "Ogłoszenia przypięte do obszaru nawet na siedem dni.",
-  "home.features.messaging.voice.name": "Głos na żywo",
+  "home.features.messaging.voice.name": "Głos i wideo na żywo",
   "home.features.messaging.voice.line":
-    "Przytrzymaj mikrofon i mów do wszystkich w zasięgu, jak przez krótkofalówkę.",
+    "Przytrzymaj mikrofon, by mówić, albo nadawaj na żywo z kamery, do wszystkich w zasięgu.",
   "home.features.messaging.notes.name": "Notatki głosowe",
   "home.features.messaging.notes.line": "Nagrany dźwięk, szybszy niż pisanie wskazówek.",
   "home.features.messaging.files.name": "Zdjęcia, wideo i pliki",

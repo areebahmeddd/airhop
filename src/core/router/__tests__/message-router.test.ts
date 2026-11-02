@@ -63,6 +63,29 @@ describe("public message payloads", () => {
     expect(decoded!.msgId).toBe("abc123");
   });
 
+  test("a location level carries the cell it was written in", () => {
+    const decoded = decodeAirhopChannelPayload(
+      encodeAirhopChannelPayload("#block", "here", "id1", "9q8yyk8"),
+    );
+    expect(decoded).toEqual({
+      channel: "#block",
+      text: "here",
+      msgId: "id1",
+      cell: "9q8yyk8",
+    });
+    expect(
+      decodeAirhopChannelPayload(encodeAirhopChannelPayload("#a", "t", "i"))
+        ?.cell,
+    ).toBe("");
+  });
+
+  test("returns null when the cell length overruns the payload", () => {
+    // chLen=1 "#", idLen=0, cellLen=9 with two bytes following.
+    expect(
+      decodeAirhopChannelPayload(new Uint8Array([1, 35, 0, 9, 57, 113])),
+    ).toBeNull();
+  });
+
   test("both decoders return null for an empty payload", () => {
     expect(decodeMeshPublicPayload(new Uint8Array(0))).toBeNull();
     expect(decodeAirhopChannelPayload(new Uint8Array(0))).toBeNull();
@@ -289,8 +312,8 @@ describe("PeerRegistry", () => {
   });
 
   test("update() preserves nostrPubkey across BLE re-announces", () => {
-    // BLE ANNOUNCE packets do not carry a nostrPubkey field, so update() is
-    // called without one. The previously learned nostrPubkey must survive.
+    // An ANNOUNCE may omit TLV 0x07, so update() is called without a key. The
+    // one already learned must survive.
     const registry = new PeerRegistry();
     const peerID = "aabbccdd11223344";
 
@@ -302,7 +325,6 @@ describe("PeerRegistry", () => {
     });
     registry.setNostrPubkey(peerID, "d".repeat(64));
 
-    // Simulate a second ANNOUNCE with no nostrPubkey field.
     registry.update({
       peerID,
       noisePubKey: new Uint8Array(32),
@@ -310,15 +332,13 @@ describe("PeerRegistry", () => {
       nickname: "frank-v2",
     });
 
-    // nostrPubkey must still be present.
     expect(registry.get(peerID)?.nostrPubkey).toBe("d".repeat(64));
-    // Nickname should be updated to reflect the new announce.
     expect(registry.get(peerID)?.nickname).toBe("frank-v2");
   });
 });
 
 describe("MessageRouter", () => {
-  test("sendChannelMessage broadcasts a signed CHANNEL_MSG packet", () => {
+  test("sendChannelMessage broadcasts a named channel as a signed CHANNEL_MSG_AIRHOP packet", () => {
     const identity = makeIdentity();
     const registry = new PeerRegistry();
     const broadcasts: Packet[] = [];
@@ -361,10 +381,9 @@ describe("MessageRouter", () => {
   });
 
   test("sendDm sends unicast DM when session is established", () => {
-    // The router has no separate WiFi tier. It emits one unicast and the
-    // injected callback (MeshService in production) decides whether that goes
-    // over a WiFi link or BLE. Asserting that exactly one dispatch happens is
-    // what stops a second, duplicate WiFi path being reintroduced.
+    // The router has no separate Wi-Fi tier. It emits one unicast and the
+    // injected callback (MeshService in production) picks the link. Asserting
+    // exactly one dispatch is what keeps a second, duplicate path out.
     const identity = makeIdentity();
     const registry = new PeerRegistry();
     const recipientPeerID = "aabbccdd00112233";
@@ -644,7 +663,7 @@ describe("MessageRouter", () => {
     });
   });
 
-  test("sendDm prefers BLE over Nostr even when both are available", () => {
+  test("a known Nostr key does not change a session send", () => {
     const identity = makeIdentity();
     const registry = new PeerRegistry();
     const recipientPeerID = "ccddee0011223344";
@@ -659,25 +678,20 @@ describe("MessageRouter", () => {
     const { sessionI } = makePeerNoiseSession();
     registry.setSession(recipientPeerID, sessionI);
 
-    const nostrSent: string[] = [];
     const unicasts: Packet[] = [];
     const router = new MessageRouter(
       identity,
       registry,
       () => {},
       (_, p) => unicasts.push(p),
-      async (pubkey) => {
-        nostrSent.push(pubkey);
-      },
     );
 
     const result = router.sendDm(recipientPeerID, "prefer ble", "m0");
     expect(result).toBe("sent");
     expect(unicasts).toHaveLength(1);
-    expect(nostrSent).toHaveLength(0);
   });
 
-  test("direct transport is skipped entirely when no Noise session exists", () => {
+  test("without a Noise session it returns needs-courier, even with a Nostr key known", () => {
     // Without a session the router cannot encrypt a DM for any direct transport.
     const identity = makeIdentity();
     const registry = new PeerRegistry();
@@ -692,7 +706,6 @@ describe("MessageRouter", () => {
     registry.setNostrPubkey(recipientPeerID, "e".repeat(64));
 
     const unicasts: string[] = [];
-    const nostrSent: string[] = [];
     const router = new MessageRouter(
       identity,
       registry,
@@ -700,15 +713,11 @@ describe("MessageRouter", () => {
       (peerID: string) => {
         unicasts.push(peerID);
       },
-      async (pubkey) => {
-        nostrSent.push(pubkey);
-      },
     );
 
     const result = router.sendDm(recipientPeerID, "no session", "m0");
-    expect(result).toBe("sent-nostr");
+    expect(result).toBe("needs-courier");
     expect(unicasts).toHaveLength(0);
-    expect(nostrSent).toHaveLength(1);
   });
 });
 

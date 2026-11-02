@@ -16,7 +16,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **Location channel**: A public room scoped to a geohash cell and carried over Nostr, from `#region` down to `#block`.
 
-**One-time prekey**: A single-use X25519 key a phone publishes in advance, signed, in a prekey bundle (packet type `0x24`) gossiped over the mesh. A courier envelope is sealed to one, so mail left with a carrier stays safe if the recipient's long-term key leaks later.
+**One-time prekey**: A single-use X25519 key a phone publishes in advance, signed, in a prekey bundle (packet type `0x24`) flooded over the mesh. A courier envelope is sealed to one, so mail left with a carrier stays safe if the recipient's long-term key leaks later.
 
 **Peer ID**: A phone's 8-byte mesh address, `hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`. It stays the same until a panic wipe replaces the identity.
 
@@ -28,7 +28,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: Signal's per-message key agreement, which gives each message its own key so one leaked key exposes no other message. Airhop runs it on live DMs between two Airhop phones, seeded from and bound to their Noise session. Courier mail gets its forward secrecy from one-time prekeys instead.
 
-**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve signature scheme. Packets are signed with the sender's Ed25519 key, and a signature is verified before a packet is displayed or acted on; `LEAVE`, files, board posts and voice frames are also verified before they are relayed.
+**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve signature scheme. Packets are signed with the sender's Ed25519 key, and a signature is verified before a packet is displayed or acted on; `LEAVE`, files, board posts, and voice and video frames are also verified before they are relayed.
 
 **[HKDF](https://datatracker.ietf.org/doc/html/rfc5869)**: HMAC-based Key Derivation Function. Derives keys from Diffie-Hellman outputs inside Noise, the Double Ratchet and the Nostr DM construction.
 
@@ -56,7 +56,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: An eviction policy that drops the least recently used entry when a cache is full. The packet deduplication seen-set uses it (1,000 entries, 5 minutes).
 
-**[MultipeerConnectivity](https://developer.apple.com/documentation/multipeerconnectivity)**: Apple's older peer-to-peer framework, over the proprietary AWDL radio. Airhop does not use it; the iOS fast path is Apple's standards-based `WiFiAware` framework. The name appears in early commits.
+**[MultipeerConnectivity](https://developer.apple.com/documentation/multipeerconnectivity)**: Apple's older peer-to-peer framework, over the proprietary AWDL radio. Airhop does not use it; the iOS fast path is Apple's standards-based `WiFiAware` framework.
 
 **[NFC (Near Field Communication)](https://en.wikipedia.org/wiki/Near-field_communication)**: Tap-to-exchange radio with a range of a few centimeters. Not used: contact exchange is a camera QR scan (`add-contact-screen.tsx`), which gives the same in-person guarantee and works on every phone.
 
@@ -78,7 +78,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md)**: Nostr private direct messages, wrapped in gift wrap so relays see neither sender, recipient nor content.
 
-**[NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md)**: Relay-managed groups. Not used, because it puts membership enforcement on a relay ([ARCHITECTURE.md section 6](../spec/ARCHITECTURE.md#nip-29-was-not-used)).
+**[NIP-29](https://github.com/nostr-protocol/nips/blob/master/29.md)**: Relay-managed groups. Not used, because it puts membership enforcement on a relay ([ARCHITECTURE.md section 7](../spec/ARCHITECTURE.md#nip-29-was-not-used)).
 
 **[NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md)**: Nostr's versioned encryption standard: ChaCha20 with an HMAC-SHA256 tag. bitchat's variant, which Airhop implements byte for byte, uses XChaCha20-Poly1305 instead.
 
@@ -102,7 +102,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[AAC (Advanced Audio Coding)](https://en.wikipedia.org/wiki/Advanced_Audio_Coding)**: Lossy audio compression. Push-to-talk voice is AAC-LC at 16 kHz mono, sent as `VOICE_FRAME` (`0x29`) bursts.
 
-**[Arti](https://gitlab.torproject.org/tpo/core/arti)**: The Tor Project's Rust Tor client. Airhop embeds it on both platforms from `native/arti/`, as an xcframework on iOS and a JNI library on Android. Off by default; when on, it runs a SOCKS5 listener on loopback that every relay connection is dialled through.
+**[Arti](https://gitlab.torproject.org/tpo/core/arti)**: The Tor Project's Rust Tor client. Airhop embeds it on both platforms from `native/arti/`, as an xcframework on iOS and a JNI library on Android. Off by default; when on, it runs a SOCKS5 listener on loopback that every relay connection is dialed through.
 
 **[TurboModule](https://reactnative.dev/docs/turbo-native-modules-introduction)**: React Native's native module system. The specs in `src/bridge/` are hand-maintained TypeScript interfaces over the Swift and Kotlin modules, resolved through the interop layer rather than generated by Codegen.
 

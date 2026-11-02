@@ -20,6 +20,7 @@ import {
   decodeFilePacket,
   encodeFilePacket,
   isAllowedMime,
+  liveVideoStreamOf,
   maxBytesForType,
   mimeMatchesMagic,
   receivedFileName,
@@ -54,8 +55,9 @@ import { safeFileName } from "@utils/safe-file-name";
 import { stripInvisibles } from "@utils/strip-invisibles";
 import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
+import { sweepMediaIfDue } from "./media-retention";
 
-// ---- Types ----
+// ---- Constants and types ----
 
 // Delay between consecutive outbound fragments. Without it the radio drops
 // fragments and the transfer never completes on the far side.
@@ -334,13 +336,12 @@ function deleteIfExpired(
 //
 // Covers outgoing as well as incoming: both are written under the same prefix,
 // and a photo you sent is exactly as sensitive as one you received. Scheduled by
-// services/media-retention: at launch, and throttled on each return to the app,
-// since a foreground service can keep the process alive for weeks.
+// services/media-retention: at launch, and throttled on each return to the app
+// and each received file, since a foreground service can keep the process alive
+// for weeks.
 //
 // A file whose age cannot be read is kept. The alternative is deleting user
-// content on the strength of a missing timestamp, and on Android
-// `creationTime` is genuinely absent below API 26, so an unreadable age is an
-// expected state rather than a corrupt one.
+// content on the strength of a missing timestamp.
 export function sweepExpiredAttachments(
   now: number = Date.now(),
   maxAgeMs: number = MEDIA_MAX_AGE_MS,
@@ -462,7 +463,7 @@ async function emptyDirectory(
 }
 
 // Both resolve to whether the RADIO ACCEPTED the packet, not whether anyone
-// received it (there are no per-fragment acknowledgements on this wire). A
+// received it (there are no per-fragment acknowledgments on this wire). A
 // false is the transport saying "my write queue is full, do not hand me another
 // one yet", which is the difference between pacing and losing a file: a refused
 // fragment that is not offered again is a stream the far side can never
@@ -519,7 +520,7 @@ export type AckPrivateFileFn = (
   messageID: string,
 ) => void;
 
-// NOTE: naming lives in wireFileName(), which owns the extension and bitchat's
+// Naming lives in wireFileName(), which owns the extension and bitchat's
 // stable-ID shape together. Nothing here may put localized UI copy on the wire:
 // a display word is not a file name, and one without an extension arrives as a
 // file the OS cannot open.
@@ -600,6 +601,14 @@ export class FileTransferService {
   private readonly isReachable?: IsReachableFn;
   private readonly getDegree: () => number;
   private readonly ackPrivateFile?: AckPrivateFileFn;
+  // Hands a finished live stream's file to the row the stream left; true when
+  // it took the row. Set by mesh-service once live video is running.
+  absorbLiveVideo?: (
+    senderPeerID: string,
+    channel: string,
+    streamID: string,
+    attachment: ChatAttachment,
+  ) => boolean;
 
   // Throttles the "that attachment didn't arrive" line, per sender.
   private readonly failureNotifier = new AttachmentFailureNotifier();
@@ -612,7 +621,7 @@ export class FileTransferService {
     sealFile?: SealFileFn,
     usesBleRadio?: UsesBleRadioFn,
     isReachable?: IsReachableFn,
-    // Our neighbour count, which a public file's TTL follows (see
+    // Our neighbor count, which a public file's TTL follows (see
     // origin-ttl.ts). 0 (sparse) when not given.
     getDegree: () => number = () => 0,
     ackPrivateFile?: AckPrivateFileFn,
@@ -665,7 +674,7 @@ export class FileTransferService {
       const tx = this.outbound.get(transferId);
       // Delete the accounting BEFORE clearing the queue: a fragment already
       // awaiting the radio checks for it on the way back, and its absence is
-      // what stops a cancelled transfer requeueing itself.
+      // what stops a canceled transfer requeueing itself.
       this.outbound.delete(transferId);
       for (let i = this.outQueue.length - 1; i >= 0; i--) {
         if (this.outQueue[i].transferId === transferId) {
@@ -705,7 +714,7 @@ export class FileTransferService {
     const recipientPeerID = isDM ? channel.slice(3) : "";
     // Type first, then name: both sides read the type off the extension once
     // the file is on disk, so the name follows the MIME. Never the picker's raw
-    // value, since an empty or unrecognised type is dropped on arrival.
+    // value, since an empty or unrecognized type is dropped on arrival.
     const mimeType = resolveMimeType(meta.mimeType, meta.name || undefined);
     const fileName = wireFileName(meta.type, meta.name, mimeType);
 
@@ -838,9 +847,9 @@ export class FileTransferService {
   // fragment is handed over lets a refused write march the sender to 100% and
   // "sent" while the receiver waits forever on a stream missing its third
   // fragment. A refusal keeps the fragment instead: it goes back to the front of
-  // the queue (order matters to nothing
-  // on the wire, but retrying out of order would leave gaps behind), the pacing
-  // eases off to let the stack drain, and nothing is counted as sent until it is.
+  // the queue (order matters to nothing on the wire, but retrying out of order
+  // would leave gaps behind), the pacing eases off to let the stack drain, and
+  // nothing is counted as sent until it is.
   private async drainOne(): Promise<void> {
     const next = this.outQueue.shift();
     if (next === undefined) return;
@@ -893,7 +902,7 @@ export class FileTransferService {
       // Not part of a tracked transfer, so there is no card to fail and nobody
       // waiting on it. Drop it rather than retrying forever.
     } else if (tx === undefined) {
-      // Cancelled while this fragment was in flight. Its accounting is already
+      // Canceled while this fragment was in flight. Its accounting is already
       // gone, so requeueing would resurrect a transfer the user stopped.
     } else {
       tx.refusals += 1;
@@ -1096,6 +1105,10 @@ export class FileTransferService {
       `${INCOMING_FILE_PREFIX}${String(Date.now())}_${safeName}`,
     );
     try {
+      // The age bound beside the size bound. A phone left receiving in the
+      // background for weeks never comes back to the app, where the sweep
+      // otherwise runs; throttled, so nearly every arrival skips it.
+      sweepMediaIfDue();
       enforceIncomingQuota(fp.content.length);
       file.create({ overwrite: true, intermediates: true });
       // Sync on purpose: from the duplicate and joined-room checks above to
@@ -1116,6 +1129,32 @@ export class FileTransferService {
       return;
     }
 
+    const attachment: ChatAttachment = {
+      type,
+      uri: file.uri,
+      // Shown in the bubble, the notification and the share sheet's title,
+      // where an override could disguise the extension.
+      name:
+        fp.fileName !== undefined
+          ? stripInvisibles(fp.fileName, { singleLine: true })
+          : undefined,
+      mimeType,
+      durationMs: fp.durationMs ?? undefined,
+      sizeBytes: fp.content.length,
+    };
+
+    // A finished live stream takes over the row its stream left, rather than
+    // showing the same video twice.
+    const streamID = type === "video" ? liveVideoStreamOf(fp.fileName) : null;
+    if (
+      streamID !== null &&
+      this.absorbLiveVideo?.(senderPeerID, channel, streamID, attachment) ===
+        true
+    ) {
+      if (stableID !== null) this.ackPrivateFile?.(senderPeerID, stableID);
+      return;
+    }
+
     // A first attachment from someone opens the conversation, as a first DM
     // does. A room is never created here: only joined ones get this far.
     if (isDM) useChatStore.getState().addChannel(channel);
@@ -1129,19 +1168,7 @@ export class FileTransferService {
       text: fp.caption ?? "",
       timestampMs: Date.now(),
       isMine: false,
-      attachment: {
-        type,
-        uri: file.uri,
-        // Shown in the bubble, the notification and the share sheet's title,
-        // where an override could disguise the extension.
-        name:
-          fp.fileName !== undefined
-            ? stripInvisibles(fp.fileName, { singleLine: true })
-            : undefined,
-        mimeType,
-        durationMs: fp.durationMs ?? undefined,
-        sizeBytes: fp.content.length,
-      },
+      attachment,
     });
     // After the write, so a file the disk refused is not acknowledged. Also
     // when a cleared thread dropped the row: it did arrive.

@@ -24,10 +24,10 @@ export interface UrgentNotice {
 const COLLAPSE_MS = 4_000;
 const CONTENT_MAX_CHARS = 120;
 
-// The post IDs are relay and mesh data, so the set is bounded, at the same size
-// as bridge-service's ID sets. Evicting the oldest re-announces a post only if
-// it is replayed after 2,000 newer ones and is still inside the ingest recency
-// window, and then the cost is one repeated line.
+// The post IDs are relay and mesh data, so the set is bounded. Evicting the
+// oldest re-announces a post only if it is replayed after 2,000 newer ones and
+// is still inside the ingest recency window, and then the cost is one repeated
+// line.
 const MAX_HANDLED = 2_000;
 
 const handled = new BoundedIdSet(MAX_HANDLED);

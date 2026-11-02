@@ -16,7 +16,7 @@
 // A chat list is told "your content is now this tall" for two very different
 // reasons, and it cannot tell them apart from the event alone:
 //
-//   * the list is measuring itself - FlatList reports once per batch it
+//   * the list is measuring itself: FlatList reports once per batch it
 //     renders, so opening a thread produces a run of these before anything has
 //     changed, and an image finishing layout produces another later,
 //   * a message actually arrived.
@@ -66,14 +66,13 @@ export function resolveThreadScroll({
   return countChanged ? "animated" : "instant";
 }
 
-//
 // The landing above is driven entirely by content-size events, so it ends the
-// moment the content stops changing height - whether or not it actually arrived.
+// moment the content stops changing height, whether or not it actually arrived.
 // A list that is not inverted mounts its OLDEST rows first and walks down as
 // later batches render, so "open at the newest message" is a run of scrolls, and
-// losing the last one leaves the reader a row short of the end. Nothing measured
-// that, and the jump-to-latest pill is suppressed for the whole landing, so a
-// near miss stranded them with no way back.
+// losing the last one leaves the reader a row short of the end. Nothing else
+// measures that, and the jump-to-latest pill is suppressed for the whole
+// landing, so a near miss would strand them with no way back.
 //
 // So once the content holds still, check the placement rather than assume it,
 // then hand the list back to the reader.
@@ -87,8 +86,8 @@ export interface LandingSettleInput {
   // How far off the end still counts as arrived. Deliberately much tighter than
   // the "has the reader wandered off" tolerance: those are different questions.
   // Deciding somebody drifted away can afford to be generous, because being
-  // wrong only shows a pill they can ignore. Deciding our own placement landed
-  // cannot, because being wrong is the bug - a gap of well under one bubble is
+  // wrong only shows a pill they can ignore. Deciding a placement landed
+  // cannot, because being wrong is the bug: a gap of well under one bubble is
   // exactly what this exists to close, and a generous threshold would call it
   // arrived and walk away.
   tolerance: number;

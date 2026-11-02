@@ -1,4 +1,3 @@
-// StatusDot component.
 // A small colored indicator for peer / network online state.
 
 import React from "react";

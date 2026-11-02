@@ -1,6 +1,7 @@
 // Peer state: nearby peers discovered via ANNOUNCE packets.
 // Not persisted: peer list is always rebuilt from live BLE discovery.
 
+import { PEER_REACHABLE_TTL_MS } from "@core/router/message-router";
 import { create } from "zustand";
 
 export interface NearbyPeer {
@@ -8,7 +9,7 @@ export interface NearbyPeer {
   nickname: string;
   lastSeenMs: number;
   noisePubKeyHex: string; // hex of 32-byte X25519 pub
-  rssi?: number; // dBm, populated once BLE service is wired in v0.7+
+  rssi?: number; // dBm
   // Whether this peer's ANNOUNCE arrived over a BLE link we hold, rather than
   // relayed through the mesh. A direct peer cannot be invented: it requires an
   // actual GATT connection. That makes it the one thing worth protecting when
@@ -39,7 +40,7 @@ interface PeerState {
   // Record a fresh RSSI reading for an already-known peer. No-op for unknown
   // peers: a signal reading alone doesn't tell us their identity.
   updateRssi: (peerID: string, rssi: number) => void;
-  // Bind or release a peer's direct-neighbour standing from the LINK lifecycle
+  // Bind or release a peer's direct-neighbor standing from the LINK lifecycle
   // rather than from announce contents. A link is physical: it cannot be
   // claimed, only held.
   setDirect: (peerID: string, isDirect: boolean) => void;
@@ -56,15 +57,15 @@ interface PeerState {
   clearAll: () => void;
 }
 
-// A peer is "reachable" if seen within the last 60 seconds (matches
-// PEER_REACHABLE_TTL_MS in message-router.ts).
+// A peer is "reachable" if seen within the router's mesh reachability window
+// (PEER_REACHABLE_TTL_MS).
 //
 // Exported because this is also what the UI's green dot means. Every screen
 // that renders presence reads it rather than its own literal, so the radar and
 // the peer list cannot disagree about the same peer. 60s is one missed ANNOUNCE
 // of slack against the 15-30s jitter in announce-manager, and it is the eviction
-// cutoff below, so anything shorter greys out peers the store still holds.
-export const REACHABLE_TTL_MS = 60_000;
+// cutoff below, so anything shorter grays out peers the store still holds.
+export const REACHABLE_TTL_MS = PEER_REACHABLE_TTL_MS;
 
 // Ceiling on how many peers the radar will hold.
 //
@@ -116,8 +117,8 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
       const next = new Map(state.peers);
       const existing = state.peers.get(peer.peerID);
       // Merge over the existing entry rather than replacing it. ANNOUNCE-derived
-      // updates carry no `rssi`, so a plain replace wiped the signal reading
-      // every 30s: it would flicker between a real value and undefined.
+      // updates carry no `rssi`, so a plain replace would wipe the signal reading
+      // on every announce and flicker between a real value and undefined.
       next.set(peer.peerID, { ...existing, ...peer, lastSeenMs: Date.now() });
       // Bound the list on insert.
       //
@@ -147,10 +148,11 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
       // a reading identical to the last.
       if (existing === undefined || existing.rssi === rssi) return state;
       const next = new Map(state.peers);
-      // Deliberately does NOT refresh lastSeenMs. RSSI is polled every 5s off
-      // the GATT link, so treating it as liveness would pin a peer as "just
-      // seen" forever even after their ANNOUNCE timer died, a ghost peer that
-      // evictStale could never remove. Reachability stays driven by ANNOUNCEs.
+      // Deliberately does NOT refresh lastSeenMs. RSSI is polled every few
+      // seconds off the GATT link, so treating it as liveness would pin a peer
+      // as "just seen" forever even after their ANNOUNCE timer died, a ghost
+      // peer that evictStale could never remove. Reachability stays driven by
+      // ANNOUNCEs.
       next.set(peerID, { ...existing, rssi });
       return { peers: next };
     });

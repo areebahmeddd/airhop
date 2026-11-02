@@ -67,47 +67,23 @@ import { getStorage } from "@store/mmkv";
 import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell } from "../harness/app-shell";
 import { installNativeBle, installNativeWifi } from "../harness/bridge-shim";
 import { IosBleModule } from "../harness/ios-native";
 import { installOfflineWebSocket } from "../harness/offline-socket";
 import { DeviceOS } from "../harness/os";
+import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
-// No test here needs a relay; without this the pool opens real sockets to public
-// relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
 
-// How long a fresh grant takes to become effective in the Bluetooth stack.
-// bitchat-android waits a flat 1000ms for exactly this and says so: "This
-// solves the issue where app needs restart to work on first install"
-// (MainActivity.kt). Airhop retries until the stack accepts instead, which
-// is correct on a slow device and instant on a fast one.
+// How long a fresh grant takes to become effective in the Bluetooth stack (see
+// permissionSettleMs in os.ts). bitchat-android waits a flat 1000ms for it;
+// Airhop retries until the stack accepts instead, which is correct on a slow
+// device and instant on a fast one.
 const REAL_GRANT_SETTLE_MS = 600;
-
-// Every field a scenario here can move, so one test's leftovers never decide
-// the next one's verdict.
-function resetStores(): void {
-  useMeshStateStore.setState({
-    bleBlocker: "starting",
-    blePermissionBlocked: false,
-    bleAdvertisingUnsupported: false,
-    powerSaving: false,
-    wifiFastPath: "unknown",
-    lanState: "off",
-    locationGranted: true,
-    nostrConnected: false,
-    torActive: false,
-    bridgeActive: false,
-    bridgePeopleAcross: 0,
-    presenceStatus: "online",
-  });
-  // A start restores a kept Invisible, so Online has to be the saved choice too.
-  useSettingsStore.getState().setStayInvisible(false);
-  useSettingsStore.getState().setBackgroundMeshEnabled(true);
-  usePeerStore.getState().clearAll();
-}
 
 // A phone with working Wi-Fi Aware. Without one the shim answers as a phone
 // that has none, so a scenario only gets the fast path by asking for it.
@@ -152,15 +128,18 @@ function androidDevice(os: DeviceOS): AndroidBleModule {
 
 describe("cold start and permissions", () => {
   let app: AppShell | null = null;
+  let androidOS: { restore: () => void } | null = null;
 
   beforeEach(() => {
     jest.useFakeTimers();
-    resetStores();
+    resetMeshStores();
   });
 
   afterEach(() => {
     app?.teardown();
     app = null;
+    androidOS?.restore();
+    androidOS = null;
     installNativeBle(null);
     installNativeWifi(null);
     jest.clearAllTimers();
@@ -175,7 +154,7 @@ describe("cold start and permissions", () => {
     });
     const v = new Verdict(
       "S01",
-      "first install, everything allowed, stack honours the grant 600ms later",
+      "first install, everything allowed, stack honors the grant 600ms later",
       os,
     );
     const native = androidDevice(os);
@@ -586,6 +565,8 @@ describe("cold start and permissions", () => {
 
   test("S11 the platform refuses a scan after accepting it", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
+    // An Android-only event, which the mesh subscribes to only there.
+    androidOS = jest.replaceProperty(Platform, "OS", "android");
     const v = new Verdict(
       "S11",
       "onScanFailed arrives long after startScan resolved, the only radio failure the reconciler cannot see for itself",

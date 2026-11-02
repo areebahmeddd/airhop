@@ -72,9 +72,8 @@ const SEND_SATS_ROW_HEIGHT = 44;
 interface Props {
   onOpenDM?: (channel: string) => void;
   viewMode: ViewMode;
-  // Increment this to programmatically open the add-contact QR scanner (e.g.
-  // from the App.tsx header's add-contact button). Counter pattern avoids
-  // boolean edge cases.
+  // Bumped by the app header's add button to open the add-contact screen. A
+  // counter rather than a boolean, so repeated taps each register.
   addContactTrigger?: number;
 }
 
@@ -136,7 +135,6 @@ export default function PeerList({
     return () => clearInterval(timer);
   }, [evictStale]);
 
-  // Watch the trigger counter from the App.tsx header button.
   const prevAddTrigger = useRef(addContactTrigger ?? 0);
   useEffect(() => {
     if (
@@ -151,7 +149,7 @@ export default function PeerList({
   // Belt-and-suspenders: mesh-service already keeps a blocked peer's announces
   // out of the store, but a peer blocked mid-session is already cached, and
   // filtering here makes it disappear at once instead of at TTL eviction.
-  // Memoised because the result goes straight to RadarView, and a fresh array
+  // Memoized because the result goes straight to RadarView, and a fresh array
   // each render would make the radar re-bucket every peer.
   const peerList = useMemo(
     () =>
@@ -178,7 +176,6 @@ export default function PeerList({
     onOpenDM?.(channel);
   }
 
-  // Reset all peer-detail sheet state and close.
   function closeSheet(): void {
     setSelectedPeer(null);
     setShowSendSats(false);
@@ -186,7 +183,7 @@ export default function PeerList({
     setProbe(null);
   }
 
-  // How far away a peer is, in hops rather than metres.
+  // How far away a peer is, in hops rather than meters.
   //
   // Hops is the honest measure. RSSI swings tens of dB with orientation, bodies
   // and walls, which is why the radar labels its rings by signal; a hop count is
@@ -194,7 +191,7 @@ export default function PeerList({
   //
   // Only ever run on request. A ping floods at TTL 7, so firing one per sheet
   // open would put a packet across the whole mesh per tap, which is the airtime
-  // a crowded room cannot spare. Never run for a direct neighbour: `isDirect` is
+  // a crowded room cannot spare. Never run for a direct neighbor: `isDirect` is
   // bound to a GATT link we hold, so the answer is one hop without asking.
   async function handleCheckDistance(peerID: string): Promise<void> {
     if (probe?.peerID === peerID && probe.result === "pending") return;
@@ -234,7 +231,7 @@ export default function PeerList({
     setShowSendSats(false);
     closeSheet();
     onOpenDM?.(`dm:${peer.peerID}`);
-    // The thread we just opened shows the bubble, so only speak up when the
+    // The thread just opened shows the bubble, so only speak up when the
     // token did not go straight out. A peer standing next to you normally takes
     // the radio rail, which needs no explanation.
     if (result.rail !== "mesh") {
@@ -439,8 +436,8 @@ export default function PeerList({
                 </Text>
               </View>
             ) : (
-              /* Message + Send sats: a tight pair of actions, not spread
-                  apart by the sheet's larger identity/actions rhythm. */
+              // Message + Send sats: a tight pair of actions, not spread apart
+              // by the sheet's larger identity/actions rhythm.
               <View style={styles.sheetActions}>
                 <Pressable
                   style={styles.sheetMessageBtn}
@@ -560,7 +557,7 @@ export default function PeerList({
 
 // "How far away is this person", answered in hops.
 //
-// The split between the first two states is the design: a direct neighbour is
+// The split between the first two states is the design: a direct neighbor is
 // answered from what the radio already holds, and only a relayed peer costs a
 // packet. See handleCheckDistance.
 //

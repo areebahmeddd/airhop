@@ -2,9 +2,9 @@
 // an unsolicited one. Matches bitchat's RequestSyncManager.swift.
 //
 // Gossip sync replays old packets by design: a peer returning from a partition
-// asks for what it missed, and the answer is stale by definition. That rules
-// out a blanket freshness window, which is why the mesh had neither and every
-// packet stayed replayable by anyone who had recorded one.
+// asks for what it missed, and the answer is stale by definition. A blanket
+// freshness window would refuse those answers, and no window at all leaves
+// every packet replayable by anyone who recorded one.
 //
 // The exemption is attributed by the receiver rather than asserted by the
 // sender. We register every REQUEST_SYNC against the peer we sent it to, and a

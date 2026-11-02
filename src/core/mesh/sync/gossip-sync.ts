@@ -20,12 +20,8 @@
 //   * Requests are unicast, so a response can be attributed to a request we
 //     made. See request-sync-manager.ts.
 //
-// Packet ID (per PacketIdUtil.swift / PacketIdUtil.kt):
-//   SHA-256(type[1] | senderID[8] | timestamp_u64_BE[8] | payload)[0:16]
-//   See computePacketId in packet-codec.ts.
-//
-// GCS hash for filter membership:
-//   h64 = first 8 bytes of SHA-256(packetID) as big-endian u64
+// Packet ID: computePacketId in packet-codec.ts. GCS hash for filter
+// membership: packetIdToH64 below.
 //
 // Wire format for REQUEST_SYNC payload (TLV, type-u8, length-u16-BE, value):
 //   0x01  P       (uint8)   Golomb-Rice parameter
@@ -114,10 +110,10 @@ const RESPONSE_LIMIT_WINDOW_MS = 30_000;
 
 // SyncTypeFlags bit indices (bit -> message type), matching bitchat's
 // SyncTypeFlags.swift so a board sync round is mutually intelligible.
-const TYPE_BIT_ANNOUNCE = 0; // bit 0
-const TYPE_BIT_MESSAGE = 1; // bit 1
-const TYPE_BIT_BOARD = 8; // bit 8 (board posts persist and sync until expiry)
-// bit 10 (private group messages). bitchat caches, advertises and serves group
+const TYPE_BIT_ANNOUNCE = 0;
+const TYPE_BIT_MESSAGE = 1;
+const TYPE_BIT_BOARD = 8; // board posts persist and sync until expiry
+// Private group messages. bitchat caches, advertises and serves group
 // packets under this bit, and it is a group's only store-and-forward. The
 // payload stays sealed under the epoch key, so a relay learns nothing by
 // carrying it.
@@ -283,7 +279,7 @@ function packetIdToH64(packetId: Uint8Array): bigint {
   const raw =
     (BigInt(view.getUint32(0, false)) << 32n) |
     BigInt(view.getUint32(4, false));
-  return raw & 0x7fff_ffff_ffff_ffffn; // clear sign bit
+  return raw & 0x7fff_ffff_ffff_ffffn;
 }
 
 // ---- GCS filter (Golomb-Coded Set) ----
@@ -464,7 +460,6 @@ function mapToRange(h64: bigint, modulo: bigint): bigint {
   return x === 0n ? 1n : x;
 }
 
-// Check whether a h64 value is contained in a decoded filter set.
 function filterContains(sortedValues: bigint[], candidate: bigint): boolean {
   let lo = 0;
   let hi = sortedValues.length - 1;
@@ -479,7 +474,6 @@ function filterContains(sortedValues: bigint[], candidate: bigint): boolean {
 
 // ---- Wire encode/decode for REQUEST_SYNC payload ----
 
-// TLV encoder: type (u8), length (u16 BE), value
 function encodeTlv(type: number, value: Uint8Array): Uint8Array {
   const out = new Uint8Array(3 + value.length);
   out[0] = type;
@@ -602,7 +596,7 @@ export interface GossipSyncWiring {
   sendToPeer: SendToPeerFn;
   // Peers we currently hold a link to, by peerID.
   getPeers: () => readonly string[];
-  // Told about every request we send, so the receive path can recognise a
+  // Told about every request we send, so the receive path can recognize a
   // solicited response. See request-sync-manager.ts.
   onRequest: (peerID: string) => void;
   // Once a tick, before any request, for state that ages on the same clock.
@@ -628,7 +622,7 @@ export class GossipSync {
     this.boards,
   ];
   // Sync replies we were handed and did not keep, by packet ID. See noteReply.
-  private readonly declined = new Map<string, FilterEntry>();
+  private readonly declined = new Map<string, DeclinedEntry>();
   private timer: ReturnType<typeof setInterval> | null = null;
   // Set while started, for requests made between ticks.
   private session: {
@@ -643,9 +637,7 @@ export class GossipSync {
     RESPONSE_LIMIT_WINDOW_MS,
   );
 
-  // Start the 15-second sync tick. Every request is unicast to a peer we hold
-  // a link to: a broadcast one has no peer to register against, so nothing it
-  // drew back would be taken as a reply.
+  // Start the 15-second sync tick.
   start(identity: GossipSyncIdentity, wiring: GossipSyncWiring): void {
     if (this.timer !== null) this.stop();
     this.session = { identity, wiring };
@@ -671,7 +663,7 @@ export class GossipSync {
     this.session = null;
   }
 
-  // Every round at once to one peer, for a neighbour just met, as bitchat-ios
+  // Every round at once to one peer, for a neighbor just met, as bitchat-ios
   // scheduleInitialSyncToPeer. Waiting for the tick leaves a phone that keeps
   // relaunching with no history, and a holder that relaunches loses it for
   // good. Two requests, well inside the eight a responder answers.
@@ -684,9 +676,7 @@ export class GossipSync {
     if (this.session === null) return;
     const { identity, wiring } = this.session;
     const pkt = this.buildFilterPacket(identity, peerID, types, now);
-    // Registered BEFORE the send: on a fast link the response can outrun our
-    // own continuation, and a response that lands before its registration
-    // looks exactly like an unsolicited one.
+    // Registered BEFORE the send, for the reason in request-sync-manager.ts.
     wiring.onRequest(peerID);
     wiring.sendToPeer(peerID, pkt);
   }
@@ -757,7 +747,7 @@ export class GossipSync {
   // author whose announce this node never heard and so cannot verify: nothing
   // here is ever served, but the ID goes into our own filters, or every peer
   // we ask would offer it again every round for as long as it stays servable.
-  // Only replies are remembered, so only a neighbour we asked could plant an
+  // Only replies are remembered, so only a neighbor we asked could plant an
   // ID here, and it could as easily withhold the packet.
   noteReply(packet: Packet): void {
     if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;
@@ -768,6 +758,7 @@ export class GossipSync {
       type: packet.type,
       timestamp: packet.timestamp,
       id,
+      sender: bytesToHex(packet.senderID),
     });
     for (const oldest of this.declined.keys()) {
       if (this.declined.size <= DECLINED_CAPACITY) break;
@@ -775,15 +766,29 @@ export class GossipSync {
     }
   }
 
+  // This author's key was just pinned, so the replies refused for want of it
+  // would now verify. Off our filters, peers offer them again on the next
+  // round; left on, the author's history stays hidden for the whole window,
+  // even from the author. Returns the forgotten packet IDs, which the caller's
+  // deduplicator still holds: left there, the copies peers offer again are
+  // dropped as already seen and noted as declined all over again.
+  forgetDeclinedFrom(peerID: string): Uint8Array[] {
+    const forgotten: Uint8Array[] = [];
+    for (const [key, entry] of this.declined) {
+      if (entry.sender !== peerID) continue;
+      this.declined.delete(key);
+      forgotten.push(entry.id);
+    }
+    return forgotten;
+  }
+
   private *packets(): Generator<Packet> {
     for (const store of this.stores) yield* store.values();
   }
 
   // Build a REQUEST_SYNC for `toPeerID` covering the packet types in `types`.
-  // ttl 0: this is a question for the far end of one link, and relaying it
-  // asks a node that was never being addressed. Built even when we hold none
-  // of those types: the empty filter asks for everything, which is how a
-  // newcomer collects the board.
+  // Built even when we hold none of those types: the empty filter asks for
+  // everything, which is how a newcomer collects the board.
   buildFilterPacket(
     identity: GossipSyncIdentity,
     toPeerID: string,
@@ -840,12 +845,10 @@ export class GossipSync {
   // hold that the peer appears to be missing, ready to write straight back down
   // the link it asked on.
   //
-  // Responses come back ttl 0 and flagged IS_RSR. ttl 0 keeps them link-local,
-  // or the requester's flood router would see each one as new and push it
-  // across the mesh. IS_RSR marks them as the answer to the requester's own
-  // question, so it can exempt them from its freshness window. Both fields are
-  // normalised out of the signing preimage, so retagging a stored packet leaves
-  // its signature verifiable.
+  // IS_RSR marks a response as the answer to the requester's own question, which
+  // exempts it from the requester's freshness window. That flag and the response's ttl 0
+  // are both normalized out of the signing preimage, so retagging a stored packet
+  // leaves its signature verifiable.
   handleFilter(
     filterPacket: Packet,
     fromPeerID?: string,
@@ -917,6 +920,11 @@ interface FilterEntry {
   type: PacketType;
   timestamp: number;
   id: Uint8Array;
+}
+
+// Plus who wrote it, so their entries can go once their key is known.
+interface DeclinedEntry extends FilterEntry {
+  sender: string;
 }
 
 // ---- Helpers ----

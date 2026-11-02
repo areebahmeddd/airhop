@@ -140,7 +140,7 @@ export default function NetworkScreen({ onBack }: Props): React.JSX.Element {
   }
 
   // Off disables a lot (relays, Tor, gateway, bridge), so it confirms first; on
-  // does not prompt. Cancelling leaves the switch on, because it is driven by
+  // does not prompt. Canceling leaves the switch on, because it is driven by
   // the persisted setting, which never changed.
   function handleInternetToggle(value: boolean): void {
     if (value) {

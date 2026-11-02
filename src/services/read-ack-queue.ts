@@ -20,6 +20,15 @@ export class ReadAckQueue {
     this.pending.set(key, ids);
   }
 
+  has(key: string): boolean {
+    return this.pending.has(key);
+  }
+
+  // Every conversation owed something, as a snapshot a caller may take from.
+  keys(): string[] {
+    return [...this.pending.keys()];
+  }
+
   // Everything owed for `key`, oldest first, which is then no longer owed.
   take(key: string): string[] {
     const ids = this.pending.get(key);

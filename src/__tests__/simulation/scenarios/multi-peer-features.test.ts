@@ -653,7 +653,7 @@ test("F09 carried mail is not flooded at peers heard only through relays", async
   // cooldown, and it still reaches them.
   const s = (scenario = new Scenario({
     id: "F09",
-    title: "a carrier in a chain sprays its neighbours, not the whole mesh",
+    title: "a carrier in a chain sprays its neighbors, not the whole mesh",
     seed: 609,
   }));
   const radio = new RadioFabric(s.world);
@@ -717,14 +717,14 @@ test("F09 carried mail is not flooded at peers heard only through relays", async
     bag(f).size === 0,
     held,
   );
-  const neighbours = new Set([alice.peerID, d.peerID]);
+  const neighbors = new Set([alice.peerID, d.peerID]);
   const beyond = originated.mock.calls.filter(
-    ([, peer]) => !neighbours.has(peer),
+    ([, peer]) => !neighbors.has(peer),
   );
   s.check(
     "the carrier sent nothing to peers it hears only through relays",
     beyond.length === 0,
-    `to neighbours=${String(originated.mock.calls.length - beyond.length)}, beyond=${String(beyond.length)}`,
+    `to neighbors=${String(originated.mock.calls.length - beyond.length)}, beyond=${String(beyond.length)}`,
   );
 
   // Bob comes back at the far end, where no carrier holds a link to him.

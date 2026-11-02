@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">মেশ নেটওয়ার্ক</string>
   <string name="mesh_channel_description">Airhop-এর মেশ পটভূমিতে সক্রিয় রাখে</string>
   <string name="mesh_notification_title">Airhop মেশ সক্রিয়</string>
@@ -8,4 +8,16 @@
     <item quantity="one">নাগালে %1$sটি পিয়ার</item>
     <item quantity="other">নাগালে %1$sটি পিয়ার</item>
   </plurals>
+  <string name="mesh_bluetooth_off">ব্লুটুথ বন্ধ · খোঁজা হচ্ছে না</string>
+  <string name="widget_label">নাগালে থাকা পিয়ার</string>
+  <string name="widget_description">নাগালে থাকা পিয়ার, আর কখন গোনা হয়েছে</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">নাগালে থাকা পিয়ার</item>
+    <item quantity="other">নাগালে থাকা পিয়ার</item>
+  </plurals>
+  <string name="widget_nobody">নাগালে কেউ নেই</string>
+  <string name="widget_as_of">%1$s অনুযায়ী</string>
+  <string name="widget_paused">মেশ থেমে আছে</string>
+  <string name="widget_unset">Airhop খুলুন</string>
+  <string name="widget_stale">রিফ্রেশ করতে Airhop খুলুন</string>
 </resources>

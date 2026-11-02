@@ -4,7 +4,7 @@
 // Everything formats in the app's language, not the device's: someone reading
 // Airhop in Spanish on an English phone sees "mar", not "Tue". So never
 // `toLocale*String([])`, whose empty list asks the OS, the value that diverges.
-// The language is read at call time; App.tsx subscribes to the i18n store and
+// The language is read at call time; app.tsx subscribes to the i18n store and
 // re-renders the tree on a change, so no formatter needs to be a hook.
 //
 // Numerals are pinned to Latin app-wide (`formatCount` in `@i18n` does the same,
@@ -185,6 +185,19 @@ export function formatBytes(bytes: number, roundUp = false): string {
   return `${formatFixed(round((bytes / (1024 * 1024)) * 10) / 10, 1)} MiB`;
 }
 
+// How far a map cell reaches, "4.9 km" or "38 m", for the globe picker. Metric
+// in every language (see en.ts), SI symbols that read the same everywhere,
+// and a precision that shrinks no further than the figure means: a cell's
+// size is an approximation to begin with.
+export function formatCellSize(meters: number): string {
+  const km = meters / 1000;
+  if (km >= 100) return `${formatNumber(Math.round(km))} km`;
+  if (km >= 1) return `${formatFixed(km, 1)} km`;
+  if (meters >= 10) return `${formatFixed(Math.round(meters), 0)} m`;
+  if (meters >= 1) return `${formatFixed(meters, 1)} m`;
+  return `${formatFixed(meters, 2)} m`;
+}
+
 function formatFixed(value: number, fractionDigits: number): string {
   return numberFormatter({
     minimumFractionDigits: fractionDigits,
@@ -294,10 +307,10 @@ export function amountParts(
   return { amount: value, unit: label };
 }
 
-// "500 sat - coffee money", for search previews and accessibility labels.
+// "500 sat · coffee money", what chat search matches and shows for a token.
 export function formatTokenSummary(info: TokenInfo): string {
   const amount = formatUnitAmount(info.amount, info.unit);
-  return info.memo ? `${amount} - ${info.memo}` : amount;
+  return info.memo ? `${amount} · ${info.memo}` : amount;
 }
 
 // m:ss.

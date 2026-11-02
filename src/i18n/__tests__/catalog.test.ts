@@ -45,8 +45,8 @@ describe.each(CODES)("%s", (code) => {
   it("uses the same placeholders as English in every string", () => {
     // The interpolation contract: `{amount}` in English must survive into every
     // translation, in any position, or the value silently never appears. Order
-    // goes unchecked: reordering is exactly what translators need to
-    // be free to do, and why placeholders are named, never positional.
+    // goes unchecked: reordering is exactly what translators need to be free to
+    // do, and why placeholders are named, never positional.
     const mismatched: string[] = [];
     for (const [key, source] of Object.entries(en.strings)) {
       const expected = placeholders(source);
@@ -179,7 +179,7 @@ describe("plural categories", () => {
 describe("do not translate", () => {
   // These strings are not copy: they cross the wire, or an identity derives from
   // them, so a translated variant is an interop bug. bitchat-ios matches an
-  // incoming emote by its English substring, and is itself fully localised while
+  // incoming emote by its English substring, and is itself fully localized while
   // still keeping these as English literals. See docs/spec/ARCHITECTURE.md.
   //
   // Two rules, and the difference matters.
@@ -189,7 +189,7 @@ describe("do not translate", () => {
   const MUST_BE_ABSENT = ["hugs", "slaps", "around a bit with a large trout"];
 
   // VERBATIM: protocol identifiers that legitimately sit inside translated prose.
-  // Not forbidden, frozen. Localising "#bluetooth" or "/hug" produces a sentence
+  // Not forbidden, frozen. Localizing "#bluetooth" or "/hug" produces a sentence
   // naming a channel or command that does not exist.
   const MUST_BE_VERBATIM = [
     "#bluetooth",
@@ -285,8 +285,7 @@ describe("English source conventions", () => {
   it("spells in US English", () => {
     // The source language's dictionary, not a preference, scoped to words
     // that can plausibly appear in this app's copy. "cancellation" keeps its
-    // double L in US English and is left out, so only the verb forms
-    // are caught.
+    // double L in US English and is left out, so only the verb forms are caught.
     const BRITISH: Record<string, string> = {
       cancelled: "canceled",
       cancelling: "canceling",

@@ -14,9 +14,9 @@
 // send-side budgets matching the ones bitchat-ios applies when it prepares
 // media; neither client applies them on receive.
 
-export const MAX_FILE_BYTES = 1 * 1024 * 1024; // 1 MiB, absolute ceiling
-export const MAX_VOICE_BYTES = 512 * 1024; // 512 KiB
-export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
+export const MAX_FILE_BYTES = 1 * 1024 * 1024;
+export const MAX_VOICE_BYTES = 512 * 1024;
+export const MAX_IMAGE_BYTES = 512 * 1024;
 
 // What the resizer fits a photo to, under the 512 KiB photo budget above. The
 // two differ because of a receiver-side limit on the other client.
@@ -30,17 +30,19 @@ export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
 // link forces. bitchat's own photos are 45 KB at a 448px edge, so this stays
 // generous by comparison, and Airhop-to-Airhop is unaffected either way: our own
 // reassembly times out on idle, not on total duration.
-export const MAX_SENT_IMAGE_BYTES = 256 * 1024; // 256 KiB
+export const MAX_SENT_IMAGE_BYTES = 256 * 1024;
 
-// Longest video the camera will record, in seconds.
-//
-// A recording is sent exactly as it comes off the camera: `quality` in
-// expo-image-picker applies to stills, and there is no transcoder in the app, so
-// length is the only lever on size. At the 1 MiB ceiling a longer clip would be
-// refused after the user had already shot it, which is the worst moment to say
-// no. A picked video is still checked against the ceiling at pick time, since
-// nothing bounds what is already in the library.
+// Longest video the camera will record, in seconds. A recording is shrunk
+// before it is sent (video-prepare.ts), so this bounds the picture rather than
+// the file: 15 s still keeps sound and 10 fps at bitchat's 100 KiB, where a
+// minute drops to a silent 6 fps.
 export const MAX_VIDEO_SECONDS = 15;
+
+// The largest video a bitchat phone is sent: bitchat-ios's
+// LiveVideoLimits.maxVideoFileBytes, which both its clips and a finished live
+// stream are fitted to. A video for the Bluetooth room, or for a DM to anyone
+// not known to run Airhop, is shrunk under it.
+export const MAX_BITCHAT_VIDEO_BYTES = 100 * 1024;
 
 // The largest transfer that reliably completes inside bitchat's 30-second
 // assembly window, with room for the retries a busy link forces. At the ~20ms
@@ -50,7 +52,7 @@ export const MAX_VIDEO_SECONDS = 15;
 // our own reassembly times out on idle rather than on total duration. It is the
 // line past which sending to a BITCHAT peer is worth warning about, since above
 // it the file is dropped on arrival and we would otherwise show a sent tick.
-export const MAX_BITCHAT_TRANSFER_BYTES = 350 * 1024; // 350 KiB
+export const MAX_BITCHAT_TRANSFER_BYTES = 350 * 1024;
 
 // Worst-case reassembled frame: the 1 MiB payload plus the TLV metadata (max
 // fileName + mimeType) and the binary packet envelope. Mirrors bitchat's
@@ -74,11 +76,47 @@ export function wireMediaName(
   return `${kind === "image" ? "img" : "voice"}_${uuidV4()}.${extension}`;
 }
 
+// A round video note is an ordinary video file, marked only by its name, so
+// bitchat and older builds show it as a plain video and nothing on the wire
+// changes. Never bitchat's `video_<16 hex>.mp4`: that names a finished live
+// stream, and a bitchat receiver would try to swap it into a live bubble.
+const VIDEO_NOTE_NAME = /^note_[0-9a-f-]{36}(?: \(\d+\))?\.mp4$/i;
+
+export function videoNoteName(): string {
+  return `note_${uuidV4()}.mp4`;
+}
+
+// The receiver may have suffixed a repeat arrival, as "name (1).mp4".
+export function isVideoNoteName(name: string | undefined): boolean {
+  return name !== undefined && VIDEO_NOTE_NAME.test(name);
+}
+
+// A shrunk video, named the way bitchat names its clips. No client reads the
+// name; it only has to stay clear of `video_`, below.
+export function videoClipName(): string {
+  return `clip_${uuidV4()}.mp4`;
+}
+
+// A finished live stream, resent as a file: `video_` and the stream ID as 16
+// lowercase hex. The name is the whole link between the file and the live
+// bubble it replaces, on every client.
+const LIVE_VIDEO_NAME = /^video_([0-9a-f]{16})(?: \(\d+\))?\.mp4$/i;
+
+export function liveVideoFileName(streamIDHex: string): string {
+  return `video_${streamIDHex.toLowerCase()}.mp4`;
+}
+
+// The stream a file finishes, or null for any other file.
+export function liveVideoStreamOf(name: string | undefined): string | null {
+  const match = name === undefined ? null : LIVE_VIDEO_NAME.exec(name);
+  return match === null ? null : match[1].toLowerCase();
+}
+
 // The wire name for an attachment.
 //
 // The name is not cosmetic: the receiver writes it to disk, and the photo
 // library and the audio player both read the type off the extension rather than
-// the MIME that travelled beside it. iOS rejects a save outright when there is
+// the MIME that traveled beside it. iOS rejects a save outright when there is
 // none (expo-media-library EmptyFileExtensionException).
 //
 // A supplied name is kept and only gains an extension if it had none. A missing
@@ -128,7 +166,7 @@ export function ensureFileExtension(name: string, mimeType: string): string {
 }
 
 // One preferred spelling per MIME type, the inverse of MIME_BY_EXTENSION.
-// `bin` for anything unrecognised: an extension the OS does not know still
+// `bin` for anything unrecognized: an extension the OS does not know still
 // beats none, which is the case that fails hard.
 const EXTENSION_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -163,9 +201,9 @@ export function receivedFileName(name: string, mimeType: string): string {
   return `${dot > 0 ? leaf.slice(0, dot) : leaf}.${extension}`;
 }
 
-// RFC 4122 version 4, from the platform CSPRNG. `Math.random` is banned in this
-// codebase and would be wrong here anyway: two photos naming the same id would
-// collide in bitchat's dedup and the second would be discarded as a duplicate.
+// RFC 4122 version 4, from the platform CSPRNG so ids never repeat: two photos
+// naming the same id would collide in bitchat's dedup and the second would be
+// discarded as a duplicate.
 function uuidV4(): string {
   const b = crypto.getRandomValues(new Uint8Array(16));
   b[6] = (b[6] & 0x0f) | 0x40; // version 4
@@ -177,7 +215,7 @@ function uuidV4(): string {
 // ---- MIME allow-list (bitchat MimeType.allowed, plus video for Airhop) ----
 
 // bitchat accepts every one of these, including video, but only renders images
-// and voice notes: MimeType resolves an unrecognised type through
+// and voice notes: MimeType resolves an unrecognized type through
 // application/octet-stream (whose UTType is public.data, which everything
 // conforms to), and BitchatMessage.mediaKind only surfaces .image and .voice.
 // So a video or a document reaches a bitchat peer and lands as a plain
@@ -206,7 +244,7 @@ const BITCHAT_ALLOWED_MIME = new Set([
 ]);
 
 // The video Airhop sends (EXTENSION_BY_MIME); bitchat-ios sends none. Anything
-// else labelled video/* would go to the OS player unchecked.
+// else labeled video/* would go to the OS player unchecked.
 const AIRHOP_VIDEO_MIME = new Set(["video/mp4", "video/quicktime"]);
 
 export function isAllowedMime(mime: string | undefined): boolean {
@@ -370,12 +408,12 @@ const MIME_BY_EXTENSION: Record<string, string> = {
 // The MIME type to put on the wire, which is never blank and never something
 // the far side will refuse.
 //
-// This matters more than it looks. A receiver (ours and bitchat's alike) drops
-// a file whose type is not on the allow-list, and an empty string is not on the
-// allow-list, so a picker that returned no type produced an attachment that
-// sent successfully, showed a full progress bar, and silently never arrived.
-// Anything unrecognised becomes application/octet-stream, which bitchat accepts
-// and renders as a document, so the file lands even when its type does not.
+// A receiver (ours and bitchat's alike) drops a file whose type is not on the
+// allow-list, and an empty string is not on the allow-list, so a picker that
+// returns no type would make an attachment that sends successfully, shows a
+// full progress bar, and silently never arrives. Anything unrecognized becomes
+// application/octet-stream, which bitchat accepts and renders as a document, so
+// the file lands even when its type does not.
 export function resolveMimeType(
   declared: string | undefined,
   fileName: string | undefined,
@@ -430,11 +468,9 @@ function u32(n: number): number[] {
 // empty or exceeds the 1 MiB ceiling.
 //
 // The metadata tags are built in a plain array and the file bytes are copied in
-// with set(). That split is not stylistic: spreading the content into
-// Array.push passes every byte as a separate function argument, which overflows
-// the call stack somewhere in the tens of kilobytes. Every attachment past that
-// size threw a RangeError from inside the encoder, well before the 1 MiB
-// ceiling this function is supposed to be enforcing.
+// with set(). Spreading the content into Array.push would pass every byte as a
+// separate function argument, which overflows the call stack somewhere in the
+// tens of kilobytes, well before the ceiling.
 export function encodeFilePacket(p: FilePacket): Uint8Array | null {
   if (p.content.length === 0 || p.content.length > MAX_FILE_BYTES) return null;
   const enc = new TextEncoder();
@@ -479,6 +515,12 @@ export function encodeFilePacket(p: FilePacket): Uint8Array | null {
   out.set(head, 0);
   out.set(p.content, head.length);
   return out;
+}
+
+// A u32 or u64 field as a number. Precise to 2^53, far past any size that
+// matters here.
+function bigEndian(bytes: Uint8Array): number {
+  return bytes.reduce((v, byte) => v * 256 + byte, 0);
 }
 
 // Decode a bitchat TLV blob. Tolerates bitchat's legacy encodings (fileSize
@@ -526,7 +568,12 @@ export function decodeFilePacket(data: Uint8Array): FilePacket | null {
         fileName = dec.decode(value);
         break;
       case TLV_FILESIZE:
-        // value is the declared size; we trust the content bytes themselves.
+        // The content bytes are what is kept, but a declared size over the
+        // ceiling is refused outright, as bitchat-ios does, so all three
+        // clients reject the same packet.
+        if ((len === 4 || len === 8) && bigEndian(value) > MAX_FILE_BYTES) {
+          return null;
+        }
         break;
       case TLV_MIMETYPE:
         mimeType = dec.decode(value);

@@ -9,6 +9,7 @@ import { useMeshStateStore, type BleBlocker } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, type NearbyPeer } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
 import StatusDot from "@ui/components/status-dot";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
 import {
   FontSize,
@@ -90,10 +91,10 @@ interface Props {
 
 // Ring assignment is signal-based when RSSI is known, and falls back to
 // recency when it isn't (a peer heard via a multi-hop relay has no RSSI of its
-// own, since we never had a direct radio link to measure).
+// own, since this phone never had a direct radio link to measure).
 //
-// The rings are labelled by signal strength rather than distance. RSSI swings
-// tens of dB with orientation, bodies, walls and radio, so any metre figure
+// The rings are labeled by signal strength rather than distance. RSSI swings
+// tens of dB with orientation, bodies, walls and radio, so any meter figure
 // derived from it would be invented.
 const RSSI_STRONG = -60; // dBm, roughly same-room
 const RSSI_MEDIUM = -80; // dBm, beyond that it's the edge of usable range
@@ -103,8 +104,7 @@ const RING_THRESHOLDS: [number, number] = [15_000, 45_000]; // ms
 
 // Radii as fraction of half the canvas size (C).
 const RING_FR: [number, number, number] = [0.3, 0.54, 0.78];
-// Keys, not text: evaluated once at import, so translated strings here would
-// freeze in whichever language the app started in.
+// Keys, translated on render.
 const RING_LABEL_KEYS: [TranslationKey, TranslationKey, TranslationKey] = [
   "mesh.radar.signal_strong",
   "mesh.radar.signal_medium",
@@ -113,7 +113,7 @@ const RING_LABEL_KEYS: [TranslationKey, TranslationKey, TranslationKey] = [
 
 // Cardinal letters as data rather than four near-identical JSX blocks with four
 // different hand-tuned offset pairs. Each offset is relative to the canvas
-// centre and expressed against the outer ring radius, so the set stays put if
+// center and expressed against the outer ring radius, so the set stays put if
 // the ring fractions above are ever retuned.
 const COMPASS: {
   label: string;
@@ -134,7 +134,7 @@ const SELF_SIZE = 42;
 // nothing and leave a blank Mesh tab.
 const MIN_CANVAS = 180;
 
-// And a ceiling. Android 16 stopped honouring an orientation lock above 600dp
+// And a ceiling. Android 16 stopped honoring an orientation lock above 600dp
 // and Android 17 removed the opt-out, so a foldable's inner screen hands this
 // view ~850dp and an uncapped dial pushes the caption behind the tab bar. A
 // phone gives ~390dp, so the cap is inert there.
@@ -142,9 +142,9 @@ const MAX_CANVAS = 420;
 
 // ---- Component ----
 
-// Memoised: every render re-buckets every peer and re-lays out every dot, and
-// peer-list passes a memoised `peers` and a `now` that ticks once a second, so
-// nothing else on the screen should trigger that.
+// Memoized: every render re-buckets every peer and re-lays out every dot, and
+// peer-list passes a memoized `peers` and a `now` that ticks every 10 seconds,
+// so nothing else on the screen should trigger that.
 function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   const T = useT();
   const TP = useTPlural();
@@ -160,7 +160,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   // An endlessly expanding ring is the textbook vestibular trigger, and it
   // carries nothing the status line below the dial does not already say in
   // words. So under "reduce motion" the sweep does not run at all (WCAG 2.3.3)
-  // and the centre tap answers with a haptic instead of a wave.
+  // and the center tap answers with a haptic instead of a wave.
   const reducedMotion = useReducedMotion();
   // The sonar means "a scan is running". It sweeps when one is, and stops when
   // one is not, whichever of the three reasons applies. Anything else is the
@@ -188,7 +188,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     if (reducedMotion) {
       // The wave is the whole feedback for this tap, so with motion off the
       // touch still has to land somewhere. A selection tick is the quietest
-      // acknowledgement the OS offers, which suits an action that is
+      // acknowledgment the OS offers, which suits an action that is
       // deliberately cosmetic anyway.
       acknowledged();
       return;
@@ -226,7 +226,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   // rather than left frozen mid-bloom: a stalled half-drawn ring reads as the
   // app having hung, an empty dial reads as switched off, which is the truth.
   // The line under the radar says which of the three reasons it is, and the
-  // centre tap keeps its own one-shot wave so the screen still answers a touch.
+  // center tap keeps its own one-shot wave so the screen still answers a touch.
   useEffect(() => {
     if (!scanning || reducedMotion) {
       ring1.setValue(0);
@@ -318,7 +318,7 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   const outerR = C * RING_FR[2];
 
   // Every wave is a circle the size of the outer ring, scaled up from the
-  // centre as it fades. The tap wave peaks a little brighter than the ambient
+  // center as it fades. The tap wave peaks a little brighter than the ambient
   // ones so a touch reads over the sweep.
   const waveBox = {
     width: outerR * 2,
@@ -327,6 +327,14 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     top: C - outerR,
     left: C - outerR,
   };
+  const statusHeadline =
+    peers.length > 0
+      ? TP("mesh.peers_in_range", peers.length)
+      : away
+        ? T("mesh.radar.paused")
+        : blockerHeadline(blocker);
+  useAnnounce(statusHeadline);
+
   const waveStyle = (val: Animated.Value, peak: number, from: number) => ({
     opacity: val.interpolate({
       inputRange: [0, 0.15, 1],
@@ -460,15 +468,10 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
           </View>
 
           {/* One live region, so a blocker is announced when it happens and
-              the two lines read as one stop. */}
+              the two lines read as one stop. VoiceOver hears the headline
+              through useAnnounce above. */}
           <View style={styles.status} accessibilityLiveRegion="polite">
-            <Text style={styles.statusText}>
-              {peers.length > 0
-                ? TP("mesh.peers_in_range", peers.length)
-                : away
-                  ? T("mesh.radar.paused")
-                  : blockerHeadline(blocker)}
-            </Text>
+            <Text style={styles.statusText}>{statusHeadline}</Text>
             <Text style={styles.hintText}>
               {peers.length > 0
                 ? T("mesh.radar.ring_hint")
@@ -619,7 +622,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     // Physical marginLeft on purpose: the radar maps real positions and never
     // mirrors. The label is 16pt wider than its avatar, pulled back by half to
-    // centre over it.
+    // center over it.
     peerLabel: {
       fontSize: FontSize["2xs"],
       color: Colors.textMuted,

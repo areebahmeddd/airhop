@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "あなたの識別情報は端末上で生成される {ed25519} の鍵ペアで、{ios_keychain} または {android_keystore} に保存されます。アカウントも登録もなく、サーバーに触れるものは何もありません。つまり、削除すればあなたにつながる痕跡が何も残らない使い捨てアプリとしても使えます。",
   "home.about.body.crypto":
-    "各セッションは認証付きハンドシェイクに {noise} プロトコルを使います。保存されたメッセージは {ratchet} アルゴリズムを使うため、後から端末が侵害されても過去のメッセージは読めないままです。緊急消去はすべての鍵とメッセージを 1 秒未満で破棄します。",
+    "各セッションは認証付きハンドシェイクに {noise} プロトコルを使います。Airhop 端末どうしのライブのダイレクトメッセージは {ratchet} アルゴリズムを使うため、後から鍵が漏えいしても送信済みのメッセージは開けません。緊急消去はすべての鍵とメッセージを 1 秒未満で破棄します。",
   "home.about.body.internet":
     "あなたと相手が Bluetooth の圏外にいるときは、{nostr} リレーがインターネット経由の橋渡しとなり、{nip17} 形式でギフトラップしたダイレクトメッセージを使います。そのため二人ともオンラインであれば、メッシュは世界規模に広がります。{tor} は iOS でも Android でも {arti} 経由で利用でき、Tor をブロックするネットワーク向けに{obfs4}、{snowflake}、{webtunnel} のブリッジもあります。",
   "home.about.optional.title": "Airhop には、自分で有効にできる任意の機能があります:",
@@ -167,9 +167,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "ルームへの招待リンク、または最大 16 人の署名済みリスト。",
   "home.features.messaging.board.name": "掲示板",
   "home.features.messaging.board.line": "最大 7 日間、その地域に貼り出される告知。",
-  "home.features.messaging.voice.name": "ライブ音声",
+  "home.features.messaging.voice.name": "ライブ音声と映像",
   "home.features.messaging.voice.line":
-    "マイクを押している間、圏内の相手と話せます。トランシーバーのように。",
+    "マイクを押して話すか、カメラでライブ配信。圏内の相手に届きます。",
   "home.features.messaging.notes.name": "ボイスメモ",
   "home.features.messaging.notes.line": "録音した音声。道順を打ち込むより速い。",
   "home.features.messaging.files.name": "写真・動画・ファイル",

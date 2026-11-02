@@ -7,7 +7,9 @@ import {
   type BoardWire,
 } from "@core/mesh/wire/board-packet";
 import { ed25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { createMMKV } from "react-native-mmkv";
+import type * as BoardStoreModule from "../board-store";
 import { isLivePost, useBoardStore } from "../board-store";
 
 function author(): { priv: Uint8Array; pub: Uint8Array } {
@@ -133,6 +135,31 @@ describe("board store", () => {
       createMMKV({ id: "board-store" }).getString("entries"),
     ).toBeUndefined();
   });
+
+  it("restores a tombstone under the deadline recorded when it was applied", () => {
+    const a = author();
+    const at = Date.now();
+    const p = makePost(a, { createdAt: at - 1000, lifetimeMs: DAY });
+    useBoardStore.getState().ingest(post(p), at);
+    const tombstone = signBoardTombstone(p.postID, a.pub, at, a.priv);
+    useBoardStore.getState().ingest({ kind: "tombstone", tombstone }, at);
+
+    const entries = createMMKV({ id: "board-store" }).getString("entries");
+
+    jest.isolateModules(() => {
+      // Modules start fresh here, the storage mock included, so a relaunch has
+      // to be handed what the last run wrote.
+      const fresh = require("react-native-mmkv") as {
+        createMMKV: typeof createMMKV;
+      };
+      fresh.createMMKV({ id: "board-store" }).set("entries", entries ?? "");
+      const restored = (require("../board-store") as typeof BoardStoreModule)
+        .useBoardStore;
+      const [held] = restored.getState().tombstones;
+      expect(held.retainUntil).toBe(p.expiresAt);
+      expect(held.isOrphan).toBe(false);
+    });
+  });
 });
 
 // The time rules ingest applies, without a store: what a relay consults before
@@ -167,5 +194,56 @@ describe("isLivePost", () => {
     expect(useBoardStore.getState().ingest(post(stale), now)).toBe("rejected");
     expect(isLivePost(live, now)).toBe(true);
     expect(useBoardStore.getState().ingest(post(live), now)).toBe("accepted");
+  });
+});
+
+// A bridged notice's NIP-09 retraction stays owed until a relay accepts it, so
+// a delete made offline still reaches the relays later, across a relaunch.
+describe("bridged retractions", () => {
+  const now = Date.now();
+
+  beforeEach(() => {
+    useBoardStore.getState().clearAll();
+  });
+
+  function bridged(): BoardPost {
+    const p = makePost(author(), { createdAt: now - 1000 });
+    useBoardStore.getState().ingest(post(p), now);
+    useBoardStore.getState().noteBridgedEvent(bytesToHex(p.postID), "event-1");
+    return p;
+  }
+
+  it("is owed from the delete until a relay settles it", () => {
+    const p = bridged();
+    const id = bytesToHex(p.postID);
+    expect(
+      useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt),
+    ).toBe("event-1");
+    // The bridged mapping is gone; the retraction is not.
+    expect(
+      useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt),
+    ).toBeUndefined();
+    expect(useBoardStore.getState().pendingBridgedDeletes(now)).toEqual([
+      { eventID: "event-1", geohash: p.geohash },
+    ]);
+    useBoardStore.getState().settleBridgedDelete("event-1");
+    expect(useBoardStore.getState().pendingBridgedDeletes(now)).toEqual([]);
+  });
+
+  it("is dropped once the note would have expired on its own", () => {
+    const p = bridged();
+    const id = bytesToHex(p.postID);
+    useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt);
+    expect(
+      useBoardStore.getState().pendingBridgedDeletes(p.expiresAt + 1),
+    ).toEqual([]);
+  });
+
+  it("goes with a panic wipe", () => {
+    const p = bridged();
+    const id = bytesToHex(p.postID);
+    useBoardStore.getState().queueBridgedDelete(id, p.geohash, p.expiresAt);
+    useBoardStore.getState().clearAll();
+    expect(useBoardStore.getState().pendingBridgedDeletes(now)).toEqual([]);
   });
 });

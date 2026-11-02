@@ -4,8 +4,10 @@
 # metadata  create the App Store version for this tag, push listing and screenshots
 #
 # Signing files are decoded from workflow secrets on the runner. The
-# distribution certificate and App Store profile are managed in Apple Developer
-# and refreshed when entitlements change. TestFlight uploads are automated;
+# distribution certificate and the two App Store profiles, one for the app and
+# one for the AirhopWidget extension it embeds, are managed in Apple Developer
+# and refreshed when entitlements change. Both App IDs carry the App Group the
+# widget reads the mesh snapshot from. TestFlight uploads are automated;
 # submitting a build for App Store review remains manual.
 
 skip_docs
@@ -16,7 +18,8 @@ WORKSPACE = "ios/Airhop.xcworkspace"
 PROJECT = "ios/Airhop.xcodeproj"
 SCHEME = "Airhop"
 APP_IDENTIFIER = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
-TEAM_ID = CredentialsManager::AppfileConfig.try_fetch_value(:team_id)
+WIDGET_TARGET = "AirhopWidget"
+WIDGET_IDENTIFIER = "#{APP_IDENTIFIER}.widget"
 
 platform :ios do
   private_lane :authenticate do
@@ -43,18 +46,27 @@ platform :ios do
     profile_path = ENV.fetch("IOS_PROVISIONING_PROFILE_FILE")
     install_provisioning_profile(path: profile_path)
     profile_uuid = FastlaneCore::ProvisioningProfile.uuid(profile_path)
+    widget_profile_path = ENV.fetch("IOS_WIDGET_PROVISIONING_PROFILE_FILE")
+    install_provisioning_profile(path: widget_profile_path)
+    widget_profile_uuid = FastlaneCore::ProvisioningProfile.uuid(widget_profile_path)
 
     # The checked-in project has no team and no signing style, so ci.yml can
-    # build it unsigned. Signing is applied here, on the throwaway runner.
-    update_code_signing_settings(
-      path: PROJECT,
-      targets: [SCHEME],
-      use_automatic_signing: false,
-      team_id: TEAM_ID,
-      code_sign_identity: "Apple Distribution",
-      profile_uuid: profile_uuid,
-      bundle_identifier: APP_IDENTIFIER,
-    )
+    # build it unsigned. Signing is applied here, on the throwaway runner, one
+    # target and its own profile at a time.
+    [
+      [SCHEME, APP_IDENTIFIER, profile_uuid],
+      [WIDGET_TARGET, WIDGET_IDENTIFIER, widget_profile_uuid],
+    ].each do |target, identifier, uuid|
+      update_code_signing_settings(
+        path: PROJECT,
+        targets: [target],
+        use_automatic_signing: false,
+        team_id: ENV.fetch("APPLE_TEAM_ID"),
+        code_sign_identity: "Apple Distribution",
+        profile_uuid: uuid,
+        bundle_identifier: identifier,
+      )
+    end
 
     build_app(
       workspace: WORKSPACE,
@@ -63,7 +75,12 @@ platform :ios do
       export_method: "app-store",
       output_directory: "ios/build",
       output_name: "Airhop.ipa",
-      export_options: { provisioningProfiles: { APP_IDENTIFIER => profile_uuid } },
+      export_options: {
+        provisioningProfiles: {
+          APP_IDENTIFIER => profile_uuid,
+          WIDGET_IDENTIFIER => widget_profile_uuid,
+        },
+      },
     )
 
     # Apple's processing takes minutes; the build appears in TestFlight on its own.

@@ -14,8 +14,9 @@
 // so neither the JS thread nor the UI can be stalled by audio work.
 //
 // Events emitted to TypeScript:
-//   AirhopVoice.frame         { dataBase64 }
-//   AirhopVoice.captureError  { message }
+//   AirhopVoice.frame          { dataBase64, level }
+//   AirhopVoice.playbackLevel  { level }
+//   AirhopVoice.captureError   { message }
 import AVFoundation
 import Foundation
 import OSLog
@@ -128,8 +129,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   // release path calls setAudioForPlayback). So the second hold and every one
   // after it would capture nothing while reporting success: the burst goes
   // live on the far side and no audio ever follows. bitchat-ios recreates
-  // its capture engine for the same reason (the `engine` comment in its
-  // PTTCaptureEngine.swift).
+  // its capture engine for the same reason.
   private var captureEngine = AVAudioEngine()
   // Whether `captureEngine`'s input unit has been instantiated by us. Reading
   // `inputNode` on an engine that was never armed instantiates it against
@@ -150,7 +150,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   // Only ever touched on `captureQueue`, alongside the rest of capture setup
   // and teardown, so it needs no lock of its own.
   private var captureObservers: [NSObjectProtocol] = []
-  // Serialises capture setup/teardown against the render thread's tap.
+  // Serializes capture setup/teardown against the render thread's tap.
   private let captureQueue = DispatchQueue(label: "org.onemindlabs.airhop.voice.capture")
   // The capture's AAC converter, kept so a release can drain it. Set and read
   // on `captureQueue`, used under `encoderLock`, which the tap holds too.
@@ -258,14 +258,14 @@ final class AirhopVoiceModule: RCTEventEmitter {
   }
 
   /// Play-and-record with speaker default and ducking, matching the walkie
-  /// behaviour the design asks for: other audio dips rather than stops.
+  /// behavior the design asks for: other audio dips rather than stops.
   private func configureSession() throws {
     let session = AVAudioSession.sharedInstance()
     // HFP is the only Bluetooth profile that carries a microphone, and the
     // Simulator does not offer it: asking for it there fails the whole
     // setCategory call, so live voice would be dead on every simulator run
     // rather than merely routing to the Mac's own mic. bitchat guards the
-    // same way; see their AudioSessionCoordinator.swift.
+    // same way.
     #if targetEnvironment(simulator)
       let options: AVAudioSession.CategoryOptions = [.duckOthers, .defaultToSpeaker]
     #else
@@ -353,14 +353,14 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// handleCapturedBuffer can tell that apart from a talker who has gone
   /// quiet, so the burst has to be ended from here instead.
   ///
-  /// Deliberately only the failures JS cannot see for itself. A call, Siri,
-  /// or a switch to another app all leave AppState, and message-thread.tsx
-  /// already ends the hold on that, by the same route a user's release
-  /// takes, which also delivers the voice note. Observing interruptions here
-  /// too would race that better ending and sometimes win, turning a note that
-  /// would have been sent into one that is dropped. What is left is hardware
-  /// going away while the app stays in the foreground, which nothing above
-  /// this layer can observe.
+  /// A call, Siri, or a switch to another app usually leave AppState, and
+  /// message-thread.tsx ends the hold on that by the same route a user's
+  /// release takes, which also delivers the voice note. An interruption is
+  /// therefore acted on only after a grace, and only if that ending has not
+  /// already come: a call ringing in as a banner interrupts the session with
+  /// the app still active, and nothing else would end the burst. Otherwise
+  /// these are hardware going away while the app stays in the foreground,
+  /// which nothing above this layer can observe.
   ///
   /// Each observer is scoped to this engine and this session rather than to
   /// every notification of its kind, and carries the generation of the
@@ -397,7 +397,26 @@ final class AirhopVoiceModule: RCTEventEmitter {
         else { return }
         self?.failCapture(generation, "Microphone disconnected")
       })
+
+    // The session was taken, most often by a call: the microphone stops with
+    // no error. failCapture is a no-op once a release has stopped the capture.
+    captureObservers.append(
+      center.addObserver(
+        forName: AVAudioSession.interruptionNotification,
+        object: session,
+        queue: .main
+      ) { [weak self] note in
+        guard let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+          AVAudioSession.InterruptionType(rawValue: raw) == .began
+        else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.interruptionGrace) {
+          self?.failCapture(generation, "Microphone interrupted")
+        }
+      })
   }
+
+  /// Time for AppState to end the hold first, which keeps the voice note.
+  private static let interruptionGrace: TimeInterval = 1
 
   /// A capture that died on its own rather than one the user stopped.
   ///
@@ -879,7 +898,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// Why the microphone stopped, for a burst that ended without the user
   /// letting go. The string is diagnostic rather than copy: JS ignores it and
   /// shows its own translated line, the same way the Kotlin module's messages
-  /// are never rendered. See voice-audio.ts and message-thread.tsx.
+  /// are never rendered. See voice-audio-backend.ts and message-thread.tsx.
   private func emitCaptureError(_ message: String) {
     guard bridge != nil else { return }
     sendEvent(withName: VoiceEvent.captureError, body: ["message": message])

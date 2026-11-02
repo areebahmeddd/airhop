@@ -1,13 +1,19 @@
 // Teleport to a geohash: open a public location channel for a cell you are not
-// physically in. The user types a geohash, we normalise and validate it exactly
-// as bitchat does, then hand it to mesh-service, which joins the cell as a
-// `geohash:<gh>` channel and brings up its Nostr subscription. The channel then
-// appears under Your Rooms and interoperates with bitchat clients in the same
-// cell.
+// physically in. The user picks the cell on the globe or types its geohash, we
+// normalize and validate it exactly as bitchat does, then hand it to
+// mesh-service, which joins the cell as a `geohash:<gh>` channel and brings up
+// its Nostr subscription. The channel then appears under Your channels and
+// interoperates with bitchat clients in the same cell.
+//
+// Every way in (the globe, the field, a nearby cell, a saved place) ends in
+// openGeohash, so one rule decides between the user's own named channel and a
+// teleport.
 
 import { t, useT, type TranslationKey } from "@i18n";
+import { chevronForward } from "@i18n/layout";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import {
+  GEO_CHANNEL_PRECISION,
   geohashLevelName,
   isValidGeohash,
   normalizeGeohash,
@@ -23,17 +29,16 @@ import {
   FontSize,
   FontWeight,
   HIT_SLOP,
+  hitSlopFor,
   LineHeight,
   Radius,
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import {
-  geohashNeighbours,
-  type NeighbourDirection,
-} from "@utils/geohash-grid";
+import { geohashNeighbors, type NeighborDirection } from "@utils/geohash-grid";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -41,16 +46,19 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { GeohashPicker, globeAvailable } from "./geohash-picker";
 
 // How long typing has to stop before the cell's name is looked up. Long enough
 // that a six-character geohash costs one lookup rather than six.
 const NAME_LOOKUP_DEBOUNCE_MS = 500;
 
-// Keyed the way `geohashNeighbours` names the eight cells. The chip shows the
+const REMOVE_ICON_SIZE = 15;
+
+// Keyed the way `geohashNeighbors` names the eight cells. The chip shows the
 // short point; the label is a whole sentence per direction, since the
 // direction word takes a different case or preposition in most languages.
 const DIRECTION_KEYS: Record<
-  NeighbourDirection,
+  NeighborDirection,
   { short: TranslationKey; open: TranslationKey }
 > = {
   N: { short: "chat.jump.dir.n", open: "chat.jump.open_n" },
@@ -85,24 +93,36 @@ export function GeohashJumpSheet({
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // The cell this phone is standing in, at neighbourhood precision. Null with
+  // The globe opens over this sheet, as bitchat's does, so closing it comes
+  // back to the sheet as it was left, typing and all.
+  const [picking, setPicking] = useState(false);
+  // Go closes the globe at once instead of sliding it away. The sheet closes
+  // right behind it, and iOS ignores closing a sheet whose globe is still
+  // mid-slide, which would leave an invisible window over the app.
+  const [globeSlides, setGlobeSlides] = useState(true);
+  // A phone without Vulkan or Metal is offered the field alone. Read while
+  // open only: the sheet is mounted from launch, and Skia probes the GPU on
+  // its first read.
+  const canPick = visible && globeAvailable();
+
+  // The cell this phone is standing in, at neighborhood precision. Null with
   // no location grant, which is why every part of this sheet that uses it is
   // conditional rather than assumed.
   const homeCell = visible
     ? (getMeshService()?.getChannelGeohash("#neighborhood") ?? null)
     : null;
 
-  // The eight cells touching yours. This is the "where do I actually want to
-  // go" case: people ask for the next street or the next town, not for a
-  // geohash they have memorised. Typing one is still there for anyone who has.
-  const neighbours = useMemo(
-    () => (homeCell ? geohashNeighbours(homeCell) : []),
+  // The eight cells touching yours, one tap each: people most often want the
+  // next street or the next town over. The globe and the field cover anywhere
+  // further.
+  const neighbors = useMemo(
+    () => (homeCell ? geohashNeighbors(homeCell) : []),
     [homeCell],
   );
 
   const bookmarks = useGeohashBookmarksStore((s) => s.bookmarks);
   const placeNames = usePlaceNamesStore((s) => s.names);
-  // Resolve names for saved places so the list reads "~Kumaraswamy Layout"
+  // Resolve names for saved places so the list reads "~Old Town"
   // rather than a bare geohash. Best-effort and cached in the store.
   useEffect(() => {
     if (!visible) return;
@@ -110,13 +130,12 @@ export function GeohashJumpSheet({
   }, [visible, bookmarks]);
 
   // And for the cells around you, which is what makes Nearby readable: "N ·
-  // Jayanagar" is a place, "N · #tdr1kz" is a string. Eight lookups on open,
+  // Old Town" is a place, "N · #tdr1v9" is a string. Eight lookups on open,
   // once ever, since the store caches a cell's name forever.
   useEffect(() => {
     if (!visible) return;
-    for (const n of neighbours)
-      usePlaceNamesStore.getState().resolve(n.geohash);
-  }, [visible, neighbours]);
+    for (const n of neighbors) usePlaceNamesStore.getState().resolve(n.geohash);
+  }, [visible, neighbors]);
 
   // The typed cell, once it is long enough to mean somewhere. Debounced:
   // resolving on every keystroke would geocode "r", "rd", "rdr" and so on,
@@ -145,33 +164,40 @@ export function GeohashJumpSheet({
   function reset() {
     setInput("");
     setError(null);
+    setPicking(false);
   }
 
-  // Open a saved cell: reuse the channel the user is already in if this is their
-  // current cell, otherwise teleport into it. Same redirect rule as typing it.
+  // The one way from this sheet into a cell: reuse the channel the user is
+  // already in if this is their current cell, otherwise teleport into it. A
+  // failure leaves the cell in the field with the reason under it.
   function openGeohash(geohash: string) {
     const svc = getMeshService();
     const channel =
       svc?.localGeoChannelFor(geohash) ?? svc?.joinGeohash(geohash);
-    if (channel === undefined) return;
-    reset();
-    onJoined(channel);
-  }
-
-  function handleGo() {
-    if (!valid) return;
-    if (localChannel !== null) {
-      reset();
-      onJoined(localChannel);
-      return;
-    }
-    const channel = getMeshService()?.joinGeohash(input);
     if (channel === undefined) {
+      setPicking(false);
+      setInput(geohash);
       setError(t("chat.jump.failed"));
       return;
     }
     reset();
     onJoined(channel);
+  }
+
+  function handleGo() {
+    if (valid) openGeohash(input);
+  }
+
+  // The cells this phone is standing in, for the globe's fallback start (it
+  // takes the coarsest). Empty with no location grant.
+  function ownCells(): string[] {
+    const svc = getMeshService();
+    const cells: string[] = [];
+    for (const channel of Object.keys(GEO_CHANNEL_PRECISION)) {
+      const gh = svc?.getChannelGeohash(channel);
+      if (gh) cells.push(gh);
+    }
+    return cells;
   }
 
   function handleClose() {
@@ -227,6 +253,29 @@ export function GeohashJumpSheet({
         </View>
       </View>
 
+      {canPick && (
+        <Pressable
+          style={({ pressed }) => [styles.globeRow, pressed && styles.pressed]}
+          onPress={() => {
+            // Typing stays in the field; the keyboard would otherwise sit
+            // over the globe.
+            Keyboard.dismiss();
+            setGlobeSlides(true);
+            setPicking(true);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={T("chat.jump.globe")}
+          accessibilityHint={T("chat.jump.globe_note")}
+        >
+          <Feather name="map" size={18} color={Colors.textPrimary} />
+          <View style={styles.globeText}>
+            <Text style={styles.globeTitle}>{T("chat.jump.globe")}</Text>
+            <Text style={styles.globeNote}>{T("chat.jump.globe_note")}</Text>
+          </View>
+          <Feather name={chevronForward} size={18} color={Colors.textMuted} />
+        </Pressable>
+      )}
+
       <View style={styles.inputRow}>
         <Text style={styles.inputPrefix}>#</Text>
         <TextInput
@@ -260,16 +309,19 @@ export function GeohashJumpSheet({
       )}
       {error !== null && <Text style={styles.error}>{error}</Text>}
 
-      {neighbours.length > 0 && (
+      {neighbors.length > 0 && (
         <View style={styles.saved}>
           <UpperText style={styles.savedLabel}>
             {T("chat.jump.nearby")}
           </UpperText>
           <View style={styles.nearbyWrap}>
-            {neighbours.map((n) => (
+            {neighbors.map((n) => (
               <Pressable
                 key={n.geohash}
-                style={styles.nearbyChip}
+                style={({ pressed }) => [
+                  styles.nearbyChip,
+                  pressed && styles.pressed,
+                ]}
                 onPress={() => openGeohash(n.geohash)}
                 accessibilityRole="button"
                 accessibilityLabel={T(DIRECTION_KEYS[n.direction].open)}
@@ -323,13 +375,24 @@ export function GeohashJumpSheet({
                     onPress={() =>
                       useGeohashBookmarksStore.getState().remove(gh)
                     }
-                    hitSlop={HIT_SLOP}
+                    // Inside the row's own target, so it grows in height
+                    // only: 44pt tall within the row, and sideways no further
+                    // than the gap before the place name.
+                    hitSlop={{
+                      ...hitSlopFor(REMOVE_ICON_SIZE),
+                      left: HIT_SLOP.left,
+                      right: HIT_SLOP.right,
+                    }}
                     accessibilityRole="button"
                     accessibilityLabel={T("chat.jump.remove_place", {
                       name: name ?? gh,
                     })}
                   >
-                    <Feather name="x" size={15} color={Colors.textMuted} />
+                    <Feather
+                      name="x"
+                      size={REMOVE_ICON_SIZE}
+                      color={Colors.textMuted}
+                    />
                   </Pressable>
                 </Pressable>
               );
@@ -362,6 +425,20 @@ export function GeohashJumpSheet({
           <Text style={styles.confirmText}>{T("chat.jump.go")}</Text>
         </Pressable>
       </View>
+
+      {/* Inside the sheet, so iOS presents it over the sheet rather than
+          beside it, which it would refuse while the sheet is up. */}
+      <GeohashPicker
+        visible={picking}
+        animated={globeSlides}
+        initialGeohash={valid ? input : null}
+        nearby={picking ? ownCells() : []}
+        onSelect={(geohash) => {
+          setGlobeSlides(false);
+          openGeohash(geohash);
+        }}
+        onClose={() => setPicking(false)}
+      />
     </BottomSheet>
   );
 }
@@ -399,6 +476,35 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
       lineHeight: LineHeight.sm,
+    },
+    globeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: Spacing.md,
+      minHeight: BUTTON_HEIGHT,
+      paddingVertical: Spacing.md,
+      paddingHorizontal: Spacing.base,
+      borderRadius: Radius.xl,
+      backgroundColor: Colors.surfaceRaised,
+      borderWidth: 1,
+      borderColor: Colors.border,
+    },
+    pressed: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    globeText: {
+      flex: 1,
+      gap: Spacing["2xs"],
+    },
+    globeTitle: {
+      fontSize: FontSize.base,
+      fontWeight: FontWeight.medium,
+      color: Colors.textPrimary,
+    },
+    globeNote: {
+      fontSize: FontSize.xs,
+      lineHeight: LineHeight.xs,
+      color: Colors.textMuted,
     },
     inputRow: {
       flexDirection: "row",

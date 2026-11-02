@@ -1,7 +1,7 @@
 // AirhopWiFiModule: Wi-Fi Aware high-bandwidth transport for Airhop (iOS).
 //
-// Apple's WiFiAware framework, iOS 26+. Same three methods, four events and
-// rejection codes as AirhopWiFiModule.kt, so services/wifi-controller.ts drives
+// Apple's WiFiAware framework, iOS 26+. The same methods, events and rejection
+// codes as AirhopWiFiModule.kt, so services/wifi-controller.ts drives
 // both platforms without knowing which. No protocol or routing logic here: raw
 // bytes to TypeScript, as AirhopBLEModule does.
 //
@@ -18,7 +18,7 @@
 //
 // NetworkConnection has no cancel. A connection ends when the last reference is
 // dropped, so one task per link owns its connection for the link's life and
-// closing means cancelling that task. The registry holds a reference for writes,
+// closing means canceling that task. The registry holds a reference for writes,
 // which is why `serve`'s defer removes it.
 //
 // Discovery is symmetric with no serviceSpecificInfo to break a tie before
@@ -51,7 +51,7 @@ private enum WiFiEvent {
 /// on the Kotlin side.
 ///
 /// Two sends awaited concurrently on one connection interleave and split a frame
-/// across another's bytes, desynchronising the reader for good. A broadcast fans
+/// across another's bytes, desynchronizing the reader for good. A broadcast fans
 /// out while an ANNOUNCE may be going to the same link, so that is ordinary.
 ///
 /// A failed predecessor is awaited and its error discarded: one refused frame
@@ -103,7 +103,7 @@ private actor WiFiAwareTransport {
   /// the pair by then.
   private var linkByDevice: [WAPairedDevice.ID: String] = [:]
   /// Dials in flight, so a re-reported peer does not open a second connection.
-  private var dialling: Set<WAPairedDevice.ID> = []
+  private var dialing: Set<WAPairedDevice.ID> = []
   /// Last endpoint per device, so an inbound tiebreak loss can dial at once.
   private var endpoints: [WAPairedDevice.ID: WAEndpoint] = [:]
   /// Wait before the next dial to a device whose link ended or whose dial
@@ -112,6 +112,9 @@ private actor WiFiAwareTransport {
   private var redialDelay: [WAPairedDevice.ID: Duration] = [:]
 
   private var linkSeq = 0
+  /// How long a new connection has to come up and exchange hellos (see
+  /// `serve`): Android's 7 s connect timeout plus its 5 s HELLO_TIMEOUT_MS.
+  private static let helloTimeout: Duration = .seconds(12)
   private var runTask: Task<Void, Never>?
   /// Regenerated per attach, so it never identifies this device across sessions.
   private var localToken = Data()
@@ -175,7 +178,7 @@ private actor WiFiAwareTransport {
     }
     links.removeAll()
     linkByDevice.removeAll()
-    dialling.removeAll()
+    dialing.removeAll()
     endpoints.removeAll()
     redialDelay.removeAll()
   }
@@ -187,7 +190,7 @@ private actor WiFiAwareTransport {
       try await NetworkListener(
         for: .wifiAware(.connecting(to: service, from: .allPairedDevices)),
         using: .parameters { TCP() }
-          // `bulk` prioritises throughput, power and coexistence with
+          // `bulk` prioritizes throughput, power and coexistence with
           // infrastructure Wi-Fi, and is the whole battery policy here.
           // power-policy.ts scales the BLE radios and leaves this one
           // alone on both platforms: the OS withdraws Aware under
@@ -231,25 +234,27 @@ private actor WiFiAwareTransport {
   ///
   /// Reported so the JS reconciler forgets it is started and retries, rather
   /// than latching over a transport with nothing published or subscribed. No
-  /// matching `true` edge: iOS has no state broadcast to hang one on.
+  /// matching `true` edge: iOS has no state broadcast to hang one on. No
+  /// reason either: the JS breaker counts Android's "session" drops, a chipset
+  /// that resets when a data path opens, and nothing here is that.
   private func reportUnavailable() {
     stop()
     guard lastReportedAvailable != false else { return }
     lastReportedAvailable = false
-    emit(WiFiEvent.availabilityChanged, ["available": false, "reason": "session"])
+    emit(WiFiEvent.availabilityChanged, ["available": false])
   }
 
-  // MARK: Dialling
+  // MARK: Dialing
 
   private func considerDial(_ endpoint: WAEndpoint) {
     // A browser update spawned before cancellation landed, or the redial in
     // `serve`'s defer, both reach here after `stop()`. Either would dial a
-    // torn-down transport and leave a `dialling` entry the sweep has passed.
+    // torn-down transport and leave a `dialing` entry the sweep has passed.
     guard isRunning else { return }
     let deviceID = endpoint.device.id
     endpoints[deviceID] = endpoint
-    guard linkByDevice[deviceID] == nil, !dialling.contains(deviceID) else { return }
-    dialling.insert(deviceID)
+    guard linkByDevice[deviceID] == nil, !dialing.contains(deviceID) else { return }
+    dialing.insert(deviceID)
     Task { await self.dial(endpoint) }
   }
 
@@ -276,7 +281,7 @@ private actor WiFiAwareTransport {
   // MARK: Link lifetime
 
   /// Own one connection for its whole life. The inner task exists only so the
-  /// link can be cancelled from outside: `serve` blocks in `receive`, which
+  /// link can be canceled from outside: `serve` blocks in `receive`, which
   /// nothing but cancellation interrupts.
   private func spawnLink(
     _ connection: NetworkConnection<TCP>,
@@ -312,7 +317,16 @@ private actor WiFiAwareTransport {
     var redial: WAEndpoint?
     // False only where the peer's own connection is the one that survives.
     var retryLater = true
+    // A dial or an accepted connection that has not traded hellos in time is
+    // not becoming a link, and nothing else would end it: neither the connect
+    // nor the receive below has a deadline of its own. Canceling the link's
+    // task unwinds both into the defer.
+    let helloDeadline = Task {
+      try? await Task.sleep(for: Self.helloTimeout)
+      if !Task.isCancelled { handle.task?.cancel() }
+    }
     defer {
+      helloDeadline.cancel()
       // Hello failed, tiebreak lost or read loop ended, this is the one
       // place a link stops existing. A registry entry left behind holds the
       // connection alive with nobody reading it.
@@ -333,11 +347,12 @@ private actor WiFiAwareTransport {
       let header = try await connection.receive(exactly: Framing.prefixBytes).content
       guard let length = Framing.length(header), length == AwareDial.tokenBytes else { return }
       let peerToken = try await connection.receive(exactly: length).content
+      helloDeadline.cancel()
 
       // After the hello, not before: the path only populates once ready.
       if deviceID == nil {
         // `try await` spans the whole chain. The effects sit on the
-        // Wi-Fi Aware accessor, not on `currentPath`, so parenthesising
+        // Wi-Fi Aware accessor, not on `currentPath`, so parenthesizing
         // the first term leaves the rest unmarked and this will not
         // compile. `try?` because failing to name the device costs the
         // dial guard a hint, not the link.
@@ -372,7 +387,7 @@ private actor WiFiAwareTransport {
   ///
   /// Nil when the transport stopped underneath it. `stop()` only cancels links
   /// it knows about, and one still exchanging its hello is not in the registry:
-  /// its task is unstructured, so cancelling the listener does not reach it.
+  /// its task is unstructured, so canceling the listener does not reach it.
   /// Going Away while a peer connects is the ordinary way to hit this.
   private func adopt(
     _ connection: NetworkConnection<TCP>,
@@ -398,7 +413,7 @@ private actor WiFiAwareTransport {
     if let deviceID {
       linkByDevice[deviceID] = linkID
       // Holding the guard would stop a reconnect once this link drops.
-      dialling.remove(deviceID)
+      dialing.remove(deviceID)
       redialDelay.removeValue(forKey: deviceID)
     }
     AirhopLog.wifi.notice("WiFi link up: \(linkID, privacy: .public)")
@@ -408,7 +423,7 @@ private actor WiFiAwareTransport {
 
   private func releaseDial(_ deviceID: WAPairedDevice.ID?) {
     guard let deviceID else { return }
-    dialling.remove(deviceID)
+    dialing.remove(deviceID)
   }
 
   // MARK: Reading
@@ -471,7 +486,7 @@ private actor WiFiAwareTransport {
       // Only if it still points at us: a newer link may have claimed the
       // slot, and clearing it would orphan the live one.
       if linkByDevice[deviceID] == linkID { linkByDevice.removeValue(forKey: deviceID) }
-      dialling.remove(deviceID)
+      dialing.remove(deviceID)
     }
     AirhopLog.wifi.notice("WiFi link down: \(linkID, privacy: .public)")
     emit(WiFiEvent.linkDisconnected, ["linkID": linkID])
@@ -485,11 +500,11 @@ private actor WiFiAwareTransport {
   /// reads these notices back.
   func dumpState() -> String {
     """
-    attached: \(isRunning)
-    peers known: \(endpoints.count)
-    links up: \(links.count)
-    dials in flight: \(dialling.count)
-    backing off: \(redialDelay.count)
+    Attached: \(isRunning ? "yes" : "no")
+    Peers now: \(endpoints.count)
+    Links now: \(links.count)
+    Dials in flight: \(dialing.count)
+    Backing off: \(redialDelay.count)
     """
   }
 }
@@ -623,8 +638,42 @@ final class AirhopWiFiModule: RCTEventEmitter {
       return
     }
     Task {
+      await self.flushWrites()
       await transport.stop()
       resolve(nil)
+    }
+  }
+
+  // MARK: Farewell flush
+
+  /// Writes handed over and not yet answered. Counted here, on the bridge's
+  /// queue, rather than in the transport: each write and the stop are separate
+  /// tasks, and a stop can reach the actor before a write handed over ahead of
+  /// it does.
+  private let pendingLock = NSLock()
+  private var pendingWrites = 0
+
+  private func adjustPendingWrites(_ delta: Int) {
+    pendingLock.lock()
+    pendingWrites += delta
+    pendingLock.unlock()
+  }
+
+  private var hasPendingWrites: Bool {
+    pendingLock.lock()
+    defer { pendingLock.unlock() }
+    return pendingWrites > 0
+  }
+
+  /// The farewell (a LEAVE, a voice or video END) is handed over in the same
+  /// tick as the stop, and canceling a link drops what it has not sent. A
+  /// healthy link takes it in milliseconds; a stalled one gets 300 ms, as on
+  /// Android.
+  @available(iOS 26.0, *)
+  private func flushWrites() async {
+    let deadline = ContinuousClock.now + .milliseconds(300)
+    while hasPendingWrites, ContinuousClock.now < deadline {
+      try? await Task.sleep(for: .milliseconds(10))
     }
   }
 
@@ -665,7 +714,10 @@ final class AirhopWiFiModule: RCTEventEmitter {
       reject("LINK_CLOSED", "WiFi transport is not running", nil)
       return
     }
+    // Counted before the task exists, so a stop handed over next sees it.
+    adjustPendingWrites(1)
     Task {
+      defer { self.adjustPendingWrites(-1) }
       do {
         try await transport.write(linkID: linkID, payload: payload)
         resolve(nil)
@@ -685,7 +737,7 @@ final class AirhopWiFiModule: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     guard #available(iOS 26.0, *) else {
-      resolve("attached: false")
+      resolve("Attached: no")
       return
     }
     dumpState(resolve: resolve)
@@ -694,7 +746,7 @@ final class AirhopWiFiModule: RCTEventEmitter {
   @available(iOS 26.0, *)
   private func dumpState(resolve: @escaping RCTPromiseResolveBlock) {
     guard let transport = box as? WiFiAwareTransport else {
-      resolve("attached: false")
+      resolve("Attached: no")
       return
     }
     Task {

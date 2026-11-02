@@ -63,7 +63,7 @@ describe("deriveGeohashIdentity", () => {
     expect(a.pubKeyHex).not.toBe(b.pubKeyHex);
   });
 
-  it("normalises case so a geohash is one channel", () => {
+  it("normalizes case so a geohash is one channel", () => {
     expect(deriveGeohashIdentity(seed, "U4PRU").pubKeyHex).toBe(
       deriveGeohashIdentity(seed, "u4pru").pubKeyHex,
     );
@@ -96,8 +96,8 @@ describe("geohashDisplayName", () => {
   });
 
   // A bidi override in the name would reorder the suffix that tells two
-  // people apart, so the name is normalised as an announced one is.
-  it("normalises the nickname before suffixing it", () => {
+  // people apart, so the name is normalized as an announced one is.
+  it("normalizes the nickname before suffixing it", () => {
     expect(geohashDisplayName(pubkey, "M\u202Eo\u200Bm\n(x)")).toBe(
       "Mom (x)#beef",
     );

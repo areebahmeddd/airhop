@@ -7,16 +7,12 @@
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("./harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
 );
-// EAGER factories. A lazy `get default()` resolves after jest.isolateModules has
-// closed, which would hand every sandboxed phone the same native module. See
-// harness/device.ts.
+// EAGER factories, not a lazy `get default()`: see smoke.test.ts.
 jest.mock("@bridge/NativeAirhopBLE", () => {
   const shim = require("../harness/bridge-shim");
   return { __esModule: true, default: shim.bleBridge };

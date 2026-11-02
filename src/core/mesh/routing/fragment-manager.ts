@@ -60,6 +60,15 @@ export const FRAG_DATA_SIZE = MAX_BLE_FRAME - FRAME_OVERHEAD; // 467 bytes
 // Max simultaneous reassembly slots. Matches bitchat.
 const MAX_CONCURRENT = 128;
 
+// Bytes every assembly together may hold. Each slot is capped by its type's
+// frame, so without this 128 slots topped up just inside the idle timeout hold
+// over a hundred MiB. Room for seven full 1 MiB files at once, more than a
+// Bluetooth room ever carries, since one takes most of a minute at the
+// sender's pacing. Reaching it refuses new bytes rather than evicting: freeing
+// room by dropping an in-flight stream would hand the sender of junk a way to
+// cancel genuine transfers.
+const MAX_TOTAL_BYTES = 8 * 1024 * 1024;
+
 // The least data a fragment other than the last may carry. No sender cuts one
 // smaller: bitchat-ios never goes under its BLEOutboundFragmentPlanner
 // minimumChunkSize, 64, and Airhop's are FRAG_DATA_SIZE. Refusing smaller
@@ -87,14 +96,13 @@ const MAX_FRAME_OVERHEAD_BYTES =
   V2_HEADER_SIZE + 2 * SENDER_ID_SIZE + 1 + 255 * SENDER_ID_SIZE + 4 + 64 + 255;
 
 // An assembly holds no more than the frame its claimed type could decode to,
-// so a stream labelled as a public message cannot buffer a file's worth of
+// so a stream labeled as a public message cannot buffer a file's worth of
 // memory. Mirrors bitchat-ios PacketPayloadLimits.maxFrameBytes.
 function maxAssemblyBytes(originalType: number): number {
   return maxPayloadBytes(originalType as PacketType) + MAX_FRAME_OVERHEAD_BYTES;
 }
 
-// The outer fragment packet type per PROTOCOLS.md.
-const OUTER_TYPE = PacketType.FRAGMENT; // 0x20
+const OUTER_TYPE = PacketType.FRAGMENT;
 
 // What the assembly knows about how its packet arrived, which the packet
 // itself cannot say. A fragment's freshness says nothing about the packet
@@ -166,8 +174,7 @@ export function fragmentPacket(
       // Carry the parent's recipient. A DM's fragments addressed to nobody are
       // classified by bitchat as public: it archives sealed private media in its
       // gossip store and re-offers it to third parties, and relays each fragment
-      // to every neighbour instead of down
-      // the directed path.
+      // to every neighbor instead of down the directed path.
       recipientID: packet.recipientID ?? new Uint8Array(8),
       timestamp: Date.now(),
       // Zeros, not a signature: the SIGNED flag is clear, so the encoder omits
@@ -261,7 +268,11 @@ interface Assembly {
 }
 
 export class FragmentManager {
+  // Least recently updated first: an assembly moves to the end on every
+  // fragment it takes, so the first entry is the one a new stream evicts.
   private readonly assemblies = new Map<AssemblyKey, Assembly>();
+  // The sum of every assembly's byteCount, held to MAX_TOTAL_BYTES.
+  private totalBytes = 0;
 
   // Process a received fragment packet. Calls `onComplete` with the
   // reassembled inner Packet when the last fragment arrives.
@@ -281,7 +292,7 @@ export class FragmentManager {
     this.evictExpired();
 
     // Refuse a fragment too large to ever be stored before touching the table.
-    // Starting an assembly evicts the oldest in-flight stream, so without this
+    // Starting an assembly evicts the stalest in-flight stream, so without this
     // a fragment that is about to be rejected anyway is still a one-packet
     // eviction primitive against a full table.
     //
@@ -289,13 +300,16 @@ export class FragmentManager {
     // the outer packet may be DEFLATE-compressed and the decoder inflates up to
     // the sender-declared size: ~25 bytes on the wire, megabytes after.
     if (header.data.length > maxAssemblyBytes(header.originalType)) return;
+    if (this.totalBytes + header.data.length > MAX_TOTAL_BYTES) return;
 
     let asm = this.assemblies.get(key);
     if (asm === undefined) {
       if (this.assemblies.size >= MAX_CONCURRENT) {
-        // Evict the oldest slot to make room.
-        const oldest = this.assemblies.keys().next().value;
-        if (oldest !== undefined) this.assemblies.delete(oldest);
+        // The slot idle longest, not the one started first: a genuine stream
+        // refreshes every few tens of milliseconds, so a burst of fresh junk
+        // streams evicts each other before it reaches a live transfer.
+        const stalest = this.assemblies.keys().next().value;
+        if (stalest !== undefined) this.drop(stalest);
       }
       const now = Date.now();
       asm = {
@@ -325,8 +339,8 @@ export class FragmentManager {
       asm.byteCount + header.data.length >
       maxAssemblyBytes(asm.originalType)
     ) {
-      // Refuse the fragment, keep the assembly. Deleting the stream here made
-      // one cheap packet a remote kill switch for somebody else's transfer:
+      // Refuse the fragment, keep the assembly. Deleting the stream here would
+      // make one cheap packet a remote kill switch for somebody else's transfer:
       // inflate past the ceiling, aim it at any (sender, streamID) observable
       // on the air, and a 90%-complete photo is gone with no error at either
       // end. A genuinely oversized stream still cannot complete and ages out on
@@ -336,10 +350,13 @@ export class FragmentManager {
 
     asm.fragments.set(header.index, header.data);
     asm.byteCount += header.data.length;
+    this.totalBytes += header.data.length;
     if (asm.origin !== origin) asm.origin = null;
     // Progress keeps the assembly alive: a transfer that is still arriving is
     // not a stale one, however long it has been running.
     asm.updatedAt = Date.now();
+    this.assemblies.delete(key);
+    this.assemblies.set(key, asm);
 
     onProgress?.({
       key,
@@ -352,7 +369,7 @@ export class FragmentManager {
     });
 
     if (asm.fragments.size === asm.total) {
-      this.assemblies.delete(key);
+      this.drop(key);
       const parts: Uint8Array[] = [];
       for (let i = 0; i < asm.total; i++) {
         const frag = asm.fragments.get(i);
@@ -383,8 +400,15 @@ export class FragmentManager {
   evictExpired(): void {
     const cutoff = Date.now() - TIMEOUT_MS;
     for (const [key, asm] of this.assemblies) {
-      if (asm.updatedAt < cutoff) this.assemblies.delete(key);
+      if (asm.updatedAt < cutoff) this.drop(key);
     }
+  }
+
+  private drop(key: AssemblyKey): void {
+    const asm = this.assemblies.get(key);
+    if (asm === undefined) return;
+    this.assemblies.delete(key);
+    this.totalBytes -= asm.byteCount;
   }
 
   get size(): number {
@@ -393,6 +417,7 @@ export class FragmentManager {
 
   reset(): void {
     this.assemblies.clear();
+    this.totalBytes = 0;
   }
 }
 

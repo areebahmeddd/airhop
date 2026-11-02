@@ -35,6 +35,7 @@ import {
   resetWalletService,
   settleReclaim,
 } from "../wallet-service";
+import { receiveOffline, strangersTokenAt } from "./wallet-test-helpers";
 
 jest.setTimeout(60_000);
 
@@ -67,16 +68,8 @@ function receiptOf(sats: number): string | undefined {
   return held().find((p) => p.amount === sats)?.receiptTxId;
 }
 
-async function strangersToken(sats: number): Promise<string> {
-  const sender = new Wallet(new Mint(fabric.url), { unit: UNIT });
-  await sender.loadMint();
-  const quote = await sender.createMintQuoteBolt11(sats);
-  const proofs = await sender.mintProofsBolt11(sats, quote);
-  return getEncodedToken({
-    mint: fabric.url,
-    unit: UNIT,
-    proofs,
-  } as unknown as Token);
+function strangersToken(sats: number): Promise<string> {
+  return strangersTokenAt(fabric.url, sats);
 }
 
 // Coins nobody signed, in a real keyset and denomination, carrying no witness:
@@ -98,18 +91,6 @@ function forgedToken(sats: number): string {
       },
     ],
   } as unknown as Token);
-}
-
-// Received with the internet off: stored as a receipt of its own, no swap
-// staged, so only a refresh redeems it.
-async function receiveOffline(token: string): Promise<void> {
-  useSettingsStore.setState({ internetEnabled: false });
-  try {
-    const result = await receiveToken(token);
-    expect(result.outcome).toBe("stored");
-  } finally {
-    useSettingsStore.setState({ internetEnabled: true });
-  }
 }
 
 beforeAll(async () => {

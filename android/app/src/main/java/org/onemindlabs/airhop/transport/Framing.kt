@@ -4,7 +4,8 @@ package org.onemindlabs.airhop.transport
 // big-endian length, then the bytes. An empty frame is the heartbeat. Pure, so
 // the read loops and the tests share one definition of a valid prefix.
 internal object Framing {
-    // One 64 KiB file chunk plus the length prefix.
+    // The longest body a reader accepts (PROTOCOLS.md); senders stop PREFIX_BYTES
+    // short of it.
     const val MAX_FRAME = 65544
     const val PREFIX_BYTES = 4
 

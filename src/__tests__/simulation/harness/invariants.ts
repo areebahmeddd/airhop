@@ -4,7 +4,7 @@
 // a scripted exchange you can write down the expected outcome. For twenty
 // phones, a flapping radio and a lossy relay set you cannot: the number
 // of legal outcomes is enormous, and enumerating them would mean encoding the
-// implementation's behaviour as the expectation, which tests nothing.
+// implementation's behavior as the expectation, which tests nothing.
 //
 // So the assertions here are properties, not outcomes. "Everyone who could hear
 // it ended up with the same messages" is true of a correct system under every
@@ -36,11 +36,12 @@ function key(m: SeenMessage): string {
 // Deliberately compares SETS, not sequences. Two devices can legitimately order
 // two messages sent in the same millisecond differently, because they arrived in
 // different orders and the tie-break is local. Requiring identical sequences
-// would fail on correct behaviour, which is how a harness loses its credibility.
+// would fail on correct behavior, which is how a harness loses its credibility.
+//
 // A device is only expected to hold messages it did not write. The sender's own
 // copy is a DIFFERENT row with a DIFFERENT id: message-thread.tsx mints a local
 // id for the optimistic echo, while the wire copy carries the id
-// sendChannelMessage generated. That is correct behaviour (a broadcaster never
+// sendChannelMessage generated. That is correct behavior (a broadcaster never
 // receives its own broadcast back), so comparing raw id sets across devices
 // would report a failure on a perfectly converged room.
 export function convergence(
@@ -233,9 +234,8 @@ export class StatusWatcher {
           // budget, and the bubble has to stop showing an hourglass over
           // something already discarded. That is queued/sent/carried -> failed,
           // which is a rank DECREASE, permitted here and nowhere else. What must
-          // never happen is a
-          // give-up contradicting a receipt: delivered or read means it arrived,
-          // and no amount of local retrying changes that.
+          // never happen is a give-up contradicting a receipt: delivered or read
+          // means it arrived, and no amount of local retrying changes that.
           const isGiveUp =
             m.status === "failed" &&
             prev !== undefined &&
@@ -296,8 +296,8 @@ export function unreadCoherent(
   return findings;
 }
 
-// The aggregate badge equals the sum of the parts. A badge that disagrees with
-// the list beneath it is the single most common "app feels broken" complaint.
+// The aggregate badge equals the sum of the parts, since a badge that disagrees
+// with the list beneath it reads as a broken app.
 // The badge is computed by the app's own `sumUnread`, which skips muted
 // conversations; the parts are the threads that exist and are not muted, so an
 // unread count left behind for a thread that is gone shows up here too.
@@ -326,9 +326,9 @@ export function badgeMatchesThreads(devices: SimDevice[]): Finding[] {
 
 // Nothing was offered to a link that a link cannot carry. A frame past the
 // 512-byte ATT ceiling is truncated by Android and refused by iOS, so it never
-// decodes on the far side and the transfer dies with no error anywhere. Without
-// this check the fabric carries any size, and a fragment sized past the ceiling
-// would go unnoticed.
+// decodes on the far side and the transfer dies with no error anywhere. The
+// fabric drops such a frame and counts it, so without this check a fragment
+// sized past the ceiling would go unnoticed.
 export function noOversizedFrames(radio: {
   framesOversized: number;
 }): Finding[] {

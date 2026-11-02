@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-ko/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "블루투스 꺼짐 · 스캔하지 않음";
+"widget_label" = "범위 내 피어";
+"widget_description" = "범위 내 피어 수와 센 시각";
+"widget_nobody" = "범위 내에 아무도 없음";
+"widget_as_of" = "%1$@ 기준";
+"widget_paused" = "메시 일시 중지";
+"widget_unset" = "Airhop 열기";
+"widget_stale" = "Airhop을 열어 새로고침";

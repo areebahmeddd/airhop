@@ -1,4 +1,4 @@
-// The native contract for a WebSocket tunnelled over Arti's SOCKS5 proxy, so
+// The native contract for a WebSocket tunneled over Arti's SOCKS5 proxy, so
 // Nostr relay traffic can go through Tor. React Native's own WebSocket cannot
 // speak SOCKS5, which is why this exists.
 //
@@ -8,8 +8,8 @@
 // NativeEventEmitter, mirroring NativeAirhopTor.
 //
 // Absent on Android, where the proxy is installed into the shared OkHttp client
-// instead and covers every socket without a shim. Absent too in any
-// build where the native file was not compiled in. Callers must gate on
+// instead and covers every socket without a shim. Absent too in any build where
+// the native file was not compiled in. Callers must gate on
 // isTorSocketNativeAvailable().
 import type { EventSubscription } from "react-native";
 import { NativeEventEmitter, NativeModules } from "react-native";

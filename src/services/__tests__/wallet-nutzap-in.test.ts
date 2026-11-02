@@ -13,6 +13,7 @@ import type { NostrClient } from "@core/nostr/nostr-client";
 import { KIND_NUTZAP } from "@core/payments/nutzap";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
+import { useBlockedStore } from "@store/blocked-store";
 import {
   accountKey,
   bootstrapWalletStorage,
@@ -40,6 +41,8 @@ const THEIR_PUB = bytesToHex(
   secp256k1.getPublicKey(new Uint8Array(32).fill(8), true),
 );
 const ME = "ab".repeat(32);
+// The mesh peer whose Nostr alias signs the test's nutzaps, for blocking.
+const SENDER_PEER = "0123456789abcdef";
 
 let world: World;
 let fabric: MintFabric;
@@ -268,6 +271,62 @@ describe("a mint that gives no answer about a nutzap", () => {
     await settle();
     expect(held()).toBe(8);
     expect(settled(event.id)).toBe(true);
+  });
+});
+
+describe("a nutzap from someone blocked", () => {
+  afterEach(() => {
+    useBlockedStore.getState().unblockPeer(SENDER_PEER);
+  });
+
+  it("is redeemed without a word", async () => {
+    const announced: number[] = [];
+    stop();
+    stop = startNutzapWatcher({
+      myPubkey: ME,
+      client,
+      onRedeemed: (amount) => announced.push(amount),
+    });
+    const event = nutzapEvent(await lockedProofs(8, OUR_PUB));
+    useBlockedStore.getState().blockPeer(SENDER_PEER);
+    useBlockedStore.getState().blockAlias(`nostr_${event.pubkey}`, SENDER_PEER);
+
+    deliver(event);
+    await settle();
+
+    // The coins are ours either way; only the announcement is withheld.
+    expect(held()).toBe(8);
+    expect(settled(event.id)).toBe(true);
+    expect(announced).toEqual([]);
+
+    useBlockedStore.getState().unblockPeer(SENDER_PEER);
+    const next = nutzapEvent(await lockedProofs(4, OUR_PUB));
+    deliver(next);
+    await settle();
+    expect(announced).toEqual([4]);
+  });
+});
+
+describe("a nutzap whose outputs reuse a counter the mint has signed", () => {
+  it("is redeemed past the clash, not settled unredeemed", async () => {
+    const first = nutzapEvent(await lockedProofs(8, OUR_PUB));
+    deliver(first);
+    await settle();
+    expect(held()).toBe(8);
+
+    // A restore that missed this keyset: the phrase's counters fall behind
+    // outputs the mint has already signed.
+    useWalletStore.getState().resetCounters();
+    const event = nutzapEvent(await lockedProofs(16, OUR_PUB));
+    deliver(event);
+    await settle();
+
+    expect(held()).toBe(24);
+    expect(settled(event.id)).toBe(true);
+    expect(nutzapRows().map((tx) => tx.status)).toEqual([
+      "completed",
+      "completed",
+    ]);
   });
 });
 

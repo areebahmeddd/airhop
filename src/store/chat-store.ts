@@ -68,7 +68,8 @@ export interface ChatMessage {
   isMine: boolean;
   attachment?: ChatAttachment;
   // Local-only notice rendered as centered muted text instead of a bubble
-  // (e.g. "you took a screenshot"). Never sent over the mesh.
+  // (e.g. "you took a screenshot"). Never sent over the mesh, and never inferred
+  // from text: matching on user text lets any peer forge a system row.
   isSystem?: boolean;
   // The catalog key `text` was rendered from, for rows the app writes itself:
   // a location card's summary, a group membership notice, a payment receipt.
@@ -104,6 +105,22 @@ export interface ChatMessage {
     lng: number;
     accuracyM?: number;
     takenAtMs: number;
+  };
+  // A live stream someone is sending, rendered as a live picture until it
+  // ends. Then the field goes and `attachment` holds the recording: this
+  // phone's own reconstruction, replaced by the sender's file if one arrives.
+  // Only ever on a received row; a row still carrying it after a restart is
+  // stale and is dropped (see live-video-receiver.ts).
+  liveVideo?: {
+    // The stream ID, 16 lowercase hex.
+    streamID: string;
+    state: "live" | "reconnecting";
+    startedAtMs: number;
+    width: number;
+    height: number;
+    // Whether START said the stream carries sound; a silent one offers no
+    // sound control.
+    hasAudio: boolean;
   };
   // A Ring alert, tagged with a bell in message-bubble.tsx. `status` covers
   // its full lifecycle: "sent" until acknowledged, "read" once it is.
@@ -182,7 +199,7 @@ interface ChatState {
   // Both halves are needed before the two threads may be folded into one, and
   // the reason is attribution rather than tidiness. Merging is what switches our
   // replies from the pseudonymous per-cell rail onto the durable one, and the
-  // durable inbox recognises a sender only by a Nostr key it already knows.
+  // durable inbox recognizes a sender only by a Nostr key it already knows.
   // (It cannot do otherwise: the envelope carries a sender peer ID, but that
   // field is unauthenticated, so trusting it would let anyone file a message
   // into anyone's thread.)
@@ -242,7 +259,10 @@ interface ChatState {
   // bookkeeping (and the record of which cell we met in) has no one left to
   // serve.
   clearGeoCardExchange: (pubkey: string) => void;
-  addMessage: (msg: ChatMessage) => void;
+  // True when the thread holds the row afterwards, new or already there. False
+  // when it is refused as older than the thread's last clear, or trimmed on
+  // arrival, so an inbound path knows not to recreate the conversation.
+  addMessage: (msg: ChatMessage) => boolean;
   // Advance an outgoing message's delivery status (never downgrades). `atMs`
   // stamps the delivered/read time for the Message info sheet.
   setMessageStatus: (
@@ -257,6 +277,14 @@ interface ChatState {
   // Remove a single message. Used by Undo Send to pull an outgoing message back
   // during its brief hold window, before it is ever transmitted.
   removeMessage: (channel: string, id: string) => void;
+  // Move a live stream's row on: a new state, or its recording in place of
+  // the picture (`liveVideo` undefined and `attachment` set). Touches only a
+  // row that is, or was, a live stream.
+  setLiveVideoRow: (
+    channel: string,
+    id: string,
+    row: Pick<ChatMessage, "liveVideo" | "attachment">,
+  ) => void;
   // Rewrite a row the app itself wrote once its outcome is known (a refused
   // ring reads "Rang, snoozed"). Only rows carrying a systemKey qualify: those
   // are the only words that belong to Airhop rather than to a person.
@@ -325,7 +353,7 @@ function markCleared(
 
 // Default channels shown on first launch, mirroring bitchat's channel hierarchy.
 // Mesh: BLE-only broadcast channel. Location channels: Nostr, sorted by coverage.
-const DEFAULT_CHANNELS = [
+export const DEFAULT_CHANNELS = [
   "#bluetooth",
   "#block",
   "#neighborhood",
@@ -398,15 +426,15 @@ const mmkvStorage = {
 // Coalesce persistence: a write costs the size of the whole store, not the size
 // of what changed.
 //
-// zustand/persist serialises the entire persisted slice on every set(), which
+// zustand/persist serializes the entire persisted slice on every set(), which
 // here is every channel and thread, up to 200 messages each, JSON-stringified
 // and handed to MMKV synchronously on the JS thread. One arriving message pays
 // for the room's entire history.
 //
 // Survivable at conversational speed, and not survivable in the case this app
 // exists for: a phone rejoining a busy mesh takes its missed history in a
-// burst, and every packet in that burst re-serialises everything received so
-// far. Same quadratic append bitchat's conversation-store work removed.
+// burst, and every packet in that burst re-serializes everything received so
+// far. The same quadratic append bitchat's conversation store avoids.
 //
 // Trailing-edge throttle: at most one write per window, and the last value in
 // the window is what lands. Dropping intermediate snapshots is safe because
@@ -451,7 +479,7 @@ export function flushChatPersistence(): void {
 // leaves it armed is a wipe with a queued write of the data it destroyed.
 //
 // The current call order happens to be safe, since clearing the store replaces
-// the snapshot before any timer can run. Cancelling first makes it true by
+// the snapshot before any timer can run. Canceling first makes it true by
 // construction instead of by accident.
 export function dropPendingChatPersistence(): void {
   if (writeTimer !== null) {
@@ -466,9 +494,8 @@ export const useChatStore = create<ChatState>()(
     (set, get) => ({
       channels: DEFAULT_CHANNELS,
       messages: {},
-      // Empty string: user at list, not inside any thread.
-      // Changing from DEFAULT_CHANNELS[0] so new messages to #bluetooth are
-      // counted as unread until the user explicitly opens that channel.
+      // Empty string: user at list, not inside any thread, so new messages to
+      // #bluetooth count as unread until the user explicitly opens that channel.
       activeChannel: "",
       lastThread: "",
       unreadCounts: {},
@@ -532,7 +559,7 @@ export const useChatStore = create<ChatState>()(
           msg.timestampMs <
             Math.min(clearedAt, Date.now()) - CLEARED_CLOCK_SKEW_MS
         ) {
-          return;
+          return false;
         }
         // Decide this before the set() runs: was it already present? Observers
         // must fire exactly once for a new message and never for a duplicate
@@ -613,6 +640,7 @@ export const useChatStore = create<ChatState>()(
         if (stored && !isDuplicate && !msg.isMine && !msg.ring) {
           for (const fn of inboundListeners) fn(msg);
         }
+        return stored;
       },
 
       setMessageStatus(channel, id, status, atMs) {
@@ -690,6 +718,24 @@ export const useChatStore = create<ChatState>()(
           if (existing === undefined) return state;
           const next = existing.filter((m) => m.id !== id);
           if (next.length === existing.length) return state;
+          return { messages: { ...state.messages, [channel]: next } };
+        });
+      },
+
+      setLiveVideoRow(channel, id, row) {
+        set((state) => {
+          const existing = state.messages[channel];
+          if (existing === undefined) return state;
+          let changed = false;
+          const next = existing.map((m) => {
+            if (m.id !== id || m.isMine) return m;
+            if (m.liveVideo === undefined && m.attachment?.type !== "video") {
+              return m;
+            }
+            changed = true;
+            return { ...m, ...row };
+          });
+          if (!changed) return state;
           return { messages: { ...state.messages, [channel]: next } };
         });
       },
@@ -807,8 +853,8 @@ export const useChatStore = create<ChatState>()(
       },
 
       // Wipes a channel's messages and unread count but keeps the channel
-      // itself (and its description/transport/visibility/pin state) intact,
-      // distinct from removeChannel, which deletes the channel entirely.
+      // itself (and its key, pin and mute) intact, distinct from removeChannel,
+      // which deletes the channel entirely.
       clearChannelMessages(channel: string) {
         set((state) => {
           const messages = { ...state.messages };
@@ -821,13 +867,6 @@ export const useChatStore = create<ChatState>()(
         });
       },
 
-      // Fold one thread into another once two channel keys are known to be
-      // the same person (an in-person scan, or a mutual geohash card exchange).
-      //
-      // `from` may be the thread the user has open: a conversation carried over
-      // Nostr is merged the moment the scan lands. So the pointers move with
-      // the messages, or the open thread renders a channel that no longer
-      // exists.
       noteGeoCardExchange(
         pubkey: string,
         half: { theirPeerID?: string; sentMine?: boolean },
@@ -873,6 +912,13 @@ export const useChatStore = create<ChatState>()(
         }));
       },
 
+      // Fold one thread into another once two channel keys are known to be
+      // the same person (an in-person scan, or a mutual geohash card exchange).
+      //
+      // `from` may be the thread the user has open: a conversation carried over
+      // Nostr is merged the moment the scan lands. So the pointers move with
+      // the messages, or the open thread renders a channel that no longer
+      // exists.
       mergeChannel(from: string, to: string) {
         if (from === to) return;
         // Reading either name means reading the merged conversation, so nothing

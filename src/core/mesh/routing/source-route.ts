@@ -25,7 +25,7 @@ function toHex(bytes: Uint8Array): string {
 // The peer this packet should go to next, or null when it is not source-routed
 // through us and should be handled by the ordinary flood path.
 //
-// Returns null - meaning "flood" - for every case that is not an unambiguous
+// Returns null, meaning "flood", for every case that is not an unambiguous
 // instruction addressed to us:
 //
 //   * no route, or a v1 packet (the HAS_ROUTE flag is not valid below v2 and

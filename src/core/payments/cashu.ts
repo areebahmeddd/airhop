@@ -463,7 +463,7 @@ export function verifyTokenOffline(
     }
     const keyset = keyChain.getKeyset(proof.id);
     // An inactive keyset is listed without keys (NUT-01 serves only active
-    // ones); the mint still honours it, so this is no evidence of forgery.
+    // ones); the mint still honors it, so this is no evidence of forgery.
     if (!keyset.hasKeys) {
       keysMissing = true;
       continue;
@@ -652,10 +652,10 @@ export function selectProofsForAmount(
 
   // Unverified first, then largest: an unverified proof's double-spend risk
   // grows while held, so pass it on toward a mint sooner than we would reach
-  // one (the recipient sees it as unverified). "They swap at once" does not
-  // apply: this app is for recipients with no signal. Wrong for a melt, where
-  // the mint checks every input and an unverified one only raises the failure
-  // odds, so `payLightningInvoice` selects with cashu-ts instead.
+  // one (the recipient sees it as unverified, and may have no signal either).
+  // Wrong for a melt, where the mint checks every input and an unverified one
+  // only raises the failure odds, so `payLightningInvoice` selects with cashu-ts
+  // instead.
   const ranked = [...proofs].sort(
     (a, b) =>
       Number(a.verified === true) - Number(b.verified === true) ||

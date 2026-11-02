@@ -114,7 +114,7 @@ const SKIP_FILES = [
   // Identity derivation. The word lists are wire-visible: the same peer must
   // resolve to the same name on every device and in bitchat.
   "src/utils/username.ts",
-  // Licence texts, quoted verbatim in the original.
+  // License texts, quoted verbatim in the original.
   "src/data/licenses.ts",
   // Legal copy. English is the authoritative version; the reader chrome around
   // it is translated, the clauses are not. See docs/spec/ARCHITECTURE.md.
@@ -126,6 +126,9 @@ const SKIP_FILES = [
   // Bridge lines, quoted verbatim from upstream. Wire-visible: a translated
   // word here would be a bridge that does not resolve.
   "src/data/bridges.ts",
+  // The globe's packed geometry and Natural Earth's place names: map data,
+  // and place names are proper nouns.
+  "src/data/world-geometry.ts",
   // The catalog itself.
   "src/i18n/",
   // Diagnostics bundle for maintainers triaging bug reports, not user-facing text.
@@ -141,10 +144,14 @@ const SKIP_DIRS = ["__tests__", "__mocks__", "node_modules"];
 
 // Literals that look like copy but are not.
 const IGNORE = new Set([
-  // Unit symbols, not words. `format.ts` localises the digits and separator
+  // Unit symbols, not words. `format.ts` localizes the digits and separator
   // around them, which is the part that varies.
   "KiB",
   "MiB",
+  "km",
+  // Font families the globe asks Skia's font manager for by name.
+  "Helvetica",
+  "Menlo",
   "Ed25519 + X25519",
   "AES-256",
   "GitHub",
@@ -153,7 +160,7 @@ const IGNORE = new Set([
   "GitHub Sponsors",
   "Areeb Ahmed",
   // The license's formal name, substituted into `released_under` as a link.
-  // Same rule as the store names above: SPDX identifiers are not localised, and
+  // Same rule as the store names above: SPDX identifiers are not localized, and
   // a translated "MIT License" names a license that does not exist.
   "MIT License",
   // A broadcast marker, read the same everywhere, like "ON AIR". Deliberate:
@@ -167,7 +174,7 @@ const IGNORE = new Set([
   // The transmitted /slap payload, which bitchat matches as an English
   // substring. Extracting it stops the two apps understanding each other.
   "around a bit with a large trout",
-  // The transmitted screenshot notice, which bitchat recognises by the same
+  // The transmitted screenshot notice, which bitchat recognizes by the same
   // English words. The reader's own app renders it in their language.
   "took a screenshot *",
   // Invariant breaches in the coin selector, thrown at a stack trace and never
@@ -177,7 +184,7 @@ const IGNORE = new Set([
   "melt selection did not map back to stored proofs",
 ]);
 
-// Capitalised words that are identifiers, never translated: compared in code,
+// Capitalized words that are identifiers, never translated: compared in code,
 // or shown as is like a currency code. Kept narrow on purpose: every entry is a
 // word the audit no longer reads, so a label spelled the same way would slip
 // past.
@@ -193,7 +200,7 @@ const IDENTIFIERS = new Set([
   "NFC",
   // The unit label for bitcoin, shown as is like the currency code "USD".
   "BTC",
-  // Compass codes naming a geohash's neighbours. The chips show catalog keys.
+  // Compass codes naming a geohash's neighbors. The chips show catalog keys.
   "NE",
   "SE",
   "SW",
@@ -253,7 +260,7 @@ function looksLikeCopy(value) {
   // Identifiers, keys, paths, css-ish values, protocol constants.
   if (/^[a-z0-9_\-./#@:%+*]+$/.test(value)) return false;
   // All capitals is a constant only with a digit or an underscore in it, or
-  // when it is a known identifier. A bare capitalised word such as "URGENT" is
+  // when it is a known identifier. A bare capitalized word such as "URGENT" is
   // a label someone meant to show.
   if (
     /^[A-Z0-9_]+$/.test(value) &&
@@ -269,7 +276,7 @@ function looksLikeCopy(value) {
   if (/^[0-9a-f]{8,}$/i.test(value)) return false;
   // Already extracted: a translation key.
   if (/^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+$/.test(value)) return false;
-  // Needs a space or a capitalised opening, i.e. it reads like a phrase.
+  // Needs a space or a capitalized opening, i.e. it reads like a phrase.
   return value.includes(" ") || /^[A-Z]/.test(value);
 }
 
@@ -321,7 +328,7 @@ function collect(file) {
 //
 //   Template literals, since the scanner bails on any line holding `${`.
 //
-//   String literals INSIDE an interpolation, the blind spot that bail creates.
+//   String literals inside an interpolation, the blind spot that bail creates.
 //   Prose in a conditional between two spans sits on a line already given up on:
 //   `${urgent ? "Urgent notice · " : "Notice · "}${content}`.
 //

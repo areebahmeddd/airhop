@@ -12,9 +12,7 @@
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("./harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -193,28 +191,29 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
     20_000,
   );
 
-  // Establish alice as a settled direct neighbour before the flood starts.
+  // Establish alice as a settled direct neighbor before the flood starts.
   //
   // The property under test is that a flood cannot evict an ESTABLISHED
-  // neighbour. Bob can learn alice's identity from a relayed announce (which is
+  // neighbor. Bob can learn alice's identity from a relayed announce (which is
   // enough to display her messages) before her direct announce has bound his
   // link to her, and flooding in that window would be testing the setup rather
-  // than the defence.
+  // than the defense.
   const established = await waitForCoarse(
     s.world,
     () => bob.isDirectPeer(alice.peerID),
     30_000,
   );
   s.check(
-    "alice is an established direct neighbour before the flood",
+    "alice is an established direct neighbor before the flood",
     established,
     `bob sees alice as direct: ${String(bob.isDirectPeer(alice.peerID))}`,
   );
 
   // Each fake peer is internally consistent: a real keypair, a peer ID properly
   // derived from it, a correctly signed announce. Nothing about any one of them
-  // is detectably wrong - which is exactly what makes a Sybil flood a resource
+  // is detectably wrong, which is exactly what makes a Sybil flood a resource
   // problem rather than a signature problem.
+  //
   // Past the 200-peer cap, by enough to show the cap rather than the flood is
   // what stops the list.
   const fakes = 250;
@@ -275,7 +274,7 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
   // the cap are peers we hold an actual BLE link to, which cannot be invented.
   // The floor is the control: a list that never filled to the cap would mean
   // the fakes were refused for some other reason and the cap went untested.
-  const directNeighbours = 2;
+  const directNeighbors = 2;
   s.check(
     "the flood filled the list to its cap",
     bob.peerCount() >= 200,
@@ -283,8 +282,8 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
   );
   s.check(
     "the peer list is bounded rather than growing with the flood",
-    bob.peerCount() <= 200 + directNeighbours,
-    `bob holds ${bob.peerCount()} peers after ${String(fakes)} fakes announced (cap 200 + ${directNeighbours} direct)`,
+    bob.peerCount() <= 200 + directNeighbors,
+    `bob holds ${bob.peerCount()} peers after ${String(fakes)} fakes announced (cap 200 + ${directNeighbors} direct)`,
   );
   s.check(
     "the real message is still in the thread",
@@ -519,7 +518,7 @@ test("C07 seeded soak: eight phones, hundreds of random events", async () => {
   );
 
   // Everything a phone or the world can plausibly do, drawn at random. The
-  // point is not any individual action - it is that no ORDERING of them breaks
+  // point is not any individual action, it is that no ORDERING of them breaks
   // an invariant.
   const sentTexts: string[] = [];
   let sendSeq = 0;

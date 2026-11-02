@@ -7,14 +7,14 @@
      rect, scaled to the viewport below. No raster densities to keep in step and
      nothing to re-export when a density is added.
 
-     To regenerate: read the rects out of that SVG, normalise them against the
+     To regenerate: read the rects out of that SVG, normalize them against the
      mark's bounding box (11 cells wide by 6 tall), and emit one
      "M<x>,<y>h<c>v<c>h-<c>z" per cell.
 -->
 <!--
      The monochrome layer Android 13+ uses when the user turns on themed icons.
      The system tints it from the wallpaper palette and reads only the alpha, so
-     the fill colour here is arbitrary.
+     the fill color here is arbitrary.
 
      6dp per cell puts the mark at 66x36, which fits the 66dp safe zone of the
      108dp canvas exactly. Anything outside that zone is cropped by the launcher

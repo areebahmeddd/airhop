@@ -40,13 +40,6 @@ export const useAlertStore = create<AlertState>((set) => ({
       // runs at the moment the alert is raised and `t` resolves the language
       // then. A default button built once at import would freeze in whichever
       // language the app started in.
-      //
-      // This was a hardcoded "OK" and shipped English into every alert that
-      // does not pass its own buttons, in all thirty languages. `i18n:audit`
-      // could not see it: its copy heuristic wants a capitalised word or a run
-      // of words, and "OK" is two characters. Found by running the
-      // pseudolocale, where every string around it was bracketed and this one
-      // was not.
       buttons:
         buttons && buttons.length > 0 ? buttons : [{ text: t("common.ok") }],
     });
@@ -57,8 +50,7 @@ export const useAlertStore = create<AlertState>((set) => ({
   },
 }));
 
-// Same call shape as RN's `Alert.alert(title, message?, buttons?)`, so
-// existing call sites swap over by only changing the import.
+// Same call shape as RN's `Alert.alert(title, message?, buttons?)`.
 export function showAlert(
   title: string,
   message?: string,

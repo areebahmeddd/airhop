@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Din identitet är ett {ed25519}-nyckelpar som skapas på din enhet och sparas i {ios_keychain} eller {android_keystore}. Det finns inga konton, ingen registrering och inget som rör en server, det vill säga appen kan användas som en engångsapp som inte lämnar något som leder tillbaka till dig när den raderats.",
   "home.about.body.crypto":
-    "Varje session använder {noise}-protokollet för en autentiserad handskakning. Sparade meddelanden använder {ratchet}-algoritmen, det vill säga även om din enhet komprometteras senare förblir dina tidigare meddelanden oläsbara. Nödradering förstör alla nycklar och meddelanden på under en sekund.",
+    "Varje session använder {noise}-protokollet för en autentiserad handskakning. Direktmeddelanden i realtid mellan Airhop-telefoner använder {ratchet}-algoritmen, det vill säga en nyckel som läcker senare kan inte öppna redan skickade meddelanden. Nödradering förstör alla nycklar och meddelanden på under en sekund.",
   "home.about.body.internet":
     "När du och en kontakt är utanför Bluetooth-räckvidd fungerar {nostr}-reläer som en brygga över internet, med direktmeddelanden inslagna enligt {nip17}, så att meshet når hela världen så länge ni båda är uppkopplade. Stöd för {tor} finns på både iOS och Android, via {arti}, med {obfs4}-, {snowflake}- och {webtunnel}-bryggor för nät som blockerar Tor.",
   "home.about.optional.title": "Airhop har valfria funktioner som du kan slå på:",
@@ -168,9 +168,9 @@ const strings: Strings = {
     "Inbjudningslänkar till ett rum, eller en signerad lista på upp till 16.",
   "home.features.messaging.board.name": "Anslagstavla",
   "home.features.messaging.board.line": "Anslag fästa vid ett område i upp till sju dagar.",
-  "home.features.messaging.voice.name": "Direktsänd röst",
+  "home.features.messaging.voice.name": "Direktsänd röst och video",
   "home.features.messaging.voice.line":
-    "Håll in mikrofonen och prata med alla inom räckhåll, som en walkie-talkie.",
+    "Håll in mikrofonen för att prata, eller sänd live med kameran, till alla inom räckhåll.",
   "home.features.messaging.notes.name": "Röstmeddelanden",
   "home.features.messaging.notes.line": "Inspelat ljud, snabbare än att skriva en vägbeskrivning.",
   "home.features.messaging.files.name": "Foton, video och filer",

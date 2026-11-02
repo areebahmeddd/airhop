@@ -24,6 +24,11 @@ import {
   FileTransferService,
   INCOMING_FILE_PREFIX,
 } from "../file-transfer-service";
+import { sweepMediaIfDue } from "../media-retention";
+
+// When the sweep is due is media-retention.test.ts; here only that a received
+// file asks.
+jest.mock("../media-retention", () => ({ sweepMediaIfDue: jest.fn() }));
 
 // The service only touches expo-file-system on the RECEIVE path: one flat
 // in-memory cache directory, named files, and a switch to make writes fail.
@@ -410,7 +415,7 @@ describe("radio backpressure", () => {
     expect(outcome).toHaveBeenCalledWith(true);
   });
 
-  it("does not resurrect a transfer cancelled mid-flight", async () => {
+  it("does not resurrect a transfer canceled mid-flight", async () => {
     const { service } = makeService(false);
     const outcome = jest.fn();
 
@@ -734,6 +739,16 @@ describe("receiving a file", () => {
     expect(useChatStore.getState().messages["#bluetooth"]).toHaveLength(1);
   });
 
+  // A phone receiving in the background for weeks never returns to the app,
+  // where the retention sweep otherwise runs.
+  it("asks for the retention sweep as a received file is stored", async () => {
+    (sweepMediaIfDue as jest.Mock).mockClear();
+    useChatStore.getState().addChannel("#bluetooth");
+    makeService().service.onFileTransfer(broadcast(photo()));
+    await settle();
+    expect(sweepMediaIfDue).toHaveBeenCalledTimes(1);
+  });
+
   // The shown name is the sender's word; nothing in it may disguise what it is.
   it("stores a received name without its bidi controls, under the validated type", async () => {
     const tlv = encodeFilePacket({
@@ -761,7 +776,7 @@ describe("receiving a file", () => {
   });
 
   // A DM is addressed by recipient ID and never tagged, so a tag naming one is
-  // a forgery: it would put the file in that contact's thread, unlabelled.
+  // a forgery: it would put the file in that contact's thread, unlabeled.
   it("refuses a public file tagged with a direct message thread", async () => {
     const contact = "dm:99aa99aa99aa99aa";
     useChatStore.getState().addChannel(contact);

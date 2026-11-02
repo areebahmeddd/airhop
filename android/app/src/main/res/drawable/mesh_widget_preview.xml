@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget picker's preview below API 31, which takes an image rather than
+     a layout: the empty card and the mark, with no made-up count on it. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item
+      android:width="110dp"
+      android:height="110dp"
+      android:drawable="@drawable/mesh_widget_card"/>
+  <item
+      android:width="22dp"
+      android:height="12dp"
+      android:top="14dp"
+      android:start="14dp"
+      android:gravity="top|start"
+      android:drawable="@drawable/mesh_widget_mark"/>
+</layer-list>

@@ -1,11 +1,12 @@
-// Gossiped one-time prekey bundles (MessageType 0x24).
+// One-time prekey bundles (MessageType 0x24).
 //
 // Byte-identical to bitchat PrekeyBundle.swift. A bundle publishes a batch of
 // one-time Curve25519 public prekeys bound to the owner's Noise static key by an
 // Ed25519 signature over domain-prefixed canonical bytes. Anyone holding the
 // owner's announce-verified signing key can verify a bundle offline, which is
-// what lets bundles spread and persist mesh-wide via gossip sync while the owner
-// is away. Senders seal courier mail to one of these prekeys (one-way Noise X)
+// what lets a bundle travel while its owner is away; Airhop floods its own to
+// each new link and does not carry them in gossip sync (PROTOCOLS.md section
+// 5.2). Senders seal courier mail to one of these prekeys (one-way Noise X)
 // instead of the owner's long-lived static key, restoring forward secrecy for
 // asynchronous first contact.
 //

@@ -11,10 +11,28 @@ jest.mock("../mesh-service", () => ({
 
 import { encodeQRContent } from "@core/crypto/contact-exchange";
 import { peerIDFromNoiseKey } from "@core/crypto/peer-id";
+import { base64UrlToBytes, bytesToBase64Url } from "@core/encoding/base64";
 import { generateChannelKey } from "@core/mesh/rooms/channel-crypto";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useContactsStore } from "@store/contacts-store";
 import { applyAirhopLink } from "../link-router";
+
+const signingPrivKey = new Uint8Array(32).fill(4);
+
+function signedCard(noisePubKey: Uint8Array): string {
+  return encodeQRContent(
+    {
+      peerID: peerIDFromNoiseKey(noisePubKey),
+      noisePubKey,
+      signingPubKey: ed25519.getPublicKey(signingPrivKey),
+      nickname: "someone",
+      nostrPubKey: new Uint8Array(32).fill(5),
+    },
+    signingPrivKey,
+  );
+}
 
 beforeEach(() => {
   useChatStore.getState().clearAll();
@@ -56,13 +74,7 @@ test("a link without a key joins the public room", () => {
 test("a card naming a different key from the one held is refused as a conflict", () => {
   const noisePubKey = new Uint8Array(32).fill(3);
   const peerID = peerIDFromNoiseKey(noisePubKey);
-  const card = encodeQRContent({
-    peerID,
-    noisePubKey,
-    signingPubKey: new Uint8Array(32).fill(4),
-    nickname: "someone",
-    nostrPubKey: new Uint8Array(32).fill(5),
-  });
+  const card = signedCard(noisePubKey);
   mockMeshUp = true;
   mockAddVerifiedContact.mockReturnValue("conflict");
 
@@ -75,4 +87,39 @@ test("a card naming a different key from the one held is refused as a conflict",
   expect(applyAirhopLink({ kind: "card", card })).toEqual({
     refused: "invalid",
   });
+});
+
+test("a signed card is imported with its Nostr key", () => {
+  const noisePubKey = new Uint8Array(32).fill(3);
+  const peerID = peerIDFromNoiseKey(noisePubKey);
+  mockMeshUp = true;
+  mockAddVerifiedContact.mockReturnValue("added");
+
+  expect(
+    applyAirhopLink({ kind: "card", card: signedCard(noisePubKey) }),
+  ).toEqual({ channel: `dm:${peerID}` });
+  expect(useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex).toBe(
+    bytesToHex(new Uint8Array(32).fill(5)),
+  );
+});
+
+// A real person's card with someone else's Nostr key passes every mesh key
+// check, and once the safety number matched it would route their internet DMs
+// to the forger. The signature is what refuses it, before anything is seeded.
+test("a card with a substituted Nostr key is refused as invalid", () => {
+  const noisePubKey = new Uint8Array(32).fill(3);
+  const peerID = peerIDFromNoiseKey(noisePubKey);
+  const bytes = base64UrlToBytes(
+    signedCard(noisePubKey).slice("airhop:v1/".length),
+  );
+  bytes.set(new Uint8Array(32).fill(0xee), bytes.length - 64 - 32);
+  const forged = "airhop:v1/" + bytesToBase64Url(bytes);
+  mockMeshUp = true;
+  mockAddVerifiedContact.mockReturnValue("added");
+
+  expect(applyAirhopLink({ kind: "card", card: forged })).toEqual({
+    refused: "invalid",
+  });
+  expect(mockAddVerifiedContact).not.toHaveBeenCalled();
+  expect(useContactsStore.getState().getContact(peerID)).toBeUndefined();
 });

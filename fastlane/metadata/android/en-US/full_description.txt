@@ -1,6 +1,6 @@
 Offline doesn't mean disconnected.
 
-Airhop lets nearby phones communicate directly over Bluetooth. Chat, share photos and videos, make offline payments, and talk with live push-to-talk, all without mobile data, Wi-Fi, or servers.
+Airhop lets nearby phones communicate directly over Bluetooth. Chat, share photos and videos, make offline payments, talk with live push-to-talk, and go live on camera, all without mobile data, Wi-Fi, or servers.
 
 No account. No phone number. No server. Just open the app and you're reachable.
 
@@ -11,6 +11,7 @@ No account. No phone number. No server. Just open the app and you're reachable.
 - Private groups and invite-only channels
 - Photo, video, and voice note sharing
 - Live push-to-talk, like a walkie-talkie
+- Live video to everyone nearby or to one contact
 - Bulletin boards for persistent local announcements
 - Send and receive Cashu ecash
 
@@ -25,10 +26,10 @@ Airhop speaks the same protocol as bitchat. Airhop and bitchat users automatical
 
 ## Privacy and security
 
-- Open source under the MIT License
-- Every message is digitally signed to prevent impersonation
-- Attachments are automatically deleted after seven days
-- Panic wipe permanently deletes all messages and cryptographic keys stored on the device
+- Open source under the MIT License.
+- Every message is digitally signed to prevent impersonation.
+- Attachments are automatically deleted after seven days.
+- Panic wipe permanently deletes all messages and cryptographic keys stored on the device.
 
 ## What Airhop doesn't promise
 

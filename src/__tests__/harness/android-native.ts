@@ -4,11 +4,11 @@
 // It tracks the Kotlin branch for branch, so a scenario failure is evidence
 // about the real module rather than about a convenient approximation. What it
 // CANNOT do is prove the Kotlin compiles or that the platform behaves as
-// modelled; that still needs a device build. What it does prove is that the
-// logic, given the OS behaviours in os.ts, produces the right sequence of calls
+// modeled; that still needs a device build. What it does prove is that the
+// logic, given the OS behaviors in os.ts, produces the right sequence of calls
 // and the right state.
 //
-// Audit anchors, by Kotlin member:
+// Anchors, by Kotlin member:
 //   bluetoothManager / adapter   lazy and nullable
 //   adapterStateReceiver         ON / TURNING_OFF / OFF
 //   initialize()                 registers the receiver (NOT init{})
@@ -169,7 +169,7 @@ export class AndroidBleModule implements BleNativeModule {
   // failing with no instance, which the runtime check stands for here. The
   // listener runs later on the JS thread, out of Kotlin's reach, and a throw
   // there is a fatal JS exception that a release build turns into a crash. So a
-  // listener that throws kills the modelled process rather than vanishing,
+  // listener that throws kills the modeled process rather than vanishing,
   // which is what lets every "process survived" verdict fail.
   private emitEvent(name: string, body: Record<string, unknown>): void {
     if (this.os.crashed !== null) return;
@@ -219,9 +219,9 @@ export class AndroidBleModule implements BleNativeModule {
   // it, so this is the only thing there is to check.
   powerMode = "balanced";
 
-  // Kotlin setPowerMode. Note what it does NOT do: report a link or adapter
-  // change. A duty-cycled scan is still "scanning" as far as JS is concerned,
-  // and saying otherwise would have the reconciler try to fix a working state.
+  // Kotlin setPowerMode. It reports no link or adapter change: a duty-cycled
+  // scan is still "scanning" as far as JS is concerned, and saying otherwise
+  // would have the reconciler try to fix a working state.
   async setPowerMode(mode: string): Promise<void> {
     if (mode === this.powerMode) return;
     this.powerMode = mode;
@@ -329,7 +329,7 @@ export class AndroidBleModule implements BleNativeModule {
     } catch {
       return rejectWith(
         "PERMISSION_DENIED",
-        "stack has not honoured the grant yet",
+        "stack has not honored the grant yet",
       );
     }
     this.setupGattServer();
@@ -338,7 +338,7 @@ export class AndroidBleModule implements BleNativeModule {
     this.radioPort?.radiosChanged();
   }
 
-  // Note what is absent: the foreground service.
+  // Leaves the foreground service alone.
   async stopAdvertising(): Promise<void> {
     this.advertising = false;
     this.gattServer = null;
@@ -388,7 +388,7 @@ export class AndroidBleModule implements BleNativeModule {
     } catch {
       return rejectWith(
         "PERMISSION_DENIED",
-        "stack has not honoured the grant yet",
+        "stack has not honored the grant yet",
       );
     }
     this.scanning = true;
@@ -432,11 +432,11 @@ export class AndroidBleModule implements BleNativeModule {
   }
 
   addListener(): void {
-    /* NativeEventEmitter contract */
+    // NativeEventEmitter contract
   }
 
   removeListeners(): void {
-    /* NativeEventEmitter contract */
+    // NativeEventEmitter contract
   }
 
   // ---- shared radio medium ----

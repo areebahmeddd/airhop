@@ -9,7 +9,6 @@
 //
 // Runs the real wallet service against the simulated mint.
 
-import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { t } from "@i18n";
 import { useSettingsStore } from "@store/settings-store";
 import {
@@ -33,6 +32,7 @@ import {
   reconcile,
   resetWalletService,
 } from "../wallet-service";
+import { strangersTokenAt } from "./wallet-test-helpers";
 
 jest.setTimeout(60_000);
 
@@ -59,16 +59,8 @@ function rows(kind: string) {
   return useWalletStore.getState().history.filter((tx) => tx.kind === kind);
 }
 
-async function strangersToken(sats: number): Promise<string> {
-  const sender = new Wallet(new Mint(fabric.url), { unit: UNIT });
-  await sender.loadMint();
-  const quote = await sender.createMintQuoteBolt11(sats);
-  const proofs = await sender.mintProofsBolt11(sats, quote);
-  return getEncodedToken({
-    mint: fabric.url,
-    unit: UNIT,
-    proofs,
-  } as unknown as Token);
+function strangersToken(sats: number): Promise<string> {
+  return strangersTokenAt(fabric.url, sats);
 }
 
 beforeAll(async () => {

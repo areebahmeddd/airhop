@@ -21,6 +21,10 @@ import type { WifiFastPath } from "@store/mesh-state-store";
 // depends on this transport, and polling a radio in a pocket has a cost.
 const BACKOFF_MS = [500, 1500, 4000, 10_000, 30_000] as const;
 
+// Retries of a permission refusal before the ladder stops: every rung short of
+// the 30 s cap, about sixteen seconds in all.
+const PERMISSION_RETRIES = BACKOFF_MS.length - 1;
+
 // A run shorter than this that ends reads as flapping, and the ladder keeps
 // climbing rather than resetting.
 const STABLE_RUN_MS = 60_000;
@@ -36,9 +40,10 @@ const UNSTABLE_RUN_MS = 3 * 60_000;
 const UNSTABLE_RUNS = 3;
 const UNSTABLE_WINDOW_MS = 15 * 60_000;
 
-// Why native reported the transport gone: the radio switched off, or the
+// Why Android reported the transport gone: the radio switched off, or the
 // framework ended the session under a live radio. Only the second is the
-// device's fault, so only the second counts toward the breaker.
+// device's fault, so only the second counts toward the breaker. iOS names no
+// reason: its drops are not that chipset quirk and never count.
 export type WiFiDropReason = "radio" | "session";
 
 // Matched on `code`, never on message text, which is a UI concern.
@@ -330,8 +335,14 @@ export class WiFiController {
             ? "permission"
             : "unknown",
       );
-      // A permission refusal is retried too: unlike Bluetooth there is no
-      // banner asking the user to act, so this transport has only the retry.
+      // A permission refusal is retried for a while, since a grant can land a
+      // moment after the attach that needed it, then left to refresh(), which a
+      // grant or a resume calls, and to the next start. Retried for good, it
+      // polls every 30 s for the life of the process on Android 12 and 12L,
+      // where discovery needs a location grant Airhop never asks for there.
+      if (failure === "permission" && this.attempt >= PERMISSION_RETRIES) {
+        return;
+      }
       this.scheduleRetry();
       return;
     }

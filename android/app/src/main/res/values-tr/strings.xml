@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mesh ağı</string>
   <string name="mesh_channel_description">Airhop mesh\'ini arka planda etkin tutar</string>
   <string name="mesh_notification_title">Airhop mesh\'i etkin</string>
@@ -8,4 +8,16 @@
     <item quantity="one">menzilde %1$s eş</item>
     <item quantity="other">menzilde %1$s eş</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth kapalı · taranmıyor</string>
+  <string name="widget_label">Menzildeki eşler</string>
+  <string name="widget_description">Menzildeki eşler ve sayıldıkları saat</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">eş menzilde</item>
+    <item quantity="other">eş menzilde</item>
+  </plurals>
+  <string name="widget_nobody">menzilde kimse yok</string>
+  <string name="widget_as_of">%1$s itibarıyla</string>
+  <string name="widget_paused">Mesh duraklatıldı</string>
+  <string name="widget_unset">Airhop\'u aç</string>
+  <string name="widget_stale">Yenilemek için Airhop\'u aç</string>
 </resources>

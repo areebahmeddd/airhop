@@ -1,9 +1,9 @@
 // Blocking must mean the same thing in a location channel as on the mesh.
 //
-// On BLE it already did: `routePacket` drops every non-ANNOUNCE packet from a
-// blocked sender at one chokepoint. Nothing equivalent existed on the Nostr
-// side, so a blocked person kept posting into #city, kept counting toward the
-// participant total, and could still open a geo DM.
+// On BLE `routePacket` drops every non-ANNOUNCE packet from a blocked sender at
+// one chokepoint. The Nostr side has none, so each way in checks for itself, and
+// one that does not lets a blocked person post into #city, count toward the
+// participant total, or open a geo DM.
 //
 // Three ingress points carry a stranger's words into a location channel, each
 // pinned below with a control case beside it so a pass cannot just mean

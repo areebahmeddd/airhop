@@ -44,7 +44,7 @@ import {
 
 // The production derivation, pinned to a known vector: gossip sync and DM
 // addressing key on it, and bitchat derives it identically.
-describe("Peer ID derivation", () => {
+describe("peer ID derivation", () => {
   test("is the first 8 bytes of SHA-256 over the Noise key, as hex", () => {
     // SHA-256(0x00 * 32) = 66687aadf862bd776c8fc18b8e9f8e20...
     expect(peerIDFromNoiseKey(new Uint8Array(32))).toBe("66687aadf862bd77");
@@ -76,7 +76,7 @@ describe("Peer ID derivation", () => {
 //   payload
 //   signature   (64 bytes, only if hasSignature)
 
-describe("Packet header byte layout (v2)", () => {
+describe("packet header byte layout (v2)", () => {
   const SENDER = new Uint8Array([
     0xaa, 0xbb, 0xcc, 0xdd, 0x11, 0x22, 0x33, 0x44,
   ]);
@@ -108,7 +108,6 @@ describe("Packet header byte layout (v2)", () => {
     expect(buf[1]).toBe(PacketType.ANNOUNCE));
   test("byte[2] is TTL", () => expect(buf[2]).toBe(7));
 
-  // Timestamp: u64 BE at [3-10]
   test("bytes[3-10] are timestamp u64 BE", () => {
     const view = new DataView(buf.buffer);
     const hi = view.getUint32(3, false);
@@ -117,17 +116,14 @@ describe("Packet header byte layout (v2)", () => {
     expect(ts).toBe(0x12345678);
   });
 
-  // Flags at [11]
   test("byte[11] is flags", () =>
     expect(buf[11]).toBe(Flags.SIGNED | Flags.HAS_RECIPIENT));
 
-  // PayloadLength u32 BE at [12-15]
   test("bytes[12-15] are payloadLength u32 BE", () => {
     const view = new DataView(buf.buffer);
     expect(view.getUint32(12, false)).toBe(PAYLOAD.length);
   });
 
-  // Variable section starts at [16]
   test("bytes[16-23] are senderID", () =>
     expect(Array.from(buf.slice(16, 24))).toEqual(Array.from(SENDER)));
   test("bytes[24-31] are recipientID (hasRecipient=1)", () =>
@@ -164,7 +160,7 @@ describe("Packet header byte layout (v2)", () => {
 // ---- Flag Bit Values ----
 // Must match bitchat BinaryProtocol.Flags exactly.
 
-describe("Flag bit values", () => {
+describe("flag bit values", () => {
   test("HAS_RECIPIENT = 0x01", () => expect(Flags.HAS_RECIPIENT).toBe(0x01));
   test("SIGNED = 0x02", () => expect(Flags.SIGNED).toBe(0x02));
   test("COMPRESSED = 0x04", () => expect(Flags.COMPRESSED).toBe(0x04));
@@ -174,7 +170,7 @@ describe("Flag bit values", () => {
 
 // ---- Packet Round-Trip ----
 
-describe("Packet encode/decode round-trip", () => {
+describe("packet encode/decode round-trip", () => {
   test("all fields survive encode -> decode (unicast with route)", () => {
     const hop1 = new Uint8Array(8).fill(0xcc);
     const hop2 = new Uint8Array(8).fill(0xdd);
@@ -224,7 +220,7 @@ describe("Packet encode/decode round-trip", () => {
 // encode with ttl=0, isRSR=false, hasSignature=0, then sign the bytes.
 // This lets relay nodes decrement TTL without invalidating the signature.
 
-describe("Signature coverage (relay TTL compat)", () => {
+describe("signature coverage (relay TTL compat)", () => {
   const privKey = new Uint8Array(32).fill(0xcc);
   const pubKey = ed25519.getPublicKey(privKey);
 
@@ -241,7 +237,7 @@ describe("Signature coverage (relay TTL compat)", () => {
     };
   }
 
-  test("TTL=0 still verifies (TTL normalised to 0 during signing)", () => {
+  test("TTL=0 still verifies (TTL normalized to 0 during signing)", () => {
     const p = makePacket(7);
     p.signature = signPacket(p, privKey);
     p.ttl = 0;
@@ -261,7 +257,7 @@ describe("Signature coverage (relay TTL compat)", () => {
 // Matches bitchat PacketIdUtil.swift / PacketIdUtil.kt:
 //   SHA-256(type[1] | senderID[8] | timestamp_u64_BE[8] | payload)[0:16]
 
-describe("Packet ID derivation (dedup and gossip sync key)", () => {
+describe("packet ID derivation (dedup and gossip sync key)", () => {
   test("same fields produce the same packetID", () => {
     const p: Packet = {
       type: PacketType.CHANNEL_MSG,
@@ -394,7 +390,7 @@ describe("ANNOUNCE TLV encoding", () => {
 // payload budget can never let an oversized frame through;
 // fragment-manager.test.ts asserts the encoded frame directly.
 
-describe("Fragment wire constants", () => {
+describe("fragment wire constants", () => {
   test("the frame budget is the 512-byte ATT attribute ceiling", () => {
     expect(MAX_BLE_FRAME).toBe(512);
   });

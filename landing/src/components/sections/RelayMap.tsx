@@ -169,12 +169,12 @@ export default function RelayMap() {
   const [active, setActive] = useState<number | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let canceled = false;
 
     fetch(worldAtlas)
       .then((res) => res.json())
       .then((topology: Topology) => {
-        if (cancelled) return;
+        if (canceled) return;
         const countries = feature(topology, topology.objects["countries"]);
         const features = "features" in countries ? countries.features : [countries];
         setLand(features.filter((f) => f.id !== ANTARCTICA_ID));
@@ -182,7 +182,7 @@ export default function RelayMap() {
       .catch(() => {});
 
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, []);
 

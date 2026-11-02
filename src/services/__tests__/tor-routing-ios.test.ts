@@ -57,10 +57,7 @@ const mockSetTorBridgeLines = jest.fn((next: string) => {
   mockBridgeLines = next;
 });
 
-// Writes back, the way the real store does. A mock that lets code persist a
-// preference and then read the old value hides exactly the bug this suite is
-// meant to catch: the enable path sets torEnabled before awaiting the bootstrap
-// and re-reads it afterwards to confirm the user still wants Tor.
+// Writes back, the way the real store does: tor-routing.test.ts says why.
 const mockSetTorEnabled = jest.fn((next: boolean) => {
   mockTorEnabled = next;
 });
@@ -177,6 +174,7 @@ import {
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
   revalidateTorRouting,
+  setTorBridgeMode,
   setTorRouting,
 } from "../tor-routing";
 import { TorWebSocket } from "../tor-websocket";
@@ -243,6 +241,19 @@ describe("enabling Tor on iOS", () => {
     await setTorRouting(false);
 
     expect(socketFactory).toHaveBeenLastCalledWith(DIRECT_SOCKET);
+  });
+
+  // A bridge change restarts Arti. A relay pool rebuilt in that gap has to fail
+  // on the Tor socket, never open on the direct one.
+  it("keeps the Tor socket through a bridge change", async () => {
+    await setTorRouting(true);
+    mockTorEnabled = true;
+    socketFactory.mockClear();
+
+    await setTorBridgeMode("snowflake");
+
+    expect(mockStopTor).toHaveBeenCalled();
+    expect(socketFactory).not.toHaveBeenCalledWith(DIRECT_SOCKET);
   });
 
   it("stays fail-closed, and keeps Arti, when the bootstrap times out", async () => {
@@ -334,13 +345,8 @@ describe("revalidating on iOS", () => {
   });
 });
 
-// The marker that keeps a broken Tor client from making Airhop unopenable.
-//
-// `torEnabled` is written before the native client exists so a relaunch during a
-// bootstrap comes back on Tor rather than on the clear net. Without the marker
-// that ordering replays a fatal native failure on every launch, and the user's
-// only way out is deleting their keys. With it, the launch keeps Tor on and
-// holds the internet half, and only Tor off or an accepted Try again leaves.
+// The marker that keeps a broken Tor client from making Airhop unopenable:
+// tor-routing.test.ts says why.
 describe("surviving a Tor client that kills the process", () => {
   test("the start window is marked before the call and cleared after it", async () => {
     mockTorEnabled = false;
@@ -494,7 +500,7 @@ describe("bootstrap reporting on iOS", () => {
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("idle");
   });
 
-  it("says nothing about a bootstrap the user has already cancelled", async () => {
+  it("says nothing about a bootstrap the user has already canceled", async () => {
     mockTorEnabled = true;
     primeTorRoutingOnStartup();
     await Promise.resolve();
@@ -563,9 +569,7 @@ describe("app lifecycle on iOS", () => {
     expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 
-  // An older native binary without the method must not take the resume down
-  // with it.
-  it("survives a native module that does not implement it", () => {
+  it("survives a native call that rejects", () => {
     mockSetAppForeground.mockRejectedValue(new Error("unrecognized selector"));
     expect(() => {
       notifyTorAppForeground(true);

@@ -61,18 +61,19 @@ import type { Platform } from "../../harness/os";
 import type { RadioNode } from "./radio-fabric";
 import type { World } from "./world";
 
-// MessageType.swift / MessageType.kt. Anything outside this set reaches no
+// MessageType in both bitchat clients. Anything outside this set reaches no
 // handler on a real bitchat build.
 //
-// The three values past voiceFrame are listed as raw numbers because Airhop has
-// no constant for them: 0x2A and 0x2B are reserved upstream for courier
-// spray-ack, and 0x2C is announceV2. They are here so this actor claims the
-// range bitchat actually claims, which is what makes a future Airhop type
-// landing on one of them fail a scenario instead of passing quietly.
+// 0x2A to 0x2C are listed as raw numbers because Airhop has no constant for
+// them: 0x2A and 0x2B are reserved upstream for courier spray-ack, and 0x2C is
+// announceV2. They are here so this actor claims the range bitchat actually
+// claims, which is what makes a future Airhop type landing on one of them fail
+// a scenario instead of passing quietly.
 const BITCHAT_KNOWN_TYPES = new Set<number>([
   0x2a,
   0x2b,
   0x2c,
+  PacketType.VIDEO_FRAME,
   PacketType.ANNOUNCE,
   PacketType.CHANNEL_MSG,
   PacketType.LEAVE,
@@ -100,8 +101,8 @@ const FRAG_MAX_CONCURRENT = 128;
 // bleFragmentLifetimeSeconds. Counted from the FIRST fragment of a stream, not
 // the last, because `timestamp` is stamped once in startAssemblyIfNeeded and
 // never refreshed. Airhop's own reassembler times out on idle instead, which is
-// the better policy and precisely why this has to be modelled here: our
-// behaviour cannot stand in for theirs.
+// the better policy and precisely why this has to be modeled here: Airhop's
+// behavior cannot stand in for bitchat's.
 const FRAG_LIFETIME_MS = 30_000;
 
 // CourierStore.swift: maxLifetimeSeconds plus one hour of clock-skew slack.
@@ -243,11 +244,11 @@ export class BitchatActor implements RadioNode {
   // Signing keys learned from verified announces, which is the only thing that
   // binds a peerID to an identity.
   private readonly peerKeys = new Map<string, Uint8Array>();
-  // In-progress fragment reassembly, keyed by sender and stream. Modelled on
+  // In-progress fragment reassembly, keyed by sender and stream. Modeled on
   // BLEFragmentAssemblyBuffer.swift, including the detail that matters most:
   // `startedAtMs` is stamped once and never refreshed, so the window is measured
   // from the first fragment rather than the last. That is bitchat's real
-  // behaviour, and the reason a large Airhop transfer can be dropped on arrival
+  // behavior, and the reason a large Airhop transfer can be dropped on arrival
   // however well the radio is doing.
   private readonly assemblies = new Map<
     string,
@@ -575,7 +576,7 @@ export class BitchatActor implements RadioNode {
   //
   // Every frame goes out with the all-0xFF recipient sentinel that
   // bitchat-android writes with HAS_RECIPIENT set, which is the encoding a
-  // receiver has to recognise as broadcast on top of the omitted-field form
+  // receiver has to recognize as broadcast on top of the omitted-field form
   // that bitchat-ios and Airhop emit.
   sendVoiceBurst(dataPackets = 3): void {
     const burstID = new Uint8Array(8).fill(0xa0 + (dataPackets & 0x0f));
@@ -700,7 +701,7 @@ export class BitchatActor implements RadioNode {
   //
   // Directed at the gateway, carrying a `toGateway` carrier. The event is
   // Schnorr-signed by the caller (the scenario supplies it), because a gateway
-  // that published unsigned events on a neighbour's say-so would be an open
+  // that published unsigned events on a neighbor's say-so would be an open
   // proxy: bitchat verifies before publishing and so must Airhop.
   depositWithGateway(
     gatewayPeerID: string,
@@ -956,12 +957,8 @@ function joinChunks(parts: Uint8Array[]): Uint8Array {
 }
 
 // The courier envelope TLV carries an expiry as a u64 millisecond timestamp
-// under tag 0x02 (see courier-store.ts; 0x03 is the ciphertext).
-//
-// This read 0x03 and additionally required an 8-byte length, so it matched
-// nothing and always returned null: onCourierEnvelope returned early every
-// time, and the "bitchat refuses an over-long expiry" conformance check was
-// dead code that nothing asserted either. Returns null when absent.
+// under tag 0x02 (see courier-store.ts; 0x03 is the ciphertext). Returns null
+// when absent.
 function readCourierExpiryMs(payload: Uint8Array): number | null {
   let o = 0;
   while (o + 3 <= payload.length) {

@@ -57,7 +57,12 @@ sed -i -E "s/(CURRENT_PROJECT_VERSION = )[^;]*(;)/\1${IOS_BUILD}\2/" ios/Airhop.
 grep -q "MARKETING_VERSION = ${VERSION};" ios/Airhop.xcodeproj/project.pbxproj
 grep -q "CURRENT_PROJECT_VERSION = ${IOS_BUILD};" ios/Airhop.xcodeproj/project.pbxproj
 
-git-cliff --config cliff.toml --tag "${TAG}" --output docs/dev/CHANGELOG.md
+git-cliff --config cliff.toml --unreleased --tag "${TAG}" --prepend docs/dev/CHANGELOG.md
+sed -i '/^$/N;/^\n$/D' docs/dev/CHANGELOG.md
+CODENAME=$(sed -n "s/^[[:space:]]*\"${VERSION%%.*}\":[[:space:]]*\"\([^\"]*\)\".*/\1/p" src/data/releases.ts | head -1)
+if [ -n "${CODENAME}" ]; then
+  sed -i "0,/^## ${TAG} (/s//## ${TAG} · ${CODENAME} (/" docs/dev/CHANGELOG.md
+fi
 
 git add app.json ios/Airhop.xcodeproj/project.pbxproj docs/dev/CHANGELOG.md
 # No [skip ci]: GitHub applies it to a tag push of this commit too, and the tag

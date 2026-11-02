@@ -6,12 +6,11 @@
 // loadable without a native host. A module with no imports of its own sits
 // between them and belongs to neither.
 //
-// What survived a wipe without this: the native TorStatusChanged listener, whose
+// Without this a wipe leaves the native TorStatusChanged listener, whose
 // callback keeps writing into the store the wipe has just reset, and the module
-// flag, which stayed true while the store said false. Neither is dangerous on
-// its own - Arti is stopped by then, so no event is coming - but a wipe that
-// leaves live listeners and disagreeing copies of a privacy flag has not
-// finished, and this file exists so the next thing added here is covered too.
+// flag true while the store says false. Neither is dangerous on its own (Arti
+// is stopped by then, so no event is coming), but a wipe that leaves live
+// listeners and disagreeing copies of a privacy flag has not finished.
 
 type TeardownFn = () => void;
 
@@ -23,7 +22,7 @@ export function setTorTeardown(next: TeardownFn | null): void {
 }
 
 // Drop the status subscription and reset the routing flag. Safe to call when
-// nothing is installed, and on Android, where there is no Arti to watch.
+// nothing is installed.
 export function teardownTorState(): void {
   try {
     teardown?.();

@@ -16,8 +16,10 @@ Sources are under `app/src/main/java/org/onemindlabs/airhop/`.
 | `lan/`       | `AirhopLANModule`: mDNS discovery and TCP links on one network        |
 | `transport/` | `Framing`: the length-prefixed stream both TCP transports speak       |
 | `voice/`     | `AirhopVoiceModule`: AAC-LC capture and playback for push-to-talk     |
+| `video/`     | `AirhopVideoModule`: live video, recording, and the video transcoder  |
 | `tor/`       | `AirhopTorModule`, the Arti bindings, the SOCKS proxy, the transports |
 | `service/`   | The foreground service that keeps the mesh alive, and the boot path   |
+| `widget/`    | `AirhopMeshWidget`: the home screen widget and the state it draws     |
 
 Each module has a `*Package.kt` beside it that registers it with the bridge.
 The TypeScript side of every contract is in `src/bridge/`.
@@ -52,9 +54,9 @@ lock in the same commit:
 JVM tests, no device, under `app/src/test/`. They cover the pure pieces:
 `Framing` and `FrameReader`, `AwareDial` (the Aware follow-up messages, hello
 frame, tiebreak and backoff), the LAN interface filter, the Tor proxy selector,
-the Tor status word, the transports a bridge list names, and the voice playback
-bursts. Anything that touches a radio is covered by the simulator under
-`src/__tests__/` and by devices.
+the Tor status word, the transports a bridge list names, the voice playback
+bursts, the video surface registry, and the widget's state. Anything that touches
+a radio is covered by the simulator under `src/__tests__/` and by devices.
 
 ```sh
 cd android && ./gradlew :app:testDebugUnitTest

@@ -29,13 +29,13 @@ const SCREENS: {
     altKey: "home.showcase.channels.alt",
   },
   {
-    base: "05-payments",
+    base: "04-payments",
     titleKey: "home.showcase.wallet.title",
     captionKey: "home.showcase.wallet.caption",
     altKey: "home.showcase.wallet.alt",
   },
   {
-    base: "04-no-accounts",
+    base: "05-no-accounts",
     titleKey: "home.showcase.identity.title",
     captionKey: "home.showcase.identity.caption",
     altKey: "home.showcase.identity.alt",

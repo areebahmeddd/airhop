@@ -35,7 +35,7 @@ export const bleBridge: BleNativeModule = {
   removeListeners: (n) => req().removeListeners(n),
 };
 
-// WiFi Aware / MultipeerConnectivity, same indirection as BLE above.
+// WiFi Aware, same indirection as BLE above.
 //
 // Until a scenario installs a module this is a phone without Wi-Fi Aware: the
 // start is refused as unsupported, as the Kotlin module refuses it. Never a
@@ -77,7 +77,7 @@ export const wifiBridge = {
   removeListeners: (n: number): void => currentWifi?.removeListeners(n),
 };
 
-// The LAN transport. Unlike WiFi Aware, discovery and dialling are separate:
+// The LAN transport. Unlike WiFi Aware, discovery and dialing are separate:
 // mDNS finds everyone on the network and who to connect to is a decision, so
 // the module reports what it sees and opens the sockets it is told to.
 export interface LanNativeModule {

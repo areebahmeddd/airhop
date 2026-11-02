@@ -1,5 +1,5 @@
 // Action lines (/hug, /slap and the screenshot notice) this app or bitchat
-// could have produced, recognised on receipt.
+// could have produced, recognized on receipt.
 //
 // An action renders centered and italic with no sender name, one shade off a
 // system row. Matching on "starts and ends with *" would let any peer put any
@@ -8,8 +8,8 @@
 // name. Anything else is a normal bubble under the sender's real name.
 //
 // The text on the wire is bitchat's fixed English, which it matches by
-// substring, so none of it is ever translated. Both sides are NFC-normalised
-// before comparing: a nickname stored normalised never equals the decomposed
+// substring, so none of it is ever translated. Both sides are NFC-normalized
+// before comparing: a nickname stored normalized never equals the decomposed
 // spelling another keyboard put in the message.
 
 import type { ChatMessage } from "@store/chat-store";

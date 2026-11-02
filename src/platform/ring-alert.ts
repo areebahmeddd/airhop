@@ -5,7 +5,7 @@
 // does for a call. iOS has no such path outside CallKit, which is for calls;
 // there a ring is the notification chain in notification-service.ts, and
 // this module answers false so the caller falls back to haptics. Ringer mode
-// and Do Not Disturb are honoured natively, and a loop that could not start
+// and Do Not Disturb are honored natively, and a loop that could not start
 // for either reason also answers false.
 
 import NativeAirhopApp from "@bridge/NativeAirhopApp";

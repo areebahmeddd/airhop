@@ -1,6 +1,6 @@
 // The Airhop brand mark: a monochrome pixel bird, the soaring seabird on every
 // app icon (a nod to the release codenames, birds, alphabetical). Drawn as a
-// grid of square cells so it stays crisp at any size, in whatever colour the
+// grid of square cells so it stays crisp at any size, in whatever color the
 // surface needs, so it reads in both themes.
 
 import React from "react";

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mạng lưới</string>
   <string name="mesh_channel_description">Giữ mạng lưới Airhop chạy ở chế độ nền</string>
   <string name="mesh_notification_title">Mạng lưới Airhop đang chạy</string>
@@ -7,4 +7,15 @@
   <plurals name="mesh_notification_peers">
     <item quantity="other">%1$s nút mạng trong tầm</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth đã tắt · không quét</string>
+  <string name="widget_label">Nút mạng trong tầm</string>
+  <string name="widget_description">Nút mạng trong tầm, và thời điểm đếm</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="other">nút mạng trong tầm</item>
+  </plurals>
+  <string name="widget_nobody">không có ai trong tầm</string>
+  <string name="widget_as_of">lúc %1$s</string>
+  <string name="widget_paused">Mạng lưới tạm dừng</string>
+  <string name="widget_unset">Mở Airhop</string>
+  <string name="widget_stale">Mở Airhop để làm mới</string>
 </resources>

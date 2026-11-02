@@ -3,7 +3,7 @@
 //
 // There is exactly ONE clock here, and it is Jest's fake timers. Every device's
 // OS model, every native module, the real mesh-service's own setTimeouts, and
-// every fabric schedule onto it. That is not a convenience - it is the property
+// every fabric schedule onto it. That is not a convenience: it is the property
 // that makes the whole harness trustworthy. Two clocks would let the simulation
 // invent an interleaving that hardware cannot produce, and a race-condition
 // harness that reports impossible races is worse than no harness, because every
@@ -135,7 +135,7 @@ export class World {
   //
   // The step size is a real trade. Too coarse and two events that a device would
   // have seen milliseconds apart arrive in the same tick, hiding orderings. Too
-  // fine and a 60-second scenario takes 12,000 iterations. 5ms matches the
+  // fine and a 60-second scenario takes 12,000 iterations. 5ms sits under the
   // shortest thing anything in Airhop schedules (the 8ms voice relay jitter
   // floor), so no scheduled event can be skipped over.
   async advance(ms: number, stepMs = 5): Promise<void> {
@@ -155,16 +155,17 @@ export class World {
   // "Quiet" is deliberately defined as no new trace lines and no frame on any
   // medium, rather than no pending timers: Airhop always has pending timers
   // (announce, gossip, outbox sweep), so waiting for an empty timer queue would
-  // never return. What we actually want is "the network has stopped saying
+  // never return. The question is whether "the network has stopped saying
   // anything new", which is what convergence checks need. Frames count because
   // a delivery writes no trace line: a relay hop or a sync answer would
   // otherwise land after settle() had already called the room converged.
+  //
   // The step here is coarser than a precise advance() on purpose. Settling is
   // about draining a network that has already been set in motion, not about
   // observing a race, and jest.advanceTimersByTime runs every timer due inside
   // the window in the right order either way. The only fidelity given up is the
   // interleaving of promise continuations against timers within one 25ms slice,
-  // which no scenario asserts on - and it makes a crowded room finish in
+  // which no scenario asserts on, and it makes a crowded room finish in
   // seconds instead of minutes.
   async settle(budgetMs = 30_000, quietMs = 500): Promise<void> {
     let quietFor = 0;
@@ -191,8 +192,8 @@ export class World {
 
   // Await a promise that can only settle if time passes.
   //
-  // Under fake timers a bare `await` on anything that schedules a timeout - a
-  // mint round trip, store hydration, a retry backoff - deadlocks: the promise
+  // Under fake timers a bare `await` on anything that schedules a timeout (a
+  // mint round trip, store hydration, a retry backoff) deadlocks: the promise
   // is waiting for a clock that only advances when somebody asks it to, and the
   // await is what stopped anybody asking. Driving the clock while waiting is
   // the only correct way to await app code from a scenario.

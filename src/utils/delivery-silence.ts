@@ -2,7 +2,7 @@
 //
 // A DM that was published but never delivered looks exactly like one sent a
 // minute ago: a single tick, and nothing else. Over weeks that is far too quiet
-// to notice, and it is the shape of every permanent disappearance - a peer who
+// to notice, and it is the shape of every permanent disappearance: a peer who
 // uninstalled, lost their phone, or panic-wiped and came back as a new identity
 // (which is unlinkable by design, so no app can ever say which).
 //
@@ -22,7 +22,7 @@ import type { ChatMessage } from "@store/chat-store";
 
 // How long without any confirmation before it is worth saying.
 //
-// Matched to the outbox's own TTL, which is the app's existing judgement about
+// Matched to the outbox's own TTL, which is the app's existing judgment about
 // when a message stops being worth chasing ("a week-old 'hi' is noise, not a
 // message"). Shorter would fire on an ordinary holiday; much longer and the
 // answer arrives too late to act on. A week of sending into silence is a fact
@@ -40,7 +40,7 @@ function isConfirmed(msg: ChatMessage): boolean {
   );
 }
 
-// The point after which nothing we sent has been confirmed, or null when there
+// The point after which nothing sent has been confirmed, or null when there
 // is nothing worth saying: a healthy conversation, one with no outgoing messages
 // at all, or one whose silence is still inside the window.
 //
@@ -72,7 +72,7 @@ export function unconfirmedSince(
   for (const msg of messages) {
     if (!msg.isMine || msg.isSystem === true) continue;
     // Already surfaced in the bubble itself, so counting it here would say the
-    // same thing twice - and a reclaimed payment was withdrawn on purpose.
+    // same thing twice, and a reclaimed payment was withdrawn on purpose.
     if (msg.status === "failed" || msg.status === "reclaimed") continue;
     if (isConfirmed(msg)) continue;
     if (msg.timestampMs <= lastConfirmed) continue;

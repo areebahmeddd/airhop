@@ -63,7 +63,7 @@ function base64Decode(text: string): Uint8Array {
 export interface RelayNodeOptions {
   id: string;
   // A relay is not a phone, but the fabric models links per platform. Android
-  // is the closer analogue: always discoverable, no foreground rules.
+  // is the closer analog: always discoverable, no foreground rules.
   platform?: Platform;
 }
 

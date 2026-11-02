@@ -88,7 +88,7 @@ pub const AIRHOP_TOR_ERR_PANIC: i32 = -9;
 
 /// Run an FFI entry point, returning `fallback` if it panics.
 ///
-/// Unwinding across an FFI boundary is undefined behaviour. Aborting prevents
+/// Unwinding across an FFI boundary is undefined behavior. Aborting prevents
 /// that too and is the wrong trade here: an abort takes the Bluetooth mesh, the
 /// wallet and the courier store with it, none of which depend on Tor.
 ///
@@ -446,7 +446,7 @@ pub fn stop() -> i32 {
     // is all it takes. Holding the lock makes that start wait for the teardown
     // instead, bounded by the timeout below.
     //
-    // Android serialises these calls on one thread anyway; iOS does not, which
+    // Android serializes these calls on one thread anyway; iOS does not, which
     // is why the lock is held here rather than in either app.
     let mut guard = match state().lock() {
         Ok(g) => g,

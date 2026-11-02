@@ -33,9 +33,8 @@ describe("groupReach", () => {
   });
 
   it("excludes blocked members from both halves", () => {
-    // Matches the geohash participant list, which stopped counting blocked
-    // people this same session. Counting someone the roster no longer shows
-    // would make the two disagree.
+    // Matches the geohash participant list. Counting someone the roster no
+    // longer shows would make the two disagree.
     expect(
       groupReach(
         roster(ME, ALICE, BOB, CARA),

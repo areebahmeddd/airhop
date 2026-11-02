@@ -4,7 +4,7 @@
 // only: there Tor wraps nostr-tools' WebSockets but not `fetch`, so a mint call
 // would leave in the clear carrying the user's mint, amounts and IP. On Android
 // the proxy sits in the OkHttp client `fetch` is built from, so a mint call
-// under Tor is tunnelled or fails, and refusing it would only take deposits and
+// under Tor is tunneled or fails, and refusing it would only take deposits and
 // withdrawals away from every Android user. The Wallet screen disables its
 // actions off this same predicate.
 //

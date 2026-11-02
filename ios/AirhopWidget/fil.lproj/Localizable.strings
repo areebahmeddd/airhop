@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-b+fil/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Naka-off ang Bluetooth · hindi nag-i-scan";
+"widget_label" = "Mga peer na nasa saklaw";
+"widget_description" = "Mga peer na nasa saklaw, at kung kailan sila binilang";
+"widget_nobody" = "walang nasa saklaw";
+"widget_as_of" = "noong %1$@";
+"widget_paused" = "Naka-pause ang mesh";
+"widget_unset" = "Buksan ang Airhop";
+"widget_stale" = "Buksan ang Airhop para i-refresh";

@@ -11,16 +11,16 @@
 // safe, since TTL is zeroed in the signed bytes so relays can decrement.
 //
 // The ceiling follows this phone's degree: 7 sparse, 6 at mid degree (7 for
-// an urgent board post), 5 dense, and a live voice stream's 7 or 5. That is
-// what neighbours at the same degree clamp to anyway, so reach is unchanged at
-// the top. The cost is a dense originator whose neighbours are sparse: they
+// an urgent board post), 5 dense, and a live stream's 7 or 5. That is
+// what neighbors at the same degree clamp to anyway, so reach is unchanged at
+// the top. The cost is a dense originator whose neighbors are sparse: they
 // would relay at full depth, and it starts up to two hops short of that.
 // Public text, board posts and group messages backfill over gossip; the rest
 // accept it.
 //
 // Applies to broadcasts that carry content we authored: public and private
-// channel messages, group messages, board posts, public files, live voice.
-// Not applied to:
+// channel messages, group messages, board posts, public files, live voice and
+// video. Not applied to:
 //
 //   * Announces. The direct-peer rule in mesh-service identifies a directly
 //     heard announce by `packet.ttl === ANNOUNCE_TTL`, and that rule is what

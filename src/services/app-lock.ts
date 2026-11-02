@@ -145,8 +145,19 @@ export function disableAppLock(): void {
 // app away too ("inactive" on iOS, a pause read as "background" on Android),
 // and counting that would re-arm the lock as a dismissed prompt closed, and ask
 // again, forever.
+//
+// Android can recreate the Activity, and so this subscription, while the
+// process and the lock's state live on. So whether the app is away is seeded
+// from that state rather than assumed false: a lock left "covered" or "locked"
+// in the background still counts the coming return. Already back when it
+// subscribes, a "covered" lock is settled at once, since only noteForeground
+// leaves it and the lock face offers no Unlock there; a "locked" one already
+// shows Unlock.
 export function watchAppLock(): () => void {
-  let away = false;
+  const { phase } = useAppLockStore.getState();
+  const active = AppState.currentState === "active";
+  let away = phase !== "open" && !active;
+  if (active && phase === "covered") noteForeground();
   const appState = AppState.addEventListener("change", (next) => {
     if (next === "background") {
       if (promptPausedApp()) return;

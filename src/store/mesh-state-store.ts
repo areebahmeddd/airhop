@@ -31,7 +31,7 @@ export type PresenceStatus = "online" | "away" | "invisible";
 // distinct network state rather than a generic weight, so the Mesh tab reads at
 // a glance:
 //   danger   a hard blocker to fix now (red), Bluetooth off, permission
-//   caution  a feature is unavailable (amber), location off
+//   caution  a feature is off or limited (amber), location off
 //   relay    traffic carried over the internet (blue), Nostr relay
 //   tor      internet traffic onion-routed (purple), Tor on
 //   gateway  this device relaying for others (teal), internet gateway
@@ -119,7 +119,7 @@ export type LanState =
 //                          looks. Cannot occur from API 31, where the manifest
 //                          asserts neverForLocation on BLUETOOTH_SCAN.
 //   starting               permissions just landed and the stack has not
-//                          honoured them yet. Transient by definition.
+//                          honored them yet. Transient by definition.
 //   none                   nothing is in the way.
 //
 // No member for Android 12+'s "Approximate" location: the mesh does not ask for
@@ -134,7 +134,7 @@ export type BleBlocker =
   | "adapter-off"
   | "location-services-off";
 
-// What a banner's button does. The banner layer names the intent; App.tsx owns
+// What a banner's button does. The banner layer names the intent; app.tsx owns
 // the implementation, so the store stays free of navigation and native calls.
 export type BannerAction =
   | "resume"
@@ -142,10 +142,13 @@ export type BannerAction =
   | "open-location-settings"
   | "open-app-settings"
   // Open the OEM's own background/autostart screen. Android only, and only on
-  // the brands that actually need it; see utils/battery-optimization.ts.
+  // the brands that actually need it; see platform/battery-optimization.ts.
   | "open-background-limits"
   // Airhop's own Tor screen, where a blocked or held Tor is resolved.
-  | "open-tor-settings";
+  | "open-tor-settings"
+  // Ask for foreground location, or explain the way to Settings once the OS
+  // will no longer ask. See services/turn-on-location.ts.
+  | "enable-location";
 
 export interface MeshBanner {
   // Stable identity for React keys and de-duplication.
@@ -161,7 +164,7 @@ export interface MeshBanner {
   // Only advisories are dismissible. A real blocker is not: hiding "Bluetooth
   // is off" would leave an empty radar with nothing explaining it, which is the
   // state this whole banner system exists to eliminate. Advice about a phone's
-  // background behaviour is different: it is true, it is worth saying once,
+  // background behavior is different: it is true, it is worth saying once,
   // and a user who has read it should not have to read it forever.
   dismissible?: boolean;
 }
@@ -242,7 +245,7 @@ interface MeshStateStore {
   // half pauses.
   //
   // Not a safety gate. Both platforms embed Arti, which has no clearnet path, so
-  // a relay dialled during a dead bootstrap fails rather than falling back and
+  // a relay dialed during a dead bootstrap fails rather than falling back and
   // nothing leaks whether this is set or not. It is raised from the start of
   // every bootstrap, because a relay that fails its first connect is never
   // retried: a pool built before the circuit is dead for good. On a network
@@ -382,16 +385,15 @@ export interface MeshBannerInputs {
   // (Xiaomi, Samsung, Oppo, ...), or undefined when there is nothing to say:
   // stock Android, iOS, or a user who has already acknowledged the note.
   //
-  // Optional so every existing caller keeps compiling and simply gets no
-  // advisory, which is the correct default for a device we know nothing about.
+  // Optional: absent means no advisory, the correct default for a device
+  // nothing is known about.
   backgroundLimitsBrand?: string;
   // The radios are scanning in short bursts to save a nearly flat battery, and
-  // the user is watching. Optional so existing callers keep compiling and get no
-  // note, which is the right default for a device whose battery we cannot read.
+  // the user is watching. Absent means no note, the right default for a device
+  // whose battery cannot be read.
   powerSaving?: boolean;
-  // This device's clock looks wrong to the mesh. Optional so existing callers
-  // keep compiling and get no banner, which is the right default for a caller
-  // with no evidence either way.
+  // This device's clock looks wrong to the mesh. Absent means no banner, the
+  // right default for a caller with no evidence either way.
   clockSkewed?: boolean;
   // This chipset has no BLE peripheral role, so the device can scan and relay
   // but can never be discovered. Optional, defaulting to the capable case.
@@ -408,7 +410,7 @@ export interface MeshBannerInputs {
   identityElsewhere?: boolean;
   nostrConnected: boolean;
   torActive: boolean;
-  // Optional so existing callers keep compiling; absent reads as "idle".
+  // Absent reads as "idle".
   torBootstrap?: TorBootstrapPhase;
   gatewayEnabled: boolean;
   bridgeActive: boolean;
@@ -426,6 +428,18 @@ function hasOtherLocalTransport(inputs: MeshBannerInputs): boolean {
     inputs.lanState === "active" ||
     inputs.lanState === "searching"
   );
+}
+
+// The location-off note, for the Mesh tab and for the inside of a location
+// channel. Only the wording differs between the two, so one builder keeps the
+// tone and the way out from drifting apart.
+export function locationOffBanner(label: string): MeshBanner {
+  return {
+    key: "location",
+    label,
+    tone: "caution",
+    action: { label: t("mesh.banner.action.turn_on"), kind: "enable-location" },
+  };
 }
 
 // One blocker, one banner, one way out.
@@ -462,7 +476,7 @@ function bleBlockerBanner(
 
     // Red only when it leaves nothing. WiFi Aware and LAN carry the mesh
     // without Bluetooth, so "mesh unavailable" over a working LAN is false, and
-    // a red banner over a working mesh teaches people to ignore the colour. The
+    // a red banner over a working mesh teaches people to ignore the color. The
     // action stays either way: Bluetooth is still worth back for range, for the
     // screen being off, and for the other platform.
     case "adapter-off":
@@ -597,11 +611,6 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     });
   }
 
-  // Aggressive OEM background management is the last remaining way the mesh can
-  // stop relaying without anything announcing it: the foreground service is
-  // reaped, no callback fires, and the app only finds out because it comes back
-  // to a stopped mesh. It ranks above the location note because it affects the
-  // mesh itself rather than one feature that rides on it.
   // A permanent property of the hardware, not a fault and not actionable: some
   // chipsets at the API 26 floor ship no BLE peripheral role, so the phone can
   // see everyone and nobody can see it. Said once, then dismissible, because it
@@ -616,6 +625,11 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     });
   }
 
+  // Aggressive OEM background management is the last remaining way the mesh can
+  // stop relaying without anything announcing it: the foreground service is
+  // reaped, no callback fires, and the app only finds out because it comes back
+  // to a stopped mesh. It ranks above the location note because it affects the
+  // mesh itself rather than one feature that rides on it.
   if (
     inputs.backgroundLimitsBrand !== undefined &&
     inputs.backgroundLimitsBrand.length > 0
@@ -634,14 +648,10 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     });
   }
 
-  // Location is informational: the BLE mesh works without it, only the location
-  // (geohash) channels need it.
+  // Location is informational: the BLE mesh works without it, and the location
+  // channels still run over Bluetooth, reaching only people nearby.
   if (!inputs.locationGranted) {
-    banners.push({
-      key: "location",
-      label: t("mesh.banner.location_off"),
-      tone: "caution",
-    });
+    banners.push(locationOffBanner(t("mesh.banner.location_off")));
   }
 
   // Not a fault: the phone is low or in Battery Saver, and the app has turned
@@ -767,7 +777,7 @@ export function useMeshBanners(): MeshBanner[] {
   // language is a real input to this computation. Subscribing states that
   // outright: without it the banners would still refresh, but only because a
   // parent happened to re-render, which is the kind of coupling that survives
-  // exactly until somebody memoises the parent.
+  // exactly until somebody memoizes the parent.
   void useLanguage();
   const presenceStatus = useMeshStateStore((s) => s.presenceStatus);
   const bleBlocker = useMeshStateStore((s) => s.bleBlocker);

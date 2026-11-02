@@ -112,7 +112,7 @@ test("a network coming back nudges the mesh and Tor once, after it settles", asy
   expect(mockReconcileIfDue).toHaveBeenCalledTimes(1);
 });
 
-// Android: connected first, validated a few seconds later. A relay dialled in
+// Android: connected first, validated a few seconds later. A relay dialed in
 // between fails and is dropped, so the validation nudges again.
 test("a network validating after it connected nudges again", async () => {
   await watch(WIFI);
@@ -204,9 +204,6 @@ test("starting twice subscribes once", async () => {
   expect(net.addNetworkStateListener.mock.calls.length).toBe(before);
 });
 
-// Until an offline receipt is swapped, whoever holds its token can spend it
-// first, so the wallet's pass runs as soon as the user's own switches let it
-// reach the mint, not at the next foreground.
 test("the internet switch going back on runs the wallet's pass at once", async () => {
   mockBlock = "internet-off";
   await watch(WIFI);

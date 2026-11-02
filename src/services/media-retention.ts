@@ -1,9 +1,10 @@
 // When the attachment retention sweep runs.
 //
-// Once at launch, and again on a return to the app once SWEEP_INTERVAL_MS has
-// passed. The launch alone is not enough: on Android the foreground service can
-// keep one process alive for weeks, receiving media the whole time, and a
-// window of days would then be enforced only as often as the phone restarts.
+// Once at launch, and again on a return to the app or a received file once
+// SWEEP_INTERVAL_MS has passed. The launch alone is not enough: on Android the
+// foreground service can keep one process alive for weeks, receiving media the
+// whole time, and a window of days would then be enforced only as often as the
+// phone restarts. Nor is a return alone, when nobody opens the app.
 //
 // Wrapped because the cache directory may be unreadable on a device with no
 // storage left, and a failed sweep must not stop the app from opening.

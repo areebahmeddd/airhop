@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The widget's card: theme.ts `surface` at Radius.xl. Launchers before API 31
+     draw a widget unclipped, so the corner is this drawable's to set. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+  <solid android:color="@color/mesh_widget_surface"/>
+  <corners android:radius="20dp"/>
+</shape>

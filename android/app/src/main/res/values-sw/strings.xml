@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Mtandao wa mesh</string>
   <string name="mesh_channel_description">Huweka mesh ya Airhop ikiendelea chinichini</string>
   <string name="mesh_notification_title">Mesh ya Airhop inaendelea</string>
@@ -8,4 +8,16 @@
     <item quantity="one">peer %1$s yuko ndani ya masafa</item>
     <item quantity="other">peer %1$s wako ndani ya masafa</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Bluetooth imezimwa · haichanganui</string>
+  <string name="widget_label">Peer walio ndani ya masafa</string>
+  <string name="widget_description">Peer walio ndani ya masafa, na wakati walipohesabiwa</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">peer yuko ndani ya masafa</item>
+    <item quantity="other">peer wako ndani ya masafa</item>
+  </plurals>
+  <string name="widget_nobody">hakuna aliye ndani ya masafa</string>
+  <string name="widget_as_of">kufikia %1$s</string>
+  <string name="widget_paused">Mesh imesitishwa</string>
+  <string name="widget_unset">Fungua Airhop</string>
+  <string name="widget_stale">Fungua Airhop ili kuonyesha upya</string>
 </resources>

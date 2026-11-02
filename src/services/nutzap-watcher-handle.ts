@@ -35,9 +35,9 @@ export function stopNutzapWatcher(): void {
 // The watcher captures a NostrClient instance, and that instance does not
 // survive a transport rebuild: toggling Tor, or turning internet fallback off
 // and on, constructs a new client and leaves the old subscription pointing at a
-// closed pool. It was installed exactly once, at startup, so either toggle
-// silently ended NIP-61 for the rest of the session and incoming nutzaps
-// stopped being redeemed with nothing to say so.
+// closed pool. Were it installed only at startup, either toggle would silently
+// end NIP-61 for the rest of the session, and incoming nutzaps would stop being
+// redeemed with nothing to say so.
 //
 // Registered by the startup path, which owns the wallet keys and the alert it
 // raises, and called by the mesh service after it builds a transport. The

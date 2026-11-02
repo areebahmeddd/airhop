@@ -56,7 +56,7 @@ export type SenderFailure =
   | "permission"
   | "wrong-phone"
   | "incompatible"
-  | "cancelled"
+  | "canceled"
   | "storage"
   | "interrupted";
 
@@ -109,7 +109,7 @@ export class MoveSender {
   private peerConfirmed = false;
   private ended = false;
   private settled = false;
-  private cancelled = false;
+  private canceled = false;
   private unsubscribe: (() => void) | null = null;
   private commitTimer: ReturnType<typeof setTimeout> | null = null;
   // Message 2 can arrive before the write of message 1 resolves.
@@ -139,12 +139,12 @@ export class MoveSender {
       return;
     }
     // A cancel during either read has already torn down, and would not again.
-    if (this.cancelled) return;
+    if (this.canceled) return;
     this.unsubscribe = subscribeMoveLink((event) => this.onLinkEvent(event));
 
     const connectionID = await this.dial(hosts);
     if (connectionID === null) return;
-    if (this.cancelled) {
+    if (this.canceled) {
       closeMove(connectionID);
       return;
     }
@@ -175,7 +175,7 @@ export class MoveSender {
       this.fail("unreachable");
       return;
     }
-    if (this.cancelled || this.settled || this.session === null) return;
+    if (this.canceled || this.settled || this.session === null) return;
     this.set({
       phase: "verify",
       words: safetyNumberWords(moveSas(this.session.handshakeHash)),
@@ -240,9 +240,9 @@ export class MoveSender {
   // Only until the stream ends; after that the new phone may have committed.
   cancel(): void {
     if (this.ended || this.settled) return;
-    this.cancelled = true;
+    this.canceled = true;
     if (this.session === null) {
-      this.fail("cancelled", false);
+      this.fail("canceled", false);
       return;
     }
     // Settled first so the stream stops; torn down once the abort has left.
@@ -264,7 +264,7 @@ export class MoveSender {
   private async dial(hosts: string[]): Promise<string | null> {
     const deadline = Date.now() + DIAL_WINDOW_MS;
     let failure: SenderFailure = "unreachable";
-    while (!this.cancelled && Date.now() < deadline) {
+    while (!this.canceled && Date.now() < deadline) {
       for (const host of hosts) {
         try {
           return await dialMove(host, this.invite.port);
@@ -276,11 +276,11 @@ export class MoveSender {
             failure = "permission";
           }
         }
-        if (this.cancelled) return null;
+        if (this.canceled) return null;
       }
       await delay(DIAL_RETRY_MS);
     }
-    if (!this.cancelled) this.fail(failure);
+    if (!this.canceled) this.fail(failure);
     return null;
   }
 
@@ -390,7 +390,7 @@ export class MoveSender {
           : message.reason === MoveAbortReason.STORAGE
             ? "storage"
             : message.reason === MoveAbortReason.CANCELLED
-              ? "cancelled"
+              ? "canceled"
               : "interrupted",
       );
       return;

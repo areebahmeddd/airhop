@@ -1,9 +1,5 @@
-// Obj-C++ bridge: exposes AirhopWiFiPairing (Swift) to the React Native bridge.
-//
-// iOS only, and there is no Android counterpart on purpose. Pairing is a
-// precondition to having Wi-Fi Aware links on this platform, not a property of
-// a link, so it stays out of the transport contract both platforms share. See
-// AirhopWiFiPairing.swift.
+// Objective-C bridge for AirhopWiFiPairing.swift. iOS only, for the reason given
+// there.
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
 

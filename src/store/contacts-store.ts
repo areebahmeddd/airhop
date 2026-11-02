@@ -13,7 +13,7 @@
 // DM route be established without waiting to hear their ANNOUNCE, gives the
 // thread their real nickname instead of one generated from the peer ID, and
 // pins the identity so a later ANNOUNCE claiming that peer ID with different
-// keys can be recognised as an impersonation attempt.
+// keys can be recognized as an impersonation attempt.
 
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -68,8 +68,8 @@ export interface Contact {
   // A name only you see, kept apart from `nickname` above.
   //
   // `nickname` is what the peer calls themselves, and it must survive being
-  // relabelled: the contact sheet shows both, so "who they say they are" stays
-  // checkable after you have renamed them to something you recognise. Writing
+  // relabeled: the contact sheet shows both, so "who they say they are" stays
+  // checkable after you have renamed them to something you recognize. Writing
   // your label over theirs would destroy the only copy of it you hold.
   //
   // Never leaves the device. It is not announced, not carried in a card, and
@@ -117,9 +117,9 @@ interface ContactsState {
   contacts: Record<string, Contact>;
 
   // Save or update a contact. Merges onto an existing record and can never
-  // weaken one, whichever of the four screens calls it. The policy lives here
-  // rather than in the callers, because a rule several of them have to remember
-  // is not a rule:
+  // weaken one, whichever caller writes it. The policy lives here rather than
+  // in the callers, because a rule several of them have to remember is not a
+  // rule:
   //
   //   source           never decreases (see SOURCE_RANK)
   //   verification     kept once earned; only a write carrying one may set it
@@ -139,7 +139,7 @@ interface ContactsState {
   // same rule.
   addContact: (contact: Contact) => void;
   // Save a peer as an unverified contact if not already saved. The one entry
-  // point for the Signal-style "people you message are kept" behaviour, so
+  // point for the Signal-style "people you message are kept" behavior, so
   // every path that starts a conversation stays consistent.
   saveIfAbsent: (
     peerID: string,

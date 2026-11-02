@@ -6,19 +6,19 @@
 // failures this design exists to prevent:
 //
 //   1. A permission grant is visible to the app before the Bluetooth stack
-//      honours it. Calls issued in that window threw SecurityException, were
-//      swallowed by `.catch(() => {})`, and nothing retried - so a fresh
-//      install sat with both radios dead behind a UI claiming everything was
-//      fine, until the user force-quit and relaunched.
-//   2. On iOS, every CBManager state callback was reported to JS as a radio
-//      change, which scheduled a restart, which constructed a new CBManager,
-//      which fired a state callback. Fourteen central and fourteen peripheral
-//      managers were allocated in ten seconds on an idle phone.
-//   3. Going Invisible called stopAdvertising(), which on Android also tore
-//      down the foreground service, silently ending background operation for a
-//      mesh that was still meant to be scanning and relaying.
+//      honors it. A call issued in that window throws SecurityException; with
+//      the error swallowed and nothing retrying, a fresh install would sit with
+//      both radios dead behind a UI claiming everything is fine, until the user
+//      force-quit and relaunched.
+//   2. On iOS, reporting every CBManager state callback to JS as a radio change
+//      would schedule a restart, which constructs a new CBManager, which fires a
+//      state callback: fourteen central and fourteen peripheral managers in ten
+//      seconds on an idle phone.
+//   3. Going Invisible is not stopping the mesh. Tied to advertising, the
+//      Android foreground service would go down with it and silently end
+//      background operation for a mesh still meant to be scanning and relaying.
 //
-// The shape that fixes all three is a reconciler, not a set of commands:
+// The shape that prevents all three is a reconciler, not a set of commands:
 //
 //   - There is a DESIRED state (running? discoverable?) and a set of DEVICE
 //     FACTS (radio on? permission held? location services on?).
@@ -58,11 +58,11 @@ export interface RadioFacts {
   // not exist on BLUETOOTH_SCAN. Always false on iOS.
   locationRequiredForScan: boolean;
   // Android: the OS-wide location toggle, as the device reports it. Scan
-  // results are withheld without it however healthy everything else looks -
+  // results are withheld without it however healthy everything else looks,
   // but only while locationRequiredForScan is true. Always true on iOS.
   locationServicesEnabled: boolean;
   // 0-100, or null when unknown (iOS always, Android before the first battery
-  // broadcast). Drives how hard the radios run - see power-policy.ts.
+  // broadcast). Drives how hard the radios run: see power-policy.ts.
   batteryPercent: number | null;
   charging: boolean;
   // Android Battery Saver. Always false on iOS.
@@ -111,11 +111,11 @@ export function blockerFor(
     if (facts.locationRequiredForScan) return "location-permission";
     return permissionBlocked ? "permission-blocked" : "permission-denied";
   }
-  // "unknown" means the platform has not reported yet - which means it has not
+  // "unknown" means the platform has not reported yet, which means it has not
   // reported the POWER state either. Checked before poweredOn for exactly that
-  // reason: reading the not-yet-initialised default as "the radio is off" is
-  // what made every iOS cold launch open with "Bluetooth off · mesh
-  // unavailable" on a perfectly healthy phone.
+  // reason: reading the not-yet-initialized default as "the radio is off" would
+  // open every iOS cold launch with "Bluetooth off · mesh unavailable" on a
+  // perfectly healthy phone.
   if (facts.authorization === "unknown") return "starting";
   // Order matters below: a radio that is off is the more actionable complaint,
   // and telling someone their location settings are wrong while Bluetooth is
@@ -146,7 +146,7 @@ export class RadioController {
   // power mode changes WHETHER we scan, only how often and how loudly.
   private readonly power = new PowerPolicy();
   // Whether the app is on screen. The single biggest input to the power policy
-  // - a pocketed phone has nobody waiting on discovery latency - and the one
+  // (a pocketed phone has nobody waiting on discovery latency) and the one
   // thing native cannot observe for us.
   private appForeground = true;
 
@@ -214,7 +214,7 @@ export class RadioController {
   }
 
   // Invisible: keep scanning and relaying, stop announcing ourselves. Crucially
-  // NOT the same as stopping the mesh - the background service stays up,
+  // NOT the same as stopping the mesh: the background service stays up,
   // because the mesh is still doing work.
   setDiscoverable(enabled: boolean): void {
     if (this.desired.discoverable === enabled) return;
@@ -230,9 +230,9 @@ export class RadioController {
     // Forget what we believe about the background service.
     //
     // An aggressive OEM battery manager can reap a foreground service without
-    // telling anyone, and there is no callback for it. Caching "we started it"
-    // meant that once it was reaped it never came back for the rest of the
-    // session, and the mesh silently stopped surviving backgrounding. A resume
+    // telling anyone, and there is no callback for it. With "we started it"
+    // cached, a reaped service would never come back for the rest of the
+    // session, and the mesh would silently stop surviving backgrounding. A resume
     // is precisely the moment that belief is least trustworthy, so drop it and
     // let the reconcile below re-assert.
     this.backgroundServiceOn = null;
@@ -290,7 +290,7 @@ export class RadioController {
 
   // `minDelayMs` is for the refusals whose own recovery window is longer than
   // anything on the ladder. It raises this one retry rather than the schedule,
-  // so an ordinary permission-settling retry stays as quick as it was.
+  // so an ordinary permission-settling retry stays quick.
   private scheduleRetry(minDelayMs = 0): void {
     if (this.disposed || !this.desired.running) return;
     if (this.retryTimer !== null) return;
@@ -331,13 +331,13 @@ export class RadioController {
     // service go with it.
     if (!this.desired.running) {
       // Forced, not reconciled: `actual` is what JS believes, and both native
-      // modules keep an intent latch this side cannot see. On any drift - a
-      // restored process, a radio that came back on its own - the delta sends
+      // modules keep an intent latch this side cannot see. On any drift (a
+      // restored process, a radio that came back on its own) the delta sends
       // nothing while the latch survives, and native can advertise a device
       // whose owner chose Away. Stopping is idempotent, so forcing is cheap.
       await this.applyRadios(
         { scanning: false, advertising: false },
-        /* force */ true,
+        true, // force
       );
       await this.setBackgroundService(false);
       // Native keeps whatever mode it was last given, and a stopped radio has
@@ -362,7 +362,7 @@ export class RadioController {
 
     const facts = await this.readFacts();
     // Reading the device is the one slow step here, and intent can change while
-    // it is in flight - the user choosing Away, or a panic wipe, lands as an
+    // it is in flight: the user choosing Away, or a panic wipe, lands as an
     // ordinary synchronous call on the same tick. Without this re-check the rest
     // of this pass would go on to start radios the user has just asked to stop.
     // The outer loop re-runs on `dirty`, so bailing here loses nothing.
@@ -408,19 +408,19 @@ export class RadioController {
       advertising: this.desired.discoverable,
     });
     // The background service exists to keep a RUNNING mesh alive off-screen, so
-    // it is tied to the mesh running - not, as before, to advertising. Invisible
-    // stops advertising and must keep relaying.
+    // it is tied to the mesh running, not to advertising. Invisible stops
+    // advertising and must keep relaying.
     //
     // Gated on SCANNING, not on the combined result.
     //
     // Issued whatever `applyRadios` reports, this puts a persistent "Airhop mesh
     // active" notification over a phone whose scanner has just refused. Gating it
     // on `ok` alone has the opposite fault: `ok` is also false when only
-    // ADVERTISING failed, and a device that
-    // scans and relays perfectly well but cannot advertise would then lose the
-    // service that keeps it alive off screen. Both directions are wrong for the
-    // same reason, which is that `ok` answers "did every call succeed" and the
-    // service exists for "is this device still doing mesh work".
+    // ADVERTISING failed, and a device that scans and relays perfectly well but
+    // cannot advertise would then lose the service that keeps it alive off
+    // screen. Both directions are wrong for the same reason, which is that `ok`
+    // answers "did every call succeed" and the service exists for "is this device
+    // still doing mesh work".
     //
     // Scanning is that question. A phone that scans is receiving and relaying
     // for everyone around it, which is worth holding the process up for whether
@@ -431,8 +431,8 @@ export class RadioController {
       this.attempt = 0;
     } else {
       // A native call refused. The usual reason is a permission the app can see
-      // but the stack has not honoured yet, which resolves itself in a few
-      // hundred milliseconds - so retry rather than give up.
+      // but the stack has not honored yet, which resolves itself in a few
+      // hundred milliseconds, so retry rather than give up.
       this.scheduleRetry();
     }
   }
@@ -460,8 +460,9 @@ export class RadioController {
     try {
       await AirhopBLE.setPowerMode(mode);
     } catch {
-      // Older native module, or the radio went away mid-call. The mode is
-      // advisory - the mesh runs either way - and the next reconcile retries.
+      // A permission withdrawn or the radio gone mid-call. Native records the
+      // mode before restarting the radios, so only the restart is lost and the
+      // next start runs at it. Advisory either way: the mesh runs regardless.
     }
   }
 
@@ -507,8 +508,7 @@ export class RadioController {
     );
   }
 
-  // Read what the device says about itself, tolerating an older native module
-  // that does not implement the call yet.
+  // Read what the device says about itself.
   private async readFacts(): Promise<RadioFacts> {
     try {
       const state = await AirhopBLE.getRadioState();
@@ -519,13 +519,11 @@ export class RadioController {
         locationRequiredForScan: state.locationRequiredForScan,
         locationServicesEnabled: state.locationServicesEnabled,
         // Native reports -1 when it has nothing to say (iOS, or Android before
-        // the first battery broadcast). Normalised to null here so the policy
+        // the first battery broadcast). Normalized to null here so the policy
         // has one "unknown" to reason about instead of a magic number.
         batteryPercent: state.batteryPercent < 0 ? null : state.batteryPercent,
         charging: state.charging,
-        // Compared rather than read, so a native build without the field
-        // reads as off instead of as undefined.
-        powerSaveMode: state.powerSaveMode === true,
+        powerSaveMode: state.powerSaveMode,
       };
     } catch {
       // Unreadable this instant. "unknown" reads as "starting", which retries,
@@ -572,11 +570,11 @@ export class RadioController {
     // A device with no BLE peripheral role never gets asked again.
     //
     // Some chipsets at the API 26 floor report a null bluetoothLeAdvertiser, and
-    // native answers UNSUPPORTED. That is not a transient refusal, but it used
-    // to be treated as one: applyRadios returned false, reconcileOnce scheduled
-    // a retry, the backoff capped at five seconds, and the app called
-    // startAdvertising every five seconds for as long as the mesh ran. Battery
-    // and logcat spend, forever, on a question whose answer cannot change.
+    // native answers UNSUPPORTED. That is not a transient refusal. Treated as
+    // one, applyRadios would return false, reconcileOnce would schedule a retry,
+    // and with the backoff capped at five seconds startAdvertising would go out
+    // that often for as long as the mesh ran: battery and logcat spend, forever,
+    // on a question whose answer cannot change.
     //
     // Scanning and relaying are untouched, so the mesh still works from this
     // phone's side. What it loses is being discovered, which is why the store is
@@ -644,7 +642,7 @@ export class RadioController {
     } catch {
       // Refused (typically a background-start restriction on Android 12+).
       // The mesh runs fine in the foreground either way, and the next
-      // reconcile - which a resume always triggers - will try again.
+      // reconcile, which a resume always triggers, will try again.
     }
   }
 

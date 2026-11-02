@@ -6,9 +6,9 @@
 // GitHub release. Release notes open GitHub's /releases/latest, which always
 // redirects to the newest published release, so no fetch happens here.
 //
-// No Build Number row: Expo doesn't expose a real build number outside an
-// EAS build, and this app isn't on EAS yet, so a fabricated number would
-// violate the "every row must be real" rule rather than satisfy it.
+// No Build Number row: Expo exposes no real build number outside an EAS build,
+// and this app does not build on EAS, so a made-up number would break the rule
+// that every row is real.
 
 import { APP_VERSION, GITHUB_URL, LATEST_RELEASE_PAGE } from "@data/app-info";
 import { useT } from "@i18n";

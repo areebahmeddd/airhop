@@ -16,8 +16,7 @@ import { VoicePlayer, type AudioPlaybackBackend } from "../voice-player";
 //
 // A VoiceSession holds two live timers (the jitter-buffer flush and the session
 // timeout). Left open they outlive the test, and Jest reports "a worker process
-// has failed to exit gracefully" for this whole directory. Closing them here is also the behaviour the app relies on: mesh-service
-// closes its player on shutdown for exactly the same reason.
+// has failed to exit gracefully" for this whole directory.
 const openPlayers: { close: () => void }[] = [];
 
 function track<T extends { close: () => void }>(player: T): T {
@@ -160,12 +159,6 @@ describe("VoicePlayer", () => {
   });
 
   it("starts playing from DATA when the START was missed", () => {
-    // Discarding the burst would let one lost packet at the head silence the
-    // whole thing, and walking into range mid-sentence would get you nothing
-    // until the talker let go and pressed again. The codec is not in
-    // doubt (0x01 is the only value the format defines), so a burst can be
-    // picked up from any DATA packet. Receive-side only: nothing on the wire
-    // changes and a bitchat sender does nothing differently.
     const player = track(new VoicePlayer(backend));
     player.handlePacket(makeDataPacket(1, 1), "peerA");
     expect(player.activeSessions).toHaveLength(1);
@@ -245,11 +238,8 @@ describe("VoicePlayer resource caps", () => {
   });
 });
 
-// A peer in Bluetooth range can send whatever it likes for as long as it likes,
-// and an honest client's own 120-second limit is no defence because a hostile
-// one simply does not have it. These pin the inbound ceilings that stop one
-// talker holding the floor indefinitely. Matches bitchat's pttMaxBurstBytes and
-// pttInboundMaxBytesPerSecond.
+// The inbound ceilings that stop one talker holding the floor indefinitely.
+// Matches bitchat's pttMaxBurstBytes and pttInboundMaxBytesPerSecond.
 describe("VoicePlayer inbound burst caps", () => {
   function makeBackend(): AudioPlaybackBackend {
     return {

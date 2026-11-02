@@ -4,7 +4,11 @@
 // The count is substituted, so the banner carries directional isolates.
 // Compared without them: pinning them here would test `interpolate`.
 import { stripIsolates } from "@i18n";
-import { computeMeshBanners, type MeshBannerInputs } from "../mesh-state-store";
+import {
+  computeMeshBanners,
+  locationOffBanner,
+  type MeshBannerInputs,
+} from "../mesh-state-store";
 
 // A healthy, fully-online baseline. Individual tests override one field.
 const HEALTHY: MeshBannerInputs = {
@@ -71,7 +75,7 @@ describe("computeMeshBanners", () => {
 
   // Bluetooth off is only a blocker when it leaves nothing. Said over a working
   // LAN or WiFi Aware link it is false, and a red banner over a working mesh is
-  // how people learn to ignore the colour.
+  // how people learn to ignore the color.
   it("softens Bluetooth-off while another local transport carries the mesh", () => {
     for (const inputs of [
       { lanState: "active" as const },
@@ -272,6 +276,30 @@ describe("computeMeshBanners", () => {
     expect(banners.map((b) => b.key)).toEqual([]);
   });
 
+  // The location channels still run over Bluetooth without a grant, so the note
+  // says how far they reach rather than calling them unavailable, and offers the
+  // grant itself rather than a trip to Settings.
+  it("says location channels reach nearby only, and offers to turn it on", () => {
+    const banner = computeMeshBanners({
+      ...HEALTHY,
+      locationGranted: false,
+    })[0];
+    expect(banner).toEqual({
+      key: "location",
+      label: "Location off · location channels reach nearby only",
+      tone: "caution",
+      action: { label: "Turn on", kind: "enable-location" },
+    });
+  });
+
+  it("builds the in-room note with the same tone and way out", () => {
+    const banner = locationOffBanner("Any label");
+    expect(banner.label).toBe("Any label");
+    expect(banner.tone).toBe("caution");
+    expect(banner.action?.kind).toBe("enable-location");
+    expect(banner.dismissible).toBeUndefined();
+  });
+
   it("stacks location, Nostr and Tor together when all apply", () => {
     const banners = computeMeshBanners({
       ...HEALTHY,
@@ -431,7 +459,7 @@ describe("clock skew banner", () => {
 });
 
 // The WiFi Aware fast path, which is an accelerator and never a blocker. It gets
-// a note only when the user could act on it, and never a colour that suggests
+// a note only when the user could act on it, and never a color that suggests
 // something is broken: every message still sends over Bluetooth.
 describe("the WiFi fast-path note", () => {
   it("says nothing when the fast path is running", () => {

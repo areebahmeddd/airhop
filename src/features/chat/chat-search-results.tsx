@@ -59,11 +59,10 @@ import {
 } from "react-native";
 
 // The filter chips shown above search, one per content kind Airhop supports.
-// Keys, not text: evaluated once at import, so translated strings here would
-// freeze in the language the app started in.
+// Keys, not text: the component translates on render.
 //
 // Each empty state is its own sentence rather than the label spliced into one:
-// a label is a capitalised plural, and the noun's gender, number and case all
+// a label is a capitalized plural, and the noun's gender, number and case all
 // change the words around it.
 const MEDIA_FILTERS: {
   key: MediaFilter;

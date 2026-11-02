@@ -5,9 +5,8 @@
 // frames for JITTER_BUFFER_MS before flushing them in sequence order, smoothing
 // over network jitter while keeping latency acceptable for live PTT.
 //
-// One VoiceSession is created per (senderPeerID, sessionId) pair. Sessions are
-// automatically cleaned up when a last-frame is received or after an inactivity
-// timeout.
+// One VoiceSession is created per (senderPeerID, burstID) pair, and closed by
+// the burst's END or CANCELED, by an inbound cap, or by the inactivity timeout.
 
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Packet } from "../wire/packet-codec";
@@ -308,7 +307,7 @@ export class VoicePlayer {
   // live pill naming them would outlive the audio, waiting for a packet that
   // is never coming.
   private readonly onSessionsChanged: () => void;
-  // Key: "${senderPeerID}:${sessionId}"
+  // Key: "${senderPeerID}:${burstIDHex}"
   private sessions = new Map<string, VoiceSession>();
   // Which burst is being heard, of however many are arriving.
   //
@@ -339,8 +338,7 @@ export class VoicePlayer {
     this.onSessionsChanged = onSessionsChanged;
   }
 
-  // Feed a raw VOICE_FRAME packet into the player. Handles session lifecycle and
-  // frame routing automatically. Call this from the BLE packet receive path.
+  // Feed a raw VOICE_FRAME packet into the player.
   handlePacket(packet: Packet, senderPeerID: string): void {
     this.handleBurstPayload(packet.payload, senderPeerID);
   }
@@ -360,12 +358,6 @@ export class VoicePlayer {
 
     switch (burst.kind) {
       case "start": {
-        // Only so many bursts can be in flight at once. Every one holds a
-        // jitter buffer, and only one of them can be making sound, so past this
-        // point a new burst is buying nothing at the cost of memory. Matches
-        // bitchat's pttMaxConcurrentAssemblies. The oldest goes rather than
-        // refusing the new one: a talker who just started is more likely to be
-        // the one being listened to than one whose buffer has gone stale.
         if (!this.sessions.has(key)) {
           this.openSession(key, burst.burstID, senderPeerID, burst.codec, true);
         }
@@ -501,7 +493,7 @@ export class VoicePlayer {
     }));
   }
 
-  // Tear down all sessions (e.g. on app background).
+  // Tear down all sessions, as when the mesh stops.
   close(): void {
     for (const session of this.sessions.values()) session.destroy();
     this.sessions.clear();

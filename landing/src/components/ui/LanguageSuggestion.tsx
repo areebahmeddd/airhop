@@ -22,13 +22,13 @@ export default function LanguageSuggestion() {
     const next = suggestLanguage(current);
     if (next === null) return;
 
-    let cancelled = false;
+    let canceled = false;
     void loadCatalog(next).then(() => {
-      if (!cancelled) setSuggested(next);
+      if (!canceled) setSuggested(next);
     });
 
     return () => {
-      cancelled = true;
+      canceled = true;
     };
   }, [current]);
 

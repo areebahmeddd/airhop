@@ -28,6 +28,14 @@ describe("Deduplicator", () => {
       expect(dedup.has(packetId(0x01))).toBe(true);
     });
 
+    it("delete() forgets one ID and leaves the rest", () => {
+      dedup.add(packetId(0x01));
+      dedup.add(packetId(0x02));
+      dedup.delete(packetId(0x01));
+      expect(dedup.has(packetId(0x01))).toBe(false);
+      expect(dedup.has(packetId(0x02))).toBe(true);
+    });
+
     it("different packetIDs are tracked independently", () => {
       dedup.add(packetId(0x01));
       expect(dedup.has(packetId(0x01))).toBe(true);
@@ -51,7 +59,6 @@ describe("Deduplicator", () => {
 
   describe("LRU eviction", () => {
     it("evicts the oldest entry when capacity (1000) is exceeded", () => {
-      // Fill to capacity
       for (let i = 0; i < 1000; i++) {
         const n = new Uint8Array(16);
         n[0] = (i >> 8) & 0xff;
@@ -60,12 +67,11 @@ describe("Deduplicator", () => {
       }
       expect(dedup.size).toBe(1000);
 
-      // Adding one more should evict the oldest (index 0)
       dedup.add(packetId(0xff));
       expect(dedup.size).toBe(1000);
 
       // The very first entry (i=0, bytes [0,0,...]) should be evicted
-      const oldest = new Uint8Array(16); // i=0: n[0]=0, n[1]=0
+      const oldest = new Uint8Array(16);
       expect(dedup.has(oldest)).toBe(false);
     });
 
@@ -102,7 +108,6 @@ describe("Deduplicator", () => {
       dedup.add(packetId(0x01));
       expect(dedup.has(packetId(0x01))).toBe(true);
 
-      // Advance past the 5-minute expiry window
       jest.advanceTimersByTime(5 * 60 * 1000 + 1);
 
       expect(dedup.has(packetId(0x01))).toBe(false);
@@ -120,11 +125,10 @@ describe("Deduplicator", () => {
 
     it("fresh entries survive purgeExpired()", () => {
       dedup.add(packetId(0x01));
-      jest.advanceTimersByTime(1000); // 1 second only
+      jest.advanceTimersByTime(1000);
       dedup.add(packetId(0x02));
 
       dedup.purgeExpired();
-      // Neither is expired yet
       expect(dedup.size).toBe(2);
     });
   });

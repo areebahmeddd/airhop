@@ -1,9 +1,8 @@
 // Push-to-talk voice capture: encodes audio into VOICE_FRAME (0x29) packets.
 //
-// Architecture: audio capture is delegated to an AudioCaptureBackend interface.
-// The platform implementation (expo-av, react-native-audio-api, etc.) provides
-// raw PCM callbacks; this module handles PTT session state, frame sequencing,
-// and packet construction.
+// Capture and encoding belong to an AudioCaptureBackend: the platform hands
+// over encoded AAC frames, and this module handles PTT session state, frame
+// sequencing and packet construction.
 //
 // VOICE_FRAME payload format (matches bitchat VoiceBurstPacket.swift):
 //   [burstID: 8 bytes][seq: u16 BE][flags: u8][type-specific payload]
@@ -33,7 +32,7 @@ import {
   type Packet,
 } from "../wire/packet-codec";
 
-// ---- Constants (per PUSH-TO-TALK-DESIGN.md / VoiceBurstPacket.swift) ----
+// ---- Constants ----
 
 // Codec values: must match VoiceBurstCodec in bitchat.
 export const VoiceCodec = {
@@ -70,9 +69,10 @@ const MAX_FRAMES_PER_PACKET = 8;
 export const MAX_BURST_MS = 120_000;
 
 // Ceiling on the finalized voice note kept for a burst. At ~130 bytes a frame
-// and 64 ms per frame this is a little over four minutes, well past the 512 KiB
-// the file transfer would accept anyway; the cap is here so a stuck microphone
-// cannot grow the array without bound.
+// and 64 ms per frame this is a little over four minutes, about the 512 KiB
+// the file transfer would accept anyway. MAX_BURST_MS stops capture long before
+// that on the wall clock; the cap holds if the clock is wound back mid-burst, so
+// the array cannot grow without bound.
 const MAX_RECORDED_FRAMES = 4096;
 
 // Fixed burst packet header size: burstID(8) + seq(2) + flags(1) = 11 bytes.
@@ -131,7 +131,7 @@ export interface VoiceCaptureConfig {
   // Best-effort, like the broadcast path: a frame that cannot go out right now
   // is simply not sent. See emit().
   onDmPayload?: (payload: Uint8Array) => void;
-  // Our neighbour count, which a public burst's TTL follows (see
+  // Our neighbor count, which a public burst's TTL follows (see
   // origin-ttl.ts). 0 (sparse) when not given.
   getDegree?: () => number;
 }
@@ -265,7 +265,6 @@ export class VoiceCaptureSession {
       return;
     }
 
-    // Flush any buffered frames.
     this.flushPending();
 
     // The length of the audio, not of the press. They differ by however long
@@ -320,8 +319,6 @@ export class VoiceCaptureSession {
     // This frame is going into the burst, so the burst now exists. Announce it
     // before anything carrying audio can go out ahead of it.
     this.sendStartIfNeeded();
-    // If adding this frame would exceed the budget or the frame count limit,
-    // flush what we have first.
     if (
       this.pendingFrames.length > 0 &&
       (BURST_HEADER_SIZE + this.pendingSize + frameCost > PTT_MAX_BURST_BYTES ||
@@ -338,7 +335,7 @@ export class VoiceCaptureSession {
   }
 
   // The burst as a standalone, playable file, or null when nothing was
-  // captured. Read after stopPtt; cancelPtt discards it, because a cancelled
+  // captured. Read after stopPtt; cancelPtt discards it, because a canceled
   // burst should leave nothing behind even though the live audio already
   // played on the far side.
   finalizedRecording(): Uint8Array | null {
@@ -461,7 +458,6 @@ function writeBurstHeader(
   buf[BURST_ID_SIZE + 2] = flags;
 }
 
-// START packet: [burstID:8][seq:2][0x01][codec:1]
 export function encodeBurstStart(
   burstID: Uint8Array,
   codec: VoiceCodecId,
@@ -472,7 +468,6 @@ export function encodeBurstStart(
   return buf;
 }
 
-// DATA packet: [burstID:8][seq:2][0x00][len:2][frame]...(repeating)
 export function encodeBurstData(
   burstID: Uint8Array,
   seq: number,
@@ -492,7 +487,6 @@ export function encodeBurstData(
   return buf;
 }
 
-// END packet: [burstID:8][seq:2][0x02][totalDataPackets:2][durationMs:4]
 export function encodeBurstEnd(
   burstID: Uint8Array,
   seq: number,
@@ -507,7 +501,6 @@ export function encodeBurstEnd(
   return buf;
 }
 
-// CANCELED packet: [burstID:8][seq:2][0x04]
 export function encodeBurstCanceled(
   burstID: Uint8Array,
   seq: number,

@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-b+zh+Hans/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "蓝牙已关 · 未在扫描";
+"widget_label" = "范围内的节点";
+"widget_description" = "范围内的节点，以及清点的时间";
+"widget_nobody" = "范围内没有人";
+"widget_as_of" = "截至 %1$@";
+"widget_paused" = "网状网络已暂停";
+"widget_unset" = "打开 Airhop";
+"widget_stale" = "打开 Airhop 以刷新";

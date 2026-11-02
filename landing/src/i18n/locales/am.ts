@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "ማንነትዎ በመሣሪያዎ ላይ የተፈጠረና በ {ios_keychain} ወይም በ {android_keystore} ውስጥ የተቀመጠ የ {ed25519} ቁልፍ ጥንድ ነው። መለያ የለም፣ ምዝገባ የለም፣ አገልጋይን የሚነካ ነገርም የለም። ማለትም ከተሰረዘ በኋላ ወደ እርስዎ የሚመራ ምንም ሳይተው እንደ ጊዜያዊ መተግበሪያ ሊያገለግል ይችላል።",
   "home.about.body.crypto":
-    "እያንዳንዱ ክፍለ ጊዜ ለተረጋገጠ የመጀመሪያ ልውውጥ የ {noise} ፕሮቶኮልን ይጠቀማል። የተቀመጡ መልእክቶች የ {ratchet} ስልተ ቀመርን ይጠቀማሉ፤ ማለትም መሣሪያዎ ወደፊት ቢጠለፍም እንኳ ያለፉት መልእክቶችዎ ሊነበቡ አይችሉም። የአስቸኳይ ጊዜ ማጥፋት ሁሉንም ቁልፎችና መልእክቶች ከአንድ ሰከንድ ባነሰ ጊዜ ውስጥ ያጠፋል።",
+    "እያንዳንዱ ክፍለ ጊዜ ለተረጋገጠ የመጀመሪያ ልውውጥ የ {noise} ፕሮቶኮልን ይጠቀማል። በAirhop ስልኮች መካከል ያሉ ቀጥታ የግል መልእክቶች የ {ratchet} ስልተ ቀመርን ይጠቀማሉ፤ ማለትም ቁልፍ ወደፊት ቢወጣም እንኳ አስቀድመው የተላኩ መልእክቶችን መክፈት አይችልም። የአስቸኳይ ጊዜ ማጥፋት ሁሉንም ቁልፎችና መልእክቶች ከአንድ ሰከንድ ባነሰ ጊዜ ውስጥ ያጠፋል።",
   "home.about.body.internet":
     "እርስዎና ሰዎችዎ ከ Bluetooth ክልል ውጭ ሲሆኑ የ {nostr} ማስተላለፊያዎች በኢንተርኔት በኩል እንደ ድልድይ ያገለግላሉ፤ በ {nip17} ቅርጽ የተጠቀለሉ ቀጥታ መልእክቶችን ይጠቀማሉ። ስለዚህ ሁለታችሁም በመስመር ላይ ስትሆኑ መረቡ ወደ መላው ዓለም ይዘረጋል። የ {tor} ድጋፍ በ iOS እና በ Android ላይ በ {arti} በኩል ይገኛል፤ Tor ለሚያግዱ አውታረ መረቦችም የ {obfs4}፣ የ {snowflake} እና የ {webtunnel} ድልድዮች አሉ።",
   "home.about.optional.title": "Airhop እርስዎ ማብራት የሚችሏቸው አማራጭ ባህሪዎች አሉት:",
@@ -154,8 +154,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "ለክፍል የግብዣ አገናኞች፣ ወይም እስከ 16 ሰዎች የተፈረመ ዝርዝር።",
   "home.features.messaging.board.name": "የማስታወቂያ ሰሌዳ",
   "home.features.messaging.board.line": "እስከ ሰባት ቀናት ድረስ በአንድ አካባቢ ተለጥፈው የሚቆዩ ማስታወቂያዎች።",
-  "home.features.messaging.voice.name": "ቀጥታ ድምጽ",
-  "home.features.messaging.voice.line": "ማይክሮፎኑን ተጭነው በክልሉ ውስጥ ካለ ማንኛውም ሰው ጋር ይነጋገሩ፣ እንደ ዋኪቶኪ።",
+  "home.features.messaging.voice.name": "ቀጥታ ድምጽ እና ቪዲዮ",
+  "home.features.messaging.voice.line":
+    "ማይክሮፎኑን ተጭነው ይነጋገሩ፣ ወይም በካሜራ ቀጥታ ያስተላልፉ፣ በክልሉ ውስጥ ላለ ማንኛውም ሰው።",
   "home.features.messaging.notes.name": "የድምጽ መልእክቶች",
   "home.features.messaging.notes.line": "የተቀዳ ድምጽ፣ አቅጣጫ ከመተየብ ይፈጥናል።",
   "home.features.messaging.files.name": "ፎቶዎች፣ ቪዲዮና ፋይሎች",

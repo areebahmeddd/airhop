@@ -47,7 +47,8 @@ const KIND_SEAL = 13;
 export const KIND_GIFT_WRAP = 1059;
 
 // bitchat randomizes seal + gift-wrap timestamps by +/-15 minutes (NostrProtocol
-// randomizedTimestamp). Matching this keeps our events indistinguishable from
+// randomizedTimestamp), which blurs send timing without moving them so far that
+// relays reject them. Matching it keeps our events indistinguishable from
 // theirs to a relay.
 const TIMESTAMP_JITTER_SECONDS = 15 * 60;
 
@@ -121,8 +122,6 @@ export function wrapDm(
   return { event: giftWrap, wrapperPubkey: ephemeralPubkey };
 }
 
-// bitchat randomizes the seal and gift-wrap timestamps by +/-15 minutes to blur
-// send timing without moving them so far that relays reject them.
 function randomizedTimestamp(): number {
   const jitter = Math.floor(
     (secureRandom() * 2 - 1) * TIMESTAMP_JITTER_SECONDS,
@@ -221,7 +220,7 @@ export function unwrapDm(
 
   // The rumor's own clock has to be plausible.
   //
-  // The gift wrap's outer timestamp is randomised by design (NIP-17), so the
+  // The gift wrap's outer timestamp is randomized by design (NIP-17), so the
   // inner rumor's `created_at` is the only claim about when this was sent, and
   // nothing signs it into a window. A relay, or the sender, can date it
   // arbitrarily. Threads sort by time, so a far-future rumor pins itself to the
@@ -248,7 +247,6 @@ export function unwrapDm(
 
 // Derive a secp256k1 private key from an Ed25519 signing key via HKDF-SHA256.
 // This gives each identity a deterministic Nostr key without a second key pair.
-// Used when the caller does not manage separate Nostr keys.
 export function deriveNostrPrivKey(ed25519PrivKey: Uint8Array): Uint8Array {
   const info = new TextEncoder().encode("airhop-nostr-key-v1");
   return hkdf(sha256, ed25519PrivKey, undefined, info, 32);

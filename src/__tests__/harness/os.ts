@@ -4,16 +4,16 @@
 // device and what the device is actually doing. A test that mocks the native
 // module away cannot find them, because the mock agrees with the app by
 // construction. So this file models the OS side of that gap (the rules Android
-// and iOS actually enforce), and the native modules are modelled separately
+// and iOS actually enforce), and the native modules are modeled separately
 // (android-native.ts, ios-native.ts) as code running ON this OS.
 //
-// Everything the OS enforces here is a real, documented behaviour:
+// Everything the OS enforces here is a real, documented behavior:
 //
 //   - A runtime permission is granted to the APP before it is enforced by the
 //     Bluetooth STACK. PermissionsAndroid resolves on the first; BLE calls are
 //     checked against the second. bitchat-android papers over the window with
 //     `delay(1000)` and the comment "This solves the issue where app needs
-//     restart to work on first install" (MainActivity.kt). Modelled as
+//     restart to work on first install" (MainActivity.kt). Modeled as
 //     `permissionSettleMs`.
 //   - Turning the adapter off invalidates every GATT handle the app holds. The
 //     handles stay non-null and look alive; every call through them fails.
@@ -105,7 +105,7 @@ export interface DeviceOptions {
   apiLevel?: number;
   adapter?: AdapterState;
   locationServicesEnabled?: boolean;
-  // How long after the user taps "Allow" the Bluetooth stack actually honours
+  // How long after the user taps "Allow" the Bluetooth stack actually honors
   // the grant. Zero models an ideal device; real hardware is not ideal, and
   // this is the window bitchat's delay(1000) exists to clear.
   permissionSettleMs?: number;
@@ -116,7 +116,7 @@ export interface DeviceOptions {
   canAdvertise?: boolean;
   hasWifiAware?: boolean;
   // Install-time permissions the manifest declares. Only the ones a
-  // foreground service type's prerequisite reads are modelled; the default is
+  // foreground service type's prerequisite reads are modeled; the default is
   // what android/app/src/main/AndroidManifest.xml declares of them.
   manifestPermissions?: readonly string[];
   // Multi-device simulation only. A device in a world does not own the clock:
@@ -158,7 +158,7 @@ export class DeviceOS {
 
   // What the app is told it has (PermissionsAndroid.check).
   private granted: Partial<Record<AndroidPermission, PermissionState>> = {};
-  // What the Bluetooth stack will actually honour right now. Lags `granted` by
+  // What the Bluetooth stack will actually honor right now. Lags `granted` by
   // permissionSettleMs. This split is the whole point of the model.
   private enforced = new Set<AndroidPermission>();
 
@@ -191,8 +191,8 @@ export class DeviceOS {
   }
 
   // There is exactly one clock in this harness: Jest's fake timers. The OS
-  // model, the native modules, and the real mesh-service (whose
-  // scheduleRadioRestart uses a bare setTimeout) all schedule onto it, so their
+  // model, the native modules, and the real mesh-service (whose timers are bare
+  // setTimeouts) all schedule onto it, so their
   // ordering in a scenario is the same ordering they would have on a device.
   // Running two clocks side by side would let the harness invent an interleave
   // that hardware never produces, which is the one thing a race-condition
@@ -244,7 +244,7 @@ export class DeviceOS {
 
   // Run a block the way the OS runs it: on a thread with no exception handler
   // above it. Android does not have a concept of a callback that throws and is
-  // ignored: the process dies. Modelling that honestly is what lets the harness
+  // ignored: the process dies. Modeling that honestly is what lets the harness
   // tell a swallowed error from an app crash.
   runOnThread(name: string, fn: () => void): void {
     if (this.crashed !== null) return;
@@ -271,7 +271,7 @@ export class DeviceOS {
   setPermission(p: AndroidPermission, state: PermissionState): void {
     this.granted[p] = state;
     if (state === "granted") {
-      // The app can see the grant immediately. The stack honours it later.
+      // The app can see the grant immediately. The stack honors it later.
       if (this.permissionSettleMs === 0) {
         this.enforced.add(p);
       } else {

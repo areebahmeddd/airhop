@@ -41,9 +41,9 @@
 	     Read the key name carefully: it asks about NON-EXEMPT encryption, not
 	     about encryption. Airhop plainly uses encryption, but under the EAR that
 	     is only "non-standard cryptography" when the algorithm is proprietary or
-	     unpublished. Every primitive here is a published standard - X25519
-	     (RFC 7748), Ed25519 (RFC 8032), ChaCha20-Poly1305 (RFC 8439), SHA-256,
-	     HKDF (RFC 5869), secp256k1 Schnorr (BIP-340) - composed by published
+	     unpublished. Every primitive here is a published standard (X25519,
+	     RFC 7748; Ed25519, RFC 8032; ChaCha20-Poly1305, RFC 8439; SHA-256; HKDF,
+	     RFC 5869; secp256k1 Schnorr, BIP-340) composed by published
 	     specifications: the Noise Protocol Framework, Signal's Double Ratchet,
 	     and NIP-44. Nothing is invented here.
 
@@ -96,13 +96,13 @@
 	     hand-maintained, never regenerated from app.json, so a new permission
 	     is added here.
 
-	     These are not optional. Without them iOS does not deny the request - it
+	     These are not optional. Without them iOS does not deny the request: it
 	     terminates the process the moment AVCaptureDevice or AVAudioSession is
 	     touched. -->
 	<key>NSCameraUsageDescription</key>
 	<string>Airhop uses the camera to scan a contact's QR code, and to capture photos and videos to share with nearby peers.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Airhop uses the microphone to record voice notes and to carry live voice to nearby peers.</string>
+	<string>Airhop uses the microphone to record voice and video notes and to carry live voice to nearby peers.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Airhop accesses your photo library to share images and videos over the mesh.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

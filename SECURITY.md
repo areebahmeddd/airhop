@@ -25,7 +25,7 @@ Android release APKs for `org.onemindlabs.airhop` are signed with one certificat
 
 | Stage               | Target                                    |
 | ------------------- | ----------------------------------------- |
-| Acknowledgement     | 48 hours                                  |
+| Acknowledgment      | 48 hours                                  |
 | Triage and severity | 5 business days                           |
 | Critical fix        | 7 days                                    |
 | High fix            | 14 days                                   |

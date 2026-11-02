@@ -10,9 +10,9 @@
 // One difference survives, and it is about coverage rather than lifecycle. On
 // Android the proxy is installed into React Native's OkHttp clients and as the
 // process's default selector, so every web request the Java stack makes is
-// covered, `fetch` and downloads included. On iOS only the Nostr
-// WebSocket goes through Tor, which is why a mint request there has to be
-// refused rather than routed. See services/tor-routing.ts.
+// covered, `fetch` and downloads included. On iOS only the Nostr WebSocket goes
+// through Tor, which is why a mint request there has to be refused rather than
+// routed. See services/tor-routing.ts.
 import type { EventSubscription, TurboModule } from "react-native";
 import {
   NativeEventEmitter,
@@ -41,8 +41,18 @@ export interface Spec extends TurboModule {
   // separately, so a client cannot come up without stating which it is. Native
   // starts the transports the lines name before Arti, and rejects when they do
   // not come up rather than falling back to a direct route.
+  //
+  // A refused start rejects with a code saying why: `tor_bridge_rejected` (Arti
+  // refused the bridge lines), `tor_transport_failed` (the pluggable transports
+  // did not come up), `tor_port_busy` (another client holds the SOCKS port) or
+  // `tor_start_failed` (anything else).
   startTor(bridgeLines: string): Promise<void>;
-  stopTor(): Promise<void>;
+
+  // Resolves once the client and its transports are down, so a start that
+  // follows cannot overlap the stop. `keepHeld` leaves Android's HTTP stack
+  // held rather than routing it direct, for a bridge change that starts again
+  // straight after; iOS holds nothing natively and ignores it.
+  stopTor(keepHeld: boolean): Promise<void>;
 
   // Stop Arti and delete everything it has written to disk. Panic wipe only.
   //

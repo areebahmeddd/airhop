@@ -1,6 +1,6 @@
 // Single source of truth for the selectable monospace fonts.
 //
-// Adding a new font is a one-line entry here (plus loading its file in App.tsx).
+// Adding a new font is a one-line entry here (plus loading its file in app.tsx).
 // Both the Appearance picker and the FontFamily.mono resolver (ui/theme.ts) read
 // from this table, so the family string is never duplicated and a new option can
 // never be silently mismapped the way a hand-written ternary would.
@@ -11,7 +11,7 @@ import type { MonoFont } from "@store/settings-store";
 
 export interface MonoFontSpec {
   // The React Native `fontFamily` value. "monospace" is the OS built-in; the
-  // others must be loaded via useFonts in App.tsx under this exact name.
+  // others must be loaded via useFonts in app.tsx under this exact name.
   family: string;
   // Shown in the Appearance picker.
   // Keys, not text: this is a module constant, so translated strings would

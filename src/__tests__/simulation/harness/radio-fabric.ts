@@ -7,7 +7,7 @@
 // means, which is the point: a medium that understood the protocol could not
 // find a protocol bug.
 //
-// Behaviours modelled here because they are real and they break things:
+// Behaviors modeled here because they are real and they break things:
 //
 //   * Discovery is not instant. A scanner takes a while to see an advertiser,
 //     and a GATT connection takes longer still. Code that assumes a peer is
@@ -116,13 +116,19 @@ function pairKey(a: string, b: string): string {
   return a < b ? `${a}|${b}` : `${b}|${a}`;
 }
 
+// The second link of a dual-linked pair: its key in the link table and the
+// prefix of the handles both sides hold for it.
+const SECOND_KEY = "#2";
+const FIRST_PREFIX = "link:";
+const SECOND_PREFIX = "link2:";
+
 // Simultaneous central-role links a phone can hold. A radio limit, not a policy
 // one: Android controllers manage roughly seven GATT client connections and
 // refuse the rest with status 133. Mirrors bitchat-ios
 // TransportConfig.bleMaxCentralLinks and the cap both Airhop native modules
 // enforce. Without this the simulation would let 25 phones hold 300
 // simultaneous connections, which is not a network any of this code will ever
-// meet, and would hide the crowd behaviour that actually matters.
+// meet, and would hide the crowd behavior that actually matters.
 const MAX_CENTRAL_LINKS = 6;
 
 export class RadioFabric {
@@ -132,6 +138,9 @@ export class RadioFabric {
   // everybody", which is what a small scenario wants.
   private adjacency: Map<string, Set<string>> | null = null;
   private conditions: LinkConditions = { ...DEFAULT_CONDITIONS };
+  // Off by default: a second link per pair changes the link table, and with it
+  // every scenario's seeded timing.
+  private dualLinks = false;
   private readonly rng: Prng;
   // Pending discovery timers, so a device that stops advertising mid-discovery
   // does not connect anyway.
@@ -215,7 +224,7 @@ export class RadioFabric {
   // walking away does.
   setIsolated(deviceID: string, isolated: boolean): void {
     if (this.adjacency === null) {
-      // Materialise the implicit full mesh so one device can be cut from it.
+      // Materialize the implicit full mesh so one device can be cut from it.
       const ids = [...this.devices.keys()];
       const pairs: [string, string][] = [];
       for (let i = 0; i < ids.length; i++) {
@@ -226,10 +235,10 @@ export class RadioFabric {
     const map = this.adjacency;
     if (map === null) return;
     if (isolated) {
-      const neighbours = map.get(deviceID);
-      if (neighbours !== undefined) {
-        for (const other of neighbours) map.get(other)?.delete(deviceID);
-        neighbours.clear();
+      const neighbors = map.get(deviceID);
+      if (neighbors !== undefined) {
+        for (const other of neighbors) map.get(other)?.delete(deviceID);
+        neighbors.clear();
       }
       this.world.say("WALKED_AWAY", deviceID);
     } else {
@@ -246,6 +255,16 @@ export class RadioFabric {
   private canHear(a: string, b: string): boolean {
     if (this.adjacency === null) return a !== b;
     return this.adjacency.get(a)?.has(b) ?? false;
+  }
+
+  // Both phones of a pair dial each other, as they do on hardware: each scans,
+  // each sees the other, and neither checks for a link the other side opened.
+  // A pair then holds two links, one per direction, which is what the fanout
+  // has to collapse to one write per neighbor.
+  setDualLinks(on: boolean): void {
+    this.dualLinks = on;
+    this.world.say("DUAL_LINKS", on ? "on" : "off");
+    this.recompute();
   }
 
   // ---- conditions ----
@@ -334,6 +353,7 @@ export class RadioFabric {
         const a = ids[i];
         const b = ids[j];
         const key = pairKey(a, b);
+        this.considerSecondLink(key);
         if (this.links.has(key)) continue;
         if (this.pendingDiscovery.has(key)) continue;
         // Either side scanning and seeing the other is enough: the link is
@@ -342,7 +362,8 @@ export class RadioFabric {
         const bSeesA = this.visible(b, a);
         if (!aSeesB && !bSeesA) continue;
         // The scanner is whichever side could see the other. If both, the
-        // lower id wins, deterministically.
+        // lower id wins, deterministically, and in dual-link mode the other
+        // side dials back once this link is up.
         let scanner = aSeesB ? a : b;
         let advertiser = aSeesB ? b : a;
         // If the natural scanner is at its central-link ceiling, the other side
@@ -362,6 +383,18 @@ export class RadioFabric {
         this.scheduleDiscovery(key, scanner, advertiser);
       }
     }
+  }
+
+  // In dual-link mode, the first link's advertiser dialing its scanner back.
+  private considerSecondLink(key: string): void {
+    if (!this.dualLinks) return;
+    const first = this.links.get(key);
+    const second = key + SECOND_KEY;
+    if (first === undefined) return;
+    if (this.links.has(second) || this.pendingDiscovery.has(second)) return;
+    if (!this.visible(first.b, first.a)) return;
+    if (this.centralLinkCount(first.b) >= MAX_CENTRAL_LINKS) return;
+    this.scheduleDiscovery(second, first.b, first.a);
   }
 
   // How much slower discovery is for a scanner whose app is in the background.
@@ -423,11 +456,13 @@ export class RadioFabric {
     if (s === undefined || a === undefined) return;
 
     const rssi = this.rng.int(-90, -40);
+    const isSecond = key.endsWith(SECOND_KEY);
+    const prefix = isSecond ? SECOND_PREFIX : FIRST_PREFIX;
     const link: Link = {
       a: scanner,
       b: advertiser,
-      aLinkID: `link:${advertiser}`,
-      bLinkID: `link:${scanner}`,
+      aLinkID: `${prefix}${advertiser}`,
+      bLinkID: `${prefix}${scanner}`,
       rssi,
       aLastDeliveryAt: this.world.now,
       bLastDeliveryAt: this.world.now,
@@ -439,6 +474,7 @@ export class RadioFabric {
     // told about its own handle only.
     s.native.fabricLinkUp(link.aLinkID, "central", rssi);
     a.native.fabricLinkUp(link.bLinkID, "peripheral", rssi);
+    if (!isSecond) this.considerSecondLink(key);
   }
 
   private dropLink(key: string): void {
@@ -457,8 +493,10 @@ export class RadioFabric {
   private onWrite(fromID: string, linkID: string, dataBase64: string): void {
     if (this.disposed) return;
     // linkID is the SENDER's handle, which names the far side.
-    const toID = linkID.startsWith("link:") ? linkID.slice("link:".length) : "";
-    const key = pairKey(fromID, toID);
+    const isSecond = linkID.startsWith(SECOND_PREFIX);
+    const prefix = isSecond ? SECOND_PREFIX : FIRST_PREFIX;
+    const toID = linkID.startsWith(prefix) ? linkID.slice(prefix.length) : "";
+    const key = pairKey(fromID, toID) + (isSecond ? SECOND_KEY : "");
     const link = this.links.get(key);
     if (link === undefined) return;
 
@@ -477,7 +515,7 @@ export class RadioFabric {
     // left; iOS refuses it outright. Either way nothing arrives, so the fabric
     // drops it and counts it.
     //
-    // A fabric that accepts any size lets a 557-byte fragment pass every
+    // A fabric that accepts any size lets an oversized fragment pass every
     // simulation while every attachment vanishes on real hardware.
     // `framesOversized` exists so a scenario can assert it never happened.
     if (bytes > MAX_BLE_FRAME) {
@@ -576,7 +614,7 @@ export class RadioFabric {
   // Listen to everything on the air.
   //
   // This is not a test hook so much as a capability anybody within thirty
-  // metres already has: BLE is a broadcast medium, and a passive listener
+  // meters already has: BLE is a broadcast medium, and a passive listener
   // records whatever is transmitted. Scenarios use it to capture traffic and
   // replay it later. Returns an unsubscribe.
   private readonly taps: ((
@@ -599,9 +637,9 @@ export class RadioFabric {
   // room would.
   //
   // Deliberately NOT routed through a SimDevice: an attacker is not running
-  // Airhop, and modelling one as a device would lend it Airhop's own restraint.
+  // Airhop, and modeling one as a device would lend it Airhop's own restraint.
   // This writes straight into the victim's radio over a link it already holds,
-  // which is exactly the capability anybody within thirty metres has.
+  // which is exactly the capability anybody within thirty meters has.
   injectTo(victimID: string, viaPeerID: string, dataBase64: string): boolean {
     const key = pairKey(victimID, viaPeerID);
     const link = this.links.get(key);

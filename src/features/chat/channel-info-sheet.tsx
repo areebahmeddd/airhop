@@ -6,7 +6,7 @@
 
 import { GROUP_MAX_MEMBERS } from "@core/mesh/rooms/group-protocol";
 import { relayDisplayHost } from "@core/nostr/geo-relay";
-import { t, useT, useTPlural, type TranslationKey } from "@i18n";
+import { t, useT, useTPlural } from "@i18n";
 import {
   Feather,
   type FeatherIconName,
@@ -40,6 +40,7 @@ import {
   HIT_SLOP,
   hitSlopFor,
   LineHeight,
+  PRESSED_OPACITY,
   Radius,
   Spacing,
   useThemeColors,
@@ -57,61 +58,8 @@ import {
   type ScrollViewInstance,
 } from "react-native";
 
+import { CHANNEL_SCOPE, DEFAULT_CHANNEL_NAMES } from "./default-channels";
 import { confirmLeaveConversation } from "./leave-conversation";
-
-// Protocol-defined default channels. Read-only, cannot be left.
-const DEFAULT_CHANNEL_NAMES = new Set([
-  "#bluetooth",
-  "#block",
-  "#neighborhood",
-  "#city",
-  "#province",
-  "#region",
-]);
-
-// Static metadata for each default channel.
-// Keys, not text: a module constant is evaluated once at import, so translated
-// strings here would freeze in whichever language the app started in. The
-// component translates them on render. Guarded by `npm run i18n:audit`.
-const CHANNEL_SCOPE: Record<
-  string,
-  {
-    tagKey: TranslationKey;
-    descriptionKey: TranslationKey;
-    transportKey: TranslationKey;
-  }
-> = {
-  "#bluetooth": {
-    tagKey: "chat.scope.mesh",
-    descriptionKey: "chat.scope.mesh_desc",
-    transportKey: "chat.transport.bluetooth",
-  },
-  "#block": {
-    tagKey: "chat.scope.block",
-    descriptionKey: "chat.scope.block_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#neighborhood": {
-    tagKey: "chat.scope.neighborhood",
-    descriptionKey: "chat.scope.neighborhood_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#city": {
-    tagKey: "chat.scope.city",
-    descriptionKey: "chat.scope.city_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#province": {
-    tagKey: "chat.scope.province",
-    descriptionKey: "chat.scope.province_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#region": {
-    tagKey: "chat.scope.country",
-    descriptionKey: "chat.scope.country_desc",
-    transportKey: "chat.transport.both",
-  },
-};
 
 interface Props {
   channel: string | null;
@@ -404,7 +352,7 @@ export default function ChannelInfoSheet({
 
   // One unified member list for all channel kinds. A group's signed roster, a
   // geo cell's active participants, a private channel's proven key-holders, or
-  // the nearby BLE peers all normalise to the same shape and render identically
+  // the nearby BLE peers all normalize to the same shape and render identically
   // (You row, chat action, search). This is a roster, so it lists and counts
   // you: a group roster already has you, and the others-only lists gain a "You"
   // row. The header's "nearby" and "active" are presence, and count others only.
@@ -494,7 +442,10 @@ export default function ChannelInfoSheet({
               a location channel with a resolved cell gets a bookmark toggle. */}
       {isGeo && geohash !== null && (
         <Pressable
-          style={styles.cornerBtn}
+          style={({ pressed }) => [
+            styles.cornerBtn,
+            pressed && styles.pressedDim,
+          ]}
           onPress={() => useGeohashBookmarksStore.getState().toggle(geohash)}
           hitSlop={hitSlopFor(28)}
           accessibilityRole="button"
@@ -595,7 +546,10 @@ export default function ChannelInfoSheet({
                     <Text style={styles.factGeohash}>{geohash}</Text>
                   </Text>
                   <Pressable
-                    style={styles.copyBtn}
+                    style={({ pressed }) => [
+                      styles.copyBtn,
+                      pressed && styles.pressedFill,
+                    ]}
                     onPress={handleCopyGeohash}
                     hitSlop={HIT_SLOP}
                     accessibilityRole="button"
@@ -613,7 +567,10 @@ export default function ChannelInfoSheet({
                     about relays behave the same way. */}
                 <View style={styles.factDivider} />
                 <Pressable
-                  style={styles.factRow}
+                  style={({ pressed }) => [
+                    styles.factRow,
+                    pressed && styles.pressedDim,
+                  ]}
                   onPress={() => setRelaysExpanded((v) => !v)}
                   accessibilityRole="button"
                   accessibilityState={{ expanded: relaysExpanded }}
@@ -669,6 +626,7 @@ export default function ChannelInfoSheet({
               {`${memberSectionTitle} · ${memberTotal}`}
             </UpperText>
             <Pressable
+              style={({ pressed }) => pressed && styles.pressedDim}
               onPress={() => {
                 setSearching((s) => !s);
                 setMemberSearch("");
@@ -737,6 +695,7 @@ export default function ChannelInfoSheet({
                 )}
                 {m.onChat && (
                   <Pressable
+                    style={({ pressed }) => pressed && styles.pressedDim}
                     onPress={m.onChat}
                     hitSlop={HIT_SLOP}
                     accessibilityRole="button"
@@ -753,6 +712,7 @@ export default function ChannelInfoSheet({
                 )}
                 {m.onRemove && (
                   <Pressable
+                    style={({ pressed }) => pressed && styles.pressedDim}
                     onPress={m.onRemove}
                     hitSlop={HIT_SLOP}
                     accessibilityRole="button"
@@ -783,7 +743,10 @@ export default function ChannelInfoSheet({
           <View style={styles.actions}>
             {canAddMembers && (
               <Pressable
-                style={styles.actionBtn}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  pressed && styles.pressedFill,
+                ]}
                 onPress={() => {
                   setAddSelected(new Set());
                   setShowAddMembers(true);
@@ -802,9 +765,10 @@ export default function ChannelInfoSheet({
               </Pressable>
             )}
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.actionBtn,
                 canAddMembers && styles.actionBtnStacked,
+                pressed && styles.pressedFill,
               ]}
               onPress={handleLeave}
               accessibilityRole="button"
@@ -853,7 +817,10 @@ export default function ChannelInfoSheet({
                 return (
                   <Pressable
                     key={peer.peerID}
-                    style={styles.addRow}
+                    style={({ pressed }) => [
+                      styles.addRow,
+                      pressed && styles.pressedDim,
+                    ]}
                     onPress={() => toggleAddMember(peer.peerID)}
                     accessibilityRole="checkbox"
                     accessibilityState={{ checked: sel }}
@@ -881,9 +848,10 @@ export default function ChannelInfoSheet({
             </ScrollView>
           )}
           <Pressable
-            style={[
+            style={({ pressed }) => [
               styles.addConfirm,
               addSelected.size === 0 && styles.addConfirmDisabled,
+              pressed && styles.pressedDim,
             ]}
             onPress={handleAddMembers}
             disabled={addSelected.size === 0}
@@ -913,6 +881,12 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingTop: Spacing.sm,
       paddingBottom: Spacing.lg,
       gap: Spacing.sm,
+    },
+    pressedFill: {
+      backgroundColor: Colors.surfacePressed,
+    },
+    pressedDim: {
+      opacity: PRESSED_OPACITY,
     },
     cornerBtn: {
       position: "absolute",
@@ -1013,7 +987,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     // Relay hosts sit inside the facts card, indented to start under the row's
     // label rather than its icon: a fact row is a 16px icon plus a Spacing.md
-    // gap, so the hosts hang off the same left edge as "Relays" above them.
+    // gap, so the hosts hang off the same edge as "Relays" above them.
     relayList: {
       paddingBottom: Spacing.md,
       paddingStart: 16 + Spacing.md,

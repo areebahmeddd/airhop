@@ -1,7 +1,8 @@
-// Split from boot-start.ts: that file imports mesh-service.ts, which loads
-// the native BLE TurboModule (getEnforcing) at module scope. panic-wipe.ts
-// and the settings screens only need to mirror one native preference and
-// must not drag that chain in - panic-wipe's own test has no native bridge.
+// Mirrors the boot-start preference down to native. Its own module rather than
+// part of boot-start.ts, which imports mesh-service.ts and so loads the native
+// BLE TurboModule (getEnforcing) at module scope: panic-wipe.ts and the settings
+// screens must not drag that chain in, and panic-wipe's own test has no native
+// bridge.
 
 import NativeAirhopApp from "@bridge/NativeAirhopApp";
 

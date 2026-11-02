@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-vi/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetooth đã tắt · không quét";
+"widget_label" = "Nút mạng trong tầm";
+"widget_description" = "Nút mạng trong tầm, và thời điểm đếm";
+"widget_nobody" = "không có ai trong tầm";
+"widget_as_of" = "lúc %1$@";
+"widget_paused" = "Mạng lưới tạm dừng";
+"widget_unset" = "Mở Airhop";
+"widget_stale" = "Mở Airhop để làm mới";

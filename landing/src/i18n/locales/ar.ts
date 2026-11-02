@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "هويتك زوج مفاتيح {ed25519} يُنشأ على جهازك ويُحفظ في {ios_keychain} أو {android_keystore}. لا حسابات ولا تسجيل ولا شيء يمر بأي خادم، أي يمكن استخدامه كتطبيق مؤقت لا يترك بعد حذفه ما يدل عليك.",
   "home.about.body.crypto":
-    "كل جلسة تستخدم بروتوكول {noise} لمصافحة موثّقة. والرسائل المخزّنة تستخدم خوارزمية {ratchet}، أي أنه حتى لو اختُرق جهازك لاحقًا تبقى رسائلك السابقة غير قابلة للقراءة. والمسح الطارئ يتلف كل المفاتيح والرسائل في أقل من ثانية.",
+    "كل جلسة تستخدم بروتوكول {noise} لمصافحة موثّقة. والرسائل المباشرة الحية بين هواتف Airhop تستخدم خوارزمية {ratchet}، أي أن تسرّب مفتاح لاحقًا لا يكفي لفتح الرسائل المرسلة سابقًا. والمسح الطارئ يتلف كل المفاتيح والرسائل في أقل من ثانية.",
   "home.about.body.internet":
     "حين تكون أنت وجهة اتصالك خارج نطاق Bluetooth، تعمل مُرحّلات {nostr} كجسر عبر الإنترنت، مستخدمةً رسائل مباشرة مغلّفة بصيغة {nip17}، فتمتد الشبكة المتشابكة عالميًا طالما كنتما متصلين. ودعم {tor} متاح على iOS و Android عبر {arti}، مع جسور {obfs4}، {snowflake} و {webtunnel} للشبكات التي تحجب Tor.",
   "home.about.optional.title": "في Airhop مزايا اختيارية يمكنك تفعيلها:",
@@ -161,9 +161,9 @@ const strings: Strings = {
   "home.features.messaging.groups.line": "روابط دعوة لغرفة، أو قائمة موقّعة تصل إلى 16 عضوًا.",
   "home.features.messaging.board.name": "لوحة إعلانات",
   "home.features.messaging.board.line": "إشعارات مثبّتة على منطقة لمدة تصل إلى سبعة أيام.",
-  "home.features.messaging.voice.name": "صوت مباشر",
+  "home.features.messaging.voice.name": "صوت وفيديو مباشر",
   "home.features.messaging.voice.line":
-    "اضغط على الميكروفون وتحدث إلى كل من في النطاق، مثل جهاز اللاسلكي.",
+    "اضغط على الميكروفون لتتحدث، أو ابدأ بثًا مباشرًا بالكاميرا، إلى كل من في النطاق.",
   "home.features.messaging.notes.name": "رسائل صوتية",
   "home.features.messaging.notes.line": "صوت مسجّل، أسرع من كتابة الاتجاهات.",
   "home.features.messaging.files.name": "صور وفيديو وملفات",

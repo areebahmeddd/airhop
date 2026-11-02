@@ -21,12 +21,14 @@
 //   AirhopWiFi.availabilityChanged { available, reason }
 //
 // availabilityChanged tells the reconciler to forget it is started. It is sent
-// when the radio is gone ("radio") or the attach has to be rebuilt ("session"),
-// never for what native recovers from on its own (a discovery session ending, a
-// peer not answering, a data path dropping), so the links JS holds survive
-// those. Android carries both edges off the framework's state broadcast; iOS
-// has no such broadcast and reports only the falling edge, which is why the
-// controller answers a drop with a retry ladder.
+// when the radio is gone or the attach has to be rebuilt, never for what native
+// recovers from on its own (a discovery session ending, a peer not answering, a
+// data path dropping), so the links JS holds survive those. Android carries
+// both edges off the framework's state broadcast, and names a drop "radio" or,
+// when the framework ended it under a live radio, "session"; only "session"
+// counts toward the controller's breaker. iOS has no such broadcast and reports
+// only the falling edge, with no reason, which is why the controller answers a
+// drop with a retry ladder.
 import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 

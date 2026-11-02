@@ -60,7 +60,7 @@ function buildCache(opts: { inactive?: MintKeyset } = {}): {
 const { cache, keysetId } = buildCache();
 
 // Built loosely and cast once: cashu-ts models an amount as a wrapper type, and
-// the point here is the verifier's behaviour on hand-made proofs, not our
+// the point here is the verifier's behavior on hand-made proofs, not our
 // ability to satisfy its constructors.
 function proof(
   over: {
@@ -178,7 +178,7 @@ describe("when the check cannot reach a conclusion", () => {
 
   it("skips a proof from a keyset the mint has since rotated away", () => {
     // We know the mint but not this keyset, so there is nothing to check. It
-    // must not be called a forgery: rotation is normal mint behaviour.
+    // must not be called a forgery: rotation is normal mint behavior.
     const rotated = proof({ id: "00" + "ff".repeat(7), dleq: FORGED_DLEQ });
     expect(verify([rotated])).toEqual({
       status: "unchecked",
@@ -188,7 +188,7 @@ describe("when the check cannot reach a conclusion", () => {
 
   it("reads a listed keyset whose keys are not cached as unchecked, not forged", () => {
     // NUT-01 serves keys for active keysets only, so after a rotation the old
-    // keyset is listed with no keys. The mint still honours its coins.
+    // keyset is listed with no keys. The mint still honors its coins.
     const inactiveId = "00" + "aa".repeat(7);
     const { cache: withInactive } = buildCache({
       inactive: { id: inactiveId, unit: UNIT, active: false },

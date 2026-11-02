@@ -23,7 +23,7 @@ export interface Coords {
 }
 
 // Re-check position at most this often. Geohash cells are large, so polling
-// harder would just drain battery for no behavioural change.
+// harder would just drain battery for no behavioral change.
 const REFRESH_MS = 5 * 60 * 1000;
 
 // A live fix that never comes would stall every geohash channel.
@@ -54,10 +54,10 @@ export async function hasLocationPermission(): Promise<boolean> {
 // The same reading, keeping the distinction a boolean throws away: whether the
 // OS will still show its prompt.
 //
-// The Permissions screen needs this and had no way to get it, so a permanently
-// denied location rendered as an ordinary "Allow" whose tap is a silent no-op -
-// the one state where the only useful action is a trip to Settings. Everything
-// that just wants a yes/no keeps using hasLocationPermission.
+// The Permissions screen needs this: a permanently denied location must not
+// render as an ordinary "Allow" whose tap is a silent no-op, the one state where
+// the only useful action is a trip to Settings. Everything that just wants a
+// yes/no keeps using hasLocationPermission.
 export async function locationPermissionState(): Promise<{
   granted: boolean;
   canAskAgain: boolean;
@@ -136,7 +136,7 @@ const PIN_MAX_AGE_MS = 60_000;
 const PIN_FIX_TIMEOUT_MS = 15_000;
 
 export interface PinFix extends Coords {
-  // Horizontal accuracy in metres, when the OS gives one.
+  // Horizontal accuracy in meters, when the OS gives one.
   accuracyM?: number;
   // When the fix was taken, which is what the pin reports, not when it is sent.
   takenAtMs: number;
@@ -184,8 +184,38 @@ export async function getPinLocation(): Promise<PinFix | null> {
   }
 }
 
-// Drop the cached fix. Called on panic wipe so a stale position can't outlive
-// the identity that observed it.
+let hereCache: PinFix | null = null;
+let hereInFlight: Promise<PinFix | null> | null = null;
+let hereGeneration = 0;
+
+// Where the reader is now, for measuring the distance to a received pin. Held
+// to the bounds a sent pin is: a distance drawn from an hour-old or
+// cell-tower fix would point confidently at the wrong place, where null lets
+// the card say it has no fix. Shared while the fix is younger than a pin may
+// be, and in flight once, so a thread of cards costs one fix.
+export async function getFreshLocation(): Promise<Coords | null> {
+  if (!(await hasLocationPermission())) {
+    hereCache = null;
+    return null;
+  }
+  if (hereCache !== null && Date.now() - hereCache.takenAtMs < PIN_MAX_AGE_MS) {
+    return hereCache;
+  }
+  const generation = hereGeneration;
+  hereInFlight ??= getPinLocation().finally(() => {
+    hereInFlight = null;
+  });
+  const fix = await hereInFlight;
+  // A wipe while the fix was coming must not have it land in the new cache.
+  if (generation !== hereGeneration) return null;
+  hereCache = fix;
+  return fix;
+}
+
+// Drop the cached fixes. Called on panic wipe so a stale position can't
+// outlive the identity that observed it.
 export function clearLocationCache(): void {
   cached = null;
+  hereCache = null;
+  hereGeneration += 1;
 }

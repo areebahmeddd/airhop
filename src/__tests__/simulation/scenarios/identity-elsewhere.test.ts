@@ -69,9 +69,9 @@ const warned = (d: SimDevice): boolean =>
 // Long enough for several announce rounds, isolated and connected alike.
 const SETTLE_MS = 90_000;
 
-test("I01 two phones on one identity both warn, and a bystander does not", async () => {
+test("IE01 two phones on one identity both warn, and a bystander does not", async () => {
   const s = (scenario = new Scenario({
-    id: "I01",
+    id: "IE01",
     title: "one identity running on two phones",
   }));
   const [oldPhone, newPhone, bystander] = room(s, [
@@ -96,9 +96,9 @@ test("I01 two phones on one identity both warn, and a bystander does not", async
   s.assert();
 });
 
-test("I02 a phone hearing echoes of itself, before and after a relaunch, never warns", async () => {
+test("IE02 a phone hearing echoes of itself, before and after a relaunch, never warns", async () => {
   const s = (scenario = new Scenario({
-    id: "I02",
+    id: "IE02",
     title: "echoes of our own announces are not another phone",
   }));
   const [alice, bob, carol] = room(s, [
@@ -108,10 +108,7 @@ test("I02 a phone hearing echoes of itself, before and after a relaunch, never w
   ]);
   for (const d of [alice, bob, carol]) d.launch();
   await advanceFor(s.world, SETTLE_MS);
-  s.check(
-    "no warning while two neighbours relay our announces",
-    !warned(alice),
-  );
+  s.check("no warning while two neighbors relay our announces", !warned(alice));
 
   // The previous run's announces are still circulating when the new one starts.
   alice.relaunch();
@@ -121,9 +118,9 @@ test("I02 a phone hearing echoes of itself, before and after a relaunch, never w
   s.assert();
 });
 
-test("I03 the warning comes down once the other phone is gone", async () => {
+test("IE03 the warning comes down once the other phone is gone", async () => {
   const s = (scenario = new Scenario({
-    id: "I03",
+    id: "IE03",
     title: "the other phone is erased or switched off",
   }));
   const [kept, other, bob] = room(s, [

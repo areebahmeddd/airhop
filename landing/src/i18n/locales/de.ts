@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Deine Identität ist ein {ed25519}-Schlüsselpaar, das auf deinem Gerät erzeugt und in {ios_keychain} oder {android_keystore} gespeichert wird. Es gibt keine Konten, keine Registrierung und nichts, was einen Server berührt, das heißt, die App lässt sich als Wegwerf-App nutzen, die nach dem Löschen nichts hinterlässt, was auf dich zurückführt.",
   "home.about.body.crypto":
-    "Jede Sitzung nutzt das {noise}-Protokoll für einen authentifizierten Handshake. Gespeicherte Nachrichten nutzen den {ratchet}-Algorithmus, das heißt, selbst wenn dein Gerät später kompromittiert wird, bleiben deine früheren Nachrichten unlesbar. Die Notlöschung vernichtet alle Schlüssel und Nachrichten in unter einer Sekunde.",
+    "Jede Sitzung nutzt das {noise}-Protokoll für einen authentifizierten Handshake. Live-Direktnachrichten zwischen Airhop-Telefonen nutzen den {ratchet}-Algorithmus, das heißt, selbst ein später bekannt gewordener Schlüssel öffnet bereits gesendete Nachrichten nicht. Die Notlöschung vernichtet alle Schlüssel und Nachrichten in unter einer Sekunde.",
   "home.about.body.internet":
     "Wenn du und ein Kontakt außerhalb der Bluetooth-Reichweite seid, dienen {nostr}-Relays als Brücke über das Internet, mit gift-wrapped Direktnachrichten im {nip17}-Format. So reicht das Mesh weltweit, sobald ihr beide online seid. {tor} wird auf iOS und Android unterstützt, über {arti}, mit {obfs4}-, {snowflake}- und {webtunnel}-Bridges für Netze, die Tor blockieren.",
   "home.about.optional.title": "Airhop hat optionale Funktionen, die du aktivieren kannst:",
@@ -173,9 +173,9 @@ const strings: Strings = {
   "home.features.messaging.board.name": "Schwarzes Brett",
   "home.features.messaging.board.line":
     "Aushänge, die bis zu sieben Tage an ein Gebiet geheftet bleiben.",
-  "home.features.messaging.voice.name": "Live-Sprache",
+  "home.features.messaging.voice.name": "Live-Sprache und -Video",
   "home.features.messaging.voice.line":
-    "Mikro gedrückt halten und mit allen in Reichweite sprechen, wie mit einem Walkie-Talkie.",
+    "Mikro gedrückt halten zum Sprechen oder live mit der Kamera senden, an alle in Reichweite.",
   "home.features.messaging.notes.name": "Sprachnachrichten",
   "home.features.messaging.notes.line":
     "Aufgenommenes Audio, schneller als eine Wegbeschreibung zu tippen.",

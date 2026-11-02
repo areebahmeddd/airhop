@@ -1,4 +1,4 @@
-// AirhopWiFiModule: WiFi Aware (NAN) transport for Airhop on Android.
+// AirhopWiFiModule: Wi-Fi Aware (NAN) transport for Airhop on Android.
 //
 // Peer-to-peer data paths without a router or internet, ~30 m, ~250 Mbps.
 // Raw bytes to TypeScript, as AirhopBLEModule does; no protocol or routing
@@ -145,7 +145,7 @@ private const val CONNECT_RETRY_MS = 750L
 private const val CONNECT_ATTEMPTS = 3
 private const val CONNECT_TIMEOUT_MS = 7_000
 
-// How long the side the tiebreak did not pick waits before dialling itself.
+// How long the side the tiebreak did not pick waits before dialing itself.
 // Discovery is often one-directional (fact 1), so the preferred side may never
 // have matched us.
 private const val RESPONDER_GRACE_MS = 20_000L
@@ -167,6 +167,10 @@ private const val HELLO_TIMEOUT_MS = 5_000L
 // A write blocked this long means the peer stopped reading. The same thirty
 // seconds the read side allows a frame.
 private const val WRITE_STALL_MS = FrameReader.FRAME_DEADLINE_MS
+
+// How long stopWiFi lets queued writes go out before releasing the paths.
+private const val FAREWELL_FLUSH_MS = 300L
+private const val FAREWELL_POLL_MS = 10L
 
 // Accepted sockets still waiting for their hello. A real one sends it within a
 // round trip of connecting, so more than a few at once is not data paths.
@@ -192,7 +196,7 @@ private const val SESSION_TERMINATIONS_LIMIT = 3
 private const val SESSION_TERMINATIONS_WINDOW_MS = 2 * 60_000L
 
 // After a link closes, the far side is releasing its half of the path at the
-// same moment; dialling into that is the connect that aborts.
+// same moment; dialing into that is the connect that aborts.
 private const val REDIAL_DELAY_MS = 2_000L
 
 private const val PEER_STALE_MS = 5 * 60_000L
@@ -208,7 +212,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
 
     override fun getName(): String = "AirhopWiFi"
 
-    // ---- State model ---------------------------------------------------------
+    // ---- State model ----
 
     // Handles are session-scoped: cleared on every discovery restart, refilled
     // by the next match or message.
@@ -245,10 +249,12 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         @Volatile var lastReadAtMs = SystemClock.elapsedRealtime()
         // When the write in progress began, 0 while none is.
         @Volatile var writingSinceMs = 0L
+        // Writes handed over and not yet finished, queued ones included.
+        val pendingWrites = AtomicInteger(0)
         var heartbeat: ScheduledFuture<*>? = null
     }
 
-    // ---- Executors and framework handles -------------------------------------
+    // ---- Executors and framework handles ----
 
     // Every mutation runs on this one thread. Framework callbacks arrive on the
     // main looper or the connectivity thread, bridge calls on the native
@@ -315,11 +321,14 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     private var lastActivityAtMs = 0L
     private var lastRefreshAtMs = 0L
     private var attachedAtMs = 0L
+    // Since attach. The peer table forgets after PEER_STALE_MS, so it alone
+    // cannot tell "never" from "a while ago".
+    private val peersSeen = HashSet<String>()
     private val sessionTerminationsAtMs = ArrayDeque<Long>()
 
     private var listenerCount = 0
 
-    // ---- Logging -------------------------------------------------------------
+    // ---- Logging ----
 
     // Kept in the process as well as logcat: Samsung retail builds drop every
     // line below warning at the log daemon, and Diagnostics reads this instead.
@@ -347,7 +356,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
 
     private fun logE(message: String) = log(Log.ERROR, message)
 
-    // ---- Thread hopping ------------------------------------------------------
+    // ---- Thread hopping ----
 
     // False once invalidate() has shut the executor down, for the bridge
     // methods that owe a promise an answer either way.
@@ -375,14 +384,14 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
 
     private fun now(): Long = SystemClock.elapsedRealtime()
 
-    // ---- Start / Stop --------------------------------------------------------
+    // ---- Start / Stop ----
 
     // UNSUPPORTED is permanent and asked first; UNAVAILABLE is about this
     // minute and retried by the JS reconciler.
     @ReactMethod
     fun startWiFi(promise: Promise) {
         if (!hasAwareFeature) {
-            promise.reject("WIFI_AWARE_UNSUPPORTED", "WiFi Aware not supported on this device")
+            promise.reject("WIFI_AWARE_UNSUPPORTED", "Wi-Fi Aware not supported on this device")
             return
         }
         if (!onState { startOnState(promise) }) {
@@ -393,7 +402,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     private fun startOnState(promise: Promise) {
         val manager = awareManager()
         if (manager == null || !manager.isAvailable) {
-            promise.reject("WIFI_AWARE_UNAVAILABLE", "WiFi Aware is not available right now")
+            promise.reject("WIFI_AWARE_UNAVAILABLE", "Wi-Fi Aware is not available right now")
             return
         }
         if (awareSession != null) {
@@ -420,14 +429,17 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
 
                     override fun onAttachFailed() {
                         onState { attaching = false }
-                        logW("WiFi Aware attach failed")
-                        promise.reject("WIFI_AWARE_ATTACH_FAILED", "Failed to attach to WiFi Aware")
+                        logW("Wi-Fi Aware attach failed")
+                        promise.reject(
+                            "WIFI_AWARE_ATTACH_FAILED",
+                            "Failed to attach to Wi-Fi Aware",
+                        )
                     }
 
                     override fun onAwareSessionTerminated() {
                         onState {
                             if (generation != sessionGeneration.get()) return@onState
-                            logW("WiFi Aware session terminated by the framework")
+                            logW("Wi-Fi Aware session terminated by the framework")
                             reportUnavailable()
                         }
                     }
@@ -436,7 +448,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             )
         } catch (e: SecurityException) {
             attaching = false
-            promise.reject("PERMISSION_DENIED", "WiFi Aware permission missing", e)
+            promise.reject("PERMISSION_DENIED", "Wi-Fi Aware permission missing", e)
         } catch (e: Exception) {
             attaching = false
             promise.reject("WIFI_AWARE_ATTACH_FAILED", e.message, e)
@@ -461,12 +473,13 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         attachedAtMs = now()
         lastActivityAtMs = attachedAtMs
         sessionTerminationsAtMs.clear()
-        logI("WiFi Aware attached, instance $instanceHex, port $serverPort")
+        peersSeen.clear()
+        logI("Wi-Fi Aware attached, instance $instanceHex, port $serverPort")
         // attach() can succeed while publish and subscribe are refused, when
         // NEARBY_WIFI_DEVICES lands a moment late.
         if (!startDiscovery()) {
             teardown()
-            promise.reject("PERMISSION_DENIED", "WiFi Aware discovery refused")
+            promise.reject("PERMISSION_DENIED", "Wi-Fi Aware discovery refused")
             return
         }
         maintenance?.cancel(false)
@@ -486,10 +499,26 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun stopWiFi(promise: Promise) {
         val accepted = onState {
+            awaitWrites()
             teardown()
             promise.resolve(null)
         }
         if (!accepted) promise.resolve(null)
+    }
+
+    // The farewell (a LEAVE, a voice or video END) is handed to writeToWiFiLink
+    // in the same tick as stopWiFi, and releasing the data path destroys every
+    // socket on it, queued writes included. A healthy link takes them in
+    // milliseconds, and a stalled one gets FAREWELL_FLUSH_MS. State thread.
+    private fun awaitWrites() {
+        val deadline = now() + FAREWELL_FLUSH_MS
+        try {
+            while (links.values.any { it.pendingWrites.get() > 0 } && now() < deadline) {
+                Thread.sleep(FAREWELL_POLL_MS)
+            }
+        } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
     }
 
     // Idempotent. Links are announced closed before the map is cleared so JS
@@ -521,7 +550,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         for (id in links.keys.toList()) closeLink(id, "transport stopped")
     }
 
-    // ---- Availability --------------------------------------------------------
+    // ---- Availability ----
 
     // The broadcast carries no extras by design; the state is read back from
     // the manager.
@@ -533,7 +562,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                     val available = awareManager()?.isAvailable == true
                     if (available == lastReportedAvailable) return@onState
                     lastReportedAvailable = available
-                    logI("WiFi Aware ${if (available) "available" else "unavailable"}")
+                    logI("Wi-Fi Aware ${if (available) "available" else "unavailable"}")
                     // Torn down before JS is told, so a reconcile prompted by the
                     // event cannot race a half-released session.
                     if (!available) teardown()
@@ -549,15 +578,18 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
 
     // Reported as unavailable so the reconciler forgets it is started and
-    // re-attaches on its ladder.
+    // re-attaches on its ladder. Switching Wi-Fi off ends the session too, often
+    // before the state broadcast arrives, so the radio is asked rather than
+    // assumed: only an end under a live radio counts toward the JS breaker.
     private fun reportUnavailable() {
+        val reason = if (awareManager()?.isAvailable == true) REASON_SESSION else REASON_RADIO
         teardown()
         lastReportedAvailable = false
         emitEvent(
             EVT_AVAILABILITY_CHANGED,
             WritableNativeMap().apply {
                 putBoolean("available", false)
-                putString("reason", REASON_SESSION)
+                putString("reason", reason)
             },
         )
     }
@@ -572,9 +604,11 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         registerAwareReceiver()
     }
 
+    // Registered whether or not the service answers yet: one missing at startup
+    // would otherwise leave every later radio change unheard, and each drop
+    // read as a session ending under a live radio.
     private fun registerAwareReceiver() {
         if (awareReceiverRegistered) return
-        val manager = awareManager() ?: return
         try {
             // A protected system broadcast; NOT_EXPORTED is required from API 34.
             ContextCompat.registerReceiver(
@@ -585,9 +619,9 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             )
             awareReceiverRegistered = true
             // Seeded so the first broadcast is compared against reality.
-            lastReportedAvailable = manager.isAvailable
+            lastReportedAvailable = awareManager()?.isAvailable
         } catch (e: Exception) {
-            Log.e(TAG, "Could not register WiFi Aware state receiver", e)
+            Log.e(TAG, "Could not register Wi-Fi Aware state receiver", e)
         }
     }
 
@@ -602,7 +636,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         super.invalidate()
     }
 
-    // ---- Write to a connected peer -------------------------------------------
+    // ---- Write to a connected peer ----
 
     @ReactMethod
     fun writeToWiFiLink(linkID: String, dataBase64: String, promise: Promise) {
@@ -627,6 +661,8 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             promise.reject("INVALID_DATA", "Empty frame")
             return
         }
+        // Counted before the hand-off, so a stop arriving next sees it.
+        link.pendingWrites.incrementAndGet()
         val accepted = onIo {
             try {
                 writeFrame(link, data)
@@ -635,9 +671,14 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                 logW("Write failed on $linkID: ${e.message}")
                 onState { closeLink(linkID, "write failed") }
                 promise.reject("WRITE_FAILED", e.message, e)
+            } finally {
+                link.pendingWrites.decrementAndGet()
             }
         }
-        if (!accepted) promise.reject("LINK_CLOSED", "WiFi transport is shutting down")
+        if (!accepted) {
+            link.pendingWrites.decrementAndGet()
+            promise.reject("LINK_CLOSED", "WiFi transport is shutting down")
+        }
     }
 
     // Blocking. IO thread, except the hello, which is a few bytes into an
@@ -655,21 +696,19 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Required NativeEventEmitter contract --------------------------------
+    // ---- Required NativeEventEmitter contract ----
 
     @ReactMethod
     fun addListener(@Suppress("UNUSED_PARAMETER") eventName: String) {
         listenerCount++
     }
 
-    // Double, not Int: React Native marshals every JS number as a double and an
-    // Int overload is never matched.
     @ReactMethod
     fun removeListeners(count: Double) {
         listenerCount = maxOf(0, listenerCount - count.toInt())
     }
 
-    // ---- Diagnostics ---------------------------------------------------------
+    // ---- Diagnostics ----
 
     // Peers, links and the recent log as text for the support bundle. Read on
     // the state thread so no peer is described mid-transition.
@@ -677,16 +716,22 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     fun dumpState(promise: Promise) {
         val accepted = onState {
             val out = StringBuilder()
-            val attached = awareSession != null
-            out.append("attached: ").append(attached)
-            if (attached) {
-                out.append(" for ").append((now() - attachedAtMs) / 1000).append("s")
-                out.append(", publish ").append(if (publishSession != null) "up" else "down")
-                out.append(", subscribe ").append(if (subscribeSession != null) "up" else "down")
+            if (awareSession != null) {
+                out.append("Attached: yes, for ")
+                    .append(duration(now() - attachedAtMs))
+                    .append('\n')
+                out.append("Publish: ")
+                    .append(if (publishSession != null) "up" else "down")
+                    .append('\n')
+                out.append("Subscribe: ")
+                    .append(if (subscribeSession != null) "up" else "down")
+                    .append('\n')
+            } else {
+                out.append("Attached: no\n")
             }
-            out.append('\n')
             appendResources(out)
-            out.append("peers: ").append(peers.size).append('\n')
+            out.append("Peers seen since attach: ").append(peersSeen.size).append('\n')
+            out.append("Peers now: ").append(peers.size).append('\n')
             val t = now()
             for (peer in peers.values) {
                 out.append("  ")
@@ -695,17 +740,22 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                     .append(peer.state.name.lowercase())
                     .append(peer.role?.let { " as ${it.name.lowercase()}" } ?: "")
                     .append(", seen ")
-                    .append((t - peer.lastSeenAtMs) / 1000)
-                    .append("s ago")
-                    .append(", attempts ")
+                    .append(duration(t - peer.lastSeenAtMs))
+                    .append(" ago, attempts ")
                     .append(peer.attempts)
                     .append(", handles ")
-                    .append(if (peer.subscribeHandle != null) "s" else "-")
-                    .append(if (peer.publishHandle != null) "p" else "-")
+                    .append(
+                        listOfNotNull(
+                                peer.subscribeHandle?.let { "subscribe" },
+                                peer.publishHandle?.let { "publish" },
+                            )
+                            .joinToString("+")
+                            .ifEmpty { "none" }
+                    )
                 peer.linkID?.let { out.append(", link ").append(it) }
                 out.append('\n')
             }
-            out.append("links: ").append(links.size).append('\n')
+            out.append("Links now: ").append(links.size).append('\n')
             for (link in links.values) {
                 out.append("  ")
                     .append(link.id)
@@ -713,13 +763,22 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                     .append(link.peerInstance?.take(8) ?: "no hello yet")
                     .append('\n')
             }
-            out.append("log:\n")
+            out.append("Log:\n")
             val lines = synchronized(recentLog) { recentLog.toList() }
-            if (lines.isEmpty()) out.append("  empty\n")
+            if (lines.isEmpty()) out.append("  Empty.\n")
             for (line in lines) out.append("  ").append(line).append('\n')
             promise.resolve(out.toString())
         }
         if (!accepted) promise.resolve("")
+    }
+
+    private fun duration(ms: Long): String {
+        val s = ms / 1000
+        return when {
+            s < 60 -> "$s s"
+            s < 3600 -> "${s / 60} min"
+            else -> "${s / 3600} h ${(s % 3600) / 60} min"
+        }
     }
 
     // Zero free publish, subscribe or data-path slots is the one hardware
@@ -728,7 +787,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         val resources =
             runCatching { awareManager()?.availableAwareResources }.getOrNull() ?: return
-        out.append("resources: ")
+        out.append("Available: ")
             .append(resources.availableDataPathsCount)
             .append(" data paths, ")
             .append(resources.availablePublishSessionsCount)
@@ -737,7 +796,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             .append(" subscribe\n")
     }
 
-    // ---- Discovery -----------------------------------------------------------
+    // ---- Discovery ----
 
     // False when publish or subscribe was refused outright; an asynchronous
     // refusal arrives through onSessionConfigFailed.
@@ -753,7 +812,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     // their links.
     private fun restartDiscovery(reason: String) {
         if (awareSession == null) return
-        logI("Restarting WiFi Aware discovery: $reason")
+        logI("Restarting Wi-Fi Aware discovery: $reason")
         lastRefreshAtMs = now()
         runCatching { publishSession?.close() }
         runCatching { subscribeSession?.close() }
@@ -779,7 +838,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     // device a moment before the state broadcast that says WiFi went off.
     private fun onDiscoverySessionTerminated(which: String, generation: Int) {
         if (generation != discoveryGeneration.get()) return
-        logW("WiFi Aware $which session terminated by the framework")
+        logW("Wi-Fi Aware $which session terminated by the framework")
         val t = now()
         sessionTerminationsAtMs.addLast(t)
         while (
@@ -846,7 +905,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                     override fun onSessionConfigFailed() {
                         onState {
                             if (generation != discoveryGeneration.get()) return@onState
-                            logE("WiFi Aware publish config refused")
+                            logE("Wi-Fi Aware publish config refused")
                             reportUnavailable()
                         }
                     }
@@ -858,7 +917,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                                 return@onState
                             }
                             publishSession = started
-                            logI("WiFi Aware publish started")
+                            logI("Wi-Fi Aware publish started")
                         }
                     }
 
@@ -895,7 +954,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                     override fun onSessionConfigFailed() {
                         onState {
                             if (generation != discoveryGeneration.get()) return@onState
-                            logE("WiFi Aware subscribe config refused")
+                            logE("Wi-Fi Aware subscribe config refused")
                             reportUnavailable()
                         }
                     }
@@ -907,7 +966,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
                                 return@onState
                             }
                             subscribeSession = started
-                            logI("WiFi Aware subscribe started")
+                            logI("Wi-Fi Aware subscribe started")
                         }
                     }
 
@@ -972,7 +1031,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Peers ---------------------------------------------------------------
+    // ---- Peers ----
 
     private fun peerFor(instance: String): Peer {
         val t = now()
@@ -981,6 +1040,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             peers.getOrPut(instance) {
                 Peer(instance).also {
                     it.idleSinceMs = t
+                    peersSeen.add(instance)
                     logI("New peer ${instance.take(8)}")
                 }
             }
@@ -989,14 +1049,22 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     }
 
     private fun onPeerDiscovered(peerHandle: PeerHandle, ssi: ByteArray?) {
-        val instance = ssi?.let { AwareDial.instanceFrom(it, AwareDial.TOKEN_BYTES) } ?: return
+        val instance = ssi?.let { AwareDial.instanceFrom(it, AwareDial.TOKEN_BYTES) }
+        if (instance == null) {
+            // MATCH_ONCE: at most once per peer per subscribe session.
+            logW("Discovered a peer whose service info is unreadable, ignoring it")
+            return
+        }
         if (instance == instanceHex) return
         val peer = peerFor(instance)
         peer.subscribeHandle = peerHandle
-        peer.token = ssi.copyOfRange(0, AwareDial.TOKEN_BYTES)
+        val token = ssi.copyOfRange(0, AwareDial.TOKEN_BYTES)
+        // A new token is a new attach, whose dial counter starts again.
+        if (peer.token?.contentEquals(token) == false) peer.peerEpoch = -1
+        peer.token = token
         subscribeHandles[peerHandle] = instance
         logI(
-            "Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialling" else "waiting for its dial"}"
+            "Discovered ${instance.take(8)}, ${if (prefersInitiator(peer)) "dialing" else "waiting for its dial"}"
         )
         if (
             peer.state == DialState.IDLE && prefersInitiator(peer) && now() >= peer.nextAttemptAtMs
@@ -1008,7 +1076,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
     private fun prefersInitiator(peer: Peer): Boolean =
         AwareDial.prefersInitiator(localToken, peer.token)
 
-    // ---- Initiator -----------------------------------------------------------
+    // ---- Initiator ----
 
     // Only the REQUEST goes out here. Requesting the path now would fire before
     // the responder had read it, against a peer with nothing outstanding.
@@ -1020,7 +1088,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         peer.role = Role.INITIATOR
         peer.stateSinceMs = now()
         val messageId = sendCounter.getAndIncrement()
-        logI("Dialling ${peer.instance.take(8)}, epoch ${peer.epoch}, attempt ${peer.attempts + 1}")
+        logI("Dialing ${peer.instance.take(8)}, epoch ${peer.epoch}, attempt ${peer.attempts + 1}")
         try {
             pendingSends[messageId] = peer.instance
             session.sendMessage(
@@ -1110,7 +1178,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         onState { if (peer.network === callback) attemptFailed(peer) }
     }
 
-    // ---- Responder -----------------------------------------------------------
+    // ---- Responder ----
 
     private fun onConnectRequest(peerHandle: PeerHandle, message: ByteArray) {
         val session = publishSession ?: return
@@ -1124,7 +1192,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         // the tiebreak arriving late. Answered again while our side of it
         // stands, since the READY may be the half that was lost.
         val responding = peer.role == Role.RESPONDER && peer.state != DialState.IDLE
-        if (epoch <= peer.peerEpoch) {
+        if (!AwareDial.isNewRequest(epoch, peer.peerEpoch, peer.state == DialState.IDLE)) {
             if (responding && epoch == peer.peerEpoch) sendReady(session, peerHandle, epoch)
             return
         }
@@ -1141,7 +1209,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             }
             DialState.REQUESTED,
             DialState.PATH_PENDING -> {
-                // Both dialled at once. The tokens settle it the same way on
+                // Both dialed at once. The tokens settle it the same way on
                 // both ends: the lower keeps its attempt, the higher yields.
                 if (peer.role == Role.INITIATOR) {
                     if (prefersInitiator(peer)) return
@@ -1154,7 +1222,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             DialState.IDLE -> {}
         }
 
-        logI("Peer ${instance.take(8)} dialling us, epoch $epoch, opening our side")
+        logI("Peer ${instance.take(8)} dialing us, epoch $epoch, opening our side")
         peer.state = DialState.PATH_PENDING
         peer.role = Role.RESPONDER
         peer.stateSinceMs = now()
@@ -1180,7 +1248,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             .onFailure { logW("Could not send connect-ready: ${it.message}") }
     }
 
-    // ---- Data path -----------------------------------------------------------
+    // ---- Data path ----
 
     private fun requestPath(
         peer: Peer,
@@ -1277,7 +1345,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         )
     }
 
-    // ---- Maintenance ---------------------------------------------------------
+    // ---- Maintenance ----
 
     // Every deadline is applied here rather than by a timer per peer, so one
     // place says what the transport does next.
@@ -1337,7 +1405,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         peer.subscribeHandle?.let { subscribeHandles.remove(it) }
     }
 
-    // ---- Sockets -------------------------------------------------------------
+    // ---- Sockets ----
 
     // Dual-stack by default, which an inbound link-local IPv6 connect needs.
     private fun ensureServerSocket(): Boolean {
@@ -1349,7 +1417,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
             onIo { acceptLoop(socket) }
             true
         } catch (e: Exception) {
-            logE("Could not open the WiFi Aware server socket: ${e.message}")
+            logE("Could not open the Wi-Fi Aware server socket: ${e.message}")
             false
         }
     }
@@ -1434,7 +1502,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
         links[id] = link
         if (peer != null) attachLink(link, peer)
-        logI("WiFi Aware socket open: $id${peer?.let { " to ${it.instance.take(8)}" } ?: ""}")
+        logI("Wi-Fi Aware socket open: $id${peer?.let { " to ${it.instance.take(8)}" } ?: ""}")
         state.schedule(
             {
                 if (links[id] === link && !link.hasHello) closeLink(id, "no hello")
@@ -1485,7 +1553,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         if (link.hasHello) return
         link.hasHello = true
         emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", link.id) })
-        logI("WiFi Aware link connected: ${link.id} to ${instance.take(8)}")
+        logI("Wi-Fi Aware link connected: ${link.id} to ${instance.take(8)}")
         link.heartbeat =
             state.scheduleWithFixedDelay(
                 { heartbeat(link) },
@@ -1550,7 +1618,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         val link = links.remove(linkID) ?: return
         link.heartbeat?.cancel(false)
         runCatching { link.socket.close() }
-        logI("WiFi Aware link closed: $linkID ($reason)")
+        logI("Wi-Fi Aware link closed: $linkID ($reason)")
         val peer = link.peerInstance?.let { peers[it] }
         if (peer != null && peer.linkID == linkID) {
             peer.linkID = null
@@ -1569,7 +1637,7 @@ class AirhopWiFiModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Helpers -------------------------------------------------------------
+    // ---- Helpers ----
 
     // Every caller is on the state thread or an IO thread with no handler
     // above it, and getJSModule throws whenever no runtime is attached.

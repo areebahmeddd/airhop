@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Airhopは、近くのピアにあなたの存在を知らせるためにBluetoothを使います。";
 "NSLocalNetworkUsageDescription" = "Airhopは、大きなデータ（動画や大きなファイル）を送るために、ローカルネットワークで近くのデバイスに直接つなぎます。";
 "NSCameraUsageDescription" = "Airhopは、連絡先のQRコードを読み取るため、また近くのピアと共有する写真や動画を撮影するためにカメラを使います。";
-"NSMicrophoneUsageDescription" = "Airhopは、ボイスメモを録音するため、また近くのピアにライブ音声を届けるためにマイクを使います。";
+"NSMicrophoneUsageDescription" = "Airhopは、ボイスメモやビデオメモを録音するため、また近くのピアにライブ音声を届けるためにマイクを使います。";
 "NSPhotoLibraryUsageDescription" = "Airhopは、画像や動画をメッシュ上で共有するためにフォトライブラリにアクセスします。";
 "NSPhotoLibraryAddUsageDescription" = "Airhopは、あなたが保存を選んだときと、QRコードをダウンロードしたときに、写真や動画をフォトライブラリに保存します。";
 "NSFaceIDUsageDescription" = "Airhopは、本人であることを確認するためにFace IDを使います。アプリロックがオンのときにアプリを開くとき、そして復元フレーズを表示する前や識別情報を新しい端末へ移す前です。";

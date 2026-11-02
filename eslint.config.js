@@ -90,7 +90,7 @@ module.exports = defineConfig([
             'textAlign has no logical form in React Native. Use textAlignEnd from @i18n/layout for the trailing edge, or "auto" for the leading edge.',
         },
         {
-          // A bare toLocaleString() asks the DEVICE for its locale, not the
+          // A bare toLocaleString() asks the device for its locale, not the
           // language the app is being read in. On a phone set to Arabic it
           // renders a wallet balance in Arabic-Indic digits inside the monospace
           // face, next to a Latin "sat".

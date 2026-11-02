@@ -1,12 +1,12 @@
-// A wrong neighbour walks the user somewhere they did not point at, and the
-// cases that break neighbour maths are exactly the ones nobody tests by hand:
+// A wrong neighbor walks the user somewhere they did not point at, and the
+// cases that break neighbor math are exactly the ones nobody tests by hand:
 // the poles and the date line. Values below are checked against the published
 // geohash grid rather than against our own implementation.
 
 import {
   geohashBounds,
   geohashCenter,
-  geohashNeighbours,
+  geohashNeighbors,
 } from "../geohash-grid";
 
 describe("geohashBounds", () => {
@@ -35,22 +35,22 @@ describe("geohashBounds", () => {
   });
 });
 
-describe("geohashNeighbours", () => {
+describe("geohashNeighbors", () => {
   it("has none for the whole world", () => {
-    expect(geohashNeighbours("")).toEqual([]);
+    expect(geohashNeighbors("")).toEqual([]);
   });
 
   it("finds the eight cells around an inland one", () => {
-    const n = geohashNeighbours("tdr1k");
+    const n = geohashNeighbors("tdr1k");
     expect(n).toHaveLength(8);
     expect(new Set(n.map((x) => x.geohash)).size).toBe(8);
-    // A neighbour is a different cell of the same precision.
+    // A neighbor is a different cell of the same precision.
     expect(n.every((x) => x.geohash.length === 5)).toBe(true);
     expect(n.every((x) => x.geohash !== "tdr1k")).toBe(true);
   });
 
   it("puts north actually north", () => {
-    const n = geohashNeighbours("tdr1k");
+    const n = geohashNeighbors("tdr1k");
     const north = n.find((x) => x.direction === "N")!;
     expect(geohashCenter(north.geohash).lat).toBeGreaterThan(
       geohashCenter("tdr1k").lat,
@@ -61,7 +61,7 @@ describe("geohashNeighbours", () => {
     // "x" (lat 0..45, lon 135..180) sits against +180, so its eastern column
     // is the cells at lon -180..-135 on the other side. Without the wrap, E
     // re-encodes to "x" itself and is dropped, and NE / SE clamp to "z" / "r".
-    const n = geohashNeighbours("x");
+    const n = geohashNeighbors("x");
     expect(n).toHaveLength(8);
     const at = (d: string) => n.find((x) => x.direction === d)?.geohash;
     expect(at("NE")).toBe("b");
@@ -74,10 +74,10 @@ describe("geohashNeighbours", () => {
   // 8-tall one.
   const byDirection = (gh: string): Record<string, string> =>
     Object.fromEntries(
-      geohashNeighbours(gh).map((n) => [n.direction, n.geohash]),
+      geohashNeighbors(gh).map((n) => [n.direction, n.geohash]),
     );
 
-  it("matches the published neighbours of an odd-length cell", () => {
+  it("matches the published neighbors of an odd-length cell", () => {
     expect(byDirection("dqcjq")).toEqual({
       N: "dqcjw",
       NE: "dqcjx",
@@ -90,7 +90,7 @@ describe("geohashNeighbours", () => {
     });
   });
 
-  it("matches the published neighbours of a bridge rendezvous cell", () => {
+  it("matches the published neighbors of a bridge rendezvous cell", () => {
     // Precision 6, the bridge's cell size, wholly inside its parent.
     expect(byDirection("tdr1v9")).toEqual({
       N: "tdr1vd",
@@ -106,7 +106,7 @@ describe("geohashNeighbours", () => {
 
   it("carries across the parent cell's edge", () => {
     // "tdr1vb" is the bottom-right character of its parent, so its east and
-    // south neighbours live under different parents ("tdr1y", "tdr1t").
+    // south neighbors live under different parents ("tdr1y", "tdr1t").
     const n = byDirection("tdr1vb");
     expect(n.E).toBe("tdr1y0");
     expect(n.S).toBe("tdr1tz");
@@ -121,9 +121,9 @@ describe("geohashNeighbours", () => {
     expect(n.E).toBe("bpbpbp");
   });
 
-  it("drops the neighbour that would be past the pole", () => {
+  it("drops the neighbor that would be past the pole", () => {
     // A top-row cell has no cell to its north.
-    const n = geohashNeighbours("b");
+    const n = geohashNeighbors("b");
     expect(n.some((x) => x.direction === "N")).toBe(false);
   });
 });

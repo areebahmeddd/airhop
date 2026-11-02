@@ -6,9 +6,7 @@
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("./harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -63,7 +61,7 @@ import {
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
-import { SimDevice } from "./harness/device";
+import { prekeysHeldFor, SimDevice } from "./harness/device";
 import { noCrashes, noForgedSenders } from "./harness/invariants";
 import { media } from "./harness/media-fabric";
 import { RadioFabric } from "./harness/radio-fabric";
@@ -237,6 +235,17 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   );
   s.check("bob has alice's real signing key bound before the attack", legit);
 
+  // A DM opens a session, which proves alice's key, so a contradicting
+  // announce is news worth telling bob about rather than a question a session
+  // still has to settle.
+  alice.sendDm(bob.peerID, "hi bob");
+  const proven = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("hi bob"),
+    20_000,
+  );
+  s.check("bob and alice share a session and a chat", proven);
+
   // Attack 1: an UNSIGNED announce claiming alice's ID.
   //
   // Verification must not run only `if (SIGNED)`: clearing the flag would let
@@ -276,6 +285,30 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
     }),
   );
   await s.world.advance(2000);
+  // The same forgery again, freshly stamped: still one notice for one key.
+  inject(
+    s,
+    radio,
+    bob.id,
+    mallory.id,
+    forgeAnnounce({
+      claimedPeerID: alice.peerID,
+      noisePubKey: alice.identity.noiseStaticPubKey,
+      signingPubKey: mallory.identity.signingPubKey,
+      nickname: "alice",
+      timestamp: s.world.wallClock(),
+      signWith: mallory.identity.signingPrivKey,
+    }),
+  );
+  await s.world.advance(2000);
+  const notices = bob
+    .messages(`dm:${alice.peerID}`)
+    .filter((m) => m.id.startsWith("key-refused-"));
+  s.check(
+    "bob's chat with alice says a different key was refused, once",
+    notices.length === 1,
+    `${notices.length} notices`,
+  );
 
   // Attack 3: sender mismatch, claiming alice's ID while carrying mallory's
   // own noise key. Rejected because the ID does not derive from the key.
@@ -754,7 +787,7 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
     `LEAVE frames before=${leaveFramesBefore} after=${radio.countOfType(PacketType.LEAVE)}`,
   );
 
-  // The other half: a real departure must still be honoured, or the rule above
+  // The other half: a real departure must still be honored, or the rule above
   // is just a way to break presence.
   //
   // Driven through the actual "user goes Away" path rather than an injected
@@ -783,7 +816,7 @@ test("C09 a forged LEAVE is neither acted on nor passed along", async () => {
 test("C09b a genuine old LEAVE dressed as a sync reply is refused", async () => {
   // The freshness window stops a replayed LEAVE, except through the one path
   // allowed to carry old packets: a reply to our own sync request. Every
-  // neighbour is asked every round, so a neighbour holding a recording of
+  // neighbor is asked every round, so a neighbor holding a recording of
   // alice's goodbye could tag it IS_RSR and end her session with us. Only the
   // types sync serves pass as replies, and LEAVE is not one.
   const s = (scenario = new Scenario({
@@ -1239,16 +1272,6 @@ function contactOf(device: SimDevice, peerID: string): ContactLike | undefined {
       ContactLike
     >
   )[peerID];
-}
-
-// The prekeys bob would seal to for this Noise key, as hex.
-function prekeysHeldFor(device: SimDevice, noiseKey: Uint8Array): string[] {
-  const peers = (
-    device.mesh as unknown as {
-      peerPrekeys: { peers: Record<string, { prekeys: { pub: string }[] }> };
-    }
-  ).peerPrekeys.peers;
-  return (peers[bytesToHex(noiseKey)]?.prekeys ?? []).map((p) => p.pub);
 }
 
 // A packet claiming `claimedPeerID`, signed with whatever key the caller holds.

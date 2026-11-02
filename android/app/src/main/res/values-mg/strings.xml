@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">Tambajotra harato</string>
   <string name="mesh_channel_description">Mitazona ny haraton\'ny Airhop mavitrika any aoriana</string>
   <string name="mesh_notification_title">Mandeha ny haraton\'ny Airhop</string>
@@ -8,4 +8,16 @@
     <item quantity="one">teboka %1$s ao anatin\'ny fetra</item>
     <item quantity="other">teboka %1$s ao anatin\'ny fetra</item>
   </plurals>
+  <string name="mesh_bluetooth_off">Vonoina ny Bluetooth · tsy mikaroka</string>
+  <string name="widget_label">Teboka ao anatin\'ny fetra</string>
+  <string name="widget_description">Teboka ao anatin\'ny fetra, sy ny fotoana nanisana azy</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="one">teboka ao anatin\'ny fetra</item>
+    <item quantity="other">teboka ao anatin\'ny fetra</item>
+  </plurals>
+  <string name="widget_nobody">tsy misy ao anatin\'ny fetra</string>
+  <string name="widget_as_of">tamin\'ny %1$s</string>
+  <string name="widget_paused">Miato ny harato</string>
+  <string name="widget_unset">Sokafy ny Airhop</string>
+  <string name="widget_stale">Sokafy ny Airhop hanavaozana</string>
 </resources>

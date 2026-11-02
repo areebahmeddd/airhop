@@ -93,14 +93,10 @@ export interface Spec extends TurboModule {
   // break "Invisible", which stops advertising while still scanning and relaying.
   // Android runs a foreground service; iOS is a no-op, since background BLE comes
   // from UIBackgroundModes.
+  //
+  // What the service's notice says belongs to AirhopApp, beside the home
+  // screen widget that shows the same count.
   setBackgroundServiceEnabled(enabled: boolean): Promise<void>;
-
-  // The reachable peer count on Android's background notice. No-op on iOS,
-  // which shows no notice.
-  setBackgroundPeerCount(count: number): Promise<void>;
-
-  // The notice's system settings page, to quiet or hide it. False on iOS.
-  openBackgroundNoticeSettings(): Promise<boolean>;
 
   // Required by the NativeEventEmitter contract.
   addListener(eventName: string): void;

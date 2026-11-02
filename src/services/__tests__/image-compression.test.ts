@@ -134,14 +134,14 @@ describe("prepareImageForSend", () => {
     expect(fileTransfer.discardPickerCopy).not.toHaveBeenCalled();
   });
 
-  it("re-encodes a PNG that a .jpg name would have labelled JPEG", async () => {
+  it("re-encodes a PNG that a .jpg name would have labeled JPEG", async () => {
     mockDisk.set("file:///img_1.jpg", PNG);
     const ready = await prepareImageForSend("file:///img_1.jpg", "img_1.jpg");
     expect(ready?.uri).toBe("file:///rung0.jpg");
     expect(ready?.mimeType).toBe("image/jpeg");
   });
 
-  it("keeps a correctly labelled PNG as a PNG", async () => {
+  it("keeps a correctly labeled PNG as a PNG", async () => {
     mockDisk.set("file:///b.png", PNG);
     const ready = await prepareImageForSend(
       "file:///b.png",

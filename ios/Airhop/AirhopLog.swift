@@ -4,8 +4,8 @@
 //
 // A logged value needs `privacy: .public` to survive a release build: the
 // unified log redacts interpolated values by default. Mark public only what
-// cannot identify a peer, device, or key, the bar AirhopBLEModule.kt's
-// linkID meets on Android.
+// cannot identify a peer, device, or key, the bar AirhopBLEModule.kt holds its
+// linkID to on Android.
 import Foundation
 import OSLog
 
@@ -18,12 +18,14 @@ enum AirhopLog {
   static let tor = Logger(subsystem: subsystem, category: "AirhopTorModule")
   static let iptProxy = Logger(subsystem: subsystem, category: "AirhopIPtProxy")
   static let voice = Logger(subsystem: subsystem, category: "AirhopVoiceModule")
+  static let video = Logger(subsystem: subsystem, category: "AirhopVideoModule")
   static let app = Logger(subsystem: subsystem, category: "AirhopAppModule")
 
   // What recentLog() reads back. Any other subsystem or category entry in
   // the store, ours or another process's, is dropped.
   static let categories: Set<String> = [
     "AirhopBLEModule", "AirhopWiFiModule", "AirhopLANModule",
-    "AirhopTorModule", "AirhopIPtProxy", "AirhopVoiceModule", "AirhopAppModule",
+    "AirhopTorModule", "AirhopIPtProxy", "AirhopVoiceModule", "AirhopVideoModule",
+    "AirhopAppModule",
   ]
 }

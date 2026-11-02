@@ -3,7 +3,6 @@
 //
 // Runs the real wallet service against the simulated mint.
 
-import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { useSettingsStore } from "@store/settings-store";
 import {
   accountKey,
@@ -22,6 +21,7 @@ import {
   refreshAccount,
   resetWalletService,
 } from "../wallet-service";
+import { receiveOffline, strangersTokenAt } from "./wallet-test-helpers";
 
 jest.setTimeout(60_000);
 
@@ -32,19 +32,11 @@ let fabric: MintFabric;
 // Two more mints, for a pass with several accounts to redeem.
 let others: MintFabric[];
 
-async function strangersToken(
+function strangersToken(
   sats: number,
   at: MintFabric = fabric,
 ): Promise<string> {
-  const sender = new Wallet(new Mint(at.url), { unit: UNIT });
-  await sender.loadMint();
-  const quote = await sender.createMintQuoteBolt11(sats);
-  const proofs = await sender.mintProofsBolt11(sats, quote);
-  return getEncodedToken({
-    mint: at.url,
-    unit: UNIT,
-    proofs,
-  } as unknown as Token);
+  return strangersTokenAt(at.url, sats);
 }
 
 function pendingPreviews(): number {
@@ -172,16 +164,6 @@ describe("Tor switched on while a pass is running (iOS)", () => {
     expect(unverifiedAt(fabric.url)).toBe(48);
   });
 });
-
-// Received with the internet off: a receipt of its own, no swap staged.
-async function receiveOffline(token: string): Promise<void> {
-  useSettingsStore.setState({ internetEnabled: false });
-  try {
-    expect((await receiveToken(token)).outcome).toBe("stored");
-  } finally {
-    useSettingsStore.setState({ internetEnabled: true });
-  }
-}
 
 function unverifiedAt(url: string): number {
   return (useWalletStore.getState().proofs[accountKey(url, UNIT)] ?? [])

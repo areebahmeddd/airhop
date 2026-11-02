@@ -25,6 +25,7 @@
 import NativeAirhopTor, {
   subscribeTorStatus,
   type Spec as TorModule,
+  type TorStatus,
 } from "@bridge/NativeAirhopTor";
 import { isTorSocketNativeAvailable } from "@bridge/NativeAirhopTorSocket";
 import { setTorTeardown } from "@core/nostr/tor-teardown-handle";
@@ -49,8 +50,31 @@ export interface TorRoutingResult {
   //   unavailable  the native Tor client is missing from this build
   //   timeout      Arti did not bootstrap in time
   //   no-bridges   the chosen mode needs bridge lines and has none
+  //   bad-bridges  the bridge lines were refused, or their transport failed
+  //   port-busy    another Tor client holds the SOCKS port
   //   error        Arti failed to start
-  reason?: "unavailable" | "timeout" | "no-bridges" | "error";
+  reason?:
+    | "unavailable"
+    | "timeout"
+    | "no-bridges"
+    | "bad-bridges"
+    | "port-busy"
+    | "error";
+}
+
+// A refused start, by the code native rejects with. Matched on `code`, never on
+// message text. Retrying cannot fix either named case, so each gets a message
+// that says what will.
+function startFailureReason(error: unknown): TorRoutingResult["reason"] {
+  switch ((error as { code?: string } | undefined)?.code) {
+    case "tor_bridge_rejected":
+    case "tor_transport_failed":
+      return "bad-bridges";
+    case "tor_port_busy":
+      return "port-busy";
+    default:
+      return "error";
+  }
 }
 
 // Single writer for the active flag. It lives in the mesh store, so the Mesh
@@ -289,7 +313,7 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
     // than on the clear net.
     useSettingsStore.getState().setTorEnabled(true);
     // The clear-net pool goes now, not after the bootstrap: waiting would leave
-    // up to a minute of subscriptions and DMs going out unprotected after the
+    // a minute or more of subscriptions and DMs going out unprotected after the
     // user asked for Tor. With the gate up the restart only tears down, and the
     // watcher rebuilds on the Tor socket once the circuit is ready.
     setNostrBlocked(true);
@@ -307,10 +331,11 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
       // the socket would put the user back on the clear net they just left.
       return { ok: false, reason: "timeout" };
     }
-    // Re-check consent before claiming it. Sixty seconds is long enough for the
-    // user to toggle Tor back off, or for a panic wipe to tear the whole thing
-    // down, and an enable that resolves afterwards would assert onion routing
-    // over a socket that is back on the clear net.
+    // Re-check consent before claiming it. A bootstrap may run up to three
+    // minutes (TOR_READY_TIMEOUT_S), long enough for the user to toggle Tor
+    // back off, or for a panic wipe to tear the whole thing down, and an enable
+    // that resolves afterwards would assert onion routing over a socket that is
+    // back on the clear net.
     if (!useSettingsStore.getState().torEnabled) {
       return { ok: false, reason: "error" };
     }
@@ -320,7 +345,8 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
     // client that was ready before the gate went up reports no further change.
     setNostrBlocked(false);
     return { ok: true };
-  } catch {
+  } catch (error) {
+    const reason = startFailureReason(error);
     // Neither Try again from the held state nor a bridge change has a clear
     // net to go back to: the user asked for Tor and has not been online without
     // it since, and a user who asked for a bridge is likely somewhere a direct
@@ -334,19 +360,19 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
       stopWatchingTorBootstrap();
       if (retryingHeld) useSettingsStore.getState().setTorStartPending(true);
       holdAfterFailedStart();
-      return { ok: false, reason: "error" };
+      return { ok: false, reason };
     }
     // A throw is different from a slow bootstrap: the module itself failed, so
     // there is nothing to wait for, and leaving the app with no internet half
     // would be worse than the clear net it started on. Unwind completely.
-    await NativeAirhopTor.stopTor().catch(() => {});
+    await NativeAirhopTor.stopTor(false).catch(() => {});
     installDirectSocket();
     setTorActive(false);
     useSettingsStore.getState().setTorEnabled(false);
     stopWatchingTorBootstrap();
     writeNostrBlocked(false);
     getMeshService()?.restartNostr();
-    return { ok: false, reason: "error" };
+    return { ok: false, reason };
   }
 }
 
@@ -356,7 +382,11 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
 // around the proxy.
 async function disableTorRouting(restarting = false): Promise<void> {
   stopWatchingTorBootstrap();
-  installDirectSocket();
+  // Not for a bridge change: Tor comes straight back, and a pool rebuilt in the
+  // gap (a foreground revalidation reading the stopping client as ready) must
+  // fail on the Tor socket rather than open on the direct one, as Android's
+  // keepHeld does for HTTP.
+  if (!restarting) installDirectSocket();
   // Nothing is starting, so the marker has nothing left to warn about. This is
   // also how Tor off leaves the held state a crashed start left behind.
   useSettingsStore.getState().setTorStartPending(false);
@@ -379,8 +409,10 @@ async function disableTorRouting(restarting = false): Promise<void> {
   setTorBootstrap("idle");
   // Native puts its HTTP client back on a direct route inside stopTor, after the
   // client is down, so there is no instant in which the proxy is gone while
-  // something still believes it is covered.
-  await NativeAirhopTor?.stopTor().catch(() => {});
+  // something still believes it is covered. Not for a bridge change: Tor comes
+  // straight back, so Android keeps the HTTP stack held across the gap, and a
+  // wallet call made in it fails rather than reaching the mint directly.
+  await NativeAirhopTor?.stopTor(restarting).catch(() => {});
   if (!restarting) getMeshService()?.restartNostr();
 }
 
@@ -510,7 +542,7 @@ export function applyInternetAvailability(enabled: boolean): void {
   // marker stays: turning the internet back on returns to it, because only Try
   // again or Tor off may leave it.
   if (!held) useSettingsStore.getState().setTorStartPending(false);
-  void NativeAirhopTor?.stopTor().catch(() => {});
+  void NativeAirhopTor?.stopTor(false).catch(() => {});
 }
 
 // Tell Arti which side of the screen the app is on, so it can sleep in the
@@ -519,9 +551,9 @@ export function applyInternetAvailability(enabled: boolean): void {
 // Ungated on the preference: with nothing running it is a no-op on both
 // platforms.
 export function notifyTorAppForeground(foreground: boolean): void {
-  void NativeAirhopTor?.setAppForeground?.(foreground).catch(() => {
-    // An older native binary without the method. The foreground re-check below
-    // still corrects the claim; what is lost is the dormancy behind it.
+  void NativeAirhopTor?.setAppForeground(foreground).catch(() => {
+    // The foreground re-check below still corrects the claim; what is lost is
+    // the dormancy behind it.
   });
 }
 
@@ -541,25 +573,34 @@ export async function revalidateTorRouting(): Promise<void> {
   // trigger that can never recover a session. With the internet off, Arti is
   // stopped on purpose, and reading that as blocked would say so on the Tor
   // screen.
-  const { torEnabled, internetEnabled } = useSettingsStore.getState();
-  if (!torEnabled || !internetEnabled) return;
+  const torWanted = (): boolean => {
+    const { torEnabled, internetEnabled } = useSettingsStore.getState();
+    return torEnabled && internetEnabled;
+  };
+  if (!torWanted()) return;
   if (NativeAirhopTor == null) return;
 
+  let status: TorStatus | null = null;
   try {
-    const status = await NativeAirhopTor.getTorStatus();
-    if (status.isReady) {
-      setTorActive(true);
-      setTorBootstrap("idle");
-      setNostrBlocked(false);
-      return;
-    }
-    if (status.isStarting) {
-      setTorBootstrap("starting");
-      return;
-    }
+    status = await NativeAirhopTor.getTorStatus();
   } catch {
     // The module answered with an error rather than a status. Treat that the
     // same as "not routing": the point of this path is to stop overstating.
+  }
+  // Read again, as enableTorRouting does: the user can switch Tor or the
+  // internet off while the status is in flight, and both stand Tor down
+  // themselves. Writing after either would claim Tor, or a block, for a
+  // preference that is no longer set.
+  if (!torWanted()) return;
+  if (status?.isReady) {
+    setTorActive(true);
+    setTorBootstrap("idle");
+    setNostrBlocked(false);
+    return;
+  }
+  if (status?.isStarting) {
+    setTorBootstrap("starting");
+    return;
   }
   // The socket path and the preference are both left alone. Swapping back to a
   // direct socket would put traffic on the clear net the user opted out of, and

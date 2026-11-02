@@ -35,7 +35,6 @@ import { useChatStore } from "@store/chat-store";
 import { computeMeshBanners, useMeshStateStore } from "@store/mesh-state-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
-import { useSettingsStore } from "@store/settings-store";
 import { channelInviteLink, parseAirhopLink } from "@utils/deep-link";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell, makeIdentity } from "../harness/app-shell";
@@ -43,37 +42,17 @@ import { installNativeBle } from "../harness/bridge-shim";
 import { IosBleModule } from "../harness/ios-native";
 import { installOfflineWebSocket } from "../harness/offline-socket";
 import { DeviceOS } from "../harness/os";
+import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
-// No test here needs a relay; without this the pool opens real sockets to public
-// relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
 
-// Every field a scenario here can move, so one test's leftovers never decide
-// the next one's verdict.
 function resetStores(): void {
-  useMeshStateStore.setState({
-    bleBlocker: "starting",
-    blePermissionBlocked: false,
-    bleAdvertisingUnsupported: false,
-    powerSaving: false,
-    wifiFastPath: "unknown",
-    lanState: "off",
-    locationGranted: true,
-    nostrConnected: false,
-    torActive: false,
-    bridgeActive: false,
-    bridgePeopleAcross: 0,
-    presenceStatus: "online",
-  });
-  // A start restores a kept Invisible, so Online has to be the saved choice too.
-  useSettingsStore.getState().setStayInvisible(false);
-  useSettingsStore.getState().setBackgroundMeshEnabled(true);
-  usePeerStore.getState().clearAll();
+  resetMeshStores();
   useOutboxStore.setState({ pending: [] });
 }
 
-// A signed ANNOUNCE from `peer`, as a neighbour sends one the moment a link
+// A signed ANNOUNCE from `peer`, as a neighbor sends one the moment a link
 // comes up. Without it the mesh has never heard of anyone on the link, and a
 // scenario about losing a peer has no peer to lose.
 function announceFrom(peer: Identity, nickname: string): string {
@@ -126,10 +105,10 @@ describe("mid-session radio chaos and lifecycle", () => {
     jest.useRealTimers();
   });
 
-  test("S11 Bluetooth toggled off then on from quick settings, app in front", async () => {
+  test("S36 Bluetooth toggled off then on from quick settings, app in front", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
-      "S11",
+      "S36",
       "Android: BT off then on while looking at the app",
       os,
     );
@@ -185,7 +164,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     const native = new AndroidBleModule(os);
     installNativeBle(native);
     native.initialize();
-    // Note: bootJsRuntime() has NOT been called. The app is on the splash screen.
+    // bootJsRuntime() has NOT been called: the app is on the splash screen.
 
     os.setBluetooth(false);
     await os.advance(300);
@@ -262,10 +241,10 @@ describe("mid-session radio chaos and lifecycle", () => {
     v.assert();
   });
 
-  test("S14 Bluetooth dies mid-conversation while a DM is being sent", async () => {
+  test("S37 Bluetooth dies mid-conversation while a DM is being sent", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
-      "S14",
+      "S37",
       "BT off mid-DM, nothing may be silently lost",
       os,
     );
@@ -280,7 +259,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     native.fabricDeliver(linkID, announceFrom(friend, "friend"));
     await os.advance(200);
     v.check(
-      "the friend is a direct neighbour before the outage",
+      "the friend is a direct neighbor before the outage",
       isDirectPeer(friend.peerID),
       "precondition: without a known peer the outage changes nothing",
     );
@@ -336,7 +315,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     });
     await os.advance(200);
     v.check(
-      "both friends are direct neighbours before the outage",
+      "both friends are direct neighbors before the outage",
       friends.every((f) => isDirectPeer(f.peerID)),
       "precondition: without known peers the outage changes nothing",
     );
@@ -457,9 +436,9 @@ describe("mid-session radio chaos and lifecycle", () => {
 
   // iOS: the same chaos, against CoreBluetooth.
 
-  test("S11i iOS: Bluetooth toggled off then on", async () => {
+  test("S36i iOS: Bluetooth toggled off then on", async () => {
     const os = new DeviceOS({ platform: "ios" });
-    const v = new Verdict("S11i", "iOS: BT off then on mid-session", os);
+    const v = new Verdict("S36i", "iOS: BT off then on mid-session", os);
     const native = new IosBleModule(os);
     installNativeBle(native);
     app = new AppShell({ os });

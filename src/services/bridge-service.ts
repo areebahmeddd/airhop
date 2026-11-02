@@ -31,7 +31,7 @@
 // rebuild would let the new subscription's backfill re-inject, re-downlink and
 // re-publish what the previous one already handled.
 //
-// The subscription covers the own precision-6 cell and its eight neighbours,
+// The subscription covers the own precision-6 cell and its eight neighbors,
 // so two islands either side of a cell edge still meet. Publishes go to the
 // own cell only, which is symmetric: each side's ring includes the other's
 // cell.
@@ -66,7 +66,7 @@ import { decodeGeohash, encodeGeohash } from "@core/nostr/geohash-presence";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { useSettingsStore } from "@store/settings-store";
 import { BoundedIdSet } from "@utils/bounded-id-set";
-import { geohashNeighbours } from "@utils/geohash-grid";
+import { geohashNeighbors } from "@utils/geohash-grid";
 import { verifyEvent, type Event as NostrEvent } from "nostr-tools";
 import { getCoarseLocation } from "./location-service";
 
@@ -166,7 +166,7 @@ export interface BridgeHooks {
   // Report status changes so the banner/header can react.
   onStatus(status: BridgeStatus): void;
   // The rendezvous cell changed, including to or from none. The cell rides in
-  // every ANNOUNCE (TLV 0x06), so a mesh-only neighbour learns it only from the
+  // every ANNOUNCE (TLV 0x06), so a mesh-only neighbor learns it only from the
   // next one, and waiting a full cycle leaves it composing for the wrong cell.
   onActiveCellChanged(): void;
 }
@@ -191,7 +191,7 @@ export class BridgeService {
   private client: NostrClient | null = null;
   private enabled = false;
   private activeCell: string | null = null;
-  // The own cell plus its neighbour ring: what the subscription asks for, and
+  // The own cell plus its neighbor ring: what the subscription asks for, and
   // the only cells an inbound event may be signed for.
   private subscribedCells: ReadonlySet<string> = new Set();
   private subscription: { close: () => void } | null = null;
@@ -232,6 +232,11 @@ export class BridgeService {
   private readonly participants = new Map<string, number>(); // pubkey -> lastSeenMs
   private presenceTimer: ReturnType<typeof setTimeout> | null = null;
   private lastPresenceAtMs = 0;
+  // The heartbeat names a precision-6 cell, finer than location presence ever
+  // goes, so it is sent only while on screen, as geohash presence is and as
+  // bitchat-ios is by being suspended. Carrying deposits and downlinks needs
+  // no heartbeat and goes on in the background.
+  private foreground = true;
 
   constructor(
     signingPrivKey: Uint8Array,
@@ -320,6 +325,12 @@ export class BridgeService {
     this.emitStatus();
   }
 
+  setForeground(foreground: boolean): void {
+    if (this.foreground === foreground) return;
+    this.foreground = foreground;
+    if (foreground) this.publishPresence();
+  }
+
   // Internet switched off: deposits were accepted on the promise of putting
   // them on the internet, and must not be published if it comes back later.
   dropQueuedUplinks(): void {
@@ -359,7 +370,7 @@ export class BridgeService {
     this.subscribedCells =
       cell === null
         ? new Set()
-        : new Set([cell, ...geohashNeighbours(cell).map((n) => n.geohash)]);
+        : new Set([cell, ...geohashNeighbors(cell).map((n) => n.geohash)]);
     this.hooks.onActiveCellChanged();
   }
 
@@ -394,14 +405,14 @@ export class BridgeService {
   }
 
   // Shared by the cell-change, relay-change and client-swap paths. The relay
-  // set is read as the socket opens, for the own cell: the neighbours are a
-  // kilometre away, so their nearest relays are the same ones.
+  // set is read as the socket opens, for the own cell: the neighbors are a
+  // kilometer away, so their nearest relays are the same ones.
   private openSubscription(cell = this.activeCell): void {
     this.subscription?.close();
     this.subscription = null;
     const client = this.client;
     if (client === null || cell === null) return;
-    const cells = [cell, ...geohashNeighbours(cell).map((n) => n.geohash)];
+    const cells = [cell, ...geohashNeighbors(cell).map((n) => n.geohash)];
     this.subscription = client.subscribe(
       [
         {
@@ -443,7 +454,7 @@ export class BridgeService {
   //
   // When it went to live relays, returns whether one accepted it. Otherwise
   // undefined: bridging off, internet off, nearby-only, no cell, or offline,
-  // where the only carrier is a bridge peer, a radio neighbour the caller
+  // where the only carrier is a bridge peer, a radio neighbor the caller
   // already counts.
   bridgeOutgoing(
     content: string,
@@ -466,7 +477,7 @@ export class BridgeService {
     });
     this.publishedEventIDs.add(event.id);
     // Our own radio copy is already on our timeline; note its stable ID so the
-    // event coming back from our own subscription is recognised as a local copy.
+    // event coming back from our own subscription is recognized as a local copy.
     this.seenRadioStableIDs.add(
       bridgeStableID(senderPeerID, timestampMs, content),
     );
@@ -754,7 +765,7 @@ export class BridgeService {
   private publishPresence(): void {
     const client = this.client;
     if (!this.enabled || client === null || this.activeCell === null) return;
-    if (!this.hooks.relaysConnected()) return;
+    if (!this.foreground || !this.hooks.relaysConnected()) return;
     const now = Date.now();
     if (now - this.lastPresenceAtMs < PRESENCE_MIN_INTERVAL_MS) return;
     this.lastPresenceAtMs = now;
@@ -839,7 +850,7 @@ export class BridgeService {
   }
 
   // The rendezvous identity for a cell: deterministic, so our own events are
-  // still recognised after a restart, and never the location-channel key.
+  // still recognized after a restart, and never the location-channel key.
   //
   // Only the ring's identities are cached. A fromBridge carrier names any cell
   // it likes, so caching those would be memory anyone in radio range could

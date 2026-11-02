@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Airhop, varlığınızı yakındaki eşlere duyurmak için Bluetooth kullanır.";
 "NSLocalNetworkUsageDescription" = "Airhop, büyük aktarımlarda (video, büyük dosyalar) yakındaki cihazlara doğrudan bağlanmak için yerel ağı kullanır.";
 "NSCameraUsageDescription" = "Airhop, bir kişinin QR kodunu taramak ve yakındaki eşlerle paylaşacağınız fotoğraf ve videoları çekmek için kamerayı kullanır.";
-"NSMicrophoneUsageDescription" = "Airhop, sesli not kaydetmek ve yakındaki eşlere canlı ses taşımak için mikrofonu kullanır.";
+"NSMicrophoneUsageDescription" = "Airhop, sesli ve görüntülü not kaydetmek ve yakındaki eşlere canlı ses taşımak için mikrofonu kullanır.";
 "NSPhotoLibraryUsageDescription" = "Airhop, görselleri ve videoları mesh üzerinden paylaşmak için fotoğraf galerinize erişir.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop, siz kaydetmeyi seçtiğinizde ve QR kodunuzu indirdiğinizde fotoğraf ve videoları galerinize kaydeder.";
 "NSFaceIDUsageDescription" = "Airhop, sen olduğunu doğrulamak için Face ID kullanır: uygulama kilidi açıkken uygulamayı açmak için ve kurtarma ifadeni göstermeden ya da kimliğini yeni bir telefona taşımadan önce.";

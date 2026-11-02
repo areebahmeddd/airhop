@@ -2,7 +2,7 @@
 //
 // Every scenario draws its faults from one of these, seeded from a number the
 // scenario prints. A soak run that fails on seed 91744 fails on seed 91744
-// again, on any machine, forever - which is the difference between "the fuzzer
+// again, on any machine, forever, which is the difference between "the fuzzer
 // found something" and "the fuzzer found something and we can go look at it".
 //
 // xorshift128 rather than Math.random for exactly that reason, and rather than
@@ -15,7 +15,7 @@ export class Prng {
   private s3: number;
 
   constructor(readonly seed: number) {
-    // splitmix64-style expansion so neighbouring seeds do not produce
+    // splitmix64-style expansion so neighboring seeds do not produce
     // correlated streams. Seed 1 and seed 2 must look nothing alike.
     let x = seed >>> 0 || 0x9e3779b9;
     const next = (): number => {

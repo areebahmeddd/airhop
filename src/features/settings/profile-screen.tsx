@@ -3,12 +3,12 @@
 // sub-screens (src/features/settings/sections/*). Panic wipe stays here,
 // at the very bottom, outside every section.
 
-import { encodeQRContent } from "@core/crypto/contact-exchange";
 import {
   isShipped,
   LANGUAGES,
   needsRelaunch,
   PICKER_LANGUAGES,
+  resolvePreference,
   t,
   useT,
   type TranslationKey,
@@ -51,7 +51,6 @@ import {
   withAlpha,
   type ResolvedTheme,
 } from "@ui/theme";
-import { peerInviteLink } from "@utils/deep-link";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
@@ -75,6 +74,7 @@ import {
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import ConnectivityGroup from "./connectivity-group";
+import { languageA11yName, languageRowState } from "./language-rows";
 import AboutScreen from "./sections/about-screen";
 import DiagnosticsScreen from "./sections/diagnostics-screen";
 import GeneralScreen from "./sections/general-screen";
@@ -116,7 +116,7 @@ async function shareOrIgnore(
 }
 
 // Presence on the mesh. Online broadcasts + scans, Away stops the mesh
-// entirely, Invisible keeps scanning but stops advertising our presence.
+// entirely, Invisible keeps scanning but stops advertising.
 type Status = PresenceStatus;
 
 // Colors and the translator are both passed in, and both for the same reason:
@@ -174,7 +174,7 @@ const HEADER_GLYPH = 18;
 // 220 rather than 200 because the card carries a full contact card at
 // error-correction H, which is a dense grid, and the extra points keep each
 // module comfortably above the size a camera needs. It still clears
-// the sheet's padding on the narrowest phone we support.
+// the sheet's padding on the narrowest supported phone.
 //
 // The mark is capped at a fifth of the code. Past roughly 30% the occluded area
 // exceeds what even H can recover and the code stops scanning at an angle.
@@ -183,12 +183,10 @@ const QR_LOGO_SIZE = 44;
 const AIRHOP_MARK = require("../../../assets/images/icon.png") as number;
 
 // Copy glyph in the peer ID box. Shared by the icon and the inset that keeps the
-// ID centred against it, so the two can never drift apart.
+// ID centered against it, so the two can never drift apart.
 const COPY_GLYPH = 15;
 
-// Keys, not text: a module constant is evaluated once at import, so translated
-// strings here would freeze in whichever language the app started in. The
-// component translates them on render. Guarded by `npm run i18n:audit`.
+// Keys, translated on render.
 //
 // There is no "System default" row. An untouched install already follows the
 // phone (see ThemePreference), so the row would only ever restate what the tick
@@ -236,6 +234,9 @@ interface Props {
   onWipeStart?: () => void;
   onWipe?: () => void;
   onResumeMesh?: () => void;
+  // A transfer that ended unconfirmed after its screen was gone: the shell asks
+  // what to do with this phone, as a relaunch would.
+  onTransferUnconfirmed?: () => void;
   // This screen owns a navigation stack the shell cannot see: its sections are
   // early returns, not routes. The shell needs its depth so a horizontal swipe
   // inside a section goes back rather than stepping to the next tab.
@@ -254,6 +255,7 @@ export default function ProfileScreen({
   onWipeStart,
   onWipe,
   onResumeMesh,
+  onTransferUnconfirmed,
   onCanGoBackChange,
   popSignal = 0,
   initialView = "root",
@@ -300,16 +302,31 @@ export default function ProfileScreen({
   const languagePreference = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const setMonoFont = useSettingsStore((s) => s.setMonoFont);
+  // The Phone language row. Its description is the language following the
+  // phone resolves to, in its own script, re-read when the phone's changes.
+  const phoneLanguageRow = languageRowState(
+    "system",
+    languagePreference,
+    T.language,
+    needsRelaunch(languagePreference),
+  );
+  const deviceEndonym = LANGUAGES[resolvePreference("system")].endonym;
+  const phoneLanguageA11y = T("settings.language.name_endonym_a11y", {
+    name: T("settings.language.phone"),
+    endonym: deviceEndonym,
+  });
 
-  // The QR encodes a full contact card (peer ID + Noise and Ed25519 public keys
-  // + nickname), not just the peer ID. A bare ID carries nothing a scanner can
-  // verify or encrypt to; the card lets the other device confirm the ID really
-  // is the fingerprint of these keys and open an encrypted session immediately.
-  // Falls back to the plain ID if the mesh service isn't up yet, which older
-  // builds' scanners also still accept.
+  // The QR encodes a full contact card (peer ID + Noise, Ed25519 and Nostr
+  // public keys + nickname), not just the peer ID. A bare ID carries nothing a
+  // scanner can verify or encrypt to; the card lets the other device confirm
+  // the ID really is the fingerprint of these keys and open an encrypted
+  // session immediately. The mesh service signs it with the identity it
+  // already holds, so nobody can swap the Nostr key in a forwarded copy and
+  // this screen never touches the signing key. The plain ID stands in while
+  // the mesh service isn't up, or still runs an identity this screen has left.
   const qrValue = useMemo(() => {
-    const card = getMeshService()?.getContactCard();
-    return card ? encodeQRContent(card) : peerID;
+    const mesh = getMeshService();
+    return mesh?.peerID === peerID ? mesh.getContactQR() : peerID;
   }, [peerID]);
 
   // The sections below are early returns rather than an overlay, so opening one
@@ -377,7 +394,7 @@ export default function ProfileScreen({
   }, [view, goBack]);
 
   // Tell the shell whether there is anywhere to go back to, so it can turn its
-  // tab-stepping swipe into a back-swipe while we are inside a section.
+  // tab-stepping swipe into a back-swipe while inside a section.
   useEffect(() => {
     onCanGoBackChange?.(view !== "root");
   }, [view, onCanGoBackChange]);
@@ -522,8 +539,8 @@ export default function ProfileScreen({
   }
 
   // The same card the QR encodes, as text, for when there is no camera between
-  // the two people. Copy only: the string is ~180 characters, so the box shows
-  // enough to recognise and the glyph does the work.
+  // the two people. Copy only: the string is ~250 characters, so the box shows
+  // enough to recognize and the glyph does the work.
   function handleCopyContactCode(): void {
     copyContactCode(qrValue);
   }
@@ -550,10 +567,8 @@ export default function ProfileScreen({
     const uri = await writeQRToCache();
     try {
       if (uri === null) throw new Error("qr render failed");
-      // See the note in message-thread's saveAttachmentToDevice:
-      // saveToLibraryAsync is a throwing stub in expo-media-library 57, so
-      // this branch always fell into the catch below and Download QR could
-      // never have worked.
+      // Asset.create: expo-media-library ships saveToLibraryAsync as a stub that
+      // always throws.
       await MediaLibrary.Asset.create(uri);
       showAlert(t("settings.qr.saved"), t("settings.qr.saved_body"));
     } catch {
@@ -595,13 +610,10 @@ export default function ProfileScreen({
   }
 
   async function handleShareQR(): Promise<void> {
-    // Share the CODE, not a link to a bare peer ID.
-    //
-    // Never `airhop://peer/<id>` alone, which is the one artifact that cannot
-    // reach the person: an ID is a hash of the Noise key and carries no keys at
-    // all, so the recipient can only message back from inside Bluetooth range.
-    // A button saying "Share QR" that hands over
-    // the weakest thing the app has. The image carries the whole contact card.
+    // Share the code, not a link to a bare peer ID. An ID is a hash of the Noise
+    // key and carries no keys at all, so from `airhop://peer/<id>` alone the
+    // recipient can only message back from inside Bluetooth range. The image
+    // and the text fallback both carry what the QR shows.
     const uri = await writeQRToCache();
     if (uri !== null && (await Sharing.isAvailableAsync())) {
       try {
@@ -612,11 +624,11 @@ export default function ProfileScreen({
         return;
       } catch {
         // Fall through: a refused share sheet should still leave a way to send
-        // something, and the link below carries the same payload.
+        // the code as text.
       }
     }
     await shareOrIgnore({
-      message: `${t("settings.qr.share_body")}\n\n${peerInviteLink(peerID)}`,
+      message: `${t("settings.qr.share_body")}\n\n${qrValue}`,
       title: t("settings.qr.share_message"),
     });
   }
@@ -996,7 +1008,7 @@ export default function ProfileScreen({
             {T("settings.qr.title")}
           </Text>
           <View style={styles.qrLarge}>
-            {/* Level H (30% recoverable) pays for the modules the centre mark
+            {/* Level H (30% recoverable) pays for the modules the center mark
                 covers, so a smudged or angled scan still reads. */}
             <QRCode
               value={qrValue}
@@ -1332,27 +1344,75 @@ export default function ProfileScreen({
               })}
             </View>
 
-            {/* No "System" row: first launch follows the phone and a choice
-                here pins it. A language with no catalog yet is dimmed, not
-                hidden, and goes live the release its catalog lands. */}
+            {/* Phone language first, the way both OS per-app pickers offer
+                it: a choice below pins a language, and this row is the way
+                back to following the phone without resetting every other
+                setting. A language with no catalog yet is dimmed, not hidden,
+                and goes live the release its catalog lands. */}
             <UpperText style={styles.appearanceGroupLabel}>
               {T("settings.group.language")}
             </UpperText>
             <View style={[shared.settingsGroup, styles.appearanceGroup]}>
-              {PICKER_LANGUAGES.map((code, i) => {
+              <Pressable
+                style={({ pressed }) => [
+                  styles.optionRowGrouped,
+                  pressed && shared.rowPressed,
+                ]}
+                onPress={() => {
+                  setLanguage("system");
+                  if (!needsRelaunch("system")) setShowThemeModal(false);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{
+                  selected: phoneLanguageRow.selected,
+                  disabled: false,
+                }}
+                accessibilityLabel={
+                  phoneLanguageRow.pending
+                    ? T("settings.language.pending_a11y", {
+                        value: phoneLanguageA11y,
+                      })
+                    : T("settings.language.set_a11y", {
+                        value: phoneLanguageA11y,
+                      })
+                }
+              >
+                <View style={styles.optionIconGrouped}>
+                  <Feather
+                    name="smartphone"
+                    size={18}
+                    color={Colors.textMuted}
+                  />
+                </View>
+                <View style={shared.optionText}>
+                  <Text style={shared.optionLabel}>
+                    {T("settings.language.phone")}
+                  </Text>
+                  <Text style={shared.optionDescription}>{deviceEndonym}</Text>
+                </View>
+                {phoneLanguageRow.pending && (
+                  <Text style={styles.languageSoon}>
+                    {T("settings.language.pending")}
+                  </Text>
+                )}
+                {phoneLanguageRow.selected && !phoneLanguageRow.pending && (
+                  <Feather name="check" size={18} color={Colors.textPrimary} />
+                )}
+              </Pressable>
+              {PICKER_LANGUAGES.map((code) => {
                 const spec = LANGUAGES[code];
                 const shipped = isShipped(code);
-                // Ticked against what is on screen, not against the preference,
-                // so a right-to-left choice waiting for a relaunch does not claim
-                // to be active while the app is still in the old language.
-                const selected = code === T.language;
-                const pending =
-                  languagePreference === code &&
-                  needsRelaunch(languagePreference);
+                const { selected, pending } = languageRowState(
+                  code,
+                  languagePreference,
+                  T.language,
+                  needsRelaunch(languagePreference),
+                );
                 const name = T(spec.nameKey);
+                const a11yName = languageA11yName(T, name, spec.endonym);
                 return (
                   <React.Fragment key={code}>
-                    {i > 0 && <View style={shared.groupDivider} />}
+                    <View style={shared.groupDivider} />
                     <Pressable
                       style={({ pressed }) => [
                         styles.optionRowGrouped,
@@ -1377,10 +1437,14 @@ export default function ProfileScreen({
                         shipped
                           ? pending
                             ? T("settings.language.pending_a11y", {
-                                value: name,
+                                value: a11yName,
                               })
-                            : T("settings.language.set_a11y", { value: name })
-                          : T("settings.language.soon_a11y", { value: name })
+                            : T("settings.language.set_a11y", {
+                                value: a11yName,
+                              })
+                          : T("settings.language.soon_a11y", {
+                              value: a11yName,
+                            })
                       }
                     >
                       <View style={styles.optionIconGrouped}>
@@ -1426,6 +1490,7 @@ export default function ProfileScreen({
           onClose={() => setShowTransferModal(false)}
           onResumeMesh={() => onResumeMesh?.()}
           onErased={handleTransferErased}
+          onUnconfirmedAway={() => onTransferUnconfirmed?.()}
         />
 
         {/* Drops straight to onboarding, with no second "Wiped" screen. */}

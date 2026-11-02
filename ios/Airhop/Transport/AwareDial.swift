@@ -1,6 +1,6 @@
 // The rules that get a pair of Aware peers onto one socket on this platform:
-// the token hello, which connection survives when both ends dialled, and how
-// long a device waits before it is dialled again. Pure, and shared with the
+// the token hello, which connection survives when both ends dialed, and how
+// long a device waits before it is dialed again. Pure, and shared with the
 // tests, so the module holds only the framework calls around them.
 //
 // Not the Kotlin AwareDial: Apple's discovery is symmetric with no service

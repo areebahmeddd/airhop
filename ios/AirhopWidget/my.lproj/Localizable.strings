@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-my/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "ဘလူးတုသ် ပိတ်ထားသည် · မရှာဖွေပါ";
+"widget_label" = "အကွာအဝေးအတွင်း လုပ်ဖော်ကိုင်ဖက်များ";
+"widget_description" = "အကွာအဝေးအတွင်း လုပ်ဖော်ကိုင်ဖက်များနှင့် ရေတွက်ခဲ့သည့် အချိန်";
+"widget_nobody" = "အကွာအဝေးအတွင်း မည်သူမျှ မရှိ";
+"widget_as_of" = "%1$@ အထိ";
+"widget_paused" = "မက်ရှ် ရပ်ထားသည်";
+"widget_unset" = "Airhop ကို ဖွင့်ပါ";
+"widget_stale" = "ပြန်လည်ကြည့်ရှုရန် Airhop ကို ဖွင့်ပါ";

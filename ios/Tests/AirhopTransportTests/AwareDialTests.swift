@@ -28,10 +28,10 @@ final class AwareDialTests: XCTestCase {
   // must reach the same answer, and the two connections must get opposite
   // answers: the one whose initiator holds the lower token survives.
   func testExactlyOneConnectionSurvives() {
-    // The connection dialled by the lower token: kept at both ends.
+    // The connection dialed by the lower token: kept at both ends.
     XCTAssertTrue(AwareDial.keeps(localToken: low, peerToken: high, weInitiated: true))
     XCTAssertTrue(AwareDial.keeps(localToken: high, peerToken: low, weInitiated: false))
-    // The connection dialled by the higher token: dropped at both ends.
+    // The connection dialed by the higher token: dropped at both ends.
     XCTAssertFalse(AwareDial.keeps(localToken: high, peerToken: low, weInitiated: true))
     XCTAssertFalse(AwareDial.keeps(localToken: low, peerToken: high, weInitiated: false))
   }

@@ -1,22 +1,5 @@
-// The launch sweep that makes a failed panic wipe retry itself.
-//
-// The wipe most likely to fail is the one that matters. Items are stored
-// AFTER_FIRST_UNLOCK, so a phone that has booted but not been unlocked refuses
-// both deletes and reads, which is exactly the seizure the gesture exists for.
-// Without a retry, the wipe fails once, says so in an alert, and the keys stay
-// for the life of the device.
-//
-// The properties that matter:
-//   * A launch with no identity deletes the secrets that no longer have an
-//     owner, because with no identity none of them does.
-//   * The identity is never touched. The sweep is not awaited, and onboarding
-//     writes an identity moments later; a delete still in flight would destroy
-//     the key the user just created.
-//   * "Leftovers" is only ever claimed when one is positively read back. A
-//     keychain that refuses everything is unreadable, not dirty, and saying
-//     otherwise would put an alarm about data at rest in front of somebody
-//     whose phone is merely locked.
-//   * A first install, the overwhelmingly common case, is a silent no-op.
+// The launch sweep that makes a failed panic wipe retry itself. Why it deletes
+// what it deletes and spares what it spares is on `sweepOrphanedSecrets`.
 
 const mockDelete = jest.fn<Promise<void>, [string]>();
 const mockGet = jest.fn<Promise<string | null>, [string]>();

@@ -50,7 +50,7 @@ import type { SettingId } from "./settings-index";
 
 // Circle diameters for the two round shapes in the shared sheet vocabulary: the
 // icon medallion at the top of a confirm sheet, and an option row's leading dot.
-// Named so their radii cannot drift off centre.
+// Named so their radii cannot drift off center.
 const SHEET_ICON_SIZE = 48;
 const OPTION_DOT_SIZE = 34;
 
@@ -129,8 +129,12 @@ export const SettingsScroll = React.forwardRef<
   ScrollViewInstance,
   Omit<ScrollViewProps, "contentContainerStyle"> & {
     children: React.ReactNode;
+    fill?: boolean;
   }
->(function SettingsScroll({ children, ...scrollProps }, forwardedRef) {
+>(function SettingsScroll(
+  { children, fill = false, ...scrollProps },
+  forwardedRef,
+) {
   const styles = useSharedStyles();
   const scrollRef = useRef<ScrollViewInstance>(null);
   const contentRef = useRef<ViewInstance>(null);
@@ -163,12 +167,17 @@ export const SettingsScroll = React.forwardRef<
           else if (forwardedRef !== null) forwardedRef.current = node;
         }}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={fill ? styles.fill : undefined}
         {...scrollProps}
       >
         {/* The content padding rides on a real View rather than
             contentContainerStyle, so rows have an ancestor to measure against.
             Identical box either way. */}
-        <View ref={contentRef} style={styles.content} collapsable={false}>
+        <View
+          ref={contentRef}
+          style={[styles.content, fill && styles.fill]}
+          collapsable={false}
+        >
           {children}
         </View>
       </ScrollView>
@@ -345,7 +354,7 @@ export function SettingLinkRow({
 // off-track. The off-track uses borderStrong so the control keeps a visible
 // outline on a surface-colored row.
 // A disabled switch is dimmed rather than recolored, so it still reads as on
-// or off at a glance. RN greys the control inconsistently across platforms,
+// or off at a glance. RN grays the control inconsistently across platforms,
 // so the opacity is set here.
 // It is named after its row unless told otherwise. Disabled goes into the
 // accessibility state on both platforms: RN's Switch puts it there on Android
@@ -397,7 +406,10 @@ export function SubHeader({
     <View style={styles.subHeader}>
       <Pressable
         onPress={onBack}
-        style={styles.subHeaderBack}
+        style={({ pressed }) => [
+          styles.subHeaderBack,
+          pressed && styles.subHeaderBackPressed,
+        ]}
         hitSlop={HIT_SLOP}
         accessibilityRole="button"
         accessibilityLabel={T("settings.back")}
@@ -426,6 +438,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.md,
       paddingBottom: TAB_BAR_CLEARANCE,
     },
+    fill: {
+      flexGrow: 1,
+    },
     subHeader: {
       flexDirection: "row",
       alignItems: "center",
@@ -443,6 +458,10 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       justifyContent: "center",
       marginStart: -Spacing.xs,
     },
+    // A bare glyph with no fill to darken, so it dims.
+    subHeaderBackPressed: {
+      opacity: PRESSED_OPACITY,
+    },
     subHeaderTitle: {
       flex: 1,
       fontSize: FontSize.md,
@@ -451,7 +470,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       textAlign: "center",
     },
     // Mirrors subHeaderBack, negative margin included, or the title's flex box
-    // is asymmetric and its centred text lands 2pt off centre.
+    // is asymmetric and its centered text lands 2pt off center.
     subHeaderSpacer: {
       width: 32,
       marginEnd: -Spacing.xs,

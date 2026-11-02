@@ -8,7 +8,7 @@
 //
 // Two honesties to keep in mind when reading these numbers:
 //   - Send progress reflects bytes handed to the radio, not bytes the far side
-//     confirmed. There is no per-fragment acknowledgement, so "sent" is
+//     confirmed. There is no per-fragment acknowledgment, so "sent" is
 //     optimistic.
 //   - Receive progress reflects chunks that actually arrived and reassembled,
 //     so it is exact.
@@ -25,7 +25,7 @@ export type TransferDirection = "send" | "receive";
 // It is not terminal. If progress resumes it flips back to "active"; if the
 // silence continues it is declared "failed".
 export type TransferStatus =
-  "active" | "stalled" | "done" | "failed" | "cancelled";
+  "active" | "stalled" | "done" | "failed" | "canceled";
 
 export interface Transfer {
   id: string;
@@ -94,7 +94,7 @@ const STALL_AFTER_MS = 12_000;
 // A transfer that stays silent this long is declared failed: the peer is out of
 // range for good, not merely slow. Until there is a resume back-channel, a
 // stalled receive cannot recover on its own (the sender already sent and freed
-// its chunks), so we stop pretending and surface the failure.
+// its chunks), so the failure is surfaced rather than left looking stalled.
 const STALL_FAIL_AFTER_MS = 45_000;
 
 export const useTransferStore = create<TransferState>()((set, get) => ({
@@ -195,7 +195,7 @@ export const useTransferStore = create<TransferState>()((set, get) => ({
 
   // Cancel is initiated by the user. The actual teardown (dropping queued
   // packets or a partial reassembly) is done by FileTransferService; this just
-  // reflects it in the UI, then clears the card quickly since a cancelled
+  // reflects it in the UI, then clears the card quickly since a canceled
   // transfer needs no lingering "done" state.
   cancel(id) {
     set((state) => {
@@ -204,7 +204,7 @@ export const useTransferStore = create<TransferState>()((set, get) => ({
       return {
         transfers: {
           ...state.transfers,
-          [id]: { ...existing, updatedAtMs: Date.now(), status: "cancelled" },
+          [id]: { ...existing, updatedAtMs: Date.now(), status: "canceled" },
         },
       };
     });
@@ -226,7 +226,7 @@ export const useTransferStore = create<TransferState>()((set, get) => ({
           failed.push(id);
           changed = true;
         } else if (t.status === "active" && idle >= STALL_AFTER_MS) {
-          // Zero the speed so the card stops showing a rate/ETA it can't honour.
+          // Zero the speed so the card stops showing a rate/ETA it can't honor.
           next[id] = { ...t, status: "stalled", speedBps: 0 };
           changed = true;
         }

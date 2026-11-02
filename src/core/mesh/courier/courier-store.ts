@@ -9,16 +9,16 @@
 //
 // This module owns the envelope and the bag it sits in: wire format, routing
 // tag, trust tiers, pool bounds, spray budget. Sealing and packet building stay
-// in mesh-service, which seals ONCE per message and addresses the same bytes to
-// every courier. That is what lets `deposit` recognise the copies as one
-// envelope, so nothing here may re-seal.
+// in mesh-service, which seals once per send pass and addresses the same bytes
+// to every courier in it. That is what lets `deposit` recognize the copies as
+// one envelope, so nothing here may re-seal.
 //
 // Envelope wire format (COURIER_ENV payload, and a kind 1401 drop's content):
 // TLVs of [type u8][length u16 BE][value], as bitchat's CourierEnvelope.
 //   0x01  recipient tag   HMAC-SHA256(recipientNoisePub, dayEpoch)[0:16]
 //   0x02  expiry          Unix milliseconds, u64 BE
 //   0x03  ciphertext      Noise X sealed payload
-//   0x04  copies          spray-and-wait budget
+//   0x04  copies          spray-and-wait budget, u8; omitted at 1 (carry-only)
 //   0x05  prekey ID       one-time prekey sealed to (v2); absent for a static seal
 
 import { hmac } from "@noble/hashes/hmac.js";
@@ -33,15 +33,15 @@ import { base64ToBytes, bytesToBase64 } from "../../encoding/base64";
 // the other side, and anything we fail to enforce is a slot someone else can
 // take from us.
 const POOL_SIZE = 40;
-// Verified-tier mail can never crowd out favourites' share of the pool.
+// Verified-tier mail can never crowd out favorites' share of the pool.
 const VERIFIED_POOL_SIZE = 20;
 // How long an envelope is worth carrying, matching CourierEnvelope
 // .maxLifetimeSeconds. Exported because mesh-service stamps the envelopes it
 // originates and the two must not drift.
-export const ENVELOPE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const ENVELOPE_TTL_MS = 24 * 60 * 60 * 1000;
 // Tolerance on a depositor's expiry, matching Limits.maxExpirySlack. Absorbs
 // clock skew between two phones without letting anyone park mail indefinitely.
-const EXPIRY_SLACK_MS = 60 * 60 * 1000; // 1 hour
+const EXPIRY_SLACK_MS = 60 * 60 * 1000;
 const MAX_ENVELOPE_BYTES = 16 * 1024; // 16 KiB plaintext cap
 const FAVORITE_QUOTA = 5;
 const VERIFIED_QUOTA = 2;
@@ -125,23 +125,15 @@ export function candidateTags(
 }
 
 // ---- Envelope wire format ----
-//
-// TLV encoding matching bitchat-ios CourierEnvelope.encode() / .decode().
-// Types:
-//   0x01  recipientTag  (16 bytes)
-//   0x02  expiry        (8 bytes, u64 BE, milliseconds)
-//   0x03  ciphertext    (variable)
-//   0x04  copies        (1 byte, omitted when copies == 1)
-//
-// All lengths are u16 BE.
 
 const ENV_TLV_TAG = 0x01;
 const ENV_TLV_EXPIRY = 0x02;
 const ENV_TLV_CIPHERTEXT = 0x03;
 const ENV_TLV_COPIES = 0x04;
 // v2 (forward-secret) envelopes: the ciphertext is Noise X to the recipient's
-// one-time prekey with this ID rather than their static key. Omitted for v1 so
-// v1 decoders skip it as unknown and still carry v2 envelopes opaquely.
+// one-time prekey with this ID rather than their static key. Absent on v1. A
+// decoder that predates it skips it as unknown and carries the envelope
+// opaquely.
 const ENV_TLV_PREKEY_ID = 0x05;
 const TAG_LENGTH = 16;
 
@@ -186,8 +178,6 @@ export function encodeEnvelopePayload(env: SealedEnvelope): Uint8Array {
     appendTlv(ENV_TLV_COPIES, new Uint8Array([env.copies & 0xff]), bytes);
   }
 
-  // Omitted for v1 static-sealed envelopes so they stay byte-identical to the
-  // pre-prekey wire format.
   if (env.prekeyID !== undefined) {
     const idBuf = new Uint8Array(4);
     new DataView(idBuf.buffer).setUint32(0, env.prekeyID >>> 0, false);
@@ -234,9 +224,7 @@ export function decodeEnvelopePayload(
         break;
       case ENV_TLV_COPIES:
         // Clamped, exactly as bitchat clamps it in CourierEnvelope's
-        // initialiser. An envelope is unauthenticated input, and `copies` is a
-        // spray budget: accepting the raw byte let a hostile envelope claim 255
-        // and turn every carrier that picked it up into an amplifier.
+        // initializer. See MAX_COPIES.
         if (len === 1) copies = Math.min(Math.max(value[0], 1), MAX_COPIES);
         break;
       case ENV_TLV_PREKEY_ID:
@@ -269,7 +257,7 @@ interface StoredEnvelope {
   copies: number;
   prekeyID?: number;
   // Noise static keys (hex) this envelope has already been handed to, so a
-  // repeat announce from the same neighbour cannot spend budget on a copy they
+  // repeat announce from the same neighbor cannot spend budget on a copy they
   // already hold. Per-entry, and it dies with the entry.
   sprayedTo: Set<string>;
   // When this was last flooded toward its recipient, heard only through
@@ -307,7 +295,7 @@ export class CourierStore {
   //
   // MMKV rather than the keychain: an envelope is someone else's ciphertext,
   // sealed to a key this device does not hold. Wiped on panic all the same (see
-  // MMKV_STORE_IDS), since holding a neighbour's mail is evidence about who was
+  // MMKV_STORE_IDS), since holding a neighbor's mail is evidence about who was
   // standing near whom.
   constructor(mmkvId = "courier-store") {
     this.storage = getStorage(mmkvId);
@@ -384,7 +372,7 @@ export class CourierStore {
     const env = decodeEnvelopePayload(payload);
     if (env === null) return false;
     const now = Date.now();
-    if (env.expiryMs < now) return false; // already expired
+    if (env.expiryMs < now) return false;
     // Reject an expiry past the policy lifetime. Without this a depositor sets
     // its own retention: one envelope stamped years out would hold a pool slot
     // for as long as the app is installed. The slack absorbs clock skew between
@@ -396,8 +384,9 @@ export class CourierStore {
 
     // Identical ciphertext is the same envelope. Merging keeps spray-and-wait a
     // splitting scheme rather than a minting one, and duplicates are guaranteed
-    // rather than exotic: a sender seals ONCE and hands the same bytes to every
-    // courier, so any two of them meeting already hold what the other offers.
+    // rather than exotic: a sender seals once per pass and hands the same bytes
+    // to every courier in it, so any two of them meeting already hold what the
+    // other offers.
     // A second entry would carry its own budget and its own sprayedTo, letting
     // one message fill the bag and the mesh-wide copy count grow per encounter.
     //
@@ -417,7 +406,6 @@ export class CourierStore {
       return true;
     }
 
-    // Check per-depositor quota by tier.
     const quota = tier === "favorite" ? FAVORITE_QUOTA : VERIFIED_QUOTA;
     const depositorCount = this.envelopes.filter(
       (e) =>
@@ -437,9 +425,7 @@ export class CourierStore {
       return false;
     }
 
-    // Check total pool cap.
     if (this.envelopes.length >= POOL_SIZE) {
-      // Evict lowest-priority slot (verified-tier, then oldest).
       const idx = this.findEvictionCandidate(tier);
       if (idx < 0) return false; // pool full, all favorites
       this.envelopes.splice(idx, 1);
@@ -541,7 +527,7 @@ export class CourierStore {
   //   copies < 2   nothing to halve; a carry-only copy is the end of its branch
   //   sprayedTo    once per peer, not once per announce. Announces arrive
   //                continuously, so without it a budget decays 4 -> 2 -> 1
-  //                against one neighbour without ever reaching a new carrier.
+  //                against one neighbor without ever reaching a new carrier.
   //                bitchat tracks the same set
   //   depositor    they handed us this envelope, so they demonstrably hold it.
   //                Spraying it back spends half a budget on a hop that delivers
@@ -619,17 +605,17 @@ export class CourierStore {
 
   // Which envelope to drop to make room for `incoming`, or -1 to refuse it.
   //
-  // Verified mail is evicted before favourite mail, oldest first. The tier of
+  // Verified mail is evicted before favorite mail, oldest first. The tier of
   // the INCOMING envelope matters too: a verified arrival may never displace a
-  // favourite, because that would let anyone who has merely announced push a
+  // favorite, because that would let anyone who has merely announced push a
   // contact's mail out of a full pool. bitchat states the same rule: evict a
-  // favourite only when the incoming envelope is itself a favourite, otherwise
+  // favorite only when the incoming envelope is itself a favorite, otherwise
   // reject.
   //
   // Not one score over tier and age: that always returns an index for a
-  // non-empty pool, which would make the "pool full, all favourites" refusal
+  // non-empty pool, which would make the "pool full, all favorites" refusal
   // at the call site unreachable and let a verified envelope displace a
-  // favourite.
+  // favorite.
   private findEvictionCandidate(incoming: CourierTier): number {
     let bestIdx = -1;
     let bestAge = -1;
@@ -646,7 +632,7 @@ export class CourierStore {
     }
     if (bestIdx !== -1) return bestIdx;
 
-    // Nothing but favourites left. Only another favourite may take a slot.
+    // Nothing but favorites left. Only another favorite may take a slot.
     if (incoming !== "favorite") return -1;
     for (let i = 0; i < this.envelopes.length; i++) {
       const age = Date.now() - this.envelopes[i].storedAt;

@@ -24,7 +24,7 @@ source "$SCRIPT_DIR/TOOLCHAIN.env"
 info() { printf '\033[0;36m==>\033[0m %s\n' "$*"; }
 fail() { printf '\033[0;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# ---- Preconditions --------------------------------------------------------
+# ---- Preconditions ----
 
 [ "$(uname -s)" = "Darwin" ] || fail "build-apple.sh requires macOS"
 command -v cargo >/dev/null || fail "cargo is not on PATH"
@@ -39,7 +39,7 @@ actual_rust="$(rustc --version | awk '{print $2}')"
 actual_cbindgen="$(cbindgen --version | awk '{print $2}')"
 [ "$actual_cbindgen" = "$CBINDGEN_VERSION" ] || fail "cbindgen is $actual_cbindgen, TOOLCHAIN.env pins $CBINDGEN_VERSION"
 
-# ---- Reproducibility ------------------------------------------------------
+# ---- Reproducibility ----
 #
 # Keep build paths, timestamps, and locale stable across build machines.
 
@@ -62,12 +62,12 @@ fi
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-# ---- Targets --------------------------------------------------------------
+# ---- Targets ----
 
 DEVICE_TARGET=aarch64-apple-ios
 SIM_TARGETS=(aarch64-apple-ios-sim x86_64-apple-ios)
 
-# ---- Header ---------------------------------------------------------------
+# ---- Header ----
 #
 # Generate the C header before compiling so cbindgen failures stop the build
 # immediately.
@@ -81,7 +81,7 @@ cbindgen --config "$SCRIPT_DIR/cbindgen.toml" \
 grep -q "airhop_tor_start" "$BUILD_DIR/include/arti.h" \
   || fail "cbindgen produced a header with no entry points"
 
-# ---- Test -----------------------------------------------------------------
+# ---- Test ----
 #
 # The same step build-android.sh runs, so a client that cannot start is caught on
 # whichever platform is built first rather than on a phone.
@@ -92,7 +92,7 @@ info "Running the crate's tests on the host"
   cargo test --locked
 )
 
-# ---- Build ----------------------------------------------------------------
+# ---- Build ----
 
 # Rust's llvm-nm can read the LLVM bitcode embedded by the matching Rust toolchain.
 # Apple's nm may reject that bitcode when its LLVM version is older.
@@ -171,7 +171,7 @@ for target in "${SIM_TARGETS[@]}"; do
   build_target "$target"
 done
 
-# ---- Package --------------------------------------------------------------
+# ---- Package ----
 
 # Device and simulator are separate xcframework slices. Simulator targets can
 # share one universal archive because they use the same platform variant.
@@ -206,7 +206,7 @@ xcodebuild -create-xcframework \
   -library "$BUILD_DIR/ios-sim/$LIB_NAME" -headers "$BUILD_DIR/ios-sim/Headers" \
   -output "$XCFRAMEWORK"
 
-# ---- Record ---------------------------------------------------------------
+# ---- Record ----
 
 info "Recording hashes"
 (

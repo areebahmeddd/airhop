@@ -8,7 +8,7 @@
 // Two entry points, because errors arrive two ways:
 //
 //   ErrorBoundary              React render, lifecycle and hook errors.
-//   installGlobalErrorHandler  everything else - an unawaited rejection, a throw
+//   installGlobalErrorHandler  everything else: an unawaited rejection, a throw
 //                              in a native listener, a setTimeout callback.
 //
 // The mesh does not live in the React tree: MeshService, the radios and the
@@ -109,7 +109,7 @@ function Fallback({ onRetry }: { onRetry: () => void }): React.JSX.Element {
 }
 
 // Installed once per runtime: Fast Refresh re-runs the effect, and chaining onto
-// our own previous handler would stack them for the whole dev session. The
+// its own previous handler would stack them for the whole dev session. The
 // callback lives beside the flag rather than being captured, so re-installing
 // swaps where fatals go instead of leaving a ref to an unmounted boundary.
 let handlerInstalled = false;
@@ -144,7 +144,7 @@ export function installGlobalErrorHandler(
         deliverFatal(error instanceof Error ? error : new Error(String(error)));
       } catch {
         // The fallback itself failed. Fall through to the default handler,
-        // which ends the process - there is genuinely nothing left to try.
+        // which ends the process: there is nothing left to try.
         previous?.(error, isFatal);
       }
       return;

@@ -18,9 +18,9 @@ describe("peerIDToUsername", () => {
 
   // A Nostr id fed into the byte math would index the word lists with NaN and
   // render "undefined-undefined-nost", so this low-level fallback resolves it to
-  // the peer's npub-style label instead. (Display surfaces name a
-  // geohash pseudonym as `anon#<last4>` via resolveDisplayName; peerIDToUsername
-  // is only the never-undefined safety net.)
+  // the peer's npub-style label instead. (Display surfaces name a geohash
+  // pseudonym as `anon#<last4>` via resolveDisplayName; peerIDToUsername is only
+  // the never-undefined safety net.)
   test("Nostr id resolves to an npub-style label, never 'undefined'", () => {
     const nostrID =
       "nostr_53624313fcb11263cdb2562c440e0f5f0356a653ae9d449d09bc8c349c5ea763";

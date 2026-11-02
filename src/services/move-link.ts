@@ -4,7 +4,8 @@
 import NativeAirhopLAN from "@bridge/NativeAirhopLAN";
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import type { LocalSubnet } from "@core/move/local-subnet";
-import { DeviceEventEmitter, type EventSubscription } from "react-native";
+import type { EventSubscription } from "react-native";
+import { nativeEvents } from "./native-events";
 
 export type MoveLinkEvent =
   | { kind: "connected"; connectionID: string }
@@ -28,13 +29,15 @@ export function isMoveLinkAvailable(): boolean {
 export function subscribeMoveLink(
   listener: (event: MoveLinkEvent) => void,
 ): () => void {
+  // Through the module, or iOS never sends them (see native-events.ts).
+  const events = nativeEvents(NativeAirhopLAN);
   const subs: EventSubscription[] = [
-    DeviceEventEmitter.addListener(
+    events.addListener(
       "AirhopLAN.moveConnected",
       (e: { connectionID: string }) =>
         listener({ kind: "connected", connectionID: e.connectionID }),
     ),
-    DeviceEventEmitter.addListener(
+    events.addListener(
       "AirhopLAN.moveData",
       (e: { connectionID: string; dataBase64: string }) => {
         let bytes: Uint8Array;
@@ -46,10 +49,8 @@ export function subscribeMoveLink(
         listener({ kind: "data", connectionID: e.connectionID, bytes });
       },
     ),
-    DeviceEventEmitter.addListener(
-      "AirhopLAN.moveClosed",
-      (e: { connectionID: string }) =>
-        listener({ kind: "closed", connectionID: e.connectionID }),
+    events.addListener("AirhopLAN.moveClosed", (e: { connectionID: string }) =>
+      listener({ kind: "closed", connectionID: e.connectionID }),
     ),
   ];
   return () => {

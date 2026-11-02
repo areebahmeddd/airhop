@@ -4,7 +4,7 @@
 "NSBluetoothPeripheralUsageDescription" = "Airhop memakai Bluetooth untuk mengumumkan kehadiran Anda kepada rekan terdekat.";
 "NSLocalNetworkUsageDescription" = "Airhop memakai jaringan lokal untuk terhubung langsung ke perangkat terdekat pada transfer besar (video, berkas besar).";
 "NSCameraUsageDescription" = "Airhop memakai kamera untuk memindai kode QR sebuah kontak, dan untuk mengambil foto serta video yang dibagikan ke rekan terdekat.";
-"NSMicrophoneUsageDescription" = "Airhop memakai mikrofon untuk merekam catatan suara dan untuk membawa suara langsung ke rekan terdekat.";
+"NSMicrophoneUsageDescription" = "Airhop memakai mikrofon untuk merekam catatan suara dan video dan untuk membawa suara langsung ke rekan terdekat.";
 "NSPhotoLibraryUsageDescription" = "Airhop mengakses galeri foto Anda untuk membagikan gambar dan video lewat mesh.";
 "NSPhotoLibraryAddUsageDescription" = "Airhop menyimpan foto dan video ke galeri Anda saat Anda memilih menyimpannya, dan saat Anda mengunduh kode QR Anda.";
 "NSFaceIDUsageDescription" = "Airhop menggunakan Face ID untuk memastikan ini kamu: untuk membuka aplikasi saat kunci aplikasi menyala, dan sebelum menampilkan frasa pemulihanmu atau memindahkan identitasmu ke ponsel baru.";

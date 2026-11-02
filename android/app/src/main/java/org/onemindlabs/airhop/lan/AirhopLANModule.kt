@@ -1,5 +1,3 @@
-package org.onemindlabs.airhop.lan
-
 // The LAN transport: mDNS discovery over ordinary TCP.
 //
 // The only transport that reaches an iPhone from an Android phone over
@@ -9,7 +7,7 @@ package org.onemindlabs.airhop.lan
 //
 // Framing, the accept loop, the read loop and the link registry are the same
 // shapes AirhopWiFiModule uses, deliberately: both carry the same length-
-// prefixed Airhop packets, so a bug fixed in one is recognisable in the other.
+// prefixed Airhop packets, so a bug fixed in one is recognizable in the other.
 // What differs is above the socket. Aware connects to whatever it finds; this
 // connects only where it is told to, because mDNS returns everyone and
 // connecting to everyone is a full mesh. That decision lives in TypeScript
@@ -21,6 +19,7 @@ package org.onemindlabs.airhop.lan
 // the same framing, heartbeat and read loop, its own listener and events, and
 // no mDNS. Each link knows which socket it belongs to, so stopLAN never cuts a
 // transfer and neither can write to the other's connections.
+package org.onemindlabs.airhop.lan
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -48,6 +47,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.Inet4Address
 import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
@@ -122,6 +122,12 @@ private const val ACCEPT_RETRY_MS = 1_000L
 // than as a refusal, so an unbounded connect would hold a thread forever.
 private const val CONNECT_TIMEOUT_MS = 5_000
 
+// How long stopLAN lets queued writes go out before closing the links. The
+// mesh hands over its LEAVE and any voice or video END in the same tick it
+// stops, and a healthy socket takes them in milliseconds.
+private const val FAREWELL_FLUSH_MS = 300L
+private const val FAREWELL_POLL_MS = 10L
+
 // Whether an interface can carry local peers, by the LOCAL_IFACE_PREFIXES rule.
 // An accepted socket on anything else is refused: loopback is another app on
 // this phone, cellular is a stranger on the carrier's network.
@@ -167,13 +173,15 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         val output: OutputStream,
         // A transfer connection rather than a mesh link.
         val move: Boolean,
-        // Accepted rather than dialled, for the inbound caps.
+        // Accepted rather than dialed, for the inbound caps.
         val inbound: Boolean,
         val writeLock: Any = Any(),
     ) {
         @Volatile var heartbeat: ScheduledFuture<*>? = null
         // When the write in progress began, 0 while none is.
         @Volatile var writingSinceMs = 0L
+        // Writes handed over and not yet finished, queued ones included.
+        val pendingWrites = AtomicInteger(0)
     }
 
     private val links = ConcurrentHashMap<String, LinkState>()
@@ -228,7 +236,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     private var resolvingName: String? = null
     private val resolveLock = Any()
 
-    // ---- Lifecycle -----------------------------------------------------------
+    // ---- Lifecycle ----
 
     @ReactMethod
     fun startLAN(instanceName: String, promise: Promise) {
@@ -276,15 +284,19 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun stopLAN(promise: Promise) {
-        teardown()
+        teardown(flush = true)
         promise.resolve(null)
     }
 
     // Synchronized because reporting a dead publish or browse calls this from an
     // NsdManager callback, which can meet stopLAN arriving on the bridge thread.
     // Reentrant, so the call in startLAN's own failure path is unaffected.
+    //
+    // `flush` lets a link's queued writes go out before it closes (see
+    // closeAfterWrites). Everything else stops at once, so a start that follows
+    // finds nothing running.
     @Synchronized
-    private fun teardown() {
+    private fun teardown(flush: Boolean = false) {
         sessionGeneration.incrementAndGet()
         val nsd = nsdManager()
         registrationListener?.let { runCatching { nsd?.unregisterService(it) } }
@@ -309,9 +321,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
 
         // Mesh links only: a move connection outlives the mesh stopping when the
         // old phone freezes to send.
-        for ((id, link) in links.entries.toList()) {
-            if (!link.move) handleLinkClose(id)
-        }
+        val meshLinks = links.values.filter { !it.move }
+        if (flush) closeAfterWrites(meshLinks) else meshLinks.forEach { handleLinkClose(it.id) }
         discovered.clear()
         linkByName.clear()
         nameByLink.clear()
@@ -319,6 +330,34 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             resolveQueue.clear()
             resolving = false
             resolvingName = null
+        }
+    }
+
+    // The farewell is handed to writeToLANLink in the same tick as stopLAN, so
+    // its write is still queued on the IO pool when the stop lands, and closing
+    // at once would drop it: the peer would keep us listed for a minute and hold
+    // a session we cleared. The links close once their writes are out, or after
+    // FAREWELL_FLUSH_MS, off the bridge thread.
+    private fun closeAfterWrites(closing: List<LinkState>) {
+        if (closing.isEmpty()) return
+        val closer = Runnable {
+            val deadline = SystemClock.elapsedRealtime() + FAREWELL_FLUSH_MS
+            try {
+                while (
+                    closing.any { it.pendingWrites.get() > 0 } &&
+                        SystemClock.elapsedRealtime() < deadline
+                ) {
+                    Thread.sleep(FAREWELL_POLL_MS)
+                }
+            } catch (_: InterruptedException) {
+                Thread.currentThread().interrupt()
+            }
+            closing.forEach { handleLinkClose(it.id) }
+        }
+        try {
+            ioExecutor.execute(closer)
+        } catch (_: Exception) {
+            closing.forEach { handleLinkClose(it.id) }
         }
     }
 
@@ -440,7 +479,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         )
     }
 
-    // ---- Discovery -----------------------------------------------------------
+    // ---- Discovery ----
 
     private fun registerService(nsd: NsdManager, name: String) {
         val generation = sessionGeneration.get()
@@ -475,12 +514,15 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                 override fun onDiscoveryStarted(serviceType: String) = Unit
 
                 override fun onServiceFound(info: NsdServiceInfo) {
+                    // A stopped browse can still deliver, into the next session.
+                    if (generation != sessionGeneration.get()) return
                     // Our own record comes back off the network like anyone else's.
                     if (info.serviceName == instanceName) return
-                    enqueueResolve(info)
+                    enqueueResolve(info, generation)
                 }
 
                 override fun onServiceLost(info: NsdServiceInfo) {
+                    if (generation != sessionGeneration.get()) return
                     discovered.remove(info.serviceName)
                     emitEvent(
                         EVT_PEER_LOST,
@@ -504,7 +546,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
 
     // A name already resolved, queued or in flight is skipped: mDNS repeats
     // itself, and every repeat would otherwise cost a resolve.
-    private fun enqueueResolve(info: NsdServiceInfo) {
+    private fun enqueueResolve(info: NsdServiceInfo, generation: Int) {
         val name = info.serviceName
         if (discovered.containsKey(name) || discovered.size >= MAX_DISCOVERED) return
         synchronized(resolveLock) {
@@ -514,10 +556,15 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             if (resolving) return
             resolving = true
         }
-        drainResolves()
+        drainResolves(generation)
     }
 
-    private fun drainResolves() {
+    // Bound to the session that queued it. A resolve answering after stopLAN
+    // neither marks its peer discovered in the next session, which would keep
+    // that name from ever being resolved there, nor drains that session's
+    // queue, which runs a drain of its own.
+    private fun drainResolves(generation: Int) {
+        if (generation != sessionGeneration.get()) return
         val next =
             synchronized(resolveLock) {
                 val head = resolveQueue.removeFirstOrNull()
@@ -541,10 +588,11 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             object : NsdManager.ResolveListener {
                 override fun onResolveFailed(info: NsdServiceInfo, errorCode: Int) {
                     Log.w(TAG, "Resolve failed for ${info.serviceName}: $errorCode")
-                    drainResolves()
+                    drainResolves(generation)
                 }
 
                 override fun onServiceResolved(info: NsdServiceInfo) {
+                    if (generation != sessionGeneration.get()) return
                     val host = info.host
                     val room =
                         discovered.containsKey(info.serviceName) || discovered.size < MAX_DISCOVERED
@@ -560,13 +608,13 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                             },
                         )
                     }
-                    drainResolves()
+                    drainResolves(generation)
                 }
             },
         )
     }
 
-    // ---- Links ---------------------------------------------------------------
+    // ---- Links ----
 
     @ReactMethod
     fun connectToPeer(serviceName: String, promise: Promise) {
@@ -583,20 +631,20 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             promise.resolve(null)
             return
         }
+        // A dial that completes after stopLAN must not reopen a transport the
+        // user switched off.
+        val generation = sessionGeneration.get()
         try {
             ioExecutor.execute {
                 try {
                     val socket = Socket()
-                    socket.connect(
-                        java.net.InetSocketAddress(peer.host, peer.port),
-                        CONNECT_TIMEOUT_MS,
-                    )
-                    registerLink(
-                        "lan-out-${linkCounter.incrementAndGet()}",
-                        socket,
-                        serviceName,
-                    )
-                    promise.resolve(null)
+                    socket.connect(InetSocketAddress(peer.host, peer.port), CONNECT_TIMEOUT_MS)
+                    val id = "lan-out-${linkCounter.incrementAndGet()}"
+                    if (registerLink(id, socket, serviceName, generation = generation)) {
+                        promise.resolve(null)
+                    } else {
+                        promise.reject("CONNECT_FAILED", "LAN transport stopped")
+                    }
                 } catch (e: Exception) {
                     // Most often client isolation, which every guest network
                     // enables and which cannot be detected before trying.
@@ -615,7 +663,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             val socket = ServerSocket(0)
             serverSocket = socket
             serverPort = socket.localPort
-            ioExecutor.execute { acceptLoop(socket) }
+            val generation = sessionGeneration.get()
+            ioExecutor.execute { acceptLoop(socket, generation) }
             true
         } catch (e: Exception) {
             Log.e(TAG, "Could not open the LAN server socket: ${e.message}")
@@ -623,10 +672,11 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    private fun acceptLoop(socket: ServerSocket) {
+    private fun acceptLoop(socket: ServerSocket, generation: Int) {
         acceptEach(socket, "Accept") { client ->
             if (admitInbound(client, move = false, cap = MAX_INBOUND_LAN)) {
-                registerLink("lan-in-${linkCounter.incrementAndGet()}", client, inbound = true)
+                val id = "lan-in-${linkCounter.incrementAndGet()}"
+                registerLink(id, client, inbound = true, generation = generation)
             }
         }
     }
@@ -679,12 +729,19 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     //
     // Catches Throwable: on the accept thread an Error (a thread that could not
     // be created) would otherwise end the process.
+    //
+    // `generation` is the mesh session a dial or an accept belongs to; null for
+    // a transfer, which outlives the mesh stopping. A socket that completes
+    // after its session ended is closed rather than reported. Checked and
+    // registered under teardown's lock, so a link is either in place before a
+    // teardown, which then closes it, or refused after one.
     private fun registerLink(
         id: String,
         socket: Socket,
         serviceName: String? = null,
         move: Boolean = false,
         inbound: Boolean = false,
+        generation: Int? = null,
     ): Boolean {
         var reported = false
         try {
@@ -692,27 +749,37 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             socket.keepAlive = true
             socket.soTimeout = FrameReader.READ_TIMEOUT_MS
             val link = LinkState(id, socket, socket.getOutputStream(), move, inbound)
-            links[id] = link
-            if (serviceName != null) {
-                linkByName[serviceName] = id
-                nameByLink[id] = serviceName
+            synchronized(this) {
+                if (generation != null && generation != sessionGeneration.get()) {
+                    Log.i(TAG, "Dropped LAN link $id from a stopped session")
+                    runCatching { socket.close() }
+                    return false
+                }
+                links[id] = link
+                if (serviceName != null) {
+                    linkByName[serviceName] = id
+                    nameByLink[id] = serviceName
+                }
+                link.heartbeat =
+                    heartbeatExecutor.scheduleWithFixedDelay(
+                        { heartbeat(link) },
+                        HEARTBEAT_MS,
+                        HEARTBEAT_MS,
+                        TimeUnit.MILLISECONDS,
+                    )
+                if (move) {
+                    emitEvent(
+                        EVT_MOVE_CONNECTED,
+                        WritableNativeMap().apply { putString("connectionID", id) },
+                    )
+                } else {
+                    emitEvent(
+                        EVT_LINK_CONNECTED,
+                        WritableNativeMap().apply { putString("linkID", id) },
+                    )
+                }
+                reported = true
             }
-            link.heartbeat =
-                heartbeatExecutor.scheduleWithFixedDelay(
-                    { heartbeat(link) },
-                    HEARTBEAT_MS,
-                    HEARTBEAT_MS,
-                    TimeUnit.MILLISECONDS,
-                )
-            if (move) {
-                emitEvent(
-                    EVT_MOVE_CONNECTED,
-                    WritableNativeMap().apply { putString("connectionID", id) },
-                )
-            } else {
-                emitEvent(EVT_LINK_CONNECTED, WritableNativeMap().apply { putString("linkID", id) })
-            }
-            reported = true
             Log.i(TAG, "LAN link connected: $id")
             startReadLoop(id, socket.getInputStream(), move)
             return true
@@ -793,6 +860,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             promise.reject("INVALID_DATA", "Empty frame")
             return
         }
+        // Counted before the hand-off, so a stop arriving next sees it.
+        link.pendingWrites.incrementAndGet()
         try {
             ioExecutor.execute {
                 try {
@@ -802,9 +871,12 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                     Log.w(TAG, "Write failed on $linkID: ${e.message}")
                     handleLinkClose(linkID)
                     promise.reject("WRITE_FAILED", e.message, e)
+                } finally {
+                    link.pendingWrites.decrementAndGet()
                 }
             }
         } catch (e: Exception) {
+            link.pendingWrites.decrementAndGet()
             promise.reject("LINK_CLOSED", "LAN transport is shutting down", e)
         }
     }
@@ -857,7 +929,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // ---- Transfer ------------------------------------------------------------
+    // ---- Transfer ----
 
     // IPv4 address and prefix length on the interfaces hasLocalNetwork counts:
     // a served hotspot included, cellular not. The prefix is reported, not
@@ -963,10 +1035,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             ioExecutor.execute {
                 val socket = Socket()
                 try {
-                    socket.connect(
-                        java.net.InetSocketAddress(host, port.toInt()),
-                        CONNECT_TIMEOUT_MS,
-                    )
+                    socket.connect(InetSocketAddress(host, port.toInt()), CONNECT_TIMEOUT_MS)
                 } catch (e: Exception) {
                     runCatching { socket.close() }
                     promise.reject("CONNECT_FAILED", e.message, e)
@@ -1000,7 +1069,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         promise.resolve(null)
     }
 
-    // ---- Required NativeEventEmitter contract --------------------------------
+    // ---- Required NativeEventEmitter contract ----
 
     @ReactMethod
     fun addListener(@Suppress("UNUSED_PARAMETER") eventName: String) {

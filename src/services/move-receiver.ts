@@ -52,7 +52,7 @@ import { isIdentityCondemned } from "./wipe-marker";
 
 export type ReceiverFailure =
   | "incompatible"
-  | "cancelled"
+  | "canceled"
   // The connection dropped, or what arrived did not check out.
   | "interrupted"
   | "storage"
@@ -104,7 +104,7 @@ export class MoveReceiver {
   private releaseTimer: ReturnType<typeof setTimeout> | null = null;
   private lastProgressAt = 0;
   private disposed = false;
-  private cancelling = false;
+  private canceling = false;
 
   constructor(private readonly onChange: (state: ReceiverState) => void) {}
 
@@ -166,13 +166,13 @@ export class MoveReceiver {
     this.pollTimer = setInterval(() => void this.refreshCode(), HOSTS_POLL_MS);
   }
 
-  // Tells the old phone, briefly, so it can say "cancelled" not "dropped".
+  // Tells the old phone, briefly, so it can say "canceled" not "dropped".
   cancel(): void {
-    if (this.disposed || this.cancelling) return;
+    if (this.disposed || this.canceling) return;
     // Once the stream is in, the install runs to its end.
     const phase = this.state.phase;
     if (phase === "saving" || phase === "releasing" || phase === "done") return;
-    this.cancelling = true;
+    this.canceling = true;
     const told =
       this.active !== null
         ? settleOr(
@@ -186,7 +186,7 @@ export class MoveReceiver {
 
   // Unmounting mid-cancel waits for the cancel to finish closing.
   dispose(): void {
-    if (this.cancelling) return;
+    if (this.canceling) return;
     this.close();
   }
 
@@ -200,7 +200,7 @@ export class MoveReceiver {
   }
 
   private set(state: ReceiverState): void {
-    if (this.disposed || this.cancelling) return;
+    if (this.disposed || this.canceling) return;
     this.state = state;
     this.onChange(state);
   }
@@ -434,7 +434,7 @@ export class MoveReceiver {
         ) {
           this.fail(
             message.reason === MoveAbortReason.CANCELLED
-              ? "cancelled"
+              ? "canceled"
               : "interrupted",
           );
         }

@@ -1,4 +1,3 @@
-// PrimaryButton component.
 // The single filled CTA surface for a screen's primary action (onboarding,
 // confirmations). Near-black fill + inverse text, matching the same
 // iMessage-style inversion used for outgoing message bubbles. The outline
@@ -76,7 +75,10 @@ export default function PrimaryButton({
           variant === "outline" && styles.labelOutline,
           disabled && styles.labelDisabled,
         ]}
-        numberOfLines={1}
+        // Two lines, not one: at a large text size "Pay {amount} {unit}" or a
+        // Tamil label outgrows the width, and a truncated action is unreadable
+        // (WCAG 1.4.4). The pill grows from BUTTON_HEIGHT to fit the second.
+        numberOfLines={2}
       >
         {label}
       </Text>
@@ -90,10 +92,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.accent,
       borderRadius: Radius.full,
       paddingVertical: Spacing["md-base"],
+      // Keeps a wrapped label clear of the full radius, which curves into the
+      // corners of a two-line pill.
+      paddingHorizontal: Spacing.lg,
       minHeight: BUTTON_HEIGHT,
       alignItems: "center",
       justifyContent: "center",
-      // A transparent border when enabled, so disabling changes only its colour,
+      // A transparent border when enabled, so disabling changes only its color,
       // never the button's geometry.
       borderWidth: 1,
       borderColor: "transparent",
@@ -110,7 +115,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.surfacePressed,
     },
     // Disabled keeps a visible border: the raised fill barely differs from the
-    // onboarding background, so without it the pill reads as stray grey text.
+    // onboarding background, so without it the pill reads as stray gray text.
     disabled: {
       backgroundColor: Colors.surfaceRaised,
       borderColor: Colors.border,
@@ -120,6 +125,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textInverse,
       letterSpacing: 0.1,
+      textAlign: "center",
     },
     labelOutline: {
       color: Colors.textPrimary,

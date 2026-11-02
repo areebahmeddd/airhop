@@ -1,17 +1,16 @@
 // A transcription of ios/Airhop/AirhopBLEModule.swift, running against the OS
-// model. Same contract as the Android transcription: branch for branch, with
-// the Swift line on each.
+// model. Same contract as the Android transcription: branch for branch.
 //
-// Audit anchors, current file:
-//   :98   ensureCentralManager / ensurePeripheralManager, created ONCE
-//   :128  applyState(), the reconciler every entry point funnels into
-//   :175  registerService()
-//   :200  startAdvertising, refuses per CBManagerState
-//   :250  startScanning, same
-//   :300  getRadioState, answers before any manager exists
-//   :560  centralManagerDidUpdateState, all six states
-//   :620  reportAdapterState, change-only
-//   :745  peripheralManagerDidUpdateState, all six states, real teardown
+// Anchors, by Swift member:
+//   ensureCentralManager / ensurePeripheralManager, created ONCE
+//   applyState(), the reconciler every entry point funnels into
+//   registerService()
+//   startAdvertising, refuses per CBManagerState
+//   startScanning, same
+//   getRadioState, answers before any manager exists
+//   centralManagerDidUpdateState, all six states
+//   reportAdapterState, change-only
+//   peripheralManagerDidUpdateState, all six states, real teardown
 
 import { DeviceEventEmitter } from "react-native";
 import type {
@@ -251,7 +250,7 @@ export class IosBleModule implements BleNativeModule {
     return false;
   }
 
-  // Background BLE comes from UIBackgroundModes, not from us.
+  // Background BLE comes from UIBackgroundModes, not from this module.
   async setBackgroundServiceEnabled(_enabled: boolean): Promise<void> {
     return;
   }
@@ -334,11 +333,19 @@ export class IosBleModule implements BleNativeModule {
     this.radioPort?.radiosChanged();
   }
 
-  // RCTEventEmitter drops an event with no listeners; iOS has no equivalent of
-  // the Android crash.
+  // RCTEventEmitter.sendEventWithName: dropped with no JS runtime, and dropped
+  // while the module's listener count is zero. Only the module's own
+  // addListener raises that count, which NativeEventEmitter calls and
+  // DeviceEventEmitter never does, so a subscription that skips the module
+  // hears nothing here, as on a phone. iOS has no equivalent of the Android
+  // crash.
   private emitEvent(name: string, body: Record<string, unknown>): void {
     if (!this.os.jsRuntimeReady) {
       this.os.log("native", "EVENT_DROPPED_NO_JS", name);
+      return;
+    }
+    if (this.listenerCount === 0) {
+      this.os.log("native", "EVENT_DROPPED_NO_LISTENERS", name);
       return;
     }
     DeviceEventEmitter.emit(name, body);
@@ -363,12 +370,16 @@ export class IosBleModule implements BleNativeModule {
     return rejectWith("UNKNOWN_LINK", `No active link with ID ${linkID}`);
   }
 
-  addListener(): void {
-    /* RCTEventEmitter contract */
+  // RCTEventEmitter's addListener: / removeListeners:, one count for every
+  // event the module raises.
+  private listenerCount = 0;
+
+  addListener(_eventName: string): void {
+    this.listenerCount++;
   }
 
-  removeListeners(): void {
-    /* RCTEventEmitter contract */
+  removeListeners(count: number): void {
+    this.listenerCount = Math.max(0, this.listenerCount - count);
   }
 
   // ---- shared radio medium ----
@@ -378,7 +389,7 @@ export class IosBleModule implements BleNativeModule {
   // The rule that costs iPhone-to-Android discovery: once the app leaves the
   // foreground CoreBluetooth moves the service UUID into the advertisement
   // overflow area and drops the local name, so only another iOS device scanning
-  // for that exact UUID can still see it. Modelled here rather than in the
+  // for that exact UUID can still see it. Modeled here rather than in the
   // medium because it is a property of THIS radio, and the medium only has to
   // ask whether the far side is an iPhone.
   get discoverable(): boolean {

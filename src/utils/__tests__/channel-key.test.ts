@@ -9,7 +9,7 @@ import {
 } from "../channel-key";
 
 describe("teleported cell channels", () => {
-  it("recognises a teleported cell, and not a named location channel", () => {
+  it("recognizes a teleported cell, and not a named location channel", () => {
     expect(isManualGeoChannel("geohash:tdr1k")).toBe(true);
     expect(isManualGeoChannel("#city")).toBe(false);
   });

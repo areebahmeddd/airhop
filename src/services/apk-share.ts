@@ -1,5 +1,5 @@
 // Shares Airhop's own installed APK through the system share sheet, so a
-// nearby phone with no Airhop yet can get it directly - Quick Share, Nearby
+// nearby phone with no Airhop yet can get it directly: Quick Share, Nearby
 // Share, Bluetooth and the rest show up on their own.
 //
 // Android only; the native module rejects on iOS.

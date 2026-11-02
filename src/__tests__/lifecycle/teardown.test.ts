@@ -1,6 +1,7 @@
-// The paths where something is being torn down, replaced, or raced. These are where a lifecycle bug is most expensive, because the state
-// being handled is either about to stop existing (a wipe) or has to survive
-// (a conversation, a queued message).
+// The paths where something is being torn down, replaced, or raced. These are
+// where a lifecycle bug is most expensive, because the state being handled is
+// either about to stop existing (a wipe) or has to survive (a conversation, a
+// queued message).
 
 jest.mock("expo-location", () => ({}));
 jest.mock("@bridge/NativeAirhopBLE", () => ({
@@ -23,41 +24,16 @@ import {
 } from "@services/mesh-service";
 import { applyPresence } from "@services/presence-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
-import { usePeerStore } from "@store/peer-store";
-import { useSettingsStore } from "@store/settings-store";
+import { Platform } from "react-native";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell, makeIdentity } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
 import { installOfflineWebSocket } from "../harness/offline-socket";
 import { DeviceOS } from "../harness/os";
+import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
-// No test here needs a relay; without this the pool opens real sockets to public
-// relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
-
-// Every field a scenario here can move, so one test's leftovers never decide
-// the next one's verdict.
-function resetStores(): void {
-  useMeshStateStore.setState({
-    bleBlocker: "starting",
-    blePermissionBlocked: false,
-    bleAdvertisingUnsupported: false,
-    powerSaving: false,
-    wifiFastPath: "unknown",
-    lanState: "off",
-    locationGranted: true,
-    nostrConnected: false,
-    torActive: false,
-    bridgeActive: false,
-    bridgePeopleAcross: 0,
-    presenceStatus: "online",
-  });
-  // A start restores a kept Invisible, so Online has to be the saved choice too.
-  useSettingsStore.getState().setStayInvisible(false);
-  useSettingsStore.getState().setBackgroundMeshEnabled(true);
-  usePeerStore.getState().clearAll();
-}
 
 function androidDevice(os: DeviceOS): AndroidBleModule {
   const native = new AndroidBleModule(os);
@@ -68,15 +44,18 @@ function androidDevice(os: DeviceOS): AndroidBleModule {
 
 describe("teardown, replacement and races", () => {
   let app: AppShell | null = null;
+  let androidOS: { restore: () => void } | null = null;
 
   beforeEach(() => {
     jest.useFakeTimers();
-    resetStores();
+    resetMeshStores();
   });
 
   afterEach(() => {
     app?.teardown();
     app = null;
+    androidOS?.restore();
+    androidOS = null;
     installNativeBle(null);
     jest.clearAllTimers();
     jest.useRealTimers();
@@ -503,7 +482,7 @@ describe("teardown, replacement and races", () => {
     await os.advance(5000);
 
     v.check(
-      "scanning survived the cancelled stop",
+      "scanning survived the canceled stop",
       native.scanning,
       "the teardown scheduled by the earlier Away fired after the user came back",
     );
@@ -514,7 +493,9 @@ describe("teardown, replacement and races", () => {
 
   test("S32 Battery Saver turns the radios down on a healthy battery", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
-    const v = new Verdict("S32", "the OS power switch is honoured", os);
+    // An Android-only event, which the mesh subscribes to only there.
+    androidOS = jest.replaceProperty(Platform, "OS", "android");
+    const v = new Verdict("S32", "the OS power switch is honored", os);
     const native = androidDevice(os);
 
     app = new AppShell({ os });

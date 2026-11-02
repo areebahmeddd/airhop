@@ -42,7 +42,7 @@ export default function UsernameScreen({
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Same "centre if it fits, scroll if it does not" container as the
+      {/* Same "center if it fits, scroll if it does not" container as the
           welcome screen. This card is the tallest fixed block in onboarding, so
           on a short viewport it is the CTA underneath that would be clipped. */}
       <ScrollView
@@ -57,10 +57,14 @@ export default function UsernameScreen({
           <View
             style={[styles.card, { borderColor: withAlpha(accentColor, 0.2) }]}
             accessible
-            accessibilityLabel={T("onboarding.username.card_a11y", {
+            // The rows' labels are in the sentence itself, so each language
+            // punctuates the list its own way. Values in identityProps' order.
+            accessibilityLabel={T("onboarding.username.card_full_a11y", {
               username,
               peerID,
-              props: props.map((p) => `${p.label}: ${p.value}`).join(". "),
+              algorithm: props[0].value,
+              storage: props[1].value,
+              account: props[2].value,
             })}
           >
             <View

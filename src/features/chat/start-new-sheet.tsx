@@ -12,6 +12,7 @@ import { useChatStore } from "@store/chat-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import ChoiceList from "@ui/components/choice-list";
 import UpperText from "@ui/components/upper-text";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import {
   BUTTON_HEIGHT,
   DISABLED_OPACITY,
@@ -79,6 +80,8 @@ export function StartNewSheet({
   // Create and say why, so the button is never live yet inert.
   const nameTooShort = normalizedInput.length < 2;
   const canCreate = !nameTooShort && !nameAlreadyExists;
+  // The error's live region is Android's; VoiceOver hears it through this.
+  useAnnounce(nameAlreadyExists ? T("chat.new.name_exists") : null);
 
   // `backToChooser` reopens the chooser, since the user may have picked the
   // wrong option. Backdrop or system back leaves entirely.

@@ -1,7 +1,7 @@
 // A place, rendered inside a message bubble.
 //
 // No map, by design. Tiles are an HTTP call to somebody's server: a
-// fingerprint, a dependency, and a grey square in exactly the conditions this
+// fingerprint, a dependency, and a gray square in exactly the conditions this
 // app exists for. What a person in a crowd needs is a direction and a distance,
 // which is what this draws.
 //
@@ -13,7 +13,7 @@
 import { t, useT } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import {
-  getCoarseLocation,
+  getFreshLocation,
   hasLocationPermission,
 } from "@services/location-service";
 import type { ChatMessage } from "@store/chat-store";
@@ -65,6 +65,18 @@ const DIRECTION_KEYS = {
   nw: "chat.location.direction.nw",
 } as const;
 
+// A geo: URI opens whichever maps app the user has chosen on Android. iOS
+// registers no handler for it, so Apple Maps is named there. Exported for the
+// bubble's screen-reader action, which reaches the same handoff.
+export function openInMaps(pin: Pin): void {
+  const point = `${String(pin.lat)},${String(pin.lng)}`;
+  const url =
+    Platform.OS === "ios"
+      ? `https://maps.apple.com/?ll=${point}&q=${point}`
+      : `geo:${point}?q=${point}`;
+  Linking.openURL(url).catch(() => {});
+}
+
 export default function LocationCard({
   pin,
   isMine,
@@ -81,14 +93,15 @@ export default function LocationCard({
 
   // Read once per card, and only against an existing grant. Never prompts:
   // somebody else's pin is theirs to read, not a reason to raise a permission
-  // dialog, and the card says what is missing instead. `getCoarseLocation`
-  // caches for five minutes, so several cards in a thread cost one fix.
+  // dialog, and the card says what is missing instead. `getFreshLocation` holds
+  // "here" to the age and accuracy a sent pin must meet, and shares one fix
+  // across the cards in a thread.
   useEffect(() => {
     if (isMine) return;
     let alive = true;
     void (async () => {
       if (!(await hasLocationPermission())) return;
-      const coords = await getCoarseLocation();
+      const coords = await getFreshLocation();
       if (alive && coords !== null) setHere(coords);
     })();
     return () => {
@@ -107,16 +120,6 @@ export default function LocationCard({
     };
   }, [here, pin.lat, pin.lng]);
 
-  // A geo: URI opens whichever maps app the user has chosen on Android. iOS
-  // registers no handler for it, so Apple Maps is named there.
-  function openInMaps(): void {
-    const point = `${String(pin.lat)},${String(pin.lng)}`;
-    const url =
-      Platform.OS === "ios"
-        ? `https://maps.apple.com/?ll=${point}&q=${point}`
-        : `geo:${point}?q=${point}`;
-    Linking.openURL(url).catch(() => {});
-  }
   const fg = isMine ? Colors.myBubbleText : Colors.accent;
 
   return (
@@ -173,7 +176,7 @@ export default function LocationCard({
           you were sent. */}
       <Pressable
         style={styles.action}
-        onPress={openInMaps}
+        onPress={() => openInMaps(pin)}
         accessibilityRole="button"
         accessibilityLabel={T("chat.location.open_maps")}
       >

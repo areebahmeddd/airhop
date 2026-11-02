@@ -3,14 +3,12 @@
 //
 //   node scripts/check-invisibles.js
 //
-// Why this exists. `src/core/payments/cashu.ts` once carried literal control
-// bytes where escape sequences were meant: a character class intended as
-// `[\x00-\x1f]` held the raw bytes themselves, and a word boundary held a
-// backspace. The expressions silently matched nothing, so a mint-safety check
-// accepted every mint it was asked about. The same bytes made git treat the
-// file as binary, so no diff of it was ever readable in review. A money-handling
-// file became unreviewable and unenforced at once, and nothing in the toolchain
-// objected.
+// Why this exists. A literal control byte where an escape sequence was meant
+// (a character class intended as `[\x00-\x1f]` holding the raw bytes, a word
+// boundary holding a backspace) makes a regex silently match nothing, so the
+// check it guards accepts everything. The same byte makes git treat the file as
+// binary, so no diff of it is readable in review, and nothing in the toolchain
+// objects.
 //
 // The wider case is Trojan Source (CVE-2021-42574): bidirectional overrides and
 // zero-width characters let source read one way to a human and compile another.

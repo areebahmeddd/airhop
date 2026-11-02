@@ -4,7 +4,7 @@
 // identity is arriving, whether both phones show the same words, and whether
 // the old phone let go of it.
 
-import { useT, type TranslationKey } from "@i18n";
+import { useT, type TranslationKey, type Translator } from "@i18n";
 import { chevronBack } from "@i18n/layout";
 import { rejected, succeeded } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
@@ -18,6 +18,7 @@ import Avatar from "@ui/components/avatar";
 import PrimaryButton from "@ui/components/primary-button";
 import SafetyWords from "@ui/components/safety-words";
 import TextButton from "@ui/components/text-button";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import {
   FontSize,
   FontWeight,
@@ -47,7 +48,7 @@ const AVATAR_SIZE = 72;
 
 const FAILURE_BODY: Record<ReceiverFailure, TranslationKey> = {
   incompatible: "onboarding.transfer.failed_incompatible",
-  cancelled: "onboarding.transfer.failed_cancelled",
+  canceled: "onboarding.transfer.failed_cancelled",
   interrupted: "onboarding.transfer.failed_interrupted",
   storage: "onboarding.transfer.failed_storage",
   unavailable: "onboarding.transfer.failed_unavailable",
@@ -110,6 +111,16 @@ export default function TransferInScreen({
     });
     return () => sub.remove();
   }, [busy, state.phase, onCancel]);
+
+  // VoiceOver's half of the live regions below: each heading once. The words
+  // are the trigger, so a released "done", which reads "Releasing" like the
+  // phase before it, is not said twice; receiving is one phase however its
+  // percentage moves.
+  const heading = phaseHeading(state, T);
+  useAnnounce(heading, {
+    trigger: state.phase === "receiving" ? "receiving" : heading,
+    assertive: state.phase === "failed",
+  });
 
   function busyPanel(title: string, peerID?: string): React.JSX.Element {
     return (
@@ -363,6 +374,39 @@ export default function TransferInScreen({
   );
 }
 
+// What a phase's live region leads with, for VoiceOver. Null where the screen
+// has no live region: the QR is something to look at, not news.
+function phaseHeading(state: ReceiverState, T: Translator): string | null {
+  switch (state.phase) {
+    case "preparing":
+      return T("onboarding.transfer.preparing");
+    case "offline":
+      return T("onboarding.transfer.offline_title");
+    case "waiting":
+      return null;
+    case "confirm":
+      return T("onboarding.transfer.confirm_title");
+    case "awaiting":
+      return T("onboarding.transfer.waiting_old", {
+        action: T("settings.transfer.confirm_cta"),
+      });
+    case "receiving":
+      return T("onboarding.transfer.receiving", {
+        percent: formatNumber(Math.floor(state.progress * 100)),
+      });
+    case "saving":
+      return T("onboarding.transfer.saving");
+    case "releasing":
+      return T("onboarding.transfer.releasing");
+    case "done":
+      return state.released
+        ? T("onboarding.transfer.releasing")
+        : T("onboarding.transfer.check_title");
+    case "failed":
+      return `${T("onboarding.transfer.failed_title")}\n${T(FAILURE_BODY[state.reason])}`;
+  }
+}
+
 type Styles = ReturnType<typeof createStyles>;
 
 // Whose identity is arriving, so the person can tell it is theirs.
@@ -477,7 +521,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
     },
-    // A digit centred in a circle: Android's font padding would sit it low.
+    // A digit centered in a circle: Android's font padding would sit it low.
     stepNumberText: {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,

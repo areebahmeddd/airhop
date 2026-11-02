@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">메시 네트워크</string>
   <string name="mesh_channel_description">Airhop 메시를 백그라운드에서 계속 실행합니다</string>
   <string name="mesh_notification_title">Airhop 메시 실행 중</string>
@@ -7,4 +7,15 @@
   <plurals name="mesh_notification_peers">
     <item quantity="other">범위 내 피어 %1$s명</item>
   </plurals>
+  <string name="mesh_bluetooth_off">블루투스 꺼짐 · 스캔하지 않음</string>
+  <string name="widget_label">범위 내 피어</string>
+  <string name="widget_description">범위 내 피어 수와 센 시각</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="other">범위 내 피어</item>
+  </plurals>
+  <string name="widget_nobody">범위 내에 아무도 없음</string>
+  <string name="widget_as_of">%1$s 기준</string>
+  <string name="widget_paused">메시 일시 중지</string>
+  <string name="widget_unset">Airhop 열기</string>
+  <string name="widget_stale">Airhop을 열어 새로고침</string>
 </resources>

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="mesh_channel_name">網狀網路</string>
   <string name="mesh_channel_description">讓 Airhop 網狀網路在背景保持運行</string>
   <string name="mesh_notification_title">Airhop 網狀網路運行中</string>
@@ -7,4 +7,15 @@
   <plurals name="mesh_notification_peers">
     <item quantity="other">範圍內有 %1$s 個節點</item>
   </plurals>
+  <string name="mesh_bluetooth_off">藍牙已關 · 未在掃描</string>
+  <string name="widget_label">範圍內的節點</string>
+  <string name="widget_description">範圍內的節點，以及清點的時間</string>
+  <plurals name="widget_in_range" tools:ignore="ImpliedQuantity">
+    <item quantity="other">範圍內的節點</item>
+  </plurals>
+  <string name="widget_nobody">範圍內沒有人</string>
+  <string name="widget_as_of">截至 %1$s</string>
+  <string name="widget_paused">網狀網路已暫停</string>
+  <string name="widget_unset">開啟 Airhop</string>
+  <string name="widget_stale">開啟 Airhop 以重新整理</string>
 </resources>

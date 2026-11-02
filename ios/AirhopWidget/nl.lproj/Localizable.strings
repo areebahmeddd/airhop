@@ -1,0 +1,10 @@
+/* Written from android/app/src/main/res/values-nl/strings.xml by npm run i18n:native -- --write. Edit that file, not this one. */
+
+"mesh_bluetooth_off" = "Bluetooth uit · niet aan het scannen";
+"widget_label" = "Peers binnen bereik";
+"widget_description" = "Peers binnen bereik, en wanneer ze geteld zijn";
+"widget_nobody" = "niemand binnen bereik";
+"widget_as_of" = "om %1$@";
+"widget_paused" = "Mesh gepauzeerd";
+"widget_unset" = "Open Airhop";
+"widget_stale" = "Open Airhop om te vernieuwen";
