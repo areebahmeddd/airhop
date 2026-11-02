@@ -167,11 +167,6 @@ export class GeohashPresence {
     await this.publishPresence(geohash, relays);
   }
 
-  // Nothing to tear down: the schedule lives with the caller.
-  stop(): void {
-    // Kept so callers can treat every presence object the same way.
-  }
-
   // Subscribe to a geohash channel: chat messages AND presence heartbeats.
   //
   // Both kinds share one subscription because both count as "this pubkey is

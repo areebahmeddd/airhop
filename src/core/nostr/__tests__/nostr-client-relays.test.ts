@@ -45,7 +45,7 @@ jest.mock("nostr-tools/pool", () => ({
 // Closed after each test: a live client holds its connection poll open.
 const clients: NostrClient[] = [];
 function open(): NostrClient {
-  const client = new NostrClient({ relays: [] });
+  const client = new NostrClient();
   clients.push(client);
   return client;
 }

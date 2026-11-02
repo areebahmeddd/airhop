@@ -7873,7 +7873,6 @@ export class MeshService {
   // (Tor or direct) without disturbing BLE or the durable store subscriptions.
   private buildNostrTransport(): void {
     this.nostrClient = new NostrClient({
-      relays: [],
       // Reflect real relay connectivity in the mesh banner: with no BLE peers
       // but a live relay, the Mesh tab can say it is relaying over the internet
       // instead of implying nothing is reachable.

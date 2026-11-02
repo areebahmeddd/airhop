@@ -101,8 +101,6 @@ const RESUBSCRIBE_BASE_MS = 15_000;
 const RESUBSCRIBE_MAX_MS = 5 * 60_000;
 
 export interface NostrClientConfig {
-  // Relay URLs to connect to (merged with default DM relays).
-  relays?: string[];
   // Called whenever the set of live relay connections crosses the has-any /
   // has-none boundary, so the UI can reflect whether the internet bridge is up.
   onConnectionChange?: (connected: boolean) => void;
@@ -149,11 +147,6 @@ export class NostrClient {
       CONNECTION_POLL_MS,
     );
 
-    // Merge caller-provided relays with the default DM relay set, deduplicated
-    // and capped at MAX_RELAY_COUNT.
-    const provided = (config.relays ?? [])
-      .map(normalizeRelayUrl)
-      .filter(Boolean) as string[];
     const defaults = DEFAULT_DM_RELAYS.map(normalizeRelayUrl).filter(
       Boolean,
     ) as string[];

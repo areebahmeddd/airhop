@@ -702,7 +702,6 @@ export class GeohashChannelService {
     // know whether we would be. Back to "cannot say" rather than "nowhere",
     // which would tell every location thread it had been left behind.
     useMeshStateStore.getState().setLiveGeoCells(null);
-    for (const p of this.presenceByGeohash.values()) p.stop();
     this.presenceByGeohash.clear();
   }
 

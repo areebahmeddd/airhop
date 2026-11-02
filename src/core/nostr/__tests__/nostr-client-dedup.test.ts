@@ -13,6 +13,7 @@ import type { Event } from "nostr-tools";
 import { finalizeEvent, generateSecretKey } from "nostr-tools";
 import type { Filter } from "nostr-tools/filter";
 import { useWebSocketImplementation } from "nostr-tools/pool";
+import { DEFAULT_DM_RELAYS } from "../geo-relay";
 import { NostrClient } from "../nostr-client";
 
 const HOSTILE = "wss://hostile.example";
@@ -82,7 +83,7 @@ let sockets: ScriptedSocket[] = [];
 const storedOn = new Map<string, object[]>();
 const replyDelayMs = new Map<string, number>();
 
-// nostr-tools normalises a relay URL with a trailing slash.
+// nostr-tools normalizes a relay URL with a trailing slash.
 function relayOf(url: string): string {
   return url.replace(/\/$/, "");
 }
@@ -142,7 +143,7 @@ afterEach(() => {
 
 describe("a subscription across several relays", () => {
   it("still delivers an event after a hostile relay sent a forged copy under its ID", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = new NostrClient();
     const genuine = signed("hello");
     const seen: string[] = [];
     client.subscribe(
@@ -162,7 +163,7 @@ describe("a subscription across several relays", () => {
   });
 
   it("delivers an honest duplicate once and verifies it once", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = new NostrClient();
     const verify = spyOnVerify(client);
     const genuine = signed("hello");
     const seen: string[] = [];
@@ -184,7 +185,7 @@ describe("a subscription across several relays", () => {
   });
 
   it("does not let a rejected far-future event move another relay's since", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = new NostrClient();
     client.subscribe(
       [{ kinds: [1], since: SINCE }],
       () => undefined,
@@ -211,7 +212,7 @@ describe("a subscription across several relays", () => {
   });
 
   it("keeps a relay's since in the present after it delivered a validly signed far-future event", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = new NostrClient();
     client.subscribe(
       [{ kinds: [1], since: SINCE }],
       () => undefined,
@@ -236,7 +237,7 @@ describe("a subscription across several relays", () => {
   });
 
   it("delivers from another relay an event the full pump refused", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = new NostrClient();
     // Filler that skips Schnorr, so a full queue costs no signing.
     const verify = spyOnVerify(client);
     const realVerify = verify.getMockImplementation() as (e: Event) => boolean;
@@ -277,7 +278,7 @@ describe("a subscription across several relays", () => {
 
   it("reports EOSE once, after every relay has finished its backfill", async () => {
     replyDelayMs.set(HONEST, 50);
-    const client = new NostrClient({ relays: [] });
+    const client = new NostrClient();
     const eose = jest.fn();
     client.subscribe([{ kinds: [1], since: SINCE }], () => undefined, eose, [
       HOSTILE,
@@ -292,7 +293,7 @@ describe("a subscription across several relays", () => {
   });
 
   it("closes every relay's subscription through the one closer, and close() drops every socket", async () => {
-    const client = new NostrClient({ relays: [] });
+    const client = new NostrClient();
     const closer = client.subscribe(
       [{ kinds: [1], since: SINCE }],
       () => undefined,
@@ -316,12 +317,15 @@ describe("a subscription across several relays", () => {
 });
 
 describe("queryEvents", () => {
+  // A query asks the default pool.
+  const [FIRST_DM_RELAY, SECOND_DM_RELAY] = DEFAULT_DM_RELAYS;
+
   it("returns the genuine event despite a relay that answers with a forged copy first", async () => {
     const genuine = signed("zap");
-    storedOn.set(HOSTILE, [forgedCopyOf(genuine)]);
-    storedOn.set(HONEST, [genuine]);
-    replyDelayMs.set(HONEST, 20);
-    const client = new NostrClient({ relays: [HOSTILE, HONEST] });
+    storedOn.set(FIRST_DM_RELAY, [forgedCopyOf(genuine)]);
+    storedOn.set(SECOND_DM_RELAY, [genuine]);
+    replyDelayMs.set(SECOND_DM_RELAY, 20);
+    const client = new NostrClient();
 
     const result = client.queryEvents({ kinds: [1], since: SINCE });
     await settle(100);
@@ -333,9 +337,9 @@ describe("queryEvents", () => {
   it("merges copies from several relays by ID", async () => {
     const genuine = signed("zap");
     const other = signed("other");
-    storedOn.set(HOSTILE, [genuine]);
-    storedOn.set(HONEST, [genuine, other]);
-    const client = new NostrClient({ relays: [HOSTILE, HONEST] });
+    storedOn.set(FIRST_DM_RELAY, [genuine]);
+    storedOn.set(SECOND_DM_RELAY, [genuine, other]);
+    const client = new NostrClient();
 
     const result = client.queryEvents({ kinds: [1], since: SINCE });
     await settle(100);
