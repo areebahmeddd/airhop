@@ -25,7 +25,7 @@ import {
   verifyPacket,
   type Packet,
 } from "../wire/packet-codec";
-import { normalizeNickname } from "./nickname";
+import { fitNickname, normalizeNickname } from "./nickname";
 
 // Announce cadence adapts to whether we can currently hear anyone, matching
 // bitchat: a short tick while isolated, so a first link hears from us again
@@ -191,45 +191,7 @@ function writeTlv(buf: number[], type: number, value: Uint8Array): void {
 }
 
 // The nickname TLV budget, in BYTES of UTF-8 (see the layout note at the top).
-const NICKNAME_MAX_BYTES = 32;
-
-// Code points that cannot end a name, so the cut lands before them: a mark
-// without its base renders on a dotted circle, a joiner splits an emoji. 32
-// bytes is about ten Devanagari characters, so the budget is reached most often
-// in exactly the scripts that write with marks.
-//
-// Duplicated from `truncateToUtf8Bytes` in `@utils/utf8-budget` rather than
-// imported, because `src/core/` depends on nothing above it. Keep them in step.
-const DANGLING_NICKNAME = /[\p{M}\u200D\uFE0E\uFE0F]/u;
-
-// Fit a nickname into the TLV, canonicalized first.
-//
-// Truncation counts UTF-8 bytes and drops whole code points. Slicing the string
-// instead would count UTF-16 units, which is the wrong unit twice over: a name
-// of 32 emoji is 128 bytes, four times the budget, and a slice can land in the
-// middle of a surrogate pair and emit a lone half that decodes to a replacement
-// character on the far side.
-function fitNickname(nickname: string): Uint8Array {
-  const encoder = new TextEncoder();
-  const codePoints = [...normalizeNickname(nickname)];
-  let bytes = encoder.encode(codePoints.join(""));
-  while (bytes.length > NICKNAME_MAX_BYTES) {
-    codePoints.pop();
-    bytes = encoder.encode(codePoints.join(""));
-  }
-  // Only once it fits, and only if something was dropped: a name already inside
-  // the budget is the user's own.
-  if (bytes.length < encoder.encode(normalizeNickname(nickname)).length) {
-    while (
-      codePoints.length > 0 &&
-      DANGLING_NICKNAME.test(codePoints[codePoints.length - 1])
-    ) {
-      codePoints.pop();
-    }
-    bytes = encoder.encode(codePoints.join(""));
-  }
-  return bytes;
-}
+const MAX_NICKNAME_BYTES = 32;
 
 // Never writes TLV 0x04 (neighbour IDs): the list would hand any passive
 // listener the local adjacency graph.
@@ -240,7 +202,7 @@ export function encodeAnnouncePayload(
   capabilities = 0,
   bridgeGeohash?: string,
 ): Uint8Array {
-  const nicknameBytes = fitNickname(nickname);
+  const nicknameBytes = fitNickname(nickname, MAX_NICKNAME_BYTES);
   const buf: number[] = [];
 
   writeTlv(buf, TLV_NICKNAME, nicknameBytes);

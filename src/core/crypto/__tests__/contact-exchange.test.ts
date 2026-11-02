@@ -50,7 +50,7 @@ describe("ContactCard binary encode/decode", () => {
 
   // The card's name is the peer's choice, and it is saved as the contact's
   // own name, so it enters in the same canonical form an announced one does.
-  test("the nickname is normalised where it enters", () => {
+  test("the nickname is normalized where it enters", () => {
     const card = makeCard({ nickname: " M\u202Eo\u200Bm\n(verified)" });
     const decoded = decodeContactCard(encodeContactCard(card));
     expect(decoded.nickname).toBe("Mom (verified)");
@@ -66,6 +66,12 @@ describe("ContactCard binary encode/decode", () => {
     const card = makeCard({ nickname: "a".repeat(60) });
     const decoded = decodeContactCard(encodeContactCard(card));
     expect(decoded.nickname).toBe("a".repeat(32));
+  });
+
+  test("truncation never splits a character", () => {
+    const card = makeCard({ nickname: `${"a".repeat(31)}é` });
+    const decoded = decodeContactCard(encodeContactCard(card));
+    expect(decoded.nickname).toBe("a".repeat(31));
   });
 
   test("multi-byte UTF-8 nickname round-trips", () => {

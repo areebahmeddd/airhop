@@ -39,7 +39,7 @@ import {
   utf8ToBytes,
 } from "@noble/hashes/utils.js";
 import { base64UrlToBytes, bytesToBase64Url } from "../encoding/base64";
-import { normalizeNickname } from "../mesh/discovery/nickname";
+import { fitNickname, normalizeNickname } from "../mesh/discovery/nickname";
 
 // A card read from our own `airhop:v1/` format, where the Nostr key is part of
 // the fixed layout and therefore always present. Narrower than ContactCard so
@@ -84,13 +84,8 @@ export function encodeContactCard(card: ContactCard): Uint8Array {
     throw new Error("contact-exchange: nostrPubKey must be 32 bytes");
   }
 
-  // Encode, then byte-truncate to MAX_NICKNAME_BYTES. This matches the
-  // behavior in announce-manager.ts (silent truncation). Callers should
-  // validate nickname length before calling, but we never throw for it.
-  let nicknameBytes = new TextEncoder().encode(card.nickname);
-  if (nicknameBytes.length > MAX_NICKNAME_BYTES) {
-    nicknameBytes = nicknameBytes.slice(0, MAX_NICKNAME_BYTES);
-  }
+  // Truncated to MAX_NICKNAME_BYTES rather than refused.
+  const nicknameBytes = fitNickname(card.nickname, MAX_NICKNAME_BYTES);
 
   const peerIDBytes = hexToBytes(card.peerID);
 
