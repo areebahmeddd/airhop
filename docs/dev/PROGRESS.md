@@ -69,7 +69,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] Reproducible native builds: `native/arti/build-in-container.sh` pins Rust, the NDK and a Debian snapshot; `build-apple.sh` produces the xcframework; both verify exported symbols, and Android also verifies 16 KiB page alignment and that no build-machine path survived
 - [x] `src/services/tor-routing.ts`: the single toggle and startup choke point. Every relay connection is dialed through the proxy, so Tor fails closed
 - [x] Push-to-talk: `voice-capture.ts` and `voice-player.ts` (AAC-LC 16 kHz mono, 350 ms jitter buffer), with `AirhopVoiceModule` streaming mic and speaker off the JS thread. `VOICE_FRAME` (`0x29`) is relayed in the mesh, and DM bursts ride `NoisePayloadType.VOICE_FRAME` (`0x08`). Hold-to-talk UI with a live HUD, a floor-courtesy hint and autoplay gating
-- [x] `src/core/router/message-router.ts`: Nostr added after the radios, before the courier
+- [x] `MeshService.trySendDm`: Nostr gift-wrap added after the radios, before the courier
 
 ### v0.8.0: Identity and Forward Secrecy
 
