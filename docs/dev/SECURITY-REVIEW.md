@@ -979,4 +979,4 @@ Gaps found in bitchat-ios while using it as the reference. None is accommodated;
 | The geocoder is not gated on Tor                                                                                                                                         | Gated (NET-2)                                                          | Info     |
 | The relay URL check accepts hex and octal IPv4                                                                                                                           | Refused (NET-13)                                                       | Info     |
 
-For the record only, bitchat-android: the 256-fragment cap (permissionlesstech/bitchat-android#940) and sync replies without `IS_RSR`, both refused by bitchat-ios as well.
+For the record only, bitchat-android: the 256-fragment cap and sync replies without `IS_RSR`, both refused by bitchat-ios as well.

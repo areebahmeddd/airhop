@@ -211,9 +211,8 @@ packet with Apple's encoder both to verify it and to relay it, so a signed packe
 whose compressed bytes differ fails verification there and is dropped, and one it
 relays no longer verifies downstream. Frames from bitchat-android fail the same
 way. No sender can avoid it, since leaving a payload uncompressed changes the
-preimage too. The fix belongs to bitchat-ios:
-[#1805](https://github.com/permissionlesstech/bitchat/pull/1805), still open,
-keeps the received form.
+preimage too. The fix belongs in bitchat-ios, by keeping the received form as
+Airhop and bitchat-android do.
 
 **Decompression is bounded by the declared size while it runs.**
 `originalSize` is a sender-supplied field, so a packet can declare 100 bytes and
@@ -368,7 +367,7 @@ recipient not known to run Airhop, is not an MP4. Nothing on the wire changes.
 > [!IMPORTANT]
 > **The 1 MiB ceiling cannot be raised unilaterally.** bitchat-ios refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, about 1.13 MiB), and it refuses by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving. bitchat-android's codec allows 10 MiB, but its fragment reassembler accepts at most 256 fragments per stream (about 117 KiB), so on the mesh it is the stricter receiver and there is no cross-platform number to raise to.
 >
-> Each packet type is capped at what its encoders can produce, before anything is inflated ([section 4](#4-routing-constants)), as bitchat-ios does and as bitchat's own [#1634](https://github.com/permissionlesstech/bitchat/pull/1634) argues for. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that approaches it.
+> Each packet type is capped at what its encoders can produce, before anything is inflated ([section 4](#4-routing-constants)), as bitchat-ios does. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that approaches it.
 >
 > `conformance.test.ts` reads `maxPayloadBytes` from `FileTransferLimits.swift` in a local bitchat checkout, when one is present, and fails if the caps above no longer fit under the ceiling it implies.
 
