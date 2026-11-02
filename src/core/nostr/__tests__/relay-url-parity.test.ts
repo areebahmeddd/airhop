@@ -82,7 +82,7 @@ describe("relay URL canonicalization parity", () => {
     }
   });
 
-  // If this fails, a cell's five slots are spent on fewer than five machines.
+  // If this fails, a cell spends its relay slots on fewer machines than slots.
   test("collapses the shapes of a shipped relay to a single canonical URL", () => {
     for (const relay of GEO_RELAYS) {
       const bare = relay.url.replace(/^wss:\/\//, "");

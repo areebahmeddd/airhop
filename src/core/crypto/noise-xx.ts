@@ -23,9 +23,7 @@ const PROTOCOL_NAME_BYTES = new TextEncoder().encode(
   "Noise_XX_25519_ChaChaPoly_SHA256",
 );
 
-// Transport messages use a 4-byte BE nonce prefix.
 const TRANSPORT_NONCE_PREFIX_LEN = 4;
-// Poly1305 auth tag length.
 const TAG_LEN = 16;
 // Sliding-window replay protection covers the last 1024 nonces.
 const REPLAY_WINDOW = 1024;
@@ -104,7 +102,6 @@ function chachaEncrypt(
   return chacha20poly1305(key, makeNonce(n), aad).encrypt(plaintext);
 }
 
-// Decrypt with ChaCha20-Poly1305. Throws if auth fails.
 function chachaDecrypt(
   key: Uint8Array,
   n: number,
@@ -172,7 +169,6 @@ function makeTransportSession(
   let sendCounter = 0;
   let recvCounter = 0;
   const recvReplay = new ReplayWindow();
-  // Keep copies so we can zero them out if needed in future
   const sk = sendKey.slice();
   const rk = recvKey.slice();
 
@@ -257,10 +253,10 @@ export class NoiseHandshake {
 
     // MixHash(prologue). Standard Noise ALWAYS runs this after InitializeSymmetric
     // even when the prologue is empty, and bitchat does too, so h becomes
-    // SHA-256(protocol_name). Skipping it left our handshake hash one hash behind
-    // bitchat's, which is used as the AEAD associated data when the static key is
-    // sealed in message 2: same key, different AAD, so the tag mismatches and no
-    // bitchat<->Airhop handshake could ever complete.
+    // SHA-256(protocol_name). Skipping it leaves our handshake hash one hash
+    // behind bitchat's, and that hash is the AEAD associated data when the static
+    // key is sealed in message 2: same key, different AAD, so the tag mismatches
+    // and no handshake with bitchat completes.
     //
     // Empty on every mesh session, as bitchat sends it. Only a transfer binds
     // one, to the scanned code.
@@ -448,7 +444,6 @@ export class NoiseHandshake {
       exporterSecret,
     );
 
-    // Zero sensitive state
     this.localStaticPriv.fill(0);
     if (this.localEphemeralPriv) this.localEphemeralPriv.fill(0);
     if (this.k) this.k.fill(0);

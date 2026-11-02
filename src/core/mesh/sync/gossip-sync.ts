@@ -20,12 +20,8 @@
 //   * Requests are unicast, so a response can be attributed to a request we
 //     made. See request-sync-manager.ts.
 //
-// Packet ID (per PacketIdUtil.swift / PacketIdUtil.kt):
-//   SHA-256(type[1] | senderID[8] | timestamp_u64_BE[8] | payload)[0:16]
-//   See computePacketId in packet-codec.ts.
-//
-// GCS hash for filter membership:
-//   h64 = first 8 bytes of SHA-256(packetID) as big-endian u64
+// Packet ID: computePacketId in packet-codec.ts. GCS hash for filter
+// membership: packetIdToH64 below.
 //
 // Wire format for REQUEST_SYNC payload (TLV, type-u8, length-u16-BE, value):
 //   0x01  P       (uint8)   Golomb-Rice parameter
@@ -114,10 +110,10 @@ const RESPONSE_LIMIT_WINDOW_MS = 30_000;
 
 // SyncTypeFlags bit indices (bit -> message type), matching bitchat's
 // SyncTypeFlags.swift so a board sync round is mutually intelligible.
-const TYPE_BIT_ANNOUNCE = 0; // bit 0
-const TYPE_BIT_MESSAGE = 1; // bit 1
-const TYPE_BIT_BOARD = 8; // bit 8 (board posts persist and sync until expiry)
-// bit 10 (private group messages). bitchat caches, advertises and serves group
+const TYPE_BIT_ANNOUNCE = 0;
+const TYPE_BIT_MESSAGE = 1;
+const TYPE_BIT_BOARD = 8; // board posts persist and sync until expiry
+// Private group messages. bitchat caches, advertises and serves group
 // packets under this bit, and it is a group's only store-and-forward. The
 // payload stays sealed under the epoch key, so a relay learns nothing by
 // carrying it.
@@ -283,7 +279,7 @@ function packetIdToH64(packetId: Uint8Array): bigint {
   const raw =
     (BigInt(view.getUint32(0, false)) << 32n) |
     BigInt(view.getUint32(4, false));
-  return raw & 0x7fff_ffff_ffff_ffffn; // clear sign bit
+  return raw & 0x7fff_ffff_ffff_ffffn;
 }
 
 // ---- GCS filter (Golomb-Coded Set) ----
@@ -464,7 +460,6 @@ function mapToRange(h64: bigint, modulo: bigint): bigint {
   return x === 0n ? 1n : x;
 }
 
-// Check whether a h64 value is contained in a decoded filter set.
 function filterContains(sortedValues: bigint[], candidate: bigint): boolean {
   let lo = 0;
   let hi = sortedValues.length - 1;
@@ -479,7 +474,6 @@ function filterContains(sortedValues: bigint[], candidate: bigint): boolean {
 
 // ---- Wire encode/decode for REQUEST_SYNC payload ----
 
-// TLV encoder: type (u8), length (u16 BE), value
 function encodeTlv(type: number, value: Uint8Array): Uint8Array {
   const out = new Uint8Array(3 + value.length);
   out[0] = type;
@@ -643,9 +637,7 @@ export class GossipSync {
     RESPONSE_LIMIT_WINDOW_MS,
   );
 
-  // Start the 15-second sync tick. Every request is unicast to a peer we hold
-  // a link to: a broadcast one has no peer to register against, so nothing it
-  // drew back would be taken as a reply.
+  // Start the 15-second sync tick.
   start(identity: GossipSyncIdentity, wiring: GossipSyncWiring): void {
     if (this.timer !== null) this.stop();
     this.session = { identity, wiring };
@@ -684,9 +676,7 @@ export class GossipSync {
     if (this.session === null) return;
     const { identity, wiring } = this.session;
     const pkt = this.buildFilterPacket(identity, peerID, types, now);
-    // Registered BEFORE the send: on a fast link the response can outrun our
-    // own continuation, and a response that lands before its registration
-    // looks exactly like an unsolicited one.
+    // Registered BEFORE the send, for the reason in request-sync-manager.ts.
     wiring.onRequest(peerID);
     wiring.sendToPeer(peerID, pkt);
   }
@@ -797,10 +787,8 @@ export class GossipSync {
   }
 
   // Build a REQUEST_SYNC for `toPeerID` covering the packet types in `types`.
-  // ttl 0: this is a question for the far end of one link, and relaying it
-  // asks a node that was never being addressed. Built even when we hold none
-  // of those types: the empty filter asks for everything, which is how a
-  // newcomer collects the board.
+  // Built even when we hold none of those types: the empty filter asks for
+  // everything, which is how a newcomer collects the board.
   buildFilterPacket(
     identity: GossipSyncIdentity,
     toPeerID: string,
@@ -857,12 +845,10 @@ export class GossipSync {
   // hold that the peer appears to be missing, ready to write straight back down
   // the link it asked on.
   //
-  // Responses come back ttl 0 and flagged IS_RSR. ttl 0 keeps them link-local,
-  // or the requester's flood router would see each one as new and push it
-  // across the mesh. IS_RSR marks them as the answer to the requester's own
-  // question, so it can exempt them from its freshness window. Both fields are
-  // normalised out of the signing preimage, so retagging a stored packet leaves
-  // its signature verifiable.
+  // IS_RSR marks a response as the answer to the requester's own question, which
+  // exempts it from the requester's freshness window. That flag and the response's ttl 0
+  // are both normalized out of the signing preimage, so retagging a stored packet
+  // leaves its signature verifiable.
   handleFilter(
     filterPacket: Packet,
     fromPeerID?: string,

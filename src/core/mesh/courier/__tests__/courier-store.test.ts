@@ -57,7 +57,7 @@ function makeEnvelopePayload(
 }
 
 describe("recipientTag", () => {
-  test("same pubkey + same day -> same tag", () => {
+  test("is the same for one pubkey across a UTC day", () => {
     const keys = makeNoiseKeypair();
     // The first and last millisecond of one UTC day.
     const morning = Date.UTC(2026, 0, 1, 0, 0, 0, 0);
@@ -67,7 +67,7 @@ describe("recipientTag", () => {
     );
   });
 
-  test("different pubkeys -> different tags", () => {
+  test("differs between pubkeys", () => {
     const k1 = makeNoiseKeypair();
     const k2 = makeNoiseKeypair();
     const nowMs = Date.now();
@@ -398,11 +398,6 @@ describe("CourierStore spray", () => {
   });
 
   test("hands an envelope to each peer once, not once per announce", () => {
-    // Spraying is driven by announces, which arrive continuously from the same
-    // neighbours. Without a per-peer record the budget would be spent
-    // re-handing the same copy to someone who already held it, so an envelope
-    // would decay 4 -> 2 -> 1 without ever reaching a second carrier: the
-    // opposite of what spray-and-wait is for.
     const store = freshStore();
     const depositor = makeNoiseKeypair();
     const tag = new Uint8Array(16).fill(0x11);
@@ -420,9 +415,6 @@ describe("CourierStore spray", () => {
     expect(store.offerSpray(stranger.pub)).toHaveLength(1);
   });
 
-  // Spraying back at whoever handed it over spends half a budget on a peer that
-  // demonstrably has it, and when the depositor is the sender leaves them
-  // carrying their own outgoing mail. bitchat excludes depositorNoiseKey too.
   test("never sprays an envelope back at the peer who deposited it", () => {
     const store = freshStore();
     const depositor = makeNoiseKeypair();
@@ -450,10 +442,6 @@ describe("CourierStore spray", () => {
   });
 
   test("clamps a hostile copy budget rather than amplifying it", () => {
-    // `copies` is unauthenticated input that decides how many times a carrier
-    // re-emits an envelope. bitchat clamps it in the envelope initialiser; an
-    // unclamped byte would let one sender claim 255 and recruit every carrier
-    // that picked it up into an amplifier.
     const store = freshStore();
     const depositor = makeNoiseKeypair();
     const tag = new Uint8Array(16).fill(0x12);
@@ -488,9 +476,6 @@ describe("CourierStore spray", () => {
   });
 });
 
-// Duplicates are guaranteed rather than exotic: a sender seals ONCE and hands
-// the same bytes to every courier, so any two of them meeting already hold what
-// the other offers.
 describe("CourierStore duplicate envelopes", () => {
   test("collapses an identical ciphertext instead of taking a second slot", () => {
     const store = freshStore();
@@ -565,9 +550,6 @@ describe("CourierStore duplicate envelopes", () => {
   });
 });
 
-// The mailbag has to outlive the process: carriage spans hours, a React Native
-// process does not, and a kill must not empty the bag while the depositor's
-// outbox still believes a courier holds it.
 describe("CourierStore persistence", () => {
   test("carried mail survives a restart, with its budget and spray record", () => {
     const id = `courier-persist-${String(++storeCounter)}`;

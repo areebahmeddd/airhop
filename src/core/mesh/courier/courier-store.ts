@@ -18,7 +18,7 @@
 //   0x01  recipient tag   HMAC-SHA256(recipientNoisePub, dayEpoch)[0:16]
 //   0x02  expiry          Unix milliseconds, u64 BE
 //   0x03  ciphertext      Noise X sealed payload
-//   0x04  copies          spray-and-wait budget
+//   0x04  copies          spray-and-wait budget, u8; omitted at 1 (carry-only)
 //   0x05  prekey ID       one-time prekey sealed to (v2); absent for a static seal
 
 import { hmac } from "@noble/hashes/hmac.js";
@@ -38,10 +38,10 @@ const VERIFIED_POOL_SIZE = 20;
 // How long an envelope is worth carrying, matching CourierEnvelope
 // .maxLifetimeSeconds. Exported because mesh-service stamps the envelopes it
 // originates and the two must not drift.
-export const ENVELOPE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const ENVELOPE_TTL_MS = 24 * 60 * 60 * 1000;
 // Tolerance on a depositor's expiry, matching Limits.maxExpirySlack. Absorbs
 // clock skew between two phones without letting anyone park mail indefinitely.
-const EXPIRY_SLACK_MS = 60 * 60 * 1000; // 1 hour
+const EXPIRY_SLACK_MS = 60 * 60 * 1000;
 const MAX_ENVELOPE_BYTES = 16 * 1024; // 16 KiB plaintext cap
 const FAVORITE_QUOTA = 5;
 const VERIFIED_QUOTA = 2;
@@ -125,23 +125,15 @@ export function candidateTags(
 }
 
 // ---- Envelope wire format ----
-//
-// TLV encoding matching bitchat-ios CourierEnvelope.encode() / .decode().
-// Types:
-//   0x01  recipientTag  (16 bytes)
-//   0x02  expiry        (8 bytes, u64 BE, milliseconds)
-//   0x03  ciphertext    (variable)
-//   0x04  copies        (1 byte, omitted when copies == 1)
-//
-// All lengths are u16 BE.
 
 const ENV_TLV_TAG = 0x01;
 const ENV_TLV_EXPIRY = 0x02;
 const ENV_TLV_CIPHERTEXT = 0x03;
 const ENV_TLV_COPIES = 0x04;
 // v2 (forward-secret) envelopes: the ciphertext is Noise X to the recipient's
-// one-time prekey with this ID rather than their static key. Omitted for v1 so
-// v1 decoders skip it as unknown and still carry v2 envelopes opaquely.
+// one-time prekey with this ID rather than their static key. Absent on v1. A
+// decoder that predates it skips it as unknown and carries the envelope
+// opaquely.
 const ENV_TLV_PREKEY_ID = 0x05;
 const TAG_LENGTH = 16;
 
@@ -186,8 +178,6 @@ export function encodeEnvelopePayload(env: SealedEnvelope): Uint8Array {
     appendTlv(ENV_TLV_COPIES, new Uint8Array([env.copies & 0xff]), bytes);
   }
 
-  // Omitted for v1 static-sealed envelopes so they stay byte-identical to the
-  // pre-prekey wire format.
   if (env.prekeyID !== undefined) {
     const idBuf = new Uint8Array(4);
     new DataView(idBuf.buffer).setUint32(0, env.prekeyID >>> 0, false);
@@ -234,9 +224,7 @@ export function decodeEnvelopePayload(
         break;
       case ENV_TLV_COPIES:
         // Clamped, exactly as bitchat clamps it in CourierEnvelope's
-        // initialiser. An envelope is unauthenticated input, and `copies` is a
-        // spray budget: accepting the raw byte let a hostile envelope claim 255
-        // and turn every carrier that picked it up into an amplifier.
+        // initializer. See MAX_COPIES.
         if (len === 1) copies = Math.min(Math.max(value[0], 1), MAX_COPIES);
         break;
       case ENV_TLV_PREKEY_ID:
@@ -384,7 +372,7 @@ export class CourierStore {
     const env = decodeEnvelopePayload(payload);
     if (env === null) return false;
     const now = Date.now();
-    if (env.expiryMs < now) return false; // already expired
+    if (env.expiryMs < now) return false;
     // Reject an expiry past the policy lifetime. Without this a depositor sets
     // its own retention: one envelope stamped years out would hold a pool slot
     // for as long as the app is installed. The slack absorbs clock skew between
@@ -418,7 +406,6 @@ export class CourierStore {
       return true;
     }
 
-    // Check per-depositor quota by tier.
     const quota = tier === "favorite" ? FAVORITE_QUOTA : VERIFIED_QUOTA;
     const depositorCount = this.envelopes.filter(
       (e) =>
@@ -438,9 +425,7 @@ export class CourierStore {
       return false;
     }
 
-    // Check total pool cap.
     if (this.envelopes.length >= POOL_SIZE) {
-      // Evict lowest-priority slot (verified-tier, then oldest).
       const idx = this.findEvictionCandidate(tier);
       if (idx < 0) return false; // pool full, all favorites
       this.envelopes.splice(idx, 1);

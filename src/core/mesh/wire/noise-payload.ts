@@ -8,7 +8,7 @@
 // is dropped outright.
 
 // bitchat NoisePayloadType (BitchatProtocol.swift). 0x04/0x05 are reserved;
-// verify (0x10/0x11) and vouch (0x12) are later milestones.
+// Airhop has no verify (0x10/0x11) or vouch (0x12) payloads.
 export const NoisePayloadType = {
   PRIVATE_MESSAGE: 0x01,
   READ_RECEIPT: 0x02,
@@ -24,13 +24,13 @@ export const NoisePayloadType = {
   // private-file alias below.
   VIDEO_FRAME: 0x0a,
   // A whole file, encrypted inside the session rather than signed in the open.
-  // Body is a BitchatFilePacket TLV - the same bytes a public FILE_TRANSFER
+  // Body is a BitchatFilePacket TLV, the same bytes a public FILE_TRANSFER
   // carries, so one encoder serves both and only the envelope differs.
   //
   // 0x20 is the value already deployed by bitchat-android and required of new
   // senders. bitchat-ios also accepts 0x09 from its own prerelease builds and
   // canonicalizes it on receive; it never emits it, and neither do we. We
-  // accept it for the same reason iOS does: those builds exist in the wild.
+  // accept it for the same reason it does: those builds exist in the wild.
   PRIVATE_FILE: 0x20,
   PRIVATE_FILE_LEGACY_ALIAS: 0x09,
   // Capabilities and signing key, proven inside the session instead of
@@ -50,12 +50,8 @@ export const NoisePayloadType = {
   //
   // 0x50, and the gap below it is deliberate: PROTOCOLS.md section 3 starts
   // Airhop's packet types at 0x50 so bitchat keeps room to allocate forward, and
-  // the same applies here. CONTACT_CARD holds 0x22 from before that rule reached
-  // this enum and cannot move without breaking shipped builds, so new Airhop
-  // payloads start at 0x50 instead.
-  //
-  // bitchat drops a payload type it does not know, which is correct for a
-  // client with no concept of a location pin.
+  // the same applies here. CONTACT_CARD stays at 0x22 below that line, since
+  // moving it would break shipped builds.
   LOCATION_PIN: 0x50,
   // A "come check your messages" alert, its acknowledgment, and its refusal.
   // Bodies in ring-payload.ts. Airhop-only: bitchat drops an unknown
@@ -82,14 +78,11 @@ const TLV_CONTENT = 0x01;
 // bitchat's number, not a product decision: `PrivateMessagePacket` in
 // Packets.swift writes one byte of length per field, and both clients refuse
 // anything longer. Raising it needs a versioned or negotiated format agreed
-// across iOS and Android (tracked upstream as bitchat #784);
-// reinterpreting the existing length byte in place corrupts a legitimate
-// 255-byte DM from every deployed client.
+// across bitchat-ios and bitchat-android; reinterpreting the existing length
+// byte in place corrupts a legitimate 255-byte DM from every deployed client.
 //
-// Exported so the composer enforces the same budget the wire does. Letting the
-// UI guess is what produced the bug this prevents: a 2000-character composer
-// over a 255-byte envelope, so a long DM encoded to null and went nowhere on
-// every transport, reported as sent.
+// Exported so the composer enforces the same budget the wire does: a longer DM
+// encodes to null and goes nowhere on any transport.
 export const PRIVATE_MESSAGE_MAX_CONTENT_BYTES = 255;
 
 function utf8(s: string): Uint8Array {
@@ -142,7 +135,6 @@ export function decodePrivateMessagePacket(
   return { messageID, content };
 }
 
-// Wrap a body with its NoisePayload type byte: [type] ++ body.
 function typedPayload(type: number, body: Uint8Array): Uint8Array {
   const out = new Uint8Array(1 + body.length);
   out[0] = type;

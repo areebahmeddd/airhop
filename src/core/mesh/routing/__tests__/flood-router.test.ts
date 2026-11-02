@@ -19,7 +19,7 @@ function makePacket(nonceByte: number = 0x01, ttl: number = 7): Packet {
   return {
     type: PacketType.ANNOUNCE,
     ttl,
-    flags: Flags.SIGNED, // 0x02
+    flags: Flags.SIGNED,
     senderID: new Uint8Array(8),
     recipientID: new Uint8Array(8),
     timestamp: Date.now(),
@@ -70,7 +70,6 @@ describe("FloodRouter", () => {
       const sent: Packet[] = [];
       router.receive(makePacket(0x01, 7), (p) => sent.push(p));
 
-      // Nothing sent immediately
       expect(sent.length).toBe(0);
 
       // By the top of the sparse window, the relay has fired.
@@ -181,7 +180,6 @@ describe("FloodRouter", () => {
       expect(jest.getTimerCount()).toBe(0);
       jest.advanceTimersByTime(300);
 
-      // Both relays were cancelled
       expect(sent.length).toBe(0);
     });
   });

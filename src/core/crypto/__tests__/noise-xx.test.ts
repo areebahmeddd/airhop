@@ -252,7 +252,7 @@ describe("Double Ratchet seeding", () => {
 
   test("two handshakes between the SAME pair yield different root keys", () => {
     // Fresh ephemerals every handshake, so re-pairing does not replay the old
-    // chain. A static-static seed was identical for a given pair forever.
+    // chain. A static-static seed would be identical for a given pair forever.
     const iKeys = makeKeypair();
     const rKeys = makeKeypair();
     const first = completeHandshake(iKeys.priv, rKeys.priv);

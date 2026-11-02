@@ -222,8 +222,6 @@ describe("packetizer budget", () => {
 });
 
 describe("DM burst scoping", () => {
-  // A DM burst is sealed to one peer. It must never also go out as a broadcast,
-  // or audio meant for one person is heard by everyone in range.
   it("never broadcasts a DM burst", async () => {
     const sealed: Uint8Array[] = [];
     const {
@@ -295,10 +293,6 @@ describe("burst close is the talker's decision", () => {
   const kinds = (packets: Packet[]) =>
     packets.map((p) => decodeBurstPacket(p.payload)?.kind);
 
-  // The hold is a recording as well as a stream, and only the finger ends it.
-  // A link that flaps, which on Bluetooth is often, must cost the frames it
-  // was down for and nothing else, or the talker loses the second half of a
-  // sentence and is told nothing.
   it("keeps recording through a burst whose frames cannot be sent", async () => {
     const packets: Uint8Array[] = [];
     let reachable = true;
@@ -345,13 +339,7 @@ describe("burst close is the talker's decision", () => {
     expect(packets).toHaveLength(0);
   });
 
-  // A tap on the mic instead of a hold. bitchat does the same thing in
-  // PTTLiveVoiceSession.finish(): below its minimum it sends `.canceled` and
-  // deletes the file rather than delivering a fragment of a word.
-  //
-  // Ending it instead would leave everyone in range holding a third of a second
-  // of audio as a voice note, in a conversation where the person who pressed the
-  // button sees no message at all.
+  // A tap on the mic instead of a hold. See MIN_BURST_KEEP_MS.
   it("retracts a hold too short to be a message", async () => {
     const { packets, session, feed } = makeSession();
     await session.startPtt();
@@ -442,10 +430,6 @@ describe("burst close is the talker's decision", () => {
   });
 });
 
-// A retraction is the one control packet nothing else can stand in for. Both
-// clients turn a burst that merely stops into a finished voice note after three
-// seconds, so a lost END costs nothing; a lost CANCELED means the far side
-// keeps and plays exactly what the talker took back.
 describe("CANCELED is repeated", () => {
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => {
@@ -500,14 +484,8 @@ describe("CANCELED is repeated", () => {
     expect(new Set(canceled.map((p) => p.timestamp)).size).toBeGreaterThan(1);
   });
 
-  // A burst nobody was told about is a burst nobody has to be told about.
-  //
-  // The far side turns a bare START into a live bubble (bitchat opens an
-  // assembly for it, Airhop opens a session) and then shows LIVE for the three
-  // seconds its idle timeout takes to give up on audio that is never coming. A
-  // microphone that fails to open is not rare (a stale audio session, a call
-  // holding the input), so the burst has to stay unannounced until it has
-  // something to say.
+  // A burst nobody was told about is a burst nobody has to be told about. See
+  // sendStartIfNeeded.
   it("says nothing at all for a hold that captured no audio", async () => {
     const { packets, session } = makeSession();
     await session.startPtt();
@@ -553,10 +531,6 @@ describe("burstIDHex", () => {
 });
 
 describe("framesToAdtsFile", () => {
-  // The live frames are bare AAC: no container, because the codec byte already
-  // says what they are. A file has to be self-describing, so each frame gets a
-  // seven-byte ADTS header. This is what turns a burst people heard live into
-  // a voice note that anyone out of range can still play.
   it("prefixes every frame with a valid ADTS header", () => {
     const frames = [new Uint8Array(120).fill(1), new Uint8Array(96).fill(2)];
     const file = framesToAdtsFile(frames);
@@ -589,10 +563,6 @@ describe("framesToAdtsFile", () => {
   });
 });
 
-// One hold may only occupy the radio for so long. Matches bitchat's
-// PTTCaptureEngine.maxCaptureDuration: past the ceiling the session stays open
-// and stops encoding, so the gesture still belongs to the user and releasing
-// still ends the burst properly.
 describe("burst duration ceiling", () => {
   it("stops emitting once the burst passes two minutes", async () => {
     const now = jest.spyOn(Date, "now");

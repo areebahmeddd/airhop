@@ -77,7 +77,8 @@ const SKIPPED = new Set([
   "capabilities/caps_encode_ffffffffffffffff",
   // Read back from the low 48 bits, to stay clear of float loss.
   "capabilities/caps_decode_ffffffffffffffffff",
-  // The encoder declares the content length, so a different file_size is not expressible.
+  // The encoder declares the content length, so a different file_size is not
+  // expressible.
   "file_packet_tlv/file_packet_4_big.bin",
   "file_packet_tlv/file_packet_5_mismatch.bin",
   // Airhop refuses to encode empty content, which bitchat-ios refuses to decode.
@@ -302,7 +303,8 @@ describe("packet_encode", () => {
     expect(d.ttl).toBe(e.decoded_ttl);
     expect(d.isRSR === true).toBe(e.decoded_is_rsr);
     expect(hex(d.senderID)).toBe(e.decoded_sender_id);
-    // Airhop decodes an absent recipient to BROADCAST_ID, and no signature to zeros.
+    // Airhop decodes an absent recipient to BROADCAST_ID, and no signature to
+    // zeros.
     expect(hex(d.recipientID)).toBe(
       e.decoded_recipient_id ?? hex(BROADCAST_ID),
     );
@@ -537,7 +539,8 @@ interface FileFields {
   file_size: number | null;
 }
 
-// file_size is not compared: Airhop trusts the content bytes, not the declared size.
+// file_size is not compared: Airhop trusts the content bytes, not the declared
+// size.
 function expectFile(payload: Hex, e: FileFields | null): void {
   const f = decodeFilePacket(bytes(payload));
   if (e === null) {

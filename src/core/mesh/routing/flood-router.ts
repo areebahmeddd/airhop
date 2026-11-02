@@ -8,9 +8,6 @@
 //     and duplicate suppression has time to work.
 //   - Duplicate packets (same ID within 5 min) are dropped silently.
 //
-// Packet ID matches bitchat PacketIdUtil:
-// SHA-256(type|senderID|timestamp|payload)[0:16]
-//
 // The router verifies no signature. The few types that must be checked before
 // they are relayed are checked by the caller first (mesh-service mayRelay).
 import { equalBytes } from "@noble/curves/utils.js";
@@ -189,12 +186,11 @@ export class FloodRouter {
     private readonly localPeerID: Uint8Array,
     private readonly getDegree: () => number = () => 0,
   ) {}
-  // Scheduled relay timers, keyed by packet ID hex. Stored so callers can
-  // flush on shutdown if needed.
+  // Scheduled relay timers, keyed by packet ID hex, held for flush().
   private readonly pending: Map<string, ReturnType<typeof setTimeout>> =
     new Map();
 
-  // Process an incoming packet from the BLE layer.
+  // Process an incoming packet.
   //
   // Returns true if the packet is new (caller should handle it locally).
   // Returns false if the packet is a duplicate (caller should drop silently).
@@ -271,7 +267,7 @@ export class FloodRouter {
     this.pending.set(idKey, timer);
   }
 
-  // Cancel all pending relay timers (e.g., on BLE disconnect or shutdown).
+  // Cancel all pending relay timers, for when the mesh stops.
   flush(): void {
     for (const timer of this.pending.values()) {
       clearTimeout(timer);

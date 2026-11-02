@@ -1,6 +1,6 @@
-// Round-trip + structural tests for bitchat's nip44-v2 Nostr DM encryption.
-// Full byte-parity with a real bitchat ciphertext needs a captured vector; these
-// lock in the scheme's shape and self-consistency. Peers are addressed by their
+// Round-trip + structural tests for bitchat's nip44-v2 Nostr DM encryption. A
+// real bitchat-ios ciphertext is opened in nostr-dm-interop.test.ts; these lock
+// in the scheme's shape and self-consistency. Peers are addressed by their
 // BIP-340 x-only key, the one a Nostr event carries, so a raw scalar that lands
 // on odd Y still has to round-trip.
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
@@ -10,7 +10,7 @@ import {
   normalizeSecretKeyEvenY,
 } from "../bitchat-nip44";
 
-describe("bitchat-nostr-crypto", () => {
+describe("bitchat-nip44", () => {
   it("round-trips a message between sender and recipient", () => {
     const senderPriv = secp256k1.utils.randomSecretKey();
     const recipPriv = secp256k1.utils.randomSecretKey();

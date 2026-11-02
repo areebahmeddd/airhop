@@ -9,7 +9,7 @@
 //   SHA256(name) before trusting it.
 //
 //   Group messages broadcast as MessageType.groupMessage (0x25): a cleartext
-//   groupID + epoch + nonce framing an ChaCha20-Poly1305 body. Only members
+//   groupID + epoch + nonce framing a ChaCha20-Poly1305 body. Only members
 //   holding the epoch key can open it; the inner content is Ed25519-signed by
 //   the author so a member cannot forge another member's messages.
 //
@@ -578,11 +578,11 @@ export interface GroupStateContext {
 //   3. Then removal. A roster that omits us is the creator dropping us.
 //   4. Then apply.
 //
-// Reversing 1 and 2 gives a silent eviction primitive. A group ID rides in the
+// Running 3 before 1 gives a silent eviction primitive. A group ID rides in the
 // clear on every group message so relays can carry group traffic, so anyone who
 // has seen one could craft a state naming themselves creator with a roster that
 // omits the victim, and the victim's client would destroy its own key and drop
-// the room. bitchat had the same ordering gap, upstream PR #1587.
+// the room. bitchat-ios checks in the same order.
 export function groupStateAction(
   state: Pick<GroupStatePayload, "creatorFingerprint" | "members" | "epoch">,
   ctx: GroupStateContext,

@@ -81,8 +81,6 @@ describe("nostr carrier", () => {
       eventJSON,
     })!;
     const extended = new Uint8Array([...base, 0x7f, 0x00, 0x02, 0xaa, 0xbb]);
-    // Trailing unknown TLV makes offset != length only if not consumed; the
-    // decoder consumes it, so this should still decode.
     const decoded = decodeNostrCarrier(extended);
     expect(decoded).not.toBeNull();
     expect(decoded!.geohash).toBe("u4pruy");

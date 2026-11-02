@@ -6,8 +6,8 @@
 // (header layout, flags, signature coverage, packet ID). Between them they cover
 // both halves: that file owns the frame, this one owns what rides inside it.
 //
-// Every other interop test in this repo is Airhop-encodes-then-Airhop-decodes,
-// which proves only that we agree with ourselves.
+// A test that encodes and decodes with Airhop's own codec proves only that we
+// agree with ourselves.
 //
 // The expected bytes below were written by reading bitchat's OWN encoders, not by
 // running ours and recording the output. Each block names the Swift type and the
@@ -56,7 +56,7 @@ describe("bitchat vector: file packet TLV", () => {
   //   0x01  fileName   u16 length
   //   0x02  fileSize   u16 length, ALWAYS the literal 4, then a u32 value
   //   0x03  mimeType   u16 length
-  //   0x04  content    u32 length  <- note: u32, not u16, unlike the three above
+  //   0x04  content    u32 length, unlike the three above
   // fileSize defaults to content.count. Every integer is big-endian.
   test("a one-byte JPEG named a.jpg is exactly these bytes", () => {
     const encoded = encodeFilePacket({

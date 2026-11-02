@@ -14,9 +14,9 @@
 // send-side budgets matching the ones bitchat-ios applies when it prepares
 // media; neither client applies them on receive.
 
-export const MAX_FILE_BYTES = 1 * 1024 * 1024; // 1 MiB, absolute ceiling
-export const MAX_VOICE_BYTES = 512 * 1024; // 512 KiB
-export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
+export const MAX_FILE_BYTES = 1 * 1024 * 1024;
+export const MAX_VOICE_BYTES = 512 * 1024;
+export const MAX_IMAGE_BYTES = 512 * 1024;
 
 // What the resizer fits a photo to, under the 512 KiB photo budget above. The
 // two differ because of a receiver-side limit on the other client.
@@ -30,7 +30,7 @@ export const MAX_IMAGE_BYTES = 512 * 1024; // 512 KiB
 // link forces. bitchat's own photos are 45 KB at a 448px edge, so this stays
 // generous by comparison, and Airhop-to-Airhop is unaffected either way: our own
 // reassembly times out on idle, not on total duration.
-export const MAX_SENT_IMAGE_BYTES = 256 * 1024; // 256 KiB
+export const MAX_SENT_IMAGE_BYTES = 256 * 1024;
 
 // Longest video the camera will record, in seconds. A recording is shrunk
 // before it is sent (video-prepare.ts), so this bounds the picture rather than
@@ -42,7 +42,7 @@ export const MAX_VIDEO_SECONDS = 15;
 // LiveVideoLimits.maxVideoFileBytes, which both its clips and a finished live
 // stream are fitted to. A video for the Bluetooth room, or for a DM to anyone
 // not known to run Airhop, is shrunk under it.
-export const MAX_BITCHAT_VIDEO_BYTES = 100 * 1024; // 100 KiB
+export const MAX_BITCHAT_VIDEO_BYTES = 100 * 1024;
 
 // The largest transfer that reliably completes inside bitchat's 30-second
 // assembly window, with room for the retries a busy link forces. At the ~20ms
@@ -52,7 +52,7 @@ export const MAX_BITCHAT_VIDEO_BYTES = 100 * 1024; // 100 KiB
 // our own reassembly times out on idle rather than on total duration. It is the
 // line past which sending to a BITCHAT peer is worth warning about, since above
 // it the file is dropped on arrival and we would otherwise show a sent tick.
-export const MAX_BITCHAT_TRANSFER_BYTES = 350 * 1024; // 350 KiB
+export const MAX_BITCHAT_TRANSFER_BYTES = 350 * 1024;
 
 // Worst-case reassembled frame: the 1 MiB payload plus the TLV metadata (max
 // fileName + mimeType) and the binary packet envelope. Mirrors bitchat's
@@ -201,9 +201,9 @@ export function receivedFileName(name: string, mimeType: string): string {
   return `${dot > 0 ? leaf.slice(0, dot) : leaf}.${extension}`;
 }
 
-// RFC 4122 version 4, from the platform CSPRNG. `Math.random` is banned in this
-// codebase and would be wrong here anyway: two photos naming the same id would
-// collide in bitchat's dedup and the second would be discarded as a duplicate.
+// RFC 4122 version 4, from the platform CSPRNG so ids never repeat: two photos
+// naming the same id would collide in bitchat's dedup and the second would be
+// discarded as a duplicate.
 function uuidV4(): string {
   const b = crypto.getRandomValues(new Uint8Array(16));
   b[6] = (b[6] & 0x0f) | 0x40; // version 4
@@ -408,12 +408,12 @@ const MIME_BY_EXTENSION: Record<string, string> = {
 // The MIME type to put on the wire, which is never blank and never something
 // the far side will refuse.
 //
-// This matters more than it looks. A receiver (ours and bitchat's alike) drops
-// a file whose type is not on the allow-list, and an empty string is not on the
-// allow-list, so a picker that returned no type produced an attachment that
-// sent successfully, showed a full progress bar, and silently never arrived.
-// Anything unrecognised becomes application/octet-stream, which bitchat accepts
-// and renders as a document, so the file lands even when its type does not.
+// A receiver (ours and bitchat's alike) drops a file whose type is not on the
+// allow-list, and an empty string is not on the allow-list, so a picker that
+// returns no type would make an attachment that sends successfully, shows a
+// full progress bar, and silently never arrives. Anything unrecognized becomes
+// application/octet-stream, which bitchat accepts and renders as a document, so
+// the file lands even when its type does not.
 export function resolveMimeType(
   declared: string | undefined,
   fileName: string | undefined,
@@ -468,11 +468,9 @@ function u32(n: number): number[] {
 // empty or exceeds the 1 MiB ceiling.
 //
 // The metadata tags are built in a plain array and the file bytes are copied in
-// with set(). That split is not stylistic: spreading the content into
-// Array.push passes every byte as a separate function argument, which overflows
-// the call stack somewhere in the tens of kilobytes. Every attachment past that
-// size threw a RangeError from inside the encoder, well before the 1 MiB
-// ceiling this function is supposed to be enforcing.
+// with set(). Spreading the content into Array.push would pass every byte as a
+// separate function argument, which overflows the call stack somewhere in the
+// tens of kilobytes, well before the ceiling.
 export function encodeFilePacket(p: FilePacket): Uint8Array | null {
   if (p.content.length === 0 || p.content.length > MAX_FILE_BYTES) return null;
   const enc = new TextEncoder();

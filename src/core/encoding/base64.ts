@@ -5,16 +5,12 @@
 //
 //   * base64url decoding always re-pads. Skip it and the same string decodes in
 //     a Nostr envelope but fails in a private-channel key.
-//   * decoding returns null on malformed input and never throws, so a caller's
-//     error handling does not depend on which path it reached.
+//   * each decoder's error behavior is in its name: `*ToBytes` throws on
+//     malformed input, `try*ToBytes` returns null.
 //
 // Several of these sit directly on crypto paths (contact cards, channel keys,
 // Nostr envelopes, courier drops), where a padding disagreement reads as a
 // decryption failure and gets diagnosed as a network problem.
-//
-// Both error behaviours are kept and named, so no call site changes meaning by
-// being migrated: `*ToBytes` throws on malformed input, `try*ToBytes` returns
-// null. Pick the one the caller already expected.
 //
 // Nothing here touches the wire format. Base64 is how bytes cross the native
 // bridge and how text-only transports carry binary; the packet encoder works in
@@ -59,9 +55,7 @@ export function bytesToBase64Url(bytes: Uint8Array): string {
 // base64url to bytes. Throws on malformed input.
 //
 // Padding is restored before decoding. Unpadded input is the normal case here,
-// since the encoder above strips it, and an engine is not obliged to accept it:
-// the one copy of this that skipped the re-pad was a decode failure waiting for
-// the right input length.
+// since the encoder above strips it, and an engine is not obliged to accept it.
 export function base64UrlToBytes(base64url: string): Uint8Array {
   let b64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
   while (b64.length % 4 !== 0) b64 += "=";

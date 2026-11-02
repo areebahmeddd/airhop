@@ -140,7 +140,7 @@ export function decodeNostrCarrier(
   ) {
     return null;
   }
-  // Apply the same field bounds as the constructor.
+  // Apply the same field bounds as the encoder.
   if (
     geohash.length === 0 ||
     enc.encode(geohash).length > CARRIER_MAX_GEOHASH_LENGTH ||

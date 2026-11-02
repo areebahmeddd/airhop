@@ -1,5 +1,5 @@
-// Character autocorrelation for repeated-content spam, ported from bitchat's
-// RepetitionDetector so every client draws the same line.
+// Character autocorrelation for repeated-content spam, ported from
+// bitchat-android's RepetitionDetector so both draw the same line.
 //
 // Text is compared as code points after `normalizeForComparison`, so case,
 // spacing, look-alike letters, accents and invisible characters do not hide a

@@ -102,8 +102,7 @@ function maxAssemblyBytes(originalType: number): number {
   return maxPayloadBytes(originalType as PacketType) + MAX_FRAME_OVERHEAD_BYTES;
 }
 
-// The outer fragment packet type per PROTOCOLS.md.
-const OUTER_TYPE = PacketType.FRAGMENT; // 0x20
+const OUTER_TYPE = PacketType.FRAGMENT;
 
 // What the assembly knows about how its packet arrived, which the packet
 // itself cannot say. A fragment's freshness says nothing about the packet
@@ -175,8 +174,7 @@ export function fragmentPacket(
       // Carry the parent's recipient. A DM's fragments addressed to nobody are
       // classified by bitchat as public: it archives sealed private media in its
       // gossip store and re-offers it to third parties, and relays each fragment
-      // to every neighbour instead of down
-      // the directed path.
+      // to every neighbor instead of down the directed path.
       recipientID: packet.recipientID ?? new Uint8Array(8),
       timestamp: Date.now(),
       // Zeros, not a signature: the SIGNED flag is clear, so the encoder omits
@@ -341,8 +339,8 @@ export class FragmentManager {
       asm.byteCount + header.data.length >
       maxAssemblyBytes(asm.originalType)
     ) {
-      // Refuse the fragment, keep the assembly. Deleting the stream here made
-      // one cheap packet a remote kill switch for somebody else's transfer:
+      // Refuse the fragment, keep the assembly. Deleting the stream here would
+      // make one cheap packet a remote kill switch for somebody else's transfer:
       // inflate past the ceiling, aim it at any (sender, streamID) observable
       // on the air, and a 90%-complete photo is gone with no error at either
       // end. A genuinely oversized stream still cannot complete and ages out on

@@ -1,9 +1,10 @@
 // Key generation, peer ID derivation, and secure storage for Airhop identity.
 //
-// One identity = two key pairs. The X25519 static key is used only for Noise
-// XX sessions and derives the peer ID. The Ed25519 key signs packets and seeds
-// the Nostr identity. Both private keys live in the OS Keychain/Keystore via
-// ./keychain and never leave the device.
+// One identity = two key pairs. The X25519 static key is the Noise key (XX
+// sessions, courier seals, the first ratchet key) and derives the peer ID. The
+// Ed25519 key signs packets and seeds the Nostr identity. Both private keys live
+// in the OS Keychain/Keystore via ./keychain and leave the device only in a
+// device transfer.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { KEYCHAIN_ITEMS, readSecret, writeSecret } from "./keychain";
@@ -15,7 +16,6 @@ import { peerIDFromNoiseKey } from "./peer-id";
 // `nostrPubKeyHex`, derived once at construction, and that is what the
 // ANNOUNCE TLV and the QR contact card carry.
 export interface Identity {
-  // X25519 static key pair, used for Noise XX session encryption only
   noiseStaticPrivKey: Uint8Array;
   noiseStaticPubKey: Uint8Array;
   // Ed25519 key pair. Signs packets, and is the SEED the Nostr identity is
@@ -90,6 +90,3 @@ export async function loadIdentity(): Promise<Identity | null> {
     peerID: peerIDFromNoiseKey(noisePub),
   };
 }
-
-// The panic wipe is `wipeAllSecrets` in ./keychain, called directly by
-// services/panic-wipe.ts. It walks the item registry, so it belongs beside it.

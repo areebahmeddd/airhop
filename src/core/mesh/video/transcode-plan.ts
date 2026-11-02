@@ -1,8 +1,7 @@
 // The numbers for one transcode pass: which part of the source to keep,
 // whether it keeps its sound, and the size, frame rate and bitrate of the
-// picture.
-// bitchat-ios's VideoTranscoder.plan, so a clip shrunk here for a bitchat phone
-// is the clip bitchat itself would have made.
+// picture. bitchat-ios's VideoTranscoder.plan, so a clip shrunk here for a
+// bitchat phone is the clip bitchat itself would have made.
 //
 // The bitrate comes from the budget spread over the kept length; resolution
 // and frame rate follow the bitrate, and the upright shape is kept in 16-pixel
@@ -10,7 +9,7 @@
 //
 // One Airhop extension: a budget above bitchat's (a DM to another Airhop
 // phone) may use bitchat-android's 480-pixel step. At bitchat's own budget the
-// ladder is exactly iOS's, which stops at 320.
+// ladder is exactly bitchat-ios's, which stops at 320.
 
 import { MAX_BITCHAT_VIDEO_BYTES } from "../wire/file-packet";
 

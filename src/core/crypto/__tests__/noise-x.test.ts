@@ -39,13 +39,12 @@ describe("Noise X seal/open", () => {
     );
   });
 
-  test("envelope has expected minimum length (32 e + 48 enc_s + payload + 16)", () => {
+  test("envelope is exactly 32 e + 48 enc_s + payload + 16 tag bytes", () => {
     const sender = makeKeypair();
     const recipient = makeKeypair();
     const plaintext = new Uint8Array(10);
 
     const envelope = noiseXSeal(sender.priv, recipient.pub, plaintext, P);
-    // 32 (e_pub) + 48 (enc_static + tag) + 10 (payload) + 16 (payload tag)
     expect(envelope.length).toBe(32 + 48 + 10 + 16);
   });
 

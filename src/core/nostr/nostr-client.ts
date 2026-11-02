@@ -3,9 +3,9 @@
 // Publish uses first-ACK-wins: the event is sent to all relays and the promise
 // resolves on the first OK.
 //
-// Relay selection: caller provides the relay list. Use geo-relay.ts to pick
-// the closest relays. A fixed set of default gift-wrap relays is always
-// included for DM delivery.
+// Relay selection: the default pool is the fixed gift-wrap relay set, for DM
+// delivery. A location channel or the mesh bridge passes its own list per call,
+// from geo-relay.ts.
 //
 // Tor proxy: this client never touches the socket directly. Routing Nostr
 // through Tor is done one level up, by swapping nostr-tools' WebSocket
@@ -42,11 +42,11 @@ const MAX_RELAY_COUNT = 5;
 // MAX_RELAY_COUNT.
 //
 // A geohash cell's set is its GEO_RELAY_COUNT routed relays (the interop
-// rendezvous, which must stay intact) PLUS the user's custom relays, appended last by
-// mergeGeoRelays. Capping that back to MAX_RELAY_COUNT would trim from the tail
-// and so drop exactly the custom entries, silently undoing the setting for
-// anyone who left geo-relay discovery on: the UI would report the relay added
-// and it would never be contacted. Sized to hold both halves.
+// rendezvous, which must stay intact) PLUS the user's custom relays, appended
+// last by mergeGeoRelays. Capping that back to MAX_RELAY_COUNT would trim from
+// the tail and so drop exactly the custom entries, silently undoing the setting
+// for anyone who left geo-relay discovery on: the UI would report the relay
+// added and it would never be contacted. Sized to hold both halves.
 const MAX_OVERRIDE_RELAY_COUNT = GEO_RELAY_COUNT + MAX_CUSTOM_RELAYS;
 
 // How long to wait for a publish ACK from at least one relay.
@@ -137,9 +137,9 @@ export class NostrClient {
     this.onConnectionChange = config.onConnectionChange;
     this.pool = new SimplePool({ enableReconnect: true, enablePing: true });
     this.pool.maxWaitForConnection = CONNECT_TIMEOUT_MS;
-    // The pool tells us as relays connect and drop (set as properties: the
-    // SimplePool constructor doesn't accept these in its options). We translate
-    // that into a single "any live relay" boolean for the caller.
+    // Set as properties: the SimplePool constructor does not accept these in its
+    // options. They report only a connect the pool was asked for; the poll below
+    // catches a live socket dropping (see CONNECTION_POLL_MS).
     this.pool.onRelayConnectionSuccess = () => this.reconcileConnected();
     this.pool.onRelayConnectionFailure = () => this.reconcileConnected();
     this.connectionPoll = setInterval(
@@ -150,8 +150,7 @@ export class NostrClient {
     const defaults = DEFAULT_DM_RELAYS.map(normalizeRelayUrl).filter(
       Boolean,
     ) as string[];
-    const merged = [...new Set([...provided, ...defaults])];
-    this.relays = merged.slice(0, MAX_RELAY_COUNT);
+    this.relays = [...new Set(defaults)].slice(0, MAX_RELAY_COUNT);
     this.dmRelays = new Set(defaults);
   }
 

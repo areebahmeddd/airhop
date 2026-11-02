@@ -2,13 +2,13 @@
 //
 // A custom relay added while geo-relay discovery is on (the default) must be
 // contacted. mergeGeoRelays appends custom relays after the cell's interop set,
-// which is already exactly 5, the size of the default DM pool, so re-capping a
-// per-call relay list to that size trims precisely the user's entries: the
-// settings row reads "1 added" and nothing ever opens a socket to it.
+// which alone fills the default DM pool's cap of 5, so re-capping a per-call
+// relay list to that size trims precisely the user's entries: the settings row
+// reads "1 added" and nothing ever opens a socket to it.
 //
-// mergeGeoRelays is unit-tested on its own (see geo-relay.test.ts, "interop
-// relays never dropped"), but the contract can break one layer down. So these
-// assert the relays NostrClient targets, not the ones the caller asked for.
+// mergeGeoRelays is unit-tested on its own (see geo-relay.test.ts), but the
+// contract can break one layer down. So these assert the relays NostrClient
+// targets, not the ones the caller asked for.
 
 import type { Event } from "nostr-tools";
 import {
@@ -54,7 +54,7 @@ afterEach(() => {
   for (const client of clients.splice(0)) client.close();
 });
 
-// Five nearest relays for a cell, as GeoRelayDirectory would return them.
+// A cell's nearest relays, as GeoRelayDirectory would return them.
 const NEAREST = ["wss://n1", "wss://n2", "wss://n3", "wss://n4", "wss://n5"];
 const CUSTOM = ["wss://my-own-relay.example.com"];
 

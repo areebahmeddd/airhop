@@ -17,8 +17,8 @@
 //
 // Total: 106 + nicknameLen bytes. Every card carries all three keys: the Noise
 // and signing keys for BLE, and the Nostr key so a contact met only by QR (never
-// over Bluetooth) is still reachable over the internet. Airhop is pre-1.0 with no
-// install base, so there is exactly one card format rather than a versioned pair.
+// over Bluetooth) is still reachable over the internet. There is exactly one card
+// format, with no older one left to read.
 //
 // The QR (and a shared link or pasted code, which are the same string) is that
 // card followed by a 64-byte Ed25519 signature by the signing key it names:
@@ -51,7 +51,7 @@ export interface ContactCard {
   peerID: string; // 16 hex chars
   noisePubKey: Uint8Array; // 32-byte X25519
   signingPubKey: Uint8Array; // 32-byte Ed25519
-  nickname: string; // 0-32 UTF-8 characters
+  nickname: string; // 0-32 UTF-8 bytes
   // 32-byte secp256k1 (Nostr identity).
   //
   // Optional because a card can come from a bitchat verification QR, where the

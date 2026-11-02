@@ -17,8 +17,7 @@
 //   Symmetric-key ratchet: derives sending/receiving message keys from chain keys
 //   DH ratchet: advances root key whenever a new ratchet public key is received
 //
-// Out-of-order messages are supported via a map of skipped message keys. The
-// map is capped at MAX_SKIP entries (1000) to bound memory usage.
+// Out-of-order messages are supported via a map of skipped message keys.
 
 import { chacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { x25519 } from "@noble/curves/ed25519.js";
@@ -36,9 +35,9 @@ const KDF_RK_INFO = new TextEncoder().encode("airhop-dr-root-v1");
 const KDF_CK_MSG_BYTE = new Uint8Array([0x01]);
 const KDF_CK_CHAIN_BYTE = new Uint8Array([0x02]);
 
-// AEAD: ChaCha20-Poly1305. Message key is 32 bytes. Nonce is 12 bytes
-// (all-zeros; key is single-use so nonce reuse is not a concern here).
-const AEAD_NONCE = new Uint8Array(12); // zero nonce; MK is used once
+// ChaCha20-Poly1305 under an all-zero nonce: each 32-byte message key encrypts
+// once, so no nonce repeats under a key.
+const AEAD_NONCE = new Uint8Array(12);
 
 export interface RatchetKeyPair {
   readonly priv: Uint8Array; // 32-byte X25519 scalar
@@ -86,7 +85,6 @@ function aeadDecrypt(
   return chacha20poly1305(mk, AEAD_NONCE, aad).decrypt(ciphertext);
 }
 
-//
 // Header wire format (40 bytes):
 //   [0-31]   DHs_pub  (32 bytes, sender's current ratchet public key)
 //   [32-35]  PN       (u32-BE, number of messages in previous sending chain)
@@ -119,8 +117,8 @@ function decodeHeader(buf: Uint8Array): MessageHeader {
   };
 }
 
-// The full Double Ratchet state for one conversation. Keep one per peer.
-// Serializable for storage: no closures, only plain data.
+// The full Double Ratchet state for one conversation. Keep one per peer. Plain
+// data, which is what lets ratchetDecrypt try a message on a copy of it.
 export interface RatchetState {
   // Sending ratchet key pair. Rotated with each DH ratchet step.
   DHs: RatchetKeyPair;
@@ -308,7 +306,8 @@ function trySkippedKey(
 }
 
 // Advance the receiving chain key, storing skipped message keys, until we
-// reach message number `until`. Respects MAX_SKIP.
+// reach message number `until`. Throws on a gap wider than MAX_SKIP, and past
+// MAX_SKIP stored keys the oldest goes.
 function skipMessageKeys(state: RatchetState, until: number): void {
   if (state.Nr > until) return;
   if (until - state.Nr > MAX_SKIP) {
@@ -337,7 +336,7 @@ function dhRatchetStep(state: RatchetState, newDhPub: Uint8Array): void {
   state.Nr = 0;
   state.DHr = newDhPub;
 
-  // Receiving ratchet step: derive new CKr using Bob's new ratchet key.
+  // Receiving ratchet step: derive new CKr using the peer's new ratchet key.
   const dhOut1 = x25519.getSharedSecret(state.DHs.priv, newDhPub);
   const [rk1, ckr] = kdfRk(state.RK, dhOut1);
   state.RK = rk1;

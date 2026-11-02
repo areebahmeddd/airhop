@@ -1,6 +1,6 @@
 // Limits for the public spam filter. Identical to bitchat-android's
-// SpamFilterConfig and bitchat-ios's port, so a message one client hides, the
-// others hide too.
+// SpamFilterConfig, apart from the comparison caps below, so a message it hides
+// is hidden here too.
 
 export interface TokenBucketConfig {
   capacity: number;
@@ -9,7 +9,7 @@ export interface TokenBucketConfig {
 
 // Per sender: a burst of 6 messages then one every 10 s, 1200 characters a
 // minute, 2 links a minute. The character capacity is also the longest public
-// message any bitchat client will show.
+// message the filter will show.
 export const MESSAGE_BUCKET: TokenBucketConfig = {
   capacity: 6,
   refillPerSecond: 1 / 10,
@@ -43,7 +43,8 @@ export const SPAM_FILTER_CONFIG = {
   crossUserMinLength: 16,
   crossUserHistorySize: 200,
   // Caps on the work one message can cause against other senders' texts; a
-  // flood built from a tiny alphabet passes the cheap checks.
+  // flood built from a tiny alphabet passes the cheap checks. Airhop's own:
+  // bitchat-android has no such cap.
   crossUserMaxComparisons: 64,
   crossUserMaxAlignments: 8,
   historySize: 10,

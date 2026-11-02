@@ -19,8 +19,8 @@
 // accept it.
 //
 // Applies to broadcasts that carry content we authored: public and private
-// channel messages, group messages, board posts, public files, live voice and video.
-// Not applied to:
+// channel messages, group messages, board posts, public files, live voice and
+// video. Not applied to:
 //
 //   * Announces. The direct-peer rule in mesh-service identifies a directly
 //     heard announce by `packet.ttl === ANNOUNCE_TTL`, and that rule is what

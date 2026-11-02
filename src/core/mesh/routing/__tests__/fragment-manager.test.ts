@@ -31,7 +31,6 @@ function makeIdentity() {
   return { signingPrivKey, signingPubKey, peerID };
 }
 
-// Build a large packet with `payloadSize` payload bytes.
 function makeLargePacket(
   payloadSize: number,
   identity: ReturnType<typeof makeIdentity>,
@@ -214,7 +213,6 @@ describe("FragmentManager", () => {
     const senderID = frags[0].senderID;
     let reassembled: Packet | null = null;
 
-    // Deliver in reverse order
     for (const f of [...frags].reverse()) {
       manager.receive(senderID, f.payload, (p) => {
         reassembled = p;
@@ -231,7 +229,6 @@ describe("FragmentManager", () => {
     const senderID = frags[0].senderID;
     let callCount = 0;
 
-    // Send fragment 0 twice
     manager.receive(senderID, frags[0].payload, () => {
       callCount++;
     });

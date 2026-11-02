@@ -1,6 +1,6 @@
-// Decides whether an incoming public message is hidden. Ported from bitchat's
-// SpamFilter (Android shipped it in 2.1.0; iOS is porting it) with the same
-// limits, so the three clients hide the same messages.
+// Decides whether an incoming public message is hidden. Ported from
+// bitchat-android's SpamFilter with the same limits, so both hide the same
+// messages.
 //
 // Each sender gets three token buckets (messages, characters, links) plus three
 // repetition checks: a message that repeats itself internally, a near-copy of

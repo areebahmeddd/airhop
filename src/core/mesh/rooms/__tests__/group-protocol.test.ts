@@ -157,13 +157,8 @@ describe("group message (0x25)", () => {
   });
 });
 
-// groupStateAction: which question gets asked first.
-//
-// By the time this runs the caller has verified the state's signature and
-// confirmed the Noise peer who sent it is the creator the state names. Both are
-// satisfied by an attacker naming themselves creator, since verifyGroupState
-// looks the signing key up inside the roster it is checking. Neither says
-// anything about the group we already hold, which is what this decides.
+// groupStateAction: which question gets asked first. Why the order is the
+// security property is on the function.
 describe("groupStateAction", () => {
   const ME = "a".repeat(64);
   const CREATOR = "c".repeat(64);
@@ -219,10 +214,9 @@ describe("groupStateAction", () => {
     ).toBe("reject");
   });
 
-  // A roster we were never in, for a group we do not hold, is not an eviction -
-  // it is somebody else's group. Treating it as a removal would be harmless
-  // today but would make the removal branch reachable without a held group,
-  // which is the shape the bug had.
+  // A roster we were never in, for a group we do not hold, is somebody else's
+  // group rather than an eviction. The removal branch stays reachable only with
+  // a held group.
   test("a roster for a group we do not hold is refused, not removed", () => {
     expect(
       groupStateAction(state(CREATOR, [CREATOR]), { myFingerprint: ME }),
@@ -252,11 +246,6 @@ describe("groupStateAction", () => {
     ).toBe("reject");
   });
 
-  // A group ID rides in the clear on every group message, so anyone who has
-  // seen one can craft the hostile state below, naming themselves creator. Were
-  // it to return "remove" against the held creator, the victim's own client
-  // would destroy its group key and drop the room: a silent eviction that needs
-  // no group key and shows the victim nothing.
   test("the creator check runs before the roster check", () => {
     // Same input differing only in the held creator. If the roster check ran
     // first, both of these would come back "remove".

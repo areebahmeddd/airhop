@@ -1,9 +1,9 @@
 // Bulletin-board wire format (MessageType.boardPost = 0x23 payloads).
 //
 // Byte-identical to bitchat BoardPackets.swift so a signed Airhop board post or
-// tombstone verifies on bitchat-ios and bitchat-android and vice versa. A board post is a
-// signed, persistent notice designed to outlive chat: it lives until its
-// author-chosen expiry (max 7 days). A tombstone is a signed deletion marker
+// tombstone verifies on bitchat-ios and bitchat-android and vice versa. A board
+// post is a signed, persistent notice designed to outlive chat: it lives until
+// its author-chosen expiry (max 7 days). A tombstone is a signed deletion marker
 // only the author's key can produce.
 //
 // TLV layout (type u8, length u16 big-endian, value):
@@ -185,7 +185,6 @@ function tlv(parts: Uint8Array[], type: TLV, value: Uint8Array): void {
   parts.push(value);
 }
 
-// Build and sign a board post with the author's Ed25519 signing private key.
 export function signBoardPost(
   fields: Omit<BoardPost, "signature">,
   signingPrivKey: Uint8Array,
@@ -389,7 +388,6 @@ export function decodeBoardWire(data: Uint8Array): BoardWire | null {
   return null;
 }
 
-// A fresh 16-byte random post ID.
 export function newPostID(): Uint8Array {
   return crypto.getRandomValues(
     new Uint8Array(BoardWireConstants.POST_ID_LENGTH),

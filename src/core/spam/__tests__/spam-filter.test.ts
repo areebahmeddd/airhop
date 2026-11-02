@@ -1,5 +1,5 @@
-// The public spam filter, case for case against bitchat's SpamFilterTests, so
-// Airhop hides exactly what both bitchat clients hide.
+// The public spam filter, case for case against bitchat-android's
+// SpamFilterTest, so Airhop hides exactly what it hides.
 
 import { countLinks } from "../link-counter";
 import { normalizeForComparison } from "../repetition-detector";

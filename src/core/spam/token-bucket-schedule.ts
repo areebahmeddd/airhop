@@ -6,7 +6,7 @@
 // admitted only if replaying every bucket with it inserted never runs dry. For
 // live, in-order traffic that is exactly a classic token bucket. Entries older
 // than the backdate window fold into a checkpoint nothing can precede, which
-// keeps the replay short. Port of bitchat's TokenBucketSchedule.
+// keeps the replay short. Port of bitchat-android's TokenBucketSchedule.
 
 import type { TokenBucketConfig } from "./spam-filter-config";
 

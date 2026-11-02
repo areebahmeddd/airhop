@@ -153,10 +153,10 @@ export class GeohashPresence {
 
   // Announce that we are in this cell, signed with this cell's key.
   //
-  // One cell per call. Publishing every allowed precision from one object put
-  // the same key in the region, province and city cells at once, which a relay
-  // can stitch into one person's location. Cadence and cell selection belong to
-  // the caller, which knows which channels the user is in.
+  // One cell per call. Publishing every allowed precision from one object would
+  // put the same key in the region, province and city cells at once, which a
+  // relay can stitch into one person's location. Cadence and cell selection
+  // belong to the caller, which knows which channels the user is in.
   //
   // `relays` is the cell's own relay set, where everyone in the cell reads
   // presence. With none, the heartbeat is skipped, as bitchat-ios skips it:

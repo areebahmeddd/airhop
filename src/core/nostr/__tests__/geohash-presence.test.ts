@@ -118,12 +118,8 @@ describe("presence broadcast policy", () => {
     expect(mayBroadcastPresence(5)).toBe(true); // city
   });
 
-  // At these precisions a cell is a neighbourhood, a block, a building. A
-  // heartbeat there is a statement about where a person is standing, and the
-  // spec's answer is that the count is simply not knowable: the UI shows
-  // "? people" rather than an undercount presented as fact.
-  test("fine cells never broadcast: neighbourhood, block, building", () => {
-    expect(mayBroadcastPresence(6)).toBe(false); // neighbourhood
+  test("fine cells never broadcast: neighborhood, block, building", () => {
+    expect(mayBroadcastPresence(6)).toBe(false); // neighborhood
     expect(mayBroadcastPresence(7)).toBe(false); // block
     expect(mayBroadcastPresence(8)).toBe(false); // building
     expect(mayBroadcastPresence(9)).toBe(false);
@@ -136,17 +132,10 @@ describe("presence broadcast policy", () => {
 });
 
 describe("heartbeat timing", () => {
-  // 40-80s, averaging 60. A fixed cadence would itself be a fingerprint; the
-  // average is what keeps a peer inside everyone else's five-minute online
-  // window with room to miss a round.
-  test("the round interval centres on 60s", () => {
+  test("the round interval centers on 60s", () => {
     expect(nextHeartbeatDelayMs(() => 0.5)).toBe(60_000);
   });
 
-  // Cells inside a round are spaced 2-5s apart. Each is signed by a different
-  // derived key, so publishing them together still leaks: three unfamiliar
-  // pubkeys arriving in the same instant, round after round, group into one
-  // device by timing alone.
   test("both delays stay inside their window for any random value", () => {
     for (let i = 0; i <= 100; i++) {
       const r = i / 100;

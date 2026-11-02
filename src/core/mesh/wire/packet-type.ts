@@ -30,7 +30,7 @@ export const enum PacketType {
   // bitchat assigns forward and has reached 0x2D, so anything just past their
   // last shipped value is contested ground: one byte with two meanings makes
   // each side's parser depend on the other's validation to not misfire. 0x50
-  // leaves them 35 values of room, and conformance.test.ts fails if they come
+  // leaves them 34 values of room, and conformance.test.ts fails if they come
   // within 16, so a future collision surfaces in CI rather than in the field.
   CHANNEL_ENC = 0x50, // Airhop private channel: XChaCha20-Poly1305 sealed msg
   // Not 0x02: bitchat's BLE mesh has one public room, so a location cell sent as

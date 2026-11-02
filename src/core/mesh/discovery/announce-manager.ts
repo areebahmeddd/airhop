@@ -14,8 +14,6 @@
 //   0x06  bridge cell        (bitchat; decoded, ignored)
 //   0x07  Nostr secp256k1 pub (32 bytes X-only, Airhop extension, ignored by bitchat)
 //   0xB1  Bitle relay role   (read, never written)
-//
-// Broadcast interval: 15 to 30 seconds while connected, faster while isolated.
 import { hexToBytes } from "@noble/hashes/utils.js";
 import type { Identity } from "../../crypto/identity";
 import {
@@ -50,15 +48,16 @@ export const ANNOUNCE_TTL = 7;
 // peer who left hours ago keeps reappearing in the room.
 //
 // Both upstreams bound this, but differently, so this is a choice rather than a
-// port. iOS uses 900s and only looks backwards (BLEPacketFreshnessPolicy:
-// `timestamp < now - maxAge`); Android uses 10 minutes and compares the
-// absolute difference (AnnouncementIdentityValidator MAX_CLOCK_SKEW_MS), which
-// also rejects timestamps from the future.
+// port. bitchat-ios uses 900s and only looks backwards
+// (BLEPacketFreshnessPolicy: `timestamp < now - maxAge`); bitchat-android uses
+// 10 minutes and compares the absolute difference
+// (AnnouncementIdentityValidator MAX_CLOCK_SKEW_MS), which also rejects
+// timestamps from the future.
 //
 // We take 15 minutes AND make it symmetric, which is the union of what the two
 // accept: never tighter than either upstream in the direction it checks, so no
 // announce that a bitchat device would accept is refused here. The forward
-// bound is the cheap half - it costs nothing and stops a peer parking a
+// bound is the cheap half: it costs nothing and stops a peer parking a
 // far-future timestamp, which is the obvious way to make a packet that never
 // goes stale.
 export const ANNOUNCE_MAX_SKEW_MS = 15 * 60 * 1000;
@@ -354,11 +353,8 @@ export class AnnounceManager {
     return this.stamped.includes(timestampMs);
   }
 
-  // Start broadcasting ANNOUNCE packets.
-  //
-  // The interval adapts to connectivity: ~4s while isolated (no links), then a
-  // jittered 15-30s once at least one link is up. Pass getLinkCount so the
-  // manager can tell which state it is in on each tick.
+  // Start broadcasting ANNOUNCE packets at the cadence above. Pass getLinkCount
+  // so the manager can tell which state it is in on each tick.
   //
   // Pass nostrPubKey to include TLV 0x07 (constant for the session lifetime).
   // Pass getCapabilities to include TLV 0x05; it is read on every tick so a

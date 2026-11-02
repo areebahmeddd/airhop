@@ -521,8 +521,6 @@ describe("selectProofsForAmount", () => {
   });
 
   it("spends unverified proofs before confirmed ones", () => {
-    // Passing on the riskiest proofs first is both safer for us and no worse
-    // for the recipient, who swaps immediately.
     const proofs: StoredProof[] = [
       { ...proofSet([8])[0], secret: "confirmed", verified: true },
       { ...proofSet([8])[0], secret: "unconfirmed", verified: false },

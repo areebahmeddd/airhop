@@ -58,7 +58,6 @@ export const Flags = {
 // Other implementations use an all-0xFF sentinel instead; see isBroadcast().
 export const BROADCAST_ID = new Uint8Array(8);
 
-// Fixed header sizes.
 export const V1_HEADER_SIZE = 14; // 2-byte payload length
 export const V2_HEADER_SIZE = 16; // 4-byte payload length (+ optional route)
 export const SENDER_ID_SIZE = 8;
@@ -119,10 +118,9 @@ export interface Packet {
 
 // Hand a packet to the transport, fire and forget.
 //
-// Lives beside `Packet` because flood-router and gossip-sync each had their own
-// identical copy. Returns void deliberately: these are floods with no per-packet
-// outcome. A transport that can refuse a write needs a type that says so, which
-// is file-transfer-service's Paced* pair.
+// Returns void deliberately: these are floods with no per-packet outcome. A
+// transport that can refuse a write needs a type that says so, which is
+// file-transfer-service's Paced* pair.
 export type SendFn = (packet: Packet) => void;
 
 // Timestamps are u64 on the wire but JS numbers, so these two are exact only up
@@ -180,8 +178,8 @@ export function padsBLEFrame(type: PacketType): boolean {
 
 // Encode a packet to bitchat's binary wire format.
 //
-// `padding` defaults to the per-type wire policy above. Callers that need the
-// padded form regardless - only signingBytes() - pass true explicitly.
+// `padding` defaults to the per-type wire policy above. Only signingBytes()
+// needs the padded form regardless, and passes true explicitly.
 export function encodePacket(
   p: Packet,
   padding = padsBLEFrame(p.type),
@@ -373,13 +371,10 @@ function decodeCore(raw: Uint8Array): Packet | null {
   if (isCompressed) {
     if (payloadLen < lengthFieldBytes) return null;
     // payloadLen is a claim made by the sender; this bounds the read against
-    // what actually arrived. Every other read in this function is guarded the
-    // same way, and this one was not: a 24-byte frame declaring COMPRESSED with
-    // payloadLength 4 left `off` exactly at the end of the buffer, and DataView
+    // what actually arrived. A 24-byte frame declaring COMPRESSED with
+    // payloadLength 4 leaves `off` exactly at the end of the buffer, and DataView
     // THROWS on an out-of-range read rather than returning null like the rest of
-    // the failure paths here. decodePacket has no try/catch and neither does the
-    // caller, so the RangeError escaped into the native packetReceived listener.
-    // A malformed frame must decode to null, never throw.
+    // the failure paths here. A malformed frame must decode to null, never throw.
     if (off + lengthFieldBytes > raw.length) return null;
     const origSize =
       version === 2 ? view.getUint32(off, false) : view.getUint16(off, false);
@@ -423,11 +418,8 @@ function decodeCore(raw: Uint8Array): Packet | null {
   };
 }
 
-// Produce the byte string Ed25519 signs / verifies.
-// Matches bitchat toBinaryDataForSigning(): encode the packet with ttl=0,
-// isRSR cleared, and hasSignature cleared (so no signature field appears).
-// This means relay TTL decrements and solicited-response tagging never
-// invalidate the original signature.
+// The byte string Ed25519 signs and verifies, as bitchat
+// toBinaryDataForSigning(). See the signing note at the top of this file.
 function signingBytes(p: Packet): Uint8Array {
   return encodePacket(
     {
@@ -480,7 +472,6 @@ export function computePacketId(p: Packet): Uint8Array {
   ).slice(0, 16);
 }
 
-// Check whether the packet's recipientID is addressed to the given peer.
 export function isForMe(p: Packet, myPeerIDBytes: Uint8Array): boolean {
   for (let i = 0; i < 8; i++) {
     if (p.recipientID[i] !== myPeerIDBytes[i]) return false;
@@ -495,8 +486,8 @@ export function isForMe(p: Packet, myPeerIDBytes: Uint8Array): boolean {
 //     emit, and what BROADCAST_ID stands in for after decoding.
 //   - recipientID all-zeros, the decoded form of the case above.
 //   - recipientID all-0xFF, the broadcast sentinel bitchat-android writes with
-//     HAS_RECIPIENT set. Dropping these would silently lose Android live voice
-//     and public file transfers.
+//     HAS_RECIPIENT set. Dropping these would silently lose its live voice and
+//     public file transfers.
 export function isBroadcast(p: Packet): boolean {
   if (!(p.flags & Flags.HAS_RECIPIENT)) return true;
   return (

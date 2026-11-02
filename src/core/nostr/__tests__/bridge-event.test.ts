@@ -134,12 +134,8 @@ describe("parseBridgeEvent", () => {
     expect(parseBridgeEvent(wrongKind)).toBeNull();
   });
 
-  // The hint becomes the timeline row identity, so an unchecked one is a write
-  // primitive: the sender, timestamp and text of a public message are all
-  // public, so anyone could compute a victim's stable ID, publish their own
-  // rendezvous event claiming it, and land on that exact row on every far
-  // island with different words under the original's identity. Claiming a row
-  // requires the id to hash the claimant's OWN content.
+  // The hint becomes the timeline row identity, so claiming a row requires the
+  // id to hash the claimant's OWN content.
   test("ignores a stable ID that does not match the event's own content", () => {
     const genuine = createBridgeMeshEvent({
       content: "meet at the north gate",

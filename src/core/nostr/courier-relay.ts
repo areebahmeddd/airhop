@@ -2,8 +2,8 @@
 //
 // When BLE mesh delivery is not possible, sealed courier envelopes can be
 // parked on Nostr relays under a rotating daily recipient tag. The recipient
-// polls for matching events when they come online. This mirrors bitchat-ios
-// NostrProtocol.EventKind.courierDrop.
+// subscribes to matching events when they come online. This mirrors
+// bitchat-ios NostrProtocol.EventKind.courierDrop.
 //
 // Event format (kind 1401):
 //   kind:    1401
@@ -35,7 +35,7 @@ const KIND_COURIER_DROP = 1401;
 // window. 100 raises that cost. There is deliberately no paging with `until`,
 // as in bitchat-ios: a flood can outrun any page budget, every junk page costs
 // Schnorr checks, and this path is only a fallback to the mesh and the outbox.
-const MAX_FETCH_PER_POLL = 100;
+const MAX_BACKFILL_DROPS = 100;
 
 // Publish a sealed courier envelope to Nostr as a kind 1401 event.
 // The envelope's expiryMs is used as the NIP-40 expiration tag.
@@ -53,7 +53,6 @@ export async function publishCourierDrop(
   const tagHex = bytesToHex(envelope.recipientTag);
   const expiryUnixSec = Math.floor(envelope.expiryMs / 1000).toString();
 
-  // Encode the full envelope payload (TLV) to base64 for the event content.
   const payload = encodeEnvelopePayload(envelope);
   const content = bytesToBase64(payload);
 
@@ -93,7 +92,7 @@ export function subscribeCourierDrops(
     kinds: [KIND_COURIER_DROP],
     "#x": tagHexes,
     since: Math.floor(Date.now() / 1000) - 86400, // last 24h (envelope TTL)
-    limit: MAX_FETCH_PER_POLL,
+    limit: MAX_BACKFILL_DROPS,
   };
 
   const closer = client.subscribe([filter], (event: Event) => {

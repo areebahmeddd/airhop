@@ -17,7 +17,7 @@ describe("wire values", () => {
   test("authenticatedPeerState is 0x21", () => {
     expect(NoisePayloadType.AUTHENTICATED_PEER_STATE).toBe(0x21);
   });
-  test("privateFile is 0x20, with 0x09 accepted from prerelease iOS", () => {
+  test("privateFile is 0x20, with 0x09 accepted from prerelease bitchat-ios", () => {
     expect(NoisePayloadType.PRIVATE_FILE).toBe(0x20);
     expect(NoisePayloadType.PRIVATE_FILE_LEGACY_ALIAS).toBe(0x09);
   });

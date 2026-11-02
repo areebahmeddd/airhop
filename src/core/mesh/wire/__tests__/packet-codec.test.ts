@@ -1,6 +1,7 @@
 // Wire-format tests for the bitchat-compatible binary codec. These lock in
-// byte-level behavior that must match bitchat-ios and bitchat-android: v1 + v2 headers,
-// PKCS#7 padding, raw-DEFLATE compression, and signing over the padded encoding.
+// byte-level behavior that must match bitchat-ios and bitchat-android: v1 + v2
+// headers, PKCS#7 padding, raw-DEFLATE compression, and signing over the padded
+// encoding.
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { deflateRaw } from "pako";
 import { optimalBlockSize, pad } from "../message-padding";
@@ -237,12 +238,12 @@ describe("packet-codec", () => {
     // Assemble the v2 frame by hand (broadcast, compressed, no route) instead of
     // going through encodePacket. Building the fixture with our own encoder
     // would be circular: it would re-compress and the frame would stop being
-    // foreign, so the tests would pass even with the fix removed.
+    // foreign, so the tests would pass even without the wire-form reuse.
     // `padded` separates the two senses of padding that the protocol keeps
     // apart. The SIGNING PREIMAGE is padded for every type on every
     // implementation (toBinaryDataForSigning encodes with padding on), so a
     // preimage is always built with padded=true. The wire frame follows the
-    // per-type policy, and ANNOUNCE - what this fixture builds - is one of the
+    // per-type policy, and ANNOUNCE, which this fixture builds, is one of the
     // types bitchat does not pad. Getting these the same way round is the whole
     // point of the fixture.
     function buildFrame(
@@ -328,8 +329,8 @@ describe("packet-codec", () => {
     // Decoder tolerance is not optional. bitchat's own padding notes leave
     // "does the other platform's decoder tolerate trailing bytes" as an open
     // question, and an implementation that pads a type we do not must still be
-    // readable here - otherwise a peer upgrading its padding policy silently
-    // becomes unreachable rather than noisily incompatible.
+    // readable here, or a peer upgrading its padding policy silently becomes
+    // unreachable rather than noisily incompatible.
     it("decodes and verifies a foreign frame that WAS padded", () => {
       const payload = new TextEncoder().encode(TEXT);
       const foreignBytes = deflateRaw(payload, LEGACY_ENCODER);

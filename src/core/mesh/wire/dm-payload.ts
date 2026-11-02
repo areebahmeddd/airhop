@@ -33,12 +33,10 @@ export interface DmPayload {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-// Encode a private message (text) with its id.
 export function encodeDmMessage(messageId: string, text: string): Uint8Array {
   return encodeEnvelope(DmPayloadType.MESSAGE, messageId, text);
 }
 
-// Encode a receipt (delivered or read) for a given message id.
 export function encodeDmReceipt(
   type: typeof DmPayloadType.DELIVERED | typeof DmPayloadType.READ_RECEIPT,
   messageId: string,
