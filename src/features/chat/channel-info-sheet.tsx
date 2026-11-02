@@ -6,7 +6,7 @@
 
 import { GROUP_MAX_MEMBERS } from "@core/mesh/rooms/group-protocol";
 import { relayDisplayHost } from "@core/nostr/geo-relay";
-import { t, useT, useTPlural, type TranslationKey } from "@i18n";
+import { t, useT, useTPlural } from "@i18n";
 import {
   Feather,
   type FeatherIconName,
@@ -58,61 +58,8 @@ import {
   type ScrollViewInstance,
 } from "react-native";
 
+import { CHANNEL_SCOPE, DEFAULT_CHANNEL_NAMES } from "./default-channels";
 import { confirmLeaveConversation } from "./leave-conversation";
-
-// Protocol-defined default channels. Read-only, cannot be left.
-const DEFAULT_CHANNEL_NAMES = new Set([
-  "#bluetooth",
-  "#block",
-  "#neighborhood",
-  "#city",
-  "#province",
-  "#region",
-]);
-
-// Static metadata for each default channel.
-// Keys, not text: a module constant is evaluated once at import, so translated
-// strings here would freeze in whichever language the app started in. The
-// component translates them on render. Guarded by `npm run i18n:audit`.
-const CHANNEL_SCOPE: Record<
-  string,
-  {
-    tagKey: TranslationKey;
-    descriptionKey: TranslationKey;
-    transportKey: TranslationKey;
-  }
-> = {
-  "#bluetooth": {
-    tagKey: "chat.scope.mesh",
-    descriptionKey: "chat.scope.mesh_desc",
-    transportKey: "chat.transport.bluetooth",
-  },
-  "#block": {
-    tagKey: "chat.scope.block",
-    descriptionKey: "chat.scope.block_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#neighborhood": {
-    tagKey: "chat.scope.neighborhood",
-    descriptionKey: "chat.scope.neighborhood_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#city": {
-    tagKey: "chat.scope.city",
-    descriptionKey: "chat.scope.city_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#province": {
-    tagKey: "chat.scope.province",
-    descriptionKey: "chat.scope.province_desc",
-    transportKey: "chat.transport.both",
-  },
-  "#region": {
-    tagKey: "chat.scope.country",
-    descriptionKey: "chat.scope.country_desc",
-    transportKey: "chat.transport.both",
-  },
-};
 
 interface Props {
   channel: string | null;

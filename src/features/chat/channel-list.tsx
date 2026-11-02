@@ -6,7 +6,7 @@
 // Creating a channel lives in start-new-sheet, not here: the header "+" is on
 // both Chats sub-tabs, so App.tsx mounts the chooser alongside this list.
 
-import { t, tPlural, useT, useTPlural, type TranslationKey } from "@i18n";
+import { t, tPlural, useT, useTPlural } from "@i18n";
 import {
   chevronForward,
   directionMark,
@@ -63,6 +63,7 @@ import ReanimatedSwipeable, {
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import ChannelInfoSheet from "./channel-info-sheet";
+import { CHANNEL_SCOPE, DEFAULT_CHANNEL_NAMES } from "./default-channels";
 import { confirmLeaveConversation } from "./leave-conversation";
 
 // ---- Constants ----
@@ -71,17 +72,6 @@ import { confirmLeaveConversation } from "./leave-conversation";
 // Nostr subscription, so a slow poll keeps the list live without a per-event
 // re-render of the whole screen.
 const GEO_COUNT_POLL_MS = 5000;
-
-// The 6 bitchat-compatible default channels. Always present, cannot be
-// removed: they are part of the mesh protocol.
-const DEFAULT_CHANNEL_NAMES = new Set([
-  "#bluetooth",
-  "#block",
-  "#neighborhood",
-  "#city",
-  "#province",
-  "#region",
-]);
 
 // Default channels is collapsed to this many rows until the user expands it.
 const DEFAULT_VISIBLE_COUNT = 3;
@@ -96,41 +86,6 @@ let persistedCollapsedSections = new Set<string>();
 // One side inset for both the section headers and the rows, so their leading
 // text ("DEFAULT CHANNELS", "#bluetooth") lines up and cannot drift apart.
 const ROW_INSET = Spacing.base;
-
-// Scope info for built-in bitchat-compatible channels.
-//
-// Keys, not text: a module constant is evaluated once at import, so holding
-// translated strings here would freeze them in whichever language the app
-// started in. The component translates on render.
-const CHANNEL_SCOPE: Record<
-  string,
-  { tagKey: TranslationKey; descriptionKey: TranslationKey }
-> = {
-  "#bluetooth": {
-    tagKey: "chat.scope.mesh",
-    descriptionKey: "chat.scope.mesh_desc",
-  },
-  "#block": {
-    tagKey: "chat.scope.block",
-    descriptionKey: "chat.scope.block_desc",
-  },
-  "#neighborhood": {
-    tagKey: "chat.scope.neighborhood",
-    descriptionKey: "chat.scope.neighborhood_desc",
-  },
-  "#city": {
-    tagKey: "chat.scope.city",
-    descriptionKey: "chat.scope.city_desc",
-  },
-  "#province": {
-    tagKey: "chat.scope.province",
-    descriptionKey: "chat.scope.province_desc",
-  },
-  "#region": {
-    tagKey: "chat.scope.country",
-    descriptionKey: "chat.scope.country_desc",
-  },
-};
 
 // ---- Types ----
 

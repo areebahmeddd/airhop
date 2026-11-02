@@ -352,7 +352,7 @@ function markCleared(
 
 // Default channels shown on first launch, mirroring bitchat's channel hierarchy.
 // Mesh: BLE-only broadcast channel. Location channels: Nostr, sorted by coverage.
-const DEFAULT_CHANNELS = [
+export const DEFAULT_CHANNELS = [
   "#bluetooth",
   "#block",
   "#neighborhood",
