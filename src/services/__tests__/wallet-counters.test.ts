@@ -7,7 +7,7 @@
 // Runs the real wallet service against the simulated mint, which refuses a
 // blinded message it has signed before.
 
-import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
+import { getEncodedToken, type Token } from "@cashu/cashu-ts";
 import { generateRecoveryPhrase } from "@core/payments/wallet-seed";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
@@ -29,6 +29,7 @@ import {
   resetWalletService,
   restoreFromRecoveryPhrase,
 } from "../wallet-service";
+import { strangersTokenAt } from "./wallet-test-helpers";
 
 jest.setTimeout(120_000);
 
@@ -65,16 +66,8 @@ async function fund(sats: number): Promise<void> {
   await claimLightningDeposit(fabric.url, UNIT, deposit.quoteId);
 }
 
-async function strangersToken(sats: number): Promise<string> {
-  const sender = new Wallet(new Mint(fabric.url), { unit: UNIT });
-  await sender.loadMint();
-  const quote = await sender.createMintQuoteBolt11(sats);
-  const proofs = await sender.mintProofsBolt11(sats, quote);
-  return getEncodedToken({
-    mint: fabric.url,
-    unit: UNIT,
-    proofs,
-  } as unknown as Token);
+function strangersToken(sats: number): Promise<string> {
+  return strangersTokenAt(fabric.url, sats);
 }
 
 // A coin under the mint's real keyset that the mint never signed, with no

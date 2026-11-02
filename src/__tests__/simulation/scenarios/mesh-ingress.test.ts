@@ -54,7 +54,7 @@ import {
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes, randomBytes } from "@noble/hashes/utils.js";
-import { SimDevice, type DeviceSpec } from "../harness/device";
+import { prekeysHeldFor, SimDevice, type DeviceSpec } from "../harness/device";
 import { noCrashes } from "../harness/invariants";
 import { media } from "../harness/media-fabric";
 import { RadioFabric } from "../harness/radio-fabric";
@@ -161,16 +161,6 @@ function bundleFrom(
     at,
     signWith,
   );
-}
-
-// The prekeys bob would seal to for this Noise key, as hex.
-function prekeysHeldFor(device: SimDevice, noiseKey: Uint8Array): string[] {
-  const peers = (
-    device.mesh as unknown as {
-      peerPrekeys: { peers: Record<string, { prekeys: { pub: string }[] }> };
-    }
-  ).peerPrekeys.peers;
-  return (peers[bytesToHex(noiseKey)]?.prekeys ?? []).map((p) => p.pub);
 }
 
 function assembliesHeldBy(device: SimDevice): number {

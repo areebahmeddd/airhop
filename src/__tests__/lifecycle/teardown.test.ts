@@ -23,42 +23,18 @@ import {
 } from "@services/mesh-service";
 import { applyPresence } from "@services/presence-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
-import { usePeerStore } from "@store/peer-store";
-import { useSettingsStore } from "@store/settings-store";
 import { Platform } from "react-native";
 import { AndroidBleModule } from "../harness/android-native";
 import { AppShell, makeIdentity } from "../harness/app-shell";
 import { installNativeBle } from "../harness/bridge-shim";
 import { installOfflineWebSocket } from "../harness/offline-socket";
 import { DeviceOS } from "../harness/os";
+import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
 // No test here needs a relay; without this the pool opens real sockets to public
 // relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
-
-// Every field a scenario here can move, so one test's leftovers never decide
-// the next one's verdict.
-function resetStores(): void {
-  useMeshStateStore.setState({
-    bleBlocker: "starting",
-    blePermissionBlocked: false,
-    bleAdvertisingUnsupported: false,
-    powerSaving: false,
-    wifiFastPath: "unknown",
-    lanState: "off",
-    locationGranted: true,
-    nostrConnected: false,
-    torActive: false,
-    bridgeActive: false,
-    bridgePeopleAcross: 0,
-    presenceStatus: "online",
-  });
-  // A start restores a kept Invisible, so Online has to be the saved choice too.
-  useSettingsStore.getState().setStayInvisible(false);
-  useSettingsStore.getState().setBackgroundMeshEnabled(true);
-  usePeerStore.getState().clearAll();
-}
 
 function androidDevice(os: DeviceOS): AndroidBleModule {
   const native = new AndroidBleModule(os);
@@ -73,7 +49,7 @@ describe("teardown, replacement and races", () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    resetStores();
+    resetMeshStores();
   });
 
   afterEach(() => {

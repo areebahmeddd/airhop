@@ -1912,3 +1912,16 @@ function buildSandbox(
   if (inner === null) throw new Error("sandbox build produced nothing");
   return inner;
 }
+
+// The prekeys this device holds for the owner of a Noise key.
+export function prekeysHeldFor(
+  device: SimDevice,
+  noiseKey: Uint8Array,
+): string[] {
+  const peers = (
+    device.mesh as unknown as {
+      peerPrekeys: { peers: Record<string, { prekeys: { pub: string }[] }> };
+    }
+  ).peerPrekeys.peers;
+  return (peers[bytesToHex(noiseKey)]?.prekeys ?? []).map((p) => p.pub);
+}

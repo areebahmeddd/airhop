@@ -63,7 +63,7 @@ import {
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
-import { SimDevice } from "./harness/device";
+import { prekeysHeldFor, SimDevice } from "./harness/device";
 import { noCrashes, noForgedSenders } from "./harness/invariants";
 import { media } from "./harness/media-fabric";
 import { RadioFabric } from "./harness/radio-fabric";
@@ -1274,16 +1274,6 @@ function contactOf(device: SimDevice, peerID: string): ContactLike | undefined {
       ContactLike
     >
   )[peerID];
-}
-
-// The prekeys bob would seal to for this Noise key, as hex.
-function prekeysHeldFor(device: SimDevice, noiseKey: Uint8Array): string[] {
-  const peers = (
-    device.mesh as unknown as {
-      peerPrekeys: { peers: Record<string, { prekeys: { pub: string }[] }> };
-    }
-  ).peerPrekeys.peers;
-  return (peers[bytesToHex(noiseKey)]?.prekeys ?? []).map((p) => p.pub);
 }
 
 // A packet claiming `claimedPeerID`, signed with whatever key the caller holds.

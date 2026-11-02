@@ -74,6 +74,7 @@ import { installNativeBle, installNativeWifi } from "../harness/bridge-shim";
 import { IosBleModule } from "../harness/ios-native";
 import { installOfflineWebSocket } from "../harness/offline-socket";
 import { DeviceOS } from "../harness/os";
+import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
 // No test here needs a relay; without this the pool opens real sockets to public
@@ -86,29 +87,6 @@ installOfflineWebSocket();
 // (MainActivity.kt). Airhop retries until the stack accepts instead, which
 // is correct on a slow device and instant on a fast one.
 const REAL_GRANT_SETTLE_MS = 600;
-
-// Every field a scenario here can move, so one test's leftovers never decide
-// the next one's verdict.
-function resetStores(): void {
-  useMeshStateStore.setState({
-    bleBlocker: "starting",
-    blePermissionBlocked: false,
-    bleAdvertisingUnsupported: false,
-    powerSaving: false,
-    wifiFastPath: "unknown",
-    lanState: "off",
-    locationGranted: true,
-    nostrConnected: false,
-    torActive: false,
-    bridgeActive: false,
-    bridgePeopleAcross: 0,
-    presenceStatus: "online",
-  });
-  // A start restores a kept Invisible, so Online has to be the saved choice too.
-  useSettingsStore.getState().setStayInvisible(false);
-  useSettingsStore.getState().setBackgroundMeshEnabled(true);
-  usePeerStore.getState().clearAll();
-}
 
 // A phone with working Wi-Fi Aware. Without one the shim answers as a phone
 // that has none, so a scenario only gets the fast path by asking for it.
@@ -157,7 +135,7 @@ describe("cold start and permissions", () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    resetStores();
+    resetMeshStores();
   });
 
   afterEach(() => {

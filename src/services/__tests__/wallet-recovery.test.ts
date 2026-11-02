@@ -8,7 +8,6 @@
 //
 // Runs the real wallet service against the simulated mint.
 
-import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { useSettingsStore } from "@store/settings-store";
 import {
   accountKey,
@@ -35,6 +34,7 @@ import {
   removeMint,
   resetWalletService,
 } from "../wallet-service";
+import { strangersTokenAt } from "./wallet-test-helpers";
 
 // cashu-ts retries a 5xx on the NUT-19 endpoints with backoff, in real time.
 jest.setTimeout(180_000);
@@ -78,16 +78,8 @@ function meltRow() {
   return useWalletStore.getState().history.find((t) => t.kind === "melt");
 }
 
-async function strangersToken(sats: number): Promise<string> {
-  const sender = new Wallet(new Mint(fabric.url), { unit: UNIT });
-  await sender.loadMint();
-  const quote = await sender.createMintQuoteBolt11(sats);
-  const proofs = await sender.mintProofsBolt11(sats, quote);
-  return getEncodedToken({
-    mint: fabric.url,
-    unit: UNIT,
-    proofs,
-  } as unknown as Token);
+function strangersToken(sats: number): Promise<string> {
+  return strangersTokenAt(fabric.url, sats);
 }
 
 async function fund(sats: number): Promise<void> {

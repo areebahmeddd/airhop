@@ -8,7 +8,6 @@
 // The invariant: a coin is spendable, or held against the one operation that
 // may have spent it, or gone because the mint says so. Exactly one.
 
-import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
 import { generateRecoveryPhrase } from "@core/payments/wallet-seed";
 import { useSettingsStore } from "@store/settings-store";
 import {
@@ -42,6 +41,7 @@ import {
   resetWalletService,
   restoreFromRecoveryPhrase,
 } from "../wallet-service";
+import { strangersTokenAt } from "./wallet-test-helpers";
 
 jest.setTimeout(60_000);
 
@@ -83,16 +83,8 @@ async function waitFor(check: () => boolean, ms = 5_000): Promise<void> {
 
 // Coins this wallet was paid by somebody else: minted by a separate wallet at
 // the same mint and handed over as a token string.
-async function strangersToken(sats: number): Promise<string> {
-  const sender = new Wallet(new Mint(fabric.url), { unit: UNIT });
-  await sender.loadMint();
-  const quote = await sender.createMintQuoteBolt11(sats);
-  const proofs = await sender.mintProofsBolt11(sats, quote);
-  return getEncodedToken({
-    mint: fabric.url,
-    unit: UNIT,
-    proofs,
-  } as unknown as Token);
+function strangersToken(sats: number): Promise<string> {
+  return strangersTokenAt(fabric.url, sats);
 }
 
 async function fund(sats: number): Promise<void> {
