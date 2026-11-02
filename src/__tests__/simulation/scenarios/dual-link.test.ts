@@ -64,10 +64,10 @@ afterAll(() => {
 
 const CHANNEL = "#bluetooth";
 
-test("L01 a dual-linked line writes each flood once per neighbour, with no echo", async () => {
+test("DL01 a dual-linked line writes each flood once per neighbor, with no echo", async () => {
   const s = (scenario = new Scenario({
-    id: "L01",
-    title: "one write per neighbour, however many links it holds",
+    id: "DL01",
+    title: "one write per neighbor, however many links it holds",
     seed: 601,
   }));
   const radio = new RadioFabric(s.world);
@@ -155,7 +155,7 @@ test("L01 a dual-linked line writes each flood once per neighbour, with no echo"
   s.assert(true);
 });
 
-test("L02 a duplicate direct announce binds the link it arrives on, if it verifies", async () => {
+test("DL02 a duplicate direct announce binds the link it arrives on, if it verifies", async () => {
   // Our announce goes down every link as the same bytes, so the copy on a
   // neighbour's second link is a duplicate of the one on its first. Dropped
   // as one before the announce handler binds it, that link would stay
@@ -163,7 +163,7 @@ test("L02 a duplicate direct announce binds the link it arrives on, if it verifi
   // packet ID leaves the signature out, so a duplicate is bound only once it
   // verifies against the key already held for its sender.
   const s = (scenario = new Scenario({
-    id: "L02",
+    id: "DL02",
     title: "a second link is bound by the duplicate announce on it",
     seed: 602,
   }));

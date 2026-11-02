@@ -109,10 +109,10 @@ describe("mid-session radio chaos and lifecycle", () => {
     jest.useRealTimers();
   });
 
-  test("S11 Bluetooth toggled off then on from quick settings, app in front", async () => {
+  test("S36 Bluetooth toggled off then on from quick settings, app in front", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
-      "S11",
+      "S36",
       "Android: BT off then on while looking at the app",
       os,
     );
@@ -245,10 +245,10 @@ describe("mid-session radio chaos and lifecycle", () => {
     v.assert();
   });
 
-  test("S14 Bluetooth dies mid-conversation while a DM is being sent", async () => {
+  test("S37 Bluetooth dies mid-conversation while a DM is being sent", async () => {
     const os = new DeviceOS({ platform: "android", apiLevel: 34 });
     const v = new Verdict(
-      "S14",
+      "S37",
       "BT off mid-DM, nothing may be silently lost",
       os,
     );

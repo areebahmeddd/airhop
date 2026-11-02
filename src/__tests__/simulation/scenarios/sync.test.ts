@@ -166,14 +166,14 @@ function phones(
   return { radio, devices };
 }
 
-test("S01 catching up after a partition does not re-flood the mesh", async () => {
+test("SY01 catching up after a partition does not re-flood the mesh", async () => {
   // Sync responses must not carry their original ttl. The requester's flood
   // router would see each one as new, which it is, and forward it to every
   // other neighbour, who would forward it again. One phone rejoining after a
   // partition would push the entire archive across the mesh, and the symptom
   // is a room that gets slower the longer it runs.
   const s = (scenario = new Scenario({
-    id: "S01",
+    id: "SY01",
     title: "a rejoining phone catches up without rebroadcasting what it learns",
     seed: 91,
   }));
@@ -242,7 +242,7 @@ test("S01 catching up after a partition does not re-flood the mesh", async () =>
   // node that relays what it was just handed turns one catch-up into a storm.
   // Carol answering dave's own sync request, which may land in this window, is
   // not a relay: a well-formed answer is IS_RSR at ttl 0 and never forwarded
-  // (S02). Only ttl 0 is excused, since an answer with a live ttl is the
+  // (SY02). Only ttl 0 is excused, since an answer with a live ttl is the
   // regression this scenario catches.
   const aliceSenderID = alice.peerID;
   const rebroadcast = carolAir.packets.filter(
@@ -262,12 +262,12 @@ test("S01 catching up after a partition does not re-flood the mesh", async () =>
   s.assert(true);
 });
 
-test("S02 sync requests and their answers never leave the link", async () => {
+test("SY02 sync requests and their answers never leave the link", async () => {
   // REQUEST_SYNC is a question about what the phone on the far end of THIS
   // link is missing. Relaying it asks a node that was never being addressed,
   // and every hop it travels multiplies the answers.
   const s = (scenario = new Scenario({
-    id: "S02",
+    id: "SY02",
     title: "sync traffic is link-local in both directions",
     seed: 92,
   }));
@@ -299,7 +299,7 @@ test("S02 sync requests and their answers never leave the link", async () => {
     syncPackets.every((p) => p.ttl === 0),
     `ttls = [${syncPackets.map((p) => String(p.ttl)).join(",")}]`,
   );
-  // Whether a request is relayed is S11's question: a neighbour's own request
+  // Whether a request is relayed is SY11's question: a neighbor's own request
   // travels at ttl 0, which no flood router forwards, so only one injected
   // with TTL headroom can tell a relay that refuses from one that never had
   // the chance.
@@ -308,8 +308,8 @@ test("S02 sync requests and their answers never leave the link", async () => {
   s.assert(true);
 });
 
-test("S03 an old packet is refused even when its signature is perfect", async () => {
-  // The deduplicator is not the defence here: its window is five minutes and
+test("SY03 an old packet is refused even when its signature is perfect", async () => {
+  // The deduplicator is not the defense here: its window is five minutes and
   // its state is per device, so it says nothing about a phone that never saw
   // the original. Someone can record a message in one room and play it into
   // strangers' phones later, attributed to its author and presented as current.
@@ -320,7 +320,7 @@ test("S03 an old packet is refused even when its signature is perfect", async ()
   // field: the timestamp. If only the stale one is refused, the age check is
   // what refused it: not the signature rule, not dedup, not routing.
   const s = (scenario = new Scenario({
-    id: "S03",
+    id: "SY03",
     title: "a matched pair differing only in age",
     seed: 93,
   }));
@@ -445,14 +445,14 @@ test("S03 an old packet is refused even when its signature is perfect", async ()
   s.assert(true);
 });
 
-test("S04 a route planned by another node is followed, not flooded", async () => {
+test("SY04 a route planned by another node is followed, not flooded", async () => {
   // Airhop never plans routes, since publishing a crowd's adjacency graph is
   // the wrong price for routing bandwidth (see core/mesh/source-route.ts). A
   // bitchat peer that has planned one is still owed the hop it asked for, or we
   // become a node other implementations route around. The forged packet here
   // stands in for that peer.
   const s = (scenario = new Scenario({
-    id: "S04",
+    id: "SY04",
     title: "an intermediate hop unicasts along the route instead of flooding",
     seed: 94,
   }));
@@ -536,13 +536,13 @@ test("S04 a route planned by another node is followed, not flooded", async () =>
   s.assert(true);
 });
 
-test("S05 a plaintext message cannot land in a private channel", async () => {
+test("SY05 a plaintext message cannot land in a private channel", async () => {
   // A private channel is sealed, but its name also exists as a public room
   // type. A correctly signed public message under that name would render
   // beneath the encryption lock, from anyone in range. Matched pair: the same
   // author and path into a public room is the control.
   const s = (scenario = new Scenario({
-    id: "S05",
+    id: "SY05",
     title: "plaintext under a private channel's name",
     seed: 95,
   }));
@@ -598,12 +598,12 @@ test("S05 a plaintext message cannot land in a private channel", async () => {
   s.assert(true);
 });
 
-test("S06 a plaintext message cannot land in a group or a DM thread", async () => {
+test("SY06 a plaintext message cannot land in a group or a DM thread", async () => {
   // Groups and DMs are joined rooms like any channel, so without a check by
   // name a signed public message naming one would render inside a thread the
   // UI marks as encrypted. The control is the same message into a public room.
   const s = (scenario = new Scenario({
-    id: "S06",
+    id: "SY06",
     title: "plaintext under a group's or a DM's name",
     seed: 96,
   }));
@@ -664,7 +664,7 @@ test("S06 a plaintext message cannot land in a group or a DM thread", async () =
   s.assert(true);
 });
 
-test("S07 a fragmented sync reply is let in only when it was asked for", async () => {
+test("SY07 a fragmented sync reply is let in only when it was asked for", async () => {
   // A sync reply is old by nature, and one longer than a Bluetooth frame
   // arrives as fragments, which are stamped when cut and so always look fresh.
   // The freshness question therefore has to be asked of the packet inside. The
@@ -672,7 +672,7 @@ test("S07 a fragmented sync reply is let in only when it was asked for", async (
   // one link carol has just asked for a sync. Only the one carrying IS_RSR is
   // a reply; the other is a replay wrapped to dodge the window.
   const s = (scenario = new Scenario({
-    id: "S07",
+    id: "SY07",
     title: "old packets inside fresh fragments",
     seed: 97,
   }));
@@ -753,13 +753,13 @@ test("S07 a fragmented sync reply is let in only when it was asked for", async (
   s.assert(true);
 });
 
-test("S09 a bitchat transfer that outlasts the window still completes", async () => {
+test("SY09 a bitchat transfer that outlasts the window still completes", async () => {
   // bitchat-ios and bitchat-android stamp every fragment with the time of the
   // packet inside, so a slow transfer's later fragments look minutes old. One
   // that continues a stream already under way is live traffic; a stream that
   // opens with old fragments is a replay, and must be neither kept nor relayed.
   const s = (scenario = new Scenario({
-    id: "S09",
+    id: "SY09",
     title: "a long bitchat transfer against the freshness window",
     seed: 99,
   }));
@@ -852,12 +852,12 @@ test("S09 a bitchat transfer that outlasts the window still completes", async ()
   s.assert(true);
 });
 
-test("S08 a message too long for one frame still reaches a latecomer", async () => {
+test("SY08 a message too long for one frame still reaches a latecomer", async () => {
   // Bob hears alice's message as fragments. He has to remember it for sync,
   // and his reply to carol has to be cut to fit the link, or the history a
   // latecomer turns up for silently stops at the frame size.
   const s = (scenario = new Scenario({
-    id: "S08",
+    id: "SY08",
     title: "long history crosses sync over Bluetooth",
     seed: 98,
   }));
@@ -953,13 +953,13 @@ function silenceSync(device: SimDevice): void {
   (device.mesh as unknown as { gossip: { stop: () => void } }).gossip.stop();
 }
 
-test("S11 a sync request is answered only when it is the link peer's own", async () => {
+test("SY11 a sync request is answered only when it is the link peer's own", async () => {
   // One request can draw a node's whole store down a link, so it is answered
   // only when it is what bitchat-ios would answer: link-local, from the peer
   // bound to the link it came in on, and signed by that peer. A relayed one
   // asks every node it reaches.
   const s = (scenario = new Scenario({
-    id: "S11",
+    id: "SY11",
     title: "unsigned, relayed and misattributed sync requests",
     seed: 111,
   }));
@@ -1096,12 +1096,12 @@ async function askedNeighbour(s: Scenario): Promise<{
   return { radio, alice, carol, mallory, channel };
 }
 
-test("S12 a sync reply is taken only inside the window it would be served for", async () => {
+test("SY12 a sync reply is taken only inside the window it would be served for", async () => {
   // bitchat-ios serves six hours of public history, so a reply that old is
   // backfill. One from just past it is a recording wearing the flag, and the
   // pair either side of the line is what pins where the line is.
   const s = (scenario = new Scenario({
-    id: "S12",
+    id: "SY12",
     title: "old IS_RSR replays against the message window",
     seed: 112,
   }));
@@ -1135,12 +1135,12 @@ test("S12 a sync reply is taken only inside the window it would be served for", 
   s.assert(true);
 });
 
-test("S13 a sync reply carrying TTL is refused", async () => {
+test("SY13 a sync reply carrying TTL is refused", async () => {
   // A reply is link-local by construction. One with hops left would be relayed
   // with its exemption intact, and the next node, which also asked us, would
   // take it too.
   const s = (scenario = new Scenario({
-    id: "S13",
+    id: "SY13",
     title: "IS_RSR with TTL headroom",
     seed: 113,
   }));
@@ -1168,11 +1168,11 @@ test("S13 a sync reply carrying TTL is refused", async () => {
   s.assert(true);
 });
 
-test("S14 a stale packet at TTL 0 without IS_RSR is refused", async () => {
+test("SY14 a stale packet at TTL 0 without IS_RSR is refused", async () => {
   // bitchat-android answers a sync with TTL 0 and no flag. bitchat-ios refuses
   // those once they are stale, and so does Airhop: TTL 0 alone claims nothing.
   const s = (scenario = new Scenario({
-    id: "S14",
+    id: "SY14",
     title: "TTL 0 is not a sync reply",
     seed: 114,
   }));
@@ -1191,12 +1191,12 @@ test("S14 a stale packet at TTL 0 without IS_RSR is refused", async () => {
   s.assert(true);
 });
 
-test("S10 catching up on someone who has since gone quiet", async () => {
+test("SY10 catching up on someone who has since gone quiet", async () => {
   // Sync re-serves a message for six hours but its author's announce for
   // only one, so history often comes from someone no longer announcing. Carol
   // met alice earlier, and the key she pinned then must still verify it.
   const s = (scenario = new Scenario({
-    id: "S10",
+    id: "SY10",
     title: "history from a quiet author still verifies",
     seed: 100,
   }));
@@ -1246,13 +1246,13 @@ test("S10 catching up on someone who has since gone quiet", async () => {
   s.assert(true);
 });
 
-test("S15 a flood of forged messages neither crowds out real history nor rides along with it", async () => {
+test("SY15 a flood of forged messages neither crowds out real history nor rides along with it", async () => {
   // A relay keeps what it will offer latecomers only once it has verified it.
   // Kept before verifying, a thousand forgeries under alice's name fill the
   // store, push her real messages out, and are then served to everyone who
   // asks.
   const s = (scenario = new Scenario({
-    id: "S15",
+    id: "SY15",
     title: "forged-message flood versus backfill",
     seed: 115,
   }));
@@ -1342,13 +1342,13 @@ test("S15 a flood of forged messages neither crowds out real history nor rides a
   s.assert(true);
 });
 
-test("S16 history a newcomer cannot verify is offered once, not every round", async () => {
+test("SY16 history a newcomer cannot verify is offered once, not every round", async () => {
   // A newcomer keeps only what it verified, and it cannot verify someone who
   // stopped announcing before it arrived. If what it could not keep were not
   // remembered, every neighbour would offer it again every round, for as long
   // as the history stays servable.
   const s = (scenario = new Scenario({
-    id: "S16",
+    id: "SY16",
     title: "unverifiable backfill is not a loop",
     seed: 116,
   }));
@@ -1403,12 +1403,12 @@ test("S16 history a newcomer cannot verify is offered once, not every round", as
   s.assert(true);
 });
 
-test("S17 a phone meeting a holder gets the history within seconds, not on the next tick", async () => {
-  // A request goes a second after a neighbour's first link binds, as on
+test("SY17 a phone meeting a holder gets the history within seconds, not on the next tick", async () => {
+  // A request goes a second after a neighbor's first link binds, as on
   // bitchat-ios. Left to the 15 s tick, which restarts with every launch, a
   // phone that keeps relaunching would never catch up.
   const s = (scenario = new Scenario({
-    id: "S17",
+    id: "SY17",
     title: "history arrives on meeting",
     seed: 170,
   }));
@@ -1463,12 +1463,12 @@ test("S17 a phone meeting a holder gets the history within seconds, not on the n
   s.assert(true);
 });
 
-test("S18 an author that relaunched can serve its own message again", async () => {
+test("SY18 an author that relaunched can serve its own message again", async () => {
   // The sync store lives in memory, so a relaunch empties it. A sync reply
   // carrying the author's own message is carried again, as on bitchat-ios,
   // or the author's filter would claim it while it could never serve it.
   const s = (scenario = new Scenario({
-    id: "S18",
+    id: "SY18",
     title: "own history after a relaunch",
     seed: 180,
   }));
@@ -1529,14 +1529,14 @@ test("S18 an author that relaunched can serve its own message again", async () =
   s.assert(true);
 });
 
-test("S19 history refused for want of its author's key is taken once the author is heard", async () => {
+test("SY19 history refused for want of its author's key is taken once the author is heard", async () => {
   // dave cannot verify alice until he hears her announce, so he refuses her
   // history and remembers its IDs. Once her key is pinned the IDs come off his
   // filters and bob offers them again under the same packet IDs, which dave's
   // deduplicator still holds from the first offer. Unless that forgets them
   // too, every round's offer is dropped as a duplicate for five minutes.
   const s = (scenario = new Scenario({
-    id: "S19",
+    id: "SY19",
     title: "backfill after the author's key arrives",
     seed: 190,
   }));

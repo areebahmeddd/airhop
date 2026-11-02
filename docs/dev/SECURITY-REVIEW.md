@@ -50,9 +50,9 @@ The cryptographic primitives and the wire format were sound on arrival: the Nois
 | C15  | Stranger in a location DM forwards a friend's card, plain or re-signed   | Every forwarded card refused; the friend's key untouched                                                           |
 | F10  | Private-room member seals a message in another member's name             | Dropped; a copy under the victim's message ID does not displace hers                                               |
 | I04  | Someone who read the transfer code races the real old phone              | Nothing installs unless the person confirms matching words; a decline replaces the code                            |
-| S03  | Stale packet with a perfect signature, into a phone that never saw it    | Refused on age; the matched fresh copy is accepted                                                                 |
+| SY03 | Stale packet with a perfect signature, into a phone that never saw it    | Refused on age; the matched fresh copy is accepted                                                                 |
 | M07  | Recorded voice burst played out of a stranger's phone later              | Refused on freshness and not relayed; a valid signature does not make a burst live                                 |
-| S15  | 1,100 forged messages under a real peer's ID, then a latecomer syncs     | The forgeries are neither kept nor served; the latecomer gets the real peer's messages                             |
+| SY15 | 1,100 forged messages under a real peer's ID, then a latecomer syncs     | The forgeries are neither kept nor served; the latecomer gets the real peer's messages                             |
 | C11b | Genuine Double Ratchet packet replayed past dedup                        | The failed decrypt is discarded and the session kept                                                               |
 | C12  | Handshake msg1 flood under 500 random IDs                                | Pending state bounded, at most 30 answered a minute; a genuine first contact completes                             |
 | F03  | Store-and-forward carrier inspecting what it carries                     | Sealed; the carrier cannot read it                                                                                 |

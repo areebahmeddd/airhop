@@ -180,12 +180,12 @@ function burstFrom(talker: Identity, at: number): string[] {
   ].map((payload) => signed(talker, PacketType.VOICE_FRAME, payload, at));
 }
 
-test("I01 our own fragments echoed back open no assembly", async () => {
+test("MI01 our own fragments echoed back open no assembly", async () => {
   // A dual link or a relay hands our broadcast fragments straight back. They
   // are duplicates of what we originated, and reassembling them rebuilds and
   // decodes our own file, or with one missing, holds a slot until it expires.
   const s = (scenario = new Scenario({
-    id: "I01",
+    id: "MI01",
     title: "own fragments echoed",
     seed: 91,
   }));
@@ -222,12 +222,12 @@ test("I01 our own fragments echoed back open no assembly", async () => {
   s.assert();
 });
 
-test("I02 a prekey bundle that outran its owner's announce is kept and used", async () => {
+test("MI02 a prekey bundle that outran its owner's announce is kept and used", async () => {
   // The owner's announce and bundle go out together and are relayed with
   // independent jitter, so a node two hops away often gets the bundle first.
   // Bundles are never synced, so one dropped then may never come again.
   const s = (scenario = new Scenario({
-    id: "I02",
+    id: "MI02",
     title: "prekey bundle before announce",
     seed: 92,
   }));
@@ -290,13 +290,13 @@ test("I02 a prekey bundle that outran its owner's announce is kept and used", as
   s.assert();
 });
 
-test("I03 live voice from a clock running ahead is heard; too far ahead or too old is not", async () => {
+test("MI03 live voice from a clock running ahead is heard; too far ahead or too old is not", async () => {
   // bitchat-ios bounds only the past for live frames (30 s) and leaves the
   // future to its two-minute ingress guard. Bounding the future at 30 s here
   // would cut a fast-clocked talker off at every Airhop hop while bitchat-ios
   // phones hear and relay them.
   const s = (scenario = new Scenario({
-    id: "I03",
+    id: "MI03",
     title: "live voice clock skew",
     seed: 93,
   }));
@@ -339,11 +339,11 @@ test("I03 live voice from a clock running ahead is heard; too far ahead or too o
   s.assert();
 });
 
-test("I04 a burst silenced for a note stays quiet to its end, and the next one plays", async () => {
+test("MI04 a burst silenced for a note stays quiet to its end, and the next one plays", async () => {
   // bitchat-ios stops a burst when a note starts: one sound at a time, and the
   // listener chose the note.
   const s = (scenario = new Scenario({
-    id: "I04",
+    id: "MI04",
     title: "live voice silenced by the listener",
     seed: 94,
   }));
@@ -383,13 +383,13 @@ test("I04 a burst silenced for a note stays quiet to its end, and the next one p
   s.assert();
 });
 
-test("I05 a DM waiting on a handshake is not spent like a failed send", async () => {
+test("MI05 a DM waiting on a handshake is not spent like a failed send", async () => {
   // Under a handshake nothing carrying the words has left the phone. Charged as
   // an attempt, a peer in range whose handshake never answers would see the
   // message fail within minutes; bitchat-ios keeps it, bounded by the outbox's
   // week.
   const s = (scenario = new Scenario({
-    id: "I05",
+    id: "MI05",
     title: "DM held by a silent handshake",
     seed: 95,
   }));

@@ -58,9 +58,9 @@ const phone = (id: string, seedByte: number): DeviceSpec => ({
   internetEnabled: true,
 });
 
-test("L01 a #block message stays out of the next block, and a phone with no fix still sees and sends over Bluetooth", async () => {
+test("LC01 a #block message stays out of the next block, and a phone with no fix still sees and sends over Bluetooth", async () => {
   const s = (scenario = new Scenario({
-    id: "L01",
+    id: "LC01",
     title: "location levels keep to their cell",
     seed: 95,
   }));
