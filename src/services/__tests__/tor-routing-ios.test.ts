@@ -57,10 +57,7 @@ const mockSetTorBridgeLines = jest.fn((next: string) => {
   mockBridgeLines = next;
 });
 
-// Writes back, the way the real store does. A mock that lets code persist a
-// preference and then read the old value hides exactly the bug this suite is
-// meant to catch: the enable path sets torEnabled before awaiting the bootstrap
-// and re-reads it afterwards to confirm the user still wants Tor.
+// Writes back, the way the real store does: tor-routing.test.ts says why.
 const mockSetTorEnabled = jest.fn((next: boolean) => {
   mockTorEnabled = next;
 });
@@ -348,13 +345,8 @@ describe("revalidating on iOS", () => {
   });
 });
 
-// The marker that keeps a broken Tor client from making Airhop unopenable.
-//
-// `torEnabled` is written before the native client exists so a relaunch during a
-// bootstrap comes back on Tor rather than on the clear net. Without the marker
-// that ordering replays a fatal native failure on every launch, and the user's
-// only way out is deleting their keys. With it, the launch keeps Tor on and
-// holds the internet half, and only Tor off or an accepted Try again leaves.
+// The marker that keeps a broken Tor client from making Airhop unopenable:
+// tor-routing.test.ts says why.
 describe("surviving a Tor client that kills the process", () => {
   test("the start window is marked before the call and cleared after it", async () => {
     mockTorEnabled = false;

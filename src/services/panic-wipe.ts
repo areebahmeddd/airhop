@@ -21,8 +21,8 @@
 // from that: every step that can stall is time-boxed, and the sequence is
 // resumable if the process dies partway through (see ./wipe-marker).
 //
-// After this call the app is left in an empty, first-run state.
-// A restart will trigger key regeneration at next launch.
+// After this call the app is left in an empty, first-run state, and the next
+// identity comes from onboarding.
 
 import NativeAirhopTor from "@bridge/NativeAirhopTor";
 import { wipeAllSecrets } from "@core/crypto/keychain";
@@ -282,10 +282,10 @@ export async function panicWipe(): Promise<PanicWipeResult> {
     torActive: false,
     torBootstrap: "idle",
     // The gate holding the Nostr transport down while Tor is wanted and no
-    // circuit can carry it.
-    // The wipe turns Tor off, so a gate left shut would leave a fresh install
-    // with no internet half and a banner about a Tor nobody asked for.
-    // teardownTorState clears it too; this covers either ordering.
+    // circuit can carry it. The wipe turns Tor off, so a gate left shut would
+    // leave a fresh install with no internet half and a banner about a Tor
+    // nobody asked for. teardownTorState clears it too; this covers either
+    // ordering.
     nostrBlockedByTor: false,
     bridgeActive: false,
     bridgePeopleAcross: 0,

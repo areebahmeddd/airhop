@@ -1,17 +1,7 @@
-// Mesh wiring service.
-//
-// Bridges the native transport modules (BLE, WiFi Aware, LAN) to the core
-// TypeScript engine. One singleton instance is created after identity
-// generation and lives for the app's lifetime.
-//
-// Responsibilities:
-//   - Start BLE advertising (peripheral) + scanning (central)
-//   - Start the WiFi Aware and LAN (mDNS + TCP) transports where available
-//   - Send periodic ANNOUNCE packets via AnnounceManager
-//   - Receive raw bytes, reassemble fragments, and route inner packets
-//   - Dispatch ANNOUNCE payloads to PeerStore (UI layer)
-//   - Dispatch CHANNEL_MSG, NOISE_ENCRYPTED, DR_ENCRYPTED to ChatStore
-//   - Expose sendChannelMessage(), sendDm(), sendAttachment() for feature layer
+// Wires the native transports (BLE, Wi-Fi Aware, LAN) and Nostr to the core
+// TypeScript engine: raw bytes come in and reach their handlers and stores, and
+// the feature layer's sends leave on whichever transport reaches the peer. One
+// instance at a time, created once an identity exists (initMeshService).
 
 import AirhopBLE from "@bridge/NativeAirhopBLE";
 import NativeAirhopLAN from "@bridge/NativeAirhopLAN";
@@ -597,10 +587,10 @@ export class MeshService {
   // Nostr event ids seen via gateway carriers, to break rebroadcast loops and
   // drop duplicate ferries.
   private readonly seenCarrierEventIDs = new BoundedIdSet(GATEWAY_ID_SET_CAP);
-  // Gateway loop prevention, mirroring bitchat GatewayService's ID sets:
-  //   publishedEventIDs  - events we (as a gateway) published to relays on a
-  //                        mesh peer's behalf; never rebroadcast their relay echo.
-  //   rebroadcastEventIDs - relay events we already ferried to the mesh; ferry once.
+  // Gateway loop prevention, mirroring bitchat GatewayService's ID sets.
+  // publishedEventIDs: events we (as a gateway) published to relays on a mesh
+  // peer's behalf; never rebroadcast their relay echo. rebroadcastEventIDs: relay
+  // events we already ferried to the mesh; ferry once.
   private readonly publishedEventIDs = new BoundedIdSet(GATEWAY_ID_SET_CAP);
   // Deposits accepted while the relays were down, waiting for a connection.
   // Without this a mesh-only peer that hands its message to a gateway during a
@@ -707,7 +697,6 @@ export class MeshService {
   // peer ID. See sendUnroutedReadReceipts.
   private readonly unroutedReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
 
-  // Fragment reassembly: collects FRAGMENT packets into full packets.
   private readonly fragmentManager = new FragmentManager();
 
   // Store-and-forward courier. Holds sealed envelopes addressed to OTHER peers
@@ -1712,10 +1701,10 @@ export class MeshService {
   // same thing when its queue is simply full), so teardown stays with the
   // disconnect event.
   private relayPacket(relay: Packet, ingressLinkID: string): void {
-    // Someone upstream computed a path that names us. Honour it: one unicast
-    // write instead of a write to every neighbour. We never plan routes
-    // ourselves (see core/mesh/source-route.ts for why), but a bitchat peer
-    // that has is owed the hop it asked for.
+    // Someone upstream computed a path that names us. Honor it: one unicast
+    // write instead of a write to every neighbor. We never plan routes
+    // ourselves (see core/mesh/routing/source-route.ts for why), but a bitchat
+    // peer that has is owed the hop it asked for.
     const nextHop = nextHopFor(relay, this.identity.peerID);
     if (nextHop !== null) {
       // Skipping the ingress link continues the search rather than ending it:
@@ -2722,9 +2711,6 @@ export class MeshService {
 
   // ---- Noise XX handshake handlers ----
 
-  // Dispatch an incoming NOISE_HANDSHAKE packet through the correct leg of
-  // the three-message Noise XX exchange, then call split() once the handshake
-  // is complete and flush any messages that were queued in the interim.
   // The in-flight handshake for a peer, or undefined if none OR if it has gone
   // stale (older than HANDSHAKE_TIMEOUT_MS). A stale entry is dropped here so the
   // caller re-initiates cleanly instead of appending to a dead handshake. Used on
@@ -2792,6 +2778,9 @@ export class MeshService {
     return peerIDFromNoiseKey(session.remoteStaticPubKey) === claimedPeerID;
   }
 
+  // Dispatch an incoming NOISE_HANDSHAKE packet through the correct leg of the
+  // three-message Noise XX exchange, and release whatever waited on the session
+  // once it completes.
   private onNoiseHandshake(packet: Packet): void {
     const senderID = bytesToHex(packet.senderID);
     if (senderID === this.identity.peerID) return;
@@ -2884,7 +2873,7 @@ export class MeshService {
       } catch {
         return;
       }
-      // Identity binding (bitchat NoiseSessionManager, #1432): the completed
+      // Identity binding (bitchat NoiseSessionManager): the completed
       // session's static key MUST derive to the claimed senderID. Otherwise a
       // peer that answered under someone else's ID could bind a session to an
       // identity it does not own. Abort without sending msg3 or touching state.
@@ -3049,9 +3038,9 @@ export class MeshService {
       ratchet: airhop ? this.seedRatchet(role, session) : null,
     });
 
-    // The handshake just completed, so an encrypted route now exists where
-    // there wasn't one, so deliver anything queued for this peer immediately
-    // rather than waiting up to 30s for their next ANNOUNCE.
+    // An encrypted route now exists where there was none, so anything queued
+    // for this peer goes now rather than at their next ANNOUNCE, up to 30 s
+    // away.
     this.flushOutbox(peerID);
   }
 
@@ -3660,7 +3649,7 @@ export class MeshService {
 
     // Identity proof. Handled before anything else in this method, because
     // every other branch below is content and this one decides who the content
-    // is FROM. See core/mesh/peer-state-packet.ts.
+    // is FROM. See core/mesh/wire/peer-state-packet.ts.
     if (payload.type === NoisePayloadType.AUTHENTICATED_PEER_STATE) {
       this.onAuthenticatedPeerState(senderID, payload.body);
       return;
@@ -4091,10 +4080,10 @@ export class MeshService {
     // The signature is MANDATORY. Verifying only when the sender set the
     // SIGNED flag would let the sender opt out of being checked, and an
     // unsigned announce would write its keys into the registry. verifyPacket
-    // already returns false when SIGNED is
-    // clear, so one unconditional call covers both "no signature" and "bad
-    // signature". bitchat treats these as two distinct rejections
-    // (.missingSignature / .invalidSignature) and refuses both.
+    // already returns false when SIGNED is clear, so one unconditional call
+    // covers both "no signature" and "bad signature". bitchat treats these as
+    // two distinct rejections (.missingSignature / .invalidSignature) and
+    // refuses both.
     if (!verifyPacket(packet, info.signingPubKey)) return;
 
     // A blocked peer's announces still resolve transport-level routing
@@ -4319,7 +4308,7 @@ export class MeshService {
     for (const pkt of missing) void this.sendPacketOnLink(linkID, pkt);
   }
 
-  // Courier: store-and-forward for peers we can't reach directly
+  // ---- Courier: store-and-forward for peers we can't reach directly ----
 
   // How many couriers one message is deposited with. Distinct from the spray
   // budget stamped on the envelope (COURIER_INITIAL_COPIES), despite both being
@@ -4625,8 +4614,8 @@ export class MeshService {
     // touched.
     if (!this.senderIsAuthentic(packet, senderID)) return;
 
-    // Contacts get the larger quota; everyone else the
-    // smaller one, so an unknown peer can't fill our storage.
+    // Contacts get the larger quota; everyone else the smaller one, so an
+    // unknown peer can't fill our storage.
     const depositorPub = this.registry.get(senderID)?.noisePubKey;
     if (!depositorPub) return; // unknown depositor: no quota to charge
     const isContact =
@@ -4681,9 +4670,8 @@ export class MeshService {
       const fromPeerID = peerIDFromNoiseKey(senderStaticPubKey);
       if (useBlockedStore.getState().isBlocked(fromPeerID)) return;
 
-      // The plaintext is a typed Noise payload, exactly as bitchat seals it.
-      // Anything else is from a build that predates this or is not a private
-      // message at all, and there is nothing useful to render either way.
+      // The plaintext is a typed Noise payload, exactly as bitchat seals it, and
+      // anything but a private message has nothing useful to render.
       const typed = decodeNoisePayload(plaintext);
       if (typed === null || typed.type !== NoisePayloadType.PRIVATE_MESSAGE) {
         return;
@@ -6198,13 +6186,11 @@ export class MeshService {
     // group's key so nothing further can be read. (The notice carries a throwaway
     // zero key, so there is nothing to keep anyway.)
     //
-    // Say so before the room goes. `removeChannel` takes the whole message
-    // history with it, so a silent removal makes a conversation and every
-    // message in it vanish with no explanation. bitchat tells the user
-    // (system.group.removed_from); this keeps
-    // the thread in place, marks it read-only by virtue of having no key, and
-    // leaves a system line saying what happened. The user can then delete it
-    // themselves, which is the one thing they could not do before.
+    // The thread stays, read-only by virtue of having no key, with a system
+    // line saying what happened, as bitchat tells the user
+    // (system.group.removed_from). `removeChannel` would take the whole message
+    // history with it, and a conversation and every message in it would vanish
+    // with no explanation. The user can delete the thread themselves.
     if (action === "remove") {
       const name = held?.name ?? state.name;
       useGroupStore.getState().remove(groupIDHex);
@@ -6231,8 +6217,8 @@ export class MeshService {
       return;
     }
 
-    // First time we see this group is a genuine "you were added", surface it
-    // as a local system notice so the new room isn't a silent surprise.
+    // The first sight of this group is a genuine "you were added", surfaced as
+    // a local system notice so the new room isn't a silent surprise.
     const wasNew = held === undefined;
     useGroupStore.getState().upsertFromState(state);
     useChatStore.getState().addChannel(channel);
@@ -7065,9 +7051,9 @@ export class MeshService {
     }
 
     // Priority 4: Nostr gift-wrap DM over the internet, for a peer no radio
-    // reaches. Doing this here, in the service layer, is what makes both a
-    // first send and an outbox flush use the internet fallback, since the
-    // router only ever sees the ephemeral registry.
+    // reaches. The address can come from a saved contact (nostrAddressFor),
+    // which outlives the router's registry, so a first send and an outbox flush
+    // both reach a peer the registry has forgotten.
     const nostrPubkey = allowNostr
       ? this.nostrAddressFor(recipientPeerID)
       : undefined;
@@ -7099,8 +7085,8 @@ export class MeshService {
   // envelope so a bitchat client can parse it (and we can parse theirs). Returns
   // false when no relay is live or the content is longer than one
   // PrivateMessagePacket, so callers fall back to courier and the outbox. The
-  // single place the service seals a DM for Nostr, so the nostr_ reply path,
-  // the durable fallback, and any future caller stay identical.
+  // single place the service seals a DM for Nostr, so the nostr_ reply path and
+  // trySendDm stay identical.
   //
   // A pool with no live relay is not a route: there is no signal, or Tor is
   // still building circuits. Claiming "sent" there skips the courier copy and
@@ -7195,12 +7181,11 @@ export class MeshService {
   //
   // Media rides the mesh only (never Nostr), so returns whether a route exists
   // right now: for a DM, a direct link to that peer; for a channel, any live
-  // link.
-  // The reach is checked BEFORE starting the transfer, so an unreachable send
-  // never spins up a progress card that would falsely reach 100%. False means it
-  // went nowhere, so the caller surfaces that instead of a confident "sent"
-  // (the text path reports reach the same way); the user can retry when a link
-  // returns.
+  // link. The reach is checked BEFORE starting the transfer, so an unreachable
+  // send never spins up a progress card that would falsely reach 100%. False
+  // means it went nowhere, so the caller surfaces that instead of a confident
+  // "sent" (the text path reports reach the same way); the user can retry when a
+  // link returns.
   //
   // A DM also needs a session and the peer's proof, inside it, that it reads a
   // sealed file (capability bit 8). A DM attachment is never sent in the
@@ -7231,7 +7216,6 @@ export class MeshService {
 
   // ---- Payment helpers (used by wallet feature layer) ----
 
-  // The local peer ID derived from the noise public key.
   getPeerID(): string {
     return this.identity.peerID;
   }
@@ -7359,8 +7343,8 @@ export class MeshService {
     }
 
     // Seed the routing registry so sendDm can pick a transport immediately.
-    // Note this does NOT touch peer-store: being a contact is not evidence of
-    // being nearby, and the Mesh tab must keep meaning "in range right now".
+    // This does NOT touch peer-store: being a contact is not evidence of being
+    // nearby, and the Mesh tab must keep meaning "in range right now".
     this.registry.update({
       peerID: card.peerID,
       noisePubKey: card.noisePubKey,
@@ -7901,9 +7885,9 @@ export class MeshService {
         // And our own mail. Relays coming up IS a new route appearing, and it
         // is the exact trigger bitchat flushes on; without it a queued DM
         // waits for a peer's ANNOUNCE or the 45-second sweep with the relay it
-        // needs already live. Safe to call often: an entry survives
-        // until the recipient acknowledges it, and the recipient collapses a
-        // duplicate by message id.
+        // needs already live. Safe to call often: an entry survives until the
+        // recipient acknowledges it, and the recipient collapses a duplicate by
+        // message id.
         this.retryQueuedOverInternet();
         // Relays coming up while bridging turns us into a serving bridge (we can
         // now publish + advertise a cell): publish the deposits held through the
@@ -8174,12 +8158,6 @@ export class MeshService {
     );
   }
 
-  // Rebuild the Nostr transport on whatever WebSocket implementation nostr-tools
-  // currently has installed. Called when Tor routing is toggled at runtime: the
-  // old relay pool is closed and a fresh one opened, so every relay connection
-  // re-establishes over the selected path (Tor or direct). BLE links and the
-  // durable store subscriptions are deliberately left untouched, because Tor is
-  // an internet-only concern and must not disturb nearby Bluetooth chat.
   // Whether the Nostr transport is allowed to exist right now.
   //
   // Two gates, both of which must be open. `internetEnabled` is the user asking
@@ -8231,7 +8209,6 @@ export class MeshService {
     const close = subscribeCourierDropEvents(tags, client, (env) => {
       // A tag can collide, so this takes the same open path as a mesh envelope,
       // which fails closed on a ciphertext it cannot decrypt.
-      //
       this.openCourierEnvelopeForUs(env, courierSentAtMs(env.expiryMs));
     });
     this.courierDropSub = { close };
@@ -8246,6 +8223,12 @@ export class MeshService {
     this.subscribeCourierDrops();
   }
 
+  // Rebuild the Nostr transport on whatever WebSocket implementation nostr-tools
+  // currently has installed. Called when Tor routing is toggled at runtime: the
+  // old relay pool is closed and a fresh one opened, so every relay connection
+  // re-establishes over the selected path (Tor or direct). BLE links and the
+  // durable store subscriptions are deliberately left untouched, because Tor is
+  // an internet-only concern and must not disturb nearby Bluetooth chat.
   restartNostr(): void {
     // Before the first start(), there is nothing to rebuild: start() (or
     // applyInternetEnabled) will build the transport once the gates are open.
@@ -8557,13 +8540,13 @@ export class MeshService {
 
 let _instance: MeshService | null = null;
 
-// Returns the active MeshService, or null if not yet started.
 export function getMeshService(): MeshService | null {
   return _instance;
 }
 
 // Create (or replace) the singleton MeshService with the given identity.
-// Called once from App.tsx after identity is ready.
+// Called from app.tsx, and from boot-start.ts on an Android boot start, once an
+// identity is ready.
 export function initMeshService(
   identity: Identity,
   nickname: string,

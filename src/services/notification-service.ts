@@ -65,9 +65,7 @@ const ARRIVED_COOLDOWN_MS = 3_000;
 // get quieter under Android 15's notification cooldown.
 //
 // PUBLIC on the lock screen: the card says "X is ringing you" and nothing
-// else, and hide-previews already blanks the name. Android fixes a channel's
-// settings at creation, so the earlier PRIVATE channel is deleted at
-// configure time rather than updated.
+// else, and hide-previews already blanks the name.
 const RING_CHANNEL_ID = "ring_alert";
 
 // iOS cannot loop a sound outside a call, so a ring there is a chain of local
@@ -175,9 +173,10 @@ export function setTabNavigator(fn: ((tab: NoticeTab) => void) | null): void {
 
 // Ask for notification permission. Kept separate from configureNotifications so
 // the prompt can be sequenced with the Bluetooth and location prompts in one
-// place (App.startMeshWithPermissions) rather than racing them, which on a fresh
-// install swallowed this prompt and could crash. Denial degrades gracefully: no
-// system notifications, but in-app badges and the foreground haptic still work.
+// place (startMeshDependents in app.tsx) rather than racing them, which on a
+// fresh install swallows this prompt and can crash. Denial degrades gracefully:
+// no system notifications, but in-app badges and the foreground haptic still
+// work.
 // Never throws: a permission-layer failure must not take down mesh startup.
 export async function requestNotificationPermission(): Promise<void> {
   try {
@@ -221,10 +220,10 @@ export async function configureNotifications(): Promise<void> {
   // `void configureNotifications()`, a rejection from any of them does two things
   // at once: it escapes as an unhandled rejection, which the global handler turns
   // into the full-screen error fallback, and it skips the response listener, so
-  // notification taps stop routing for the whole
-  // session. The `configured` latch is set before the first await, so nothing
-  // ever retried. A channel that could not be created costs a default-styled
-  // notification; it should never cost the app its UI.
+  // notification taps stop routing for the whole session. The `configured` latch
+  // is set before the first await, so nothing ever retries. A channel that could
+  // not be created costs a default-styled notification; it should never cost the
+  // app its UI.
   if (Platform.OS === "android") {
     try {
       await Notifications.setNotificationChannelAsync(MESSAGES_CHANNEL_ID, {
@@ -266,11 +265,10 @@ export async function configureNotifications(): Promise<void> {
 
   // Launched by tapping a notification while the app was killed.
   //
-  // The synchronous reader, not the deprecated `getLastNotificationResponseAsync`
-  // it replaces. Being synchronous is the better shape here as well as the
-  // supported one: the response is already in memory by the time the module
-  // loads, so awaiting it only opened a window in which the tapped conversation
-  // could be overtaken by whatever tab the app was going to open anyway.
+  // The synchronous reader, not the deprecated `getLastNotificationResponseAsync`:
+  // the response is already in memory by the time the module loads, and awaiting
+  // it would open a window in which the tapped conversation could be overtaken by
+  // whatever tab the app was going to open anyway.
   //
   // Guarded for the same reason as the channels above: routing the tap is a
   // nicety, and losing the listener to it would be a bad trade.
@@ -365,9 +363,9 @@ export async function handleInboundMessage(
 }
 
 // Called whenever the set of nearby peers changes (see notification-pipeline),
-// with the reachable count before and after. Almost every call is a
-// no-op: shouldNotifyNearby only lets through an empty mesh coming alive while
-// the app is in the background, and then only once per cooldown.
+// with the reachable count before and after. Almost every call is a no-op:
+// shouldNotifyNearby only lets through an empty mesh coming alive while the app
+// is in the background, and then only once per cooldown.
 //
 // This is the one background event that is not a message and still worth
 // surfacing. On Android the foreground service keeps the mesh scanning with the

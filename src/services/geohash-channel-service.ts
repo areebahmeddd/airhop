@@ -19,9 +19,9 @@
 // heartbeats are additionally restricted to coarse precisions by geohash-presence.ts.
 //
 // Degradation: with location denied, the NAMED channels resolve to no cell and
-// keep working over BLE exactly as before. Location is an enhancement, never a
-// requirement. Teleported channels (geohash:<gh>) carry a fixed geohash, so
-// they stay live over the internet even with no location fix.
+// keep working over BLE. Location is an enhancement, never a requirement.
+// Teleported channels (geohash:<gh>) carry a fixed geohash, so they stay live
+// over the internet even with no location fix.
 
 import { BoardWireConstants } from "@core/mesh/wire/board-packet";
 import { isFavoriteControl } from "@core/mesh/wire/favorite-control";
@@ -297,6 +297,7 @@ export class GeohashChannelService {
   // The geo-DM peer -> cell binding lives in chat-store (`geoDmCells`), NOT in a
   // field here, because an in-memory Map does not survive a relaunch. See the
   // note on that field for what a reply does without it.
+
   // Read receipts owed over geo DM, keyed by the peer's Nostr pubkey.
   private readonly pendingGeoDmReadAcks = new ReadAckQueue(MAX_PER_CHANNEL);
 

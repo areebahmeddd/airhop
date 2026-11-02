@@ -7,7 +7,7 @@
 // client, point the app's sockets at it, report honestly, fail closed. What
 // this file exists to pin down is the one place they still differ.
 //
-// **Android installs no WebSocket shim.** iOS swaps nostr-tools' WebSocket for
+// Android installs no WebSocket shim. iOS swaps nostr-tools' WebSocket for
 // TorWebSocket, because React Native's own cannot speak SOCKS5. Android needs no
 // such swap: the proxy is installed one layer lower, into the OkHttp client that
 // `fetch` and WebSocket are both built from, so every socket the app opens is

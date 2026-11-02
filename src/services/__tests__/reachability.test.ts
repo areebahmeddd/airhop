@@ -204,9 +204,6 @@ test("starting twice subscribes once", async () => {
   expect(net.addNetworkStateListener.mock.calls.length).toBe(before);
 });
 
-// Until an offline receipt is swapped, whoever holds its token can spend it
-// first, so the wallet's pass runs as soon as the user's own switches let it
-// reach the mint, not at the next foreground.
 test("the internet switch going back on runs the wallet's pass at once", async () => {
   mockBlock = "internet-off";
   await watch(WIFI);

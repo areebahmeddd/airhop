@@ -125,11 +125,9 @@ function hangingPass(): { started: Promise<string> } {
     (key: string) =>
       new Promise((_resolve, reject) => {
         markStarted(key);
-        native.cancelTranscode.mockImplementationOnce((cancelled: string) => {
-          if (cancelled === key) {
-            reject(
-              Object.assign(new Error("cancelled"), { code: "CANCELLED" }),
-            );
+        native.cancelTranscode.mockImplementationOnce((canceled: string) => {
+          if (canceled === key) {
+            reject(Object.assign(new Error("canceled"), { code: "CANCELLED" }));
           }
         });
       }),
@@ -334,7 +332,7 @@ describe("prepareVideoForSend", () => {
     expect(adoptIntoAttachmentCache).not.toHaveBeenCalled();
   });
 
-  test("a file the phone cannot open", async () => {
+  test("a file the phone cannot open is refused as unreadable", async () => {
     native.probeVideo.mockRejectedValueOnce(new Error("UNREADABLE"));
 
     expect(await prepareVideoForSend(video())).toEqual({
@@ -343,7 +341,7 @@ describe("prepareVideoForSend", () => {
     });
   });
 
-  test("a pass that fails", async () => {
+  test("a pass that fails is reported, and its card goes", async () => {
     native.transcodeVideo.mockRejectedValueOnce(new Error("TRANSCODE_FAILED"));
 
     expect(await prepareVideoForSend(video())).toEqual({

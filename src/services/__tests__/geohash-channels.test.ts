@@ -86,10 +86,10 @@ describe("teleport: typed geohashes", () => {
     expect(geohashLevelName("td")).toBe("Region");
     expect(geohashLevelName("tdr")).toBe("Province");
     expect(geohashLevelName("tdr1")).toBe("Province");
-    expect(geohashLevelName("tdr1k")).toBe("City");
-    expect(geohashLevelName("tdr1ke")).toBe("Neighborhood");
-    expect(geohashLevelName("tdr1ke7")).toBe("City block");
-    expect(geohashLevelName("tdr1ke7x")).toBe("Building");
+    expect(geohashLevelName("tdr1v")).toBe("City");
+    expect(geohashLevelName("tdr1v9")).toBe("Neighborhood");
+    expect(geohashLevelName("tdr1v9q")).toBe("City block");
+    expect(geohashLevelName("tdr1v9qt")).toBe("Building");
   });
 });
 

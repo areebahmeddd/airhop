@@ -1,20 +1,17 @@
 // How hard the radios should work, given what the device can afford.
 //
-// Airhop scans and advertises at the most aggressive settings the platform
-// offers - LOW_LATENCY both ways, TX_POWER_HIGH - and did so identically whether
-// the app was on screen or pocketed, and whether the phone was at 100% or 4%.
 // Continuous LOW_LATENCY scanning is roughly an order of magnitude more
 // expensive than LOW_POWER, and for an app whose whole purpose is running in a
-// pocket all day it is the single largest battery cost there is.
+// pocket all day it is the single largest battery cost there is. So how hard the
+// radios run depends on whether the app is on screen and on the battery left.
 //
 // The bands and the mode table follow bitchat-android's PowerProfileResolver
-// (mesh/PowerManager.kt) deliberately: it is the reference implementation for
-// this protocol, its thresholds are field-tested, and inventing different
-// numbers would be guessing. Two things are ours:
+// (mesh/PowerManager.kt) deliberately: its thresholds are field-tested, and
+// inventing different numbers would be guessing. Two things are ours:
 //
-//   * Hysteresis. bitchat re-resolves on every ACTION_BATTERY_CHANGED, which
-//     fires on every 1% step. A phone sitting at 20% while discharging, or
-//     wobbling either side of it while charging, would flip modes repeatedly -
+//   * Hysteresis. bitchat-android re-resolves on every ACTION_BATTERY_CHANGED,
+//     which fires on every 1% step. A phone sitting at 20% while discharging, or
+//     wobbling either side of it while charging, would flip modes repeatedly,
 //     and every flip restarts the scanner, which costs more than it saves.
 //   * The policy lives in TypeScript rather than in the native module, because
 //     the radios are already owned by one reconciler (radio-controller.ts) and
@@ -27,7 +24,7 @@
 export type PowerMode =
   "performance" | "balanced" | "power-saver" | "ultra-low-power";
 
-// Matches bitchat AppConstants.Power.
+// Matches bitchat-android's AppConstants.Power.
 const CRITICAL_BATTERY_PERCENT = 10;
 const LOW_BATTERY_PERCENT = 20;
 
@@ -74,11 +71,11 @@ export function bandFor(
   return "normal";
 }
 
-// The mode to run in. Mirrors bitchat's resolver, in the same order, because the
-// ordering IS the policy:
+// The mode to run in. Mirrors bitchat-android's resolver, in the same order,
+// because the ordering IS the policy:
 //
 //   * Background dominates everything. Off screen, nobody is waiting on
-//     discovery latency, so there is no reason to pay for it - and this is where
+//     discovery latency, so there is no reason to pay for it, and this is where
 //     a phone spends almost all of its day.
 //   * The OS power-saving switch beats charging and a healthy battery. It is
 //     the user saying outright to spend less, where charging and the battery

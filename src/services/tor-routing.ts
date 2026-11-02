@@ -313,7 +313,7 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
     // than on the clear net.
     useSettingsStore.getState().setTorEnabled(true);
     // The clear-net pool goes now, not after the bootstrap: waiting would leave
-    // up to a minute of subscriptions and DMs going out unprotected after the
+    // a minute or more of subscriptions and DMs going out unprotected after the
     // user asked for Tor. With the gate up the restart only tears down, and the
     // watcher rebuilds on the Tor socket once the circuit is ready.
     setNostrBlocked(true);
@@ -331,10 +331,11 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
       // the socket would put the user back on the clear net they just left.
       return { ok: false, reason: "timeout" };
     }
-    // Re-check consent before claiming it. Sixty seconds is long enough for the
-    // user to toggle Tor back off, or for a panic wipe to tear the whole thing
-    // down, and an enable that resolves afterwards would assert onion routing
-    // over a socket that is back on the clear net.
+    // Re-check consent before claiming it. A bootstrap may run up to three
+    // minutes (TOR_READY_TIMEOUT_S), long enough for the user to toggle Tor
+    // back off, or for a panic wipe to tear the whole thing down, and an enable
+    // that resolves afterwards would assert onion routing over a socket that is
+    // back on the clear net.
     if (!useSettingsStore.getState().torEnabled) {
       return { ok: false, reason: "error" };
     }

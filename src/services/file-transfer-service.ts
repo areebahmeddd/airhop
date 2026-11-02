@@ -57,7 +57,7 @@ import * as FileSystem from "expo-file-system";
 import { Platform } from "react-native";
 import { sweepMediaIfDue } from "./media-retention";
 
-// ---- Types ----
+// ---- Constants and types ----
 
 // Delay between consecutive outbound fragments. Without it the radio drops
 // fragments and the transfer never completes on the far side.
@@ -341,9 +341,7 @@ function deleteIfExpired(
 // for weeks.
 //
 // A file whose age cannot be read is kept. The alternative is deleting user
-// content on the strength of a missing timestamp, and on Android
-// `creationTime` is genuinely absent below API 26, so an unreadable age is an
-// expected state rather than a corrupt one.
+// content on the strength of a missing timestamp.
 export function sweepExpiredAttachments(
   now: number = Date.now(),
   maxAgeMs: number = MEDIA_MAX_AGE_MS,
@@ -522,7 +520,7 @@ export type AckPrivateFileFn = (
   messageID: string,
 ) => void;
 
-// NOTE: naming lives in wireFileName(), which owns the extension and bitchat's
+// Naming lives in wireFileName(), which owns the extension and bitchat's
 // stable-ID shape together. Nothing here may put localized UI copy on the wire:
 // a display word is not a file name, and one without an extension arrives as a
 // file the OS cannot open.
@@ -849,9 +847,9 @@ export class FileTransferService {
   // fragment is handed over lets a refused write march the sender to 100% and
   // "sent" while the receiver waits forever on a stream missing its third
   // fragment. A refusal keeps the fragment instead: it goes back to the front of
-  // the queue (order matters to nothing
-  // on the wire, but retrying out of order would leave gaps behind), the pacing
-  // eases off to let the stack drain, and nothing is counted as sent until it is.
+  // the queue (order matters to nothing on the wire, but retrying out of order
+  // would leave gaps behind), the pacing eases off to let the stack drain, and
+  // nothing is counted as sent until it is.
   private async drainOne(): Promise<void> {
     const next = this.outQueue.shift();
     if (next === undefined) return;

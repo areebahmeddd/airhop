@@ -24,6 +24,7 @@ import {
   receiveToken,
   resetWalletService,
 } from "../wallet-service";
+import { strangersTokenAt } from "./wallet-test-helpers";
 
 jest.setTimeout(60_000);
 
@@ -32,18 +33,6 @@ const UNIT = "sat";
 let world: World;
 let held: MintFabric;
 let stranger: MintFabric;
-
-async function tokenFrom(fabric: MintFabric, sats: number): Promise<string> {
-  const sender = new Wallet(new Mint(fabric.url), { unit: UNIT });
-  await sender.loadMint();
-  const quote = await sender.createMintQuoteBolt11(sats);
-  const proofs = await sender.mintProofsBolt11(sats, quote);
-  return getEncodedToken({
-    mint: fabric.url,
-    unit: UNIT,
-    proofs,
-  } as unknown as Token);
-}
 
 // The stored keyset list emptied, with the wallet service left as it is.
 function emptyKeysetCache(url: string): void {
@@ -97,7 +86,7 @@ beforeEach(async () => {
 
 describe("a token under a keyset the wallet has not fetched", () => {
   it("is read after fetching its mint's keysets, and received", async () => {
-    const token = await tokenFrom(held, 16);
+    const token = await strangersTokenAt(held.url, 16);
     forgetCachedKeysets(held.url);
     expect(readable(token)).toBe(false);
 
@@ -109,7 +98,7 @@ describe("a token under a keyset the wallet has not fetched", () => {
   });
 
   it("says the mint is out of reach rather than calling it unreadable", async () => {
-    const token = await tokenFrom(held, 8);
+    const token = await strangersTokenAt(held.url, 8);
     forgetCachedKeysets(held.url);
     held.setConditions({ offline: true });
 
@@ -120,7 +109,7 @@ describe("a token under a keyset the wallet has not fetched", () => {
   });
 
   it("turns into a readable chat token once the keysets are fetched", async () => {
-    const token = await tokenFrom(held, 4);
+    const token = await strangersTokenAt(held.url, 4);
     forgetCachedKeysets(held.url);
 
     await fetchKeysetsForTokenText(`here you go ${token}`);
@@ -129,7 +118,7 @@ describe("a token under a keyset the wallet has not fetched", () => {
   });
 
   it("does not put a wiped wallet's mint back when the fetch lands late", async () => {
-    const token = await tokenFrom(held, 4);
+    const token = await strangersTokenAt(held.url, 4);
     forgetCachedKeysets(held.url);
     held.setConditions({ latencyMs: 50 });
 
@@ -177,7 +166,7 @@ describe("a token under a keyset the wallet has not fetched", () => {
   });
 
   it("never contacts a mint the user has not added", async () => {
-    const token = await tokenFrom(stranger, 4);
+    const token = await strangersTokenAt(stranger.url, 4);
     const fetch = jest.spyOn(globalThis, "fetch");
 
     await fetchKeysetsForTokenText(token);

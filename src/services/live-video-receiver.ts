@@ -239,14 +239,14 @@ export class LiveVideoReceiver {
     return true;
   }
 
-  // ---- Sound ----
-
-  // The one row whose sound plays, or null for none.
   // Streams being received, a picture yet or not.
   get streamCount(): number {
     return this.streams.size;
   }
 
+  // ---- Sound ----
+
+  // The one row whose sound plays, or null for none.
   get audible(): string | null {
     return this.audibleRow;
   }

@@ -173,8 +173,8 @@ describe("sweepExpiredAttachments", () => {
     expect(foreign.deleted).toBe(false);
   });
 
-  // Android has no creationTime below API 26. Deleting user content because a
-  // timestamp is missing is the worse of the two failures.
+  // Deleting user content because a timestamp is missing is the worse of the two
+  // failures.
   it("keeps a file whose age cannot be read", () => {
     const unknown = put({
       name: "airhop_unknown.jpg",

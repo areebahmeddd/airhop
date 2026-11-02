@@ -54,10 +54,10 @@ export async function hasLocationPermission(): Promise<boolean> {
 // The same reading, keeping the distinction a boolean throws away: whether the
 // OS will still show its prompt.
 //
-// The Permissions screen needs this and had no way to get it, so a permanently
-// denied location rendered as an ordinary "Allow" whose tap is a silent no-op -
-// the one state where the only useful action is a trip to Settings. Everything
-// that just wants a yes/no keeps using hasLocationPermission.
+// The Permissions screen needs this: a permanently denied location must not
+// render as an ordinary "Allow" whose tap is a silent no-op, the one state where
+// the only useful action is a trip to Settings. Everything that just wants a
+// yes/no keeps using hasLocationPermission.
 export async function locationPermissionState(): Promise<{
   granted: boolean;
   canAskAgain: boolean;

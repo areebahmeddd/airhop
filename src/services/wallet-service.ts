@@ -6,8 +6,9 @@
 // Guarantees:
 //  1. Proofs are never deleted to send. They are reserved against a transaction
 //     id and dropped only once delivery is confirmed (`reclaimSend` recovers).
-//  2. Nothing is credited without a mint swap or a passing DLEQ check; offline
-//     credits are marked unverified and redeemed first when online.
+//  2. Nothing counts as verified until the mint has signed for it, and a token
+//     whose DLEQ check fails is refused. Offline credits are marked unverified
+//     and redeemed first when online.
 //  3. No mint call goes over the clear net while Tor is on (iOS: Arti wraps
 //     only WebSockets, not fetch).
 //  4. A (mint, unit) pair is one account; units never mix.
@@ -115,9 +116,9 @@ import { internetOff, torClaimed } from "./network-gate";
 // Every mint request is bounded. cashu-ts only aborts when given a timeout and
 // React Native's fetch has none, so a mint that accepts the connection and never
 // answers (captive portal, cell handover, overloaded mint) hangs forever. A hang
-// is worse than an error: the confirm button spins, the per-mint refresh lock
-// blocks every other mint, and startup stalls before the nutzap watcher is
-// installed. 20s is generous for a slow round trip and inside a user's patience.
+// is worse than an error: the confirm button spins, and the reconcile pass, which
+// walks mints one at a time and which every later caller joins, never finishes.
+// 20s is generous for a slow round trip and inside a user's patience.
 const MINT_REQUEST_TIMEOUT_MS = 20_000;
 
 // A bolt11 melt legitimately takes longer while Lightning routes. Aborting does
@@ -566,7 +567,7 @@ async function getWallet(
         cacheWallet(key, wallet);
         return wallet;
       } catch {
-        // fall through to the throw below
+        // Unreadable, so as good as no cache.
       }
     }
     throw new WalletError(
@@ -709,7 +710,7 @@ export async function initWalletService(): Promise<boolean> {
 
 // Load the recovery phrase and switch new proofs to deterministic secrets.
 // Never throws: a phrase that cannot be used this session means random
-// secrets, which the next refresh re-issues under the phrase (`needsSwap`).
+// secrets, which the next refresh re-issues under the phrase.
 async function loadBackupState(): Promise<void> {
   let stored;
   try {
@@ -3080,7 +3081,6 @@ async function runReconcilePass(): Promise<void> {
   let replayed = 0;
   for (const tx of state.history) {
     if (tx.status !== "pending" || tx.swapPreview === undefined) continue;
-    // Its answer is not late, it is still on its way.
     if (swapsInFlight.has(tx.id)) continue;
     if (replayed >= MAX_SWAP_REPLAYS_PER_PASS) break;
     if (pass.halted()) return;

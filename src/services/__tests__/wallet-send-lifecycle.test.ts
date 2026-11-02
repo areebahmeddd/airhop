@@ -8,7 +8,6 @@
 //
 // No mint is involved: the offline path is the subject.
 
-// Imports come first in source; Babel hoists jest.mock() calls above them.
 import { getDecodedToken, getEncodedToken, type Token } from "@cashu/cashu-ts";
 import { toProofLike } from "@core/payments/cashu";
 import type { StoredProof } from "@core/payments/stored-proof";
