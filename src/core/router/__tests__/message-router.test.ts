@@ -682,22 +682,17 @@ describe("MessageRouter", () => {
     const { sessionI } = makePeerNoiseSession();
     registry.setSession(recipientPeerID, sessionI);
 
-    const nostrSent: string[] = [];
     const unicasts: Packet[] = [];
     const router = new MessageRouter(
       identity,
       registry,
       () => {},
       (_, p) => unicasts.push(p),
-      async (pubkey) => {
-        nostrSent.push(pubkey);
-      },
     );
 
     const result = router.sendDm(recipientPeerID, "prefer ble", "m0");
     expect(result).toBe("sent");
     expect(unicasts).toHaveLength(1);
-    expect(nostrSent).toHaveLength(0);
   });
 
   test("direct transport is skipped entirely when no Noise session exists", () => {
@@ -715,7 +710,6 @@ describe("MessageRouter", () => {
     registry.setNostrPubkey(recipientPeerID, "e".repeat(64));
 
     const unicasts: string[] = [];
-    const nostrSent: string[] = [];
     const router = new MessageRouter(
       identity,
       registry,
@@ -723,15 +717,11 @@ describe("MessageRouter", () => {
       (peerID: string) => {
         unicasts.push(peerID);
       },
-      async (pubkey) => {
-        nostrSent.push(pubkey);
-      },
     );
 
     const result = router.sendDm(recipientPeerID, "no session", "m0");
-    expect(result).toBe("sent-nostr");
+    expect(result).toBe("needs-courier");
     expect(unicasts).toHaveLength(0);
-    expect(nostrSent).toHaveLength(1);
   });
 });
 

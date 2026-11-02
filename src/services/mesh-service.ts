@@ -220,7 +220,6 @@ import {
   MessageRouter,
   newMessageId,
   PeerRegistry,
-  type NostrSendFn,
   type RouterIdentity,
 } from "@core/router/message-router";
 import {
@@ -989,22 +988,11 @@ export class MeshService {
         this.sendReceipt(senderPeerID, DmPayloadType.DELIVERED, messageID),
     );
 
-    const nostrSendFn: NostrSendFn = async (
-      recipientNostrPubkey: string,
-      text: string,
-    ): Promise<void> => {
-      // Route through the one envelope-building path so a Nostr DM is always
-      // bitchat-parseable. (This router tier is superseded by trySendDm's own
-      // Nostr priority, but kept consistent for safety.)
-      this.publishNostrDm(recipientNostrPubkey, newMessageId(), text);
-    };
-
     this.router = new MessageRouter(
       routerIdentity,
       this.registry,
       broadcastFn,
       unicastFn,
-      nostrSendFn,
       () => this.links.degree(),
     );
 

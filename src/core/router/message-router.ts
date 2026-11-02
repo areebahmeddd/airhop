@@ -412,21 +412,6 @@ export interface RouterIdentity {
 
 export type BroadcastFn = (packet: Packet) => void;
 export type UnicastFn = (recipientPeerID: string, packet: Packet) => void;
-// Sends a gift-wrapped Nostr DM to a recipient by their secp256k1 pubkey.
-// Implemented by the feature layer; swapped for a test double in unit tests.
-export type NostrSendFn = (
-  recipientNostrPubkey: string,
-  text: string,
-) => Promise<void>;
-
-// There is deliberately no separate WiFiUnicastFn tier here. It would duplicate
-// what the injected `unicast` callback already does: MeshService's unicast checks
-// for an active WiFi link and uses it before falling back to BLE, so a second
-// WiFi check in the router would consult the transport twice.
-//
-// Transport selection belongs in the callback that owns the link maps, not here.
-// The router only decides WHICH tier to use (direct / Nostr / courier); how a
-// direct packet reaches the peer is the transport layer's business.
 
 // bitchat's mesh has one public room, which its UI labels "bluetooth". Airhop
 // names it as a channel so it lists beside the location cells. Source of truth
@@ -572,10 +557,7 @@ export class MessageRouter {
     private readonly registry: PeerRegistry,
     private readonly broadcast: BroadcastFn,
     private readonly unicast: UnicastFn,
-    // Nostr gift-wrap DM. Optional. When absent, DMs fall through to courier
-    // if no direct session is available.
-    private readonly nostrSend?: NostrSendFn,
-    // Our neighbour count, which the TTL of what we author follows (see
+    // Our neighbor count, which the TTL of what we author follows (see
     // origin-ttl.ts). 0 (sparse) when not given, for tests with no mesh.
     private readonly getDegree: () => number = () => 0,
   ) {}
@@ -635,23 +617,14 @@ export class MessageRouter {
     this.broadcast(packet);
   }
 
-  // Send a direct message.
-  //
-  // Transport selection:
-  //   1. Direct: if the recipient has an active Noise session, encrypt and
-  //      unicast it. The injected `unicast` callback picks the physical
-  //      transport, preferring Wi-Fi Aware, then LAN, then BLE. Both share the same Noise session, which is
-  //      transport-agnostic.
-  //   2. Nostr: if a NostrSendFn was injected and the recipient's Nostr pubkey
-  //      is known, fire-and-forget a gift-wrap DM over the internet. Returns
-  //      'sent-nostr' so the caller can show a pending indicator.
-  //   3. Courier: returns 'needs-courier' so the caller can seal the message
-  //      and hand it to connected peers.
+  // Send a direct message over the Noise session, which is transport-agnostic;
+  // `unicast` picks the link. "needs-courier" means nothing went out, so the
+  // caller tries its next tier.
   sendDm(
     recipientPeerID: string,
     text: string,
     messageID: string,
-  ): "sent" | "sent-nostr" | "needs-courier" {
+  ): "sent" | "needs-courier" {
     const peer = this.registry.get(recipientPeerID);
 
     // Direct transport. Requires an active Noise session so the payload can be
@@ -670,16 +643,6 @@ export class MessageRouter {
       }
     }
 
-    // Priority 3: Nostr gift-wrap DM when recipient pubkey is known.
-    if (this.nostrSend !== undefined && peer?.nostrPubkey !== undefined) {
-      void this.nostrSend(peer.nostrPubkey, text).catch(() => {
-        // Delivery failure is handled at the feature layer via Nostr client
-        // events. Silently dropping here keeps the router side-effect-free.
-      });
-      return "sent-nostr";
-    }
-
-    // Priority 3: Courier store-and-forward.
     return "needs-courier";
   }
 
