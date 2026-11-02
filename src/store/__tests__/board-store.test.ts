@@ -9,6 +9,7 @@ import {
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { createMMKV } from "react-native-mmkv";
+import type * as BoardStoreModule from "../board-store";
 import { isLivePost, useBoardStore } from "../board-store";
 
 function author(): { priv: Uint8Array; pub: Uint8Array } {
@@ -133,6 +134,31 @@ describe("board store", () => {
     expect(
       createMMKV({ id: "board-store" }).getString("entries"),
     ).toBeUndefined();
+  });
+
+  it("restores a tombstone under the deadline recorded when it was applied", () => {
+    const a = author();
+    const at = Date.now();
+    const p = makePost(a, { createdAt: at - 1000, lifetimeMs: DAY });
+    useBoardStore.getState().ingest(post(p), at);
+    const tombstone = signBoardTombstone(p.postID, a.pub, at, a.priv);
+    useBoardStore.getState().ingest({ kind: "tombstone", tombstone }, at);
+
+    const entries = createMMKV({ id: "board-store" }).getString("entries");
+
+    jest.isolateModules(() => {
+      // Modules start fresh here, the storage mock included, so a relaunch has
+      // to be handed what the last run wrote.
+      const fresh = require("react-native-mmkv") as {
+        createMMKV: typeof createMMKV;
+      };
+      fresh.createMMKV({ id: "board-store" }).set("entries", entries ?? "");
+      const restored = (require("../board-store") as typeof BoardStoreModule)
+        .useBoardStore;
+      const [held] = restored.getState().tombstones;
+      expect(held.retainUntil).toBe(p.expiresAt);
+      expect(held.isOrphan).toBe(false);
+    });
   });
 });
 

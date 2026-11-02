@@ -70,7 +70,11 @@ interface BoardState {
   posts: BoardPost[];
   tombstones: StoredTombstone[];
 
-  ingest: (wire: BoardWire, now?: number) => BoardIngestResult;
+  ingest: (
+    wire: BoardWire,
+    now?: number,
+    retainUntilOverride?: number,
+  ) => BoardIngestResult;
   postsForGeohash: (geohash: string) => BoardPost[];
   isOwnPost: (post: BoardPost, mySigningKey: Uint8Array) => boolean;
   prune: (now?: number) => void;
@@ -215,6 +219,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
     posts: BoardPost[],
     tombstones: StoredTombstone[],
     now: number,
+    retainUntilOverride?: number,
   ): {
     result: BoardIngestResult;
     posts: BoardPost[];
@@ -259,6 +264,13 @@ export const useBoardStore = create<BoardState>((set, get) => {
           createdAtMs: target.createdAt,
         });
       }
+    } else if (retainUntilOverride !== undefined) {
+      // Restored from disk, as bitchat-ios restores it: the deadline recorded
+      // when the tombstone was first applied stands. Orphan status is not
+      // persisted, so a restored tombstone no longer counts toward the orphan
+      // caps, which bound what one session can take in.
+      retainUntil = Math.min(retainUntilOverride, maxRetain);
+      isOrphan = false;
     } else {
       // Post unknown (tombstone raced ahead); keep it so a late post is
       // suppressed if it arrives later.
@@ -327,7 +339,11 @@ export const useBoardStore = create<BoardState>((set, get) => {
     posts: [],
     tombstones: [],
 
-    ingest(wire: BoardWire, now: number = Date.now()): BoardIngestResult {
+    ingest(
+      wire: BoardWire,
+      now: number = Date.now(),
+      retainUntilOverride?: number,
+    ): BoardIngestResult {
       const pruned = pruneArrays(get().posts, get().tombstones, now);
       let result: BoardIngestResult;
       let nextPosts = pruned.posts;
@@ -343,6 +359,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
           nextPosts,
           nextTombstones,
           now,
+          retainUntilOverride,
         );
         result = r.result;
         nextPosts = r.posts;
@@ -521,9 +538,6 @@ function writeRecord(key: string, record: object): void {
       continue;
     }
     if (wire === null || !verifyBoardWire(wire)) continue;
-    // Disk restore of a tombstone whose post is long gone: trust the recorded
-    // retention deadline. ingest recomputes it as an orphan otherwise, which is
-    // still safe (capped), so passing through ingest is acceptable.
-    store.ingest(wire, now);
+    store.ingest(wire, now, entry.r ?? undefined);
   }
 })();
