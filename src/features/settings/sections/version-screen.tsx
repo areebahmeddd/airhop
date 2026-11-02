@@ -71,7 +71,7 @@ interface Props {
 const IOS_STORE_URL = APP_STORE_URL;
 
 // The name the release workflow stages the APK under. Matched by name rather
-// than by position so a new asset in the release cannot shift what we fetch.
+// than by position so a new asset in the release cannot shift what is fetched.
 const APK_ASSET_NAME = "airhop.apk";
 
 // The outcome of a check. "idle" is the resting state before the first tap.
@@ -194,7 +194,7 @@ export default function VersionScreen({ onBack }: Props): React.JSX.Element {
   //
   // ACTION_VIEW with the archive type, not ACTION_INSTALL_PACKAGE: that one is
   // deprecated from API 29, and this pair resolves to the package installer on
-  // every version from our minimum of 26 up.
+  // every version from the minimum of 26 up.
   //
   // A content:// URI carrying the read grant, since a file:// one handed to
   // another process is refused from Android 7. Everything past that point

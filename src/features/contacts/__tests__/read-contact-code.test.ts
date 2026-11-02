@@ -31,6 +31,6 @@ test("an unsigned card of ours is refused as tampered", () => {
   ).toBe("tampered");
 });
 
-test("a code that is not a card is not one", () => {
+test("a code that is not a card reads to nothing", () => {
   expect(readContactCode("https://example.com")).toBeNull();
 });

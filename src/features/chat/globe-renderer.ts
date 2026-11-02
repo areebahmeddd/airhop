@@ -301,14 +301,14 @@ function drawBorders(
   canvas.drawPath(path.build(), ink.border);
 }
 
-// Text centred vertically on `y`, with a halo in the water colour so it reads
+// Text centered vertically on `y`, with a halo in the water color so it reads
 // over land, lines and the limb alike.
 function drawLabel(
   canvas: SkCanvas,
   text: string,
   x: number,
   y: number,
-  centred: boolean,
+  centered: boolean,
   font: SkFont,
   paint: SkPaint,
   halo: SkPaint,
@@ -316,7 +316,7 @@ function drawLabel(
   "worklet";
   const metrics = font.getMetrics();
   const baseline = y - (metrics.ascent + metrics.descent) / 2;
-  const left = centred ? x - font.getTextWidth(text) / 2 : x;
+  const left = centered ? x - font.getTextWidth(text) / 2 : x;
   canvas.drawText(text, left, baseline, halo, font);
   canvas.drawText(text, left, baseline, paint, font);
 }

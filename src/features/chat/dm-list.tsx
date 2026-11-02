@@ -91,8 +91,6 @@ export default function DmList({
     return () => clearInterval(id);
   }, []);
   const [refreshing, setRefreshing] = useState(false);
-  // Swipe left on a DM row for More (clear / delete), the same pattern as the
-  // Channels list, so both chat surfaces manage conversations consistently.
   const [moreOptionsDM, setMoreOptionsDM] = useState<string | null>(null);
   // Which DM's contact-info sheet is open (null when closed).
   const [infoChannel, setInfoChannel] = useState<string | null>(null);
@@ -290,12 +288,8 @@ export default function DmList({
                 pressed && styles.rowPressed,
               ]}
               onPress={() => onSelectDM(item)}
-              // Long-press opens the same sheet the swipe does.
-              //
-              // Swipe was the only way in, which is a problem twice over: every
-              // messenger people already use offers long-press as its peer, and
-              // ReanimatedSwipeable exposes no accessibility actions, so with a
-              // screen reader on these options did not exist at all.
+              // Long-press opens the same sheet the swipe does, for the reasons
+              // the channel list gives.
               onLongPress={() => {
                 held();
                 handleSwipeMore(item);
@@ -411,10 +405,8 @@ export default function DmList({
             </Pressable>
           );
 
-          // Swipe left for More, the same interaction as the Channels list, so
-          // both surfaces feel like one consistent app. The wrapper animates the
-          // row settling into place when the list reorders (pin, new activity)
-          // and fading in/out on add/remove.
+          // The wrapper animates the row settling into place when the list
+          // reorders (pin, new activity) and fading in and out on add and remove.
           return (
             <Animated.View
               layout={LinearTransition.duration(Duration.slow)}
@@ -644,9 +636,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       paddingBottom: TAB_BAR_CLEARANCE,
     },
-    // No per-row background, just flat rows directly on the screen background,
-    // divided only by the hairline separator below. Matches the WhatsApp
-    // chat-list look rather than a "card per row" treatment.
     row: {
       flexDirection: "row",
       alignItems: "center",
@@ -655,8 +644,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       gap: Spacing.md,
       minHeight: 72,
     },
-    // The one press treatment for a row, shared by this list's conversation
-    // rows and its action sheet. See PRESSED_OPACITY in ui/theme.
     rowPressed: {
       backgroundColor: Colors.surfacePressed,
     },
@@ -776,8 +763,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.textPrimary,
     },
-    // Two boxes, neutral actions and destructive ones, so a mis-tap cannot
-    // cross from Mute into Block. Overflow clips the rows to the corners.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,

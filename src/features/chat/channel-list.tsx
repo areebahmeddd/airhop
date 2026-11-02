@@ -4,7 +4,7 @@
 // More: info, mute and clear, plus pin and Leave for Your channels.
 //
 // Creating a channel lives in start-new-sheet, not here: the header "+" is on
-// both Chats sub-tabs, so App.tsx mounts the chooser alongside this list.
+// both Chats sub-tabs, so app.tsx mounts the chooser alongside this list.
 
 import { t, tPlural, useT, useTPlural } from "@i18n";
 import {
@@ -881,8 +881,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-    // Full-bleed, so the pressed background spans the width while the content
-    // lines up with the section title. Flat rows split by hairlines, not cards.
     channelRow: {
       flexDirection: "row",
       alignItems: "center",
@@ -890,7 +888,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingVertical: Spacing["md-base"],
       minHeight: 72,
     },
-    // Shared by the rows and the More sheet, so both press the same way.
     rowPressed: {
       backgroundColor: Colors.surfacePressed,
     },
@@ -1000,8 +997,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textSecondary,
       fontWeight: FontWeight.medium,
     },
-    // One tight box per group of actions; overflow clips the rows to its
-    // corners. Leave gets a box of its own, red on its icon and label only.
     moreRowsGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,

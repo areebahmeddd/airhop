@@ -260,7 +260,8 @@ export function JoinLinkSheet({
           disabled={link === null}
           accessibilityRole="button"
           accessibilityLabel={T("chat.join.join")}
-          // Without this a reader user taps into what sounds like plain text.
+          // Without this a screen reader user taps into what sounds like
+          // plain text.
           accessibilityState={{ disabled: link === null }}
         >
           <Text style={styles.confirmText}>{T("chat.join.join")}</Text>

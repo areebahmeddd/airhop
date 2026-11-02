@@ -9,8 +9,8 @@
 // this position does, it is explicitly permitted, and it costs one tap.
 //
 // The card option therefore points at the Support section of the site, which
-// carries the same two choices - Dodo Payments for cards, UPI, netbanking and
-// wallets, and GitHub Sponsors - and owns the checkout itself. GitHub Sponsors
+// carries the same two choices (Dodo Payments for cards, UPI, netbanking and
+// wallets, and GitHub Sponsors) and owns the checkout itself. GitHub Sponsors
 // stays a direct link because it is a third-party page the user already has an
 // account relationship with, not a checkout this app is presenting.
 //
@@ -40,9 +40,7 @@ interface Props {
   onBack: () => void;
 }
 
-// The Support section of the website, which owns the Dodo Payments checkout
-// (cards, UPI, netbanking and wallets) and repeats the GitHub Sponsors link.
-// See the note at the top of this file for why the app does not open the
+// See the note at the top of this file for why this is the site and not the
 // checkout itself.
 const SUPPORT_URL = "https://airhop.1mindlabs.org/#support";
 

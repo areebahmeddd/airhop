@@ -70,10 +70,10 @@ interface Props {
 type Stage = "entry" | "camera" | "confirm";
 
 const PEER_ID_RE = /^[0-9a-f]{16}$/;
-// Deep-link format exported by Profile -> "Share QR".
+// A peer ID as a link, airhop://peer/<id>. Profile shares the full contact
+// code instead, but a pasted link still reads.
 const AIRHOP_LINK_RE = /^airhop:\/\/peer\/([0-9a-f]{16})$/i;
 
-// Accept a raw 16-char hex peer ID or an airhop://peer/<id> deep-link URL.
 function parsePeerID(raw: string): string | null {
   const t = raw.trim().toLowerCase();
   if (PEER_ID_RE.test(t)) return t;
@@ -154,8 +154,8 @@ export default function AddContactScreen({
   function handleBarcodeScanned(data: string): void {
     if (hasScannedRef.current) return;
     const result = parseScan(data);
-    if (result === null) return; // Not a code we read, keep scanning.
-    // Recognised and refused. Reported rather than ignored: through a
+    if (result === null) return; // Unrecognized, keep scanning.
+    // Recognized and refused. Reported rather than ignored: through a
     // viewfinder an expired bitchat code looks exactly like an unreadable one,
     // and the fix ("ask them to show it again") is only obvious once said.
     if (!isScanResult(result)) {
@@ -202,8 +202,6 @@ export default function AddContactScreen({
     setStage("confirm");
   }
 
-  // Open the live camera scanner.
-  //
   // Permission is settled BEFORE the camera stage is entered, not alongside it.
   // Mounting CameraView while the OS prompt is still up hands it a denied
   // camera, and expo-camera doesn't re-acquire the device when the answer
@@ -237,7 +235,6 @@ export default function AddContactScreen({
     setStage("entry");
   }
 
-  // Decode a QR from an image the user already has saved, no camera needed.
   async function handlePickFromGallery(): Promise<void> {
     setError(null);
     const granted = await ensurePermission(
@@ -344,7 +341,7 @@ export default function AddContactScreen({
       });
     } else if (!prior) {
       // New peer, ID only: remember them so the contact survives a restart, but
-      // record that we hold no keys for them yet.
+      // record that no keys are held for them yet.
       useContactsStore.getState().addContact({
         peerID,
         noisePubKeyHex: "",
@@ -376,8 +373,8 @@ export default function AddContactScreen({
       ? existingContact.nickname
       : foundUsername;
   // Confirm-step status. An existing contact takes precedence; otherwise the
-  // pill answers two questions, not one: do we hold their keys, and did we see
-  // where they came from. A pasted card answers the first only.
+  // pill answers two questions, not one: does this phone hold their keys, and
+  // did it see where they came from. A pasted card answers the first only.
   const confirmPill: {
     label: string;
     color: string;
@@ -621,9 +618,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flex: 1,
       backgroundColor: Colors.bg,
     },
-    // ---- Camera scan chrome: fixed dark scrim regardless of app theme,
-    // matching the platform-standard scanner look (iOS/Android system
-    // scanners are always dark-on-camera, not theme-aware). ----
+    // Camera scan chrome: a fixed dark scrim whatever the app theme, as the
+    // iOS and Android system scanners have.
     scanChrome: {
       flex: 1,
       justifyContent: "space-between",

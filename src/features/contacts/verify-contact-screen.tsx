@@ -60,7 +60,7 @@ interface Props {
 type Stage = "choose" | "camera" | "compare" | "differ";
 
 // Outcome of a single scan. `match` has already written the verified contact by
-// the time it is set, so the sheet behind us is updated the moment we land here.
+// the time it is set, so the sheet behind this one is already up to date.
 type Outcome = "match" | "mismatch" | "tampered" | "expired";
 
 export default function VerifyContactScreen({

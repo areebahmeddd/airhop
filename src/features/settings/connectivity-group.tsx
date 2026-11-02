@@ -33,9 +33,7 @@ import {
 type ToggleKey =
   "background" | "autoStartOnBoot" | "liveVoice" | "bridge" | "gateway";
 
-// Keys rather than text: this is a module constant, so it cannot call a hook,
-// and building it once at module load would freeze the copy in whichever
-// language the app started in. The component translates it on render.
+// Keys, translated on render.
 interface ConfirmCopy {
   title: TranslationKey;
   body: TranslationKey;
@@ -144,7 +142,7 @@ export default function ConnectivityGroup({
   const setGatewayEnabled = useSettingsStore((s) => s.setGatewayEnabled);
   const bridgeEnabled = useSettingsStore((s) => s.bridgeEnabled);
   const setBridgeEnabled = useSettingsStore((s) => s.setBridgeEnabled);
-  // All but live voice need the internet; disabled while it is off.
+  // The gateway and the bridge need the internet; disabled while it is off.
   const internetEnabled = useSettingsStore((s) => s.internetEnabled);
   // The bridge needs a location fix to find its neighborhood cell; surface a
   // hint when it is on but location is denied.

@@ -1,5 +1,6 @@
-// Message thread screen for a single channel.
-// Shows messages with sender and timestamp. Text input to compose and PTT button.
+// Message thread screen for one conversation: a channel, a group or a DM. Draws
+// the messages and owns the composer, the send path and everything a message
+// can carry: attachments, voice, live video and ecash.
 
 import { nicknameKey, normalizeNickname } from "@core/mesh/discovery/nickname";
 import type { TranscodeRange } from "@core/mesh/video/transcode-plan";
@@ -415,19 +416,12 @@ const SHEET_HANDOFF_MS = 250;
 // it competing for attention defeats that.
 const COMPOSER_SCRIM = "rgba(0,0,0,0.85)";
 
-// Photo and video bubbles are all one width, so a run of them lines up down the
-// thread instead of each bubble taking the width of whatever caption happens to
-// sit under it. The height follows the photo's own shape, clamped: unclamped, a
-// phone screenshot (about 0.45 wide-to-tall) would be a column half the screen
-// high, and a panorama would be a letterbox slit. Beyond the clamp the photo is
-// centre-cropped to fit, which is what every messenger does, and tapping still
-// opens the untouched original full screen.
 // A voice note is speech on a ~18 KiB/s radio, so it is recorded as speech:
 // mono, 16 kHz (the band a voice actually occupies), 32 kbps. The stock
 // HIGH_QUALITY preset is 44.1 kHz stereo at 128 kbps, four times the bytes for
-// nothing anyone can hear on a phone speaker, which put a one-minute note over
-// the 512 KiB wire cap and spent a minute of Bluetooth getting there. Still AAC
-// in an .m4a container, so bitchat and any ordinary player read it unchanged.
+// nothing anyone can hear on a phone speaker, which would put a one-minute note
+// over the 512 KiB wire cap and spend a minute of Bluetooth getting there. Still
+// AAC in an .m4a container, so bitchat and any ordinary player read it unchanged.
 const VOICE_RECORDING = {
   ...RecordingPresets.HIGH_QUALITY,
   sampleRate: 16000,
@@ -460,6 +454,13 @@ const LIVE_AVAILABILITY_POLL_MS = 3000;
 // going out after the encoder has stopped feeding it.
 const BURST_MAX_SECS = Math.floor(MAX_BURST_MS / 1000);
 
+// Photo and video bubbles are all one width, so a run of them lines up down the
+// thread instead of each bubble taking the width of whatever caption happens to
+// sit under it. The height follows the photo's own shape, clamped: unclamped, a
+// phone screenshot (about 0.45 wide-to-tall) would be a column half the screen
+// high, and a panorama would be a letterbox slit. Beyond the clamp the photo is
+// center-cropped to fit, which is what every messenger does, and tapping still
+// opens the untouched original full screen.
 const MEDIA_BUBBLE_WIDTH = 220;
 const VIDEO_NOTE_SIZE = 200;
 const MEDIA_MIN_ASPECT = 0.75; // portrait floor: 220 x 293
@@ -510,8 +511,7 @@ const HEADER_ICON_SIZE = 32;
 // actually acts on appear here, so the list never advertises a command that does
 // nothing. Both are IRC-style emotes: in a DM they target the peer, in a channel
 // they take a trailing @name.
-// Keys, not text: a module constant is evaluated once at import, so translated
-// strings here would freeze in whichever language the app started in.
+// Keys, not text: the component translates on render.
 //
 // `cmd` is NOT a key and is never translated: it is the token the parser
 // matches, and the text these emotes transmit is recognized as an English
@@ -532,9 +532,6 @@ function activeSlashQuery(draft: string): string | null {
   const m = /^\/(\w*)$/.exec(draft);
   return m ? m[1]!.toLowerCase() : null;
 }
-
-// Deliberately not a text-sniffer: matching on user text lets any peer forge a
-// system row, and destroys the real message content.
 
 // Fixed bar heights for the voice-note waveform. A constant, not a literal in
 // the render, so the playhead math below has one length to divide by.
@@ -1126,8 +1123,6 @@ function createTransferStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingHorizontal: Spacing.md,
       paddingVertical: Spacing.sm,
     },
-    // The tail of the queue, as one muted line rather than a stack of cards
-    // that all say 0%.
     queued: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,
@@ -1665,7 +1660,6 @@ export default function MessageThread({
   // How far the compose bar has to lift to clear the on-screen keyboard.
   const keyboardInset = useKeyboardInset();
   const { messages, addMessage, addChannel } = useChatStore();
-  // Live peer count, real data from BLE discovery, not a stub.
   // Subscribe to the stable peer map and derive the reachable list locally.
   const peers = usePeerStore((s) => s.peers);
   const [peerClock, setPeerClock] = useState(() => Date.now());
@@ -1729,8 +1723,7 @@ export default function MessageThread({
 
   // Live participant list for a geohash channel, from Nostr presence + recent
   // posts in the cell. Polled since it updates off a network subscription, not a
-  // store. Drives the member pill and members sheet; #bluetooth and private
-  // channels have no such roster and fall back to nearby BLE peers.
+  // store. Drives the member count and the @-mention candidates.
   const [geoMembers, setGeoMembers] = useState<GeoParticipant[]>([]);
   useEffect(() => {
     // Only polled for geo channels; geoMembers is never read otherwise, so a
@@ -1759,7 +1752,7 @@ export default function MessageThread({
   );
   // A roster counts you, a presence count does not. A group's roster already
   // lists you, and a private channel's members are its key-holders plus you,
-  // as the member sheet shows them. "Nearby" and "active" are others only, the
+  // as the info sheet shows them. "Nearby" and "active" are others only, the
   // same number the chat-list row shows.
   const memberCount = isGroup
     ? (getMeshService()?.groupMemberCount(channel.slice("group:".length)) ?? 0)
@@ -2109,8 +2102,8 @@ export default function MessageThread({
   //
   // Decides what the recording bar offers. On a hold, a finger is on the mic and
   // nothing in the bar is reachable: lifting to reach a button IS the release,
-  // which sends. That is why its X appeared to discard and sent instead. Started
-  // by tap there is no held finger, so the bar's own controls are the way out.
+  // which sends. Started by tap there is no held finger, so the bar's own
+  // controls are the way out.
   const [handsFreeRecording, setHandsFreeRecording] = useState(false);
   const liveVoiceEnabled = useSettingsStore((s) => s.liveVoiceEnabled);
   // Whether a note recording is open right now, for the unmount cleanup. That
@@ -2118,7 +2111,6 @@ export default function MessageThread({
   const recordingRef = useRef(false);
   const isRecording = recorderState.isRecording;
   recordingRef.current = isRecording;
-  // Voice recording
   const [recordingSecs, setRecordingSecs] = useState(0);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Seconds elapsed, counted beside the state rather than from it. The tick
@@ -2128,20 +2120,17 @@ export default function MessageThread({
   // When the recorder opened, for the note's length. The tick above counts
   // whole seconds, which puts every note under one second at zero.
   const recordStartedAtRef = useRef(0);
-  // A live burst stops going out at the ceiling while the button is still held,
-  // so the HUD has to say so. Derived from the same elapsed count the HUD
-  // already shows rather than a second timer, so the two can never disagree.
-  // Only meaningful for a live burst: a recording is a local file with no
-  // airtime to spend, and it is capped by the attachment size limit instead.
-  // The recording ceiling, and it applies to both paths for different reasons.
+  // The recording ceiling, which applies to both paths for different reasons.
+  // Derived from the elapsed count the HUD already shows rather than a second
+  // timer, so the two can never disagree.
   //
   // Live: the capture layer already stops adding frames past MAX_BURST_MS, so
-  // this is the UI catching up with a burst that has already ended.
-  // Note: nothing else stops it. At 32 kbps a recording crosses the 512 KiB
-  // voice cap at about 128 s, and `rejectIfTooLarge` deliberately skips voice,
+  // this is the UI catching up with a burst that has already ended, while the
+  // button is still held.
+  // Nothing else stops it. At 32 kbps a recording crosses the 512 KiB
+  // voice cap at about 130 s, and `rejectIfTooLarge` deliberately skips voice,
   // so an over-long note would be refused by the transport at send with the
-  // audio already gone. Same number for both, which is also the one the UI
-  // shows.
+  // audio already gone.
   const atRecordingLimit = recordingSecs >= BURST_MAX_SECS;
   const burstEnded = isTalkingLive && atRecordingLimit;
   // Read from inside the level listener, which is subscribed once and would
@@ -2219,8 +2208,6 @@ export default function MessageThread({
   function handleCopySenderKey(peerID: string): void {
     copySenderKey(peerID.slice(NOSTR_ID_PREFIX.length));
   }
-  // Channel members list: currently-reachable peers, tap one to open the
-  // same profile sheet as tapping their avatar on a message.
   // Notices (bulletin board) sheet for this channel.
   const [showNotices, setShowNotices] = useState(false);
   // A picked attachment held for review before sending, so the user can add a
@@ -2242,8 +2229,8 @@ export default function MessageThread({
     canTranscodeVideo() &&
     (sheetAttachment.durationMs ?? 0) > MIN_TRIM_MS;
   const [captionDraft, setCaptionDraft] = useState("");
-  // Brief delivery status hint shown below the compose bar for DMs.
-  // "queued" = no route available; cleared after 4 seconds.
+  // Brief hint above the compose bar on why a send has not arrived; see
+  // showStatus.
   const [dmStatus, setDmStatus] = useState<
     | "queued"
     | "no-reach"
@@ -2299,7 +2286,6 @@ export default function MessageThread({
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevScrollTrigger = useRef(targetMessageTrigger ?? 0);
 
-  // Clean up recording timer, DM status timer, and any active sound on unmount.
   useEffect(() => {
     return () => {
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
@@ -2428,8 +2414,8 @@ export default function MessageThread({
   // sent to a specific message. Until then we are still placing them at the
   // newest message, and every layout measurement the list reports is another
   // chance to do that: opening a thread is not one event, it is one per batch
-  // FlatList renders. Treating those as the reader's own position is what made
-  // reopening a thread scroll itself down two or three times over.
+  // FlatList renders. Treating those as the reader's own position would scroll a
+  // reopened thread down two or three times over.
   const landingRef = useRef(true);
   // Message count the list has already been scrolled for, seeded with what is
   // on screen at mount so the first measurement counts as landing, not as new
@@ -2504,12 +2490,12 @@ export default function MessageThread({
   // list back to the reader.
   //
   // Re-armed by every content-size change, so it fires once, after the last
-  // batch, rather than part way down a thread still rendering itself. Ending the
-  // landing is the other half of the fix: the jump-to-latest pill is suppressed
-  // for its whole duration, and a landing that ends only on a drag leaves a
-  // thread resting short of the end with nothing to escape with. From here the
-  // ordinary at-bottom rule takes over, which re-pins on
-  // layout shifts just the same, so nothing that relied on landing loses it.
+  // batch, rather than part way down a thread still rendering itself. The landing
+  // has to end here: the jump-to-latest pill is suppressed for its whole duration,
+  // and a landing that ends only on a drag leaves a thread resting short of the
+  // end with nothing to escape with. From here the ordinary at-bottom rule takes
+  // over, which re-pins on layout shifts just the same, so nothing that relied on
+  // landing loses it.
   function scheduleLandingSettle(): void {
     if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
     settleTimerRef.current = setTimeout(() => {
@@ -2615,9 +2601,8 @@ export default function MessageThread({
   );
 
   // Scroll to a message opened from a search result. Guarded by the same
-  // fire-once-per-increment counter pattern used elsewhere in this app (e.g.
-  // ChannelList's join-modal trigger) so remounts/re-renders don't re-fire it,
-  // but re-tapping the same search result does.
+  // fire-once-per-increment counter as StartNewSheet's `trigger`, so remounts and
+  // re-renders don't re-fire it, but re-tapping the same search result does.
   useEffect(() => {
     if (
       targetMessageTrigger === undefined ||
@@ -2912,9 +2897,8 @@ export default function MessageThread({
       // A group is Bluetooth-only, so reach is the same question a channel
       // broadcast faces, and it gets the same three answers. Reporting "sent"
       // whenever the packet is merely sealed gives a message to a group nobody is
-      // in range of a tick it has not earned. Groups have no
-      // delivery receipts on either client, so this tick is all the user gets and
-      // it has to be true.
+      // in range of a tick it has not earned. Groups have no delivery receipts on
+      // either client, so this tick is all the user gets and it has to be true.
       const sent = service.sendGroupMessage(
         msgChannel.slice("group:".length),
         msg.text,
@@ -3037,7 +3021,7 @@ export default function MessageThread({
               mimeType: att.mimeType ?? "",
               durationMs: att.durationMs ?? 0,
               // The caption lives on the message text. Without it a retried
-              // photo arrived stripped of the words that went with it.
+              // photo would arrive stripped of the words that went with it.
               caption: item.text || undefined,
             },
             // Same rule as a first send: the outcome is known when the radio has
@@ -3069,10 +3053,10 @@ export default function MessageThread({
     //
     // A DM uses the second person, matching bitchat: its handleEmote sends
     // "slaps you around a bit with a large trout" on the private-chat branch,
-    // and its reader matches that literal string. We sent the recipient's
-    // nickname instead, which read as a third-person line about them in their
-    // own DM. English, never translated: this text crosses the wire and bitchat
-    // matches it as a substring.
+    // and its reader matches that literal string. The recipient's nickname would
+    // read as a third-person line about them in their own DM. English, never
+    // translated: this text crosses the wire and bitchat matches it as a
+    // substring.
     const emote = /^\/(hug|slap)(?:\s+(.*))?$/i.exec(text);
     if (emote) {
       const kind = emote[1].toLowerCase();
@@ -3120,8 +3104,8 @@ export default function MessageThread({
     };
     // Sending is what creates the conversation. Inbound messages already call
     // addChannel before addMessage; without the same call here, a thread you
-    // started yourself (tapping a member in a channel, say) held its messages
-    // but never appeared in the DM list, which renders from `channels`.
+    // started yourself (tapping a member in a channel, say) would hold its
+    // messages but never appear in the DM list, which renders from `channels`.
     // Idempotent, so re-sending in an existing thread is a no-op.
     useChatStore.getState().addChannel(channel);
     followOwnMessage();
@@ -3311,8 +3295,8 @@ export default function MessageThread({
           // Settled once every fragment has actually been taken by the radio,
           // or once the transfer has given up or been canceled. The bubble
           // stays on its clock face until then: a photo is thousands of paced
-          // writes, not one, and calling it sent the moment it is queued is
-          // what let a transfer the radio never carried look delivered.
+          // writes, not one, and calling it sent the moment it is queued would
+          // let a transfer the radio never carried look delivered.
           (delivered) => {
             useChatStore
               .getState()
@@ -3455,9 +3439,6 @@ export default function MessageThread({
     return false;
   }
 
-  // Forwarding reuses the existing send pipeline: it's just composing a new
-  // message with the original content in a different channel/DM. No protocol
-  // changes needed.
   // Returns false when there was nothing to forward, so the caller can leave
   // the reader where they are instead of walking them into a thread to look at
   // a message that never arrived.
@@ -3642,7 +3623,8 @@ export default function MessageThread({
   function handleMessageSender(): void {
     if (!senderInfoTarget) return;
     const { peerID, nickname } = senderInfoTarget;
-    // Bind the cell before opening the thread, exactly as the members list does.
+    // Bind the cell before opening the thread, exactly as the info sheet's members
+    // list does.
     //
     // The binding is what tells the send path to write from our PER-CELL
     // identity. Without it a reply falls through to our durable Nostr key, so a
@@ -3811,10 +3793,6 @@ export default function MessageThread({
     });
   }
 
-  // Send the staged attachment with its (optional) caption, then clear the
-  // composer. The caption rides the file packet, so media + caption arrive as
-  // one message.
-  //
   // What to warn about before sending this to the peer in this DM, or null when
   // there is nothing to say.
   //
@@ -3886,6 +3864,9 @@ export default function MessageThread({
     service.sendDm(peerID, caption);
   }
 
+  // Send the staged attachment with its optional caption, then clear the
+  // composer.
+  //
   // A photo is resized first. A camera file is measured in megabytes and a sent
   // photo is fitted to 256 KiB, so without this step the common case (open
   // camera, take a picture, send it) could not work at all. The sheet closes
@@ -3966,15 +3947,6 @@ export default function MessageThread({
     setCaptionDraft("");
   }
 
-  // Hold the mic. One gesture, and the app picks the delivery that the mesh can
-  // actually manage right now:
-  //
-  //   live burst   when the native audio module exists, somebody is in
-  //                Bluetooth range to hear it, and live voice is switched on
-  //   voice note   otherwise, exactly as before
-  //
-  // The choice is made per press rather than once at startup, because the thing
-  // it depends on (is anyone in range) changes as people walk around.
   // Write the finished burst to the attachment cache and send it the way any
   // voice note is sent. Best-effort throughout: the live audio already went
   // out, so a failure here costs the record of the message, not the message.
@@ -3992,9 +3964,9 @@ export default function MessageThread({
       // swaps the finished audio into the existing row; a name it cannot parse
       // matches nothing, and the same few seconds of speech arrive twice: once
       // as the burst they heard, once as a note repeating it. See
-      // ChatLiveVoiceCoordinator.burstID(fromVoiceFileName:) on iOS and
-      // LiveVoiceManager.burstIDFromVoiceFileName on Android; both take the 16
-      // characters after `voice_` and require every one of them to be hex.
+      // ChatLiveVoiceCoordinator.burstID(fromVoiceFileName:) in bitchat-ios and
+      // LiveVoiceManager.burstIDFromVoiceFileName in bitchat-android; both take the
+      // 16 characters after `voice_` and require every one of them to be hex.
       //
       // The extension stays `.aac`, because that is what the bytes are: a live
       // burst finalizes as ADTS AAC, not an MP4 container. Only the stem is
@@ -4098,6 +4070,15 @@ export default function MessageThread({
     });
   }
 
+  // Hold the mic. One gesture, and the app picks the delivery that the mesh can
+  // actually manage right now:
+  //
+  //   live burst   when the native audio module exists, somebody is in
+  //                Bluetooth range to hear it, and live voice is switched on
+  //   voice note   otherwise
+  //
+  // The choice is made per press rather than once at startup, because the thing
+  // it depends on (is anyone in range) changes as people walk around.
   async function handleTalkStart(): Promise<void> {
     silencePlayback();
     setHandsFreeRecording(false);
@@ -4105,7 +4086,8 @@ export default function MessageThread({
     // seconds, and the audio session itself takes a moment. A finger can be
     // long gone by the time either finishes, so every press takes a number and
     // anything that resolves against an older one is discarded. Without this, a
-    // quick tap left the microphone open and streaming with nothing held down.
+    // quick tap would leave the microphone open and streaming with nothing held
+    // down.
     const hold = holdSeqRef.current + 1;
     holdSeqRef.current = hold;
     setIsPTTActive(true);
@@ -4305,8 +4287,7 @@ export default function MessageThread({
 
   // The hold became hands-free. The microphone is already open and stays open;
   // all that changes is who is holding it, which is now the bar rather than a
-  // finger. `handsFreeRecording` is the state that swap has always been made of,
-  // so the X and Send appear exactly as they do for a tapped voice note.
+  // finger, so the X and Send appear exactly as they do for a tapped voice note.
   const lockTalk = useCallback((): void => {
     held();
     setCancelArmed(false);
@@ -4573,7 +4554,6 @@ export default function MessageThread({
     ],
   }));
 
-  // The hint fades as the mic closes on it; the armed copy replaces it.
   // Whether to offer the lock. Mirrors the gesture's own condition, minus the
   // travel: a note recording is running, nothing is sliding toward cancel, and
   // the bar is not already hands-free.
@@ -4588,6 +4568,7 @@ export default function MessageThread({
   const barLockHint = noteBar?.canLock ?? lockHintVisible;
   const barSeconds = noteBar?.seconds ?? recordingSecs;
 
+  // The hint fades as the mic closes on it; the armed copy replaces it.
   const cancelHintStyle = useAnimatedStyle(() => ({
     opacity: 1 - 0.5 * (cancelSlide.value / CANCEL_SLIDE_DISTANCE),
   }));
@@ -4862,7 +4843,7 @@ export default function MessageThread({
       }
       // expo-audio writes to a directory of its own, outside the attachment
       // cache: a note left there escapes the retention sweep, the Storage total
-      // and Clear cache. Photos already go through this.
+      // and Clear cache.
       const uri = await adoptIntoAttachmentCache(
         recorded,
         wireMediaName("voice", "m4a"),
@@ -5082,10 +5063,6 @@ export default function MessageThread({
     }
   }
 
-  // Hand a received file to the OS so the user can view or save it.
-  // expo-sharing is used rather than Linking.openURL because Android blocks
-  // direct file:// URIs from other apps. Sharing goes through a FileProvider
-  // and works on both platforms.
   // Get an attachment out of Airhop and onto the device.
   //
   // Received files live in the app's private cache: cleared with the cache,
@@ -5128,10 +5105,10 @@ export default function MessageThread({
     try {
       // Asset.create, not saveToLibraryAsync.
       //
-      // saveToLibraryAsync is not merely deprecated in expo-media-library 57:
-      // the exported symbol is a stub that throws unconditionally. Inside the
-      // try/catch below that failure is invisible, so the app asks for photo
-      // permission, the user grants it, and Save always reports "not saved".
+      // saveToLibraryAsync is not merely deprecated in expo-media-library: the
+      // exported symbol is a stub that throws unconditionally. Inside the
+      // try/catch below that failure is invisible: the user grants photo
+      // permission and Save still reports "not saved".
       await MediaLibrary.Asset.create(attachment.uri);
       setToast({
         message:
@@ -5147,8 +5124,12 @@ export default function MessageThread({
     }
   }
 
+  // Hand a received file to the OS so the user can view or save it. expo-sharing
+  // rather than Linking.openURL, because Android blocks direct file:// URIs from
+  // other apps. Sharing goes through a FileProvider and works on both platforms.
+  //
   // `insideViewer`: as saveAttachmentToDevice. The native share sheet presents
-  // fine over the viewer; only our own failure dialog cannot.
+  // fine over the viewer; only this app's failure dialog cannot.
   async function openAttachment(
     attachment: ChatAttachment,
     insideViewer = false,
@@ -5409,7 +5390,7 @@ export default function MessageThread({
   return (
     // Padding, not KeyboardAvoidingView: Android is edge-to-edge, so the window
     // never shrinks for the IME and KAV's Android path (which waits for that
-    // resize) left the compose bar buried under the keyboard. Measuring the IME
+    // resize) leaves the compose bar buried under the keyboard. Measuring the IME
     // and padding by it works identically on both platforms. The inset is the
     // keyboard height minus the bottom safe-area, because the thread already
     // sits above the nav bar inside the app's root SafeAreaView.
@@ -5470,7 +5451,7 @@ export default function MessageThread({
             })}
           >
             {isDM ? (
-              // DM: avatar + name, left-aligned right after the back arrow.
+              // DM: avatar + name, right after the back arrow.
               <View style={styles.headerDmId}>
                 <Avatar
                   username={resolveDisplayName(channel.slice(3))}
@@ -5802,8 +5783,8 @@ export default function MessageThread({
                   ? T("chat.thread.empty_desc")
                   : t("chat.thread.say_something", {
                       // Never the raw store key: a group's key is
-                      // "group:<id>", which read as "Say something in
-                      // group:7920...". Same label the header shows.
+                      // "group:<id>", which would read as "Say something
+                      // in group:7920...". Same label the header shows.
                       channel: isGroup ? displayName : channelLabel,
                     })}
               </Text>
@@ -6335,7 +6316,6 @@ export default function MessageThread({
             />
 
             {draft.trim().length > 0 ? (
-              // Send button: shown when there is text
               <Pressable
                 style={({ pressed }) => [
                   styles.sendButton,
@@ -6949,9 +6929,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-    // Same badge as the tab bar and the segments, ringed in the surface colour
-    // so it reads as a cutout. On the back chevron, so the button itself says
-    // what is waiting behind it.
     backBadge: {
       position: "absolute",
       top: 0,
@@ -7095,8 +7072,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textMuted,
       fontStyle: "italic",
     },
-    // Centered, italic emote line (/hug, /slap), a touch stronger than a system
-    // notice so it reads as a playful action, not a status message.
     emoteText: {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
@@ -7248,9 +7223,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 0,
       marginBottom: 3,
     },
-    // A compose control that is present but cannot act here. Dimmed rather
-    // than recoloured, the same treatment SettingSwitch gives a locked switch,
-    // so it still reads as itself and plainly not available.
     composeDisabled: {
       opacity: DISABLED_OPACITY,
     },
@@ -7277,7 +7249,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 0,
       marginBottom: 1,
     },
-    // Both send buttons are accent fills, so a press dims rather than darkens.
     accentPressed: { opacity: PRESSED_OPACITY },
     // The mic's touch target: MIN_TOUCH square, occupying only the drawn
     // button's footprint. Padding rather than hitSlop; see the wrapper.
@@ -7469,9 +7440,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.danger,
       fontWeight: FontWeight.medium,
     },
-    // Centred on the row rather than sitting on a baseline, so a bar grows in
-    // both directions from the middle and the meter reads as a waveform instead
-    // of a bar chart.
     recordingLockHint: {
       alignItems: "center",
       gap: -2,

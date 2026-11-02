@@ -72,9 +72,8 @@ const SEND_SATS_ROW_HEIGHT = 44;
 interface Props {
   onOpenDM?: (channel: string) => void;
   viewMode: ViewMode;
-  // Increment this to programmatically open the add-contact QR scanner (e.g.
-  // from the App.tsx header's add-contact button). Counter pattern avoids
-  // boolean edge cases.
+  // Bumped by the app header's add button to open the add-contact screen. A
+  // counter rather than a boolean, so repeated taps each register.
   addContactTrigger?: number;
 }
 
@@ -136,7 +135,6 @@ export default function PeerList({
     return () => clearInterval(timer);
   }, [evictStale]);
 
-  // Watch the trigger counter from the App.tsx header button.
   const prevAddTrigger = useRef(addContactTrigger ?? 0);
   useEffect(() => {
     if (
@@ -178,7 +176,6 @@ export default function PeerList({
     onOpenDM?.(channel);
   }
 
-  // Reset all peer-detail sheet state and close.
   function closeSheet(): void {
     setSelectedPeer(null);
     setShowSendSats(false);
@@ -234,7 +231,7 @@ export default function PeerList({
     setShowSendSats(false);
     closeSheet();
     onOpenDM?.(`dm:${peer.peerID}`);
-    // The thread we just opened shows the bubble, so only speak up when the
+    // The thread just opened shows the bubble, so only speak up when the
     // token did not go straight out. A peer standing next to you normally takes
     // the radio rail, which needs no explanation.
     if (result.rail !== "mesh") {
@@ -439,8 +436,8 @@ export default function PeerList({
                 </Text>
               </View>
             ) : (
-              /* Message + Send sats: a tight pair of actions, not spread
-                  apart by the sheet's larger identity/actions rhythm. */
+              // Message + Send sats: a tight pair of actions, not spread apart
+              // by the sheet's larger identity/actions rhythm.
               <View style={styles.sheetActions}>
                 <Pressable
                   style={styles.sheetMessageBtn}

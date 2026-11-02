@@ -104,9 +104,9 @@ export default function ContactInfoSheet({
   // geohash pseudonym. Being able to meet is not required: the screen offers a
   // scan for somebody present and a code comparison for somebody on a call.
   const canVerify = !!peerID && !verified && /^[0-9a-f]{16}$/i.test(peerID);
-  // A Nostr/geohash peer is an anonymous, per-cell pseudonym, there is no
-  // lasting identity to verify, so the sheet says "Anonymous" rather than the
-  // "Not verified · scan their QR" line that a mesh peer gets.
+  // A Nostr/geohash peer is an anonymous, per-cell pseudonym with no lasting
+  // identity to verify, so the sheet says "Anonymous" rather than the "Not
+  // verified" line a mesh peer gets.
   const isAnonymous = peerID !== null && isNostrId(peerID);
 
   // What they call themselves, which the sheet keeps showing after a rename so
@@ -459,10 +459,10 @@ export default function ContactInfoSheet({
                   </Text>
                 </Pressable>
               ) : (
-                /* Who they are, in the two forms that matter: the name they
-                   go by, and the ID that is actually bound to their keys. Both
-                   stay visible after a rename, so a label the user chose can
-                   never hide the identity they verified. */
+                // Who they are, in the two forms that matter: the name they
+                // go by, and the ID that is actually bound to their keys. Both
+                // stay visible after a rename, so a label the user chose can
+                // never hide the identity they verified.
                 <View style={styles.identityBox}>
                   <View style={styles.identityRow}>
                     <Text style={styles.identityLabel}>
@@ -673,8 +673,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       gap: Spacing.xs,
     },
-    // The rename pencil, top-right. On a round ground like every other icon
-    // action in the app; bare, it reads as decoration rather than a control.
     cornerBtn: {
       position: "absolute",
       top: Spacing.base,

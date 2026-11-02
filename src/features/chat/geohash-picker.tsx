@@ -336,9 +336,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       gap: Spacing.sm,
     },
-    // Floating over the globe, so styled as the app's other floating pills
-    // (the jump-to-latest button): a surface, a hairline for the dark canvas
-    // that swallows the shadow, and the shadow for the light one.
+    // A hairline for the dark canvas, which swallows the shadow, and the shadow
+    // for the light one.
     floating: {
       backgroundColor: Colors.surface,
       borderWidth: StyleSheet.hairlineWidth,

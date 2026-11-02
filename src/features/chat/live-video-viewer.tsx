@@ -361,7 +361,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-    // Grows into the free space and gives way first to the badge and timer.
     name: {
       flexGrow: 1,
       flexShrink: 1,
@@ -391,7 +390,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       justifyContent: "center",
       paddingHorizontal: Spacing.xl,
     },
-    // The studio's frame, so the picture is the one the sender previewed.
     frame: {
       flex: 1,
       maxWidth: "100%",
@@ -410,7 +408,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       justifyContent: "center",
     },
-    // So "Reconnecting…" reads on any picture in either theme.
     scrim: {
       backgroundColor: Colors.mediaScrim,
     },

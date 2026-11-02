@@ -424,7 +424,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center" as const,
       gap: Spacing.sm,
     },
-    // Explains the Sync group above it, so it stays muted and centred.
+    // Explains the Sync group above it, so it stays muted and centered.
     footnote: {
       fontSize: FontSize.xs,
       color: Colors.textMuted,

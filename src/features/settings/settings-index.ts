@@ -617,8 +617,8 @@ const SECTION_WEIGHT = 10;
 const DESCRIPTION_WEIGHT = 1;
 
 // Rank every indexed setting against `query`. The translator is passed in
-// because this matches what is on screen, and a module-level `t` would freeze
-// at the language the app started in.
+// because the caller memoizes the hits: a module-level `t` gives the memo
+// nothing to key on, so they would stay in the old language after a switch.
 export function searchSettings(query: string, T: Translator): SettingsHit[] {
   // Word by word, in any order: "storage data" has to find "Storage & data"
   // and "report bug" has to find "Report a bug". Every word must land

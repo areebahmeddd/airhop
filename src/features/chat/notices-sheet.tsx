@@ -5,8 +5,8 @@
 // kind-1 note so people who are online but out of Bluetooth range see it.
 //
 // Two scopes, mirroring bitchat:
-//   Geo   - this location cell (geo board posts + Nostr location notes)
-//   Mesh  - the Bluetooth-local board (geohash "", BLE-only)
+//   Geo   this location cell (geo board posts + Nostr location notes)
+//   Mesh  the Bluetooth-local board (geohash "", BLE-only)
 //
 // The two feeds are merged (see mergeNotices). Urgent posts sort first, then
 // newest. Deleting your own post sends a signed tombstone that outruns stale

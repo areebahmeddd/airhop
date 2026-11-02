@@ -184,8 +184,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingHorizontal: Spacing.base,
       paddingBottom: Spacing["2xl"],
     },
-    // One raised card owns the background and rounded corners; the rows sit
-    // transparent inside it, clipped to the radius by overflow.
     actionGroup: {
       backgroundColor: Colors.surfaceRaised,
       borderRadius: Radius.lg,

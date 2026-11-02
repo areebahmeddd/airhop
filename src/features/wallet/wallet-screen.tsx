@@ -146,8 +146,7 @@ import QRCode from "react-native-qrcode-svg";
 import { confirmOwnerForPhrase } from "./phrase-access";
 import TokenScanSheet, { type ScanTarget } from "./token-scan-sheet";
 
-// What the App-level header can ask of this screen.
-// Asked from outside: the header's help button, or a `cashu:` link the OS
+// Asked from outside: the app header's help button, or a `cashu:` link the OS
 // delivered, which only fills in Receive.
 export type WalletAction =
   { kind: "help" } | { kind: "receive"; token: string };
@@ -1530,9 +1529,9 @@ export default function WalletScreen({
     (mintList.length === 0 ? T("wallet.choose.needs_mint") : null);
 
   // The phrase exists from wallet creation; what backup adds is twelve words
-  // written down and kept. So it reads safe only
-  // once verified: an unwritten phrase implies a safety net that is not there,
-  // and unconfirmed is shown as unsafe, not half-safe.
+  // written down and kept. So it reads safe only once verified: an unwritten
+  // phrase implies a safety net that is not there, and unconfirmed is shown as
+  // unsafe, not half-safe.
   const backupSafe = backupEnabled && backupVerified;
   const backupStatus = backupEnabled
     ? backupVerified
@@ -3898,7 +3897,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexShrink: 1,
       textAlign: "center",
     },
-    // Inside the balance card, so it stretches past the card's centring.
+    // Inside the balance card, so it stretches past the card's centering.
     actionRow: {
       flexDirection: "row",
       justifyContent: "space-between",

@@ -470,7 +470,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       textAlign: "center",
     },
     // Mirrors subHeaderBack, negative margin included, or the title's flex box
-    // is asymmetric and its centred text lands 2pt off centre.
+    // is asymmetric and its centered text lands 2pt off center.
     subHeaderSpacer: {
       width: 32,
       marginEnd: -Spacing.xs,

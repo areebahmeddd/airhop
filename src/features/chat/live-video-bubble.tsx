@@ -147,7 +147,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     picture: {
       flex: 1,
     },
-    // A picture has no fill of its own to darken.
     pressed: {
       opacity: PRESSED_OPACITY,
     },
@@ -160,8 +159,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       alignItems: "center",
       gap: Spacing.xs,
     },
-    // On a scrim, so it reads on any picture in either theme. The LIVE pill's
-    // padding, so the two read as one row.
     timer: {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,

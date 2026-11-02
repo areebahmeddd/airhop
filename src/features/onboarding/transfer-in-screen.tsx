@@ -521,7 +521,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderWidth: 1,
       borderColor: Colors.border,
     },
-    // A digit centred in a circle: Android's font padding would sit it low.
+    // A digit centered in a circle: Android's font padding would sit it low.
     stepNumberText: {
       fontSize: FontSize.xs,
       fontWeight: FontWeight.semibold,

@@ -2,7 +2,7 @@
 // physically in. The user picks the cell on the globe or types its geohash, we
 // normalize and validate it exactly as bitchat does, then hand it to
 // mesh-service, which joins the cell as a `geohash:<gh>` channel and brings up
-// its Nostr subscription. The channel then appears under Your Rooms and
+// its Nostr subscription. The channel then appears under Your channels and
 // interoperates with bitchat clients in the same cell.
 //
 // Every way in (the globe, the field, a nearby cell, a saved place) ends in
@@ -35,10 +35,7 @@ import {
   Spacing,
   useThemeColors,
 } from "@ui/theme";
-import {
-  geohashNeighbours,
-  type NeighbourDirection,
-} from "@utils/geohash-grid";
+import { geohashNeighbors, type NeighborDirection } from "@utils/geohash-grid";
 import { useEffect, useMemo, useState } from "react";
 import {
   Keyboard,
@@ -480,8 +477,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textSecondary,
       lineHeight: LineHeight.sm,
     },
-    // A full row in the field's own surface and radius rather than an icon
-    // squeezed into the field: for most places it is the way in.
     globeRow: {
       flexDirection: "row",
       alignItems: "center",

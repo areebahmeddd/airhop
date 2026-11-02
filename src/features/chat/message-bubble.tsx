@@ -1,9 +1,9 @@
-// A single message row: bubble, forwarded tag, star badge, and the long-press
-// surface that opens the message action sheet.
+// A single message row: bubble, forwarded tag and the long-press surface that
+// opens the message action sheet.
 //
 // Attachment and Cashu-token rendering stay in message-thread.tsx (they
-// depend on per-thread interactive state: playingUri, revealedAttachments,
-// claimToken) and are handed down as render props.
+// depend on per-thread interactive state: playingMessageId,
+// revealedAttachments, claimingToken) and are handed down as render props.
 
 import { isVideoNoteName } from "@core/mesh/wire/file-packet";
 import type { ChatToken } from "@core/payments/cashu";
@@ -901,7 +901,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       color: Colors.accent,
     },
-    // Your own bubble is filled with the accent, so the tag inverts on it.
     ringTagTextMine: { color: Colors.textInverse },
   });
 }

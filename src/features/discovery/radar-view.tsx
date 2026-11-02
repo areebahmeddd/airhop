@@ -91,7 +91,7 @@ interface Props {
 
 // Ring assignment is signal-based when RSSI is known, and falls back to
 // recency when it isn't (a peer heard via a multi-hop relay has no RSSI of its
-// own, since we never had a direct radio link to measure).
+// own, since this phone never had a direct radio link to measure).
 //
 // The rings are labeled by signal strength rather than distance. RSSI swings
 // tens of dB with orientation, bodies, walls and radio, so any meter figure
@@ -104,8 +104,7 @@ const RING_THRESHOLDS: [number, number] = [15_000, 45_000]; // ms
 
 // Radii as fraction of half the canvas size (C).
 const RING_FR: [number, number, number] = [0.3, 0.54, 0.78];
-// Keys, not text: evaluated once at import, so translated strings here would
-// freeze in whichever language the app started in.
+// Keys, translated on render.
 const RING_LABEL_KEYS: [TranslationKey, TranslationKey, TranslationKey] = [
   "mesh.radar.signal_strong",
   "mesh.radar.signal_medium",
@@ -143,9 +142,9 @@ const MAX_CANVAS = 420;
 
 // ---- Component ----
 
-// Memoised: every render re-buckets every peer and re-lays out every dot, and
-// peer-list passes a memoised `peers` and a `now` that ticks once a second, so
-// nothing else on the screen should trigger that.
+// Memoized: every render re-buckets every peer and re-lays out every dot, and
+// peer-list passes a memoized `peers` and a `now` that ticks every 10 seconds,
+// so nothing else on the screen should trigger that.
 function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
   const T = useT();
   const TP = useTPlural();

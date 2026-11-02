@@ -882,8 +882,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingBottom: Spacing.lg,
       gap: Spacing.sm,
     },
-    // Every tap reports: a neutral fill darkens, a bare glyph, a row with no
-    // fill of its own or the accent button dims.
     pressedFill: {
       backgroundColor: Colors.surfacePressed,
     },
@@ -989,7 +987,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     // Relay hosts sit inside the facts card, indented to start under the row's
     // label rather than its icon: a fact row is a 16px icon plus a Spacing.md
-    // gap, so the hosts hang off the same left edge as "Relays" above them.
+    // gap, so the hosts hang off the same edge as "Relays" above them.
     relayList: {
       paddingBottom: Spacing.md,
       paddingStart: 16 + Spacing.md,

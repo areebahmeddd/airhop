@@ -52,9 +52,7 @@ interface Props {
 // instant you send it, with no pill. The rest hold it that long behind an
 // "undo" pill before it goes out.
 //
-// The tables in this file hold translation keys rather than text, because a
-// module constant cannot call a hook. The component translates them on render,
-// which is also what keeps them live when the language changes.
+// The tables in this file hold keys, translated on render.
 const UNDO_OPTIONS: {
   value: number;
   labelKey: TranslationKey;

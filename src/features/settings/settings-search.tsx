@@ -43,7 +43,7 @@ export default function SettingsSearch({
   const shared = useSharedStyles();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
 
-  // No debounce, unlike chat search: this walks a fixed list of ~50 rows.
+  // No debounce, unlike chat search: this walks a fixed list of ~60 rows.
   const hits = useMemo(() => searchSettings(query, T), [query, T]);
   const trimmed = query.trim();
 

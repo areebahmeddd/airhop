@@ -116,7 +116,7 @@ async function shareOrIgnore(
 }
 
 // Presence on the mesh. Online broadcasts + scans, Away stops the mesh
-// entirely, Invisible keeps scanning but stops advertising our presence.
+// entirely, Invisible keeps scanning but stops advertising.
 type Status = PresenceStatus;
 
 // Colors and the translator are both passed in, and both for the same reason:
@@ -174,7 +174,7 @@ const HEADER_GLYPH = 18;
 // 220 rather than 200 because the card carries a full contact card at
 // error-correction H, which is a dense grid, and the extra points keep each
 // module comfortably above the size a camera needs. It still clears
-// the sheet's padding on the narrowest phone we support.
+// the sheet's padding on the narrowest supported phone.
 //
 // The mark is capped at a fifth of the code. Past roughly 30% the occluded area
 // exceeds what even H can recover and the code stops scanning at an angle.
@@ -183,12 +183,10 @@ const QR_LOGO_SIZE = 44;
 const AIRHOP_MARK = require("../../../assets/images/icon.png") as number;
 
 // Copy glyph in the peer ID box. Shared by the icon and the inset that keeps the
-// ID centred against it, so the two can never drift apart.
+// ID centered against it, so the two can never drift apart.
 const COPY_GLYPH = 15;
 
-// Keys, not text: a module constant is evaluated once at import, so translated
-// strings here would freeze in whichever language the app started in. The
-// component translates them on render. Guarded by `npm run i18n:audit`.
+// Keys, translated on render.
 //
 // There is no "System default" row. An untouched install already follows the
 // phone (see ThemePreference), so the row would only ever restate what the tick
@@ -396,7 +394,7 @@ export default function ProfileScreen({
   }, [view, goBack]);
 
   // Tell the shell whether there is anywhere to go back to, so it can turn its
-  // tab-stepping swipe into a back-swipe while we are inside a section.
+  // tab-stepping swipe into a back-swipe while inside a section.
   useEffect(() => {
     onCanGoBackChange?.(view !== "root");
   }, [view, onCanGoBackChange]);
@@ -569,10 +567,8 @@ export default function ProfileScreen({
     const uri = await writeQRToCache();
     try {
       if (uri === null) throw new Error("qr render failed");
-      // See the note in message-thread's saveAttachmentToDevice:
-      // saveToLibraryAsync is a throwing stub in expo-media-library 57, so
-      // this branch always fell into the catch below and Download QR could
-      // never have worked.
+      // Asset.create: expo-media-library ships saveToLibraryAsync as a stub that
+      // always throws.
       await MediaLibrary.Asset.create(uri);
       showAlert(t("settings.qr.saved"), t("settings.qr.saved_body"));
     } catch {
@@ -614,13 +610,10 @@ export default function ProfileScreen({
   }
 
   async function handleShareQR(): Promise<void> {
-    // Share the CODE, not a link to a bare peer ID.
-    //
-    // Never `airhop://peer/<id>` alone, which is the one artifact that cannot
-    // reach the person: an ID is a hash of the Noise key and carries no keys at
-    // all, so the recipient can only message back from inside Bluetooth range.
-    // A button saying "Share QR" that hands over
-    // the weakest thing the app has. The image carries the whole contact card.
+    // Share the code, not a link to a bare peer ID. An ID is a hash of the Noise
+    // key and carries no keys at all, so from `airhop://peer/<id>` alone the
+    // recipient can only message back from inside Bluetooth range. The image
+    // and the text fallback both carry what the QR shows.
     const uri = await writeQRToCache();
     if (uri !== null && (await Sharing.isAvailableAsync())) {
       try {

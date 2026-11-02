@@ -349,8 +349,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       paddingVertical: Spacing["sm-md"],
       paddingHorizontal: Spacing["sm-md"],
     },
-    // A room that cannot take this selection. Still tappable, so the tap can
-    // explain; the same treatment the composer's attach button gets.
     rowBlocked: {
       opacity: DISABLED_OPACITY,
     },

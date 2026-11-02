@@ -270,7 +270,7 @@ function InfoLine({
 
 // Every line here is an event on one message, so the time is the point and the
 // date only disambiguates. Formatted through utils/format so it follows the
-// app's language; this called `toLocale*String([])`, which asks the device.
+// app's language rather than the device's.
 function formatDateTime(ms: number): string {
   const d = new Date(ms);
   const now = new Date();
