@@ -2,6 +2,18 @@
 
 All notable changes are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.0.10 · Albatross (2026-11-02)
+
+### What's New
+
+- feat: video notes, spam filter and widgets (#90) (by @areebahmeddd) [e165b20]
+- feat: upgrade to Expo SDK 58 and React Native 0.88 (#85) (by @areebahmeddd) [75cd869]
+- fix: improve voice, chat, wallet and background reliability; add an optional app lock (#84) (by @areebahmeddd) [792c580]
+- refactor: improve test cov + other updates (by @areebahmeddd) [9f22732]
+- fix: rendering of text in message thread and notifications (by @areebahmeddd) [0693d0e]
+
+**Full changelog:** [v1.0.9..v1.0.10](https://github.com/areebahmeddd/airhop/compare/v1.0.9..v1.0.10)
+
 ## v1.0.9 · Albatross (2026-09-27)
 
 ### What's New (Security Update)
