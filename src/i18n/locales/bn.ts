@@ -476,7 +476,6 @@ export const strings: Strings = {
   "chat.thread.empty": "এখনো কোনো বার্তা নেই",
   "chat.thread.empty_desc": "একটি এনক্রিপ্ট করা কথোপকথন শুরু করুন।",
   "chat.thread.jump_latest": "সবশেষ বার্তায় যান",
-  "chat.thread.back_to_members": "সদস্যদের কাছে ফিরুন",
   "chat.thread.nostr_key": "Nostr পাবলিক কী",
   "chat.thread.in_range": "নাগালের মধ্যে",
   "chat.voice.not_recorded": "ভয়েস নোট রেকর্ড হয়নি",

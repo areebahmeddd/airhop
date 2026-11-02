@@ -471,7 +471,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Chưa có tin nhắn nào",
   "chat.thread.empty_desc": "Bắt đầu một cuộc trò chuyện được mã hóa.",
   "chat.thread.jump_latest": "Nhảy tới tin nhắn mới nhất",
-  "chat.thread.back_to_members": "Quay lại danh sách thành viên",
   "chat.thread.nostr_key": "Khóa công khai Nostr",
   "chat.thread.in_range": "Trong tầm",
   "chat.voice.not_recorded": "Tin nhắn thoại không ghi được",

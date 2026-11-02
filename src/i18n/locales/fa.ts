@@ -472,7 +472,6 @@ export const strings: Strings = {
   "chat.thread.empty": "هنوز پیامی نیست",
   "chat.thread.empty_desc": "یک گفتگوی رمزگذاری‌شده آغاز کنید.",
   "chat.thread.jump_latest": "پرش به تازه‌ترین پیام",
-  "chat.thread.back_to_members": "بازگشت به اعضا",
   "chat.thread.nostr_key": "کلید عمومی Nostr",
   "chat.thread.in_range": "در محدوده",
   "chat.voice.not_recorded": "پیام صوتی ضبط نشد",

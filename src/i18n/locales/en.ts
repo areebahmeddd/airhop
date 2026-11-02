@@ -29,8 +29,8 @@
 //   Never in here    Anything that crosses the wire or derives an identity: the
 //                    username word lists, the transmitted /hug and /slap text
 //                    (bitchat matches it as an English substring), command
-//                    tokens, channel names, geohashes, user content, licence
-//                    texts. Localise the hint describing a command, never the
+//                    tokens, channel names, geohashes, user content, license
+//                    texts. Localize the hint describing a command, never the
 //                    command. The wordmark "airhop" is drawn as part of the
 //                    brand mark and is never translated or transliterated, and
 //                    the endonyms in src/i18n/languages.ts stay in their own
@@ -508,7 +508,6 @@ export const strings = {
   "chat.thread.empty": "No messages yet",
   "chat.thread.empty_desc": "Start an encrypted conversation.",
   "chat.thread.jump_latest": "Jump to latest message",
-  "chat.thread.back_to_members": "Back to members",
   "chat.thread.nostr_key": "Nostr public key",
   "chat.thread.in_range": "In range",
   "chat.voice.not_recorded": "Voice note didn’t record",

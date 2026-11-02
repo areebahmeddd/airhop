@@ -474,7 +474,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Inga meddelanden än",
   "chat.thread.empty_desc": "Börja ett krypterat samtal.",
   "chat.thread.jump_latest": "Hoppa till senaste meddelandet",
-  "chat.thread.back_to_members": "Tillbaka till medlemmarna",
   "chat.thread.nostr_key": "Publik Nostr-nyckel",
   "chat.thread.in_range": "Inom räckhåll",
   "chat.voice.not_recorded": "Röstmeddelandet spelades inte in",

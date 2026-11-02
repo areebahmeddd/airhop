@@ -478,7 +478,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Сообщений пока нет",
   "chat.thread.empty_desc": "Начните зашифрованный разговор.",
   "chat.thread.jump_latest": "Перейти к последнему сообщению",
-  "chat.thread.back_to_members": "Назад к участникам",
   "chat.thread.nostr_key": "Публичный ключ Nostr",
   "chat.thread.in_range": "В зоне действия",
   "chat.voice.not_recorded": "Голосовая заметка не записалась",

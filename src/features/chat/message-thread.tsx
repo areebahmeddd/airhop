@@ -2212,9 +2212,6 @@ export default function MessageThread({
   const [senderInfoTarget, setSenderInfoTarget] = useState<{
     peerID: string;
     nickname: string;
-    // True when opened from the members list, so the sheet shows a back arrow
-    // that returns to the list (still open behind it) instead of dismissing.
-    fromMembers?: boolean;
   } | null>(null);
   // Copy affordance for the sender profile sheet's Nostr key, same tap-to-copy
   // behavior as the contact-info sheet.
@@ -6759,21 +6756,6 @@ export default function MessageThread({
         >
           {senderInfoTarget && (
             <>
-              {senderInfoTarget.fromMembers && (
-                <Pressable
-                  style={styles.dmInfoBack}
-                  onPress={() => setSenderInfoTarget(null)}
-                  hitSlop={hitSlopFor(28)}
-                  accessibilityRole="button"
-                  accessibilityLabel={T("chat.thread.back_to_members")}
-                >
-                  <Feather
-                    name={chevronBack}
-                    size={24}
-                    color={Colors.textPrimary}
-                  />
-                </Pressable>
-              )}
               <View style={styles.dmInfoBody}>
                 <Avatar
                   username={senderDisplayName}
@@ -7706,13 +7688,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     dmInfoSheet: {
       width: "100%",
       paddingBottom: Spacing["2xl"],
-    },
-    dmInfoBack: {
-      position: "absolute",
-      top: Spacing.base,
-      start: Spacing.base,
-      zIndex: 1,
-      padding: Spacing.xs,
     },
     dmInfoBody: {
       alignItems: "center",

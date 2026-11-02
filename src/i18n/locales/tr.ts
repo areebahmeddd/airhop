@@ -481,7 +481,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Henüz mesaj yok",
   "chat.thread.empty_desc": "Şifreli bir konuşma başlat.",
   "chat.thread.jump_latest": "En son mesaja atla",
-  "chat.thread.back_to_members": "Üyelere geri dön",
   "chat.thread.nostr_key": "Nostr açık anahtarı",
   "chat.thread.in_range": "Menzilde",
   "chat.voice.not_recorded": "Sesli not kaydedilmedi",

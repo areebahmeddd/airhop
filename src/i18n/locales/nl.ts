@@ -479,7 +479,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Nog geen berichten",
   "chat.thread.empty_desc": "Begin een versleuteld gesprek.",
   "chat.thread.jump_latest": "Naar het laatste bericht",
-  "chat.thread.back_to_members": "Terug naar de leden",
   "chat.thread.nostr_key": "Publieke Nostr-sleutel",
   "chat.thread.in_range": "Binnen bereik",
   "chat.voice.not_recorded": "Het spraakbericht is niet opgenomen",

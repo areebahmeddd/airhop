@@ -474,7 +474,6 @@ export const strings: Strings = {
   "chat.thread.empty": "ਹਾਲੇ ਕੋਈ ਸੁਨੇਹਾ ਨਹੀਂ",
   "chat.thread.empty_desc": "ਇਨਕ੍ਰਿਪਟਡ ਗੱਲਬਾਤ ਸ਼ੁਰੂ ਕਰੋ।",
   "chat.thread.jump_latest": "ਸਭ ਤੋਂ ਨਵੇਂ ਸੁਨੇਹੇ ’ਤੇ ਜਾਓ",
-  "chat.thread.back_to_members": "ਮੈਂਬਰਾਂ ’ਤੇ ਵਾਪਸ",
   "chat.thread.nostr_key": "Nostr ਜਨਤਕ ਕੁੰਜੀ",
   "chat.thread.in_range": "ਪਹੁੰਚ ਵਿੱਚ",
   "chat.voice.not_recorded": "ਵੌਇਸ ਨੋਟ ਰਿਕਾਰਡ ਨਹੀਂ ਹੋਇਆ",

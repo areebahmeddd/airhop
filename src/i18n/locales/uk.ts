@@ -478,7 +478,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Повідомлень поки немає",
   "chat.thread.empty_desc": "Почніть зашифровану розмову.",
   "chat.thread.jump_latest": "Перейти до найновішого повідомлення",
-  "chat.thread.back_to_members": "Назад до учасників",
   "chat.thread.nostr_key": "Відкритий ключ Nostr",
   "chat.thread.in_range": "У радіусі",
   "chat.voice.not_recorded": "Голосову нотатку не записано",

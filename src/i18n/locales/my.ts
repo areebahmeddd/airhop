@@ -486,7 +486,6 @@ export const strings: Strings = {
   "chat.thread.empty": "မက်ဆေ့ဂျ် မရှိသေးပါ",
   "chat.thread.empty_desc": "စာဝှက်ထားသော စကားပြောတစ်ခု စတင်ပါ။",
   "chat.thread.jump_latest": "နောက်ဆုံးမက်ဆေ့ဂျ်သို့ ခုန်ပါ",
-  "chat.thread.back_to_members": "အဖွဲ့ဝင်များသို့ ပြန်သွားပါ",
   "chat.thread.nostr_key": "Nostr အများသုံးသော့",
   "chat.thread.in_range": "အကွာအဝေးအတွင်း",
   "chat.voice.not_recorded": "အသံမှတ်စု အသံမဖမ်းခဲ့ပါ",

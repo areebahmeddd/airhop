@@ -485,7 +485,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Bado hakuna jumbe",
   "chat.thread.empty_desc": "Anzisha mazungumzo yaliyosimbwa.",
   "chat.thread.jump_latest": "Rukia ujumbe wa hivi punde",
-  "chat.thread.back_to_members": "Rudi kwa wanachama",
   "chat.thread.nostr_key": "Ufunguo wa umma wa Nostr",
   "chat.thread.in_range": "Ndani ya masafa",
   "chat.voice.not_recorded": "Noti ya sauti haikurekodiwa",

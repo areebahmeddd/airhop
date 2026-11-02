@@ -489,7 +489,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Mbola tsy misy hafatra",
   "chat.thread.empty_desc": "Manomboha resaka voafono.",
   "chat.thread.jump_latest": "Mankany amin'ny hafatra farany",
-  "chat.thread.back_to_members": "Miverina amin'ny mpikambana",
   "chat.thread.nostr_key": "Lakile ho an'ny daholobe Nostr",
   "chat.thread.in_range": "Ao anatin'ny fetra",
   "chat.voice.not_recorded": "Tsy voarakitra ilay naoty feo",

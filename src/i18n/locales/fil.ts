@@ -491,7 +491,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Wala pang mensahe",
   "chat.thread.empty_desc": "Magsimula ng naka-encrypt na usapan.",
   "chat.thread.jump_latest": "Tumalon sa pinakabagong mensahe",
-  "chat.thread.back_to_members": "Bumalik sa mga miyembro",
   "chat.thread.nostr_key": "Pampublikong susi sa Nostr",
   "chat.thread.in_range": "Nasa saklaw",
   "chat.voice.not_recorded": "Hindi na-record ang voice note",

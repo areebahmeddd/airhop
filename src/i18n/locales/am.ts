@@ -446,7 +446,6 @@ export const strings: Strings = {
   "chat.thread.empty": "ገና መልእክቶች የሉም",
   "chat.thread.empty_desc": "የተመሰጠረ ውይይት ጀምር።",
   "chat.thread.jump_latest": "ወደ የቅርቡ መልእክት ዝለል",
-  "chat.thread.back_to_members": "ወደ አባላት ተመለስ",
   "chat.thread.nostr_key": "የNostr ይፋዊ ቁልፍ",
   "chat.thread.in_range": "በክልል ውስጥ",
   "chat.voice.not_recorded": "የድምፅ መልእክቱ አልተቀዳም",

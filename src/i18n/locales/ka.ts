@@ -481,7 +481,6 @@ export const strings: Strings = {
   "chat.thread.empty": "ჯერ შეტყობინებები არ არის",
   "chat.thread.empty_desc": "დაიწყე დაშიფრული საუბარი.",
   "chat.thread.jump_latest": "უახლეს შეტყობინებაზე გადასვლა",
-  "chat.thread.back_to_members": "წევრებთან დაბრუნება",
   "chat.thread.nostr_key": "Nostr-ის საჯარო გასაღები",
   "chat.thread.in_range": "მიღწევადია",
   "chat.voice.not_recorded": "ხმოვანი ჩანაწერი არ ჩაიწერა",

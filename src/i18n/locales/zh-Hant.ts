@@ -451,7 +451,6 @@ export const strings: Strings = {
   "chat.thread.empty": "還沒有訊息",
   "chat.thread.empty_desc": "開始一段加密對話。",
   "chat.thread.jump_latest": "跳到最新訊息",
-  "chat.thread.back_to_members": "回到成員清單",
   "chat.thread.nostr_key": "Nostr 公鑰",
   "chat.thread.in_range": "在範圍內",
   "chat.voice.not_recorded": "語音留言沒有錄到",

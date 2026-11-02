@@ -482,7 +482,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Ancora nessun messaggio",
   "chat.thread.empty_desc": "Avvia una conversazione cifrata.",
   "chat.thread.jump_latest": "Vai all’ultimo messaggio",
-  "chat.thread.back_to_members": "Torna ai membri",
   "chat.thread.nostr_key": "Chiave pubblica Nostr",
   "chat.thread.in_range": "Nel raggio",
   "chat.voice.not_recorded": "La nota vocale non è stata registrata",

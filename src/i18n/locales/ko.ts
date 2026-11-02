@@ -469,7 +469,6 @@ export const strings: Strings = {
   "chat.thread.empty": "아직 메시지가 없습니다",
   "chat.thread.empty_desc": "암호화된 대화를 시작하세요.",
   "chat.thread.jump_latest": "최신 메시지로 이동",
-  "chat.thread.back_to_members": "멤버로 돌아가기",
   "chat.thread.nostr_key": "Nostr 공개 키",
   "chat.thread.in_range": "범위 내",
   "chat.voice.not_recorded": "음성 메모가 녹음되지 않았습니다",

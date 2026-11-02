@@ -463,7 +463,6 @@ export const strings: Strings = {
   "chat.thread.empty": "لا توجد رسائل بعد",
   "chat.thread.empty_desc": "ابدأ محادثة مشفّرة.",
   "chat.thread.jump_latest": "الانتقال إلى أحدث رسالة",
-  "chat.thread.back_to_members": "العودة إلى الأعضاء",
   "chat.thread.nostr_key": "مفتاح Nostr العام",
   "chat.thread.in_range": "ضمن النطاق",
   "chat.voice.not_recorded": "لم تُسجَّل الملاحظة الصوتية",

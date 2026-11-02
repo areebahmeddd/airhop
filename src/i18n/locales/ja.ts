@@ -478,7 +478,6 @@ export const strings: Strings = {
   "chat.thread.empty": "メッセージはまだありません",
   "chat.thread.empty_desc": "暗号化された会話を始めましょう。",
   "chat.thread.jump_latest": "最新のメッセージへ移動",
-  "chat.thread.back_to_members": "メンバーに戻る",
   "chat.thread.nostr_key": "Nostr公開鍵",
   "chat.thread.in_range": "圏内",
   "chat.voice.not_recorded": "ボイスメモを録音できませんでした",

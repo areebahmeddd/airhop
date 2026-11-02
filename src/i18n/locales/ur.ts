@@ -473,7 +473,6 @@ export const strings: Strings = {
   "chat.thread.empty": "ابھی کوئی پیغام نہیں",
   "chat.thread.empty_desc": "خفیہ گفتگو شروع کریں۔",
   "chat.thread.jump_latest": "تازہ ترین پیغام پر جائیں",
-  "chat.thread.back_to_members": "ارکان پر واپس",
   "chat.thread.nostr_key": "Nostr عوامی کلید",
   "chat.thread.in_range": "حدود میں",
   "chat.voice.not_recorded": "صوتی نوٹ ریکارڈ نہ ہوا",

@@ -466,7 +466,6 @@ export const strings: Strings = {
   "chat.thread.empty": "ยังไม่มีข้อความ",
   "chat.thread.empty_desc": "เริ่มบทสนทนาที่เข้ารหัส",
   "chat.thread.jump_latest": "ข้ามไปยังข้อความล่าสุด",
-  "chat.thread.back_to_members": "กลับไปที่สมาชิก",
   "chat.thread.nostr_key": "กุญแจสาธารณะ Nostr",
   "chat.thread.in_range": "อยู่ในระยะ",
   "chat.voice.not_recorded": "ข้อความเสียงไม่ได้ถูกบันทึก",

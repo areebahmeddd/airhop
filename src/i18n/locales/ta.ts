@@ -489,7 +489,6 @@ export const strings: Strings = {
   "chat.thread.empty": "இன்னும் செய்திகள் இல்லை",
   "chat.thread.empty_desc": "குறியாக்கம் செய்யப்பட்ட உரையாடலைத் தொடங்குங்கள்.",
   "chat.thread.jump_latest": "சமீபத்திய செய்திக்குச் செல்",
-  "chat.thread.back_to_members": "உறுப்பினர்களுக்குத் திரும்பு",
   "chat.thread.nostr_key": "Nostr பொதுச் சாவி",
   "chat.thread.in_range": "வரம்பில்",
   "chat.voice.not_recorded": "குரல் குறிப்பு பதிவாகவில்லை",

@@ -480,7 +480,6 @@ export const strings: Strings = {
   "chat.thread.empty": "Belum ada pesan",
   "chat.thread.empty_desc": "Mulai percakapan yang terenkripsi.",
   "chat.thread.jump_latest": "Lompat ke pesan terbaru",
-  "chat.thread.back_to_members": "Kembali ke anggota",
   "chat.thread.nostr_key": "Kunci publik Nostr",
   "chat.thread.in_range": "Dalam jangkauan",
   "chat.voice.not_recorded": "Catatan suaranya tidak terekam",
