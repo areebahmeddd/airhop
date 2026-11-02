@@ -10,9 +10,9 @@
 // One difference survives, and it is about coverage rather than lifecycle. On
 // Android the proxy is installed into React Native's OkHttp clients and as the
 // process's default selector, so every web request the Java stack makes is
-// covered, `fetch` and downloads included. On iOS only the Nostr
-// WebSocket goes through Tor, which is why a mint request there has to be
-// refused rather than routed. See services/tor-routing.ts.
+// covered, `fetch` and downloads included. On iOS only the Nostr WebSocket goes
+// through Tor, which is why a mint request there has to be refused rather than
+// routed. See services/tor-routing.ts.
 import type { EventSubscription, TurboModule } from "react-native";
 import {
   NativeEventEmitter,

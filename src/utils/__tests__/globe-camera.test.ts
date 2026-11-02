@@ -125,9 +125,8 @@ describe("gestures", () => {
 });
 
 describe("animations", () => {
-  // bitchat-ios #1807 review: zzzz's centre is past the drag limit. The flight
-  // used to clamp there and select zzzf, while the reduced-motion path kept
-  // zzzz.
+  // zzzz's center is past the drag limit. Clamping the flight there would select
+  // zzzf, while the reduced-motion path keeps zzzz.
   it("lands a polar flight on the requested cell", () => {
     const target = startTarget("zzzz", []);
     expect(target.lat).toBeGreaterThan(89);

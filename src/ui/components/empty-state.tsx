@@ -1,16 +1,15 @@
 // The one empty state in the app.
 //
-// Used by dm-list, peer-list, channel-list, notification-center and
-// chat-search-results. An empty screen is the first thing a new user sees on four
-// of these surfaces, so icon size, opacity, title colour and spacing are fixed
-// here rather than per caller, where they drift.
+// An empty list is the first thing a new user sees on most of the surfaces
+// using this, so icon size, opacity, title color and spacing are fixed here
+// rather than per caller, where they drift.
 //
 // Two variants, because there are two jobs:
 //
 //   full     the whole surface is empty (no peers, no DMs, no notifications).
-//            Centres in the space it is given.
-//   compact  one section of an otherwise populated screen is empty (Your Rooms
-//            with no rooms in it). Sits inline, no vertical centring, so it does
+//            Centers in the space it is given.
+//   compact  one section of an otherwise populated screen is empty (Your channels
+//            with nothing in it). Sits inline, no vertical centering, so it does
 //            not shove the sections around it.
 //
 // The three parts are announced as one utterance rather than three stops: an

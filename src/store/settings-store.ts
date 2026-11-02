@@ -1,7 +1,6 @@
-// App preferences: theme, media auto-download, and upload quality.
-// MMKV-persisted so choices survive app restarts. Reset to defaults by the
-// panic wipe (via reset()), so a wipe leaves a true first-run state with no
-// trace of the previous user's choices.
+// App preferences, MMKV-persisted so choices survive app restarts. Reset to
+// defaults by the panic wipe (via reset()), so a wipe leaves a true first-run
+// state with no trace of the previous user's choices.
 
 import { MAX_CUSTOM_RELAYS, validateRelayUrl } from "@core/nostr/geo-relay";
 import type { BitcoinUnit } from "@core/payments/cashu";

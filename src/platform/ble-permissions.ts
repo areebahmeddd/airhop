@@ -12,7 +12,7 @@
 //   - API <=30: ACCESS_FINE_LOCATION, since neverForLocation does not exist and
 //     Android withholds every result without it.
 //
-// Deliberately unlike bitchat/android, which requires location at every level
+// Deliberately unlike bitchat-android, which requires location at every level
 // and so also needs ACCESS_BACKGROUND_LOCATION and a `location` service type:
 // that coupling costs a backgrounded phone every scan result, and anyone on
 // "Approximate" a mesh that finds nobody. The advertisement and the wire
@@ -27,7 +27,7 @@
 import { PermissionsAndroid, Platform, type Permission } from "react-native";
 
 // Below this, BLUETOOTH_SCAN does not exist and a BLE scan is a location
-// access whatever we say about it.
+// access whatever the manifest says about it.
 const NEVER_FOR_LOCATION_MIN_API = 31;
 
 // Android 17.

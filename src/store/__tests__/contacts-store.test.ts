@@ -152,7 +152,7 @@ describe("local nicknames", () => {
 });
 
 // The merge rules on addContact: a write may fill gaps in a record but never
-// weaken one, whichever of the four screens made it.
+// weaken one, whichever caller made it.
 describe("addContact merges and never weakens", () => {
   const ID = "aabbccdd00112233";
 

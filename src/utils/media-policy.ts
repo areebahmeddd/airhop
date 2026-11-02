@@ -1,5 +1,3 @@
-import { MESH_PUBLIC_CHANNEL } from "@core/router/message-router";
-import { t } from "@i18n";
 // Where media (photos, videos, files, voice notes) may be sent.
 //
 // Media rides the BLE file-transfer path only: it is flood-broadcast over
@@ -19,6 +17,10 @@ import { t } from "@i18n";
 // This mirrors bitchat's `canSendMediaInCurrentContext` (media only in `.mesh`
 // and mesh peer DMs), so the two apps behave the same about what a channel can
 // carry.
+
+import { MESH_PUBLIC_CHANNEL } from "@core/router/message-router";
+import { t } from "@i18n";
+
 // The public BLE broadcast channel: bitchat's single mesh room, which its UI
 // labels "bluetooth" rather than naming as a channel.
 //
@@ -72,8 +74,8 @@ function isLocationChannel(channel: string): boolean {
 // chat-store, and this module stays free of store dependencies. Callers read it
 // from `channelKeys[channel]`.
 //
-// Only decides what we emit. Notices from other clients still render, so mixed
-// rooms with bitchat and Android peers stay consistent.
+// Only decides what this phone emits. Notices from other clients still render,
+// so mixed rooms stay consistent.
 export function notifiesOnScreenshot(
   channel: string,
   hasChannelKey: boolean,

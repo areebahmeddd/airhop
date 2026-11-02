@@ -1,10 +1,10 @@
 // CLDR plural category selection.
 //
 // Hermes has no `Intl.PluralRules` on either platform. The usual answer is
-// `@formatjs/intl-pluralrules`, and this is not that: the shipped
-// languages reduce to nine distinct rule shapes, so nine functions replace a
-// dependency, a locale-data module per language, a patched global `Intl`, and
-// the Android startup cost FormatJS documents for its own detection path.
+// `@formatjs/intl-pluralrules`, and this is not that: the shipped languages
+// reduce to nine distinct rule shapes, so nine functions replace a dependency,
+// a locale-data module per language, a patched global `Intl`, and the Android
+// startup cost FormatJS documents for its own detection path.
 //
 // Node ships full ICU, so `__tests__/plurals.test.ts` checks every rule below
 // against `Intl.PluralRules` itself.
@@ -95,9 +95,9 @@ const arabic: Rule = (i) => {
 
 // ---- The table ----
 //
-// Every language Airhop plans to ship, catalog or not: the rule is a fact about
-// the language, so a catalog landing never touches this file.
-// `plurals.test.ts` asserts every code in LANGUAGES appears here.
+// Every language Airhop declares: the rule is a fact about the language, so a
+// catalog landing never touches this file. `plurals.test.ts` asserts every code
+// in LANGUAGES appears here.
 const RULES = {
   am: oneIsZeroOrOne,
   ar: arabic,

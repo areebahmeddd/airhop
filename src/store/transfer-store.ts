@@ -94,7 +94,7 @@ const STALL_AFTER_MS = 12_000;
 // A transfer that stays silent this long is declared failed: the peer is out of
 // range for good, not merely slow. Until there is a resume back-channel, a
 // stalled receive cannot recover on its own (the sender already sent and freed
-// its chunks), so we stop pretending and surface the failure.
+// its chunks), so the failure is surfaced rather than left looking stalled.
 const STALL_FAIL_AFTER_MS = 45_000;
 
 export const useTransferStore = create<TransferState>()((set, get) => ({

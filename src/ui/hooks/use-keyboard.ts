@@ -1,10 +1,10 @@
 // Keyboard geometry, measured rather than guessed.
 //
 // Android is edge-to-edge from Expo SDK 54 on, which means the activity window
-// no longer shrinks when the IME opens even with `adjustResize`: the keyboard
+// does not shrink when the IME opens even with `adjustResize`: the keyboard
 // simply draws over the app. `KeyboardAvoidingView` inherits that problem (its
 // Android path relies on the window resize), so anything anchored to the bottom
-// of the screen - the compose bar, a sheet's text field - ends up underneath the
+// of the screen (the compose bar, a sheet's text field) ends up underneath the
 // keyboard. Reading the IME frame directly and lifting by that amount is the one
 // approach that behaves the same on both platforms.
 //
@@ -60,7 +60,7 @@ export function useKeyboardHeight(): number {
 //
 // Only iOS has anything to subtract: its measurement includes the home
 // indicator that such a view is already clear of. Android has taken its
-// navigation bar out already, so subtracting again left the compose bar sitting
+// navigation bar out already, so subtracting again would leave the compose bar
 // a navigation bar's height under the keyboard, clipped along its bottom edge.
 export function useKeyboardInset(): number {
   const keyboard = useKeyboardHeight();

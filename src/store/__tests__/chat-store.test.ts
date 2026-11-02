@@ -579,7 +579,7 @@ describe("chat persistence window", () => {
 
 // The store's whole unread rule is `!isMine && channel !== activeChannel`, so
 // `activeChannel` means "the conversation the user is reading" and nothing else.
-// App.tsx owns that distinction and clears it when the app leaves the
+// app.tsx owns that distinction and clears it when the app leaves the
 // foreground: a thread still on screen behind a locked phone is not being read.
 //
 // Getting this wrong is invisible in the store and loud to a user. The OS
@@ -591,7 +591,7 @@ describe("unread while the app is away", () => {
   it("counts a message that arrives with no conversation being read", () => {
     const s = useChatStore.getState();
     s.addChannel("#a");
-    s.setActiveChannel(""); // what App.tsx does on background
+    s.setActiveChannel(""); // what app.tsx does on background
     s.addMessage(makeMessage({ channel: "#a", isMine: false, id: "m-away" }));
     expect(useChatStore.getState().unreadCounts["#a"]).toBe(1);
   });

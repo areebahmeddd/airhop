@@ -1,7 +1,8 @@
 // A brief confirmation pill: "Saved to your photos", and anything else where
 // the user did something small and deserves to see that it worked.
 //
-// Sits between the two things this app already had and neither of which fits.
+// Fills the gap between the app's two other feedback surfaces, neither of
+// which fits.
 // An alert dialog demands a tap for news nobody needs to acknowledge; the muted
 // status strip above the compose bar is quiet enough to miss, and it is behind
 // a full-screen photo when the action was taken from there. So: same pill the
@@ -93,9 +94,9 @@ export default function Toast({
     }
     opacity.value = withTiming(1, { duration: FADE_MS });
     lift.value = withTiming(0, { duration: FADE_MS });
-    // Both timers are tracked. Untracked, a message arriving during the
-    // fade-out left the previous pill's onHide in flight, and it landed ~180ms
-    // later and cleared the message that had just replaced it.
+    // Both timers are tracked. Untracked, a message arriving during the fade-out
+    // leaves the previous pill's onHide in flight, which lands ~180ms later and
+    // clears the message that just replaced it.
     let fade: ReturnType<typeof setTimeout> | null = null;
     const hold = setTimeout(() => {
       opacity.value = withTiming(0, { duration: FADE_MS });

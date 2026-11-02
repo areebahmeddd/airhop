@@ -20,7 +20,7 @@ export function lastActivityMs(
 }
 
 // Pinned first, then most-recent-activity first. Non-mutating; ties keep their
-// incoming relative order (Array.sort is stable on our engines), so an empty
+// incoming relative order (Array.sort is stable since ES2019), so an empty
 // thread stays put rather than jittering around.
 export function sortConversationsByActivity(
   channels: string[],

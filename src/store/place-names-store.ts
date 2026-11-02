@@ -8,9 +8,9 @@
 // Geocoding is best-effort: it needs a network round-trip and a platform
 // geocoder, and either can be unavailable. Every failure resolves to no name and
 // the UI simply omits it. A successful lookup is cached (a geohash cell maps to
-// the same place forever), so we never geocode the same cell twice. Raw
-// coordinates never leave the device: only the cell's centre is geocoded, and it
-// is derived from the geohash the app already knows. Even that is not asked for
+// the same place forever), so no cell is geocoded twice. Raw coordinates never
+// leave the device: only the cell's center is geocoded, and it is derived from
+// the geohash the app already knows. Even that is not asked for
 // while the internet is off or Tor is on (see resolve).
 
 import { decodeGeohash } from "@core/nostr/geohash-presence";
@@ -36,7 +36,7 @@ export function placeNameKey(geohash: string): string {
 interface PlaceNamesState {
   // geohash -> resolved place name.
   names: Record<string, string>;
-  // Kick off a best-effort lookup for a cell if we do not already have one.
+  // Kick off a best-effort lookup for a cell if none is cached.
   resolve: (geohash: string) => void;
   clearAll: () => void;
 }

@@ -134,7 +134,7 @@ export type BleBlocker =
   | "adapter-off"
   | "location-services-off";
 
-// What a banner's button does. The banner layer names the intent; App.tsx owns
+// What a banner's button does. The banner layer names the intent; app.tsx owns
 // the implementation, so the store stays free of navigation and native calls.
 export type BannerAction =
   | "resume"
@@ -142,7 +142,7 @@ export type BannerAction =
   | "open-location-settings"
   | "open-app-settings"
   // Open the OEM's own background/autostart screen. Android only, and only on
-  // the brands that actually need it; see utils/battery-optimization.ts.
+  // the brands that actually need it; see platform/battery-optimization.ts.
   | "open-background-limits"
   // Airhop's own Tor screen, where a blocked or held Tor is resolved.
   | "open-tor-settings"
@@ -385,16 +385,15 @@ export interface MeshBannerInputs {
   // (Xiaomi, Samsung, Oppo, ...), or undefined when there is nothing to say:
   // stock Android, iOS, or a user who has already acknowledged the note.
   //
-  // Optional so every existing caller keeps compiling and simply gets no
-  // advisory, which is the correct default for a device we know nothing about.
+  // Optional: absent means no advisory, the correct default for a device
+  // nothing is known about.
   backgroundLimitsBrand?: string;
   // The radios are scanning in short bursts to save a nearly flat battery, and
-  // the user is watching. Optional so existing callers keep compiling and get no
-  // note, which is the right default for a device whose battery we cannot read.
+  // the user is watching. Absent means no note, the right default for a device
+  // whose battery cannot be read.
   powerSaving?: boolean;
-  // This device's clock looks wrong to the mesh. Optional so existing callers
-  // keep compiling and get no banner, which is the right default for a caller
-  // with no evidence either way.
+  // This device's clock looks wrong to the mesh. Absent means no banner, the
+  // right default for a caller with no evidence either way.
   clockSkewed?: boolean;
   // This chipset has no BLE peripheral role, so the device can scan and relay
   // but can never be discovered. Optional, defaulting to the capable case.
@@ -411,7 +410,7 @@ export interface MeshBannerInputs {
   identityElsewhere?: boolean;
   nostrConnected: boolean;
   torActive: boolean;
-  // Optional so existing callers keep compiling; absent reads as "idle".
+  // Absent reads as "idle".
   torBootstrap?: TorBootstrapPhase;
   gatewayEnabled: boolean;
   bridgeActive: boolean;
@@ -612,11 +611,6 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     });
   }
 
-  // Aggressive OEM background management is the last remaining way the mesh can
-  // stop relaying without anything announcing it: the foreground service is
-  // reaped, no callback fires, and the app only finds out because it comes back
-  // to a stopped mesh. It ranks above the location note because it affects the
-  // mesh itself rather than one feature that rides on it.
   // A permanent property of the hardware, not a fault and not actionable: some
   // chipsets at the API 26 floor ship no BLE peripheral role, so the phone can
   // see everyone and nobody can see it. Said once, then dismissible, because it
@@ -631,6 +625,11 @@ export function computeMeshBanners(inputs: MeshBannerInputs): MeshBanner[] {
     });
   }
 
+  // Aggressive OEM background management is the last remaining way the mesh can
+  // stop relaying without anything announcing it: the foreground service is
+  // reaped, no callback fires, and the app only finds out because it comes back
+  // to a stopped mesh. It ranks above the location note because it affects the
+  // mesh itself rather than one feature that rides on it.
   if (
     inputs.backgroundLimitsBrand !== undefined &&
     inputs.backgroundLimitsBrand.length > 0

@@ -1,7 +1,7 @@
 // Backing store for the Ring overlay: the phone rings while `current` is set.
 //
-// Transient, not persisted, like alert-store. app.tsx's subscribeInboundRings
-// wiring calls `show` for every ring not arriving in the thread already on
+// Transient, not persisted, like alert-store. services/notification-pipeline
+// calls `show` for every ring not arriving in the thread already on
 // screen, whether or not the app is in front; out of the foreground the
 // system tray is told as well (raiseRingNotification). ring-alert-sheet.tsx
 // renders it and owns the ringing.

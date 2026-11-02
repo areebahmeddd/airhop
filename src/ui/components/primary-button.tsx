@@ -1,4 +1,3 @@
-// PrimaryButton component.
 // The single filled CTA surface for a screen's primary action (onboarding,
 // confirmations). Near-black fill + inverse text, matching the same
 // iMessage-style inversion used for outgoing message bubbles. The outline

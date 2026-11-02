@@ -1,4 +1,3 @@
-// Avatar component.
 // A circular badge showing the first two characters of a username,
 // with a background color deterministically derived from the peer ID.
 
@@ -107,8 +106,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
       letterSpacing: INITIALS_TRACKING,
       // Tracking is applied after the last glyph too, so the text box measures
-      // wider than it draws and centring it leaves the glyphs half a track
-      // short. Cancelling the trailing space puts them back on centre.
+      // wider than it draws and centering it leaves the glyphs half a track
+      // short. Canceling the trailing space puts them back on center.
       marginEnd: -INITIALS_TRACKING,
     },
   });

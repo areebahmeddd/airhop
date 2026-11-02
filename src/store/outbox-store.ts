@@ -69,7 +69,7 @@ interface OutboxState {
 
   // Returns the oldest entries the per-recipient cap pushed out, if any.
   enqueue: (msg: Omit<PendingMessage, "attempts">) => PendingMessage[];
-  // Remove a message once it has actually gone out.
+  // Take a message off the queue, normally because a receipt confirmed it.
   resolve: (id: string) => void;
   // Everything still owed to a given peer, oldest first.
   forPeer: (peerID: string) => PendingMessage[];

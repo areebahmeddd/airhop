@@ -129,7 +129,7 @@ describe("mentionsNickname across scripts", () => {
     expect(mentionsNickname("@あさひこ hello", "あさひ")).toBe(false);
   });
 
-  it("keeps refusing an email, which is why the OPENING boundary stayed strict", () => {
+  it("keeps refusing an email, which is why the OPENING boundary stays strict", () => {
     // Relaxing the leading side would read the host out of "ali@example.com" as
     // a mention of "example". The cost is that Chinese and Japanese, which write
     // no spaces, need the mention at a word start.

@@ -78,7 +78,7 @@ const MAX_SAMPLED_FRAME_MILLIS = 50;
 
 // A motion session runs from touch-down through any fling or animation until
 // the globe rests. Within one, detail only steps down: letting it step back up
-// made the grid and labels flash under the finger. Between sessions, a smooth
+// makes the grid and labels flash under the finger. Between sessions, a smooth
 // one lets the next start a level higher, until any session has had to shed.
 export interface Governor {
   detail: MotionDetail;

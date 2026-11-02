@@ -20,7 +20,7 @@ function state() {
 describe("liveVoiceEnabled", () => {
   it("defaults on, matching bitchat's PTTSettings", () => {
     // A walkie-talkie nobody can find is not a feature. bitchat ships this on
-    // and so do we; turning it off is the deliberate act.
+    // and so does Airhop; turning it off is the deliberate act.
     state().setLiveVoiceEnabled(false);
     state().reset();
     expect(state().liveVoiceEnabled).toBe(true);

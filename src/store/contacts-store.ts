@@ -117,9 +117,9 @@ interface ContactsState {
   contacts: Record<string, Contact>;
 
   // Save or update a contact. Merges onto an existing record and can never
-  // weaken one, whichever of the four screens calls it. The policy lives here
-  // rather than in the callers, because a rule several of them have to remember
-  // is not a rule:
+  // weaken one, whichever caller writes it. The policy lives here rather than
+  // in the callers, because a rule several of them have to remember is not a
+  // rule:
   //
   //   source           never decreases (see SOURCE_RANK)
   //   verification     kept once earned; only a write carrying one may set it

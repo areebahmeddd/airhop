@@ -1,4 +1,3 @@
-// MeshStatusBar component.
 // A stack of slim contextual banners surfacing Mesh-tab state: a deliberate
 // pause (Away), hard blockers (Bluetooth off, permission), and calm notes
 // (location off, relaying via Nostr, Tor on, gateway on). Shown on the Mesh

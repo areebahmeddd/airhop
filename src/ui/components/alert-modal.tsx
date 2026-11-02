@@ -1,5 +1,5 @@
 // Global alert modal, the visual counterpart to src/store/alert-store.ts's
-// `showAlert()`. Mounted once at the app root (App.tsx) so any screen can call
+// `showAlert()`. Mounted once at the app root (app.tsx) so any screen can call
 // `showAlert(title, message, buttons)` and get this design-language dialog
 // instead of the OS-native Alert.alert box.
 //

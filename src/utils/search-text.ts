@@ -1,5 +1,5 @@
-// How a query is normalized, and how good a match is once found. Split out of
-// chat-search so settings search ranks identically.
+// How a query is normalized, and how good a match is once found. Shared by
+// chat-search and settings search so both rank identically.
 
 import { stripIsolates } from "@i18n";
 

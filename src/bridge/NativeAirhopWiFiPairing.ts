@@ -60,7 +60,7 @@ export interface Spec extends TurboModule {
   // advertise so the other one can find this.
   //
   // `labels` and `colors` are the screen that launches Apple's sheet, which is
-  // ours rather than the system's. Both cross the bridge for the same reason:
+  // Airhop's rather than the system's. Both cross the bridge for the same reason:
   // native owns no user-facing content and no visual value. The strings come
   // from the catalog and the colors from `useThemeColors()`, so the screen
   // follows the app's theme without Swift holding a second palette that would

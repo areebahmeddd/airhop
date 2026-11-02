@@ -1,6 +1,6 @@
 // Design tokens.
 //
-// Monochromatic light palette. One interactive accent (near-black). Semantic
+// Monochromatic palettes, light and dark, with one interactive accent. Semantic
 // colors used strictly for meaning, never decoration.
 //
 // Rule: if a color does not communicate information, it should not exist.
@@ -55,7 +55,7 @@ export const Colors = {
   // ---- Selection ----
   // Highlight behind selected text in an input. Never `accent`: that is a solid
   // near-black, and a text field paints the selection as an opaque block behind
-  // the glyphs, so selecting a whole message hid the text under a slab. Enough
+  // the glyphs, so selecting a whole message hides the text under a slab. Enough
   // alpha to show the run, little enough to keep every glyph readable.
   selection: "rgba(17,17,17,0.18)",
 
@@ -250,7 +250,7 @@ export const FontSize = {
 
 // One line height per text size, so a size cannot drift across screens. Body
 // sizes sit near 1.5x, the display size near 1.05x. The "Tight" pair is for a
-// single glyph centred in a fixed pill: a badge digit, a dismiss cross.
+// single glyph centered in a fixed pill: a badge digit, a dismiss cross.
 export const LineHeight = {
   "2xsTight": 12,
   "2xs": 15,
@@ -279,8 +279,9 @@ export const MaxFontScale = {
 // dismissal and a toast fade read as the same app moving rather than three
 // components each guessing.
 //
-// Anything built on these must also respect the OS "reduce motion" switch. Use
-// reanimated's `useReducedMotion()` at the call site (WCAG 2.3.3).
+// Anything built on these must also respect the OS "reduce motion" switch
+// (WCAG 2.3.3). Reanimated does so on its own; `Animated` goes through
+// `useReducedMotion()` in ui/hooks/use-reduced-motion.ts.
 export const Duration = {
   base: 180, // fades, enters
   slow: 220, // sheet dismiss, list reorder
@@ -297,12 +298,12 @@ export const FontWeight = {
   bold: "700" as const,
 };
 
-// Monospace family for keys, geohashes, IDs, and wallet amounts. Points at the
-// bundled JetBrains Mono (loaded in App.tsx); if the font ever fails to load,
-// the platform substitutes its own monospace, so text never disappears.
+// Monospace family for keys, geohashes, IDs, and wallet amounts: the system
+// monospace by default, or the bundled JetBrains Mono (loaded in app.tsx). If
+// that font ever fails to load, the platform substitutes its own monospace, so
+// text never disappears.
 export const FontFamily = {
-  // Resolved live from the user's Appearance choice via the single MONO_FONTS
-  // table (one source of truth, so adding a font can't mismap here). Read at
+  // Resolved live from the user's Appearance choice through MONO_FONTS. Read at
   // style-build time; useThemeColors below recomputes styles when it changes.
   get mono(): string {
     return MONO_FONTS[useSettingsStore.getState().monoFont].family;
@@ -332,7 +333,7 @@ export const Radius = {
 export const DISABLED_OPACITY = 0.4;
 
 // The press treatment for a surface with nothing neutral to darken: an accent
-// button, whose fill IS the accent so darkening it would mean recolouring the
+// button, whose fill IS the accent so darkening it would mean recoloring the
 // label too, and a bare icon and label such as a tab or a segment. Everything
 // else darkens to Colors.surfacePressed instead. Applied through Pressable's
 // style callback.

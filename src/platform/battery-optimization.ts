@@ -130,10 +130,9 @@ export function needsBatteryOptimizationPrompt(): boolean {
   return isKnownAggressiveOEM(getDeviceBrand());
 }
 
-// Reads the device brand from React Native's Platform.constants.
-// Returns empty string if not available (e.g. running in tests without mocks).
+// The device brand from React Native's Platform.constants, or empty when it
+// has none (running in tests without mocks).
 export function getDeviceBrand(): string {
-  // Platform.constants is available on both old and New Architecture.
   const constants = Platform.constants as Record<string, unknown>;
   return typeof constants.Brand === "string" ? constants.Brand : "";
 }

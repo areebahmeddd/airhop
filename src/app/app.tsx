@@ -289,9 +289,9 @@ let staleSendsSettled = false;
 
 // Request the BLE runtime permissions the OS requires, THEN start the mesh.
 // Without the grant, native startScanning/startAdvertising throw and are
-// swallowed: a silent, total discovery failure. On denial we surface a
-// dialog instead of failing quietly, and still start the service so Nostr
-// (internet) transport keeps working even when BLE is unavailable.
+// swallowed: a silent, total discovery failure. A denial is surfaced rather
+// than left quiet (see applyBlePermissionResult), and the service still starts
+// so Nostr (internet) transport keeps working even when BLE is unavailable.
 async function startMeshWithPermissions(
   identity: Identity,
   nickname: string,
@@ -306,7 +306,7 @@ async function startMeshWithPermissions(
   // than the one it exists to prevent.
   //
   // Android-only in practice, and correctly so: hasBlePermissions() resolves
-  // true on iOS, where CoreBluetooth prompts on first use and carries our own
+  // true on iOS, where CoreBluetooth prompts on first use and carries Airhop's
   // NSBluetoothAlwaysUsageDescription string. That prompt IS the primer there,
   // and iOS has no location coupling to explain away. The sheet still renders
   // correctly on iOS if it is ever shown; it simply is not needed.
@@ -773,7 +773,7 @@ function AppContent(): React.JSX.Element {
   }, [languagePreference, wantedLanguage]);
 
   // appReady guards against a flash of the welcome screen on every launch.
-  // The identity check is async, so we render nothing until it resolves.
+  // The identity check is async, so nothing renders until it resolves.
   const [appReady, setAppReady] = useState(false);
   // A wipe is destroying this device's data right now. Two ways in, one screen:
   // triggered from Profile, or resumed at launch after the last session died
@@ -849,7 +849,6 @@ function AppContent(): React.JSX.Element {
   const [chatView, setChatView] = useState<ChatView>({ kind: "list" });
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<TextInputInstance>(null);
-  // Which message a search result should scroll a thread to on open.
   const [messageTarget, setMessageTarget] = useState<MessageTarget | null>(
     null,
   );
@@ -886,10 +885,10 @@ function AppContent(): React.JSX.Element {
 
   // Android system nav bar: tint its buttons/pill to the theme, the same way the
   // status bar does, so the top and bottom chrome read as one themed surface.
-  // Driven by our in-app theme, not the OS scheme, so forcing dark while the
+  // Driven by the in-app theme, not the OS scheme, so forcing dark while the
   // phone is light still gets light buttons. Under edge-to-edge the bar is
-  // transparent and our content draws behind it, so only the button contrast is
-  // ours to set. No-op on iOS, which has no such bar.
+  // transparent and the app's content draws behind it, so only the button
+  // contrast is left to set. No-op on iOS, which has no such bar.
   //
   // Set imperatively rather than through the declarative <NavigationBar>
   // component, and the difference is the whole point. That component keeps a
@@ -999,7 +998,7 @@ function AppContent(): React.JSX.Element {
               })
               .catch(() => {
                 // Unreachable keychain. It said nothing about data at rest, so
-                // neither do we.
+                // the banner says nothing either.
               });
           }
         }
@@ -1207,9 +1206,9 @@ function AppContent(): React.JSX.Element {
     // No setAppActive here: the useState initializer above already read
     // AppState, and the listener below carries every change after it.
     //
-    // Re-read the permissions whenever we come to the foreground: the user may
-    // have changed either in system Settings while we were backgrounded, and
-    // coming back is the only signal we get. Bluetooth adapter changes already
+    // Re-read the permissions on every return to the foreground: the user may
+    // have changed either in system Settings while the app was away, and
+    // coming back is the only signal there is. Bluetooth adapter changes already
     // arrive as native events, so they need no polling here.
     //
     // Both are checks, never requests: prompting someone who just walked back
@@ -1235,15 +1234,14 @@ function AppContent(): React.JSX.Element {
       // only on a change. Every blocker that is not a permission (Bluetooth
       // switched off, location services switched off, a grant that has not yet
       // reached the Bluetooth stack) would then come back to a mesh that decided
-      // nothing needed doing. The controller is a
-      // reconciler: it reads the device itself and issues only the calls that
-      // change something, so calling it on every resume is both correct and
-      // free.
+      // nothing needed doing. The controller is a reconciler: it reads the
+      // device itself and issues only the calls that change something, so calling
+      // it on every resume is both correct and free.
       getMeshService()?.retryRadios();
     };
     syncPermissions();
-    // Tell the mesh which side of the screen we are on, for both states: the
-    // radio controller turns the scan rate down when backgrounded, and needs
+    // Tell the mesh which side of the screen the app is on, for both states:
+    // the radio controller turns the scan rate down when backgrounded, and needs
     // the leaving edge as much as the returning one.
     getMeshService()?.setAppForeground(AppState.currentState === "active");
     // Arti too: a boot start put it to sleep before any screen existed.
@@ -1259,11 +1257,11 @@ function AppContent(): React.JSX.Element {
       // drops the radios to power-saver, and every mode change restarts the
       // scanner: the OS permission dialog, the most common way into this state
       // on the very first launch, would bounce the scan off and on underneath
-      // itself. Everything else here still treats it as
-      // "not active", which is right for them: a notification should be raised
-      // and chat state flushed, because the user genuinely is not reading the
-      // screen. The app-switcher cover is not one of them, and is native for
-      // exactly this reason: it hangs off backgrounding, not off focus.
+      // itself. Everything else here still treats it as "not active", which is
+      // right for them: a notification should be raised and chat state flushed,
+      // because the user genuinely is not reading the screen. The app-switcher
+      // cover is not one of them, and is native for exactly this reason: it hangs
+      // off backgrounding, not off focus.
       getMeshService()?.setAppForeground(next !== "background");
       // Arti needs the same signal, and needs it on the "background" boundary
       // rather than on "active": an app switcher or a permission dialog does not
@@ -1273,7 +1271,7 @@ function AppContent(): React.JSX.Element {
       if (next !== "active") {
         // Chat persistence is throttled, so leaving the foreground is the last
         // safe moment to force whatever is still inside that window to disk.
-        // The OS can stop giving us cycles at any point after this.
+        // The OS can stop giving the app cycles at any point after this.
         flushChatPersistence();
       }
       if (next === "active") {
@@ -2685,7 +2683,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.full,
       ...Shadow.high,
     },
-    // The pill itself: a solid surface with a hairline edge.
     tabBar: {
       flexDirection: "row",
       backgroundColor: Colors.surface,

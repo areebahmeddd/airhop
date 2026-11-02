@@ -57,7 +57,7 @@ describe("detail frames", () => {
 });
 
 describe("governor", () => {
-  // Shedding detail makes frames fast, and stepping back up mid-drag made the
+  // Shedding detail makes frames fast, and stepping back up mid-drag makes the
   // grid and labels flash on and off.
   it("never steps detail back up within one motion", () => {
     const g = makeGovernor();

@@ -4,7 +4,7 @@
 // Everything formats in the app's language, not the device's: someone reading
 // Airhop in Spanish on an English phone sees "mar", not "Tue". So never
 // `toLocale*String([])`, whose empty list asks the OS, the value that diverges.
-// The language is read at call time; App.tsx subscribes to the i18n store and
+// The language is read at call time; app.tsx subscribes to the i18n store and
 // re-renders the tree on a change, so no formatter needs to be a hook.
 //
 // Numerals are pinned to Latin app-wide (`formatCount` in `@i18n` does the same,
@@ -310,7 +310,7 @@ export function amountParts(
 // "500 sat · coffee money", what chat search matches and shows for a token.
 export function formatTokenSummary(info: TokenInfo): string {
   const amount = formatUnitAmount(info.amount, info.unit);
-  return info.memo ? `${amount} - ${info.memo}` : amount;
+  return info.memo ? `${amount} · ${info.memo}` : amount;
 }
 
 // m:ss.

@@ -9,7 +9,7 @@
 // canonical (announce-manager normalizes at decode), but message text is not:
 // it is whatever the sender's keyboard produced, and an iOS keyboard and an
 // Android one can emit the same accented name in different encodings. Comparing
-// raw strings meant a cross-platform mention silently never fired.
+// raw strings means a cross-platform mention silently never fires.
 
 import { normalizeNickname } from "@core/mesh/discovery/nickname";
 

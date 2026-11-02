@@ -1,5 +1,3 @@
-// Outbox tests.
-//
 // This queue is the difference between "queued for delivery" being true and
 // being a lie, so the properties that matter are: nothing is lost, nothing is
 // delivered twice, and nothing lingers forever.
@@ -193,8 +191,8 @@ describe("expiry", () => {
     }
     enqueue("b-important", PEER_B, now);
 
-    // A single global cap evicted the oldest entry whatever it was, so the
-    // chatty peer above would silently have deleted this one.
+    // A single global cap would evict the oldest entry whatever it was, so the
+    // chatty peer above would silently delete this one.
     expect(
       state()
         .forPeer(PEER_B)

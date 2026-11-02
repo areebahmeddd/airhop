@@ -9,7 +9,7 @@ export interface NearbyPeer {
   nickname: string;
   lastSeenMs: number;
   noisePubKeyHex: string; // hex of 32-byte X25519 pub
-  rssi?: number; // dBm, populated once BLE service is wired in v0.7+
+  rssi?: number; // dBm
   // Whether this peer's ANNOUNCE arrived over a BLE link we hold, rather than
   // relayed through the mesh. A direct peer cannot be invented: it requires an
   // actual GATT connection. That makes it the one thing worth protecting when
@@ -117,8 +117,8 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
       const next = new Map(state.peers);
       const existing = state.peers.get(peer.peerID);
       // Merge over the existing entry rather than replacing it. ANNOUNCE-derived
-      // updates carry no `rssi`, so a plain replace wiped the signal reading
-      // every 30s: it would flicker between a real value and undefined.
+      // updates carry no `rssi`, so a plain replace would wipe the signal reading
+      // on every announce and flicker between a real value and undefined.
       next.set(peer.peerID, { ...existing, ...peer, lastSeenMs: Date.now() });
       // Bound the list on insert.
       //
@@ -148,10 +148,11 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
       // a reading identical to the last.
       if (existing === undefined || existing.rssi === rssi) return state;
       const next = new Map(state.peers);
-      // Deliberately does NOT refresh lastSeenMs. RSSI is polled every 5s off
-      // the GATT link, so treating it as liveness would pin a peer as "just
-      // seen" forever even after their ANNOUNCE timer died, a ghost peer that
-      // evictStale could never remove. Reachability stays driven by ANNOUNCEs.
+      // Deliberately does NOT refresh lastSeenMs. RSSI is polled every few
+      // seconds off the GATT link, so treating it as liveness would pin a peer
+      // as "just seen" forever even after their ANNOUNCE timer died, a ghost
+      // peer that evictStale could never remove. Reachability stays driven by
+      // ANNOUNCEs.
       next.set(peerID, { ...existing, rssi });
       return { peers: next };
     });

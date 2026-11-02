@@ -30,9 +30,9 @@ export interface GroupReach {
 // their stores, so this stays a pure function the tests can drive directly.
 //
 // A member is identified on the roster by fingerprint and on the radio by peer
-// ID, and the peer ID is the first 16 hex of the fingerprint. That mapping is
-// used in five other places (see channel-info-sheet and mesh-service) and is a
-// consequence of peerID = SHA-256(noiseStaticPub)[0:8].
+// ID, and the peer ID is the first 16 hex of the fingerprint, a consequence of
+// peerID = SHA-256(noiseStaticPub)[0:8]. channel-info-sheet and mesh-service
+// rely on the same mapping.
 export function groupReach(
   memberFingerprints: readonly string[],
   localPeerID: string,

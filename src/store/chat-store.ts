@@ -68,7 +68,8 @@ export interface ChatMessage {
   isMine: boolean;
   attachment?: ChatAttachment;
   // Local-only notice rendered as centered muted text instead of a bubble
-  // (e.g. "you took a screenshot"). Never sent over the mesh.
+  // (e.g. "you took a screenshot"). Never sent over the mesh, and never inferred
+  // from text: matching on user text lets any peer forge a system row.
   isSystem?: boolean;
   // The catalog key `text` was rendered from, for rows the app writes itself:
   // a location card's summary, a group membership notice, a payment receipt.
@@ -432,8 +433,8 @@ const mmkvStorage = {
 //
 // Survivable at conversational speed, and not survivable in the case this app
 // exists for: a phone rejoining a busy mesh takes its missed history in a
-// burst, and every packet in that burst re-serialises everything received so
-// far. Same quadratic append bitchat's conversation-store work removed.
+// burst, and every packet in that burst re-serializes everything received so
+// far. The same quadratic append bitchat's conversation store avoids.
 //
 // Trailing-edge throttle: at most one write per window, and the last value in
 // the window is what lands. Dropping intermediate snapshots is safe because
@@ -493,9 +494,8 @@ export const useChatStore = create<ChatState>()(
     (set, get) => ({
       channels: DEFAULT_CHANNELS,
       messages: {},
-      // Empty string: user at list, not inside any thread.
-      // Changing from DEFAULT_CHANNELS[0] so new messages to #bluetooth are
-      // counted as unread until the user explicitly opens that channel.
+      // Empty string: user at list, not inside any thread, so new messages to
+      // #bluetooth count as unread until the user explicitly opens that channel.
       activeChannel: "",
       lastThread: "",
       unreadCounts: {},
@@ -853,8 +853,8 @@ export const useChatStore = create<ChatState>()(
       },
 
       // Wipes a channel's messages and unread count but keeps the channel
-      // itself (and its description/transport/visibility/pin state) intact,
-      // distinct from removeChannel, which deletes the channel entirely.
+      // itself (and its key, pin and mute) intact, distinct from removeChannel,
+      // which deletes the channel entirely.
       clearChannelMessages(channel: string) {
         set((state) => {
           const messages = { ...state.messages };
@@ -867,13 +867,6 @@ export const useChatStore = create<ChatState>()(
         });
       },
 
-      // Fold one thread into another once two channel keys are known to be
-      // the same person (an in-person scan, or a mutual geohash card exchange).
-      //
-      // `from` may be the thread the user has open: a conversation carried over
-      // Nostr is merged the moment the scan lands. So the pointers move with
-      // the messages, or the open thread renders a channel that no longer
-      // exists.
       noteGeoCardExchange(
         pubkey: string,
         half: { theirPeerID?: string; sentMine?: boolean },
@@ -919,6 +912,13 @@ export const useChatStore = create<ChatState>()(
         }));
       },
 
+      // Fold one thread into another once two channel keys are known to be
+      // the same person (an in-person scan, or a mutual geohash card exchange).
+      //
+      // `from` may be the thread the user has open: a conversation carried over
+      // Nostr is merged the moment the scan lands. So the pointers move with
+      // the messages, or the open thread renders a channel that no longer
+      // exists.
       mergeChannel(from: string, to: string) {
         if (from === to) return;
         // Reading either name means reading the merged conversation, so nothing

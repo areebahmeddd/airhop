@@ -69,7 +69,7 @@ const COMPASS: readonly CompassPoint[] = [
 
 export function compassPoint(bearing: number): CompassPoint {
   const normalized = ((bearing % 360) + 360) % 360;
-  // +22.5 so each sector is centred on its label rather than starting at it.
+  // +22.5 so each sector is centered on its label rather than starting at it.
   return COMPASS[Math.floor((normalized + 22.5) / 45) % 8] as CompassPoint;
 }
 

@@ -1,6 +1,6 @@
 // Persistent storage for signed bulletin-board posts and their tombstones.
 //
-// Mirrors bitchat BoardStore.swift. Posts are signed public notices designed to
+// Mirrors bitchat-ios's BoardStore. Posts are signed public notices designed to
 // outlive chat: they stay on disk until their author-chosen expiry (max 7 days).
 // Tombstones are retained until the deleted post's original expiry so the delete
 // keeps outrunning stale copies of the post.

@@ -74,7 +74,7 @@ describe("bearingDegrees", () => {
 });
 
 describe("compassPoint", () => {
-  // Sectors are centred on their labels, so due north reads "n" from either
+  // Sectors are centered on their labels, so due north reads "n" from either
   // side of 0.
   it("centers each sector on its label", () => {
     expect(compassPoint(0)).toBe("n");

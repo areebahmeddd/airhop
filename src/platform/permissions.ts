@@ -6,14 +6,14 @@
 // go wrong:
 //
 //   undetermined  the OS prompt has never been shown. Show it. Saying anything
-//                 of our own first is a second dialog nobody asked for.
+//                 of the app's own first is a second dialog nobody asked for.
 //   deniable      denied once, but the OS will still prompt. Ask again, because
 //                 the user is now in the flow that needs it and the ask finally
 //                 has context.
 //   blocked       denied for good ("Don't allow" twice on Android, any denial on
 //                 iOS). Prompting again is a silent no-op, so this is the only
-//                 case that deserves a message from us - and that message has to
-//                 include the way out, which is the Settings app.
+//                 case that deserves a message from the app, and that message
+//                 has to include the way out, which is the Settings app.
 //
 // Callers get a plain boolean and can stay linear.
 

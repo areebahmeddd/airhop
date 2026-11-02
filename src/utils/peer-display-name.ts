@@ -69,7 +69,7 @@ export function channelSenderName(
   const nick = contactName ?? announced;
 
   // A Nostr sender's public-key tail already identifies them uniquely, so no
-  // fingerprint suffix when we fall back to it. A trusted or announced name
+  // fingerprint suffix when it is the fallback. A trusted or announced name
   // still wins, kept distinguishable with the same tail.
   if (isNostrId(peerID)) {
     return nick ? `${nick}#${peerID.slice(-4)}` : nostrShortLabel(peerID);
