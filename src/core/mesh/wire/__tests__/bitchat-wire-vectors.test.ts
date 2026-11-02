@@ -198,9 +198,10 @@ describe("should_compress", () => {
 });
 
 describe("compress", () => {
-  // DEFLATE output is not canonical, so the interop contract is that each side
-  // inflates the other's stream and agrees on whether to compress at all. The
-  // relay path never recompresses (WirePayload), so exact bytes are not needed.
+  // DEFLATE output is not canonical, so what this pins is that each side inflates
+  // the other's stream and agrees on whether to compress at all. Airhop's relay
+  // path never recompresses (WirePayload); bitchat-ios's does (PROTOCOLS.md
+  // section 2.2).
   replay<{ payload: Hex }, { compressed: Hex | null }>(
     "compress",
     ({ payload }, { compressed }) => {

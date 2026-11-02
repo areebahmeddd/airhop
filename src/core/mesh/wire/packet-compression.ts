@@ -1,17 +1,20 @@
-// Payload compression, byte-identical to bitchat's CompressionUtil.
+// Payload compression in bitchat's CompressionUtil format: raw DEFLATE plus the
+// original size.
 //
 // bitchat compresses payloads with raw DEFLATE (RFC 1951, no zlib header) and
-// stores the original size so the receiver can restore it. iOS uses Apple's
-// COMPRESSION_ZLIB, Android uses java.util.zip.Deflater at DEFAULT_COMPRESSION
-// with nowrap=true; both are reference zlib.
+// stores the original size so the receiver can restore it. bitchat-ios uses
+// Apple's COMPRESSION_ZLIB, bitchat-android java.util.zip.Deflater at
+// DEFAULT_COMPRESSION with nowrap=true.
 //
-// The output must match theirs byte for byte, because signing and verification
-// both re-encode the packet, so verification re-compresses. A different encoder
-// produces a different signing blob and a signature that will not verify even
-// though the payload is identical. DEFLATE output is not canonical: any
-// conforming encoder emits a valid stream, but not the same bytes. pako's
-// original hash does not match reference zlib; `legacyHash: false` selects the
-// one that does, and it is set explicitly so parity does not ride on a default.
+// DEFLATE output is not canonical: any conforming encoder emits a valid stream,
+// but not the same bytes. A decoded packet keeps its wire form (WirePayload in
+// packet-codec.ts), so only a packet this node originates passes through here,
+// and the signature covers the bytes this emits. A verifier that re-compresses
+// instead, as bitchat-ios does, needs its own encoder to produce those bytes.
+// pako's original hash does not match reference zlib; `legacyHash: false`
+// selects the one that does, which is what bitchat-android's Deflater emits,
+// and it is set explicitly so parity does not ride on a default. Apple's encoder
+// differs on some inputs (PROTOCOLS.md section 2.2).
 
 import { deflateRaw, Inflate } from "pako";
 
@@ -23,12 +26,11 @@ export const COMPRESSION_THRESHOLD = 100;
 // payload-limits.ts); this bounds any other caller.
 export const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024;
 
-// zlib DEFAULT_COMPRESSION, the level Android passes and iOS's COMPRESSION_ZLIB
-// matches. Do not change: it would break signature parity with bitchat.
+// zlib DEFAULT_COMPRESSION, the level bitchat-android passes. Do not change: it
+// would break the parity above.
 const COMPRESSION_LEVEL = 6;
 
-// legacyHash: false selects the zlib-compatible hash. Do not change: it is what
-// makes our output byte-identical to bitchat's, and signatures depend on it.
+// Do not change `legacyHash`, for the reason at the top of this file.
 const DEFLATE_OPTIONS: NonNullable<Parameters<typeof deflateRaw>[1]> = {
   level: COMPRESSION_LEVEL,
   legacyHash: false,

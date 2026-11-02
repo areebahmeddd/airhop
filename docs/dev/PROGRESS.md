@@ -26,6 +26,7 @@ Where the build stands: what exists and how it is verified, what is in flight, a
 - A screenshot in a private chat is not announced on Android 13 alone, where detecting one needs a media read permission Airhop does not hold ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#countermeasures)).
 - Posting in a location channel links the cell to this identity: a post carries the mesh name, and an in-place post also goes over Bluetooth under the mesh key ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#key-pair)).
 - On Android, and on iOS without Tor, a relay WebSocket frame has no inbound size bound, so a hostile relay could send one huge frame ([SECURITY-REVIEW.md](SECURITY-REVIEW.md#6-limitations-and-accepted-risks)).
+- A signed public `#bluetooth` message of 100 bytes or more can be dropped by bitchat-ios 1.8.0, which verifies by re-compressing with Apple's encoder ([PROTOCOLS.md section 2.2](../spec/PROTOCOLS.md#22-compression)). An upstream fix is open in bitchat-ios [#1805](https://github.com/permissionlesstech/bitchat/pull/1805).
 - A public `#bluetooth` message retried after an app kill can show twice to a neighbor who had the first copy, since those packets carry no message ID.
 - On Android the globe picker draws with Vulkan 1.1, which every 64-bit phone launched on Android 10 or later has. A phone without it (older, 32-bit or Android Go) still installs Airhop, since the manifest drops Skia's Vulkan requirement, but is not offered the globe and picks a location channel by typing its geohash. Every supported iPhone has Metal.
 

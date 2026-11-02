@@ -203,8 +203,17 @@ received form and falls back to compressing, keeping tampering detectable.
 Airhop's outbound DEFLATE is byte-identical to reference zlib (`pako` with
 `legacyHash: false`, locked by test vectors in `packet-compression.test.ts`).
 It is verified against zlib 1.3.1, which is also what Android's `Deflater`
-produces. It is **not verified against Apple's encoder**, which needs
-`CompressionUtil.compress` run on Apple hardware.
+produces. It **differs from Apple's encoder**: two of the five compressed vectors
+recorded from bitchat-ios (`fixtures/bitchat-ios.json`) are not what `pako` emits.
+
+bitchat-ios 1.8.0 does not keep the received form. It re-compresses a decoded
+packet with Apple's encoder both to verify it and to relay it, so a signed packet
+whose compressed bytes differ fails verification there and is dropped, and one it
+relays no longer verifies downstream. Frames from bitchat-android fail the same
+way. No sender can avoid it, since leaving a payload uncompressed changes the
+preimage too. The fix belongs to bitchat-ios:
+[#1805](https://github.com/permissionlesstech/bitchat/pull/1805), still open,
+keeps the received form.
 
 **Decompression is bounded by the declared size while it runs.**
 `originalSize` is a sender-supplied field, so a packet can declare 100 bytes and

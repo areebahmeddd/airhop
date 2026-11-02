@@ -1,8 +1,9 @@
 // Binary encode/decode for the bitchat wire format.
 //
 // Byte-identical to bitchat BinaryProtocol.swift / BinaryProtocol.kt so an
-// Airhop packet is decodable and signature-verifiable by bitchat-ios and bitchat-android
-// nodes, and vice versa. Two header versions coexist:
+// Airhop packet is decodable by bitchat-ios and bitchat-android nodes, and vice
+// versa, and its signature verifies there, apart from the compressed case in
+// PROTOCOLS.md section 2.2. Two header versions coexist:
 //
 //   v1 header (14 bytes):  version type ttl timestamp(8) flags payloadLen(u16)
 //   v2 header (16 bytes):  version type ttl timestamp(8) flags payloadLen(u32)
