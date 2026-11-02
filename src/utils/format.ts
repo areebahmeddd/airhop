@@ -307,7 +307,7 @@ export function amountParts(
   return { amount: value, unit: label };
 }
 
-// "500 sat - coffee money", for search previews and accessibility labels.
+// "500 sat · coffee money", what chat search matches and shows for a token.
 export function formatTokenSummary(info: TokenInfo): string {
   const amount = formatUnitAmount(info.amount, info.unit);
   return info.memo ? `${amount} - ${info.memo}` : amount;

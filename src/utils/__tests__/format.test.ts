@@ -286,7 +286,7 @@ describe("formatTokenSummary", () => {
 
   it("renders amount and unit, with the memo when present", () => {
     expect(formatTokenSummary(info(64, "sat"))).toBe("64 sat");
-    expect(formatTokenSummary(info(64, "sat", "beer"))).toBe("64 sat - beer");
+    expect(formatTokenSummary(info(64, "sat", "beer"))).toBe("64 sat · beer");
   });
 
   it("groups a large amount", () => {
