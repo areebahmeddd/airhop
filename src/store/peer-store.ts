@@ -1,6 +1,7 @@
 // Peer state: nearby peers discovered via ANNOUNCE packets.
 // Not persisted: peer list is always rebuilt from live BLE discovery.
 
+import { PEER_REACHABLE_TTL_MS } from "@core/router/message-router";
 import { create } from "zustand";
 
 export interface NearbyPeer {
@@ -56,15 +57,15 @@ interface PeerState {
   clearAll: () => void;
 }
 
-// A peer is "reachable" if seen within the last 60 seconds (matches
-// PEER_REACHABLE_TTL_MS in message-router.ts).
+// A peer is "reachable" if seen within the router's mesh reachability window
+// (PEER_REACHABLE_TTL_MS).
 //
 // Exported because this is also what the UI's green dot means. Every screen
 // that renders presence reads it rather than its own literal, so the radar and
 // the peer list cannot disagree about the same peer. 60s is one missed ANNOUNCE
 // of slack against the 15-30s jitter in announce-manager, and it is the eviction
-// cutoff below, so anything shorter greys out peers the store still holds.
-export const REACHABLE_TTL_MS = 60_000;
+// cutoff below, so anything shorter grays out peers the store still holds.
+export const REACHABLE_TTL_MS = PEER_REACHABLE_TTL_MS;
 
 // Ceiling on how many peers the radar will hold.
 //

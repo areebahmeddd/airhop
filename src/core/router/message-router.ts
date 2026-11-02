@@ -39,7 +39,7 @@ const DIRECT_PEER_TTL_MS = ANNOUNCE_CONNECTED_MAX_MS * 1.5;
 // Timeout for mesh peers learned via relayed ANNOUNCEs (not directly connected).
 // Longer because relayed packets can take several hops and arrive late.
 // Matches bitchat's 60-second mesh reachability window.
-const PEER_REACHABLE_TTL_MS = 60_000;
+export const PEER_REACHABLE_TTL_MS = 60_000;
 
 // ---- Peer registry ----
 
