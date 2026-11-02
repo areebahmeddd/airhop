@@ -1,8 +1,8 @@
-// Human-readable names for geohash cells, e.g. "tdr1k" -> "Kumaraswamy Layout".
+// Human-readable names for geohash cells, e.g. "Old Town".
 //
-// A location channel is scoped by a geohash, which is precise but unreadable. We
-// reverse-geocode the cell's centre once (best-effort, device-side) and cache
-// the result, so the UI can show "~Kumaraswamy Layout" beside the coverage tag,
+// A location channel is scoped by a geohash, which is precise but unreadable.
+// The cell's center is reverse-geocoded once (best-effort, device-side) and the
+// result cached, so the UI can show "~Old Town" beside the coverage tag,
 // matching how bitchat labels its location channels.
 //
 // Geocoding is best-effort: it needs a network round-trip and a platform

@@ -125,7 +125,7 @@ export function GeohashJumpSheet({
 
   const bookmarks = useGeohashBookmarksStore((s) => s.bookmarks);
   const placeNames = usePlaceNamesStore((s) => s.names);
-  // Resolve names for saved places so the list reads "~Kumaraswamy Layout"
+  // Resolve names for saved places so the list reads "~Old Town"
   // rather than a bare geohash. Best-effort and cached in the store.
   useEffect(() => {
     if (!visible) return;
@@ -133,7 +133,7 @@ export function GeohashJumpSheet({
   }, [visible, bookmarks]);
 
   // And for the cells around you, which is what makes Nearby readable: "N ·
-  // Jayanagar" is a place, "N · #tdr1kz" is a string. Eight lookups on open,
+  // Old Town" is a place, "N · #tdr1v9" is a string. Eight lookups on open,
   // once ever, since the store caches a cell's name forever.
   useEffect(() => {
     if (!visible) return;

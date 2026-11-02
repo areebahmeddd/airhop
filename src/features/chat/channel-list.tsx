@@ -364,7 +364,7 @@ export default function ChannelList({
           const scope = CHANNEL_SCOPE[item];
           return scope === undefined ? undefined : T(scope.tagKey);
         })();
-    // Reverse-geocoded place name for this cell, e.g. "~Kumaraswamy Layout",
+    // Reverse-geocoded place name for this cell, e.g. "~Old Town",
     // shown between the coverage tag and the active count. Only present once the
     // cell has a geohash (teleported always; named only with location on).
     const rowGeohash = isManualGeo ? manualGh : geoHashes[item];

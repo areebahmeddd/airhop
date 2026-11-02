@@ -1770,7 +1770,7 @@ export default function MessageThread({
         : peerCount;
 
   // Reverse-geocoded name for a location channel's cell, shown in the header
-  // subtitle as "~Kumaraswamy Layout". Present once the cell has a geohash
+  // subtitle as "~Old Town". Present once the cell has a geohash
   // (teleported always; named only with location on) and geocoding succeeds.
   const channelGeohash = isGeo
     ? (manualGeohashOf(channel) ??

@@ -44,15 +44,14 @@ describe("which channels are geo channels", () => {
     expect(isGeoChannel("geohash:tdr1k")).toBe(true);
   });
 
-  // Character counts read off a real bitchat-ios handset in Bengaluru, which
-  // showed #tdr1kyp, #tdr1ky, #tdr1k, #tdr1 and #td for its five channels. A
+  // Character counts read off a real bitchat-ios handset's five channels. A
   // mismatch puts the two apps in different cells and they silently never meet.
   it("maps each channel to the precision bitchat uses", () => {
-    expect(GEO_CHANNEL_PRECISION["#block"]).toBe("tdr1kyp".length);
-    expect(GEO_CHANNEL_PRECISION["#neighborhood"]).toBe("tdr1ky".length);
-    expect(GEO_CHANNEL_PRECISION["#city"]).toBe("tdr1k".length);
-    expect(GEO_CHANNEL_PRECISION["#province"]).toBe("tdr1".length);
-    expect(GEO_CHANNEL_PRECISION["#region"]).toBe("td".length);
+    expect(GEO_CHANNEL_PRECISION["#block"]).toBe(7);
+    expect(GEO_CHANNEL_PRECISION["#neighborhood"]).toBe(6);
+    expect(GEO_CHANNEL_PRECISION["#city"]).toBe(5);
+    expect(GEO_CHANNEL_PRECISION["#province"]).toBe(4);
+    expect(GEO_CHANNEL_PRECISION["#region"]).toBe(2);
   });
 });
 
