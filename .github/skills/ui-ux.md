@@ -61,7 +61,7 @@ style={({ pressed }) => [styles.cta, pressed && styles.ctaPressed]}
 // ctaPressed: { opacity: PRESSED_OPACITY }
 ```
 
-A row cannot dim: a white row on an off-white page loses nothing visible. An accent button cannot darken: its fill is the accent, so darkening means recolouring the label, which reads as a state change. Always the `style={({ pressed }) => ...}` callback, never component state, which re-renders twice per tap.
+A row cannot dim: a white row on an off-white page loses nothing visible. An accent button cannot darken: its fill is the accent, so darkening means recoloring the label, which reads as a state change. Always the `style={({ pressed }) => ...}` callback, never component state, which re-renders twice per tap.
 
 Feedback under 400ms is the point (Doherty). Anything slower needs its own progress.
 
@@ -90,9 +90,9 @@ A hand-typed radius sitting next to a token is the tell that someone eyeballed i
 
 ## Optical, Not Mathematical
 
-- **Letter-spacing** is applied after the last glyph too, so a tracked string measures wider than it draws and centring that box leaves the glyphs half a track short. Cancel it with `marginEnd: -TRACKING`, or by trimming the trailing padding on a pill.
-- **`includeFontPadding: false`** on any digit centred in a circle. Android-only and on by default, it reserves ascender and descender room a digit never uses, so a numeral that centres on iOS sits low on Android.
-- **An optical nudge on one side needs its mirror on the other**, or the box it centres in is asymmetric and the centred text lands off by half the nudge.
+- **Letter-spacing** is applied after the last glyph too, so a tracked string measures wider than it draws and centering that box leaves the glyphs half a track short. Cancel it with `marginEnd: -TRACKING`, or by trimming the trailing padding on a pill.
+- **`includeFontPadding: false`** on any digit centered in a circle. Android-only and on by default, it reserves ascender and descender room a digit never uses, so a numeral that centers on iOS sits low on Android.
+- **An optical nudge on one side needs its mirror on the other**, or the box it centers in is asymmetric and the centered text lands off by half the nudge.
 - **Display figures** want leading pulled in to the font size and slight negative tracking. Default 1.1 leading at 38pt leaves a band of dead space under the digits.
 
 ## Grouping

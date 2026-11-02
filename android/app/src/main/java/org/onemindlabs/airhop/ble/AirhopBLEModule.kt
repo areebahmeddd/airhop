@@ -107,7 +107,7 @@ private const val REQUEST_ENABLE_BT = 0xB1E
 // controller typically supports around seven concurrent GATT client
 // connections, and connectGatt past that fails with status 133. Uncapped, a
 // phone in a crowded room dials every advertiser it sees, fails most of them and
-// retries on every scan callback, which burns the radio and destabilises the
+// retries on every scan callback, which burns the radio and destabilizes the
 // links that did connect.
 //
 // The mesh does not need every peer to be a direct neighbor: flood routing

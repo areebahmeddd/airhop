@@ -236,7 +236,7 @@ private final class LANTransport {
       listener.stateUpdateHandler = { [weak self, weak listener] state in
         guard let self else { return }
         self.queue.async {
-          // A listener a teardown cancelled reports `.cancelled` after the
+          // A listener a teardown canceled reports `.cancelled` after the
           // fact, by which time the next start may own the transport; only
           // the current listener speaks for it.
           guard let listener, self.listener === listener else { return }
@@ -538,7 +538,7 @@ private final class LANTransport {
             onReady?(.connectFailed(String(describing: error)))
           }
           // A failed connection still holds this handler, and the handler
-          // holds the connection, until it is cancelled. The `.cancelled`
+          // holds the connection, until it is canceled. The `.cancelled`
           // that follows finds the link already retired.
           connection.cancel()
           self.retire(linkID)
@@ -653,7 +653,7 @@ private final class LANTransport {
     }
   }
 
-  /// Ask a link to end. Cancelling drives the state handler, whose `.cancelled`
+  /// Ask a link to end. Canceling drives the state handler, whose `.cancelled`
   /// branch calls `retire`, which is what reports it.
   private func closeLink(_ linkID: String) {
     guard var link = links[linkID], !link.closing else { return }

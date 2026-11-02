@@ -352,7 +352,7 @@ private actor WiFiAwareTransport {
       // After the hello, not before: the path only populates once ready.
       if deviceID == nil {
         // `try await` spans the whole chain. The effects sit on the
-        // Wi-Fi Aware accessor, not on `currentPath`, so parenthesising
+        // Wi-Fi Aware accessor, not on `currentPath`, so parenthesizing
         // the first term leaves the rest unmarked and this will not
         // compile. `try?` because failing to name the device costs the
         // dial guard a hint, not the link.
