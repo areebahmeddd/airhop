@@ -51,7 +51,6 @@ import {
   withAlpha,
   type ResolvedTheme,
 } from "@ui/theme";
-import { peerInviteLink } from "@utils/deep-link";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import * as Sharing from "expo-sharing";
@@ -632,11 +631,11 @@ export default function ProfileScreen({
         return;
       } catch {
         // Fall through: a refused share sheet should still leave a way to send
-        // something, and the link below carries the same payload.
+        // the code as text.
       }
     }
     await shareOrIgnore({
-      message: `${t("settings.qr.share_body")}\n\n${peerInviteLink(peerID)}`,
+      message: `${t("settings.qr.share_body")}\n\n${qrValue}`,
       title: t("settings.qr.share_message"),
     });
   }

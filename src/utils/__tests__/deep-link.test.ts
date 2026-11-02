@@ -5,12 +5,7 @@
 // every malformed shape resolves to nothing rather than a half-built target,
 // and the builders round-trip so a link this app hands out is one it can read
 // back.
-import {
-  channelInviteLink,
-  isMeshLink,
-  parseAirhopLink,
-  peerInviteLink,
-} from "../deep-link";
+import { channelInviteLink, isMeshLink, parseAirhopLink } from "../deep-link";
 
 describe("parseAirhopLink: channels", () => {
   it("parses a channel link and prefixes #", () => {
@@ -82,7 +77,7 @@ describe("parseAirhopLink: private channel key + reach", () => {
 });
 
 describe("parseAirhopLink: contact card", () => {
-  it("recognises a v1 card and hands it back for decoding", () => {
+  it("recognizes a v1 card and hands it back for decoding", () => {
     expect(parseAirhopLink("airhop:v1/SGVsbG8")).toEqual({
       kind: "card",
       card: "airhop:v1/SGVsbG8",
@@ -107,10 +102,11 @@ describe("link builders round-trip", () => {
       overNostr: false,
     });
   });
+});
 
-  it("peer link parses back to the same id", () => {
-    const link = peerInviteLink("aabbccdd00112233");
-    expect(parseAirhopLink(link)).toEqual({
+describe("peer links", () => {
+  it("parses a peer link to its id", () => {
+    expect(parseAirhopLink("airhop://peer/aabbccdd00112233")).toEqual({
       kind: "peer",
       peerID: "aabbccdd00112233",
     });

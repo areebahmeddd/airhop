@@ -84,10 +84,6 @@ export function channelInviteLink(
   return `${base}?k=${key}${overNostr ? "&n=1" : ""}`;
 }
 
-export function peerInviteLink(peerID: string): string {
-  return `airhop://peer/${peerID}`;
-}
-
 export function isMeshLink(url: string): boolean {
   return /^airhop:(?:\/\/)?mesh\/?$/i.test(url.trim());
 }
