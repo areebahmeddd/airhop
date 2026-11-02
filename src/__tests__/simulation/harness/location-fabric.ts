@@ -1,18 +1,13 @@
 // Where each phone is standing.
 //
-// This exists because its absence quietly disabled two whole features. Every
-// simulation file mocked `expo-location` as `{}`, so `getCoarseLocation()`
-// returned null, so the named location channels (#block through #region)
-// resolved to no geohash cell at all. geohash-channel-service says so plainly:
-// "with location denied, the NAMED channels resolve to no cell". No cell means
-// nothing is published to Nostr, which means a gateway has nothing to uplink
-// and a bridge has no rendezvous cell to meet in.
+// With `expo-location` mocked as `{}`, `getCoarseLocation()` returns null and
+// the named location channels (#block through #region) resolve to no geohash
+// cell. No cell means nothing is published to Nostr, so a gateway has nothing to
+// uplink, a bridge has no rendezvous cell to meet in, and a scenario can only
+// assert that nothing happened. Placing the phones somewhere is what makes the
+// internet gateway and the mesh bridge testable at all.
 //
-// Scenarios written against that mock could only ever assert that nothing
-// happened. Placing the phones somewhere is what makes the internet gateway and
-// the mesh bridge testable at all.
-//
-// Coordinates are per phone, so two devices can share a cell (neighbours) or
+// Coordinates are per phone, so two devices can share a cell (neighbors) or
 // sit in different ones (different cities), which is the distinction both
 // features are built around.
 
@@ -76,7 +71,7 @@ export function locations(): LocationRegistry {
 // The module body a test file installs in place of `expo-location`.
 //
 // Each sandbox gets its own instance (expo modules ARE isolated per module
-// registry - the in-memory filesystem relies on the same thing), so the phone
+// registry, and the in-memory filesystem relies on the same thing), so the phone
 // it belongs to is bound once at build time rather than inferred at call time.
 // Position lookups happen on timers deep inside the geohash service, not on a
 // native callback, so there is no reliable "who is running" frame to read.

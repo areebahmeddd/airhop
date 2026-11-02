@@ -12,9 +12,7 @@
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("./harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -213,8 +211,9 @@ test("C04 a Sybil flood of fake peers does not evict the real ones", async () =>
 
   // Each fake peer is internally consistent: a real keypair, a peer ID properly
   // derived from it, a correctly signed announce. Nothing about any one of them
-  // is detectably wrong - which is exactly what makes a Sybil flood a resource
+  // is detectably wrong, which is exactly what makes a Sybil flood a resource
   // problem rather than a signature problem.
+  //
   // Past the 200-peer cap, by enough to show the cap rather than the flood is
   // what stops the list.
   const fakes = 250;
@@ -519,7 +518,7 @@ test("C07 seeded soak: eight phones, hundreds of random events", async () => {
   );
 
   // Everything a phone or the world can plausibly do, drawn at random. The
-  // point is not any individual action - it is that no ORDERING of them breaks
+  // point is not any individual action, it is that no ORDERING of them breaks
   // an invariant.
   const sentTexts: string[] = [];
   let sendSeq = 0;

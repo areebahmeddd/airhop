@@ -6,9 +6,7 @@
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("./harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -160,14 +158,12 @@ test("B01 a message crosses a chain of phones that cannot hear each other", asyn
 
   // Give the chain time to converge before judging it.
   //
-  // A node several hops out can receive a public message BEFORE it has received
-  // the author's ANNOUNCE, and a message whose signing key you do not yet hold
-  // is refused rather than displayed. That is the signature rule working as
-  // intended, and bitchat behaves the same way; what closes the gap is gossip
-  // sync re-serving the message once the key is known, on its own cadence.
-  // Asserting convergence the instant the far end lights up would be asserting
-  // that no node is ever one hop behind on identity, which is untrue of any
-  // flood network, and would make this scenario flaky rather than wrong.
+  // A node several hops out can still receive a public message BEFORE the
+  // author's ANNOUNCE, and what closes that gap is gossip sync re-serving the
+  // message once the key is known, on its own cadence. Asserting convergence the
+  // instant the far end lights up would be asserting that no node is ever one
+  // hop behind on identity, which is untrue of any flood network, and would make
+  // this scenario flaky rather than wrong.
   await waitForCoarse(
     s.world,
     () => convergence(devices, channel).length === 0,

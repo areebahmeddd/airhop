@@ -10,9 +10,7 @@
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("../harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -447,7 +445,7 @@ test("SY03 an old packet is refused even when its signature is perfect", async (
 
 test("SY04 a route planned by another node is followed, not flooded", async () => {
   // Airhop never plans routes, since publishing a crowd's adjacency graph is
-  // the wrong price for routing bandwidth (see core/mesh/source-route.ts). A
+  // the wrong price for routing bandwidth (PROTOCOLS.md 2.3). A
   // bitchat peer that has planned one is still owed the hop it asked for, or we
   // become a node other implementations route around. The forged packet here
   // stands in for that peer.
@@ -483,7 +481,7 @@ test("SY04 a route planned by another node is followed, not flooded", async () =
   });
 
   // Alice -> [bob] -> carol. The route carries intermediate hops only; carol is
-  // in the header, per SOURCE_ROUTING.md section 3.
+  // in the header, per PROTOCOLS.md 2.3.
   const senderID = hexToBytes(alice.peerID);
   const recipientID = hexToBytes(carol.peerID);
   const hop = hexToBytes(bob.peerID);

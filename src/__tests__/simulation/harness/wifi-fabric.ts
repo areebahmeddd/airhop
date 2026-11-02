@@ -96,12 +96,10 @@ export class WifiFabric {
 
   // Bring a link up between two devices, as discovery would.
   //
-  // Refuses and says so rather than failing quietly, in two cases. Two different
-  // platforms cannot reach each other even though both speak NAN, because Apple
-  // demands a paired data path that Android cannot complete. And two iPhones
-  // that have not paired have nothing to discover, since Apple's browser only
-  // ever names devices already in the paired list. A scenario that expected
-  // either link is asserting something that cannot happen in the field.
+  // Refuses and says so rather than failing quietly, under the two rules above.
+  // Apple's browser only ever names devices already in the paired list, so two
+  // unpaired iPhones have nothing to discover. A scenario that expected either
+  // link is asserting something that cannot happen in the field.
   link(aID: string, bID: string): boolean {
     if (this.disposed) return false;
     const a = this.nodes.get(aID);

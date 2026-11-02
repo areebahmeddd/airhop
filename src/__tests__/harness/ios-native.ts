@@ -1,17 +1,16 @@
 // A transcription of ios/Airhop/AirhopBLEModule.swift, running against the OS
-// model. Same contract as the Android transcription: branch for branch, with
-// the Swift line on each.
+// model. Same contract as the Android transcription: branch for branch.
 //
-// Audit anchors, current file:
-//   :98   ensureCentralManager / ensurePeripheralManager, created ONCE
-//   :128  applyState(), the reconciler every entry point funnels into
-//   :175  registerService()
-//   :200  startAdvertising, refuses per CBManagerState
-//   :250  startScanning, same
-//   :300  getRadioState, answers before any manager exists
-//   :560  centralManagerDidUpdateState, all six states
-//   :620  reportAdapterState, change-only
-//   :745  peripheralManagerDidUpdateState, all six states, real teardown
+// Anchors, by Swift member:
+//   ensureCentralManager / ensurePeripheralManager, created ONCE
+//   applyState(), the reconciler every entry point funnels into
+//   registerService()
+//   startAdvertising, refuses per CBManagerState
+//   startScanning, same
+//   getRadioState, answers before any manager exists
+//   centralManagerDidUpdateState, all six states
+//   reportAdapterState, change-only
+//   peripheralManagerDidUpdateState, all six states, real teardown
 
 import { DeviceEventEmitter } from "react-native";
 import type {
@@ -251,7 +250,7 @@ export class IosBleModule implements BleNativeModule {
     return false;
   }
 
-  // Background BLE comes from UIBackgroundModes, not from us.
+  // Background BLE comes from UIBackgroundModes, not from this module.
   async setBackgroundServiceEnabled(_enabled: boolean): Promise<void> {
     return;
   }

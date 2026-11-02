@@ -1,6 +1,6 @@
 // Ring, end to end: the grant, the proof, the ring, and every answer. The
 // grant is made after the first message throughout, since that is the order
-// people use, and the proof that lights the button must follow it (#60).
+// people use, and the proof that lights the button must follow it.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>

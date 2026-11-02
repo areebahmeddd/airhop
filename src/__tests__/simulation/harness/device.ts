@@ -252,7 +252,7 @@ interface StoreLike {
 
 // Invoke a store action across the sandbox boundary.
 //
-// Everything coming out of an isolated registry is `unknown` to us: device A's
+// Everything coming out of an isolated registry is `unknown` here: device A's
 // zustand store is not device B's, and neither is the one this file was
 // compiled against. Rather than lie about the types with a cast at every call
 // site, there is one place that does the check.
@@ -801,15 +801,15 @@ export class SimDevice {
     return entry?.isDirect === true;
   }
 
-  // How many BLE links the SERVICE believes it has, as opposed to how many the
-  // radio actually holds. A gap between the two is a state desynchronisation
-  // and is exactly the kind of bug that makes a healthy phone go silent, so it
-  // is worth being able to see both.
   // See Inner.emitter.
   get eventEmitter(): object {
     return this.inner.emitter;
   }
 
+  // How many BLE links the SERVICE believes it has, as opposed to how many the
+  // radio actually holds. A gap between the two is a state desynchronization
+  // and is exactly the kind of bug that makes a healthy phone go silent, so it
+  // is worth being able to see both.
   bleLinkCount(): number {
     return this.bleLinkIDs().length;
   }
@@ -895,7 +895,7 @@ export class SimDevice {
     return this.mesh?.sendRing(peerID) ?? null;
   }
 
-  // What ring-store says about the last ring we sent this peer.
+  // What ring-store says about the last ring this phone sent this peer.
   ringState(peerID: string): {
     sending: boolean;
     refusal: number | null;
@@ -1537,7 +1537,8 @@ export class SimDevice {
     }
   }
 
-  // Announce how to nutzap us (kind 10019) and start redeeming what arrives.
+  // Announce how to nutzap this phone (kind 10019) and start redeeming what
+  // arrives.
   //
   // The app does both of these on launch; the harness does not run it, so
   // a scenario that wants the receive half has to ask for it. Returns false when

@@ -4,14 +4,11 @@
 // A photo is one FILE_TRANSFER packet split into fragments that each fit a single
 // BLE write, paced onto the radio 20ms apart. A live voice burst is a stream of
 // small packets that must NOT enter the fragment scheduler. Both share one
-// radio. Every
-// scenario here is about what happens when they share it badly.
+// radio. Every scenario here is about what happens when they share it badly.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
-  // Every phone needs its own listener set. See harness/event-router.ts: this
-  // is the only interception point that reliably catches every path by which
-  // mesh-service and the native modules reach the emitter.
+  // Every phone needs its own listener set. See harness/event-router.ts.
   (
     require("../harness/event-router") as { routerModule: () => unknown }
   ).routerModule(),
@@ -228,7 +225,7 @@ test("M10 a photo at the send budget arrives, every frame legal", async () => {
   for (const d of devices) d.joinChannel(channel);
 
   // A full-size photo is hundreds of fragments, the path where a sizing mistake
-  // or a stalled assembly actually shows up. 40 KB is only 88.
+  // or a stalled assembly actually shows up.
   const photo = media.jpeg(MAX_SENT_IMAGE_BYTES);
   const accepted = alice.sendAttachment(channel, photo, {
     type: "image",
@@ -596,7 +593,7 @@ test("M08 an attachment cannot be forged, misrouted, or aimed at a room you neve
   );
 
   // The control: a real attachment from alice still arrives. A rule that
-  // dropped everything would pass all four checks above and be worthless. A DM
+  // dropped everything would pass every check above and be worthless. A DM
   // attachment needs a session, which a text opens.
   alice.send(`dm:${bob.peerID}`, "photo coming");
   await waitFor(
@@ -1159,18 +1156,17 @@ test("M16 a private photo shows delivered once the other phone has it", async ()
 });
 
 test("M12 a photo Airhop sends is reassembled by a bitchat phone", async () => {
-  // The one claim nothing tested. Byte fixtures prove our file TLV matches
-  // bitchat's layout, and the radio's link limit proves each frame is legal, but
-  // neither says a node playing by bitchat's rules can put the fragments back
-  // together and get the original photo out. That is exactly what was false in
-  // the field: every frame was 45 bytes over the ATT ceiling, so bitchat's
-  // decoder rejected each one and no photo ever arrived, silently, in both
+  // Byte fixtures prove Airhop's file TLV matches bitchat's layout, and the
+  // radio's link limit proves each frame is legal, but neither says a node
+  // playing by bitchat's rules can put the fragments back together and get the
+  // original photo out. bitchat's decoder rejects a frame over the ATT ceiling,
+  // so an oversized fragment means no photo ever arrives, silently, in both
   // directions.
   //
-  // Sent at the real send budget, so this also stands as the guard on it: 256KiB
-  // is about eleven seconds of paced fragments, and bitchat abandons a stream
-  // thirty seconds after its FIRST fragment. Raise the budget far enough and this
-  // scenario reports an expired assembly instead of a photo.
+  // Sent at the real send budget, so this also stands as the guard on it:
+  // 256 KiB is about eleven seconds of paced fragments, and bitchat abandons a
+  // stream thirty seconds after its FIRST fragment. Raise the budget far enough
+  // and this scenario reports an expired assembly instead of a photo.
   const s = (scenario = new Scenario({
     id: "M12",
     title: "Airhop photo, reassembled and decoded by bitchat's rules",

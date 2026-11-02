@@ -108,10 +108,7 @@ test("IE02 a phone hearing echoes of itself, before and after a relaunch, never 
   ]);
   for (const d of [alice, bob, carol]) d.launch();
   await advanceFor(s.world, SETTLE_MS);
-  s.check(
-    "no warning while two neighbours relay our announces",
-    !warned(alice),
-  );
+  s.check("no warning while two neighbors relay our announces", !warned(alice));
 
   // The previous run's announces are still circulating when the new one starts.
   alice.relaunch();

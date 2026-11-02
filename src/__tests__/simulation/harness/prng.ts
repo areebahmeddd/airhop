@@ -2,7 +2,7 @@
 //
 // Every scenario draws its faults from one of these, seeded from a number the
 // scenario prints. A soak run that fails on seed 91744 fails on seed 91744
-// again, on any machine, forever - which is the difference between "the fuzzer
+// again, on any machine, forever, which is the difference between "the fuzzer
 // found something" and "the fuzzer found something and we can go look at it".
 //
 // xorshift128 rather than Math.random for exactly that reason, and rather than

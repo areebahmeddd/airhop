@@ -1,6 +1,7 @@
-// The paths where something is being torn down, replaced, or raced. These are where a lifecycle bug is most expensive, because the state
-// being handled is either about to stop existing (a wipe) or has to survive
-// (a conversation, a queued message).
+// The paths where something is being torn down, replaced, or raced. These are
+// where a lifecycle bug is most expensive, because the state being handled is
+// either about to stop existing (a wipe) or has to survive (a conversation, a
+// queued message).
 
 jest.mock("expo-location", () => ({}));
 jest.mock("@bridge/NativeAirhopBLE", () => ({
@@ -32,8 +33,6 @@ import { DeviceOS } from "../harness/os";
 import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
-// No test here needs a relay; without this the pool opens real sockets to public
-// relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
 
 function androidDevice(os: DeviceOS): AndroidBleModule {

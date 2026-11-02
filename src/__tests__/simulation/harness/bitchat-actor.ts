@@ -61,14 +61,14 @@ import type { Platform } from "../../harness/os";
 import type { RadioNode } from "./radio-fabric";
 import type { World } from "./world";
 
-// MessageType.swift / MessageType.kt. Anything outside this set reaches no
+// MessageType in both bitchat clients. Anything outside this set reaches no
 // handler on a real bitchat build.
 //
 // 0x2A to 0x2C are listed as raw numbers because Airhop has no constant for
 // them: 0x2A and 0x2B are reserved upstream for courier spray-ack, and 0x2C is
-// announceV2. They are here so this actor claims the
-// range bitchat actually claims, which is what makes a future Airhop type
-// landing on one of them fail a scenario instead of passing quietly.
+// announceV2. They are here so this actor claims the range bitchat actually
+// claims, which is what makes a future Airhop type landing on one of them fail
+// a scenario instead of passing quietly.
 const BITCHAT_KNOWN_TYPES = new Set<number>([
   0x2a,
   0x2b,
@@ -101,8 +101,8 @@ const FRAG_MAX_CONCURRENT = 128;
 // bleFragmentLifetimeSeconds. Counted from the FIRST fragment of a stream, not
 // the last, because `timestamp` is stamped once in startAssemblyIfNeeded and
 // never refreshed. Airhop's own reassembler times out on idle instead, which is
-// the better policy and precisely why this has to be modelled here: our
-// behaviour cannot stand in for theirs.
+// the better policy and precisely why this has to be modeled here: Airhop's
+// behavior cannot stand in for bitchat's.
 const FRAG_LIFETIME_MS = 30_000;
 
 // CourierStore.swift: maxLifetimeSeconds plus one hour of clock-skew slack.
@@ -957,12 +957,8 @@ function joinChunks(parts: Uint8Array[]): Uint8Array {
 }
 
 // The courier envelope TLV carries an expiry as a u64 millisecond timestamp
-// under tag 0x02 (see courier-store.ts; 0x03 is the ciphertext).
-//
-// This read 0x03 and additionally required an 8-byte length, so it matched
-// nothing and always returned null: onCourierEnvelope returned early every
-// time, and the "bitchat refuses an over-long expiry" conformance check was
-// dead code that nothing asserted either. Returns null when absent.
+// under tag 0x02 (see courier-store.ts; 0x03 is the ciphertext). Returns null
+// when absent.
 function readCourierExpiryMs(payload: Uint8Array): number | null {
   let o = 0;
   while (o + 3 <= payload.length) {

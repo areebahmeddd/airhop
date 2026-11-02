@@ -1,8 +1,8 @@
 // The same-platform fast path.
 //
 // ARCHITECTURE.md lists WiFi Aware as an accelerator that the mesh engine is
-// not supposed to notice: same `Transport` interface as BLE, priority 1 in the
-// router, and it carries what BLE cannot. These scenarios form real links over
+// not supposed to notice: the same packet frames as BLE, one table of links, and
+// it carries what BLE cannot. These scenarios form real links over
 // harness/wifi-fabric.ts rather than taking that on trust.
 //
 // What is worth asserting, and why:
@@ -12,8 +12,8 @@
 //     the fast path would be decorative.
 //   * Messages cross it, and the timeline cannot tell which radio carried them.
 //     That is the claim the whole two-transport design rests on.
-//   * Android and iOS never link. Two different protocols behind one interface
-//     is exactly the shape that invites a wrong assumption.
+//   * Android and iOS never link. One protocol on both platforms is exactly the
+//     shape that invites a wrong assumption.
 //   * Losing the link is cleaned up, so a peer that walked away does not sit in
 //     the registry looking reachable.
 //   * A payload far past the BLE frame ceiling crosses in one piece. This is the
@@ -169,10 +169,8 @@ test("W-F02 an iPhone and an Android never form a WiFi link", async () => {
   phone.launch();
 
   // Both platforms speak WiFi Aware, which makes it tempting to assume a
-  // link between them. Apple requires a paired device for every data path and
-  // refuses an open one; Android cannot complete Apple's pairing. So the two
-  // implement the same protocol and still cannot reach each other, and every
-  // cross-platform hop stays on Bluetooth.
+  // link between them. harness/wifi-fabric.ts states why there is none, so
+  // every cross-platform hop stays on Bluetooth.
   //
   // Pairing them first, so the refusal is provably about the platforms rather
   // than about the gate that stops two unpaired iPhones.
@@ -258,9 +256,9 @@ test("W-F02c two paired iPhones meet over WiFi with no Bluetooth between them", 
   a.launch();
   b.launch();
 
-  // The same assertion W-F01 makes for Android, on the platform that only just
-  // got the transport: once paired, an iPhone is a mesh node like any other and
-  // nothing above the link layer can tell which radio carried the packet.
+  // The same assertion W-F01 makes for Android: once paired, an iPhone is a mesh
+  // node like any other and nothing above the link layer can tell which radio
+  // carried the packet.
   wifi.pair("a", "b");
   wifi.link("a", "b");
 
@@ -433,19 +431,10 @@ test("W-F04 a photo too big for one BLE frame crosses WiFi in one piece", async 
 
 // ---- Both radios at once ----
 
-// The scenario that is NOT here, and why.
-//
-// The obvious question with two radios up is "which one wins for a private
-// message", and it is the wrong question. Airhop does not pick a winner. A
-// message is a recipient-addressed, TTL-bounded packet that FLOODS every
-// transport, because no node knows the topology and the recipient may be
-// several hops away. Encryption is what makes it private, not the path. Five separate places in mesh-service write to a WiFi link, so
-// disabling any one of them changes nothing observable.
-//
-// For a DM that is doubly unfalsifiable: even with both dedup layers removed,
-// a Double Ratchet message can only be decrypted once, so a second copy can
-// never reach the thread. Such a test could not fail, so it would test
-// nothing.
+// The scenario that is NOT here, and why: a DM on both radios shown once. Even
+// with both dedup layers removed, a Double Ratchet message can only be decrypted
+// once, so a second copy can never reach the thread. Such a test could not fail,
+// so it would test nothing. Which radio a DM takes is W-F09's question.
 //
 // Public messages are where the property has teeth. They have no ratchet, so
 // deduplication is the only thing standing between "two radios" and "every
@@ -669,17 +658,13 @@ test("W-F08 losing WiFi mid-conversation falls back to Bluetooth", async () => {
 // neighbors too, so the shipped case has BOTH radios up and the interesting
 // question is which one the file takes.
 //
-// The risk being guarded is specific and has a precedent. bitchat shipped its
-// own WiFi bulk path and later found it had never fired once in production: an
-// unrelated image-compression change put every real photo below the size that
-// triggers the transport, so the feature was live, tested, and dead. A radio
-// that only carries traffic in a configuration nobody is in is decorative, and
-// nothing about the app's behaviour would say so.
+// A radio that only carries traffic in a configuration nobody is in is
+// decorative, and nothing about the app's behavior would say so.
 //
-// Airhop has no size threshold, so it cannot fail that exact way. What it has
-// instead is the direct-link shortcut: an addressed packet goes to the WiFi
-// link when the recipient has been mapped to one, which is the whole reason the
-// mapping exists (ARCHITECTURE.md, "Transport Stack"). If that mapping never
+// Airhop has no size threshold for the transport. What it has instead is the
+// direct-link shortcut: an addressed packet goes to the WiFi link when the
+// recipient has been mapped to one, which is the whole reason the mapping
+// exists (ARCHITECTURE.md, "Transport Stack"). If that mapping never
 // populates in practice, or the BLE path wins the race, every attachment
 // quietly fragments over Bluetooth at ~18 KiB/s while a 250 Mbps radio sits idle
 // beside it. The symptom is "photos are slow", which is indistinguishable from

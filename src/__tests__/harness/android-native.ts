@@ -8,7 +8,7 @@
 // logic, given the OS behaviors in os.ts, produces the right sequence of calls
 // and the right state.
 //
-// Audit anchors, by Kotlin member:
+// Anchors, by Kotlin member:
 //   bluetoothManager / adapter   lazy and nullable
 //   adapterStateReceiver         ON / TURNING_OFF / OFF
 //   initialize()                 registers the receiver (NOT init{})
@@ -219,9 +219,9 @@ export class AndroidBleModule implements BleNativeModule {
   // it, so this is the only thing there is to check.
   powerMode = "balanced";
 
-  // Kotlin setPowerMode. Note what it does NOT do: report a link or adapter
-  // change. A duty-cycled scan is still "scanning" as far as JS is concerned,
-  // and saying otherwise would have the reconciler try to fix a working state.
+  // Kotlin setPowerMode. It reports no link or adapter change: a duty-cycled
+  // scan is still "scanning" as far as JS is concerned, and saying otherwise
+  // would have the reconciler try to fix a working state.
   async setPowerMode(mode: string): Promise<void> {
     if (mode === this.powerMode) return;
     this.powerMode = mode;
@@ -338,7 +338,7 @@ export class AndroidBleModule implements BleNativeModule {
     this.radioPort?.radiosChanged();
   }
 
-  // Note what is absent: the foreground service.
+  // Leaves the foreground service alone.
   async stopAdvertising(): Promise<void> {
     this.advertising = false;
     this.gattServer = null;
@@ -432,11 +432,11 @@ export class AndroidBleModule implements BleNativeModule {
   }
 
   addListener(): void {
-    /* NativeEventEmitter contract */
+    // NativeEventEmitter contract
   }
 
   removeListeners(): void {
-    /* NativeEventEmitter contract */
+    // NativeEventEmitter contract
   }
 
   // ---- shared radio medium ----

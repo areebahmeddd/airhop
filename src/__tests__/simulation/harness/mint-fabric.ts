@@ -282,7 +282,6 @@ export class MintFabric {
   // inactive after a rotation and still honored as inputs, as NUT-02 says.
   private readonly keysets: Keyset[] = [];
   private readonly keysetVersion: 0 | 1;
-  // Every proof secret the mint has signed, and whether it has been spent.
   private conditions: MintConditions = { ...DEFAULT_CONDITIONS };
   private readonly quotes = new Map<string, FabricQuote>();
   // Every blinded message the mint has ever signed, keyed by B_. NUT-09 restore
@@ -410,7 +409,7 @@ export class MintFabric {
   private async handle(input: unknown, init?: unknown): Promise<Response> {
     const url = typeof input === "string" ? input : String(input);
     // Anything not addressed to this mint goes to whoever was installed before
-    // us. That chaining is what lets two mints exist at once, which a
+    // it. That chaining is what lets two mints exist at once, which a
     // consolidate scenario needs: without it the second `install()` would
     // shadow the first and every call to mint A would 404.
     if (!url.startsWith(this.url)) {
@@ -1131,8 +1130,8 @@ export class MintFabric {
   // and an offline receive could not be distinguished from a forgery.
   //
   // The proof comes from cashu-ts rather than being hand-rolled here. It is the
-  // reference implementation of the spec being modelled, so a witness it
-  // produces is the one a real mint would produce. Writing our own would only
+  // reference implementation of the spec being modeled, so a witness it
+  // produces is the one a real mint would produce. Writing one here would only
   // demonstrate that it agrees with itself.
   private blindSign(output: { amount: number; B_: string; id: string }): {
     id: string;

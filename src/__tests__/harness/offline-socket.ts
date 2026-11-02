@@ -4,8 +4,8 @@
 // Starting the mesh also builds the Nostr transport, and nostr-tools'
 // SimplePool will happily open real sockets to relay.damus.io and friends from
 // inside CI. That is wrong on four counts: a test must not depend on the
-// internet, the connections outlive the test (Jest reported 32 open handles and
-// force-killed the worker), a relay being slow would make an unrelated
+// internet, the connections outlive the test (Jest force-kills the worker over
+// the open handles), a relay being slow would make an unrelated
 // assertion flake, and on Node 22 a refused one kills the worker outright
 // (nostr-tools closes the socket from its error handler, and that WebSocket
 // fires the error again from close, until the stack runs out).
@@ -44,7 +44,7 @@ export class OfflineWebSocket {
   }
 
   send(): void {
-    /* nothing is connected */
+    // Nothing is connected.
   }
 
   close(): void {

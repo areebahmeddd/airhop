@@ -82,9 +82,9 @@ import { advanceFor, Scenario, waitForCoarse } from "../harness/scenario";
 
 jest.setTimeout(240_000);
 
-// bitchat's NOSTR_CARRIER. Counting these on the air is how we know a gateway
-// was actually asked to carry something, rather than inferring it from a
-// side effect.
+// bitchat's NOSTR_CARRIER. Counting these on the air is how a scenario knows a
+// gateway was actually asked to carry something, rather than inferring it from
+// a side effect.
 const NOSTR_CARRIER = 0x28;
 // Geohash channel message, the thing a gateway publishes on someone's behalf.
 const KIND_GEOHASH_MESSAGE = 20000;
@@ -867,8 +867,6 @@ test.each(COMBINED_ROLE_SEEDS)(
       150_000,
     );
 
-    // One phone carrying both roles, which is the configuration that matters:
-    // whoever has signal in a group ends up being the bridge and the gateway.
     s.check(
       "the far island received the stranded phone's message",
       localB.texts(BRIDGE_CHANNEL).includes("from the phone with no signal"),

@@ -515,7 +515,7 @@ export class RadioFabric {
     // left; iOS refuses it outright. Either way nothing arrives, so the fabric
     // drops it and counts it.
     //
-    // A fabric that accepts any size lets a 557-byte fragment pass every
+    // A fabric that accepts any size lets an oversized fragment pass every
     // simulation while every attachment vanishes on real hardware.
     // `framesOversized` exists so a scenario can assert it never happened.
     if (bytes > MAX_BLE_FRAME) {

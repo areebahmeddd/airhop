@@ -77,15 +77,12 @@ import { DeviceOS } from "../harness/os";
 import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
-// No test here needs a relay; without this the pool opens real sockets to public
-// relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
 
-// How long a fresh grant takes to become effective in the Bluetooth stack.
-// bitchat-android waits a flat 1000ms for exactly this and says so: "This
-// solves the issue where app needs restart to work on first install"
-// (MainActivity.kt). Airhop retries until the stack accepts instead, which
-// is correct on a slow device and instant on a fast one.
+// How long a fresh grant takes to become effective in the Bluetooth stack (see
+// permissionSettleMs in os.ts). bitchat-android waits a flat 1000ms for it;
+// Airhop retries until the stack accepts instead, which is correct on a slow
+// device and instant on a fast one.
 const REAL_GRANT_SETTLE_MS = 600;
 
 // A phone with working Wi-Fi Aware. Without one the shim answers as a phone

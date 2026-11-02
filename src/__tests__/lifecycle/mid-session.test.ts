@@ -45,12 +45,8 @@ import { DeviceOS } from "../harness/os";
 import { resetMeshStores } from "../harness/reset-mesh-stores";
 import { Verdict } from "../harness/verdict";
 
-// No test here needs a relay; without this the pool opens real sockets to public
-// relays from CI and leaves them open when the test ends.
 installOfflineWebSocket();
 
-// Every field a scenario here can move, so one test's leftovers never decide
-// the next one's verdict.
 function resetStores(): void {
   resetMeshStores();
   useOutboxStore.setState({ pending: [] });
@@ -168,7 +164,7 @@ describe("mid-session radio chaos and lifecycle", () => {
     const native = new AndroidBleModule(os);
     installNativeBle(native);
     native.initialize();
-    // Note: bootJsRuntime() has NOT been called. The app is on the splash screen.
+    // bootJsRuntime() has NOT been called: the app is on the splash screen.
 
     os.setBluetooth(false);
     await os.advance(300);
@@ -440,9 +436,9 @@ describe("mid-session radio chaos and lifecycle", () => {
 
   // iOS: the same chaos, against CoreBluetooth.
 
-  test("S11i iOS: Bluetooth toggled off then on", async () => {
+  test("S36i iOS: Bluetooth toggled off then on", async () => {
     const os = new DeviceOS({ platform: "ios" });
-    const v = new Verdict("S11i", "iOS: BT off then on mid-session", os);
+    const v = new Verdict("S36i", "iOS: BT off then on mid-session", os);
     const native = new IosBleModule(os);
     installNativeBle(native);
     app = new AppShell({ os });

@@ -35,7 +35,7 @@ export const bleBridge: BleNativeModule = {
   removeListeners: (n) => req().removeListeners(n),
 };
 
-// WiFi Aware / MultipeerConnectivity, same indirection as BLE above.
+// WiFi Aware, same indirection as BLE above.
 //
 // Until a scenario installs a module this is a phone without Wi-Fi Aware: the
 // start is refused as unsupported, as the Kotlin module refuses it. Never a

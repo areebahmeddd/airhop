@@ -46,9 +46,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { DeviceEventEmitter } from "react-native";
 // The real type, not a copy: the annotation below only guards against drift if
-// it points at production. This file redeclared the interface and annotated
-// against its own copy, which is how the literal kept a `needsPreciseLocation`
-// field after the real one dropped it.
+// it points at production.
 import type { BlePermissionResult } from "@platform/ble-permissions";
 import {
   destroyMeshService,
@@ -108,10 +106,9 @@ export async function ensureBlePermissions(
   os: DeviceOS,
   answer: (p: AndroidPermission) => "granted" | "denied" | "blocked",
 ): Promise<BlePermissionResult> {
-  // Annotated, so a field that stops existing on the real type is a compile
-  // error here rather than a stale property nothing reads. This object carried
-  // `needsPreciseLocation` for a while after the real one dropped it, precisely
-  // because an unannotated literal gets no excess-property check.
+  // Annotated, because an unannotated literal gets no excess-property check: a
+  // field that stops existing on the real type is a compile error here rather
+  // than a stale property nothing reads.
   const locationRequired = os.platform === "android" && os.apiLevel < 31;
   const clean: BlePermissionResult = {
     granted: true,
@@ -162,8 +159,8 @@ export interface AppShellOptions {
   answer?: (p: AndroidPermission) => "granted" | "denied" | "blocked";
 }
 
-// The alerts the app would have put on screen. Asserting on these is how we
-// check the UX story a scenario tells, not just whether the radio came up.
+// The alerts the app would have put on screen. Asserting on these is how a
+// scenario checks the UX story it tells, not just whether the radio came up.
 export interface ShownAlert {
   title: string;
   kind: "blocked" | "denied";

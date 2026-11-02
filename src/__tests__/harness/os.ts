@@ -191,8 +191,8 @@ export class DeviceOS {
   }
 
   // There is exactly one clock in this harness: Jest's fake timers. The OS
-  // model, the native modules, and the real mesh-service (whose
-  // scheduleRadioRestart uses a bare setTimeout) all schedule onto it, so their
+  // model, the native modules, and the real mesh-service (whose timers are bare
+  // setTimeouts) all schedule onto it, so their
   // ordering in a scenario is the same ordering they would have on a device.
   // Running two clocks side by side would let the harness invent an interleave
   // that hardware never produces, which is the one thing a race-condition
