@@ -1617,7 +1617,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-skia (3.8.1):
+  - react-native-skia (3.9.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2783,7 +2783,7 @@ SPEC CHECKSUMS:
   React-mutationobservernativemodule: b97a67c29f724d18a92379e7390f24350acb433a
   react-native-get-random-values: 625b34d7f8a66d85c594071603f748d756bd90da
   react-native-safe-area-context: b1c9f15a36e597e9cef4c5526e209ef2645bc2e0
-  react-native-skia: 51e57fd6f56b5548af9165d51eac6f2291b67689
+  react-native-skia: 0258cfbbb3e865e2db6feaf9850e887d2cd6cd90
   react-native-vector-icons-feather: 32f485a696f1ac4c3e17216782e7b26475e9e6d4
   react-native-vector-icons-material-design-icons: 811f6c4447a60d8a66394644093dcffdc546772f
   React-NativeModulesApple: 8cfb2f308f48c48068c96b932e7f0e4297c23342
