@@ -7,11 +7,12 @@
 // Nearest-relay selection uses the Haversine great-circle formula. The caller
 // provides GPS coordinates; this module returns the N nearest relay URLs.
 
-// Relays to publish to and subscribe on per geohash cell: the 5 nearest plus
-// the next 5 as warm backups, both ways, as bitchat routes (GeoRelayRouting.md).
-// Backups carry traffic even while the primaries work, so two people on
-// opposite sides of a partial outage still share a relay. NostrClient sizes
-// its per-call ceiling from this, so it lives here and nowhere else.
+// Relays to publish to and subscribe on per geohash cell, both ways: the 5
+// nearest, which are the ones bitchat's clients use, plus the next 5 as warm
+// backups. The first 5 keep every bitchat client in reach. The backups carry
+// traffic even while the primaries work, so two people on opposite sides of a
+// partial outage still share a relay. NostrClient sizes its per-call ceiling
+// from this, so it lives here and nowhere else.
 export const GEO_RELAY_COUNT = 10;
 
 // How many relays a user may add by hand. A ceiling rather than a preference:

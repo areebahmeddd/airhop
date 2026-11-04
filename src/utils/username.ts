@@ -1,7 +1,7 @@
 // Deterministic human-readable usernames derived from a peer's public key.
 //
 // Format: <adjective>-<noun>-<4-hex-suffix>
-// Example: "swift-falcon-3a9f"
+// Example: "swift-falcon-6925"
 //
 // Both word lists are exactly 128 entries (power of 2) so the byte-modulo
 // mapping is perfectly uniform. The first byte of the peer ID selects the

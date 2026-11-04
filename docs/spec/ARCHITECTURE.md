@@ -154,11 +154,13 @@ for this npub's inbox and every joined cell's.
 Usernames are derived from the public key, never chosen:
 
 ```
-peerID 3a9f2c1b -> "swift-falcon-3a9f"
+peerID 6925aa00 -> "swift-falcon-6925"
 ```
 
-A name cannot be claimed without the key it comes from, so no Airhop user can
-take another's. It does not make impersonation impossible on the mesh: a bitchat
+A name is a label for a key, not a claim on one. It comes from the peer ID's
+first two bytes, so there are only 65,536 names and anyone can generate keys
+until one matches; a contact is bound to a person by scanning their QR code. Nor
+is the label the only impersonation route on the mesh: a bitchat
 peer chooses its own nickname freely and Airhop renders what it announces, which
 is why a public-channel sender is always shown with a `#last4` suffix taken from
 the peer ID. An announced name loses its invisible and bidirectional control
@@ -442,7 +444,7 @@ Five things still limit it:
 ### Nostr
 
 - **Relay list.** 300+ public relays from georelays (`nostr_relays.csv`, the directory both bitchat clients are built from), taken weekly at the snapshot bitchat-ios's own sync takes, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
-- **Choosing relays.** A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (five primaries and five warm backups, used for both publishing and subscribing, as bitchat routes), plus up to five the user adds. DMs use a pool of well-known relays, at most five
+- **Choosing relays.** A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (the five nearest, which bitchat's clients use, plus five warm backups, all used for both publishing and subscribing), plus up to five the user adds. DMs use a pool of well-known relays, at most five
 - **DMs.** NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
 - **Channels and presence.** Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
 - **Publishing.** A publish goes to every relay in its set and counts as sent on the first acceptance, so no single relay is load-bearing
@@ -1500,7 +1502,7 @@ The app-switcher snapshot stays blank either way (iOS cover, Android recents).
 
 ### Panic wipe
 
-Triggered from the Profile screen (`src/features/settings/profile-screen.tsx`).
+Triggered from the You tab (`src/features/settings/profile-screen.tsx`).
 One tap opens a confirmation sheet; three quick taps skip it and wipe
 immediately.
 
@@ -1530,7 +1532,7 @@ so they come after everything that holds message content.
 
 The keychain step is best-effort like the rest, and the wipe continues past a
 failure rather than abandoning the data. It is the one step whose outcome is
-reported: `panicWipe` returns `keysDestroyed`, and the Profile screen says so
+reported: `panicWipe` returns `keysDestroyed`, and the You tab says so
 when the OS refused, because a locked keychain on a booted-but-locked device is
 exactly the seizure case and "your keys are gone" must never be claimed falsely.
 A refused delete also condemns the identity ([Key storage](#key-storage)).
