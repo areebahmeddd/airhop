@@ -1,7 +1,8 @@
-import { formatShortDate, useLanguage, useT, type TranslationKey } from "@/i18n";
+import { formatShortDate, useDirection, useLanguage, useT, type TranslationKey } from "@/i18n";
 import { useRichText } from "@/i18n/rich-text";
 import { REPO_LINKS, STORE_LINKS } from "@/lib/links";
 import {
+  ArrowLeft,
   ArrowRight,
   ChevronDown,
   Download,
@@ -87,7 +88,7 @@ function Underlined({ delay, children }: { delay: number; children: React.ReactN
     <span className="text-ink relative whitespace-nowrap">
       {children}
       <svg
-        className="absolute right-0 -bottom-1 left-0 h-[5px] w-full"
+        className="absolute start-0 -bottom-1 h-[5px] w-full"
         viewBox="0 0 100 6"
         preserveAspectRatio="none"
         aria-hidden="true"
@@ -243,6 +244,7 @@ function HeroBody() {
 export default function Hero() {
   const T = useT();
   const language = useLanguage();
+  const ForwardArrow = useDirection() === "rtl" ? ArrowLeft : ArrowRight;
 
   return (
     <section className="px-6 md:px-10">
@@ -274,10 +276,10 @@ export default function Hero() {
             <span className="text-secondary mono text-[10px] tracking-wide whitespace-nowrap">
               {formatShortDate(language, __RELEASE_DATE__)}
             </span>
-            <ArrowRight
+            <ForwardArrow
               size={11}
               strokeWidth={2}
-              className="text-mute flex-shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+              className="text-mute shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5"
               aria-hidden="true"
             />
           </a>

@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Je identiteit is een {ed25519}-sleutelpaar dat op je apparaat wordt aangemaakt en bewaard in {ios_keychain} of {android_keystore}. Er zijn geen accounts, geen registraties en niets dat een server raakt, oftewel je kunt de app als wegwerp-app gebruiken die na verwijdering niets achterlaat dat naar jou leidt.",
   "home.about.body.crypto":
-    "Elke sessie gebruikt het {noise}-protocol voor een geauthenticeerde handshake. Live directe berichten tussen Airhop-telefoons gebruiken het {ratchet}-algoritme, oftewel een sleutel die later uitlekt, kan al verzonden berichten niet openen. Noodwissen vernietigt alle sleutels en berichten in minder dan een seconde.",
+    "Elke sessie gebruikt het {noise}-protocol voor een geauthenticeerde handshake. Live directe berichten tussen Airhop-telefoons gebruiken het {ratchet}-algoritme, oftewel een sleutel die later uitlekt, kan al verzonden berichten niet openen. Noodwissen vernietigt alle sleutels en berichten in enkele seconden.",
   "home.about.body.internet":
     "Als jij en een contact buiten Bluetooth-bereik zijn, dienen {nostr}-relays als brug via internet, met directe berichten ingepakt volgens {nip17}, zodat de mesh wereldwijd reikt zodra jullie allebei online zijn. Ondersteuning voor {tor} is er op iOS en Android, via {arti}, met {obfs4}-, {snowflake}- en {webtunnel}-bridges voor netwerken die Tor blokkeren.",
   "home.about.optional.title": "Airhop heeft optionele functies die je kunt inschakelen:",
@@ -188,8 +188,7 @@ const strings: Strings = {
   "home.features.identity.keys.line":
     "Aangemaakt op deze telefoon, bewaard in de sleutelhanger van het systeem.",
   "home.features.identity.names.name": "Leesbare namen",
-  "home.features.identity.names.line":
-    "Afgeleid van je sleutel, zodat niemand de jouwe kan afpakken.",
+  "home.features.identity.names.line": "Afgeleid van je sleutel, nooit gekozen of geregistreerd.",
   "home.features.identity.qr.name": "Contacten via QR",
   "home.features.identity.qr.line": "Eén scan draagt hun sleutels over, niet alleen hun naam.",
   "home.features.identity.forward.name": "Voorwaartse geheimhouding",
@@ -198,8 +197,7 @@ const strings: Strings = {
   "home.features.identity.move.line":
     "Chats en wallet verhuizen mee, dan wist de oude telefoon zichzelf.",
   "home.features.identity.panic.name": "Noodwissen",
-  "home.features.identity.panic.line":
-    "Elke sleutel en elk bericht vernietigd in minder dan een seconde.",
+  "home.features.identity.panic.line": "Elke sleutel en elk bericht vernietigd in enkele seconden.",
 
   "home.features.networking.title": "Netwerk",
   "home.features.networking.summary": "De telefoons zijn het netwerk.",

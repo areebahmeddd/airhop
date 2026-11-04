@@ -68,7 +68,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Mpiara-dakile {ed25519} noforonina teo amin'ny fitaovanao ary tehirizina ao amin'ny {ios_keychain} na {android_keystore} no maha-ianao anao. Tsy misy kaonty, tsy misy fisoratana anarana, ary tsy misy mikasika mpizara na dia iray aza, ka azo ampiasaina ho rindranasa vonjimaika tsy mamela na inona na inona mitondra any aminao rehefa voafafa.",
   "home.about.body.crypto":
-    "Mampiasa ny fitsipika {noise} ho an'ny fifampifankahafantarana voamarina ny fivoriana tsirairay. Ny hafatra manokana an-tsehatra eo amin'ny finday Airhop dia mampiasa ny algoritma {ratchet}, ka na dia mivoaka aza ny lakile iray any aoriana, dia tsy afaka manokatra ny hafatra efa nalefa izany. Mandrava ny lakile sy ny hafatra rehetra latsaky ny segondra iray ny famafana maika.",
+    "Mampiasa ny fitsipika {noise} ho an'ny fifampifankahafantarana voamarina ny fivoriana tsirairay. Ny hafatra manokana an-tsehatra eo amin'ny finday Airhop dia mampiasa ny algoritma {ratchet}, ka na dia mivoaka aza ny lakile iray any aoriana, dia tsy afaka manokatra ny hafatra efa nalefa izany. Mandrava ny lakile sy ny hafatra rehetra ao anatin'ny segondra vitsy ny famafana maika.",
   "home.about.body.internet":
     "Rehefa lavitra ny fetran'ny Bluetooth ianao sy ny fifandraisanao, dia manjary tetezana amin'ny Internet ny mpanelanelana {nostr}, mampiasa hafatra mivantana voafono araka ny endrika {nip17}, ka miitatra manerantany ny harato rehefa samy an-tserasera ianareo. Misy ny fanohanana ny {tor} amin'ny iOS sy Android, amin'ny {arti}, misy tetezana {obfs4}, {snowflake} sy {webtunnel} ho an’ny tambajotra manakana ny Tor.",
   "home.about.optional.title": "Manana fiasa safidy azonao alefa ny Airhop:",
@@ -191,7 +191,7 @@ const strings: Strings = {
   "home.features.identity.keys.line":
     "Noforonina teto amin'ity findy ity, tehirizina ao amin'ny fitehirizan-dakilen'ny rafitra.",
   "home.features.identity.names.name": "Anarana azo vakiana",
-  "home.features.identity.names.line": "Avy amin'ny lakilenao, ka tsy misy afaka maka ny anao.",
+  "home.features.identity.names.line": "Avy amin'ny lakilenao, tsy fidina na soratana mihitsy.",
   "home.features.identity.qr.name": "Fifandraisana amin'ny QR",
   "home.features.identity.qr.line":
     "Fakana sary iray dia mitondra ny lakiley, fa tsy ny anarany fotsiny.",
@@ -202,7 +202,7 @@ const strings: Strings = {
     "Mifindra ny resaka sy ny kitapom-bola, avy eo mamafa ny tenany ny findy taloha.",
   "home.features.identity.panic.name": "Famafana maika",
   "home.features.identity.panic.line":
-    "Ravana latsaky ny segondra iray ny lakile sy ny hafatra rehetra.",
+    "Ravana ao anatin'ny segondra vitsy ny lakile sy ny hafatra rehetra.",
 
   "home.features.networking.title": "Tambajotra",
   "home.features.networking.summary": "Ny findy no tambajotra.",

@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "あなたの識別情報は端末上で生成される {ed25519} の鍵ペアで、{ios_keychain} または {android_keystore} に保存されます。アカウントも登録もなく、サーバーに触れるものは何もありません。つまり、削除すればあなたにつながる痕跡が何も残らない使い捨てアプリとしても使えます。",
   "home.about.body.crypto":
-    "各セッションは認証付きハンドシェイクに {noise} プロトコルを使います。Airhop 端末どうしのライブのダイレクトメッセージは {ratchet} アルゴリズムを使うため、後から鍵が漏えいしても送信済みのメッセージは開けません。緊急消去はすべての鍵とメッセージを 1 秒未満で破棄します。",
+    "各セッションは認証付きハンドシェイクに {noise} プロトコルを使います。Airhop 端末どうしのライブのダイレクトメッセージは {ratchet} アルゴリズムを使うため、後から鍵が漏えいしても送信済みのメッセージは開けません。緊急消去はすべての鍵とメッセージを数秒で破棄します。",
   "home.about.body.internet":
     "あなたと相手が Bluetooth の圏外にいるときは、{nostr} リレーがインターネット経由の橋渡しとなり、{nip17} 形式でギフトラップしたダイレクトメッセージを使います。そのため二人ともオンラインであれば、メッシュは世界規模に広がります。{tor} は iOS でも Android でも {arti} 経由で利用でき、Tor をブロックするネットワーク向けに{obfs4}、{snowflake}、{webtunnel} のブリッジもあります。",
   "home.about.optional.title": "Airhop には、自分で有効にできる任意の機能があります:",
@@ -183,7 +183,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "鍵ペアによる識別",
   "home.features.identity.keys.line": "この端末で生成し、OS のキーチェーンに保管します。",
   "home.features.identity.names.name": "読める名前",
-  "home.features.identity.names.line": "あなたの鍵から導かれるので、誰にも奪われません。",
+  "home.features.identity.names.line": "あなたの鍵から導かれ、選ぶことも登録することもありません。",
   "home.features.identity.qr.name": "QR での連絡先",
   "home.features.identity.qr.line": "一度読み取れば名前だけでなく鍵も受け取れます。",
   "home.features.identity.forward.name": "前方秘匿性",
@@ -191,7 +191,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "新しい端末へ移行",
   "home.features.identity.move.line": "チャットとウォレットが移り、古い端末は自らを消去します。",
   "home.features.identity.panic.name": "緊急消去",
-  "home.features.identity.panic.line": "すべての鍵とメッセージを 1 秒未満で破棄。",
+  "home.features.identity.panic.line": "すべての鍵とメッセージを数秒で破棄。",
 
   "home.features.networking.title": "ネットワーク",
   "home.features.networking.summary": "端末そのものがネットワークです。",

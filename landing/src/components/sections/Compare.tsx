@@ -1,6 +1,6 @@
 import SectionHeader from "@/components/ui/SectionHeader";
 import { useT, type TranslationKey, type Translator } from "@/i18n";
-import { REPO_URL } from "@/lib/links";
+import { BITCHAT_URL, REPO_URL } from "@/lib/links";
 import { motion } from "motion/react";
 
 function Yes({ T }: { T: Translator }) {
@@ -131,7 +131,7 @@ const ROWS: {
   },
   {
     name: "bitchat",
-    href: "https://bitchat.free",
+    href: BITCHAT_URL,
     transport: "Bluetooth + Nostr + Tor",
     encryption: "Noise XX",
     offline: true,
@@ -187,7 +187,7 @@ export default function Compare() {
                       <th
                         key={key}
                         scope="col"
-                        className="label text-secondary px-5 py-3.5 text-[10px] font-semibold tracking-[0.14em] whitespace-nowrap"
+                        className="label text-secondary px-5 py-3.5 text-start text-[10px] font-semibold tracking-[0.14em] whitespace-nowrap"
                       >
                         {T(key)}
                       </th>

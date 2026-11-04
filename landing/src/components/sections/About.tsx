@@ -2,7 +2,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import TextLink from "@/components/ui/TextLink";
 import { useT, type TranslationKey } from "@/i18n";
 import { useRichText } from "@/i18n/rich-text";
-import { REPO_LINKS } from "@/lib/links";
+import { BITCHAT_URL, REPO_LINKS } from "@/lib/links";
 import { motion } from "motion/react";
 import { useMemo } from "react";
 
@@ -25,7 +25,7 @@ function Built() {
           {T("home.about.link.mesh")}
         </TextLink>
       ),
-      bitchat: <TextLink href="https://bitchat.free">bitchat</TextLink>,
+      bitchat: <TextLink href={BITCHAT_URL}>bitchat</TextLink>,
       wire_protocol: (
         <TextLink href={REPO_LINKS.protocolsDoc}>{T("home.about.link.wire_protocol")}</TextLink>
       ),
@@ -131,7 +131,7 @@ export default function About() {
         >
           <div className="border-line border-b px-6 py-3 select-none">
             <p className="label text-secondary text-[10px] font-bold tracking-widest">
-              &#9679; {T("home.about.card")}
+              <span aria-hidden="true">&#9679;</span> {T("home.about.card")}
             </p>
           </div>
 

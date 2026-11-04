@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "당신의 신원은 기기에서 생성되어 {ios_keychain} 또는 {android_keystore}에 저장되는 {ed25519} 키 쌍입니다. 계정도 가입도 없고 서버에 닿는 것도 없습니다. 즉 삭제하면 당신으로 이어지는 흔적이 남지 않는 일회용 앱처럼 쓸 수 있습니다.",
   "home.about.body.crypto":
-    "모든 세션은 인증된 핸드셰이크에 {noise} 프로토콜을 사용합니다. Airhop 휴대폰 간의 실시간 다이렉트 메시지는 {ratchet} 알고리즘을 사용하므로, 나중에 키가 유출되더라도 이미 보낸 메시지는 열 수 없습니다. 긴급 삭제는 모든 키와 메시지를 1초 안에 파기합니다.",
+    "모든 세션은 인증된 핸드셰이크에 {noise} 프로토콜을 사용합니다. Airhop 휴대폰 간의 실시간 다이렉트 메시지는 {ratchet} 알고리즘을 사용하므로, 나중에 키가 유출되더라도 이미 보낸 메시지는 열 수 없습니다. 긴급 삭제는 모든 키와 메시지를 몇 초 만에 파기합니다.",
   "home.about.body.internet":
     "당신과 상대가 Bluetooth 범위를 벗어나면 {nostr} 릴레이가 인터넷을 통한 다리 역할을 하며, {nip17} 형식으로 감싼 다이렉트 메시지를 사용합니다. 그래서 둘 다 온라인이면 메시는 전 세계로 넓어집니다. {tor} 지원은 iOS와 Android 모두에서 {arti}로 제공되며, Tor를 차단하는 네트워크를 위한 {obfs4}, {snowflake}와 {webtunnel} 브리지도 있습니다.",
   "home.about.optional.title": "Airhop에는 직접 켤 수 있는 선택 기능이 있습니다:",
@@ -180,8 +180,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "키 쌍 신원",
   "home.features.identity.keys.line": "이 휴대폰에서 만들어 OS 키체인에 보관합니다.",
   "home.features.identity.names.name": "읽을 수 있는 이름",
-  "home.features.identity.names.line":
-    "당신의 키에서 파생되므로 누구도 당신의 이름을 가져갈 수 없습니다.",
+  "home.features.identity.names.line": "당신의 키에서 파생되며, 고르거나 등록하지 않습니다.",
   "home.features.identity.qr.name": "QR 연락처",
   "home.features.identity.qr.line": "한 번 스캔하면 이름뿐 아니라 키까지 전해집니다.",
   "home.features.identity.forward.name": "전방향 비밀성",
@@ -189,7 +188,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "새 휴대폰으로 이전",
   "home.features.identity.move.line": "대화와 지갑이 옮겨지고, 이전 휴대폰은 스스로 지워집니다.",
   "home.features.identity.panic.name": "긴급 삭제",
-  "home.features.identity.panic.line": "모든 키와 메시지를 1초 안에 파기합니다.",
+  "home.features.identity.panic.line": "모든 키와 메시지를 몇 초 만에 파기합니다.",
 
   "home.features.networking.title": "네트워킹",
   "home.features.networking.summary": "휴대폰 자체가 네트워크입니다.",

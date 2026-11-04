@@ -130,7 +130,7 @@ const SECTIONS: LegalSection[] = [
   {
     heading: "Mesh bridge (optional)",
     paragraphs: [
-      'A device with the mesh bridge enabled links your area\'s public #bluetooth channel with another Bluetooth crowd out of radio range, carrying that public chat between them over the internet. It only ever touches public #bluetooth traffic, never your private messages, and every bridged message stays signed by its original author, so the bridge cannot read private content or alter what it carries. A per-message "nearby only" control keeps any single message off the internet. Enabling it uses your own data connection and battery. Mesh bridge is off by default.',
+      "A device with the mesh bridge enabled links your area's public #bluetooth channel with another Bluetooth crowd out of radio range, carrying that public chat between them over the internet. It only ever touches public #bluetooth traffic, never your private messages, and every bridged message stays signed by its original author, so the bridge cannot read private content or alter what it carries. To find the other crowd, it resolves your rough location and listens on Nostr relays for your area's cell, roughly 1.2 km across, and the cells around it, so those relays learn that area. A per-message \"nearby only\" control keeps any single message off the internet. Enabling it uses your own data connection and battery. Mesh bridge is off by default.",
     ],
   },
   {
@@ -177,7 +177,7 @@ const SECTIONS: LegalSection[] = [
     paragraphs: [
       {
         bullets: [
-          "**Panic wipe.** Erase all local keys, messages, queued mail, cached media, Tor state, notifications, and app data from the Profile screen. Photos you saved to your gallery belong to your phone's photo library and stay there, and on iPhone a Wi-Fi Aware pairing stays in the system's own list until you remove it in the Settings app.",
+          "**Panic wipe.** Erase all local keys, messages, queued mail, cached media, Tor state, notifications, and app data from the You tab. Photos you saved to your gallery belong to your phone's photo library and stay there, and on iPhone a Wi-Fi Aware pairing stays in the system's own list until you remove it in the Settings app.",
           "**Feature controls.** Tor routing, the mesh bridge, and the internet gateway can each be turned on or off in settings, and location channels left unjoined. Anything already published to a relay cannot be recalled.",
           "**Wallet.** Remove a mint at any time from the Wallet tab. Removing one deletes the coins held there from this device, so withdraw or send them first. A panic wipe destroys the wallet file, its encryption key, and the recovery phrase together.",
           "**System permissions.** Bluetooth, location, microphone, camera, photo library, and notification access can each be revoked in your device settings at any time. Camera access is used to scan QR codes, to take photos, videos and video notes you choose to send, and to go live when you choose to.",
@@ -209,7 +209,7 @@ export default function PrivacyScreen({ onBack }: Props): React.JSX.Element {
   return (
     <LegalDocScreen
       title="Privacy Policy"
-      lastUpdated="November 1, 2026"
+      lastUpdated="January 1, 2027"
       sections={SECTIONS}
       onBack={onBack}
     />

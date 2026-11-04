@@ -1,4 +1,4 @@
-import { Arrow, Box, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
+import { Arrow, Box, Caption, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
 
 export function Fragmentation() {
   return (
@@ -33,17 +33,9 @@ export function Fragmentation() {
       <Box x={644} y={96} w={140} h={64} label="reassemble" sub="128 slots, 30 s timeout" />
       <line x1={788} y1={128} x2={824} y2={128} stroke={LINE} markerEnd="url(#fr-arrow)" />
       <Box x={828} y={96} w={78} h={64} label="file" strong />
-      <text
-        x={392}
-        y={94}
-        fontFamily={MONO}
-        fontSize={9}
-        fontWeight={700}
-        fill={MUTED}
-        letterSpacing="0.18em"
-      >
+      <Caption x={392} y={94}>
         ONE FRAGMENT EVERY 25 ms
-      </text>
+      </Caption>
       <text x={16} y={210} fontFamily={MONO} fontSize={10} fill={MUTED}>
         The 25 ms pacing (30 ms in a room) is not a throttle for politeness. Without it the radio
         drops fragments and the transfer never completes.

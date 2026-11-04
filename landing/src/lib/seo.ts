@@ -8,7 +8,7 @@ import {
 import type { TranslationKey } from "../i18n/locales/types.ts";
 import { SITE_URL } from "./links.ts";
 
-export const LAST_UPDATED = "2026-11-01";
+export const LAST_UPDATED = "2027-01-01";
 
 export interface PageSeo {
   path: string;
@@ -16,7 +16,6 @@ export interface PageSeo {
   descriptionKey: TranslationKey;
   type: "website" | "article";
   breadcrumbKey?: TranslationKey;
-  lastmod: string;
   noIndex?: boolean;
   translated?: boolean;
 }
@@ -27,7 +26,6 @@ export const SEO: Record<string, PageSeo> = {
     titleKey: "seo.home.title",
     descriptionKey: "seo.home.description",
     type: "website",
-    lastmod: LAST_UPDATED,
     translated: true,
   },
   "/architecture": {
@@ -36,7 +34,6 @@ export const SEO: Record<string, PageSeo> = {
     descriptionKey: "seo.architecture.description",
     type: "article",
     breadcrumbKey: "seo.architecture.breadcrumb",
-    lastmod: LAST_UPDATED,
   },
   "/faq": {
     path: "/faq",
@@ -44,7 +41,6 @@ export const SEO: Record<string, PageSeo> = {
     descriptionKey: "seo.faq.description",
     type: "website",
     breadcrumbKey: "seo.faq.breadcrumb",
-    lastmod: LAST_UPDATED,
   },
   "/blogs": {
     path: "/blogs",
@@ -52,7 +48,6 @@ export const SEO: Record<string, PageSeo> = {
     descriptionKey: "seo.blogs.description",
     type: "website",
     breadcrumbKey: "seo.blogs.breadcrumb",
-    lastmod: LAST_UPDATED,
     translated: true,
   },
   "/brand": {
@@ -61,7 +56,6 @@ export const SEO: Record<string, PageSeo> = {
     descriptionKey: "seo.brand.description",
     type: "website",
     breadcrumbKey: "seo.brand.breadcrumb",
-    lastmod: LAST_UPDATED,
   },
   "/privacy-policy": {
     path: "/privacy-policy",
@@ -69,7 +63,6 @@ export const SEO: Record<string, PageSeo> = {
     descriptionKey: "seo.privacy.description",
     type: "website",
     breadcrumbKey: "seo.privacy.breadcrumb",
-    lastmod: LAST_UPDATED,
   },
   "/terms-of-service": {
     path: "/terms-of-service",
@@ -77,7 +70,6 @@ export const SEO: Record<string, PageSeo> = {
     descriptionKey: "seo.terms.description",
     type: "website",
     breadcrumbKey: "seo.terms.breadcrumb",
-    lastmod: LAST_UPDATED,
   },
 };
 
@@ -86,7 +78,6 @@ export const NOT_FOUND_SEO: PageSeo = {
   titleKey: "seo.notfound.title",
   descriptionKey: "seo.notfound.description",
   type: "website",
-  lastmod: LAST_UPDATED,
   noIndex: true,
 };
 

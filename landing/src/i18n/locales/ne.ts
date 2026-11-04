@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "तपाईंको परिचय भनेको तपाईंकै उपकरणमा बनेको र {ios_keychain} वा {android_keystore} मा राखिएको {ed25519} साँचो जोडी हो। कुनै खाता छैन, दर्ता छैन, र कुनै सर्भरलाई छुने कुरा पनि छैन; अर्थात् मेटाएपछि तपाईंसम्म पुर्‍याउने केही नछोड्ने अस्थायी एपजस्तै प्रयोग गर्न सकिन्छ।",
   "home.about.body.crypto":
-    "हरेक सत्रले प्रमाणित ह्यान्डसेकका लागि {noise} प्रोटोकल प्रयोग गर्छ। Airhop फोनहरूबीचका प्रत्यक्ष सन्देशहरूले {ratchet} एल्गोरिदम प्रयोग गर्छन्; अर्थात् पछि कुनै साँचो चुहिए पनि पठाइसकेका सन्देशहरू खोल्न सकिँदैन। आपत्कालीन मेटाइले सबै साँचो र सन्देश एक सेकेन्डभित्रै नष्ट गर्छ।",
+    "हरेक सत्रले प्रमाणित ह्यान्डसेकका लागि {noise} प्रोटोकल प्रयोग गर्छ। Airhop फोनहरूबीचका प्रत्यक्ष सन्देशहरूले {ratchet} एल्गोरिदम प्रयोग गर्छन्; अर्थात् पछि कुनै साँचो चुहिए पनि पठाइसकेका सन्देशहरू खोल्न सकिँदैन। आपत्कालीन मेटाइले सबै साँचो र सन्देश केही सेकेन्डमै नष्ट गर्छ।",
   "home.about.body.internet":
     "तपाईं र तपाईंको सम्पर्क Bluetooth को पहुँचबाहिर हुँदा {nostr} रिलेहरूले इन्टरनेटमार्फत पुलको काम गर्छन्, र {nip17} ढाँचामा बेरिएका सिधा सन्देशहरू प्रयोग हुन्छन्; त्यसैले दुवै जना अनलाइन हुँदा मेस विश्वभर फैलिन्छ। {tor} को सहयोग iOS र Android दुवैमा {arti} मार्फत उपलब्ध छ, र Tor रोक्ने सञ्जालका लागि {obfs4}, {snowflake} र {webtunnel} ब्रिजहरू पनि छन्।",
   "home.about.optional.title": "Airhop मा तपाईंले चाहेमा खोल्न सकिने वैकल्पिक सुविधाहरू छन्:",
@@ -186,8 +186,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "साँचो जोडीको परिचय",
   "home.features.identity.keys.line": "यही फोनमा बनेको, प्रणालीको साँचो भण्डारमा राखिएको।",
   "home.features.identity.names.name": "पढ्न मिल्ने नाम",
-  "home.features.identity.names.line":
-    "तपाईंको साँचोबाट बनेको, त्यसैले तपाईंको नाम कसैले लिन सक्दैन।",
+  "home.features.identity.names.line": "तपाईंको साँचोबाट बनेका, न छानिन्छन् न दर्ता गरिन्छन्।",
   "home.features.identity.qr.name": "QR सम्पर्क",
   "home.features.identity.qr.line": "एकपटक स्क्यान गर्दा नाम मात्र होइन, उनीहरूका साँचो पनि आउँछ।",
   "home.features.identity.forward.name": "फरवार्ड सेक्रेसी",
@@ -195,7 +194,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "नयाँ फोनमा सार्ने",
   "home.features.identity.move.line": "च्याट र वालेट सर्छन्, त्यसपछि पुरानो फोनले आफैँलाई मेटाउँछ।",
   "home.features.identity.panic.name": "आपत्कालीन मेटाइ",
-  "home.features.identity.panic.line": "हरेक साँचो र हरेक सन्देश एक सेकेन्डभित्रै नष्ट।",
+  "home.features.identity.panic.line": "हरेक साँचो र हरेक सन्देश केही सेकेन्डमै नष्ट।",
 
   "home.features.networking.title": "सञ्जाल",
   "home.features.networking.summary": "फोनहरू नै सञ्जाल हुन्।",

@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Votre identité est une paire de clés {ed25519} générée sur votre appareil et conservée dans {ios_keychain} ou {android_keystore}. Il n'y a ni compte, ni inscription, ni rien qui touche un serveur, autrement dit l'application peut servir d'application jetable qui ne laisse aucune trace remontant jusqu'à vous une fois supprimée.",
   "home.about.body.crypto":
-    "Chaque session utilise le protocole {noise} pour une poignée de main authentifiée. Les messages directs en direct entre téléphones Airhop utilisent l'algorithme {ratchet}, autrement dit une clé divulguée plus tard ne permet pas d'ouvrir les messages déjà envoyés. L'effacement d'urgence détruit toutes les clés et tous les messages en moins d'une seconde.",
+    "Chaque session utilise le protocole {noise} pour une poignée de main authentifiée. Les messages directs en direct entre téléphones Airhop utilisent l'algorithme {ratchet}, autrement dit une clé divulguée plus tard ne permet pas d'ouvrir les messages déjà envoyés. L'effacement d'urgence détruit toutes les clés et tous les messages en quelques secondes.",
   "home.about.body.internet":
     "Quand vous et votre contact êtes hors de portée du Bluetooth, les relais {nostr} servent de pont par internet, avec des messages privés emballés au format {nip17}, de sorte que le mesh s'étend au monde entier dès que vous êtes tous les deux en ligne. La prise en charge de {tor} est disponible sur iOS et Android, via {arti}, avec des bridges {obfs4}, {snowflake} et {webtunnel} pour les réseaux qui bloquent Tor.",
   "home.about.optional.title":
@@ -191,8 +191,7 @@ const strings: Strings = {
   "home.features.identity.keys.line":
     "Créée sur ce téléphone, conservée dans le trousseau du système.",
   "home.features.identity.names.name": "Noms lisibles",
-  "home.features.identity.names.line":
-    "Dérivés de votre clé, donc personne ne peut prendre le vôtre.",
+  "home.features.identity.names.line": "Dérivés de votre clé, jamais choisis ni enregistrés.",
   "home.features.identity.qr.name": "Contacts par QR",
   "home.features.identity.qr.line": "Un scan transmet leurs clés, pas seulement leur nom.",
   "home.features.identity.forward.name": "Confidentialité persistante",
@@ -202,7 +201,7 @@ const strings: Strings = {
     "Discussions et portefeuille suivent, puis l'ancien téléphone s'efface.",
   "home.features.identity.panic.name": "Effacement d'urgence",
   "home.features.identity.panic.line":
-    "Chaque clé et chaque message détruits en moins d'une seconde.",
+    "Chaque clé et chaque message détruits en quelques secondes.",
 
   "home.features.networking.title": "Réseau",
   "home.features.networking.summary": "Les téléphones sont le réseau.",

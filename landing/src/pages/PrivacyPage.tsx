@@ -3,7 +3,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import TextLink from "@/components/ui/TextLink";
 import { useSEO } from "@/hooks/useSEO";
 import { formatDate, useLanguage, useT } from "@/i18n";
-import { REPO_LINKS, REPO_URL } from "@/lib/links";
+import { BITCHAT_URL, REPO_LINKS, REPO_URL } from "@/lib/links";
 import { LAST_UPDATED, SEO } from "@/lib/seo";
 
 export default function PrivacyPage() {
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
         <EnglishContent className="text-secondary mt-14">
           <section className="border-line space-y-4 border-t pt-12 first:border-t-0 first:pt-0">
             <h2 className="text-ink text-base font-semibold">Summary</h2>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>No project-operated accounts or messaging servers.</li>
               <li>No analytics, advertising, telemetry, or tracking of any kind.</li>
               <li>No sale of user data.</li>
@@ -45,7 +45,7 @@ export default function PrivacyPage() {
             <p className="text-[15px] leading-[1.75]">
               Airhop stores data only on your device. None of it is transmitted to us.
             </p>
-            <ul className="marker:text-mute list-disc space-y-2.5 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2.5 ps-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>Identity keys.</strong> An Ed25519 signing key and a Noise static key are
                 generated locally when you set up the app and stored in your device's secure storage
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
             <p className="text-[15px] leading-[1.75]">
               When the app is running, nearby mesh devices can receive:
             </p>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 Your display name, which the app generates from your public key, and your public
                 identity keys.
@@ -182,7 +182,7 @@ export default function PrivacyPage() {
             </p>
             <p className="text-[15px] leading-[1.75]">
               Nearby mesh devices are not limited to Airhop.{" "}
-              <TextLink href="https://bitchat.free" tone="quiet">
+              <TextLink href={BITCHAT_URL} tone="quiet">
                 bitchat
               </TextLink>{" "}
               is a separate, compatible app that can join the same mesh and receive this same data.
@@ -229,7 +229,7 @@ export default function PrivacyPage() {
               When Airhop uses the internet, it connects to public or user-selected Nostr relays to
               extend conversations beyond Bluetooth range.
             </p>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>Private messages.</strong> Fallback messages use NIP-17 gift wraps. Relay
                 operators can observe event timestamps and network metadata, but not message
@@ -254,7 +254,7 @@ export default function PrivacyPage() {
               optional and only requested when you use them. Android 11 and older are the exception:
               they also require it to scan for Bluetooth, and Airhop reads no position for that.
             </p>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>Exact coordinates never leave your device</strong> and are never stored.
                 Your position is truncated to a grid cell, and the smallest cell we ever publish is
@@ -290,7 +290,7 @@ export default function PrivacyPage() {
               claim a token while online, and on its own once you are online, to settle coins you
               received offline, redeem a nutzap, or fetch a mint's keys to show a token in a chat.
             </p>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>What a mint can see.</strong> Your IP address, the amounts you deposit and
                 withdraw, and when. Mints are third parties whose retention and privacy practices
@@ -363,9 +363,11 @@ export default function PrivacyPage() {
               another Bluetooth crowd out of radio range, carrying that public chat between them
               over the internet. It only ever touches public #bluetooth traffic, never your private
               messages, and every bridged message stays signed by its original author, so the bridge
-              cannot read private content or alter what it carries. A per-message "nearby only"
-              control keeps any single message off the internet. Enabling it uses your own data
-              connection and battery. Mesh bridge is off by default.
+              cannot read private content or alter what it carries. To find the other crowd, it
+              resolves your rough location and listens on Nostr relays for your area's cell, roughly
+              1.2 km across, and the cells around it, so those relays learn that area. A per-message
+              "nearby only" control keeps any single message off the internet. Enabling it uses your
+              own data connection and battery. Mesh bridge is off by default.
             </p>
           </section>
 
@@ -382,7 +384,7 @@ export default function PrivacyPage() {
 
           <section className="border-line space-y-4 border-t pt-12 first:border-t-0 first:pt-0">
             <h2 className="text-ink text-base font-semibold">Cryptography</h2>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>Private sessions.</strong> Noise XX with X25519 and ChaCha20-Poly1305.
               </li>
@@ -430,7 +432,7 @@ export default function PrivacyPage() {
 
           <section className="border-line space-y-4 border-t pt-12 first:border-t-0 first:pt-0">
             <h2 className="text-ink text-base font-semibold">How long data is kept</h2>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>Undelivered private messages:</strong> until delivered, or seven days,
                 whichever comes first.
@@ -465,13 +467,13 @@ export default function PrivacyPage() {
 
           <section className="border-line space-y-4 border-t pt-12 first:border-t-0 first:pt-0">
             <h2 className="text-ink text-base font-semibold">Your controls</h2>
-            <ul className="marker:text-mute list-disc space-y-2 pl-5 text-[15px] leading-[1.75]">
+            <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 <strong>Panic wipe.</strong> Erase all local keys, messages, queued mail, cached
-                media, Tor state, notifications, and app data from the Profile screen. Photos you
-                saved to your gallery belong to your phone's photo library and stay there, and on
-                iPhone a Wi-Fi Aware pairing stays in the system's own list until you remove it in
-                the Settings app.
+                media, Tor state, notifications, and app data from the You tab. Photos you saved to
+                your gallery belong to your phone's photo library and stay there, and on iPhone a
+                Wi-Fi Aware pairing stays in the system's own list until you remove it in the
+                Settings app.
               </li>
               <li>
                 <strong>Feature controls.</strong> Tor routing, the mesh bridge, and the internet

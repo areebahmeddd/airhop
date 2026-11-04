@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "ማንነትዎ በመሣሪያዎ ላይ የተፈጠረና በ {ios_keychain} ወይም በ {android_keystore} ውስጥ የተቀመጠ የ {ed25519} ቁልፍ ጥንድ ነው። መለያ የለም፣ ምዝገባ የለም፣ አገልጋይን የሚነካ ነገርም የለም። ማለትም ከተሰረዘ በኋላ ወደ እርስዎ የሚመራ ምንም ሳይተው እንደ ጊዜያዊ መተግበሪያ ሊያገለግል ይችላል።",
   "home.about.body.crypto":
-    "እያንዳንዱ ክፍለ ጊዜ ለተረጋገጠ የመጀመሪያ ልውውጥ የ {noise} ፕሮቶኮልን ይጠቀማል። በAirhop ስልኮች መካከል ያሉ ቀጥታ የግል መልእክቶች የ {ratchet} ስልተ ቀመርን ይጠቀማሉ፤ ማለትም ቁልፍ ወደፊት ቢወጣም እንኳ አስቀድመው የተላኩ መልእክቶችን መክፈት አይችልም። የአስቸኳይ ጊዜ ማጥፋት ሁሉንም ቁልፎችና መልእክቶች ከአንድ ሰከንድ ባነሰ ጊዜ ውስጥ ያጠፋል።",
+    "እያንዳንዱ ክፍለ ጊዜ ለተረጋገጠ የመጀመሪያ ልውውጥ የ {noise} ፕሮቶኮልን ይጠቀማል። በAirhop ስልኮች መካከል ያሉ ቀጥታ የግል መልእክቶች የ {ratchet} ስልተ ቀመርን ይጠቀማሉ፤ ማለትም ቁልፍ ወደፊት ቢወጣም እንኳ አስቀድመው የተላኩ መልእክቶችን መክፈት አይችልም። የአስቸኳይ ጊዜ ማጥፋት ሁሉንም ቁልፎችና መልእክቶች በሰከንዶች ውስጥ ያጠፋል።",
   "home.about.body.internet":
     "እርስዎና ሰዎችዎ ከ Bluetooth ክልል ውጭ ሲሆኑ የ {nostr} ማስተላለፊያዎች በኢንተርኔት በኩል እንደ ድልድይ ያገለግላሉ፤ በ {nip17} ቅርጽ የተጠቀለሉ ቀጥታ መልእክቶችን ይጠቀማሉ። ስለዚህ ሁለታችሁም በመስመር ላይ ስትሆኑ መረቡ ወደ መላው ዓለም ይዘረጋል። የ {tor} ድጋፍ በ iOS እና በ Android ላይ በ {arti} በኩል ይገኛል፤ Tor ለሚያግዱ አውታረ መረቦችም የ {obfs4}፣ የ {snowflake} እና የ {webtunnel} ድልድዮች አሉ።",
   "home.about.optional.title": "Airhop እርስዎ ማብራት የሚችሏቸው አማራጭ ባህሪዎች አሉት:",
@@ -169,7 +169,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "የቁልፍ ጥንድ ማንነት",
   "home.features.identity.keys.line": "በዚህ ስልክ ላይ ተፈጥሮ በሥርዓቱ ቁልፍ ማከማቻ ውስጥ ይቀመጣል።",
   "home.features.identity.names.name": "ሊነበቡ የሚችሉ ስሞች",
-  "home.features.identity.names.line": "ከቁልፍዎ የተገኙ ናቸው፤ ስለዚህ የእርስዎን ማንም ሊወስድ አይችልም።",
+  "home.features.identity.names.line": "ከቁልፍዎ የተገኙ ናቸው፤ አይመረጡም፣ አይመዘገቡም።",
   "home.features.identity.qr.name": "በ QR የሚገኙ እውቂያዎች",
   "home.features.identity.qr.line": "አንድ ጊዜ መቃኘት ስማቸውን ብቻ ሳይሆን ቁልፎቻቸውንም ያመጣል።",
   "home.features.identity.forward.name": "ወደፊት ሚስጥራዊነት",
@@ -177,7 +177,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "ወደ አዲስ ስልክ ማስተላለፍ",
   "home.features.identity.move.line": "ውይይቶችና ቦርሳው ይዛወራሉ፣ ከዚያ አሮጌው ስልክ ራሱን ያጠፋል።",
   "home.features.identity.panic.name": "የአስቸኳይ ጊዜ ማጥፋት",
-  "home.features.identity.panic.line": "እያንዳንዱ ቁልፍና እያንዳንዱ መልእክት ከአንድ ሰከንድ ባነሰ ጊዜ ይጠፋል።",
+  "home.features.identity.panic.line": "እያንዳንዱ ቁልፍና እያንዳንዱ መልእክት በሰከንዶች ውስጥ ይጠፋል።",
 
   "home.features.networking.title": "መረብ",
   "home.features.networking.summary": "ስልኮቹ ራሳቸው መረቡ ናቸው።",

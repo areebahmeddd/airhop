@@ -14,7 +14,7 @@ export default function BlogsPage() {
       className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center"
     >
       <div className="flex flex-col items-center gap-4">
-        <span className="text-secondary font-mono text-[11px] font-semibold tracking-[0.25em] uppercase">
+        <span className="label text-secondary text-[11px] font-semibold tracking-[0.2em]">
           {T("page.blogs.eyebrow")}
         </span>
         <h1 className="text-ink text-3xl font-semibold tracking-tight sm:text-4xl">

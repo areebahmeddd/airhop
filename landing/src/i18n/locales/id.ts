@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Identitas Anda adalah pasangan kunci {ed25519} yang dibuat di perangkat Anda dan disimpan di {ios_keychain} atau {android_keystore}. Tidak ada akun, tidak ada pendaftaran, dan tidak ada yang menyentuh server mana pun, artinya aplikasi ini bisa dipakai sebagai aplikasi sekali pakai yang tidak meninggalkan apa pun yang mengarah kembali ke Anda setelah dihapus.",
   "home.about.body.crypto":
-    "Setiap sesi memakai protokol {noise} untuk handshake terautentikasi. Pesan langsung live antar ponsel Airhop memakai algoritme {ratchet}, artinya kunci yang bocor di kemudian hari tidak bisa membuka pesan yang sudah terkirim. Hapus darurat memusnahkan semua kunci dan pesan dalam waktu kurang dari satu detik.",
+    "Setiap sesi memakai protokol {noise} untuk handshake terautentikasi. Pesan langsung live antar ponsel Airhop memakai algoritme {ratchet}, artinya kunci yang bocor di kemudian hari tidak bisa membuka pesan yang sudah terkirim. Hapus darurat memusnahkan semua kunci dan pesan dalam hitungan detik.",
   "home.about.body.internet":
     "Ketika Anda dan kontak berada di luar jangkauan Bluetooth, relai {nostr} berfungsi sebagai jembatan lewat internet, memakai pesan langsung terbungkus berformat {nip17}, sehingga mesh meluas ke seluruh dunia selama kalian berdua daring. Dukungan {tor} tersedia di iOS dan Android, lewat {arti}, dengan bridge {obfs4}, {snowflake}, dan {webtunnel} untuk jaringan yang memblokir Tor.",
   "home.about.optional.title": "Airhop punya fitur opsional yang bisa Anda aktifkan:",
@@ -189,7 +189,7 @@ const strings: Strings = {
   "home.features.identity.keys.line": "Dibuat di ponsel ini, disimpan di keychain sistem.",
   "home.features.identity.names.name": "Nama yang mudah dibaca",
   "home.features.identity.names.line":
-    "Diturunkan dari kunci Anda, jadi tidak ada yang bisa mengambilnya.",
+    "Diturunkan dari kunci Anda, tidak pernah dipilih atau didaftarkan.",
   "home.features.identity.qr.name": "Kontak lewat QR",
   "home.features.identity.qr.line": "Sekali pindai membawa kunci mereka, bukan cuma namanya.",
   "home.features.identity.forward.name": "Kerahasiaan maju",
@@ -198,8 +198,7 @@ const strings: Strings = {
   "home.features.identity.move.line":
     "Obrolan dan dompet ikut pindah, lalu ponsel lama menghapus dirinya.",
   "home.features.identity.panic.name": "Hapus darurat",
-  "home.features.identity.panic.line":
-    "Semua kunci dan pesan dimusnahkan dalam waktu kurang dari satu detik.",
+  "home.features.identity.panic.line": "Semua kunci dan pesan dimusnahkan dalam hitungan detik.",
 
   "home.features.networking.title": "Jaringan",
   "home.features.networking.summary": "Ponsel-ponsel itulah jaringannya.",

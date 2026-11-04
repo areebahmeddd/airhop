@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Sua identidade é um par de chaves {ed25519} gerado no seu dispositivo e guardado no {ios_keychain} ou no {android_keystore}. Não há contas, nem cadastros, nem nada que toque um servidor, ou seja, dá para usar como app descartável que não deixa nada ligando de volta a você depois de excluído.",
   "home.about.body.crypto":
-    "Cada sessão usa o protocolo {noise} para um handshake autenticado. As mensagens diretas ao vivo entre celulares com Airhop usam o algoritmo {ratchet}, ou seja, uma chave vazada depois não abre as mensagens já enviadas. A limpeza de pânico destrói todas as chaves e mensagens em menos de um segundo.",
+    "Cada sessão usa o protocolo {noise} para um handshake autenticado. As mensagens diretas ao vivo entre celulares com Airhop usam o algoritmo {ratchet}, ou seja, uma chave vazada depois não abre as mensagens já enviadas. A limpeza de pânico destrói todas as chaves e mensagens em segundos.",
   "home.about.body.internet":
     "Quando você e um contato estão fora do alcance do Bluetooth, os relays do {nostr} servem de ponte pela internet, usando mensagens diretas embrulhadas no formato {nip17}, então a rede mesh se estende globalmente sempre que vocês dois estiverem on-line. O suporte a {tor} está disponível no iOS e no Android, via {arti}, com bridges {obfs4}, {snowflake} e {webtunnel} para redes que bloqueiam o Tor.",
   "home.about.optional.title": "O Airhop tem recursos opcionais que você pode ativar:",
@@ -187,7 +187,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "Identidade por par de chaves",
   "home.features.identity.keys.line": "Criada neste celular, guardada no chaveiro do sistema.",
   "home.features.identity.names.name": "Nomes legíveis",
-  "home.features.identity.names.line": "Derivados da sua chave, então ninguém pode tomar o seu.",
+  "home.features.identity.names.line": "Derivados da sua chave, nunca escolhidos nem registrados.",
   "home.features.identity.qr.name": "Contatos por QR",
   "home.features.identity.qr.line": "Uma leitura carrega as chaves, não só o nome.",
   "home.features.identity.forward.name": "Sigilo futuro",
@@ -196,8 +196,7 @@ const strings: Strings = {
   "home.features.identity.move.line":
     "Conversas e carteira vão junto, e o celular antigo se apaga.",
   "home.features.identity.panic.name": "Limpeza de pânico",
-  "home.features.identity.panic.line":
-    "Todas as chaves e mensagens destruídas em menos de um segundo.",
+  "home.features.identity.panic.line": "Todas as chaves e mensagens destruídas em segundos.",
 
   "home.features.networking.title": "Rede",
   "home.features.networking.summary": "Os celulares são a rede.",

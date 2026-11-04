@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Twoja tożsamość to para kluczy {ed25519} generowana na twoim urządzeniu i przechowywana w {ios_keychain} albo {android_keystore}. Nie ma kont, rejestracji ani niczego, co dotyka serwera, czyli można używać aplikacji jak jednorazowej, która po usunięciu nie zostawia nic, co prowadziłoby do ciebie.",
   "home.about.body.crypto":
-    "Każda sesja korzysta z protokołu {noise} do uwierzytelnionego uzgadniania. Wiadomości bezpośrednie na żywo między telefonami z Airhop korzystają z algorytmu {ratchet}, czyli klucz ujawniony później nie otworzy już wysłanych wiadomości. Awaryjne czyszczenie niszczy wszystkie klucze i wiadomości w niecałą sekundę.",
+    "Każda sesja korzysta z protokołu {noise} do uwierzytelnionego uzgadniania. Wiadomości bezpośrednie na żywo między telefonami z Airhop korzystają z algorytmu {ratchet}, czyli klucz ujawniony później nie otworzy już wysłanych wiadomości. Awaryjne czyszczenie niszczy wszystkie klucze i wiadomości w kilka sekund.",
   "home.about.body.internet":
     "Kiedy ty i twój kontakt jesteście poza zasięgiem Bluetootha, przekaźniki {nostr} służą jako most przez internet, z wiadomościami bezpośrednimi zapakowanymi w formacie {nip17}, więc sieć mesh sięga całego świata, kiedy oboje jesteście online. Obsługa {tor} jest dostępna na iOS i Androidzie, przez {arti}, z mostkami {obfs4}, {snowflake} i {webtunnel} dla sieci blokujących Tora.",
   "home.about.optional.title": "Airhop ma opcjonalne funkcje, które możesz włączyć:",
@@ -188,7 +188,7 @@ const strings: Strings = {
     "Tworzona na tym telefonie, przechowywana w pęku kluczy systemu.",
   "home.features.identity.names.name": "Czytelne nazwy",
   "home.features.identity.names.line":
-    "Wyprowadzone z twojego klucza, więc nikt nie zabierze ci twojej.",
+    "Wyprowadzone z twojego klucza, nigdy nie wybierane ani rejestrowane.",
   "home.features.identity.qr.name": "Kontakty przez QR",
   "home.features.identity.qr.line": "Jedno skanowanie przenosi ich klucze, nie tylko nazwę.",
   "home.features.identity.forward.name": "Utajnianie przekazywania",
@@ -196,8 +196,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "Przeniesienie na nowy telefon",
   "home.features.identity.move.line": "Czaty i portfel przechodzą, a stary telefon sam się czyści.",
   "home.features.identity.panic.name": "Awaryjne czyszczenie",
-  "home.features.identity.panic.line":
-    "Każdy klucz i każda wiadomość zniszczone w niecałą sekundę.",
+  "home.features.identity.panic.line": "Każdy klucz i każda wiadomość zniszczone w kilka sekund.",
 
   "home.features.networking.title": "Sieć",
   "home.features.networking.summary": "To telefony są siecią.",

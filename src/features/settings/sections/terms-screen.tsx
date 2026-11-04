@@ -82,7 +82,7 @@ export default function TermsScreen({ onBack }: Props): React.JSX.Element {
   return (
     <LegalDocScreen
       title="Terms of Service"
-      lastUpdated="October 19, 2026"
+      lastUpdated="January 1, 2027"
       sections={SECTIONS}
       onBack={onBack}
     />

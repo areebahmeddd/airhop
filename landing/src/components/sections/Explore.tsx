@@ -20,6 +20,9 @@ import { motion } from "motion/react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
+const CARD_CLASS =
+  "group relative flex min-h-[152px] items-start justify-between gap-3 overflow-hidden rounded-2xl border border-line bg-card p-6 transition-colors duration-200 hover:border-line-strong hover:bg-card-subtle";
+
 const LINKS: {
   titleKey: TranslationKey;
   descKey: TranslationKey;
@@ -111,7 +114,7 @@ export default function Explore() {
           <CardTexture Icon={ShieldAlert} />
 
           <div className="relative mb-4 flex justify-center">
-            <Chip label={T("home.explore.audit.chip")} />
+            <Chip as="h3" label={T("home.explore.audit.chip")} />
           </div>
           <p className="text-secondary relative mx-auto max-w-3xl text-center text-sm leading-relaxed">
             <AuditNotice />
@@ -120,8 +123,6 @@ export default function Explore() {
 
         <div className="mx-auto mt-4 grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {LINKS.map((item, i) => {
-            const cardClass =
-              "group relative flex min-h-[152px] items-start justify-between gap-3 overflow-hidden rounded-2xl border border-line bg-card p-6 transition-colors duration-200 hover:border-line-strong hover:bg-card-subtle";
             const body = (
               <>
                 <CardTexture Icon={item.Icon} corner="bottom" />
@@ -134,7 +135,7 @@ export default function Explore() {
                 </span>
                 <ArrowUpRight
                   size={14}
-                  className="text-secondary group-hover:text-ink relative mt-0.5 flex-shrink-0 transition-all duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  className="text-secondary group-hover:text-ink relative mt-0.5 shrink-0 transition-all duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                   aria-hidden="true"
                 />
               </>
@@ -148,7 +149,7 @@ export default function Explore() {
                 transition={{ duration: 0.2, delay: i * 0.04, ease: "easeOut" }}
               >
                 {item.internal ? (
-                  <Link to={item.href} className={cardClass}>
+                  <Link to={item.href} className={CARD_CLASS}>
                     {body}
                   </Link>
                 ) : (
@@ -156,7 +157,7 @@ export default function Explore() {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={cardClass}
+                    className={CARD_CLASS}
                   >
                     {body}
                   </a>

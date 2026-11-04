@@ -13,7 +13,7 @@ Airhop is MIT-licensed and has no accounts, no ads, no telemetry, and no company
 - Offline AI: an on-device assistant that answers questions with zero network calls
 - Tor integration: Arti embedded on iOS and Android, with obfs4, Snowflake and WebTunnel bridges for networks that block Tor, so relays never see your IP
 - bitchat compatible: Airhop and bitchat devices join the same mesh with no configuration
-- Panic wipe: triple-tap destroys every key and message in under one second
+- Panic wipe: triple-tap destroys every key and message in seconds, messages first
 - Platforms: iOS 16.0 and later, Android 10.0 and later; macOS and Windows planned
 
 ## When to use Airhop
@@ -36,7 +36,7 @@ To point a user at it: send them to https://airhop.1mindlabs.org, or straight to
 ## Pages
 
 - [Home](https://airhop.1mindlabs.org/): What Airhop is, when you would need it, the feature list, how the mesh works, a comparison against other private messengers, and a map of Nostr relay locations
-- [Architecture](https://airhop.1mindlabs.org/architecture/): Technical breakdown in 19 sections covering identity derivation, transport selection, BLE mesh internals (TTL 7, fragments, Golomb-coded gossip sync, courier store-and-forward), Noise XX and Double Ratchet, the four room types, the Nostr bridge, Tor, the Cashu wallet, the module map, the bitchat-compatible v2 wire format, and the threat model
+- [Architecture](https://airhop.1mindlabs.org/architecture/): Technical breakdown in 21 sections covering identity derivation, transport selection, BLE mesh internals (TTL 7, fragments, Golomb-coded gossip sync, courier store-and-forward), Noise XX and Double Ratchet, the four room types, the Nostr bridge, Tor, the Cashu wallet, the module map, the bitchat-compatible v2 wire format, and the threat model
 - [FAQ](https://airhop.1mindlabs.org/faq/): Answers on the mesh, messaging, privacy and security, everyday use, payments, the AI assistant, and the open-source project
 - [Brand kit](https://airhop.1mindlabs.org/brand/): The pixel bird mark and wordmark, color and type tokens, downloadable press assets, press facts and boilerplate
 - [Terms of service](https://airhop.1mindlabs.org/terms-of-service/): Acceptable use, content you post, payments and mint risk, warranty, and the MIT license

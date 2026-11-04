@@ -67,7 +67,11 @@ export function useSEO(page: PageSeo) {
       "robots",
       noIndex ? "noindex, nofollow" : indexable ? "index, follow" : "noindex, follow",
     );
-    if (!noIndex) setLink("canonical", url);
+    if (noIndex) {
+      document.head.querySelector('link[rel="canonical"]')?.remove();
+    } else {
+      setLink("canonical", url);
+    }
     setMeta("property", "og:type", type);
     setMeta("property", "og:title", title);
     setMeta("property", "og:description", description);

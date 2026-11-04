@@ -3,7 +3,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import TextLink from "@/components/ui/TextLink";
 import { useSEO } from "@/hooks/useSEO";
 import { formatDate, useLanguage, useT } from "@/i18n";
-import { REPO_LINKS, REPO_URL } from "@/lib/links";
+import { BITCHAT_URL, REPO_LINKS, REPO_URL } from "@/lib/links";
 import { LAST_UPDATED, SEO } from "@/lib/seo";
 
 export default function TermsPage() {
@@ -27,7 +27,7 @@ export default function TermsPage() {
             <p className="text-[15px] leading-[1.75]">
               Airhop is a free, open-source mobile application for offline peer-to-peer
               communication over Bluetooth mesh networks, built on the foundation of{" "}
-              <TextLink href="https://bitchat.free" tone="quiet">
+              <TextLink href={BITCHAT_URL} tone="quiet">
                 bitchat
               </TextLink>
               . It is an independent project, not backed by any company. By using this website or

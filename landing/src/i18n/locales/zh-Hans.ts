@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "你的身份是一对在本机生成的 {ed25519} 密钥，保存在 {ios_keychain} 或 {android_keystore} 中。没有账号，没有注册，也没有任何东西会接触服务器，也就是说它可以当作一次性应用使用，删除后不会留下任何指向你的线索。",
   "home.about.body.crypto":
-    "每个会话都使用 {noise} 协议完成经过认证的握手。Airhop 手机之间的实时私信使用 {ratchet} 算法，也就是说即使密钥日后泄露，也无法打开已发送的消息。紧急擦除会在一秒内销毁所有密钥和消息。",
+    "每个会话都使用 {noise} 协议完成经过认证的握手。Airhop 手机之间的实时私信使用 {ratchet} 算法，也就是说即使密钥日后泄露，也无法打开已发送的消息。紧急擦除会在数秒内销毁所有密钥和消息。",
   "home.about.body.internet":
     "当你和联系人都超出 Bluetooth 范围时，{nostr} 中继会充当互联网桥梁，使用 {nip17} 形式的礼物包装私信，因此只要你们双方都在线，网状网络就能延伸到全球。{tor} 支持在 iOS 和 Android 上均可用，通过 {arti} 实现，并为封锁 Tor 的网络提供 {obfs4}、{snowflake} 与 {webtunnel} 网桥。",
   "home.about.optional.title": "Airhop 提供了一些可以自行开启的功能：",
@@ -166,7 +166,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "密钥对身份",
   "home.features.identity.keys.line": "在这部手机上生成，保存在系统钥匙串中。",
   "home.features.identity.names.name": "可读的名字",
-  "home.features.identity.names.line": "由你的密钥推导而来，别人抢不走。",
+  "home.features.identity.names.line": "由你的密钥推导而来，无需选择或注册。",
   "home.features.identity.qr.name": "二维码联系人",
   "home.features.identity.qr.line": "扫一次带走的是对方的密钥，而不只是名字。",
   "home.features.identity.forward.name": "前向保密",
@@ -174,7 +174,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "迁移到新手机",
   "home.features.identity.move.line": "聊天和钱包随之迁移，旧手机随后自行擦除。",
   "home.features.identity.panic.name": "紧急擦除",
-  "home.features.identity.panic.line": "所有密钥和消息在一秒内销毁。",
+  "home.features.identity.panic.line": "所有密钥和消息在数秒内销毁。",
 
   "home.features.networking.title": "组网",
   "home.features.networking.summary": "手机本身就是网络。",

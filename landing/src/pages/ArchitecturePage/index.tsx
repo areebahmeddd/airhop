@@ -164,32 +164,45 @@ function Figure({ caption, children }: { caption: React.ReactNode; children: Rea
 function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
   return (
     <div className="border-line bg-card my-6 overflow-x-auto rounded-2xl border [contain:layout]">
-      <table className="w-full min-w-[560px] border-collapse text-left">
+      <table className="w-full min-w-[560px] border-collapse text-start">
         <thead>
           <tr className="border-line bg-card-subtle border-b">
-            {head.map((h) => (
-              <th
-                key={h}
-                className="text-secondary px-4 py-3 font-mono text-[10px] font-semibold tracking-[0.14em] uppercase"
-              >
-                {h}
-              </th>
-            ))}
+            {head.map((h) =>
+              h === "" ? (
+                <td key={h} />
+              ) : (
+                <th
+                  key={h}
+                  scope="col"
+                  className="text-secondary px-4 py-3 text-start font-mono text-[10px] font-semibold tracking-[0.14em] uppercase"
+                >
+                  {h}
+                </th>
+              ),
+            )}
           </tr>
         </thead>
         <tbody>
           {rows.map((r, i) => (
             <tr key={i} className="border-line border-b last:border-b-0">
-              {r.map((cell, j) => (
-                <td
-                  key={j}
-                  className={`px-4 py-3 align-top text-[13px] leading-relaxed ${
-                    j === 0 ? "text-ink font-medium" : "text-secondary"
-                  }`}
-                >
-                  {cell}
-                </td>
-              ))}
+              {r.map((cell, j) =>
+                j === 0 ? (
+                  <th
+                    key={j}
+                    scope="row"
+                    className="text-ink px-4 py-3 text-start align-top text-[13px] leading-relaxed font-medium"
+                  >
+                    {cell}
+                  </th>
+                ) : (
+                  <td
+                    key={j}
+                    className="text-secondary px-4 py-3 align-top text-[13px] leading-relaxed"
+                  >
+                    {cell}
+                  </td>
+                ),
+              )}
             </tr>
           ))}
         </tbody>
@@ -200,7 +213,7 @@ function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
 
 function Note({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="border-ink bg-card-subtle my-6 rounded-r-2xl border-l-2 py-4 pr-4 pl-5">
+    <div className="border-ink bg-card-subtle my-6 rounded-e-2xl border-s-2 py-4 ps-5 pe-4">
       <div className="text-mute font-mono text-[10px] font-semibold tracking-[0.18em] uppercase">
         {label}
       </div>
@@ -246,25 +259,25 @@ export default function ArchitecturePage() {
 
         <EnglishContent className="mt-14 lg:grid lg:grid-cols-[176px_1fr] lg:gap-14">
           <nav aria-label={T("page.architecture.toc")} className="mb-12 lg:mb-0">
-            <div className="-mx-1 px-1 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+            <div className="no-scrollbar -mx-1 px-1 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
               <div className="text-mute font-mono text-[10px] font-semibold tracking-[0.18em] uppercase">
                 {T("page.architecture.toc")}
               </div>
-              <ul className="mt-3 space-y-3.5">
+              <ul className="mt-2.5 space-y-3">
                 {TOC.map((group) => (
                   <li key={group.act}>
                     <div className="text-ink font-mono text-[10px] font-semibold tracking-[0.14em] uppercase">
                       {group.act}
                     </div>
-                    <ul className="border-line mt-1.5 border-l">
+                    <ul className="border-line mt-1 border-s">
                       {group.items.map((item) => {
                         const isActive = item.id === active;
                         return (
-                          <li key={item.id} className="-ml-px">
+                          <li key={item.id} className="-ms-px">
                             <a
                               href={`#${item.id}`}
                               aria-current={isActive ? "true" : undefined}
-                              className={`block border-l py-1.5 pl-3 text-[13px] leading-4 transition-colors ${
+                              className={`block border-s py-1 ps-3 text-[13px] leading-4 transition-colors ${
                                 isActive
                                   ? "border-ink text-ink font-medium"
                                   : "text-secondary hover:border-line-strong hover:text-ink border-transparent"
@@ -296,9 +309,11 @@ export default function ArchitecturePage() {
               <p>
                 Everything follows from one split. The whole protocol, every packet, every
                 handshake, every routing decision, lives in <C>src/core/</C> as pure TypeScript with
-                no native imports. The Swift and Kotlin code does four things: advertise, scan, hand
-                raw bytes up, and write raw bytes out.{" "}
-                <strong className="text-ink">It has no concept of a packet.</strong>
+                no native imports. The Bluetooth code in Swift and Kotlin does four things:
+                advertise, scan, hand raw bytes up, and write raw bytes out.{" "}
+                <strong className="text-ink">It has no concept of a packet.</strong> The rest of the
+                native side (the other radios, the audio and video encoders, Tor) is just as blind
+                to the protocol.
               </p>
               <p>
                 That constraint buys two things. The entire protocol is testable in CI without a
@@ -319,7 +334,11 @@ export default function ArchitecturePage() {
                   ],
                   ["src/store/", "Zustand slices persisted to MMKV", "No"],
                   ["src/services/", "mesh-service, wallet-service, payment-router", "No"],
-                  ["src/core/", "crypto, mesh, nostr, payments, router, move", "No"],
+                  [
+                    "src/core/",
+                    "crypto, mesh, nostr, payments, router, move, spam, encoding",
+                    "No",
+                  ],
                   ["src/bridge/", "TurboModule specs, the only meeting point", "Interface only"],
                   [
                     "ios/ · android/",
@@ -344,9 +363,8 @@ export default function ArchitecturePage() {
                       mesh-service.ts
                     </TextLink>{" "}
                     walks for every direct message. Each tier is tried in order and the first one
-                    that can carry the message wins. A message sent over the mesh or left with
-                    couriers also waits in the outbox for up to a week, until a delivery receipt
-                    clears it.
+                    that can carry the message wins. Whichever tier carries it, every direct message
+                    also waits in the outbox for up to a week, until a delivery receipt clears it.
                   </>
                 }
               >
@@ -475,7 +493,7 @@ export default function ArchitecturePage() {
                   [
                     "HKDF",
                     "Derives many keys from one secret, deterministically",
-                    "Turns the signing key into the Nostr identity and every per-cell identity",
+                    "Turns the signing key into the Nostr identity. Per-cell identities use HMAC-SHA256, also keyed from the signing key",
                   ],
                   [
                     "Noise XX",
@@ -581,7 +599,7 @@ export default function ArchitecturePage() {
               title="Identity"
               lede="There is no account, no server that knows you exist, and nothing to sign up for. Your identity is two key pairs generated on your phone the first time you open the app."
             >
-              <Figure caption="Two roots, everything else derived. One identity across the mesh, the internet and payments, with no phone number, email or registration anywhere in the chain.">
+              <Figure caption="Two roots, with your name, Nostr identity and location identities derived from them. No phone number, email or registration anywhere in the chain. The wallet keeps keys of its own.">
                 <IdentityTree />
               </Figure>
 
@@ -591,8 +609,9 @@ export default function ArchitecturePage() {
                 the signing key is <TextLink href="https://ed25519.cr.yp.to">Ed25519</TextLink>, so
                 the two cannot be the same key. Running the signing key through{" "}
                 <TextLink href="https://datatracker.ietf.org/doc/html/rfc5869">HKDF</TextLink> with
-                the label <C>airhop-nostr-key-v1</C> yields one stable Nostr identity that survives
-                a reinstall from the same keys, without linking to anything real.
+                the label <C>airhop-nostr-key-v1</C> yields one stable Nostr identity: the same keys
+                always give the same one, so it moves with them to a new phone, without linking to
+                anything real.
               </p>
               <p>
                 Location channels go one step further and derive a fresh secp256k1 identity per
@@ -629,14 +648,15 @@ export default function ArchitecturePage() {
               <p>
                 Display names are not chosen and cannot be registered. The peer ID is{" "}
                 <C>hex(SHA-256(noiseStaticPub)).slice(0, 16)</C>, and the readable name is a
-                deterministic function of it, so <C>swift-falcon-3a9f</C> belongs to exactly one key
-                pair and nobody can squat it. To bind a name to a person you actually know, scan
+                deterministic function of its first two bytes, so <C>swift-falcon-6925</C> is a
+                label for a key, not proof of one. There are only 65,536 such names, and anyone can
+                generate keys until one matches. To bind a name to a person you actually know, scan
                 their QR code: the card carries their real public keys, and the peer ID is checked
                 against the Noise key it claims to derive from.
               </p>
               <p>
-                Your generated nickname is fixed after setup to prevent impersonation. Once either
-                person holds the other's keys, they may assign the other a local nickname for their
+                Your generated nickname is fixed after setup, so it stays stable. Once either person
+                holds the other's keys, they may assign the other a local nickname for their
                 conversations. It changes only the local display label, never the cryptographic
                 identity.
               </p>
@@ -644,8 +664,8 @@ export default function ArchitecturePage() {
               <p>
                 Airhop keeps your identity and app data on the phone. There is no cloud backup. To
                 move to a new phone, the new phone shows a QR code and the old phone scans it after
-                Face ID or its passcode. The phones then connect over the same Wi-Fi or a hotspot,
-                with no internet or server involved.
+                its biometric or passcode check. The phones then connect over the same Wi-Fi or a
+                hotspot, with no internet or server involved.
               </p>
               <p>
                 An encrypted Noise XX handshake is tied to the QR code, and both phones then show
@@ -1026,12 +1046,13 @@ export default function ArchitecturePage() {
 
               <p>
                 <strong className="text-ink">Panic wipe is the terminal transition.</strong> From
-                the Profile screen, one tap asks for confirmation and three quick taps skip it. It
-                deletes every Keychain and Keystore entry, clears every MMKV partition, empties the
-                cache directory (and tmp on iOS), clears delivered notifications and deletes Tor's
-                state, in under a second. The wallet file is emptied and its key destroyed, so what
-                stays on disk cannot be read. Two things are beyond its reach: photos saved to the
-                gallery, and Wi-Fi Aware pairings in the iPhone's own list.
+                the You tab, one tap asks for confirmation and three quick taps skip it. It deletes
+                every Keychain and Keystore entry, clears every MMKV partition, empties the cache
+                directory (and tmp on iOS), clears delivered notifications and deletes Tor's state.
+                Messages go before anything slow, so a stalled step cannot keep them on disk. The
+                wallet file is emptied and its key destroyed, so what stays on disk cannot be read.
+                Two things are beyond its reach: photos saved to the gallery, and Wi-Fi Aware
+                pairings in the iPhone's own list.
               </p>
             </Section>
 
@@ -1074,11 +1095,11 @@ export default function ArchitecturePage() {
               </Figure>
 
               <Note label="Why a room attachment is readable and a direct one is not">
-                A direct attachment is sealed inside the recipient's Noise session as <C>0x20</C>,
-                like the message it arrives with. It goes only to a peer that has proven inside that
-                session it can open one; an app that cannot is told so, and nothing goes out in the
-                clear. The older signed cleartext form is still accepted on receipt. In the public
-                Bluetooth room there is nobody to seal to, so{" "}
+                A direct attachment is sealed inside the recipient's Noise session as payload type{" "}
+                <C>0x20</C>, like the message it arrives with. It goes only to a peer that has
+                proven inside that session it can open one; an app that cannot is told so, and
+                nothing goes out in the clear. The older signed cleartext form is still accepted on
+                receipt. In the public Bluetooth room there is nobody to seal to, so{" "}
                 <strong className="text-ink">any device relaying that one can open it</strong>,
                 exactly like the text beside it. Either way the signature covers the file, so nobody
                 can forge or alter one.
@@ -1227,10 +1248,10 @@ export default function ArchitecturePage() {
               <p>
                 A voice note is a file: you record it, it sends, they play it. Live voice takes the
                 same gesture and makes it immediate. Speech is encoded to AAC-LC at 16 kHz mono, one
-                frame per 64 ms, and each frame goes out as it is produced. About{" "}
-                <strong className="text-ink">15 packets a second, roughly 2 KiB/s</strong> against a
-                link that carries about 18 KiB/s, so talking leaves most of it free for everything
-                else.
+                frame per 64 ms, and frames go out as they are produced, usually one to a packet.
+                About <strong className="text-ink">15 packets a second, roughly 2 KiB/s</strong>{" "}
+                against a link that carries about 18 KiB/s, so talking leaves most of it free for
+                everything else.
               </p>
               <p>
                 Staying out of the fragment scheduler is the hard part, and it is solved with size.
@@ -1248,17 +1269,19 @@ export default function ArchitecturePage() {
                   ["Packet", "0x29, broadcast", "0x08 inside Noise"],
                   ["Who hears it", "Everyone in range", "One person"],
                   ["Protected by", "Ed25519 signature", "The Noise session"],
-                  ["Relayed", "Yes, up to 7 hops, 5 in a crowd", "Yes, like any DM"],
+                  ["Relayed", "Yes, up to 7 hops, 5 in a crowd", "No, it needs a direct link"],
                 ]}
               />
 
               <p>
                 Latency is a budget, and the jitter buffer spends most of it. A frame takes 64 ms to
-                accumulate, a few milliseconds to encode, and 30 to 60 ms to cross one radio hop.
-                The receiver then holds 350 ms of audio before starting, which is what turns an
-                irregular stream of packets into a voice.{" "}
+                accumulate and a few milliseconds to encode, then waits for the next one, since a
+                packet leaves once it knows no second frame will fit. Crossing one radio hop takes
+                30 to 60 ms. The receiver then holds 350 ms of audio before starting, which is what
+                turns an irregular stream of packets into a voice.{" "}
                 <strong className="text-ink">
-                  Mouth to ear is about 470 ms on one hop, and stays under a second across three.
+                  Mouth to ear is about half a second on one hop, and stays under a second across
+                  three.
                 </strong>{" "}
                 Relaying voice uses a tighter jitter window than ordinary traffic (8 to 25 ms rather
                 than up to 220) for exactly this reason: the ordinary window would spend the whole
@@ -1322,8 +1345,8 @@ export default function ArchitecturePage() {
                 and goes out as it is filmed: H.264 for the picture and the same AAC-LC as live
                 voice for the sound, cut into packets of{" "}
                 <strong className="text-ink">at most 352 bytes</strong>, so none is ever fragmented.
-                The packet type is bitchat's, 0x2D, and the encoding is too, so a stream from either
-                app plays on the other.
+                The packet type is bitchat's, <C>0x2D</C>, and the encoding is too, so a stream from
+                either app plays on the other.
               </p>
 
               <Table
@@ -1869,10 +1892,10 @@ export default function ArchitecturePage() {
                 richer would put protocol knowledge on the native side. TypeScript calls down to
                 start and stop advertising, start and stop scanning, open a network listener, and
                 write bytes to a link. Native calls back up with eight events: a packet arrived, a
-                link connected, a link disconnected, a signal reading changed, the adapter or power
-                state changed, a scan failed, and the mesh was stopped from the notification. Bytes
-                cross base64-encoded, because that is the only representation both runtimes agree on
-                safely.
+                link connected, a link disconnected, a signal reading changed, Bluetooth turned on
+                or off, the battery or charging state changed, a scan failed, and the mesh was
+                stopped from the notification. Bytes cross base64-encoded, because that is the only
+                representation both runtimes agree on safely.
               </p>
             </Section>
 
@@ -2067,10 +2090,10 @@ export default function ArchitecturePage() {
                 <br />
                 <strong className="text-ink">Who wrote a broadcast, some of the time.</strong> A
                 packet you author leaves with a hop budget drawn from the three values at and below
-                what relays around you would emit (5 to 7 when the mesh is sparse, 3 to 5 in a
-                crowd), so a listener cannot read authorship off the maximum. The top value is still
-                unambiguous, so about a third of broadcasts remain attributable to the radio that
-                sent them.
+                what relays around you would emit (5 to 7 when the mesh is sparse, 4 to 6 with a few
+                neighbors, 3 to 5 in a crowd), so a listener cannot read authorship off the maximum.
+                The top value is still unambiguous, so about a third of broadcasts remain
+                attributable to the radio that sent them.
                 <br />
                 <br />
                 <strong className="text-ink">A compromised operating system.</strong> If the OS is

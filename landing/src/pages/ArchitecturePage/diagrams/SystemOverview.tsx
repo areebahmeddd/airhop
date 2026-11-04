@@ -29,7 +29,7 @@ export function SystemOverview() {
         w={244}
         h={44}
         label="src/features"
-        sub="chats · mesh · wallet · profile"
+        sub="chat · discovery · wallet · settings"
       />
       <Box
         x={32}

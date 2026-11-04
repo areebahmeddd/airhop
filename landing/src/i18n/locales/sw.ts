@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Utambulisho wako ni jozi ya funguo za {ed25519} inayotengenezwa kwenye kifaa chako na kuhifadhiwa katika {ios_keychain} au {android_keystore}. Hakuna akaunti, hakuna usajili, wala kitu chochote kinachogusa seva, yaani inaweza kutumika kama programu ya matumizi ya mara moja isiyoacha chochote kinachokuelekea baada ya kufutwa.",
   "home.about.body.crypto":
-    "Kila kipindi hutumia itifaki ya {noise} kwa uthibitishaji wa awali. Ujumbe wa moja kwa moja kati ya simu za Airhop hutumia algoriti ya {ratchet}, yaani hata ufunguo ukivuja baadaye, hauwezi kufungua ujumbe uliokwisha tumwa. Ufutaji wa dharura huharibu funguo na ujumbe wote kwa chini ya sekunde moja.",
+    "Kila kipindi hutumia itifaki ya {noise} kwa uthibitishaji wa awali. Ujumbe wa moja kwa moja kati ya simu za Airhop hutumia algoriti ya {ratchet}, yaani hata ufunguo ukivuja baadaye, hauwezi kufungua ujumbe uliokwisha tumwa. Ufutaji wa dharura huharibu funguo na ujumbe wote ndani ya sekunde chache.",
   "home.about.body.internet":
     "Wewe na mwenzako mkiwa nje ya masafa ya Bluetooth, vipeperushi vya {nostr} hufanya kazi kama daraja kupitia intaneti, vikitumia ujumbe wa moja kwa moja uliofungashwa kwa muundo wa {nip17}, hivyo mesh hufika dunia nzima kila mnapokuwa mtandaoni nyote wawili. Msaada wa {tor} upo kwenye iOS na Android, kupitia {arti}, na madaraja ya {obfs4}, {snowflake} na {webtunnel} kwa mitandao inayozuia Tor.",
   "home.about.optional.title": "Airhop ina vipengele vya hiari unavyoweza kuwasha:",
@@ -189,7 +189,7 @@ const strings: Strings = {
     "Umetengenezwa kwenye simu hii, umehifadhiwa katika hazina ya funguo ya mfumo.",
   "home.features.identity.names.name": "Majina yanayosomeka",
   "home.features.identity.names.line":
-    "Yametokana na ufunguo wako, hivyo hakuna anayeweza kuchukua lako.",
+    "Yametokana na ufunguo wako, hayachaguliwi wala hayasajiliwi.",
   "home.features.identity.qr.name": "Anwani kwa QR",
   "home.features.identity.qr.line": "Kuchanganua mara moja hubeba funguo zao, si jina tu.",
   "home.features.identity.forward.name": "Usiri wa mbele",
@@ -198,7 +198,7 @@ const strings: Strings = {
   "home.features.identity.move.line": "Mazungumzo na pochi huhamia, kisha simu ya zamani hujifuta.",
   "home.features.identity.panic.name": "Ufutaji wa dharura",
   "home.features.identity.panic.line":
-    "Kila ufunguo na kila ujumbe huharibiwa kwa chini ya sekunde moja.",
+    "Kila ufunguo na kila ujumbe huharibiwa ndani ya sekunde chache.",
 
   "home.features.networking.title": "Mtandao",
   "home.features.networking.summary": "Simu ndizo mtandao.",

@@ -72,6 +72,7 @@ export default function Navbar() {
         </div>
 
         <button
+          type="button"
           ref={toggleRef}
           onClick={() => setIsOpen(!isOpen)}
           className="text-ink hover:bg-inner active:bg-hover flex h-11 w-11 items-center justify-center rounded-full transition-colors duration-150 md:hidden"
@@ -91,7 +92,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="border-line bg-card absolute top-full right-3 left-3 z-40 mt-2 flex flex-col rounded-2xl border p-2 md:hidden"
+            className="border-line bg-card absolute inset-x-3 top-full z-40 mt-2 flex flex-col rounded-2xl border p-2 md:hidden"
           >
             {NAV_ITEMS.map((item) => (
               <Link
