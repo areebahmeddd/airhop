@@ -368,8 +368,6 @@ jobs:
       attestations: write
 
     steps:
-      # First, so a missing secret fails in seconds and by name, not as an empty
-      # file deep inside fastlane after the pods are installed.
       - name: Check release secrets
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
