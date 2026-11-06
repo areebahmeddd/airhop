@@ -6,7 +6,7 @@
     "role": "owner",
     "name": "Areeb Ahmed",
     "email": "hi@areeb.dev",
-    "description": "Independent developer and final-year computer science student in India. I build and maintain Airhop on my own, in the open, under the MIT license. The project has received no grants, investment or institutional funding to date.",
+    "description": "Independent developer and final-year computer science student in India. I build and maintain Airhop on my own, in the open, under the MIT license.",
     "webpageUrl": {
       "url": "https://airhop.1mindlabs.org"
     }
@@ -52,7 +52,7 @@
         "guid": "supporter",
         "status": "active",
         "name": "Supporter",
-        "description": "Any amount, one time or recurring. Covers day to day maintenance: releases, bug fixes, and keeping bitchat interoperability working as both protocols evolve.",
+        "description": "Any amount, one time or recurring. Covers releases, bug fixes and keeping up with bitchat as it changes.",
         "amount": 0,
         "currency": "USD",
         "frequency": "monthly",
@@ -62,7 +62,7 @@
         "guid": "device-lab",
         "status": "active",
         "name": "Device lab",
-        "description": "A few used low-end Android handsets and a pair of ESP32 boards with 915 MHz LoRa radios. Real Bluetooth discovery timing, background execution and OEM battery manager behavior cannot be verified any other way.",
+        "description": "A few used low-end Android handsets and a pair of ESP32 boards with 915 MHz LoRa radios, since Bluetooth discovery, background execution and OEM battery managers can only be tested on real hardware.",
         "amount": 500,
         "currency": "USD",
         "frequency": "one-time",
@@ -72,7 +72,7 @@
         "guid": "security-audit",
         "status": "active",
         "name": "External review of the cryptography",
-        "description": "A scoped independent review of the Noise XX handshake and Double Ratchet implementation by someone other than me, with findings published. A full two-scope audit costs far more than this; this funds a first external pair of eyes on the parts that matter most. Ahead of v1.9.0.",
+        "description": "An independent review of the Noise XX handshake and Double Ratchet implementation, with the findings published. A first step toward the full audit, which costs far more.",
         "amount": 2000,
         "currency": "USD",
         "frequency": "one-time",

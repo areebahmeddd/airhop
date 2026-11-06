@@ -13,7 +13,7 @@ Airhop is MIT-licensed and has no accounts, no ads, no telemetry, and no company
 - Offline AI: an on-device assistant that answers questions with zero network calls
 - Tor integration: Arti embedded on iOS and Android, with obfs4, Snowflake and WebTunnel bridges for networks that block Tor, so relays never see your IP
 - bitchat compatible: Airhop and bitchat devices join the same mesh with no configuration
-- Panic wipe: triple-tap destroys every key and message in seconds, messages first
+- Panic wipe: triple-tap destroys every key and message in under one second
 - Platforms: iOS 16.0 and later, Android 10.0 and later; macOS and Windows planned
 
 ## When to use Airhop
@@ -52,7 +52,7 @@ The site chrome, the home page and the blogs page are available in thirty-five l
 - [Architecture specification](https://github.com/areebahmeddd/airhop/blob/main/docs/spec/ARCHITECTURE.md): Design decisions behind the protocol and the app
 - [Protocol specification](https://github.com/areebahmeddd/airhop/blob/main/docs/spec/PROTOCOLS.md): Exact byte layouts, BLE service UUIDs, packet types and constants, shared with bitchat
 - [Glossary](https://github.com/areebahmeddd/airhop/blob/main/docs/dev/GLOSSARY.md): Terminology used across the project
-- [Roadmap](https://github.com/areebahmeddd/airhop/blob/main/docs/design/ROADMAP.md): Version targets, including the planned external security audit at v1.9.0
+- [Roadmap](https://github.com/areebahmeddd/airhop/blob/main/docs/design/ROADMAP.md): Version targets, including the planned external security audit at v1.7.0
 - [Vision](https://github.com/areebahmeddd/airhop/blob/main/docs/design/VISION.md): Why Airhop exists and the principles behind it
 
 ## Optional

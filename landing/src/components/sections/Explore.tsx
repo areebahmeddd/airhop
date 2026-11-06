@@ -83,7 +83,7 @@ function AuditNotice() {
         </TextLink>
       ),
       version: (
-        <TextLink href={`${REPO_LINKS.roadmapDoc}#v190-security-hardening`}>v1.9.0</TextLink>
+        <TextLink href={`${REPO_LINKS.roadmapDoc}#v170-security-hardening`}>v1.7.0</TextLink>
       ),
     }),
     [T],

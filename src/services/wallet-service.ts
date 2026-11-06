@@ -113,12 +113,12 @@ import { internetOff, torClaimed } from "./network-gate";
 
 // ---- Network limits ----
 
-// Every mint request is bounded. cashu-ts only aborts when given a timeout and
-// React Native's fetch has none, so a mint that accepts the connection and never
-// answers (captive portal, cell handover, overloaded mint) hangs forever. A hang
-// is worse than an error: the confirm button spins, and the reconcile pass, which
-// walks mints one at a time and which every later caller joins, never finishes.
-// 20s is generous for a slow round trip and inside a user's patience.
+// Every mint request is bounded well under cashu-ts's five-minute default. A
+// mint that accepts the connection and never answers (captive portal, cell
+// handover, overloaded mint) would otherwise hold the confirm button spinning,
+// and the reconcile pass, which walks mints one at a time and which every later
+// caller joins, with it. 20s is generous for a slow round trip and inside a
+// user's patience.
 const MINT_REQUEST_TIMEOUT_MS = 20_000;
 
 // A bolt11 melt legitimately takes longer while Lightning routes. Aborting does
