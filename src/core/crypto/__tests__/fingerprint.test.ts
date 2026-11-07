@@ -1,13 +1,30 @@
-// Safety numbers. These properties are what the feature rests on, so they are
+// Safety codes. These properties are what the feature rests on, so they are
 // pinned rather than assumed.
 
+import { sha512 } from "@noble/hashes/sha2.js";
 import {
   peerFingerprint,
   SAFETY_BITS_PER_WORD,
   SAFETY_WORD_COUNT,
-  safetyNumber,
+  safetyCode,
   safetyNumberIndices,
 } from "../fingerprint";
+
+// A passthrough that counts stretching rounds, so the cache can be shown to
+// skip them rather than inferred from timing.
+jest.mock("@noble/hashes/sha2.js", () => {
+  const actual = jest.requireActual<typeof import("@noble/hashes/sha2.js")>(
+    "@noble/hashes/sha2.js",
+  );
+  return {
+    ...actual,
+    sha512: Object.assign(
+      (message: Uint8Array) => actual.sha512(message),
+      actual.sha512,
+      { create: jest.fn(() => actual.sha512.create()) },
+    ),
+  };
+});
 
 function key(fill: number): Uint8Array {
   return new Uint8Array(32).fill(fill);
@@ -20,6 +37,9 @@ const BOB_SIGN = key(0x44);
 
 const alice = peerFingerprint(ALICE_NOISE, ALICE_SIGN);
 const bob = peerFingerprint(BOB_NOISE, BOB_SIGN);
+// Computed once: each code is thousands of hashes on purpose.
+const aliceCode = safetyCode(alice);
+const bobCode = safetyCode(bob);
 
 describe("peerFingerprint", () => {
   it("is 32 bytes and deterministic", () => {
@@ -46,35 +66,62 @@ describe("peerFingerprint", () => {
   });
 });
 
-describe("safetyNumber", () => {
-  // Both phones render the same code without either side knowing who is who,
-  // so one person reads and the other listens instead of both reading.
-  it("is the same from either side", () => {
-    expect(safetyNumber(alice, bob)).toEqual(safetyNumber(bob, alice));
-  });
-
-  it("differs per pair", () => {
+describe("safetyCode", () => {
+  // Not a pair hash: nothing about Bob enters Alice's code, which is what
+  // leaves a man in the middle no two keys of his own to collide.
+  it("depends on one person alone", () => {
+    expect(aliceCode).not.toEqual(bobCode);
     const carol = peerFingerprint(key(0x55), key(0x66));
-    expect(safetyNumber(alice, bob)).not.toEqual(safetyNumber(alice, carol));
+    expect(safetyCode(carol)).not.toEqual(aliceCode);
   });
 
   // A substituted signing key must change the code, or the comparison confirms
   // nothing.
-  it("changes when one side's signing key is substituted", () => {
+  it("changes when the signing key is substituted", () => {
     const impostor = peerFingerprint(BOB_NOISE, key(0x99));
-    expect(safetyNumber(alice, impostor)).not.toEqual(safetyNumber(alice, bob));
+    expect(safetyCode(impostor)).not.toEqual(bobCode);
   });
 
-  // Domain separation: a peer fingerprint and a pair hash are both SHA-256 over
-  // concatenated bytes, and the pair hash takes peer fingerprints as input.
-  it("is not the peer fingerprint of the same inputs", () => {
-    expect(safetyNumber(alice, alice)).not.toEqual(alice);
+  it("is a SHA-512 digest, not the fingerprint", () => {
+    expect(aliceCode).toHaveLength(64);
+    expect(aliceCode.slice(0, 32)).not.toEqual(alice);
+  });
+
+  it("refuses anything but a 32-byte fingerprint", () => {
+    expect(() => safetyCode(new Uint8Array(31))).toThrow();
+  });
+
+  // The compare screen asks for your own code every time it opens; stretching
+  // it again each time is the stall the cache exists to remove.
+  it("stretches each fingerprint once per process", () => {
+    const create = sha512.create as jest.Mock;
+    const dave = peerFingerprint(key(0x77), key(0x88));
+    create.mockClear();
+    const first = safetyCode(dave);
+    expect(create).toHaveBeenCalledTimes(5200);
+    create.mockClear();
+    expect(safetyCode(dave)).toEqual(first);
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("hands out a copy, so a caller cannot poison the cache", () => {
+    const mine = safetyCode(alice);
+    mine.fill(0);
+    expect(safetyCode(alice)).toEqual(aliceCode);
+  });
+
+  // Evicting keeps memory bounded without changing any answer.
+  it("gives the same code after its entry is evicted", () => {
+    for (let fill = 0x80; fill < 0xa0; fill++) {
+      safetyCode(peerFingerprint(key(fill), key(fill)));
+    }
+    expect(safetyCode(alice)).toEqual(aliceCode);
   });
 });
 
 describe("safetyNumberIndices", () => {
   it("returns the expected count, all in range", () => {
-    const indices = safetyNumberIndices(safetyNumber(alice, bob));
+    const indices = safetyNumberIndices(aliceCode);
     expect(indices).toHaveLength(SAFETY_WORD_COUNT);
     for (const index of indices) {
       expect(index).toBeGreaterThanOrEqual(0);
@@ -93,11 +140,10 @@ describe("safetyNumberIndices", () => {
     expect(safetyNumberIndices(digest).slice(0, 3)).toEqual([127, 0, 127]);
   });
 
-  // Pinned from the current implementation: a change to the hash, the key
-  // order or the bit reading moves every word.
+  // Pinned from an independent computation: a change to the context string,
+  // the round count, the hash or the bit reading moves every word.
   it("gives a pinned answer for fixed keys", () => {
-    expect(safetyNumberIndices(safetyNumber(alice, bob))).toEqual([
-      52, 123, 112, 98, 116, 127,
-    ]);
+    expect(safetyNumberIndices(aliceCode)).toEqual([70, 26, 39, 11, 17, 8]);
+    expect(safetyNumberIndices(bobCode)).toEqual([6, 37, 66, 107, 112, 80]);
   });
 });

@@ -10,8 +10,8 @@
 // which descends from a chaining key that absorbed both parties' ephemeral DH
 // outputs, so it cannot be reconstructed from long-term keys after the fact.
 // Not the transcript hash: mixHash absorbs only bytes that went over the wire,
-// so that value is public to anyone who captured the handshake. See tryInitDR
-// in mesh-service.ts.
+// so that value is public to anyone who captured the handshake. See
+// seedRatchet in mesh-service.ts.
 //
 // The ratchet has two interleaved components:
 //   Symmetric-key ratchet: derives sending/receiving message keys from chain keys

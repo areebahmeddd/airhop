@@ -46,6 +46,12 @@ import {
   type ReceiveResult,
 } from "./wallet-service";
 
+// How long a payment to someone in range waits for their session proof, which
+// starts the ratchet a token needs. A handshake and the proof behind it take a
+// few hundred milliseconds over Bluetooth; past this the token goes the way it
+// would have anyway.
+const NEARBY_PROOF_WAIT_MS = 3000;
+
 // How the DM actually left the device: "they have it" versus "queued, they
 // might get it tomorrow", which the confirmation must not blur.
 export type DeliveryRoute = ReturnType<MeshService["sendDm"]>;
@@ -120,6 +126,13 @@ export async function payPerson(
     // spend a mint round trip on a fancier instrument, and keep the in-person
     // case working with no internet, the case the app exists for.
     const nearby = service.hasDirectLink(payee.peerID);
+    // A token is past plain Noise's 255 bytes, so it needs the ratchet, which
+    // starts on the peer's proof. Paying someone just met, before any session,
+    // would otherwise queue it and report it too large while they stand here.
+    if (nearby) {
+      service.prepareDmSession(payee.peerID);
+      await service.waitForDmProof(payee.peerID, NEARBY_PROOF_WAIT_MS);
+    }
 
     if (!nearby && payee.nostrPubkey !== undefined) {
       const client = service.getNostrClient();
@@ -204,13 +217,12 @@ function resolvePayee(
 ): ResolvedPayee | null {
   if (params.peerID !== undefined && params.peerID.length > 0) {
     const peerID = params.peerID;
-    // A `nostr_` id carries its key; else their last ANNOUNCE, then the
-    // contact record, which survives them leaving Bluetooth range.
+    // A `nostr_` id carries its key; else the caller's, else wherever a DM
+    // to them would go: the contact, their session, or a key remembered from
+    // an earlier launch, all of which outlast them leaving Bluetooth range.
     const nostrPubkey = isNostrId(peerID)
       ? peerID.slice(NOSTR_ID_PREFIX.length)
-      : (params.nostrPubkey ??
-        service.getPeerNostrPubkey(peerID) ??
-        useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex);
+      : (params.nostrPubkey ?? service.getPeerNostrPubkey(peerID));
     return {
       peerID,
       ...(nostrPubkey !== undefined && nostrPubkey.length > 0

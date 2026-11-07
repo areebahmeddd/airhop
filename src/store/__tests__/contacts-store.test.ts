@@ -371,7 +371,7 @@ describe("verification is separate from source", () => {
 });
 
 // The mesh keys a peer proves inside a Noise session, landing on a contact that
-// was saved by messaging and so has none. Without this the safety number stays
+// was saved by messaging and so has none. Without this the safety code stays
 // uncomputable for exactly the people "compare a code" is meant to serve.
 describe("setProvenKeys", () => {
   const ID = "aabbccdd00112233";
@@ -399,7 +399,7 @@ describe("setProvenKeys", () => {
     expect(c?.signingPubKeyHex).toBe("bb".repeat(32));
   });
 
-  it("never re-pins keys a safety number confirmed", () => {
+  it("never re-pins keys a safety code confirmed", () => {
     state().addContact(makeContact({ source: "link" }));
     state().markVerified(ID);
     state().setProvenKeys(ID, "11".repeat(32), "22".repeat(32));
@@ -430,7 +430,7 @@ describe("setProvenKeys", () => {
     const c = state().getContact(ID);
     expect(c?.nostrPubkeyHex).toBeUndefined();
     expect(state().ownNicknameFor(ID)).toBeUndefined();
-    // The next vouched announce fills the npub again.
+    // The proven session hands the npub over again (0x54).
     state().setNostrPubkey(ID, "dd".repeat(32));
     expect(state().getContact(ID)?.nostrPubkeyHex).toBe("dd".repeat(32));
   });
@@ -468,5 +468,40 @@ describe("setProvenKeys", () => {
     const c = state().getContact(ID);
     expect(c?.nickname).toBe("swift");
     expect(c?.source).toBe("manual");
+  });
+});
+
+// Which app a contact runs, from session proofs alone. A bitchat QR card
+// carries an npub too, so nothing on a card may decide it.
+describe("setProvenAirhop", () => {
+  const ID = "aabbccdd00112233";
+
+  it("records what the latest proof said, either way", () => {
+    state().addContact(makeContact({ nostrPubkeyHex: "cc".repeat(32) }));
+    expect(state().getContact(ID)?.provenAirhop).toBeUndefined();
+    state().setProvenAirhop(ID, true);
+    expect(state().getContact(ID)?.provenAirhop).toBe(true);
+    state().setProvenAirhop(ID, false);
+    expect(state().getContact(ID)?.provenAirhop).toBe(false);
+  });
+
+  it("is a no-op when no contact exists (never invents a stranger)", () => {
+    state().setProvenAirhop(ID, true);
+    expect(state().getContact(ID)).toBeUndefined();
+  });
+
+  it("leaves the record untouched when the proof says nothing new", () => {
+    state().addContact(makeContact());
+    state().setProvenAirhop(ID, true);
+    const before = state().getContact(ID);
+    state().setProvenAirhop(ID, true);
+    expect(state().getContact(ID)).toBe(before);
+  });
+
+  it("survives a re-added card", () => {
+    state().addContact(makeContact({ source: "link" }));
+    state().setProvenAirhop(ID, true);
+    state().addContact(makeContact({ source: "qr" }));
+    expect(state().getContact(ID)?.provenAirhop).toBe(true);
   });
 });

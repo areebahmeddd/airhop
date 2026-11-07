@@ -155,16 +155,21 @@ function forgeAnnounce(opts: {
   nickname: string;
   timestamp: number;
   signWith?: Uint8Array;
+  // Written as TLV 0x07, to show that a Nostr key in a forged announce is
+  // ignored, not merely never sent.
   nostrPubKey?: Uint8Array;
 }): string {
-  const payload = encodeAnnouncePayload(
+  const base = encodeAnnouncePayload(
     {
       noiseStaticPubKey: opts.noisePubKey,
       signingPubKey: opts.signingPubKey,
     } as Identity,
     opts.nickname,
-    opts.nostrPubKey,
   );
+  const payload =
+    opts.nostrPubKey === undefined
+      ? base
+      : new Uint8Array([...base, 0x07, 32, ...opts.nostrPubKey]);
   const packet: Packet = {
     type: PacketType.ANNOUNCE,
     ttl: ANNOUNCE_TTL,
@@ -370,16 +375,17 @@ test("C08 a forged ANNOUNCE cannot rebind a known peer's signing key", async () 
   s.assert();
 });
 
-test("C10 an announce claiming someone else's Nostr key cannot take their thread or their mail", async () => {
-  // An announce is signed by the announcer, which proves nothing about the
-  // Nostr key it carries. Bob has been writing to alice over Nostr while
-  // offline. Mallory, in range, announces herself with alice's npub. If that
-  // claim could fold alice's thread into mallory's, bob's queued mail would be
-  // re-addressed to mallory and sealed to her Noise key. The only act that may
-  // do either is scanning a card off the other phone.
+test("C10 a peer claiming someone else's Nostr key cannot take their thread or their mail", async () => {
+  // A session proves who is speaking, not whose Nostr key they name. Bob has
+  // been writing to alice over Nostr while offline. Mallory, in range, names
+  // alice's npub as her own: first in an announce, where the key is ignored,
+  // then inside a real session. If that claim could fold alice's thread
+  // into mallory's, bob's queued mail would be re-addressed to mallory and
+  // sealed to her Noise key. The only act that may do either is scanning a
+  // card off the other phone.
   const s = (scenario = new Scenario({
     id: "C10",
-    title: "nostr key claim in an announce",
+    title: "another peer names alice's Nostr key as its own",
     seed: 70,
   }));
   const radio = new RadioFabric(s.world);
@@ -411,8 +417,9 @@ test("C10 an announce claiming someone else's Nostr key cannot take their thread
   bob.sendDm(aliceKey, "for alice only");
   const outbox = bob.store("outboxStore");
   const chat = bob.store("chatStore");
-  const queuedFor = (peer: string): number =>
-    (outbox.getState().forPeer as (p: string) => unknown[])(peer).length;
+  const queuedTo = (peer: string): { text: string }[] =>
+    (outbox.getState().forPeer as (p: string) => { text: string }[])(peer);
+  const queuedFor = (peer: string): number => queuedTo(peer).length;
   s.check(
     "bob's message to alice is queued for her key",
     queuedFor(aliceKey) === 1,
@@ -435,18 +442,35 @@ test("C10 an announce claiming someone else's Nostr key cannot take their thread
   );
   await s.world.advance(2000);
 
-  // The control: bob took the announce in, and holds the npub mallory claimed
-  // as hers. Refusing the packet outright would pass every check below without
-  // the claim ever having been weighed.
-  const claimed = (
+  const registry = (
     bob.mesh as unknown as {
       registry: { nostrPubkeyFor: (peerID: string) => string | undefined };
     }
-  ).registry.nostrPubkeyFor(mallory.peerID);
+  ).registry;
   s.check(
-    "bob ingested the announce carrying alice's npub",
-    claimed === alice.nostrPubkey,
-    `registry npub for mallory = ${String(claimed)}`,
+    "an announce's Nostr key is ignored outright",
+    registry.nostrPubkeyFor(mallory.peerID) === undefined,
+    `registry npub for mallory = ${String(registry.nostrPubkeyFor(mallory.peerID))}`,
+  );
+
+  // Inside a session, as a modified phone would: mallory's own app hands over
+  // alice's npub as the key to reach her at.
+  (mallory.mesh as unknown as { nostrPubKeyHex: string }).nostrPubKeyHex =
+    alice.nostrPubkey;
+  bob.send(`dm:${mallory.peerID}`, "hi mallory");
+
+  // The control: bob took the claim in, and holds the npub mallory named as
+  // hers. Refusing it outright would pass every check below without the claim
+  // ever having been weighed.
+  const claimed = await waitFor(
+    s.world,
+    () => registry.nostrPubkeyFor(mallory.peerID) === alice.nostrPubkey,
+    20_000,
+  );
+  s.check(
+    "bob took in the npub mallory named inside their session",
+    claimed,
+    `registry npub for mallory = ${String(registry.nostrPubkeyFor(mallory.peerID))}`,
   );
 
   const redirects = chat.getState().channelRedirects as Record<string, string>;
@@ -456,8 +480,9 @@ test("C10 an announce claiming someone else's Nostr key cannot take their thread
     `redirect = ${String(redirects[aliceThread])}`,
   );
   s.check(
-    "bob's mail for alice is still queued for alice, none for mallory",
-    queuedFor(aliceKey) === 1 && queuedFor(mallory.peerID) === 0,
+    "bob's mail for alice is still queued for alice, only his own for mallory",
+    queuedFor(aliceKey) === 1 &&
+      queuedTo(mallory.peerID).every((m) => m.text === "hi mallory"),
   );
 
   // A card claiming alice's ID over mallory's Noise key is refused before
@@ -1340,11 +1365,17 @@ test("C14 after a restart, whoever announces first as a saved contact speaks for
   await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
 
   // Messaging alice saves her, and the session proves her keys onto the record.
+  // Delivered before she leaves, so nothing is still queued for her to open a
+  // session over when she comes back.
   bob.send(`dm:${alice.peerID}`, "hi alice");
   const aliceKey = bytesToHex(alice.identity.signingPubKey);
   const saved = await waitFor(
     s.world,
-    () => contactOf(bob, alice.peerID)?.signingPubKeyHex === aliceKey,
+    () =>
+      contactOf(bob, alice.peerID)?.signingPubKeyHex === aliceKey &&
+      bob
+        .messages(`dm:${alice.peerID}`)
+        .some((m) => m.text === "hi alice" && m.status === "delivered"),
     20_000,
   );
   s.check("bob saved alice with her proven signing key", saved);
@@ -1352,8 +1383,8 @@ test("C14 after a restart, whoever announces first as a saved contact speaks for
   radio.setTopology([["bob", "mallory"]]);
   bob.relaunch();
   bob.joinChannel(channel);
-  // As for a bitchat contact, which never announces a Nostr key. After the
-  // restart, or the registry would put alice's own back at once.
+  // As for a bitchat contact, which never hands over a Nostr key. After the
+  // restart, so nothing still in memory puts alice's own back.
   bob.store("contactsStore").setState({
     contacts: {
       ...(bob.store("contactsStore").getState().contacts as Record<
@@ -1575,8 +1606,11 @@ test("C14b a contact key from a forged link card gives way to a session proof", 
       bobMaps.get(plantedNpub) === undefined,
     `npub=${String(contactOf(bob, alice.peerID)?.nostrPubkeyHex)} name=${String(contactOf(bob, alice.peerID)?.nickname)} mapped=${String(bobMaps.get(plantedNpub))}`,
   );
+  // Bob is a stranger to alice until a DM passes between them, and only then
+  // does she hand him her Nostr key.
+  bob.send(`dm:${alice.peerID}`, "is this you?");
   s.check(
-    "so her next announce stores her own",
+    "so the key she hands over inside the session stores her own",
     await waitFor(
       s.world,
       () => contactOf(bob, alice.peerID)?.nostrPubkeyHex === alice.nostrPubkey,
@@ -1834,6 +1868,18 @@ test("C11b a genuine ratchet packet replayed past dedup does not evict the sessi
   s.track(...cast);
   for (const d of cast) d.launch();
   await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  // The first message opens the session and rides plain Noise; the ratchet is
+  // seeded once each side has proven itself inside it, so the next one is a
+  // ratchet packet worth replaying.
+  alice.send(`dm:${bob.peerID}`, "zero");
+  await waitFor(
+    s.world,
+    () =>
+      alice.messages(`dm:${bob.peerID}`).find((m) => m.text === "zero")
+        ?.status === "delivered",
+    20_000,
+  );
 
   const captured: string[] = [];
   const stop = radio.tapWrites((fromID, _link, data) => {
@@ -2222,5 +2268,75 @@ test("C15 a stranger in a location DM cannot hand over a friend's card", async (
       redirects()[`dm:nostr_${aliceCell}`] === `dm:${alice.peerID}`,
   );
   s.expectNone("process health", noCrashes([alice, bob, mallory]));
+  s.assert();
+});
+
+test("C17 an older announce arriving late does not roll a peer's name back", async () => {
+  // Announces from one peer can arrive out of order: a slower relay path, or a
+  // sync reply. The late, older one still says carol is about, but the name it
+  // carries is out of date and must not replace the newer one.
+  const s = (scenario = new Scenario({
+    id: "C17",
+    title: "out-of-order announces",
+    seed: 117,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, {
+    id: "alice",
+    platform: "android",
+    seedByte: 11,
+  });
+  const bob = SimDevice.create(s.world, {
+    id: "bob",
+    platform: "android",
+    seedByte: 22,
+  });
+  // Never on the radio: her announces reach bob only as relayed copies.
+  const carol = SimDevice.create(s.world, {
+    id: "carol",
+    platform: "android",
+    seedByte: 33,
+  });
+  for (const d of [alice, bob]) radio.add(d);
+  s.track(alice, bob);
+  alice.launch();
+  bob.launch();
+  await waitFor(s.world, () => bob.peers().includes(alice.peerID), 20_000);
+
+  const announce = (nickname: string, timestamp: number): string =>
+    forgeAnnounce({
+      claimedPeerID: carol.peerID,
+      noisePubKey: carol.identity.noiseStaticPubKey,
+      signingPubKey: carol.identity.signingPubKey,
+      nickname,
+      timestamp,
+      signWith: carol.identity.signingPrivKey,
+    });
+  const nickname = (): string | undefined =>
+    (
+      bob.store("peerStore").getState().peers as Map<
+        string,
+        { nickname: string }
+      >
+    ).get(carol.peerID)?.nickname;
+
+  const now = s.world.wallClock();
+  inject(s, radio, bob.id, alice.id, announce("carol-now", now));
+  await s.world.advance(1_000);
+  s.check("bob learns carol's current name", nickname() === "carol-now");
+
+  inject(s, radio, bob.id, alice.id, announce("carol-before", now - 30_000));
+  await s.world.advance(1_000);
+  s.check(
+    "the older announce keeps her listed under the newer name",
+    nickname() === "carol-now",
+    `nickname=${String(nickname())}`,
+  );
+
+  inject(s, radio, bob.id, alice.id, announce("carol-later", now + 1_000));
+  await s.world.advance(1_000);
+  s.check("a newer announce still renames her", nickname() === "carol-later");
+
+  s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();
 });

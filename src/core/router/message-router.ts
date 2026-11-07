@@ -52,7 +52,9 @@ export interface PeerEntry {
   // Whether this peer is directly connected over BLE (link event received).
   // Direct peers use the shorter DIRECT_PEER_TTL_MS; mesh peers use 60s.
   isDirect: boolean;
-  // Nostr public key (secp256k1 hex) announced by this peer, if known.
+  // Nostr public key (secp256k1 hex) this peer named inside a Noise session
+  // (NoisePayloadType.NOSTR_KEY) or that a contact card carried, if any.
+  // Never from an announce.
   nostrPubkey?: string;
   // bitchat capability bits announced by this peer (ANNOUNCE TLV 0x05), if any.
   // 0/undefined means the peer advertised none.
@@ -150,7 +152,8 @@ export class PeerRegistry {
       ...fields,
       isDirect: entry.isDirect ?? existing?.isDirect ?? false,
       lastSeenMs: Date.now(),
-      // A learned Nostr pubkey survives a re-announce that omits TLV 0x07.
+      // A Nostr key from a session or a card survives every announce, none of
+      // which carries one.
       nostrPubkey: entry.nostrPubkey ?? existing?.nostrPubkey,
       capabilities: entry.capabilities ?? existing?.capabilities,
       // Session-authenticated state outranks anything an announce carries, and
@@ -209,6 +212,19 @@ export class PeerRegistry {
     const e = this.get(peerID);
     if (e?.authenticatedCapabilities === undefined) return false;
     return (e.authenticatedCapabilities & bit) !== 0;
+  }
+
+  // The same, ignoring reachability: for a property of the peer's build rather
+  // than of reaching them now, which a peer quiet for a minute still has.
+  provedCapability(peerID: string, bit: number): boolean {
+    const proven = this.provenCapabilities(peerID);
+    return proven !== undefined && (proven & bit) !== 0;
+  }
+
+  // Every bit a session proved, ignoring reachability as above. Undefined
+  // while no proof is held, which is not the same as one proving no bits.
+  provenCapabilities(peerID: string): number | undefined {
+    return this.peers.get(peerID)?.authenticatedCapabilities;
   }
 
   // Drop the least recently seen peers once the registry is over its ceiling.
@@ -279,8 +295,8 @@ export class PeerRegistry {
     if (e) e.nostrPubkey = nostrPubkey;
   }
 
-  // For a key learned alongside a signing key a proof has since contradicted.
-  // The next announce fills it again.
+  // For a key learned alongside a signing key a proof has since contradicted
+  // (a link card's). The session that proved it hands over the real one.
   forgetNostrPubkey(peerID: string): void {
     const e = this.peers.get(peerID);
     if (e) e.nostrPubkey = undefined;
@@ -313,7 +329,7 @@ export class PeerRegistry {
     return this.peers.get(peerID)?.noisePubKey;
   }
 
-  // The Nostr key the peer announced, ignoring reachability.
+  // The peer's Nostr key, from its session or a card, ignoring reachability.
   nostrPubkeyFor(peerID: string): string | undefined {
     return this.peers.get(peerID)?.nostrPubkey;
   }
@@ -668,12 +684,21 @@ export class MessageRouter {
   // Send an arbitrary NoisePayload (type + body) over the Noise session, e.g. a
   // creator-signed group invite. Returns false when no session exists yet, so
   // the caller can retry once the handshake completes.
+  //
+  // `session` seals under one not yet sent under: a rekey proving itself
+  // before it switches. Otherwise the session held.
   sendNoisePayload(
     recipientPeerID: string,
     type: number,
     body: Uint8Array,
+    session?: NoiseSession,
   ): boolean {
-    const packet = this.buildNoisePayloadPacket(recipientPeerID, type, body);
+    const packet = this.buildNoisePayloadPacket(
+      recipientPeerID,
+      type,
+      body,
+      session,
+    );
     if (packet === null) return false;
     this.unicast(recipientPeerID, packet);
     return true;
@@ -692,10 +717,12 @@ export class MessageRouter {
     recipientPeerID: string,
     type: number,
     body: Uint8Array,
+    session?: NoiseSession,
   ): Packet | null {
     const peer = this.registry.get(recipientPeerID);
-    if (peer?.session === undefined) return null;
-    const payload = peer.session.encrypt(encodeNoisePayload(type, body));
+    const sealer = session ?? peer?.session;
+    if (peer === undefined || sealer === undefined) return null;
+    const payload = sealer.encrypt(encodeNoisePayload(type, body));
     return this.makeNoisePacket(recipientPeerID, payload);
   }
 
@@ -727,16 +754,41 @@ export class MessageRouter {
   // Gating it on the TTL would drop DMs from a direct peer whose announce has
   // aged out, while the sender's sendDm reports "sent" and the outbox never
   // queues a retry.
+  /**
+   * @public The router's own tests read one session through it; the mesh
+   * passes every candidate session to `decryptDmUnder`.
+   */
   decryptDm(packet: Packet, senderPeerID: string): NoisePayload | null {
     const session = this.registry.sessionFor(senderPeerID);
     if (session === undefined) return null;
-    try {
-      const payload = decodeNoisePayload(session.decrypt(packet.payload));
+    return (
+      this.decryptDmUnder(packet, senderPeerID, [session])?.payload ?? null
+    );
+  }
+
+  // The same, trying each session in turn, and saying which one opened it.
+  // Around a rekey a peer's traffic arrives under the session sent under, the
+  // one about to replace it, or the one it replaced; the caller lists them in
+  // the order to try. A failed attempt leaves a session's replay window as it
+  // was, so trying the next costs nothing but the attempt.
+  decryptDmUnder(
+    packet: Packet,
+    senderPeerID: string,
+    sessions: readonly NoiseSession[],
+  ): { payload: NoisePayload; session: NoiseSession } | null {
+    for (const session of sessions) {
+      let plaintext: Uint8Array;
+      try {
+        plaintext = session.decrypt(packet.payload);
+      } catch {
+        continue;
+      }
+      const payload = decodeNoisePayload(plaintext);
+      if (payload === null) return null;
       // On success only: a decrypted packet is proof the peer is here.
-      if (payload !== null) this.registry.noteHeard(senderPeerID);
-      return payload;
-    } catch {
-      return null;
+      this.registry.noteHeard(senderPeerID);
+      return { payload, session };
     }
+    return null;
   }
 }

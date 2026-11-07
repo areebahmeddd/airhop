@@ -42,6 +42,7 @@ import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { useLocationNotesStore } from "@store/location-notes-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { getStorage } from "@store/mmkv";
+import { useNostrKeysStore } from "@store/nostr-keys-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { usePeerStore } from "@store/peer-store";
 import { usePlaceNamesStore } from "@store/place-names-store";
@@ -143,8 +144,12 @@ export const MMKV_STORE_IDS = [
   // belongs here: an erased phone has no transfer left to recover.
   "move-marker",
   // nostr-processed-events lists the gift wraps and courier mail this
-  // identity opened, which says who writes to it.
+  // identity opened, which says who writes to it, and the DMs disappearing
+  // messages removed (store/expired-messages).
   "nostr-processed-events",
+  // nostr-keys-store pairs the npubs that wrote to this identity with the mesh
+  // peers they claim to be, the same who-talks-to-whom the inbox IDs reveal.
+  "nostr-keys-store",
 ] as const;
 
 // What the wipe managed to do. Only the one claim the caller must not make
@@ -261,6 +266,7 @@ export async function panicWipe(): Promise<PanicWipeResult> {
   useGeohashBookmarksStore.getState().clearAll();
   usePlaceNamesStore.getState().clearAll();
   useRingStore.getState().clearAll();
+  useNostrKeysStore.getState().clearAll();
   useSettingsStore.getState().reset();
   // Lives outside every store this wipe clears (AirhopBootReceiver reads it
   // with no JS up), so a wiped identity would still auto-start into nothing.

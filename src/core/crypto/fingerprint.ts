@@ -1,28 +1,35 @@
-// Safety numbers: the code two people read to each other to confirm the keys
-// their phones hold are the right ones.
+// Safety codes: what two people read to each other to confirm the keys their
+// phones hold are the right ones.
 //
 // Key delivery and verification are separate steps. A QR scan does both at
 // once; every other way of learning someone's keys (an airhop:// link, a card
-// inside a geohash DM, hearing their announce) does only the first. This is the
-// second on its own, so the confirming channel can be anything the two people
-// trust: a call, a radio, another app. The strength comes from that channel.
+// inside a geohash DM, a mesh session) does only the first. This is the second
+// on its own, so the confirming channel can be anything the two people trust:
+// a call, a radio, another app. The strength comes from that channel.
 //
-// Two properties the rest of the feature rests on:
+// Three properties the rest of the feature rests on:
 //
 //   * It covers BOTH keys. A peer ID is SHA-256 of the Noise key alone, so
 //     reading one aloud would not catch the attack that matters: a forged card
 //     keeps the victim's real peer ID and Noise key and substitutes the
 //     attacker's SIGNING key.
+//   * One code per person, from that person's keys alone. A code over both
+//     identities lets a man in the middle, who picks the fake key on each side,
+//     search for any two keys whose pair hashes collide: a birthday search of
+//     about 2^21 keys per side. A per-person code leaves nothing to collide
+//     with; the fake must match the one code its victim reads aloud.
 //   * It imports nothing. A match sets a flag, a mismatch tells the user to
 //     stop. Neither writes a key, so unlike the scan path there is no
-//     re-pinning power to gate.
+//     re-pinning power to gate. The flag attests keys, not words, so a change
+//     to how codes are drawn leaves every verified contact verified.
 
-import { sha256 } from "@noble/hashes/sha2.js";
+import { sha256, sha512 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 
-// Domain separators. The pair hash takes the peer hash's output as its input,
-// so without them one could be substituted for the other.
+// Domain separators, so a fingerprint and a code can never stand in for one
+// another, nor for any other hash in the app.
 const PEER_CONTEXT = "airhop-fingerprint-v1";
-const PAIR_CONTEXT = "airhop-safety-number-v1";
+const CODE_CONTEXT = "airhop-safety-code-v1";
 
 const encoder = new TextEncoder();
 
@@ -37,18 +44,8 @@ function concat(...parts: Uint8Array[]): Uint8Array {
   return out;
 }
 
-// Compare two byte strings of equal length. Returns <0, 0 or >0 so the pair
-// hash below can order its two inputs.
-function compareBytes(a: Uint8Array, b: Uint8Array): number {
-  for (let i = 0; i < a.length && i < b.length; i++) {
-    const diff = (a[i] as number) - (b[i] as number);
-    if (diff !== 0) return diff;
-  }
-  return a.length - b.length;
-}
-
 // One identity's fingerprint: 32 bytes over both of its public keys. Never
-// shown on its own; it is the input to the pair hash below.
+// shown on its own; it is the input to the code below.
 export function peerFingerprint(
   noisePubKey: Uint8Array,
   signingPubKey: Uint8Array,
@@ -61,23 +58,58 @@ export function peerFingerprint(
   );
 }
 
-// The code both people see, identical on the two phones.
+// Signal's safety-number stretching (NumericFingerprintGenerator): 5,200
+// rounds of SHA-512, each over the previous digest and the fingerprint again.
+// Every key an attacker tries costs this many hashes, which is what turns the
+// 42 bits below into a bound worth stating.
+const SAFETY_CODE_ITERATIONS = 5200;
+
+// A code is public (it is read aloud), so caching it holds nothing secret. A
+// screen needs two at a time, your own and one contact's; the rest is headroom
+// for switching between contacts without stretching again.
+const CODE_CACHE_LIMIT = 16;
+const codeCache = new Map<string, Uint8Array>();
+
+// The code for one person, the same on every phone that holds their keys.
 //
-// Sorted before hashing so neither side has to know who is who. Without it each
-// side derives a different string and the exchange doubles in length.
-export function safetyNumber(ours: Uint8Array, theirs: Uint8Array): Uint8Array {
-  const [first, second] =
-    compareBytes(ours, theirs) <= 0 ? [ours, theirs] : [theirs, ours];
-  return sha256(concat(encoder.encode(PAIR_CONTEXT), first, second));
+// Six words from 128-entry lists is 42 bits. To pass, an impostor needs a key
+// whose code lands on one specific person's six words: about 2^42 keys, each
+// costing 5,200 SHA-512 rounds, roughly 2^54 hash operations per targeted
+// person, all done before the two people speak. Within reach of a determined,
+// funded attacker, and the reason scanning the QR in person, which compares
+// the full keys, stays the strong path. Every extra word is another to read
+// over a bad line, and a code nobody finishes reading protects nothing.
+//
+// Slow by design: long enough to stall a frame on a slow phone, so it runs off
+// the render path, and the last few codes are cached (CODE_CACHE_LIMIT) so a
+// screen reopened does not stretch the same fingerprint again.
+export function safetyCode(fingerprint: Uint8Array): Uint8Array {
+  if (fingerprint.length !== 32) {
+    throw new Error("safetyCode: a fingerprint is 32 bytes");
+  }
+  const cacheKey = bytesToHex(fingerprint);
+  let digest = codeCache.get(cacheKey);
+  if (digest === undefined) {
+    digest = stretch(fingerprint);
+    // Insertion order makes the Map a FIFO: the oldest entry goes first.
+    if (codeCache.size >= CODE_CACHE_LIMIT) {
+      const oldest = codeCache.keys().next().value;
+      if (oldest !== undefined) codeCache.delete(oldest);
+    }
+    codeCache.set(cacheKey, digest);
+  }
+  // A copy, so a caller that writes into its result cannot poison the cache.
+  return digest.slice();
 }
 
-// Six words from 128-entry lists is 42 bits.
-//
-// Sized against the attack rather than to a round number. Forging a match means
-// grinding keys until the pair hash lands on the same six words: 2^42 for one
-// targeted pair, and it has to be done before the two people speak. Every extra
-// word is another word to read over a bad line, and a code nobody finishes
-// reading protects nothing.
+function stretch(fingerprint: Uint8Array): Uint8Array {
+  let digest = concat(encoder.encode(CODE_CONTEXT), fingerprint);
+  for (let i = 0; i < SAFETY_CODE_ITERATIONS; i++) {
+    digest = sha512.create().update(digest).update(fingerprint).digest();
+  }
+  return digest;
+}
+
 export const SAFETY_WORD_COUNT = 6;
 export const SAFETY_BITS_PER_WORD = 7;
 

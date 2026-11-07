@@ -198,9 +198,9 @@ describe("replay window", () => {
 
 // The seam between Noise and the Double Ratchet.
 //
-// tryInitDR seeds the ratchet's root key from `exporterSecret`. Three properties
-// have to hold together, and a change to any one silently breaks or weakens
-// every Airhop-to-Airhop DM, so all three are pinned here.
+// seedRatchet takes the ratchet's root key from `exporterSecret`. Three
+// properties have to hold together, and a change to any one silently breaks or
+// weakens every Airhop-to-Airhop DM, so all three are pinned here.
 //
 // The middle one is the easiest to get wrong. `handshakeHash` looks like a
 // seed, since Noise XX mixes both parties' ephemerals into it. It does, but it

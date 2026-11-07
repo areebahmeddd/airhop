@@ -12,8 +12,12 @@
 //   0x04  neighbor IDs       (bitchat; skipped, never written)
 //   0x05  capabilities       (bitchat bitfield)
 //   0x06  bridge cell        (bitchat; decoded, ignored)
-//   0x07  Nostr secp256k1 pub (32 bytes X-only, Airhop extension, ignored by bitchat)
 //   0xB1  Bitle relay role   (read, never written)
+//
+// Nothing here names the phone's Nostr key. An announce floods to everyone in
+// range, so a key in it would tie the radio identity to an internet inbox for
+// any listener. An Airhop peer hands it over inside the Noise session instead
+// (NoisePayloadType.NOSTR_KEY).
 import { hexToBytes } from "@noble/hashes/utils.js";
 import type { Identity } from "../../crypto/identity";
 import {
@@ -80,8 +84,7 @@ export function isAnnounceFresh(
 
 // ANNOUNCE TLV types. 0x01-0x06 are bitchat's (Packets.swift TLVType); we must
 // not reuse them. bitchat's 0x05 is a capabilities bitfield and 0x06 is a bridge
-// geohash. Reading either as our Nostr key (or vice versa) would corrupt both
-// sides, so our Nostr pubkey lives at 0x07, which bitchat skips as unknown.
+// geohash. An unknown tag is skipped, and no announce carries a Nostr key.
 const TLV_NICKNAME = 0x01;
 const TLV_NOISE_PUB = 0x02;
 const TLV_SIGNING_PUB = 0x03;
@@ -89,15 +92,14 @@ const TLV_CAPABILITIES = 0x05; // bitchat capabilities bitfield (little-endian)
 const TLV_BRIDGE_GEOHASH = 0x06; // bitchat bridge cell (decoded, ignored)
 // A geohash is at most 12 characters; bitchat-ios writes and reads no longer cell.
 const MAX_GEOHASH_BYTES = 12;
-const TLV_NOSTR_PUB = 0x07; // Airhop extension: secp256k1 X-only Nostr pubkey
 
 // Bitle's own TLV, read but never written (bitleproject/bitle, noise_handshake.c).
 //
 // A Bitle relay is a full peer, not a repeater: it holds a Noise identity and
 // signs announces, so it lands in the roster looking like a person nobody can
 // reach. 0xB1 is the one byte that says otherwise, bit 0 meaning "dedicated
-// relay". It sits far outside the 0x01-0x07 range either client assigns, so
-// there is no collision to manage and an older phone simply skips it.
+// relay". It sits far outside the 0x01-0x06 range bitchat assigns, so there is
+// no collision to manage, and a phone that does not know it skips it.
 //
 // Cosmetic, and it has to stay cosmetic. The byte is inside the signed payload,
 // but a node signs its own announce, so anyone can claim to be infrastructure.
@@ -150,6 +152,12 @@ export const Capability = {
   // authenticated bit counts: a pin to a peer without it would be dropped
   // unread while the sender saw it sent.
   locationPin: 1 << 25,
+  // Runs the Double Ratchet (DR_ENCRYPTED, 0x12) and takes a Nostr key inside
+  // the session (NoisePayloadType.NOSTR_KEY, 0x54): the mark of an Airhop
+  // peer. Proven, never announced, since an announce is free to forge and
+  // public to everyone in range. Seeding the ratchet and handing over the
+  // Nostr key both wait for this bit in the peer's 0x21.
+  doubleRatchet: 1 << 26,
 } as const;
 
 // Minimal little-endian encoding with trailing zero bytes dropped, always at
@@ -179,7 +187,6 @@ export interface AnnounceInfo {
   nickname: string;
   noisePubKey: Uint8Array; // 32 bytes X25519
   signingPubKey: Uint8Array; // 32 bytes Ed25519
-  nostrPubKey?: Uint8Array; // 32 bytes secp256k1 X-only (Airhop extension)
   capabilities: number; // bitchat capability bits (TLV 0x05); 0 when absent
   bridgeGeohash?: string; // rendezvous cell a bridge peer advertises (TLV 0x06)
   isInfrastructure: boolean; // Bitle relay marker (TLV 0xB1 bit 0); false when absent
@@ -197,7 +204,6 @@ const MAX_NICKNAME_BYTES = 32;
 export function encodeAnnouncePayload(
   identity: Identity,
   nickname: string,
-  nostrPubKey?: Uint8Array,
   capabilities = 0,
   bridgeGeohash?: string,
 ): Uint8Array {
@@ -223,10 +229,6 @@ export function encodeAnnouncePayload(
     writeTlv(buf, TLV_BRIDGE_GEOHASH, cellBytes);
   }
 
-  if (nostrPubKey !== undefined && nostrPubKey.length === 32) {
-    writeTlv(buf, TLV_NOSTR_PUB, nostrPubKey);
-  }
-
   return new Uint8Array(buf);
 }
 
@@ -238,7 +240,6 @@ export function decodeAnnouncePayload(
   let nickname = "";
   let noisePubKey: Uint8Array | null = null;
   let signingPubKey: Uint8Array | null = null;
-  let nostrPubKey: Uint8Array | undefined;
   let capabilities = 0;
   let bridgeGeohash: string | undefined;
   let isInfrastructure = false;
@@ -273,9 +274,6 @@ export function decodeAnnouncePayload(
           bridgeGeohash = new TextDecoder().decode(value);
         }
         break;
-      case TLV_NOSTR_PUB:
-        if (value.length === 32) nostrPubKey = value;
-        break;
       case TLV_BITLE_ROLE:
         // Bit-tested rather than compared, so the clock-authority bit Bitle
         // also carries here, and any bit it adds later, leave this alone.
@@ -292,7 +290,6 @@ export function decodeAnnouncePayload(
     nickname,
     noisePubKey,
     signingPubKey,
-    nostrPubKey,
     capabilities,
     bridgeGeohash,
     isInfrastructure,
@@ -311,19 +308,16 @@ export class AnnounceManager {
 
   // Build and return a signed ANNOUNCE packet ready to send. TLV 0x04 is never
   // written (see encodeAnnouncePayload).
-  // Pass nostrPubKey (32 bytes secp256k1 X-only) to include TLV 0x07 for Nostr DMs.
   // Pass capabilities (bitchat capability bits) to include TLV 0x05.
   buildPacket(
     identity: Identity,
     nickname: string,
-    nostrPubKey?: Uint8Array,
     capabilities = 0,
     bridgeGeohash?: string,
   ): Packet {
     const payload = encodeAnnouncePayload(
       identity,
       nickname,
-      nostrPubKey,
       capabilities,
       bridgeGeohash,
     );
@@ -356,14 +350,12 @@ export class AnnounceManager {
   // Start broadcasting ANNOUNCE packets at the cadence above. Pass getLinkCount
   // so the manager can tell which state it is in on each tick.
   //
-  // Pass nostrPubKey to include TLV 0x07 (constant for the session lifetime).
   // Pass getCapabilities to include TLV 0x05; it is read on every tick so a
   // toggled capability (e.g. the internet gateway) rides the next announce.
   start(
     identity: Identity,
     nickname: string,
     send: SendPacketFn,
-    nostrPubKey?: Uint8Array,
     getLinkCount?: () => number,
     getCapabilities?: () => number,
     getBridgeGeohash?: () => string | undefined,
@@ -376,15 +368,7 @@ export class AnnounceManager {
       if (getLinkCount !== undefined && getLinkCount() === 0) return;
       const capabilities = getCapabilities?.() ?? 0;
       const bridgeGeohash = getBridgeGeohash?.();
-      send(
-        this.buildPacket(
-          identity,
-          nickname,
-          nostrPubKey,
-          capabilities,
-          bridgeGeohash,
-        ),
-      );
+      send(this.buildPacket(identity, nickname, capabilities, bridgeGeohash));
     };
     this.broadcastFn = broadcast;
 

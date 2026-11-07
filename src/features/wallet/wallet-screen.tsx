@@ -294,8 +294,8 @@ export default function WalletScreen({
     }
   }, []);
 
-  // Contacts from a QR card or an ANNOUNCE already carry a Nostr key, so offer
-  // them rather than 63 typed characters.
+  // Contacts from a QR card or a mesh session already carry a Nostr key, so
+  // offer them rather than 63 typed characters.
   const contacts = useContactsStore((c) => c.contacts);
   const zapContacts = useMemo(
     () =>

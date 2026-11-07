@@ -60,6 +60,13 @@ export const NoisePayloadType = {
   RING: 0x51,
   RING_ACK: 0x52,
   RING_REFUSED: 0x53,
+  // This node's Nostr public key, 32 bytes x-only (nostr-key-payload.ts), so
+  // an Airhop peer can reach it over the internet once out of radio range.
+  // Sent only to a peer whose 0x21 proved Capability.doubleRatchet, so
+  // bitchat never receives a type it does not know, and only to a contact or
+  // someone a DM has passed with. Inside the session rather than in the
+  // public announce, which would hand the inbox to anyone in range.
+  NOSTR_KEY: 0x54,
 } as const;
 export type NoisePayloadTypeValue =
   (typeof NoisePayloadType)[keyof typeof NoisePayloadType];

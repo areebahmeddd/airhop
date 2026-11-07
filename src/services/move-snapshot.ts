@@ -38,6 +38,7 @@ import { useContactsStore } from "@store/contacts-store";
 import { useGeohashBookmarksStore } from "@store/geohash-bookmarks-store";
 import { useGroupStore } from "@store/group-store";
 import { getStorage } from "@store/mmkv";
+import { useNostrKeysStore } from "@store/nostr-keys-store";
 import { useOutboxStore } from "@store/outbox-store";
 import { DEVICE_SETTINGS, useSettingsStore } from "@store/settings-store";
 import { exportWalletState, importWalletState } from "@store/wallet-store";
@@ -138,6 +139,11 @@ const PARTITIONS: Record<StoreId, MovedPartition | null> = {
   // re-acknowledge the week its relays replay. Read when the mesh is built,
   // which on the new phone is after the move lands.
   "nostr-processed-events": { carry: "history", reload: () => undefined },
+  // Keys learned for the threads that move, so those peers stay reachable.
+  "nostr-keys-store": {
+    carry: "history",
+    reload: () => void useNostrKeysStore.persist.rehydrate(),
+  },
   "geohash-bookmarks-store": {
     carry: "always",
     reload: () => void useGeohashBookmarksStore.persist.rehydrate(),

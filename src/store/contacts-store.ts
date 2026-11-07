@@ -52,18 +52,20 @@ export interface Contact {
   // "in-person"   camera scan of their live screen. The app witnessed the
   //               exchange, which is also the only thing that earns the right
   //               to re-pin keys (see MeshService.addVerifiedContact)
-  // "fingerprint" both parties read the same safety number to each other over a
-  //               channel they trust. Confirms keys already held rather than
-  //               importing any, so it grants no re-pinning power
+  // "fingerprint" they read their safety code over a channel we trust and it
+  //               matched the one this phone draws from their keys. Confirms
+  //               keys already held rather than importing any, so it grants
+  //               no re-pinning power
   //
   // Equally strong as verification. They differ in what else they may do.
   verification?: "in-person" | "fingerprint";
   // The peer's Nostr public key (secp256k1 hex), once we've learned it from a
-  // v2 QR card or their ANNOUNCE. This is what makes an out-of-range contact
-  // reachable over the internet: the registry forgets a peer's npub 60s after
-  // their radio disappears, but a contact keeps it for good, so a DM to someone
-  // who has left Bluetooth range (or was never in it) can still fall back to a
-  // gift-wrapped Nostr DM. Absent for contacts we only know by peer ID.
+  // v2 QR card or inside a mesh session. This is what makes an out-of-range
+  // contact reachable over the internet: the registry forgets a peer's npub 60s
+  // after their radio disappears, but a contact keeps it for good, so a DM to
+  // someone who has left Bluetooth range (or was never in it) can still fall
+  // back to a gift-wrapped Nostr DM. Absent for contacts we only know by peer
+  // ID.
   nostrPubkeyHex?: string;
   // A name only you see, kept apart from `nickname` above.
   //
@@ -86,6 +88,12 @@ export interface Contact {
   // separate from just being a contact, the same way `verification` is kept
   // apart from `source`. Never leaves the device.
   allowRing?: boolean;
+  // Whether this contact's app is Airhop rather than bitchat, as their last
+  // session proof (0x21) said: true when it carried Capability.doubleRatchet,
+  // which bitchat never sets, false when it did not. Absent until a proof
+  // arrives. Kept here because a proof dies with the session, and a Nostr key
+  // says nothing about the app: a bitchat QR card carries one too.
+  provenAirhop?: boolean;
 }
 
 // Ordering for the merge, so a write can never lower a contact's standing. A
@@ -149,15 +157,15 @@ interface ContactsState {
   removeContact: (peerID: string) => void;
   // Bind a peer's durable Nostr pubkey to their contact. Idempotent: learning
   // the same key again is a no-op, and it never overwrites a stored key with a
-  // different one (an ANNOUNCE claiming a new npub for a known peer is treated
-  // as suspect, not authoritative). No-op when no contact exists for the peer,
+  // different one (a peer naming a new npub for itself is treated as suspect,
+  // not authoritative). No-op when no contact exists for the peer,
   // so we never manufacture a contact for a stranger just because we heard them.
   setNostrPubkey: (peerID: string, nostrPubkeyHex: string) => void;
   // Bind the mesh keys a peer PROVED, onto a contact saved without them.
   //
   // `saveIfAbsent` reaches only what the live registry held at that instant, so
   // a messaged contact carries no signing key and often no Noise key either. A
-  // safety number needs both, which is why the two keys travel together here.
+  // safety code needs both, which is why the two keys travel together here.
   //
   // Proof, never an announce: an announce carries the same two fields and
   // establishes neither. AUTHENTICATED_PEER_STATE qualifies because it rides
@@ -168,14 +176,14 @@ interface ContactsState {
   // the session contradicts, dropping the Nostr key and name that came with
   // them: those came from a link card that proves nothing about who made it,
   // and the session does. A verified contact's keys are never touched, so it
-  // can never re-pin what a scan or a safety number established. Grants no
+  // can never re-pin what a scan or a safety code established. Grants no
   // verification: holding somebody's keys is not having checked them.
   setProvenKeys: (
     peerID: string,
     noisePubKeyHex: string,
     signingPubKeyHex: string,
   ) => void;
-  // Record that the safety number was compared and matched. The other half of
+  // Record that their safety code was compared and matched. The other half of
   // verification, beside the camera scan.
   //
   // Touches no keys, which is what makes it safe for a contact whose keys
@@ -197,6 +205,10 @@ interface ContactsState {
   setLocalNickname: (peerID: string, nickname: string) => void;
   // Grant or revoke Ring for one contact. Same key gate as setLocalNickname.
   setAllowRing: (peerID: string, allow: boolean) => void;
+  // Record what a session proof said about the contact's app (provenAirhop).
+  // Only ever from a proof, and a later proof overrides an earlier one either
+  // way. No-op without a contact.
+  setProvenAirhop: (peerID: string, airhop: boolean) => void;
   getContact: (peerID: string) => Contact | undefined;
   // Display name for a peer ID, or undefined to fall back to a generated one.
   nicknameFor: (peerID: string) => string | undefined;
@@ -264,6 +276,8 @@ function mergeContact(prior: Contact | undefined, next: Contact): Contact {
     localNickname: next.localNickname ?? prior.localNickname,
     // A re-add (e.g. re-scanning a QR) must never revoke a ring grant.
     allowRing: next.allowRing ?? prior.allowRing,
+    // A card says nothing about the app; only a proof sets this.
+    provenAirhop: prior.provenAirhop,
   };
 }
 
@@ -433,6 +447,21 @@ export const useContactsStore = create<ContactsState>()(
             contacts: {
               ...state.contacts,
               [peerID]: { ...existing, allowRing: allow },
+            },
+          };
+        });
+      },
+
+      setProvenAirhop(peerID, airhop) {
+        set((state) => {
+          const existing = state.contacts[peerID];
+          // Same object when unchanged, as setProvenKeys: every reconnect
+          // re-proves.
+          if (!existing || existing.provenAirhop === airhop) return state;
+          return {
+            contacts: {
+              ...state.contacts,
+              [peerID]: { ...existing, provenAirhop: airhop },
             },
           };
         });

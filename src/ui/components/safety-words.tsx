@@ -1,8 +1,9 @@
-// Six words two phones show side by side, for a person to compare.
+// Six words for a person to compare: against what someone reads aloud, or
+// against another phone's screen.
 //
-// Used by Compare a code and by the transfer between phones. The words come
-// from `safetyNumberWords` and are never translated, so two phones in different
-// languages still agree.
+// Used for each person's code on Compare a code, and by the transfer between
+// phones. The words come from `safetyNumberWords` and are never translated, so
+// two phones in different languages still agree.
 
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";

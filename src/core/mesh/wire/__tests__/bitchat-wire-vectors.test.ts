@@ -409,7 +409,6 @@ describe("announce_tlv", () => {
       const ours = encodeAnnouncePayload(
         identity,
         i.nickname,
-        undefined,
         i.capabilities ?? 0,
         i.bridge_geohash ?? undefined,
       );

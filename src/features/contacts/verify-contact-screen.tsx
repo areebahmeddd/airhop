@@ -10,15 +10,17 @@
 //   Scan their code     they are here, and the camera witnesses the exchange.
 //                       Imports keys as well as confirming them, which is why
 //                       it alone may re-pin (addVerifiedContact)
-//   Compare a code      both parties read the same six words over a channel
-//                       they trust. The app witnesses nothing, the human does.
-//                       Imports nothing, so it grants no re-pinning power
+//   Compare a code      each reads their own six words over a channel they
+//                       trust, and the other checks them against "Their code".
+//                       The app witnesses nothing, the human does. Imports
+//                       nothing, so it grants no re-pinning power
 //
-// Both earn the same shield, and differ only in what else they may do. The
-// scan reads a bitchat user's verification QR too; the words exist only
-// between two Airhop phones.
+// Both earn the same shield, and differ only in what else they may do. Either
+// way the shield is per phone: checking their code verifies them here, and they
+// verify you on theirs. The scan reads a bitchat user's verification QR too;
+// the words exist only between two Airhop phones.
 
-import { peerFingerprint, safetyNumber } from "@core/crypto/fingerprint";
+import { peerFingerprint, safetyCode } from "@core/crypto/fingerprint";
 import { useT } from "@i18n";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { rejected, succeeded } from "@platform/haptics";
@@ -41,8 +43,16 @@ import {
 } from "@ui/theme";
 import { safetyNumberWords } from "@utils/username";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import React, { useMemo, useRef, useState } from "react";
-import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { readContactCode } from "./read-contact-code";
 
@@ -58,6 +68,33 @@ interface Props {
 // Every session starts at `choose`, so neither method is the default and a tap
 // meaning "how do I verify somebody" does not open a camera.
 type Stage = "choose" | "camera" | "compare" | "differ";
+
+interface Codes {
+  ours: string[];
+  theirs: string[];
+}
+
+function drawCodes(
+  theirNoiseHex: string,
+  theirSigningHex: string,
+): Codes | null {
+  const ourCard = getMeshService()?.getContactCard();
+  if (ourCard === undefined) return null;
+  try {
+    const ours = peerFingerprint(ourCard.noisePubKey, ourCard.signingPubKey);
+    const theirs = peerFingerprint(
+      hexToBytes(theirNoiseHex),
+      hexToBytes(theirSigningHex),
+    );
+    return {
+      ours: safetyNumberWords(safetyCode(ours)),
+      theirs: safetyNumberWords(safetyCode(theirs)),
+    };
+  } catch {
+    // Stored hex that will not decode. No code beats a wrong one.
+    return null;
+  }
+}
 
 // Outcome of a single scan. `match` has already written the verified contact by
 // the time it is set, so the sheet behind this one is already up to date.
@@ -82,30 +119,50 @@ export default function VerifyContactScreen({
 
   const contact = useContactsStore((s) => s.contacts[peerID]);
 
-  // The six words both phones show, identical on each side. Memoized because
-  // the words must not flicker while somebody is reading them aloud.
-  const words = useMemo(() => {
-    const ourCard = getMeshService()?.getContactCard();
+  // A contact saved from a typed peer ID has no keys and so no code.
+  const hasKeys =
+    contact !== undefined &&
+    contact.noisePubKeyHex.length === 64 &&
+    contact.signingPubKeyHex.length === 64;
+
+  // Your code and theirs, each from one person's keys alone, so their phone
+  // shows the same two codes the other way round. Drawn only on the compare
+  // stage, and after the stage has painted: each costs thousands of hashes, so
+  // the stage shows a spinner in their place for that moment rather than
+  // freezing on the tap. Keyed on the key strings rather than the contact, so
+  // marking them verified (a new contact object) cannot redraw the words while
+  // somebody is reading them aloud.
+  const comparing = stage === "compare";
+  const theirNoiseHex = contact?.noisePubKeyHex;
+  const theirSigningHex = contact?.signingPubKeyHex;
+  const codesKey =
+    comparing && theirNoiseHex !== undefined && theirSigningHex !== undefined
+      ? `${theirNoiseHex}:${theirSigningHex}`
+      : null;
+  const [drawn, setDrawn] = useState<{
+    key: string;
+    codes: Codes | null;
+  } | null>(null);
+  useEffect(() => {
     if (
-      ourCard === undefined ||
-      contact === undefined ||
-      contact.noisePubKeyHex.length !== 64 ||
-      contact.signingPubKeyHex.length !== 64
+      codesKey === null ||
+      theirNoiseHex === undefined ||
+      theirSigningHex === undefined
     ) {
-      return null;
+      return;
     }
-    try {
-      const ours = peerFingerprint(ourCard.noisePubKey, ourCard.signingPubKey);
-      const theirs = peerFingerprint(
-        hexToBytes(contact.noisePubKeyHex),
-        hexToBytes(contact.signingPubKeyHex),
-      );
-      return safetyNumberWords(safetyNumber(ours, theirs));
-    } catch {
-      // Stored hex that will not decode. No code beats a wrong one.
-      return null;
-    }
-  }, [contact]);
+    const timer = setTimeout(() => {
+      setDrawn({
+        key: codesKey,
+        codes: drawCodes(theirNoiseHex, theirSigningHex),
+      });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [codesKey, theirNoiseHex, theirSigningHex]);
+  // `undefined` while the codes are still being drawn, `null` when there are
+  // none to draw.
+  const codes: Codes | null | undefined =
+    drawn !== null && drawn.key === codesKey ? drawn.codes : undefined;
 
   // Fresh session each time the sheet is shown.
   //
@@ -268,9 +325,7 @@ export default function VerifyContactScreen({
                   </Text>
                 </View>
               </Pressable>
-              {/* Offered only when there is something to compare: a contact
-                  saved from a typed peer ID has no keys and so no code. */}
-              {words !== null ? (
+              {hasKeys ? (
                 <Pressable
                   style={({ pressed }) => [
                     styles.methodRow,
@@ -298,44 +353,86 @@ export default function VerifyContactScreen({
             </View>
           )}
 
-          {stage === "compare" && !compared && words !== null && (
-            <View style={styles.resultCard}>
+          {stage === "compare" && !compared && codes !== null && (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollCard}
+            >
               <Text style={styles.resultTitle}>
                 {T("contacts.verify.compare_title")}
               </Text>
               <Text style={styles.resultBody}>
                 {T("contacts.verify.compare_body", { name })}
               </Text>
-              <SafetyWords words={words} color="#FFFFFF" />
-              <Pressable
-                style={({ pressed }) => [
-                  styles.primaryBtn,
-                  pressed && styles.pressed,
-                ]}
-                onPress={handleCodesMatch}
-                accessibilityRole="button"
-                accessibilityLabel={T("contacts.verify.codes_match")}
-              >
-                <Text style={styles.primaryBtnText}>
-                  {T("contacts.verify.codes_match")}
+              {/* Yours first: it is the one read aloud. */}
+              <View style={styles.code}>
+                <Text style={styles.codeLabel}>
+                  {T("contacts.verify.your_code")}
                 </Text>
-              </Pressable>
-              <Pressable
-                style={({ pressed }) => pressed && styles.pressed}
-                onPress={() => {
-                  // A mismatch is the finding, not a failure to retry: the
-                  // words are the same next time, so a retry would only invite
-                  // tapping until it passed.
-                  rejected();
-                  setStage("differ");
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={T("contacts.verify.codes_differ")}
-              >
-                <Text style={styles.secondaryText}>
-                  {T("contacts.verify.codes_differ")}
+                {codes === undefined ? (
+                  <ActivityIndicator
+                    style={styles.codePending}
+                    color="#FFFFFF"
+                  />
+                ) : (
+                  <SafetyWords words={codes.ours} color="#FFFFFF" />
+                )}
+              </View>
+              <View style={styles.code}>
+                <Text style={styles.codeLabel}>
+                  {T("contacts.verify.their_code")}
                 </Text>
-              </Pressable>
+                {codes === undefined ? (
+                  <ActivityIndicator
+                    style={styles.codePending}
+                    color="#FFFFFF"
+                  />
+                ) : (
+                  <SafetyWords words={codes.theirs} color="#FFFFFF" />
+                )}
+              </View>
+              {/* No verdict before there is anything to compare. */}
+              {codes !== undefined && (
+                <>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.primaryBtn,
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={handleCodesMatch}
+                    accessibilityRole="button"
+                    accessibilityLabel={T("contacts.verify.codes_match")}
+                  >
+                    <Text style={styles.primaryBtnText}>
+                      {T("contacts.verify.codes_match")}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    style={({ pressed }) => pressed && styles.pressed}
+                    onPress={() => {
+                      // A mismatch is the finding, not a failure to retry: the
+                      // words are the same next time, so a retry would only invite
+                      // tapping until it passed.
+                      rejected();
+                      setStage("differ");
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={T("contacts.verify.codes_differ")}
+                  >
+                    <Text style={styles.secondaryText}>
+                      {T("contacts.verify.codes_differ")}
+                    </Text>
+                  </Pressable>
+                </>
+              )}
+            </ScrollView>
+          )}
+
+          {stage === "compare" && !compared && codes === null && (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultBody}>
+                {T("contacts.verify.no_keys")}
+              </Text>
             </View>
           )}
 
@@ -617,6 +714,33 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       justifyContent: "center",
       paddingHorizontal: Spacing.xl,
       gap: Spacing.md,
+    },
+    // The compare stage holds two codes and their labels, more than a short
+    // phone shows at the largest font scale, so it scrolls rather than clips.
+    scroll: {
+      flex: 1,
+    },
+    scrollCard: {
+      flexGrow: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: Spacing.xl,
+      paddingVertical: Spacing.lg,
+      gap: Spacing.md,
+    },
+    code: {
+      alignSelf: "stretch",
+      alignItems: "center",
+    },
+    // Holds the place of the words while they are drawn, with the margin
+    // SafetyWords keeps, so the stage does not jump when they land.
+    codePending: {
+      marginVertical: Spacing.sm,
+    },
+    codeLabel: {
+      fontSize: FontSize.xs,
+      fontWeight: FontWeight.semibold,
+      color: "rgba(255,255,255,0.6)",
     },
     resultIcon: {
       width: 56,

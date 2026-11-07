@@ -47,12 +47,7 @@ describe("announce nickname round-trip", () => {
   const senderID = new Uint8Array(8).fill(0x11);
 
   function roundTrip(nickname: string): string {
-    const payload = encodeAnnouncePayload(
-      identity as never,
-      nickname,
-      undefined,
-      0,
-    );
+    const payload = encodeAnnouncePayload(identity as never, nickname, 0);
     const info = decodeAnnouncePayload(payload, senderID);
     expect(info).not.toBeNull();
     return info!.nickname;
@@ -67,12 +62,7 @@ describe("announce nickname round-trip", () => {
   });
 
   it("normalizes on the way out too, so peers receive one form", () => {
-    const payload = encodeAnnouncePayload(
-      identity as never,
-      DECOMPOSED,
-      undefined,
-      0,
-    );
+    const payload = encodeAnnouncePayload(identity as never, DECOMPOSED, 0);
     // TLV 0x01 sits first: [type][len][value].
     expect(payload[0]).toBe(0x01);
     const value = payload.slice(2, 2 + payload[1]);
@@ -85,7 +75,6 @@ describe("announce nickname round-trip", () => {
     const payload = encodeAnnouncePayload(
       identity as never,
       "\u{1f600}".repeat(32),
-      undefined,
       0,
     );
     expect(payload[0]).toBe(0x01);
@@ -96,7 +85,6 @@ describe("announce nickname round-trip", () => {
     const payload = encodeAnnouncePayload(
       identity as never,
       "\u{1f600}".repeat(32),
-      undefined,
       0,
     );
     const value = payload.slice(2, 2 + payload[1]);

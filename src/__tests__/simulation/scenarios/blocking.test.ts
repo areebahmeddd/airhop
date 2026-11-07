@@ -112,6 +112,24 @@ test("BL01 a blocked peer cannot switch to Nostr to get through", async () => {
   );
   s.check("they met on the mesh and are both online", met);
 
+  // A conversation on the mesh first: each phone's Nostr key travels only
+  // inside a session, never in an announce, so strangers who never talked
+  // nearby have no internet route to each other.
+  alice.send(`dm:${bob.peerID}`, "hello on the mesh");
+  s.check(
+    "they talked on the mesh, which handed over their Nostr keys",
+    await waitForCoarse(
+      s.world,
+      () =>
+        alice
+          .messages(`dm:${bob.peerID}`)
+          .some(
+            (m) => m.text === "hello on the mesh" && m.status === "delivered",
+          ),
+      60_000,
+    ),
+  );
+
   // Out of radio range, so anything that arrives came over Nostr.
   radio.setIsolated("bob", true);
   await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);

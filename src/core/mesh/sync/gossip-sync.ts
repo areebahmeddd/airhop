@@ -714,6 +714,12 @@ export class GossipSync {
   // evict real history and are then served to everyone who asks. Broadcasts
   // only, and never a type that is not gossiped. An announce replaces its
   // sender's older one.
+  // The newest announce held from this peer, which `track` keeps over any
+  // older one.
+  newestAnnounce(peerID: string): Packet | undefined {
+    return this.announces.get(peerID);
+  }
+
   track(packet: Packet): void {
     if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;
     const key = bytesToHex(computePacketId(packet));

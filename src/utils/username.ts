@@ -331,7 +331,8 @@ export function peerIDToUsername(peerID: string): string {
   return `${adj}-${noun}-${suffix}`;
 }
 
-// Render a safety number as words, for two people to read to each other.
+// Render a safety code (or a device-transfer code) as words, for two people to
+// read to each other.
 //
 // Same lists the generated usernames come from, and never translated for the
 // same reason: both sides must land on identical words, and a localized code

@@ -193,6 +193,17 @@ test("IR02 a courier drop opened before a relaunch is not opened again", async (
       30_000,
     ),
   );
+  // They talk first: a phone hands its Nostr key over only inside a session,
+  // and bob's acknowledgement goes to that key.
+  alice.send(`dm:${bob.peerID}`, "hi on the mesh");
+  s.check(
+    "they talked on the mesh",
+    await waitForCoarse(
+      s.world,
+      () => bob.texts(`dm:${alice.peerID}`).includes("hi on the mesh"),
+      30_000,
+    ),
+  );
   radio.setIsolated("bob", true);
   await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
 

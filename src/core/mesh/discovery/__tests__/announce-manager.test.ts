@@ -121,6 +121,12 @@ describe("encodeCapabilities / decodeCapabilities", () => {
     expect([...encodeCapabilities(BITCHAT_LOCAL_SUPPORTED)]).toEqual([0x29]);
   });
 
+  // Proven inside a session only, never announced, but the bit is still wire:
+  // Airhop-only bits start at 24, clear of bitchat's.
+  test("the ratchet bit is Airhop's 1 << 26", () => {
+    expect(Capability.doubleRatchet).toBe(1 << 26);
+  });
+
   test("bridge bit (1<<7) fits one byte, trailing zeros dropped", () => {
     expect([...encodeCapabilities(Capability.bridge)]).toEqual([0x80]);
   });
@@ -147,12 +153,7 @@ describe("encodeCapabilities / decodeCapabilities", () => {
 describe("ANNOUNCE capabilities TLV", () => {
   test("gateway-on announce carries the exact bytes 05 01 04", () => {
     const id = makeIdentity();
-    const payload = encodeAnnouncePayload(
-      id,
-      "alice",
-      undefined,
-      Capability.gateway,
-    );
+    const payload = encodeAnnouncePayload(id, "alice", Capability.gateway);
     // Type 0x05, length 1, value 0x04, read as a TLV rather than matched as
     // text, so a chance collision inside a key cannot answer for it.
     expect(readTlv(payload, TLV_CAPABILITIES)).toEqual(
@@ -162,7 +163,7 @@ describe("ANNOUNCE capabilities TLV", () => {
 
   test("gateway-off announce omits the capabilities TLV", () => {
     const id = makeIdentity();
-    const withCap = encodeAnnouncePayload(id, "alice", undefined, 0);
+    const withCap = encodeAnnouncePayload(id, "alice", 0);
     const decoded = decodeAnnouncePayload(withCap, new Uint8Array(8));
     expect(decoded?.capabilities).toBe(0);
     // Absent entirely, not merely decoding to zero: a peer with no bits has to
@@ -175,7 +176,6 @@ describe("ANNOUNCE capabilities TLV", () => {
     const payload = encodeAnnouncePayload(
       id,
       "bob",
-      undefined,
       Capability.gateway | Capability.groups,
     );
     const info = decodeAnnouncePayload(payload, new Uint8Array(8));
@@ -187,10 +187,44 @@ describe("ANNOUNCE capabilities TLV", () => {
   test("buildPacket signs an announce whose capabilities survive validation", () => {
     const id = makeIdentity();
     const mgr = new AnnounceManager();
-    const pkt = mgr.buildPacket(id, "carol", undefined, Capability.gateway);
+    const pkt = mgr.buildPacket(id, "carol", Capability.gateway);
     const info = mgr.validateAndParse(pkt);
     expect(info).not.toBeNull();
     expect(info!.capabilities & Capability.gateway).toBe(Capability.gateway);
+  });
+});
+
+// The Nostr key travels inside a Noise session (NoisePayloadType.NOSTR_KEY),
+// never in an announce, which floods to anyone in range and would tie the
+// radio identity to an internet inbox.
+describe("ANNOUNCE carries no Nostr key", () => {
+  const TLV_RETIRED_NOSTR = 0x07;
+
+  test("an announce never writes TLV 0x07", () => {
+    const id = makeIdentity();
+    const pkt = new AnnounceManager().buildPacket(
+      id,
+      "ivan",
+      Capability.gateway,
+      "u4pruy",
+    );
+    expect(readTlv(pkt.payload, TLV_RETIRED_NOSTR)).toBeNull();
+  });
+
+  test("a 0x07 from elsewhere is skipped and costs nothing else", () => {
+    const id = makeIdentity();
+    const base = encodeAnnouncePayload(id, "judy", Capability.gateway);
+    const withKey = new Uint8Array([
+      ...base,
+      TLV_RETIRED_NOSTR,
+      32,
+      ...new Uint8Array(32).fill(0xab),
+    ]);
+    const info = decodeAnnouncePayload(withKey, new Uint8Array(8));
+    expect(info).not.toBeNull();
+    expect(info!.noisePubKey).toEqual(id.noiseStaticPubKey);
+    expect(info!.capabilities).toBe(Capability.gateway);
+    expect(Object.keys(info!)).not.toContain("nostrPubKey");
   });
 });
 
@@ -200,7 +234,6 @@ describe("ANNOUNCE bridge geohash TLV (0x06)", () => {
     const payload = encodeAnnouncePayload(
       id,
       "dave",
-      undefined,
       Capability.bridge,
       "u4pruy",
     );
@@ -213,7 +246,7 @@ describe("ANNOUNCE bridge geohash TLV (0x06)", () => {
 
   test("omits the TLV when no cell is set (non-bridging peer)", () => {
     const id = makeIdentity();
-    const payload = encodeAnnouncePayload(id, "eve", undefined, 0, undefined);
+    const payload = encodeAnnouncePayload(id, "eve", 0, undefined);
     const info = decodeAnnouncePayload(payload, new Uint8Array(8));
     expect(info?.bridgeGeohash).toBeUndefined();
   });
@@ -224,7 +257,6 @@ describe("ANNOUNCE bridge geohash TLV (0x06)", () => {
     const pkt = mgr.buildPacket(
       id,
       "frank",
-      undefined,
       Capability.bridge | Capability.gateway,
       "9q8yyk",
     );
@@ -311,7 +343,6 @@ describe("Bitle role TLV (0xB1)", () => {
     const payload = encodeAnnouncePayload(
       id,
       "heidi",
-      undefined,
       Capability.gateway,
       "u4pruy",
     );
