@@ -237,13 +237,146 @@ describe("LiveVideoSendSession", () => {
     await s.start();
     for (let t = 0; t < 4_000; t += 125) {
       encoded(t, t % 2_000 === 0);
-      s.noteRefused(3);
+      s.noteWrites({ sent: 0, refused: 3, skipped: 0, queued: 0 });
       await advance(125);
     }
     const rates = native.setBitrate.mock.calls.map(([b]) => b as number);
     expect(Math.min(...rates)).toBeLessThan(
       LIVE_VIDEO_QUALITIES.low.videoBitrate,
     );
+    const stopping = s.stop(true);
+    await advance(200);
+    await stopping;
+  });
+
+  // Once writes queue in native, refusals all but stop; the depth the queues
+  // report is the signal.
+  test("a deep radio queue drops video until it drains", async () => {
+    const { s } = session();
+    await s.start();
+    for (let t = 0; t < 1_000; t += 125) {
+      encoded(t, t === 0);
+      // Past 1.5 s of Bluetooth's 24 packets a second.
+      s.noteWrites({ sent: 3, refused: 0, skipped: 0, queued: 40 });
+      await advance(125);
+    }
+    expect(s.stats().skipping).toBe(true);
+    const rates = native.setBitrate.mock.calls.map(([b]) => b as number);
+    expect(Math.min(...rates)).toBeLessThan(
+      LIVE_VIDEO_QUALITIES.low.videoBitrate,
+    );
+    const stopping = s.stop(true);
+    await advance(200);
+    await stopping;
+  });
+
+  test("one refusing neighbor of three backs off without dropping video", async () => {
+    const { s } = session();
+    await s.start();
+    for (let t = 0; t < 1_000; t += 125) {
+      encoded(t, t === 0);
+      s.noteWrites({ sent: 2, refused: 1, skipped: 0, queued: 0 });
+      await advance(125);
+    }
+    expect(s.stats()).toMatchObject({ congested: true, skipping: false });
+    const stopping = s.stop(true);
+    await advance(200);
+    await stopping;
+  });
+
+  // A neighbor who walked away stops draining long before its link closes,
+  // and the one still in range should keep the picture.
+  test("one crowded neighbor of two leaves the stream alone", async () => {
+    const { s } = session();
+    await s.start();
+    for (let t = 0; t < 1_000; t += 125) {
+      encoded(t, t === 0);
+      s.noteWrites({ sent: 1, refused: 0, skipped: 1, queued: 2 });
+      await advance(125);
+    }
+    expect(s.stats()).toMatchObject({ congested: false, skipping: false });
+    const stopping = s.stop(true);
+    await advance(200);
+    await stopping;
+  });
+
+  test("a microphone lost mid-stream turns the sound off and tells viewers", async () => {
+    const audio = {
+      startCapture: jest.fn(() => Promise.resolve()),
+      stopCapture: jest.fn(() => Promise.resolve()),
+    };
+    const sent: Uint8Array[] = [];
+    const s = new LiveVideoSendSession(LIVE_VIDEO_QUALITIES.low, {
+      send: (p) => sent.push(p),
+      audio: audio as unknown as NativeAudioCapture,
+      onFailure: () => undefined,
+      packetBudget: BLE_PACKET_BUDGET,
+      now: () => now,
+    });
+    await s.start();
+    encoded(0, true);
+    await advance(500);
+    expect(s.soundOn).toBe(true);
+    expect(native.requestKeyframe).not.toHaveBeenCalled();
+
+    s.dropSound();
+    expect(s.soundOn).toBe(false);
+    expect(native.requestKeyframe).toHaveBeenCalledTimes(1);
+    expect(audio.stopCapture).toHaveBeenCalled();
+    encoded(500, true);
+    await advance(200);
+    const starts = sent
+      .map((p) => decodeVideoBurstPacket(p))
+      .filter((p) => p?.kind === "start")
+      .map((p) => (p?.kind === "start" ? p.config.hasAudio : null));
+    expect(starts[0]).toBe(true);
+    expect(starts[starts.length - 1]).toBe(false);
+    const stopping = s.stop(true);
+    await advance(200);
+    await stopping;
+  });
+
+  // The camera stamps video from its own start, inside startEncoding. Sound
+  // counted from any earlier moment would trail the picture by however long
+  // the encoder took to build.
+  test("sound and picture share the origin taken once the encoder has started", async () => {
+    let onFrame: (frame: Uint8Array) => void = () => undefined;
+    const audio = {
+      startCapture: jest.fn((cb: (frame: Uint8Array) => void) => {
+        onFrame = cb;
+        return Promise.resolve();
+      }),
+      stopCapture: jest.fn(() => Promise.resolve()),
+    };
+    // The encoder takes 300 ms to build.
+    native.startEncoding.mockImplementationOnce(() => {
+      now += 300;
+      return Promise.resolve();
+    });
+    const s = new LiveVideoSendSession(LIVE_VIDEO_QUALITIES.low, {
+      send: () => undefined,
+      audio: audio as unknown as NativeAudioCapture,
+      onFailure: () => undefined,
+      packetBudget: BLE_PACKET_BUDGET,
+      now: () => now,
+    });
+    await s.start();
+    // The camera's first frame and the microphone's, both 40 ms in.
+    now += 40;
+    encoded(40, true);
+    onFrame(new Uint8Array(100).fill(1));
+    const [, , videoPts] = native.appendVideo.mock.calls[0] as [
+      string,
+      string,
+      number,
+    ];
+    const [, , audioPts] = native.appendAudio.mock.calls[0] as [
+      string,
+      string,
+      number,
+    ];
+    expect(videoPts).toBe(40);
+    expect(audioPts).toBe(40);
     const stopping = s.stop(true);
     await advance(200);
     await stopping;

@@ -4,11 +4,12 @@
 // LiveVideoSendSession in Airhop's terms.
 //
 // Every 250 ms congestion control reads the deeper of two queues: the pacing
-// queue's, and the radio's, which shows only as writes it refused. A growing
-// queue lowers the encoder's bitrate, a deep one drops video at the source
-// (audio keeps flowing) until it drains and a keyframe restarts the picture.
-// There is no receiver feedback to steer by; a broadcast has many listeners
-// and none of them answer.
+// queue's, and the radio's, the typical depth of the link queues its writes
+// reported (LinkRegistry.broadcastFastest), or a full one when they refused.
+// A growing queue lowers the encoder's bitrate, a deep one drops video at the
+// source (audio keeps flowing) until it drains and a keyframe restarts the
+// picture. There is no receiver feedback to steer by; a broadcast has many
+// listeners and none of them answer.
 //
 // One session per stream, one stream at a time. The caller owns the camera,
 // so a viewfinder can run before and after.
@@ -17,6 +18,7 @@ import NativeAirhopVideo, {
   type CameraFacing,
 } from "@bridge/NativeAirhopVideo";
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
+import type { FastestResult } from "@core/mesh/links/link-registry";
 import { LiveVideoCongestionController } from "@core/mesh/video/live-video-congestion";
 import { LiveVideoPacer } from "@core/mesh/video/live-video-pacer";
 import {
@@ -109,17 +111,25 @@ export class LiveVideoSendSession {
   private readonly recording: FileSystem.File;
   private readonly now: () => number;
   private readonly wipeGeneration = currentWipeGeneration();
-  // Whether sound goes out: a microphone was given and it opened.
+  // Whether sound goes out: a microphone was given, it opened, and it has not
+  // failed since.
   private withSound: boolean;
   private startedAtMs = 0;
+  // When the encoder had started, the zero both tracks' timestamps count from.
+  // The camera stamps video from its own start, inside startEncoding; sound
+  // stamped from any earlier moment would run behind the picture by however
+  // long the encoder took to build.
+  private mediaOriginMs = 0;
   private lastCongestionMs = -Infinity;
   private awaitingKeyframe = false;
   private audioFrames = 0;
   private audioOffsetMs: number | null = null;
-  // Radio writes refused since the last congestion check, against packets
-  // handed over in it.
+  // Since the last congestion check: link writes refused, against link writes
+  // attempted, so one refusing neighbor of three reads as a third. And the
+  // radio's queue depth as the latest write reported it, in packets.
   private refusedInWindow = 0;
-  private sentInWindow = 0;
+  private writesInWindow = 0;
+  private queuedInWindow = 0;
   private lastBacklog = 0;
   private readonly highWater: number;
   private readonly skipWater: number;
@@ -260,29 +270,45 @@ export class LiveVideoSendSession {
       await this.stop(true);
       throw err;
     }
+    this.mediaOriginMs = this.now();
     // A stop during startEncoding has already shut the microphone; opening it
     // now would leave it on with nothing to close it.
     const audio = this.deps.audio;
     if (audio === null || this.stopping !== null) return;
     // The microphone is a bonus: a stream that cannot get one goes on silent.
-    //
-    // The first START already promised sound, and viewers offer a sound toggle
-    // on it. A keyframe always carries a fresh START, so asking for one now
-    // tells every viewer, Airhop or bitchat, within a frame.
     await audio
       .startCapture((frame) => this.onAudio(frame))
-      .catch(() => {
-        this.withSound = false;
-        this.streamConfig.hasAudio = false;
-        NativeAirhopVideo?.requestKeyframe();
-      });
+      .catch(() => this.dropSound());
     // Stopped while it was opening, after end() had closed it.
     if (this.stopping !== null) await audio.stopCapture();
   }
 
-  // A link's radio refused this many writes: its transmit queue is full.
-  noteRefused(count: number): void {
-    this.refusedInWindow += count;
+  // Whether sound is going out now.
+  get soundOn(): boolean {
+    return this.withSound;
+  }
+
+  // The microphone would not open, or was lost mid-stream: the picture goes
+  // on silent. The first START promised sound, and viewers offer a sound
+  // toggle on it. A keyframe always carries a fresh START, so asking for one
+  // now tells every viewer, Airhop or bitchat, within a frame.
+  dropSound(): void {
+    if (!this.withSound || this.stopping !== null) return;
+    this.withSound = false;
+    this.streamConfig.hasAudio = false;
+    NativeAirhopVideo?.requestKeyframe();
+    // Nothing more is coming from a microphone that failed; this releases its
+    // event subscriptions. A no-op on one that never opened.
+    void this.deps.audio?.stopCapture().catch(() => undefined);
+  }
+
+  // What one packet's writes came to (LinkRegistry.broadcastFastest): links
+  // that took it, links that refused it, crowded ones passed by, and the
+  // typical queue depth across them.
+  noteWrites(result: FastestResult): void {
+    this.writesInWindow += result.sent + result.refused + result.skipped;
+    this.refusedInWindow += result.refused;
+    if (result.sent + result.skipped > 0) this.queuedInWindow = result.queued;
   }
 
   // Ends the stream: END (or CANCELED), the queue drained, the recording
@@ -371,9 +397,10 @@ export class LiveVideoSendSession {
 
   private onAudio(frame: Uint8Array): void {
     if (!this.accepting) return;
-    // The first frame anchors the audio clock to the stream's; after that
-    // every frame is exactly 64 ms on, as the encoder made it.
-    this.audioOffsetMs ??= this.elapsed();
+    // The first frame anchors the audio clock to the media origin the camera
+    // stamps video from; after that every frame is exactly 64 ms on, as the
+    // encoder made it.
+    this.audioOffsetMs ??= this.now() - this.mediaOriginMs;
     const ptsMs = this.audioOffsetMs + this.audioFrames * AUDIO_FRAME_MS;
     this.audioFrames++;
     NativeAirhopVideo?.appendAudio(
@@ -406,20 +433,23 @@ export class LiveVideoSendSession {
   }
 
   private sendPacket(packet: Uint8Array): void {
-    this.sentInWindow++;
     this.deps.send(packet);
   }
 
-  // A full radio queue read as a queue depth, since the radio reports only
-  // that it refused: any refusal is a queue at its high water, and refusals
-  // for half of what went out are one far enough behind to drop video.
+  // The radio's backlog in packets: the queue depth its writes reported, or
+  // more when writes were refused, since a refusal is a queue already full.
+  // Any refusal reads as a queue at its high water, and refusals for half the
+  // writes as one far enough behind to drop video.
   private radioBacklog(): number {
+    const queued = this.queuedInWindow;
     const refused = this.refusedInWindow;
-    const sent = this.sentInWindow;
+    const writes = this.writesInWindow;
+    this.queuedInWindow = 0;
     this.refusedInWindow = 0;
-    this.sentInWindow = 0;
-    if (refused === 0) return 0;
-    return refused * 2 >= sent ? this.skipWater : this.highWater;
+    this.writesInWindow = 0;
+    if (refused === 0) return queued;
+    const full = refused * 2 >= writes ? this.skipWater : this.highWater;
+    return Math.max(queued, full);
   }
 
   private async finalDrain(): Promise<void> {

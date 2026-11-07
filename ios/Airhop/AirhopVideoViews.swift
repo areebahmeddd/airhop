@@ -41,9 +41,14 @@ final class AirhopVideoDisplays {
       stream = Stream()
       streams[key] = stream
     }
-    // A layer that failed (the app went to the background) starts again at
-    // the next keyframe.
-    for view in surfaces.surfaces(for: key) where view.displayLayer.status == .failed {
+    // A layer that failed, or that lost its decoder while the app was in the
+    // background and says it needs a flush to decode again, starts again at
+    // the next keyframe. The second case reports no failure: without the
+    // flush the picture just stays frozen.
+    for view in surfaces.surfaces(for: key)
+    where view.displayLayer.status == .failed
+      || view.displayLayer.requiresFlushToResumeDecoding
+    {
       view.displayLayer.flush()
       surfaces.resync(view, key: key)
     }

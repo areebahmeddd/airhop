@@ -40,6 +40,7 @@ import { useSettingsStore } from "@store/settings-store";
 import * as FileSystem from "expo-file-system";
 import {
   CACHE_FILE_PREFIX,
+  deleteUnreferencedAttachments,
   enforceIncomingQuota,
   INCOMING_FILE_PREFIX,
 } from "./file-transfer-service";
@@ -118,6 +119,8 @@ export interface LiveVideoReceiverDeps {
   // Live voice owns the speaker while anyone is talking.
   playAudio: (streamKey: string, frames: Uint8Array[]) => void;
   stopAudio: (streamKey: string) => void;
+  // A stream opened or closed; `streamCount` has the new number.
+  onStreamsChanged?: () => void;
   now?: () => number;
 }
 
@@ -225,17 +228,15 @@ export class LiveVideoReceiver {
     if (rows.length === 0) return false;
     const chat = useChatStore.getState();
     const [kept, ...rest] = rows;
-    for (const row of rows) {
-      const rebuilt = row.attachment?.uri;
-      if (rebuilt !== undefined && rebuilt !== attachment.uri) {
-        deleteFile(rebuilt);
-      }
-    }
+    const rebuilt = rowFiles(rows);
     for (const row of rest) chat.removeMessage(channel, row.id);
     chat.setLiveVideoRow(channel, kept.id, {
       liveVideo: undefined,
       attachment,
     });
+    // Only once no row of the stream points at them, and through the counted
+    // cleanup: a forward of a rebuilt recording shares its file.
+    deleteUnreferencedAttachments(rebuilt);
     return true;
   }
 
@@ -284,6 +285,7 @@ export class LiveVideoReceiver {
       return;
     }
     this.streams.delete(stream.key);
+    this.deps.onStreamsChanged?.();
     // A resumed segment let go before its picture still has the rows of the
     // segments before it, which a later discard has to find.
     if (!reopenable) this.rememberFinished(stream.key, false);
@@ -305,6 +307,7 @@ export class LiveVideoReceiver {
     why: "ended" | "reopenable" | "replaced",
   ): void {
     this.streams.delete(stream.key);
+    this.deps.onStreamsChanged?.();
     this.rememberFinished(stream.key, why === "reopenable");
     this.deps.stopAudio(stream.key);
     NativeAirhopVideo?.releaseDecoder(stream.key);
@@ -351,6 +354,7 @@ export class LiveVideoReceiver {
       lastRefillMs: now,
     };
     this.streams.set(key, stream);
+    this.deps.onStreamsChanged?.();
     return stream;
   }
 
@@ -516,6 +520,7 @@ export class LiveVideoReceiver {
 
   private cancel(stream: Stream): void {
     this.streams.delete(stream.key);
+    this.deps.onStreamsChanged?.();
     this.rememberFinished(stream.key, false);
     this.deps.stopAudio(stream.key);
     NativeAirhopVideo?.releaseDecoder(stream.key);
@@ -648,19 +653,26 @@ function streamRows(
   );
 }
 
+function rowFiles(rows: ChatMessage[]): string[] {
+  const uris: string[] = [];
+  for (const row of rows) {
+    if (row.attachment !== undefined) uris.push(row.attachment.uri);
+  }
+  return uris;
+}
+
 // Every row a discarded stream left, segments before a dropout included, with
-// the recordings rebuilt behind them. One still being finished deletes itself
-// when it finds its row gone.
+// the recordings rebuilt behind them unless a forward still shows one. One
+// still being finished deletes itself when it finds its row gone.
 function removeRows(
   channel: string,
   senderPeerID: string,
   streamID: string,
 ): void {
   const chat = useChatStore.getState();
-  for (const row of streamRows(channel, senderPeerID, streamID)) {
-    if (row.attachment?.uri !== undefined) deleteFile(row.attachment.uri);
-    chat.removeMessage(channel, row.id);
-  }
+  const rows = streamRows(channel, senderPeerID, streamID);
+  for (const row of rows) chat.removeMessage(channel, row.id);
+  deleteUnreferencedAttachments(rowFiles(rows));
 }
 
 function deleteFile(uri: string): void {

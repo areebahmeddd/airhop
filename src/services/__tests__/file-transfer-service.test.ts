@@ -15,6 +15,7 @@ import {
 } from "@core/mesh/wire/file-packet";
 import { PacketType, type Packet } from "@core/mesh/wire/packet-codec";
 import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
+import { privateVideoStableID } from "@core/mesh/wire/private-video-id";
 import { hexToBytes } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useTransferStore } from "@store/transfer-store";
@@ -670,6 +671,158 @@ describe("a DM to a peer who has left", () => {
   });
 });
 
+// A Bluetooth write resolves once the native queue holds it, not once the radio
+// sends it, and a disconnect discards that queue. So the last fragment being
+// accepted is not the file being sent: it is sent once the queue has had time
+// to drain, and lost if the link goes first.
+describe("a file still in a Bluetooth queue", () => {
+  const FILE = (() => {
+    const f = new Uint8Array(4000);
+    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
+    return f;
+  })();
+  const DM = "dm:1122334455667788";
+  const DEPTH = 40;
+  // DEPTH writes at the directed spacing (25 ms), plus the 500 ms margin.
+  const DRAIN_MS = DEPTH * 25 + 500;
+
+  function makeQueuedService(
+    queues: () => { linkID: string; depth: number }[],
+  ) {
+    const unicast = jest.fn().mockResolvedValue(true);
+    const service = new FileTransferService(
+      IDENTITY,
+      jest.fn().mockResolvedValue(true),
+      unicast,
+      (peerID) => peerID,
+      SEAL,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      queues,
+    );
+    return { service, unicast };
+  }
+
+  // Sends FILE and hands every fragment over, returning the transfer's id.
+  async function sendAll(
+    service: FileTransferService,
+    outcome: jest.Mock,
+  ): Promise<string> {
+    service.sendBytes(FILE, META, DM, outcome);
+    const [id] = Object.keys(useTransferStore.getState().transfers);
+    await tick(service.pendingCount);
+    expect(service.pendingCount).toBe(0);
+    return id;
+  }
+
+  it("fails the transfer when its link drops before the queue drains", async () => {
+    const { service } = makeQueuedService(() => [
+      { linkID: "c:A", depth: DEPTH },
+    ]);
+    const outcome = jest.fn();
+    const id = await sendAll(service, outcome);
+
+    // Every fragment is queued: the card is full, the bubble not yet sent.
+    const card = useTransferStore.getState().transfers[id];
+    expect(card.transferredBytes).toBe(card.totalBytes);
+    expect(card.status).toBe("active");
+    expect(outcome).not.toHaveBeenCalled();
+
+    service.onLinkGone("c:A");
+
+    expect(outcome).toHaveBeenCalledTimes(1);
+    expect(outcome).toHaveBeenCalledWith(false);
+    expect(useTransferStore.getState().transfers[id].status).toBe("failed");
+    // Nor does it come back as sent once the drain would have passed.
+    jest.advanceTimersByTime(DRAIN_MS);
+    expect(outcome).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports sent once the queue has had time to drain", async () => {
+    const { service } = makeQueuedService(() => [
+      { linkID: "c:A", depth: DEPTH },
+    ]);
+    const outcome = jest.fn();
+    const id = await sendAll(service, outcome);
+
+    // Another link going says nothing about this file.
+    service.onLinkGone("c:B");
+    jest.advanceTimersByTime(DRAIN_MS - 5);
+    expect(outcome).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(10);
+    expect(outcome).toHaveBeenCalledWith(true);
+    expect(useTransferStore.getState().transfers[id].status).toBe("done");
+
+    // Its link going after it drained fails nothing.
+    service.onLinkGone("c:A");
+    expect(outcome).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails a transfer whose link drops mid-send", async () => {
+    const { service, unicast } = makeQueuedService(() => [
+      { linkID: "c:A", depth: 3 },
+    ]);
+    const outcome = jest.fn();
+    service.sendBytes(FILE, META, DM, outcome);
+    await tick(2);
+
+    service.onLinkGone("c:A");
+
+    expect(outcome).toHaveBeenCalledWith(false);
+    expect(service.pendingCount).toBe(0);
+    const written = unicast.mock.calls.length;
+    await tick(5);
+    expect(unicast).toHaveBeenCalledTimes(written);
+  });
+
+  it("is settled once by a cancel during the drain", async () => {
+    const { service } = makeQueuedService(() => [
+      { linkID: "c:A", depth: DEPTH },
+    ]);
+    const outcome = jest.fn();
+    const id = await sendAll(service, outcome);
+
+    service.cancel(id);
+    jest.advanceTimersByTime(DRAIN_MS);
+
+    expect(outcome).toHaveBeenCalledTimes(1);
+    expect(outcome).toHaveBeenCalledWith(false);
+  });
+
+  // A room file reaches every neighbor: one walking away mid-send costs only
+  // their copy, and the file fails only once no link is left carrying it.
+  it("fails a room file only when its last Bluetooth link drops", async () => {
+    const { service } = makeQueuedService(() => [
+      { linkID: "c:A", depth: DEPTH },
+      { linkID: "c:B", depth: DEPTH },
+    ]);
+    const outcome = jest.fn();
+    service.sendBytes(FILE, META, "#bluetooth", outcome);
+    await tick(service.pendingCount);
+
+    service.onLinkGone("c:A");
+    expect(outcome).not.toHaveBeenCalled();
+    service.onLinkGone("c:B");
+    expect(outcome).toHaveBeenCalledWith(false);
+  });
+
+  // Wi-Fi Aware and LAN write to a socket with no queue to lose, so the
+  // caller reports no Bluetooth link and the file is sent with its last write.
+  it("reports a Wi-Fi or LAN transfer sent at once", async () => {
+    const { service } = makeQueuedService(() => []);
+    const outcome = jest.fn();
+    const id = await sendAll(service, outcome);
+
+    expect(outcome).toHaveBeenCalledWith(true);
+    expect(useTransferStore.getState().transfers[id].status).toBe("done");
+    service.onLinkGone("wifi-1");
+    expect(outcome).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("a file the codec cannot carry", () => {
   it("settles the bubble instead of leaving it on sending", () => {
     const { service } = makeService();
@@ -862,6 +1015,73 @@ describe("receiving a file", () => {
       globalThis.__writeFails = true;
       service.onSealedFile(SENDER, stablePhoto());
       await settle();
+      expect(ack).not.toHaveBeenCalled();
+    });
+  });
+
+  // bitchat gives video no stable ID, so two Airhop phones derive their own
+  // for the UUID names Airhop writes. bitchat's own 8-hex clip names must stay
+  // on the legacy path: deduplicating on 32 bits would drop a distinct clip.
+  describe("a sealed video under Airhop's stable-ID name", () => {
+    const SENDER = "1122334455667788";
+    // An ISO BMFF file type box, which is all the MIME check reads.
+    const MP4 = new Uint8Array([
+      0, 0, 0, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d, 0, 0, 0, 0,
+    ]);
+
+    function sealedVideo(fileName: string): Uint8Array {
+      const tlv = encodeFilePacket({
+        fileName,
+        mimeType: "video/mp4",
+        content: MP4,
+      });
+      if (tlv === null) throw new Error("no TLV");
+      return tlv;
+    }
+
+    function receiver(): { service: FileTransferService; ack: jest.Mock } {
+      const ack = jest.fn();
+      const service = new FileTransferService(
+        IDENTITY,
+        jest.fn().mockResolvedValue(true),
+        jest.fn().mockResolvedValue(true),
+        (peerID) => peerID,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        ack,
+      );
+      return { service, ack };
+    }
+
+    it.each([
+      "note_9f8e7d6c-5b4a-4938-8271-6f5e4d3c2b1a.mp4",
+      "clip_9f8e7d6c-5b4a-4938-8271-6f5e4d3c2b1a.mp4",
+    ])(
+      "keys %s by its ID, acknowledges it, and stores a repeat once",
+      async (name) => {
+        const id = privateVideoStableID(SENDER, IDENTITY.peerID, name);
+        const { service, ack } = receiver();
+        service.onSealedFile(SENDER, sealedVideo(name));
+        await settle();
+        service.onSealedFile(SENDER, sealedVideo(name));
+        await settle();
+        const rows = useChatStore.getState().messages[`dm:${SENDER}`] ?? [];
+        expect(id).not.toBeNull();
+        expect(rows.map((m) => m.id)).toEqual([id]);
+        expect(ack).toHaveBeenCalledTimes(2);
+        expect(ack).toHaveBeenCalledWith(SENDER, id);
+      },
+    );
+
+    it("leaves bitchat's 8-hex clip on the legacy path, unacknowledged", async () => {
+      const { service, ack } = receiver();
+      service.onSealedFile(SENDER, sealedVideo("clip_1a2b3c4d.mp4"));
+      await settle();
+      const rows = useChatStore.getState().messages[`dm:${SENDER}`] ?? [];
+      expect(rows).toHaveLength(1);
+      expect(rows[0].id.startsWith("ft-")).toBe(true);
       expect(ack).not.toHaveBeenCalled();
     });
   });

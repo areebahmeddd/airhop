@@ -341,8 +341,27 @@ describe("prepareVideoForSend", () => {
     });
   });
 
+  test("a pass native cannot decode is refused as unreadable, not failed", async () => {
+    // Media3 below Android 10, handed an HDR source it will not tone map.
+    native.transcodeVideo.mockRejectedValueOnce(
+      Object.assign(new Error("decoding format unsupported"), {
+        code: "UNREADABLE",
+      }),
+    );
+
+    expect(await prepareVideoForSend(video())).toEqual({
+      ok: false,
+      reason: "unreadable",
+    });
+    expect(native.transcodeVideo).toHaveBeenCalledTimes(1);
+  });
+
   test("a pass that fails is reported, and its card goes", async () => {
-    native.transcodeVideo.mockRejectedValueOnce(new Error("TRANSCODE_FAILED"));
+    native.transcodeVideo.mockRejectedValueOnce(
+      Object.assign(new Error("transcode failed"), {
+        code: "TRANSCODE_FAILED",
+      }),
+    );
 
     expect(await prepareVideoForSend(video())).toEqual({
       ok: false,

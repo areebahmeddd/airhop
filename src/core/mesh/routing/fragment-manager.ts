@@ -81,8 +81,9 @@ const MIN_NONFINAL_FRAGMENT_BYTES = 64;
 // from the last fragment that arrived, not from the first.
 //
 // That distinction is the whole point. A 512 KiB photo is about 1,120
-// fragments, and the sender paces them 20ms apart, so it cannot arrive in under
-// ~22 seconds; a 1 MiB file takes twice that. A timeout on total duration
+// fragments, and the sender paces them 25 ms apart to one peer and 30 ms to
+// the room, so it cannot arrive in under ~28 seconds; a 1 MiB file takes about
+// 56 seconds at the shorter spacing. A timeout on total duration
 // would delete the half-built file mid-transfer, and the fragments still coming
 // in would start a fresh assembly that could never reach its total, losing the
 // file silently. Idle time is the thing that actually means the sender is
@@ -394,6 +395,19 @@ export class FragmentManager {
     if (header === null) return false;
     const asm = this.assemblies.get(buildKey(fromSenderID, header.streamU64));
     return asm !== undefined && asm.updatedAt >= Date.now() - TIMEOUT_MS;
+  }
+
+  // Whether a stream from this sender is still being assembled and not idle
+  // past TIMEOUT_MS. The mesh keeps a replaced Noise session decrypting while
+  // one is, since a file sealed under it before a rekey can take longer than
+  // the session's grace to arrive.
+  assemblingFrom(senderID: Uint8Array): boolean {
+    const prefix = buildKey(senderID, 0n).split("_")[0] + "_";
+    const cutoff = Date.now() - TIMEOUT_MS;
+    for (const [key, asm] of this.assemblies) {
+      if (key.startsWith(prefix) && asm.updatedAt >= cutoff) return true;
+    }
+    return false;
   }
 
   // Purge assemblies that have received nothing for TIMEOUT_MS.

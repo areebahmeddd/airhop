@@ -36,9 +36,16 @@ import type { TurboModule } from "react-native";
 import { TurboModuleRegistry } from "react-native";
 
 export interface Spec extends TurboModule {
-  // Open the mic and start emitting frames. Resolves once capture is running; the
-  // work happens on a native thread, so this never blocks JS. Rejects when the
-  // mic is unavailable or permission is missing.
+  // Open the mic and start emitting frames. Resolves, on both platforms, only
+  // once the microphone is really recording and the encoder is running; the
+  // work happens on a native thread, so this never blocks JS. Rejects with a
+  // code the caller can branch on: MIC_BUSY (another app or a call holds the
+  // input) or CAPTURE_FAILED (the recorder or encoder would not start), and on
+  // Android PERMISSION_DENIED (iOS reports a denied microphone as a failed
+  // start; callers ask for the permission first either way). Push-to-talk
+  // falls back to a voice note on CAPTURE_FAILED but not on MIC_BUSY, where a
+  // note would record silence too, and live video goes on silent, so
+  // resolving early would strand both behind a microphone that never opened.
   startCapture(): Promise<void>;
 
   // Safe to call when not capturing.
@@ -47,6 +54,11 @@ export interface Spec extends TurboModule {
   // Open the playback pipeline for one incoming burst. Safe to call when one is
   // already open: the existing pipeline is torn down first, which is what "one
   // voice at a time" means in practice.
+  //
+  // iOS plays under the .playback category with .spokenAudio and
+  // .mixWithOthers while nothing is capturing, as bitchat-ios does, so a
+  // burst neither drops Bluetooth headphones to call quality nor ducks other
+  // audio. It moves to .playAndRecord only while capture runs.
   startPlayback(): Promise<void>;
 
   // Queue frames in order. They play as they arrive; pacing and gap-filling are

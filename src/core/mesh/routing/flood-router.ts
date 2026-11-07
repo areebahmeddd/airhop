@@ -4,13 +4,18 @@
 // Rules per PROTOCOLS.md section 4:
 //   - Every packet whose ID has not been seen is handed to the caller, relayed
 //     or not. relayDecision says whether it goes further, at what TTL.
-//   - Relay is delayed by a random jitter so the room's relays do not collide
-//     and duplicate suppression has time to work.
-//   - Duplicate packets (same ID within 5 min) are dropped silently.
+//   - Relay is delayed by a random jitter so the room's relays do not collide.
+//   - Duplicate packets (same ID within 5 min) are dropped silently. Unlike
+//     bitchat-ios, which cancels its pending relay on a duplicate once it has
+//     more than two neighbors, a duplicate never cancels this node's: Bluetooth
+//     links are point to point, so a neighbor's copy reaching us says nothing
+//     about whether our other neighbors have it.
 //
 // The router verifies no signature. The few types that must be checked before
-// they are relayed are checked by the caller first (mesh-service mayRelay).
+// they are relayed are checked by the caller first (mesh-service mayRelay),
+// between a `seen` peek and the `receive` that records the ID.
 import { equalBytes } from "@noble/curves/utils.js";
+import { isLiveMedia } from "../links/write-deadline";
 import { boardUrgentFlag } from "../wire/board-packet";
 import {
   computePacketId,
@@ -41,6 +46,20 @@ const STREAM_MAX_DELAY_MS = 25;
 const BROADCAST_TTL_CAP_DENSE = 5;
 const BROADCAST_TTL_CAP_MID = 6;
 const BROADCAST_TTL_CAP_MID_PRIORITY = 7;
+
+// Live voice and video IDs, in a set of their own so a room stream cannot
+// push chat out of the 5 minute window (a DM stream is `NOISE_ENCRYPTED`, its
+// type unknown until decrypted, and shares the message set). Held for 150 s: the 30 s past which
+// mayRelay refuses a live frame (PTT_FRAME_MAX_AGE_MS) plus the 2 minutes a
+// sender's clock may run ahead (PACKET_MAX_SKEW_MS), since only the past is
+// bounded and a frame dated ahead stays fresh that much longer. A copy
+// replayed after the ID left would otherwise be handled and relayed again.
+// 10,000 holds that window at Bluetooth rates (about 35 IDs a second for a
+// stream plus a push-to-talk burst); a Wi-Fi-rate stream evicts sooner, and
+// the voice player's and receiver's own memories of finished bursts and
+// streams stop a replay from playing.
+const LIVE_DEDUP_MAX = 10_000;
+const LIVE_DEDUP_EXPIRY_MS = 150_000;
 
 function isStream(type: PacketType): boolean {
   return (
@@ -101,9 +120,9 @@ function randomInt(min: number, max: number): number {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-// Ordinary broadcast jitter, by degree. Sparse relays go almost at once so a
-// packet is not canceled before it spreads; dense ones wait, so someone
-// else's relay usually wins and duplicate suppression does the rest.
+// Ordinary broadcast jitter, by degree (RelayController's windows). Sparse
+// relays go almost at once; the denser the room, the wider its relays spread
+// so they do not collide on the air.
 function broadcastDelayMs(degree: number): number {
   if (degree <= 2) return randomInt(10, 40);
   if (degree <= 5) return randomInt(60, 150);
@@ -178,6 +197,10 @@ export class FloodRouter {
   // message dedup entirely; a set is still needed here, since fragments are
   // relayed and a loop must end.
   private readonly fragmentDedup = new Deduplicator();
+  private readonly liveDedup = new Deduplicator(
+    LIVE_DEDUP_MAX,
+    LIVE_DEDUP_EXPIRY_MS,
+  );
 
   // `getDegree` is our current neighbor count, which the relay policy scales
   // with. It defaults to 0 (sparse), which keeps the router usable in tests
@@ -189,6 +212,13 @@ export class FloodRouter {
   // Scheduled relay timers, keyed by packet ID hex, held for flush().
   private readonly pending: Map<string, ReturnType<typeof setTimeout>> =
     new Map();
+
+  // Whether this packet's ID is already recorded, without recording it, so the
+  // caller can drop a duplicate before paying for its signature check and
+  // record the ID only once that check passes (receive).
+  seen(packet: Packet): boolean {
+    return this.dedupFor(packet).has(computePacketId(packet));
+  }
 
   // Process an incoming packet.
   //
@@ -244,9 +274,8 @@ export class FloodRouter {
   }
 
   private dedupFor(packet: Packet): Deduplicator {
-    return packet.type === PacketType.FRAGMENT
-      ? this.fragmentDedup
-      : this.dedup;
+    if (packet.type === PacketType.FRAGMENT) return this.fragmentDedup;
+    return isLiveMedia(packet.type) ? this.liveDedup : this.dedup;
   }
 
   private scheduleRelay(

@@ -528,3 +528,96 @@ describe("live playback through gaps", () => {
     expect(played.flat()).toEqual([0xff, 0x00, 0x01]);
   });
 });
+
+// The talker's last DATA and END leave in one tick, and every relay hop
+// jitters each packet on its own, so END often lands first. And CANCELED is
+// repeated, so stray copies of a retracted burst keep arriving after it.
+describe("packets after a burst is closed", () => {
+  let log: string[];
+  let backend: AudioPlaybackBackend;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    log = [];
+    backend = {
+      playFrames: (_burstIDHex, _codec, frames) => {
+        log.push(`play ${frames.map((f) => String(f[0])).join(",")}`);
+        return Promise.resolve();
+      },
+      finishSession: () => log.push("finish"),
+      stopSession: () => log.push("stop"),
+    };
+  });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  it("waits for the DATA an early END counts, then finishes with it", () => {
+    const player = track(new VoicePlayer(backend));
+    player.handlePacket(makeStartPacket(1), "alice");
+    player.handlePacket(makeDataPacket(1, 1), "alice");
+    player.handlePacket(makeDataPacket(1, 2), "alice");
+    jest.advanceTimersByTime(400);
+    expect(log).toEqual(["play 1,2"]);
+
+    // END counts three DATA packets; the third is still on its way.
+    player.handlePacket(makeEndPacket(1, 4), "alice");
+    expect(log).toEqual(["play 1,2"]);
+    expect(player.activeSessions).toHaveLength(1);
+
+    player.handlePacket(makeDataPacket(1, 3), "alice");
+    expect(log).toEqual(["play 1,2", "play 3", "finish"]);
+    expect(player.activeSessions).toHaveLength(0);
+
+    // Nothing reopens it, and no talker comes back.
+    jest.advanceTimersByTime(3_500);
+    expect(log).toEqual(["play 1,2", "play 3", "finish"]);
+    expect(player.activeSessions).toHaveLength(0);
+  });
+
+  it("gives up on a missing DATA after the grace, and a later copy opens nothing", () => {
+    const player = track(new VoicePlayer(backend));
+    player.handlePacket(makeStartPacket(1), "alice");
+    player.handlePacket(makeDataPacket(1, 1), "alice");
+    player.handlePacket(makeDataPacket(1, 2), "alice");
+    jest.advanceTimersByTime(400);
+    player.handlePacket(makeEndPacket(1, 4), "alice");
+
+    jest.advanceTimersByTime(499);
+    expect(log).toEqual(["play 1,2"]);
+    jest.advanceTimersByTime(1);
+    expect(log).toEqual(["play 1,2", "finish"]);
+    expect(player.activeSessions).toHaveLength(0);
+
+    player.handlePacket(makeDataPacket(1, 3), "alice");
+    jest.advanceTimersByTime(400);
+    expect(log).toEqual(["play 1,2", "finish"]);
+    expect(player.activeSessions).toHaveLength(0);
+  });
+
+  it("never plays DATA that arrives after CANCELED", () => {
+    const player = track(new VoicePlayer(backend));
+    player.handlePacket(makeStartPacket(1), "alice");
+    player.handlePacket(makeDataPacket(1, 1), "alice");
+    jest.advanceTimersByTime(400);
+    player.handlePacket(makeCanceledPacket(1), "alice");
+    expect(log).toEqual(["play 1", "stop"]);
+
+    // A straggler of the retracted burst, and a repeat of its CANCELED.
+    player.handlePacket(makeDataPacket(1, 2), "alice");
+    player.handlePacket(makeCanceledPacket(1), "alice");
+    jest.advanceTimersByTime(400);
+    expect(log).toEqual(["play 1", "stop"]);
+    expect(player.activeSessions).toHaveLength(0);
+  });
+
+  it("never plays DATA of a burst whose CANCELED came first", () => {
+    const player = track(new VoicePlayer(backend));
+    player.handlePacket(makeCanceledPacket(1), "alice");
+    player.handlePacket(makeDataPacket(1, 1), "alice");
+    jest.advanceTimersByTime(400);
+    expect(log).toEqual([]);
+    expect(player.activeSessions).toHaveLength(0);
+  });
+});

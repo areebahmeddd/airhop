@@ -165,6 +165,34 @@ describe("decodeBurstPacket error handling", () => {
   });
 });
 
+// bitchat-ios and bitchat-android refuse each of these whole, so a packet
+// either client would drop must not play here.
+describe("decodeBurstPacket strict DATA", () => {
+  const id = makeBurstID(0xee);
+  const frame1 = new Uint8Array([0x11, 0x22, 0x33]);
+
+  it("refuses a zero-length frame", () => {
+    const payload = encodeBurstData(id, 1, [frame1, new Uint8Array(0)]);
+    expect(decodeBurstPacket(payload)).toBeNull();
+  });
+
+  it("refuses a byte left over after the last frame", () => {
+    const good = encodeBurstData(id, 1, [frame1]);
+    const trailing = new Uint8Array(good.length + 1);
+    trailing.set(good);
+    trailing[good.length] = 0x00;
+    expect(decodeBurstPacket(good)?.kind).toBe("data");
+    expect(decodeBurstPacket(trailing)).toBeNull();
+  });
+
+  it("refuses more frames than one packet may carry", () => {
+    const eight = Array.from({ length: 8 }, () => frame1);
+    expect(decodeBurstPacket(encodeBurstData(id, 1, eight))?.kind).toBe("data");
+    const nine = Array.from({ length: 9 }, () => frame1);
+    expect(decodeBurstPacket(encodeBurstData(id, 1, nine))).toBeNull();
+  });
+});
+
 describe("packetizer budget", () => {
   // The 210-byte content budget exists so a voice packet never enters the
   // fragment scheduler, which caps concurrent transfers and would starve file

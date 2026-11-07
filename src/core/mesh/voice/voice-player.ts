@@ -6,7 +6,10 @@
 // over network jitter while keeping latency acceptable for live PTT.
 //
 // One VoiceSession is created per (senderPeerID, burstID) pair, and closed by
-// the burst's END or CANCELED, by an inbound cap, or by the inactivity timeout.
+// the burst's END (once its last DATA is in, or after a short grace), by
+// CANCELED, by an inbound cap, or by the inactivity timeout. A burst closed by
+// END, CANCELED or a cap is remembered, so a straggler arriving after it
+// cannot open it again.
 
 import { bytesToHex } from "@noble/hashes/utils.js";
 import type { Packet } from "../wire/packet-codec";
@@ -49,11 +52,23 @@ const MAX_CONCURRENT_SESSIONS = 8;
 const MAX_BURST_BYTES = 384 * 1024;
 const MAX_BYTES_PER_SECOND = 6_000;
 
-// How many cut-off bursts are remembered, so one that broke a cap cannot simply
-// carry on and be handed a fresh budget by the next packet. Bounded because the
-// memory only has to outlive the flood that caused it; a burst is identified by
-// 8 random bytes, so a talker starting a genuinely new one is never affected.
-const MAX_CUTOFF_MEMORY = 32;
+// How long an END waits for DATA it counts but this side has not heard,
+// bitchat-ios's gapSkipSeconds. Each relay hop jitters every packet on its own,
+// so the last DATA and the END, sent in one tick, can swap places on a relayed
+// path; the straggler is tens of milliseconds behind, and one lost for good
+// costs only this wait.
+const END_GRACE_MS = 500;
+
+// How many closed bursts are remembered: ended, canceled, or cut off for
+// breaking a cap. A straggler after END would otherwise open a fresh session
+// that clips the real tail and holds the floor for the idle timeout; one after
+// CANCELED would play the words the talker took back; and a cut-off burst's
+// next packet would hand a flooding peer a fresh budget. bitchat-ios caps its
+// finished-burst registry at 32 too. Bounded by count alone: an entry only has
+// to outlive the stragglers and floods of its own burst, and a burst is
+// identified by 8 random bytes, so a talker starting a genuinely new one is
+// never affected.
+const MAX_CLOSED_MEMORY = 32;
 
 // Signed distance from `b` to `a` on the 16-bit sequence ring, so a burst that
 // wraps past 0xffff still orders 0xffff before 0x0000. Valid while the two are
@@ -114,6 +129,10 @@ class VoiceSession {
   private timeoutTimer: ReturnType<typeof setTimeout> | null = null;
   private ended = false;
   private endReceived = false;
+  // The DATA count END carried, which is how this side knows the last packet
+  // is in. Null until END, and for an end inferred from silence or a cap.
+  private endTotal: number | null = null;
+  private graceTimer: ReturnType<typeof setTimeout> | null = null;
   private startMs = Date.now();
   // Cumulative audio bytes delivered by this burst, for the caps above.
   private receivedBytes = 0;
@@ -176,12 +195,34 @@ class VoiceSession {
     // Sort buffer by sequence number (handles reordering).
     this.buffer.sort((a, b) => seqDiff(a.seq, b.seq));
 
+    // The straggler an END was waiting for.
+    if (this.allDataArrived()) {
+      this.flush();
+      return true;
+    }
+
     // The first flush waits out the jitter window from the start of the burst.
     this.scheduleFlush(JITTER_BUFFER_MS - (Date.now() - this.startMs));
     return true;
   }
 
-  // Called when the END burst packet is received.
+  // The burst's END, carrying how many DATA packets it sent. Finishes at once
+  // when every one of them is in, and otherwise after END_GRACE_MS.
+  end(totalDataPackets: number): void {
+    if (this.ended) return;
+    this.endReceived = true;
+    this.endTotal = totalDataPackets;
+    if (this.allDataArrived()) {
+      this.flush();
+      return;
+    }
+    this.graceTimer ??= setTimeout(() => {
+      this.graceTimer = null;
+      this.flush();
+    }, END_GRACE_MS);
+  }
+
+  // An end with no END packet: the idle timeout, or a cap.
   markEnded(): void {
     this.endReceived = true;
   }
@@ -192,17 +233,43 @@ class VoiceSession {
       clearTimeout(this.flushTimer);
       this.flushTimer = null;
     }
+    this.clearGrace();
     this.deliverFrames(true);
   }
 
   destroy(): void {
     if (this.flushTimer !== null) clearTimeout(this.flushTimer);
     if (this.timeoutTimer !== null) clearTimeout(this.timeoutTimer);
+    this.clearGrace();
     this.ended = true;
     this.buffer = [];
   }
 
   // ---- Private ----
+
+  // Whether every DATA packet END counted has played or sits in the buffer
+  // with no hole before it. Data seqs run 1 to totalDataPackets and the buffer
+  // holds nothing behind the playhead, so walking it from the playhead finds
+  // the first one missing. A count below what already arrived is complete.
+  private allDataArrived(): boolean {
+    if (this.endTotal === null) return false;
+    let next =
+      this.nextExpectedSeq ??
+      (this.buffer.length > 0 ? this.buffer[0].seq : null);
+    // Nothing heard at all, so no hole to wait on.
+    if (next === null) return true;
+    for (const entry of this.buffer) {
+      if (entry.seq !== next) break;
+      next = (next + 1) & 0xffff;
+    }
+    return seqDiff(next, this.endTotal) > 0;
+  }
+
+  private clearGrace(): void {
+    if (this.graceTimer === null) return;
+    clearTimeout(this.graceTimer);
+    this.graceTimer = null;
+  }
 
   // Arm the flush `delayMs` from now, unless one is already due sooner.
   private scheduleFlush(delayMs: number): void {
@@ -279,6 +346,7 @@ class VoiceSession {
       clearTimeout(this.timeoutTimer);
       this.timeoutTimer = null;
     }
+    this.clearGrace();
     this.ended = true;
     this.backend.finishSession(this.burstIDHex);
     this.onDone(this.burstIDHex);
@@ -324,11 +392,10 @@ export class VoicePlayer {
   // voice notes still arrive afterwards, so nothing is lost; it is only not
   // heard live. Matches bitchat's rule in PUSH-TO-TALK-DESIGN.md section 6.
   private floorKey: string | null = null;
-  // Bursts cut off for breaking a cap. Every packet of such a burst is ignored
-  // from then on, including its END. Otherwise the very next packet would open
-  // a replacement session with its byte count back at zero, handing a flooding
-  // peer an unlimited budget one cap at a time.
-  private readonly cutOffBursts = new Set<string>();
+  // Bursts closed by END, CANCELED or a cap, oldest first (MAX_CLOSED_MEMORY).
+  // A packet for one of these opens nothing. One for a burst whose END is still
+  // waiting on stragglers reaches its session, which is still open.
+  private readonly closedBursts = new Set<string>();
 
   constructor(
     backend: AudioPlaybackBackend,
@@ -352,9 +419,9 @@ export class VoicePlayer {
 
     const burstIDHex = bytesToHex(burst.burstID);
     const key = `${senderPeerID}:${burstIDHex}`;
-    // Already cut off for flooding: every remaining packet of this burst is
-    // dead to us, END included.
-    if (this.cutOffBursts.has(key)) return;
+    // Already closed: every remaining packet of this burst is dead to us,
+    // repeats of its END and CANCELED included.
+    if (!this.sessions.has(key) && this.closedBursts.has(key)) return;
 
     switch (burst.kind) {
       case "start": {
@@ -391,22 +458,19 @@ export class VoicePlayer {
           // path plays what legitimately arrived before closing, and silencing
           // it here would throw away the audio it just flushed.
           this.releaseFloor(key);
-          if (this.cutOffBursts.size >= MAX_CUTOFF_MEMORY) {
-            const oldest = this.cutOffBursts.keys().next().value;
-            if (oldest !== undefined) this.cutOffBursts.delete(oldest);
-          }
-          this.cutOffBursts.add(key);
+          this.rememberClosed(key);
         }
         break;
       }
       case "end": {
-        const session = this.sessions.get(key);
-        if (!session) break;
-        session.markEnded();
-        session.flush();
+        // Remembered even with no session here: a straggler of a burst whose
+        // END arrived first has nothing to play into.
+        this.rememberClosed(key);
+        this.sessions.get(key)?.end(burst.totalDataPackets);
         break;
       }
       case "canceled": {
+        this.rememberClosed(key);
         const session = this.sessions.get(key);
         if (session) session.destroy();
         this.sessions.delete(key);
@@ -463,6 +527,15 @@ export class VoicePlayer {
     return session;
   }
 
+  private rememberClosed(key: string): void {
+    this.closedBursts.delete(key);
+    if (this.closedBursts.size >= MAX_CLOSED_MEMORY) {
+      const oldest = this.closedBursts.keys().next().value;
+      if (oldest !== undefined) this.closedBursts.delete(oldest);
+    }
+    this.closedBursts.add(key);
+  }
+
   // Whether this burst is the one being heard, taking the floor if it is free.
   // First to ask with audio in hand wins it. See floorKey.
   private holdsFloor(key: string): boolean {
@@ -497,7 +570,7 @@ export class VoicePlayer {
   close(): void {
     for (const session of this.sessions.values()) session.destroy();
     this.sessions.clear();
-    this.cutOffBursts.clear();
+    this.closedBursts.clear();
     this.floorKey = null;
   }
 }

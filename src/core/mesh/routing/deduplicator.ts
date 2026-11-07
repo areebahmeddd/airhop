@@ -3,7 +3,8 @@
 // Tracks 16-byte packet IDs. A packet whose ID has been seen within the last
 // 5 minutes is a duplicate and must be dropped before relay or display.
 // The cache is bounded to 1000 entries; oldest entries are evicted on overflow.
-// Both limits are per PROTOCOLS.md section 4. The ID is
+// Both limits are per PROTOCOLS.md section 4, and are the defaults: a set for
+// one class of traffic (live media) can be sized to that class. The ID is
 // packet-codec.computePacketId.
 const MAX_SIZE = 1000;
 const EXPIRY_MS = 5 * 60 * 1000;
@@ -21,12 +22,17 @@ export class Deduplicator {
   // Map preserves insertion order, which is what we rely on for LRU eviction.
   private readonly seen: Map<string, number> = new Map();
 
+  constructor(
+    private readonly maxSize: number = MAX_SIZE,
+    private readonly expiryMs: number = EXPIRY_MS,
+  ) {}
+
   // Return true if the packetID has been seen within the expiry window.
   has(packetId: Uint8Array): boolean {
     const key = packetIdKey(packetId);
     const ts = this.seen.get(key);
     if (ts === undefined) return false;
-    if (Date.now() - ts > EXPIRY_MS) {
+    if (Date.now() - ts > this.expiryMs) {
       this.seen.delete(key);
       return false;
     }
@@ -39,7 +45,7 @@ export class Deduplicator {
     if (this.seen.has(key)) {
       // Refresh timestamp by deleting and re-inserting (maintains LRU order).
       this.seen.delete(key);
-    } else if (this.seen.size >= MAX_SIZE) {
+    } else if (this.seen.size >= this.maxSize) {
       const oldest = this.seen.keys().next().value;
       if (oldest !== undefined) {
         this.seen.delete(oldest);
@@ -61,7 +67,7 @@ export class Deduplicator {
   // Remove all entries older than the expiry window. Called periodically to
   // reclaim memory without waiting for the LRU cap to trigger eviction.
   purgeExpired(): void {
-    const cutoff = Date.now() - EXPIRY_MS;
+    const cutoff = Date.now() - this.expiryMs;
     for (const [key, ts] of this.seen) {
       if (ts < cutoff) {
         this.seen.delete(key);

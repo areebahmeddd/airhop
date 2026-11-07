@@ -1,7 +1,8 @@
 // Watching live video: the receiver against a real packetizer, with the
 // native codec layer stubbed. What is checked is the row's life (live,
-// reconnecting, a recording, the sender's file taking over, a cancel) and
-// that nothing reaches the screen or the speaker unasked.
+// reconnecting, a recording, the sender's file taking over, a cancel), that
+// nothing reaches the screen or the speaker unasked, and that a recording a
+// forward still shows is never deleted from under it.
 
 import NativeAirhopVideo from "@bridge/NativeAirhopVideo";
 import { LIVE_VIDEO_QUALITIES } from "@core/mesh/video/live-video-quality";
@@ -37,9 +38,11 @@ jest.mock("expo-file-system", () => {
         : `file:///cache/${this.name}`;
     }
     get exists(): boolean {
-      return false;
+      return mockFiles.has(this.uri);
     }
-    delete(): void {}
+    delete(): void {
+      mockFiles.delete(this.uri);
+    }
   }
   class Directory {
     get exists(): boolean {
@@ -53,12 +56,14 @@ jest.mock("expo-file-system", () => {
       );
     }
   }
-  return { File, Directory, Paths: { cache: {} } };
+  return { File, Directory, Paths: { cache: { uri: "file:///cache/" } } };
 });
 
 // What the cache directory lists, and what was deleted from it.
 const mockCache = new Set<string>();
 const mockDeleted: string[] = [];
+// Files on disk by URI, for the ones a test needs to exist.
+const mockFiles = new Set<string>();
 
 const native = NativeAirhopVideo as unknown as Record<string, jest.Mock>;
 const SENDER = "a1b2c3d4e5f60718";
@@ -104,6 +109,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   watching = null;
   now = 1_000_000;
+  mockFiles.clear();
   useChatStore.getState().clearAll();
   useChatStore.getState().addChannel(ROOM);
   useSettingsStore.setState({ liveVideoEnabled: true });
@@ -269,6 +275,66 @@ describe("LiveVideoReceiver", () => {
     });
     expect(rows()).toHaveLength(1);
     expect(rows()[0].attachment?.uri).toBe("file:///cache/airhop_in_final.mp4");
+  });
+
+  describe("a recording rebuilt here, when the sender's file takes over", () => {
+    const FINAL = "file:///cache/airhop_in_final.mp4";
+
+    // A stream watched to its END, so its row holds the recording rebuilt
+    // here, which is on disk.
+    async function rebuiltRecording(receiver: LiveVideoReceiver) {
+      const { packetizer, streamID } = stream();
+      for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
+      feed(receiver, packetizer, 1);
+      for (const p of packetizer.finish(1_000, 1_000)) {
+        receiver.onPacket(SENDER, ROOM, p);
+      }
+      jest.advanceTimersByTime(1_000);
+      for (let i = 0; i < 10; i++) await Promise.resolve();
+      const attachment = row(liveVideoRowID(SENDER, streamID))?.attachment;
+      if (attachment === undefined) throw new Error("no recording");
+      mockFiles.add(attachment.uri);
+      return { streamID, attachment };
+    }
+
+    function absorb(receiver: LiveVideoReceiver, streamID: string): void {
+      receiver.absorbFinalFile(SENDER, ROOM, streamID, {
+        type: "video",
+        uri: FINAL,
+        name: `video_${streamID}.mp4`,
+      });
+    }
+
+    test("is deleted when nothing else shows it", async () => {
+      const { receiver } = setup();
+      const { streamID, attachment } = await rebuiltRecording(receiver);
+      absorb(receiver, streamID);
+      expect(row(liveVideoRowID(SENDER, streamID))?.attachment?.uri).toBe(
+        FINAL,
+      );
+      expect(mockFiles.has(attachment.uri)).toBe(false);
+    });
+
+    test("stays while a forward of it still shows it", async () => {
+      const { receiver } = setup();
+      const { streamID, attachment } = await rebuiltRecording(receiver);
+      useChatStore.getState().addMessage({
+        id: "forward",
+        channel: "#elsewhere",
+        senderID: SENDER,
+        senderNickname: "me",
+        text: "",
+        timestampMs: now,
+        isMine: true,
+        status: "sent",
+        attachment,
+      });
+      absorb(receiver, streamID);
+      expect(row(liveVideoRowID(SENDER, streamID))?.attachment?.uri).toBe(
+        FINAL,
+      );
+      expect(mockFiles.has(attachment.uri)).toBe(true);
+    });
   });
 
   test("a sender's next stream ends the last one, whose END went missing", async () => {

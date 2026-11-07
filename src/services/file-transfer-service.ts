@@ -39,9 +39,14 @@ import {
   type Packet,
 } from "@core/mesh/wire/packet-codec";
 import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
+import { privateVideoStableID } from "@core/mesh/wire/private-video-id";
 import { t } from "@i18n";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
-import { useChatStore, type ChatAttachment } from "@store/chat-store";
+import {
+  subscribeRemovedMessages,
+  useChatStore,
+  type ChatAttachment,
+} from "@store/chat-store";
 import { useTransferStore } from "@store/transfer-store";
 import {
   attachmentFailureKey,
@@ -106,6 +111,11 @@ const REFUSAL_LIMIT = 250;
 // Progress-store write throttle: refresh the card ~4x/sec rather than on every
 // drained fragment.
 const PROGRESS_UPDATE_MS = 250;
+
+// Slack past a Bluetooth queue's estimated drain before a file counts as sent:
+// once the queue is empty, the last fragment still needs a few connection
+// intervals to go out.
+const DRAIN_MARGIN_MS = 500;
 
 export interface AttachmentMeta {
   type: ChatAttachment["type"];
@@ -218,6 +228,104 @@ export function discardPickerCopy(uri: string): void {
   } catch {
     // Already gone. The wipe takes whatever a failure leaves.
   }
+}
+
+// ---- Files no message points at ----
+//
+// Leaving, clearing or trimming a conversation removes rows, and a row's
+// attachment would otherwise stay on disk until the retention sweep, days
+// later, behind a confirmation that said its history was removed.
+
+// Attachment files still in use outside any row, by URI, with a count of
+// holds. A send reads its file after the row is added, a forward transcodes
+// another row's file, and a receive writes its file before the row exists; a
+// row that goes meanwhile must not take the file from under any of them.
+const heldFiles = new Map<string, number>();
+// Held files whose last row went while they were held, checked again on
+// release.
+const recheckOnRelease = new Set<string>();
+
+// Keep `uri` from deleteUnreferencedAttachments until the returned function
+// runs. Running it again does nothing.
+export function holdAttachmentFile(uri: string): () => void {
+  heldFiles.set(uri, (heldFiles.get(uri) ?? 0) + 1);
+  let held = true;
+  return () => {
+    if (!held) return;
+    held = false;
+    const count = (heldFiles.get(uri) ?? 1) - 1;
+    if (count > 0) {
+      heldFiles.set(uri, count);
+      return;
+    }
+    heldFiles.delete(uri);
+    if (recheckOnRelease.delete(uri)) deleteUnreferencedAttachments([uri]);
+  };
+}
+
+// A file this app wrote into the attachment cache: directly in the cache
+// directory and under CACHE_FILE_PREFIX. A row may point anywhere else (a
+// document a failed adopt left where the picker put it), and nothing else is
+// ours to delete.
+function isAttachmentCacheUri(uri: string): boolean {
+  const root = FileSystem.Paths.cache.uri;
+  if (!uri.startsWith(root)) return false;
+  const name = uri.slice(root.length).replace(/^\/+/, "");
+  return !name.includes("/") && name.startsWith(CACHE_FILE_PREFIX);
+}
+
+// Delete the attachment files among `uris` that no remaining message in any
+// channel references, and return how many went.
+//
+// Counted across every channel, since rows share files: a forward keeps its
+// source's URI, and a finished live stream's row takes over the sender's file.
+// A held file is skipped and checked again when released.
+export function deleteUnreferencedAttachments(uris: Iterable<string>): number {
+  const candidates = new Set<string>();
+  for (const uri of uris) {
+    if (isAttachmentCacheUri(uri)) candidates.add(uri);
+  }
+  if (candidates.size === 0) return 0;
+  for (const list of Object.values(useChatStore.getState().messages)) {
+    for (const m of list) {
+      if (m.attachment !== undefined) candidates.delete(m.attachment.uri);
+    }
+  }
+  let deleted = 0;
+  for (const uri of candidates) {
+    if (heldFiles.has(uri)) {
+      recheckOnRelease.add(uri);
+      continue;
+    }
+    try {
+      const file = new FileSystem.File(uri);
+      if (file.exists) {
+        file.delete();
+        deleted++;
+      }
+    } catch {
+      // Open elsewhere, or already gone. The retention sweep takes it.
+    }
+  }
+  return deleted;
+}
+
+let cleanupStarted = false;
+
+// Delete a row's files once the row is gone and nothing else points at them,
+// for every way a row leaves the chat store: a removed message, a cleared or
+// left conversation, the 200-message trim and disappearing messages. Started
+// with the app and with the boot start; a second call does nothing.
+export function startAttachmentCleanup(): void {
+  if (cleanupStarted) return;
+  cleanupStarted = true;
+  subscribeRemovedMessages((removed) => {
+    const uris: string[] = [];
+    for (const m of removed) {
+      if (m.attachment !== undefined) uris.push(m.attachment.uri);
+    }
+    if (uris.length > 0) deleteUnreferencedAttachments(uris);
+  });
 }
 
 // iOS keeps two copies the cache never sees, both under tmp: the system hands
@@ -469,6 +577,9 @@ async function emptyDirectory(
 // fragment that is not offered again is a stream the far side can never
 // complete, and it has no way to ask for it.
 //
+// On Bluetooth, accepted means queued on the link, not sent: a disconnect can
+// still discard it. See BleQueuesFn.
+//
 // "Paced" is in the names because TypeScript will not defend that boolean.
 // message-router's BroadcastFn/UnicastFn are a fire-and-forget `=> void` pair,
 // and a `Promise<boolean>` is silently assignable to a `void` return: crossing
@@ -511,6 +622,24 @@ export type UsesBleRadioFn = (
 // refusal is treated as busy. Never asked for a channel file, which any link
 // can carry.
 export type IsReachableFn = (recipientPeerID: string) => boolean;
+
+// A Bluetooth link a fragment just went down, and its queue depth as the write
+// reported it.
+export interface BleQueue {
+  readonly linkID: string;
+  readonly depth: number;
+}
+
+// The Bluetooth links an accepted fragment for this recipient went down, asked
+// as the write resolves. A Bluetooth write resolves once queued, and a
+// disconnect discards the queue, so a file counts as sent only after its last
+// writes have had time to drain, and fails if one of these links goes first
+// (onLinkGone). Wi-Fi Aware and LAN are left out: a socket write has no queue
+// to lose. Absent or empty, a file counts as sent with its last fragment.
+export type BleQueuesFn = (
+  recipientPeerID: string,
+  isDM: boolean,
+) => readonly BleQueue[];
 
 // Answer a sealed photo or voice note with a DELIVERED carrying its stable ID,
 // which is what the sender's bubble is keyed by (bitchat's private media
@@ -578,6 +707,12 @@ export class FileTransferService {
       refusals: number;
       // Whether its first fragment has reached the radio. See drainOne.
       started: boolean;
+      // Bluetooth link to when its last write of ours should have drained.
+      drainsBy: Map<string, number>;
+      // A DM rides one link; a room file reaches every neighbor.
+      isDM: boolean;
+      // Set once every fragment is queued, until it counts as sent.
+      settleTimer: ReturnType<typeof setTimeout> | null;
       onOutcome?: SendOutcome;
     }
   >();
@@ -601,6 +736,7 @@ export class FileTransferService {
   private readonly isReachable?: IsReachableFn;
   private readonly getDegree: () => number;
   private readonly ackPrivateFile?: AckPrivateFileFn;
+  private readonly bleQueuesFor?: BleQueuesFn;
   // Hands a finished live stream's file to the row the stream left; true when
   // it took the row. Set by mesh-service once live video is running.
   absorbLiveVideo?: (
@@ -625,6 +761,7 @@ export class FileTransferService {
     // origin-ttl.ts). 0 (sparse) when not given.
     getDegree: () => number = () => 0,
     ackPrivateFile?: AckPrivateFileFn,
+    bleQueuesFor?: BleQueuesFn,
   ) {
     this.identity = identity;
     this.broadcast = broadcast;
@@ -635,6 +772,7 @@ export class FileTransferService {
     this.isReachable = isReachable;
     this.getDegree = getDegree;
     this.ackPrivateFile = ackPrivateFile;
+    this.bleQueuesFor = bleQueuesFor;
   }
 
   // Receive a fully reassembled FILE_TRANSFER packet from the fragment layer.
@@ -676,6 +814,7 @@ export class FileTransferService {
       // awaiting the radio checks for it on the way back, and its absence is
       // what stops a canceled transfer requeueing itself.
       this.outbound.delete(transferId);
+      if (tx?.settleTimer != null) clearTimeout(tx.settleTimer);
       for (let i = this.outQueue.length - 1; i >= 0; i--) {
         if (this.outQueue[i].transferId === transferId) {
           this.outQueue.splice(i, 1);
@@ -783,6 +922,9 @@ export class FileTransferService {
       lastPushMs: Date.now(),
       refusals: 0,
       started: false,
+      drainsBy: new Map(),
+      isDM,
+      settleTimer: null,
       onOutcome,
     });
     useTransferStore.getState().begin({
@@ -894,7 +1036,10 @@ export class FileTransferService {
         : undefined;
 
     if (accepted) {
-      if (tx !== undefined) tx.refusals = 0;
+      if (tx !== undefined) {
+        tx.refusals = 0;
+        this.noteBleQueues(tx.drainsBy, next.recipientPeerID, next.isDM);
+      }
       if (next.transferId !== undefined) {
         this.reportSendProgress(next.transferId, next.weight ?? 0);
       }
@@ -932,6 +1077,7 @@ export class FileTransferService {
   private failTransfer(transferId: string): void {
     const tx = this.outbound.get(transferId);
     this.outbound.delete(transferId);
+    if (tx?.settleTimer != null) clearTimeout(tx.settleTimer);
     for (let i = this.outQueue.length - 1; i >= 0; i--) {
       if (this.outQueue[i].transferId === transferId) {
         this.outQueue.splice(i, 1);
@@ -947,18 +1093,69 @@ export class FileTransferService {
     tx.sentBytes += weight;
     tx.remaining -= 1;
     const store = useTransferStore.getState();
+    const now = Date.now();
     if (tx.remaining <= 0) {
-      this.outbound.delete(transferId);
-      store.finish(transferId);
-      // Every fragment was accepted by the radio. Only a sealed photo or voice
-      // note hears more, through its stable-ID DELIVERED; nothing else does.
-      tx.onOutcome?.(true);
+      const drainsBy = Math.max(now, ...tx.drainsBy.values());
+      if (drainsBy <= now) {
+        this.settleSent(transferId);
+        return;
+      }
+      // Every fragment is queued, so the card can read 100% while the last
+      // of them drain; "sent" waits for them.
+      store.advance(transferId, tx.totalBytes);
+      tx.settleTimer = setTimeout(() => {
+        this.settleSent(transferId);
+      }, drainsBy - now);
       return;
     }
-    const now = Date.now();
     if (now - tx.lastPushMs >= PROGRESS_UPDATE_MS) {
       tx.lastPushMs = now;
       store.advance(transferId, tx.sentBytes);
+    }
+  }
+
+  private settleSent(transferId: string): void {
+    const tx = this.outbound.get(transferId);
+    if (tx === undefined) return;
+    this.outbound.delete(transferId);
+    useTransferStore.getState().finish(transferId);
+    // Every fragment has left the radio, as far as this side can tell. Only a
+    // sealed photo or voice note hears more, through its stable-ID DELIVERED;
+    // nothing else does.
+    tx.onOutcome?.(true);
+  }
+
+  // When each Bluetooth queue an accepted fragment went into should be empty
+  // again: its depth at the pace this file feeds it, since a radio that kept
+  // up with the spacing drains at least that fast. Only the latest write per
+  // link counts, as everything before it sits ahead of it in the same queue.
+  private noteBleQueues(
+    drainsBy: Map<string, number>,
+    recipientPeerID: string,
+    isDM: boolean,
+  ): void {
+    const queues = this.bleQueuesFor?.(recipientPeerID, isDM) ?? [];
+    if (queues.length === 0) return;
+    const spacing = isDM ? FRAGMENT_SPACING_DIRECTED_MS : FRAGMENT_SPACING_MS;
+    const now = Date.now();
+    for (const { linkID, depth } of queues) {
+      drainsBy.set(linkID, now + depth * spacing + DRAIN_MARGIN_MS);
+    }
+  }
+
+  // A link closed. Its native queue went with it, so a DM that still had
+  // fragments waiting in it fails, and the bubble offers Retry rather than
+  // claiming a file the far side never finished. A room file fails only when
+  // no Bluetooth link is left carrying it: one neighbor walking away mid-send
+  // must not cost everyone else theirs. A link whose share has drained took
+  // everything it was given.
+  onLinkGone(linkID: string): void {
+    const now = Date.now();
+    for (const [transferId, tx] of [...this.outbound]) {
+      const drainsBy = tx.drainsBy.get(linkID);
+      if (drainsBy === undefined || now >= drainsBy) continue;
+      tx.drainsBy.delete(linkID);
+      if (tx.isDM || tx.drainsBy.size === 0) this.failTransfer(transferId);
     }
   }
 
@@ -1073,12 +1270,18 @@ export class FileTransferService {
     if (!isDM && !useChatStore.getState().channels.includes(channel)) return;
     const type = typeFromMime(fp.mimeType);
 
-    // A sealed photo or voice note is keyed by bitchat's stable ID, the one the
-    // sender's bubble waits to hear back. A second arrival is the sender
-    // retrying after a lost receipt, so it is answered again, not stored twice.
+    // A sealed photo or voice note is keyed by bitchat's stable ID, and an
+    // Airhop video note or clip by Airhop's own: the one the sender's bubble
+    // waits to hear back. A second arrival is the sender retrying after a lost
+    // receipt, so it is answered again, not stored twice.
     const stableID =
       sealed && isDM
-        ? privateMediaStableID(senderPeerID, this.identity.peerID, fp.fileName)
+        ? (privateMediaStableID(
+            senderPeerID,
+            this.identity.peerID,
+            fp.fileName,
+          ) ??
+          privateVideoStableID(senderPeerID, this.identity.peerID, fp.fileName))
         : null;
     if (
       stableID !== null &&
@@ -1129,49 +1332,60 @@ export class FileTransferService {
       return;
     }
 
-    const attachment: ChatAttachment = {
-      type,
-      uri: file.uri,
-      // Shown in the bubble, the notification and the share sheet's title,
-      // where an override could disguise the extension.
-      name:
-        fp.fileName !== undefined
-          ? stripInvisibles(fp.fileName, { singleLine: true })
-          : undefined,
-      mimeType,
-      durationMs: fp.durationMs ?? undefined,
-      sizeBytes: fp.content.length,
-    };
+    // Held until a row has it: absorbing a live stream removes that stream's
+    // other rows first, and a row trimmed on arrival takes the file with it
+    // only once the store has settled.
+    const releaseFile = holdAttachmentFile(file.uri);
+    try {
+      const attachment: ChatAttachment = {
+        type,
+        uri: file.uri,
+        // Shown in the bubble, the notification and the share sheet's title,
+        // where an override could disguise the extension.
+        name:
+          fp.fileName !== undefined
+            ? stripInvisibles(fp.fileName, { singleLine: true })
+            : undefined,
+        mimeType,
+        durationMs: fp.durationMs ?? undefined,
+        sizeBytes: fp.content.length,
+      };
 
-    // A finished live stream takes over the row its stream left, rather than
-    // showing the same video twice.
-    const streamID = type === "video" ? liveVideoStreamOf(fp.fileName) : null;
-    if (
-      streamID !== null &&
-      this.absorbLiveVideo?.(senderPeerID, channel, streamID, attachment) ===
-        true
-    ) {
+      // A finished live stream takes over the row its stream left, rather than
+      // showing the same video twice.
+      const streamID = type === "video" ? liveVideoStreamOf(fp.fileName) : null;
+      if (
+        streamID !== null &&
+        this.absorbLiveVideo?.(senderPeerID, channel, streamID, attachment) ===
+          true
+      ) {
+        if (stableID !== null) this.ackPrivateFile?.(senderPeerID, stableID);
+        return;
+      }
+
+      // A first attachment from someone opens the conversation, as a first DM
+      // does. A room is never created here: only joined ones get this far.
+      if (isDM) useChatStore.getState().addChannel(channel);
+      const stored = useChatStore.getState().addMessage({
+        id: stableID ?? `ft-${senderPeerID}-${Date.now()}`,
+        channel,
+        senderID: senderPeerID,
+        senderNickname: this.resolveNickname(senderPeerID),
+        // The caption rides with the file, so the received bubble shows the
+        // media and its caption together, exactly as the sender composed it.
+        text: fp.caption ?? "",
+        timestampMs: Date.now(),
+        isMine: false,
+        attachment,
+      });
+      // Refused as older than the thread's last clear: no row will ever show
+      // the file, so it goes once released below.
+      if (!stored) deleteUnreferencedAttachments([file.uri]);
+      // After the write, so a file the disk refused is not acknowledged. Also
+      // when a cleared thread dropped the row: it did arrive.
       if (stableID !== null) this.ackPrivateFile?.(senderPeerID, stableID);
-      return;
+    } finally {
+      releaseFile();
     }
-
-    // A first attachment from someone opens the conversation, as a first DM
-    // does. A room is never created here: only joined ones get this far.
-    if (isDM) useChatStore.getState().addChannel(channel);
-    useChatStore.getState().addMessage({
-      id: stableID ?? `ft-${senderPeerID}-${Date.now()}`,
-      channel,
-      senderID: senderPeerID,
-      senderNickname: this.resolveNickname(senderPeerID),
-      // The caption rides with the file, so the received bubble shows the media
-      // and its caption together, exactly as the sender composed it.
-      text: fp.caption ?? "",
-      timestampMs: Date.now(),
-      isMine: false,
-      attachment,
-    });
-    // After the write, so a file the disk refused is not acknowledged. Also
-    // when a cleared thread dropped the row: it did arrive.
-    if (stableID !== null) this.ackPrivateFile?.(senderPeerID, stableID);
   }
 }

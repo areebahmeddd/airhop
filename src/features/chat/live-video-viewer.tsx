@@ -77,9 +77,11 @@ interface Props {
   target: LiveVideoViewerTarget;
   // Taken when the viewer opened: the row, and its nickname, can go.
   senderName: string;
-  // Whether the replay holds the thread's one sound, and how it takes it.
+  // Whether the replay holds the thread's one sound, how it takes it, and how
+  // it lets go once it ends or is paused.
   replayPlaying: boolean;
   onReplayPlay: () => void;
+  onReplayStop: () => void;
   onClose: () => void;
 }
 
@@ -88,6 +90,7 @@ export default function LiveVideoViewer({
   senderName,
   replayPlaying,
   onReplayPlay,
+  onReplayStop,
   onClose,
 }: Props): React.JSX.Element {
   const T = useT();
@@ -246,6 +249,7 @@ export default function LiveVideoViewer({
                       uri={state.replay.uri}
                       playing={replayPlaying}
                       onPlay={onReplayPlay}
+                      onStop={onReplayStop}
                     />
                   ) : (
                     <View style={styles.nothing}>
@@ -313,15 +317,17 @@ function Replay({
   uri,
   playing,
   onPlay,
+  onStop,
 }: {
   uri: string;
   playing: boolean;
   onPlay: () => void;
+  onStop: () => void;
 }): React.JSX.Element {
   const player = useVideoPlayer(uri, (p) => {
     p.loop = false;
   });
-  useExclusivePlayback(player, playing, onPlay);
+  useExclusivePlayback(player, playing, onPlay, onStop);
   return (
     <VideoView
       style={StyleSheet.absoluteFill}

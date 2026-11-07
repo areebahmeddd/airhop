@@ -118,6 +118,10 @@ export const Colors = {
   // text holds 4.5:1 even over a white picture; `overlay`, which dims a
   // screen behind a sheet, does not in this theme.
   mediaScrim: "rgba(0,0,0,0.6)",
+  // Behind a video frame: the bars around a picture that does not fill its
+  // box, and the dark before the first frame. Black in both themes, as every
+  // player draws it, since any tint would read as part of the picture.
+  mediaBackdrop: "#000000",
 } as const;
 
 // Dark variant, same keys as Colors so a screen swaps the whole palette by
@@ -205,6 +209,7 @@ export const DarkColors = {
   // ---- Overlays ----
   overlay: "rgba(0,0,0,0.6)",
   mediaScrim: "rgba(0,0,0,0.6)",
+  mediaBackdrop: "#000000",
 } as const;
 
 // A 4pt grid, with in-between steps named for the two they sit between. Each

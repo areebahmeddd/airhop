@@ -3,8 +3,12 @@
 // Hold the button to record from the front camera into a round preview, let go
 // to send, slide toward the start of the row to cancel, or lift to lock and
 // finish hands-free. A ring fills as the note runs out, and it sends itself
-// when the ring closes. The finished clip goes out as an ordinary video file
-// (see videoNoteName), so nothing on the wire changes.
+// when the ring closes. Only those send: a release, the bar's Send, or the
+// limit. Anything else that ends a recording (leaving the app or the thread, a
+// call taking the camera) discards it, as it discards a voice note, since a
+// half-recorded note was heard by nobody and is rarely what was meant. The
+// finished clip goes out as an ordinary video file (see videoNoteName), so
+// nothing on the wire changes.
 //
 // Self-contained on purpose: the mic's state machine also drives live voice,
 // and a second recorder threaded through it would put both at risk. The thread
@@ -18,7 +22,8 @@ import { isRTLLayout } from "@i18n/layout";
 import { acknowledged, armed, held, released } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
 import { Feather } from "@react-native-vector-icons/feather/static";
-import { MIN_TOUCH, Radius, useThemeColors } from "@ui/theme";
+import { setAudioForPlayback } from "@services/audio-session";
+import { Duration, MIN_TOUCH, Radius, useThemeColors } from "@ui/theme";
 import { Camera, CameraView } from "expo-camera";
 import * as FileSystem from "expo-file-system";
 import React, {
@@ -56,6 +61,11 @@ import {
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
 import { activateOnly } from "./screen-reader-actions";
+import {
+  PROGRESS_INTERVAL_S,
+  videoNoteAtLimit,
+  type RecordingProgress,
+} from "./video-note-limit";
 
 // The bitrate the camera is asked for. With the platform's own AAC track on
 // top, a full-length note lands near 700 KB, inside the 1 MiB file ceiling;
@@ -71,9 +81,6 @@ const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
 
 // Matches the compose row's 40 pt buttons.
 const BUTTON_SIZE = 40;
-
-// How often the recorder reports progress. Fine enough for a smooth ring.
-const PROGRESS_INTERVAL_S = 0.1;
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -146,7 +153,8 @@ export function useVideoNoteRecorder({
   // Started from a screen reader, which has no hold: record straight into the
   // hands-free state.
   const startLockedRef = useRef(false);
-  const lastSizeRef = useRef<number | undefined>(undefined);
+  // The recorder's last progress report: how long and how large.
+  const lastProgressRef = useRef<RecordingProgress | null>(null);
   const onRecordedRef = useRef(onRecorded);
   const onToastRef = useRef(onToast);
   const onStartRef = useRef(onStart);
@@ -176,31 +184,37 @@ export function useVideoNoteRecorder({
     lockedShared.set(false);
     outcomeRef.current = null;
     stopResentRef.current = false;
-    lastSizeRef.current = undefined;
+    lastProgressRef.current = null;
     startLockedRef.current = false;
   }, [setPhaseBoth, progress, lockAvailable, lockedShared]);
 
-  const begin = useCallback(async (): Promise<void> => {
-    if (!enabled || phaseRef.current !== "idle") return;
-    held();
-    onStartRef.current();
-    const hold = ++holdSeq.current;
-    const purpose = { purpose: t("chat.perm.video_note_purpose") };
-    const camera = await ensurePermission(
-      Camera.getCameraPermissionsAsync,
-      Camera.requestCameraPermissionsAsync,
-      { label: t("chat.perm.camera_label"), ...purpose },
-    );
-    if (!camera || hold !== holdSeq.current) return;
-    const mic = await ensurePermission(
-      Camera.getMicrophonePermissionsAsync,
-      Camera.requestMicrophonePermissionsAsync,
-      { label: t("chat.perm.mic_label"), ...purpose },
-    );
-    if (!mic || hold !== holdSeq.current) return;
-    // The camera opens on mount; recording starts once it reports ready.
-    setPhaseBoth("opening");
-  }, [enabled, setPhaseBoth]);
+  // `handsFree` for a start from a screen reader. Set per start, so a start
+  // the permissions refused cannot leave the next hold locked.
+  const begin = useCallback(
+    async (handsFree: boolean): Promise<void> => {
+      if (!enabled || phaseRef.current !== "idle") return;
+      startLockedRef.current = handsFree;
+      held();
+      onStartRef.current();
+      const hold = ++holdSeq.current;
+      const purpose = { purpose: t("chat.perm.video_note_purpose") };
+      const camera = await ensurePermission(
+        Camera.getCameraPermissionsAsync,
+        Camera.requestCameraPermissionsAsync,
+        { label: t("chat.perm.camera_label"), ...purpose },
+      );
+      if (!camera || hold !== holdSeq.current) return;
+      const mic = await ensurePermission(
+        Camera.getMicrophonePermissionsAsync,
+        Camera.requestMicrophonePermissionsAsync,
+        { label: t("chat.perm.mic_label"), ...purpose },
+      );
+      if (!mic || hold !== holdSeq.current) return;
+      // The camera opens on mount; recording starts once it reports ready.
+      setPhaseBoth("opening");
+    },
+    [enabled, setPhaseBoth],
+  );
 
   // A release, a cancel or the ring closing all end here, by stopping the
   // recorder; its promise then settles in startRecording below.
@@ -254,13 +268,24 @@ export function useVideoNoteRecorder({
     } catch {
       uri = undefined;
     }
+    // expo-camera opens the session for recording and never hands it back, so
+    // on iOS later voice notes would play quietly from the earpiece. Every
+    // voice-note exit does the same.
+    void setAudioForPlayback().catch(() => {});
     const durationMs = Date.now() - startedAtRef.current;
-    // Null outcome: the recorder stopped on its own, at a limit or because the
-    // camera went away (the app backgrounded). Either way the note was meant.
-    const outcome = outcomeRef.current ?? "send";
-    const atLimit = outcomeRef.current === null;
-    const sizeBytes = lastSizeRef.current;
+    // Null outcome: the recorder stopped on its own. At a limit that is the
+    // ring closing, a send; anything else (a call took the camera, the thread
+    // went away) is an interruption, and discards with the voice note's toast.
+    const lastProgress = lastProgressRef.current;
+    const atLimit =
+      outcomeRef.current === null && videoNoteAtLimit(durationMs, lastProgress);
+    const interrupted = outcomeRef.current === null && !atLimit;
+    const outcome = outcomeRef.current ?? (atLimit ? "send" : "cancel");
+    const sizeBytes = lastProgress?.sizeBytes;
     reset();
+    if (interrupted) {
+      onToastRef.current(t("chat.perm.recording_stopped"));
+    }
     if (uri === undefined) {
       if (outcome === "send") {
         onToastRef.current(t("chat.video_note.not_recorded"));
@@ -296,21 +321,33 @@ export function useVideoNoteRecorder({
     (canceled: boolean): void => {
       setCancelArmed(false);
       released();
+      // The system ended the touch (a call, the side button, Control Center),
+      // not a finger lifting: the app is no longer active, so it is the
+      // interruption the background handler discards, not a send.
+      if (!canceled && AppState.currentState !== "active") {
+        // Idle once the recorder already settled the interruption and said so.
+        const recording =
+          phaseRef.current !== "idle" &&
+          phaseRef.current !== "opening" &&
+          outcomeRef.current === null;
+        finish("cancel");
+        if (recording) onToastRef.current(t("chat.perm.recording_stopped"));
+        return;
+      }
       finish(canceled ? "cancel" : "send");
     },
     [finish],
   );
 
   const beginFromGesture = useCallback((): void => {
-    void begin();
+    void begin(false);
   }, [begin]);
 
   // A hold-and-slide has no screen-reader form, so it is a toggle there,
   // straight into the hands-free state.
   const toggleFromScreenReader = useCallback((): void => {
     if (phaseRef.current === "idle") {
-      startLockedRef.current = true;
-      void begin();
+      void begin(true);
     } else {
       finish("send");
     }
@@ -338,7 +375,7 @@ export function useVideoNoteRecorder({
           -e.translationY >= LOCK_SLIDE_DISTANCE
         ) {
           lockedShared.set(true);
-          slide.set(withTiming(0));
+          slide.set(withTiming(0, { duration: Duration.base }));
           scheduleOnRN(lock);
           return;
         }
@@ -358,7 +395,7 @@ export function useVideoNoteRecorder({
         if (lockedShared.get()) return;
         const canceled = cancelArmedShared.get();
         cancelArmedShared.set(false);
-        slide.set(withTiming(0));
+        slide.set(withTiming(0, { duration: Duration.base }));
         scheduleOnRN(release, canceled);
       },
     }),
@@ -375,9 +412,8 @@ export function useVideoNoteRecorder({
   );
   const gesture = usePanGesture(config);
 
-  // Leaving the app ends the note as a release would, the same ending a voice
-  // note gets. Leaving the thread unmounts the camera, which settles the
-  // recorder the same way.
+  // Leaving the app discards the note, with the toast a voice note leaves for
+  // the same exit, waiting when the user comes back.
   const finishRef = useRef(finish);
   useEffect(() => {
     finishRef.current = finish;
@@ -386,10 +422,26 @@ export function useVideoNoteRecorder({
     const sub = AppState.addEventListener("change", (state) => {
       // Background, not inactive: iOS reports inactive for Control Center,
       // which leaves the camera recording.
-      if (state === "background") finishRef.current("send");
+      if (state !== "background") return;
+      const current = phaseRef.current;
+      if (current === "idle") return;
+      // Only a recording nobody had already ended: one let go in the start
+      // gap keeps its send (see finish), and a press still opening the camera
+      // has recorded nothing to lose.
+      const recording = current !== "opening" && outcomeRef.current === null;
+      finishRef.current("cancel");
+      if (recording) onToastRef.current(t("chat.perm.recording_stopped"));
     });
     return () => sub.remove();
   }, []);
+  // Leaving the thread unmounts the camera, which settles the recorder after
+  // this screen is gone: decided now as a discard, with no toast left to show.
+  useEffect(
+    () => () => {
+      if (phaseRef.current !== "idle") outcomeRef.current ??= "cancel";
+    },
+    [],
+  );
 
   const buttonSlideStyle = useAnimatedStyle(() => ({
     transform: [
@@ -472,7 +524,10 @@ export function useVideoNoteRecorder({
                 stopResentRef.current = true;
                 cameraRef.current?.stopRecording();
               }
-              lastSizeRef.current = fileSize;
+              lastProgressRef.current = {
+                durationS: duration,
+                sizeBytes: fileSize,
+              };
               setElapsedSecs(Math.floor(duration));
               // Whichever runs out first, time or the file ceiling.
               progress.set(
@@ -592,7 +647,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       height: PREVIEW_SIZE,
       borderRadius: Radius.full,
       overflow: "hidden",
-      backgroundColor: "#000",
+      backgroundColor: Colors.mediaBackdrop,
     },
   });
 }

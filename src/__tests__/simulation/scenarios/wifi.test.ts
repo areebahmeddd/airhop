@@ -387,8 +387,8 @@ test("W-F04 a photo too big for one BLE frame crosses WiFi in one piece", async 
   a.joinChannel(CHANNEL);
   b.joinChannel(CHANNEL);
 
-  // 64 KiB is around 140 BLE frames at the 467-byte data ceiling, paced 20ms
-  // apart: about three seconds of exclusive radio time. Over WiFi it is one
+  // 64 KiB is around 140 BLE frames at the 467-byte data ceiling, paced 25 to
+  // 30 ms apart: about four seconds of exclusive radio time. Over WiFi it is one
   // write. The mesh engine composes it identically either way, which is the
   // property under test.
   // Real JPEG magic bytes. The transfer layer refuses a file whose declared

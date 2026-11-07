@@ -9,6 +9,8 @@
 package org.onemindlabs.airhop.video
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
@@ -34,12 +36,18 @@ internal class VideoSurfaceView(context: Context) :
         // How long the first output poll after a queued unit waits, so its
         // picture shows now rather than when the next unit arrives.
         const val OUTPUT_WAIT_US = 10_000L
+        // The largest unit the stream assembler accepts
+        // (core/mesh/video/video-stream-assembler.ts). Left unset, each codec
+        // sizes its input buffers for a 480x640 picture by its own rule, and a
+        // big keyframe can outgrow them.
+        const val MAX_INPUT_BYTES = 256 * 1024
     }
 
     private val thread = HandlerThread("airhop-video-decode").apply { start() }
     private val handler = Handler(thread.looper)
 
     // Decoder-thread state.
+    private var texture: SurfaceTexture? = null
     private var surface: Surface? = null
     private var codec: MediaCodec? = null
     private var parameters: Pair<ByteArray, ByteArray>? = null
@@ -57,14 +65,28 @@ internal class VideoSurfaceView(context: Context) :
         surfaceTextureListener = this
     }
 
+    // Nothing may escape this thread: an uncaught throw on it ends the process,
+    // and the bytes come from any signed sender in range. A CodecException or a
+    // buffer overflow holds the picture until the next keyframe.
     fun submit(annexB: ByteArray, keyframe: Boolean) {
-        handler.post { decode(annexB, keyframe) }
+        handler.post {
+            try {
+                decode(annexB, keyframe)
+            } catch (error: RuntimeException) {
+                Log.w(TAG, "Decoder error, waiting for a keyframe: ${error.message}")
+                releaseCodec()
+                awaitingKeyframe = true
+            }
+        }
     }
 
+    // The stream ended: its last picture goes with the decoder rather than
+    // staying up as if the stream had frozen.
     fun releaseDecoder() {
         handler.post {
             releaseCodec()
             awaitingKeyframe = true
+            blank()
         }
     }
 
@@ -74,6 +96,7 @@ internal class VideoSurfaceView(context: Context) :
             releaseCodec()
             surface?.release()
             surface = null
+            texture = null
             thread.quitSafely()
         }
     }
@@ -81,6 +104,7 @@ internal class VideoSurfaceView(context: Context) :
     override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
         val next = Surface(texture)
         handler.post {
+            this.texture = texture
             surface = next
             awaitingKeyframe = true
         }
@@ -100,6 +124,7 @@ internal class VideoSurfaceView(context: Context) :
             releaseCodec()
             surface?.release()
             surface = null
+            this.texture = null
             awaitingKeyframe = true
             texture.release()
         }
@@ -126,27 +151,26 @@ internal class VideoSurfaceView(context: Context) :
             awaitingKeyframe = false
         }
         val decoder = codec ?: return
-        try {
-            val index = dequeueInput(decoder)
-            if (index < 0) {
-                // This unit is lost, and the deltas after it would paint over
-                // the hole: hold the picture until the next keyframe instead.
-                awaitingKeyframe = true
-                return
-            }
-            decoder.getInputBuffer(index)?.apply {
-                clear()
-                put(annexB)
-            }
-            inputPtsUs += 1_000
-            decoder.queueInputBuffer(index, 0, annexB.size, inputPtsUs, 0)
-            render(decoder, OUTPUT_WAIT_US)
-        } catch (error: IllegalStateException) {
-            // CodecException is one: the picture holds until the next keyframe.
-            Log.w(TAG, "Decoder error, waiting for a keyframe: ${error.message}")
-            releaseCodec()
+        val index = dequeueInput(decoder)
+        if (index < 0) {
+            // This unit is lost, and the deltas after it would paint over the
+            // hole: hold the picture until the next keyframe instead.
             awaitingKeyframe = true
+            return
         }
+        inputPtsUs += 1_000
+        val buffer = decoder.getInputBuffer(index)?.apply { clear() }
+        if (buffer == null || annexB.size > buffer.remaining()) {
+            // Too big for the codec to take. The buffer goes back empty, since a
+            // dequeued one is held until it is queued, and the unit is lost like
+            // any other.
+            decoder.queueInputBuffer(index, 0, 0, inputPtsUs, 0)
+            awaitingKeyframe = true
+            return
+        }
+        buffer.put(annexB)
+        decoder.queueInputBuffer(index, 0, annexB.size, inputPtsUs, 0)
+        render(decoder, OUTPUT_WAIT_US)
     }
 
     private fun configure(target: Surface, sets: Pair<ByteArray, ByteArray>): Boolean =
@@ -156,6 +180,7 @@ internal class VideoSurfaceView(context: Context) :
                     .apply {
                         setByteBuffer("csd-0", ByteBuffer.wrap(VideoNal.withStartCode(sets.first)))
                         setByteBuffer("csd-1", ByteBuffer.wrap(VideoNal.withStartCode(sets.second)))
+                        setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, MAX_INPUT_BYTES)
                     }
             codec =
                 MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC).apply {
@@ -192,6 +217,24 @@ internal class VideoSurfaceView(context: Context) :
                 return
             }
         }
+    }
+
+    // Clears the picture once the codec has let go of the surface. Drawing
+    // connects the surface to the CPU for good, and a codec cannot connect to it
+    // after that, so the drawn surface is swapped for a fresh one on the same
+    // texture for the next stream.
+    private fun blank() {
+        val current = surface ?: return
+        val owner = texture ?: return
+        try {
+            val canvas = current.lockCanvas(null)
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+            current.unlockCanvasAndPost(canvas)
+        } catch (error: Exception) {
+            Log.w(TAG, "Could not clear the picture: ${error.message}")
+        }
+        current.release()
+        surface = Surface(owner)
     }
 
     private fun releaseCodec() {

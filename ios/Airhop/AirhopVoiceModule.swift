@@ -26,7 +26,7 @@ import React
 
 private enum VoiceConst {
   // Fixed by the wire format; changing any of these changes what codec byte
-  // 0x01 means and breaks both bitchat and older Airhop builds.
+  // 0x01 means and breaks interop with bitchat and other Airhop phones.
   static let sampleRate: Double = 16_000
   static let channels: AVAudioChannelCount = 1
   static let bitRate = 16_000
@@ -35,19 +35,27 @@ private enum VoiceConst {
   static let samplesPerFrame: AVAudioFrameCount = 1024
   // Generous ceiling for one encoded frame; ~130 bytes is typical at 16 kbps.
   static let maxEncodedFrameBytes = 1024
-  // About two seconds of audio. Past that the sender is outrunning the
-  // speaker and the oldest audio is already stale.
+  // About two seconds of audio, counting both what the player node holds and
+  // what waits for it. Past that the sender is outrunning the speaker and the
+  // oldest audio is already stale, so the oldest waiting frame is dropped.
   static let maxQueuedFrames = 32
+  // How far ahead of the speaker the player node is fed, about half a second.
+  // A scheduled buffer cannot be taken back, so only what waits behind this
+  // can be dropped; and the node is topped up as each frame is heard, so this
+  // has to cover a Bluetooth output path's latency or the node runs dry.
+  static let scheduledAhead = 8
   // How many times one burst may rebuild its playback engine before being
   // given up on. A route that connects and disconnects repeatedly (a car
   // stereo at the edge of range) would otherwise rebuild forever, and a
   // burst that has been interrupted eight times has nothing worth hearing
   // left in it. Matches bitchat's maxEngineRestarts in PTTBurstPlayer.swift.
   static let maxPlaybackRestarts = 8
+  // Rebuilds further apart than this are not a loop, so they reset the count.
+  static let playbackRestartWindow: TimeInterval = 10
   // Longest a finished burst may take to play out its tail before the speaker
   // is released anyway: a full queue (about two seconds) plus a second of
   // slack. Only a pipeline that stopped reporting finished buffers gets near
-  // it, and that must not keep the speaker and the ducking session forever.
+  // it, and that must not keep the speaker and the session forever.
   static let maxDrainSeconds = Double(maxQueuedFrames) * 0.064 + 1
 }
 
@@ -179,10 +187,35 @@ final class AirhopVoiceModule: RCTEventEmitter {
   // time, replaced with the engine it belongs to, and only ever touched on
   // `playbackQueue`. See observePlaybackReconfigure.
   private var playbackObserver: NSObjectProtocol?
-  // Rebuilds spent on the burst now playing. Reset per burst, capped so a
-  // flapping route cannot rebuild forever. See VoiceConst.maxPlaybackRestarts.
+  // Rebuilds spent in a row on the burst now playing, capped so a flapping
+  // route cannot rebuild forever. A rebuild after a quiet spell starts the
+  // count again: a stream watched for minutes rebuilds on every push-to-talk
+  // hold (the category goes up, then back), which is not a loop.
+  // See VoiceConst.maxPlaybackRestarts.
   private var playbackRestarts = 0
+  private var lastPlaybackRestart = Date.distantPast
+  // Brings playback back after an interruption (a call, Siri, a navigation
+  // prompt, which a spoken-audio session yields to). On `playbackQueue`.
+  private var playbackInterruptionObserver: NSObjectProtocol?
+  // Decoded frames waiting for room on the player node. See
+  // VoiceConst.scheduledAhead.
+  private var pendingFrames: [AVAudioPCMBuffer] = []
+  // The session epoch the current playback engine was built under, so an
+  // escalation rebuilds only an engine that predates it.
+  private var playbackEngineEpoch: UInt64 = 0
   private let playbackQueue = DispatchQueue(label: "org.onemindlabs.airhop.voice.playback")
+
+  // MARK: Session state
+
+  // Taken around every category change and the capture flag beside it, which
+  // the capture and playback queues both reach: a playback start must not
+  // apply playback-only in the gap between a capture deciding on
+  // play-and-record and applying it.
+  private let sessionLock = NSLock()
+  // A capture holds the session, so nothing may demote it to playback-only.
+  private var captureHoldsSession = false
+  // Bumped on each category change made here.
+  private var sessionEpoch: UInt64 = 0
 
   // MARK: RN boilerplate
 
@@ -234,7 +267,15 @@ final class AirhopVoiceModule: RCTEventEmitter {
         return
       }
       do {
-        try self.configureSession()
+        let escalation = try self.configureSession(forCapture: true)
+        // Before the mic starts, as bitchat delivers onCategoryEscalated
+        // before acquire returns: a playback engine built under playback-only
+        // does not survive the switch, and rebuilding it first keeps the two
+        // engines from starting against each other. Sync is safe: nothing on
+        // the playback queue ever waits on this one.
+        if let escalation {
+          self.playbackQueue.sync { self.rebuildPlayback(olderThan: escalation) }
+        }
         try self.beginCapture()
         self.isCapturing = true
         resolve(nil)
@@ -242,9 +283,26 @@ final class AirhopVoiceModule: RCTEventEmitter {
         AirhopLog.voice.error("capture failed: \(error.localizedDescription, privacy: .public)")
         self.isCapturing = false
         self.teardownCapture()
-        reject("VOICE_CAPTURE", error.localizedDescription, error)
+        // The codes the contract names on both platforms: a microphone that
+        // will not produce anything is busy (another app, a call, a dead
+        // route); anything else failed to start.
+        let busy =
+          (error as? VoiceError)?.isMicUnavailable == true || Self.isSessionTaken(error)
+        reject(busy ? "MIC_BUSY" : "CAPTURE_FAILED", error.localizedDescription, error)
       }
     }
+  }
+
+  // A call or a higher-priority session holds audio: activating ours fails
+  // with one of these instead of recording silence.
+  private static func isSessionTaken(_ error: Error) -> Bool {
+    let nsError = error as NSError
+    guard nsError.domain == NSOSStatusErrorDomain else { return false }
+    return [
+      AVAudioSession.ErrorCode.insufficientPriority.rawValue,
+      AVAudioSession.ErrorCode.cannotInterruptOthers.rawValue,
+      AVAudioSession.ErrorCode.isBusy.rawValue,
+    ].contains(nsError.code)
   }
 
   @objc func stopCapture(
@@ -257,15 +315,29 @@ final class AirhopVoiceModule: RCTEventEmitter {
     }
   }
 
-  /// Play-and-record with speaker default and ducking, matching the walkie
-  /// behavior the design asks for: other audio dips rather than stops.
-  private func configureSession() throws {
-    let session = AVAudioSession.sharedInstance()
-    // HFP is the only Bluetooth profile that carries a microphone, and the
-    // Simulator does not offer it: asking for it there fails the whole
-    // setCategory call, so live voice would be dead on every simulator run
-    // rather than merely routing to the Mac's own mic. bitchat guards the
-    // same way.
+  private struct SessionConfig {
+    let category: AVAudioSession.Category
+    let mode: AVAudioSession.Mode
+    let options: AVAudioSession.CategoryOptions
+  }
+
+  /// Listening only, as bitchat-ios plays bursts: mixed with whatever else is
+  /// playing rather than ducking it, and in a playback category, so AirPods
+  /// stay on their music profile instead of dropping to call quality, and no
+  /// route change eats a burst's first words.
+  private static let playbackSession = SessionConfig(
+    category: .playback, mode: .spokenAudio, options: [.mixWithOthers])
+
+  /// Talking: play-and-record with speaker default and ducking, matching the
+  /// walkie behavior the design asks for, so other audio dips rather than
+  /// stops while the mic is open.
+  ///
+  /// HFP is the only Bluetooth profile that carries a microphone, and the
+  /// Simulator does not offer it: asking for it there fails the whole
+  /// setCategory call, so live voice would be dead on every simulator run
+  /// rather than merely routing to the Mac's own mic. bitchat guards the same
+  /// way.
+  private static let captureSession: SessionConfig = {
     #if targetEnvironment(simulator)
       let options: AVAudioSession.CategoryOptions = [.duckOthers, .defaultToSpeaker]
     #else
@@ -273,23 +345,65 @@ final class AirhopVoiceModule: RCTEventEmitter {
         .duckOthers, .defaultToSpeaker, .allowBluetoothHFP,
       ]
     #endif
-    // Only when something actually differs. Both halves of the module call
-    // this, and a burst arriving while you hold the mic is the ordinary
-    // case, not the exotic one: startPlayback would otherwise re-apply a
-    // category the session already has, reconfiguring the engine under a
-    // live capture, which observeCaptureFailures cannot tell apart from the
-    // microphone being taken away. Re-setting an identical category is a
-    // no-op on the audio route, so skipping it costs nothing either.
+    return SessionConfig(category: .playAndRecord, mode: .voiceChat, options: options)
+  }()
+
+  /// Applies the session the module's state calls for: the capture session
+  /// while a capture holds it, the playback one otherwise. It escalates, and
+  /// never demotes under a live capture, as bitchat's AudioSessionCoordinator
+  /// does. Returns the new epoch when this call changed the category, so the
+  /// caller can rebuild engines built before it.
+  @discardableResult
+  private func configureSession(forCapture: Bool) throws -> UInt64? {
+    sessionLock.lock()
+    defer { sessionLock.unlock() }
+    if forCapture { captureHoldsSession = true }
+    let session = AVAudioSession.sharedInstance()
+    // Playback never demotes a session already in play-and-record, as
+    // bitchat's coordinator rule has it: that is a recording in progress
+    // (a voice note through expo-audio, which this module cannot see), and
+    // playback-only has no input. Whoever recorded hands the category back
+    // to playback when it finishes, so the next burst plays playback-only.
+    if !captureHoldsSession && session.category == .playAndRecord {
+      try session.setActive(true, options: [])
+      return nil
+    }
+    let target = captureHoldsSession ? Self.captureSession : Self.playbackSession
+    // Compared against the target, not a fixed category, or a switch between
+    // the two would be skipped. And applied only when something differs: a
+    // burst arriving while you hold the mic is the ordinary case, and
+    // re-applying the category the session already has would reconfigure the
+    // engine under a live capture, which observeCaptureFailures cannot tell
+    // apart from the microphone being taken away.
     let alreadyConfigured =
-      session.category == .playAndRecord
-      && session.mode == .voiceChat
-      && session.categoryOptions == options
+      session.category == target.category
+      && session.mode == target.mode
+      && session.categoryOptions == target.options
+    var escalation: UInt64?
     if !alreadyConfigured {
-      try session.setCategory(.playAndRecord, mode: .voiceChat, options: options)
+      try session.setCategory(target.category, mode: target.mode, options: target.options)
+      sessionEpoch &+= 1
+      escalation = sessionEpoch
     }
     // Always: an interruption leaves the session inactive, and this is the
     // call that brings it back for the next burst.
     try session.setActive(true, options: [])
+    return escalation
+  }
+
+  /// The capture no longer holds the session. Nothing is demoted here: a
+  /// burst still playing keeps the route it has, and the next playback start
+  /// applies playback-only.
+  private func releaseCaptureHold() {
+    sessionLock.lock()
+    captureHoldsSession = false
+    sessionLock.unlock()
+  }
+
+  private var currentSessionEpoch: UInt64 {
+    sessionLock.lock()
+    defer { sessionLock.unlock() }
+    return sessionEpoch
   }
 
   private func beginCapture() throws {
@@ -305,10 +419,10 @@ final class AirhopVoiceModule: RCTEventEmitter {
     let inputFormat = input.outputFormat(forBus: 0)
     // A dead input reports 0 Hz, and on some routes a plausible rate with no
     // channels; both mean the microphone is not going to produce anything,
-    // and failing here lets the caller fall back to a voice note instead of
-    // holding a mic that captures silence.
+    // and failing here as MIC_BUSY tells the caller so, instead of holding a
+    // mic that captures silence.
     guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
-      throw VoiceError.format("Microphone unavailable")
+      throw VoiceError.micUnavailable
     }
 
     // Two stages: whatever the hardware gives us down to 16 kHz mono, then
@@ -530,6 +644,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// generation ends so the caller's END follows it.
   private func finishCapture() {
     isCapturing = false
+    releaseCaptureHold()
     let center = NotificationCenter.default
     captureObservers.forEach { center.removeObserver($0) }
     captureObservers.removeAll()
@@ -570,6 +685,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
 
   private func teardownCapture() {
     isCapturing = false
+    releaseCaptureHold()
     captureEncoder = nil
     // Dropped before the generation bumps. A notification block already on
     // its way to the main queue still runs, and still finds its generation
@@ -599,7 +715,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
       // playing rather than mixing with it.
       self.teardownPlayback()
       do {
-        try self.configureSession()
+        try self.configureSession(forCapture: false)
         try self.beginPlayback()
         self.isPlaying = true
         resolve(nil)
@@ -625,11 +741,19 @@ final class AirhopVoiceModule: RCTEventEmitter {
         return
       }
       for encoded in framesBase64 {
-        guard let frame = Data(base64Encoded: encoded), !frame.isEmpty else { continue }
-        // Behind the speaker means the queued audio is already stale.
-        if self.queuedFrames >= VoiceConst.maxQueuedFrames { continue }
-        self.schedule(frame)
+        guard let frame = Data(base64Encoded: encoded), !frame.isEmpty,
+          let pcm = self.decode(frame)
+        else { continue }
+        self.pendingFrames.append(pcm)
+        // Full: the oldest waiting frame goes rather than the newest, so the
+        // listener hears the latest audio and a backlog is skipped over.
+        if self.queuedFrames + self.pendingFrames.count > VoiceConst.maxQueuedFrames {
+          self.pendingFrames.removeFirst()
+        }
       }
+      // Fed after the whole batch, so a batch past the cap loses its oldest
+      // frames rather than ones from its middle.
+      self.feedPlayer()
       resolve(nil)
     }
   }
@@ -677,7 +801,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
   }
 
   private func teardownIfDrained() {
-    guard isFinishing, queuedFrames == 0 else { return }
+    guard isFinishing, queuedFrames == 0, pendingFrames.isEmpty else { return }
     teardownPlayback()
   }
 
@@ -690,6 +814,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
     }
     playbackConverter = converter
     playbackRestarts = 0
+    pendingFrames.removeAll()
     try startPlaybackEngine(format: pcmFormat)
     queuedFrames = 0
   }
@@ -709,6 +834,9 @@ final class AirhopVoiceModule: RCTEventEmitter {
   /// that has been let go. bitchat pairs its playback engine and node the same
   /// way; see SystemPTTPlaybackEngine in PTTBurstPlayer.swift.
   private func startPlaybackEngine(format: AVAudioFormat) throws {
+    // Read first, so a category change that lands while this engine is being
+    // built counts as newer than it and rebuilds it.
+    playbackEngineEpoch = currentSessionEpoch
     playbackEngine = AVAudioEngine()
     playerNode = AVAudioPlayerNode()
     playbackEngine.attach(playerNode)
@@ -748,32 +876,67 @@ final class AirhopVoiceModule: RCTEventEmitter {
         self.restartPlayback()
       }
     }
+    // An interruption stops the engine with no configuration change, so the
+    // node would take frames nobody hears until the stream or burst ended.
+    // When it ends, the session comes back and playback is rebuilt.
+    playbackInterruptionObserver = NotificationCenter.default.addObserver(
+      forName: AVAudioSession.interruptionNotification,
+      object: AVAudioSession.sharedInstance(),
+      queue: .main
+    ) { [weak self] note in
+      guard let self,
+        let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+        AVAudioSession.InterruptionType(rawValue: raw) == .ended
+      else { return }
+      self.playbackQueue.async {
+        guard self.isPlaying else { return }
+        do {
+          try AVAudioSession.sharedInstance().setActive(true, options: [])
+        } catch {
+          return
+        }
+        // What queued while the engine was stopped is stale: played now, it
+        // would hold the sound that far behind the picture for the rest of
+        // the stream or burst.
+        self.pendingFrames.removeAll()
+        self.restartPlayback()
+      }
+    }
   }
 
   private func removePlaybackObserver() {
-    guard let observer = playbackObserver else { return }
-    NotificationCenter.default.removeObserver(observer)
-    playbackObserver = nil
+    if let observer = playbackObserver {
+      NotificationCenter.default.removeObserver(observer)
+      playbackObserver = nil
+    }
+    if let observer = playbackInterruptionObserver {
+      NotificationCenter.default.removeObserver(observer)
+      playbackInterruptionObserver = nil
+    }
   }
 
   /// Rebuilds a dead engine mid-burst and plays on.
   ///
-  /// The audio already handed to the old node is gone: about a jitter buffer's
-  /// worth, ~350 ms, one syllable. Recovering it is what bitchat's
-  /// PTTBurstPlayer does by keeping every scheduled buffer and replaying the
-  /// unfinished tail, and it is deliberately not done here. Their player owns
-  /// the jitter buffer, so that list already exists; Airhop's lives in
-  /// voice-player.ts and this module is a sink that holds one counter, as the
-  /// note at the top of this file says it should. Copying the replay would put
-  /// a second copy of the buffer state on this side of the bridge to save one
-  /// syllable. Worth revisiting only if buffering ever moves down here.
+  /// The audio already handed to the old node is gone: up to
+  /// VoiceConst.scheduledAhead frames, about half a second. Recovering it is
+  /// what bitchat's PTTBurstPlayer does by keeping every scheduled buffer and
+  /// replaying the unfinished tail, and it is deliberately not done here. Their
+  /// player owns the jitter buffer, so that list already exists; Airhop's lives
+  /// in voice-player.ts, and keeping every scheduled buffer here too would put
+  /// a second copy of that state on this side of the bridge to save a syllable
+  /// or two. Frames still waiting for room are kept and play on the new node.
   ///
   /// Deliberately no configureSession(): the reconfigure is normally the app
-  /// handing the category back on purpose, and re-asserting playAndRecord here
-  /// would take it straight back and route later playback to the earpiece.
+  /// handing the category back on purpose, or a capture escalating it, and
+  /// re-asserting a category here would fight whichever made the change.
   /// Playing under whatever category is now active is exactly right.
   private func restartPlayback() {
     guard isPlaying, let pcmFormat else { return }
+    let now = Date()
+    if now.timeIntervalSince(lastPlaybackRestart) > VoiceConst.playbackRestartWindow {
+      playbackRestarts = 0
+    }
+    lastPlaybackRestart = now
     playbackRestarts += 1
     guard playbackRestarts <= VoiceConst.maxPlaybackRestarts else {
       teardownPlayback()
@@ -790,18 +953,26 @@ final class AirhopVoiceModule: RCTEventEmitter {
       teardownPlayback()
       return
     }
-    // A finished burst's tail went with the old node, so nothing is left for
-    // the new one to drain.
+    feedPlayer()
     teardownIfDrained()
   }
 
-  /// Decode one AAC frame and hand the PCM to the player node. The node owns
-  /// the pacing: frames play back to back in the order they were scheduled.
-  private func schedule(_ frame: Data) {
+  /// A capture changed the category to play-and-record. An engine built
+  /// before that is rebuilt now, as bitchat's onCategoryEscalated asks its
+  /// holders to; one already rebuilt since, by the configuration-change
+  /// notification, is left alone.
+  private func rebuildPlayback(olderThan epoch: UInt64) {
+    guard isPlaying, playbackEngineEpoch < epoch else { return }
+    restartPlayback()
+  }
+
+  /// Decodes one AAC frame. Every frame that arrives is decoded, dropped or
+  /// not, since the decoder carries state from one frame into the next.
+  private func decode(_ frame: Data) -> AVAudioPCMBuffer? {
     guard let converter = playbackConverter,
       let pcmFormat,
       let aacFormat
-    else { return }
+    else { return nil }
 
     let compressed = AVAudioCompressedBuffer(
       format: aacFormat,
@@ -825,7 +996,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
         pcmFormat: pcmFormat,
         frameCapacity: VoiceConst.samplesPerFrame
       )
-    else { return }
+    else { return nil }
 
     var supplied = false
     var error: NSError?
@@ -838,24 +1009,36 @@ final class AirhopVoiceModule: RCTEventEmitter {
       status.pointee = .haveData
       return compressed
     }
-    guard error == nil, pcm.frameLength > 0 else { return }
-    // Measured as the audio is handed to the speaker, so the meter shows
-    // what is actually being heard rather than what has merely arrived.
-    emitPlaybackLevel(rmsLevel(of: pcm))
+    guard error == nil, pcm.frameLength > 0 else { return nil }
+    return pcm
+  }
 
-    queuedFrames += 1
-    // Counted when heard rather than when the node consumes it, so a drain
-    // does not release the speaker with the tail still in the output path.
-    let node = playerNode
-    node.scheduleBuffer(pcm, completionCallbackType: .dataPlayedBack) { [weak self, weak node] _ in
-      guard let self else { return }
-      self.playbackQueue.async {
-        // stop() fires every handler still pending, so a node already
-        // replaced by a newer burst or a rebuild would otherwise count its
-        // discarded buffers against the node playing now.
-        guard let node, node === self.playerNode else { return }
-        self.queuedFrames = max(0, self.queuedFrames - 1)
-        self.teardownIfDrained()
+  /// Hands waiting frames to the player node until it is
+  /// VoiceConst.scheduledAhead ahead of the speaker. The node owns the pacing:
+  /// frames play back to back in the order they were scheduled.
+  private func feedPlayer() {
+    while isPlaying, queuedFrames < VoiceConst.scheduledAhead, !pendingFrames.isEmpty {
+      let pcm = pendingFrames.removeFirst()
+      // Measured as the audio is handed to the speaker, so the meter shows
+      // what is actually being heard rather than what has merely arrived.
+      emitPlaybackLevel(rmsLevel(of: pcm))
+
+      queuedFrames += 1
+      // Counted when heard rather than when the node consumes it, so a drain
+      // does not release the speaker with the tail still in the output path.
+      let node = playerNode
+      node.scheduleBuffer(pcm, completionCallbackType: .dataPlayedBack) {
+        [weak self, weak node] _ in
+        guard let self else { return }
+        self.playbackQueue.async {
+          // stop() fires every handler still pending, so a node already
+          // replaced by a newer burst or a rebuild would otherwise count its
+          // discarded buffers against the node playing now.
+          guard let node, node === self.playerNode else { return }
+          self.queuedFrames = max(0, self.queuedFrames - 1)
+          self.feedPlayer()
+          self.teardownIfDrained()
+        }
       }
     }
   }
@@ -864,6 +1047,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
     isPlaying = false
     isFinishing = false
     queuedFrames = 0
+    pendingFrames.removeAll()
     // Dropped first, so a rebuild cannot be started for a burst that is
     // being torn down. A notification already on its way to the main queue
     // still runs, and restartPlayback's `isPlaying` guard turns it away.
@@ -917,10 +1101,17 @@ final class AirhopVoiceModule: RCTEventEmitter {
 
 private enum VoiceError: LocalizedError {
   case format(String)
+  case micUnavailable
 
   var errorDescription: String? {
     switch self {
     case .format(let message): return message
+    case .micUnavailable: return "Microphone unavailable"
     }
+  }
+
+  var isMicUnavailable: Bool {
+    if case .micUnavailable = self { return true }
+    return false
   }
 }

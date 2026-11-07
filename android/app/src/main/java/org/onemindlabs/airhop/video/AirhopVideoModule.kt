@@ -14,9 +14,10 @@
 // recording.
 //
 // Threading contract: every @ReactMethod returns at once. The camera binds on
-// the main thread, encoding runs on CameraX's analysis thread and a drain
-// thread, each surface decodes on its own thread, recordings share one
-// worker, and transcodes run one at a time on the transcoder's own looper.
+// the main thread, the encoder is set up and torn down on an executor of its
+// own, encoding runs on CameraX's analysis thread and a drain thread, each
+// surface decodes on its own thread, recordings share one worker, and
+// transcodes run one at a time on the transcoder's own looper.
 //
 // Events emitted to TypeScript:
 //   AirhopVideo.encoded            { dataBase64, ptsMs, keyframe }
@@ -38,7 +39,9 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import java.io.File
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 
 internal const val TAG = "AirhopVideoModule"
 
@@ -51,6 +54,10 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
 
     private val main = Handler(Looper.getMainLooper())
     private val recordingExecutor = Executors.newSingleThreadExecutor()
+    // Encoder setup and teardown, in call order. Creating and configuring a
+    // codec can take hundreds of milliseconds on some devices, which would stall
+    // the native-modules thread every other module shares.
+    private val encoderExecutor = Executors.newSingleThreadExecutor()
     // Recording-thread state.
     private val recordings = HashMap<String, Mp4Writer>()
     @Volatile private var cameraOptions: ReadableMap? = null
@@ -58,6 +65,17 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
     private val transcoderSlot = lazy { VideoTranscoder(reactContext) }
     private val transcoder by transcoderSlot
     private var listenerCount = 0
+
+    // False once invalidate has shut the executor down. A late call (a main
+    // thread post, a reload's last bridge call) must not throw: on these
+    // threads an uncaught throw ends the process.
+    private fun ExecutorService.enqueue(task: () -> Unit): Boolean =
+        try {
+            execute(Runnable { task() })
+            true
+        } catch (error: RejectedExecutionException) {
+            false
+        }
 
     init {
         VideoCamera.onFrame = { frame ->
@@ -106,17 +124,18 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
             promise.reject("BAD_PATH", "not a file URI")
             return
         }
-        recordingExecutor.execute {
+        val queued = recordingExecutor.enqueue {
             recordings.remove(recordingKey)?.cancel()
             recordings[recordingKey] = Mp4Writer(file, width.toInt(), height.toInt(), hasAudio)
             promise.resolve(null)
         }
+        if (!queued) promise.reject("RECORDING_FAILED", "video module shut down")
     }
 
     @ReactMethod
     fun appendVideo(recordingKey: String, dataBase64: String, ptsMs: Double, keyframe: Boolean) {
         val data = runCatching { Base64.decode(dataBase64, Base64.NO_WRAP) }.getOrNull() ?: return
-        recordingExecutor.execute {
+        recordingExecutor.enqueue {
             recordings[recordingKey]?.writeVideo(data, (ptsMs * 1_000).toLong(), keyframe)
         }
     }
@@ -124,19 +143,19 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun appendAudio(recordingKey: String, dataBase64: String, ptsMs: Double) {
         val data = runCatching { Base64.decode(dataBase64, Base64.NO_WRAP) }.getOrNull() ?: return
-        recordingExecutor.execute {
+        recordingExecutor.enqueue {
             recordings[recordingKey]?.writeAudio(data, (ptsMs * 1_000).toLong())
         }
     }
 
     @ReactMethod
     fun finishRecording(recordingKey: String, promise: Promise) {
-        recordingExecutor.execute {
+        val queued = recordingExecutor.enqueue {
             val writer = recordings.remove(recordingKey)
             val durationMs = writer?.durationMs ?: 0L
             if (writer == null || !writer.finish()) {
                 promise.resolve(null)
-                return@execute
+                return@enqueue
             }
             promise.resolve(
                 WritableNativeMap().apply {
@@ -145,11 +164,13 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
                 }
             )
         }
+        // Null is the "no recording" answer the caller already handles.
+        if (!queued) promise.resolve(null)
     }
 
     @ReactMethod
     fun cancelRecording(recordingKey: String) {
-        recordingExecutor.execute { recordings.remove(recordingKey)?.cancel() }
+        recordingExecutor.enqueue { recordings.remove(recordingKey)?.cancel() }
     }
 
     // ---- Transcode ----
@@ -280,20 +301,27 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
         val options = cameraOptions
         fun number(key: String, fallback: Int): Int =
             if (options != null && options.hasKey(key)) options.getDouble(key).toInt() else fallback
-        val started =
-            VideoCamera.startEncoding(
-                number("width", 144),
-                number("height", 192),
-                number("bitrate", 18_000),
-                number("keyframeIntervalSeconds", 2),
-            )
-        if (started) promise.resolve(null)
-        else promise.reject("ENCODER_FAILED", "H.264 encoder unavailable")
+        val width = number("width", 144)
+        val height = number("height", 192)
+        val bitrate = number("bitrate", 18_000)
+        val keyframeInterval = number("keyframeIntervalSeconds", 2)
+        val queued = encoderExecutor.enqueue {
+            val started = runCatching {
+                VideoCamera.startEncoding(width, height, bitrate, keyframeInterval)
+            }
+                .getOrDefault(false)
+            if (started) promise.resolve(null)
+            else promise.reject("ENCODER_FAILED", "H.264 encoder unavailable")
+        }
+        if (!queued) promise.reject("ENCODER_FAILED", "video module shut down")
     }
 
+    // On the encoder executor too, so a stop never overtakes the start before it
+    // and leaves an encoder running that nothing will stop.
     @ReactMethod
     fun stopEncoding(promise: Promise) {
-        VideoCamera.stopEncoding { promise.resolve(null) }
+        val queued = encoderExecutor.enqueue { VideoCamera.stopEncoding { promise.resolve(null) } }
+        if (!queued) VideoCamera.stopEncoding { promise.resolve(null) }
     }
 
     @ReactMethod
@@ -310,6 +338,9 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
     fun stopCamera(promise: Promise) {
         main.post {
             VideoCamera.stop()
+            // A start still queued behind the executor would otherwise open an
+            // encoder after the camera is gone.
+            encoderExecutor.enqueue { VideoCamera.stopEncoding {} }
             promise.resolve(null)
         }
     }
@@ -324,12 +355,17 @@ class AirhopVideoModule(private val reactContext: ReactApplicationContext) :
         listenerCount = maxOf(0, listenerCount - count)
     }
 
+    // Each executor runs what is already queued, its cleanup last, and then lets
+    // its thread go.
     override fun invalidate() {
         main.post { VideoCamera.stop() }
-        recordingExecutor.execute {
+        encoderExecutor.enqueue { VideoCamera.stopEncoding {} }
+        encoderExecutor.shutdown()
+        recordingExecutor.enqueue {
             recordings.values.forEach { it.cancel() }
             recordings.clear()
         }
+        recordingExecutor.shutdown()
         if (transcoderSlot.isInitialized()) transcoder.release()
         super.invalidate()
     }

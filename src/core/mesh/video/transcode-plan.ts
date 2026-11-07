@@ -7,9 +7,10 @@
 // and frame rate follow the bitrate, and the upright shape is kept in 16-pixel
 // blocks. Native code runs a pass to these numbers and decides nothing.
 //
-// One Airhop extension: a budget above bitchat's (a DM to another Airhop
-// phone) may use bitchat-android's 480-pixel step. At bitchat's own budget the
-// ladder is exactly bitchat-ios's, which stops at 320.
+// Two Airhop extensions, both for a budget above bitchat's (a DM to another
+// Airhop phone): the picture may use bitchat-android's 480-pixel step, and it
+// tops out at 350 kbps rather than 600. At bitchat's own budget the plan is
+// exactly bitchat-ios's, whose ladder stops at 320.
 
 import { MAX_BITCHAT_VIDEO_BYTES } from "../wire/file-packet";
 
@@ -28,6 +29,10 @@ const AUDIO_BITRATE = 12_000;
 const AUDIO_MIN_TOTAL_BITRATE = 30_000;
 const MIN_VIDEO_BITRATE = 6_000;
 const MAX_VIDEO_BITRATE = 600_000;
+// About what Apple's streaming guidelines give 640x360, so ample for a 480
+// long edge, and some 40% less airtime than 600 kbps on a clip short enough
+// for the 1 MiB budget to allow more (under about 21 s).
+const MAX_AIRHOP_VIDEO_BITRATE = 350_000;
 const WIDE_LONG_EDGE = 480;
 const WIDE_MIN_BITRATE = 200_000;
 const LONG_EDGE = 320;
@@ -92,7 +97,9 @@ export function planTranscode(
   const videoBitrate = clamp(
     totalBps - (withAudio ? AUDIO_BITRATE : 0),
     MIN_VIDEO_BITRATE,
-    MAX_VIDEO_BITRATE,
+    budgetBytes > MAX_BITCHAT_VIDEO_BYTES
+      ? MAX_AIRHOP_VIDEO_BITRATE
+      : MAX_VIDEO_BITRATE,
   );
   const longEdge = longEdgeFor(videoBitrate, budgetBytes);
   const aspect = source.width / Math.max(source.height, 1);

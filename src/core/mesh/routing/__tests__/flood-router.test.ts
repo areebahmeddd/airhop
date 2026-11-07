@@ -169,6 +169,64 @@ describe("FloodRouter", () => {
     });
   });
 
+  // One stream plus a push-to-talk burst is about 35 IDs a second, which in
+  // the shared set would cut chat's five minutes to about thirty seconds.
+  describe("live voice and video", () => {
+    it("do not crowd message IDs out of the dedup set", () => {
+      const message = makePacket(0x01);
+      router.originate(message);
+      for (let i = 0; i < 2_000; i++) {
+        router.originate({
+          ...makePacket(0x00),
+          type: i % 2 === 0 ? PacketType.VOICE_FRAME : PacketType.VIDEO_FRAME,
+          payload: new Uint8Array([i & 0xff, i >> 8]),
+        });
+      }
+
+      expect(router.receive(message, () => undefined)).toBe(false);
+    });
+
+    it("are still deduplicated among themselves, for as long as a live frame can stay fresh", () => {
+      const frame = { ...makePacket(0x01), type: PacketType.VIDEO_FRAME };
+      router.originate(frame);
+      expect(router.seen(frame)).toBe(true);
+
+      jest.advanceTimersByTime(149_000);
+      expect(router.seen(frame)).toBe(true);
+      jest.advanceTimersByTime(1_001);
+      expect(router.seen(frame)).toBe(false);
+    });
+  });
+
+  // The ingress peek: a duplicate is dropped before its signature is checked,
+  // and the ID is recorded only by receive, after the check passed, so a
+  // forged first copy cannot take the genuine packet's ID.
+  describe("seen()", () => {
+    it("looks the ID up without recording it", () => {
+      const packet = makePacket(0x01);
+      expect(router.seen(packet)).toBe(false);
+      expect(router.seen(packet)).toBe(false);
+      expect(router.receive(packet, () => undefined)).toBe(true);
+      expect(router.seen(packet)).toBe(true);
+    });
+  });
+
+  // Bluetooth links are point to point: a neighbor's copy reaching us says
+  // nothing about our other neighbors, so a duplicate never withdraws the
+  // relay this node already scheduled, however crowded the room.
+  it("a duplicate leaves a pending relay in place", () => {
+    const r = new FloodRouter(LOCAL, () => 6);
+    const sent: Packet[] = [];
+    const packet = makePacket(0x01);
+    r.receive(packet, (p) => sent.push(p));
+
+    expect(r.seen(packet)).toBe(true);
+    expect(r.receive(packet, (p) => sent.push(p))).toBe(false);
+    jest.advanceTimersByTime(300);
+    expect(sent).toHaveLength(1);
+    r.flush();
+  });
+
   describe("flush()", () => {
     it("cancels all pending relay timers", () => {
       const sent: Packet[] = [];
