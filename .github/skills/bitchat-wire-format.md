@@ -15,7 +15,7 @@ The packet frame, the type registry and the payloads every other subsystem rides
 | Path                                                                                          | Holds                                                        |
 | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `src/core/mesh/wire/packet-codec.ts`                                                          | Frame encode and decode, signing, packet ID, broadcast test  |
-| `src/core/mesh/wire/packet-type.ts`                                                           | The type byte, and the retired values                        |
+| `src/core/mesh/wire/packet-type.ts`                                                           | The type byte                                                |
 | `src/core/mesh/wire/payload-limits.ts`                                                        | Receive-side ceiling on each type's decoded payload          |
 | `src/core/mesh/wire/message-padding.ts`, `packet-compression.ts`                              | PKCS#7 block padding, raw DEFLATE                            |
 | `src/core/mesh/wire/noise-payload.ts`                                                         | The typed plaintext inside `NOISE_ENCRYPTED`                 |
@@ -107,8 +107,6 @@ A bitchat node never interprets a type it does not know, but it relays it: the u
 | `CHANNEL_ENC`        | `0x50`          | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop only)         |
 | `CHANNEL_MSG_AIRHOP` | `0x51`          | Broadcast         | Named public channel, a location cell (Airhop only)       |
 
-Retired, never to be reused: `0x30 VIDEO_FRAME` (live video is bitchat's `0x2D`) and `0x40 CASHU_TOKEN` (ecash is text in an ordinary DM, found by `findTokensInText()`).
-
 Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitchat-ios `PacketPayloadLimits`. A new type needing more than a v1 frame has to be added there before it ships, or receivers drop it.
 
 ## Public Channel Payloads
@@ -136,10 +134,9 @@ Location cells travel under `0x51`, where both bitchat clients see an unknown ty
 | `0x04` | neighbor IDs    | up to 80 bytes | Skipped on decode, never written: it would hand a passive listener the room's adjacency graph |
 | `0x05` | capabilities    | 1 to 4 bytes   | Minimal little-endian bitfield; omitted when zero                                             |
 | `0x06` | bridge geohash  | up to 12 bytes | Rendezvous cell a bridge gateway serves                                                       |
-| `0x07` | Nostr pub key   | 32 bytes       | Airhop only, x-only secp256k1. A claim, not a proof: see `bindNostrPubkey`                    |
 | `0xB1` | Bitle role      | 1 byte         | Read, never written. Bit 0 marks a dedicated relay; cosmetic only, since self-signed          |
 
-Receive rules: signature mandatory, and `senderID` must derive from the `0x02` key. Freshness is the ingress rule every packet meets (within 2 minutes of our clock, unless a solicited sync reply; see [`mesh-routing.md`](mesh-routing.md)), and the announce handler also refuses one more than 15 minutes off (`isAnnounceFresh`).
+No announce carries a Nostr key; it goes inside the session as `0x54`. Receive rules: signature mandatory, and `senderID` must derive from the `0x02` key. Freshness is the ingress rule every packet meets (within 2 minutes of our clock, unless a solicited sync reply; see [`mesh-routing.md`](mesh-routing.md)), and the announce handler also refuses one more than 15 minutes off (`isAnnounceFresh`). An older announce arriving after a newer one still counts as presence, but the newest held (`GossipSync.newestAnnounce`) keeps the name and capabilities.
 
 ## Noise Inner Payload
 
@@ -152,12 +149,14 @@ The plaintext of `NOISE_ENCRYPTED` is `[type u8][body]` (`NoisePayloadType`). bi
 | `0x03`        | `DELIVERED`                         | `0x21`           | `AUTHENTICATED_PEER_STATE`                                  |
 | `0x06`/`0x07` | `GROUP_INVITE` / `GROUP_KEY_UPDATE` | `0x22`           | `CONTACT_CARD` (Airhop)                                     |
 | `0x08`        | `VOICE_FRAME`                       | `0x50` to `0x53` | `LOCATION_PIN`, `RING`, `RING_ACK`, `RING_REFUSED` (Airhop) |
-| `0x0A`        | `VIDEO_FRAME`                       |                  |                                                             |
+| `0x0A`        | `VIDEO_FRAME`                       | `0x54`           | `NOSTR_KEY` (Airhop), 32-byte x-only key                    |
 
 - `PRIVATE_MESSAGE` fields have one-byte lengths, so message ID and content are each capped at 255 UTF-8 bytes on all three clients.
 - A DM attachment goes only sealed as `0x20`, and only to a peer that proved capability bit 8 inside its `0x21`. The cleartext directed `FILE_TRANSFER` is still received, never sent.
 - A sealed photo or voice note is keyed by `privateMediaStableID` (`media-<32 hex>`, from sender, recipient and an `img_<UUID>.jpg` or `voice_<UUID>.m4a` name), and the receiver answers with a `DELIVERED` naming it.
+- A sealed Airhop video note or clip (`note_<UUID>.mp4`, `clip_<UUID>.mp4`) is keyed by `privateVideoStableID` instead: the same shape under Airhop's own domain, `airhop-private-video-message-v1`. bitchat has no video ID and ignores the `DELIVERED`. Never widen it to bitchat's `clip_<8 hex>` names.
 - Capabilities in `0x21` are authoritative; announced bits are a hint that chooses wording, never how to send.
+- Bits 24 to 26 (`ring`, `locationPin`, `doubleRatchet`) travel in `0x21` only, never in an announce. Bit 26 marks an Airhop peer: it gates seeding the Double Ratchet and sending `0x54`, so bitchat never receives a type it does not know.
 - Airhop's own Noise payload types start at `0x50`; `0x22` is the one exception.
 
 A Nostr DM carries the same bytes: an unsigned `NOISE_ENCRYPTED` packet holding a Noise payload, base64url behind `bitchat1:` (`bitchat-envelope.ts`, see [`nostr-gift-wrap.md`](nostr-gift-wrap.md)).
@@ -184,7 +183,7 @@ The peer ID derives from the Noise static key, never the Ed25519 key. A scanner 
 - Change a byte of the frame layout without bumping the protocol version.
 - Sign over an unpadded preimage, or re-compress a received payload before verifying or relaying it.
 - Treat only `HAS_RECIPIENT` clear as broadcast; bitchat-android's all-`0xFF` form is a broadcast too.
-- Claim a type byte below `0x50`, or reuse `0x30` or `0x40`.
+- Claim a type byte below `0x50`, or put a Nostr key in an announce.
 - Put a marker byte, channel field or message ID into a `#bluetooth` payload.
 - Emit the `0x04` neighbor TLV or originate a source route.
 - Send a DM attachment as a cleartext `FILE_TRANSFER`, or act on an announced capability bit.

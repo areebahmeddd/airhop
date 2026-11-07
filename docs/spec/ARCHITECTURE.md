@@ -101,7 +101,7 @@ native.
 | [Store-and-forward courier](#store-and-forward)      | Yes, sealed envelope      | Yes, parked drop    | 24 hour life, as bitchat carriers enforce. Sealed to a one-time prekey for forward secrecy                                              |
 | [Location pin](#pins-and-rings)                      | Yes, `0x50` Noise payload | No                  | One point in a DM, sent once                                                                                                            |
 | [Ring](#pins-and-rings)                              | Yes, `0x51` Noise payload | No                  | Airhop only. A doorbell for someone in range                                                                                            |
-| [Voice notes](#attachments)                          | Yes, as a file            | No                  | Recorded AAC, not live                                                                                                                  |
+| [Voice notes](#attachments)                          | Yes, as a file            | No                  | Recorded AAC at 16 kbps, not live                                                                                                       |
 | [Video sharing](#attachments)                        | Yes, as a file            | No                  | Shrunk to fit its recipient, played inline                                                                                              |
 | [File transfer](#attachments)                        | Yes, per-type caps        | No                  | 1 MiB at most, any type                                                                                                                 |
 | [Live push-to-talk](#live-voice-and-video)           | Yes, `0x29` bursts        | No                  | Works between Airhop and bitchat                                                                                                        |
@@ -116,7 +116,7 @@ native.
 | [Payments (Cashu)](#why-cashu)                       | Yes, token in a message   | Yes, NIP-61 nutzap  | Transfer works offline, redemption needs internet                                                                                       |
 | [Lightning](#wallet-operations)                      | No                        | Yes                 | Top up or cash out through a mint the user chooses (NUT-04 / NUT-05)                                                                    |
 | [Wallet recovery](#recovery)                         | No                        | Yes                 | A 12-word phrase rebuilds the balance from the mints that signed it (NUT-13 / NUT-09)                                                   |
-| [Contact verification](#verifying-a-contact)         | Yes, QR or safety number  | n/a                 | A camera scan, or reading a six-word safety number to each other                                                                        |
+| [Contact verification](#verifying-a-contact)         | Yes, QR or safety code    | n/a                 | A camera scan, or each reading their own six-word safety code to the other                                                              |
 | [Panic wipe](#panic-wipe)                            | Yes                       | Yes                 | Panic button on Profile. Destroys keys, messages, groups, board, prekeys                                                                |
 | [bitchat compatibility](#ground-rules)               | Yes                       | Yes                 | Same wire format both directions. Airhop-only types are ignored by bitchat                                                              |
 
@@ -179,11 +179,19 @@ A name does not prove who holds the key. That is confirmed separately, two ways:
 
 - **Scanning their QR in person.** The camera witnesses the exchange, so this is
   also the only route allowed to re-pin keys already bound to a peer ID.
-- **Comparing a safety number.** Six words derived from both parties' Noise and
-  signing keys, identical on both phones, read to each other over a channel they
-  trust. Confirms keys already held rather than importing any, so it grants no
-  re-pinning power and needs none. This is what lets someone reachable only by
-  call or radio be verified at all.
+- **Comparing safety codes.** Each person has a code of their own: six words
+  from their Noise and signing keys alone, stretched by 5,200 rounds of SHA-512
+  as Signal stretches its safety numbers. Each reads theirs aloud over a channel
+  they both trust, and the other checks it against "Their code" on their own
+  screen and marks them verified on their own phone; verification is per phone.
+  A code over both people's keys would let a man in the middle, who picks the
+  fake key on each side, search for any two that collide (about 2^21 keys per
+  side). Against one person's code the impostor must match six fixed words:
+  about 2^42 keys at 5,200 hashes each, roughly 2^54 hash operations per person
+  targeted, done in advance. Scanning the QR in person compares the full keys
+  and stays the strong path. Confirms keys already held rather than importing
+  any, so it grants no re-pinning power and needs none. This is what lets
+  someone reachable only by call or radio be verified at all.
 
 Both earn the same badge. `source` records how the keys arrived (`qr`, `link` or
 `manual`), `verification` records whether a human has checked them; they are
@@ -252,7 +260,7 @@ Follows bitchat's design:
 - Service UUID `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`, bitchat-compatible
 - TTL at most 7, decremented per relay and clamped by neighbor count as bitchat-ios does ([PROTOCOLS.md section 4](PROTOCOLS.md#4-routing-constants))
 - Jitter of 10 to 220 ms before relay, by neighbor count (8 to 25 ms for live voice and fragments), which prevents cascade storms
-- Dedup against a 1000-entry seen set of packet IDs, each expiring after 5 minutes, with fragments in a second set of their own so file traffic cannot shorten the window
+- Dedup against a 1,000-entry seen set of packet IDs, each expiring after 5 minutes, with fragments in a second set of their own and live voice and video in a third (10,000 entries, 150 s) so neither file traffic nor a stream can shorten the window. A duplicate is dropped before its signature is checked, and never cancels this phone's own pending relay: Bluetooth links are point to point, so a neighbor's copy says nothing about the others
 - Fragments of 467 data bytes inside a 512-byte frame, the BLE write ceiling
 - Up to 128 concurrent reassemblies and 8 MiB across them; a full table evicts the one idle longest
 - Range of roughly 30 to 50 m per hop, so 7 hops reaches about 350 m
@@ -448,7 +456,7 @@ Five things still limit it:
 - **DMs.** NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
 - **Channels and presence.** Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
 - **Publishing.** A publish goes to every relay in its set and counts as sent on the first acceptance, so no single relay is load-bearing
-- **Subscribing.** Each relay is subscribed and queried on its own, and an event ID counts as seen only once its signature has verified. nostr-tools records the ID first, so across relays one hostile relay's forged copy would hide the genuine event every other relay delivers
+- **Subscribing.** Each relay is subscribed on its own, so a subscription a relay closed is reopened there alone, and an event ID counts as seen across relays only once its signature has verified, so one hostile relay's forged copy cannot hide the genuine event the others deliver. A reconnect resumes 15 minutes behind the newest event that relay sent, except a gift-wrap subscription, which asks again from where it opened, since wrap timestamps are blurred
 - **First connect.** nostr-tools retries a relay that drops, but never one whose first connect fails, so a pool is built only when it has a route: with Tor on, it waits for the circuit
 - **Connectivity.** It is read from the sockets themselves, on every question and on a 5 s poll, because nostr-tools reports a socket dropping, and its own reconnect, to no hook. Every consumer (the gateway capability, the banners, the uplink flush) follows those edges. A DM, a location DM and a courier drop are published only to the default DM relays, so they count a route only while one of those is live (`isDMConnected`, bitchat-ios `isDMRelayConnected`); a live location or custom relay alone is not one
 - **Replays.** Every subscribe replays the inbox's lookback, so gift wraps and courier mail already opened are recorded across launches (`nostr-processed-events`, [Data at rest](#data-at-rest)) and a relaunch neither files nor acknowledges them again
@@ -679,7 +687,21 @@ The handshake produces `send` and `recv` keys. Messages are then encrypted with
 nonce, and a 1024-nonce window refuses any nonce already seen.
 
 Sessions live in memory and are kept across link drops, since resuming one is
-far cheaper than a fresh handshake and radios drop links constantly. Four rules
+far cheaper than a fresh handshake and radios drop links constantly, but not
+forever: at 21.6 hours of age (90% of a day, polled each minute, as bitchat-ios
+does) a fresh handshake replaces the session, so a leaked transport key reads
+at most a day of traffic. Between two Airhop phones the lower peer ID starts
+it, and the higher starts one only if the session reaches 24 hours, so the two
+never cross. A replaced session and the ratchet bound to it keep decrypting for
+60 seconds, for packets already in flight, and for as long as a file from that
+peer is still arriving in fragments. The ratchet is reseeded on the new
+session, never carried over: a rekey and a peer that restarted look identical
+on the wire. Toward a peer that proved it runs Airhop, the side that starts a
+rekey keeps sending under the old session until something from the peer
+decrypts under the new one (normally its `0x21`), which proves its last
+handshake message landed. After 5 seconds without that, it sends that message
+and its own `0x21` once more and switches anyway. Toward bitchat, which drops
+the old session while the new handshake runs, it switches at once. Four rules
 keep the two ends on the same session:
 
 - **Inbound handshakes are rate-limited.** 10 a minute per claimed peer, and 30
@@ -705,9 +727,13 @@ The protocol detail an implementer needs is in
 ### Per-message keys: [Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)
 
 Used for live DMs between two Airhop phones, on top of the Noise session it is
-seeded from and bound to: a ratchet from an earlier session is never used under
-a later one. bitchat peers, which do not implement it, get Noise alone, and
-courier mail does not use it.
+seeded from and bound to: a ratchet from an earlier session is never used to
+send under a later one, and decrypts only for the minute a replaced session is
+held. A peer runs it when its `0x21` proves capability bit 26, which nothing
+public carries; the initiator seeds on the responder's proof, the responder on
+the initiator's proof or the first ratchet message, and until both proofs have
+crossed DMs ride plain Noise. bitchat peers, which do not implement it, get
+Noise alone, and courier mail does not use it.
 
 - Per-message forward secrecy: compromise of message N does not expose N-1 or N+1
 - Break-in recovery: if current keys leak, future messages are protected again after a few ratchet steps
@@ -737,7 +763,7 @@ prekey.
 
 - Signed before transmission, verified before display or action
 - The signature covers every packet field except the TTL, the solicited-response flag and the signature itself ([PROTOCOLS.md section 2](PROTOCOLS.md#2-packet-frame-layout))
-- Replay is bounded by a millisecond timestamp plus a deduplicator that rejects any packet ID already seen. There is no nonce field. Every packet is held to a ±2 minute freshness window at ingress, with gossip-sync replies judged by their own rules, and live voice to 30 seconds. The deduplicator is per device and cannot speak for a phone that never heard the original
+- Replay is bounded by a millisecond timestamp plus a deduplicator that rejects any packet ID already seen. There is no nonce field. Every packet is held to a ±2 minute freshness window at ingress, with gossip-sync replies judged by their own rules, and live voice and video to 30 seconds. The deduplicator is per device and cannot speak for a phone that never heard the original
 
 ### Not every packet is signed
 
@@ -769,8 +795,9 @@ outbox retry:
    flushes at once.
 3. **The Noise session over the mesh**, the path bitchat peers take.
 4. **Nostr gift-wrap**, when no radio reaches the peer, an npub is known (the
-   saved contact's first, else the one the peer announced) and a default DM
-   relay is live.
+   saved contact's first, else the one the peer named inside its session,
+   `0x54`) and a default DM relay is live. An announce never carries one, so a
+   stranger never talked to on the mesh has no internet route.
 5. **Courier**, when nothing reaches them now
    ([Store-and-forward](#store-and-forward)).
 
@@ -809,10 +836,11 @@ when the thread opens (in range with no session, or out of range with no
 Nostr) waits for that peer's next route, and in range a handshake is started
 for it, as bitchat-ios holds receipts until the handshake.
 
-**Deleted threads.** A DM arriving over Nostr or by courier brings a deleted
-thread back only when the chat store keeps the row. A row the thread's clear
-refuses is still acknowledged as delivered, since the sender waits on it, but
-owes no read receipt and recreates nothing.
+**Deleted threads.** A DM brings a deleted thread back only when the chat store
+keeps the row, on every path. A row the store refuses (one the thread's clear
+predates, or a resend of one disappearing messages removed) is still
+acknowledged as delivered, since the sender waits on it, but owes no read
+receipt and recreates nothing.
 
 **Folded threads.** Blocking a contact also blocks the location pseudonym a card exchange folded
 into their thread. A card exchange that merges a pseudonymous thread moves its
@@ -821,10 +849,12 @@ the contact, so this phone's main identity never writes to a cell key.
 
 **Attachments, pins and rings.** These are narrower. A DM attachment goes only
 sealed inside the Noise session, over a direct link, to a peer that has proven
-it can read one, and is acknowledged under bitchat's stable media ID
-([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). A pin or a ring
-needs a link and a session, and is refused rather than queued without them. A
-group invite or key update with no link waits for the peer's next announce.
+it can read one, and is acknowledged under a stable media ID: bitchat's for a
+photo or voice note, Airhop's own for a video note or clip, which bitchat never
+acknowledges ([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). A
+pin or a ring needs a link and a session, and is refused rather than queued
+without them. A group invite or key update with no link waits for the peer's
+next announce.
 
 ### Store-and-forward
 
@@ -854,8 +884,10 @@ A DM attachment goes sealed inside the Noise session
 at 512 KiB and anything else at 1 MiB, and accepts 1 MiB of any type, bitchat-ios's
 decoder ceiling. Received files share a 100 MiB budget, oldest out first.
 
-Voice notes are recorded AAC, not live. A video is shrunk to fit its recipient
-and played inline, and a round video note is held to record.
+Voice notes are recorded AAC (16 kHz mono, 16 kbps), not live, so a two-minute
+note stays inside bitchat-ios's 30-second reassembly window in a room. A video
+is shrunk to fit its recipient, its picture held to 350 kbps between two Airhop
+phones, and played inline; a round video note is held to record.
 
 ### Live voice and video
 
@@ -864,7 +896,13 @@ jitter buffer. Live video (`0x2D`) is H.264 and AAC-LC with erasure-coded packet
 sent from the attach menu, watched live in the chat or full screen, and kept as a
 recording. In a DM each rides a Noise payload instead of its own packet type.
 Both are bitchat's formats, so bursts and streams cross between the two, and
-neither is gossip-synced, since stale media is worthless. The formats are in
+neither is gossip-synced, since stale media is worthless. Both go to each
+neighbor once, on its fastest link, from their origin and at every relay, and
+a live write left in a Bluetooth link's queue past 1.5 s is dropped unsent
+there. That queue's depth is what a video stream paces itself by, and the
+radio is asked for a faster connection interval while live video is sent or
+received.
+The formats are in
 [PROTOCOLS.md section 3.1](PROTOCOLS.md#31-voice-burst-payload) and
 [section 3.10](PROTOCOLS.md#310-live-video).
 
@@ -1107,7 +1145,7 @@ is not.
 - `StoredProof.derived` marks what the phrase can rebuild, and the UI shows the uncovered remainder.
 - Backup cannot be turned off, since deleting a phrase coins derive from deletes the coins. Only the panic wipe removes it.
 - The words are shown only after the OS confirms the owner (Face ID, fingerprint or passcode), the check a transfer asks for, since they move every coin to any phone without a trace. A phone with no screen lock has no owner to ask and shows them.
-- The per-keyset counter only moves forward, and restore pushes it past everything the mint has signed, for every unit at every named mint. A reused counter recreates a signed secret and the mint refuses the swap (NUT-00 10002) with the inputs untouched. The wallet then scans the account's active keysets forward from the counter (NUT-09, gap 200), moves the counters past what it finds and retries the claim, nutzap or lock once; a refresh leaves its coins pending for the next pass. Counters reset when the phrase changes, and a mint added while a phrase is active is scanned the same way, so its counters start past what the phrase already used there.
+- The per-keyset counter only moves forward, and restore pushes it past everything the mint has signed, for every unit at every named mint. A reused counter recreates a signed secret and the mint refuses the swap (11003) with the inputs untouched. The wallet then scans the account's active keysets forward from the counter (NUT-09, gap 200), moves the counters past what it finds and retries the claim, nutzap or lock once; a refresh leaves its coins pending for the next pass. Counters reset when the phrase changes, and a mint added while a phrase is active is scanned the same way, so its counters start past what the phrase already used there.
 
 ### Mint network gate
 
@@ -1160,6 +1198,7 @@ traffic leaves it.
 - No IP address reaches a relay while Tor is active
 - NIP-17 gift-wrap hides who is talking to whom from relay operators
 - BLE mesh is radio-local, requires physical proximity, and leaves no internet signature
+- An announce names the radio identity and nothing else: the Nostr key, and with it the internet inbox, goes only to a peer this phone has held a session with
 - Geolocation is opt-in, used for location channels, and never stored or transmitted otherwise. Presence heartbeats go out only at coarse precisions (about 5 km or wider); the one exception is a mesh bridge's heartbeat for its 1.2 km rendezvous cell, opt-in and on screen only
 - Message history is stored only on the phone, under the OS's file encryption and excluded from every backup ([Data at rest](#data-at-rest)); the panic wipe destroys it and every key
 
@@ -1369,8 +1408,8 @@ iOS keeps Keychain items when the app is deleted, while the app's own storage
 goes with it, so a reinstall would boot the old identity with none of its
 history. An install records that it has had an identity (on onboarding, on a
 transfer arriving, and on every boot) in a partition the panic wipe leaves alone.
-An identity found by an install with no such record, and none of the long-lived
-stores an install from an earlier build would have, is a leftover: launch wipes
+An identity found by an install with no such record, and with none of the app's
+long-lived stores present, is a leftover: launch wipes
 every keychain item, the wallet's with it, and onboards. The check runs only on
 an identity the keychain actually returned, so a relaunch before the first unlock
 never reaches it. Android removes the Keystore keys with the app, so there it
@@ -1433,7 +1472,7 @@ key, so what stays on disk cannot be read. MMKV keeps one native instance per id
 for the life of the process and hands it back to every later open with the key
 it was first opened under, so a reopen after a wipe in the same session
 (re-onboarding, or a transfer arriving) re-keys it with `encrypt` onto the key
-the keychain now holds.
+the keychain holds by then.
 
 ### Data at rest
 
@@ -1470,6 +1509,30 @@ on every subscribe and each replay would otherwise be filed and acknowledged
 again, as bitchat-ios's `NostrProcessedEventStore` prevents. Which IDs a phone
 opened says who writes to it, so the panic wipe clears it, and a transfer moves
 it with the chat history.
+
+History leaves the phone row by row as well as all at once. Leaving or clearing
+a conversation, removing a message, the 200-message trim and disappearing
+messages all report the rows they take (`subscribeRemovedMessages` in
+`chat-store.ts`), and `file-transfer-service` deletes each attachment file no
+remaining row references, counted across every conversation since forwards
+share files, and never one a send or receive still holds. Leaving or clearing
+also drops the conversation's lines in the bell, which keep a preview of each
+message. Disappearing messages (General, off by default; 1, 7 or 30 days) time
+each message from when it reached this phone, a local `receivedAtMs` rather
+than the sender's clock, hide it from the thread, search and the conversation
+lists the moment it expires, and remove it, its files, its bell line, its
+outbox entry and any read receipt still owed for it at launch, at the next
+message's deadline (checked at least hourly), and on a return to the app once
+a deadline has passed (`src/services/message-retention.ts`). A message still
+on its way stays past the window: one sending, queued or with a courier, a DM
+the outbox retries with no relay holding a copy, and a live stream. So does a
+Cashu token received in a DM until the wallet has claimed it, since its bubble
+holds the only copy; a token posted to a room expires like any other message.
+A removed DM's ID is kept for the outbox week, so a resend
+from a sender whose delivery receipt was lost is acknowledged and refused
+rather than shown again (`src/store/expired-messages.ts`). A clock that went
+back deletes nothing. It is this phone's alone: the other phone keeps its copy.
+The conversation's notification is dismissed once nothing in it is unread.
 
 ### App lock
 
@@ -1555,7 +1618,7 @@ server, no file. The wire format is [PROTOCOLS.md section
 11](PROTOCOLS.md#11-device-transfer).
 
 The exact keys move, so nothing on the wire changes. The peer ID, the username,
-the npub, every geohash pseudonym and every safety number are derived from the
+the npub, every geohash pseudonym and every safety code are derived from the
 two private keys and come out identical. Contacts see the old phone say goodbye
 and the same identity come back, and a verified contact stays verified, because
 the keys they checked are the keys that arrived. No protocol version bump, and
@@ -1644,15 +1707,15 @@ cannot break Ed25519, X25519, ChaCha20-Poly1305, or SHA-256 preimage resistance.
 
 #### Identity and forgery
 
-| Threat                         | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Message forgery                | Ed25519 signature verified against the key bound to the claimed sender. A missing key or missing SIGNED flag is a failed check, never a skipped one                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| System-line spoofing           | A peer's `* … *` text renders as an action only when it is exactly the `/hug` or `/slap` template with the wire sender as actor and a single name as target. Anything else is a normal bubble under their name                                                                                                                                                                                                                                                                                                                                                                            |
-| Identity impersonation         | `peerID == SHA-256(noiseStaticPubKey)[0:16]`, enforced on announces and completed Noise sessions, so a peer ID cannot be claimed without its key                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Signing-key substitution       | Three tiers of trust, below                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| Nostr key claim in an announce | The npub a peer names for itself is a forwarding address for that peer, nothing more: first claim stands, no claim folds a thread keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may. A card from a QR, a link or a pasted code is signed by the signing key it names, so its Nostr key cannot be swapped by whoever passes it on. An announced npub is written onto a saved contact only when a session proof or the contact's own key stands behind the announce. See [PROTOCOLS.md section 3.3](PROTOCOLS.md#nostr-keys-a-peer-names-for-itself) |
-| Capability downgrade           | Announced bits are a discovery hint and never authorize a change in how Airhop sends. Encrypted private media is selected only on an authenticated capability, and a DM attachment never falls back to cleartext, so nobody in radio range can force one into the clear                                                                                                                                                                                                                                                                                                                   |
-| Man-in-the-middle (session)    | Noise XX mutual authentication, with the authenticated static key required to derive the peer ID it claims                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Threat                      | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Message forgery             | Ed25519 signature verified against the key bound to the claimed sender. A missing key or missing SIGNED flag is a failed check, never a skipped one                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| System-line spoofing        | A peer's `* … *` text renders as an action only when it is exactly the `/hug` or `/slap` template with the wire sender as actor and a single name as target. Anything else is a normal bubble under their name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Identity impersonation      | `peerID == SHA-256(noiseStaticPubKey)[0:16]`, enforced on announces and completed Noise sessions, so a peer ID cannot be claimed without its key                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Signing-key substitution    | Three tiers of trust, below                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Nostr key claim             | The npub a peer names for itself is a forwarding address for that peer, nothing more: first claim stands, no claim folds a thread keyed by that npub or re-addresses mail queued for it. Only a card scanned in person may, or a mutual claim: a proven session names the npub and that npub's own sealed DMs name the peer. A card from a QR, a link or a pasted code is signed by the signing key it names, so its Nostr key cannot be swapped by whoever passes it on. On the mesh a peer names its npub only inside a session (`0x54`), never in an announce, and only to a saved contact or someone a DM has passed with, so neither a listener in range nor a stranger who completes a handshake can tie the radio identity to an internet inbox, and the key that reaches a saved contact is the one its session vouched for. See [PROTOCOLS.md section 3.3](PROTOCOLS.md#nostr-keys-a-peer-names-for-itself) |
+| Capability downgrade        | Announced bits are a discovery hint and never authorize a change in how Airhop sends. Encrypted private media is selected only on an authenticated capability, and a DM attachment never falls back to cleartext, so nobody in radio range can force one into the clear                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Man-in-the-middle (session) | Noise XX mutual authentication, with the authenticated static key required to derive the peer ID it claims                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 Signing keys come in three tiers, strongest first, for every signature check: a
 key proven inside a Noise session (payload `0x21`), then a saved contact's key
@@ -1672,7 +1735,7 @@ persisted.
 | Replay                      | Content-derived packet IDs, a deduplicator, and a ±2 minute freshness window on every packet at ingress, so stale packets are neither relayed nor acted on. A packet tagged `IS_RSR` is judged on the sync rules alone, fresh or not: TTL 0, from the peer bound to the link a request went to in the last 30 s, and a type sync serves within the age it serves it for (announces 60 s, public and group messages 6 h, board posts 7 days). Live voice and video frames are also refused once 30 s old |
 | Replayed session traffic    | A Noise or Double Ratchet packet that fails to decrypt is discarded and never tears down a session, so a genuine packet replayed after it has left the dedup window cannot evict working keys or spend the handshake budget                                                                                                                                                                                                                                                                             |
 | Handshake flood             | Inbound handshakes are rate-limited and pending ones expire ([Sessions: Noise XX](#sessions-noise-xx))                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Key compromise (session)    | Noise XX forward secrecy, so past sessions stay safe if a static key later leaks                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Key compromise (session)    | Noise XX forward secrecy, so past sessions stay safe if a static key later leaks, and a session renewed daily, so a leaked transport key reads at most a day                                                                                                                                                                                                                                                                                                                                            |
 | Key compromise (DM history) | Double Ratchet per-message keys seeded from the Noise exporter secret rather than the public transcript hash, so the chain is not derivable by observers                                                                                                                                                                                                                                                                                                                                                |
 
 #### Abuse of the mesh
@@ -1683,7 +1746,7 @@ persisted.
 | Forged departure         | A LEAVE is checked against the signing key held for its sender before the relay decision, so an unverifiable one is neither acted on nor passed to nodes that may check less strictly. See [PROTOCOLS.md section 3.6](PROTOCOLS.md#36-leave-files-board-posts-and-voice-are-verified-before-they-are-relayed)                                                                                                                                                                                               |
 | Public spam              | bitchat-android's spam filter, ported with its limits: per sender 6 messages then one per 10 s, 1200 characters and 2 links a minute, and near-copies hidden whether one sender repeats a text or many identities spread it, with disguises folded away first. Runs on message time, so backfill is judged as it was sent. Local only: a hidden message is still relayed, and the user can switch it off                                                                                                    |
 | Sybil flooding           | TTL bounds propagation. The registry and radar are capped with oldest-first eviction that never drops a peer holding a real BLE link                                                                                                                                                                                                                                                                                                                                                                        |
-| Relay abuse              | A forged file, board post, voice frame or LEAVE is dropped before it is relayed; nothing addressed to this phone or sent under its own ID is relayed by it. A receiving card is shown only for a sender whose key is held, at most three at once, unnamed in public rooms                                                                                                                                                                                                                                   |
+| Relay abuse              | A forged file, board post, voice or video frame, or LEAVE is dropped before it is relayed; nothing addressed to this phone or sent under its own ID is relayed by it. A receiving card is shown only for a sender whose key is held, at most three at once, unnamed in public rooms                                                                                                                                                                                                                         |
 | Confused-deputy delivery | Directed packets are relayed but rendered only by the addressee, so a relay never surfaces someone else's private content                                                                                                                                                                                                                                                                                                                                                                                   |
 | Storage exhaustion       | Received media shares a 100 MiB budget, oldest out first, and sent media is not counted, so anyone who announced once cannot fill the phone a file at a time                                                                                                                                                                                                                                                                                                                                                |
 | Traffic analysis (BLE)   | Private payloads (Noise, Double Ratchet and private channels) are encrypted and padded to fixed buckets, so their length says little about the message. Public traffic is plaintext by design, and headers are always in the clear (see [Out of scope](#out-of-scope))                                                                                                                                                                                                                                      |
@@ -2010,15 +2073,16 @@ the same surface. Bytes cross base64-encoded, the only representation both
 runtimes agree on safely. The full per-module contract is in
 [`.github/skills/native-boundary.md`](../../.github/skills/native-boundary.md).
 
-`src/bridge/NativeAirhopBLE.ts` has ten methods:
+`src/bridge/NativeAirhopBLE.ts` has eleven methods:
 
 1. `startAdvertising` / `stopAdvertising`: GATT Peripheral
 2. `startScanning` / `stopScanning`: GATT Central. Stopping the scan also disconnects every link this phone dialed, pending dials included, as bitchat-ios does when it stops, so stopping the mesh leaves no central link up to carry a neighbor's traffic, or a new identity's announce after a wipe. Duty cycling and power changes keep their links; Invisible only stops advertising
-3. `writeToLink`: raw bytes to a connected peer
-4. `getRadioState`: support, power, authorization, location and battery in one answer
-5. `setPowerMode`: how hard to run the radios
-6. `requestEnableBluetooth` / `openLocationSettings`: one-tap fixes for the Mesh banner
-7. `setBackgroundServiceEnabled`: hold the process up, independent of advertising
+3. `writeToLink`: raw bytes to a connected peer, through a per-link FIFO queue the radio's readiness callbacks release. Each write carries a deadline (`ttlMs`, 1.5 s for live voice and video, none otherwise) past which native drops it unsent, and resolves with the link's queue depth
+4. `setLiveMediaActive`: raise connection priority while live video is sent or received, and lower it after
+5. `getRadioState`: support, power, authorization, location and battery in one answer
+6. `setPowerMode`: how hard to run the radios
+7. `requestEnableBluetooth` / `openLocationSettings`: one-tap fixes for the Mesh banner
+8. `setBackgroundServiceEnabled`: hold the process up, independent of advertising
 
 What the foreground service's notice says is not a radio's business. `AirhopAppModule`
 takes it in `setMeshSnapshot`, one reading of the reachable count, whether the
