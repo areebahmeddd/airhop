@@ -133,7 +133,7 @@ jobs:
           fi
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ steps.resolve.outputs.tag }}
           name: ${{ steps.title.outputs.name }}
@@ -324,7 +324,7 @@ jobs:
           cp "${BUNDLE_PATH}" dist/airhop.apk.intoto.jsonl
 
       - name: Upload APK and provenance to release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ needs.release.outputs.tag }}
           files: |
@@ -402,7 +402,7 @@ jobs:
         run: npm run verify:vendored
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
         with:
           ruby-version: "3.4"
           bundler-cache: false
@@ -506,7 +506,7 @@ jobs:
           upload-release-assets: false
 
       - name: Upload SBOM to release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ needs.release.outputs.tag }}
           files: airhop.spdx.json
@@ -546,7 +546,7 @@ jobs:
           subject-path: airhop-${{ needs.release.outputs.tag }}-sources.sha256
 
       - name: Upload source manifest to release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ needs.release.outputs.tag }}
           files: airhop-${{ needs.release.outputs.tag }}-sources.sha256

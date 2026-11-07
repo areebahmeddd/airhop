@@ -119,6 +119,11 @@ const CATALOG: {
         repo: "https://github.com/expo/expo/tree/main/packages/expo-intent-launcher",
       },
       {
+        name: "expo-keep-awake",
+        license: "MIT",
+        repo: "https://github.com/expo/expo/tree/main/packages/expo-keep-awake",
+      },
+      {
         name: "expo-local-authentication",
         license: "MIT",
         repo: "https://github.com/expo/expo/tree/main/packages/expo-local-authentication",
