@@ -1,7 +1,7 @@
 // NUT-13 counters across phrase changes, restores and mints met late. A
 // counter is the cursor a phrase's secrets derive from: one left ahead of the
 // phrase puts its coins past the reach of a restore, and one left behind
-// re-derives outputs the mint has signed (10002), which must cost a retry and
+// re-derives outputs the mint has signed (11003), which must cost a retry and
 // never the coins. Also: a restore of the phrase in use reports nothing new.
 //
 // Runs the real wallet service against the simulated mint, which refuses a

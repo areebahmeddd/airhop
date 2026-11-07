@@ -2338,7 +2338,7 @@ test("W32 a melt's swap-down replayed after a lost answer stays the user's", asy
 test("W33 a mint added after a restore picks up where the phrase left off", async () => {
   // The restore named one mint, so the phrase's counters at the other start
   // from zero, behind outputs the mint has signed. A mint refuses a blinded
-  // message twice (10002), so the next deposit there would fail for good.
+  // message twice (11003), so the next deposit there would fail for good.
   const s = (scenario = new Scenario({
     id: "W33",
     title: "NUT-13 counters caught up on a mint added after a restore",
