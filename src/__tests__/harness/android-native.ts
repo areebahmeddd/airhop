@@ -63,7 +63,12 @@ export interface BleNativeModule {
   stopAdvertising(): Promise<void>;
   startScanning(serviceUUIDs: string[]): Promise<void>;
   stopScanning(): Promise<void>;
-  writeToLink(linkID: string, dataBase64: string): Promise<void>;
+  writeToLink(
+    linkID: string,
+    dataBase64: string,
+    ttlMs: number,
+  ): Promise<number>;
+  setLiveMediaActive(active: boolean): Promise<void>;
   getRadioState(): Promise<RadioStateReport>;
   requestEnableBluetooth(): Promise<boolean>;
   openLocationSettings(): Promise<boolean>;
@@ -409,7 +414,13 @@ export class AndroidBleModule implements BleNativeModule {
     this.os.log("native", "GATT_SERVER_OPENED");
   }
 
-  async writeToLink(linkID: string, dataBase64: string): Promise<void> {
+  // The radio model delivers every write at once, so nothing ever waits in
+  // the link's queue: the depth is always 0 and no deadline can expire.
+  async writeToLink(
+    linkID: string,
+    dataBase64: string,
+    _ttlMs: number,
+  ): Promise<number> {
     const central = this.centralLinks.get(linkID);
     if (central !== undefined) {
       if (central.generation !== this.os.gattGeneration) {
@@ -419,16 +430,24 @@ export class AndroidBleModule implements BleNativeModule {
         );
       }
       this.radioPort?.write(linkID, dataBase64);
-      return;
+      return 0;
     }
     if (this.peripheralLinks.has(linkID)) {
       if (this.characteristic === null) {
         return rejectWith("NOT_READY", "GATT server not initialized");
       }
       this.radioPort?.write(linkID, dataBase64);
-      return;
+      return 0;
     }
     return rejectWith("UNKNOWN_LINK", `No active link with ID ${linkID}`);
+  }
+
+  // Connection priority while a stream runs. The radio model has no
+  // connection interval, so this only records what was asked.
+  liveMediaActive = false;
+
+  async setLiveMediaActive(active: boolean): Promise<void> {
+    this.liveMediaActive = active;
   }
 
   addListener(): void {
