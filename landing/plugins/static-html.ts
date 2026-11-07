@@ -15,6 +15,7 @@ import {
   breadcrumbSchema,
   canonicalUrl,
   isIndexable,
+  LAST_UPDATED,
   NOT_FOUND_SEO,
   PAGES,
   type PageSeo,
@@ -107,7 +108,7 @@ function sitemap(pages: PageSeo[]): string {
             )
             .join("")
         : "";
-      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${page.lastmod}</lastmod>\n${links}  </url>`;
+      return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${LAST_UPDATED}</lastmod>\n${links}  </url>`;
     });
   });
 

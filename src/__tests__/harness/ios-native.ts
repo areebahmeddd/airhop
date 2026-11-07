@@ -351,7 +351,13 @@ export class IosBleModule implements BleNativeModule {
     DeviceEventEmitter.emit(name, body);
   }
 
-  async writeToLink(linkID: string, dataBase64: string): Promise<void> {
+  // The radio model delivers every write at once, so nothing ever waits in
+  // the link's queue: the depth is always 0 and no deadline can expire.
+  async writeToLink(
+    linkID: string,
+    dataBase64: string,
+    _ttlMs: number,
+  ): Promise<number> {
     if (this.centralLinks.has(linkID)) {
       if (!this.readyCentralLinks.has(linkID)) {
         return rejectWith("NOT_READY", `Link ${linkID} is not notifying yet`);
@@ -361,13 +367,21 @@ export class IosBleModule implements BleNativeModule {
         return rejectWith("WRITE_BUSY", "stale link");
       }
       this.radioPort?.write(linkID, dataBase64);
-      return;
+      return 0;
     }
     if (this.peripheralLinks.has(linkID)) {
       this.radioPort?.write(linkID, dataBase64);
-      return;
+      return 0;
     }
     return rejectWith("UNKNOWN_LINK", `No active link with ID ${linkID}`);
+  }
+
+  // Connection priority while a stream runs. The radio model has no
+  // connection latency, so this only records what was asked.
+  liveMediaActive = false;
+
+  async setLiveMediaActive(active: boolean): Promise<void> {
+    this.liveMediaActive = active;
   }
 
   // RCTEventEmitter's addListener: / removeListeners:, one count for every

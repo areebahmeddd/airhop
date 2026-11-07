@@ -645,6 +645,7 @@ export const strings: Strings = {
   "chat.attach.send": "첨부 파일 보내기",
   "chat.attach.generic": "첨부 파일",
   "chat.video_prep.preparing": "동영상 준비 중",
+  "chat.video_prep.retrying": "더 작게 줄이는 중",
   "chat.video_prep.waiting": "동영상 준비 대기 중",
   "chat.video_prep.cancel": "이 동영상 준비 중단",
   "chat.video_prep.too_large":
@@ -676,8 +677,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "음성 메모 재생",
   "chat.media.pause_video": "동영상 일시정지",
   "chat.media.play_video": "동영상 재생",
-  "chat.media.voice_position": "음성 메모 위치",
-  "chat.media.voice_scrub": "막대를 따라 탭하면 그 지점으로 이동합니다",
+  "chat.media.voice_back": "5초 뒤로",
+  "chat.media.voice_forward": "5초 앞으로",
   "chat.media.image": "이미지",
   "chat.media.tap_load_photo": "탭하여 사진 불러오기",
   "chat.media.open_document": "{name} 열기",
@@ -733,6 +734,7 @@ export const strings: Strings = {
   "chat.live_video.title": "라이브 영상",
   "chat.live_video.go_live": "라이브 시작",
   "chat.live_video.end": "종료",
+  "chat.live_video.ending": "종료 중…",
   "chat.live_video.end_title": "라이브 영상을 종료할까요?",
   "chat.live_video.end_body":
     "종료하면 녹화본이 이 채팅에 남습니다. 삭제하면 시청 중인 모든 사람에게 지우라고 알립니다.",
@@ -744,9 +746,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "낮음",
   "chat.live_video.quality_medium": "보통",
   "chat.live_video.quality_high": "높음",
-  "chat.live_video.quality_low_hint": "여러 홉 떨어진 사람까지 닿습니다",
-  "chat.live_video.quality_medium_hint": "한두 홉 떨어진 사람용",
-  "chat.live_video.quality_high_hint": "바로 옆에 있는 사람용",
+  "chat.live_video.quality_low_hint":
+    "블루투스로 여러 홉 떨어진 사람까지 닿습니다",
+  "chat.live_video.quality_medium_hint":
+    "더 선명함, Wi-Fi Aware나 같은 Wi-Fi로 보는 사람용",
+  "chat.live_video.quality_high_hint":
+    "가장 선명함, Wi-Fi Aware나 같은 Wi-Fi로 보는 사람용",
+  "chat.live_video.quality_needs_wifi": "근처에 Wi-Fi가 필요합니다",
+  "chat.live_video.quality_bluetooth_note":
+    "보통과 높음은 근처에 Wi-Fi가 필요합니다",
   "chat.live_video.signal_good": "원활함",
   "chat.live_video.signal_weak": "뒤처지는 중",
   "chat.live_video.signal_poor": "영상을 보내기엔 너무 느려 소리만 보내는 중",
@@ -761,6 +769,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "위로 밀면 손을 떼고 녹음",
   "chat.voice.live_speaking": "{name}이(가) 말하는 중",
   "chat.voice.live_ended": "종료됨",
+  "chat.voice.live_stopped": "라이브 음성이 끝났습니다",
   "voice.unavailable": "실시간 음성을 사용할 수 없음",
   "voice.recording_stopped": "녹음이 중지되었습니다",
 
@@ -1837,13 +1846,15 @@ export const strings: Strings = {
     "이 연락처의 키가 아직 없습니다. 메시지를 보내거나, 만났을 때 코드를 스캔하세요.",
   "contacts.verify.compare_title": "서로에게 읽어주세요",
   "contacts.verify.compare_body":
-    "{name}의 Airhop에도 같은 여섯 단어가 보입니다. 일치한다면 두 사람 모두 키가 진짜임을 알 수 있습니다. bitchat에는 이런 단어가 없으니 대신 코드를 스캔하세요.",
-  "contacts.verify.codes_match": "일치합니다",
-  "contacts.verify.codes_differ": "일치하지 않습니다",
+    "내 코드를 {name}에게 읽어 주어 상대 휴대폰에서 확인하게 하세요. 그런 다음 상대가 읽어 주는 코드를 여기 있는 상대 코드와 대조하세요. 확인 표시는 각자 자기 휴대폰에서 합니다. bitchat에는 이런 단어가 없으니 대신 코드를 스캔하세요.",
+  "contacts.verify.your_code": "내 코드",
+  "contacts.verify.their_code": "상대 코드",
+  "contacts.verify.codes_match": "상대 코드가 일치합니다",
+  "contacts.verify.codes_differ": "상대 코드가 일치하지 않습니다",
   "contacts.verify.codes_differ_body":
     "이 휴대폰의 키가 {name}의 것이 아닐 수 있습니다. 이 채팅을 믿기 전에 직접 만나 코드를 스캔하세요.",
   "contacts.verify.compared_body":
-    "{name}과(와) 같은 코드를 확인했습니다. 이 연락처는 확인되었습니다.",
+    "{name}이(가) 읽어 준 코드가 일치하므로 이 휴대폰에서 확인되었습니다. 상대는 자기 휴대폰에서 나를 확인합니다.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "뒤로 가기",
@@ -1994,11 +2005,32 @@ export const strings: Strings = {
     "신호가 닿지 않는 곳에서 한두 주를 보낼 때의 절충안입니다.",
   "settings.general.retention_30_desc":
     "대화를 가장 오래 읽을 수 있게 해주며, 저장 공간도 가장 많이 씁니다.",
+  "settings.general.message_retention": "사라지는 메시지",
+  "settings.general.message_retention_desc":
+    "메시지와 미디어가 선택한 기간이 지나면 이 기기에서 삭제됩니다",
+  "settings.general.message_retention_sheet":
+    "각 메시지가 이 기기에 도착한 때부터 계산하며, 잊는 것은 이 기기뿐입니다. 상대방 기기에는 사본이 남고, 스크린숏은 막을 수 없으며, 개인 대화로 온 결제 중 아직 받지 않은 것은 받을 때까지 남아 있습니다.",
+  "settings.general.message_retention_off_desc":
+    "채팅을 비우거나 나갈 때까지 메시지가 남아 있습니다",
+  "settings.general.message_retention_1_desc":
+    "기기 자체가 위험할 때 가장 적게 남깁니다",
+  "settings.general.message_retention_7_desc":
+    "일주일 동안 읽을 수 있고 그 뒤에는 사라집니다",
+  "settings.general.message_retention_30_desc":
+    "대화를 가장 오래 읽을 수 있게 둡니다",
+  "settings.general.message_retention_confirm_title":
+    "오래된 메시지를 삭제할까요?",
+  "settings.general.message_retention_confirm_1":
+    "1일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+  "settings.general.message_retention_confirm_7":
+    "7일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+  "settings.general.message_retention_confirm_30":
+    "30일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
   "settings.general.reset_desc":
     "신원, 메시지, 연락처, 지갑은 그대로 둔 채 환경설정을 기본값으로 되돌립니다",
   "settings.general.reset_title": "설정을 초기화할까요?",
   "settings.general.reset_body":
-    "화면, 언어, 알림, 보내기 취소, 연결(게이트웨이, 메시 브리지, 릴레이)을 포함한 환경설정이 기본값으로 돌아갑니다. Airhop 잠금, 미디어 보관 기간, 인터넷 스위치, Tor와 그 브리지, 상태는 설정한 그대로 유지됩니다. 신원, 메시지, 연락처, 지갑은 그대로 유지됩니다.",
+    "화면, 언어, 알림, 보내기 취소, 연결(게이트웨이, 메시 브리지, 릴레이)을 포함한 환경설정이 기본값으로 돌아갑니다. Airhop 잠금, 메시지와 미디어 보관 기간, 인터넷 스위치, Tor와 그 브리지, 상태는 설정한 그대로 유지됩니다. 신원, 메시지, 연락처, 지갑은 그대로 유지됩니다.",
   "settings.general.reset_confirm": "초기화",
 
   // ---- Settings: privacy and security ----

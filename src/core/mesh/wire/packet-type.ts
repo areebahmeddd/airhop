@@ -38,11 +38,3 @@ export const enum PacketType {
   // top of the Nostr copy bitchat already receives. `#bluetooth` keeps 0x02.
   CHANNEL_MSG_AIRHOP = 0x51,
 }
-
-// Retired values, recorded so they are not reintroduced:
-//
-//   0x30 VIDEO_FRAME  specified over a same-platform WiFi path, so
-//                     cross-platform video was never reachable on it.
-//   0x40 CASHU_TOKEN  ecash travels as text inside an ordinary encrypted DM and
-//                     is found by findTokensInText(). A dedicated type would be
-//                     a second path to keep in sync.

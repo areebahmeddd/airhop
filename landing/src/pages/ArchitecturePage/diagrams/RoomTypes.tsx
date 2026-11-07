@@ -2,7 +2,7 @@ import { Caption, FILL, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
 
 export function RoomTypes() {
   const rooms = [
-    { t: "Public channel", k: "no key", w: "anyone in range", r: "mesh only" },
+    { t: "Public channel", k: "no key", w: "anyone in range", r: "mesh, optionally bridged" },
     { t: "Location channel", k: "no key", w: "anyone in the cell", r: "mesh + internet" },
     {
       t: "Private channel",

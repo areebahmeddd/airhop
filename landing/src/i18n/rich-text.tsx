@@ -1,7 +1,5 @@
 import React from "react";
-import { useT, type TranslationKey, type TranslationVars } from "./index.ts";
-
-const PLACEHOLDER = /\{(\w+)\}/g;
+import { PLACEHOLDER, useT, type TranslationKey, type TranslationVars } from "./index.ts";
 
 export function useRichText(
   key: TranslationKey,

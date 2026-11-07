@@ -652,6 +652,7 @@ export const strings: Strings = {
   "chat.attach.send": "ਅਟੈਚਮੈਂਟ ਭੇਜੋ",
   "chat.attach.generic": "ਅਟੈਚਮੈਂਟ",
   "chat.video_prep.preparing": "ਵੀਡੀਓ ਤਿਆਰ ਹੋ ਰਿਹਾ ਹੈ",
+  "chat.video_prep.retrying": "ਹੋਰ ਛੋਟਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ",
   "chat.video_prep.waiting": "ਵੀਡੀਓ ਤਿਆਰ ਹੋਣ ਦੀ ਉਡੀਕ ਵਿੱਚ",
   "chat.video_prep.cancel": "ਇਸ ਵੀਡੀਓ ਨੂੰ ਤਿਆਰ ਕਰਨਾ ਰੋਕੋ",
   "chat.video_prep.too_large": "ਇਹ ਵੀਡੀਓ ਭੇਜਣ ਜੋਗਾ ਛੋਟਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ।",
@@ -682,8 +683,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "ਵੌਇਸ ਨੋਟ ਚਲਾਓ",
   "chat.media.pause_video": "ਵੀਡੀਓ ਰੋਕੋ",
   "chat.media.play_video": "ਵੀਡੀਓ ਚਲਾਓ",
-  "chat.media.voice_position": "ਵੌਇਸ ਨੋਟ ਦੀ ਥਾਂ",
-  "chat.media.voice_scrub": "ਉਸ ਥਾਂ ’ਤੇ ਜਾਣ ਲਈ ਲਕੀਰਾਂ ਦੇ ਨਾਲ-ਨਾਲ ਦਬਾਓ",
+  "chat.media.voice_back": "5 ਸਕਿੰਟ ਪਿੱਛੇ",
+  "chat.media.voice_forward": "5 ਸਕਿੰਟ ਅੱਗੇ",
   "chat.media.image": "ਤਸਵੀਰ",
   "chat.media.tap_load_photo": "ਫ਼ੋਟੋ ਲੋਡ ਕਰਨ ਲਈ ਦਬਾਓ",
   "chat.media.open_document": "{name} ਖੋਲ੍ਹੋ",
@@ -740,6 +741,7 @@ export const strings: Strings = {
   "chat.live_video.title": "ਲਾਈਵ ਵੀਡੀਓ",
   "chat.live_video.go_live": "ਲਾਈਵ ਜਾਓ",
   "chat.live_video.end": "ਖਤਮ ਕਰੋ",
+  "chat.live_video.ending": "ਖਤਮ ਹੋ ਰਿਹਾ ਹੈ…",
   "chat.live_video.end_title": "ਲਾਈਵ ਵੀਡੀਓ ਖਤਮ ਕਰਨੀ ਹੈ?",
   "chat.live_video.end_body":
     "ਖਤਮ ਕਰਨ ਨਾਲ ਰਿਕਾਰਡਿੰਗ ਇਸੇ ਚੈਟ ਵਿੱਚ ਰਹਿੰਦੀ ਹੈ। ਰੱਦ ਕਰਨ ਨਾਲ ਦੇਖ ਰਹੇ ਸਾਰੇ ਲੋਕਾਂ ਨੂੰ ਇਸਨੂੰ ਮਿਟਾਉਣ ਲਈ ਕਿਹਾ ਜਾਂਦਾ ਹੈ।",
@@ -751,9 +753,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "ਘੱਟ",
   "chat.live_video.quality_medium": "ਦਰਮਿਆਨੀ",
   "chat.live_video.quality_high": "ਉੱਚੀ",
-  "chat.live_video.quality_low_hint": "ਕਈ ਹੌਪ ਦੂਰ ਦੇ ਲੋਕਾਂ ਤੱਕ ਪਹੁੰਚਦੀ ਹੈ",
-  "chat.live_video.quality_medium_hint": "ਇੱਕ ਜਾਂ ਦੋ ਹੌਪ ਦੂਰ ਦੇ ਲੋਕਾਂ ਲਈ",
-  "chat.live_video.quality_high_hint": "ਬਿਲਕੁਲ ਤੁਹਾਡੇ ਕੋਲ ਦੇ ਲੋਕਾਂ ਲਈ",
+  "chat.live_video.quality_low_hint":
+    "ਬਲੂਟੁੱਥ ਰਾਹੀਂ ਕਈ ਹੌਪ ਦੂਰ ਦੇ ਲੋਕਾਂ ਤੱਕ ਪਹੁੰਚਦੀ ਹੈ",
+  "chat.live_video.quality_medium_hint":
+    "ਵਧੇਰੇ ਸਾਫ਼, Wi-Fi Aware ਜਾਂ ਇੱਕੋ Wi-Fi ਉੱਤੇ ਦੇਖਣ ਵਾਲਿਆਂ ਲਈ",
+  "chat.live_video.quality_high_hint":
+    "ਸਭ ਤੋਂ ਸਾਫ਼, Wi-Fi Aware ਜਾਂ ਇੱਕੋ Wi-Fi ਉੱਤੇ ਦੇਖਣ ਵਾਲਿਆਂ ਲਈ",
+  "chat.live_video.quality_needs_wifi": "ਨੇੜੇ Wi-Fi ਚਾਹੀਦਾ ਹੈ",
+  "chat.live_video.quality_bluetooth_note":
+    "ਦਰਮਿਆਨੀ ਅਤੇ ਉੱਚੀ ਲਈ ਨੇੜੇ Wi-Fi ਚਾਹੀਦਾ ਹੈ",
   "chat.live_video.signal_good": "ਨਾਲ ਚੱਲ ਰਿਹਾ ਹੈ",
   "chat.live_video.signal_weak": "ਪਿੱਛੇ ਰਹਿ ਰਿਹਾ ਹੈ",
   "chat.live_video.signal_poor":
@@ -769,6 +777,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "ਬਿਨਾਂ ਹੱਥ ਲਾਏ ਰਿਕਾਰਡ ਕਰਨ ਲਈ ਉੱਪਰ ਖਿਸਕਾਓ",
   "chat.voice.live_speaking": "{name} ਬੋਲ ਰਹੇ ਹਨ",
   "chat.voice.live_ended": "ਖ਼ਤਮ",
+  "chat.voice.live_stopped": "ਲਾਈਵ ਆਵਾਜ਼ ਖਤਮ ਹੋਈ",
   "voice.unavailable": "ਸਿੱਧੀ ਆਵਾਜ਼ ਉਪਲਬਧ ਨਹੀਂ",
   "voice.recording_stopped": "ਰਿਕਾਰਡਿੰਗ ਰੁਕ ਗਈ",
 
@@ -1852,13 +1861,15 @@ export const strings: Strings = {
     "ਇਸ ਸੰਪਰਕ ਲਈ ਹਾਲੇ ਕੋਈ ਕੁੰਜੀ ਨਹੀਂ ਹੈ। ਉਹਨਾਂ ਨੂੰ ਸੁਨੇਹਾ ਭੇਜੋ, ਜਾਂ ਮਿਲਣ ’ਤੇ ਉਹਨਾਂ ਦਾ ਕੋਡ ਸਕੈਨ ਕਰੋ।",
   "contacts.verify.compare_title": "ਇਹ ਇੱਕ ਦੂਜੇ ਨੂੰ ਪੜ੍ਹ ਕੇ ਸੁਣਾਓ",
   "contacts.verify.compare_body":
-    "{name} ਨੂੰ Airhop ਵਿੱਚ ਇਹੀ ਛੇ ਸ਼ਬਦ ਦਿਸਦੇ ਹਨ। ਜੇ ਇਹ ਮੇਲ ਖਾਂਦੇ ਹਨ ਤਾਂ ਤੁਹਾਨੂੰ ਦੋਵਾਂ ਨੂੰ ਪਤਾ ਹੈ ਕਿ ਕੁੰਜੀਆਂ ਅਸਲੀ ਹਨ। bitchat ਅਜਿਹੇ ਸ਼ਬਦ ਨਹੀਂ ਦਿਖਾਉਂਦਾ, ਇਸ ਲਈ ਇਸਦੀ ਥਾਂ ਉਹਨਾਂ ਦਾ ਕੋਡ ਸਕੈਨ ਕਰੋ।",
-  "contacts.verify.codes_match": "ਇਹ ਮੇਲ ਖਾਂਦੇ ਹਨ",
-  "contacts.verify.codes_differ": "ਇਹ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ",
+    "ਆਪਣਾ ਕੋਡ {name} ਨੂੰ ਪੜ੍ਹ ਕੇ ਸੁਣਾਓ, ਤਾਂ ਜੋ ਉਹ ਆਪਣੇ ਫ਼ੋਨ ਉੱਤੇ ਜਾਂਚ ਸਕਣ। ਫਿਰ ਜੋ ਕੋਡ ਉਹ ਪੜ੍ਹਨ, ਉਸਨੂੰ ਇੱਥੇ ਉਹਨਾਂ ਦੇ ਕੋਡ ਨਾਲ ਮਿਲਾਓ। ਤੁਸੀਂ ਦੋਵੇਂ ਆਪਣੇ-ਆਪਣੇ ਫ਼ੋਨ ਉੱਤੇ ਦੂਜੇ ਨੂੰ ਪੁਸ਼ਟੀਸ਼ੁਦਾ ਮਾਰਕ ਕਰਦੇ ਹੋ। bitchat ਅਜਿਹੇ ਸ਼ਬਦ ਨਹੀਂ ਦਿਖਾਉਂਦਾ, ਇਸ ਲਈ ਇਸਦੀ ਥਾਂ ਉਹਨਾਂ ਦਾ ਕੋਡ ਸਕੈਨ ਕਰੋ।",
+  "contacts.verify.your_code": "ਤੁਹਾਡਾ ਕੋਡ",
+  "contacts.verify.their_code": "ਉਹਨਾਂ ਦਾ ਕੋਡ",
+  "contacts.verify.codes_match": "ਉਹਨਾਂ ਦਾ ਕੋਡ ਮੇਲ ਖਾਂਦਾ ਹੈ",
+  "contacts.verify.codes_differ": "ਉਹਨਾਂ ਦਾ ਕੋਡ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ",
   "contacts.verify.codes_differ_body":
     "ਹੋ ਸਕਦਾ ਹੈ ਇਸ ਫ਼ੋਨ ’ਤੇ ਕੁੰਜੀਆਂ {name} ਦੀਆਂ ਨਾ ਹੋਣ। ਇਸ ਚੈਟ ’ਤੇ ਭਰੋਸਾ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਆਹਮੋ-ਸਾਹਮਣੇ ਉਹਨਾਂ ਦਾ ਕੋਡ ਸਕੈਨ ਕਰੋ।",
   "contacts.verify.compared_body":
-    "ਤੁਸੀਂ ਅਤੇ {name} ਨੇ ਇੱਕੋ ਕੋਡ ਦੀ ਪੁਸ਼ਟੀ ਕੀਤੀ। ਇਹ ਸੰਪਰਕ ਪੁਸ਼ਟੀਸ਼ੁਦਾ ਹੈ।",
+    "{name} ਵੱਲੋਂ ਪੜ੍ਹਿਆ ਕੋਡ ਮੇਲ ਖਾਂਦਾ ਹੈ, ਇਸ ਲਈ ਇਸ ਫ਼ੋਨ ਉੱਤੇ ਉਹ ਪੁਸ਼ਟੀਸ਼ੁਦਾ ਹਨ। ਉਹ ਆਪਣੇ ਫ਼ੋਨ ਉੱਤੇ ਤੁਹਾਡੀ ਪੁਸ਼ਟੀ ਕਰਦੇ ਹਨ।",
 
   // ---- Settings: shared chrome ----
   "settings.back": "ਵਾਪਸ ਜਾਓ",
@@ -2015,11 +2026,32 @@ export const strings: Strings = {
     "ਸਿਗਨਲ ਤੋਂ ਹਫ਼ਤਾ-ਦੋ ਹਫ਼ਤੇ ਦੂਰ ਰਹਿਣ ਲਈ ਵਿਚਲਾ ਰਾਹ।",
   "settings.general.retention_30_desc":
     "ਗੱਲਬਾਤਾਂ ਸਭ ਤੋਂ ਲੰਮਾ ਸਮਾਂ ਪੜ੍ਹਨਯੋਗ ਰੱਖਦਾ ਹੈ, ਅਤੇ ਡਿਸਕ ’ਤੇ ਸਭ ਤੋਂ ਵੱਧ ਰੱਖਦਾ ਹੈ।",
+  "settings.general.message_retention": "ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ",
+  "settings.general.message_retention_desc":
+    "ਸੁਨੇਹੇ ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਮੀਡੀਆ ਚੁਣੇ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਂਦੇ ਹਨ",
+  "settings.general.message_retention_sheet":
+    "ਹਰ ਸੁਨੇਹੇ ਦੇ ਇਸ ਫ਼ੋਨ ’ਤੇ ਪਹੁੰਚਣ ਤੋਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਸਿਰਫ਼ ਇਹੀ ਫ਼ੋਨ ਭੁੱਲਦਾ ਹੈ। ਦੂਜੇ ਵਿਅਕਤੀ ਦਾ ਫ਼ੋਨ ਆਪਣੀ ਕਾਪੀ ਰੱਖਦਾ ਹੈ, ਸਕ੍ਰੀਨਸ਼ਾਟ ਰੋਕੇ ਨਹੀਂ ਜਾ ਸਕਦੇ, ਅਤੇ ਨਿੱਜੀ ਚੈਟ ਵਿੱਚ ਭੇਜੇ ਗਏ ਜੋ ਭੁਗਤਾਨ ਤੁਸੀਂ ਅਜੇ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕੀਤੇ, ਉਹ ਪ੍ਰਾਪਤ ਕਰਨ ਤੱਕ ਰਹਿੰਦੇ ਹਨ।",
+  "settings.general.message_retention_off_desc":
+    "ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਚੈਟ ਸਾਫ਼ ਨਹੀਂ ਕਰਦੇ ਜਾਂ ਛੱਡਦੇ ਨਹੀਂ, ਸੁਨੇਹੇ ਰਹਿੰਦੇ ਹਨ",
+  "settings.general.message_retention_1_desc":
+    "ਸਭ ਤੋਂ ਘੱਟ ਪਿੱਛੇ ਛੱਡਦਾ ਹੈ, ਜੇ ਫ਼ੋਨ ਹੀ ਖ਼ਤਰਾ ਹੋਵੇ",
+  "settings.general.message_retention_7_desc":
+    "ਪੜ੍ਹ ਲੈਣ ਲਈ ਇੱਕ ਹਫ਼ਤਾ, ਫਿਰ ਗਾਇਬ",
+  "settings.general.message_retention_30_desc":
+    "ਗੱਲਬਾਤ ਨੂੰ ਸਭ ਤੋਂ ਲੰਮਾ ਸਮਾਂ ਪੜ੍ਹਨਯੋਗ ਰੱਖਦਾ ਹੈ",
+  "settings.general.message_retention_confirm_title":
+    "ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਮਿਟਾਉਣੇ ਹਨ?",
+  "settings.general.message_retention_confirm_1":
+    "1 ਦਿਨ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
+  "settings.general.message_retention_confirm_7":
+    "7 ਦਿਨਾਂ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
+  "settings.general.message_retention_confirm_30":
+    "30 ਦਿਨਾਂ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
   "settings.general.reset_desc":
     "ਤਰਜੀਹਾਂ ਨੂੰ ਉਨ੍ਹਾਂ ਦੇ ਮੂਲ ’ਤੇ ਵਾਪਸ ਲੈ ਜਾਂਦਾ ਹੈ, ਤੁਹਾਡੀ ਪਛਾਣ, ਸੁਨੇਹੇ, ਸੰਪਰਕ ਅਤੇ ਵਾਲਿਟ ਉਵੇਂ ਦੇ ਉਵੇਂ ਛੱਡ ਕੇ",
   "settings.general.reset_title": "ਸੈਟਿੰਗਾਂ ਮੁੜ-ਸੈੱਟ ਕਰਨੀਆਂ ਹਨ?",
   "settings.general.reset_body":
-    "ਤਰਜੀਹਾਂ ਆਪਣੇ ਮੂਲ ’ਤੇ ਵਾਪਸ ਚਲੀਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਜਿਨ੍ਹਾਂ ਵਿੱਚ ਦਿੱਖ, ਭਾਸ਼ਾ, ਸੂਚਨਾਵਾਂ, ਭੇਜਣਾ ਵਾਪਸ ਲੈਣਾ, ਅਤੇ ਜੁੜਾਅ (ਗੇਟਵੇ, ਮੈਸ਼ ਪੁਲ, ਰਿਲੇ) ਸ਼ਾਮਲ ਹਨ। Airhop ਲੌਕ, ਮੀਡੀਆ ਕਿੰਨਾ ਚਿਰ ਰੱਖਿਆ ਜਾਵੇ, ਇੰਟਰਨੈੱਟ ਦਾ ਸਵਿੱਚ, Tor ਅਤੇ ਉਸਦੇ ਬ੍ਰਿਜ, ਅਤੇ ਤੁਹਾਡੀ ਹਾਲਤ ਉਵੇਂ ਹੀ ਰਹਿੰਦੇ ਹਨ ਜਿਵੇਂ ਤੁਸੀਂ ਸੈੱਟ ਕੀਤੇ ਸਨ। ਤੁਹਾਡੀ ਪਛਾਣ, ਸੁਨੇਹੇ, ਸੰਪਰਕ ਅਤੇ ਵਾਲਿਟ ਉਵੇਂ ਦੇ ਉਵੇਂ ਰਹਿੰਦੇ ਹਨ।",
+    "ਤਰਜੀਹਾਂ ਆਪਣੇ ਮੂਲ ’ਤੇ ਵਾਪਸ ਚਲੀਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਜਿਨ੍ਹਾਂ ਵਿੱਚ ਦਿੱਖ, ਭਾਸ਼ਾ, ਸੂਚਨਾਵਾਂ, ਭੇਜਣਾ ਵਾਪਸ ਲੈਣਾ, ਅਤੇ ਜੁੜਾਅ (ਗੇਟਵੇ, ਮੈਸ਼ ਪੁਲ, ਰਿਲੇ) ਸ਼ਾਮਲ ਹਨ। Airhop ਲੌਕ, ਸੁਨੇਹੇ ਅਤੇ ਮੀਡੀਆ ਕਿੰਨਾ ਚਿਰ ਰੱਖੇ ਜਾਣ, ਇੰਟਰਨੈੱਟ ਦਾ ਸਵਿੱਚ, Tor ਅਤੇ ਉਸਦੇ ਬ੍ਰਿਜ, ਅਤੇ ਤੁਹਾਡੀ ਹਾਲਤ ਉਵੇਂ ਹੀ ਰਹਿੰਦੇ ਹਨ ਜਿਵੇਂ ਤੁਸੀਂ ਸੈੱਟ ਕੀਤੇ ਸਨ। ਤੁਹਾਡੀ ਪਛਾਣ, ਸੁਨੇਹੇ, ਸੰਪਰਕ ਅਤੇ ਵਾਲਿਟ ਉਵੇਂ ਦੇ ਉਵੇਂ ਰਹਿੰਦੇ ਹਨ।",
   "settings.general.reset_confirm": "ਮੁੜ-ਸੈੱਟ ਕਰੋ",
 
   // ---- Settings: privacy and security ----

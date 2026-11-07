@@ -104,7 +104,7 @@ test("a signed card is imported with its Nostr key", () => {
 });
 
 // A real person's card with someone else's Nostr key passes every mesh key
-// check, and once the safety number matched it would route their internet DMs
+// check, and once the safety code matched it would route their internet DMs
 // to the forger. The signature is what refuses it, before anything is seeded.
 test("a card with a substituted Nostr key is refused as invalid", () => {
   const noisePubKey = new Uint8Array(32).fill(3);

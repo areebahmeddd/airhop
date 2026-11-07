@@ -20,7 +20,9 @@ import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
 import { startBackgroundNotice } from "./background-notice";
 
+import { startAttachmentCleanup } from "./file-transfer-service";
 import { sweepMediaIfDue } from "./media-retention";
+import { startMessageRetention } from "./message-retention";
 import { readMoveMarker } from "./move-marker";
 import { startNotificationPipeline } from "./notification-pipeline";
 import { applyStartupPresence } from "./presence-service";
@@ -78,6 +80,8 @@ async function bootStartMesh(): Promise<void> {
   startBackgroundNotice();
   startReachabilityWatch();
   sweepMediaIfDue();
+  startAttachmentCleanup();
+  startMessageRetention((ids) => getMeshService()?.forgetReadAcks(ids));
 
   await new Promise<void>((resolve) => setTimeout(resolve, MESH_SETTLE_MS));
 }

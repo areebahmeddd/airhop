@@ -65,7 +65,7 @@ export const strings = {
   "home.about.body.identity":
     "Your identity is an {ed25519} key pair generated on your device and stored in {ios_keychain} or {android_keystore}. There are no accounts, no registrations, and nothing that touches any server, so it can be used as a burner app that leaves nothing linking back to you once deleted.",
   "home.about.body.crypto":
-    "Every session uses the {noise} protocol for an authenticated handshake. Live direct messages between Airhop phones use the {ratchet} algorithm, so a key leaked later cannot open messages already sent. Panic wipe destroys all keys and messages in under one second.",
+    "Every session uses the {noise} protocol for an authenticated handshake. Live direct messages between Airhop phones use the {ratchet} algorithm, so a key leaked later cannot open messages already sent. Panic wipe destroys all keys and messages in seconds.",
   "home.about.body.internet":
     "When you and a contact are out of Bluetooth range, {nostr} relays serve as an internet bridge, using {nip17}-shaped gift-wrapped direct messages, so the mesh extends globally whenever both of you are online. {tor} support is available on both iOS and Android, using {arti}, with {obfs4}, {snowflake} and {webtunnel} bridges for networks that block Tor.",
   "home.about.optional.title": "Airhop has optional features you can enable:",
@@ -181,7 +181,7 @@ export const strings = {
   "home.features.identity.keys.name": "Key pair identity",
   "home.features.identity.keys.line": "Made on this phone, stored in the OS keychain.",
   "home.features.identity.names.name": "Human-readable names",
-  "home.features.identity.names.line": "Derived from your key, so nobody can take yours.",
+  "home.features.identity.names.line": "Derived from your key, never chosen or registered.",
   "home.features.identity.qr.name": "QR contacts",
   "home.features.identity.qr.line": "One scan carries their keys, not just their name.",
   "home.features.identity.forward.name": "Forward secrecy",
@@ -190,7 +190,7 @@ export const strings = {
   "home.features.identity.move.line":
     "Chats and wallet move over, then the old phone erases itself.",
   "home.features.identity.panic.name": "Panic wipe",
-  "home.features.identity.panic.line": "Every key and message destroyed in under a second.",
+  "home.features.identity.panic.line": "Every key and message destroyed in seconds.",
 
   "home.features.networking.title": "Networking",
   "home.features.networking.summary": "The phones are the network.",

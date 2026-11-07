@@ -76,7 +76,8 @@ startAdvertising(serviceUUID: string, localName: string): Promise<void>
 stopAdvertising(): Promise<void>
 startScanning(serviceUUIDs: string[]): Promise<void>
 stopScanning(): Promise<void>
-writeToLink(linkID: string, dataBase64: string): Promise<void>
+writeToLink(linkID: string, dataBase64: string, ttlMs: number): Promise<number>
+setLiveMediaActive(active: boolean): Promise<void>
 getRadioState(): Promise<{ supported, poweredOn, authorization, ... }>
 setPowerMode(mode: string): Promise<void>        // no-op on iOS
 setBackgroundServiceEnabled(enabled: boolean): Promise<void>
@@ -99,6 +100,21 @@ openLocationSettings(): Promise<boolean>
 
 `stopScanning` also disconnects every central-role link, pending dials included, and emits `linkDisconnected` for each, on both platforms (bitchat-ios `stopServices`). Duty cycling and power-mode changes go through the internal scan cycle and keep their links; `stopAdvertising` (Invisible) touches no central link.
 
+**The write queue.** Every link has a FIFO queue in native, released by the radio's own readiness callbacks: Android `onCharacteristicWrite` (central) and `onNotificationSent` (peripheral), iOS `peripheralIsReady(toSendWriteWithoutResponse:)` and `didWriteValueFor` (central) and `peripheralManagerIsReady` (peripheral).
+
+- **Deadline.** `ttlMs > 0` means native drops the entry once it has waited longer than that, at the head and whenever a new write is queued, so a dead frame never holds a slot; `0` never expires. TypeScript picks it from the packet type (`core/mesh/links/write-deadline.ts`: 1500 for `VOICE_FRAME` and `VIDEO_FRAME`, and for a DM's live voice and video frames), so native still never reads the bytes.
+- **Depth.** `writeToLink` resolves on enqueue, not on transmit, with the number of writes on that link not yet handed to the radio, this one included (0 if handed over at once). A live stream paces itself by the median of these (`LinkRegistry.broadcastFastest`'s `queued`); the Wi-Fi Aware and LAN writers resolve 0.
+- **Refusal.** `WRITE_BUSY` only when that link's queue is full: Android at 256 entries or 1 MiB, iOS at 128 entries. A refused `writeToLink` never closes a link.
+- **Stuck stack (Android).** The radio refusing to take the head is retried. Past the retry limit (about 2 s) a live write is dropped and the next tried, but a write with no deadline is never skipped: the queue closes and the link is disconnected, so JS sees `linkDisconnected` rather than a file with a hole in it.
+- **Lost callback (Android).** A head with the radio for over 2 s with no write or notify callback is taken as delivered and the next goes, checked on each new write and, while scanning, on the device monitor's tick. As a peripheral that is the end of it. As a central the stack may still hold the lost write as outstanding and refuse the next, which then ends as a stuck stack.
+
+**Connection priority.** `setLiveMediaActive(true)` while a live stream is sent or received here, `false` once none is (`MeshService.syncLiveMedia`): Android `requestConnectionPriority(CONNECTION_PRIORITY_HIGH)` on its central GATTs, iOS peripheral `setDesiredConnectionLatency(.low)`. A hint; TypeScript ignores a rejection.
+
+## Voice Contract
+
+- **`startCapture` refuses, never pretends.** It resolves only once the microphone is really recording (Android: `AudioRecord` in `RECORDSTATE_RECORDING`, encoder configured) and rejects with `MIC_BUSY` or `CAPTURE_FAILED` (Android also `PERMISSION_DENIED`). Push-to-talk falls back to a voice note on `CAPTURE_FAILED` (not on `MIC_BUSY`, where a note would record silence too) and live video goes on silent, so a start that resolves early strands both. iOS reports a session a call outranks, and an input route at 0 Hz, as `MIC_BUSY`. A microphone lost later is `AirhopVoice.captureError`.
+- **iOS playback category.** Playback runs under `.playback` with `.spokenAudio` and `.mixWithOthers` while nothing captures, as bitchat-ios does, and moves to `.playAndRecord` only for capture.
+
 ## Tor Contract
 
 `startTor` rejects with a code the Tor screen names: `tor_bridge_rejected` (Arti refused the bridge lines), `tor_transport_failed` (the pluggable transports did not start), `tor_port_busy` (127.0.0.1:39050 already held, by bitchat-ios for one) or `tor_start_failed`. `stopTor(keepHeld)` resolves only once Arti and its transports are down, on both platforms, so a start that follows cannot overlap it; `keepHeld` leaves Android's HTTP stack held rather than routed direct, for a bridge change that starts again straight after, and iOS, holding nothing natively, ignores it.
@@ -118,7 +134,7 @@ There is one BLE module (`AirhopBLEModule`). Extend it; never add a second. The 
 
 ## What Not to Do
 
-- Parse, route, sign or encrypt in Swift or Kotlin.
+- Parse, route, sign or encrypt in Swift or Kotlin. That includes reading a packet's type to expire or prioritize a write: the deadline comes down with the write (`ttlMs`).
 - Dial, or choose whom to dial, in native.
 - Resolve a start that did not happen, or crash on a missing optional module.
 - Subscribe to a module's events through `DeviceEventEmitter` alone; iOS never sends them.

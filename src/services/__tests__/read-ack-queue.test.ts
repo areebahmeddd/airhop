@@ -39,3 +39,17 @@ describe("ReadAckQueue", () => {
     expect(q.take("bob")).toEqual(["b"]);
   });
 });
+
+describe("ReadAckQueue.forget", () => {
+  // A message disappearing messages removed was never read here, and a receipt
+  // for it would say it was.
+  test("drops the given IDs from every conversation, and empty ones", () => {
+    const q = new ReadAckQueue(10);
+    q.add("alice", "a1");
+    q.add("alice", "a2");
+    q.add("bob", "b1");
+    q.forget(new Set(["a1", "b1"]));
+    expect(q.has("bob")).toBe(false);
+    expect(q.take("alice")).toEqual(["a2"]);
+  });
+});

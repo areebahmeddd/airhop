@@ -5,8 +5,9 @@
 // Nostr and courier are transports in MessageRouter's sense but hold no
 // sockets, so they are not this file's concern.
 //
-// It holds links and answers questions about them. The one thing it decides
-// is which of a peer's links a broadcast goes down, a link-table question.
+// It holds links and answers questions about them. What it decides is which
+// of a peer's links a broadcast goes down, a link-table question, and which
+// Bluetooth links are too backed up to take live media (CROWDED_BLE_QUEUE).
 // Which packet goes where, what makes a peer count as direct, and what a
 // refused write means all stay in services/mesh-service.ts.
 //
@@ -18,6 +19,9 @@
 // Adding a transport is a member of `TRANSPORT_KINDS` and a writer for it. The
 // writers are injected and nothing here imports native code, so this runs in CI
 // without a radio.
+
+import { BLE_PACKET_BUDGET } from "../video/live-video-quality";
+import { LIVE_WRITE_TTL_MS } from "./write-deadline";
 
 // The order every observable list is enumerated in. Distinct from
 // `SEND_PREFERENCE`: this is "what order do we list things in", that is "which
@@ -39,6 +43,14 @@ export type TransportKind = (typeof TRANSPORT_KINDS)[number];
 // Bluetooth is the floor and the fallback.
 const SEND_PREFERENCE: readonly TransportKind[] = ["wifi", "lan", "ble"];
 
+// A Bluetooth link whose queue last stood this deep takes no live media, so
+// what is queued there already, chat, announces and handshakes included, can
+// drain. A second of a stream at Bluetooth's live pace: a stream relayed off
+// Wi-Fi Aware or LAN arrives many times faster than one Bluetooth link takes
+// it, and would fill the queue to the cap where the radio refuses everything
+// else sent to that neighbor.
+export const CROWDED_BLE_QUEUE = BLE_PACKET_BUDGET;
+
 export interface Link {
   readonly id: string;
   readonly kind: TransportKind;
@@ -48,7 +60,40 @@ export interface Link {
 // never interpreted here: a refused BLE write usually means a full queue on a
 // healthy link, a refused WiFi unicast is treated as a dead socket, and that
 // difference is the caller's to make.
-export type LinkWriteFn = (linkID: string, dataBase64: string) => Promise<void>;
+//
+// `ttlMs` is how long the write may wait in the link's queue before the radio
+// drops it unsent, 0 for never (write-deadline.ts). Resolves to how many writes
+// on that link are still waiting for the radio, this one included: Bluetooth's
+// queue depth, which a live stream paces itself by. Wi-Fi Aware and LAN stream
+// over a socket with no such queue, and resolve 0.
+export type LinkWriteFn = (
+  linkID: string,
+  dataBase64: string,
+  ttlMs: number,
+) => Promise<number>;
+
+// What one live write down `fastestLinks()` came to: links that took the
+// bytes, links that refused them, crowded Bluetooth links passed by unwritten
+// (CROWDED_BLE_QUEUE), and how deep the queues typically are (the lower
+// median, a skipped link counted at its last reading). The median rather than
+// the deepest: a neighbor that walked away stops draining its queue long
+// before its link closes, and as the deepest it would drop video for the whole
+// room. A radio that is really saturated backs every queue up, which the
+// median sees.
+export interface FastestResult {
+  readonly sent: number;
+  readonly refused: number;
+  readonly skipped: number;
+  readonly queued: number;
+}
+
+// Not exported: callers pass an object literal.
+interface FastestOptions {
+  readonly ttlMs: number;
+  // The link the bytes arrived on, for a relay, excluded as `fanout` excludes
+  // it: that link, and every link of the peer bound to it.
+  readonly exclude?: string;
+}
 
 // Not exported: callers pass an object literal.
 interface BroadcastOptions {
@@ -84,10 +129,19 @@ export class LinkRegistry {
   // unbind the other.
   private readonly linksByPeer = new Map<string, string[]>();
 
+  // linkID to the queue depth its last accepted write reported, and when. A
+  // refused write leaves it alone: the refusal says the queue is full without
+  // saying how full.
+  private readonly depthByLink = new Map<
+    string,
+    { depth: number; atMs: number }
+  >();
+
   private sent = 0;
 
   constructor(
     private readonly writers: Readonly<Record<TransportKind, LinkWriteFn>>,
+    private readonly now: () => number = Date.now,
   ) {}
 
   // ---- Lifecycle ----
@@ -107,6 +161,7 @@ export class LinkRegistry {
   // session state and drop it off the radar until its next announce.
   close(linkID: string): string | undefined {
     this.kindByLink.delete(linkID);
+    this.depthByLink.delete(linkID);
     const peerID = this.peerByLink.get(linkID);
     this.peerByLink.delete(linkID);
     if (peerID === undefined) return undefined;
@@ -219,16 +274,21 @@ export class LinkRegistry {
   }
 
   // One link per announced peer, its fastest, plus every link no peer has
-  // announced on yet, since that could be anyone. What a live stream goes down:
-  // a peer held on Bluetooth and LAN takes the LAN copy alone, and the
-  // Bluetooth airtime goes to neighbors with nothing faster.
-  fastestLinks(): readonly Link[] {
+  // announced on yet, since that could be anyone. What live media goes down,
+  // from its origin and at every relay: a peer held on Bluetooth and LAN takes
+  // the LAN copy alone, and the Bluetooth airtime goes to neighbors with
+  // nothing faster. `exclude` is a relay's ingress link, as in `fanout`.
+  fastestLinks(exclude?: string): readonly Link[] {
+    const ingressPeer =
+      exclude === undefined ? undefined : this.peerByLink.get(exclude);
     const links: Link[] = [];
     const seen = new Set<string>();
     for (const linkID of this.linkIDs()) {
+      if (linkID === exclude) continue;
       const kind = this.kindByLink.get(linkID);
       if (kind === undefined) continue;
       const peerID = this.peerByLink.get(linkID);
+      if (peerID !== undefined && peerID === ingressPeer) continue;
       const fastest = peerID === undefined ? undefined : this.linkFor(peerID);
       const link = fastest ?? { id: linkID, kind };
       if (seen.has(link.id)) continue;
@@ -298,6 +358,23 @@ export class LinkRegistry {
     return count;
   }
 
+  // The queue depth this link's last accepted write reported, 0 for a link not
+  // written within the live write deadline or not held. An older reading is
+  // past use: every live write in that queue has since been dropped unsent.
+  queueDepth(linkID: string): number {
+    const reading = this.depthByLink.get(linkID);
+    if (reading === undefined) return 0;
+    if (this.now() - reading.atMs >= LIVE_WRITE_TTL_MS) return 0;
+    return reading.depth;
+  }
+
+  // Whether live media passes this link by (CROWDED_BLE_QUEUE). Lapsing with
+  // the reading means the next live write goes and takes a fresh one, so a
+  // neighbor nobody else writes to is not shut out for good.
+  private crowded(link: Link): boolean {
+    return link.kind === "ble" && this.queueDepth(link.id) >= CROWDED_BLE_QUEUE;
+  }
+
   // ---- Writes ----
 
   // Accurate by construction, since every write goes through `send`.
@@ -306,13 +383,20 @@ export class LinkRegistry {
   }
 
   // Rejects exactly as the radio did, so callers keep their own failure
-  // handling. A link we do not hold resolves instead: it is the outcome the
-  // radio would have produced for a socket that closed a moment ago.
-  send(linkID: string, dataBase64: string): Promise<void> {
+  // handling, and resolves to the link's queue depth (LinkWriteFn). A link we
+  // do not hold resolves 0 instead: it is the outcome the radio would have
+  // produced for a socket that closed a moment ago.
+  send(linkID: string, dataBase64: string, ttlMs = 0): Promise<number> {
     const kind = this.kindByLink.get(linkID);
-    if (kind === undefined) return Promise.resolve();
+    if (kind === undefined) return Promise.resolve(0);
     this.sent += Math.ceil((dataBase64.length * 3) / 4);
-    return this.writers[kind](linkID, dataBase64);
+    return this.writers[kind](linkID, dataBase64, ttlMs).then((depth) => {
+      // A link closed while the write was in flight stays forgotten.
+      if (this.kindByLink.has(linkID)) {
+        this.depthByLink.set(linkID, { depth, atMs: this.now() });
+      }
+      return depth;
+    });
   }
 
   // The writes one broadcast makes, each a list of links tried in turn until
@@ -374,48 +458,58 @@ export class LinkRegistry {
     dataBase64: string,
     options: BroadcastOptions = {},
   ): Promise<boolean> {
-    return (await this.writeCounted(this.fanout(options), dataBase64)).sent > 0;
-  }
-
-  // Down `fastestLinks()`, counting the links that took the bytes and the ones
-  // that refused them. A refused Bluetooth write is a full transmit queue, which
-  // is the congestion signal a live stream steers by.
-  broadcastFastest(
-    dataBase64: string,
-  ): Promise<{ sent: number; refused: number }> {
-    return this.writeCounted(
-      this.fastestLinks().map((link) => [link.id]),
-      dataBase64,
-    );
-  }
-
-  private async writeCounted(
-    writes: readonly (readonly string[])[],
-    dataBase64: string,
-  ): Promise<{ sent: number; refused: number }> {
     const results = await Promise.all(
-      writes.map((linkIDs) => this.writeFirst(linkIDs, dataBase64)),
+      this.fanout(options).map((linkIDs) =>
+        this.writeFirst(linkIDs, dataBase64, 0),
+      ),
     );
-    const sent = results.filter(Boolean).length;
-    return { sent, refused: results.length - sent };
+    return results.some((queued) => queued !== null);
   }
 
-  // Down the first of a peer's links that takes the bytes. A refused Bluetooth
+  // Down `fastestLinks()`, reporting what the writes came to (FastestResult),
+  // whose queue depth is the congestion signal a live stream steers by. A
+  // crowded link joins the median at its last reading rather than counting as
+  // refused, so one neighbor who walked away cannot cut the stream for the rest.
+  async broadcastFastest(
+    dataBase64: string,
+    options: FastestOptions,
+  ): Promise<FastestResult> {
+    const links = this.fastestLinks(options.exclude);
+    const open = links.filter((link) => !this.crowded(link));
+    const skippedDepths = links
+      .filter((link) => this.crowded(link))
+      .map((link) => this.queueDepth(link.id));
+    const results = await Promise.all(
+      open.map((link) => this.writeFirst([link.id], dataBase64, options.ttlMs)),
+    );
+    const taken = results.filter((queued): queued is number => queued !== null);
+    const depths = [...taken, ...skippedDepths].sort((a, b) => a - b);
+    return {
+      sent: taken.length,
+      refused: results.length - taken.length,
+      skipped: skippedDepths.length,
+      queued:
+        depths.length === 0 ? 0 : depths[Math.floor((depths.length - 1) / 2)],
+    };
+  }
+
+  // Down the first of a peer's links that takes the bytes, resolving to that
+  // link's queue depth, or null when every one refused. A refused Bluetooth
   // write is usually one full queue, and the peer's other link has its own.
   // The first attempt starts synchronously, so a broadcast's writes still all
   // leave in the same tick.
   private async writeFirst(
     linkIDs: readonly string[],
     dataBase64: string,
-  ): Promise<boolean> {
+    ttlMs: number,
+  ): Promise<number | null> {
     for (const linkID of linkIDs) {
-      const took = await this.send(linkID, dataBase64).then(
-        () => true,
-        () => false,
+      const queued = await this.send(linkID, dataBase64, ttlMs).catch(
+        () => null,
       );
-      if (took) return true;
+      if (queued !== null) return queued;
     }
-    return false;
+    return null;
   }
 
   // Onward to everyone but the peer the bytes arrived from. A packet does not

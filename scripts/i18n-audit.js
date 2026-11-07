@@ -163,9 +163,6 @@ const IGNORE = new Set([
   // Same rule as the store names above: SPDX identifiers are not localized, and
   // a translated "MIT License" names a license that does not exist.
   "MIT License",
-  // A broadcast marker, read the same everywhere, like "ON AIR". Deliberate:
-  // see the live voice badge in message-thread.tsx.
-  "LIVE",
   // The code's own name, which every language shipped borrows as is.
   "QR",
   // Error class names, assigned to `this.name` so a stack trace reads well.
@@ -194,8 +191,10 @@ const IDENTIFIERS = new Set([
   "PAID",
   "ISSUED",
   "PENDING",
-  // A native module's rejection code.
+  // Native modules' rejection codes.
   "UNSUPPORTED",
+  "UNREADABLE",
+  "MIC_BUSY",
   // The Unicode normalization form passed to `normalize`.
   "NFC",
   // The unit label for bitcoin, shown as is like the currency code "USD".

@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "你的身分是一組在本機產生的 {ed25519} 金鑰，保存在 {ios_keychain} 或 {android_keystore} 之中。沒有帳號，沒有註冊，也沒有任何東西會接觸伺服器，也就是說它可以當作一次性應用程式使用，刪除後不會留下任何指向你的線索。",
   "home.about.body.crypto":
-    "每個工作階段都使用 {noise} 協定完成經過驗證的交握。Airhop 手機之間的即時私訊使用 {ratchet} 演算法，也就是說即使金鑰日後外洩，也無法開啟已傳送的訊息。緊急抹除會在一秒內銷毀所有金鑰與訊息。",
+    "每個工作階段都使用 {noise} 協定完成經過驗證的交握。Airhop 手機之間的即時私訊使用 {ratchet} 演算法，也就是說即使金鑰日後外洩，也無法開啟已傳送的訊息。緊急抹除會在數秒內銷毀所有金鑰與訊息。",
   "home.about.body.internet":
     "當你和聯絡人都超出 Bluetooth 範圍時，{nostr} 中繼會作為透過網際網路的橋樑，使用 {nip17} 形式包裝的私訊，因此只要你們雙方都在線上，網狀網路就能延伸到全世界。{tor} 支援在 iOS 與 Android 上皆可使用，透過 {arti} 實作，並為封鎖 Tor 的網路提供 {obfs4}、{snowflake} 與 {webtunnel} 橋接。",
   "home.about.optional.title": "Airhop 提供了一些可以自行開啟的功能：",
@@ -167,7 +167,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "金鑰對身分",
   "home.features.identity.keys.line": "在這支手機上產生，保存在系統的鑰匙圈中。",
   "home.features.identity.names.name": "可讀的名字",
-  "home.features.identity.names.line": "由你的金鑰推導而來，別人搶不走。",
+  "home.features.identity.names.line": "由你的金鑰推導而來，無需選擇或註冊。",
   "home.features.identity.qr.name": "QR 聯絡人",
   "home.features.identity.qr.line": "掃一次帶走的是對方的金鑰，而不只是名字。",
   "home.features.identity.forward.name": "前向保密",
@@ -175,7 +175,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "移轉到新手機",
   "home.features.identity.move.line": "聊天與錢包隨之移轉，舊手機隨後自行抹除。",
   "home.features.identity.panic.name": "緊急抹除",
-  "home.features.identity.panic.line": "所有金鑰與訊息在一秒內銷毀。",
+  "home.features.identity.panic.line": "所有金鑰與訊息在數秒內銷毀。",
 
   "home.features.networking.title": "組網",
   "home.features.networking.summary": "手機本身就是網路。",

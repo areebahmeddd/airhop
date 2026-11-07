@@ -17,21 +17,38 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// The mention the user is in the middle of typing: an "@" that starts a word,
-// with the caret at the end of the draft. Returns the partial nickname (without
-// the "@"), or null when the caret is not in a mention. Only the end of the
-// draft is considered, which is where an inline picker is useful.
-export function activeMentionQuery(draft: string): string | null {
-  const m = /(?:^|\s)@([^\s@]*)$/.exec(draft);
+// The mention being typed at the caret: an "@" that starts a word and runs up
+// to it. Returns the partial nickname (without the "@"), or null when the caret
+// is not in one, or sits inside a name that carries on past it.
+export function activeMentionQuery(
+  draft: string,
+  caret: number = draft.length,
+): string | null {
+  if (continuesName(draft.slice(caret))) return null;
+  const m = /(?:^|\s)@([^\s@]*)$/.exec(draft.slice(0, caret));
   return m ? m[1] : null;
 }
 
-// Replace the mention being typed with "@<nickname> ", ready to keep typing.
-export function applyMention(draft: string, nickname: string): string {
-  return draft.replace(
-    /(^|\s)@[^\s@]*$/,
-    (_full, lead: string) => `${lead}@${nickname} `,
-  );
+// Replace the mention ending at the caret with "@<nickname>", keeping the text
+// after it, and say where the caret goes. A space follows only at the end of
+// the draft; mid-draft, whatever came next (a space, a comma) stays as it was.
+export function applyMention(
+  draft: string,
+  nickname: string,
+  caret: number = draft.length,
+): { text: string; caret: number } {
+  const head = draft
+    .slice(0, caret)
+    .replace(/(^|\s)@[^\s@]*$/, (_full, lead: string) => `${lead}@${nickname}`);
+  const tail = draft.slice(caret);
+  const done = tail.length === 0 ? `${head} ` : head;
+  return { text: done + tail, caret: done.length };
+}
+
+// Whether the text after the caret is the rest of a name, so the caret sits
+// inside one. Hyphens and underscores join words in generated nicknames.
+function continuesName(after: string): boolean {
+  return /^[\p{L}\p{M}\p{N}_-]/u.test(after);
 }
 
 // Whether `text` mentions `nickname` as a whole @token, case-insensitively.

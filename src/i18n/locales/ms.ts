@@ -658,6 +658,7 @@ export const strings: Strings = {
   "chat.attach.send": "Hantar lampiran",
   "chat.attach.generic": "Lampiran",
   "chat.video_prep.preparing": "Menyediakan video",
+  "chat.video_prep.retrying": "Mengecilkan lagi",
   "chat.video_prep.waiting": "Menunggu untuk menyediakan video",
   "chat.video_prep.cancel": "Berhenti menyediakan video ini",
   "chat.video_prep.too_large":
@@ -688,9 +689,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Mainkan nota suara",
   "chat.media.pause_video": "Jeda video",
   "chat.media.play_video": "Mainkan video",
-  "chat.media.voice_position": "Kedudukan nota suara",
-  "chat.media.voice_scrub":
-    "Ketik di sepanjang batangnya untuk melompat ke titik itu",
+  "chat.media.voice_back": "Undur 5 saat",
+  "chat.media.voice_forward": "Maju 5 saat",
   "chat.media.image": "Imej",
   "chat.media.tap_load_photo": "Ketik untuk memuatkan gambar",
   "chat.media.open_document": "Buka {name}",
@@ -749,6 +749,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Video langsung",
   "chat.live_video.go_live": "Mula siaran",
   "chat.live_video.end": "Tamatkan",
+  "chat.live_video.ending": "Menamatkan…",
   "chat.live_video.end_title": "Tamatkan video langsung?",
   "chat.live_video.end_body":
     "Menamatkan menyimpan rakaman dalam sembang ini. Membuang meminta semua yang menonton untuk memadamnya.",
@@ -763,10 +764,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Sederhana",
   "chat.live_video.quality_high": "Tinggi",
   "chat.live_video.quality_low_hint":
-    "Mencapai orang beberapa lompatan jauhnya",
+    "Mencapai orang beberapa lompatan jauhnya melalui Bluetooth",
   "chat.live_video.quality_medium_hint":
-    "Untuk orang satu atau dua lompatan jauhnya",
-  "chat.live_video.quality_high_hint": "Untuk orang di sebelah anda",
+    "Lebih tajam, untuk penonton di Wi-Fi Aware atau Wi-Fi yang sama",
+  "chat.live_video.quality_high_hint":
+    "Paling tajam, untuk penonton di Wi-Fi Aware atau Wi-Fi yang sama",
+  "chat.live_video.quality_needs_wifi": "Perlu Wi-Fi berdekatan",
+  "chat.live_video.quality_bluetooth_note":
+    "Sederhana dan Tinggi perlu Wi-Fi berdekatan",
   "chat.live_video.signal_good": "Lancar",
   "chat.live_video.signal_weak": "Ketinggalan",
   "chat.live_video.signal_poor":
@@ -782,6 +787,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Luncurkan ke atas untuk merakam tanpa memegang",
   "chat.voice.live_speaking": "{name} sedang bercakap",
   "chat.voice.live_ended": "Tamat",
+  "chat.voice.live_stopped": "Suara langsung tamat",
   "voice.unavailable": "Suara langsung tidak tersedia",
   "voice.recording_stopped": "Rakaman dihentikan",
 
@@ -1889,13 +1895,15 @@ export const strings: Strings = {
     "Belum ada kunci untuk kenalan ini. Hantar mesej kepada mereka, atau imbas kod mereka apabila anda bertemu.",
   "contacts.verify.compare_title": "Bacakan ini kepada satu sama lain",
   "contacts.verify.compare_body":
-    "{name} melihat enam perkataan yang sama dalam Airhop. Kalau ia sepadan, anda berdua tahu kuncinya tulen. bitchat tidak menunjukkan perkataan begini, jadi imbas kod mereka sahaja.",
-  "contacts.verify.codes_match": "Ia sepadan",
-  "contacts.verify.codes_differ": "Ia tidak sepadan",
+    "Bacakan kod anda kepada {name} supaya mereka menyemaknya pada telefon mereka. Kemudian padankan kod yang mereka baca dengan kod mereka di sini. Setiap seorang menandakan yang lain sebagai disahkan pada telefon sendiri. bitchat tidak menunjukkan perkataan begini, jadi imbas kod mereka sahaja.",
+  "contacts.verify.your_code": "Kod anda",
+  "contacts.verify.their_code": "Kod mereka",
+  "contacts.verify.codes_match": "Kod mereka sepadan",
+  "contacts.verify.codes_differ": "Kod mereka tidak sepadan",
   "contacts.verify.codes_differ_body":
     "Kunci pada telefon ini mungkin bukan milik {name}. Imbas kod mereka secara bersemuka sebelum anda mempercayai sembang ini.",
   "contacts.verify.compared_body":
-    "Anda dan {name} mengesahkan kod yang sama. Kenalan ini telah disahkan.",
+    "Kod yang dibaca oleh {name} sepadan, jadi mereka disahkan pada telefon ini. Mereka mengesahkan anda pada telefon mereka.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Kembali",
@@ -2057,11 +2065,32 @@ export const strings: Strings = {
     "Jalan tengah untuk satu dua minggu tanpa liputan.",
   "settings.general.retention_30_desc":
     "Mengekalkan perbualan boleh dibaca paling lama, dan paling banyak memakan ruang cakera.",
+  "settings.general.message_retention": "Mesej hilang sendiri",
+  "settings.general.message_retention_desc":
+    "Mesej dan medianya dipadam daripada telefon ini selepas tempoh yang dipilih",
+  "settings.general.message_retention_sheet":
+    "Dikira dari saat setiap mesej sampai ke telefon ini, dan hanya telefon ini yang lupa. Telefon orang lain menyimpan salinannya, tangkapan skrin tidak boleh dihalang dan bayaran dalam sembang peribadi yang belum anda tuntut kekal sehingga anda menuntutnya.",
+  "settings.general.message_retention_off_desc":
+    "Mesej kekal sehingga anda mengosongkan sembang atau keluar daripadanya",
+  "settings.general.message_retention_1_desc":
+    "Paling sedikit kesan, jika telefon itu sendiri risikonya",
+  "settings.general.message_retention_7_desc":
+    "Seminggu untuk membaca semula, kemudian hilang",
+  "settings.general.message_retention_30_desc":
+    "Memastikan perbualan boleh dibaca paling lama",
+  "settings.general.message_retention_confirm_title":
+    "Padam mesej yang lebih lama?",
+  "settings.general.message_retention_confirm_1":
+    "Mesej yang lebih lama daripada 1 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+  "settings.general.message_retention_confirm_7":
+    "Mesej yang lebih lama daripada 7 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+  "settings.general.message_retention_confirm_30":
+    "Mesej yang lebih lama daripada 30 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
   "settings.general.reset_desc":
     "Mengembalikan keutamaan kepada nilai lalainya, tanpa menyentuh identiti, mesej, kenalan dan dompet anda",
   "settings.general.reset_title": "Tetap semula tetapan?",
   "settings.general.reset_body":
-    "Keutamaan kembali kepada nilai lalainya, termasuk penampilan, bahasa, pemberitahuan, batalkan hantaran, dan sambungan (get, jambatan mesh, geganti). Kunci Airhop, tempoh media disimpan, suis internet, Tor dan jambatannya, serta status anda kekal seperti yang ditetapkan. Identiti, mesej, kenalan dan dompet anda tidak disentuh.",
+    "Keutamaan kembali kepada nilai lalainya, termasuk penampilan, bahasa, pemberitahuan, batalkan hantaran, dan sambungan (get, jambatan mesh, geganti). Kunci Airhop, tempoh mesej dan media disimpan, suis internet, Tor dan jambatannya, serta status anda kekal seperti yang ditetapkan. Identiti, mesej, kenalan dan dompet anda tidak disentuh.",
   "settings.general.reset_confirm": "Tetap semula",
 
   // ---- Settings: privacy and security ----

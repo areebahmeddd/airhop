@@ -3,112 +3,57 @@
 // (socket drop, OS kill) and the inputs are spent while the outputs exist
 // nowhere, since their blinding factors lived only in memory. cashu-ts splits
 // prepare from `completeSwap`, which builds its request purely from the
-// preview, so a stored preview can be replayed. NUT-19 makes an identical
-// replay return the same signatures rather than "already spent"; NUT-09
+// preview, so a stored preview can be replayed. NUT-19 makes a replay of the
+// same request return the same signatures rather than "already spent"; NUT-09
 // restore of the stored blinded messages is the backstop.
 //
-// Two subtleties:
-//   1. The replay must be BYTE-IDENTICAL, since the mint keys its NUT-19 cache
-//      on the payload and `JSON.stringify` keeps insertion order. Inputs are an
-//      opaque JSON round trip of what cashu-ts built, never re-shaped field by
-//      field: `{id, amount, secret, C}` for `{id, amount, C, secret}` misses.
-//   2. A P2PK witness is a BIP-340 signature over random aux data, so signing
-//      twice gives two witnesses. Inputs are signed once, before storage, and
-//      the replay never re-signs.
-// `amount` and `fees` are for the UI only: `completeSwap` never reads them.
-//
-// cashu-ts (4.10.0 on) ships `serializeSwapPreview` / `deserializeSwapPreview`
-// for the same job. They are not used here: they carry no version and no
-// bounds on what a corrupt record may hold, and moving to them changes the
-// stored shape of previews already waiting to be replayed.
+// Stored with cashu-ts's own `serializeSwapPreview`, inside a version of ours:
+// the library's form carries none, and a record read with the wrong meaning
+// would send a request the mint has never seen, a fresh spend rather than a
+// recovery. A P2PK witness is a BIP-340 signature over random aux data, so
+// signing twice gives two different requests: inputs are signed once, before
+// storage, and the replay never re-signs.
 
 import {
-  Amount,
-  normalizeProofAmounts,
-  OutputData,
+  deserializeSwapPreview,
+  serializeSwapPreview,
   type OutputDataLike,
-  type ProofLike,
-  type SerializedOutputData,
+  type SerializedSwapPreview,
   type SwapPreview,
 } from "@cashu/cashu-ts";
 
 // Bump if the stored shape changes meaning. A mismatched record is discarded,
-// not half-read: a misread replay sends a request the mint has never seen,
-// which is a fresh spend, not a recovery.
-const SWAP_PREVIEW_VERSION = 1;
+// not half-read.
+const SWAP_PREVIEW_VERSION = 2;
 
 // A swap is a handful of proofs and outputs; anything this large is corruption.
 const MAX_PREVIEW_ENTRIES = 512;
 
 export interface StoredSwapPreview {
   v: number;
-  keysetId: string;
-  amount: number;
-  fees: number;
-  // Opaque: field order is load-bearing (see the header).
-  inputs: ProofLike[];
-  keepOutputs: SerializedOutputData[];
-  sendOutputs?: SerializedOutputData[];
+  preview: SerializedSwapPreview;
 }
 
 // Call BEFORE the request goes out and after any P2PK signing, or the replay
-// will not reproduce the same body.
-export function serializeSwapPreview(preview: SwapPreview): StoredSwapPreview {
-  return {
-    v: SWAP_PREVIEW_VERSION,
-    keysetId: preview.keysetId,
-    amount: preview.amount.toNumber(),
-    fees: preview.fees.toNumber(),
-    // Turns each `Amount` into a number while keeping key order.
-    inputs: JSON.parse(JSON.stringify(preview.inputs)) as ProofLike[],
-    keepOutputs: (preview.keepOutputs ?? []).map((output) =>
-      OutputData.serialize(output),
-    ),
-    ...(preview.sendOutputs !== undefined && preview.sendOutputs.length > 0
-      ? {
-          sendOutputs: preview.sendOutputs.map((output) =>
-            OutputData.serialize(output),
-          ),
-        }
-      : {}),
-  };
+// will not reproduce the same request. `unselectedProofs` is not stored:
+// cashu-ts only echoes it back, and those proofs never left our store.
+export function storeSwapPreview(preview: SwapPreview): StoredSwapPreview {
+  return { v: SWAP_PREVIEW_VERSION, preview: serializeSwapPreview(preview) };
 }
 
 // Null when the record cannot be trusted. Not a log-and-move-on path: the
 // value that swap carried must be recovered another way, and the caller
-// decides how. `unselectedProofs` is not stored: cashu-ts only echoes it back,
-// those proofs never left our store, and storing it would duplicate them.
+// decides how.
 export function rebuildSwapPreview(stored: unknown): SwapPreview | null {
   if (!isStoredSwapPreview(stored)) return null;
   try {
-    const preview: SwapPreview = {
-      amount: Amount.from(stored.amount),
-      fees: Amount.from(stored.fees),
-      keysetId: stored.keysetId,
-      inputs: normalizeProofAmounts(stored.inputs),
-      keepOutputs: stored.keepOutputs.map((output) =>
-        OutputData.deserialize(output),
-      ),
-      ...(stored.sendOutputs !== undefined
-        ? {
-            sendOutputs: stored.sendOutputs.map((output) =>
-              OutputData.deserialize(output),
-            ),
-          }
-        : {}),
-    };
+    const preview = deserializeSwapPreview(stored.preview);
     if (preview.inputs.length === 0) return null;
-    if (
-      (preview.keepOutputs?.length ?? 0) +
-        (preview.sendOutputs?.length ?? 0) ===
-      0
-    ) {
-      return null;
-    }
+    if (swapPreviewOutputs(preview).length === 0) return null;
     return preview;
   } catch {
-    // `OutputData.deserialize` throws on a non-canonical blinding factor or a
-    // malformed secret, and `Amount.from` on a value it cannot parse.
+    // A non-canonical blinding factor, a malformed secret or an amount that
+    // does not parse.
     return null;
   }
 }
@@ -129,16 +74,11 @@ function isStoredSwapPreview(value: unknown): value is StoredSwapPreview {
   if (typeof value !== "object" || value === null) return false;
   const record = value as Partial<StoredSwapPreview>;
   if (record.v !== SWAP_PREVIEW_VERSION) return false;
-  if (typeof record.keysetId !== "string" || record.keysetId.length === 0) {
-    return false;
-  }
-  if (!Number.isFinite(record.amount) || !Number.isFinite(record.fees)) {
-    return false;
-  }
-  if (!isBoundedArray(record.inputs)) return false;
-  if (!isBoundedArray(record.keepOutputs)) return false;
-  if (record.sendOutputs !== undefined && !isBoundedArray(record.sendOutputs)) {
-    return false;
+  const preview = record.preview as Partial<SerializedSwapPreview> | undefined;
+  if (typeof preview !== "object" || preview === null) return false;
+  if (!isBoundedArray(preview.inputs)) return false;
+  for (const outputs of [preview.keepOutputs, preview.sendOutputs]) {
+    if (outputs !== undefined && !isBoundedArray(outputs)) return false;
   }
   return true;
 }

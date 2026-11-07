@@ -3,11 +3,14 @@
 //
 // Before going live the quality, the camera and the microphone can all be
 // changed; once live only the camera can, since START has told viewers what
-// the stream carries. End, close and system back ask first (End, Discard or
-// Keep streaming). Every other way out (the app going to the background, the
-// camera being taken, the thread going away) ends the stream with END and
-// hands its recording back to the thread. Only Discard sends CANCELED, which
-// tells viewers to drop what they have.
+// the stream carries. Over Bluetooth only Low is offered: Medium and High need
+// more packets a second than a Bluetooth link carries, and settle below Low's
+// picture there, so they stay in view, disabled, with the reason. End, close
+// and system back ask first (End, Discard or Keep streaming). Every other way
+// out (the app going to the background, the camera being taken, the thread
+// going away) ends the stream with END and hands its recording back to the
+// thread. Only Discard sends CANCELED, which tells viewers to drop what they
+// have.
 //
 // Mounted only while open. Permissions are the thread's to ask first: a
 // blocked-permission alert drawn from here would sit under this modal, and for
@@ -36,6 +39,7 @@ import PrimaryButton from "@ui/components/primary-button";
 import RingAlertSheet from "@ui/components/ring-alert-sheet";
 import TextButton from "@ui/components/text-button";
 import Toast from "@ui/components/toast";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import {
   DISABLED_OPACITY,
   FontSize,
@@ -132,6 +136,8 @@ export default function LiveVideoStudio({
   const [confirmingEnd, setConfirmingEnd] = useState(false);
   const [stats, setStats] = useState<LiveVideoSendStats | null>(null);
   const [canGoLive, setCanGoLive] = useState(false);
+  // Whether the stream would leave over Bluetooth, which only Low fits.
+  const [overBluetooth, setOverBluetooth] = useState(false);
   // Whether the stream carries sound: the mic switch, unless no microphone
   // opened.
   const [liveWithSound, setLiveWithSound] = useState(true);
@@ -184,6 +190,7 @@ export default function LiveVideoStudio({
       // A DM peer who walks into range with no session yet gets one opened.
       mesh?.prepareLiveVideo(channel);
       setCanGoLive(mesh?.canSendLiveVideo(channel) === true);
+      setOverBluetooth(mesh?.liveVideoOverBluetooth(channel) === true);
     };
     check();
     const timer = setInterval(check, 2_000);
@@ -196,6 +203,9 @@ export default function LiveVideoStudio({
       if (phaseRef.current === "ending") return;
       const mesh: MeshService | null = getMeshService();
       if (phaseRef.current === "live" || phaseRef.current === "starting") {
+        // Draining END can take several seconds. The confirm panel's buttons
+        // would sit there dead, so it gives way to the disabled Ending state.
+        setConfirmingEnd(false);
         setPhaseBoth("ending");
         const recording =
           (await mesh?.stopLiveVideo(canceled, sessionRef.current)) ?? null;
@@ -333,8 +343,20 @@ export default function LiveVideoStudio({
     setMicOn((on) => !on);
   }, [micAllowed]);
 
+  // A preset chosen on Wi-Fi that is out of reach once the only way out is
+  // Bluetooth goes back to Low rather than going live at a quality the link
+  // cannot carry. The disabled tabs and the note under them say why, so a
+  // toast would only repeat them.
+  useEffect(() => {
+    if (!overBluetooth || quality === "low") return;
+    if (phaseRef.current !== "preview") return;
+    setQuality("low");
+  }, [overBluetooth, quality]);
+
   const live = phase === "live";
-  const busy = phase === "starting" || phase === "ending";
+  const ending = phase === "ending";
+  const busy = phase === "starting" || ending;
+  useAnnounce(ending ? T("chat.live_video.ending") : null);
   const preset = LIVE_VIDEO_QUALITIES[quality];
   const signal = signalOf(stats);
   const audience =
@@ -470,37 +492,59 @@ export default function LiveVideoStudio({
             </View>
           ) : live || busy ? (
             <PrimaryButton
-              label={T("chat.live_video.end")}
+              label={
+                ending ? T("chat.live_video.ending") : T("chat.live_video.end")
+              }
               onPress={() => setConfirmingEnd(true)}
               disabled={busy}
             />
           ) : (
             <>
               <View style={styles.tabs} accessibilityRole="radiogroup">
-                {QUALITIES.map(({ name, labelKey }) => (
-                  <Pressable
-                    key={name}
-                    style={({ pressed }) => [
-                      styles.tab,
-                      quality === name && styles.tabActive,
-                      pressed && styles.dimmed,
-                    ]}
-                    onPress={() => setQuality(name)}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: quality === name }}
-                  >
-                    <Text
-                      style={[
-                        styles.tabText,
-                        quality === name && styles.tabTextActive,
+                {QUALITIES.map(({ name, labelKey }) => {
+                  const needsWifi = overBluetooth && name !== "low";
+                  return (
+                    <Pressable
+                      key={name}
+                      style={({ pressed }) => [
+                        styles.tab,
+                        quality === name && styles.tabActive,
+                        needsWifi && styles.disabled,
+                        !needsWifi && pressed && styles.dimmed,
                       ]}
+                      onPress={() => setQuality(name)}
+                      disabled={needsWifi}
+                      accessibilityRole="radio"
+                      accessibilityState={{
+                        checked: quality === name,
+                        disabled: needsWifi,
+                      }}
+                      accessibilityHint={
+                        needsWifi
+                          ? T("chat.live_video.quality_needs_wifi")
+                          : undefined
+                      }
                     >
-                      {T(labelKey)}
-                    </Text>
-                  </Pressable>
-                ))}
+                      <Text
+                        style={[
+                          styles.tabText,
+                          quality === name && styles.tabTextActive,
+                        ]}
+                      >
+                        {T(labelKey)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
-              <Text style={styles.hint}>{T(QUALITY_HINT[quality])}</Text>
+              <View style={styles.hints}>
+                <Text style={styles.hint}>{T(QUALITY_HINT[quality])}</Text>
+                {overBluetooth && (
+                  <Text style={styles.hint}>
+                    {T("chat.live_video.quality_bluetooth_note")}
+                  </Text>
+                )}
+              </View>
               <View style={styles.actions}>
                 <Pressable
                   onPress={toggleMic}
@@ -650,6 +694,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       color: Colors.textSecondary,
     },
     tabTextActive: { color: Colors.textPrimary },
+    // The quality's hint and, over Bluetooth, why two are off: one note, so
+    // closer together than the footer's rows.
+    hints: {
+      gap: Spacing.xs,
+    },
     hint: {
       fontSize: FontSize.sm,
       color: Colors.textMuted,

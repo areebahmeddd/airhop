@@ -40,6 +40,15 @@ export const UPLOAD_QUALITY_VALUES: Record<UploadQuality, number> = {
 export const MEDIA_RETENTION_DAY_OPTIONS = [7, 14, 30] as const;
 export type MediaRetentionDays = (typeof MEDIA_RETENTION_DAY_OPTIONS)[number];
 
+// How long a message stays on this phone (disappearing messages); 0 is Off.
+//
+// Off by default, so nothing disappears that nobody asked to lose. Counted from
+// when each message reached this phone, and local: the other phone keeps its
+// copy. See utils/message-expiry and services/message-retention.
+export const MESSAGE_RETENTION_DAY_OPTIONS = [0, 1, 7, 30] as const;
+export type MessageRetentionDays =
+  (typeof MESSAGE_RETENTION_DAY_OPTIONS)[number];
+
 // Seconds in the background before the app lock asks again. Zero locks on
 // leaving; the rest spare a quick trip to another app, as WhatsApp's do.
 export const APP_LOCK_DELAY_OPTIONS = [0, 60, 300, 1800] as const;
@@ -70,6 +79,8 @@ interface SettingsState {
   uploadQuality: UploadQuality;
   // Days an attachment stays on disk before the retention sweep removes it.
   mediaRetentionDays: MediaRetentionDays;
+  // Days a message stays on this phone after it arrived; 0 keeps it.
+  messageRetentionDays: MessageRetentionDays;
   // Whether holding the mic streams live or records a voice note.
   liveVoiceEnabled: boolean;
   // Whether live video is offered, and streams from others are shown.
@@ -135,6 +146,7 @@ interface SettingsState {
   setAutoDownloadMedia: (enabled: boolean) => void;
   setUploadQuality: (quality: UploadQuality) => void;
   setMediaRetentionDays: (days: MediaRetentionDays) => void;
+  setMessageRetentionDays: (days: MessageRetentionDays) => void;
   setLiveVoiceEnabled: (enabled: boolean) => void;
   setLiveVideoEnabled: (enabled: boolean) => void;
   setSpamFilterEnabled: (enabled: boolean) => void;
@@ -178,6 +190,7 @@ const DEFAULTS = {
   autoDownloadMedia: true,
   uploadQuality: "high",
   mediaRetentionDays: 7,
+  messageRetentionDays: 0 as MessageRetentionDays,
   liveVoiceEnabled: true,
   liveVideoEnabled: true,
   spamFilterEnabled: true,
@@ -257,6 +270,9 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setMediaRetentionDays(days) {
         set({ mediaRetentionDays: days });
+      },
+      setMessageRetentionDays(days) {
+        set({ messageRetentionDays: days });
       },
       setLiveVoiceEnabled(enabled) {
         set({ liveVoiceEnabled: enabled });
@@ -401,6 +417,12 @@ export const useSettingsStore = create<SettingsState>()(
         // A delay no build offers would never match a row in the picker.
         if (!APP_LOCK_DELAY_OPTIONS.includes(merged.appLockDelaySeconds)) {
           merged.appLockDelaySeconds = DEFAULTS.appLockDelaySeconds;
+        }
+        // Nor would a window, and an unreadable one must not delete anything.
+        if (
+          !MESSAGE_RETENTION_DAY_OPTIONS.includes(merged.messageRetentionDays)
+        ) {
+          merged.messageRetentionDays = DEFAULTS.messageRetentionDays;
         }
         if (merged.customRelays.length === 0) merged.geoRelayDiscovery = true;
         return merged;

@@ -1,8 +1,9 @@
-// Reset settings and the media retention picker: what each actually changes.
+// Reset settings and the retention pickers: what each actually changes.
 // Reset's confirm says app lock, the retention window, the internet switch, Tor
 // and status stay as set, so those must survive it. The retention sheet says
 // media goes after the chosen time, so a shorter window has to apply to what is
-// already on disk.
+// already on disk. Disappearing messages delete history the moment the window
+// shortens, so that happens only after a confirm naming it.
 
 import { t, tPlural } from "@i18n";
 import { useAlertStore } from "@store/alert-store";
@@ -23,8 +24,13 @@ jest.mock("@services/media-retention", () => ({
   sweepMediaNow: () => mockSweepNow(),
 }));
 
+const mockSweepMessagesNow = jest.fn();
+jest.mock("@services/message-retention", () => ({
+  sweepMessagesNow: () => mockSweepMessagesNow(),
+}));
+
 // Reanimated has no native half under jest, so the sheet is its contents while
-// open and nothing while closed.
+// open and nothing while closed, and nothing waits for one to slide out.
 jest.mock("@ui/components/bottom-sheet", () => ({
   __esModule: true,
   default: ({
@@ -34,6 +40,10 @@ jest.mock("@ui/components/bottom-sheet", () => ({
     visible: boolean;
     children: React.ReactNode;
   }) => (visible ? children : null),
+  afterSheetsClose: (open: () => void) => {
+    open();
+    return () => {};
+  },
 }));
 
 const METRICS = {
@@ -43,7 +53,9 @@ const METRICS = {
 
 beforeEach(() => {
   mockSweepNow.mockClear();
+  mockSweepMessagesNow.mockClear();
   useSettingsStore.getState().reset();
+  useAlertStore.getState().hide();
 });
 
 async function renderScreen(): Promise<void> {
@@ -161,6 +173,85 @@ describe("Keep media for", () => {
     expect(useSettingsStore.getState().mediaRetentionDays).toBe(30);
     expect(mockSweepNow).not.toHaveBeenCalled();
   });
+});
+
+describe("Disappearing messages", () => {
+  async function pickMessageRetention(days: 0 | 1 | 7 | 30): Promise<void> {
+    const user = userEvent.setup();
+    await user.press(screen.getByText(t("settings.general.message_retention")));
+    await user.press(
+      screen.getByRole("button", {
+        name:
+          days === 0
+            ? t("common.off")
+            : tPlural("settings.general.retention_days", days),
+      }),
+    );
+  }
+
+  function alertButton(text: string): (() => void) | undefined {
+    return useAlertStore.getState().buttons.find((b) => b.text === text)
+      ?.onPress;
+  }
+
+  it("is off until someone turns it on", () => {
+    expect(useSettingsStore.getState().messageRetentionDays).toBe(0);
+  });
+
+  it("asks before a shorter window deletes anything, naming what goes", async () => {
+    useSettingsStore.setState({ messageRetentionDays: 30 });
+    await renderScreen();
+    await pickMessageRetention(1);
+
+    const alert = useAlertStore.getState();
+    expect(alert.visible).toBe(true);
+    expect(alert.message).toBe(
+      t("settings.general.message_retention_confirm_1"),
+    );
+    // Nothing changes while the question is open.
+    expect(useSettingsStore.getState().messageRetentionDays).toBe(30);
+    expect(mockSweepMessagesNow).not.toHaveBeenCalled();
+
+    await act(async () => alertButton(t("common.delete"))?.());
+    expect(useSettingsStore.getState().messageRetentionDays).toBe(1);
+    expect(mockSweepMessagesNow).toHaveBeenCalledTimes(1);
+  });
+
+  it("treats turning it on as a shorter window", async () => {
+    await renderScreen();
+    await pickMessageRetention(7);
+
+    expect(useAlertStore.getState().message).toBe(
+      t("settings.general.message_retention_confirm_7"),
+    );
+    expect(useSettingsStore.getState().messageRetentionDays).toBe(0);
+  });
+
+  it("keeps the old window when the confirm is canceled", async () => {
+    useSettingsStore.setState({ messageRetentionDays: 7 });
+    await renderScreen();
+    await pickMessageRetention(1);
+    await act(async () => alertButton(t("common.cancel"))?.());
+
+    expect(useSettingsStore.getState().messageRetentionDays).toBe(7);
+    expect(mockSweepMessagesNow).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [1, 30],
+    [7, 0],
+  ] as const)(
+    "goes from %i days to %i at once, with no question and no sweep",
+    async (from, to) => {
+      useSettingsStore.setState({ messageRetentionDays: from });
+      await renderScreen();
+      await pickMessageRetention(to);
+
+      expect(useAlertStore.getState().visible).toBe(false);
+      expect(useSettingsStore.getState().messageRetentionDays).toBe(to);
+      expect(mockSweepMessagesNow).not.toHaveBeenCalled();
+    },
+  );
 });
 
 // The tick is a glyph a screen reader skips, so the choice has to be in the

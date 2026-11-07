@@ -994,6 +994,12 @@ export class GeohashChannelService {
     this.pendingGeoDmReadAcks.retain(keep);
   }
 
+  // Forget receipts owed for messages disappearing messages removed, as the
+  // mesh layer does for its own queues: nobody will read them here.
+  forgetGeoReadReceipts(messageIDs: ReadonlySet<string>): void {
+    this.pendingGeoDmReadAcks.forget(messageIDs);
+  }
+
   // Gift-wrap `envelope` from our per-cell identity to `recipientPubkey` and
   // publish it to the default relays (matching bitchat's geo-DM transport).
   // `onAnswer` hears whether any relay accepted it; receipts pass none, since a

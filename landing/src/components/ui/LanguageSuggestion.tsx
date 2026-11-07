@@ -7,7 +7,7 @@ import {
   type LanguageCode,
 } from "@/i18n";
 import { rememberLanguage, suggestLanguage } from "@/lib/language-hint";
-import { ArrowRight, Languages, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Languages, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -39,6 +39,9 @@ export default function LanguageSuggestion() {
 
   const spec = suggested === null ? null : LANGUAGES[suggested];
   const T = getT(suggested ?? current);
+  const rtl = spec?.direction === "rtl";
+  const ForwardArrow = rtl ? ArrowLeft : ArrowRight;
+  const nudge = rtl ? "group-hover:-translate-x-0.5" : "group-hover:translate-x-0.5";
 
   return (
     <AnimatePresence>
@@ -63,10 +66,10 @@ export default function LanguageSuggestion() {
               className="hover:text-ink group inline-flex min-w-0 items-center gap-1.5 truncate transition-colors duration-150"
             >
               <span className="truncate">{T("settings.language.suggestion")}</span>
-              <ArrowRight
+              <ForwardArrow
                 size={13}
                 aria-hidden="true"
-                className="shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+                className={`shrink-0 transition-transform duration-150 ${nudge}`}
               />
             </a>
             <button

@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Kimliğiniz, cihazınızda üretilen ve {ios_keychain} ya da {android_keystore} içinde saklanan bir {ed25519} anahtar çiftidir. Hesap yok, kayıt yok ve herhangi bir sunucuya dokunan hiçbir şey yok; yani silindikten sonra size geri götürecek hiçbir iz bırakmayan tek kullanımlık bir uygulama olarak kullanılabilir.",
   "home.about.body.crypto":
-    "Her oturum, kimliği doğrulanmış bir el sıkışma için {noise} protokolünü kullanır. Airhop telefonları arasındaki canlı doğrudan mesajlar {ratchet} algoritmasını kullanır; yani daha sonra sızan bir anahtar, önceden gönderilmiş mesajları açamaz. Acil silme, tüm anahtarları ve mesajları bir saniyeden kısa sürede yok eder.",
+    "Her oturum, kimliği doğrulanmış bir el sıkışma için {noise} protokolünü kullanır. Airhop telefonları arasındaki canlı doğrudan mesajlar {ratchet} algoritmasını kullanır; yani daha sonra sızan bir anahtar, önceden gönderilmiş mesajları açamaz. Acil silme, tüm anahtarları ve mesajları saniyeler içinde yok eder.",
   "home.about.body.internet":
     "Siz ve bir kişiniz Bluetooth menzilinin dışındayken {nostr} röleleri internet üzerinden köprü görevi görür; {nip17} biçiminde paketlenmiş doğrudan mesajlar kullanılır, böylece ikiniz de çevrimiçi olduğunuzda mesh ağı dünya geneline uzanır. {tor} desteği hem iOS'ta hem de Android'de {arti} ile mevcuttur; Tor’u engelleyen ağlar için {obfs4}, {snowflake} ve {webtunnel} köprüleri de var.",
   "home.about.optional.title": "Airhop'ta açabileceğiniz isteğe bağlı özellikler var:",
@@ -185,7 +185,7 @@ const strings: Strings = {
   "home.features.identity.keys.line":
     "Bu telefonda üretilir, sistemin anahtar zincirinde saklanır.",
   "home.features.identity.names.name": "Okunabilir adlar",
-  "home.features.identity.names.line": "Anahtarınızdan türetilir, böylece kimse sizinkini alamaz.",
+  "home.features.identity.names.line": "Anahtarınızdan türetilir, asla seçilmez ya da kaydedilmez.",
   "home.features.identity.qr.name": "QR ile kişiler",
   "home.features.identity.qr.line": "Tek tarama yalnızca adlarını değil, anahtarlarını da taşır.",
   "home.features.identity.forward.name": "İleriye dönük gizlilik",
@@ -194,8 +194,7 @@ const strings: Strings = {
   "home.features.identity.move.line":
     "Sohbetler ve cüzdan taşınır, ardından eski telefon kendini siler.",
   "home.features.identity.panic.name": "Acil silme",
-  "home.features.identity.panic.line":
-    "Her anahtar ve her mesaj bir saniyeden kısa sürede yok edilir.",
+  "home.features.identity.panic.line": "Her anahtar ve her mesaj saniyeler içinde yok edilir.",
 
   "home.features.networking.title": "Ağ",
   "home.features.networking.summary": "Telefonların kendisi ağdır.",

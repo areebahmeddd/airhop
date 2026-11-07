@@ -24,6 +24,13 @@ import type { Identity } from "@core/crypto/identity";
 import { noiseXOpen, noiseXSeal } from "@core/crypto/noise-x";
 import { NoiseHandshake, type NoiseSession } from "@core/crypto/noise-xx";
 import { peerIDFromNoiseKey } from "@core/crypto/peer-id";
+import {
+  FIRST_PROOF_TIMEOUT_MS,
+  HELD_SESSION_GRACE_MS,
+  REKEY_CHECK_INTERVAL_MS,
+  REKEY_SWITCH_TIMEOUT_MS,
+  rekeyDue,
+} from "@core/crypto/session-rekey";
 import { base64ToBytes, bytesToBase64 } from "@core/encoding/base64";
 import {
   candidateTags,
@@ -52,6 +59,11 @@ import {
   TRANSPORT_KINDS,
   type TransportKind,
 } from "@core/mesh/links/link-registry";
+import {
+  isLiveMedia,
+  LIVE_WRITE_TTL_MS,
+  writeTtlMs,
+} from "@core/mesh/links/write-deadline";
 import {
   channelRowID,
   openChannelMessage,
@@ -91,6 +103,7 @@ import { GossipSync, isSyncReplyInWindow } from "@core/mesh/sync/gossip-sync";
 import { RequestSyncManager } from "@core/mesh/sync/request-sync-manager";
 import {
   BLE_PACKET_BUDGET,
+  LIVE_VIDEO_QUALITIES,
   WIFI_PACKET_BUDGET,
   type LiveVideoQuality,
 } from "@core/mesh/video/live-video-quality";
@@ -143,6 +156,10 @@ import {
   encodeNostrCarrier,
   isValidCarrierGeohash,
 } from "@core/mesh/wire/nostr-carrier";
+import {
+  decodeNostrKey,
+  encodeNostrKey,
+} from "@core/mesh/wire/nostr-key-payload";
 import {
   BROADCAST_ID,
   decodePacket,
@@ -246,6 +263,7 @@ import {
 import { groupChannel, useGroupStore } from "@store/group-store";
 import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
+import { useNostrKeysStore } from "@store/nostr-keys-store";
 import {
   nostrResendDue,
   OUTBOX_TTL_MS,
@@ -491,6 +509,25 @@ interface PendingHandshake {
   role: "initiator" | "responder";
   // When this handshake attempt began (ms epoch), for the staleness check above.
   startedAt: number;
+  // A timed rekey of a session still held. Its result waits for the peer's
+  // proof before anything is sent under it (see stageSwitch).
+  rekey?: boolean;
+}
+
+// A session this node completed as a rekey's initiator, not yet sent under.
+interface PendingSwitch {
+  session: NoiseSession;
+  timer: ReturnType<typeof setTimeout>;
+  // Builds our msg3 again, sent once more before switching on the timeout.
+  msg3: () => Packet;
+}
+
+// A session a newer one replaced, with the ratchet bound to it, kept for
+// decrypting stragglers until `expiresAt` (HELD_SESSION_GRACE_MS).
+interface HeldSession {
+  session: NoiseSession;
+  bound: BoundRatchet | undefined;
+  expiresAt: number;
 }
 
 // Gateway downlink limits, matching bitchat GatewayService.Limits. The geohash
@@ -547,7 +584,7 @@ export class MeshService {
   // Ed25519 signing key.
   private readonly nostrPrivKey: Uint8Array;
   private readonly nostrPubKeyHex: string;
-  // A remote peer's Nostr pubkey hex to their peerID, filled as ANNOUNCEs arrive.
+  // A remote peer's Nostr pubkey hex to their peerID (bindNostrPubkey).
   private readonly nostrPubkeyToPeerID = new Map<string, string>();
 
   // Relay jitter and TTL adapt to how crowded the Bluetooth mesh is. See
@@ -650,15 +687,23 @@ export class MeshService {
   // Every link this device holds, over every radio, and the one place that
   // writes bytes to one.
   private readonly links = new LinkRegistry({
-    ble: (linkID, dataBase64) => AirhopBLE.writeToLink(linkID, dataBase64),
+    ble: (linkID, dataBase64, ttlMs) =>
+      AirhopBLE.writeToLink(linkID, dataBase64, ttlMs),
     // A build with no WiFi module holds no WiFi links, so this is never
     // reached; it resolves rather than throwing so that stays true if one ever
     // is opened before the module is checked. Same for LAN.
+    //
+    // Both write to a socket stream with no radio queue to expire or report,
+    // so the deadline is not passed on and the depth is always 0.
     wifi: (linkID, dataBase64) =>
-      NativeAirhopWiFi?.writeToWiFiLink(linkID, dataBase64) ??
-      Promise.resolve(),
+      (
+        NativeAirhopWiFi?.writeToWiFiLink(linkID, dataBase64) ??
+        Promise.resolve()
+      ).then(() => 0),
     lan: (linkID, dataBase64) =>
-      NativeAirhopLAN?.writeToLANLink(linkID, dataBase64) ?? Promise.resolve(),
+      (
+        NativeAirhopLAN?.writeToLANLink(linkID, dataBase64) ?? Promise.resolve()
+      ).then(() => 0),
   });
   // Bluetooth links whose disconnect was just handled, and when. See
   // LATE_FRAME_MS.
@@ -674,9 +719,42 @@ export class MeshService {
 
   // Double Ratchet states keyed by peerID, each bound to the Noise session it
   // was seeded from and ignored under any other (see ratchetFor). The ratchet
-  // is null for a peer that has not shown itself to be Airhop: bitchat peers
-  // keep the plain NOISE_ENCRYPTED transport.
+  // is null until the peer proves Capability.doubleRatchet inside that
+  // session: bitchat peers keep the plain NOISE_ENCRYPTED transport.
   private readonly drStates = new Map<string, BoundRatchet>();
+
+  // Session renewal (see core/crypto/session-rekey.ts). When each session was
+  // adopted, the session a rekey of ours completed but has not yet switched
+  // to, and the sessions a newer one replaced, still decrypting for a minute.
+  private readonly sessionBornAt = new WeakMap<NoiseSession, number>();
+  private readonly pendingSwitches = new Map<string, PendingSwitch>();
+  private readonly heldSessions = new Map<string, HeldSession[]>();
+  private rekeyTimer: ReturnType<typeof setInterval> | null = null;
+  // A first session we completed as initiator whose queue waits for the
+  // peer's proof, so a long DM goes on the ratchet that proof seeds rather
+  // than to the relays a round trip early. Released by the proof or, from a
+  // peer that never sends one, by the timer (FIRST_PROOF_TIMEOUT_MS).
+  private readonly awaitingProof = new Map<
+    string,
+    { session: NoiseSession; timer: ReturnType<typeof setTimeout> }
+  >();
+
+  // Sessions whose peer's 0x21 we accepted, and a peer's Nostr key that
+  // arrived ahead of its proof. A key is applied only after the proof, which
+  // may drop a contact's planted one; read first, a genuine key would be
+  // dropped with it.
+  private readonly provenSessions = new WeakSet<NoiseSession>();
+  // Sessions our own Nostr key has gone out under (sendNostrKey).
+  private readonly nostrKeySentUnder = new WeakSet<NoiseSession>();
+  private readonly earlyNostrKeys = new Map<
+    string,
+    { session: NoiseSession; key: Uint8Array }
+  >();
+  // The npub each peer's proven session named this process (applyNostrKey).
+  // Unlike the registry's, never one a card supplied, so it can vouch.
+  private readonly npubNamedInSession = new Map<string, string>();
+  // Callers of waitForDmProof, by peer, settled once a long DM can go to them.
+  private readonly proofWaiters = new Map<string, Set<() => void>>();
 
   // Creator-signed group states owed to a member we could not reach yet live in
   // group-invite-outbox, keyed by peerID. A group invite travels inside a Noise
@@ -767,6 +845,9 @@ export class MeshService {
   // this user is live, and holds the microphone while it does.
   private liveVideo: LiveVideoReceiver | null = null;
   private liveVideoSend: LiveVideoSendSession | null = null;
+  // What the Bluetooth radio was last told by setLiveMediaActive. See
+  // syncLiveMedia.
+  private liveMediaActive = false;
 
   // Stored closure so sendDRMessage can unicast DR_ENCRYPTED packets without
   // duplicating the radio preference logic.
@@ -915,13 +996,15 @@ export class MeshService {
         if (link.kind === "ble" && raw.length > MAX_BLE_FRAME) {
           return this.writeFragments(packet, link.id);
         }
-        return this.links.send(link.id, bytesToBase64(raw)).then(
-          () => true,
-          () => {
-            if (link.kind === "wifi") this.onLinkGone(link.id);
-            return false;
-          },
-        );
+        return this.links
+          .send(link.id, bytesToBase64(raw), writeTtlMs(packet.type))
+          .then(
+            () => true,
+            () => {
+              if (link.kind === "wifi") this.onLinkGone(link.id);
+              return false;
+            },
+          );
       }
       // No direct link: flood the recipient-addressed, TTL-bounded packet over
       // the mesh so an intermediate node relays it to the recipient. This is
@@ -973,8 +1056,25 @@ export class MeshService {
       // without one a refused fragment has nowhere to go.
       (recipientPeerID) => this.links.linkFor(recipientPeerID) !== undefined,
       () => this.links.degree(),
-      (senderPeerID, messageID) =>
-        this.sendReceipt(senderPeerID, DmPayloadType.DELIVERED, messageID),
+      // A file arrived in their thread, which may be the DM that lets them
+      // learn our Nostr key (sendNostrKey).
+      (senderPeerID, messageID) => {
+        this.onDmPassed(senderPeerID);
+        this.sendReceipt(senderPeerID, DmPayloadType.DELIVERED, messageID);
+      },
+      // The Bluetooth queues a fragment just joined: a DM's one link, or the
+      // first link of each neighbor a channel file fans out to.
+      (recipientPeerID, isDM) => {
+        const ids = isDM
+          ? [this.links.linkFor(recipientPeerID)].flatMap((l) =>
+              l?.kind === "ble" ? [l.id] : [],
+            )
+          : this.links.fanoutLinks({ kind: "ble" });
+        return ids.map((linkID) => ({
+          linkID,
+          depth: this.links.queueDepth(linkID),
+        }));
+      },
     );
 
     this.router = new MessageRouter(
@@ -1023,10 +1123,9 @@ export class MeshService {
       // collapse for direct announces. Two links to one peer means two copies
       // and the deduplicator drops one.
       //
-      // A refused write is NOT a disconnect. The stack refuses for ordinary
-      // reasons (its queue is full, the GATT server is mid-setup, another
-      // transfer has the link busy) and the link is fine a moment later.
-      // Teardown belongs to the disconnect event.
+      // A refused write is NOT a disconnect. The link's queue may simply be
+      // full, or the GATT server mid-setup, and the link is fine a moment
+      // later. Teardown belongs to the disconnect event.
       void this.links.broadcast(bytesToBase64(encodePacket(packet)), {
         everyLink: true,
       });
@@ -1035,7 +1134,6 @@ export class MeshService {
       this.identity,
       nickname,
       sendFn,
-      hexToBytes(this.nostrPubKeyHex),
       () => this.links.size(),
       // Advertise the gateway capability while the user has it enabled, so
       // offline peers can find us as an uplink, and the bridge capability while
@@ -1180,6 +1278,7 @@ export class MeshService {
     this.chatUnsub = useChatStore.subscribe((state, prev) => {
       if (state.channels !== prev.channels) {
         this.dropReadAcksOfClosedThreads(state.channels);
+        useNostrKeysStore.getState().retainThreads(state.channels);
       }
       if (
         state.channels !== prev.channels ||
@@ -1200,29 +1299,40 @@ export class MeshService {
     this.hydrateContactNostrKeys();
     this.oweReadReceiptsForUnread();
     // When a contact is created (typically the moment you first DM a nearby
-    // peer), bind their npub from the registry if we already heard it. Their
-    // ANNOUNCE may have arrived before the contact existed, and without this
-    // the npub is never persisted and they leave range unreachable over Nostr.
+    // peer), bind their npub from the registry if their session already
+    // delivered it. That may have happened before the contact existed, and
+    // without this the npub is never persisted and they leave range
+    // unreachable over Nostr.
     this.contactsUnsub = useContactsStore.subscribe((state, prev) => {
       if (state.contacts === prev.contacts) return;
       for (const peerID of Object.keys(state.contacts)) {
         const c = state.contacts[peerID];
         if (c.nostrPubkeyHex === undefined || c.nostrPubkeyHex.length === 0) {
-          // Only an npub from an announce whose key is vouched for, the rule
-          // onAnnounce applies.
-          const e = this.registry.get(peerID);
+          // Only beside a signing key a session or the contact vouches for.
+          // A key from a session (0x54) always is; one a link card put in the
+          // registry is only while that card's signing key stands. Read past
+          // the reachability window: a contact is often saved by replying after
+          // the peer walked off, and the key their session sent still holds.
+          const nostrPubkey = this.registry.nostrPubkeyFor(peerID);
+          const pinned = this.registry.pinnedSigningKey(peerID);
           const vouched = this.vouchedSigningKey(peerID);
           if (
-            e?.nostrPubkey !== undefined &&
+            nostrPubkey !== undefined &&
+            pinned !== undefined &&
             vouched !== undefined &&
-            equalBytes(vouched, e.signingPubKey)
+            equalBytes(vouched, pinned)
           ) {
-            useContactsStore.getState().setNostrPubkey(peerID, e.nostrPubkey);
+            useContactsStore.getState().setNostrPubkey(peerID, nostrPubkey);
           }
         } else {
           this.bindNostrPubkey(c.nostrPubkeyHex, peerID, false);
         }
-        // The same race, for the mesh keys a safety number is built from. A
+        // Saved during a proven session: they may have our key now, not only
+        // at the next proof or DM. Once per session, like any other send.
+        if (prev.contacts[peerID] === undefined) {
+          this.sendNostrKey(peerID, false);
+        }
+        // The same race, for the mesh keys a safety code is built from. A
         // peer that proved itself before the contact existed would otherwise
         // hold its proof only in the registry, which does not survive the
         // process, and the contact would sit keyless until the next handshake.
@@ -1231,14 +1341,23 @@ export class MeshService {
         // a signing key too, trusted on first use and forgeable by anyone who
         // read the Noise key off the air. Only a 0x21 proof reaches storage.
         if (c.signingPubKeyHex.length === 0) {
-          const e = this.registry.get(peerID);
-          if (e?.signingKeyAuthenticated === true) {
+          const proven = this.registry.provenSigningKey(peerID);
+          const noiseKey = this.registry.noiseKeyFor(peerID);
+          if (proven !== undefined && noiseKey !== undefined) {
             useContactsStore
               .getState()
-              .setProvenKeys(
+              .setProvenKeys(peerID, bytesToHex(noiseKey), bytesToHex(proven));
+          }
+        }
+        // And for which app they run (peerRunsAirhop).
+        if (c.provenAirhop === undefined) {
+          const capabilities = this.registry.provenCapabilities(peerID);
+          if (capabilities !== undefined) {
+            useContactsStore
+              .getState()
+              .setProvenAirhop(
                 peerID,
-                bytesToHex(e.noisePubKey),
-                bytesToHex(e.signingPubKey),
+                (capabilities & Capability.doubleRatchet) !== 0,
               );
           }
         }
@@ -1262,6 +1381,11 @@ export class MeshService {
       // pair stranded by a lost msg3 never has.
       this.reapExpiredHandshakes(Date.now());
     }, OUTBOX_SWEEP_INTERVAL_MS);
+    // Sessions otherwise last as long as the process. bitchat-ios polls its own
+    // on the same minute.
+    this.rekeyTimer = setInterval(() => {
+      this.rekeyAgedSessions(Date.now());
+    }, REKEY_CHECK_INTERVAL_MS);
 
     // Subscribe to gift-wrap events addressed to our Nostr pubkey, and to
     // courier mail parked for us on relays.
@@ -1284,8 +1408,8 @@ export class MeshService {
         ({ linkID }: { linkID: string; role: string; rssi: number }) => {
           this.bleClosedAt.delete(linkID);
           this.links.open("ble", linkID);
-          // Immediately send our ANNOUNCE (with Nostr pubkey) to the newly
-          // connected peer, throttling how often a NEW one is minted, as
+          // Immediately send our ANNOUNCE to the newly connected peer,
+          // throttling how often a NEW one is minted, as
           // bitchat-ios's BLEAnnounceThrottle does (0.15 s, gating even forced
           // announces). The packet ID covers the timestamp, so every freshly
           // minted announce is a distinct packet every relay floods at TTL 7,
@@ -1447,7 +1571,6 @@ export class MeshService {
           const pkt = this.announceManager.buildPacket(
             this.identity,
             this.nickname,
-            hexToBytes(this.nostrPubKeyHex),
             this.localCapabilities(),
             this.bridgeService.advertisedBridgeGeohash(),
           );
@@ -1508,7 +1631,6 @@ export class MeshService {
           const pkt = this.announceManager.buildPacket(
             this.identity,
             this.nickname,
-            hexToBytes(this.nostrPubKeyHex),
             this.localCapabilities(),
             this.bridgeService.advertisedBridgeGeohash(),
           );
@@ -1722,6 +1844,19 @@ export class MeshService {
     }
 
     const raw = encodePacket(relay);
+    if (raw.length <= MAX_BLE_FRAME && isLiveMedia(relay.type)) {
+      // Live media goes once per neighbor, on its fastest link, as it leaves
+      // its origin. Every other type keeps one copy per transport, a
+      // redundancy chat can afford and a stream cannot: a stream started at
+      // Wi-Fi's budget would be copied onto every Bluetooth link at many times
+      // what Bluetooth carries. A Bluetooth neighbor whose queue is already
+      // crowded is passed by (CROWDED_BLE_QUEUE), so its chat still gets out.
+      void this.links.broadcastFastest(bytesToBase64(raw), {
+        ttlMs: LIVE_WRITE_TTL_MS,
+        exclude: ingressLinkID,
+      });
+      return;
+    }
     if (raw.length <= MAX_BLE_FRAME) {
       this.links.relay(bytesToBase64(raw), ingressLinkID);
       return;
@@ -1746,10 +1881,12 @@ export class MeshService {
     if (kind === "ble" && raw.length > MAX_BLE_FRAME) {
       return this.writeFragments(packet, linkID);
     }
-    return this.links.send(linkID, bytesToBase64(raw)).then(
-      () => true,
-      () => false,
-    );
+    return this.links
+      .send(linkID, bytesToBase64(raw), writeTtlMs(packet.type))
+      .then(
+        () => true,
+        () => false,
+      );
   }
 
   // A link closed on any transport. A peer whose last link this was is no
@@ -1760,6 +1897,7 @@ export class MeshService {
     // Pongs are limited per link, so the entry goes with it; otherwise one
     // stays for every link ever pinged over.
     this.lastPongAtByLink.delete(linkID);
+    this.fileXfer.onLinkGone(linkID);
     const peerID = this.links.close(linkID);
     if (peerID === undefined) return;
     this.registry.markIndirect(peerID);
@@ -1908,6 +2046,21 @@ export class MeshService {
       return;
     }
 
+    // Before the duplicate filter, which a stray copy would otherwise poison:
+    // a sender asks each neighbor in the same millisecond with the same
+    // filter, so its requests share one packet ID whoever they are for.
+    if (this.isRequestSyncForAnother(packet)) return;
+
+    // Peek, check, then record. A copy already seen is dropped before its
+    // signature is checked: with several relaying neighbors every live frame
+    // arrives once from each, and an Ed25519 verify in JavaScript is the
+    // costliest thing done per packet. The ID is recorded only by receive,
+    // after mayRelay passed, so a forged first copy still cannot take it.
+    if (this.floodRouter.seen(packet)) {
+      this.bindSecondLink(packet, linkID);
+      return;
+    }
+
     if (!this.mayRelay(packet)) return;
 
     // Returns false if already seen: drop silently to prevent loops.
@@ -1925,7 +2078,8 @@ export class MeshService {
     this.routePacket(packet, linkID);
   }
 
-  // The checks a packet must pass before it is relayed, and so before dedup.
+  // The checks a packet must pass before it is relayed, and so before its ID
+  // is recorded: ingress peeks at the duplicate set, checks here, then records.
   //
   // Relaying first and checking in the handler is the default: a relay carries
   // traffic for peers whose keys it has never seen, and demanding one before
@@ -1936,9 +2090,11 @@ export class MeshService {
   // a LEAVE. Each costs nothing to forge under any sender ID in earshot, and a
   // forged one relayed spends the room's airtime carrying it to nodes that may
   // check less; a whole file arriving over Wi-Fi or LAN would be cut into
-  // thousands of Bluetooth fragments. Checking before dedup also stops a forged
-  // copy arriving first from taking the packet ID, which leaves the signature
-  // out, and shadowing the genuine one.
+  // thousands of Bluetooth fragments. Checking before the ID is recorded also
+  // stops a forged copy arriving first from taking the packet ID, which leaves
+  // the signature out, and shadowing the genuine one. A copy whose ID is
+  // already recorded never gets here, so a packet that passed is never checked
+  // again.
   //
   // A packet failing here is dropped whole, since each check is also a
   // precondition of its handler. The cost is a genuine one whose author's
@@ -2191,11 +2347,14 @@ export class MeshService {
     if (!isLiveVoiceAvailable()) return null;
     // The gate is read per batch of frames, not captured once: someone can
     // background the app or leave the thread in the middle of a burst, and the
-    // audio should stop there rather than play on to the end.
+    // audio should stop there rather than play on to the end. Our own live
+    // video with sound holds it shut as a note recording does, since its
+    // microphone would carry the speaker into the stream.
     this.pttPlayback = new NativeAudioPlayback(
       () =>
         this.audibleChannel !== null &&
         !this.noteRecording &&
+        this.liveVideoSend?.soundOn !== true &&
         !this.liveVoiceSilenced(),
       (level) => this.reportPttLevel({ inbound: level }),
       () => {
@@ -2362,7 +2521,8 @@ export class MeshService {
 
   // Open the mic and start streaming a burst to everyone in range. Returns
   // false when live voice is not available right now, in which case the caller
-  // falls back to recording a voice note.
+  // falls back to recording a voice note, and "busy" when something else holds
+  // the mic, where a note would record silence too.
   //
   // `onFailure` gets the burst as a finished recording, the same value a
   // release gets from stopVoiceBurst, because a call taking the mic ends a
@@ -2372,7 +2532,7 @@ export class MeshService {
     onFailure: (
       finished: Awaited<ReturnType<MeshService["stopVoiceBurst"]>>,
     ) => void,
-  ): Promise<boolean> {
+  ): Promise<boolean | "busy"> {
     if (!this.canSendLiveVoice(channel)) return false;
     // Tens of milliseconds at most; see pttClosing.
     if (this.pttClosing !== null) await this.pttClosing;
@@ -2392,24 +2552,50 @@ export class MeshService {
         signingPrivKey: this.identity.signingPrivKey,
         getDegree: () => this.links.degree(),
         onPacket: (packet) => {
-          // broadcastPacket marks the packet as originated here, so our own
-          // burst is never relayed back to us. It is deliberately not gossiped:
-          // live audio is worthless once it is late, and gossip only carries
-          // announces, messages, and board posts anyway.
-          this.broadcastPacket(packet);
+          // Originated here, so our own burst is never relayed back to us, and
+          // deliberately not gossiped: live audio is worthless once it is
+          // late. Once per neighbor on its fastest link, as a relay forwards
+          // it, with the live deadline, so a frame stuck behind a full radio
+          // queue is dropped rather than played late. One packet always fits
+          // a Bluetooth frame (the 210-byte burst budget).
+          this.floodRouter.originate(packet);
+          void this.links.broadcastFastest(
+            bytesToBase64(encodePacket(packet)),
+            { ttlMs: LIVE_WRITE_TTL_MS },
+          );
         },
         // A DM burst is sealed to the one peer instead. Same burst bytes, so
         // the two scopes share every line of the wire format above this.
         onDmPayload: channel.startsWith("dm:")
           ? (payload) => {
-              // The return value is deliberately dropped: a frame that finds no
-              // session is gone, and the burst keeps recording either way. See
-              // VoiceCaptureSession.emit.
-              this.router.sendNoisePayload(
-                channel.slice(3),
+              // A frame that finds no session is gone, and the burst keeps
+              // recording either way. See VoiceCaptureSession.emit.
+              const peer = channel.slice(3);
+              const packet = this.router.buildNoisePayloadPacket(
+                peer,
                 NoisePayloadType.VOICE_FRAME,
                 payload,
               );
+              if (packet === null) return;
+              const link = this.links.linkFor(peer);
+              // Beyond a direct link it floods like any directed packet.
+              if (link === undefined) {
+                this.unicastFn(peer, packet);
+                return;
+              }
+              // Down our link with the live deadline, as a DM stream's frames
+              // go: one stuck behind a file's fragments is dropped rather than
+              // played seconds late. A burst packet always fits one frame.
+              if (link.kind === "ble") this.floodRouter.originate(packet);
+              void this.links
+                .send(
+                  link.id,
+                  bytesToBase64(encodePacket(packet)),
+                  LIVE_WRITE_TTL_MS,
+                )
+                .catch(() => {
+                  if (link.kind === "wifi") this.onLinkGone(link.id);
+                });
             }
           : undefined,
       },
@@ -2433,7 +2619,7 @@ export class MeshService {
     this.pttCapture = capture;
     try {
       await capture.startPtt();
-    } catch {
+    } catch (err) {
       // The microphone never opened. Close the session rather than drop it:
       // START is only sent with the first frame, so this normally puts nothing
       // on the wire at all, but a burst that managed one frame before failing
@@ -2443,7 +2629,11 @@ export class MeshService {
       // has already cleared it, and clobbering that would resurrect a burst
       // the user let go of.
       if (this.pttCapture === capture) this.pttCapture = null;
-      return false;
+      // Held by a call, or an input route with nothing behind it: a voice note
+      // would record the same silence, so the caller must not fall back to one.
+      return (err as { code?: unknown } | undefined)?.code === "MIC_BUSY"
+        ? "busy"
+        : false;
     }
     return true;
   }
@@ -2538,6 +2728,7 @@ export class MeshService {
         );
       },
       stopAudio: (streamKey) => this.pttPlayback?.finishSession(streamKey),
+      onStreamsChanged: () => this.syncLiveMedia(),
     });
     receiver.dropStaleRows();
     this.fileXfer.absorbLiveVideo = (sender, channel, streamID, attachment) =>
@@ -2598,16 +2789,15 @@ export class MeshService {
     }
     const dmPeer = channel.startsWith("dm:") ? channel.slice(3) : null;
     const ttl = originTtl(PacketType.VIDEO_FRAME, this.links.degree());
-    // Wi-Fi Aware and LAN carry far more than Bluetooth. A room stream goes to
-    // each neighbor on its fastest link, so it is held to Bluetooth's pace
-    // only while some neighbor has nothing faster. Decided once: a neighbor
-    // arriving later on Bluetooth alone is met by refused writes instead.
-    const overBluetooth =
-      dmPeer === null
-        ? this.links.fastestLinks().some((link) => link.kind === "ble")
-        : (this.links.linkFor(dmPeer)?.kind ?? "ble") === "ble";
+    // Decided once: a neighbor arriving later on Bluetooth alone is met by its
+    // queue filling, which backs the stream off, instead.
+    const overBluetooth = this.liveVideoOverBluetooth(channel);
+    // The studio offers only Low over Bluetooth, but a Wi-Fi link can drop
+    // between its check and this one, and High paced to Bluetooth's budget
+    // would queue nearly all of its packets out of sight.
+    const preset = overBluetooth ? LIVE_VIDEO_QUALITIES.low : quality;
     const senderID = hexToBytes(this.identity.peerID);
-    const session = new LiveVideoSendSession(quality, {
+    const session = new LiveVideoSendSession(preset, {
       send: (payload) => {
         if (dmPeer !== null) {
           // Only down the direct link canSendLiveVideo asked for: without one,
@@ -2625,16 +2815,31 @@ export class MeshService {
                 );
           if (link === undefined || packet === null) return;
           if (link.kind === "ble") this.floodRouter.originate(packet);
-          // A refusal is a full radio queue, as in the room. On Wi-Fi Aware it
-          // is a link gone, as unicastFn reads it, so the next packet takes the
-          // peer's next link. The packet budget stays the one chosen at start;
-          // the refusals back the bitrate off instead.
+          // The live deadline although the packet is NOISE_ENCRYPTED on the
+          // wire: it carries a live frame, as stale behind a full queue as a
+          // room's. A refusal is a full radio queue, as in the room. On Wi-Fi
+          // Aware it is a link gone, as unicastFn reads it, so the next packet
+          // takes the peer's next link. The packet budget stays the one chosen
+          // at start; the queue depth backs the bitrate off instead.
           void this.links
-            .send(link.id, bytesToBase64(encodePacket(packet)))
-            .catch(() => {
-              session.noteRefused(1);
-              if (link.kind === "wifi") this.onLinkGone(link.id);
-            });
+            .send(
+              link.id,
+              bytesToBase64(encodePacket(packet)),
+              LIVE_WRITE_TTL_MS,
+            )
+            .then(
+              (queued) =>
+                session.noteWrites({ sent: 1, refused: 0, skipped: 0, queued }),
+              () => {
+                session.noteWrites({
+                  sent: 0,
+                  refused: 1,
+                  skipped: 0,
+                  queued: 0,
+                });
+                if (link.kind === "wifi") this.onLinkGone(link.id);
+              },
+            );
           return;
         }
         const packet: Packet = {
@@ -2652,25 +2857,34 @@ export class MeshService {
         // packet always fits a Bluetooth frame, so every link takes it whole.
         this.floodRouter.originate(packet);
         void this.links
-          .broadcastFastest(bytesToBase64(encodePacket(packet)))
-          .then(({ refused }) => {
-            if (refused > 0) session.noteRefused(refused);
-          });
+          .broadcastFastest(bytesToBase64(encodePacket(packet)), {
+            ttlMs: LIVE_WRITE_TTL_MS,
+          })
+          .then((result) => session.noteWrites(result));
       },
+      // A microphone lost mid-stream (a call, another app, a dead encoder)
+      // leaves the picture going on silent, as one that never opened does.
       audio:
-        withAudio && isLiveVoiceAvailable() ? new NativeAudioCapture() : null,
+        withAudio && isLiveVoiceAvailable()
+          ? new NativeAudioCapture(() => session.dropSound())
+          : null,
       onFailure,
       packetBudget: overBluetooth ? BLE_PACKET_BUDGET : WIFI_PACKET_BUDGET,
     });
     this.liveVideoSend = session;
-    // A stream we were listening to would play into our own microphone.
+    this.syncLiveMedia();
+    // A stream we were listening to would play into our own microphone, and
+    // so would a push-to-talk burst playing now. Later bursts stay quiet while
+    // the stream has sound (the playback gate).
     this.liveVideo?.setAudible(null);
+    if (withAudio) this.silenceLiveVoice();
     try {
       if (withAudio) await setAudioForRecording();
       await session.start();
     } catch {
       // A stop during the start may already have cleared it for a newer one.
       if (this.liveVideoSend === session) this.liveVideoSend = null;
+      this.syncLiveMedia();
       void setAudioForPlayback();
       return null;
     }
@@ -2685,7 +2899,16 @@ export class MeshService {
   // no-op, and the handshake limiter paces the rest.
   prepareLiveVideo(channel: string): void {
     if (!channel.startsWith("dm:")) return;
-    const peerID = channel.slice(3);
+    this.prepareDmSession(channel.slice(3));
+  }
+
+  // Called as a mesh DM thread opens, and again before a video is prepared:
+  // opens a session with a linked peer that has none, since nothing else does
+  // before the first message. Its proof is what tells Airhop from bitchat
+  // (peerRunsAirhop), which sets how far a video is shrunk, and it is what a
+  // sealed file needs to go at all. A no-op without a link, or with a session
+  // or a handshake already running; the handshake limiter paces the rest.
+  prepareDmSession(peerID: string): void {
     if (this.links.hasPeer(peerID)) this.ensureNoiseSession(peerID);
   }
 
@@ -2701,12 +2924,45 @@ export class MeshService {
     if (session === null) return null;
     const finished = await trackLiveVideoWork(session.stop(canceled));
     if (this.liveVideoSend === session) this.liveVideoSend = null;
+    this.syncLiveMedia();
     if (this.pttCapture === null) void setAudioForPlayback();
     return finished;
   }
 
   get isLiveVideoSending(): boolean {
     return this.liveVideoSend !== null;
+  }
+
+  // Whether a stream in `channel` would go over Bluetooth, which sets its
+  // packet budget, and which the studio asks before going live so it can
+  // offer only the presets Bluetooth carries. Wi-Fi Aware and LAN carry far
+  // more. A DM stream rides its peer's fastest link; a room stream goes to
+  // each neighbor on its fastest link, so it is held to Bluetooth's pace while
+  // any neighbor has nothing faster. Only the first hop is known here. With
+  // no channel, the room.
+  liveVideoOverBluetooth(channel: string = BRIDGE_CHANNEL): boolean {
+    if (channel.startsWith("dm:")) {
+      return (this.links.linkFor(channel.slice(3))?.kind ?? "ble") === "ble";
+    }
+    return this.links.fastestLinks().some((link) => link.kind === "ble");
+  }
+
+  // Raises the Bluetooth connection priority while live video is sent or
+  // received here, and lowers it once neither is, as bitchat does while a
+  // stream is sent or watched: a stream needs the short connection interval
+  // that chat does not. Received counts whether or not the chat is open, since
+  // a stream being received is also being relayed. A hint: a radio that
+  // refuses it changes nothing else.
+  private syncLiveMedia(): void {
+    const active =
+      this.liveVideoSend !== null || (this.liveVideo?.streamCount ?? 0) > 0;
+    if (active === this.liveMediaActive) return;
+    this.liveMediaActive = active;
+    // Through a promise, so a module that throws rather than rejecting cannot
+    // break the stream's start or stop.
+    void Promise.resolve()
+      .then(() => AirhopBLE.setLiveMediaActive(active))
+      .catch(() => undefined);
   }
 
   // ---- Noise XX handshake handlers ----
@@ -2879,7 +3135,17 @@ export class MeshService {
       // identity it does not own. Abort without sending msg3 or touching state.
       if (!this.sessionBindsTo(session, senderID)) return;
       this.pendingHandshakes.delete(senderID);
-      this.adoptSession(senderID, session);
+      // A timed rekey of a session both sides still hold: keep sending under
+      // that one until the peer shows it holds this one (stageSwitch). Only
+      // toward a proven Airhop peer, which keeps the old session receiving
+      // until then. bitchat-ios resets the old session the moment msg3
+      // completes the new one and bitchat-android destroys it on msg1, so
+      // toward bitchat the new session is adopted here, as a first one is.
+      const rekey =
+        pending.rekey === true &&
+        this.registry.sessionFor(senderID) !== undefined &&
+        this.registry.provedCapability(senderID, Capability.doubleRatchet);
+      if (!rekey) this.adoptSession(senderID, session, "initiator");
 
       // msg3 FIRST. Nothing encrypted under this session may go out before
       // it, because until msg3 lands the far side has no session to decrypt
@@ -2887,9 +3153,11 @@ export class MeshService {
       //
       // We complete on msg2, one message earlier than the responder does, so
       // there is a window where we believe the session is live and they do
-      // not. Anything sent into that window, including what tryInitDR (the
-      // outbox) and flushPendingGroupInvites release, is lost without a
-      // trace: no error, no receipt, nothing to retry against.
+      // not. Anything sent into that window, including the outbox and the
+      // group invites released below, is lost without a trace: no error, no
+      // receipt, nothing to retry against. A rekey closes the window by
+      // switching only on the peer's answer; a first session has nothing older
+      // to keep sending under.
       const msg3Pkt = this.makeHandshakePacket(packet.senderID.slice(), msg3);
       this.unicastFn(senderID, msg3Pkt);
 
@@ -2897,11 +3165,21 @@ export class MeshService {
       // else rides the session. Order matters: the proof is what binds our
       // signing key to this peer ID for the far side, so sending content
       // first would have it arrive attributed only by trust-on-first-use.
+      if (rekey) {
+        const recipient = packet.senderID.slice();
+        this.stageSwitch(senderID, session, () =>
+          this.makeHandshakePacket(recipient, msg3),
+        );
+        this.sendPeerState(senderID, session);
+        return;
+      }
       this.sendPeerState(senderID);
 
-      // Then seed the ratchet and release everything that was waiting.
-      this.tryInitDR(senderID, "initiator", session);
-      this.flushPendingGroupInvites(senderID);
+      // Then release everything that was waiting, once the peer's proof has
+      // seeded the ratchet (onAuthenticatedPeerState): released now, a DM past
+      // plain Noise's 255 bytes would go to the relays instead. A peer whose
+      // proof never comes gets the queue over plain Noise after the timeout.
+      this.releaseAfterProof(senderID, session);
       return;
     }
 
@@ -2918,22 +3196,33 @@ export class MeshService {
     // the victim's real session.
     if (!this.sessionBindsTo(session, senderID)) return;
     this.pendingHandshakes.delete(senderID);
-    this.adoptSession(senderID, session);
+    // msg3 proves the initiator holds this session, so it is sent under at
+    // once; any session it replaces keeps decrypting for a minute.
+    this.adoptSession(senderID, session, "responder");
     // Prove our identity first, for the same reason as the initiator path.
+    // This proof is also what tells a rekeying initiator its msg3 landed.
     this.sendPeerState(senderID);
-    // Seed the Double Ratchet for Airhop-to-Airhop sessions.
-    this.tryInitDR(senderID, "responder", session);
-    this.flushPendingGroupInvites(senderID);
+    this.releaseToSession(senderID);
   }
 
-  // File a completed, bound session. A session needs a registry entry, and a
-  // contact whose announces onAnnounce refuses (their key contradicts the
-  // stored one) has none. The session itself proves the Noise key, so the
-  // entry is seeded from the contact and the handshake still settles which
-  // key is theirs: the 0x21 that follows replaces the seeded one if it is
-  // wrong. Anyone else without an entry has never announced, and the session
-  // is not filed.
-  private adoptSession(peerID: string, session: NoiseSession): void {
+  // File a completed, bound session as the one sent under, with an unseeded
+  // ratchet bound to it. A session needs a registry entry, and a contact whose
+  // announces onAnnounce refuses (their key contradicts the stored one) has
+  // none. The session itself proves the Noise key, so the entry is seeded from
+  // the contact and the handshake still settles which key is theirs: the 0x21
+  // that follows replaces the seeded one if it is wrong. Anyone else without
+  // an entry has never announced, and the session is not filed.
+  //
+  // The session this replaces is held for stragglers rather than dropped. The
+  // ratchet is reseeded, never carried over: a rekey and a peer that restarted
+  // look identical on the wire, and a ratchet carried to a peer that seeded
+  // afresh would fail every message without a word.
+  private adoptSession(
+    peerID: string,
+    session: NoiseSession,
+    role: "initiator" | "responder",
+  ): void {
+    const previous = this.registry.sessionFor(peerID);
     const contact = useContactsStore.getState().getContact(peerID);
     const contactKey = this.contactSigningKey(peerID);
     if (
@@ -2949,6 +3238,175 @@ export class MeshService {
       });
     }
     this.registry.setSession(peerID, session);
+    // No entry, so nothing is filed and nothing will be sent under it.
+    if (this.registry.sessionFor(peerID) !== session) return;
+    const staged = this.pendingSwitches.get(peerID);
+    if (staged !== undefined) {
+      clearTimeout(staged.timer);
+      this.pendingSwitches.delete(peerID);
+      if (staged.session !== session) this.holdSession(peerID, staged.session);
+    }
+    if (previous !== undefined && previous !== session) {
+      this.holdSession(peerID, previous);
+    }
+    this.sessionBornAt.set(session, Date.now());
+    this.drStates.set(peerID, { session, role, ratchet: null });
+    // A new session gets its own proof echo, so one lost 0x21 after a rekey
+    // cannot leave it without a proof, and so without a ratchet.
+    this.peerStateEchoed.delete(peerID);
+  }
+
+  // Keep a replaced session, and the ratchet bound to it, decrypting for
+  // HELD_SESSION_GRACE_MS. The far side may still be sealing under it: it has
+  // not read our msg3 yet, or bitchat-ios rekeyed toward us mid-conversation.
+  // Nothing new is ever sealed under a held session.
+  private holdSession(peerID: string, session: NoiseSession): void {
+    const now = Date.now();
+    const bound = this.drStates.get(peerID);
+    this.pruneHeldSessions(peerID);
+    const held = (this.heldSessions.get(peerID) ?? []).filter(
+      (h) => h.session !== session,
+    );
+    held.push({
+      session,
+      bound: bound?.session === session ? bound : undefined,
+      expiresAt: now + HELD_SESSION_GRACE_MS,
+    });
+    this.heldSessions.set(peerID, held);
+  }
+
+  // The held sessions, newest first. Only the rekey tick lets one go
+  // (pruneHeldSessions): pruning on receipt would drop the session the moment
+  // a file sealed under it completes, since the last fragment ends its
+  // assembly before the reassembled packet is opened.
+  private heldSessionsOf(peerID: string): HeldSession[] {
+    return [...(this.heldSessions.get(peerID) ?? [])].reverse();
+  }
+
+  // Let go of the held sessions past their grace, so none outlives its minute
+  // by more than one tick. Past its grace a held session stays while a
+  // fragmented packet from this peer is still arriving: a 1 MiB file sealed
+  // just before a rekey takes about a minute on Bluetooth, longer behind
+  // another transfer, and the whole of it is opened only once the last
+  // fragment lands.
+  private pruneHeldSessions(peerID: string): void {
+    const held = this.heldSessions.get(peerID);
+    if (held === undefined) return;
+    const now = Date.now();
+    const assembling = this.fragmentManager.assemblingFrom(hexToBytes(peerID));
+    const live = held.filter((h) => assembling || h.expiresAt > now);
+    if (live.length === 0) this.heldSessions.delete(peerID);
+    else if (live.length !== held.length) this.heldSessions.set(peerID, live);
+  }
+
+  // Every session a packet from this peer may be sealed under, in the order to
+  // try them: the one we send under, a rekey waiting on its proof, then the
+  // ones held for stragglers.
+  private receiveSessions(peerID: string): NoiseSession[] {
+    const sessions: NoiseSession[] = [];
+    const current = this.registry.sessionFor(peerID);
+    if (current !== undefined) sessions.push(current);
+    const staged = this.pendingSwitches.get(peerID)?.session;
+    if (staged !== undefined) sessions.push(staged);
+    for (const held of this.heldSessionsOf(peerID)) {
+      sessions.push(held.session);
+    }
+    return sessions;
+  }
+
+  // A rekey of ours completed on msg2. Until the peer's answer arrives under
+  // the new session, proof its msg3 landed, everything keeps going under the
+  // old one, which the peer still decrypts. Its 0x21 is that answer, and
+  // bitchat sends one on completion too; if it is lost, switch anyway after
+  // REKEY_SWITCH_TIMEOUT_MS.
+  //
+  // A timeout usually means msg3 and the proof were lost together, so both go
+  // once more before the switch: otherwise we would send under a session the
+  // peer never formed until its stranded attempt is reaped, up to a minute
+  // later. A repeated msg3 is ignored by a peer that already completed, and
+  // the resend is built afresh: an identical packet would be dropped as a
+  // duplicate by every relay that carried the first.
+  private stageSwitch(
+    peerID: string,
+    session: NoiseSession,
+    msg3: () => Packet,
+  ): void {
+    const prior = this.pendingSwitches.get(peerID);
+    if (prior !== undefined) clearTimeout(prior.timer);
+    const timer = setTimeout(() => {
+      const staged = this.pendingSwitches.get(peerID);
+      if (staged?.session !== session) return;
+      this.unicastFn(peerID, staged.msg3());
+      this.sendPeerState(peerID, session);
+      this.switchToStaged(peerID, true);
+    }, REKEY_SWITCH_TIMEOUT_MS);
+    this.pendingSwitches.set(peerID, { session, timer, msg3 });
+  }
+
+  // Start sending under the staged session. The queue goes now unless the
+  // switch came with the peer's proof, whose handler seeds the ratchet first
+  // and then releases it, so a long DM rides the ratchet rather than the relays.
+  private switchToStaged(peerID: string, release: boolean): void {
+    const staged = this.pendingSwitches.get(peerID);
+    if (staged === undefined) return;
+    clearTimeout(staged.timer);
+    this.pendingSwitches.delete(peerID);
+    this.adoptSession(peerID, staged.session, "initiator");
+    if (release) this.releaseToSession(peerID);
+  }
+
+  // A session is ready to send under. Anything queued for this peer goes now
+  // rather than at their next ANNOUNCE, up to 30 s away.
+  private releaseToSession(peerID: string): void {
+    this.flushOutbox(peerID);
+    this.flushPendingGroupInvites(peerID);
+  }
+
+  private releaseAfterProof(peerID: string, session: NoiseSession): void {
+    this.cancelAwaitingProof(peerID);
+    const timer = setTimeout(() => {
+      if (this.awaitingProof.get(peerID)?.session !== session) return;
+      this.awaitingProof.delete(peerID);
+      this.releaseToSession(peerID);
+    }, FIRST_PROOF_TIMEOUT_MS);
+    this.awaitingProof.set(peerID, { session, timer });
+  }
+
+  private cancelAwaitingProof(peerID: string): void {
+    const awaiting = this.awaitingProof.get(peerID);
+    if (awaiting === undefined) return;
+    clearTimeout(awaiting.timer);
+    this.awaitingProof.delete(peerID);
+  }
+
+  // Forget every session with this peer: the one sent under, a staged rekey,
+  // the held ones and every ratchet bound to them.
+  private dropSessionsOf(peerID: string): void {
+    this.registry.clearSession(peerID);
+    this.drStates.delete(peerID);
+    const staged = this.pendingSwitches.get(peerID);
+    if (staged !== undefined) clearTimeout(staged.timer);
+    this.pendingSwitches.delete(peerID);
+    this.heldSessions.delete(peerID);
+    this.earlyNostrKeys.delete(peerID);
+    this.cancelAwaitingProof(peerID);
+  }
+
+  // The minute tick: renew every session old enough (session-rekey.ts) with a
+  // peer we can reach, and let held sessions past their grace go.
+  private rekeyAgedSessions(now: number): void {
+    for (const peerID of [...this.heldSessions.keys()]) {
+      this.pruneHeldSessions(peerID);
+    }
+    for (const peer of this.registry.reachablePeers()) {
+      const session = peer.session;
+      if (session === undefined) continue;
+      if (this.pendingSwitches.has(peer.peerID)) continue;
+      const born = this.sessionBornAt.get(session);
+      if (born === undefined) continue;
+      if (!rekeyDue(now - born, this.identity.peerID, peer.peerID)) continue;
+      this.initiateHandshake(peer.peerID, true);
+    }
   }
 
   // Sealed traffic arrived from a peer we hold no session with. They still
@@ -2974,7 +3432,9 @@ export class MeshService {
   }
 
   // Send msg1, whatever session we hold. No-op while an attempt is in flight.
-  private initiateHandshake(peerID: string): void {
+  // `rekey` marks a timed renewal, whose result waits for the peer's answer
+  // before anything is sent under it (stageSwitch).
+  private initiateHandshake(peerID: string, rekey = false): void {
     if (this.activeHandshake(peerID) !== undefined) return;
     // Any link, on any transport: the callers that need a session before they
     // can send at all (a location pin, an owed group state) have no other way
@@ -2990,6 +3450,7 @@ export class MeshService {
         handshake: hs,
         role: "initiator",
         startedAt: Date.now(),
+        ...(rekey ? { rekey } : {}),
       });
       const pkt = this.makeHandshakePacket(hexToBytes(peerID), msg1);
       // Direct when we hold a link, flooded when the peer is a hop away, which
@@ -3015,33 +3476,31 @@ export class MeshService {
     }
   }
 
-  // Bind a Double Ratchet to the Noise XX session that just completed,
-  // replacing whatever the previous session left. Seeded only for Airhop peers
-  // (those that announced a Nostr pubkey); bitchat nodes don't understand
-  // DR_ENCRYPTED and must keep using NOISE_ENCRYPTED.
-  private tryInitDR(
-    peerID: string,
-    role: "initiator" | "responder",
-    session: NoiseSession,
-  ): void {
-    // The nostrPubkey field is only populated from ANNOUNCE TLV 0x07, which
-    // bitchat-ios and bitchat-android never send (0x05 and 0x06 are their
-    // capabilities and bridge-cell tags, which we decode and ignore). It is a
-    // reliable Airhop indicator. Read past the reachability TTL: a peer whose
-    // last announce is a minute old still completed this handshake. A peer
-    // without it keeps the plain Noise transport, still a valid route, hence
-    // the flush below runs either way.
-    const airhop = this.registry.nostrPubkeyFor(peerID) !== undefined;
-    this.drStates.set(peerID, {
-      session,
-      role,
-      ratchet: airhop ? this.seedRatchet(role, session) : null,
-    });
-
-    // An encrypted route now exists where there was none, so anything queued
-    // for this peer goes now rather than at their next ANNOUNCE, up to 30 s
-    // away.
-    this.flushOutbox(peerID);
+  // Seed the ratchet bound to `session` once the peer proves, inside it, that
+  // it runs one (Capability.doubleRatchet in its 0x21). bitchat never sets the
+  // bit and keeps the plain Noise transport.
+  //
+  // At most once per session: the proof arrives more than once (the echo, a
+  // ring grant re-proven), and reseeding a live ratchet would desync it, after
+  // which every DM fails without a word. Only under the session sent under,
+  // never a held or replaced one.
+  //
+  // The initiator seeds on the responder's proof, which the responder sends
+  // only after reading msg3, so the first ratchet message can never fall into
+  // the msg2 window. The responder seeds a receiving chain here or on the
+  // first DR packet (onDREncrypted), and so never sends DR first.
+  //
+  // Returns whether a sending chain now exists, so the caller releases the
+  // queue once: what plain Noise could not carry (a DM past its 255 bytes)
+  // then goes on the ratchet. The responder's chain cannot send until it
+  // receives.
+  private seedRatchetOnProof(peerID: string, session: NoiseSession): boolean {
+    const bound = this.drStates.get(peerID);
+    if (bound === undefined || bound.session !== session) return false;
+    if (bound.ratchet !== null) return false;
+    if (this.registry.sessionFor(peerID) !== session) return false;
+    bound.ratchet = this.seedRatchet(bound.role, session);
+    return bound.role === "initiator";
   }
 
   private seedRatchet(
@@ -3124,12 +3583,18 @@ export class MeshService {
     // the action to people who would then be refused.
     const ring =
       forPeer !== undefined && this.ringGrantFor(forPeer) ? Capability.ring : 0;
+    // Proof only: in a public announce the bit would mark this radio as an
+    // Airhop phone to everyone in range, and a forged one would steer a peer
+    // onto a ratchet it cannot open.
+    const ratchet = forPeer !== undefined ? Capability.doubleRatchet : 0;
+    // Proof only too, for the same first reason: bitchat never sets it, so in
+    // an announce it would mark the phone as Airhop. Its one reader trusts the
+    // proven bit alone.
+    const pin = forPeer !== undefined ? Capability.locationPin : 0;
     // Unconditional: we always accept and always send encrypted private media
     // to a peer that has proven the same. It is a property of the build, not a
     // user setting.
-    return (
-      gateway | bridge | Capability.privateMedia | Capability.locationPin | ring
-    );
+    return gateway | bridge | Capability.privateMedia | pin | ring | ratchet;
   }
 
   // The permission half of ringVerdict, the part that can be told in advance.
@@ -3166,8 +3631,8 @@ export class MeshService {
   }
 
   // Peers we have already answered with our own state this session, so the
-  // echo below happens at most once per peer and two clients cannot bounce
-  // proofs off each other forever.
+  // echo below happens at most once per session and two clients cannot bounce
+  // proofs off each other forever. Cleared when a session is adopted.
   private readonly peerStateEchoed = new Set<string>();
 
   // Whether an attachment to this peer can be sealed, the precondition
@@ -3236,11 +3701,15 @@ export class MeshService {
     ) {
       return null;
     }
-    return this.router.buildNoisePayloadPacket(
+    const packet = this.router.buildNoisePayloadPacket(
       recipientPeerID,
       NoisePayloadType.PRIVATE_FILE,
       fileTlv,
     );
+    // A file sent into their thread may be the DM that lets them learn our
+    // Nostr key.
+    if (packet !== null) this.onDmPassed(recipientPeerID);
+    return packet;
   }
 
   // Hand one place to one person, once. Returns the message id, or null when no
@@ -3511,7 +3980,10 @@ export class MeshService {
   // completes on msg2 and the responder on msg3, so whichever is ready first
   // sends first and the other answers. The echo below covers msg3 and the proof
   // racing each other across different mesh links.
-  private sendPeerState(peerID: string): void {
+  //
+  // `session` is a rekey's new session, proven before it is sent under (see
+  // stageSwitch); otherwise the one held.
+  private sendPeerState(peerID: string, session?: NoiseSession): void {
     const ringGrant = this.ringGrantFor(peerID);
     const body = encodePeerStatePacket({
       capabilities: this.localCapabilities(peerID),
@@ -3524,6 +3996,7 @@ export class MeshService {
       peerID,
       NoisePayloadType.AUTHENTICATED_PEER_STATE,
       body,
+      session,
     );
     // The router refuses a peer past the reachability window even with a
     // session held, and they must not be recorded as told.
@@ -3532,11 +4005,15 @@ export class MeshService {
 
   // A peer proved its signing key and capabilities inside the session.
   //
-  // Getting here means the packet decrypted under a session whose remote static
-  // key hashes to this peer ID (sessionBindsTo). That proves possession of the
-  // Noise private key, which is stronger than the self-signed announce that
-  // TOFU pins from.
-  private onAuthenticatedPeerState(peerID: string, body: Uint8Array): void {
+  // Getting here means the packet decrypted under `session`, whose remote
+  // static key hashes to this peer ID (sessionBindsTo). That proves possession
+  // of the Noise private key, which is stronger than the self-signed announce
+  // that TOFU pins from.
+  private onAuthenticatedPeerState(
+    peerID: string,
+    body: Uint8Array,
+    session: NoiseSession,
+  ): void {
     const state = decodePeerStatePacket(body);
     // Malformed, non-canonical, duplicated or unknown-version: change nothing.
     // A half-understood identity proof is worth less than none.
@@ -3562,22 +4039,23 @@ export class MeshService {
     // Two different proven keys for one peer ID cannot both be real. The first
     // stands; this session is talking to something that is not who it was.
     if (!accepted) return;
+    this.provenSessions.add(session);
 
-    const session = this.registry.sessionFor(peerID);
     // The key we were checking this peer against was not theirs, so any
     // prekey bundle accepted under it may be someone else's, sealing our
     // courier mail to them. The next genuine bundle replaces it.
     const wrong = (k: Uint8Array | undefined): boolean =>
       k !== undefined && !equalBytes(k, state.signingPubKey);
-    if ((wrong(pinned) || wrong(contactKey)) && session !== undefined) {
+    if (wrong(pinned) || wrong(contactKey)) {
       this.peerPrekeys.forget(session.remoteStaticPubKey);
     }
-    // So may any Nostr key that came with the wrong key, from the announce it
-    // signed or the card that carried it: our internet DMs to them would go
-    // there, and its messages would land in their thread. The registry's goes
-    // before the contact is written below, whose subscription would otherwise
-    // copy it back; setProvenKeys drops the contact's. Their next vouched
-    // announce supplies the real one.
+    // So may a Nostr key that came on the card carrying the wrong key: our
+    // internet DMs to them would go there, and its messages would land in
+    // their thread. The registry's goes before the contact is written below,
+    // whose subscription would otherwise copy it back; setProvenKeys drops the
+    // contact's. A key from a session cannot be among them: it is applied only
+    // after that session's proof (onNostrKey), and the key they hand over in
+    // this one replaces what went.
     const planted: (string | undefined)[] = [];
     if (wrong(pinned)) {
       planted.push(this.registry.nostrPubkeyFor(peerID));
@@ -3603,29 +4081,259 @@ export class MeshService {
     // one whose unverified keys this proof contradicts.
     //
     // The registry copy dies with the process, and a contact saved by messaging
-    // carries no signing key, so the safety number stays uncomputable for
+    // carries no signing key, so the safety code stays uncomputable for
     // everyone met that way. "Compare a code" exists for exactly those people.
     //
     // The Noise key travels with it because a contact saved while the peer was
-    // unheard holds neither and a safety number needs both. One fact proves the
+    // unheard holds neither and a safety code needs both. One fact proves the
     // pair: this packet arrived inside a session bound to the peer ID.
-    if (session !== undefined) {
-      useContactsStore
-        .getState()
-        .setProvenKeys(
-          peerID,
-          bytesToHex(session.remoteStaticPubKey),
-          bytesToHex(state.signingPubKey),
-        );
-    }
+    useContactsStore
+      .getState()
+      .setProvenKeys(
+        peerID,
+        bytesToHex(session.remoteStaticPubKey),
+        bytesToHex(state.signingPubKey),
+      );
+    // Which app they run, for peerRunsAirhop once this session is gone.
+    useContactsStore
+      .getState()
+      .setProvenAirhop(
+        peerID,
+        (state.capabilities & Capability.doubleRatchet) !== 0,
+      );
 
     // Answer once, so a peer whose own proof crossed ours on a different link
-    // still ends up holding ours. Bounded to one echo per peer: without that,
+    // still ends up holding ours. Bounded to one echo per session: without that,
     // two clients that both echo on receipt trade proofs indefinitely.
     if (!this.peerStateEchoed.has(peerID)) {
       this.peerStateEchoed.add(peerID);
       this.sendPeerState(peerID);
     }
+
+    // An Airhop peer: hand over our Nostr key (to a peer it may go to) and
+    // seed the ratchet once per session. The key goes with every proof
+    // accepted, its echo included, so one lost 0x54 is made good by the next.
+    // A bitchat peer never sets the bit, so it never receives a payload type
+    // it does not know.
+    let release = false;
+    let seeded = false;
+    if ((state.capabilities & Capability.doubleRatchet) !== 0) {
+      this.sendNostrKey(peerID, true);
+      seeded = this.seedRatchetOnProof(peerID, session);
+      release = seeded;
+    }
+    // The queue a first session held for this proof.
+    if (this.awaitingProof.get(peerID)?.session === session) {
+      this.cancelAwaitingProof(peerID);
+      release = true;
+    }
+    if (release) this.releaseToSession(peerID);
+    // The responder's ratchet cannot send until it hears one ratchet message,
+    // and the side that answered the handshake (the higher peer ID after every
+    // rekey) may be the one with something to send: a payment past plain
+    // Noise's 255 bytes would sit queued beside its recipient. A receipt for
+    // no message gives it its sending chain; the far side files it nowhere.
+    if (seeded) {
+      const ratchet = this.ratchetFor(peerID);
+      if (ratchet !== undefined && canEncrypt(ratchet)) {
+        this.sendDRMessage(
+          peerID,
+          encodeDmReceipt(DmPayloadType.DELIVERED, newMessageId()),
+          ratchet,
+        );
+      }
+    }
+    // Their key, if it outran this proof.
+    const early = this.earlyNostrKeys.get(peerID);
+    if (early?.session === session) {
+      this.earlyNostrKeys.delete(peerID);
+      this.applyNostrKey(peerID, early.key);
+    }
+    this.settleProofWaiters(peerID);
+  }
+
+  // Whether a long DM can go to this peer now: the session we send under is
+  // proven, and toward an Airhop peer the ratchet has its sending chain, which
+  // the side that answered the handshake gets only from the first ratchet
+  // message it hears (the receipt sent on seeding).
+  private dmSessionReady(peerID: string): boolean {
+    const session = this.registry.sessionFor(peerID);
+    if (session === undefined || !this.provenSessions.has(session)) {
+      return false;
+    }
+    const caps = this.registry.provenCapabilities(peerID) ?? 0;
+    return (caps & Capability.doubleRatchet) === 0 || this.canSealTo(peerID);
+  }
+
+  private canSealTo(peerID: string): boolean {
+    const ratchet = this.ratchetFor(peerID);
+    return ratchet !== undefined && canEncrypt(ratchet);
+  }
+
+  private settleProofWaiters(peerID: string): void {
+    if (!this.dmSessionReady(peerID)) return;
+    for (const settle of [...(this.proofWaiters.get(peerID) ?? [])]) settle();
+  }
+
+  // Resolves once a long DM can go to this peer (dmSessionReady), or after
+  // `timeoutMs`: at once when it already can, or with no link for a session to
+  // come over. For a send that turns on it, a token past plain Noise's 255
+  // bytes or a choice by which app they run (peerRunsAirhop), made just after
+  // prepareDmSession started the handshake that brings the proof.
+  waitForDmProof(peerID: string, timeoutMs: number): Promise<void> {
+    if (!this.links.hasPeer(peerID) || this.dmSessionReady(peerID)) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      let waiters = this.proofWaiters.get(peerID);
+      if (waiters === undefined) {
+        waiters = new Set();
+        this.proofWaiters.set(peerID, waiters);
+      }
+      const held = waiters;
+      const settle = (): void => {
+        clearTimeout(timer);
+        held.delete(settle);
+        if (held.size === 0 && this.proofWaiters.get(peerID) === held) {
+          this.proofWaiters.delete(peerID);
+        }
+        resolve();
+      };
+      const timer = setTimeout(settle, timeoutMs);
+      held.add(settle);
+    });
+  }
+
+  // A DM passed with this peer, either way: they may now learn our Nostr key,
+  // and theirs is worth keeping past this launch.
+  private onDmPassed(peerID: string): void {
+    this.sendNostrKey(peerID, false);
+    this.rememberNostrKey(peerID);
+  }
+
+  // Our Nostr key, inside the session rather than in the public announce, so a
+  // listener in range cannot tie the radio identity to our internet inbox.
+  // Anyone in range can complete a handshake, though, so a session alone is
+  // not enough: the key goes only to a saved contact or to a peer a DM has
+  // passed with, either way. Only to a peer that proved Airhop under the
+  // session we send under.
+  //
+  // `onProof` for each proof accepted, which sends it again, bounded by the
+  // proofs (each side echoes at most once per session). Otherwise this is a
+  // DM over the mesh that may have just made the peer eligible, which sends
+  // it once per session.
+  private sendNostrKey(peerID: string, onProof: boolean): void {
+    const session = this.registry.sessionFor(peerID);
+    if (session === undefined || !this.provenSessions.has(session)) return;
+    if (!this.registry.provedCapability(peerID, Capability.doubleRatchet)) {
+      return;
+    }
+    if (!onProof && this.nostrKeySentUnder.has(session)) return;
+    const contact = useContactsStore.getState().contacts[peerID];
+    const rows = useChatStore.getState().messages[`dm:${peerID}`] ?? [];
+    if (contact === undefined && !rows.some((m) => m.isSystem !== true)) {
+      return;
+    }
+    this.nostrKeySentUnder.add(session);
+    this.router.sendNoisePayload(
+      peerID,
+      NoisePayloadType.NOSTR_KEY,
+      encodeNostrKey(hexToBytes(this.nostrPubKeyHex)),
+    );
+  }
+
+  // A peer named its Nostr key inside a session (0x54). Applied only once that
+  // session's 0x21 has been accepted: the proof may drop a Nostr key planted on
+  // the contact, and a genuine key read before it would go with it.
+  private onNostrKey(
+    peerID: string,
+    body: Uint8Array,
+    session: NoiseSession,
+  ): void {
+    const key = decodeNostrKey(body);
+    if (key === null) return;
+    if (!this.provenSessions.has(session)) {
+      this.earlyNostrKeys.set(peerID, { session, key });
+      return;
+    }
+    this.applyNostrKey(peerID, key);
+  }
+
+  // The session vouches for who sent the key, so it may go onto their contact,
+  // which keeps the first key it is given. It does not vouch for whose key it
+  // is: anyone can name someone else's npub for themselves, so on its own it
+  // maps inbound Nostr DMs first come, first served, and never folds a thread
+  // or moves mail (bindNostrPubkey). Unless that npub's own DMs named this
+  // peer back (vouchNostrKey).
+  private applyNostrKey(peerID: string, key: Uint8Array): void {
+    const npub = bytesToHex(key);
+    this.registry.setNostrPubkey(peerID, npub);
+    useContactsStore.getState().setNostrPubkey(peerID, npub);
+    this.npubNamedInSession.set(peerID, npub);
+    this.bindNostrPubkey(npub, peerID, false);
+    this.rememberNostrKey(peerID);
+    if (useNostrKeysStore.getState().claimedBy[npub] === peerID) {
+      this.vouchNostrKey(npub, peerID);
+    }
+  }
+
+  // Keep the npub a proven session named past this launch, for a peer a DM has
+  // passed with: the registry forgets it, and setNostrPubkey keeps it only on
+  // a contact, so a peer whose message went unanswered would otherwise be
+  // unreachable over the internet after a relaunch, and their next Nostr DM a
+  // stranger's thread. Not a contact: nobody chose to save them.
+  private rememberNostrKey(peerID: string): void {
+    const npub = this.npubNamedInSession.get(peerID);
+    if (npub === undefined) return;
+    const rows = useChatStore.getState().messages[`dm:${peerID}`] ?? [];
+    if (!rows.some((m) => m.isSystem !== true)) return;
+    useNostrKeysStore.getState().learn(peerID, npub);
+  }
+
+  // The peer ID a Nostr DM's sealed envelope names as its sender. The seal
+  // proves the npub wrote it; it does not prove the npub owns that peer ID.
+  // Kept until the other half arrives, a proven session from that peer naming
+  // this npub, and folded the moment both are held.
+  private noteNostrClaim(npub: string, claimed: string): void {
+    if (
+      !/^[0-9a-f]{16}$/.test(claimed) ||
+      claimed === "0000000000000000" ||
+      claimed === "ffffffffffffffff" ||
+      claimed === this.identity.peerID ||
+      useBlockedStore.getState().isBlocked(claimed)
+    ) {
+      return;
+    }
+    const named =
+      this.npubNamedInSession.get(claimed) ??
+      useNostrKeysStore.getState().learned[claimed];
+    if (named === npub) {
+      this.vouchNostrKey(npub, claimed);
+      return;
+    }
+    if (this.nostrPubkeyToPeerID.get(npub) === claimed) return;
+    useNostrKeysStore.getState().noteClaim(npub, claimed);
+  }
+
+  // Both halves are in: a session that proves `peerID` named `npub`, and
+  // `npub`'s own sealed DMs named `peerID`. Neither can be planted by a third
+  // party, so this is the same person and earns what an in-person scan does:
+  // the map moves to them, overriding a stranger's earlier claim, the
+  // `dm:nostr_` thread folds into theirs, and mail queued for the npub goes to
+  // the peer, over the mesh when it reaches them.
+  private vouchNostrKey(npub: string, peerID: string): void {
+    const thread = `dm:nostr_${npub}`;
+    const chat = useChatStore.getState();
+    const split =
+      chat.messages[thread] !== undefined || chat.channels.includes(thread);
+    const queued =
+      useOutboxStore.getState().forPeer(`nostr_${npub}`).length > 0;
+    if (this.nostrPubkeyToPeerID.get(npub) === peerID && !split && !queued) {
+      return;
+    }
+    this.bindNostrPubkey(npub, peerID, true);
+    useNostrKeysStore.getState().forgetClaim(npub);
+    this.flushOutbox(peerID);
   }
 
   // Decrypt an incoming NOISE_ENCRYPTED DM. This is the path a bitchat peer's
@@ -3640,10 +4348,23 @@ export class MeshService {
     if (bytesToHex(packet.recipientID) !== this.identity.peerID) return;
     if (useBlockedStore.getState().isBlocked(senderID)) return;
 
-    const payload = this.router.decryptDm(packet, senderID);
-    if (payload === null) {
+    const opened = this.router.decryptDmUnder(
+      packet,
+      senderID,
+      this.receiveSessions(senderID),
+    );
+    if (opened === null) {
       this.recoverSession(senderID);
       return;
+    }
+    const { payload, session } = opened;
+    // Anything under the session a rekey of ours staged proves the peer read
+    // msg3, so it is safe to send under now.
+    if (this.pendingSwitches.get(senderID)?.session === session) {
+      this.switchToStaged(
+        senderID,
+        payload.type !== NoisePayloadType.AUTHENTICATED_PEER_STATE,
+      );
     }
     const channel = `dm:${senderID}`;
 
@@ -3651,7 +4372,11 @@ export class MeshService {
     // every other branch below is content and this one decides who the content
     // is FROM. See core/mesh/wire/peer-state-packet.ts.
     if (payload.type === NoisePayloadType.AUTHENTICATED_PEER_STATE) {
-      this.onAuthenticatedPeerState(senderID, payload.body);
+      this.onAuthenticatedPeerState(senderID, payload.body, session);
+      return;
+    }
+    if (payload.type === NoisePayloadType.NOSTR_KEY) {
+      this.onNostrKey(senderID, payload.body, session);
       return;
     }
 
@@ -3740,8 +4465,7 @@ export class MeshService {
     }
 
     const nickname = resolveDisplayName(senderID);
-    useChatStore.getState().addChannel(channel);
-    useChatStore.getState().addMessage({
+    const held = useChatStore.getState().addMessage({
       // Use the sender's message id so a delivery/read receipt we send back, and
       // any duplicate copy, resolves to this exact bubble on both sides.
       id: pm.messageID,
@@ -3753,9 +4477,16 @@ export class MeshService {
       isMine: false,
     });
 
-    // Acknowledge delivery now; queue the read receipt until the user opens the
-    // conversation. Both ride back over the same Noise session.
+    // Ahead of the receipt, so a sender who walks off once it reads
+    // "delivered" already holds the key its read receipt will come from.
+    this.onDmPassed(senderID);
+    // Acknowledge delivery now, even for a message the store refused (a
+    // cleared thread, an expired resend), so the sender stops retrying. A read
+    // receipt is owed only for a row the user can open, and only that row may
+    // bring the thread back. Both ride back over the same Noise session.
     this.sendReceipt(senderID, DmPayloadType.DELIVERED, pm.messageID);
+    if (!held) return;
+    useChatStore.getState().addChannel(channel);
     this.pendingReadAcks.add(senderID, pm.messageID);
   }
 
@@ -3779,27 +4510,49 @@ export class MeshService {
       this.recoverSession(senderID);
       return;
     }
+    // The ratchet bound to the session we send under, then those bound to the
+    // sessions held for stragglers: a message the peer sealed just before a
+    // rekey switched still opens under the ratchet it was sealed with.
+    const candidates: BoundRatchet[] = [];
     const bound = this.drStates.get(senderID);
-    if (bound === undefined || bound.session !== session) return;
-    // A signed DR packet under a session we seeded no ratchet for: the peer
-    // knew we were Airhop when we did not yet know it was. A receiver ratchet
-    // cannot send first, so the sender is this session's initiator, and only
-    // as its responder can we seed the matching receiving side.
-    if (bound.ratchet === null) {
-      if (bound.role !== "responder") return;
-      bound.ratchet = this.seedRatchet("responder", session);
+    if (bound !== undefined && bound.session === session) {
+      // A signed DR packet under a session we seeded no ratchet for: the peer
+      // proved it was Airhop before its proof reached us. A receiver ratchet
+      // cannot send first, so the sender is this session's initiator, and only
+      // as its responder can we seed the matching receiving side.
+      if (bound.ratchet === null && bound.role === "responder") {
+        bound.ratchet = this.seedRatchet("responder", session);
+      }
+      candidates.push(bound);
+    }
+    for (const held of this.heldSessionsOf(senderID)) {
+      if (held.bound !== undefined) candidates.push(held.bound);
     }
 
     // A failure is discarded, as the Double Ratchet spec says, and the session
     // kept. A genuine signed packet fails here when it is a replay that
     // outlived dedup, so tearing the session down would hand whoever recorded
     // one a way to evict working keys (bitchat-ios refuses the same). Two
-    // sessions out of step heal through reapExpiredHandshakes instead.
-    let plaintext: Uint8Array;
-    try {
-      plaintext = ratchetDecrypt(bound.ratchet, packet.payload);
-    } catch {
-      return;
+    // sessions out of step heal through reapExpiredHandshakes instead. A
+    // failed attempt leaves a ratchet exactly as it was, so trying the next
+    // one costs nothing but the attempt.
+    const couldSeal = this.canSealTo(senderID);
+    let plaintext: Uint8Array | null = null;
+    for (const candidate of candidates) {
+      if (candidate.ratchet === null) continue;
+      try {
+        plaintext = ratchetDecrypt(candidate.ratchet, packet.payload);
+        break;
+      } catch {
+        continue;
+      }
+    }
+    if (plaintext === null) return;
+    // The first ratchet message gave this side its sending chain: what waited
+    // for it (a long DM, a token) goes now rather than at the next announce.
+    if (!couldSeal && this.canSealTo(senderID)) {
+      this.releaseToSession(senderID);
+      this.settleProofWaiters(senderID);
     }
 
     const channel = `dm:${senderID}`;
@@ -3824,8 +4577,7 @@ export class MeshService {
     }
 
     const nickname = resolveDisplayName(senderID);
-    useChatStore.getState().addChannel(channel);
-    useChatStore.getState().addMessage({
+    const held = useChatStore.getState().addMessage({
       // The sender's id, so a retry of an unacknowledged message lands on the
       // bubble it already has.
       id: payload.messageId,
@@ -3837,9 +4589,14 @@ export class MeshService {
       isMine: false,
     });
 
-    // Tell the sender it arrived, and remember to send a read receipt when the
-    // user opens this conversation. Both are best-effort over the same DR link.
+    // The key ahead of the receipt, as on the Noise path.
+    this.onDmPassed(senderID);
+    // Tell the sender it arrived, refused or not, as the Noise path does, and
+    // owe a read receipt only for a row the user can open. Both are best-effort
+    // over the same DR link.
     this.sendReceipt(senderID, DmPayloadType.DELIVERED, payload.messageId);
+    if (!held) return;
+    useChatStore.getState().addChannel(channel);
     this.pendingReadAcks.add(senderID, payload.messageId);
   }
 
@@ -3947,6 +4704,16 @@ export class MeshService {
     );
   }
 
+  // Messages disappearing messages removed owe no receipt: nobody will read
+  // them here. See services/message-retention.
+  forgetReadAcks(messageIDs: ReadonlySet<string>): void {
+    if (messageIDs.size === 0) return;
+    this.pendingReadAcks.forget(messageIDs);
+    this.pendingNostrReadAcks.forget(messageIDs);
+    this.unroutedReadAcks.forget(messageIDs);
+    this.geoChannels?.forgetGeoReadReceipts(messageIDs);
+  }
+
   // Receipts that found no route when their thread was read, sent the moment
   // this peer has one again. bitchat-ios likewise holds a receipt until the
   // handshake completes.
@@ -3963,12 +4730,11 @@ export class MeshService {
 
   // Where a read receipt for this thread goes over Nostr: the thread is keyed
   // either by the sender's Nostr pubkey (nostr_... thread) or by a real peerID
-  // whose contact, or last announce, carries an npub.
+  // whose contact, or session, gave us an npub.
   private receiptNostrPubkey(peerID: string): string | undefined {
     return peerID.startsWith("nostr_")
       ? peerID.slice("nostr_".length)
-      : (useContactsStore.getState().getContact(peerID)?.nostrPubkeyHex ??
-          this.registry.nostrPubkeyFor(peerID));
+      : this.nostrAddressFor(peerID);
   }
 
   // The same receipts, over Nostr once a DM relay is live, for a sender still
@@ -4152,6 +4918,14 @@ export class MeshService {
       return;
     }
     this.gossip.track(packet);
+    // An older announce relayed in after a newer one (a slower path, a sync
+    // reply) still says the peer is about, but its name and capabilities are
+    // out of date: the newest one the gossip store holds speaks for them.
+    const newest = this.gossip.newestAnnounce(peerID);
+    const shown =
+      newest !== undefined && newest.timestamp > packet.timestamp
+        ? (decodeAnnouncePayload(newest.payload, newest.senderID) ?? info)
+        : info;
 
     if (isDirectAnnounce) {
       const newNeighbor = !this.links.directPeers().includes(peerID);
@@ -4168,36 +4942,16 @@ export class MeshService {
     }
 
     // Update the core registry (used by MessageRouter for transport selection).
-    const nostrPubkeyHex = info.nostrPubKey
-      ? bytesToHex(info.nostrPubKey)
-      : undefined;
-    // Persist the npub onto their contact so it survives this peer leaving
-    // Bluetooth range (the registry entry expires 60s after their radio goes
-    // quiet), and map it for inbound Nostr DMs. For a contact, only from an
-    // announce signed by a key a session or the contact itself stands behind:
-    // a contact keeps the first npub it is given, and one planted by whoever
-    // announced first would send our Nostr DMs to them and file theirs in the
-    // contact's thread. A stranger has nothing but announces, so their npub
-    // maps as their key pins, first come.
-    if (nostrPubkeyHex) {
-      const vouched = this.vouchedSigningKey(peerID) !== undefined;
-      const contact = useContactsStore.getState().getContact(peerID);
-      if (vouched) {
-        useContactsStore.getState().setNostrPubkey(peerID, nostrPubkeyHex);
-      }
-      if (vouched || contact === undefined) {
-        this.bindNostrPubkey(nostrPubkeyHex, peerID, false);
-      }
-    }
+    // No Nostr key: an announce never carries one, and a peer's arrives inside
+    // its session (onNostrKey).
     const firstPin = this.registry.pinnedSigningKey(peerID) === undefined;
     this.registry.update({
       peerID,
       noisePubKey: info.noisePubKey,
       signingPubKey: info.signingPubKey,
-      nickname: info.nickname,
-      nostrPubkey: nostrPubkeyHex,
-      capabilities: info.capabilities,
-      bridgeGeohash: info.bridgeGeohash,
+      nickname: shown.nickname,
+      capabilities: shown.capabilities,
+      bridgeGeohash: shown.bridgeGeohash,
       // undefined preserves whatever the registry already knows. A relayed
       // announce must never *demote* a genuinely direct peer. Only an actual
       // link drop does that, via markIndirect on linkDisconnected. (The flood
@@ -4226,7 +4980,7 @@ export class MeshService {
     if (!isBlocked) {
       usePeerStore.getState().upsertPeer({
         peerID,
-        nickname: info.nickname,
+        nickname: shown.nickname,
         lastSeenMs: Date.now(),
         noisePubKeyHex: bytesToHex(info.noisePubKey),
         // Carried through so the radar can protect real neighbors when it has
@@ -4235,7 +4989,7 @@ export class MeshService {
         isDirect: isDirectAnnounce,
         // Relay nodes announce like anyone else, so without this they sit in
         // the Mesh tab as a person who never replies.
-        isInfrastructure: info.isInfrastructure,
+        isInfrastructure: shown.isInfrastructure,
         // On every announce, not only when a proof lands: this store evicts a
         // peer quiet for a minute, and the session and its proof outlive that.
         acceptsRing: this.registry.hasAuthenticatedCapability(
@@ -4290,7 +5044,7 @@ export class MeshService {
   // implementation sends a request before verifying the far side's announce,
   // which is what binds the link, so this refuses nothing either sends.
   private onRequestSync(packet: Packet, linkID: string): void {
-    if (packet.ttl !== 0) return;
+    if (packet.ttl !== 0 || this.isRequestSyncForAnother(packet)) return;
     const senderID = bytesToHex(packet.senderID);
     const linkPeer = this.links.peerOf(linkID);
     if (linkPeer !== senderID) return;
@@ -4306,6 +5060,18 @@ export class MeshService {
     // and the requester reassembles it under the same solicitation (see
     // onReassembled).
     for (const pkt of missing) void this.sendPacketOnLink(linkID, pkt);
+  }
+
+  // A sync request addressed to another phone. bitchat-ios sends one down
+  // every link when it holds none to its addressee, and answering it would
+  // replay a whole store to a peer that asked someone else. A request for
+  // everyone stays everyone's.
+  private isRequestSyncForAnother(packet: Packet): boolean {
+    return (
+      packet.type === PacketType.REQUEST_SYNC &&
+      !isBroadcast(packet) &&
+      !isForMe(packet, hexToBytes(this.identity.peerID))
+    );
   }
 
   // ---- Courier: store-and-forward for peers we can't reach directly ----
@@ -4717,10 +5483,8 @@ export class MeshService {
       // one needs their npub and a relay. Whichever lands clears the sender's
       // hourglass.
       this.sendReceipt(fromPeerID, DmPayloadType.DELIVERED, pm.messageID);
-      const senderNpub =
-        useContactsStore.getState().getContact(fromPeerID)?.nostrPubkeyHex ??
-        this.registry.nostrPubkeyFor(fromPeerID);
-      if (senderNpub !== undefined && senderNpub.length > 0) {
+      const senderNpub = this.nostrAddressFor(fromPeerID);
+      if (senderNpub !== undefined) {
         this.publishNostrAck(
           senderNpub,
           NoisePayloadType.DELIVERED,
@@ -4770,7 +5534,10 @@ export class MeshService {
       void this.sendCourierPayloadTo(encodeEnvelopePayload(env), peerID).then(
         (delivered) => {
           // Only a write accepted onto THIS peer's link retires the envelope. A
-          // refusal leaves it carried for the next encounter.
+          // refusal leaves it carried for the next encounter. Accepted means
+          // queued, as bitchat-ios commits on its write: a link lost before
+          // that queue drains loses this copy, and the sender's outbox, which
+          // keeps the message until a receipt, is what covers it.
           if (delivered) this.courier.commitHandover(env.ciphertext);
         },
       );
@@ -4827,11 +5594,12 @@ export class MeshService {
     // Only on an explicit LEAVE. An ordinary disconnect keeps the session on
     // purpose, because resuming one is far cheaper than a fresh handshake and
     // radios drop links constantly.
-    this.registry.clearSession(senderID);
+    //
     // And the ratchet seeded from it: DMs use the ratchet before any session
     // lookup, so a stale one would seal the next message to state that side no
-    // longer has, after a restart or a transfer alike.
-    this.drStates.delete(senderID);
+    // longer has, after a restart or a transfer alike. Sessions held for
+    // stragglers go too: nothing more is coming under them.
+    this.dropSessionsOf(senderID);
     this.ringGrantProven.delete(senderID);
   }
 
@@ -5280,18 +6048,21 @@ export class MeshService {
 
   // Whether this peer is running Airhop rather than bitchat.
   //
-  // Every Airhop announce carries a Nostr pubkey (TLV 0x07); bitchat's never
-  // does, so the presence of one is the signal. Falls back to the contact record,
-  // which persists the key after the registry entry expires 60 seconds behind
-  // their radio going quiet.
+  // The signal is Capability.doubleRatchet, proven inside a session (0x21),
+  // which bitchat never sets; an announce says nothing either way. The proof
+  // held now decides; without one, what the contact's last proof said
+  // (provenAirhop), which outlives the session and the process. A Nostr key
+  // on the contact is no evidence: a bitchat QR card carries one too.
   //
-  // Used to warn before sending media bitchat cannot make use of. Deliberately
-  // conservative in the useful direction: an unknown peer reads as bitchat, so
-  // the warning appears rather than being silently skipped.
+  // Used to warn before sending media bitchat cannot make use of, to size a
+  // video, and to word a payment. Deliberately conservative in the useful
+  // direction: a peer never proven reads as bitchat, so the warning appears,
+  // and a video is cut to bitchat's budget, rather than either being silently
+  // skipped. prepareDmSession is what gets the proof in before a video is cut.
   peerRunsAirhop(peerID: string): boolean {
-    if (this.registry.get(peerID)?.nostrPubkey !== undefined) return true;
-    const contact = useContactsStore.getState().contacts[peerID];
-    return contact?.nostrPubkeyHex !== undefined;
+    const proven = this.registry.provenCapabilities(peerID);
+    if (proven !== undefined) return (proven & Capability.doubleRatchet) !== 0;
+    return useContactsStore.getState().contacts[peerID]?.provenAirhop === true;
   }
 
   // Whether any Nostr relay is live. The channels that need the internet (region
@@ -5791,7 +6562,6 @@ export class MeshService {
     const packet = this.announceManager.buildPacket(
       this.identity,
       this.nickname,
-      hexToBytes(this.nostrPubKeyHex),
       // Capabilities and the bridge cell, exactly as the periodic announce
       // carries them.
       //
@@ -6994,6 +7764,7 @@ export class MeshService {
         encodeDmMessage(msgID, text),
         drState,
       );
+      this.onDmPassed(recipientPeerID);
       return "sent";
     }
 
@@ -7025,9 +7796,9 @@ export class MeshService {
       // handshake is running, or the budget refused one.
       //
       // The caller enqueues on this, and the outbox is the only copy: a
-      // completed handshake flushes it (tryInitDR), a stuck one leaves it for
-      // the next flush. One copy is what lets a reclaimed payment or a deleted
-      // message stay unsent once the session forms.
+      // completed handshake flushes it (releaseToSession), a stuck one leaves
+      // it for the next flush. One copy is what lets a reclaimed payment or a
+      // deleted message stay unsent once the session forms.
       return "handshaking";
     }
 
@@ -7046,6 +7817,7 @@ export class MeshService {
       // Only "sent" means it actually went out. A payload too long for one
       // PrivateMessagePacket falls through to the options below.
       if (this.router.sendDm(recipientPeerID, text, msgID) === "sent") {
+        this.onDmPassed(recipientPeerID);
         return "sent";
       }
     }
@@ -7070,6 +7842,7 @@ export class MeshService {
 
   // The npub a DM to `peerID` is gift-wrapped to. The contact's first: it was
   // vouched for, and it reaches someone the registry has already forgotten.
+  // Last, one a session named in an earlier launch (rememberNostrKey).
   private nostrAddressFor(peerID: string): string | undefined {
     const contactNpub = useContactsStore
       .getState()
@@ -7077,7 +7850,8 @@ export class MeshService {
     const npub =
       contactNpub !== undefined && contactNpub.length > 0
         ? contactNpub
-        : this.registry.nostrPubkeyFor(peerID);
+        : (this.registry.nostrPubkeyFor(peerID) ??
+          useNostrKeysStore.getState().learned[peerID]);
     return npub !== undefined && npub.length > 0 ? npub : undefined;
   }
 
@@ -7153,7 +7927,9 @@ export class MeshService {
     void this.nostrClient.publish(event).catch(() => {});
   }
 
-  // Encrypt and send a Double Ratchet message to a peer with a direct link.
+  // Encrypt and send a Double Ratchet message to a peer: down the direct link
+  // when there is one, and otherwise flooded, recipient-addressed, for a relay
+  // to carry it on (unicastFn), so multi-hop DMs ride the ratchet too.
   private sendDRMessage(
     peerID: string,
     payload: Uint8Array,
@@ -7231,15 +8007,19 @@ export class MeshService {
     return this.nostrPrivKey;
   }
 
-  // Our Nostr public key hex (secp256k1), announced in ANNOUNCE packets.
+  // Our Nostr public key hex (secp256k1), handed to Airhop peers inside the
+  // session (0x54) and never announced.
   getNostrPubKeyHex(): string {
     return this.nostrPubKeyHex;
   }
 
-  // Return the Nostr pubkey of a known peer (populated from their ANNOUNCE),
-  // or undefined if the peer has not announced one.
+  // The Nostr pubkey to reach this peer at, the same one a DM to them would be
+  // wrapped to (nostrAddressFor): a contact's, one their session named, or one
+  // remembered from an earlier launch, whether or not they are in range now.
+  // Undefined when none of those names one: a bitchat peer met only over the
+  // radio, or anyone we have exchanged no DM with.
   getPeerNostrPubkey(peerID: string): string | undefined {
-    return this.registry.get(peerID)?.nostrPubkey;
+    return this.nostrAddressFor(peerID);
   }
 
   // Whether a radio link to this peer exists right now.
@@ -7374,15 +8154,16 @@ export class MeshService {
   // Tie a Nostr pubkey to a peer ID.
   //
   // Every source of this binding is the peer saying "reach me at this key":
-  // an announce, a card in a link or a geohash DM, a saved contact. The key's
-  // owner never signs any of it, so anyone in range can announce someone
-  // else's npub. Such a claim may add a forwarding address for THAT peer, and
-  // nothing more: the first claim for a key stands, and a later one cannot
-  // move it. Only a card scanned off the other phone, the same act that earns
-  // a key re-pin, may override the map, fold the thread already keyed by the
-  // npub into the peer's, and re-address mail queued for it. A claim that
-  // could do those would hand a conversation, and the mail sealed for it, to
-  // whoever announced first.
+  // a key named inside a session (0x54), a card in a link or a geohash DM, a
+  // saved contact. The key's owner never signs any of it, so anyone can name
+  // someone else's npub as their own. Such a claim may add a forwarding
+  // address for THAT peer, and nothing more: the first claim for a key stands,
+  // and a later one cannot move it. Only a card scanned off the other phone,
+  // the same act that earns a key re-pin, may override the map, fold the
+  // thread already keyed by the npub into the peer's, and re-address mail
+  // queued for it. So may a claim the npub makes back (vouchNostrKey), which
+  // its owner does sign. A claim that could do those alone would hand a
+  // conversation, and the mail sealed for it, to whoever claimed first.
   private bindNostrPubkey(
     nostrPubkeyHex: string,
     peerID: string,
@@ -7579,11 +8360,18 @@ export class MeshService {
   // even before we hear their ANNOUNCE this session. Deliberately does NOT touch
   // the registry: a saved contact is not proof of being nearby, and the Mesh tab
   // must keep meaning "in range right now".
+  //
+  // Then the keys sessions named for peers a DM passed with (rememberNostrKey),
+  // as the forwarding addresses they were, so a contact's key outranks them.
   private hydrateContactNostrKeys(): void {
     for (const c of useContactsStore.getState().all()) {
       if (c.nostrPubkeyHex !== undefined && c.nostrPubkeyHex.length > 0) {
         this.nostrPubkeyToPeerID.set(c.nostrPubkeyHex, c.peerID);
       }
+    }
+    const learned = useNostrKeysStore.getState().learned;
+    for (const [peerID, npub] of Object.entries(learned)) {
+      this.bindNostrPubkey(npub, peerID, false);
     }
   }
 
@@ -7687,9 +8475,9 @@ export class MeshService {
   // other peers, but nothing addressed to us from this peer stays decryptable.
   forgetPeer(peerID: string): void {
     // The session goes with the ratchet. Kept, it has no ratchet bound to it,
-    // and onDREncrypted drops their next DR packet without renegotiating.
-    this.registry.clearSession(peerID);
-    this.drStates.delete(peerID);
+    // and onDREncrypted drops their next DR packet without renegotiating. Held
+    // and staged sessions too, or their traffic would still open for a minute.
+    this.dropSessionsOf(peerID);
     this.pendingHandshakes.delete(peerID);
     this.links.unbind(peerID);
     const nostrPubs = new Set<string>();
@@ -7704,6 +8492,8 @@ export class MeshService {
       nostrPubs.add(nostrPub);
       this.nostrPubkeyToPeerID.delete(nostrPub);
     }
+    this.npubNamedInSession.delete(peerID);
+    useNostrKeysStore.getState().forgetPeer(peerID);
     // A block follows them onto Nostr. The inbox resolved their npub through
     // the mapping just dropped, and through their contact, which the block
     // removes too, so without this their gift wraps would open as a stranger's
@@ -8062,14 +8852,13 @@ export class MeshService {
           const dm = unwrapDm(event, this.nostrPrivKey, INBOX_LOOKBACK_SECONDS);
           this.openedGiftWraps.add(event.id);
           // Map sender Nostr pubkey back to their peerID if we know them.
-          const peerID = this.nostrPubkeyToPeerID.get(dm.senderPubkey);
+          let peerID = this.nostrPubkeyToPeerID.get(dm.senderPubkey);
           // When we don't know this sender's peerID yet, key the thread by
           // their FULL Nostr pubkey, never a 16-char slice: a slice looks like
           // a peerID, and sendDm could never resolve a route for it. `nostr_`
           // keeps it unambiguous and routable, and an in-person scan folds the
           // thread into theirs (bindNostrPubkey).
           const nostrKey = `nostr_${dm.senderPubkey}`;
-          const senderKey = peerID ?? nostrKey;
           // Blocking has to be honored on the internet path too, otherwise a
           // blocked peer simply switches to Nostr and keeps reaching you (and
           // re-creates the conversation you deleted). Both forms, because the
@@ -8084,12 +8873,17 @@ export class MeshService {
           ) {
             return;
           }
-          const channel = `dm:${senderKey}`;
 
           // The rumor content is a bitchat `bitchat1:` envelope: a private
           // message or a delivery/read receipt. Decode and dispatch.
           const env = decodeBitchatEnvelope(dm.content);
           if (env === null) return;
+          // The mesh identity it names for itself may complete a mutual claim,
+          // which moves the npub to that peer before this is filed.
+          this.noteNostrClaim(dm.senderPubkey, env.senderPeerID);
+          peerID = this.nostrPubkeyToPeerID.get(dm.senderPubkey);
+          const senderKey = peerID ?? nostrKey;
+          const channel = `dm:${senderKey}`;
 
           if (env.type === NoisePayloadType.DELIVERED) {
             useChatStore
@@ -8151,6 +8945,9 @@ export class MeshService {
           if (!held) return;
           useChatStore.getState().addChannel(channel);
           this.pendingNostrReadAcks.add(dm.senderPubkey, env.messageID);
+          // A DM has now passed with them, so the key their session named
+          // outlives this launch, as one passed over the mesh does.
+          if (peerID !== undefined) this.rememberNostrKey(peerID);
         } catch {
           // Invalid or misdirected gift wrap: drop silently.
         }
@@ -8378,6 +9175,20 @@ export class MeshService {
     this.registry.clearAllSessions();
     this.peerStateEchoed.clear();
     this.ringGrantProven.clear();
+    // With them every ratchet, every session held for stragglers and every
+    // rekey waiting on its proof, so a panic wipe mid-rekey leaves no key
+    // material reachable from here.
+    this.drStates.clear();
+    for (const pending of this.pendingSwitches.values()) {
+      clearTimeout(pending.timer);
+    }
+    this.pendingSwitches.clear();
+    this.heldSessions.clear();
+    this.earlyNostrKeys.clear();
+    for (const awaiting of this.awaitingProof.values()) {
+      clearTimeout(awaiting.timer);
+    }
+    this.awaitingProof.clear();
     // A clock-skew claim is evidence about a mesh we are no longer part of.
     // Leaving the banner up after the radios come down would blame the clock
     // for an empty room that is empty because we stopped listening.
@@ -8415,6 +9226,10 @@ export class MeshService {
     if (this.outboxSweepTimer !== null) {
       clearInterval(this.outboxSweepTimer);
       this.outboxSweepTimer = null;
+    }
+    if (this.rekeyTimer !== null) {
+      clearInterval(this.rekeyTimer);
+      this.rekeyTimer = null;
     }
     this.privateChannels?.stop();
     this.privateChannels = null;

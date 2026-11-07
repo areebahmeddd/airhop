@@ -212,6 +212,23 @@ describe("planTranscode for another Airhop phone", () => {
     expect(plan.fps).toBe(15);
     expect(plan.audioBitrate).toBe(12_000);
   });
+
+  // bitchat's own budget keeps bitchat-ios's 600 kbps ceiling (above).
+  test("the picture tops out at 350 kbps however short the clip", () => {
+    for (const durationMs of [500, 5_000, 20_000]) {
+      const plan = planTranscode(
+        source(durationMs),
+        AIRHOP_BITS,
+        MAX_FILE_BYTES,
+      );
+      expect(plan.videoBitrate).toBe(350_000);
+      expect(Math.max(plan.width, plan.height)).toBe(480);
+      expect(plan.fps).toBe(24);
+    }
+    // Past about 21 s the budget, not the ceiling, sets the rate.
+    const longer = planTranscode(source(25_000), AIRHOP_BITS, MAX_FILE_BYTES);
+    expect(longer.videoBitrate).toBeLessThan(350_000);
+  });
 });
 
 describe("retryTranscodeBits", () => {

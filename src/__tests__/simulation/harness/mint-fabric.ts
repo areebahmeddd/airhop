@@ -691,7 +691,7 @@ export class MintFabric {
   // wallet with a stale snapshot repair it, so signing under an old keyset
   // here would let a rotation scenario pass that a real mint would refuse.
   //
-  // Then NUT-00 10002: a blinded message is signed once. A deterministic
+  // Then 11003: a blinded message is signed once. A deterministic
   // wallet whose counter fell behind (a restore that skipped a keyset, a
   // phrase used on another phone) re-derives one, and a mint that signed it
   // again would hide the clash and the recovery it needs.
@@ -707,7 +707,7 @@ export class MintFabric {
     if (outputs.some((o) => o.B_ !== undefined && this.signedByB.has(o.B_))) {
       this.world.say("MINT_OUTPUT_REUSED", "a blinded message signed before");
       return this.json(
-        { detail: "Blinded message of output already signed", code: 10002 },
+        { detail: "Blinded message of output already signed", code: 11003 },
         400,
       );
     }
@@ -783,7 +783,7 @@ export class MintFabric {
         "MINT_SWAP_UNDERPAID",
         `${outputSum} out for ${inputSum} in, fee ${fee}`,
       );
-      return this.json({ detail: "Outputs exceed inputs.", code: 11002 }, 400);
+      return this.json({ detail: "Outputs exceed inputs.", code: 11005 }, 400);
     }
 
     for (const input of inputs) this.spentYs.add(this.yFor(input.secret));
@@ -975,7 +975,7 @@ export class MintFabric {
         `${inputSum} in, fee ${fee}, needs ${quote.amount + this.conditions.meltFeeReserve}`,
       );
       return this.json(
-        { detail: "Insufficient inputs for melt.", code: 11002 },
+        { detail: "Insufficient inputs for melt.", code: 11005 },
         400,
       );
     }
@@ -986,7 +986,7 @@ export class MintFabric {
     // still being valid when it releases the reservation.
     if (this.conditions.meltFails) {
       this.world.say("MINT_MELT_FAILED", "route not found, inputs untouched");
-      return this.json({ detail: "Payment failed.", code: 20000 }, 400);
+      return this.json({ detail: "Payment failed.", code: 20004 }, 400);
     }
 
     const blanks = (body.outputs ?? []) as MeltRequest["blanks"];

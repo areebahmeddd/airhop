@@ -12,16 +12,19 @@ How two peers get a live encrypted session, keep it, and heal it when the two si
 
 ## Key Files
 
-| Path                                                                                                         | Holds                                                                                           |
-| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `src/core/crypto/noise-xx.ts`                                                                                | `NoiseHandshake` (create, write/read msg1 to msg3, `clone`, `split`) and `NoiseSession`         |
-| `src/core/crypto/noise-x.ts`                                                                                 | `noiseXSeal` / `noiseXOpen`, one-way sealing for courier mail                                   |
-| `src/core/crypto/double-ratchet.ts`                                                                          | Signal Double Ratchet for Airhop-to-Airhop DMs                                                  |
-| `src/core/mesh/routing/handshake-rate-limiter.ts`                                                            | Handshake budgets                                                                               |
-| `src/core/mesh/wire/peer-state-packet.ts`                                                                    | The `0x21` identity proof sent inside a new session                                             |
-| `src/services/mesh-service.ts`                                                                               | Handshake dispatch (`onNoiseHandshake`), `reapExpiredHandshakes`, `recoverSession`, `tryInitDR` |
-| `bitchat/ios/bitchat/Noise/NoiseProtocol.swift`, `NoiseSessionManager.swift`, `NoiseSecurityConstants.swift` | Reference                                                                                       |
-| `bitchat/ios/bitchat/Services/BLE/BLENoisePacketHandler.swift`                                               | Reference: what a failed decrypt does                                                           |
+| Path                                                                                                         | Holds                                                                                        |
+| ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `src/core/crypto/noise-xx.ts`                                                                                | `NoiseHandshake` (create, write/read msg1 to msg3, `clone`, `split`) and `NoiseSession`      |
+| `src/core/crypto/noise-x.ts`                                                                                 | `noiseXSeal` / `noiseXOpen`, one-way sealing for courier mail                                |
+| `src/core/crypto/double-ratchet.ts`                                                                          | Signal Double Ratchet for Airhop-to-Airhop DMs                                               |
+| `src/core/crypto/session-rekey.ts`                                                                           | When a session is renewed, and how long a replaced one keeps decrypting                      |
+| `src/core/mesh/wire/nostr-key-payload.ts`                                                                    | `0x54`, the Nostr key handed over inside a session                                           |
+| `src/core/mesh/routing/handshake-rate-limiter.ts`                                                            | Handshake budgets                                                                            |
+| `src/core/mesh/wire/peer-state-packet.ts`                                                                    | The `0x21` identity proof sent inside a new session                                          |
+| `src/services/mesh-service.ts`                                                                               | `onNoiseHandshake`, `adoptSession`, `stageSwitch`, `rekeyAgedSessions`, `seedRatchetOnProof` |
+| `bitchat/ios/bitchat/Noise/NoiseProtocol.swift`, `NoiseSessionManager.swift`, `NoiseSecurityConstants.swift` | Reference                                                                                    |
+| `bitchat/ios/bitchat/Noise/SecureNoiseSession.swift` (`needsRenegotiation`), `NoiseEncryptionService.swift`  | Reference: when bitchat-ios rekeys                                                           |
+| `bitchat/ios/bitchat/Services/BLE/BLENoisePacketHandler.swift`                                               | Reference: what a failed decrypt does                                                        |
 
 ## Which Pattern
 
@@ -44,7 +47,7 @@ The prologue is empty on every mesh session, as bitchat sends it; only a device 
 
 **Roles.** Whoever sends msg1 is the initiator. A 32-byte msg1 is answered as responder even mid-handshake (a peer restart, or a stale attempt of ours), carrying any queued DMs across. The one exception is a crossed initiation: while we hold a live initiator attempt and our peer ID sorts lower, the incoming msg1 is ignored and the peer yields, as in bitchat-ios, so exactly one session forms. The claimed sender of a msg1 is unauthenticated, so a forged one can displace a live attempt, as it can in bitchat-ios; the rate limit bounds it and the next attempt or the outbox recovers (simulation C13b).
 
-**Completing.** msg2 and msg3 are read on a `clone()` of the pending handshake, which is replaced only by a bound session, so one forged or garbled reply cannot end a genuine handshake. After `split()` the session's remote static key must hash to the claimed peer ID (`sessionBindsTo`), or it is discarded. The initiator completes on msg2, one message before the responder, so it sends msg3 **first**, then its `0x21` identity proof, then seeds the ratchet and releases queued DMs and group invites. The responder, completing on msg3, sends its proof first too.
+**Completing.** msg2 and msg3 are read on a `clone()` of the pending handshake, which is replaced only by a bound session, so one forged or garbled reply cannot end a genuine handshake. After `split()` the session's remote static key must hash to the claimed peer ID (`sessionBindsTo`), or it is discarded. The initiator completes on msg2, one message before the responder, so it sends msg3 **first**, then its `0x21` identity proof, then releases queued DMs and group invites over plain Noise. The responder, completing on msg3, sends its proof first too. Neither seeds the ratchet yet (see Double Ratchet).
 
 **Keys after split.** Initiator sends with k1 and receives with k2; the responder the reverse. `split()` handles it, and also yields `exporterSecret`, a third HKDF output for keys outside the transport. k1 and k2 are bit-identical to a two-output split, so bitchat interop is unaffected.
 
@@ -64,6 +67,25 @@ bitchat-ios counts every handshake message in its global bucket, so a flood of f
 - **No session.** Sealed traffic from an announced peer we hold no session with (their side survived a crash on ours) is answered with a handshake (`recoverSession`). A peer that never announced gets nothing, so forged sender IDs cannot fan out into flooded handshakes.
 - **Out of step past `MAX_SKIP`.** More than 1000 lost messages in one ratchet chain leave the pair out of step until a restart or a `LEAVE`. A replay raises the same error, so healing on it would bring back the replay teardown; bitchat-ios makes the same trade.
 
+## Rekey
+
+A session is renewed by a fresh XX handshake at 21.6 h of age (90% of 24 h), checked every 60 s (`rekeyAgedSessions`), as bitchat-ios renews its own. A leaked transport key then reads at most a day of traffic.
+
+| Rule                  | Value                                                                                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Who starts it         | The lower peer ID at 21.6 h; the higher only at 24 h. A bitchat peer starts its own at 21.6 h                                                                                                           |
+| Switching (initiator) | Toward a peer that proved bit 26: keeps sending under the old session until anything decrypts under the new one; after 5 s it resends msg3 and its `0x21`, then switches. Toward bitchat: at once       |
+| Switching (responder) | On msg3, at once: msg3 proves the initiator holds the new session                                                                                                                                       |
+| Replaced session      | Held receive-only for 60 s with the ratchet bound to it, and past that while a fragmented packet from the peer is still assembling, let go only on the minute tick; decrypt tries current, staged, held |
+| Ratchet               | Reseeded on the new session, never carried over                                                                                                                                                         |
+
+- **Why the lower ID only.** Two Airhop phones cross 90% within milliseconds; both initiating every day would spend a tiebreak and a round trip. The higher side's 24 h deadline only fires if the lower side's attempt never landed.
+- **Why wait for the answer.** The initiator completes on msg2; anything it seals under the new session before msg3 lands is lost if msg3 is. The responder's `0x21`, sent only after reading msg3, is the answer it waits for. A timeout usually means msg3 and the proof were lost together, so both go once more before the switch; the msg3 resend is built afresh, since relays drop an identical copy as a duplicate, and a peer that already completed ignores it.
+- **Why not toward bitchat.** bitchat-ios resets the old session the moment msg3 completes the new one, and bitchat-android destroys it on msg1, so a staged switch would keep sealing under a session the peer no longer holds. Staging needs the proven bit 26.
+- **Why reseed.** The ratchet lives in memory only, so a rekey and a peer that restarted look identical on the wire. A ratchet carried over to a peer that seeded afresh fails every message with no error.
+- **Why hold the old one.** A message sealed just before the switch, or bitchat-ios rekeying toward us mid-conversation, still arrives under the old keys. A 1 MiB file sealed just before a rekey takes about a minute on Bluetooth and opens only once its last fragment lands, hence the extension while one is assembling. A failed decrypt leaves state untouched, so trying each held session in turn costs only the attempt.
+- **Teardown.** A verified `LEAVE`, a block (`forgetPeer`) and stopping the mesh drop the current, staged and held sessions and every bound ratchet, so a panic wipe mid-rekey leaves nothing behind.
+
 ## Transport Messages
 
 ```text
@@ -82,11 +104,14 @@ bitchat-ios and bitchat-android shift right, which forgets recent nonces: after 
 
 ## Double Ratchet
 
-Airhop-to-Airhop DMs ride `DR_ENCRYPTED` for per-message forward secrecy; bitchat peers, and any peer that announced no Nostr key (TLV `0x07`), keep plain Noise transport.
+Airhop-to-Airhop DMs ride `DR_ENCRYPTED` for per-message forward secrecy; bitchat peers, and any peer whose `0x21` does not prove capability bit 26 (`doubleRatchet`), keep plain Noise transport. Nothing public says a peer is Airhop: the bit travels in `0x21` only, never in an announce.
 
 - **Seed.** `HKDF(exporterSecret, info "airhop-dr-seed-v1")` from the completed XX session. Never the handshake hash, which is public: every input to it crossed the air. Initiator seeds a sender, responder a receiver.
-- **Binding.** A ratchet counts only while the session it was seeded from is the one held (`ratchetFor`).
-- **Receive.** The packet is signed and its signature checked before the ratchet is touched, since the 40-byte ratchet header is cleartext. A responder that receives DR traffic before seeding one seeds it then.
+- **When.** On the peer's `0x21` carrying bit 26, under the session sent under (`seedRatchetOnProof`), once per session: the proof is sent again (the echo, a re-proven ring grant) and reseeding a live ratchet desyncs it. The initiator seeds on the responder's proof, which follows msg3, so its first ratchet message cannot fall into the msg2 window. Until both proofs cross, DMs ride plain Noise; the initiator holds its queue up to 5 s for the responder's proof, so a long DM goes on the ratchet rather than to the relays.
+- **Binding.** A ratchet counts only while the session it was seeded from is the one held (`ratchetFor`), apart from the grace a replaced one is held for decrypting.
+- **Receive.** The packet is signed and its signature checked before the ratchet is touched, since the 40-byte ratchet header is cleartext. A responder that receives DR traffic before the initiator's proof seeds then; it never sends DR first.
+- **Nostr key.** Each side sends `0x54` to a peer that proved bit 26 and is a saved contact or someone a DM has passed with: after each such proof, so a lost one is made good, and once when the first DM passes in a proven session. A stranger who only completes a handshake never gets it. A receiver applies it only after the same session's `0x21` is accepted, which may drop a Nostr key planted on the contact.
+- **First message.** A responder has no sending chain until it hears the initiator's first ratchet message, so the initiator sends one on seeding: an empty `DELIVERED` receipt under a random message ID, filed nowhere. When the chain appears the responder flushes what waited for it, and `waitForDmProof` (a payment, a video's budget) resolves only once this side can seal.
 - **Receipts** go over the ratchet when `canEncrypt` (a fresh responder has no sending chain until the initiator's first message), otherwise over Noise in bitchat's format.
 - **Skipped keys** are capped at `MAX_SKIP` (1000).
 
@@ -100,7 +125,7 @@ Pattern `-> e, es, s, ss`. The sender's static key travels inside the ciphertext
 
 ## Sessions Are Per Peer
 
-One session per peer ID, whichever radio carries it: BLE, Wi-Fi Aware or LAN. Sessions live in memory only and are re-established after a restart.
+One session per peer ID, whichever radio carries it: BLE, Wi-Fi Aware or LAN, plus at most a staged rekey and the replaced sessions still held for stragglers. Sessions live in memory only and are re-established after a restart.
 
 ## What Not to Do
 
@@ -108,6 +133,8 @@ One session per peer ID, whichever radio carries it: BLE, Wi-Fi Aware or LAN. Se
 - Read msg2 or msg3 on the pending handshake itself, or accept a session whose static key does not derive to the claimed peer ID.
 - Send anything under a new session before msg3, or content before the `0x21` proof.
 - Clear or replace a session because a packet failed to decrypt.
-- Seed the ratchet from the handshake hash or from static keys.
+- Seed the ratchet from the handshake hash or from static keys, at handshake completion, or a second time in one session.
+- Carry a ratchet over a rekey, or send under a rekey's session before the peer has answered under it.
+- Set bit 26 anywhere but a `0x21`, or send `0x54` to a peer that has not proved the bit.
 - Create a separate session per transport, or persist one across restarts.
 - Use Noise X for live DMs.

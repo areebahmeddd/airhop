@@ -2,8 +2,8 @@ import CardTexture from "@/components/ui/CardTexture";
 import LeaderLabel from "@/components/ui/LeaderLabel";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { useInView } from "@/hooks/useInView";
-import { useT, type TranslationKey } from "@/i18n";
-import { ArrowRight } from "lucide-react";
+import { useDirection, useT, type TranslationKey } from "@/i18n";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
@@ -32,6 +32,7 @@ const LEGEND_KEYS: TranslationKey[] = [
 
 export default function HowItWorks() {
   const T = useT();
+  const ForwardArrow = useDirection() === "rtl" ? ArrowLeft : ArrowRight;
   const reduceMotion = useReducedMotion();
   const { ref: relayMapRef, inView: relayMapInView } = useInView<HTMLDivElement>();
 
@@ -56,9 +57,9 @@ export default function HowItWorks() {
             className="label group border-line bg-card-subtle text-secondary hover:border-line-strong hover:bg-inner hover:text-ink inline-flex h-11 items-center gap-2 rounded-full border ps-5 pe-4 text-[11px] font-semibold tracking-widest transition-colors duration-150"
           >
             {T("home.how.cta")}
-            <ArrowRight
+            <ForwardArrow
               size={13}
-              className="flex-shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 rtl:rotate-180"
+              className="shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5"
               aria-hidden="true"
             />
           </Link>
@@ -94,14 +95,18 @@ export default function HowItWorks() {
           transition={{ duration: 0.25, ease: "easeOut" }}
           className="mx-auto mt-4 max-w-6xl select-none"
         >
-          <p className="label text-secondary mb-2 text-center text-[10px] font-semibold tracking-widest lg:hidden">
-            &#8592; {T("home.how.swipe")} &#8594;
+          <p
+            dir="ltr"
+            className="label text-secondary mb-2 text-center text-[10px] font-semibold tracking-widest lg:hidden"
+          >
+            <span aria-hidden="true">&#8592;</span> <bdi>{T("home.how.swipe")}</bdi>{" "}
+            <span aria-hidden="true">&#8594;</span>
           </p>
 
           <div className="border-line bg-card overflow-hidden rounded-2xl border">
             <div className="border-line border-b px-6 py-3 select-none">
               <p className="label text-secondary text-[10px] font-bold tracking-widest">
-                &#9679; {T("home.how.diagram")}
+                <span aria-hidden="true">&#9679;</span> {T("home.how.diagram")}
               </p>
             </div>
 
@@ -372,11 +377,11 @@ export default function HowItWorks() {
 
             <div className="divide-line border-line grid grid-cols-2 divide-x divide-y border-t select-none sm:grid-cols-4 sm:divide-y-0">
               <div className="text-secondary mono flex items-center justify-center gap-2.5 px-4 py-4 text-[11px]">
-                <span className="border-ink bg-card h-3 w-3 flex-shrink-0 rounded-full border-2" />
+                <span className="border-ink bg-card h-3 w-3 shrink-0 rounded-full border-2" />
                 <span>{T(LEGEND_KEYS[0])}</span>
               </div>
               <div className="text-secondary mono flex items-center justify-center gap-2.5 px-4 py-4 text-[11px]">
-                <svg width="32" height="8" className="flex-shrink-0" aria-hidden="true">
+                <svg width="32" height="8" className="shrink-0" aria-hidden="true">
                   <line
                     x1="0"
                     y1="4"
@@ -390,7 +395,7 @@ export default function HowItWorks() {
                 <span>{T(LEGEND_KEYS[1])}</span>
               </div>
               <div className="text-secondary mono flex items-center justify-center gap-2.5 px-4 py-4 text-[11px]">
-                <svg width="32" height="8" className="flex-shrink-0" aria-hidden="true">
+                <svg width="32" height="8" className="shrink-0" aria-hidden="true">
                   <line
                     x1="0"
                     y1="4"
@@ -404,7 +409,7 @@ export default function HowItWorks() {
                 <span>{T(LEGEND_KEYS[2])}</span>
               </div>
               <div className="text-secondary mono flex items-center justify-center gap-2.5 px-4 py-4 text-[11px]">
-                <svg width="32" height="8" className="flex-shrink-0" aria-hidden="true">
+                <svg width="32" height="8" className="shrink-0" aria-hidden="true">
                   <line
                     x1="0"
                     y1="4"

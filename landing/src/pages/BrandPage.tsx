@@ -1,6 +1,6 @@
 import EnglishContent from "@/components/ui/EnglishContent";
 import PageHeader from "@/components/ui/PageHeader";
-import Mark from "@/components/ui/PixelBird";
+import PixelBird from "@/components/ui/PixelBird";
 import TextLink from "@/components/ui/TextLink";
 import { useSEO } from "@/hooks/useSEO";
 import { useT } from "@/i18n";
@@ -99,7 +99,7 @@ function CopyRow({ value, children }: { value: string; children: React.ReactNode
     <button
       type="button"
       onClick={copy}
-      className="group border-line hover:bg-card-subtle active:bg-inner flex w-full items-center gap-3 border-b py-2.5 text-left transition-colors"
+      className="group border-line hover:bg-card-subtle active:bg-inner flex w-full items-center gap-3 border-b py-2.5 text-start transition-colors"
       aria-label={`Copy ${value}`}
     >
       {children}
@@ -127,7 +127,7 @@ function Swatch({ name, hex, use }: { name: string; hex: string; use: string }) 
         <span className="text-ink block text-xs font-semibold">{name}</span>
         <span className="text-secondary block truncate text-[11px]">{use}</span>
       </span>
-      <span className="text-mute w-20 shrink-0 text-right text-[11px] tracking-wider uppercase">
+      <span className="text-mute w-20 shrink-0 text-end text-[11px] tracking-wider uppercase">
         {hex}
       </span>
     </CopyRow>
@@ -164,13 +164,13 @@ export default function BrandPage() {
                 className="border-line flex aspect-[4/3] items-center justify-center rounded-2xl border"
                 style={{ backgroundColor: "#ffffff" }}
               >
-                <Mark className="h-auto w-32" fill="#1C2024" />
+                <PixelBird className="h-auto w-32" fill="#1C2024" />
               </div>
               <div
                 className="border-line flex aspect-[4/3] items-center justify-center rounded-2xl border"
                 style={{ backgroundColor: "#0C0D0E" }}
               >
-                <Mark className="h-auto w-32" fill="#EDEEF0" />
+                <PixelBird className="h-auto w-32" fill="#EDEEF0" />
               </div>
             </div>
             <p className="text-secondary mt-4 text-sm leading-relaxed">
@@ -201,7 +201,7 @@ export default function BrandPage() {
           <Panel title="The lockup">
             <div className="border-line bg-canvas flex items-center justify-center rounded-2xl border px-6 py-10">
               <div className="flex items-center gap-5">
-                <Mark className="text-ink h-auto w-16" />
+                <PixelBird className="text-ink h-auto w-16" />
                 <span className="text-ink -me-[0.34em] font-mono text-xl font-bold tracking-[0.34em]">
                   AIRHOP
                 </span>

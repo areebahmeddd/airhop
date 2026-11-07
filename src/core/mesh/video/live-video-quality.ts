@@ -4,8 +4,9 @@
 //
 // Dimensions are portrait and multiples of 16, so every hardware H.264
 // encoder takes them without cropping. Low is about the airtime of a live
-// voice burst and suits several Bluetooth hops; Medium suits one or two; High
-// assumes Wi-Fi Aware.
+// voice burst and is the only one Bluetooth carries: Medium needs about 38
+// packets a second and High about 180, against a Bluetooth budget of 24, so
+// both need Wi-Fi Aware or the local network on the first hop.
 
 import { fecPolicy, type LiveVideoFecPolicy } from "./video-stream-packetizer";
 

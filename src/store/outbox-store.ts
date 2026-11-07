@@ -64,6 +64,17 @@ export function nostrResendDue(msg: PendingMessage, nowMs: number): boolean {
   return nowMs - msg.nostrSentMs >= wait;
 }
 
+// The messages whose only way to arrive is this outbox: no relay accepted a
+// copy that would reach them while this phone is away. Disappearing messages
+// keeps their rows until they settle (utils/message-expiry).
+export function awaitingReceiptIds(
+  pending: readonly PendingMessage[],
+): ReadonlySet<string> {
+  return new Set(
+    pending.filter((p) => p.relayAccepted !== true).map((p) => p.id),
+  );
+}
+
 interface OutboxState {
   pending: PendingMessage[];
 
@@ -71,6 +82,9 @@ interface OutboxState {
   enqueue: (msg: Omit<PendingMessage, "attempts">) => PendingMessage[];
   // Take a message off the queue, normally because a receipt confirmed it.
   resolve: (id: string) => void;
+  // Take messages off the queue that are gone from this phone (disappearing
+  // messages). Each entry holds the plaintext, which must not outlive its row.
+  discard: (ids: ReadonlySet<string>) => void;
   // Everything still owed to a given peer, oldest first.
   forPeer: (peerID: string) => PendingMessage[];
   // Charge one attempt, unless the last charged one was under
@@ -122,6 +136,13 @@ export const useOutboxStore = create<OutboxState>()(
 
       resolve(id) {
         set((state) => ({ pending: state.pending.filter((p) => p.id !== id) }));
+      },
+
+      discard(ids) {
+        set((state) => {
+          const pending = state.pending.filter((p) => !ids.has(p.id));
+          return pending.length === state.pending.length ? state : { pending };
+        });
       },
 
       forPeer(peerID) {

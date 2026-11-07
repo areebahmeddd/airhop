@@ -117,9 +117,12 @@ export default function VideoTrimmer({
   useExclusivePlayback(player, previewPlaying, onPreviewPlay);
 
   // The chosen part plays on a loop, including one that runs to the video's
-  // own end, where the player stops rather than passing the end handle.
+  // own end, where the player stops rather than passing the end handle. Only
+  // while playing: Android's clock reports the time while paused too, so
+  // scrubbing the end handle would otherwise jump the frame back to the start.
   useEffect(() => {
     const time = player.addListener("timeUpdate", ({ currentTime }) => {
+      if (!player.playing) return;
       if (currentTime * 1000 < rangeRef.current.endMs) return;
       seek(player, rangeRef.current.startMs);
     });

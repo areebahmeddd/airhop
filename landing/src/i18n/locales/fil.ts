@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Ang iyong pagkakakilanlan ay isang pares ng susing {ed25519} na nilikha sa iyong device at nakaimbak sa {ios_keychain} o {android_keystore}. Walang account, walang pagpaparehistro, at walang anumang dumadaan sa server, ibig sabihin puwede itong gamitin bilang pansamantalang app na walang naiiwang anumang makakaugnay sa iyo matapos itong burahin.",
   "home.about.body.crypto":
-    "Bawat sesyon ay gumagamit ng protokol na {noise} para sa napatunayang handshake. Ang mga live na direktang mensahe sa pagitan ng mga telepono na may Airhop ay gumagamit ng algoritmong {ratchet}, ibig sabihin kahit tumagas ang isang susi sa hinaharap, hindi nito mabubuksan ang mga mensaheng naipadala na. Ang panic wipe ay sumisira sa lahat ng susi at mensahe sa wala pang isang segundo.",
+    "Bawat sesyon ay gumagamit ng protokol na {noise} para sa napatunayang handshake. Ang mga live na direktang mensahe sa pagitan ng mga telepono na may Airhop ay gumagamit ng algoritmong {ratchet}, ibig sabihin kahit tumagas ang isang susi sa hinaharap, hindi nito mabubuksan ang mga mensaheng naipadala na. Ang panic wipe ay sumisira sa lahat ng susi at mensahe sa loob ng ilang segundo.",
   "home.about.body.internet":
     "Kapag ikaw at ang iyong kontak ay wala na sa saklaw ng Bluetooth, ang mga relay ng {nostr} ang nagsisilbing tulay sa internet, gamit ang mga direktang mensaheng nakabalot sa anyong {nip17}, kaya umaabot sa buong mundo ang mesh tuwing pareho kayong online. Available ang suporta sa {tor} sa iOS at Android, sa pamamagitan ng {arti}, may mga bridge na {obfs4}, {snowflake} at {webtunnel} para sa mga network na humaharang sa Tor.",
   "home.about.optional.title": "May mga opsyonal na tampok ang Airhop na puwede mong buksan:",
@@ -190,7 +190,7 @@ const strings: Strings = {
   "home.features.identity.keys.line":
     "Nilikha sa teleponong ito, nakaimbak sa keychain ng sistema.",
   "home.features.identity.names.name": "Nababasang pangalan",
-  "home.features.identity.names.line": "Hango sa iyong susi, kaya walang makakaagaw ng sa iyo.",
+  "home.features.identity.names.line": "Hango sa iyong susi, hindi pinipili o inirerehistro.",
   "home.features.identity.qr.name": "Kontak sa QR",
   "home.features.identity.qr.line":
     "Isang scan ang nagdadala ng kanilang susi, hindi lang ng pangalan.",
@@ -202,7 +202,7 @@ const strings: Strings = {
     "Lilipat ang mga chat at wallet, saka mabubura ang lumang telepono.",
   "home.features.identity.panic.name": "Panic wipe",
   "home.features.identity.panic.line":
-    "Bawat susi at bawat mensahe ay nasisira sa wala pang isang segundo.",
+    "Bawat susi at bawat mensahe ay nasisira sa loob ng ilang segundo.",
 
   "home.features.networking.title": "Networking",
   "home.features.networking.summary": "Ang mga telepono mismo ang network.",

@@ -209,6 +209,65 @@ final class VideoTranscodePassTests: XCTestCase {
     }
     XCTAssertFalse(FileManager.default.fileExists(atPath: output.path))
   }
+
+  // A writer that stops while an input is parked never asks that input for
+  // more, so only the watchdog can let the pump go. A disk-full failure cannot
+  // be staged here; a writer canceled under the pump parks it the same way.
+  func testAPumpParkedWhenItsWriterStopsStillFinishes() async throws {
+    let source = try SyntheticClip.write(
+      to: scratch.appendingPathComponent("clip.mp4"), seconds: 3, rotated: false, withAudio: false)
+    let asset = AVURLAsset(url: source)
+    let videoTracks = try await asset.loadTracks(withMediaType: .video)
+    let track = try XCTUnwrap(videoTracks.first)
+    let reader = try AVAssetReader(asset: asset)
+    let output = AVAssetReaderTrackOutput(
+      track: track,
+      outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+    reader.add(output)
+
+    let writer = try AVAssetWriter(
+      outputURL: scratch.appendingPathComponent("out.mp4"), fileType: .mp4)
+    let video = AVAssetWriterInput(
+      mediaType: .video,
+      outputSettings: [
+        AVVideoCodecKey: AVVideoCodecType.h264,
+        AVVideoWidthKey: 640,
+        AVVideoHeightKey: 480,
+      ])
+    video.expectsMediaDataInRealTime = false
+    // Never fed: the writer holds the video back to interleave with it, so the
+    // video input parks.
+    let starved = AVAssetWriterInput(
+      mediaType: .audio,
+      outputSettings: [
+        AVFormatIDKey: kAudioFormatMPEG4AAC,
+        AVSampleRateKey: 16_000.0,
+        AVNumberOfChannelsKey: 1,
+        AVEncoderBitRateKey: 16_000,
+      ])
+    starved.expectsMediaDataInRealTime = false
+    writer.add(video)
+    writer.add(starved)
+    XCTAssertTrue(reader.startReading())
+    XCTAssertTrue(writer.startWriting())
+    writer.startSession(atSourceTime: .zero)
+
+    let group = DispatchGroup()
+    let pump = VideoTranscodePump(
+      label: "test", output: output, input: video, reader: reader, writer: writer,
+      endTime: .positiveInfinity, group: group, isCancelled: { false }, onSample: { _ in })
+    pump.start()
+    try await Task.sleep(nanoseconds: 1_000_000_000)
+    writer.cancelWriting()
+
+    let settled = await withCheckedContinuation {
+      (continuation: CheckedContinuation<Bool, Never>) in
+      DispatchQueue.global().async {
+        continuation.resume(returning: group.wait(timeout: .now() + 5) == .success)
+      }
+    }
+    XCTAssertTrue(settled, "the pump never left its group")
+  }
 }
 
 private final class Fractions: @unchecked Sendable {

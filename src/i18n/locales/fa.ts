@@ -648,6 +648,7 @@ export const strings: Strings = {
   "chat.attach.send": "فرستادن پیوست",
   "chat.attach.generic": "پیوست",
   "chat.video_prep.preparing": "در حال آماده‌سازی ویدیو",
+  "chat.video_prep.retrying": "در حال کوچک کردن بیشتر",
   "chat.video_prep.waiting": "در انتظار آماده‌سازی ویدیو",
   "chat.video_prep.cancel": "توقف آماده‌سازی این ویدیو",
   "chat.video_prep.too_large":
@@ -678,8 +679,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "پخش پیام صوتی",
   "chat.media.pause_video": "مکث ویدیو",
   "chat.media.play_video": "پخش ویدیو",
-  "chat.media.voice_position": "جای پیام صوتی",
-  "chat.media.voice_scrub": "روی میله‌ها بزنید تا به آن نقطه بپرید",
+  "chat.media.voice_back": "5 ثانیه عقب",
+  "chat.media.voice_forward": "5 ثانیه جلو",
   "chat.media.image": "تصویر",
   "chat.media.tap_load_photo": "برای بارگذاری عکس بزنید",
   "chat.media.open_document": "باز کردن {name}",
@@ -735,6 +736,7 @@ export const strings: Strings = {
   "chat.live_video.title": "ویدیوی زنده",
   "chat.live_video.go_live": "شروع پخش زنده",
   "chat.live_video.end": "پایان",
+  "chat.live_video.ending": "در حال پایان…",
   "chat.live_video.end_title": "ویدیوی زنده تمام شود؟",
   "chat.live_video.end_body":
     "با پایان دادن، ضبط در همین گفتگو می‌ماند. با دور انداختن، از همه بینندگان خواسته می‌شود آن را پاک کنند.",
@@ -747,9 +749,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "کم",
   "chat.live_video.quality_medium": "متوسط",
   "chat.live_video.quality_high": "زیاد",
-  "chat.live_video.quality_low_hint": "به افرادی در چند پرش دورتر می‌رسد",
-  "chat.live_video.quality_medium_hint": "برای افرادی در یک یا دو پرش دورتر",
-  "chat.live_video.quality_high_hint": "برای افرادی درست کنار شما",
+  "chat.live_video.quality_low_hint":
+    "از راه بلوتوث به افرادی در چند پرش دورتر می‌رسد",
+  "chat.live_video.quality_medium_hint":
+    "واضح‌تر، برای بینندگانی که روی Wi-Fi Aware یا همان Wi-Fi هستند",
+  "chat.live_video.quality_high_hint":
+    "واضح‌ترین، برای بینندگانی که روی Wi-Fi Aware یا همان Wi-Fi هستند",
+  "chat.live_video.quality_needs_wifi": "به Wi-Fi در نزدیکی نیاز دارد",
+  "chat.live_video.quality_bluetooth_note":
+    "متوسط و زیاد به Wi-Fi در نزدیکی نیاز دارند",
   "chat.live_video.signal_good": "همگام است",
   "chat.live_video.signal_weak": "عقب می‌افتد",
   "chat.live_video.signal_poor":
@@ -765,6 +773,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "برای ضبط بدون نگه داشتن، به بالا بکشید",
   "chat.voice.live_speaking": "{name} در حال صحبت",
   "chat.voice.live_ended": "پایان یافت",
+  "chat.voice.live_stopped": "صدای زنده تمام شد",
   "voice.unavailable": "صدای زنده در دسترس نیست",
   "voice.recording_stopped": "ضبط متوقف شد",
 
@@ -1850,13 +1859,15 @@ export const strings: Strings = {
     "هنوز کلیدی برای این مخاطب نیست. به آن‌ها پیام بدهید، یا وقتی دیدارشان کردید کدشان را بپویید.",
   "contacts.verify.compare_title": "این‌ها را برای هم بخوانید",
   "contacts.verify.compare_body":
-    "{name} همان شش واژه را در Airhop می‌بیند. اگر یکی بودند، هر دو می‌دانید کلیدها واقعی‌اند. bitchat چنین واژه‌هایی نشان نمی‌دهد، پس به‌جای آن کدشان را بپویید.",
-  "contacts.verify.codes_match": "این‌ها یکی هستند",
-  "contacts.verify.codes_differ": "یکی نیستند",
+    "کد خود را برای {name} بخوانید تا روی گوشی خودش بررسی کند. سپس کدی را که می‌خواند با کد او در اینجا مقایسه کنید. هر کدام از شما دیگری را روی گوشی خودش تأییدشده علامت می‌زند. bitchat چنین واژه‌هایی نشان نمی‌دهد، پس به‌جای آن کدشان را بپویید.",
+  "contacts.verify.your_code": "کد شما",
+  "contacts.verify.their_code": "کد او",
+  "contacts.verify.codes_match": "کد او یکی است",
+  "contacts.verify.codes_differ": "کد او یکی نیست",
   "contacts.verify.codes_differ_body":
     "شاید کلیدهای این گوشی مال {name} نباشند. پیش از اعتماد به این گفتگو، کدشان را حضوری بپویید.",
   "contacts.verify.compared_body":
-    "شما و {name} یک کد را تأیید کردید. این مخاطب تأیید شد.",
+    "کدی که {name} خواند یکی است، پس روی این گوشی تأیید شد. او هم شما را روی گوشی خودش تأیید می‌کند.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "بازگشت",
@@ -2014,11 +2025,32 @@ export const strings: Strings = {
     "حد میانه برای یکی دو هفته دوری از آنتن.",
   "settings.general.retention_30_desc":
     "گفتگوها را بیش از همه خواندنی نگه می‌دارد و بیشترین فضا را هم می‌گیرد.",
+  "settings.general.message_retention": "پیام‌های ناپدیدشونده",
+  "settings.general.message_retention_desc":
+    "پیام‌ها و رسانه‌هایشان پس از مدت انتخاب‌شده از این گوشی حذف می‌شوند",
+  "settings.general.message_retention_sheet":
+    "از زمانی شمرده می‌شود که هر پیام به این گوشی رسیده، و فقط این گوشی فراموش می‌کند. گوشی طرف مقابل نسخهٔ خودش را نگه می‌دارد، جلوی اسکرین‌شات را نمی‌شود گرفت و پرداخت‌هایی که در گفتگوی خصوصی برایتان فرستاده شده و هنوز دریافت نکرده‌اید تا وقتی دریافتشان کنید می‌مانند.",
+  "settings.general.message_retention_off_desc":
+    "پیام‌ها می‌مانند تا گفتگو را پاک کنید یا از آن خارج شوید",
+  "settings.general.message_retention_1_desc":
+    "کمترین ردپا، اگر خطر خود گوشی است",
+  "settings.general.message_retention_7_desc":
+    "یک هفته برای خواندن، بعد پاک می‌شوند",
+  "settings.general.message_retention_30_desc":
+    "گفتگوها را طولانی‌ترین مدت خواندنی نگه می‌دارد",
+  "settings.general.message_retention_confirm_title":
+    "پیام‌های قدیمی‌تر حذف شوند؟",
+  "settings.general.message_retention_confirm_1":
+    "پیام‌های قدیمی‌تر از 1 روز همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. این کار برگشت‌پذیر نیست.",
+  "settings.general.message_retention_confirm_7":
+    "پیام‌های قدیمی‌تر از 7 روز همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. این کار برگشت‌پذیر نیست.",
+  "settings.general.message_retention_confirm_30":
+    "پیام‌های قدیمی‌تر از 30 روز همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. این کار برگشت‌پذیر نیست.",
   "settings.general.reset_desc":
     "ترجیحات را به حالت پیش‌فرض بازمی‌گرداند و هویت، پیام‌ها، مخاطبان و کیف پول شما را دست‌نخورده می‌گذارد",
   "settings.general.reset_title": "تنظیمات بازنشانی شود؟",
   "settings.general.reset_body":
-    "ترجیحات به پیش‌فرض بازمی‌گردند، از جمله ظاهر، زبان، اعلان‌ها، لغو ارسال، و اتصال (دروازه، پل مش، رله‌ها). قفل Airhop، مدت نگهداری رسانه، روشن یا خاموش بودن اینترنت، Tor و پل‌هایش، و وضعیت شما همان‌طور که تنظیم کرده‌اید می‌مانند. هویت، پیام‌ها، مخاطبان و کیف پول شما دست‌نخورده می‌مانند.",
+    "ترجیحات به پیش‌فرض بازمی‌گردند، از جمله ظاهر، زبان، اعلان‌ها، لغو ارسال، و اتصال (دروازه، پل مش، رله‌ها). قفل Airhop، مدت نگهداری پیام‌ها و رسانه، روشن یا خاموش بودن اینترنت، Tor و پل‌هایش، و وضعیت شما همان‌طور که تنظیم کرده‌اید می‌مانند. هویت، پیام‌ها، مخاطبان و کیف پول شما دست‌نخورده می‌مانند.",
   "settings.general.reset_confirm": "بازنشانی",
 
   // ---- Settings: privacy and security ----

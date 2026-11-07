@@ -34,6 +34,10 @@ export interface ActivityEntry {
   previewKey?: CatalogKey;
   previewVars?: TranslationVars;
   timestampMs: number;
+  // When it was logged, by this phone's clock, which is when its message
+  // arrived. Disappearing messages expire an entry by it, as they do the
+  // message (ChatMessage.receivedAtMs).
+  recordedAtMs: number;
   // False until the user has opened the bell screen and seen it.
   seen: boolean;
   // "message" (default) or "notice" (a board/bulletin post). Lets the bell and
@@ -51,7 +55,7 @@ const MAX_ENTRIES = 100;
 interface ActivityState {
   // Newest first.
   entries: ActivityEntry[];
-  record: (entry: Omit<ActivityEntry, "seen">) => void;
+  record: (entry: Omit<ActivityEntry, "seen" | "recordedAtMs">) => void;
   markAllSeen: () => void;
   // Mark every entry for one conversation as seen. Reading a thread is seeing
   // its notifications, and the OS notification is dismissed at the same moment.
@@ -59,6 +63,15 @@ interface ActivityState {
   // Follow a thread folded into another (chat-store mergeChannel), so a row
   // still opens the conversation rather than a name nothing answers to.
   repointChannel: (from: string, to: string) => void;
+  // Drop a conversation's entries when it is cleared or left. Each holds a
+  // preview of a message, so leaving them would keep words the conversation's
+  // own history no longer has.
+  removeChannel: (channel: string) => void;
+  // Drop the message entries disappearing messages have retired: those whose
+  // message expired (`ids`), and any logged before `cutoffMs` whose message
+  // was trimmed before it could expire. Notices are left alone: a board keeps
+  // its own lifetime, and gossip would only offer the post again.
+  expire: (ids: ReadonlySet<string>, cutoffMs: number) => void;
   // Mark every notice for one board (geohash, "" = mesh) as seen. Called when
   // the user opens that room's notices sheet, so its board-icon badge clears.
   markNoticesSeen: (geohash: string) => void;
@@ -88,7 +101,10 @@ export const useActivityStore = create<ActivityState>()(
           // Dedupe by message id: the same message can reach us over several
           // mesh paths, and it should log once.
           if (state.entries.some((e) => e.id === entry.id)) return state;
-          const next = [{ ...entry, seen: false }, ...state.entries];
+          const next = [
+            { ...entry, recordedAtMs: Date.now(), seen: false },
+            ...state.entries,
+          ];
           return { entries: next.slice(0, MAX_ENTRIES) };
         });
       },
@@ -122,6 +138,24 @@ export const useActivityStore = create<ActivityState>()(
             return { ...e, channel: to };
           });
           return changed ? { entries } : state;
+        });
+      },
+
+      removeChannel(channel) {
+        set((state) => {
+          const entries = state.entries.filter((e) => e.channel !== channel);
+          return entries.length === state.entries.length ? state : { entries };
+        });
+      },
+
+      expire(ids, cutoffMs) {
+        set((state) => {
+          const entries = state.entries.filter(
+            (e) =>
+              e.kind === "notice" ||
+              (!ids.has(e.id) && e.recordedAtMs >= cutoffMs),
+          );
+          return entries.length === state.entries.length ? state : { entries };
         });
       },
 

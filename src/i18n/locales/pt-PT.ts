@@ -662,6 +662,7 @@ export const strings: Strings = {
   "chat.attach.send": "Enviar o anexo",
   "chat.attach.generic": "Anexo",
   "chat.video_prep.preparing": "A preparar o vídeo",
+  "chat.video_prep.retrying": "A reduzir ainda mais",
   "chat.video_prep.waiting": "A aguardar para preparar o vídeo",
   "chat.video_prep.cancel": "Parar de preparar este vídeo",
   "chat.video_prep.too_large":
@@ -693,9 +694,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Reproduzir a nota de voz",
   "chat.media.pause_video": "Pausar o vídeo",
   "chat.media.play_video": "Reproduzir o vídeo",
-  "chat.media.voice_position": "Posição na nota de voz",
-  "chat.media.voice_scrub":
-    "Toca ao longo das barras para saltares para esse ponto",
+  "chat.media.voice_back": "Recuar 5 segundos",
+  "chat.media.voice_forward": "Avançar 5 segundos",
   "chat.media.image": "Imagem",
   "chat.media.tap_load_photo": "Toca para carregar a fotografia",
   "chat.media.open_document": "Abrir {name}",
@@ -754,6 +754,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Vídeo em direto",
   "chat.live_video.go_live": "Emitir em direto",
   "chat.live_video.end": "Terminar",
+  "chat.live_video.ending": "A terminar…",
   "chat.live_video.end_title": "Terminar o vídeo em direto?",
   "chat.live_video.end_body":
     "Terminar mantém a gravação nesta conversa. Descartar pede a todos os que estão a ver para a apagarem.",
@@ -766,9 +767,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Média",
   "chat.live_video.quality_high": "Alta",
   "chat.live_video.quality_low_hint":
-    "Chega a pessoas a vários saltos de distância",
-  "chat.live_video.quality_medium_hint": "Para pessoas a um ou dois saltos",
-  "chat.live_video.quality_high_hint": "Para pessoas mesmo ao teu lado",
+    "Chega a pessoas a vários saltos de distância por Bluetooth",
+  "chat.live_video.quality_medium_hint":
+    "Mais nítida, para quem vê por Wi-Fi Aware ou pela mesma rede Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "A mais nítida, para quem vê por Wi-Fi Aware ou pela mesma rede Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Precisa de Wi-Fi por perto",
+  "chat.live_video.quality_bluetooth_note":
+    "Média e Alta precisam de Wi-Fi por perto",
   "chat.live_video.signal_good": "A acompanhar",
   "chat.live_video.signal_weak": "A ficar para trás",
   "chat.live_video.signal_poor":
@@ -784,6 +790,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Desliza para cima para gravares sem manter premido",
   "chat.voice.live_speaking": "{name} está a falar",
   "chat.voice.live_ended": "Terminado",
+  "chat.voice.live_stopped": "Voz em direto terminada",
   "voice.unavailable": "Voz em direto indisponível",
   "voice.recording_stopped": "Gravação interrompida",
 
@@ -1898,13 +1905,15 @@ export const strings: Strings = {
     "Ainda não há chaves deste contacto. Escreve à pessoa, ou lê o código dela quando se encontrarem.",
   "contacts.verify.compare_title": "Leiam isto um ao outro",
   "contacts.verify.compare_body":
-    "{name} vê as mesmas seis palavras no Airhop. Se corresponderem, ambos sabem que as chaves são autênticas. O bitchat não mostra estas palavras, por isso lê antes o código da pessoa.",
-  "contacts.verify.codes_match": "Correspondem",
-  "contacts.verify.codes_differ": "Não correspondem",
+    "Lê o teu código a {name} para que o confirme no telemóvel dela. Depois compara o código que a pessoa ler com o código dela aqui. Cada um marca o outro como verificado no próprio telemóvel. O bitchat não mostra estas palavras, por isso lê antes o código da pessoa.",
+  "contacts.verify.your_code": "O teu código",
+  "contacts.verify.their_code": "Código da pessoa",
+  "contacts.verify.codes_match": "O código da pessoa corresponde",
+  "contacts.verify.codes_differ": "O código da pessoa não corresponde",
   "contacts.verify.codes_differ_body":
     "As chaves neste telemóvel podem não ser de {name}. Lê o código da pessoa presencialmente antes de confiares nesta conversa.",
   "contacts.verify.compared_body":
-    "Tu e {name} confirmaram o mesmo código. Este contacto está verificado.",
+    "O código que {name} leu corresponde, por isso a pessoa está verificada neste telemóvel. No telemóvel dela, é ela que te verifica.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Voltar",
@@ -2066,11 +2075,32 @@ export const strings: Strings = {
     "Um meio-termo para uma ou duas semanas longe da rede.",
   "settings.general.retention_30_desc":
     "Mantém as conversas legíveis mais tempo, e ocupa mais disco.",
+  "settings.general.message_retention": "Mensagens temporárias",
+  "settings.general.message_retention_desc":
+    "As mensagens e a sua multimédia são eliminadas deste telemóvel após o tempo escolhido",
+  "settings.general.message_retention_sheet":
+    "Contado a partir do momento em que cada mensagem chegou a este telemóvel, e só este telemóvel esquece. O telemóvel da outra pessoa guarda a sua cópia, as capturas de ecrã não podem ser impedidas e os pagamentos de conversas privadas que ainda não resgataste ficam até os resgatares.",
+  "settings.general.message_retention_off_desc":
+    "As mensagens ficam até limpares a conversa ou saíres dela",
+  "settings.general.message_retention_1_desc":
+    "Deixa o mínimo para trás, se o risco é o próprio telemóvel",
+  "settings.general.message_retention_7_desc":
+    "Uma semana para pôr a conversa em dia, depois desaparecem",
+  "settings.general.message_retention_30_desc":
+    "Mantém as conversas legíveis durante mais tempo",
+  "settings.general.message_retention_confirm_title":
+    "Eliminar mensagens mais antigas?",
+  "settings.general.message_retention_confirm_1":
+    "As mensagens com mais de 1 dia vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. Não é possível anular.",
+  "settings.general.message_retention_confirm_7":
+    "As mensagens com mais de 7 dias vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. Não é possível anular.",
+  "settings.general.message_retention_confirm_30":
+    "As mensagens com mais de 30 dias vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. Não é possível anular.",
   "settings.general.reset_desc":
     "Repõe as preferências nos valores originais, deixando intactos a tua identidade, mensagens, contactos e carteira",
   "settings.general.reset_title": "Repor as definições?",
   "settings.general.reset_body":
-    "As preferências voltam ao original, incluindo o aspeto, o idioma, as notificações, anular o envio, e a ligação (ponte de Internet, ponte de malha, relays). O bloqueio do Airhop, o tempo que a multimédia é guardada, o interruptor da Internet, o Tor e as suas pontes, e o teu estado ficam como os definiste. A tua identidade, mensagens, contactos e carteira ficam intactos.",
+    "As preferências voltam ao original, incluindo o aspeto, o idioma, as notificações, anular o envio, e a ligação (ponte de Internet, ponte de malha, relays). O bloqueio do Airhop, o tempo que as mensagens e a multimédia são guardadas, o interruptor da Internet, o Tor e as suas pontes, e o teu estado ficam como os definiste. A tua identidade, mensagens, contactos e carteira ficam intactos.",
   "settings.general.reset_confirm": "Repor",
 
   // ---- Settings: privacy and security ----

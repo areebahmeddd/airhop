@@ -163,8 +163,8 @@ export async function prepareVideoForSend(
   queue = run.catch(() => undefined);
   try {
     return await run;
-  } catch {
-    return { ok: false, reason: job.stopped ?? failureReason() };
+  } catch (error) {
+    return { ok: false, reason: job.stopped ?? passFailure(error) };
   } finally {
     jobs.delete(job.id);
     useVideoPrepStore.getState().remove(job.id);
@@ -266,7 +266,7 @@ async function transcode(job: Job, video: VideoToSend): Promise<PreparedVideo> {
     if (job.stopped !== null) return { ok: false, reason: job.stopped };
     const output = workFile(job.id, attempt);
     job.passKey = `${job.id}:${String(attempt)}`;
-    useVideoPrepStore.getState().start(job.id);
+    useVideoPrepStore.getState().start(job.id, attempt);
     const result = await native.transcodeVideo(
       job.passKey,
       video.uri,
@@ -296,6 +296,14 @@ async function transcode(job: Job, video: VideoToSend): Promise<PreparedVideo> {
     bits = retryTranscodeBits(bits, budget, result.sizeBytes);
   }
   return { ok: false, reason: "too_large" };
+}
+
+// A pass native gave up on. Android rejects a source it cannot decode (HDR
+// below Android 10, where Media3 will not tone map) as UNREADABLE, which no
+// retry can fix; anything else may go on a second try.
+function passFailure(error: unknown): VideoPrepFailure {
+  const code = (error as { code?: unknown } | undefined)?.code;
+  return failureReason(code === "UNREADABLE" ? "unreadable" : "failed");
 }
 
 // A pass iOS failed because the app had just left the foreground can answer

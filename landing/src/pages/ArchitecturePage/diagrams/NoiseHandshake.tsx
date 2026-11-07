@@ -1,4 +1,4 @@
-import { Arrow, Box, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
+import { Arrow, Box, FILL, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
 
 export function NoiseHandshake() {
   const msgs = [
@@ -29,7 +29,7 @@ export function NoiseHandshake() {
             strokeWidth={1.3}
             markerEnd="url(#nh-arrow)"
           />
-          <rect x={370} y={m.y - 30} width={180} height={26} rx={2} fill="var(--dg-fill)" />
+          <rect x={370} y={m.y - 30} width={180} height={26} rx={2} fill={FILL} />
           <text
             x={460}
             y={m.y - 12}

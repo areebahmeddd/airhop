@@ -21,15 +21,53 @@ describe("activeMentionQuery", () => {
   });
 });
 
+describe("activeMentionQuery mid-draft", () => {
+  // The word "everyone" selected and replaced with "@al".
+  const draft = "hey @al, see you tomorrow";
+  const caret = "hey @al".length;
+
+  it("finds the mention that ends at the caret", () => {
+    expect(activeMentionQuery(draft, caret)).toBe("al");
+  });
+
+  it("offers nothing with the caret inside a longer name", () => {
+    expect(activeMentionQuery("hey @alice, hi", "hey @al".length)).toBeNull();
+    expect(
+      activeMentionQuery("hey @swift-otter", "hey @swift".length),
+    ).toBeNull();
+  });
+
+  it("offers nothing with the caret past the mention", () => {
+    expect(activeMentionQuery(draft, draft.length)).toBeNull();
+  });
+
+  it("counts emoji and combining accents before the @ by code unit", () => {
+    const before = "ok 👍 café @be";
+    expect(activeMentionQuery(`${before} later`, before.length)).toBe("be");
+  });
+});
+
 describe("applyMention", () => {
-  it("completes the mention with a trailing space", () => {
-    expect(applyMention("@an", "anabelle")).toBe("@anabelle ");
-    expect(applyMention("hey @an", "anabelle")).toBe("hey @anabelle ");
-    expect(applyMention("@", "anabelle")).toBe("@anabelle ");
+  it("completes a mention at the end with a trailing space", () => {
+    expect(applyMention("@an", "anabelle")).toEqual({
+      text: "@anabelle ",
+      caret: 10,
+    });
+    expect(applyMention("hey @an", "anabelle").text).toBe("hey @anabelle ");
+    expect(applyMention("@", "anabelle").text).toBe("@anabelle ");
+  });
+
+  it("keeps the rest of the draft and puts the caret after the name", () => {
+    const draft = "hey @al, see you tomorrow";
+    const next = applyMention(draft, "alice", "hey @al".length);
+    expect(next.text).toBe("hey @alice, see you tomorrow");
+    expect(next.caret).toBe("hey @alice".length);
+    const spaced = applyMention("@al and more", "alice", 3);
+    expect(spaced.text).toBe("@alice and more");
   });
 
   it("handles nicknames with regex-special characters safely", () => {
-    expect(applyMention("@sw", "swift.otter")).toBe("@swift.otter ");
+    expect(applyMention("@sw", "swift.otter").text).toBe("@swift.otter ");
   });
 });
 

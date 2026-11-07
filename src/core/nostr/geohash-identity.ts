@@ -1,7 +1,7 @@
 // Per-geohash Nostr identities.
 //
 // Location channels MUST NOT be signed with the user's main Nostr key. That key
-// is published in ANNOUNCE (TLV) and used for DMs, so reusing it here would let
+// goes to everyone we talk to and carries our DMs, so reusing it here would let
 // any relay operator, or anyone watching a geohash, tie the user's movement
 // history to their durable identity, and correlate the block/city/region cells
 // they post in as one person. A fresh key per geohash breaks those links.

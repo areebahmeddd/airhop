@@ -662,6 +662,7 @@ export const strings: Strings = {
   "chat.attach.send": "Kirim lampiran",
   "chat.attach.generic": "Lampiran",
   "chat.video_prep.preparing": "Menyiapkan video",
+  "chat.video_prep.retrying": "Memperkecil lagi",
   "chat.video_prep.waiting": "Menunggu untuk menyiapkan video",
   "chat.video_prep.cancel": "Berhenti menyiapkan video ini",
   "chat.video_prep.too_large":
@@ -692,9 +693,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Putar catatan suara",
   "chat.media.pause_video": "Jeda video",
   "chat.media.play_video": "Putar video",
-  "chat.media.voice_position": "Posisi catatan suara",
-  "chat.media.voice_scrub":
-    "Ketuk sepanjang batangnya untuk melompat ke titik itu",
+  "chat.media.voice_back": "Mundur 5 detik",
+  "chat.media.voice_forward": "Maju 5 detik",
   "chat.media.image": "Gambar",
   "chat.media.tap_load_photo": "Ketuk untuk memuat foto",
   "chat.media.open_document": "Buka {name}",
@@ -753,6 +753,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Video langsung",
   "chat.live_video.go_live": "Mulai siaran",
   "chat.live_video.end": "Akhiri",
+  "chat.live_video.ending": "Mengakhiri…",
   "chat.live_video.end_title": "Akhiri video langsung?",
   "chat.live_video.end_body":
     "Mengakhiri menyimpan rekaman di obrolan ini. Membuang meminta semua yang menonton untuk menghapusnya.",
@@ -767,10 +768,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Sedang",
   "chat.live_video.quality_high": "Tinggi",
   "chat.live_video.quality_low_hint":
-    "Menjangkau orang beberapa lompatan jauhnya",
+    "Menjangkau orang beberapa lompatan jauhnya lewat Bluetooth",
   "chat.live_video.quality_medium_hint":
-    "Untuk orang satu atau dua lompatan jauhnya",
-  "chat.live_video.quality_high_hint": "Untuk orang tepat di sebelah Anda",
+    "Lebih tajam, untuk penonton di Wi-Fi Aware atau Wi-Fi yang sama",
+  "chat.live_video.quality_high_hint":
+    "Paling tajam, untuk penonton di Wi-Fi Aware atau Wi-Fi yang sama",
+  "chat.live_video.quality_needs_wifi": "Perlu Wi-Fi di dekat",
+  "chat.live_video.quality_bluetooth_note":
+    "Sedang dan Tinggi perlu Wi-Fi di dekat",
   "chat.live_video.signal_good": "Lancar",
   "chat.live_video.signal_weak": "Mulai tertinggal",
   "chat.live_video.signal_poor":
@@ -786,6 +791,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Geser ke atas untuk merekam bebas genggam",
   "chat.voice.live_speaking": "{name} sedang bicara",
   "chat.voice.live_ended": "Selesai",
+  "chat.voice.live_stopped": "Suara langsung berakhir",
   "voice.unavailable": "Suara langsung tidak tersedia",
   "voice.recording_stopped": "Perekaman dihentikan",
 
@@ -1883,13 +1889,15 @@ export const strings: Strings = {
     "Belum ada kunci untuk kontak ini. Kirimi mereka pesan, atau pindai kode mereka saat bertemu.",
   "contacts.verify.compare_title": "Bacakan ini satu sama lain",
   "contacts.verify.compare_body":
-    "{name} melihat enam kata yang sama di Airhop. Kalau cocok, kalian berdua tahu kuncinya asli. bitchat tidak menampilkan kata seperti ini, jadi pindai saja kode mereka.",
-  "contacts.verify.codes_match": "Ini cocok",
-  "contacts.verify.codes_differ": "Tidak cocok",
+    "Bacakan kode kamu ke {name} agar mereka memeriksanya di ponsel mereka. Lalu cocokkan kode yang mereka bacakan dengan kode mereka di sini. Kalian masing-masing menandai yang lain terverifikasi di ponsel sendiri. bitchat tidak menampilkan kata seperti ini, jadi pindai saja kode mereka.",
+  "contacts.verify.your_code": "Kode kamu",
+  "contacts.verify.their_code": "Kode mereka",
+  "contacts.verify.codes_match": "Kode mereka cocok",
+  "contacts.verify.codes_differ": "Kode mereka tidak cocok",
   "contacts.verify.codes_differ_body":
     "Kunci di ponsel ini mungkin bukan milik {name}. Pindai kode mereka secara langsung sebelum memercayai obrolan ini.",
   "contacts.verify.compared_body":
-    "Kamu dan {name} memastikan kode yang sama. Kontak ini terverifikasi.",
+    "Kode yang dibacakan {name} cocok, jadi mereka terverifikasi di ponsel ini. Mereka memverifikasi kamu di ponsel mereka.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Kembali",
@@ -2051,11 +2059,32 @@ export const strings: Strings = {
     "Jalan tengah untuk satu dua pekan tanpa sinyal.",
   "settings.general.retention_30_desc":
     "Menjaga utasnya paling lama terbaca, sekaligus paling banyak memakan ruang.",
+  "settings.general.message_retention": "Pesan sementara",
+  "settings.general.message_retention_desc":
+    "Pesan dan medianya dihapus dari ponsel ini setelah waktu yang dipilih",
+  "settings.general.message_retention_sheet":
+    "Dihitung sejak tiap pesan sampai di ponsel ini, dan hanya ponsel ini yang lupa. Ponsel orang lain tetap menyimpan salinannya, tangkapan layar tidak bisa dicegah, dan pembayaran dari obrolan pribadi yang belum kamu klaim tetap ada sampai kamu mengklaimnya.",
+  "settings.general.message_retention_off_desc":
+    "Pesan tetap ada sampai kamu mengosongkan obrolan atau keluar darinya",
+  "settings.general.message_retention_1_desc":
+    "Jejak paling sedikit, jika ponselnya sendiri yang berisiko",
+  "settings.general.message_retention_7_desc":
+    "Seminggu untuk mengejar, lalu hilang",
+  "settings.general.message_retention_30_desc":
+    "Menjaga obrolan tetap terbaca paling lama",
+  "settings.general.message_retention_confirm_title":
+    "Hapus pesan yang lebih lama?",
+  "settings.general.message_retention_confirm_1":
+    "Pesan yang lebih lama dari 1 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Ini tidak bisa dibatalkan.",
+  "settings.general.message_retention_confirm_7":
+    "Pesan yang lebih lama dari 7 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Ini tidak bisa dibatalkan.",
+  "settings.general.message_retention_confirm_30":
+    "Pesan yang lebih lama dari 30 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Ini tidak bisa dibatalkan.",
   "settings.general.reset_desc":
     "Mengembalikan preferensi ke bawaannya, tanpa menyentuh identitas, pesan, kontak, dan dompetmu",
   "settings.general.reset_title": "Setel ulang pengaturan?",
   "settings.general.reset_body":
-    "Preferensi kembali ke bawaannya, termasuk tampilan, bahasa, notifikasi, batalkan kirim, dan konektivitas (gerbang, jembatan, relai). Kunci Airhop, lama penyimpanan media, sakelar internet, Tor beserta bridge-nya, dan statusmu tetap seperti yang kamu atur. Identitas, pesan, kontak, dan dompetmu tidak tersentuh.",
+    "Preferensi kembali ke bawaannya, termasuk tampilan, bahasa, notifikasi, batalkan kirim, dan konektivitas (gerbang, jembatan, relai). Kunci Airhop, lama penyimpanan pesan dan media, sakelar internet, Tor beserta bridge-nya, dan statusmu tetap seperti yang kamu atur. Identitas, pesan, kontak, dan dompetmu tidak tersentuh.",
   "settings.general.reset_confirm": "Setel ulang",
 
   // ---- Settings: privacy and security ----

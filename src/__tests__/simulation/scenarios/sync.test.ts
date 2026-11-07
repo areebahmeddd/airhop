@@ -958,7 +958,7 @@ test("SY11 a sync request is answered only when it is the link peer's own", asyn
   // asks every node it reaches.
   const s = (scenario = new Scenario({
     id: "SY11",
-    title: "unsigned, relayed and misattributed sync requests",
+    title: "unsigned, relayed, misattributed and misaddressed sync requests",
     seed: 111,
   }));
   const { radio, devices } = phones(s, ["alice", "carol", "mallory"]);
@@ -1035,17 +1035,20 @@ test("SY11 a sync request is answered only when it is the link peer's own", asyn
     misattributed === 0,
   );
 
+  // bitchat-ios sends a request down every link when it holds none to its
+  // addressee. The copy meant for us shares the stray's packet ID, so it must
+  // still be answered when the stray came first.
+  const at = s.world.wallClock();
+  const stray = await tryRequest(
+    syncRequest({ claimed: mallory, to: alice, ttl: 0, signWith: mallory, at }),
+  );
+  s.check("a request addressed to another phone is not answered", stray === 0);
+
   const genuine = await tryRequest(
-    syncRequest({
-      claimed: mallory,
-      to: carol,
-      ttl: 0,
-      signWith: mallory,
-      at: s.world.wallClock(),
-    }),
+    syncRequest({ claimed: mallory, to: carol, ttl: 0, signWith: mallory, at }),
   );
   s.check(
-    "the link peer's own signed request is answered",
+    "the link peer's own signed request is answered, after a stray with its ID",
     genuine > 0,
     `answers=${String(genuine)}`,
   );

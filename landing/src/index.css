@@ -30,9 +30,9 @@
   --moon: light-dark(#7c3aed, #a78bfa);
   --grad-hi: light-dark(#ffffff, #1a1c1e);
   --grad-lo: light-dark(#fafafc, #141618);
-  --dg-ink: light-dark(#1c2024, #edeef0);
-  --dg-mute: light-dark(#60646c, #b0b4ba);
-  --dg-line: light-dark(#cdced6, #43484e);
+  --dg-ink: var(--t-ink);
+  --dg-mute: var(--t-secondary);
+  --dg-line: var(--t-line-strong);
   --dg-fill: light-dark(#ffffff, #212225);
   --dg-soft: light-dark(#f0f0f3, #272a2d);
 }

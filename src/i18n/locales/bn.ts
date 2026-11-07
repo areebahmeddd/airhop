@@ -652,6 +652,7 @@ export const strings: Strings = {
   "chat.attach.send": "সংযুক্তি পাঠান",
   "chat.attach.generic": "সংযুক্তি",
   "chat.video_prep.preparing": "ভিডিও প্রস্তুত হচ্ছে",
+  "chat.video_prep.retrying": "আকার আরও ছোট করা হচ্ছে",
   "chat.video_prep.waiting": "ভিডিও প্রস্তুতের অপেক্ষায়",
   "chat.video_prep.cancel": "এই ভিডিও প্রস্তুত করা বন্ধ করুন",
   "chat.video_prep.too_large": "এই ভিডিওটি পাঠানোর মতো ছোট করা যায়নি।",
@@ -681,8 +682,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "ভয়েস নোট চালান",
   "chat.media.pause_video": "ভিডিও থামান",
   "chat.media.play_video": "ভিডিও চালান",
-  "chat.media.voice_position": "ভয়েস নোটে অবস্থান",
-  "chat.media.voice_scrub": "সেই জায়গায় যেতে দাগগুলোর ওপর ট্যাপ করুন",
+  "chat.media.voice_back": "5 সেকেন্ড পিছনে",
+  "chat.media.voice_forward": "5 সেকেন্ড সামনে",
   "chat.media.image": "ছবি",
   "chat.media.tap_load_photo": "ছবি লোড করতে ট্যাপ করুন",
   "chat.media.open_document": "{name} খুলুন",
@@ -737,6 +738,7 @@ export const strings: Strings = {
   "chat.live_video.title": "লাইভ ভিডিও",
   "chat.live_video.go_live": "লাইভে যান",
   "chat.live_video.end": "শেষ করুন",
+  "chat.live_video.ending": "শেষ করা হচ্ছে…",
   "chat.live_video.end_title": "লাইভ ভিডিও শেষ করবেন?",
   "chat.live_video.end_body":
     "শেষ করলে রেকর্ডিং এই চ্যাটে থাকবে। বাতিল করলে যারা দেখছেন সবাইকে এটি মুছে ফেলতে বলা হবে।",
@@ -748,9 +750,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "নিম্ন",
   "chat.live_video.quality_medium": "মাঝারি",
   "chat.live_video.quality_high": "উচ্চ",
-  "chat.live_video.quality_low_hint": "কয়েক হপ দূরের মানুষের কাছে পৌঁছায়",
-  "chat.live_video.quality_medium_hint": "এক বা দুই হপ দূরের মানুষের জন্য",
-  "chat.live_video.quality_high_hint": "ঠিক আপনার পাশের মানুষের জন্য",
+  "chat.live_video.quality_low_hint":
+    "ব্লুটুথে কয়েক হপ দূরের মানুষের কাছে পৌঁছায়",
+  "chat.live_video.quality_medium_hint":
+    "আরও স্পষ্ট, Wi-Fi Aware বা একই Wi-Fi-এ থাকা দর্শকদের জন্য",
+  "chat.live_video.quality_high_hint":
+    "সবচেয়ে স্পষ্ট, Wi-Fi Aware বা একই Wi-Fi-এ থাকা দর্শকদের জন্য",
+  "chat.live_video.quality_needs_wifi": "কাছাকাছি Wi-Fi দরকার",
+  "chat.live_video.quality_bluetooth_note":
+    "মাঝারি ও উচ্চ মানের জন্য কাছাকাছি Wi-Fi দরকার",
   "chat.live_video.signal_good": "তাল মিলিয়ে চলছে",
   "chat.live_video.signal_weak": "পিছিয়ে পড়ছে",
   "chat.live_video.signal_poor": "ভিডিওর জন্য খুব ধীর, শুধু শব্দ পাঠানো হচ্ছে",
@@ -765,6 +773,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "হাত ছাড়া রেকর্ড করতে উপরে সরান",
   "chat.voice.live_speaking": "{name} কথা বলছেন",
   "chat.voice.live_ended": "শেষ",
+  "chat.voice.live_stopped": "লাইভ ভয়েস শেষ হয়েছে",
   "voice.unavailable": "সরাসরি কথা বলা যাচ্ছে না",
   "voice.recording_stopped": "রেকর্ডিং থেমেছে",
 
@@ -1842,13 +1851,15 @@ export const strings: Strings = {
     "এই পরিচিতির জন্য এখনো কোনো কী নেই। তাদের বার্তা পাঠান, বা দেখা হলে তাদের কোড স্ক্যান করুন।",
   "contacts.verify.compare_title": "এগুলো একে অপরকে পড়ে শোনান",
   "contacts.verify.compare_body":
-    "{name} Airhop-এ একই ছয়টি শব্দ দেখছেন। মিলে গেলে আপনারা দুজনেই জানবেন কী-গুলো আসল। bitchat এমন কোনো শব্দ দেখায় না, তাই বরং তাদের কোড স্ক্যান করুন।",
-  "contacts.verify.codes_match": "এগুলো মেলে",
-  "contacts.verify.codes_differ": "এগুলো মেলে না",
+    "আপনার কোড {name}-কে পড়ে শোনান, যাতে তারা নিজেদের ফোনে মিলিয়ে দেখতে পারেন। তারপর তারা যে কোড পড়েন, তা এখানে তাদের কোডের সঙ্গে মিলিয়ে দেখুন। আপনারা প্রত্যেকে নিজের ফোনে অন্যজনকে যাচাই করা হিসেবে চিহ্নিত করবেন। bitchat এমন কোনো শব্দ দেখায় না, তাই বরং তাদের কোড স্ক্যান করুন।",
+  "contacts.verify.your_code": "আপনার কোড",
+  "contacts.verify.their_code": "তাদের কোড",
+  "contacts.verify.codes_match": "তাদের কোড মেলে",
+  "contacts.verify.codes_differ": "তাদের কোড মেলে না",
   "contacts.verify.codes_differ_body":
     "এই ফোনের কী-গুলো হয়তো {name}-এর নয়। এই চ্যাটে ভরসা করার আগে সামনাসামনি তাদের কোড স্ক্যান করুন।",
   "contacts.verify.compared_body":
-    "আপনি ও {name} একই কোড নিশ্চিত করেছেন। এই পরিচিতি যাচাই করা হয়েছে।",
+    "{name} যে কোড পড়েছেন তা মেলে, তাই এই ফোনে তারা যাচাই করা। তারা নিজেদের ফোনে আপনাকে যাচাই করবেন।",
 
   // ---- Settings: shared chrome ----
   "settings.back": "ফিরুন",
@@ -2004,11 +2015,31 @@ export const strings: Strings = {
     "সংকেত ছাড়া এক-দুই সপ্তাহের জন্য মাঝামাঝি একটি পথ।",
   "settings.general.retention_30_desc":
     "কথোপকথন সবচেয়ে বেশিদিন পড়া যায়, আর ডিস্কেও সবচেয়ে বেশি জমে।",
+  "settings.general.message_retention": "অদৃশ্য হওয়া বার্তা",
+  "settings.general.message_retention_desc":
+    "বেছে নেওয়া সময় পরে বার্তা ও তার মিডিয়া এই ফোন থেকে মুছে যায়",
+  "settings.general.message_retention_sheet":
+    "প্রতিটি বার্তা এই ফোনে পৌঁছানোর সময় থেকে গোনা হয়, আর শুধু এই ফোনই ভুলে যায়। অন্যজনের ফোন নিজের কপি রেখে দেয়, স্ক্রিনশট আটকানো যায় না, আর ব্যক্তিগত চ্যাটে পাঠানো যে পেমেন্ট এখনও নেননি তা নেওয়া পর্যন্ত থেকে যায়।",
+  "settings.general.message_retention_off_desc":
+    "চ্যাট খালি না করা বা ছেড়ে না যাওয়া পর্যন্ত বার্তা থেকে যায়",
+  "settings.general.message_retention_1_desc":
+    "সবচেয়ে কম পড়ে থাকে, যদি ফোনটাই ঝুঁকি হয়",
+  "settings.general.message_retention_7_desc":
+    "পড়ে নেওয়ার জন্য এক সপ্তাহ, তারপর উধাও",
+  "settings.general.message_retention_30_desc":
+    "কথোপকথন সবচেয়ে বেশি দিন পড়ার মতো রাখে",
+  "settings.general.message_retention_confirm_title": "পুরোনো বার্তা মুছবেন?",
+  "settings.general.message_retention_confirm_1":
+    "1 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। এটি ফেরানো যাবে না।",
+  "settings.general.message_retention_confirm_7":
+    "7 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। এটি ফেরানো যাবে না।",
+  "settings.general.message_retention_confirm_30":
+    "30 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। এটি ফেরানো যাবে না।",
   "settings.general.reset_desc":
     "পছন্দগুলো তাদের আদি অবস্থায় ফেরায়, আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত রেখে",
   "settings.general.reset_title": "সেটিংস রিসেট করবেন?",
   "settings.general.reset_body":
-    "পছন্দগুলো আদি অবস্থায় ফেরে, যার মধ্যে আছে চেহারা, ভাষা, বিজ্ঞপ্তি, পাঠানো ফেরানো, আর সংযোগ (গেটওয়ে, মেশ সেতু, রিলে)। Airhop লক, মিডিয়া কতদিন রাখা হয়, ইন্টারনেটের সুইচ, Tor ও তার ব্রিজ, আর আপনার অবস্থা যেমন ঠিক করেছেন তেমনই থাকে। আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত থাকে।",
+    "পছন্দগুলো আদি অবস্থায় ফেরে, যার মধ্যে আছে চেহারা, ভাষা, বিজ্ঞপ্তি, পাঠানো ফেরানো, আর সংযোগ (গেটওয়ে, মেশ সেতু, রিলে)। Airhop লক, বার্তা ও মিডিয়া কতদিন রাখা হয়, ইন্টারনেটের সুইচ, Tor ও তার ব্রিজ, আর আপনার অবস্থা যেমন ঠিক করেছেন তেমনই থাকে। আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত থাকে।",
   "settings.general.reset_confirm": "রিসেট",
 
   // ---- Settings: privacy and security ----

@@ -7,7 +7,9 @@ import { useActivityStore } from "../activity-store";
 import {
   dropPendingChatPersistence,
   flushChatPersistence,
+  MAX_PER_CHANNEL,
   subscribeInboundMessages,
+  subscribeRemovedMessages,
   useChatStore,
   type ChatMessage,
 } from "../chat-store";
@@ -97,10 +99,17 @@ describe("radio wins over a bridged row", () => {
   });
   const radio = makeMessage({ id: "mesh-abc", timestampMs: T + 400 });
 
+  // Stored with the time it reached this phone, which is not part of either
+  // copy as sent.
+  const stored = (m: ChatMessage): ChatMessage => ({
+    ...m,
+    receivedAtMs: expect.any(Number) as number,
+  });
+
   it("replaces the bridged row with the radio copy that arrives after it", () => {
     state().addMessage(bridged);
     state().addMessage(radio);
-    expect(state().messages["#test"]).toEqual([radio]);
+    expect(state().messages["#test"]).toEqual([stored(radio)]);
   });
 
   it("neither notifies nor counts it unread a second time", () => {
@@ -116,13 +125,13 @@ describe("radio wins over a bridged row", () => {
   it("keeps the radio row when the bridged copy comes second", () => {
     state().addMessage(radio);
     state().addMessage(bridged);
-    expect(state().messages["#test"]).toEqual([radio]);
+    expect(state().messages["#test"]).toEqual([stored(radio)]);
   });
 
   it("keeps the first of two bridged copies", () => {
     state().addMessage(bridged);
     state().addMessage({ ...bridged, senderNickname: "mallory#eeee" });
-    expect(state().messages["#test"]).toEqual([bridged]);
+    expect(state().messages["#test"]).toEqual([stored(bridged)]);
   });
 });
 
@@ -1000,5 +1009,177 @@ describe("the contact-card exchange state", () => {
     expect(
       useChatStore.getState().geoCardExchange[PEER_CELL_KEY],
     ).toBeUndefined();
+  });
+});
+
+// Disappearing messages count from when a row reached this phone, so the store
+// stamps it on the way in; the sender's clock is not a substitute.
+describe("receivedAtMs", () => {
+  afterEach(() => jest.useRealTimers());
+
+  it("is this phone's clock at arrival, whatever the sender's said", () => {
+    jest.useFakeTimers({ now: 1_800_000_000_000 });
+    state().addMessage(makeMessage({ timestampMs: 1_000 }));
+    expect(state().messages["#test"][0].receivedAtMs).toBe(1_800_000_000_000);
+  });
+
+  it("is kept when a row already carries one", () => {
+    state().addMessage(makeMessage({ receivedAtMs: 42 }));
+    expect(state().messages["#test"][0].receivedAtMs).toBe(42);
+  });
+});
+
+// The side channel file cleanup listens on: every way a row leaves, and only
+// once the store no longer holds it.
+describe("subscribeRemovedMessages", () => {
+  let removed: ChatMessage[][] = [];
+  let heldDuringCall: number[] = [];
+  let unsubscribe: () => void = () => {};
+
+  beforeEach(() => {
+    removed = [];
+    heldDuringCall = [];
+    unsubscribe = subscribeRemovedMessages((rows) => {
+      removed.push([...rows]);
+      heldDuringCall.push(
+        Object.values(state().messages).reduce((n, l) => n + l.length, 0),
+      );
+    });
+  });
+  afterEach(() => unsubscribe());
+
+  it("reports a removed message", () => {
+    state().addMessage(makeMessage({ id: "a" }));
+    state().removeMessage("#test", "a");
+    expect(removed.map((r) => r.map((m) => m.id))).toEqual([["a"]]);
+    expect(heldDuringCall).toEqual([0]);
+  });
+
+  it.each(["removeChannel", "clearChannelMessages"] as const)(
+    "reports every row %s takes",
+    (action) => {
+      state().addMessage(makeMessage({ id: "a", timestampMs: 1 }));
+      state().addMessage(makeMessage({ id: "b", timestampMs: 2 }));
+      state()[action]("#test");
+      expect(removed.map((r) => r.map((m) => m.id))).toEqual([["a", "b"]]);
+      expect(heldDuringCall).toEqual([0]);
+    },
+  );
+
+  it("reports the oldest row a full thread trims", () => {
+    for (let i = 0; i <= MAX_PER_CHANNEL; i++) {
+      state().addMessage(makeMessage({ id: `m${String(i)}`, timestampMs: i }));
+    }
+    expect(removed.map((r) => r.map((m) => m.id))).toEqual([["m0"]]);
+  });
+
+  it("says nothing when nothing went", () => {
+    state().removeMessage("#test", "missing");
+    state().clearChannelMessages("#empty");
+    expect(removed).toEqual([]);
+  });
+});
+
+// Leaving or clearing removes a conversation's history from this phone, and
+// the bell's previews are a copy of it.
+describe("activity entries of a cleared or left conversation", () => {
+  beforeEach(() => useActivityStore.getState().clearAll());
+
+  function log(id: string, channel: string): void {
+    useActivityStore.getState().record({
+      id,
+      channel,
+      isDM: false,
+      senderID: "aabbccdd00112233",
+      senderNickname: "alice",
+      preview: "words",
+      timestampMs: 1,
+    });
+  }
+
+  it.each(["removeChannel", "clearChannelMessages"] as const)(
+    "go with %s, and other conversations' stay",
+    (action) => {
+      log("a", "#test");
+      log("b", "#other");
+      state()[action]("#test");
+      expect(useActivityStore.getState().entries.map((e) => e.id)).toEqual([
+        "b",
+      ]);
+    },
+  );
+});
+
+describe("removeExpired", () => {
+  const NOW = 1_800_000_000_000;
+  const DAY = 24 * 60 * 60 * 1000;
+
+  it("removes rows past the window, everywhere, and returns them", () => {
+    state().addMessage(makeMessage({ id: "old", receivedAtMs: NOW - 2 * DAY }));
+    state().addMessage(
+      makeMessage({ id: "new", receivedAtMs: NOW - 1000, timestampMs: 2 }),
+    );
+    state().addMessage(
+      makeMessage({ id: "dm", channel: "dm:x", receivedAtMs: NOW - 3 * DAY }),
+    );
+    const gone = state().removeExpired(NOW, DAY);
+    expect(gone.map((m) => m.id).sort()).toEqual(["dm", "old"]);
+    expect(state().messages["#test"].map((m) => m.id)).toEqual(["new"]);
+    expect(state().messages["dm:x"]).toEqual([]);
+  });
+
+  it("brings the unread count down to what is left", () => {
+    for (const [id, at] of [
+      ["a", NOW - 3 * DAY],
+      ["b", NOW - 2 * DAY],
+      ["c", NOW],
+    ] as const) {
+      state().addMessage(
+        makeMessage({ id, receivedAtMs: at, timestampMs: at }),
+      );
+    }
+    expect(state().unreadCounts["#test"]).toBe(3);
+    state().removeExpired(NOW, DAY);
+    expect(state().unreadCounts["#test"]).toBe(1);
+  });
+
+  it("changes nothing with the setting off", () => {
+    state().addMessage(makeMessage({ receivedAtMs: 0 }));
+    const before = state().messages;
+    expect(state().removeExpired(NOW, 0)).toEqual([]);
+    expect(state().messages).toBe(before);
+  });
+
+  // A sender whose DELIVERED was lost resends the same ID for the outbox week.
+  // Dedup by "still in the thread" would take it as new.
+  it("refuses a resend of a DM it removed, without telling anyone", () => {
+    const heard: string[] = [];
+    const unsubscribe = subscribeInboundMessages((m) => heard.push(m.id));
+    try {
+      const dm = makeMessage({
+        id: "dm-gone",
+        channel: "dm:x",
+        receivedAtMs: NOW - 2 * DAY,
+      });
+      state().addMessage(dm);
+      heard.length = 0;
+      state().removeExpired(NOW, DAY);
+
+      expect(state().addMessage({ ...dm, receivedAtMs: undefined })).toBe(
+        false,
+      );
+      expect(state().messages["dm:x"]).toEqual([]);
+      expect(state().unreadCounts["dm:x"] ?? 0).toBe(0);
+      expect(heard).toEqual([]);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it("keeps no record of a channel message, which no outbox resends", () => {
+    const room = makeMessage({ id: "room-gone", receivedAtMs: NOW - 2 * DAY });
+    state().addMessage(room);
+    state().removeExpired(NOW, DAY);
+    expect(state().addMessage({ ...room, receivedAtMs: undefined })).toBe(true);
   });
 });

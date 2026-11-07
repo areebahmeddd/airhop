@@ -46,8 +46,18 @@ RCT_EXTERN_METHOD(setBackgroundServiceEnabled:(BOOL)enabled
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+// Resolves with the writes on the link not yet handed to the radio, this one
+// included. ttlMs > 0 drops a write still queued that long, at the head or
+// when a later write is queued; 0 or less never expires.
 RCT_EXTERN_METHOD(writeToLink:(NSString *)linkID
                   dataBase64:(NSString *)dataBase64
+                  ttlMs:(double)ttlMs
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+// Low connection latency for subscribed centrals while live media runs; the
+// central role has no equivalent call.
+RCT_EXTERN_METHOD(setLiveMediaActive:(BOOL)active
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

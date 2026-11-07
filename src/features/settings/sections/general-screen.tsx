@@ -22,14 +22,17 @@ import {
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { syncAutoStartOnBoot } from "@services/boot-sync";
 import { sweepMediaNow } from "@services/media-retention";
+import { sweepMessagesNow } from "@services/message-retention";
 import { showAlert } from "@store/alert-store";
 import {
   MEDIA_RETENTION_DAY_OPTIONS,
+  MESSAGE_RETENTION_DAY_OPTIONS,
   useSettingsStore,
   type MediaRetentionDays,
+  type MessageRetentionDays,
   type UploadQuality,
 } from "@store/settings-store";
-import BottomSheet from "@ui/components/bottom-sheet";
+import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
 import UpperText from "@ui/components/upper-text";
 import { useThemeColors } from "@ui/theme";
 import React, { useState } from "react";
@@ -121,6 +124,39 @@ const RETENTION_DESCRIPTION: Record<MediaRetentionDays, TranslationKey> = {
   30: "settings.general.retention_30_desc",
 };
 
+// Disappearing messages, keyed on their union for the same reason.
+const MESSAGE_RETENTION_DESCRIPTION: Record<
+  MessageRetentionDays,
+  TranslationKey
+> = {
+  0: "settings.general.message_retention_off_desc",
+  1: "settings.general.message_retention_1_desc",
+  7: "settings.general.message_retention_7_desc",
+  30: "settings.general.message_retention_30_desc",
+};
+
+// What a shorter window deletes, said before it does. A whole sentence per
+// window rather than a count spliced in, since "older than 1 day" declines
+// differently from the bare "1 day" the picker shows.
+const MESSAGE_RETENTION_CONFIRM: Record<
+  Exclude<MessageRetentionDays, 0>,
+  TranslationKey
+> = {
+  1: "settings.general.message_retention_confirm_1",
+  7: "settings.general.message_retention_confirm_7",
+  30: "settings.general.message_retention_confirm_30",
+};
+
+function messageRetentionLabel(
+  T: Translator,
+  TP: PluralTranslator,
+  days: MessageRetentionDays,
+): string {
+  return days === 0
+    ? T("common.off")
+    : TP("settings.general.retention_days", days);
+}
+
 // What Reset settings leaves alone, as its confirm says.
 //   stayInvisible        status belongs to the Profile picker, and the running
 //                        mesh keeps it, so the next launch has to as well.
@@ -129,6 +165,8 @@ const RETENTION_DESCRIPTION: Record<MediaRetentionDays, TranslationKey> = {
 //                        to pick up the phone an open app.
 //   mediaRetentionDays   the default is the shortest window, so resetting it
 //                        could only delete media at the next sweep.
+//   messageRetentionDays the default is off, so resetting it would quietly
+//                        keep messages someone chose to have disappear.
 //   tor*, internetEnabled  someone who chose Tor, its bridges or no internet at
 //                        all would otherwise be put on the clear net by a tap
 //                        meant to fix the theme.
@@ -137,6 +175,7 @@ const KEPT_BY_RESET = [
   "appLockEnabled",
   "appLockDelaySeconds",
   "mediaRetentionDays",
+  "messageRetentionDays",
   "torEnabled",
   // Goes with torEnabled: it records a native start that never answered, and
   // clearing it under a kept Tor would retry the start that crashed.
@@ -192,6 +231,41 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
   const [showQualitySheet, setShowQualitySheet] = useState(false);
   const mediaRetentionDays = useSettingsStore((s) => s.mediaRetentionDays);
   const [showRetentionSheet, setShowRetentionSheet] = useState(false);
+  const messageRetentionDays = useSettingsStore((s) => s.messageRetentionDays);
+  const [showMessageRetentionSheet, setShowMessageRetentionSheet] =
+    useState(false);
+
+  // A longer window, or Off, deletes nothing and needs no question. A shorter
+  // one deletes history at once and for good, so it is confirmed, naming what
+  // goes, and applied only on a yes.
+  function chooseMessageRetention(days: MessageRetentionDays): void {
+    setShowMessageRetentionSheet(false);
+    if (
+      days === 0 ||
+      (messageRetentionDays !== 0 && days >= messageRetentionDays)
+    ) {
+      useSettingsStore.getState().setMessageRetentionDays(days);
+      return;
+    }
+    const confirmKey = MESSAGE_RETENTION_CONFIRM[days];
+    afterSheetsClose(() =>
+      showAlert(
+        T("settings.general.message_retention_confirm_title"),
+        T(confirmKey),
+        [
+          { text: T("common.cancel"), style: "cancel" },
+          {
+            text: T("common.delete"),
+            style: "destructive",
+            onPress: () => {
+              useSettingsStore.getState().setMessageRetentionDays(days);
+              sweepMessagesNow();
+            },
+          },
+        ],
+      ),
+    );
+  }
 
   function doReset(): void {
     // Gateway and bridge react to their own settings via MeshService
@@ -296,6 +370,21 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   onValueChange={setSpamFilterEnabled}
                 />
               }
+            />
+            <GroupDivider />
+            {/* Last in Messages, the nearest it can sit to the media
+                retention row it mirrors, which follows the quality row. */}
+            <SettingLinkRow
+              id="message-retention"
+              icon="watch"
+              label={T("settings.general.message_retention")}
+              description={T("settings.general.message_retention_desc")}
+              control={
+                <Text style={styles.settingValue}>
+                  {messageRetentionLabel(T, TP, messageRetentionDays)}
+                </Text>
+              }
+              onPress={() => setShowMessageRetentionSheet(true)}
             />
           </View>
         </View>
@@ -455,6 +544,54 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                     </Text>
                     <Text style={styles.optionDescription}>
                       {T(RETENTION_DESCRIPTION[days])}
+                    </Text>
+                  </View>
+                  {selected && (
+                    <Feather
+                      name="check"
+                      size={18}
+                      color={Colors.textPrimary}
+                    />
+                  )}
+                </Pressable>
+              </React.Fragment>
+            );
+          })}
+        </View>
+      </BottomSheet>
+
+      <BottomSheet
+        visible={showMessageRetentionSheet}
+        onClose={() => setShowMessageRetentionSheet(false)}
+        sheetStyle={styles.sheet}
+      >
+        <Text style={styles.sheetTitle}>
+          {T("settings.general.message_retention")}
+        </Text>
+        <Text style={styles.sheetSubtitle}>
+          {T("settings.general.message_retention_sheet")}
+        </Text>
+        <View style={styles.optionGroup}>
+          {MESSAGE_RETENTION_DAY_OPTIONS.map((days, i) => {
+            const selected = days === messageRetentionDays;
+            const label = messageRetentionLabel(T, TP, days);
+            return (
+              <React.Fragment key={days}>
+                {i > 0 && <GroupDivider />}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.optionRowGrouped,
+                    pressed && styles.rowPressed,
+                  ]}
+                  onPress={() => chooseMessageRetention(days)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  accessibilityLabel={label}
+                >
+                  <View style={styles.optionText}>
+                    <Text style={styles.optionLabel}>{label}</Text>
+                    <Text style={styles.optionDescription}>
+                      {T(MESSAGE_RETENTION_DESCRIPTION[days])}
                     </Text>
                   </View>
                   {selected && (

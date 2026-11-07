@@ -22,7 +22,9 @@
 //   AirhopVoice.captureError   { message }
 package org.onemindlabs.airhop.voice
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioFormat
@@ -36,6 +38,7 @@ import android.media.MediaRecorder
 import android.os.SystemClock
 import android.util.Base64
 import android.util.Log
+import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -75,7 +78,8 @@ private fun rmsLevel(pcm: ByteArray, length: Int): Double {
 }
 
 // Codec parameters. Fixed by the wire format; changing any of these changes
-// what codec byte 0x01 means and breaks both bitchat and older Airhop builds.
+// what codec byte 0x01 means and breaks interop with bitchat and other Airhop
+// phones.
 private const val SAMPLE_RATE = 16_000
 private const val CHANNELS = 1
 private const val BIT_RATE = 16_000
@@ -196,7 +200,15 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         reactContext.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
     }
 
-    private fun requestVoiceFocus(onLoss: () -> Unit): AudioFocusRequest? {
+    // `refused` is AUDIOFOCUS_REQUEST_FAILED, which the system answers while a
+    // call holds the audio. No delayed gain is asked for, so the only other
+    // answer is a grant.
+    private class VoiceFocus(val request: AudioFocusRequest, val refused: Boolean)
+
+    // Null when there is no audio manager or the request threw, which says
+    // nothing about the microphone. minSdk is 26, so AudioFocusRequest is
+    // always there.
+    private fun requestVoiceFocus(onLoss: () -> Unit): VoiceFocus? {
         val manager = audioManager ?: return null
         val request =
             AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
@@ -211,30 +223,45 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     }
                 }
                 .build()
-        // Refused only while a call holds the audio, and a burst proceeds
-        // either way: the capture's own read failures still end it.
-        return runCatching { manager.requestAudioFocus(request) }.map { request }.getOrNull()
+        val result = runCatching { manager.requestAudioFocus(request) }.getOrNull() ?: return null
+        return VoiceFocus(request, result == AudioManager.AUDIOFOCUS_REQUEST_FAILED)
     }
 
-    private fun abandonVoiceFocus(request: AudioFocusRequest?) {
-        if (request == null) return
-        runCatching { audioManager?.abandonAudioFocusRequest(request) }
+    private fun abandonVoiceFocus(focus: VoiceFocus?) {
+        if (focus == null) return
+        runCatching { audioManager?.abandonAudioFocusRequest(focus.request) }
     }
 
     // ---- Capture ----
 
+    // Settles from the capture thread: resolved once the microphone is recording
+    // and the encoder is running, rejected with the reason it is not
+    // (PERMISSION_DENIED, MIC_BUSY, CAPTURE_FAILED). Resolving earlier would
+    // leave a caller holding a burst with no microphone behind it, and its
+    // fallback, a voice note or a silent stream, would never run.
     @ReactMethod
     fun startCapture(promise: Promise) {
+        if (
+            ContextCompat.checkSelfPermission(reactContext, Manifest.permission.RECORD_AUDIO) !=
+                PackageManager.PERMISSION_GRANTED
+        ) {
+            promise.reject("PERMISSION_DENIED", "RECORD_AUDIO not granted")
+            return
+        }
         if (capturing.getAndSet(true)) {
             // Already running. Idempotent rather than an error: a double press
-            // should not fail a burst that is already live.
-            promise.resolve(null)
+            // should not fail a burst that is already live. A start whose
+            // microphone has not opened yet takes this caller along, so both
+            // hear the same answer.
+            if (currentGate?.join(promise) != true) promise.resolve(null)
             return
         }
         val generation = captureGeneration.incrementAndGet()
         val previous = captureThread
         val run = CaptureRun()
         currentRun = run
+        val gate = StartGate(promise)
+        currentGate = gate
         val thread =
             Thread(
                 {
@@ -245,8 +272,14 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                         // never on the caller, which is the mic button's own release
                         // path.
                         runCatching { previous?.join(CAPTURE_HANDOFF_TIMEOUT_MS) }
-                        runCapture(generation)
+                        runCapture(generation, gate)
                     } finally {
+                        // Unsettled here only when a newer start, or the module
+                        // going away, superseded this capture before its
+                        // microphone opened. Its caller has moved on, and a
+                        // rejection would have it stop the capture that
+                        // replaced this one.
+                        gate.resolve()
                         val waiters =
                             synchronized(run) {
                                 run.finished = true
@@ -261,8 +294,46 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         thread.priority = Thread.MAX_PRIORITY
         captureThread = thread
         thread.start()
-        promise.resolve(null)
     }
+
+    // The start promise, settled once by whichever comes first: the microphone
+    // recording, or the reason it cannot.
+    private class StartGate(promise: Promise) {
+        private val promises = mutableListOf(promise)
+        private var settled = false
+
+        // Another caller of the same start. False once it has settled: the
+        // microphone is already recording, or already failed and reported.
+        @Synchronized
+        fun join(promise: Promise): Boolean {
+            if (settled) return false
+            promises.add(promise)
+            return true
+        }
+
+        fun resolve() {
+            settle()?.forEach { it.resolve(null) }
+        }
+
+        // False when the start already settled, so the failure is the caller's
+        // to report another way.
+        fun reject(code: String, message: String): Boolean {
+            val waiting = settle() ?: return false
+            waiting.forEach { it.reject(code, message) }
+            return true
+        }
+
+        @Synchronized
+        private fun settle(): List<Promise>? {
+            if (settled) return null
+            settled = true
+            return promises.toList()
+        }
+    }
+
+    // The start whose microphone may still be opening, for a second start to
+    // join (see startCapture).
+    @Volatile private var currentGate: StartGate? = null
 
     @ReactMethod
     fun stopCapture(promise: Promise) {
@@ -284,14 +355,14 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
         if (!pending) promise.resolve(null)
     }
 
-    private fun runCapture(generation: Int) {
+    private fun runCapture(generation: Int, gate: StartGate) {
         // The hold can end while this thread is waiting for the previous
         // capture to hand the microphone back. Opening it now would be a hot
         // mic for as long as its own teardown takes, recording nobody.
         if (captureGeneration.get() != generation) return
         var record: AudioRecord? = null
         var encoder: MediaCodec? = null
-        var focus: AudioFocusRequest? = null
+        var focus: VoiceFocus? = null
         try {
             val minBuffer =
                 AudioRecord.getMinBufferSize(
@@ -300,7 +371,12 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     AudioFormat.ENCODING_PCM_16BIT,
                 )
             if (minBuffer <= 0) {
-                failCapture(generation, "Microphone does not support 16 kHz mono capture")
+                failCapture(
+                    generation,
+                    gate,
+                    "CAPTURE_FAILED",
+                    "Microphone does not support 16 kHz mono capture",
+                )
                 return
             }
             record =
@@ -314,31 +390,65 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     AudioFormat.ENCODING_PCM_16BIT,
                     maxOf(minBuffer, PCM_BYTES_PER_FRAME * 4),
                 )
+            // Uninitialized is what another app holding the microphone, or a
+            // permission revoked since the check, looks like here.
             if (record.state != AudioRecord.STATE_INITIALIZED) {
-                failCapture(generation, "Microphone unavailable")
+                failCapture(generation, gate, "MIC_BUSY", "Microphone unavailable")
                 return
             }
 
-            encoder =
-                MediaCodec.createEncoderByType(AAC_MIME).apply {
-                    configure(
-                        MediaFormat.createAudioFormat(AAC_MIME, SAMPLE_RATE, CHANNELS).apply {
-                            setInteger(
-                                MediaFormat.KEY_AAC_PROFILE,
-                                MediaCodecInfo.CodecProfileLevel.AACObjectLC,
-                            )
-                            setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE)
-                            setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, PCM_BYTES_PER_FRAME * 2)
-                        },
-                        null,
-                        null,
-                        MediaCodec.CONFIGURE_FLAG_ENCODE,
-                    )
-                    start()
-                }
+            // Held in `encoder` before it is configured, so the release below
+            // covers a codec that was created and then refused its format.
+            val codec = MediaCodec.createEncoderByType(AAC_MIME)
+            encoder = codec
+            try {
+                codec.configure(
+                    MediaFormat.createAudioFormat(AAC_MIME, SAMPLE_RATE, CHANNELS).apply {
+                        setInteger(
+                            MediaFormat.KEY_AAC_PROFILE,
+                            MediaCodecInfo.CodecProfileLevel.AACObjectLC,
+                        )
+                        setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE)
+                        setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, PCM_BYTES_PER_FRAME * 2)
+                    },
+                    null,
+                    null,
+                    MediaCodec.CONFIGURE_FLAG_ENCODE,
+                )
+                codec.start()
+            } catch (e: Exception) {
+                Log.e(TAG, "AAC encoder unavailable", e)
+                failCapture(generation, gate, "CAPTURE_FAILED", "Audio encoder unavailable")
+                return
+            }
 
-            focus = requestVoiceFocus { failCapture(generation, "Microphone interrupted") }
-            record.startRecording()
+            val voiceFocus = requestVoiceFocus {
+                failCapture(generation, gate, "MIC_BUSY", "Microphone interrupted")
+            }
+            focus = voiceFocus
+            // Android 10 and later hand a capture that a call has silenced a
+            // stream of zeros rather than an error, so the refused focus is the
+            // only sign of it. Recording on would send silence as a burst, and
+            // the caller's fallback (a voice note, or video without sound)
+            // would never run.
+            if (voiceFocus?.refused == true) {
+                failCapture(generation, gate, "MIC_BUSY", "Microphone held by a call")
+                return
+            }
+            try {
+                record.startRecording()
+            } catch (e: IllegalStateException) {
+                failCapture(generation, gate, "MIC_BUSY", "Microphone did not start")
+                return
+            }
+            if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+                failCapture(generation, gate, "MIC_BUSY", "Microphone did not start")
+                return
+            }
+            // Recording, with the encoder running: only now has the start
+            // happened. A stop that landed while it opened still ends the loop
+            // below at once, after this.
+            gate.resolve()
             val pcm = ByteArray(PCM_BYTES_PER_FRAME)
             val info = MediaCodec.BufferInfo()
 
@@ -351,22 +461,25 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     // A negative result is a real error (mic revoked, device
                     // lost); zero just means nothing was ready yet.
                     if (read < 0) {
-                        failCapture(generation, "Microphone stopped")
+                        failCapture(generation, gate, "CAPTURE_FAILED", "Microphone stopped")
                         return
                     }
                     continue
                 }
                 captureLevel = rmsLevel(pcm, read)
-                feedEncoder(encoder, pcm, read)
-                drainEncoder(encoder, info, generation)
+                feedEncoder(codec, pcm, read)
+                drainEncoder(codec, info, generation)
             }
 
             // Flush what the encoder is still holding so the tail of the burst
             // is not lost, then let the END packet follow it.
-            flushEncoder(encoder, info, generation)
+            flushEncoder(codec, info, generation)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "capture refused", e)
+            failCapture(generation, gate, "PERMISSION_DENIED", "RECORD_AUDIO not granted")
         } catch (e: Exception) {
             Log.e(TAG, "capture failed", e)
-            failCapture(generation, e.message ?: "Recording failed")
+            failCapture(generation, gate, "CAPTURE_FAILED", e.message ?: "Recording failed")
         } finally {
             // Only if this thread is still the current capture. A successor has
             // already claimed the flag, and clearing it here would leave that
@@ -492,7 +605,7 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     private fun runPlayback(burst: PlaybackBurst) {
         var decoder: MediaCodec? = null
         var track: AudioTrack? = null
-        var focus: AudioFocusRequest? = null
+        var focus: VoiceFocus? = null
         try {
             decoder =
                 MediaCodec.createDecoderByType(AAC_MIME).apply {
@@ -534,8 +647,8 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
                     .setBufferSizeInBytes(maxOf(minBuffer, PCM_BYTES_PER_FRAME * 4))
                     .setTransferMode(AudioTrack.MODE_STREAM)
                     .build()
-            // A loss needs no answer here: the system routes the call over the
-            // burst, and the burst's voice note still arrives.
+            // A refusal or a loss needs no answer here: the system routes the
+            // call over the burst, and the burst's voice note still arrives.
             focus = requestVoiceFocus {}
             track.play()
 
@@ -677,9 +790,13 @@ class AirhopVoiceModule(private val reactContext: ReactApplicationContext) :
     // Reported only by the capture that is still current: a thread that lost
     // the microphone because a newer burst took it has not failed, and telling
     // JS otherwise would end the burst the user is holding right now.
-    private fun failCapture(generation: Int, message: String) {
+    //
+    // Before the microphone opened, the start promise is the answer, under
+    // `code`; after, captureError is.
+    private fun failCapture(generation: Int, gate: StartGate, code: String, message: String) {
         if (captureGeneration.get() != generation) return
         capturing.set(false)
+        if (gate.reject(code, message)) return
         emitEvent(EVT_CAPTURE_ERROR, WritableNativeMap().apply { putString("message", message) })
     }
 

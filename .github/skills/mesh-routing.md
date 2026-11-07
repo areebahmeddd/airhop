@@ -12,24 +12,26 @@ Which packets a node passes on, how far and how soon, how large packets are cut 
 
 ## Key Files
 
-| Path                                                                              | Holds                                                                          |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `src/core/mesh/routing/flood-router.ts`                                           | `relayDecision`, `relayLimit`, `FloodRouter` (`receive`, `admit`, `originate`) |
-| `src/core/mesh/routing/deduplicator.ts`                                           | The packet-ID seen set (the router holds two: packets, and fragments)          |
-| `src/core/mesh/routing/fragment-manager.ts`                                       | Fragmentation and reassembly                                                   |
-| `src/core/mesh/routing/origin-ttl.ts`                                             | The TTL a broadcast this node authors leaves with                              |
-| `src/core/mesh/routing/source-route.ts`                                           | `nextHopFor`: following another node's source route                            |
-| `src/core/mesh/sync/gossip-sync.ts`, `request-sync-manager.ts`, `packet-store.ts` | GCS gossip sync                                                                |
-| `src/services/mesh-service.ts`                                                    | Ingress gates (`isFreshOrSolicited`, `mayRelay`), dispatch                     |
-| `bitchat/ios/bitchat/Services/RelayController.swift`                              | Reference: the relay decision                                                  |
-| `bitchat/ios/bitchat/Services/BLE/`                                               | Reference: `BLEService`, `BLEFragmentHandler`, `BLEIngressPacketGuard`         |
-| `bitchat/ios/bitchat/Sync/GossipSyncManager.swift`                                | Reference: gossip sync                                                         |
+| Path                                                                              | Holds                                                                                  |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/core/mesh/routing/flood-router.ts`                                           | `relayDecision`, `relayLimit`, `FloodRouter` (`seen`, `receive`, `admit`, `originate`) |
+| `src/core/mesh/routing/deduplicator.ts`                                           | The packet-ID seen set (the router holds three: packets, fragments, live media)        |
+| `src/core/mesh/links/write-deadline.ts`                                           | Which packet types are live media, and the deadline their link writes carry            |
+| `src/core/mesh/routing/fragment-manager.ts`                                       | Fragmentation and reassembly                                                           |
+| `src/core/mesh/routing/origin-ttl.ts`                                             | The TTL a broadcast this node authors leaves with                                      |
+| `src/core/mesh/routing/source-route.ts`                                           | `nextHopFor`: following another node's source route                                    |
+| `src/core/mesh/sync/gossip-sync.ts`, `request-sync-manager.ts`, `packet-store.ts` | GCS gossip sync                                                                        |
+| `src/services/mesh-service.ts`                                                    | Ingress gates (`isFreshOrSolicited`, `mayRelay`), dispatch                             |
+| `bitchat/ios/bitchat/Services/RelayController.swift`                              | Reference: the relay decision                                                          |
+| `bitchat/ios/bitchat/Services/BLE/`                                               | Reference: `BLEService`, `BLEFragmentHandler`, `BLEIngressPacketGuard`                 |
+| `bitchat/ios/bitchat/Sync/GossipSyncManager.swift`                                | Reference: gossip sync                                                                 |
 
 ## Ingress, in Order
 
 1. **Freshness.** A packet more than 2 minutes from our clock (`PACKET_MAX_SKEW_MS`) is dropped before relay or handling. A packet tagged `IS_RSR` is judged on the sync rules instead (below). A late fragment of a stream already under way passes, so a slow transfer is not cut off.
-2. **Pre-relay checks** (`mayRelay`), as bitchat-ios checks these before scheduling a relay: a `LEAVE` or `FILE_TRANSFER` must verify against the key held for its sender; a `VOICE_FRAME` or `VIDEO_FRAME` must verify, be a broadcast, not be ours and be under 30 s old (only the past is bounded, as bitchat-ios; a frame dated ahead is left to the 2 minute skew); a `BOARD_POST` must decode, carry a valid author signature and, as a post, still be live. A failure is dropped **before dedup**, so a forged copy cannot take the genuine packet's ID. Every other type is relayed unchecked, since a relay carries traffic for peers whose keys it has never seen.
-3. **Dedup and relay** (`FloodRouter.receive`): a seen ID returns `false` and is dropped silently; a new one returns `true` for the caller to handle, and a relay is scheduled when `relayDecision` allows. A duplicate fragment (our own echoed back, or a late copy) is never fed to reassembly.
+2. **Peek** (`FloodRouter.seen`, after the fragment branch): an ID already recorded is a duplicate, dropped before any signature check, since with several relaying neighbors every packet arrives once from each. It looks the ID up without recording it. A duplicate direct announce may still bind an unbound second link (`bindSecondLink`, which verifies on its own).
+3. **Pre-relay checks** (`mayRelay`), as bitchat-ios checks these before scheduling a relay: a `LEAVE` or `FILE_TRANSFER` must verify against the key held for its sender; a `VOICE_FRAME` or `VIDEO_FRAME` must verify, be a broadcast, not be ours and be under 30 s old (only the past is bounded, as bitchat-ios; a frame dated ahead is left to the 2 minute skew); a `BOARD_POST` must decode, carry a valid author signature and, as a post, still be live. A failure is dropped **before its ID is recorded**, so a forged copy cannot take the genuine packet's ID. Every other type is relayed unchecked, since a relay carries traffic for peers whose keys it has never seen.
+4. **Record and relay** (`FloodRouter.receive`): records the ID, returns `true` for the caller to handle, and schedules a relay when `relayDecision` allows. So ingress is **peek, check, then record**. Fragments skip the peek and the checks and go straight here: a duplicate fragment (our own echoed back, or a late copy) returns `false` and is never fed to reassembly.
 
 A packet rebuilt from fragments goes through `admit`, not `receive`: it is deduplicated and held to the same checks, but not relayed again, since its fragments already were.
 
@@ -51,9 +53,11 @@ An all-`0xFF` recipient (bitchat-android's broadcast) counts as a broadcast, so 
 
 **Origin TTL.** A broadcast this node authors (channel, group, board, public file, live voice per burst, live video per stream) draws its TTL from `[ceiling - 2, ceiling]` of `relayLimit` at this node's degree, so the maximum alone does not mark the author. Announces keep `7`, because a directly heard announce is recognized by `ttl === ANNOUNCE_TTL`; directed traffic, prekey bundles and gateway carriers keep `7` too.
 
-**Jitter.** Every relay waits a random delay so a room's relays do not collide and dedup has time to work: 10 to 35 ms for handshakes, 20 to 60 ms for other directed traffic, 8 to 25 ms for broadcast fragments and live voice and video, and for other broadcasts 10 to 40, 60 to 150, 80 to 180 or 100 to 220 ms at degree ≤ 2, 3 to 5, 6 to 9 and 10 up.
+**Jitter.** Every relay waits a random delay so a room's relays do not collide: 10 to 35 ms for handshakes, 20 to 60 ms for other directed traffic, 8 to 25 ms for broadcast fragments and live voice and video, and for other broadcasts 10 to 40, 60 to 150, 80 to 180 or 100 to 220 ms at degree ≤ 2, 3 to 5, 6 to 9 and 10 up.
 
-**Fanout.** `LinkRegistry` decides it, as bitchat-ios does (`BLEFanoutSelector.collapseDuplicateLinksPerPeer`, `excludedPeerLinks`), since dual-role Bluetooth leaves most pairs on two links and writing both doubles the airtime. A broadcast or relay is one write per neighbor per transport, on that neighbor's most recently bound link (its other links on the same transport if the write is refused), plus one to every link no announce has bound yet. A relay skips every link of the peer it arrived from, not just the ingress link. Only our own direct announce goes on every link (`everyLink`), since it is what binds a link to its peer, and live video takes the fastest link per peer (`broadcastFastest`). bitchat-ios's fanout subset is not implemented. A source-routed packet naming this node goes to the next named hop instead, falling back to the flood when anything about the route is unclear. Airhop follows routes and never originates them.
+**No duplicate cancel.** A duplicate never withdraws a relay this node already scheduled. bitchat-ios has a rule for it (`BLEReceivePipeline.shouldCancelScheduledRelayForDuplicate`, above two connected peers), but Bluetooth links are point to point: a neighbor's copy reaching us says nothing about whether our other neighbors have it, and the simulation of a crowded room loses messages with it.
+
+**Fanout.** `LinkRegistry` decides it, as bitchat-ios does (`BLEFanoutSelector.collapseDuplicateLinksPerPeer`, `excludedPeerLinks`), since dual-role Bluetooth leaves most pairs on two links and writing both doubles the airtime. A broadcast or relay is one write per neighbor per transport, on that neighbor's most recently bound link (its other links on the same transport if the write is refused), plus one to every link no announce has bound yet. A relay skips every link of the peer it arrived from, not just the ingress link. Only our own direct announce goes on every link (`everyLink`), since it is what binds a link to its peer. Live voice and video, authored or relayed, take one link per peer instead, its fastest (`broadcastFastest`, which skips the ingress peer as a relay's fanout does): a stream started at Wi-Fi's budget would otherwise be copied onto every Bluetooth link too. Their writes carry a 1.5 s deadline (`write-deadline.ts`), past which native drops them unsent from the link's queue; everything else never expires. bitchat-ios's fanout subset is not implemented, nor its live video pruning, which needs a neighbor graph Airhop does not build. A source-routed packet naming this node goes to the next named hop instead, falling back to the flood when anything about the route is unclear. Airhop follows routes and never originates them.
 
 Relays decrement TTL but never re-sign: the signature covers the packet with TTL zeroed (see [`bitchat-wire-format.md`](bitchat-wire-format.md)).
 
@@ -68,7 +72,9 @@ PacketID = SHA-256(type[1] | senderID[8] | timestamp_u64_BE[8] | payload)[0:16]
 | Max entries   | 1000      |
 | Expiry window | 5 minutes |
 
-Oldest evicted on overflow. Fragments go in a second set of the same size and expiry: one 1 MiB file is over two thousand fragment IDs, which in a shared set would cut the message window to about half a minute (bitchat-ios keeps fragments out of its dedup entirely). Call `originate(packet)` for everything this node sends, so its own broadcasts echoing back are not relayed.
+Oldest evicted on overflow. Fragments go in a second set of the same size and expiry: one 1 MiB file is over two thousand fragment IDs, which in a shared set would cut the message window to about half a minute (bitchat-ios keeps fragments out of its dedup entirely). Live voice and video go in a third, 10,000 entries for 150 s, the 30 s past which `mayRelay` refuses a live frame plus the 2 minutes a sender's clock may run ahead: one stream plus a push-to-talk burst is about 35 IDs a second, which in the shared set would cut chat's window to about half a minute too. Call `originate(packet)` for everything this node sends, so its own broadcasts echoing back are not relayed.
+
+`seen(packet)` looks an ID up without recording it; only `receive`, `admit` and `originate` record. That split is what lets ingress drop a duplicate before verifying it while still recording an ID only after the check passed.
 
 ## Fragmentation
 
@@ -101,7 +107,7 @@ Three deliberate differences from bitchat-ios: its chunk is 469 bytes from a sma
 
 `REQUEST_SYNC` is link-local: sent at TTL 0 to one link peer, never relayed whatever TTL it arrives with.
 
-- **Answering.** Only a request that is plainly the link peer's own, as bitchat-ios answers (`BLEService.handleRequestSync`): TTL 0, `senderID` equal to the peer bound to the link it arrived on, and a signature verifying against the key held for that peer. The budget is 8 responses per 30 s per peer, and replies go back down that link only, at TTL 0 with `IS_RSR` set.
+- **Answering.** Only a request that is plainly the link peer's own, as bitchat-ios answers (`BLEService.handleRequestSync`): TTL 0, `senderID` equal to the peer bound to the link it arrived on, a signature verifying against the key held for that peer, and a recipient that is this node or no one. A request for another phone is dropped before the duplicate filter, since one sender's requests share a packet ID. The budget is 8 responses per 30 s per peer, and replies go back down that link only, at TTL 0 with `IS_RSR` set.
 - **Accepting a reply.** An `IS_RSR` packet is judged on the sync rules alone, fresh or not (bitchat-ios `BLEIngressPacketGuard`): TTL 0, arriving on the link bound to a peer we asked in the last 30 s, never dated past the 2 minute skew, and a type we sync within the age we serve it for (`isSyncReplyInWindow`).
 
 | Type                                                 | Served and accepted for                                    |
@@ -115,7 +121,7 @@ The 6 h window is bitchat-ios's `syncPublicMessageMaxAgeSeconds`, which `BLEServ
 
 - **Rounds** (`SYNC_ROUNDS`), as bitchat-ios: announces, public, named-channel and group messages every 15 s; board posts alone every 60 s. Each round has its own 400-byte filter and since-cursor. A peer's first direct link also gets every round 1 s after it binds (`requestNow`, as bitchat-ios `scheduleInitialSyncToPeer`), since the tick restarts with each launch and a phone that keeps relaunching would otherwise never catch up.
 - **Stores.** Only accepted packets are stored, one store per kind (public messages 1000 and 8 MiB, group messages 200 and 4 MiB, board posts 200, the latest announce per peer), so one kind cannot evict another and a forgery is never served. A sync reply this node refused is advertised in its filters, so peers stop offering it, but never served, until its author's signing key is first pinned: then it is dropped (`forgetDeclinedFrom`), and its IDs leave the flood router's dedup set (`FloodRouter.forget`), so the next round offers that history again and it is taken. A signed sync reply carrying our own packet is tracked again, so an author that relaunched can serve it, and is never shown as a second row.
-- **Never synced:** prekey bundles, DMs, voice, files.
+- **Never synced:** prekey bundles, DMs, live voice and video, files.
 - **Filter.** A Golomb-Coded Set, not a bloom filter; the false-positive formula differs.
 
 ## Announce Cadence
@@ -125,9 +131,10 @@ With no link nothing is sent, and the timer looks again every 4 s; with any link
 ## What Not to Do
 
 - Relay before decrementing TTL, or relay a packet this node originated (register it with `originate()`).
-- Dedup before the pre-relay checks, or add a signature check for types outside `mayRelay`.
+- Record an ID before the pre-relay checks (peek with `seen`, check, then `receive`), verify a packet the peek already found, or add a signature check for types outside `mayRelay`.
+- Cancel a pending relay on a duplicate (see No duplicate cancel above).
 - Relay `REQUEST_SYNC`, or answer one that did not come from the link's bound peer.
 - Size a fragment by payload rather than by the encoded frame.
-- Change the fragment budget, reassembly timeout or dedup expiry without matching bitchat.
+- Change the fragment budget, reassembly timeout or the packet and fragment dedup expiry without matching bitchat. The live media set (150 s) is Airhop's own, tied to the live freshness bound and the clock skew.
 - Track a packet for gossip before it is accepted.
 - Use a bloom filter for gossip.

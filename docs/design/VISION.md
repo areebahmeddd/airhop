@@ -62,12 +62,12 @@ What each feature is for, and when someone would actually reach for it.
 ### Identity
 
 - No account. Your identity is a key pair made on the phone. Nothing registers anywhere, so there is nothing to seize or subpoena.
-- Human-readable names. Your key decides your name, so nobody can take someone else's.
+- Human-readable names. Your key decides your name, so nobody chooses or registers one. A name is a label, not proof: scanning a contact's QR code is what binds it to a person.
 - QR contacts. A scanned card carries public keys, and the peer ID is checked against them before anything is trusted. A card arriving by `airhop://` link is recorded as unverified; only an in-person scan counts.
 - End-to-end encryption. Live sessions use Noise XX. Nobody in the middle, including relaying phones, can read a private message.
 - Forward secrecy. Double Ratchet for live chats, and single-use prekeys for mail left with a courier, so an old message stays protected even if a key leaks later.
 - Transfer to a new phone. The new phone shows a code, the old one scans it, and your name, contacts, chats and wallet move across over Wi-Fi or a hotspot. Contacts notice nothing, and the old phone erases itself, so the identity is moved, never copied.
-- Panic wipe. The panic button on the Profile screen, triple-tapped to skip the confirmation, and every key, message, group, notice and prekey is gone in under a second.
+- Panic wipe. The panic button on the You tab, triple-tapped to skip the confirmation, and every key, message, group, notice and prekey is gone in under a second.
 
 ### Networking
 

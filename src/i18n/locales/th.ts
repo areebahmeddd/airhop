@@ -641,6 +641,7 @@ export const strings: Strings = {
   "chat.attach.send": "ส่งไฟล์แนบ",
   "chat.attach.generic": "ไฟล์แนบ",
   "chat.video_prep.preparing": "กำลังเตรียมวิดีโอ",
+  "chat.video_prep.retrying": "กำลังลดขนาดเพิ่มเติม",
   "chat.video_prep.waiting": "กำลังรอเตรียมวิดีโอ",
   "chat.video_prep.cancel": "หยุดเตรียมวิดีโอนี้",
   "chat.video_prep.too_large": "ไม่สามารถทำให้วิดีโอนี้เล็กพอที่จะส่งได้",
@@ -669,8 +670,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "เล่นข้อความเสียง",
   "chat.media.pause_video": "หยุดวิดีโอชั่วคราว",
   "chat.media.play_video": "เล่นวิดีโอ",
-  "chat.media.voice_position": "ตำแหน่งในข้อความเสียง",
-  "chat.media.voice_scrub": "แตะตามแท่งเพื่อข้ามไปยังจุดนั้น",
+  "chat.media.voice_back": "ย้อนกลับ 5 วินาที",
+  "chat.media.voice_forward": "ข้ามไป 5 วินาที",
   "chat.media.image": "รูปภาพ",
   "chat.media.tap_load_photo": "แตะเพื่อโหลดรูปภาพ",
   "chat.media.open_document": "เปิด {name}",
@@ -724,6 +725,7 @@ export const strings: Strings = {
   "chat.live_video.title": "วิดีโอสด",
   "chat.live_video.go_live": "เริ่มไลฟ์",
   "chat.live_video.end": "จบ",
+  "chat.live_video.ending": "กำลังจบ…",
   "chat.live_video.end_title": "จบวิดีโอสดไหม",
   "chat.live_video.end_body":
     "การจบจะเก็บวิดีโอที่บันทึกไว้ในแชทนี้ การทิ้งจะบอกให้ทุกคนที่กำลังดูลบทิ้ง",
@@ -735,9 +737,14 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "ต่ำ",
   "chat.live_video.quality_medium": "กลาง",
   "chat.live_video.quality_high": "สูง",
-  "chat.live_video.quality_low_hint": "ไปถึงคนที่อยู่ห่างออกไปหลายฮอป",
-  "chat.live_video.quality_medium_hint": "สำหรับคนที่อยู่ห่างหนึ่งหรือสองฮอป",
-  "chat.live_video.quality_high_hint": "สำหรับคนที่อยู่ข้าง ๆ คุณ",
+  "chat.live_video.quality_low_hint":
+    "ไปถึงคนที่อยู่ห่างออกไปหลายฮอปผ่านบลูทูธ",
+  "chat.live_video.quality_medium_hint":
+    "คมชัดขึ้น สำหรับผู้ชมที่ใช้ Wi-Fi Aware หรือ Wi-Fi เดียวกัน",
+  "chat.live_video.quality_high_hint":
+    "คมชัดที่สุด สำหรับผู้ชมที่ใช้ Wi-Fi Aware หรือ Wi-Fi เดียวกัน",
+  "chat.live_video.quality_needs_wifi": "ต้องมี Wi-Fi อยู่ใกล้ๆ",
+  "chat.live_video.quality_bluetooth_note": "กลางและสูงต้องมี Wi-Fi อยู่ใกล้ๆ",
   "chat.live_video.signal_good": "ตามทัน",
   "chat.live_video.signal_weak": "เริ่มตามไม่ทัน",
   "chat.live_video.signal_poor": "ช้าเกินไปสำหรับวิดีโอ กำลังส่งเฉพาะเสียง",
@@ -752,6 +759,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "เลื่อนขึ้นเพื่อบันทึกแบบไม่ต้องกดค้าง",
   "chat.voice.live_speaking": "{name} กำลังพูด",
   "chat.voice.live_ended": "จบแล้ว",
+  "chat.voice.live_stopped": "เสียงสดจบแล้ว",
   "voice.unavailable": "ใช้เสียงสดไม่ได้",
   "voice.recording_stopped": "หยุดบันทึกแล้ว",
 
@@ -1810,13 +1818,15 @@ export const strings: Strings = {
     "ยังไม่มีกุญแจของผู้ติดต่อรายนี้ ส่งข้อความถึงพวกเขา หรือสแกนรหัสเมื่อได้เจอกัน",
   "contacts.verify.compare_title": "อ่านสิ่งเหล่านี้ให้กันฟัง",
   "contacts.verify.compare_body":
-    "{name} เห็นคำหกคำเดียวกันใน Airhop ถ้าตรงกัน คุณทั้งคู่ก็รู้ว่ากุญแจนั้นเป็นของจริง bitchat ไม่แสดงคำเหล่านี้ จึงให้สแกนรหัสของพวกเขาแทน",
-  "contacts.verify.codes_match": "ตรงกัน",
-  "contacts.verify.codes_differ": "ไม่ตรงกัน",
+    "อ่านรหัสของคุณให้ {name} ฟังเพื่อให้อีกฝ่ายตรวจในโทรศัพท์ของตน จากนั้นเทียบรหัสที่อีกฝ่ายอ่านกับรหัสของอีกฝ่ายที่นี่ แต่ละคนทำเครื่องหมายว่าอีกฝ่ายได้รับการยืนยันในโทรศัพท์ของตัวเอง bitchat ไม่แสดงคำเหล่านี้ จึงให้สแกนรหัสของพวกเขาแทน",
+  "contacts.verify.your_code": "รหัสของคุณ",
+  "contacts.verify.their_code": "รหัสของอีกฝ่าย",
+  "contacts.verify.codes_match": "รหัสของอีกฝ่ายตรงกัน",
+  "contacts.verify.codes_differ": "รหัสของอีกฝ่ายไม่ตรงกัน",
   "contacts.verify.codes_differ_body":
     "กุญแจในโทรศัพท์เครื่องนี้อาจไม่ใช่ของ {name} สแกนรหัสของพวกเขาต่อหน้าก่อนจะไว้ใจแชทนี้",
   "contacts.verify.compared_body":
-    "คุณและ {name} ยืนยันรหัสเดียวกันแล้ว ผู้ติดต่อรายนี้ได้รับการยืนยัน",
+    "รหัสที่ {name} อ่านตรงกัน อีกฝ่ายจึงได้รับการยืนยันในโทรศัพท์เครื่องนี้แล้ว ส่วนอีกฝ่ายจะยืนยันคุณในโทรศัพท์ของตน",
 
   // ---- Settings: shared chrome ----
   "settings.back": "กลับ",
@@ -1970,11 +1980,30 @@ export const strings: Strings = {
     "ทางสายกลางสำหรับช่วงหนึ่งถึงสองสัปดาห์ที่ห่างจากสัญญาณ",
   "settings.general.retention_30_desc":
     "ทำให้อ่านบทสนทนาย้อนหลังได้นานที่สุด และกินพื้นที่มากที่สุด",
+  "settings.general.message_retention": "ข้อความที่หายไป",
+  "settings.general.message_retention_desc":
+    "ข้อความและสื่อของข้อความจะถูกลบจากโทรศัพท์เครื่องนี้หลังเวลาที่เลือก",
+  "settings.general.message_retention_sheet":
+    "นับจากเวลาที่แต่ละข้อความมาถึงโทรศัพท์เครื่องนี้ และมีเพียงเครื่องนี้ที่ลืม โทรศัพท์ของอีกฝ่ายยังเก็บสำเนาไว้ ป้องกันการจับภาพหน้าจอไม่ได้ และการชำระเงินในแชทส่วนตัวที่คุณยังไม่ได้เคลมจะยังอยู่จนกว่าคุณจะเคลม",
+  "settings.general.message_retention_off_desc":
+    "ข้อความจะอยู่จนกว่าคุณจะล้างแชทหรือออกจากแชท",
+  "settings.general.message_retention_1_desc":
+    "ทิ้งร่องรอยไว้น้อยที่สุด เหมาะเมื่อตัวเครื่องคือความเสี่ยง",
+  "settings.general.message_retention_7_desc":
+    "มีเวลาหนึ่งสัปดาห์ให้อ่านตาม แล้วจึงหายไป",
+  "settings.general.message_retention_30_desc": "ทำให้อ่านบทสนทนาได้นานที่สุด",
+  "settings.general.message_retention_confirm_title": "ลบข้อความเก่าหรือไม่",
+  "settings.general.message_retention_confirm_1":
+    "ข้อความที่เก่ากว่า 1 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ย้อนกลับไม่ได้",
+  "settings.general.message_retention_confirm_7":
+    "ข้อความที่เก่ากว่า 7 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ย้อนกลับไม่ได้",
+  "settings.general.message_retention_confirm_30":
+    "ข้อความที่เก่ากว่า 30 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ย้อนกลับไม่ได้",
   "settings.general.reset_desc":
     "คืนการตั้งค่ากลับเป็นค่าเริ่มต้น โดยไม่แตะต้องตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณ",
   "settings.general.reset_title": "รีเซ็ตการตั้งค่าหรือไม่",
   "settings.general.reset_body":
-    "การตั้งค่าจะกลับเป็นค่าเริ่มต้น รวมถึงรูปลักษณ์ ภาษา การแจ้งเตือน การเลิกทำการส่ง และการเชื่อมต่อ (เกตเวย์ บริดจ์เมช รีเลย์) ส่วนล็อก Airhop ระยะเวลาเก็บสื่อ สวิตช์อินเทอร์เน็ต Tor และบริดจ์ของ Tor และสถานะของคุณจะยังคงตามที่ตั้งไว้ ตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณจะไม่ถูกแตะต้อง",
+    "การตั้งค่าจะกลับเป็นค่าเริ่มต้น รวมถึงรูปลักษณ์ ภาษา การแจ้งเตือน การเลิกทำการส่ง และการเชื่อมต่อ (เกตเวย์ บริดจ์เมช รีเลย์) ส่วนล็อก Airhop ระยะเวลาเก็บข้อความและสื่อ สวิตช์อินเทอร์เน็ต Tor และบริดจ์ของ Tor และสถานะของคุณจะยังคงตามที่ตั้งไว้ ตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณจะไม่ถูกแตะต้อง",
   "settings.general.reset_confirm": "รีเซ็ต",
 
   // ---- Settings: privacy and security ----

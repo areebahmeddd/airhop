@@ -1,18 +1,16 @@
 const GITHUB_OWNER = "areebahmeddd";
 
-const GITHUB_REPO = `${GITHUB_OWNER}/airhop`;
-
-const REPO = `https://github.com/${GITHUB_REPO}`;
-
 export const SITE_URL = "https://airhop.1mindlabs.org";
 
-export const REPO_URL = REPO;
+export const REPO_URL = `https://github.com/${GITHUB_OWNER}/airhop`;
 
 export const SPONSOR_URL = `https://github.com/sponsors/${GITHUB_OWNER}`;
 
 export const AUTHOR_NAME = "Areeb Ahmed";
 
 export const AUTHOR_URL = "https://areeb.dev";
+
+export const BITCHAT_URL = "https://bitchat.free";
 
 export const SOCIAL_LINKS = {
   x: "https://x.com/areebahmeddd",
@@ -28,18 +26,18 @@ export const STORE_LINKS = {
 } as const;
 
 export const REPO_LINKS = {
-  license: `${REPO}/blob/main/LICENSE`,
-  contributing: `${REPO}/blob/main/CONTRIBUTING.md`,
-  securityReview: `${REPO}/blob/main/.github/agents/security-review.md`,
-  architectureDoc: `${REPO}/blob/main/docs/spec/ARCHITECTURE.md`,
-  protocolsDoc: `${REPO}/blob/main/docs/spec/PROTOCOLS.md`,
-  glossaryDoc: `${REPO}/blob/main/docs/dev/GLOSSARY.md`,
-  progressDoc: `${REPO}/blob/main/docs/dev/PROGRESS.md`,
-  roadmapDoc: `${REPO}/blob/main/docs/design/ROADMAP.md`,
-  visionDoc: `${REPO}/blob/main/docs/design/VISION.md`,
-  issues: `${REPO}/issues`,
-  discussions: `${REPO}/discussions`,
-  releases: `${REPO}/releases/latest`,
-  apk: `${REPO}/releases/latest/download/airhop.apk`,
-  pressAssets: `${REPO}/tree/maintainer/press-kit/press/out`,
+  license: `${REPO_URL}/blob/main/LICENSE`,
+  contributing: `${REPO_URL}/blob/main/CONTRIBUTING.md`,
+  securityReview: `${REPO_URL}/blob/main/.github/agents/security-review.md`,
+  architectureDoc: `${REPO_URL}/blob/main/docs/spec/ARCHITECTURE.md`,
+  protocolsDoc: `${REPO_URL}/blob/main/docs/spec/PROTOCOLS.md`,
+  glossaryDoc: `${REPO_URL}/blob/main/docs/dev/GLOSSARY.md`,
+  progressDoc: `${REPO_URL}/blob/main/docs/dev/PROGRESS.md`,
+  roadmapDoc: `${REPO_URL}/blob/main/docs/design/ROADMAP.md`,
+  visionDoc: `${REPO_URL}/blob/main/docs/design/VISION.md`,
+  issues: `${REPO_URL}/issues`,
+  discussions: `${REPO_URL}/discussions`,
+  releases: `${REPO_URL}/releases/latest`,
+  apk: `${REPO_URL}/releases/latest/download/airhop.apk`,
+  pressAssets: `${REPO_URL}/tree/maintainer/press-kit/press/out`,
 } as const;

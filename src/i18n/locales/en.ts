@@ -686,6 +686,7 @@ export const strings = {
   "chat.attach.send": "Send attachment",
   "chat.attach.generic": "Attachment",
   "chat.video_prep.preparing": "Preparing video",
+  "chat.video_prep.retrying": "Making it smaller",
   "chat.video_prep.waiting": "Waiting to prepare video",
   "chat.video_prep.cancel": "Stop preparing this video",
   "chat.video_prep.too_large":
@@ -717,8 +718,8 @@ export const strings = {
   "chat.media.play_voice": "Play voice note",
   "chat.media.pause_video": "Pause video",
   "chat.media.play_video": "Play video",
-  "chat.media.voice_position": "Voice note position",
-  "chat.media.voice_scrub": "Tap along the bars to jump to that point",
+  "chat.media.voice_back": "Back 5 seconds",
+  "chat.media.voice_forward": "Forward 5 seconds",
   "chat.media.image": "Image",
   "chat.media.tap_load_photo": "Tap to load photo",
   "chat.media.open_document": "Open {name}",
@@ -774,6 +775,7 @@ export const strings = {
   "chat.live_video.title": "Live video",
   "chat.live_video.go_live": "Go live",
   "chat.live_video.end": "End",
+  "chat.live_video.ending": "Ending…",
   "chat.live_video.end_title": "End live video?",
   "chat.live_video.end_body":
     "Ending keeps the recording in this chat. Discarding tells everyone watching to drop it.",
@@ -785,9 +787,14 @@ export const strings = {
   "chat.live_video.quality_low": "Low",
   "chat.live_video.quality_medium": "Medium",
   "chat.live_video.quality_high": "High",
-  "chat.live_video.quality_low_hint": "Reaches people several hops away",
-  "chat.live_video.quality_medium_hint": "For people one or two hops away",
-  "chat.live_video.quality_high_hint": "For people right next to you",
+  "chat.live_video.quality_low_hint":
+    "Reaches people several hops away over Bluetooth",
+  "chat.live_video.quality_medium_hint":
+    "Sharper, for viewers on Wi-Fi Aware or the same Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "Sharpest, for viewers on Wi-Fi Aware or the same Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Needs Wi-Fi nearby",
+  "chat.live_video.quality_bluetooth_note": "Medium and High need Wi-Fi nearby",
   "chat.live_video.signal_good": "Keeping up",
   "chat.live_video.signal_weak": "Falling behind",
   "chat.live_video.signal_poor": "Too slow for video, sending sound only",
@@ -802,6 +809,7 @@ export const strings = {
   "chat.voice.lift_lock": "Slide up to record hands-free",
   "chat.voice.live_speaking": "{name} speaking",
   "chat.voice.live_ended": "Ended",
+  "chat.voice.live_stopped": "Live voice ended",
   "voice.unavailable": "Live voice not available",
   "voice.recording_stopped": "Recording stopped",
 
@@ -1873,13 +1881,15 @@ export const strings = {
     "No keys for this contact yet. Message them, or scan their code when you meet.",
   "contacts.verify.compare_title": "Read these to each other",
   "contacts.verify.compare_body":
-    "{name} sees the same six words on Airhop. If they match, you both know the keys are real. bitchat shows no such words, so scan their code instead.",
-  "contacts.verify.codes_match": "These match",
-  "contacts.verify.codes_differ": "They don’t match",
+    "Read your code to {name} for them to check on their phone. Then check the code they read against their code here. Each of you marks the other verified on your own phone. bitchat shows no such words, so scan their code instead.",
+  "contacts.verify.your_code": "Your code",
+  "contacts.verify.their_code": "Their code",
+  "contacts.verify.codes_match": "Their code matches",
+  "contacts.verify.codes_differ": "Their code doesn’t match",
   "contacts.verify.codes_differ_body":
     "The keys on this phone may not be {name}’s. Scan their code in person before you trust this chat.",
   "contacts.verify.compared_body":
-    "You and {name} confirmed the same code. This contact is verified.",
+    "The code {name} read matches, so they’re verified on this phone. They mark you verified on theirs.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Go back",
@@ -2030,11 +2040,30 @@ export const strings = {
     "A middle ground for a week or two away from signal.",
   "settings.general.retention_30_desc":
     "Keeps threads readable longest, and keeps the most on disk.",
+  "settings.general.message_retention": "Disappearing messages",
+  "settings.general.message_retention_desc":
+    "Messages and their media are deleted from this phone after the selected time",
+  "settings.general.message_retention_sheet":
+    "Counted from when each message reached this phone, and only this phone forgets. The other person’s phone keeps its copy, screenshots can’t be prevented, and payments sent to you in a private chat stay until you claim them.",
+  "settings.general.message_retention_off_desc":
+    "Messages stay until you clear the chat or leave it",
+  "settings.general.message_retention_1_desc":
+    "Least left behind, if the phone itself is the risk",
+  "settings.general.message_retention_7_desc": "A week to catch up, then gone",
+  "settings.general.message_retention_30_desc":
+    "Keeps threads readable longest",
+  "settings.general.message_retention_confirm_title": "Delete older messages?",
+  "settings.general.message_retention_confirm_1":
+    "Messages older than 1 day will be deleted from this phone now, with their media. This can’t be undone.",
+  "settings.general.message_retention_confirm_7":
+    "Messages older than 7 days will be deleted from this phone now, with their media. This can’t be undone.",
+  "settings.general.message_retention_confirm_30":
+    "Messages older than 30 days will be deleted from this phone now, with their media. This can’t be undone.",
   "settings.general.reset_desc":
     "Puts preferences back to their defaults, leaving your identity, messages, contacts and wallet untouched",
   "settings.general.reset_title": "Reset settings?",
   "settings.general.reset_body":
-    "Preferences go back to their defaults, including appearance, language, notifications, undo send, and connectivity (gateway, bridge, relays). App lock, how long media is kept, the internet switch, Tor and its bridges, and your status stay as set. Your identity, messages, contacts, and wallet are untouched.",
+    "Preferences go back to their defaults, including appearance, language, notifications, undo send, and connectivity (gateway, bridge, relays). App lock, how long messages and media are kept, the internet switch, Tor and its bridges, and your status stay as set. Your identity, messages, contacts, and wallet are untouched.",
   "settings.general.reset_confirm": "Reset",
 
   // ---- Settings: privacy and security ----

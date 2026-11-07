@@ -94,25 +94,16 @@ final class AirhopBLEModule: RCTEventEmitter {
   // would never fire. A dispatch timer needs no run loop and fires on the queue
   // CoreBluetooth expects to be called from.
   private var rssiTimers: [String: DispatchSourceTimer] = [:]
-  // Notifies that updateValue() refused because the transmit queue was full.
-  // Flushed from peripheralManagerIsReady(toUpdateSubscribers:), so a fragment
-  // refused under load does not vanish mid-transfer.
-  private var pendingNotifies: [(data: Data, central: CBCentral)] = []
-
-  // How many refused notifications may be held before the peripheral role
-  // starts reporting WRITE_BUSY instead of accepting more.
-  //
-  // A notification is at most one BLE frame (512 bytes), so the ceiling is
-  // 128 KiB: enough to ride out the bursts CoreBluetooth routinely refuses
-  // mid-transfer, far short of letting one bad link consume memory in proportion
-  // to how badly it is behaving.
-  //
-  // Global rather than per-central, deliberately. CoreBluetooth caps
-  // simultaneous centrals in the single digits, so the worst case is one
-  // struggling peer eating headroom its neighbors would rarely need at the same
-  // moment, and the cost of that is backpressure, which is the correct response
-  // anyway.
-  private static let maxPendingNotifies = 256
+  // The writes each link has not yet handed to the radio, in both roles; see
+  // LinkWriteQueue for the rules. A queue per link, so one slow neighbor fills
+  // only its own and hears WRITE_BUSY while the others keep moving. Discarded
+  // with its link. On `queue`, like all the state here.
+  private var writeQueues: [String: LinkWriteQueue] = [:]
+  // Central links with an acknowledged write in flight. Nothing more goes down
+  // such a link until its didWriteValueFor, which keeps the link's order.
+  private var awaitingWriteResponse: Set<String> = []
+  // Live media is being sent or watched. See setLiveMediaActive.
+  private var liveMediaActive = false
 
   // What the app wants, kept apart from what CoreBluetooth is currently doing.
   //
@@ -408,6 +399,7 @@ final class AirhopBLEModule: RCTEventEmitter {
       guard let self else { return }
       self.wantAdvertising = false
       self.applyState()
+      self.discardWritesIfMeshStopped()
       resolve(nil)
     }
   }
@@ -473,8 +465,19 @@ final class AirhopBLEModule: RCTEventEmitter {
       // Reported here rather than left to didDisconnect: a canceled pending
       // connect may never call back.
       self.retireAllCentralLinks()
+      self.discardWritesIfMeshStopped()
       resolve(nil)
     }
+  }
+
+  // Both roles stopped is the mesh stopping. A central still subscribed to this
+  // side keeps its link, but nothing queued for it may go out afterwards.
+  // Invisible keeps scanning, so its peripheral links keep their queues. Must
+  // be called on `queue`.
+  private func discardWritesIfMeshStopped() {
+    guard !wantScanning, !wantAdvertising else { return }
+    writeQueues.removeAll()
+    awaitingWriteResponse.removeAll()
   }
 
   // Everything the device will tell us about whether BLE can run right now,
@@ -596,12 +599,54 @@ final class AirhopBLEModule: RCTEventEmitter {
     resolve(nil)
   }
 
+  // Asks every subscribed central for a short connection interval while live
+  // media is sent or watched, as bitchat raises connection priority for a
+  // stream, and for .medium afterwards: CoreBluetooth cannot withdraw a
+  // request, so a central asked once keeps .medium for the rest of that
+  // connection rather than whatever it chose itself. Only the peripheral role
+  // has this call; CoreBluetooth gives a central no say over the interval.
+  @objc
+  func setLiveMediaActive(
+    _ active: Bool,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    queue.async { [weak self] in
+      guard let self else {
+        resolve(nil)
+        return
+      }
+      self.liveMediaActive = active
+      for central in self.peripheralLinks.values {
+        self.applyConnectionLatency(to: central)
+      }
+      resolve(nil)
+    }
+  }
+
+  // Must be called on `queue`.
+  private func applyConnectionLatency(to central: CBCentral) {
+    // Outside poweredOn CoreBluetooth rejects the call as API misuse.
+    guard let manager = peripheralManager, manager.state == .poweredOn else { return }
+    manager.setDesiredConnectionLatency(liveMediaActive ? .low : .medium, for: central)
+  }
+
   // MARK: I/O
 
+  // Queues the bytes on the link and hands the radio what it will take now.
+  //
+  // Resolves with how many writes on this link the radio has not yet taken,
+  // this one included (0 when it went straight out), so the sender sees a
+  // backlog build rather than only a refusal once it is full. WRITE_BUSY means
+  // this link's queue is full. `ttlMs` > 0 drops the write unsent once it has
+  // been queued that long, found at the head or when a later write is queued;
+  // TypeScript sets it for live media, and nothing here reads the bytes to
+  // decide.
   @objc
   func writeToLink(
     _ linkID: String,
     dataBase64: String,
+    ttlMs: Double,
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -613,76 +658,109 @@ final class AirhopBLEModule: RCTEventEmitter {
         return
       }
 
-      // Central role: write to a remote peripheral's characteristic
+      let centralRole: Bool
       if let peripheral = self.centralLinks[linkID] {
         guard self.readyCentralLinks.contains(linkID),
-          let characteristic = self.cachedCharacteristic(on: peripheral)
+          self.cachedCharacteristic(on: peripheral) != nil
         else {
           reject("NOT_READY", "Link \(linkID) is not notifying yet", nil)
           return
         }
-        // A .withoutResponse write larger than the negotiated limit is
-        // silently discarded by CoreBluetooth. Mesh frames run up to 512 B
-        // and the unacknowledged limit is often smaller, so fall back to
-        // an acknowledged write rather than losing the packet.
-        let maxUnacked = peripheral.maximumWriteValueLength(for: .withoutResponse)
-        let writeType: CBCharacteristicWriteType =
-          data.count <= maxUnacked ? .withoutResponse : .withResponse
-        // CoreBluetooth also discards an unacknowledged write issued while its
-        // transmit queue is full, and says so only through
-        // canSendWriteWithoutResponse. Reporting the refusal, as the Android
-        // module does, lets the fragment pacer hold the chunk and offer it again;
-        // otherwise the far side is left missing a fragment it can never ask for.
-        if writeType == .withoutResponse && !peripheral.canSendWriteWithoutResponse {
-          reject("WRITE_BUSY", "BLE transmit queue full for link \(linkID)", nil)
-          return
-        }
-        peripheral.writeValue(data, for: characteristic, type: writeType)
-        resolve(nil)
+        centralRole = true
+      } else if self.peripheralLinks[linkID] != nil, self.characteristic != nil {
+        centralRole = false
+      } else {
+        reject("UNKNOWN_LINK", "No active link with ID \(linkID)", nil)
         return
       }
 
-      // Peripheral role: notify only this link's central. Passing nil here
-      // would fan the packet out to every subscribed central, and a unicast DM
-      // would leak to unrelated peers and waste airtime.
-      if let central = self.peripheralLinks[linkID],
-        let char = self.characteristic
-      {
-        let ok =
-          self.peripheralManager?.updateValue(data, for: char, onSubscribedCentrals: [central])
-          ?? false
-        if ok {
-          resolve(nil)
-          return
-        }
-        // Transmit queue full. Hold the packet and flush it when
-        // CoreBluetooth signals readiness, rather than dropping a
-        // fragment the far side can never reassemble without.
-        //
-        // Bounded, or a congested link grows it without limit while the
-        // sender's pacer, seeing nothing but successes, keeps pushing at full
-        // speed. bitchat does the same (BLEOutboundNotificationBuffer, capped
-        // at blePendingNotificationsCapCount): queue, because a brief burst is
-        // better smoothed than bounced, but refuse once the buffer says the
-        // link is not keeping up.
-        //
-        // WRITE_BUSY past the cap is the same code the central role above
-        // returns and the same one Android returns, so the pacer needs no
-        // per-platform branch.
-        if self.pendingNotifies.count >= Self.maxPendingNotifies {
-          reject(
-            "WRITE_BUSY",
-            "Transmit queue full (\(self.pendingNotifies.count) held)",
-            nil)
-          return
-        }
-        self.pendingNotifies.append((data: data, central: central))
-        resolve(nil)
+      // Queued even when the radio has room, so a write never passes one
+      // already waiting on the link: fragments arrive in order or not at all.
+      let accepted = self.writeQueues[linkID, default: LinkWriteQueue()]
+        .append(data, ttlMs: ttlMs, now: Self.monotonicNow())
+      guard accepted else {
+        reject("WRITE_BUSY", "Write queue full for link \(linkID)", nil)
         return
       }
-
-      reject("UNKNOWN_LINK", "No active link with ID \(linkID)", nil)
+      if centralRole {
+        self.drainCentralLink(linkID)
+      } else {
+        self.drainPeripheralLinks()
+      }
+      resolve(self.writeQueues[linkID]?.depth ?? 0)
     }
+  }
+
+  private static func monotonicNow() -> UInt64 {
+    DispatchTime.now().uptimeNanoseconds
+  }
+
+  // Hands one central link's queue to its peripheral while CoreBluetooth will
+  // take it. Must be called on `queue`.
+  private func drainCentralLink(_ linkID: String) {
+    guard !awaitingWriteResponse.contains(linkID),
+      readyCentralLinks.contains(linkID),
+      let peripheral = centralLinks[linkID],
+      let characteristic = cachedCharacteristic(on: peripheral)
+    else { return }
+    let now = Self.monotonicNow()
+    while let data = writeQueues[linkID]?.head(now: now) {
+      // A .withoutResponse write larger than the negotiated limit is silently
+      // discarded by CoreBluetooth. Mesh frames run up to 512 B and the
+      // unacknowledged limit is often smaller, so such a write goes
+      // acknowledged, and the next one waits for its didWriteValueFor.
+      if data.count > peripheral.maximumWriteValueLength(for: .withoutResponse) {
+        writeQueues[linkID]?.removeHead()
+        awaitingWriteResponse.insert(linkID)
+        peripheral.writeValue(data, for: characteristic, type: .withResponse)
+        return
+      }
+      // CoreBluetooth also discards an unacknowledged write issued while its
+      // transmit queue is full, and says so only through this flag.
+      // peripheralIsReady(toSendWriteWithoutResponse:) resumes the drain.
+      guard peripheral.canSendWriteWithoutResponse else { return }
+      writeQueues[linkID]?.removeHead()
+      peripheral.writeValue(data, for: characteristic, type: .withoutResponse)
+    }
+  }
+
+  // Hands the peripheral links' queues to their centrals while CoreBluetooth
+  // takes them. A notify goes to its link's central only: nil would fan it out
+  // to every subscriber, leaking a unicast DM and wasting airtime.
+  //
+  // One write per link per pass, since the transmit queue is shared: a link
+  // with a long backlog cannot take every free slot while its neighbors wait.
+  // A refused link keeps its head for the next readiness callback or write,
+  // and drops out of the pass rather than ending it, so a central that refuses
+  // for a reason of its own cannot hold up the rest.
+  // Must be called on `queue`.
+  private func drainPeripheralLinks() {
+    guard let manager = peripheralManager, manager.state == .poweredOn,
+      let char = characteristic
+    else { return }
+    let now = Self.monotonicNow()
+    var pending = Array(peripheralLinks.keys)
+    while !pending.isEmpty {
+      var again: [String] = []
+      for linkID in pending {
+        guard let central = peripheralLinks[linkID],
+          let data = writeQueues[linkID]?.head(now: now)
+        else { continue }
+        guard manager.updateValue(data, for: char, onSubscribedCentrals: [central]) else {
+          continue
+        }
+        writeQueues[linkID]?.removeHead()
+        again.append(linkID)
+      }
+      pending = again
+    }
+  }
+
+  // The link is gone or stopped: what it had queued goes nowhere. Must be
+  // called on `queue`.
+  private func discardWrites(_ linkID: String) {
+    writeQueues.removeValue(forKey: linkID)
+    awaitingWriteResponse.remove(linkID)
   }
 
   private func cachedCharacteristic(on peripheral: CBPeripheral) -> CBCharacteristic? {
@@ -770,6 +848,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
   private func retireAllCentralLinks() {
     for linkID in centralLinks.keys {
       sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
+      discardWrites(linkID)
     }
     centralLinks.removeAll()
     readyCentralLinks.removeAll()
@@ -829,6 +908,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     centralManager?.cancelPeripheralConnection(peripheral)
     // A canceled pending connect may never call back.
     centralLinks.removeValue(forKey: linkID)
+    discardWrites(linkID)
     rssiTimers[linkID]?.cancel()
     rssiTimers.removeValue(forKey: linkID)
     scheduleRescan()
@@ -875,6 +955,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     let linkID = centralLinkID(for: peripheral)
     centralLinks.removeValue(forKey: linkID)
     readyCentralLinks.remove(linkID)
+    discardWrites(linkID)
     centralAttempts.removeValue(forKey: linkID)
     overdueDials.remove(linkID)
     scheduleRescan()
@@ -891,6 +972,7 @@ extension AirhopBLEModule: CBCentralManagerDelegate {
     // expireDial freed it before JS ever heard it connect.
     let wasLinked = centralLinks.removeValue(forKey: linkID) != nil
     readyCentralLinks.remove(linkID)
+    discardWrites(linkID)
     centralAttempts.removeValue(forKey: linkID)
     overdueDials.remove(linkID)
     rssiTimers[linkID]?.cancel()
@@ -957,6 +1039,7 @@ extension AirhopBLEModule: CBPeripheralDelegate {
       // Subscription failed: the link cannot receive, so tear it down
       // rather than leaving a half-open connection that looks healthy.
       readyCentralLinks.remove(linkID)
+      discardWrites(linkID)
       centralManager?.cancelPeripheralConnection(peripheral)
       return
     }
@@ -998,6 +1081,24 @@ extension AirhopBLEModule: CBPeripheralDelegate {
       withName: BLEEvent.rssiUpdated,
       body: ["linkID": linkID, "rssi": RSSI.intValue])
   }
+
+  // The transmit queue has room for an unacknowledged write again.
+  func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
+    drainCentralLink(centralLinkID(for: peripheral))
+  }
+
+  // Fires only for acknowledged writes. A failed one is not retried, since its
+  // promise has already settled.
+  func peripheral(
+    _ peripheral: CBPeripheral,
+    didWriteValueFor characteristic: CBCharacteristic,
+    error: Error?
+  ) {
+    guard characteristic.uuid == BLEConst.characteristicUUID else { return }
+    let linkID = centralLinkID(for: peripheral)
+    awaitingWriteResponse.remove(linkID)
+    drainCentralLink(linkID)
+  }
 }
 
 // MARK: - CBPeripheralManagerDelegate
@@ -1021,14 +1122,12 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
       serviceRegistered = false
       actuallyAdvertising = false
       characteristic = nil
-      pendingNotifies.removeAll()
 
     case .unauthorized:
       retireAllCentralSubscribers()
       serviceRegistered = false
       actuallyAdvertising = false
       characteristic = nil
-      pendingNotifies.removeAll()
 
     case .unsupported:
       actuallyAdvertising = false
@@ -1038,7 +1137,6 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
       serviceRegistered = false
       actuallyAdvertising = false
       characteristic = nil
-      pendingNotifies.removeAll()
 
     case .unknown:
       break
@@ -1053,6 +1151,7 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
   private func retireAllCentralSubscribers() {
     for linkID in peripheralLinks.keys {
       sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
+      discardWrites(linkID)
     }
     peripheralLinks.removeAll()
   }
@@ -1080,6 +1179,7 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
     AirhopLog.ble.notice("BLE link up (peripheral)")
     let linkID = peripheralLinkID(for: central)
     peripheralLinks[linkID] = central
+    if liveMediaActive { applyConnectionLatency(to: central) }
     sendEvent(
       withName: BLEEvent.linkConnected,
       body: ["linkID": linkID, "role": "peripheral", "rssi": -99])
@@ -1093,6 +1193,7 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
     AirhopLog.ble.notice("BLE link down (peripheral)")
     let linkID = peripheralLinkID(for: central)
     peripheralLinks.removeValue(forKey: linkID)
+    discardWrites(linkID)
     sendEvent(withName: BLEEvent.linkDisconnected, body: ["linkID": linkID])
   }
 
@@ -1137,16 +1238,10 @@ extension AirhopBLEModule: CBPeripheralManagerDelegate {
     peripheral.respond(to: first, withResult: .success)
   }
 
-  // CoreBluetooth drained its transmit queue: replay anything updateValue()
-  // previously refused, preserving order. Stops at the first refusal so the
-  // remaining items stay queued for the next readiness callback.
+  // CoreBluetooth has room in its transmit queue again: resume every
+  // peripheral link's queue, in order, until it refuses once more.
   func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {
-    guard let char = characteristic else { return }
-    while let next = pendingNotifies.first {
-      let ok = peripheral.updateValue(next.data, for: char, onSubscribedCentrals: [next.central])
-      if !ok { return }
-      pendingNotifies.removeFirst()
-    }
+    drainPeripheralLinks()
   }
 
   func peripheralManager(

@@ -671,6 +671,7 @@ export const strings: Strings = {
   "chat.attach.send": "Anhang senden",
   "chat.attach.generic": "Anhang",
   "chat.video_prep.preparing": "Video wird vorbereitet",
+  "chat.video_prep.retrying": "Wird weiter verkleinert",
   "chat.video_prep.waiting": "Video wartet auf Vorbereitung",
   "chat.video_prep.cancel": "Vorbereitung dieses Videos abbrechen",
   "chat.video_prep.too_large":
@@ -702,9 +703,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Sprachnotiz abspielen",
   "chat.media.pause_video": "Video pausieren",
   "chat.media.play_video": "Video abspielen",
-  "chat.media.voice_position": "Position in der Sprachnotiz",
-  "chat.media.voice_scrub":
-    "Tippe entlang der Balken, um an die Stelle zu springen",
+  "chat.media.voice_back": "5 Sekunden zurück",
+  "chat.media.voice_forward": "5 Sekunden vor",
   "chat.media.image": "Bild",
   "chat.media.tap_load_photo": "Tippen, um das Foto zu laden",
   "chat.media.open_document": "{name} öffnen",
@@ -762,6 +762,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Live-Video",
   "chat.live_video.go_live": "Live gehen",
   "chat.live_video.end": "Beenden",
+  "chat.live_video.ending": "Wird beendet…",
   "chat.live_video.end_title": "Live-Video beenden?",
   "chat.live_video.end_body":
     "Beim Beenden bleibt die Aufnahme in diesem Chat. Beim Verwerfen wird allen Zuschauenden gesagt, sie zu löschen.",
@@ -776,10 +777,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Mittel",
   "chat.live_video.quality_high": "Hoch",
   "chat.live_video.quality_low_hint":
-    "Erreicht Menschen mehrere Sprünge entfernt",
+    "Erreicht über Bluetooth Menschen mehrere Sprünge entfernt",
   "chat.live_video.quality_medium_hint":
-    "Für Menschen ein oder zwei Sprünge entfernt",
-  "chat.live_video.quality_high_hint": "Für Menschen direkt neben dir",
+    "Schärfer, für Zuschauer über Wi-Fi Aware oder im selben WLAN",
+  "chat.live_video.quality_high_hint":
+    "Am schärfsten, für Zuschauer über Wi-Fi Aware oder im selben WLAN",
+  "chat.live_video.quality_needs_wifi": "Braucht WLAN in der Nähe",
+  "chat.live_video.quality_bluetooth_note":
+    "Mittel und Hoch brauchen WLAN in der Nähe",
   "chat.live_video.signal_good": "Kommt mit",
   "chat.live_video.signal_weak": "Fällt zurück",
   "chat.live_video.signal_poor": "Zu langsam für Video, nur Ton wird gesendet",
@@ -795,6 +800,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Nach oben wischen, um freihändig aufzunehmen",
   "chat.voice.live_speaking": "{name} spricht",
   "chat.voice.live_ended": "Beendet",
+  "chat.voice.live_stopped": "Live-Sprechen beendet",
   "voice.unavailable": "Live-Sprache nicht verfügbar",
   "voice.recording_stopped": "Aufnahme beendet",
 
@@ -1915,13 +1921,15 @@ export const strings: Strings = {
     "Für diesen Kontakt gibt es noch keine Schlüssel. Schreibe der Person, oder scanne ihren Code, wenn ihr euch trefft.",
   "contacts.verify.compare_title": "Lest euch das gegenseitig vor",
   "contacts.verify.compare_body":
-    "{name} sieht in Airhop dieselben sechs Wörter. Wenn sie übereinstimmen, wisst ihr beide, dass die Schlüssel echt sind. bitchat zeigt keine solchen Wörter, scanne dort stattdessen den Code.",
-  "contacts.verify.codes_match": "Sie stimmen überein",
-  "contacts.verify.codes_differ": "Sie stimmen nicht überein",
+    "Lies {name} deinen Code vor, damit er auf dem anderen Telefon geprüft wird. Prüfe dann den vorgelesenen Code mit dem Code des Kontakts hier. Jeder von euch markiert den anderen auf dem eigenen Telefon als verifiziert. bitchat zeigt keine solchen Wörter, scanne dort stattdessen den Code.",
+  "contacts.verify.your_code": "Dein Code",
+  "contacts.verify.their_code": "Code des Kontakts",
+  "contacts.verify.codes_match": "Der Code des Kontakts stimmt",
+  "contacts.verify.codes_differ": "Der Code des Kontakts stimmt nicht",
   "contacts.verify.codes_differ_body":
     "Die Schlüssel auf diesem Telefon gehören vielleicht nicht {name}. Scanne den Code persönlich, bevor du diesem Chat vertraust.",
   "contacts.verify.compared_body":
-    "Du und {name} habt denselben Code bestätigt. Dieser Kontakt ist verifiziert.",
+    "Der Code, den {name} vorgelesen hat, stimmt, also ist der Kontakt auf diesem Telefon verifiziert. Dich verifiziert die andere Person auf dem eigenen Telefon.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Zurück",
@@ -2082,11 +2090,32 @@ export const strings: Strings = {
     "Ein Mittelweg für ein bis zwei Wochen ohne Empfang.",
   "settings.general.retention_30_desc":
     "Hält Verläufe am längsten lesbar und belegt am meisten Speicher.",
+  "settings.general.message_retention": "Verschwindende Nachrichten",
+  "settings.general.message_retention_desc":
+    "Nachrichten und ihre Medien werden nach der gewählten Zeit von diesem Telefon gelöscht",
+  "settings.general.message_retention_sheet":
+    "Gezählt ab der Ankunft jeder Nachricht auf diesem Telefon, und nur dieses Telefon vergisst. Das Telefon der anderen Person behält seine Kopie, Screenshots lassen sich nicht verhindern, und Zahlungen aus privaten Chats, die du noch nicht eingelöst hast, bleiben, bis du sie einlöst.",
+  "settings.general.message_retention_off_desc":
+    "Nachrichten bleiben, bis du den Chat leerst oder verlässt",
+  "settings.general.message_retention_1_desc":
+    "Hinterlässt am wenigsten, wenn das Telefon selbst das Risiko ist",
+  "settings.general.message_retention_7_desc":
+    "Eine Woche zum Nachlesen, dann weg",
+  "settings.general.message_retention_30_desc":
+    "Hält Verläufe am längsten lesbar",
+  "settings.general.message_retention_confirm_title":
+    "Ältere Nachrichten löschen?",
+  "settings.general.message_retention_confirm_1":
+    "Nachrichten, die älter als 1 Tag sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Das lässt sich nicht rückgängig machen.",
+  "settings.general.message_retention_confirm_7":
+    "Nachrichten, die älter als 7 Tage sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Das lässt sich nicht rückgängig machen.",
+  "settings.general.message_retention_confirm_30":
+    "Nachrichten, die älter als 30 Tage sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Das lässt sich nicht rückgängig machen.",
   "settings.general.reset_desc":
     "Setzt Einstellungen auf ihren Standard zurück und lässt Identität, Nachrichten, Kontakte und Wallet unberührt",
   "settings.general.reset_title": "Einstellungen zurücksetzen?",
   "settings.general.reset_body":
-    "Einstellungen gehen auf ihren Standard zurück, darunter Erscheinungsbild, Sprache, Mitteilungen, Senden rückgängig und Verbindungen (Gateway, Brücke, Relays). App-Sperre, Aufbewahrungsdauer für Medien, der Internet-Schalter, Tor und seine Bridges sowie dein Status bleiben, wie du sie eingestellt hast. Deine Identität, Nachrichten, Kontakte und Wallet bleiben unberührt.",
+    "Einstellungen gehen auf ihren Standard zurück, darunter Erscheinungsbild, Sprache, Mitteilungen, Senden rückgängig und Verbindungen (Gateway, Brücke, Relays). App-Sperre, Aufbewahrungsdauer für Nachrichten und Medien, der Internet-Schalter, Tor und seine Bridges sowie dein Status bleiben, wie du sie eingestellt hast. Deine Identität, Nachrichten, Kontakte und Wallet bleiben unberührt.",
   "settings.general.reset_confirm": "Zurücksetzen",
 
   // ---- Settings: privacy and security ----

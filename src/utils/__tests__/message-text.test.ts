@@ -42,6 +42,7 @@ function entry(fields: Partial<ActivityEntry>): ActivityEntry {
     preview: "",
     timestampMs: 0,
     seen: false,
+    recordedAtMs: 0,
     ...fields,
   };
 }

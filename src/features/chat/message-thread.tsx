@@ -14,11 +14,13 @@ import {
   MAX_BITCHAT_TRANSFER_BYTES,
   MAX_VIDEO_SECONDS,
   maxBytesForType,
+  videoClipName,
   videoNoteName,
   wireMediaName,
 } from "@core/mesh/wire/file-packet";
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
 import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
+import { privateVideoStableID } from "@core/mesh/wire/private-video-id";
 import {
   findChatTokens,
   mayContainToken,
@@ -57,6 +59,7 @@ import {
   AttachmentTooLargeError,
   CACHE_FILE_PREFIX,
   discardPickerCopy,
+  holdAttachmentFile,
   sizeLabel,
 } from "@services/file-transfer-service";
 import {
@@ -107,7 +110,7 @@ import {
   transferSpeedBps,
   useTransferStore,
 } from "@store/transfer-store";
-import { useVideoPrepStore } from "@store/video-prep-store";
+import { useVideoPrepStore, type VideoPrep } from "@store/video-prep-store";
 import { keysetRefsOf, useWalletStore } from "@store/wallet-store";
 import AppModal from "@ui/components/app-modal";
 import Avatar from "@ui/components/avatar";
@@ -116,6 +119,7 @@ import CopyGlyph from "@ui/components/copy-glyph";
 import MeshStatusBar from "@ui/components/mesh-status-bar";
 import Toast from "@ui/components/toast";
 import UpperText from "@ui/components/upper-text";
+import { useAnnounce } from "@ui/hooks/use-announce";
 import { useCopy } from "@ui/hooks/use-copy";
 import { useKeyboardInset } from "@ui/hooks/use-keyboard";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
@@ -158,6 +162,10 @@ import {
   notifiesOnScreenshot,
 } from "@utils/media-policy";
 import { activeMentionQuery, applyMention } from "@utils/mentions";
+import {
+  messageRetentionWindowMs,
+  withoutExpired,
+} from "@utils/message-expiry";
 import { messageText, systemRow } from "@utils/message-text";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import {
@@ -182,7 +190,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import * as ScreenCapture from "expo-screen-capture";
 import * as Sharing from "expo-sharing";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { useVideoPlayer, VideoView, type VideoTrack } from "expo-video";
 import React, {
   useCallback,
   useEffect,
@@ -246,6 +254,7 @@ import {
   CANCEL_SLIDE_DISTANCE,
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
+import LiveBadge from "./live-badge";
 import LiveVideoStudio from "./live-video-studio";
 import LiveVideoViewer from "./live-video-viewer";
 import type { LiveVideoViewerTarget } from "./live-video-viewer-state";
@@ -255,6 +264,7 @@ import MessageInfoSheet from "./message-info-sheet";
 import { NoticesSheet } from "./notices-sheet";
 import { activateOnly } from "./screen-reader-actions";
 import SendLocationSheet from "./send-location-sheet";
+import { useAwaitingReceipt } from "./use-awaiting-receipt";
 import { useExclusivePlayback } from "./use-exclusive-playback";
 import {
   useVideoNoteRecorder,
@@ -417,16 +427,18 @@ const SHEET_HANDOFF_MS = 250;
 const COMPOSER_SCRIM = "rgba(0,0,0,0.85)";
 
 // A voice note is speech on a ~18 KiB/s radio, so it is recorded as speech:
-// mono, 16 kHz (the band a voice actually occupies), 32 kbps. The stock
-// HIGH_QUALITY preset is 44.1 kHz stereo at 128 kbps, four times the bytes for
-// nothing anyone can hear on a phone speaker, which would put a one-minute note
-// over the 512 KiB wire cap and spend a minute of Bluetooth getting there. Still
-// AAC in an .m4a container, so bitchat and any ordinary player read it unchanged.
+// mono, 16 kHz (the band a voice actually occupies), 16 kbps, as bitchat-ios
+// records it. A two-minute note is then about 235 KiB, some 15 s of airtime in
+// a room, inside bitchat-ios's 30 s reassembly window. The stock HIGH_QUALITY
+// preset is 44.1 kHz stereo at 128 kbps, eight times the bytes for nothing
+// anyone can hear on a phone speaker, which would put a one-minute note over
+// the 512 KiB wire cap and spend a minute of Bluetooth getting there. Still AAC
+// in an .m4a container, so bitchat and any ordinary player read it unchanged.
 const VOICE_RECORDING = {
   ...RecordingPresets.HIGH_QUALITY,
   sampleRate: 16000,
   numberOfChannels: 1,
-  bitRate: 32000,
+  bitRate: 16000,
   // Puts a loudness reading on the recorder's status, which is what draws the
   // meter for a plain voice note. The live path gets the same number from its
   // own frames; this is the only way to get it for this one.
@@ -444,10 +456,21 @@ const VOICE_METER_POLL_MS = 100;
 // counted on a single line instead.
 const TRANSFER_CARD_LIMIT = 2;
 
+// How long a video waits for a linked peer's proof before its budget is set.
+// A handshake and the proof behind it take a few hundred milliseconds over
+// Bluetooth; past this the peer is taken for bitchat, the safe direction.
+const VIDEO_PROOF_WAIT_MS = 3000;
+
 // How often to re-check whether the mic button would go live. Slow on purpose:
 // this only changes when peers arrive or leave, and the answer drives an icon,
 // not a decision.
 const LIVE_AVAILABILITY_POLL_MS = 3000;
+
+// The speaker claim for a stream's replay in the full-screen viewer. Apart from
+// the row's own id, which the inline player answers to.
+function viewerReplayKey(rowID: string): string {
+  return `viewer:${rowID}`;
+}
 
 // The live-burst ceiling in seconds, for the HUD. Derived from the value the
 // capture layer actually enforces, so the badge cannot claim a burst is still
@@ -467,6 +490,8 @@ const MEDIA_MIN_ASPECT = 0.75; // portrait floor: 220 x 293
 const MEDIA_MAX_ASPECT = 1.9; // landscape ceiling: 220 x 116
 // Until the real dimensions are read, 4:3 keeps the row from jumping far.
 const MEDIA_DEFAULT_ASPECT = 4 / 3;
+// Every live video quality is 3:4, so a stream's recording is too.
+const LIVE_VIDEO_ASPECT = 3 / 4;
 
 function mediaHeightForAspect(aspect: number | null): number {
   const ratio = Math.min(
@@ -533,6 +558,10 @@ function activeSlashQuery(draft: string): string | null {
   return m ? m[1]!.toLowerCase() : null;
 }
 
+// How far a screen reader's back and forward actions move through a voice
+// note. The copy says the number ("Back 5 seconds"), so change both together.
+const VOICE_SEEK_STEP_SECS = 5;
+
 // Fixed bar heights for the voice-note waveform. A constant, not a literal in
 // the render, so the playhead math below has one length to divide by.
 const VOICE_WAVE_BARS = [6, 12, 8, 16, 10, 14, 8, 6, 12, 10, 8, 14];
@@ -555,38 +584,53 @@ interface VoiceNoteBubbleProps {
   onToggle: () => void;
   onFinished: () => void;
   onAskResend?: () => void;
+  // Hands the thread this note's seek while it is mounted (null on unmount),
+  // for the bubble's screen-reader actions: the waveform sits inside the
+  // bubble's one accessible element, where nobody can tap along it.
+  registerSeek: (seek: ((bySecs: number) => void) | null) => void;
 }
 
-// Inline video player for a received (or sent) video attachment. A finished
-// live stream keeps the shape its live bubble had, so the row does not jump
-// when the stream ends.
+// Inline video player for a received (or sent) video attachment, sized by its
+// own shape as a photo is, so a portrait clip is not a strip in a landscape
+// box. A finished live stream keeps the shape its live bubble had, so the row
+// does not jump when the stream ends.
 function VideoAttachment({
   uri,
   liveRecording = false,
   playing,
   onPlay,
+  onStop,
   onAskResend,
 }: {
   uri: string;
   liveRecording?: boolean;
   playing: boolean;
   onPlay: () => void;
+  onStop: () => void;
   onAskResend?: () => void;
 }): React.JSX.Element {
+  const Colors = useThemeColors();
   const present = useAttachmentPresent(uri);
   const player = useVideoPlayer(uri, (p) => {
     // Don't autoplay: a thread can hold several videos and they would all
     // start at once when the list renders.
     p.loop = false;
   });
-  useExclusivePlayback(player, playing, onPlay);
-  // Handed the speaker by the thread rather than by the native controls, which
-  // is how a screen reader plays it: inside the bubble's one element on iOS,
-  // those controls are out of reach. A start the controls made lands here too,
-  // and playing a playing player does nothing.
+  // The thread can also hand it the speaker, which is how a screen reader
+  // plays it: inside the bubble's one element on iOS, the native controls are
+  // out of reach. The hook plays it on that change.
+  useExclusivePlayback(player, playing, onPlay, onStop);
+  const [aspect, setAspect] = useState<number | null>(() =>
+    liveRecording ? LIVE_VIDEO_ASPECT : videoTrackAspect(player.videoTrack),
+  );
   useEffect(() => {
-    if (playing && present) player.play();
-  }, [player, playing, present]);
+    if (liveRecording) return;
+    const sub = player.addListener("sourceLoad", ({ availableVideoTracks }) => {
+      const next = videoTrackAspect(availableVideoTracks[0] ?? null);
+      if (next !== null) setAspect(next);
+    });
+    return () => sub.remove();
+  }, [player, liveRecording]);
 
   if (!present) {
     return <AttachmentUnavailable kind="video" onAskResend={onAskResend} />;
@@ -596,7 +640,10 @@ function VideoAttachment({
     <VideoView
       style={[
         videoAttachmentStyles.video,
-        liveRecording && videoAttachmentStyles.live,
+        {
+          height: mediaHeightForAspect(aspect),
+          backgroundColor: Colors.mediaBackdrop,
+        },
       ]}
       player={player}
       contentFit="contain"
@@ -604,6 +651,13 @@ function VideoAttachment({
       nativeControls
     />
   );
+}
+
+// Width over height of a decoded track, or null while it is unknown.
+function videoTrackAspect(track: VideoTrack | null): number | null {
+  if (track === null) return null;
+  const { width, height } = track.size;
+  return width > 0 && height > 0 ? width / height : null;
 }
 
 // A round video note: a silent loop in the thread, with sound on tap. Muted
@@ -656,9 +710,19 @@ function VideoNoteAttachment({
     else player.play();
   }, [player, reduceMotion, withSound]);
   const onFinishedRef = useRef(onFinished);
+  const withSoundRef = useRef(withSound);
   useEffect(() => {
     onFinishedRef.current = onFinished;
+    withSoundRef.current = withSound;
   });
+  // Unmounted while heard (scrolled out of the list's window): let go of the
+  // slot, or the remount would replay it aloud from the start.
+  useEffect(
+    () => () => {
+      if (withSoundRef.current) onFinishedRef.current();
+    },
+    [],
+  );
   useEffect(() => {
     if (!withSound) return;
     const sub = player.addListener("playToEnd", () => {
@@ -683,7 +747,10 @@ function VideoNoteAttachment({
       accessibilityState={{ checked: withSound }}
     >
       <VideoView
-        style={videoAttachmentStyles.note}
+        style={[
+          videoAttachmentStyles.note,
+          { backgroundColor: Colors.mediaBackdrop },
+        ]}
         player={player}
         contentFit="cover"
         nativeControls={false}
@@ -719,20 +786,13 @@ function VideoNoteAttachment({
 
 const videoAttachmentStyles = StyleSheet.create({
   video: {
-    width: 220,
-    height: 150,
+    width: MEDIA_BUBBLE_WIDTH,
     borderRadius: Radius.md,
-    backgroundColor: "#000",
-  },
-  // Every live video quality is 3:4.
-  live: {
-    height: mediaHeightForAspect(3 / 4),
   },
   note: {
     width: VIDEO_NOTE_SIZE,
     height: VIDEO_NOTE_SIZE,
     borderRadius: Radius.full,
-    backgroundColor: "#000",
   },
   noteBadge: {
     position: "absolute",
@@ -840,6 +900,59 @@ function createUndoStyles(Colors: ReturnType<typeof useThemeColors>) {
   });
 }
 
+// One video being shrunk, pass by pass: one that comes out over budget is
+// followed by a second, labeled as such, whose bar starts again from 0% rather
+// than reading as the first one's bar falling back.
+function VideoPrepCard({
+  prep,
+  styles,
+}: {
+  prep: VideoPrep;
+  styles: ReturnType<typeof createTransferStyles>;
+}): React.JSX.Element {
+  const Colors = useThemeColors();
+  const T = useT();
+  const pct = Math.round(prep.fraction * 100);
+  return (
+    <View style={styles.card}>
+      <Feather name="film" size={18} color={Colors.textSecondary} />
+      <View style={styles.body}>
+        <View style={styles.topRow}>
+          <Text style={styles.name} numberOfLines={1}>
+            {prep.status !== "active"
+              ? T("chat.video_prep.waiting")
+              : prep.pass > 1
+                ? T("chat.video_prep.retrying")
+                : T("chat.video_prep.preparing")}
+          </Text>
+          <View style={styles.transferRight}>
+            {prep.status === "active" && (
+              <Text style={styles.pct}>{formatPercent(pct / 100)}</Text>
+            )}
+            <Pressable
+              onPress={() => cancelVideoPreparation(prep.id)}
+              style={({ pressed }) => pressed && styles.closePressed}
+              hitSlop={hitSlopFor(TRANSFER_CLOSE_SIZE)}
+              accessibilityRole="button"
+              accessibilityLabel={T("chat.video_prep.cancel")}
+            >
+              <Feather name="x" size={16} color={Colors.textMuted} />
+            </Pressable>
+          </View>
+        </View>
+        <View style={styles.track}>
+          <View
+            style={[
+              styles.fill,
+              { width: `${pct}%`, backgroundColor: Colors.accent },
+            ]}
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 // Progress cards for the attachments currently moving through this thread.
 // Files crawl over Bluetooth (~18 KiB/s), so one at the 1 MiB cap takes about a
 // minute; showing live percent, speed and ETA is the difference between
@@ -876,45 +989,9 @@ function TransferProgressList({
 
   return (
     <View style={styles.wrap}>
-      {preparing.map((p) => {
-        const pct = Math.round(p.fraction * 100);
-        return (
-          <View key={p.id} style={styles.card}>
-            <Feather name="film" size={18} color={Colors.textSecondary} />
-            <View style={styles.body}>
-              <View style={styles.topRow}>
-                <Text style={styles.name} numberOfLines={1}>
-                  {p.status === "active"
-                    ? T("chat.video_prep.preparing")
-                    : T("chat.video_prep.waiting")}
-                </Text>
-                <View style={styles.transferRight}>
-                  {p.status === "active" && (
-                    <Text style={styles.pct}>{formatPercent(pct / 100)}</Text>
-                  )}
-                  <Pressable
-                    onPress={() => cancelVideoPreparation(p.id)}
-                    style={({ pressed }) => pressed && styles.closePressed}
-                    hitSlop={hitSlopFor(TRANSFER_CLOSE_SIZE)}
-                    accessibilityRole="button"
-                    accessibilityLabel={T("chat.video_prep.cancel")}
-                  >
-                    <Feather name="x" size={16} color={Colors.textMuted} />
-                  </Pressable>
-                </View>
-              </View>
-              <View style={styles.track}>
-                <View
-                  style={[
-                    styles.fill,
-                    { width: `${pct}%`, backgroundColor: Colors.accent },
-                  ]}
-                />
-              </View>
-            </View>
-          </View>
-        );
-      })}
+      {preparing.map((p) => (
+        <VideoPrepCard key={p.id} prep={p} styles={styles} />
+      ))}
       {shown.map((t) => {
         const pct =
           t.totalBytes > 0
@@ -1425,6 +1502,7 @@ function VoiceNoteBubble({
   onToggle,
   onFinished,
   onAskResend,
+  registerSeek,
 }: VoiceNoteBubbleProps): React.JSX.Element {
   const T = useT();
   const Colors = useThemeColors();
@@ -1432,6 +1510,23 @@ function VoiceNoteBubble({
   const present = useAttachmentPresent(uri);
   const player = useAudioPlayer(uri);
   const status = useAudioPlayerStatus(player);
+
+  const registerSeekRef = useRef(registerSeek);
+  useEffect(() => {
+    registerSeekRef.current = registerSeek;
+  });
+  useEffect(() => {
+    const register = registerSeekRef.current;
+    register((bySecs) => {
+      if (player.duration <= 0) return;
+      const to = Math.min(
+        player.duration,
+        Math.max(0, player.currentTime + bySecs),
+      );
+      void player.seekTo(to).catch(() => {});
+    });
+    return () => register(null);
+  }, [player]);
 
   useEffect(() => {
     // A file that is gone cannot play; asking anyway just toggles the button.
@@ -1450,6 +1545,22 @@ function VoiceNoteBubble({
       onFinished();
     }
   }, [isPlaying, onFinished, player, status.didJustFinish]);
+
+  // A row scrolled far enough to unmount takes its player, and the sound,
+  // with it. Letting go of the slot then keeps the remount from starting the
+  // note again from the top, and the screen reader from offering to pause
+  // something silent. onFinished compares and clears, so this never takes a
+  // newer claim.
+  const releaseRef = useRef({ isPlaying, onFinished });
+  useEffect(() => {
+    releaseRef.current = { isPlaying, onFinished };
+  });
+  useEffect(
+    () => () => {
+      if (releaseRef.current.isPlaying) releaseRef.current.onFinished();
+    },
+    [],
+  );
 
   // How long the clip runs. The sender's own figure is authoritative when it is
   // there, but a voice note from bitchat has none: bitchat's file packet has no
@@ -1474,7 +1585,11 @@ function VoiceNoteBubble({
   // Tap anywhere on the bars to jump there, the same gesture bitchat supports
   // and the one people expect from a voice note. Deliberately a tap and not a
   // drag: these bubbles live inside a scrolling list, and a scrubber that
-  // swallows vertical movement would make the thread feel stuck.
+  // swallows vertical movement would make the thread feel stuck. The row is
+  // held left to right, as the trimmer's strip is, because `locationX` is
+  // measured from the physical left on both platforms; the bars take no
+  // touches, or a tap landing on one would report its position inside that
+  // 3pt bar.
   const [waveWidth, setWaveWidth] = useState(0);
   function handleSeek(e: GestureResponderEvent): void {
     if (waveWidth <= 0 || status.duration <= 0) return;
@@ -1520,15 +1635,13 @@ function VoiceNoteBubble({
         style={styles.attachVoiceWave}
         onPress={handleSeek}
         onLayout={(e) => setWaveWidth(e.nativeEvent.layout.width)}
-        accessibilityRole="adjustable"
-        accessibilityLabel={T("chat.media.voice_position")}
-        accessibilityHint={T("chat.media.voice_scrub")}
       >
         {VOICE_WAVE_BARS.map((h, i) => {
           const played = i / VOICE_WAVE_BARS.length < progress;
           return (
             <View
               key={i}
+              pointerEvents="none"
               style={[
                 styles.attachVoiceBar,
                 barColor,
@@ -1885,8 +1998,8 @@ export default function MessageThread({
   const isDMPeerOnline =
     dmPeerID !== null && onlinePeers.some((p) => p.peerID === dmPeerID);
   // Whether this DM can still be delivered when the peer is not nearby: either
-  // they are a Nostr-only correspondent, or we hold their durable
-  // Nostr pubkey (from a v2 QR card or a past ANNOUNCE), and a relay is live.
+  // they are a Nostr-only correspondent, or we hold their durable Nostr pubkey
+  // (from a v2 QR card or a past mesh session), and a relay is live.
   // Drives honest banner copy: an offline peer we can still reach over the
   // internet must not be shown the same "we'll deliver when they're nearby"
   // line as an unreachable one, nor the reverse.
@@ -1962,6 +2075,10 @@ export default function MessageThread({
   // Focused when something else drafts into the composer, so the text is not
   // left behind a closed keyboard.
   const composerRef = useRef<TextInputInstance>(null);
+  // Where the caret is, so a mention can be picked mid-draft: "range" while
+  // text is selected, null for the end of the draft. Tracked only while the
+  // draft holds an "@", so other typing does not render the thread twice a key.
+  const [caret, setCaret] = useState<number | "range" | null>(null);
 
   // @-mention suggestions. Who can be tagged depends on the thread: a group's
   // roster, a location cell's active participants, or a channel's nearby peers.
@@ -1988,7 +2105,10 @@ export default function MessageThread({
   }, [isGeo, channel, geoMembers, peers]);
 
   // The candidates matching what the user is typing after "@", minus yourself.
-  const mentionQuery = activeMentionQuery(draft);
+  const mentionCaret =
+    typeof caret === "number" ? Math.min(caret, draft.length) : draft.length;
+  const mentionQuery =
+    caret === "range" ? null : activeMentionQuery(draft, mentionCaret);
   const mentionMatches = useMemo(() => {
     if (mentionQuery === null) return [];
     // Matching, de-duplication and the self-check all run on the normalized
@@ -2127,12 +2247,31 @@ export default function MessageThread({
   // Live: the capture layer already stops adding frames past MAX_BURST_MS, so
   // this is the UI catching up with a burst that has already ended, while the
   // button is still held.
-  // Nothing else stops it. At 32 kbps a recording crosses the 512 KiB
-  // voice cap at about 130 s, and `rejectIfTooLarge` deliberately skips voice,
-  // so an over-long note would be refused by the transport at send with the
-  // audio already gone.
+  // Note: nothing else stops it. At 16 kbps a recording would cross the
+  // 512 KiB voice cap at about 260 s, and `rejectIfTooLarge` deliberately
+  // skips voice, so an over-long note would be refused by the transport at
+  // send with the audio already gone.
   const atRecordingLimit = recordingSecs >= BURST_MAX_SECS;
   const burstEnded = isTalkingLive && atRecordingLimit;
+  // VoiceOver's half of the live voice rows, which TalkBack hears through
+  // their alert role and live region: who started talking and when it ended,
+  // and on this side, running out. Silent while this side holds the mic, when
+  // the row is hidden too, so VoiceOver speaks nothing into a recording; the
+  // incoming audio is held back for the same reason. Going live is said by
+  // haptics alone, since speech then would be sent as part of the burst. The
+  // limit may speak: capture has already stopped by then.
+  const liveTalkerRowHidden = isPTTActive || isRecording || isTalkingLive;
+  useAnnounce(
+    liveTalkerRowHidden
+      ? null
+      : liveTalker === null
+        ? T("chat.voice.live_stopped")
+        : liveTalkers.length > 1
+          ? TP("chat.voice.live_speaking_count", liveTalkers.length)
+          : T("chat.voice.live_speaking", { name: liveTalker }),
+    { trigger: liveTalker },
+  );
+  useAnnounce(burstEnded ? T("chat.voice.limit_reached") : null);
   // Read from inside the level listener, which is subscribed once and would
   // otherwise keep driving the meter after the burst it belongs to has ended.
   const atLimitRef = useRef(false);
@@ -2140,6 +2279,15 @@ export default function MessageThread({
   // Which voice note is playing, by message id. One at a time: starting a
   // second pauses the first, since two clips over one speaker is noise.
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+  // Lets go of the speaker only while `id` still holds it, since a release can
+  // land after another player has claimed.
+  const releasePlaying = useCallback((id: string): void => {
+    setPlayingMessageId((current) => (current === id ? null : current));
+  }, []);
+  // Each mounted voice note's seek, by message id, so the bubble's
+  // screen-reader actions can move through a note the way a tap on its bars
+  // does.
+  const voiceSeekers = useRef(new Map<string, (bySecs: number) => void>());
   // A live stream's sound is the same speaker: a note given sound silences the
   // stream, and a stream unmuted stops the note. Whatever the user starts (a
   // note, a video, the trimmer's preview, a stream's sound) also silences a
@@ -2174,6 +2322,12 @@ export default function MessageThread({
   );
   // URI of the photo currently shown in the full-screen viewer, or null.
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  // A row's file goes with the row (a trim, an expiry), and the viewer can
+  // outlive its row, so Save and Share would find nothing. Held while shown.
+  useEffect(() => {
+    if (fullscreenImage === null) return;
+    return holdAttachmentFile(fullscreenImage);
+  }, [fullscreenImage]);
   const autoDownloadMedia = useSettingsStore((s) => s.autoDownloadMedia);
   const bridgeEnabled = useSettingsStore((s) => s.bridgeEnabled);
   const undoSendSeconds = useSettingsStore((s) => s.undoSendSeconds);
@@ -2299,8 +2453,20 @@ export default function MessageThread({
   // if they are unblocked.
   const blockedPeerIDs = useBlockedStore((s) => s.blockedPeerIDs);
   const blockedAliases = useBlockedStore((s) => s.blockedAliases);
+  // Disappearing messages leave the screen when they expire, whenever the
+  // sweep gets to them. Checked on the peer clock, and only while the setting
+  // is on, so a thread with it off never recomputes for the clock.
+  const messageRetentionDays = useSettingsStore((s) => s.messageRetentionDays);
+  const retentionWindowMs = messageRetentionWindowMs(messageRetentionDays);
+  const expiryClock = retentionWindowMs > 0 ? peerClock : 0;
+  const awaitingReceipt = useAwaitingReceipt();
   const msgs = useMemo(() => {
-    const all = messages[channel] ?? [];
+    const all = withoutExpired(
+      messages[channel] ?? [],
+      expiryClock,
+      retentionWindowMs,
+      awaitingReceipt,
+    );
     if (blockedPeerIDs.length === 0) return all;
     return all.filter(
       (m) =>
@@ -2308,7 +2474,15 @@ export default function MessageThread({
         (!blockedPeerIDs.includes(m.senderID) &&
           blockedAliases[m.senderID] === undefined),
     );
-  }, [messages, channel, blockedPeerIDs, blockedAliases]);
+  }, [
+    messages,
+    channel,
+    blockedPeerIDs,
+    blockedAliases,
+    expiryClock,
+    retentionWindowMs,
+    awaitingReceipt,
+  ]);
   // A token under an uncached keyset reads from its metadata until the fetch
   // updates `mints` and it decodes in full.
   useEffect(() => {
@@ -2324,6 +2498,18 @@ export default function MessageThread({
   // peer that has proven it reads pins is offered one.
   const acceptsLocationPin =
     isMeshDM && getMeshService()?.peerAcceptsLocationPin(dmPeerID) === true;
+  // Start the Noise handshake while the thread is being read, so the first
+  // message or file goes out on a session that is already up, and an Airhop
+  // peer is known as one before a video is shrunk for it. Again when they come
+  // into range, since without a link there is nothing to start it over.
+  const dmPeerDirect = usePeerStore(
+    (s) => dmPeerID !== null && s.peers.get(dmPeerID)?.isDirect === true,
+  );
+  useEffect(() => {
+    if (isMeshDM && dmPeerID !== null) {
+      getMeshService()?.prepareDmSession(dmPeerID);
+    }
+  }, [isMeshDM, dmPeerID, dmPeerDirect]);
 
   // How long this conversation has been going out with nothing coming back.
   //
@@ -3215,17 +3401,21 @@ export default function MessageThread({
     // backstop that keeps any future caller from reopening the hole.
     if (!canSendMedia(targetChannel)) return;
     const caption = options?.caption?.trim() ?? "";
-    // A private photo or voice note is keyed by bitchat's stable ID, which is
-    // what the receiver's DELIVERED names. Forwarding one into a thread that
-    // already holds it would reuse the ID, so the copy gets a fresh name.
+    // A private photo or voice note is keyed by bitchat's stable ID, and a
+    // video note or clip by Airhop's, which is what the receiver's DELIVERED
+    // names. Forwarding one into a thread that already holds it would reuse
+    // the ID, so the copy gets a fresh name of the same kind.
     const dmPeer = targetChannel.startsWith("dm:")
       ? targetChannel.slice(3)
       : null;
+    const stableIDFor = (fileName: string | undefined): string | null =>
+      dmPeer === null
+        ? null
+        : (privateMediaStableID(localPeerID, dmPeer, fileName) ??
+          privateVideoStableID(localPeerID, dmPeer, fileName));
     let wireName = name;
-    let stableID =
-      dmPeer === null ? null : privateMediaStableID(localPeerID, dmPeer, name);
+    let stableID = stableIDFor(name);
     if (
-      dmPeer !== null &&
       stableID !== null &&
       (useChatStore.getState().messages[targetChannel] ?? []).some(
         (m) => m.id === stableID,
@@ -3233,8 +3423,12 @@ export default function MessageThread({
     ) {
       wireName = name?.startsWith("voice_")
         ? wireMediaName("voice", "m4a")
-        : wireMediaName("image", "jpg");
-      stableID = privateMediaStableID(localPeerID, dmPeer, wireName);
+        : name?.startsWith("note_")
+          ? videoNoteName()
+          : name?.startsWith("clip_")
+            ? videoClipName()
+            : wireMediaName("image", "jpg");
+      stableID = stableIDFor(wireName);
     }
     const msg: ChatMessage = {
       id: stableID ?? newMessageId(),
@@ -3271,17 +3465,30 @@ export default function MessageThread({
     // declined. Only for the thread on screen: forwarding sends into another
     // one, and that must not move the list the user is looking at.
     if (targetChannel === channel) followOwnMessage();
+    // Held until its bytes are read: a clear or a trim that takes the row
+    // meanwhile must not delete the file out from under the read.
+    const releaseFile = holdAttachmentFile(uri);
     addMessage(msg);
 
     const service = getMeshService();
-    if (!service) return;
+    if (!service) {
+      releaseFile();
+      // Nothing will ever settle it otherwise; failed offers the retry.
+      useChatStore.getState().setMessageStatus(targetChannel, msg.id, "failed");
+      return;
+    }
 
     // Read the file bytes and push them through the file-transfer pipeline.
     void (async () => {
       try {
         // Raw bytes through the File API: a base64 read would cost ~2.4x peak
         // memory per attachment.
-        const bytes = await new FileSystem.File(uri).bytes();
+        let bytes: Uint8Array;
+        try {
+          bytes = await new FileSystem.File(uri).bytes();
+        } finally {
+          releaseFile();
+        }
         const reached = service.sendAttachment(
           targetChannel,
           bytes,
@@ -3343,7 +3550,8 @@ export default function MessageThread({
   // video-prepare says so, with its progress on a card above the composer, and
   // its bubble only once it is ready, the way a photo waits for its resize.
   // The source stays the caller's, apart from a picker's or recorder's copy,
-  // which has served its purpose once this settles.
+  // which has served its purpose once the video is sent or given up on. A
+  // failed prep keeps it, with its trim and caption, for "Try again".
   async function sendVideoAttachment(
     video: {
       uri: string;
@@ -3363,36 +3571,70 @@ export default function MessageThread({
   ): Promise<void> {
     const targetChannel = options.targetChannel ?? channel;
     const ownsSource = origin !== "forward";
-    if (!canSendMedia(targetChannel)) {
+    const dropSource = (): void => {
       if (ownsSource) discardPickerCopy(video.uri);
+    };
+    if (!canSendMedia(targetChannel)) {
+      dropSource();
       return;
     }
-    const ready = await prepareVideoForSend({
-      ...video,
-      channel: targetChannel,
-      origin,
-      toAirhop: recipientRunsAirhop(targetChannel),
-    });
-    if (ownsSource && (!ready.ok || ready.uri !== video.uri)) {
-      discardPickerCopy(video.uri);
+    // A thread opened before the peer was in range has no session yet, and
+    // without one an Airhop peer reads as bitchat and gets bitchat's shrink.
+    // The handshake and the proof after it are round trips, so the budget waits
+    // briefly for them; a peer that never proves anything costs that wait.
+    if (targetChannel.startsWith("dm:")) {
+      const peerID = targetChannel.slice(3);
+      const service = getMeshService();
+      if (!isNostrId(peerID) && service !== null) {
+        service.prepareDmSession(peerID);
+        await service.waitForDmProof(peerID, VIDEO_PROOF_WAIT_MS);
+      }
     }
-    if (!ready.ok) {
-      reportVideoPrepFailure(ready.reason);
+    // A peer that can never take media is said before a transcode that can
+    // run a minute, not after it. One merely out of range is not refused here:
+    // the send still lands as a failed bubble to retry, as a voice note does.
+    if (mediaUnsupported(targetChannel)) {
+      dropSource();
+      showMediaRefusedStatus(targetChannel);
       return;
     }
-    sendAttachmentMessage(
-      "video",
-      ready.uri,
-      ready.name,
-      ready.mimeType,
-      ready.durationMs ?? video.durationMs,
-      {
-        targetChannel,
-        forwarded: options.forwarded,
-        sizeBytes: ready.sizeBytes,
-        caption: options.caption,
-      },
-    );
+    // A forward's source is another row's file. Held until the new row
+    // references it, so a clear or a trim of the old row while this prepares
+    // cannot delete what is being read.
+    const releaseSource = ownsSource
+      ? undefined
+      : holdAttachmentFile(video.uri);
+    try {
+      const ready = await prepareVideoForSend({
+        ...video,
+        channel: targetChannel,
+        origin,
+        toAirhop: recipientRunsAirhop(targetChannel),
+      });
+      if (!ready.ok) {
+        reportVideoPrepFailure(ready.reason, {
+          retry: () => void sendVideoAttachment(video, origin, options),
+          drop: dropSource,
+        });
+        return;
+      }
+      if (ready.uri !== video.uri) dropSource();
+      sendAttachmentMessage(
+        "video",
+        ready.uri,
+        ready.name,
+        ready.mimeType,
+        ready.durationMs ?? video.durationMs,
+        {
+          targetChannel,
+          forwarded: options.forwarded,
+          sizeBytes: ready.sizeBytes,
+          caption: options.caption,
+        },
+      );
+    } finally {
+      releaseSource?.();
+    }
     options.onSent?.();
   }
 
@@ -3403,16 +3645,58 @@ export default function MessageThread({
     return getMeshService()?.peerRunsAirhop(targetChannel.slice(3)) === true;
   }
 
+  // Whether a DM peer we hold a link to runs an app that cannot take sealed
+  // files, the one refusal no retry fixes. A session still opening is not
+  // refused: prepareDmSession started it when the thread opened. A peer out of
+  // range, and a room's reach, are left to the send.
+  function mediaUnsupported(targetChannel: string): boolean {
+    if (!targetChannel.startsWith("dm:")) return false;
+    const service = getMeshService();
+    if (service === null) return false;
+    const peerID = targetChannel.slice(3);
+    return (
+      service.hasDirectLink(peerID) &&
+      service.mediaRefusal(peerID) === "unsupported"
+    );
+  }
+
   // Canceled from its card says nothing: the user is the one who stopped it.
-  function reportVideoPrepFailure(reason: VideoPrepFailure): void {
-    if (reason === "canceled") return;
-    const body: Record<Exclude<VideoPrepFailure, "canceled">, string> = {
+  // A file nothing could open, or one that cannot be made small enough, is
+  // given up on. Anything else keeps the source, trim and caption, and offers
+  // to run the same send again.
+  function reportVideoPrepFailure(
+    reason: VideoPrepFailure,
+    handlers: { retry: () => void; drop: () => void },
+  ): void {
+    if (reason === "canceled") {
+      handlers.drop();
+      return;
+    }
+    // Both passes already missed the budget for too_large, so running them
+    // again on the same clip and trim cannot do better.
+    if (reason === "unreadable" || reason === "too_large") {
+      handlers.drop();
+      showAlert(
+        t("chat.attach.not_sent"),
+        t(
+          reason === "unreadable"
+            ? "chat.video_prep.unreadable"
+            : "chat.video_prep.too_large",
+        ),
+      );
+      return;
+    }
+    const body: Record<
+      Exclude<VideoPrepFailure, "canceled" | "unreadable" | "too_large">,
+      string
+    > = {
       interrupted: t("chat.video_prep.interrupted"),
-      too_large: t("chat.video_prep.too_large"),
-      unreadable: t("chat.video_prep.unreadable"),
       failed: t("chat.video_prep.failed"),
     };
-    showAlert(t("chat.attach.not_sent"), body[reason]);
+    showAlert(t("chat.attach.not_sent"), body[reason], [
+      { text: t("common.cancel"), style: "cancel", onPress: handlers.drop },
+      { text: t("common.try_again"), onPress: handlers.retry },
+    ]);
   }
 
   // The forward rules that do not depend on one message's shape (see
@@ -4018,10 +4302,10 @@ export default function MessageThread({
       // or leaves a note recording past its own size cap.
       if (liveHoldRef.current) return;
 
-      // A note is ended rather than parked, because the file is what breaches
-      // the cap: at 32 kbps it crosses the 512 KiB voice limit at about this
-      // point, and `rejectIfTooLarge` skips voice, so without this the transport
-      // refuses it at send with the audio already gone.
+      // A note is ended rather than parked, because nothing else bounds the
+      // file: at 16 kbps it would go on to cross the 512 KiB voice limit at
+      // about 260 s, and `rejectIfTooLarge` skips voice, so the transport would
+      // refuse it at send with the audio already gone.
       //
       // Sent rather than left under a Send button, which over a recorder that
       // has already stopped would read as though more could still be said. The
@@ -4062,11 +4346,15 @@ export default function MessageThread({
       void talkRef.current.end();
       return;
     }
+    // The button is inert under a video note by pointerEvents, which a screen
+    // reader's activation may not honor.
+    if (videoNote.active) return;
     // Nothing is held, so the bar's buttons are the way out and the slide hint
     // would be unusable advice. Set after start(), which clears the flag for
-    // the held case, and only for a note: a live burst has no buttons to offer.
-    void talkRef.current.start().then(() => {
-      if (!liveHoldRef.current) setHandsFreeRecording(true);
+    // the held case, only once the mic opened (the flag takes touch off the
+    // button), and only for a note: a live burst has no buttons to offer.
+    void talkRef.current.start().then((started) => {
+      if (started && !liveHoldRef.current) setHandsFreeRecording(true);
     });
   }
 
@@ -4079,7 +4367,10 @@ export default function MessageThread({
   //
   // The choice is made per press rather than once at startup, because the thing
   // it depends on (is anyone in range) changes as people walk around.
-  async function handleTalkStart(): Promise<void> {
+  //
+  // Returns whether the microphone opened and is still this press's, the
+  // contract `startRecording` keeps.
+  async function handleTalkStart(): Promise<boolean> {
     silencePlayback();
     setHandsFreeRecording(false);
     // Opening the mic is not instant: a permission prompt can sit on screen for
@@ -4099,8 +4390,9 @@ export default function MessageThread({
       // nothing behind it until the finger lifts. The permission itself is
       // already explained by ensurePermission; this is only the button telling
       // the truth about what it is doing, which is nothing.
-      if (!(await startRecording(hold))) setIsPTTActive(false);
-      return;
+      const started = await startRecording(hold);
+      if (!started) setIsPTTActive(false);
+      return started;
     }
     const granted = await ensurePermission(
       () => AudioModule.getRecordingPermissionsAsync(),
@@ -4110,13 +4402,13 @@ export default function MessageThread({
         purpose: t("chat.perm.mic_live_purpose"),
       },
     );
-    if (hold !== holdSeqRef.current) return; // let go while the prompt was up
+    if (hold !== holdSeqRef.current) return false; // let go while prompted
     if (!granted) {
       setIsPTTActive(false);
-      return;
+      return false;
     }
     lockAvailableShared.value = false;
-    const live = await service.startVoiceBurst(channel, (finished) => {
+    const outcome = await service.startVoiceBurst(channel, (finished) => {
       // Capture died under us (a call took the mic). Drop the live state so the
       // HUD does not claim to still be transmitting, and stop the clock, or its
       // ceiling fires a "sent at limit" toast for a burst long gone.
@@ -4139,6 +4431,7 @@ export default function MessageThread({
         );
       }
     });
+    const live = outcome === true;
     if (hold !== holdSeqRef.current) {
       // The hold ended while the mic was opening. Close the burst the way the
       // user closed it, rather than merely closing it: a swipe has to retract,
@@ -4170,8 +4463,12 @@ export default function MessageThread({
           }
         }
         await releaseAudioSession();
+      } else if (!live && holdSeqRef.current === hold + 1) {
+        // The mic never opened, and no newer press is opening it. A failed
+        // start still left iOS in record mode.
+        await releaseAudioSession();
       }
-      return;
+      return false;
     }
     if (live) {
       liveHoldRef.current = true;
@@ -4182,11 +4479,21 @@ export default function MessageThread({
       // the same rule as text, moving the view only on send.
       jumpToLatest();
       startRecordingTimer();
-      return;
+      return true;
+    }
+    // A call or a dead input route holds the microphone, so a voice note would
+    // record nothing either. The failed start still left iOS in record mode.
+    if (outcome === "busy") {
+      await releaseAudioSession();
+      setIsPTTActive(false);
+      setToast({ message: t("chat.perm.recording_stopped"), icon: "mic-off" });
+      return false;
     }
     // Live was offered and could not start. Fall back rather than dropping the
     // press: the user held the button and expects to have said something.
-    if (!(await startRecording(hold))) setIsPTTActive(false);
+    const started = await startRecording(hold);
+    if (!started) setIsPTTActive(false);
+    return started;
   }
 
   async function handleTalkEnd(): Promise<void> {
@@ -4298,6 +4605,19 @@ export default function MessageThread({
   const finishTalk = useCallback((canceled: boolean): void => {
     setCancelArmed(false);
     released();
+    // The system ended a held note's touch (a call, the side button, Control
+    // Center), not a finger lifting: discarded as backgrounding would, since
+    // nothing of a note was heard. A live burst already was, so it ends.
+    if (
+      !canceled &&
+      AppState.currentState !== "active" &&
+      !liveHoldRef.current &&
+      recordingRef.current
+    ) {
+      void talkRef.current.cancel();
+      setToast({ message: t("chat.perm.recording_stopped"), icon: "mic-off" });
+      return;
+    }
     void (canceled ? talkRef.current.cancel() : talkRef.current.end());
   }, []);
 
@@ -4804,6 +5124,9 @@ export default function MessageThread({
 
   async function stopRecording(): Promise<void> {
     setHandsFreeRecording(false);
+    // The bar's Send and the length limit end a note without the release
+    // handler, which is what clears this on the touch path.
+    setIsPTTActive(false);
     const durationMs = Date.now() - recordStartedAtRef.current;
     stopRecordingTimer();
     try {
@@ -4827,8 +5150,11 @@ export default function MessageThread({
       if (!audioRecorder.getStatus().isRecording) return;
       await audioRecorder.stop();
       // A tap, not a message: the same floor a live burst is retracted under,
-      // so the two paths agree. The hint says what the press was for.
+      // so the two paths agree. The hint says what the press was for. Its file
+      // is outside the attachment prefix, so only this would ever delete it.
       if (durationMs < MIN_BURST_KEEP_MS) {
+        const tapped = audioRecorder.uri;
+        if (tapped) discardPickerCopy(tapped);
         setToast({ message: t("chat.voice.hold_record"), icon: "mic" });
         return;
       }
@@ -4862,8 +5188,9 @@ export default function MessageThread({
           durationMs,
           { sizeBytes },
         );
-      // A long note outruns bitchat's reassembly window just as a picked file
-      // does (two minutes is about 469 KiB), so it gets the picker's caution.
+      // A note large enough to outrun bitchat's reassembly window gets the
+      // picker's caution, as a picked file does. At 16 kbps that takes more
+      // than the two-minute cap (about 234 KiB), so it rarely shows.
       const caution = bitchatMediaCaution("voice", sizeBytes);
       if (caution !== null) {
         showAlert(caution.title, caution.body, [
@@ -4889,6 +5216,7 @@ export default function MessageThread({
 
   async function cancelRecording(): Promise<void> {
     setHandsFreeRecording(false);
+    setIsPTTActive(false);
     stopRecordingTimer();
     // Only a recorder that is running owns the file at `uri`. Otherwise it
     // still names the last note, which may be one sent from where it was
@@ -4998,8 +5326,12 @@ export default function MessageThread({
                 current === messageId ? null : messageId,
               )
             }
-            onFinished={() => setPlayingMessageId(null)}
+            onFinished={() => releasePlaying(messageId)}
             onAskResend={onAskResend}
+            registerSeek={(seek) => {
+              if (seek === null) voiceSeekers.current.delete(messageId);
+              else voiceSeekers.current.set(messageId, seek);
+            }}
           />
         );
       }
@@ -5043,11 +5375,7 @@ export default function MessageThread({
                 current === messageId ? null : messageId,
               )
             }
-            onFinished={() =>
-              setPlayingMessageId((current) =>
-                current === messageId ? null : current,
-              )
-            }
+            onFinished={() => releasePlaying(messageId)}
             onAskResend={onAskResend}
           />
         ) : (
@@ -5056,6 +5384,7 @@ export default function MessageThread({
             liveRecording={liveVideoStreamOf(attachment.name) !== null}
             playing={playingMessageId === messageId}
             onPlay={() => setPlayingMessageId(messageId)}
+            onStop={() => releasePlaying(messageId)}
             onAskResend={onAskResend}
           />
         );
@@ -5283,14 +5612,26 @@ export default function MessageThread({
               },
         );
       } else if (attachment.type === "voice") {
-        actions.push({
-          name: "media",
-          label: playing
-            ? t("chat.media.pause_voice")
-            : t("chat.media.play_voice"),
-          run: togglePlaying,
-          primary: true,
-        });
+        actions.push(
+          {
+            name: "media",
+            label: playing
+              ? t("chat.media.pause_voice")
+              : t("chat.media.play_voice"),
+            run: togglePlaying,
+            primary: true,
+          },
+          {
+            name: "voiceBack",
+            label: t("chat.media.voice_back"),
+            run: () => voiceSeekers.current.get(id)?.(-VOICE_SEEK_STEP_SECS),
+          },
+          {
+            name: "voiceForward",
+            label: t("chat.media.voice_forward"),
+            run: () => voiceSeekers.current.get(id)?.(VOICE_SEEK_STEP_SECS),
+          },
+        );
       } else if (attachment.type === "document") {
         actions.push({
           name: "media",
@@ -6081,15 +6422,21 @@ export default function MessageThread({
         <LiveVideoViewer
           target={liveViewer.target}
           senderName={liveViewer.senderName}
-          replayPlaying={playingMessageId === liveViewer.target.rowID}
-          onReplayPlay={() => setPlayingMessageId(liveViewer.target.rowID)}
+          // Its own claim, not the row's: under the row's id, a replay would
+          // also start the inline player for the same recording.
+          replayPlaying={
+            playingMessageId === viewerReplayKey(liveViewer.target.rowID)
+          }
+          onReplayPlay={() =>
+            setPlayingMessageId(viewerReplayKey(liveViewer.target.rowID))
+          }
+          onReplayStop={() =>
+            releasePlaying(viewerReplayKey(liveViewer.target.rowID))
+          }
           onClose={() => {
             // The replay's player goes with the viewer, so its claim on the
             // speaker goes too.
-            const rowID = liveViewer.target.rowID;
-            setPlayingMessageId((current) =>
-              current === rowID ? null : current,
-            );
+            releasePlaying(viewerReplayKey(liveViewer.target.rowID));
             setLiveViewer(null);
           }}
         />
@@ -6157,7 +6504,16 @@ export default function MessageThread({
               <Pressable
                 key={c.id}
                 style={styles.mentionRow}
-                onPress={() => setDraft(applyMention(draft, c.nickname))}
+                onPress={() => {
+                  const next = applyMention(draft, c.nickname, mentionCaret);
+                  setDraft(next.text);
+                  setCaret(next.caret);
+                  // After the new text lands, or the field puts the caret at
+                  // its end.
+                  requestAnimationFrame(() =>
+                    composerRef.current?.setSelection(next.caret, next.caret),
+                  );
+                }}
                 accessibilityRole="button"
                 accessibilityLabel={t("chat.thread.mention", {
                   name: c.nickname,
@@ -6241,12 +6597,7 @@ export default function MessageThread({
                 : T("chat.voice.live_speaking", { name: liveTalker })
             }
           >
-            <View style={styles.liveBadge}>
-              <View style={styles.liveDot} />
-              {/* Untranslated, like the transmitting badge: a broadcast marker
-                  read the same everywhere. */}
-              <Text style={styles.liveBadgeText}>LIVE</Text>
-            </View>
+            <LiveBadge />
             <Text style={styles.liveIncomingName} numberOfLines={1}>
               {liveTalkers.length > 1
                 ? TP("chat.voice.live_speaking_count", liveTalkers.length)
@@ -6293,6 +6644,12 @@ export default function MessageThread({
               style={styles.input}
               value={draft}
               onChangeText={handleDraftChange}
+              onSelectionChange={(e) => {
+                const { start, end } = e.nativeEvent.selection;
+                setCaret(
+                  !draft.includes("@") ? null : start === end ? start : "range",
+                );
+              }}
               placeholder={T("chat.thread.message_placeholder")}
               placeholderTextColor={Colors.textMuted}
               multiline
@@ -6504,17 +6861,9 @@ export default function MessageThread({
             {/* A voice note can be canceled before anyone hears it; a live burst
               already played on the other phone. The sender must tell at once. */}
             {/* Past the ceiling nothing goes out, so the badge says it ended and
-              drops the red: letting go is all that is left. LIVE stays
-              untranslated, like the incoming badge. */}
+              drops the red: letting go is all that is left. */}
             {isTalkingLive && (
-              <View style={[styles.liveBadge, burstEnded && styles.endedBadge]}>
-                {!burstEnded && <View style={styles.liveDot} />}
-                <UpperText
-                  style={[styles.liveBadgeText, burstEnded && styles.endedText]}
-                >
-                  {burstEnded ? T("chat.voice.live_ended") : "LIVE"}
-                </UpperText>
-              </View>
+              <LiveBadge ended={burstEnded} accessibilityLiveRegion="polite" />
             )}
             {/* Past the ceiling the meter goes muted and flat, like the badge.
               A video note has no meter; the camera circle above shows it is
@@ -6574,10 +6923,12 @@ export default function MessageThread({
             (!o.dmOnly || isDM) &&
             (!o.meshOnly || isMeshDM) &&
             (!o.androidOnly || Platform.OS === "android") &&
-            // Not over a note being recorded: the stream would need the
-            // microphone and camera the recording holds.
+            // Not over a note being recorded or a live burst: a stream, or
+            // a second voice note, would need the microphone they hold.
             (!o.liveOnly ||
               (liveVideoOffered && !isRecording && !videoNote.active)) &&
+            (o.action !== "voice" ||
+              (!isRecording && !isTalkingLive && !videoNote.active)) &&
             (o.action !== "location" || acceptsLocationPin),
         ).map(({ action, icon, labelKey, descKey }, i) => (
           <React.Fragment key={action}>
@@ -7271,33 +7622,6 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     pttButtonBusy: {
       borderColor: Colors.accent,
     },
-    liveBadge: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: Spacing.xs,
-      paddingHorizontal: Spacing.sm,
-      paddingVertical: 3,
-      borderRadius: Radius.full,
-      backgroundColor: Colors.dangerDim,
-    },
-    liveDot: {
-      width: 6,
-      height: 6,
-      borderRadius: Radius.xs,
-      backgroundColor: Colors.danger,
-    },
-    liveBadgeText: {
-      fontSize: FontSize.xs,
-      fontWeight: FontWeight.semibold,
-      color: Colors.danger,
-      letterSpacing: 0.5,
-    },
-    endedBadge: {
-      backgroundColor: Colors.surfaceRaised,
-    },
-    endedText: {
-      color: Colors.textMuted,
-    },
     pttButtonActive: {
       backgroundColor: Colors.dangerDim,
       borderColor: Colors.danger,
@@ -7561,7 +7885,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     fullscreenBackdrop: {
       flex: 1,
-      backgroundColor: "#000000",
+      backgroundColor: Colors.mediaBackdrop,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -7610,7 +7934,11 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       flexGrow: 1,
       flexDirection: "row",
       alignItems: "center",
+      // Spread across the whole target, so where a tap lands along it is
+      // where the bars say it is.
+      justifyContent: "space-between",
       gap: Spacing["2xs"],
+      direction: "ltr",
     },
     attachVoiceBar: {
       width: 3,

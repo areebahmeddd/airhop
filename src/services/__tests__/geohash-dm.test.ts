@@ -250,6 +250,24 @@ describe("geohash DM", () => {
 
     expect(bobPublished).toHaveLength(1);
   });
+
+  // Disappearing messages removed it, so nobody will read it here.
+  it("forgets the read receipt of a message disappearing messages removed", () => {
+    const { alice, aliceCell, bobCell, sent, bobPublished, newBob, receive } =
+      geoDmPair();
+    alice.sendGeoDm(GEOHASH, bobCell, "m-expired", "hi");
+    alice.sendGeoDm(GEOHASH, bobCell, "m-kept", "hey");
+    const bob = newBob();
+    receive(bob, sent[0]);
+    receive(bob, sent[1]);
+    expect(bobPublished).toHaveLength(2);
+
+    bob.forgetGeoReadReceipts(new Set(["m-expired"]));
+    bob.sendGeoReadReceipts(aliceCell);
+
+    // One read receipt, for the message still on this phone.
+    expect(bobPublished).toHaveLength(3);
+  });
 });
 
 // Which identity a reply is written from, and whether that survives a relaunch.

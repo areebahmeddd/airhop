@@ -324,7 +324,7 @@ describe("FragmentManager reassembly timeout", () => {
   });
 
   test("survives a transfer that runs longer than the timeout", () => {
-    // A photo-sized file over Bluetooth, paced 20 ms a fragment, runs well past
+    // A photo-sized file over Bluetooth, paced 25 to 30 ms a fragment, runs past
     // 30 seconds. The timeout counts silence, not total duration: timing out on
     // duration would delete the half-built file mid-flight, and the remaining
     // fragments would start an assembly that can never complete, losing the

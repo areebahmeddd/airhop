@@ -81,6 +81,8 @@ function fakeMesh(options: {
 }) {
   return {
     hasDirectLink: jest.fn(() => options.directLink ?? false),
+    prepareDmSession: jest.fn(),
+    waitForDmProof: jest.fn(() => Promise.resolve()),
     getNostrClient: jest.fn(() => ((options.online ?? true) ? {} : null)),
     getNostrPrivKey: jest.fn(() => new Uint8Array(32)),
     getPeerNostrPubkey: jest.fn(() => options.peerNostrPubkey),

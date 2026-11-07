@@ -17,12 +17,12 @@ export function ModuleMap() {
     },
     {
       label: "src/core",
-      sub: "crypto · mesh · nostr · payments · router · move. Pure TypeScript, no native imports.",
+      sub: "crypto · mesh · nostr · payments · router · move · spam · encoding. No native imports.",
     },
     { label: "src/bridge", sub: "TurboModule specs. The only place native and TypeScript meet." },
     {
       label: "ios/ · android/",
-      sub: "Swift and Kotlin. Advertise, scan, read bytes, write bytes. Nothing else.",
+      sub: "Swift and Kotlin. Radios, encoders and Tor, moving raw bytes. No protocol logic.",
     },
   ];
   return (

@@ -100,6 +100,15 @@ final class VideoTranscodePass {
   private let lock = NSLock()
   private var cancelled = false
   private var reader: AVAssetReader?
+  // Set once writing has started, so cancel() never cancels a writer that has
+  // not begun.
+  private var writer: AVAssetWriter?
+  private var pumps: [VideoTranscodePump] = []
+  // Where the writer is canceled, one call at a time. cancelWriting blocks
+  // until writing stops, and cancel() may be called from a progress callback
+  // running on a pump's own queue, so cancel() hands the work here rather than
+  // blocking its caller.
+  private let control = DispatchQueue(label: "org.onemindlabs.airhop.video.transcode.control")
 
   init(source: URL, output: URL, options: VideoTranscodeOptions) {
     self.source = source
@@ -107,13 +116,28 @@ final class VideoTranscodePass {
     self.options = options
   }
 
-  // Safe from any thread, before, during or after run.
+  // Safe from any thread, before, during or after run, and never blocks: the
+  // writer is canceled and every pump finished on their own queues, so the
+  // pass settles even with an input parked that will never ask for more.
   func cancel() {
-    let reader = lock.withLock {
+    let (reader, writer, pumps) = lock.withLock {
       cancelled = true
-      return self.reader
+      return (self.reader, self.writer, self.pumps)
     }
     reader?.cancelReading()
+    control.async {
+      if let writer { Self.cancelWriting(writer) }
+      for pump in pumps {
+        pump.queue.async { pump.finish() }
+      }
+    }
+  }
+
+  // Only a writer still writing: one that failed or completed has nothing to
+  // cancel. Must be called on `control`.
+  private static func cancelWriting(_ writer: AVAssetWriter) {
+    guard writer.status == .writing else { return }
+    writer.cancelWriting()
   }
 
   private var isCancelled: Bool {
@@ -222,28 +246,74 @@ final class VideoTranscodePass {
       reader.cancelReading()
       throw VideoTranscodeError.failed(writer.error?.localizedDescription ?? "startWriting")
     }
+    let cancelledBeforeWriting = lock.withLock {
+      self.writer = writer
+      return cancelled
+    }
+    if cancelledBeforeWriting {
+      reader.cancelReading()
+      control.sync { Self.cancelWriting(writer) }
+      throw VideoTranscodeError.cancelled
+    }
     // The kept part's first moment becomes the clip's zero.
     writer.startSession(atSourceTime: startTime)
 
     var reported = 0.0
+    // Resumed only by the group, which every pump leaves exactly once, so this
+    // resumes exactly once.
     await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
       let group = DispatchGroup()
-      pump(videoOutput, into: videoInput, label: "video", endTime: endTime, group: group) {
-        [weak self] pts in
-        let fraction = min(max((pts.seconds - startSeconds) / keepSeconds, 0), 1)
-        guard fraction - reported >= Self.progressStep, self?.isCancelled == false else { return }
-        reported = fraction
-        onProgress(fraction)
-      }
+      let cancelledCheck = { [weak self] in self?.isCancelled ?? true }
+      var pumps = [
+        VideoTranscodePump(
+          label: "video", output: videoOutput, input: videoInput, reader: reader,
+          writer: writer, endTime: endTime, group: group, isCancelled: cancelledCheck
+        ) { [weak self] pts in
+          let fraction = min(max((pts.seconds - startSeconds) / keepSeconds, 0), 1)
+          guard fraction - reported >= Self.progressStep, self?.isCancelled == false else {
+            return
+          }
+          reported = fraction
+          onProgress(fraction)
+        }
+      ]
       if let audio {
-        pump(audio.0, into: audio.1, label: "audio", endTime: endTime, group: group) { _ in }
+        pumps.append(
+          VideoTranscodePump(
+            label: "audio", output: audio.0, input: audio.1, reader: reader, writer: writer,
+            endTime: endTime, group: group, isCancelled: cancelledCheck, onSample: { _ in }))
+      }
+      // Started, and so in the group, before cancel() can see them: a finish
+      // that ran first would leave a group never entered.
+      pumps.forEach { $0.start() }
+      let cancelledBeforePumps = lock.withLock {
+        self.pumps = pumps
+        return cancelled
+      }
+      if cancelledBeforePumps {
+        for pump in pumps {
+          pump.queue.async { pump.finish() }
+        }
       }
       group.notify(queue: .global(qos: .userInitiated)) { continuation.resume() }
     }
+    // From here the writer is this task's alone: a cancel() that comes later
+    // only marks the pass, and run() discards the file, so it never cancels
+    // the writer while finishWriting is under way.
+    let cancelledAfterPumps = lock.withLock {
+      self.pumps = []
+      self.writer = nil
+      return cancelled
+    }
 
-    if isCancelled || reader.status == .failed || reader.status == .cancelled {
-      writer.cancelWriting()
-      if isCancelled { throw VideoTranscodeError.cancelled }
+    if cancelledAfterPumps || reader.status == .failed || reader.status == .cancelled
+      || writer.status != .writing
+    {
+      let writerError = writer.error
+      // Behind any cancel() still canceling it, never beside it.
+      control.sync { Self.cancelWriting(writer) }
+      if cancelledAfterPumps { throw VideoTranscodeError.cancelled }
+      if let writerError { throw VideoTranscodeError.failed(writerError.localizedDescription) }
       throw VideoTranscodeError.failed(reader.error?.localizedDescription ?? "read")
     }
     await writer.finishWriting()
@@ -327,43 +397,110 @@ final class VideoTranscodePass {
     return nil
   }
 
-  // Copies samples until the reader runs dry, passes the kept length, or is
-  // canceled, driven by the input's own readiness; leaves `group` once.
-  private func pump(
-    _ output: AVAssetReaderOutput,
-    into input: AVAssetWriterInput,
+  private func removeOutput() {
+    try? FileManager.default.removeItem(at: output)
+  }
+}
+
+// Copies one reader output into one writer input until the reader runs dry,
+// passes the kept length, or the pass is canceled, driven by the input's own
+// readiness. Leaves its group exactly once however it ends.
+//
+// An input asks for more only while its writer is writing, so one parked
+// waiting for room when the writer fails (disk full, an encoder reset) is
+// never asked again, and would hold the group, and every transcode queued
+// behind this one, forever. A watchdog on the pump's queue finishes it once
+// the writer or reader has stopped. All of a pump's state is touched only on
+// its queue.
+final class VideoTranscodePump {
+  // How often the watchdog looks. A failure is rare and final, so half a
+  // second late costs nothing.
+  private static let watchdogInterval: DispatchTimeInterval = .milliseconds(500)
+
+  let queue: DispatchQueue
+  private let output: AVAssetReaderOutput
+  private let input: AVAssetWriterInput
+  private let reader: AVAssetReader
+  private let writer: AVAssetWriter
+  private let endTime: CMTime
+  private let group: DispatchGroup
+  private let isCancelled: () -> Bool
+  private let onSample: (CMTime) -> Void
+  private var finished = false
+  private var watchdog: DispatchSourceTimer?
+
+  init(
     label: String,
+    output: AVAssetReaderOutput,
+    input: AVAssetWriterInput,
+    reader: AVAssetReader,
+    writer: AVAssetWriter,
     endTime: CMTime,
     group: DispatchGroup,
+    isCancelled: @escaping () -> Bool,
     onSample: @escaping (CMTime) -> Void
   ) {
+    queue = DispatchQueue(label: "org.onemindlabs.airhop.video.transcode.\(label)")
+    self.output = output
+    self.input = input
+    self.reader = reader
+    self.writer = writer
+    self.endTime = endTime
+    self.group = group
+    self.isCancelled = isCancelled
+    self.onSample = onSample
+  }
+
+  // Enters the group now, on the caller's thread, so a group.notify registered
+  // after this waits for the pump.
+  func start() {
     group.enter()
-    let queue = DispatchQueue(label: "org.onemindlabs.airhop.video.transcode.\(label)")
-    var finished = false
-    input.requestMediaDataWhenReady(on: queue) { [weak self] in
-      guard !finished else { return }
-      while input.isReadyForMoreMediaData {
-        guard self?.isCancelled == false,
-          let sample = output.copyNextSampleBuffer()
-        else {
-          finished = true
-          input.markAsFinished()
-          group.leave()
-          return
-        }
-        let pts = CMSampleBufferGetPresentationTimeStamp(sample)
-        guard pts < endTime, input.append(sample) else {
-          finished = true
-          input.markAsFinished()
-          group.leave()
-          return
-        }
-        onSample(pts)
+    queue.async {
+      guard !self.finished else { return }
+      let timer = DispatchSource.makeTimerSource(queue: self.queue)
+      timer.schedule(
+        deadline: .now() + Self.watchdogInterval, repeating: Self.watchdogInterval)
+      timer.setEventHandler { self.check() }
+      self.watchdog = timer
+      timer.resume()
+      // Weak: the pump holds the input, and a canceled writer may keep this
+      // block, since only markAsFinished is documented to let it go.
+      self.input.requestMediaDataWhenReady(on: self.queue) { [weak self] in
+        self?.pumpSamples()
       }
     }
   }
 
-  private func removeOutput() {
-    try? FileManager.default.removeItem(at: output)
+  // Must be called on `queue`. Idempotent.
+  func finish() {
+    guard !finished else { return }
+    finished = true
+    watchdog?.cancel()
+    watchdog = nil
+    // A failed or canceled writer has nothing left to flush.
+    if writer.status == .writing { input.markAsFinished() }
+    group.leave()
+  }
+
+  private func pumpSamples() {
+    guard !finished else { return }
+    while input.isReadyForMoreMediaData {
+      guard !isCancelled(), let sample = output.copyNextSampleBuffer() else {
+        finish()
+        return
+      }
+      let pts = CMSampleBufferGetPresentationTimeStamp(sample)
+      guard pts < endTime, input.append(sample) else {
+        finish()
+        return
+      }
+      onSample(pts)
+    }
+  }
+
+  private func check() {
+    let writerStopped = writer.status == .failed || writer.status == .cancelled
+    let readerStopped = reader.status == .failed || reader.status == .cancelled
+    if isCancelled() || writerStopped || readerStopped { finish() }
   }
 }

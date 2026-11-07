@@ -5,11 +5,11 @@
 //
 // Media3 Transformer does the work on the GPU: it decodes whatever the phone
 // can (HEVC and 10-bit included), applies the track's rotation, tone maps HDR
-// to SDR (API 29+), drops frames to the target rate and scales with a center
-// crop. A portrait picture is encoded portrait, so its pixels are upright with
-// no rotation flag, as bitchat-ios writes it. Source metadata is stripped at the
-// muxer, since Transformer otherwise copies the source's location into the
-// output.
+// to SDR (API 29+; below that an HDR source is refused as unreadable), drops
+// frames to the target rate and scales with a center crop. A portrait picture
+// is encoded portrait, so its pixels are upright with no rotation flag, as
+// bitchat-ios writes it. Source metadata is stripped at the muxer, since
+// Transformer otherwise copies the source's location into the output.
 //
 // Threading: Transformer is driven from its own looper thread, which this owns;
 // probes and frame grabs block, so they run on a separate one.
@@ -80,6 +80,16 @@ internal object TranscodeMedia {
     const val CODE_UNREADABLE = "UNREADABLE"
     const val CODE_CANCELLED = "CANCELLED"
     const val CODE_FAILED = "TRANSCODE_FAILED"
+
+    // A source this phone cannot decode is unreadable here, whatever the reason.
+    // That covers HDR below API 29, where Media3 refuses to decode it rather
+    // than tone map, and which would otherwise read as a generic failure.
+    fun failureCode(exportErrorCode: Int): String =
+        if (exportErrorCode == ExportException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED) {
+            CODE_UNREADABLE
+        } else {
+            CODE_FAILED
+        }
 
     fun uprightSize(width: Int, height: Int, rotationDegrees: Int): Pair<Int, Int> =
         if (Math.floorMod(rotationDegrees, 180) == 90) height to width else width to height
@@ -259,7 +269,7 @@ internal class VideoTranscoder(context: Context) {
                         fail(
                             pass,
                             TranscodeFailure(
-                                TranscodeMedia.CODE_FAILED,
+                                TranscodeMedia.failureCode(exportException.errorCode),
                                 exportException.errorCodeName,
                             ),
                         )

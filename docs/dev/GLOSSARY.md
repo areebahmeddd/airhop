@@ -20,7 +20,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **Peer ID**: A phone's 8-byte mesh address, `hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`. It stays the same until a panic wipe replaces the identity.
 
-**Safety number**: Six words derived from two peers' keys, read aloud to each other to verify a contact without a camera. The device transfer shows six words from its own handshake the same way.
+**Safety code**: Six words derived from one person's keys alone, stretched by 5,200 rounds of SHA-512. Each person reads theirs aloud and the other checks it against "Their code" on their own phone, to verify a contact without a camera. The device transfer shows six words from its own handshake in the same word lists.
 
 ## Cryptography
 
@@ -100,7 +100,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 ## Tools and Libraries
 
-**[AAC (Advanced Audio Coding)](https://en.wikipedia.org/wiki/Advanced_Audio_Coding)**: Lossy audio compression. Push-to-talk voice is AAC-LC at 16 kHz mono, sent as `VOICE_FRAME` (`0x29`) bursts.
+**[AAC (Advanced Audio Coding)](https://en.wikipedia.org/wiki/Advanced_Audio_Coding)**: Lossy audio compression. Push-to-talk and voice notes are both AAC-LC at 16 kHz mono and 16 kbps: push-to-talk is sent live as `VOICE_FRAME` (`0x29`) bursts, a voice note as a file once recorded.
 
 **[Arti](https://gitlab.torproject.org/tpo/core/arti)**: The Tor Project's Rust Tor client. Airhop embeds it on both platforms from `native/arti/`, as an xcframework on iOS and a JNI library on Android. Off by default; when on, it runs a SOCKS5 listener on loopback that every relay connection is dialed through.
 

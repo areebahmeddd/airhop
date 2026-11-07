@@ -28,8 +28,8 @@ export function WalletStates() {
         strokeDasharray="4 3"
         markerEnd="url(#ws-arrow)"
       />
-      <text x={604} y={112} fontFamily={MONO} fontSize={9} fill={MUTED}>
-        reclaim
+      <text x={606} y={124} fontFamily={MONO} fontSize={9} fill={MUTED}>
+        reclaim online
       </text>
 
       <Box
@@ -40,7 +40,10 @@ export function WalletStates() {
         label="Unconfirmed"
         sub="received offline, DLEQ checked"
       />
-      <line x1={554} y1={182} x2={660} y2={256} stroke={LINE} markerEnd="url(#ws-arrow)" />
+      <line x1={784} y1={92} x2={784} y2={228} stroke={LINE} markerEnd="url(#ws-arrow)" />
+      <text x={792} y={164} fontFamily={MONO} fontSize={9} fill={MUTED}>
+        reclaim offline
+      </text>
       <line
         x1={660}
         y1={244}

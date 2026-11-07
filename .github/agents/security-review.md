@@ -54,14 +54,14 @@ Check for:
 
 ### 3. Packet Signing & Verification
 
-**Rule:** Every outgoing packet is signed, except the types bitchat leaves unsigned (Noise handshakes and transport, fragments, ping, pong and carrier broadcasts). A group message from bitchat arrives unsigned and authenticates inside its ciphertext, so its handler keys on the inner signing key, never the outer sender ID. Every signed incoming packet is verified before display or action, and one that fails is dropped silently. The codec only encodes and decodes: `signPacket` and `verifyPacket` are called by `mesh-service.ts`. Relaying is separate: a relay forwards bytes it may not be able to check, except `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` and `BOARD_POST`, which are verified before the relay decision (`mayRelay`).
+**Rule:** Every outgoing packet is signed, except the types bitchat leaves unsigned (Noise handshakes, fragments, ping, pong and carrier broadcasts). Airhop signs its own Noise transport packets, which bitchat sends unsigned, and accepts them either way: the session's AEAD authenticates them. A group message from bitchat arrives unsigned and authenticates inside its ciphertext, so its handler keys on the inner signing key, never the outer sender ID. Every signed incoming packet is verified before display or action, and one that fails is dropped silently. The codec only encodes and decodes: `signPacket` and `verifyPacket` are called by `mesh-service.ts`. Relaying is separate: a relay forwards bytes it may not be able to check, except `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` and `BOARD_POST`, which are verified before the relay decision (`mayRelay`).
 
 Check for:
 
 - A send path that puts a packet of a signed type on the air without `signPacket`: **FAIL**
 - A receive path that acts on a signed type without `verifyPacket` against the sender's resolved key: **FAIL**
 - An unsigned kind trusted on its outer sender ID: **FAIL**
-- A `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` or `BOARD_POST` relayed, or deduplicated, before `mayRelay` passes it: **FAIL**
+- A `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` or `BOARD_POST` relayed, or its ID recorded, before `mayRelay` passes it: **FAIL**. Ingress may peek at the duplicate set first (`FloodRouter.seen`, which records nothing), so a copy of an ID already accepted skips the check
 - Anything tracked in `gossip-sync.ts` for serving before its handler accepted it, or served from a store another kind can evict: **FAIL**
 - A relay of a packet addressed to this node or sent under its own ID, or a relay TTL above what `relayDecision` allows: **FAIL**
 - Any UI render path (`src/features/`) that displays a message before signature verification: **FAIL**
@@ -101,7 +101,9 @@ Check for:
 - Ratchet key reuse (each ratchet step must derive a fresh chain key): **FAIL**
 - `DR_ENCRYPTED` handled before its packet signature is checked: **FAIL**
 - Ratchet state (keys, counters, the skipped-key cache) changed before the message authenticates: **FAIL** (a forgery must leave it byte-identical)
-- A ratchet used under a Noise session other than the one it was seeded from: **FAIL**
+- A ratchet used under a Noise session other than the one it was seeded from: **FAIL** (decrypting under a replaced session still held for its grace, 60 s or while a file from that peer is still arriving, is the one exception; sealing under one never is)
+- A ratchet carried over to a new session instead of reseeded, seeded at handshake completion rather than on the peer's `0x21` with bit 26, or seeded twice in one session: **FAIL**
+- The Nostr key in an announce, any of bits 24 to 26 set outside a `0x21`, or `0x54` sent to a peer that has not proven bit 26: **FAIL**
 - Missing out-of-order message key caching: **WARN**
 
 ### 7. One-time Prekeys (`0x24`)

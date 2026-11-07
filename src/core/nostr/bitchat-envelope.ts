@@ -7,7 +7,7 @@
 // prefix, so we must produce and parse it to interoperate. The packet is exactly
 // our BLE wire format, so this reuses packet-codec + noise-payload.
 
-import { hexToBytes } from "@noble/hashes/utils.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { base64UrlToBytes, bytesToBase64Url } from "../encoding/base64";
 import {
   decodeNoisePayload,
@@ -33,6 +33,10 @@ export interface BitchatDmContent {
   // Raw payload body, for the types that carry bytes rather than text: only
   // CONTACT_CARD. `content` stays the text channel.
   body?: Uint8Array;
+  // The mesh peer ID the sender names for itself, as 16 hex digits. Only a
+  // claim: the seal proves the npub wrote it, not that the npub owns that peer
+  // ID. Random for a location DM.
+  senderPeerID: string;
 }
 
 // Strict: parseInt would also read "+f" or " 1", giving one ID several
@@ -45,8 +49,9 @@ function peerIdBytes(peerID: string | null): Uint8Array {
 
 // A null sender is a pseudonymous DM (a location channel), which must not carry
 // our durable mesh ID: that would tie the per-cell identity to it. It gets
-// fresh random bytes per envelope instead, as bitchat does. No receiver reads
-// the field; the gift wrap authenticates the sender.
+// fresh random bytes per envelope instead, as bitchat does. The gift wrap
+// authenticates the sender; the field is only what that sender says its mesh
+// identity is (see decodeBitchatEnvelope).
 function wrap(
   senderPeerID: string | null,
   recipientPeerID: string | null,
@@ -130,11 +135,17 @@ export function decodeBitchatEnvelope(s: string): BitchatDmContent | null {
     return null;
   const np = decodeNoisePayload(packet.payload);
   if (np === null) return null;
+  const senderPeerID = bytesToHex(packet.senderID);
 
   if (np.type === NoisePayloadType.PRIVATE_MESSAGE) {
     const pm = decodePrivateMessagePacket(np.body);
     if (pm === null) return null;
-    return { type: np.type, messageID: pm.messageID, content: pm.content };
+    return {
+      type: np.type,
+      messageID: pm.messageID,
+      content: pm.content,
+      senderPeerID,
+    };
   }
   if (
     np.type === NoisePayloadType.DELIVERED ||
@@ -144,13 +155,20 @@ export function decodeBitchatEnvelope(s: string): BitchatDmContent | null {
       type: np.type,
       messageID: new TextDecoder().decode(np.body),
       content: "",
+      senderPeerID,
     };
   }
   if (np.type === NoisePayloadType.CONTACT_CARD) {
     // Handed back as bytes and validated by the caller, not here: a card is only
     // trustworthy once its peer ID is checked against SHA-256 of its Noise key,
     // and that check lives with the one place that already does it.
-    return { type: np.type, messageID: "", content: "", body: np.body };
+    return {
+      type: np.type,
+      messageID: "",
+      content: "",
+      body: np.body,
+      senderPeerID,
+    };
   }
   return null;
 }

@@ -1,11 +1,9 @@
-// A persisted swap preview must replay byte for byte.
+// A persisted swap preview must replay as the same request.
 //
-// The mint keys its NUT-19 cache on the request body, so a replay that differs
-// by one byte is a fresh spend of inputs already taken, which fails and loses
-// the money. Pinned by replaying the whole request against a real mint, which
-// also catches input key order (`JSON.stringify` follows insertion order, so
-// rebuilding an input field by field changes the body; the module keeps inputs
-// as an opaque round trip for this).
+// The mint answers a repeat of a request from its NUT-19 cache, so a replay
+// that asks for anything different is a fresh spend of inputs already taken,
+// which fails and loses the money. Pinned by replaying the whole request
+// against a real mint.
 
 import {
   Amount,
@@ -19,7 +17,7 @@ import { MintFabric } from "../../../__tests__/simulation/harness/mint-fabric";
 import { World } from "../../../__tests__/simulation/harness/world";
 import {
   rebuildSwapPreview,
-  serializeSwapPreview,
+  storeSwapPreview,
   swapPreviewKeepCount,
   swapPreviewOutputs,
 } from "../swap-preview";
@@ -50,9 +48,9 @@ function fakePreview(): SwapPreview {
 
 // A preview travels through the transaction record, so what is actually
 // rebuilt is whatever survived MMKV's JSON, not the object handed to
-// `serializeSwapPreview`.
+// `storeSwapPreview`.
 function throughStorage(preview: SwapPreview): unknown {
-  return JSON.parse(JSON.stringify(serializeSwapPreview(preview)));
+  return JSON.parse(JSON.stringify(storeSwapPreview(preview)));
 }
 
 describe("swap preview round trip", () => {
@@ -95,43 +93,49 @@ describe("swap preview round trip", () => {
   });
 
   it("refuses a record it cannot faithfully rebuild", () => {
-    const stored = throughStorage(fakePreview()) as Record<string, unknown>;
+    const stored = throughStorage(fakePreview()) as {
+      v: number;
+      preview: Record<string, unknown>;
+    };
+    const withPreview = (fields: Record<string, unknown>) => ({
+      ...stored,
+      preview: { ...stored.preview, ...fields },
+    });
 
     expect(rebuildSwapPreview(undefined)).toBeNull();
     expect(rebuildSwapPreview("not a preview")).toBeNull();
     // A record written by a build that meant something else by these fields.
     expect(rebuildSwapPreview({ ...stored, v: 99 })).toBeNull();
-    expect(rebuildSwapPreview({ ...stored, inputs: [] })).toBeNull();
+    expect(rebuildSwapPreview(withPreview({ inputs: [] }))).toBeNull();
     expect(
-      rebuildSwapPreview({
-        ...stored,
-        keepOutputs: [],
-        sendOutputs: undefined,
-      }),
+      rebuildSwapPreview(
+        withPreview({ keepOutputs: [], sendOutputs: undefined }),
+      ),
     ).toBeNull();
     // A blinding factor that is not a canonical scalar. cashu-ts throws rather
     // than clamping, and a half-built preview must never reach the mint.
     expect(
-      rebuildSwapPreview({
-        ...stored,
-        keepOutputs: [
-          {
-            blindedMessage: {
-              amount: "4",
-              B_: "02".padEnd(66, "a"),
-              id: KEYSET_ID,
+      rebuildSwapPreview(
+        withPreview({
+          keepOutputs: [
+            {
+              blindedMessage: {
+                amount: "4",
+                B_: "02".padEnd(66, "a"),
+                id: KEYSET_ID,
+              },
+              blindingFactor: "not-a-number",
+              secret: "aa",
             },
-            blindingFactor: "not-a-number",
-            secret: "aa",
-          },
-        ],
-      }),
+          ],
+        }),
+      ),
     ).toBeNull();
   });
 });
 
 describe("replaying a stored preview", () => {
-  it("sends the mint a byte-identical /v1/swap request", async () => {
+  it("sends the mint the same /v1/swap request", async () => {
     const world = new World({ seed: 1 });
     const fabric = new MintFabric(world);
     fabric.setConditions({ latencyMs: 0 });

@@ -1,4 +1,4 @@
-import { INK, LINE, MONO, MUTED, SOFT } from "./primitives";
+import { FILL, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
 
 export function FloodPropagation() {
   const nodes = [
@@ -67,7 +67,7 @@ export function FloodPropagation() {
               cx={n.x}
               cy={n.y}
               r={26}
-              fill={isEnd ? INK : i === 0 ? SOFT : "var(--dg-fill)"}
+              fill={isEnd ? INK : i === 0 ? SOFT : FILL}
               stroke={INK}
               strokeWidth={i === 0 || isEnd ? 1.8 : 1.2}
             />

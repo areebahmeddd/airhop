@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "Din identitet är ett {ed25519}-nyckelpar som skapas på din enhet och sparas i {ios_keychain} eller {android_keystore}. Det finns inga konton, ingen registrering och inget som rör en server, det vill säga appen kan användas som en engångsapp som inte lämnar något som leder tillbaka till dig när den raderats.",
   "home.about.body.crypto":
-    "Varje session använder {noise}-protokollet för en autentiserad handskakning. Direktmeddelanden i realtid mellan Airhop-telefoner använder {ratchet}-algoritmen, det vill säga en nyckel som läcker senare kan inte öppna redan skickade meddelanden. Nödradering förstör alla nycklar och meddelanden på under en sekund.",
+    "Varje session använder {noise}-protokollet för en autentiserad handskakning. Direktmeddelanden i realtid mellan Airhop-telefoner använder {ratchet}-algoritmen, det vill säga en nyckel som läcker senare kan inte öppna redan skickade meddelanden. Nödradering förstör alla nycklar och meddelanden på några sekunder.",
   "home.about.body.internet":
     "När du och en kontakt är utanför Bluetooth-räckvidd fungerar {nostr}-reläer som en brygga över internet, med direktmeddelanden inslagna enligt {nip17}, så att meshet når hela världen så länge ni båda är uppkopplade. Stöd för {tor} finns på både iOS och Android, via {arti}, med {obfs4}-, {snowflake}- och {webtunnel}-bryggor för nät som blockerar Tor.",
   "home.about.optional.title": "Airhop har valfria funktioner som du kan slå på:",
@@ -184,7 +184,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "Identitet som nyckelpar",
   "home.features.identity.keys.line": "Skapad på den här telefonen, sparad i systemets nyckelring.",
   "home.features.identity.names.name": "Läsbara namn",
-  "home.features.identity.names.line": "Härledda ur din nyckel, så ingen kan ta ditt.",
+  "home.features.identity.names.line": "Härledda ur din nyckel, aldrig valda eller registrerade.",
   "home.features.identity.qr.name": "Kontakter via QR",
   "home.features.identity.qr.line": "En skanning bär deras nycklar, inte bara deras namn.",
   "home.features.identity.forward.name": "Framåtsekretess",
@@ -194,7 +194,7 @@ const strings: Strings = {
     "Chattar och plånbok följer med, sedan raderar den gamla telefonen sig själv.",
   "home.features.identity.panic.name": "Nödradering",
   "home.features.identity.panic.line":
-    "Varje nyckel och varje meddelande förstörda på under en sekund.",
+    "Varje nyckel och varje meddelande förstörda på några sekunder.",
 
   "home.features.networking.title": "Nätverk",
   "home.features.networking.summary": "Telefonerna är nätverket.",

@@ -65,7 +65,7 @@ function catalog(language: LanguageCode): Locale {
 
 export type TranslationVars = Record<string, string | number>;
 
-const PLACEHOLDER = /\{(\w+)\}/g;
+export const PLACEHOLDER = /\{(\w+)\}/g;
 
 function interpolate(template: string, vars?: TranslationVars): string {
   if (vars === undefined) return template;
@@ -97,7 +97,7 @@ function pluralRules(language: LanguageCode): Intl.PluralRules {
 
 const NUMBER_FORMATS = new Map<LanguageCode, Intl.NumberFormat>();
 
-export function formatNumber(language: LanguageCode, value: number): string {
+function formatNumber(language: LanguageCode, value: number): string {
   let format = NUMBER_FORMATS.get(language);
   if (!format) {
     format = new Intl.NumberFormat(LANGUAGES[language].intlLocale);
@@ -106,42 +106,32 @@ export function formatNumber(language: LanguageCode, value: number): string {
   return format.format(value);
 }
 
-const DATE_FORMATS = new Map<LanguageCode, Intl.DateTimeFormat>();
+const DATE_FORMATS = new Map<string, Intl.DateTimeFormat>();
 
-export function formatDate(language: LanguageCode, iso: string): string {
+function formatIsoDate(language: LanguageCode, iso: string, month: "long" | "short"): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
 
-  let format = DATE_FORMATS.get(language);
+  const key = `${language}:${month}`;
+  let format = DATE_FORMATS.get(key);
   if (!format) {
     format = new Intl.DateTimeFormat(LANGUAGES[language].intlLocale, {
       year: "numeric",
-      month: "long",
+      month,
       day: "numeric",
       timeZone: "UTC",
     });
-    DATE_FORMATS.set(language, format);
+    DATE_FORMATS.set(key, format);
   }
   return format.format(date);
 }
 
-const SHORT_DATE_FORMATS = new Map<LanguageCode, Intl.DateTimeFormat>();
+export function formatDate(language: LanguageCode, iso: string): string {
+  return formatIsoDate(language, iso, "long");
+}
 
 export function formatShortDate(language: LanguageCode, iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-
-  let format = SHORT_DATE_FORMATS.get(language);
-  if (!format) {
-    format = new Intl.DateTimeFormat(LANGUAGES[language].intlLocale, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    });
-    SHORT_DATE_FORMATS.set(language, format);
-  }
-  return format.format(date);
+  return formatIsoDate(language, iso, "short");
 }
 
 const TRANSLATORS = new Map<LanguageCode, Translator>();
@@ -161,7 +151,7 @@ export function getT(language: LanguageCode): Translator {
 
 const PLURAL_TRANSLATORS = new Map<LanguageCode, PluralTranslator>();
 
-export function getTPlural(language: LanguageCode): PluralTranslator {
+function getTPlural(language: LanguageCode): PluralTranslator {
   let translator = PLURAL_TRANSLATORS.get(language);
   if (!translator) {
     translator = (key, count, vars) => {

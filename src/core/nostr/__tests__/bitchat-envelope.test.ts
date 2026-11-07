@@ -33,6 +33,18 @@ describe("bitchat-envelope", () => {
     expect(dec.content).toBe("");
   });
 
+  it("hands back the peer ID the sender names, on messages and receipts", () => {
+    const msg = encodeBitchatDmEnvelope(SENDER, null, "m-2", "hi")!;
+    expect(decodeBitchatEnvelope(msg)?.senderPeerID).toBe(SENDER);
+    const ack = encodeBitchatAckEnvelope(
+      SENDER,
+      null,
+      NoisePayloadType.READ_RECEIPT,
+      "m-2",
+    );
+    expect(decodeBitchatEnvelope(ack)?.senderPeerID).toBe(SENDER);
+  });
+
   it("returns null for content longer than 255 bytes", () => {
     expect(
       encodeBitchatDmEnvelope(SENDER, RECIP, "m", "x".repeat(256)),

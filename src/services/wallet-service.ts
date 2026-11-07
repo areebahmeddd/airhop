@@ -70,7 +70,7 @@ import {
 import type { StoredProof } from "@core/payments/stored-proof";
 import {
   rebuildSwapPreview,
-  serializeSwapPreview,
+  storeSwapPreview,
   swapPreviewKeepCount,
   swapPreviewOutputs,
   type StoredSwapPreview,
@@ -113,12 +113,12 @@ import { internetOff, torClaimed } from "./network-gate";
 
 // ---- Network limits ----
 
-// Every mint request is bounded. cashu-ts only aborts when given a timeout and
-// React Native's fetch has none, so a mint that accepts the connection and never
-// answers (captive portal, cell handover, overloaded mint) hangs forever. A hang
-// is worse than an error: the confirm button spins, and the reconcile pass, which
-// walks mints one at a time and which every later caller joins, never finishes.
-// 20s is generous for a slow round trip and inside a user's patience.
+// Every mint request is bounded well under cashu-ts's five-minute default. A
+// mint that accepts the connection and never answers (captive portal, cell
+// handover, overloaded mint) would otherwise hold the confirm button spinning,
+// and the reconcile pass, which walks mints one at a time and which every later
+// caller joins, with it. 20s is generous for a slow round trip and inside a
+// user's patience.
 const MINT_REQUEST_TIMEOUT_MS = 20_000;
 
 // A bolt11 melt legitimately takes longer while Lightning routes. Aborting does
@@ -243,24 +243,35 @@ function isDefiniteRefusal(err: unknown): boolean {
   return !isAlreadySpentError(asWalletError(err, "mint-error"));
 }
 
-// NUT-05's "quote is pending". Mints that send a generic code say it in words.
+// The NUT error codes the wallet branches on (the registry in cashu/nuts
+// error_codes.md, which cashu-ts v5 exports as `MintErrorCode`).
+const NUT_PROOFS_ALREADY_SPENT = 11001;
+const NUT_PROOFS_PENDING = 11002;
+const NUT_OUTPUTS_ALREADY_SIGNED = 11003;
+const NUT_OUTPUTS_PENDING = 11004;
 const NUT_QUOTE_PENDING = 20005;
+const NUT_PENDING_CODES = new Set([
+  NUT_PROOFS_PENDING,
+  NUT_OUTPUTS_PENDING,
+  NUT_QUOTE_PENDING,
+]);
 
-// The quote or inputs are tied up in an operation the mint has not finished,
-// possibly our own: cashu-ts's NUT-19 retry of a request a gateway timed out
-// meets exactly this while the first attempt is still paying.
+// The inputs, outputs or quote are tied up in an operation the mint has not
+// finished, possibly our own: cashu-ts's NUT-19 retry of a request a gateway
+// timed out meets exactly this while the first attempt is still paying. Mints
+// that send a generic code say it in words.
 function isPendingRefusal(err: unknown): boolean {
   if (!isMintOperationError(err)) return false;
-  return err.code === NUT_QUOTE_PENDING || /pending/i.test(err.message);
+  return NUT_PENDING_CODES.has(err.code) || /pending/i.test(err.message);
 }
 
-// 10002: an output reuses a counter this phrase has already had signed (a
+// 11003: an output reuses a counter this phrase has already had signed (a
 // restore that missed a keyset or unit, the phrase in use on another phone).
 // Nothing moved, and the inputs are good; the cure is to catch the counters up
 // and try again, never to refuse the coins or settle a nutzap.
 function isReusedCounter(err: unknown): boolean {
   return (
-    asWalletError(err, "mint-error").mintCode === NUT_OUTPUT_ALREADY_SIGNED
+    asWalletError(err, "mint-error").mintCode === NUT_OUTPUTS_ALREADY_SIGNED
   );
 }
 
@@ -285,15 +296,12 @@ function isRestoreMissing(err: unknown): boolean {
 // own earlier attempt succeeding. It means "the mint has taken these inputs",
 // never "the operation failed"; callers must ask the mint which.
 //
-// By NUT-00 code where sent: 10002 (output already signed) also says "already"
-// but means a reused counter, and reading it as spent drops inputs the mint
-// never took. The text is the fallback for mints that send no code.
-const NUT_TOKEN_SPENT = 11001;
-const NUT_OUTPUT_ALREADY_SIGNED = 10002;
-
+// By code where sent: 11003 (outputs already signed) also says "already" but
+// means a reused counter, and reading it as spent drops inputs the mint never
+// took. The text is the fallback for mints that send no code.
 function isAlreadySpentError(err: WalletError): boolean {
-  if (err.mintCode === NUT_TOKEN_SPENT) return true;
-  if (err.mintCode === NUT_OUTPUT_ALREADY_SIGNED) return false;
+  if (err.mintCode === NUT_PROOFS_ALREADY_SPENT) return true;
+  if (err.mintCode === NUT_OUTPUTS_ALREADY_SIGNED) return false;
   const text = err.detail ?? err.message;
   if (/already signed|signed before|blinded/i.test(text)) return false;
   return /spent|already|TOKEN_ALREADY/i.test(text);
@@ -312,11 +320,11 @@ function isNetworkFailure(err: unknown): boolean {
     // The mint answered, so its wording ("payment timeout") says nothing about
     // the transport.
     if (isMintOperationError(current)) return false;
+    // cashu-ts wraps every transport failure in it: a refused connection, a
+    // dropped socket, its own request timeout.
     if (current instanceof NetworkError) return true;
-    const message =
-      current instanceof Error ? current.message : String(current);
-    // fetch failures in React Native surface as a bare "Network request failed".
-    if (/network|fetch|timeout|abort/i.test(message)) return true;
+    // Several keysets' keys failing to load arrive as one error per keyset.
+    if (Array.isArray(current)) return current.some(isNetworkFailure);
     current = current instanceof Error ? current.cause : undefined;
   }
   return false;
@@ -447,7 +455,7 @@ function isSeedActive(): boolean {
 // NUT-13 secrets derive from (seed, keyset id, counter); a reused counter is a
 // duplicate the mint rejects, so the cursor is persisted and only moves forward.
 // A crash before the encrypted write can lose a bump: the next swap is refused
-// (10002), its handler catches the cursor up, and the inputs are untouched.
+// (11003), its handler catches the cursor up, and the inputs are untouched.
 const counterSource: CounterSource = {
   reserve(keysetId: string, n: number) {
     return Promise.resolve(
@@ -1004,7 +1012,7 @@ export async function restoreFromRecoveryPhrase(params: {
 // scanning from where they stand. Needed wherever the phrase may have run
 // ahead of this phone: a mint added after a restore that did not name it, or
 // the same phrase used on another phone. Otherwise the next swap re-derives an
-// output the mint has signed and is refused (10002).
+// output the mint has signed and is refused (11003).
 async function catchUpCounters(mintUrl: string, unit: string): Promise<void> {
   if (!isSeedActive() || advertisesNoRestore(mintUrl)) return;
   const epoch = walletEpoch;
@@ -1214,7 +1222,7 @@ async function prepareRecoverableSwap(
       swapPreviewOutputs(preview),
     );
   }
-  return { preview, stored: serializeSwapPreview(preview) };
+  return { preview, stored: storeSwapPreview(preview) };
 }
 
 // Swaps on the wire in this process, which `reconcile` skips. A stored preview
@@ -1268,7 +1276,7 @@ async function retryPastStaleKeyset<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-// After a 10002, whose handler has discarded the staged row and caught the
+// After an 11003, whose handler has discarded the staged row and caught the
 // counters up: once more, with fresh outputs. A second clash means the scan
 // could not reach past it, and is the caller's to report.
 async function retryPastReusedCounter<T>(run: () => Promise<T>): Promise<T> {
@@ -2713,7 +2721,7 @@ const MAX_SWAP_REPLAYS_PER_PASS = 4;
 // Recover a swap whose answer never arrived. A melt or deposit can ask its
 // quote; a swap cannot, so the preview persisted before the request left (the
 // exact request plus the blinding factors) is the only way back:
-//   NUT-19  resend the byte-identical request. A caching mint returns the same
+//   NUT-19  resend the same request. A caching mint returns the same
 //           signatures; one that never saw it processes it fresh, also correct.
 //   NUT-09  on refusal, ask whether it signed these blinded messages; the
 //           stored blinding factors unblind them, deterministic or not.
@@ -2752,7 +2760,7 @@ async function replayLostSwap(tx: WalletTx, pass: PassGuard): Promise<void> {
 
   // A nutzap's inputs are locked to our key, so none can have been handed on.
   const replayable = tx.kind === "nutzap-in" || swapInputsHeld(tx, preview);
-  // The replay met 10002: whatever NUT-09 finds may be an older swap's
+  // The replay met 11003: whatever NUT-09 finds may be an older swap's
   // outputs, re-derived from a reused counter, rather than this one's.
   let clashed = false;
   if (replayable) {

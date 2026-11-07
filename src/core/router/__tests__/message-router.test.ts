@@ -312,8 +312,8 @@ describe("PeerRegistry", () => {
   });
 
   test("update() preserves nostrPubkey across BLE re-announces", () => {
-    // An ANNOUNCE may omit TLV 0x07, so update() is called without a key. The
-    // one already learned must survive.
+    // An ANNOUNCE carries no Nostr key, so update() is called without one. The
+    // one already learned inside a session must survive.
     const registry = new PeerRegistry();
     const peerID = "aabbccdd11223344";
 

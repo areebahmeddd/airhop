@@ -10,12 +10,15 @@ import { SEO } from "@/lib/seo";
 import { Plus } from "lucide-react";
 import { isValidElement, useMemo } from "react";
 
+const BLOCK_TAGS = new Set(["br", "li", "p", "ul"]);
+
 function toPlainText(node: React.ReactNode): string {
   if (node == null || typeof node === "boolean") return "";
   if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(toPlainText).join(" ");
+  if (Array.isArray(node)) return node.map(toPlainText).join("");
   if (isValidElement(node)) {
-    return toPlainText((node.props as { children?: React.ReactNode }).children);
+    const text = toPlainText((node.props as { children?: React.ReactNode }).children);
+    return typeof node.type === "string" && BLOCK_TAGS.has(node.type) ? ` ${text} ` : text;
   }
   return "";
 }

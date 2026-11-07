@@ -4,7 +4,8 @@
 //   1. Advertise as a GATT Server with the Airhop service UUID.
 //   2. Scan as a GATT Central for peers advertising the same UUID.
 //   3. Accept incoming writes and emit them to TypeScript as events.
-//   4. Write raw bytes from TypeScript to connected GATT peripherals.
+//   4. Write raw bytes from TypeScript to connected GATT peripherals, queued
+//      per link and handed to the radio one at a time (LinkWriteQueue).
 //
 // Protocol logic lives in TypeScript (src/core/). This file has no knowledge
 // of packet types, routing, or encryption.
@@ -44,6 +45,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
 import android.os.PowerManager
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Base64
 import android.util.Log
@@ -379,13 +381,17 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // Drop links that have gone quiet. Runs on the main handler rather than a
-    // timer of its own so it stops with the module.
+    // Drop links that have gone quiet, and let go of writes whose completion
+    // callback never came (one with traffic is caught by its next write). Runs
+    // on the main handler rather than a timer of its own so it stops with the
+    // module.
     private fun startDeviceMonitor() {
         if (monitorTask != null) return
         val task =
             object : Runnable {
                 override fun run() {
+                    val elapsed = SystemClock.elapsedRealtime()
+                    for ((linkID, queue) in writeQueues) releaseStalled(linkID, queue, elapsed)
                     val now = System.currentTimeMillis()
                     for ((linkID, heardAt) in lastHeardAt) {
                         val silentFor = now - heardAt
@@ -437,6 +443,11 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         } catch (e: SecurityException) {
             Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
         }
+        // After the link is removed, as in every other teardown: a racing write
+        // then finds no link and discards the queue it built. Discarding first
+        // could leave a fresh queue whose in-flight write the closed GATT never
+        // calls back for.
+        discardWrites(linkID)
         linkToAdvertisedPeerID.remove(linkID)?.let { centralPeerIDs.remove(it) }
         emitEvent(
             EVT_LINK_DISCONNECTED,
@@ -776,6 +787,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         stopDeviceMonitor()
         resetDeviceMonitoring()
         preparedWrites.clear()
+        discardAllWrites()
+        liveMediaActive = false
         advertisingActive = false
         try {
             adapter?.bluetoothLeScanner?.stopScan(scanCallback)
@@ -835,6 +848,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         centralPeerIDs.clear()
         linkToAdvertisedPeerID.clear()
         preparedWrites.clear()
+        discardAllWrites()
         try {
             gattServer?.close()
         } catch (e: Exception) {
@@ -1219,8 +1233,9 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
             peripheralLinks.clear()
             notifyingLinks.clear()
             announcedLinks.clear()
-            // Half-written long writes go with their links.
+            // Half-written long writes and queued notifies go with their links.
             preparedWrites.clear()
+            discardAllWrites("p:")
             // Leaves the foreground service alone: "Invisible" takes this path
             // too. See setBackgroundServiceEnabled.
             promise.resolve(null)
@@ -1312,8 +1327,19 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
 
     // ---- I/O ----
 
+    // Queues a write on the link and resolves with how many of the link's writes
+    // the radio has not been handed yet, this one included: 0 when it went
+    // straight to the radio. That depth, not a refusal, is the congestion
+    // signal: the queue absorbs refusals and retries them.
+    //
+    // `ttlMs` above zero is how long the write may wait for its turn before it
+    // is dropped silently (live media, which is worthless late); zero or less
+    // never expires. TypeScript chooses it. Native never looks at the bytes.
+    //
+    // WRITE_BUSY means the link's queue is full. A hand-off the stack refuses
+    // stays queued and is retried, so it is never reported.
     @ReactMethod
-    fun writeToLink(linkID: String, dataBase64: String, promise: Promise) {
+    fun writeToLink(linkID: String, dataBase64: String, ttlMs: Double, promise: Promise) {
         val data =
             try {
                 Base64.decode(dataBase64, Base64.DEFAULT)
@@ -1322,93 +1348,255 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 return
             }
 
-        // Central role: write to a connected GATT peripheral
-        centralLinks[linkID]?.let { gatt ->
-            val char = gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID)
-            if (char == null) {
+        // Checked here so a closed door is reported to this caller, under the
+        // codes it already branches on; the hand-off checks again, since any of
+        // these can change while a write waits.
+        val gatt = centralLinks[linkID]
+        if (gatt != null) {
+            if (gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID) == null) {
                 promise.reject("NO_CHARACTERISTIC", "Characteristic not found for link $linkID")
                 return
             }
-            try {
-                // A refused write is reported, not resolved: the stack rejects
-                // writes once its internal queue is full, and the sender must not
-                // believe a fragment went out that vanished mid-transfer.
-                //
-                // An unacknowledged write is capped at MTU-3 and the stack truncates
-                // past it rather than reporting an error, so anything that does not
-                // fit goes as a default (acknowledged) write, which the stack splits
-                // into a long write. The iOS module does the same with
-                // maximumWriteValueLength.
-                val mtu = centralMtu[linkID] ?: DEFAULT_ATT_MTU
-                val fitsUnacked = data.size <= mtu - ATT_WRITE_OVERHEAD
-                val writeType =
-                    if (fitsUnacked) BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                    else BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-
-                val accepted: Boolean
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    accepted =
-                        gatt.writeCharacteristic(
-                            char,
-                            data,
-                            writeType,
-                        ) == BluetoothStatusCodes.SUCCESS
-                } else {
-                    @Suppress("DEPRECATION")
-                    char.writeType = writeType
-                    @Suppress("DEPRECATION")
-                    char.value = data
-                    @Suppress("DEPRECATION")
-                    accepted = gatt.writeCharacteristic(char)
-                }
-                if (accepted) {
-                    promise.resolve(null)
-                } else {
-                    promise.reject("WRITE_BUSY", "GATT write queue full for link $linkID")
-                }
-            } catch (e: SecurityException) {
-                promise.reject("PERMISSION_DENIED", "BLUETOOTH_CONNECT required", e)
-            }
-            return
-        }
-
-        // Peripheral role: notify the central on this link
-        peripheralLinks[linkID]?.let { device ->
+        } else if (peripheralLinks.containsKey(linkID)) {
             if (!notifyingLinks.contains(linkID)) {
                 promise.reject("NOT_SUBSCRIBED", "Central on $linkID has notifications off")
                 return
             }
-            val char = characteristic
-            if (char == null) {
+            if (characteristic == null || gattServer == null) {
                 promise.reject("NOT_READY", "GATT server not initialized")
                 return
             }
-            try {
-                // A refused notify is reported for the same reason as a refused
-                // write above, under the same code, so the caller needs no second
-                // branch.
-                val accepted =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        gattServer?.notifyCharacteristicChanged(device, char, false, data) ==
-                            BluetoothStatusCodes.SUCCESS
-                    } else {
-                        @Suppress("DEPRECATION")
-                        char.value = data
-                        @Suppress("DEPRECATION")
-                        gattServer?.notifyCharacteristicChanged(device, char, false) == true
-                    }
-                if (accepted) {
-                    promise.resolve(null)
-                } else {
-                    promise.reject("WRITE_BUSY", "GATT notify queue full for link $linkID")
-                }
-            } catch (e: SecurityException) {
-                promise.reject("PERMISSION_DENIED", "BLUETOOTH_CONNECT required", e)
-            }
+        } else {
+            promise.reject("UNKNOWN_LINK", "No active link with ID $linkID")
+            return
+        }
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                !hasPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        ) {
+            promise.reject("PERMISSION_DENIED", "BLUETOOTH_CONNECT required")
             return
         }
 
-        promise.reject("UNKNOWN_LINK", "No active link with ID $linkID")
+        val ttl = if (ttlMs > 0.0) kotlin.math.ceil(ttlMs).toLong() else 0L
+        val queue = writeQueues.computeIfAbsent(linkID) { LinkWriteQueue() }
+        val now = SystemClock.elapsedRealtime()
+        releaseStalled(linkID, queue, now)
+        when (queue.offer(data, ttl, now)) {
+            LinkWriteQueue.Offer.FULL -> {
+                promise.reject("WRITE_BUSY", "GATT write queue full for link $linkID")
+                return
+            }
+            // Discarded by a disconnect between the check above and the offer.
+            LinkWriteQueue.Offer.CLOSED -> {
+                promise.reject("UNKNOWN_LINK", "No active link with ID $linkID")
+                return
+            }
+            LinkWriteQueue.Offer.QUEUED -> Unit
+            LinkWriteQueue.Offer.SEND ->
+                when (drive(linkID, queue)) {
+                    HandOff.DENIED -> {
+                        promise.reject("PERMISSION_DENIED", "BLUETOOTH_CONNECT required")
+                        return
+                    }
+                    HandOff.GONE -> {
+                        promise.reject("UNKNOWN_LINK", "No active link with ID $linkID")
+                        return
+                    }
+                    else -> Unit
+                }
+        }
+        promise.resolve(queue.waiting().toDouble())
+    }
+
+    private enum class HandOff {
+        ACCEPTED,
+        // The stack would not take it now; the head stays for a retry.
+        REFUSED,
+        // The link, its characteristic or its subscription is gone.
+        GONE,
+        DENIED,
+    }
+
+    // Per-link FIFO of outbound writes, released by the completion callbacks.
+    // See LinkWriteQueue.
+    private val writeQueues = ConcurrentHashMap<String, LinkWriteQueue>()
+
+    // Hands the head to the radio. Called only by the queue's current owner (see
+    // LinkWriteQueue), so one link never has two hand-offs racing.
+    private fun drive(linkID: String, queue: LinkWriteQueue): HandOff? {
+        val data = queue.claimHead(SystemClock.elapsedRealtime()) ?: return null
+        val result = handOff(linkID, data)
+        when (result) {
+            HandOff.ACCEPTED -> Unit
+            HandOff.REFUSED -> follow(linkID, queue, queue.refused())
+            HandOff.GONE,
+            HandOff.DENIED -> {
+                Log.w(TAG, "BLE write dropped: link ${linkRole(linkID)} unusable ($result)")
+                discardWrites(linkID, queue)
+            }
+        }
+        return result
+    }
+
+    private fun follow(linkID: String, queue: LinkWriteQueue, next: LinkWriteQueue.Next) {
+        when (next) {
+            LinkWriteQueue.Next.IDLE -> Unit
+            LinkWriteQueue.Next.SEND -> drive(linkID, queue)
+            LinkWriteQueue.Next.RETRY ->
+                mainHandler.postDelayed(
+                    { follow(linkID, queue, queue.retryDue()) },
+                    LinkWriteQueue.RETRY_DELAY_MS,
+                )
+            // The queue closed itself. Torn down on the main handler, where the
+            // monitor reaps links, and only while the link still owns this
+            // queue: one rebuilt under the same linkID is a new connection.
+            LinkWriteQueue.Next.WEDGED -> {
+                Log.w(TAG, "BLE link ${linkRole(linkID)} refuses every write, disconnecting")
+                mainHandler.post {
+                    if (writeQueues[linkID] === queue) disconnectLink(linkID)
+                }
+            }
+        }
+    }
+
+    // A head whose completion callback never came is let go, so the link's
+    // writes move again (see LinkWriteQueue.releaseStalled).
+    private fun releaseStalled(linkID: String, queue: LinkWriteQueue, nowMs: Long) {
+        val next = queue.releaseStalled(nowMs) ?: return
+        Log.w(TAG, "BLE write stalled on ${linkRole(linkID)} link: no completion, moving on")
+        follow(linkID, queue, next)
+    }
+
+    // onCharacteristicWrite or onNotificationSent: the radio is done with the
+    // link's head, so the next may go.
+    private fun onHandOffComplete(linkID: String, status: Int) {
+        val queue = writeQueues[linkID] ?: return
+        // CONNECTION_CONGESTED still means the stack took the bytes; resending
+        // them would put duplicates on air exactly when the link is saturated.
+        val delivered =
+            status == BluetoothGatt.GATT_SUCCESS ||
+                status == BluetoothGatt.GATT_CONNECTION_CONGESTED
+        follow(linkID, queue, queue.completed(delivered))
+    }
+
+    private fun handOff(linkID: String, data: ByteArray): HandOff =
+        try {
+            val gatt = centralLinks[linkID]
+            val device = peripheralLinks[linkID]
+            when {
+                gatt != null -> writeCharacteristic(linkID, gatt, data)
+                device != null -> notifyCentral(linkID, device, data)
+                else -> HandOff.GONE
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+            HandOff.DENIED
+        } catch (e: Exception) {
+            // bitchat-android treats a throw from the stack as a refusal: the
+            // retry bound and a disconnect end it if the link is really dead.
+            Log.w(TAG, "BLE hand-off failed: ${e.message}")
+            HandOff.REFUSED
+        }
+
+    private fun writeCharacteristic(linkID: String, gatt: BluetoothGatt, data: ByteArray): HandOff {
+        val char =
+            gatt.getService(SERVICE_UUID)?.getCharacteristic(CHARACTERISTIC_UUID)
+                ?: return HandOff.GONE
+        // An unacknowledged write is capped at MTU-3 and the stack truncates
+        // past it rather than reporting an error, so anything that does not fit
+        // goes as a default (acknowledged) write, which the stack splits into a
+        // long write. The iOS module does the same with maximumWriteValueLength.
+        // Both types complete through onCharacteristicWrite.
+        val mtu = centralMtu[linkID] ?: DEFAULT_ATT_MTU
+        val writeType =
+            if (data.size <= mtu - ATT_WRITE_OVERHEAD) {
+                BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+            } else {
+                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+            }
+        val accepted =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                gatt.writeCharacteristic(char, data, writeType) == BluetoothStatusCodes.SUCCESS
+            } else {
+                // This characteristic object belongs to this link's GATT, and the
+                // queue keeps one hand-off per link, but the stack also writes an
+                // inbound notification's bytes into the same object, so the two
+                // can still race. Only the API 33 calls above avoid that.
+                @Suppress("DEPRECATION")
+                char.writeType = writeType
+                @Suppress("DEPRECATION")
+                char.value = data
+                @Suppress("DEPRECATION") gatt.writeCharacteristic(char)
+            }
+        return if (accepted) HandOff.ACCEPTED else HandOff.REFUSED
+    }
+
+    private fun notifyCentral(linkID: String, device: BluetoothDevice, data: ByteArray): HandOff {
+        if (!notifyingLinks.contains(linkID)) return HandOff.GONE
+        val char = characteristic ?: return HandOff.GONE
+        val server = gattServer ?: return HandOff.GONE
+        val accepted =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                server.notifyCharacteristicChanged(device, char, false, data) ==
+                    BluetoothStatusCodes.SUCCESS
+            } else {
+                // One server characteristic serves every peripheral link, and
+                // their hand-offs run on different threads, so the value is set
+                // and sent under its lock. The call reads it before returning.
+                synchronized(char) {
+                    @Suppress("DEPRECATION")
+                    char.value = data
+                    @Suppress("DEPRECATION") server.notifyCharacteristicChanged(device, char, false)
+                }
+            }
+        return if (accepted) HandOff.ACCEPTED else HandOff.REFUSED
+    }
+
+    // A link's queued writes go with it. `expected` guards against discarding
+    // a queue the same linkID has rebuilt since.
+    private fun discardWrites(linkID: String, expected: LinkWriteQueue? = null) {
+        if (expected == null) {
+            writeQueues.remove(linkID)?.close()
+        } else {
+            writeQueues.remove(linkID, expected)
+            expected.close()
+        }
+    }
+
+    private fun discardAllWrites(rolePrefix: String? = null) {
+        for (linkID in writeQueues.keys.toList()) {
+            if (rolePrefix == null || linkID.startsWith(rolePrefix)) discardWrites(linkID)
+        }
+    }
+
+    // ---- Live media ----
+
+    // Whether a live stream is being sent or watched, so central links ask for
+    // the short connection interval it needs. bitchat raises connection priority
+    // for the same window.
+    @Volatile private var liveMediaActive = false
+
+    @ReactMethod
+    fun setLiveMediaActive(active: Boolean, promise: Promise) {
+        liveMediaActive = active
+        for (gatt in centralLinks.values) applyConnectionPriority(gatt, active)
+        // The peripheral role has no say in the connection interval on Android:
+        // only the central can request one.
+        promise.resolve(null)
+    }
+
+    private fun applyConnectionPriority(gatt: BluetoothGatt, high: Boolean) {
+        try {
+            gatt.requestConnectionPriority(
+                if (high) BluetoothGatt.CONNECTION_PRIORITY_HIGH
+                else BluetoothGatt.CONNECTION_PRIORITY_BALANCED
+            )
+        } catch (e: SecurityException) {
+            Log.e(TAG, "BLUETOOTH_CONNECT permission missing", e)
+        } catch (e: Exception) {
+            Log.w(TAG, "Connection priority not applied: ${e.message}")
+        }
     }
 
     // The mesh runs on JS timers: announces, relay jitter, gossip sync, the chat
@@ -1519,6 +1707,8 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 module.gattServer = null
                 module.characteristic = null
                 module.preparedWrites.clear()
+                // Notifies have no server left to go through.
+                module.discardAllWrites("p:")
             } catch (e: Exception) {
                 Log.w(TAG, "Force stop failed: ${e.message}")
             }
@@ -1713,6 +1903,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                     // A long write abandoned mid-transaction. Dropped, or the next
                     // connection from the same MAC resumes into a half-written frame.
                     preparedWrites.remove(linkID)
+                    discardWrites(linkID)
                     noteLinkClosed(linkID, status)
                     emitEvent(
                         EVT_LINK_DISCONNECTED,
@@ -1861,6 +2052,11 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                     gattServer?.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null)
                 }
             }
+
+            // One per notification, so the link's next queued write may go.
+            override fun onNotificationSent(device: BluetoothDevice, status: Int) {
+                onHandOffComplete("p:${device.address}", status)
+            }
         }
 
     // TRANSPORT_LE forces a BLE (not BR/EDR) connection; omitting it is a
@@ -1913,6 +2109,7 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     centralLinks.remove(linkID)
                     centralMtu.remove(linkID)
+                    discardWrites(linkID)
                     linkToAdvertisedPeerID.remove(linkID)?.let { centralPeerIDs.remove(it) }
                     noteLinkClosed(linkID, status)
                     try {
@@ -1986,6 +2183,9 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 if (descriptor.uuid != CCCD_UUID) return
                 // Notifications active: the central link is now fully usable.
                 val linkID = "c:${gatt.device.address}"
+                // Asked for once setup is done rather than at connect, where it
+                // would contend with the MTU exchange.
+                if (liveMediaActive) applyConnectionPriority(gatt, true)
                 emitEvent(
                     EVT_LINK_CONNECTED,
                     WritableNativeMap().apply {
@@ -2031,6 +2231,17 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                         putString("dataBase64", Base64.encodeToString(value, Base64.NO_WRAP))
                     },
                 )
+            }
+
+            // Fires for unacknowledged writes too, once the stack has sent them,
+            // which is what releases the link's next queued write.
+            override fun onCharacteristicWrite(
+                gatt: BluetoothGatt,
+                characteristic: BluetoothGattCharacteristic,
+                status: Int,
+            ) {
+                if (characteristic.uuid != CHARACTERISTIC_UUID) return
+                onHandOffComplete("c:${gatt.device.address}", status)
             }
 
             override fun onReadRemoteRssi(gatt: BluetoothGatt, rssi: Int, status: Int) {

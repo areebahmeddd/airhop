@@ -671,6 +671,7 @@ export const strings: Strings = {
   "chat.attach.send": "Alefaso ny fanampiny",
   "chat.attach.generic": "Fanampiny",
   "chat.video_prep.preparing": "Manomana ny horonan-tsary",
+  "chat.video_prep.retrying": "Mbola ahena kokoa",
   "chat.video_prep.waiting": "Miandry ny hanomanana ny horonan-tsary",
   "chat.video_prep.cancel": "Atsaharo ny fanomanana ity horonan-tsary ity",
   "chat.video_prep.too_large":
@@ -702,9 +703,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Alefaso ny naoty feo",
   "chat.media.pause_video": "Ajanony ny horonan-tsary",
   "chat.media.play_video": "Alefaso ny horonan-tsary",
-  "chat.media.voice_position": "Toerana ao amin'ny naoty feo",
-  "chat.media.voice_scrub":
-    "Tsindrio manaraka ny tsipika mba hankany amin'io toerana io",
+  "chat.media.voice_back": "Miverina 5 segondra",
+  "chat.media.voice_forward": "Mandroso 5 segondra",
   "chat.media.image": "Sary",
   "chat.media.tap_load_photo": "Tsindrio hampiditra ny sary",
   "chat.media.open_document": "Sokafy ny {name}",
@@ -764,6 +764,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Horonan-tsary mivantana",
   "chat.live_video.go_live": "Andefa mivantana",
   "chat.live_video.end": "Tapitra",
+  "chat.live_video.ending": "Mamarana…",
   "chat.live_video.end_title": "Hatapitra ve ny fandefasana mivantana?",
   "chat.live_video.end_body":
     "Raha atapitra dia mijanona ato amin'ity resaka ity ny fandraketana. Raha ariana dia angatahina hamafa izany ny mpijery rehetra.",
@@ -778,10 +779,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Antonony",
   "chat.live_video.quality_high": "Avo",
   "chat.live_video.quality_low_hint":
-    "Mahatratra olona lavitra dingana maromaro",
+    "Mahatratra olona lavitra dingana maromaro amin'ny Bluetooth",
   "chat.live_video.quality_medium_hint":
-    "Ho an'ny olona lavitra dingana iray na roa",
-  "chat.live_video.quality_high_hint": "Ho an'ny olona eo akaikinao",
+    "Mazava kokoa, ho an'ny mpijery amin'ny Wi-Fi Aware na Wi-Fi iray ihany",
+  "chat.live_video.quality_high_hint":
+    "Mazava indrindra, ho an'ny mpijery amin'ny Wi-Fi Aware na Wi-Fi iray ihany",
+  "chat.live_video.quality_needs_wifi": "Mila Wi-Fi akaiky",
+  "chat.live_video.quality_bluetooth_note":
+    "Mila Wi-Fi akaiky ny Antonony sy Avo",
   "chat.live_video.signal_good": "Manaraka tsara",
   "chat.live_video.signal_weak": "Mihemotra",
   "chat.live_video.signal_poor":
@@ -798,6 +803,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Sintono miakatra mba handrakitra tsy mihazona",
   "chat.voice.live_speaking": "Miteny i {name}",
   "chat.voice.live_ended": "Tapitra",
+  "chat.voice.live_stopped": "Tapitra ny feo mivantana",
   "voice.unavailable": "Tsy misy feo mivantana",
   "voice.recording_stopped": "Nijanona ny fandraketana",
 
@@ -1929,13 +1935,15 @@ export const strings: Strings = {
     "Mbola tsy misy lakile ho an'ity fifandraisana ity. Manorata aminy, na alaivo sary ny kaodiny rehefa mihaona ianareo.",
   "contacts.verify.compare_title": "Vakio amin'ny tsirairay ireto",
   "contacts.verify.compare_body":
-    "Mahita ireo teny enina mitovy ao amin'ny Airhop i {name}. Raha mifanaraka izy ireo dia samy mahafantatra ianareo fa marina ny lakile. Tsy mampiseho teny toy izany ny bitchat, ka alaivo sary ny kaodiny kosa.",
-  "contacts.verify.codes_match": "Mifanaraka",
-  "contacts.verify.codes_differ": "Tsy mifanaraka",
+    "Vakio amin'i {name} ny kaodinao mba hojereny amin'ny findainy. Avy eo ampitahao amin'ny kaodiny eto ny kaody vakiny. Samy manamarika ny iray hafa ho voamarina amin'ny findainy avy ianareo. Tsy mampiseho teny toy izany ny bitchat, ka alaivo sary ny kaodiny kosa.",
+  "contacts.verify.your_code": "Ny kaodinao",
+  "contacts.verify.their_code": "Ny kaodiny",
+  "contacts.verify.codes_match": "Mifanaraka ny kaodiny",
+  "contacts.verify.codes_differ": "Tsy mifanaraka ny kaodiny",
   "contacts.verify.codes_differ_body":
     "Mety tsy an'i {name} ny lakile ao amin'ity finday ity. Alaivo sary mivantana ny kaodiny alohan'ny hitokisanao ity resaka ity.",
   "contacts.verify.compared_body":
-    "Nanamafy kaody mitovy ianao sy i {name}. Voamarina ity fifandraisana ity.",
+    "Mifanaraka ny kaody novakin'i {name}, ka voamarina amin'ity finday ity izy. Izy kosa no manamarina anao amin'ny findainy.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Miverina",
@@ -2100,11 +2108,32 @@ export const strings: Strings = {
     "Antonony ho an'ny herinandro na roa lavitra ny famantarana.",
   "settings.general.retention_30_desc":
     "Mitazona ny resaka ho vakiana ela indrindra, ary mitana kapila be indrindra.",
+  "settings.general.message_retention": "Hafatra manjavona",
+  "settings.general.message_retention_desc":
+    "Voafafa amin'ity finday ity ny hafatra sy ny media miaraka aminy aorian'ny fotoana voafidy",
+  "settings.general.message_retention_sheet":
+    "Isaina manomboka amin'ny fotoana nahatongavan'ny hafatra tsirairay teto amin'ity finday ity, ary ity finday ity ihany no manadino. Mitazona ny dika mitovy aminy ny findain'ilay olona hafa, tsy azo sakanana ny pikantsary, ary mijanona ny fandoavana nalefa taminao tamin'ny resaka manokana mbola tsy noraisinao mandra-pandraisinao azy.",
+  "settings.general.message_retention_off_desc":
+    "Mijanona ny hafatra mandra-pamafanao ny resaka na mandra-pialanao aminy",
+  "settings.general.message_retention_1_desc":
+    "Kely indrindra no avela, raha ny finday mihitsy no loza",
+  "settings.general.message_retention_7_desc":
+    "Herinandro iray hanarahana, dia lasa",
+  "settings.general.message_retention_30_desc":
+    "Mitazona ny resaka ho azo vakiana ela indrindra",
+  "settings.general.message_retention_confirm_title":
+    "Hamafa ny hafatra taloha kokoa?",
+  "settings.general.message_retention_confirm_1":
+    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 1 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+  "settings.general.message_retention_confirm_7":
+    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 7 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+  "settings.general.message_retention_confirm_30":
+    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 30 andro, miaraka amin'ny media. Tsy azo foanana izany.",
   "settings.general.reset_desc":
     "Mamerina ny safidy amin'ny laoniny, fa tsy mikasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao",
   "settings.general.reset_title": "Averina ny fandrindrana?",
   "settings.general.reset_body":
-    "Miverina amin'ny laoniny ny safidy, ao anatin'izany ny endrika, ny fiteny, ny fampandrenesana, ny fanafoanana fandefasana, ary ny fifandraisana (vavahady, tetezan'ny harato, mpanelanelana). Mijanona araka ny nametrahanao azy ny hidin'ny Airhop, ny faharetan'ny fitehirizana media, ny bokotra Internet, ny Tor sy ny tetezany, ary ny toe-javatrao. Tsy voakasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao.",
+    "Miverina amin'ny laoniny ny safidy, ao anatin'izany ny endrika, ny fiteny, ny fampandrenesana, ny fanafoanana fandefasana, ary ny fifandraisana (vavahady, tetezan'ny harato, mpanelanelana). Mijanona araka ny nametrahanao azy ny hidin'ny Airhop, ny faharetan'ny fitehirizana hafatra sy media, ny bokotra Internet, ny Tor sy ny tetezany, ary ny toe-javatrao. Tsy voakasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao.",
   "settings.general.reset_confirm": "Avereno",
 
   // ---- Settings: privacy and security ----

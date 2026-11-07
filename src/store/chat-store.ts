@@ -3,10 +3,16 @@
 
 import type { CatalogKey, TranslationVars } from "@i18n";
 import { MAX_CHANNEL_NAME } from "@utils/deep-link";
+import { isMessageExpired, type WalletClaims } from "@utils/message-expiry";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useActivityStore } from "./activity-store";
 import { useChannelMembersStore } from "./channel-members-store";
+import {
+  forgetExpiredMessages,
+  rememberExpiredMessages,
+  wasExpiredMessage,
+} from "./expired-messages";
 import { getStorage } from "./mmkv";
 import { OUTBOX_TTL_MS } from "./outbox-store";
 
@@ -65,6 +71,13 @@ export interface ChatMessage {
   senderNickname: string;
   text: string;
   timestampMs: number;
+  // When the row reached this phone, by this phone's clock: stamped by
+  // addMessage, so a received message carries its arrival and our own its
+  // send. Disappearing messages count from it rather than from `timestampMs`,
+  // which is the sender's clock: a courier or Nostr message days late would
+  // otherwise vanish on arrival, and a sender whose clock runs fast would keep
+  // theirs longer. Never sent. Absent only on rows stored before it existed.
+  receivedAtMs?: number;
   isMine: boolean;
   attachment?: ChatAttachment;
   // Local-only notice rendered as centered muted text instead of a bubble
@@ -277,6 +290,15 @@ interface ChatState {
   // Remove a single message. Used by Undo Send to pull an outgoing message back
   // during its brief hold window, before it is ever transmitted.
   removeMessage: (channel: string, id: string) => void;
+  // Remove every message the disappearing-messages window has retired (see
+  // utils/message-expiry), in every channel, and return them. A removed DM's
+  // ID is remembered, so a resend of it is refused (see addMessage).
+  removeExpired: (
+    nowMs: number,
+    windowMs: number,
+    claims?: WalletClaims,
+    awaitingReceipt?: ReadonlySet<string>,
+  ) => ChatMessage[];
   // Move a live stream's row on: a new state, or its recording in place of
   // the picture (`liveVideo` undefined and `attachment` set). Touches only a
   // row that is, or was, a live stream.
@@ -328,6 +350,29 @@ export function subscribeInboundMessages(fn: InboundListener): () => void {
   return () => {
     inboundListeners.delete(fn);
   };
+}
+
+// Rows that left the store: a removed message, a cleared or left
+// conversation, the oldest rows a full thread trims, and expired ones. Fired
+// after the state no longer holds them, so an observer counting what still
+// references a file sees the store as it now is. A side channel for the same
+// reason as the inbound one: file deletion (services/file-transfer-service)
+// stays out of this store.
+//
+// Not fired by clearAll: the panic wipe empties the cache directory itself.
+type RemovedListener = (removed: readonly ChatMessage[]) => void;
+const removedListeners = new Set<RemovedListener>();
+
+export function subscribeRemovedMessages(fn: RemovedListener): () => void {
+  removedListeners.add(fn);
+  return () => {
+    removedListeners.delete(fn);
+  };
+}
+
+function notifyRemoved(removed: readonly ChatMessage[]): void {
+  if (removed.length === 0) return;
+  for (const fn of removedListeners) fn(removed);
 }
 
 // Max messages kept in memory per channel. Oldest are trimmed.
@@ -561,6 +606,11 @@ export const useChatStore = create<ChatState>()(
         ) {
           return false;
         }
+        // The same for a DM the disappearing-messages setting already removed,
+        // resent because its DELIVERED never reached the sender.
+        if (msg.channel.startsWith("dm:") && wasExpiredMessage(msg.id)) {
+          return false;
+        }
         // Decide this before the set() runs: was it already present? Observers
         // must fire exactly once for a new message and never for a duplicate
         // (mesh flooding delivers the same message by several paths).
@@ -569,6 +619,7 @@ export const useChatStore = create<ChatState>()(
         // Whether the message survives the trim. One older than everything the
         // thread keeps is gone on arrival, so nobody is notified about it.
         let stored = isDuplicate;
+        let trimmed: ChatMessage[] = [];
 
         set((state) => {
           const existing = state.messages[msg.channel] ?? [];
@@ -582,6 +633,11 @@ export const useChatStore = create<ChatState>()(
           const base = replacing
             ? existing.filter((m) => m !== prior)
             : existing;
+          // The radio copy of a bridged row arrived when the row did.
+          const arrived: ChatMessage = {
+            ...msg,
+            receivedAtMs: msg.receivedAtMs ?? prior?.receivedAtMs ?? Date.now(),
+          };
           // Insert by timestamp instead of appending. Mesh messages can arrive
           // out of order (a multi-hop relay is slower than a direct link but
           // still carries the ORIGINAL sender timestamp), which otherwise
@@ -599,15 +655,16 @@ export const useChatStore = create<ChatState>()(
           }
           const next = [
             ...base.slice(0, insertAt),
-            msg,
+            arrived,
             ...base.slice(insertAt),
           ];
           // Trim to cap, then keep the unread count consistent with what is left.
           const overflow = next.length - MAX_PER_CHANNEL;
           const dropped = overflow > 0 ? next.slice(0, overflow) : [];
-          const trimmed = overflow > 0 ? next.slice(overflow) : next;
-          const keptNew = !dropped.includes(msg);
+          const kept = overflow > 0 ? next.slice(overflow) : next;
+          const keptNew = !dropped.includes(arrived);
           stored = keptNew;
+          trimmed = dropped;
           // The unread messages are the newest `prevUnread` from others, so the
           // oldest `othersBefore - prevUnread` of theirs were read long ago. Only
           // a trimmed message past that read prefix was still unread; counting
@@ -616,7 +673,7 @@ export const useChatStore = create<ChatState>()(
           const othersBefore = existing.filter((m) => !m.isMine).length;
           const readOthers = Math.max(0, othersBefore - prevUnread);
           const droppedOthers = dropped.filter(
-            (m) => m !== msg && !m.isMine,
+            (m) => m !== arrived && !m.isMine,
           ).length;
           const droppedUnread = Math.max(0, droppedOthers - readOthers);
           const isUnread =
@@ -627,10 +684,11 @@ export const useChatStore = create<ChatState>()(
           const newUnread =
             Math.max(0, prevUnread - droppedUnread) + (isUnread ? 1 : 0);
           return {
-            messages: { ...state.messages, [msg.channel]: trimmed },
+            messages: { ...state.messages, [msg.channel]: kept },
             unreadCounts: { ...state.unreadCounts, [msg.channel]: newUnread },
           };
         });
+        notifyRemoved(trimmed);
 
         // Ring is excluded: mesh-service.onRing already decided whether to
         // alert (notification-policy.ringVerdict) and raises it through
@@ -713,13 +771,64 @@ export const useChatStore = create<ChatState>()(
       },
 
       removeMessage(channel, id) {
+        let removed: ChatMessage[] = [];
         set((state) => {
           const existing = state.messages[channel];
           if (existing === undefined) return state;
           const next = existing.filter((m) => m.id !== id);
           if (next.length === existing.length) return state;
+          removed = existing.filter((m) => m.id === id);
           return { messages: { ...state.messages, [channel]: next } };
         });
+        notifyRemoved(removed);
+      },
+
+      removeExpired(nowMs, windowMs, claims, awaitingReceipt) {
+        const removed: ChatMessage[] = [];
+        set((state) => {
+          let messages: Record<string, ChatMessage[]> | null = null;
+          let unreadCounts: Record<string, number> | null = null;
+          for (const [channel, list] of Object.entries(state.messages)) {
+            const kept: ChatMessage[] = [];
+            for (const m of list) {
+              (isMessageExpired(m, nowMs, windowMs, claims, awaitingReceipt)
+                ? removed
+                : kept
+              ).push(m);
+            }
+            if (kept.length === list.length) continue;
+            messages ??= { ...state.messages };
+            messages[channel] = kept;
+            // The unread messages are the newest from others, so the count
+            // becomes how many of those the sweep left. Counting what is left
+            // from others instead would let an old row kept past the window
+            // (a token not yet claimed) hold up a badge for nothing unread.
+            const unread = state.unreadCounts[channel] ?? 0;
+            if (unread > 0) {
+              const stays = new Set(kept);
+              let left = 0;
+              let seen = 0;
+              for (let i = list.length - 1; i >= 0 && seen < unread; i--) {
+                if (list[i].isMine) continue;
+                seen++;
+                if (stays.has(list[i])) left++;
+              }
+              if (left < unread) {
+                unreadCounts ??= { ...state.unreadCounts };
+                unreadCounts[channel] = left;
+              }
+            }
+          }
+          if (messages === null) return state;
+          return unreadCounts === null
+            ? { messages }
+            : { messages, unreadCounts };
+        });
+        rememberExpiredMessages(
+          removed.filter((m) => m.channel.startsWith("dm:")).map((m) => m.id),
+        );
+        notifyRemoved(removed);
+        return removed;
       },
 
       setLiveVideoRow(channel, id, row) {
@@ -786,6 +895,10 @@ export const useChatStore = create<ChatState>()(
         // Leaving takes the key, so who else held it is no longer ours to
         // keep. Rejoining rebuilds the roster from live traffic.
         useChannelMembersStore.getState().clearChannel(channel);
+        // Its history leaves this device, and the bell's previews are a copy
+        // of that history.
+        useActivityStore.getState().removeChannel(channel);
+        const removed = get().messages[channel] ?? [];
         set((state) => {
           const channels = state.channels.filter((c) => c !== channel);
           const messages = { ...state.messages };
@@ -834,6 +947,7 @@ export const useChatStore = create<ChatState>()(
             clearedAt: markCleared(state.clearedAt, channel),
           };
         });
+        notifyRemoved(removed);
       },
 
       togglePinChannel(channel: string) {
@@ -856,6 +970,8 @@ export const useChatStore = create<ChatState>()(
       // itself (and its key, pin and mute) intact, distinct from removeChannel,
       // which deletes the channel entirely.
       clearChannelMessages(channel: string) {
+        useActivityStore.getState().removeChannel(channel);
+        const removed = get().messages[channel] ?? [];
         set((state) => {
           const messages = { ...state.messages };
           delete messages[channel];
@@ -865,6 +981,7 @@ export const useChatStore = create<ChatState>()(
             clearedAt: markCleared(state.clearedAt, channel),
           };
         });
+        notifyRemoved(removed);
       },
 
       noteGeoCardExchange(
@@ -1043,6 +1160,7 @@ export const useChatStore = create<ChatState>()(
           geoCardExchange: {},
           clearedAt: {},
         });
+        forgetExpiredMessages();
       },
     }),
     {

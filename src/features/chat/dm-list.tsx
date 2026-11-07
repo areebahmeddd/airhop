@@ -17,6 +17,7 @@ import { useChatStore } from "@store/chat-store";
 import { loadDraft } from "@store/composer-drafts";
 import { isVerified, useContactsStore } from "@store/contacts-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
+import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import EmptyState from "@ui/components/empty-state";
@@ -36,6 +37,10 @@ import {
 import { dmMatches, type DmFilter } from "@utils/chat-filter";
 import { sortConversationsByActivity } from "@utils/conversation-order";
 import { formatListTimestamp } from "@utils/format";
+import {
+  messageRetentionWindowMs,
+  withoutExpiredInAll,
+} from "@utils/message-expiry";
 import { messagePreviewText } from "@utils/message-preview";
 import { resolveDisplayName } from "@utils/peer-display-name";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -53,6 +58,7 @@ import ReanimatedSwipeable, {
 import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
 import ContactInfoSheet from "./contact-info-sheet";
 import { leaveConversation } from "./leave-conversation";
+import { useAwaitingReceipt } from "./use-awaiting-receipt";
 
 interface Props {
   onSelectDM: (channel: string) => void;
@@ -90,6 +96,20 @@ export default function DmList({
     const id = setInterval(() => setNowMs(Date.now()), 15_000);
     return () => clearInterval(id);
   }, []);
+  // Rows disappearing messages retired leave the preview and the order within
+  // a tick of expiring, as they leave the thread, not at the next sweep.
+  const messageRetentionDays = useSettingsStore((s) => s.messageRetentionDays);
+  const awaitingReceipt = useAwaitingReceipt();
+  const shownMessages = useMemo(
+    () =>
+      withoutExpiredInAll(
+        messages,
+        nowMs,
+        messageRetentionWindowMs(messageRetentionDays),
+        awaitingReceipt,
+      ),
+    [messages, nowMs, messageRetentionDays, awaitingReceipt],
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [moreOptionsDM, setMoreOptionsDM] = useState<string | null>(null);
   // Which DM's contact-info sheet is open (null when closed).
@@ -228,7 +248,7 @@ export default function DmList({
           },
         }),
     ),
-    messages,
+    shownMessages,
     pinnedChannels,
   );
 
@@ -240,7 +260,7 @@ export default function DmList({
         renderItem={({ item }) => {
           const peerID = item.slice(3);
           const username = resolveDisplayName(peerID);
-          const msgs = messages[item] ?? [];
+          const msgs = shownMessages[item] ?? [];
           const last = msgs[msgs.length - 1];
           // One line, as a preview is: newlines and runs of spaces collapse.
           const draft = loadDraft(item).replace(/\s+/g, " ").trim();

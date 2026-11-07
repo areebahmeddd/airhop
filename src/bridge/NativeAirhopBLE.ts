@@ -35,7 +35,33 @@ export interface Spec extends TurboModule {
   stopScanning(): Promise<void>;
 
   // Write raw bytes to a connected peer, base64-encoded for bridge safety.
-  writeToLink(linkID: string, dataBase64: string): Promise<void>;
+  // Each link has its own FIFO queue in native, released as the radio takes
+  // each write.
+  //
+  // `ttlMs` is how long the write may wait in that queue: greater than 0, it
+  // is dropped unsent once it has waited longer, at the head or when a later
+  // write is queued; 0 never expires.
+  // TypeScript sets it from the packet type (core/mesh/links/write-deadline.ts),
+  // so native never reads the bytes.
+  //
+  // Resolves on enqueue, not on transmit, with the number of writes on that
+  // link not yet handed to the radio, this one included: 0 when it was handed
+  // over at once. That depth is what a live stream paces itself by. Rejects
+  // WRITE_BUSY only when that link's queue is full (Android 256 entries or
+  // 1 MiB, iOS 128 entries); a link that is unknown or not ready rejects with
+  // its own code.
+  writeToLink(
+    linkID: string,
+    dataBase64: string,
+    ttlMs: number,
+  ): Promise<number>;
+
+  // Whether a live stream is being sent or received here. While true, native
+  // raises connection priority: Android
+  // requestConnectionPriority(CONNECTION_PRIORITY_HIGH) on its central GATTs,
+  // iOS peripheral setDesiredConnectionLatency(.low). False lowers it again.
+  // A hint, so JS ignores a rejection.
+  setLiveMediaActive(active: boolean): Promise<void>;
 
   // Everything the device will report about whether BLE can run right now.
   //

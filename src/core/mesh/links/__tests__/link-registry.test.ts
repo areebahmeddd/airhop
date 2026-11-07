@@ -4,30 +4,41 @@
 // first few `directPeers()`, so a reshuffle silently changes who carries the
 // mail.
 import {
+  CROWDED_BLE_QUEUE,
   LinkRegistry,
   TRANSPORT_KINDS,
   type LinkWriteFn,
   type TransportKind,
 } from "../link-registry";
+import { LIVE_WRITE_TTL_MS } from "../write-deadline";
 
 interface Recorder {
   readonly writes: { linkID: string; data: string }[];
+  // The ttlMs each write in `writes` carried, in the same order.
+  readonly ttls: number[];
   readonly writers: Record<TransportKind, LinkWriteFn>;
   fail(linkID: string): void;
+  // The queue depth a link's writes resolve to; 0 unless set.
+  queue(linkID: string, depth: number): void;
 }
 
 function recorder(): Recorder {
   const writes: { linkID: string; data: string }[] = [];
+  const ttls: number[] = [];
   const failing = new Set<string>();
-  const write = (): LinkWriteFn => (linkID, data) => {
+  const depths = new Map<string, number>();
+  const write = (): LinkWriteFn => (linkID, data, ttlMs) => {
     if (failing.has(linkID)) return Promise.reject(new Error("refused"));
     writes.push({ linkID, data });
-    return Promise.resolve();
+    ttls.push(ttlMs);
+    return Promise.resolve(depths.get(linkID) ?? 0);
   };
   return {
     writes,
+    ttls,
     writers: { ble: write(), wifi: write(), lan: write() },
     fail: (linkID) => failing.add(linkID),
+    queue: (linkID, depth) => depths.set(linkID, depth),
   };
 }
 
@@ -365,8 +376,17 @@ describe("LinkRegistry", () => {
     });
 
     it("send() to a link we do not hold resolves without writing", async () => {
-      await expect(links.send("c:gone", "AAAA")).resolves.toBeUndefined();
+      await expect(links.send("c:gone", "AAAA")).resolves.toBe(0);
       expect(rec.writes).toHaveLength(0);
+    });
+
+    it("send() hands the radio the deadline, never expiring by default, and resolves its queue depth", async () => {
+      links.open("ble", "c:1");
+      rec.queue("c:1", 4);
+
+      await expect(links.send("c:1", "AAAA")).resolves.toBe(4);
+      await expect(links.send("c:1", "BBBB", 1_500)).resolves.toBe(4);
+      expect(rec.ttls).toEqual([0, 1_500]);
     });
 
     it("send() propagates a refusal so callers keep their own handling", async () => {
@@ -422,11 +442,122 @@ describe("LinkRegistry", () => {
       links.bind("c:2", "peer-b");
       rec.fail("c:2");
 
-      await expect(links.broadcastFastest("AAAA")).resolves.toEqual({
-        sent: 1,
-        refused: 1,
-      });
+      await expect(
+        links.broadcastFastest("AAAA", { ttlMs: 1_500 }),
+      ).resolves.toEqual({ sent: 1, refused: 1, skipped: 0, queued: 0 });
       expect(rec.writes.map((w) => w.linkID)).toEqual(["lan-out-1"]);
+      expect(rec.ttls).toEqual([1_500]);
+    });
+
+    // One stalled neighbor (a link whose peer walked away) must not set the
+    // pace for the room, so the depth reported is the takers' lower median.
+    it("broadcastFastest() reports the takers' typical queue depth, not the deepest", async () => {
+      links.open("ble", "c:1");
+      links.open("ble", "c:2");
+      links.open("ble", "c:3");
+      links.open("ble", "c:4");
+      links.bind("c:1", "peer-a");
+      links.bind("c:2", "peer-b");
+      links.bind("c:3", "peer-c");
+      links.bind("c:4", "peer-d");
+      rec.queue("c:1", 2);
+      rec.queue("c:2", 90);
+      rec.queue("c:3", 3);
+      rec.fail("c:4");
+
+      await expect(
+        links.broadcastFastest("AAAA", { ttlMs: 1_500 }),
+      ).resolves.toEqual({ sent: 3, refused: 1, skipped: 0, queued: 3 });
+    });
+
+    it("broadcastFastest() as a relay skips every link of the peer the bytes came from", async () => {
+      links.open("ble", "c:a");
+      links.open("ble", "p:a");
+      links.open("lan", "lan-in-a");
+      links.open("ble", "c:b");
+      links.open("ble", "p:9");
+      links.bind("c:a", "peer-a");
+      links.bind("p:a", "peer-a");
+      links.bind("lan-in-a", "peer-a");
+      links.bind("c:b", "peer-b");
+
+      expect(links.fastestLinks("p:a")).toEqual([
+        { id: "c:b", kind: "ble" },
+        { id: "p:9", kind: "ble" },
+      ]);
+      await links.broadcastFastest("AAAA", { ttlMs: 1_500, exclude: "p:a" });
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["c:b", "p:9"]);
+    });
+
+    // A stream relayed off Wi-Fi at Wi-Fi's pace would otherwise fill the
+    // Bluetooth neighbor's queue and lock chat, announces and handshakes out.
+    it("broadcastFastest() passes a crowded Bluetooth link by until it drains", async () => {
+      links = new LinkRegistry(rec.writers, () => 0);
+      links.open("ble", "c:1");
+      links.open("ble", "c:2");
+      links.open("wifi", "wifi-1");
+      links.bind("c:1", "peer-a");
+      links.bind("c:2", "peer-b");
+      links.bind("wifi-1", "peer-c");
+      rec.queue("c:1", CROWDED_BLE_QUEUE);
+      rec.queue("wifi-1", CROWDED_BLE_QUEUE * 4);
+
+      await links.broadcastFastest("AAAA", { ttlMs: 1_500 });
+      expect(links.queueDepth("c:1")).toBe(CROWDED_BLE_QUEUE);
+      rec.writes.length = 0;
+
+      // Skipped, its depth still in the median the stream steers by. Wi-Fi
+      // has no such queue to protect.
+      await expect(
+        links.broadcastFastest("AAAA", { ttlMs: 1_500 }),
+      ).resolves.toMatchObject({ sent: 2, refused: 0, skipped: 1 });
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["c:2", "wifi-1"]);
+
+      // Chat still goes, and its write reports the drained queue.
+      rec.queue("c:1", 3);
+      await links.broadcast("BBBB", { kind: "ble" });
+      expect(links.queueDepth("c:1")).toBe(3);
+      rec.writes.length = 0;
+
+      await links.broadcastFastest("AAAA", { ttlMs: 1_500 });
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["c:1", "c:2", "wifi-1"]);
+    });
+
+    it("a crowded reading lapses with the live write deadline", async () => {
+      let nowMs = 0;
+      links = new LinkRegistry(rec.writers, () => nowMs);
+      links.open("ble", "c:1");
+      rec.queue("c:1", CROWDED_BLE_QUEUE + 10);
+      await links.broadcastFastest("AAAA", { ttlMs: 1_500 });
+      rec.writes.length = 0;
+
+      await links.broadcastFastest("AAAA", { ttlMs: 1_500 });
+      expect(rec.writes).toHaveLength(0);
+
+      nowMs = LIVE_WRITE_TTL_MS;
+      expect(links.queueDepth("c:1")).toBe(0);
+      await links.broadcastFastest("AAAA", { ttlMs: 1_500 });
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["c:1"]);
+    });
+
+    it("forgets a closed link's queue depth", async () => {
+      links.open("ble", "c:1");
+      rec.queue("c:1", CROWDED_BLE_QUEUE);
+      await links.send("c:1", "AAAA");
+      links.close("c:1");
+      links.open("ble", "c:1");
+
+      expect(links.queueDepth("c:1")).toBe(0);
+    });
+
+    it("broadcastFastest() excluding an unbound link skips that link alone", async () => {
+      links.open("ble", "p:8");
+      links.open("ble", "p:9");
+      links.open("ble", "c:b");
+      links.bind("c:b", "peer-b");
+
+      await links.broadcastFastest("AAAA", { ttlMs: 0, exclude: "p:8" });
+      expect(rec.writes.map((w) => w.linkID)).toEqual(["p:9", "c:b"]);
     });
 
     it("a refused write never closes the link", async () => {

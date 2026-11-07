@@ -42,7 +42,7 @@ export function ProtectionStack() {
               width={896}
               height={32}
               rx={2}
-              fill={i % 2 === 0 ? FILL : "var(--dg-fill)"}
+              fill={FILL}
               stroke={LINE}
               strokeWidth={0.8}
             />

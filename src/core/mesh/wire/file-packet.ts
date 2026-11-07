@@ -23,13 +23,15 @@ export const MAX_IMAGE_BYTES = 512 * 1024;
 //
 // bitchat expires a half-built assembly 30 seconds after the FIRST fragment
 // arrives, not 30 seconds after the last: BLEFragmentAssemblyBuffer stamps its
-// `timestamp` once at startAssemblyIfNeeded and never refreshes it. At the ~20ms
-// pacing both clients use, 512 KiB is around 1,120 frames and 22 seconds, so a
-// photo at the budget only lands if the link never makes us retry a single
-// frame. 256 KiB is about 11 seconds, which leaves room for the backoff a busy
-// link forces. bitchat's own photos are 45 KB at a 448px edge, so this stays
-// generous by comparison, and Airhop-to-Airhop is unaffected either way: our own
-// reassembly times out on idle, not on total duration.
+// `timestamp` once at startAssemblyIfNeeded and never refreshes it. At the
+// fragment spacing both clients use, 25 ms to one peer and 30 ms to the room,
+// 512 KiB is around 1,120 frames: 28.1 s in a DM and 33.7 s in the room, so a
+// photo at the budget misses the window in the room and lands in a DM only if
+// the link never makes us retry a single frame. 256 KiB is 14.0 s and 16.9 s,
+// which leaves room for the backoff a busy link forces. bitchat's own photos
+// are 45 KB at a 448px edge, so this stays generous by comparison, and
+// Airhop-to-Airhop is unaffected either way: our own reassembly times out on
+// idle, not on total duration.
 export const MAX_SENT_IMAGE_BYTES = 256 * 1024;
 
 // Longest video the camera will record, in seconds. A recording is shrunk
@@ -45,8 +47,9 @@ export const MAX_VIDEO_SECONDS = 15;
 export const MAX_BITCHAT_VIDEO_BYTES = 100 * 1024;
 
 // The largest transfer that reliably completes inside bitchat's 30-second
-// assembly window, with room for the retries a busy link forces. At the ~20ms
-// pacing both clients use and 467 data bytes per frame, this is about 15 seconds.
+// assembly window, with room for the retries a busy link forces. At the 25 ms
+// (one peer) and 30 ms (the room) fragment spacing both clients use, and 467
+// data bytes per frame, this is 19.2 s and 23.0 s.
 //
 // Not a cap: Airhop-to-Airhop happily carries the full MAX_FILE_BYTES, because
 // our own reassembly times out on idle rather than on total duration. It is the
@@ -77,9 +80,13 @@ export function wireMediaName(
 }
 
 // A round video note is an ordinary video file, marked only by its name, so
-// bitchat and older builds show it as a plain video and nothing on the wire
-// changes. Never bitchat's `video_<16 hex>.mp4`: that names a finished live
+// bitchat shows it as a plain video and nothing on the wire changes. Never bitchat's `video_<16 hex>.mp4`: that names a finished live
 // stream, and a bitchat receiver would try to swap it into a live bubble.
+//
+// bitchat gives video no stable ID, so the UUID in a note's or a clip's name is
+// what Airhop's own ID hashes (privateVideoStableID, private-video-id.ts): two
+// Airhop phones get a delivery receipt and arrival dedup for it, and a bitchat
+// phone sees an ordinary file. Keep the UUID, or both go.
 const VIDEO_NOTE_NAME = /^note_[0-9a-f-]{36}(?: \(\d+\))?\.mp4$/i;
 
 export function videoNoteName(): string {
@@ -91,8 +98,9 @@ export function isVideoNoteName(name: string | undefined): boolean {
   return name !== undefined && VIDEO_NOTE_NAME.test(name);
 }
 
-// A shrunk video, named the way bitchat names its clips. No client reads the
-// name; it only has to stay clear of `video_`, below.
+// A shrunk video, under bitchat's `clip_` stem. No client shows the name; it
+// has to stay clear of `video_`, below, and carry a whole UUID where bitchat
+// writes 8 hex digits, since the UUID is what the stable ID above hashes.
 export function videoClipName(): string {
   return `clip_${uuidV4()}.mp4`;
 }

@@ -1,5 +1,6 @@
 import LanguagePicker from "@/components/ui/LanguagePicker";
 import PixelBird from "@/components/ui/PixelBird";
+import TextLink from "@/components/ui/TextLink";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { useT, type TranslationKey } from "@/i18n";
 import { useRichText } from "@/i18n/rich-text";
@@ -106,14 +107,9 @@ function Credit() {
     () => ({
       heart: <PixelHeart />,
       author: (
-        <a
-          href={AUTHOR_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hover:text-ink underline underline-offset-2 transition-colors duration-150"
-        >
+        <TextLink href={AUTHOR_URL} tone="quiet">
           {AUTHOR_NAME}
-        </a>
+        </TextLink>
       ),
     }),
     [],

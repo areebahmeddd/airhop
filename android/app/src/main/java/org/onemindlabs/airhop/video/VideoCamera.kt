@@ -132,10 +132,17 @@ internal object VideoCamera {
     fun stop() {
         generation++
         stopEncoding {}
-        provider?.unbindAll()
+        unbindOwn()
         preview = null
         analysis = null
         keepScreenOn(false)
+    }
+
+    // Only this camera's own use cases. The provider is process-wide, so
+    // unbindAll would also stop expo-camera's.
+    private fun unbindOwn() {
+        val bound = listOfNotNull(preview, analysis)
+        if (bound.isNotEmpty()) provider?.unbind(*bound.toTypedArray())
     }
 
     // A studio is a camera people prop up and leave. The screen timing out
@@ -247,7 +254,7 @@ internal object VideoCamera {
         val camera =
             if (facing == "back") CameraSelector.DEFAULT_BACK_CAMERA
             else CameraSelector.DEFAULT_FRONT_CAMERA
-        provider.unbindAll()
+        unbindOwn()
         val bound = provider.bindToLifecycle(lifecycle, camera, nextPreview, nextAnalysis)
         // Each bind (a new quality, the other camera) would otherwise add an
         // observer beside the last, and one error would be reported over and over.

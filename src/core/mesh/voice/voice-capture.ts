@@ -596,15 +596,21 @@ export function decodeBurstPacket(payload: Uint8Array): BurstPacket | null {
       return { kind: "start", burstID, seq, codec };
     }
     case BurstFlags.DATA: {
+      // Strict, as both bitchat decoders are: an empty frame, a byte left over
+      // that cannot hold a length, or a frame past the per-packet cap refuses
+      // the whole packet rather than playing whatever parsed.
       const frames: Uint8Array[] = [];
       let off = 0;
-      while (off + 2 <= rest.length && frames.length < MAX_FRAMES_PER_PACKET) {
+      while (off < rest.length) {
+        if (rest.length - off < 2 || frames.length >= MAX_FRAMES_PER_PACKET) {
+          return null;
+        }
         const len = new DataView(rest.buffer, rest.byteOffset + off).getUint16(
           0,
           false,
         );
         off += 2;
-        if (off + len > rest.length) return null;
+        if (len === 0 || off + len > rest.length) return null;
         frames.push(rest.slice(off, off + len));
         off += len;
       }

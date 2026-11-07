@@ -680,12 +680,12 @@ test("B08b a rehandshake with a peer whose last announce is past the TTL ends on
 });
 
 test("B08c a rehandshake whose msg3 is lost converges without a restart", async () => {
-  // Alice comes back from a crash and opens a new session. She completes it
-  // on bob's msg2; her msg3 never reaches him, so he keeps the old one. Each
-  // side now seals under keys the other does not hold, and neither side's
-  // recovery fires, since each still has a session. She then walks out of
-  // range for longer than his attempt lasts, as the link that lost msg3
-  // usually means.
+  // Alice comes back from a crash and writes to bob, which opens a new
+  // session. She completes it on bob's msg2; her msg3 never reaches him, so he
+  // keeps the old one. Each side now seals under keys the other does not
+  // hold, and neither side's recovery fires, since each still has a session.
+  // She then walks out of range for longer than his attempt lasts, as the
+  // link that lost msg3 usually means.
   const s = (scenario = new Scenario({
     id: "B08c",
     title: "rehandshake with a lost msg3",
@@ -710,6 +710,10 @@ test("B08c a rehandshake whose msg3 is lost converges without a restart", async 
     return true;
   });
   alice.relaunch();
+  // Something has to need the session: bob's DM was delivered and
+  // acknowledged before the crash, so nothing is owed in either direction.
+  await waitFor(s.world, () => alice.peers().includes(bob.peerID), 30_000);
+  alice.send(`dm:${bob.peerID}`, "back up");
   await waitFor(s.world, () => lost, 30_000);
   restore();
   s.check("alice's msg3 was lost", lost);

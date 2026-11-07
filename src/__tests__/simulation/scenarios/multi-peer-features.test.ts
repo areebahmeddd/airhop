@@ -811,7 +811,7 @@ test("F13 mail written with nobody in range goes to the first carrier that arriv
 test("F11 a message read after its sender left still reports read, over Nostr", async () => {
   // Bob gets alice's DM over Bluetooth but opens it only after she has walked
   // away. The read receipt owed over the mesh has no route left, and bob still
-  // holds the npub alice announced.
+  // holds the npub alice handed over inside their session.
   const s = (scenario = new Scenario({
     id: "F11",
     title: "a read receipt follows its sender onto the internet",

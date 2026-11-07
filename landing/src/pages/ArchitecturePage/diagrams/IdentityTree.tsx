@@ -47,14 +47,7 @@ export function IdentityTree() {
       <line x1={526} y1={147} x2={588} y2={147} stroke={LINE} markerEnd="url(#id-arrow)" />
       <line x1={526} y1={225} x2={588} y2={225} stroke={LINE} markerEnd="url(#id-arrow)" />
 
-      <Box
-        x={592}
-        y={44}
-        w={304}
-        h={54}
-        label="Internet DMs and nutzaps"
-        sub="one stable identity everywhere"
-      />
+      <Box x={592} y={44} w={304} h={54} label="Internet DMs" sub="one stable Nostr identity" />
       <Box
         x={592}
         y={120}
@@ -68,13 +61,13 @@ export function IdentityTree() {
         y={198}
         w={304}
         h={54}
-        label="swift-falcon-3a9f"
-        sub="deterministic name, cannot be squatted"
+        label="swift-falcon-6925"
+        sub="a readable label, not proof of identity"
       />
 
       <text x={16} y={306} fontFamily={MONO} fontSize={10} fill={MUTED}>
-        Both roots live in the iOS Keychain or Android Keystore. Nothing derived from them is ever
-        uploaded.
+        Both roots live in the iOS Keychain or Android Keystore. No private key derived from them is
+        ever uploaded.
       </text>
     </svg>
   );

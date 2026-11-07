@@ -661,6 +661,7 @@ export const strings: Strings = {
   "chat.attach.send": "Надіслати вкладення",
   "chat.attach.generic": "Вкладення",
   "chat.video_prep.preparing": "Підготовка відео",
+  "chat.video_prep.retrying": "Додаткове стиснення",
   "chat.video_prep.waiting": "Відео чекає на підготовку",
   "chat.video_prep.cancel": "Зупинити підготовку цього відео",
   "chat.video_prep.too_large":
@@ -691,9 +692,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Відтворити голосову нотатку",
   "chat.media.pause_video": "Призупинити відео",
   "chat.media.play_video": "Відтворити відео",
-  "chat.media.voice_position": "Позиція в голосовій нотатці",
-  "chat.media.voice_scrub":
-    "Торкайтеся вздовж смужок, щоб перескочити в те місце",
+  "chat.media.voice_back": "Назад на 5 секунд",
+  "chat.media.voice_forward": "Уперед на 5 секунд",
   "chat.media.image": "Зображення",
   "chat.media.tap_load_photo": "Торкніться, щоб завантажити фото",
   "chat.media.open_document": "Відкрити {name}",
@@ -752,6 +752,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Прямий ефір",
   "chat.live_video.go_live": "Почати ефір",
   "chat.live_video.end": "Завершити",
+  "chat.live_video.ending": "Завершення…",
   "chat.live_video.end_title": "Завершити ефір?",
   "chat.live_video.end_body":
     "Після завершення запис залишиться в цьому чаті. Після видалення всіх глядачів попросять його стерти.",
@@ -763,9 +764,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "Низька",
   "chat.live_video.quality_medium": "Середня",
   "chat.live_video.quality_high": "Висока",
-  "chat.live_video.quality_low_hint": "Досягає людей за кілька переходів",
-  "chat.live_video.quality_medium_hint": "Для людей за один-два переходи",
-  "chat.live_video.quality_high_hint": "Для людей зовсім поруч із вами",
+  "chat.live_video.quality_low_hint":
+    "Через Bluetooth досягає людей за кілька переходів",
+  "chat.live_video.quality_medium_hint":
+    "Чіткіша, для глядачів через Wi-Fi Aware або в тій самій мережі Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "Найчіткіша, для глядачів через Wi-Fi Aware або в тій самій мережі Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Потрібен Wi-Fi поблизу",
+  "chat.live_video.quality_bluetooth_note":
+    "Середній і Високій потрібен Wi-Fi поблизу",
   "chat.live_video.signal_good": "Встигає",
   "chat.live_video.signal_weak": "Відстає",
   "chat.live_video.signal_poor":
@@ -781,6 +788,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Проведіть угору, щоб записувати без утримання",
   "chat.voice.live_speaking": "{name} говорить",
   "chat.voice.live_ended": "Завершено",
+  "chat.voice.live_stopped": "Голосовий ефір завершено",
   "voice.unavailable": "Живий голос недоступний",
   "voice.recording_stopped": "Запис зупинено",
 
@@ -1869,13 +1877,15 @@ export const strings: Strings = {
     "Для цього контакту ще немає ключів. Напишіть їм або скануйте їхній код, коли зустрінетеся.",
   "contacts.verify.compare_title": "Прочитайте це одне одному",
   "contacts.verify.compare_body":
-    "{name} бачить в Airhop ті самі шість слів. Якщо вони збігаються, ви обоє знаєте, що ключі справжні. bitchat таких слів не показує, тож натомість відскануйте їхній код.",
-  "contacts.verify.codes_match": "Вони збігаються",
-  "contacts.verify.codes_differ": "Вони не збігаються",
+    "Прочитайте свій код співрозмовнику {name}, щоб той перевірив його на своєму телефоні. Потім звірте код, який він прочитає, з кодом співрозмовника тут. Кожен із вас позначає іншого як підтвердженого на власному телефоні. bitchat таких слів не показує, тож натомість відскануйте їхній код.",
+  "contacts.verify.your_code": "Ваш код",
+  "contacts.verify.their_code": "Код співрозмовника",
+  "contacts.verify.codes_match": "Код співрозмовника збігається",
+  "contacts.verify.codes_differ": "Код співрозмовника не збігається",
   "contacts.verify.codes_differ_body":
     "Можливо, ключі на цьому телефоні належать не {name}. Перш ніж довіряти цьому чату, відскануйте їхній код особисто.",
   "contacts.verify.compared_body":
-    "Ви та {name} підтвердили той самий код. Цей контакт підтверджено.",
+    "Код, який прочитав {name}, збігається, тож на цьому телефоні контакт підтверджено. Вас він підтверджує на своєму телефоні.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Повернутися",
@@ -2035,11 +2045,32 @@ export const strings: Strings = {
     "Золота середина на тиждень-два без зв’язку.",
   "settings.general.retention_30_desc":
     "Найдовше тримає розмови читабельними й найбільше займає на диску.",
+  "settings.general.message_retention": "Зникаючі повідомлення",
+  "settings.general.message_retention_desc":
+    "Повідомлення та їхні медіа видаляються з цього телефона після вибраного часу",
+  "settings.general.message_retention_sheet":
+    "Відлік іде від моменту, коли повідомлення надійшло на цей телефон, і забуває лише цей телефон. Телефон співрозмовника зберігає свою копію, знімкам екрана не запобігти, а платежі з особистих чатів, які ви ще не отримали, лишаються, доки ви їх не отримаєте.",
+  "settings.general.message_retention_off_desc":
+    "Повідомлення лишаються, доки ви не очистите чат або не вийдете з нього",
+  "settings.general.message_retention_1_desc":
+    "Лишається найменше, якщо ризик у самому телефоні",
+  "settings.general.message_retention_7_desc":
+    "Тиждень, щоб усе прочитати, потім зникають",
+  "settings.general.message_retention_30_desc":
+    "Найдовше зберігає листування читабельним",
+  "settings.general.message_retention_confirm_title":
+    "Видалити старіші повідомлення?",
+  "settings.general.message_retention_confirm_1":
+    "Повідомлення, старші за 1 день, буде видалено з цього телефона зараз разом із їхніми медіа. Це не можна скасувати.",
+  "settings.general.message_retention_confirm_7":
+    "Повідомлення, старші за 7 днів, буде видалено з цього телефона зараз разом із їхніми медіа. Це не можна скасувати.",
+  "settings.general.message_retention_confirm_30":
+    "Повідомлення, старші за 30 днів, буде видалено з цього телефона зараз разом із їхніми медіа. Це не можна скасувати.",
   "settings.general.reset_desc":
     "Повертає налаштування до типових, не чіпаючи вашу особистість, повідомлення, контакти та гаманець",
   "settings.general.reset_title": "Скинути налаштування?",
   "settings.general.reset_body":
-    "Налаштування повертаються до типових, зокрема вигляд, мова, сповіщення, скасування надсилання та зв’язок (шлюз, міст mesh, релеї). Блокування Airhop, термін зберігання медіа, перемикач інтернету, Tor і його мости, а також ваш статус лишаються такими, як ви їх налаштували. Ваша особистість, повідомлення, контакти та гаманець лишаються недоторканими.",
+    "Налаштування повертаються до типових, зокрема вигляд, мова, сповіщення, скасування надсилання та зв’язок (шлюз, міст mesh, релеї). Блокування Airhop, термін зберігання повідомлень і медіа, перемикач інтернету, Tor і його мости, а також ваш статус лишаються такими, як ви їх налаштували. Ваша особистість, повідомлення, контакти та гаманець лишаються недоторканими.",
   "settings.general.reset_confirm": "Скинути",
 
   // ---- Settings: privacy and security ----

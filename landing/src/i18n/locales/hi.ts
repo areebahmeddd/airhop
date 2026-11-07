@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "आपकी पहचान एक {ed25519} की-पेयर है, जो आपके डिवाइस पर बनती है और {ios_keychain} या {android_keystore} में रखी जाती है। कोई खाता नहीं, कोई रजिस्ट्रेशन नहीं, और ऐसा कुछ भी नहीं जो किसी सर्वर को छुए, यानी इसे एक बर्नर ऐप की तरह इस्तेमाल किया जा सकता है, जो हटाने के बाद आपसे जुड़ा कुछ भी पीछे नहीं छोड़ता।",
   "home.about.body.crypto":
-    "हर सत्र प्रमाणित हैंडशेक के लिए {noise} प्रोटोकॉल का उपयोग करता है। Airhop फ़ोनों के बीच लाइव सीधे संदेश {ratchet} एल्गोरिद्म का उपयोग करते हैं, यानी अगर बाद में कोई कुंजी लीक हो भी जाए, तो पहले भेजे गए संदेश नहीं खोले जा सकते। पैनिक वाइप एक सेकंड से भी कम में सभी कुंजियाँ और संदेश नष्ट कर देता है।",
+    "हर सत्र प्रमाणित हैंडशेक के लिए {noise} प्रोटोकॉल का उपयोग करता है। Airhop फ़ोनों के बीच लाइव सीधे संदेश {ratchet} एल्गोरिद्म का उपयोग करते हैं, यानी अगर बाद में कोई कुंजी लीक हो भी जाए, तो पहले भेजे गए संदेश नहीं खोले जा सकते। पैनिक वाइप कुछ ही सेकंड में सभी कुंजियाँ और संदेश नष्ट कर देता है।",
   "home.about.body.internet":
     "जब आप और आपका संपर्क Bluetooth की सीमा से बाहर हों, तो {nostr} रिले इंटरनेट पुल का काम करते हैं, और {nip17} शैली के गिफ़्ट-रैप्ड डायरेक्ट मैसेज इस्तेमाल होते हैं, जिससे जब भी आप दोनों ऑनलाइन हों, मेश दुनिया भर तक फैल जाता है। {tor} समर्थन iOS और Android दोनों पर {arti} के ज़रिये उपलब्ध है, और Tor को रोकने वाले नेटवर्कों के लिए {obfs4}, {snowflake} और {webtunnel} ब्रिज भी हैं।",
   "home.about.optional.title": "Airhop में कुछ वैकल्पिक सुविधाएँ हैं जिन्हें आप चालू कर सकते हैं:",
@@ -185,7 +185,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "की-पेयर पहचान",
   "home.features.identity.keys.line": "इसी फ़ोन पर बनी, OS की चाबी-तिजोरी में रखी हुई।",
   "home.features.identity.names.name": "पढ़ने योग्य नाम",
-  "home.features.identity.names.line": "आपकी कुंजी से बने, इसलिए आपका नाम कोई ले नहीं सकता।",
+  "home.features.identity.names.line": "आपकी कुंजी से बने, न चुने जाते हैं, न पंजीकृत होते हैं।",
   "home.features.identity.qr.name": "QR संपर्क",
   "home.features.identity.qr.line": "एक स्कैन उनकी कुंजियाँ लाता है, सिर्फ़ नाम नहीं।",
   "home.features.identity.forward.name": "फ़ॉरवर्ड सीक्रेसी",
@@ -194,7 +194,7 @@ const strings: Strings = {
   "home.features.identity.move.line":
     "चैट और वॉलेट साथ जाते हैं, फिर पुराना फ़ोन ख़ुद को मिटा देता है।",
   "home.features.identity.panic.name": "पैनिक वाइप",
-  "home.features.identity.panic.line": "हर कुंजी और संदेश एक सेकंड से भी कम में नष्ट।",
+  "home.features.identity.panic.line": "हर कुंजी और संदेश कुछ ही सेकंड में नष्ट।",
 
   "home.features.networking.title": "नेटवर्किंग",
   "home.features.networking.summary": "फ़ोन ही नेटवर्क हैं।",

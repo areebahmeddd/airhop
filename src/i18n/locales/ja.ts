@@ -656,6 +656,7 @@ export const strings: Strings = {
   "chat.attach.send": "添付を送信",
   "chat.attach.generic": "添付",
   "chat.video_prep.preparing": "動画を準備中",
+  "chat.video_prep.retrying": "さらに小さくしています",
   "chat.video_prep.waiting": "動画の準備を待機中",
   "chat.video_prep.cancel": "この動画の準備を中止",
   "chat.video_prep.too_large":
@@ -687,8 +688,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "ボイスメモを再生",
   "chat.media.pause_video": "動画を一時停止",
   "chat.media.play_video": "動画を再生",
-  "chat.media.voice_position": "ボイスメモの再生位置",
-  "chat.media.voice_scrub": "バーをタップするとその位置に移動します",
+  "chat.media.voice_back": "5秒戻る",
+  "chat.media.voice_forward": "5秒進む",
   "chat.media.image": "画像",
   "chat.media.tap_load_photo": "タップして写真を読み込む",
   "chat.media.open_document": "{name}を開く",
@@ -745,6 +746,7 @@ export const strings: Strings = {
   "chat.live_video.title": "ライブ動画",
   "chat.live_video.go_live": "配信を開始",
   "chat.live_video.end": "終了",
+  "chat.live_video.ending": "終了しています…",
   "chat.live_video.end_title": "ライブ動画を終了しますか？",
   "chat.live_video.end_body":
     "終了すると録画はこのチャットに残ります。破棄すると、視聴中の全員に削除するよう伝えます。",
@@ -756,9 +758,13 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "低",
   "chat.live_video.quality_medium": "中",
   "chat.live_video.quality_high": "高",
-  "chat.live_video.quality_low_hint": "数ホップ先の人まで届きます",
-  "chat.live_video.quality_medium_hint": "1〜2ホップ先の人向け",
-  "chat.live_video.quality_high_hint": "すぐそばにいる人向け",
+  "chat.live_video.quality_low_hint": "Bluetoothで数ホップ先の人まで届きます",
+  "chat.live_video.quality_medium_hint":
+    "より鮮明、Wi-Fi Awareか同じWi-Fiで見る人向け",
+  "chat.live_video.quality_high_hint":
+    "最も鮮明、Wi-Fi Awareか同じWi-Fiで見る人向け",
+  "chat.live_video.quality_needs_wifi": "近くにWi-Fiが必要です",
+  "chat.live_video.quality_bluetooth_note": "中と高には近くのWi-Fiが必要です",
   "chat.live_video.signal_good": "順調",
   "chat.live_video.signal_weak": "遅れ気味",
   "chat.live_video.signal_poor": "動画には遅すぎるため、音声のみ送信中",
@@ -773,6 +779,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "上にスライドすると手を離して録音できます",
   "chat.voice.live_speaking": "{name}が話しています",
   "chat.voice.live_ended": "終了",
+  "chat.voice.live_stopped": "ライブ音声が終了しました",
   "voice.unavailable": "ライブ通話を使えません",
   "voice.recording_stopped": "録音を停止しました",
 
@@ -1866,13 +1873,15 @@ export const strings: Strings = {
     "この連絡先の鍵はまだありません。メッセージを送るか、会ったときにコードを読み取ってください。",
   "contacts.verify.compare_title": "お互いに読み上げてください",
   "contacts.verify.compare_body":
-    "{name}のAirhopにも同じ6語が表示されています。一致すれば、鍵が本物だとお互いに確認できます。bitchatにはこの言葉がないため、代わりにコードを読み取ってください。",
-  "contacts.verify.codes_match": "一致します",
-  "contacts.verify.codes_differ": "一致しません",
+    "あなたのコードを{name}に読み上げ、相手の端末で確認してもらいます。次に、相手が読み上げたコードをここにある相手のコードと照合してください。確認済みの印は、それぞれが自分の端末で付けます。bitchatにはこの言葉がないため、代わりにコードを読み取ってください。",
+  "contacts.verify.your_code": "あなたのコード",
+  "contacts.verify.their_code": "相手のコード",
+  "contacts.verify.codes_match": "相手のコードが一致します",
+  "contacts.verify.codes_differ": "相手のコードが一致しません",
   "contacts.verify.codes_differ_body":
     "この端末の鍵は{name}のものではないかもしれません。このチャットを信頼する前に、直接会ってコードを読み取ってください。",
   "contacts.verify.compared_body":
-    "あなたと{name}が同じコードを確認しました。この連絡先は検証済みです。",
+    "{name}が読み上げたコードは一致しました。この端末では相手が検証済みになりました。あなたのことは相手が自分の端末で検証します。",
 
   // ---- Settings: shared chrome ----
   "settings.back": "戻る",
@@ -2026,11 +2035,32 @@ export const strings: Strings = {
     "電波の届かない場所で1〜2週間過ごす場合の中間案です。",
   "settings.general.retention_30_desc":
     "会話を最も長く読める状態に保ち、その分ディスクも使います。",
+  "settings.general.message_retention": "消えるメッセージ",
+  "settings.general.message_retention_desc":
+    "メッセージとそのメディアは、選んだ期間が過ぎるとこの端末から削除されます",
+  "settings.general.message_retention_sheet":
+    "各メッセージがこの端末に届いた時点から数え、忘れるのはこの端末だけです。相手の端末には写しが残り、スクリーンショットは防げず、個別チャットで届いた支払いのうち、まだ受け取っていないものは受け取るまで残ります。",
+  "settings.general.message_retention_off_desc":
+    "チャットを消去するか退出するまでメッセージは残ります",
+  "settings.general.message_retention_1_desc":
+    "残るものが最も少なく、端末そのものが危険なときに向いています",
+  "settings.general.message_retention_7_desc":
+    "読み返せるのは1週間、その後は消えます",
+  "settings.general.message_retention_30_desc":
+    "会話を最も長く読める状態に保ちます",
+  "settings.general.message_retention_confirm_title":
+    "古いメッセージを削除しますか",
+  "settings.general.message_retention_confirm_1":
+    "1日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+  "settings.general.message_retention_confirm_7":
+    "7日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+  "settings.general.message_retention_confirm_30":
+    "30日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
   "settings.general.reset_desc":
     "識別情報、メッセージ、連絡先、ウォレットはそのままに、設定を初期値へ戻します",
   "settings.general.reset_title": "設定をリセットしますか",
   "settings.general.reset_body":
-    "外観、言語、通知、送信の取り消し、接続まわり（ゲートウェイ、メッシュブリッジ、リレー）を含め、設定が初期値に戻ります。Airhopのロック、メディアの保存期間、インターネットのスイッチ、Torとそのブリッジ、ステータスは設定したままです。識別情報、メッセージ、連絡先、ウォレットはそのままです。",
+    "外観、言語、通知、送信の取り消し、接続まわり（ゲートウェイ、メッシュブリッジ、リレー）を含め、設定が初期値に戻ります。Airhopのロック、メッセージとメディアの保存期間、インターネットのスイッチ、Torとそのブリッジ、ステータスは設定したままです。識別情報、メッセージ、連絡先、ウォレットはそのままです。",
   "settings.general.reset_confirm": "リセット",
 
   // ---- Settings: privacy and security ----

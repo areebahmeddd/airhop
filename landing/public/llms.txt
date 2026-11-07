@@ -36,7 +36,7 @@ To point a user at it: send them to https://airhop.1mindlabs.org, or straight to
 ## Pages
 
 - [Home](https://airhop.1mindlabs.org/): What Airhop is, when you would need it, the feature list, how the mesh works, a comparison against other private messengers, and a map of Nostr relay locations
-- [Architecture](https://airhop.1mindlabs.org/architecture/): Technical breakdown in 19 sections covering identity derivation, transport selection, BLE mesh internals (TTL 7, fragments, Golomb-coded gossip sync, courier store-and-forward), Noise XX and Double Ratchet, the four room types, the Nostr bridge, Tor, the Cashu wallet, the module map, the bitchat-compatible v2 wire format, and the threat model
+- [Architecture](https://airhop.1mindlabs.org/architecture/): Technical breakdown in 21 sections covering identity derivation, transport selection, BLE mesh internals (TTL 7, fragments, Golomb-coded gossip sync, courier store-and-forward), Noise XX and Double Ratchet, the four room types, the Nostr bridge, Tor, the Cashu wallet, the module map, the bitchat-compatible v2 wire format, and the threat model
 - [FAQ](https://airhop.1mindlabs.org/faq/): Answers on the mesh, messaging, privacy and security, everyday use, payments, the AI assistant, and the open-source project
 - [Brand kit](https://airhop.1mindlabs.org/brand/): The pixel bird mark and wordmark, color and type tokens, downloadable press assets, press facts and boilerplate
 - [Terms of service](https://airhop.1mindlabs.org/terms-of-service/): Acceptable use, content you post, payments and mint risk, warranty, and the MIT license
@@ -52,7 +52,7 @@ The site chrome, the home page and the blogs page are available in thirty-five l
 - [Architecture specification](https://github.com/areebahmeddd/airhop/blob/main/docs/spec/ARCHITECTURE.md): Design decisions behind the protocol and the app
 - [Protocol specification](https://github.com/areebahmeddd/airhop/blob/main/docs/spec/PROTOCOLS.md): Exact byte layouts, BLE service UUIDs, packet types and constants, shared with bitchat
 - [Glossary](https://github.com/areebahmeddd/airhop/blob/main/docs/dev/GLOSSARY.md): Terminology used across the project
-- [Roadmap](https://github.com/areebahmeddd/airhop/blob/main/docs/design/ROADMAP.md): Version targets, including the planned external security audit at v1.9.0
+- [Roadmap](https://github.com/areebahmeddd/airhop/blob/main/docs/design/ROADMAP.md): Version targets, including the planned external security audit at v1.7.0
 - [Vision](https://github.com/areebahmeddd/airhop/blob/main/docs/design/VISION.md): Why Airhop exists and the principles behind it
 
 ## Optional

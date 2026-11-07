@@ -660,6 +660,7 @@ export const strings: Strings = {
   "chat.attach.send": "Bijlage sturen",
   "chat.attach.generic": "Bijlage",
   "chat.video_prep.preparing": "Video voorbereiden",
+  "chat.video_prep.retrying": "Wordt verder verkleind",
   "chat.video_prep.waiting": "Wachten om video voor te bereiden",
   "chat.video_prep.cancel": "Stop met het voorbereiden van deze video",
   "chat.video_prep.too_large":
@@ -691,8 +692,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Spraakbericht afspelen",
   "chat.media.pause_video": "Video pauzeren",
   "chat.media.play_video": "Video afspelen",
-  "chat.media.voice_position": "Positie in het spraakbericht",
-  "chat.media.voice_scrub": "Tik langs de balkjes om naar dat punt te springen",
+  "chat.media.voice_back": "5 seconden terug",
+  "chat.media.voice_forward": "5 seconden vooruit",
   "chat.media.image": "Afbeelding",
   "chat.media.tap_load_photo": "Tik om de foto te laden",
   "chat.media.open_document": "{name} openen",
@@ -751,6 +752,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Livevideo",
   "chat.live_video.go_live": "Live gaan",
   "chat.live_video.end": "Stoppen",
+  "chat.live_video.ending": "Wordt beëindigd…",
   "chat.live_video.end_title": "Livevideo stoppen?",
   "chat.live_video.end_body":
     "Bij stoppen blijft de opname in deze chat. Bij weggooien wordt iedereen die kijkt gevraagd hem te wissen.",
@@ -764,10 +766,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Middel",
   "chat.live_video.quality_high": "Hoog",
   "chat.live_video.quality_low_hint":
-    "Bereikt mensen een paar sprongen verderop",
+    "Bereikt via Bluetooth mensen een paar sprongen verderop",
   "chat.live_video.quality_medium_hint":
-    "Voor mensen een of twee sprongen verderop",
-  "chat.live_video.quality_high_hint": "Voor mensen vlak naast je",
+    "Scherper, voor kijkers via Wi-Fi Aware of hetzelfde Wi-Fi-netwerk",
+  "chat.live_video.quality_high_hint":
+    "Scherpst, voor kijkers via Wi-Fi Aware of hetzelfde Wi-Fi-netwerk",
+  "chat.live_video.quality_needs_wifi": "Heeft Wi-Fi in de buurt nodig",
+  "chat.live_video.quality_bluetooth_note":
+    "Middel en Hoog hebben Wi-Fi in de buurt nodig",
   "chat.live_video.signal_good": "Houdt het bij",
   "chat.live_video.signal_weak": "Loopt achter",
   "chat.live_video.signal_poor":
@@ -783,6 +789,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Schuif omhoog om handsfree op te nemen",
   "chat.voice.live_speaking": "{name} is aan het woord",
   "chat.voice.live_ended": "Beëindigd",
+  "chat.voice.live_stopped": "Live spraak beëindigd",
   "voice.unavailable": "Live spraak niet beschikbaar",
   "voice.recording_stopped": "Opname gestopt",
 
@@ -1889,13 +1896,15 @@ export const strings: Strings = {
     "Nog geen sleutels voor dit contact. Schrijf ze, of scan hun code als jullie elkaar zien.",
   "contacts.verify.compare_title": "Lees deze aan elkaar voor",
   "contacts.verify.compare_body":
-    "{name} ziet in Airhop dezelfde zes woorden. Als ze overeenkomen, weten jullie allebei dat de sleutels echt zijn. bitchat toont zulke woorden niet, dus scan daar hun code.",
-  "contacts.verify.codes_match": "Ze komen overeen",
-  "contacts.verify.codes_differ": "Ze komen niet overeen",
+    "Lees je code voor aan {name}, die hem op de eigen telefoon controleert. Vergelijk daarna de code die zij voorlezen met hun code hier. Ieder markeert de ander als geverifieerd op de eigen telefoon. bitchat toont zulke woorden niet, dus scan daar hun code.",
+  "contacts.verify.your_code": "Jouw code",
+  "contacts.verify.their_code": "Hun code",
+  "contacts.verify.codes_match": "Hun code klopt",
+  "contacts.verify.codes_differ": "Hun code klopt niet",
   "contacts.verify.codes_differ_body":
     "De sleutels op deze telefoon zijn misschien niet van {name}. Scan hun code in persoon voordat je deze chat vertrouwt.",
   "contacts.verify.compared_body":
-    "Jij en {name} hebben dezelfde code bevestigd. Dit contact is geverifieerd.",
+    "De code die {name} voorlas klopt, dus ze zijn geverifieerd op deze telefoon. Op hun eigen telefoon verifiëren ze jou.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Terug",
@@ -2055,11 +2064,32 @@ export const strings: Strings = {
     "Een middenweg voor een week of twee zonder bereik.",
   "settings.general.retention_30_desc":
     "Houdt gesprekken het langst leesbaar, en neemt de meeste ruimte in.",
+  "settings.general.message_retention": "Verdwijnende berichten",
+  "settings.general.message_retention_desc":
+    "Berichten en hun media worden na de gekozen tijd van deze telefoon verwijderd",
+  "settings.general.message_retention_sheet":
+    "Geteld vanaf het moment dat elk bericht deze telefoon bereikte, en alleen deze telefoon vergeet. De telefoon van de ander houdt zijn kopie, screenshots zijn niet te voorkomen en betalingen uit privéchats die je nog niet hebt opgehaald, blijven tot je ze ophaalt.",
+  "settings.general.message_retention_off_desc":
+    "Berichten blijven tot je de chat leegmaakt of verlaat",
+  "settings.general.message_retention_1_desc":
+    "Laat het minst achter, als de telefoon zelf het risico is",
+  "settings.general.message_retention_7_desc":
+    "Een week om bij te lezen, daarna weg",
+  "settings.general.message_retention_30_desc":
+    "Houdt gesprekken het langst leesbaar",
+  "settings.general.message_retention_confirm_title":
+    "Oudere berichten verwijderen?",
+  "settings.general.message_retention_confirm_1":
+    "Berichten ouder dan 1 dag worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+  "settings.general.message_retention_confirm_7":
+    "Berichten ouder dan 7 dagen worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+  "settings.general.message_retention_confirm_30":
+    "Berichten ouder dan 30 dagen worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
   "settings.general.reset_desc":
     "Zet voorkeuren terug op de standaard en laat je identiteit, berichten, contacten en portemonnee met rust",
   "settings.general.reset_title": "Instellingen resetten?",
   "settings.general.reset_body":
-    "Voorkeuren gaan terug naar de standaard, waaronder weergave, taal, meldingen, verzenden ongedaan maken en connectiviteit (gateway, meshbrug, relays). Airhop-vergrendeling, hoe lang media bewaard blijven, de internetschakelaar, Tor en zijn bridges en je status blijven zoals je ze hebt ingesteld. Je identiteit, berichten, contacten en portemonnee blijven ongemoeid.",
+    "Voorkeuren gaan terug naar de standaard, waaronder weergave, taal, meldingen, verzenden ongedaan maken en connectiviteit (gateway, meshbrug, relays). Airhop-vergrendeling, hoe lang berichten en media bewaard blijven, de internetschakelaar, Tor en zijn bridges en je status blijven zoals je ze hebt ingesteld. Je identiteit, berichten, contacten en portemonnee blijven ongemoeid.",
   "settings.general.reset_confirm": "Resetten",
 
   // ---- Settings: privacy and security ----

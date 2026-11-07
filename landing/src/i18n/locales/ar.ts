@@ -67,7 +67,7 @@ const strings: Strings = {
   "home.about.body.identity":
     "هويتك زوج مفاتيح {ed25519} يُنشأ على جهازك ويُحفظ في {ios_keychain} أو {android_keystore}. لا حسابات ولا تسجيل ولا شيء يمر بأي خادم، أي يمكن استخدامه كتطبيق مؤقت لا يترك بعد حذفه ما يدل عليك.",
   "home.about.body.crypto":
-    "كل جلسة تستخدم بروتوكول {noise} لمصافحة موثّقة. والرسائل المباشرة الحية بين هواتف Airhop تستخدم خوارزمية {ratchet}، أي أن تسرّب مفتاح لاحقًا لا يكفي لفتح الرسائل المرسلة سابقًا. والمسح الطارئ يتلف كل المفاتيح والرسائل في أقل من ثانية.",
+    "كل جلسة تستخدم بروتوكول {noise} لمصافحة موثّقة. والرسائل المباشرة الحية بين هواتف Airhop تستخدم خوارزمية {ratchet}، أي أن تسرّب مفتاح لاحقًا لا يكفي لفتح الرسائل المرسلة سابقًا. والمسح الطارئ يتلف كل المفاتيح والرسائل في ثوانٍ.",
   "home.about.body.internet":
     "حين تكون أنت وجهة اتصالك خارج نطاق Bluetooth، تعمل مُرحّلات {nostr} كجسر عبر الإنترنت، مستخدمةً رسائل مباشرة مغلّفة بصيغة {nip17}، فتمتد الشبكة المتشابكة عالميًا طالما كنتما متصلين. ودعم {tor} متاح على iOS و Android عبر {arti}، مع جسور {obfs4}، {snowflake} و {webtunnel} للشبكات التي تحجب Tor.",
   "home.about.optional.title": "في Airhop مزايا اختيارية يمكنك تفعيلها:",
@@ -176,7 +176,7 @@ const strings: Strings = {
   "home.features.identity.keys.name": "هوية بزوج مفاتيح",
   "home.features.identity.keys.line": "تُنشأ على هذا الهاتف وتُحفظ في سلسلة مفاتيح النظام.",
   "home.features.identity.names.name": "أسماء مقروءة",
-  "home.features.identity.names.line": "مشتقّة من مفتاحك، فلا يستطيع أحد أخذ اسمك.",
+  "home.features.identity.names.line": "مشتقّة من مفتاحك، لا تُختار ولا تُسجَّل.",
   "home.features.identity.qr.name": "جهات اتصال بـ QR",
   "home.features.identity.qr.line": "مسحة واحدة تنقل مفاتيحهم، لا أسماءهم فقط.",
   "home.features.identity.forward.name": "السرية المستقبلية",
@@ -184,7 +184,7 @@ const strings: Strings = {
   "home.features.identity.move.name": "النقل إلى هاتف جديد",
   "home.features.identity.move.line": "تنتقل المحادثات والمحفظة، ثم يمحو الهاتف القديم نفسه.",
   "home.features.identity.panic.name": "مسح طارئ",
-  "home.features.identity.panic.line": "كل مفتاح وكل رسالة يُتلفان في أقل من ثانية.",
+  "home.features.identity.panic.line": "كل مفتاح وكل رسالة يُتلفان في ثوانٍ.",
 
   "home.features.networking.title": "الشبكة",
   "home.features.networking.summary": "الهواتف نفسها هي الشبكة.",

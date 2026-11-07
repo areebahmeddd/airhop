@@ -449,10 +449,9 @@ export class CourierStore {
   // Envelopes addressed to a peer just met. NON-DESTRUCTIVE: the caller hands
   // each to the transport and calls `commitHandover` only once the write is
   // accepted onto that peer's own link. Retiring before then loses the mail to
-  // a refused write, and refusals are ordinary here: this runs from
-  // `onAnnounce`, when the link is busiest with the announce, the prekey bundle
-  // and a gossip round, and a full GATT queue answers WRITE_BUSY. bitchat
-  // splits handover the same way.
+  // a refused write: a link mid-setup refuses, and so does a queue already
+  // full when this runs from `onAnnounce`, beside the announce, the prekey
+  // bundle and a gossip round. bitchat splits handover the same way.
   //
   // The copy carries a budget of 1: it is going to its destination, not to
   // another carrier, so there is nothing left for it to spray.

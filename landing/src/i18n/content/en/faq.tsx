@@ -1,5 +1,5 @@
 import TextLink from "@/components/ui/TextLink";
-import { REPO_LINKS, REPO_URL } from "@/lib/links";
+import { BITCHAT_URL, REPO_LINKS, REPO_URL } from "@/lib/links";
 
 const CODE = "bg-inner text-ink rounded-[6px] px-1 py-0.5 text-[0.85em]";
 
@@ -51,11 +51,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
             where Airhop sits.
             <br />
             <br />
-            Against <TextLink href="https://bitchat.free">bitchat</TextLink> specifically, Airhop is
-            built on top of it and stays wire-compatible, but adds Double Ratchet forward secrecy,
-            offline ecash payments, and an offline AI assistant, none of which bitchat has today.
-            Beyond the protocol itself, <strong>user experience is everything to us</strong>. Great
-            privacy tools should be easy to use, not something people have to figure out.
+            Against <TextLink href={BITCHAT_URL}>bitchat</TextLink> specifically, Airhop is built on
+            top of it and stays wire-compatible, but adds Double Ratchet forward secrecy, offline
+            ecash payments, and an offline AI assistant, none of which bitchat has today. Beyond the
+            protocol itself, <strong>user experience is everything to us</strong>. Great privacy
+            tools should be easy to use, not something people have to figure out.
           </>
         ),
       },
@@ -65,7 +65,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
           <>
             Some things are missing because they are still being built, and some because they cannot
             work without breaking something that matters more. The second kind:
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>
                 <strong>No voice or video calling.</strong> The fast transports that could carry a
                 call cannot reach every pair: Wi-Fi Aware never links an iPhone to an Android, and
@@ -74,7 +74,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
               </li>
               <li>
                 <strong>Only text crosses the internet.</strong> Photos, files, and voice notes ride
-                Bluetooth, so sending one needs the other person in range.
+                Bluetooth or Wi-Fi, so sending one needs the other person nearby.
               </li>
               <li>
                 <strong>1 MiB per file.</strong> bitchat refuses anything larger the moment it
@@ -106,7 +106,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         a: (
           <>
             There are four kinds of room, and what separates them is who can get in.
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>
                 <strong>Public channels:</strong> #bluetooth, the one room for everyone in Bluetooth
                 range. Nothing is registered anywhere, nobody owns it, and it stays on the local
@@ -264,11 +264,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "What media can I send?",
-        a: "Images, voice notes, videos, and any other file format, all over Bluetooth. Each file is sent as one packet, split into fragments for the radio, paced so the radio is not overrun, and reassembled on the other side. Videos, round video notes included, are shrunk on your phone before they go and play inline: to 100 KiB for anyone who might be on bitchat, and up to 1 MiB between Airhop phones. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; voice notes are capped tighter at 512 KiB, and photos are fitted to 256 KiB so they finish inside bitchat's 30 second reassembly window. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
+        a: "Images, voice notes, videos, and any other file format, over Bluetooth or Wi-Fi. Each file is sent as one packet, split into fragments for the radio, paced so the radio is not overrun, and reassembled on the other side. Videos, round video notes included, are shrunk on your phone before they go and play inline: to 100 KiB for anyone who might be on bitchat, and up to 1 MiB between Airhop phones. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; voice notes are capped tighter at 512 KiB, and photos are fitted to 256 KiB so they finish inside bitchat's 30 second reassembly window. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. A bitchat phone gives the whole file that same 30 seconds, so past about 350 KiB the app warns you it may not arrive. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
       },
       {
         q: "Why can I only send up to a minute of video?",
-        a: "Because a video on a mesh has to stay small. Anything a bitchat phone might receive is fitted to 100 KiB, the size bitchat sends its own clips at, and that budget is shared across every second you send. A few seconds stays sharp and keeps its sound; a full minute is already a small, silent clip at a few frames a second, and longer than that would leave nothing worth watching. bitchat keeps the same minute. So rather than cutting your video off, Airhop lets you choose: before you send, a trimmer under the preview picks any part up to a minute, and the shorter the part, the better it looks. Between two Airhop phones the budget is ten times larger, and the minute keeps those sends quick for everyone relaying them.",
+        a: "Because a video on a mesh has to stay small. Anything a bitchat phone might receive is fitted to 100 KiB, the size bitchat sends its own clips at, and that budget is shared across every second you send. A few seconds stays sharp and keeps its sound; a full minute is already a small, silent clip at a few frames a second, and longer than that would leave nothing worth watching. bitchat keeps the same minute. So rather than cutting your video off, Airhop lets you choose: before you send, a trimmer under the preview picks any part up to a minute, and the shorter the part, the better it looks. A video you record in the app, round video notes included, stops at 15 seconds for the same reason. Between two Airhop phones the budget is ten times larger, and the minute keeps those sends quick for everyone relaying them.",
       },
       {
         q: "Why is there no video or voice calling?",
@@ -497,7 +497,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
               </TextLink>
               : yes.
             </strong>
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>
                 <strong>Direct messages:</strong>{" "}
                 <TextLink href="https://noiseprotocol.org/noise.html">Noise XX</TextLink> with{" "}
@@ -537,7 +537,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             <br />
             <strong>Anonymous: partially.</strong>
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>
                 <strong>Fully anonymous:</strong> no phone number, email, or sign-up. Your identity
                 is a key pair generated on-device, and nothing registers anywhere.
@@ -619,9 +619,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             mutual authentication prevents man-in-the-middle attacks on direct message sessions.
             <br />
             <br />
-            For contacts you want to fully trust, scan their QR code in person, or compare six
-            safety words over a call. Either marks them verified, the same model Signal uses with
-            safety numbers.
+            For contacts you want to fully trust, scan their QR code in person, or check safety
+            codes over a call: each of you reads your own six words, and the other checks them
+            against Their code. Either marks them verified on your own phone.
           </>
         ),
       },
@@ -645,7 +645,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             separate app-level cipher, so somebody holding your unlocked phone can read your chats
             the way they could read any other app's, unless you turn on Lock Airhop in Settings,
             Privacy &amp; security, which asks for your screen lock to open the app. Delete a
-            conversation at any time, or empty everything with panic wipe.
+            conversation at any time, empty everything with panic wipe, or turn on Disappearing
+            messages in General to clear each message 1, 7 or 30 days after it arrives.
             <br />
             <br />
             The wallet is stricter still, because coins are bearer instruments: its storage is a
@@ -655,7 +656,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             <br />
             None of it goes into an iCloud or Google backup, because Airhop excludes its data from
-            both, and panic wipe destroys the lot in under a second.
+            both, and panic wipe destroys the lot in seconds.
           </>
         ),
       },
@@ -735,7 +736,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         a: (
           <>
             The Panic wipe row on the You tab destroys every identity key, all message data, the
-            wallet, cached media and Tor state in under a second. One tap asks you to confirm; three
+            wallet, cached media and Tor state, messages first. One tap asks you to confirm; three
             quick taps skip the question, for a situation where you need the app emptied right now.{" "}
             <strong>This cannot be undone.</strong>
             <br />
@@ -746,7 +747,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             <br />
             <strong>What it cannot reach:</strong>
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>Messages already delivered. Those are on other people's phones.</li>
               <li>
                 Anything you published over the internet. Your old identity and its messages stay on
@@ -837,7 +838,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "What else does it ask permission for?",
         a: (
           <>
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>
                 <strong>Bluetooth and nearby devices:</strong> to find and talk to peers. The one it
                 cannot work without.
@@ -853,15 +854,15 @@ export const FAQ_SECTIONS: FaqSection[] = [
                 <strong>Notifications:</strong> so a message can reach you when the app is closed.
               </li>
               <li>
-                <strong>Camera:</strong> only to scan a contact's QR code, or to take a photo or
-                video you are attaching.
+                <strong>Camera:</strong> only to scan a contact's QR code, to take a photo, video or
+                video note you are attaching, or to go live.
               </li>
               <li>
                 <strong>Photos:</strong> only when you attach or save one.
               </li>
               <li>
-                <strong>Microphone:</strong> only when you record a voice note or hold the mic to
-                talk live.
+                <strong>Microphone:</strong> only when you record a voice note, video or video note,
+                hold the mic to talk live, or go live on video.
               </li>
             </ul>
             Every one of them can be refused or revoked later in your device settings, and the app
@@ -904,7 +905,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             <br />
             Three words come up throughout this section.
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>
                 <strong>Coins:</strong> the money sitting in your wallet.
               </li>
@@ -947,7 +948,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
             Any Cashu-compatible mint. You add one by pasting its address into the wallet, and
             Airhop checks it is a real mint before saving it.
             <br />
-            <ul className="my-2 list-disc space-y-1 pl-5">
+            <ul className="my-2 list-disc space-y-1 ps-5">
               <li>
                 <strong>To try it out:</strong>{" "}
                 <TextLink href="https://testnut.cashu.space">testnut.cashu.space</TextLink> is the

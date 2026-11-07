@@ -12,7 +12,7 @@ function state() {
 
 function entry(
   overrides: Partial<ActivityEntry> = {},
-): Omit<ActivityEntry, "seen"> {
+): Omit<ActivityEntry, "seen" | "recordedAtMs"> {
   return {
     id: "m1",
     channel: "dm:aaa",
@@ -73,5 +73,47 @@ describe("clearAll", () => {
     state().record(entry({ id: "a" }));
     state().clearAll();
     expect(state().entries).toEqual([]);
+  });
+});
+
+describe("removeChannel", () => {
+  it("drops one conversation's entries and keeps the rest", () => {
+    state().record(entry({ id: "a", channel: "#gone" }));
+    state().record(entry({ id: "b", channel: "#kept" }));
+    state().removeChannel("#gone");
+    expect(state().entries.map((e) => e.id)).toEqual(["b"]);
+  });
+});
+
+describe("expire", () => {
+  const NOW = 1_800_000_000_000;
+  const DAY = 24 * 60 * 60 * 1000;
+  afterEach(() => jest.useRealTimers());
+
+  function recordAt(atMs: number, e: Partial<ActivityEntry>): void {
+    jest.useFakeTimers({ now: atMs });
+    state().record(entry(e));
+  }
+
+  it("drops entries whose message expired and those logged before the cutoff", () => {
+    recordAt(NOW - 2 * DAY, { id: "old" });
+    recordAt(NOW, { id: "expired-message" });
+    recordAt(NOW, { id: "fresh" });
+    state().expire(new Set(["expired-message"]), NOW - DAY);
+    expect(state().entries.map((e) => e.id)).toEqual(["fresh"]);
+  });
+
+  // A board keeps its own lifetime, and gossip would only offer it again.
+  it("leaves notices alone", () => {
+    recordAt(NOW - 2 * DAY, { id: "notice", kind: "notice", geohash: "" });
+    state().expire(new Set(["notice"]), NOW - DAY);
+    expect(state().entries.map((e) => e.id)).toEqual(["notice"]);
+  });
+
+  // A clock moved back stamps entries in what is now the future. Kept.
+  it("keeps an entry logged after the cutoff, even one in the future", () => {
+    recordAt(NOW + DAY, { id: "future" });
+    state().expire(new Set(), NOW - DAY);
+    expect(state().entries.map((e) => e.id)).toEqual(["future"]);
   });
 });

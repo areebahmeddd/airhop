@@ -31,7 +31,7 @@ export function GiftWrap() {
         width={480}
         height={136}
         rx={2}
-        fill="var(--dg-fill)"
+        fill={FILL}
         stroke={INK}
         strokeWidth={1.2}
       />

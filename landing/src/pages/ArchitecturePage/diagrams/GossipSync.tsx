@@ -1,4 +1,4 @@
-import { Arrow, Box, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
+import { Arrow, Box, FILL, INK, LINE, MONO, MUTED, SOFT } from "./primitives";
 
 export function GossipSync() {
   return (
@@ -19,7 +19,7 @@ export function GossipSync() {
         width={260}
         height={40}
         rx={2}
-        fill="var(--dg-fill)"
+        fill={FILL}
         stroke={INK}
         strokeWidth={1.2}
       />
@@ -64,9 +64,12 @@ export function GossipSync() {
         1% false positive rate, never a full resend
       </text>
 
-      <text x={16} y={262} fontFamily={MONO} fontSize={10} fill={MUTED}>
+      <text x={16} y={256} fontFamily={MONO} fontSize={10} fill={MUTED}>
         Runs 1 second after a new link, then every 15 seconds, and covers the last 6 hours of
-        messages. Never relayed, so it stays a conversation between neighbors.
+        messages.
+      </text>
+      <text x={16} y={272} fontFamily={MONO} fontSize={10} fill={MUTED}>
+        Never relayed, so it stays a conversation between neighbors.
       </text>
     </svg>
   );

@@ -9,11 +9,11 @@ export default function EnglishContent({
   className?: string;
 }) {
   const T = useT();
-  const translated = useLanguage() === "en";
+  const isEnglish = useLanguage() === "en";
 
   return (
     <>
-      {translated ? null : (
+      {isEnglish ? null : (
         <p className="border-line bg-card-subtle text-mute mt-8 flex items-center gap-2 rounded-2xl border px-4 py-3 text-[13px]">
           <Info size={14} className="shrink-0" aria-hidden="true" />
           {T("page.english_only")}

@@ -650,6 +650,7 @@ export const strings: Strings = {
   "chat.attach.send": "منسلکہ بھیجیں",
   "chat.attach.generic": "منسلکہ",
   "chat.video_prep.preparing": "ویڈیو تیار ہو رہی ہے",
+  "chat.video_prep.retrying": "مزید چھوٹا کیا جا رہا ہے",
   "chat.video_prep.waiting": "ویڈیو تیار ہونے کے انتظار میں",
   "chat.video_prep.cancel": "اس ویڈیو کی تیاری روکیں",
   "chat.video_prep.too_large": "یہ ویڈیو بھیجنے کے قابل چھوٹی نہیں کی جا سکی۔",
@@ -679,8 +680,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "صوتی نوٹ چلائیں",
   "chat.media.pause_video": "ویڈیو روکیں",
   "chat.media.play_video": "ویڈیو چلائیں",
-  "chat.media.voice_position": "صوتی نوٹ میں جگہ",
-  "chat.media.voice_scrub": "اس مقام پر جانے کے لیے لکیروں کے ساتھ چھوئیں",
+  "chat.media.voice_back": "5 سیکنڈ پیچھے",
+  "chat.media.voice_forward": "5 سیکنڈ آگے",
   "chat.media.image": "تصویر",
   "chat.media.tap_load_photo": "تصویر لادنے کے لیے چھوئیں",
   "chat.media.open_document": "{name} کھولیں",
@@ -737,6 +738,7 @@ export const strings: Strings = {
   "chat.live_video.title": "لائیو ویڈیو",
   "chat.live_video.go_live": "لائیو جائیں",
   "chat.live_video.end": "ختم کریں",
+  "chat.live_video.ending": "ختم ہو رہا ہے…",
   "chat.live_video.end_title": "لائیو ویڈیو ختم کریں؟",
   "chat.live_video.end_body":
     "ختم کرنے پر ریکارڈنگ اسی چیٹ میں رہتی ہے۔ مسترد کرنے پر دیکھنے والے سبھی لوگوں سے اسے مٹانے کو کہا جاتا ہے۔",
@@ -748,9 +750,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "کم",
   "chat.live_video.quality_medium": "درمیانی",
   "chat.live_video.quality_high": "زیادہ",
-  "chat.live_video.quality_low_hint": "کئی ہاپ دور کے لوگوں تک پہنچتی ہے",
-  "chat.live_video.quality_medium_hint": "ایک یا دو ہاپ دور کے لوگوں کے لیے",
-  "chat.live_video.quality_high_hint": "بالکل آپ کے ساتھ موجود لوگوں کے لیے",
+  "chat.live_video.quality_low_hint":
+    "بلوٹوتھ کے ذریعے کئی ہاپ دور کے لوگوں تک پہنچتی ہے",
+  "chat.live_video.quality_medium_hint":
+    "زیادہ صاف، Wi-Fi Aware یا ایک ہی Wi-Fi پر دیکھنے والوں کے لیے",
+  "chat.live_video.quality_high_hint":
+    "سب سے صاف، Wi-Fi Aware یا ایک ہی Wi-Fi پر دیکھنے والوں کے لیے",
+  "chat.live_video.quality_needs_wifi": "قریب میں Wi-Fi درکار ہے",
+  "chat.live_video.quality_bluetooth_note":
+    "درمیانی اور زیادہ کے لیے قریب میں Wi-Fi درکار ہے",
   "chat.live_video.signal_good": "ساتھ چل رہا ہے",
   "chat.live_video.signal_weak": "پیچھے رہ رہا ہے",
   "chat.live_video.signal_poor":
@@ -766,6 +774,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "ہاتھ آزاد ریکارڈنگ کے لیے اوپر سرکائیں",
   "chat.voice.live_speaking": "{name} بول رہے ہیں",
   "chat.voice.live_ended": "ختم",
+  "chat.voice.live_stopped": "لائیو آواز ختم ہو گئی",
   "voice.unavailable": "براہ راست آواز دستیاب نہیں",
   "voice.recording_stopped": "ریکارڈنگ روک دی گئی",
 
@@ -1847,13 +1856,15 @@ export const strings: Strings = {
     "اس رابطے کی ابھی کوئی کلید نہیں۔ انہیں پیغام بھیجیں، یا ملاقات پر ان کا کوڈ اسکین کریں۔",
   "contacts.verify.compare_title": "یہ ایک دوسرے کو پڑھ کر سنائیں",
   "contacts.verify.compare_body":
-    "{name} کو Airhop میں وہی چھ الفاظ دکھائی دیتے ہیں۔ اگر وہ میل کھائیں تو آپ دونوں کو معلوم ہو جائے گا کہ کلیدیں اصلی ہیں۔ bitchat ایسے الفاظ نہیں دکھاتا، اس لیے اس کے بجائے ان کا کوڈ اسکین کریں۔",
-  "contacts.verify.codes_match": "یہ میل کھاتے ہیں",
-  "contacts.verify.codes_differ": "یہ میل نہیں کھاتے",
+    "اپنا کوڈ {name} کو پڑھ کر سنائیں تاکہ وہ اسے اپنے فون پر جانچ سکیں۔ پھر جو کوڈ وہ پڑھیں، اسے یہاں ان کے کوڈ سے ملائیں۔ آپ میں سے ہر ایک دوسرے کو اپنے فون پر تصدیق شدہ نشان زد کرتا ہے۔ bitchat ایسے الفاظ نہیں دکھاتا، اس لیے اس کے بجائے ان کا کوڈ اسکین کریں۔",
+  "contacts.verify.your_code": "آپ کا کوڈ",
+  "contacts.verify.their_code": "ان کا کوڈ",
+  "contacts.verify.codes_match": "ان کا کوڈ میل کھاتا ہے",
+  "contacts.verify.codes_differ": "ان کا کوڈ میل نہیں کھاتا",
   "contacts.verify.codes_differ_body":
     "ہو سکتا ہے اس فون پر موجود کلیدیں {name} کی نہ ہوں۔ اس چیٹ پر بھروسا کرنے سے پہلے روبرو ان کا کوڈ اسکین کریں۔",
   "contacts.verify.compared_body":
-    "آپ اور {name} نے وہی کوڈ تصدیق کیا۔ یہ رابطہ تصدیق شدہ ہے۔",
+    "{name} کا پڑھا ہوا کوڈ میل کھاتا ہے، اس لیے وہ اس فون پر تصدیق شدہ ہیں۔ وہ آپ کی تصدیق اپنے فون پر کرتے ہیں۔",
 
   // ---- Settings: shared chrome ----
   "settings.back": "واپس جائیں",
@@ -2010,11 +2021,31 @@ export const strings: Strings = {
     "سگنل کے بغیر ایک دو ہفتوں کے لیے درمیانی راستہ۔",
   "settings.general.retention_30_desc":
     "گفتگو کو سب سے دیر تک پڑھنے کے قابل رکھتا ہے، اور ڈسک پر سب سے زیادہ جگہ لیتا ہے۔",
+  "settings.general.message_retention": "غائب ہونے والے پیغامات",
+  "settings.general.message_retention_desc":
+    "پیغامات اور ان کا میڈیا منتخب وقت کے بعد اس فون سے حذف ہو جاتے ہیں",
+  "settings.general.message_retention_sheet":
+    "یہ وقت ہر پیغام کے اس فون پر پہنچنے سے گنا جاتا ہے، اور صرف یہ فون بھولتا ہے۔ دوسرے شخص کا فون اپنی نقل رکھتا ہے، اسکرین شاٹ روکے نہیں جا سکتے، اور نجی چیٹ میں بھیجی گئی جو ادائیگیاں آپ نے ابھی نہیں لیں وہ لینے تک رہتی ہیں۔",
+  "settings.general.message_retention_off_desc":
+    "پیغامات تب تک رہتے ہیں جب تک آپ چیٹ صاف نہ کریں یا اسے چھوڑ نہ دیں",
+  "settings.general.message_retention_1_desc":
+    "سب سے کم پیچھے چھوڑتا ہے، اگر خطرہ خود فون ہو",
+  "settings.general.message_retention_7_desc":
+    "پڑھنے کے لیے ایک ہفتہ، پھر غائب",
+  "settings.general.message_retention_30_desc":
+    "گفتگو کو سب سے زیادہ دیر تک پڑھنے کے قابل رکھتا ہے",
+  "settings.general.message_retention_confirm_title": "پرانے پیغامات حذف کریں؟",
+  "settings.general.message_retention_confirm_1":
+    "1 دن سے پرانے پیغامات اپنے میڈیا سمیت ابھی اس فون سے حذف ہو جائیں گے۔ اسے واپس نہیں کیا جا سکتا۔",
+  "settings.general.message_retention_confirm_7":
+    "7 دن سے پرانے پیغامات اپنے میڈیا سمیت ابھی اس فون سے حذف ہو جائیں گے۔ اسے واپس نہیں کیا جا سکتا۔",
+  "settings.general.message_retention_confirm_30":
+    "30 دن سے پرانے پیغامات اپنے میڈیا سمیت ابھی اس فون سے حذف ہو جائیں گے۔ اسے واپس نہیں کیا جا سکتا۔",
   "settings.general.reset_desc":
     "ترجیحات کو ان کی طے شدہ حالت پر لوٹاتا ہے، آپ کی شناخت، پیغامات، رابطوں اور بٹوے کو چھوئے بغیر",
   "settings.general.reset_title": "ترتیبات دوبارہ ترتیب دیں؟",
   "settings.general.reset_body":
-    "ترجیحات اپنی طے شدہ حالت پر لوٹ جاتی ہیں، جن میں ظاہری شکل، زبان، اطلاعات، بھیجنا واپس لینا، اور رابطہ کاری (گیٹ وے، میش پل، ریلے) شامل ہیں۔ Airhop لاک، میڈیا کتنی دیر رکھا جائے، انٹرنیٹ کا سوئچ، Tor اور اس کے پل، اور آپ کی حالت ویسے ہی رہتے ہیں جیسے آپ نے طے کیے۔ آپ کی شناخت، پیغامات، رابطے اور بٹوہ اچھوتے رہتے ہیں۔",
+    "ترجیحات اپنی طے شدہ حالت پر لوٹ جاتی ہیں، جن میں ظاہری شکل، زبان، اطلاعات، بھیجنا واپس لینا، اور رابطہ کاری (گیٹ وے، میش پل، ریلے) شامل ہیں۔ Airhop لاک، پیغامات اور میڈیا کتنی دیر رکھے جائیں، انٹرنیٹ کا سوئچ، Tor اور اس کے پل، اور آپ کی حالت ویسے ہی رہتے ہیں جیسے آپ نے طے کیے۔ آپ کی شناخت، پیغامات، رابطے اور بٹوہ اچھوتے رہتے ہیں۔",
   "settings.general.reset_confirm": "دوبارہ ترتیب دیں",
 
   // ---- Settings: privacy and security ----

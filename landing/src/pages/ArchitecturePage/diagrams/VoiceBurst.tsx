@@ -6,7 +6,7 @@ export function VoiceBurst() {
       viewBox="0 0 920 300"
       className="h-auto w-full"
       role="img"
-      aria-label="Live voice frames batched into bursts and played through a jitter buffer"
+      aria-label="Live voice frames sent in small packets and played through a jitter buffer"
     >
       <Arrow id="vb-arrow" />
       <Caption x={16} y={24}>
@@ -35,7 +35,7 @@ export function VoiceBurst() {
         64 ms each, about 130 bytes
       </text>
       <line x1={360} y1={66} x2={398} y2={66} stroke={LINE} markerEnd="url(#vb-arrow)" />
-      <Box x={402} y={36} w={186} h={60} label="burst packet" sub="210 bytes, never fragmented" />
+      <Box x={402} y={36} w={186} h={60} label="voice packets" sub="210 bytes, never fragmented" />
       <line x1={592} y1={66} x2={630} y2={66} stroke={LINE} markerEnd="url(#vb-arrow)" />
       <Box x={634} y={36} w={140} h={60} label="jitter buffer" sub="350 ms" />
       <line x1={778} y1={66} x2={816} y2={66} stroke={LINE} markerEnd="url(#vb-arrow)" />
