@@ -2075,6 +2075,10 @@ export default function MessageThread({
   // Focused when something else drafts into the composer, so the text is not
   // left behind a closed keyboard.
   const composerRef = useRef<TextInputInstance>(null);
+  // Where the caret is, so a mention can be picked mid-draft: "range" while
+  // text is selected, null for the end of the draft. Tracked only while the
+  // draft holds an "@", so other typing does not render the thread twice a key.
+  const [caret, setCaret] = useState<number | "range" | null>(null);
 
   // @-mention suggestions. Who can be tagged depends on the thread: a group's
   // roster, a location cell's active participants, or a channel's nearby peers.
@@ -2101,7 +2105,10 @@ export default function MessageThread({
   }, [isGeo, channel, geoMembers, peers]);
 
   // The candidates matching what the user is typing after "@", minus yourself.
-  const mentionQuery = activeMentionQuery(draft);
+  const mentionCaret =
+    typeof caret === "number" ? Math.min(caret, draft.length) : draft.length;
+  const mentionQuery =
+    caret === "range" ? null : activeMentionQuery(draft, mentionCaret);
   const mentionMatches = useMemo(() => {
     if (mentionQuery === null) return [];
     // Matching, de-duplication and the self-check all run on the normalized
@@ -6497,7 +6504,16 @@ export default function MessageThread({
               <Pressable
                 key={c.id}
                 style={styles.mentionRow}
-                onPress={() => setDraft(applyMention(draft, c.nickname))}
+                onPress={() => {
+                  const next = applyMention(draft, c.nickname, mentionCaret);
+                  setDraft(next.text);
+                  setCaret(next.caret);
+                  // After the new text lands, or the field puts the caret at
+                  // its end.
+                  requestAnimationFrame(() =>
+                    composerRef.current?.setSelection(next.caret, next.caret),
+                  );
+                }}
                 accessibilityRole="button"
                 accessibilityLabel={t("chat.thread.mention", {
                   name: c.nickname,
@@ -6628,6 +6644,12 @@ export default function MessageThread({
               style={styles.input}
               value={draft}
               onChangeText={handleDraftChange}
+              onSelectionChange={(e) => {
+                const { start, end } = e.nativeEvent.selection;
+                setCaret(
+                  !draft.includes("@") ? null : start === end ? start : "range",
+                );
+              }}
               placeholder={T("chat.thread.message_placeholder")}
               placeholderTextColor={Colors.textMuted}
               multiline
