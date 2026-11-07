@@ -619,9 +619,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             mutual authentication prevents man-in-the-middle attacks on direct message sessions.
             <br />
             <br />
-            For contacts you want to fully trust, scan their QR code in person, or compare six
-            safety words over a call. Either marks them verified, the same model Signal uses with
-            safety numbers.
+            For contacts you want to fully trust, scan their QR code in person, or check safety
+            codes over a call: each of you reads your own six words, and the other checks them
+            against Their code. Either marks them verified on your own phone.
           </>
         ),
       },
@@ -645,7 +645,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             separate app-level cipher, so somebody holding your unlocked phone can read your chats
             the way they could read any other app's, unless you turn on Lock Airhop in Settings,
             Privacy &amp; security, which asks for your screen lock to open the app. Delete a
-            conversation at any time, or empty everything with panic wipe.
+            conversation at any time, empty everything with panic wipe, or turn on Disappearing
+            messages in General to clear each message 1, 7 or 30 days after it arrives.
             <br />
             <br />
             The wallet is stricter still, because coins are bearer instruments: its storage is a

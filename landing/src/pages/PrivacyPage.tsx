@@ -66,8 +66,9 @@ export default function PrivacyPage() {
                 <strong>Message history.</strong> Conversations are stored locally on your device
                 and are never sent to us. They are protected by the operating system's app sandbox
                 and whole-device encryption, not by a separate app-level cipher, so a person with
-                access to an unlocked device can read them. Delete a conversation at any time, or
-                wipe everything with panic wipe.
+                access to an unlocked device can read them. Delete a conversation at any time, wipe
+                everything with panic wipe, or turn on Disappearing messages in General to clear
+                each message 1, 7 or 30 days after it arrives.
               </li>
               <li>
                 <strong>Private group state.</strong> Group names, member lists, and the current
@@ -122,7 +123,8 @@ export default function PrivacyPage() {
             <ul className="marker:text-mute list-disc space-y-2 ps-5 text-[15px] leading-[1.75]">
               <li>
                 Your display name, which the app generates from your public key, and your public
-                identity keys.
+                identity keys. Your Nostr key is never broadcast: it goes only to a contact, or
+                someone you have messaged, inside your encrypted session.
               </li>
               <li>Messages you send to public channels or directly to another peer.</li>
               <li>
@@ -451,8 +453,15 @@ export default function PrivacyPage() {
                 Also removed by clearing the cache, a panic wipe, or removing the app.
               </li>
               <li>
-                <strong>Conversations, groups, contacts, and keys:</strong> until you delete them,
-                run a panic wipe, or remove the app.
+                <strong>Messages:</strong> until you delete them, or for 1, 7 or 30 days after they
+                reach your phone if you turn on Disappearing messages in General (off by default).
+                It applies to your phone only; the other person keeps their copy. Messages still
+                being delivered, and payments sent to you in a private chat that you have not
+                claimed, stay until they are done.
+              </li>
+              <li>
+                <strong>Groups, contacts, and keys:</strong> until you delete them, run a panic
+                wipe, or remove the app.
               </li>
               <li>
                 <strong>Wallet transaction history:</strong> the most recent 500 entries, until you

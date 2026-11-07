@@ -672,7 +672,7 @@ export default function ArchitecturePage() {
                 the same six words. Nothing moves until you confirm they match on the new phone, so
                 a third device that read the code is turned away. The identity keys, contacts,
                 groups, rooms, chat history, outbox and wallet move to the new phone. The keys stay
-                the same, so the peer ID, name and safety numbers do too. Media files, one-time
+                the same, so the peer ID, name and safety codes do too. Media files, one-time
                 prekeys and live session state do not move. Once the new phone confirms the
                 transfer, the old phone erases its keys and local data.
               </p>
@@ -1089,6 +1089,11 @@ export default function ArchitecturePage() {
                 hash would not do, since anyone who captured the handshake holds it, and neither
                 would the two static keys, which stay derivable forever.
               </p>
+              <p>
+                Between two Airhop phones the session itself is replaced every 24 hours, and the
+                ratchet starts fresh on the new one, so a leaked session key reads at most a day of
+                traffic.
+              </p>
 
               <Figure caption="Every message type and what actually protects it.">
                 <ProtectionStack />
@@ -1256,7 +1261,8 @@ export default function ArchitecturePage() {
               <p>
                 Staying out of the fragment scheduler is the hard part, and it is solved with size.
                 A burst is capped at 210 bytes, comfortably under the 467 bytes a fragment carries,
-                so live audio is never split and never queues behind somebody's file transfer.
+                so live audio is never split, and a frame that waits over 1.5 s behind other traffic
+                is dropped rather than played late.
               </p>
 
               <Figure caption="Live frames on top, the reliable copy underneath. Both rows carry the same audio; only the timing is different.">
@@ -1847,6 +1853,10 @@ export default function ArchitecturePage() {
                   ["AI assistant", "Off. Nothing downloads until you pick a model"],
                   ["Social bridges", "Off. Individually, per plugin"],
                   [
+                    "Disappearing messages",
+                    "Off. Once on, each message leaves this phone 1, 7 or 30 days after it arrived. The other phone keeps its copy",
+                  ],
+                  [
                     "Ring",
                     "Off per contact. Nobody can ring your phone until you allow that person, and you can snooze or switch it off for everyone",
                   ],
@@ -1998,7 +2008,7 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Claiming someone else's Nostr key",
-                    "The key a peer announces for itself is a forwarding address for that peer and nothing more. It never folds a conversation keyed by that npub or redirects mail waiting for it; only a card scanned in person can",
+                    "A peer names its Nostr key only inside an encrypted session, and only to a contact or someone it has messaged, never in an announce. Even then it is a forwarding address and nothing more. It never folds a conversation keyed by that npub or redirects mail waiting for it; only a card scanned in person can, or that npub's own messages naming the same peer",
                   ],
                   [
                     "Message forgery",
