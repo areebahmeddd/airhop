@@ -1,13 +1,11 @@
-// One hostile relay must not be able to hide an event that honest relays carry.
+// One hostile relay must not be able to hide an event that honest relays carry,
+// and a reconnect must ask each relay again for everything it may have missed.
 //
-// nostr-tools 2.25.4 records an event ID as seen before it verifies the event,
-// in one set shared by every relay a pool call spans, and writes a reconnect's
-// `since` into one filter object shared the same way. Left to it, a relay that
-// sends a bad-signature copy under a genuine ID suppresses the real event from
-// every other relay, and a rejected far-future event moves every relay's
-// cursor.
-// These run the real SimplePool over a scripted socket, so the library's own
-// dedup, verification and reconnect are what is under test.
+// A forged copy under a genuine ID must not suppress the real event from
+// another relay, a rejected or far-future event must not move a relay's resume
+// point, and a gift wrap stamped earlier than the newest one seen must still
+// be asked for. These run the real SimplePool over a scripted socket, so the
+// library's own dedup, verification and reconnect are what is under test.
 
 import type { Event } from "nostr-tools";
 import { finalizeEvent, generateSecretKey } from "nostr-tools";
@@ -96,9 +94,9 @@ function socketFor(relay: string): ScriptedSocket {
 
 const author = generateSecretKey();
 
-function signed(content: string, createdAt = SINCE + 60): Event {
+function signed(content: string, createdAt = SINCE + 60, kind = 1): Event {
   return finalizeEvent(
-    { kind: 1, created_at: createdAt, tags: [], content },
+    { kind, created_at: createdAt, tags: [], content },
     author,
   );
 }
@@ -194,8 +192,7 @@ describe("a subscription across several relays", () => {
     );
     await settle();
 
-    // Rejected on signature, but nostr-tools still advances the cursor it
-    // writes into `since` on the next reconnect.
+    // Rejected on signature, so it must not become the resume point.
     const farFuture = SINCE + 10 * 365 * 24 * 3600;
     socketFor(HOSTILE).push(forgedCopyOf(signed("later", farFuture)));
     socketFor(HOSTILE).drop();
@@ -231,7 +228,8 @@ describe("a subscription across several relays", () => {
     const nowSeconds = Math.floor(Date.now() / 1000);
     for (const { filters } of reqs) {
       expect(filters[0].since).toBeGreaterThanOrEqual(SINCE);
-      expect(filters[0].since).toBeLessThanOrEqual(nowSeconds);
+      // Behind now, so what was sent while the relay was away is asked for.
+      expect(filters[0].since).toBeLessThanOrEqual(nowSeconds - 15 * 60);
     }
     client.close();
   });
@@ -347,6 +345,54 @@ describe("queryEvents", () => {
     expect((await result).map((e) => e.id).sort()).toEqual(
       [genuine.id, other.id].sort(),
     );
+    client.close();
+  });
+});
+
+describe("a reconnect", () => {
+  // 15 minutes behind it, for a sender whose clock runs slow.
+  it("resumes a subscription a little behind the newest event its relay sent", async () => {
+    const filter = { kinds: [1], since: SINCE };
+    const client = new NostrClient();
+    client.subscribe([filter], () => undefined, undefined, [HONEST]);
+    await settle();
+
+    socketFor(HONEST).push(signed("newest", SINCE + 3_600));
+    socketFor(HONEST).drop();
+    await settle(10_001);
+
+    const [resumed] = socketFor(HONEST).reqs;
+    expect(resumed.filters[0].since).toBe(SINCE + 3_600 - 15 * 60);
+    // The caller's filter is its own: a later reopen starts where it asked.
+    expect(filter.since).toBe(SINCE);
+    client.close();
+  });
+
+  // Wrap stamps are blurred, so one sent after the newest seen can carry an
+  // older stamp, and resuming from the newest would never ask for it.
+  it("asks again for every gift wrap since the subscription opened", async () => {
+    const seen: string[] = [];
+    const client = new NostrClient();
+    client.subscribe(
+      [{ kinds: [1059], since: SINCE }],
+      (e) => seen.push(e.content),
+      undefined,
+      [HONEST],
+    );
+    await settle();
+
+    socketFor(HONEST).push(signed("newest", SINCE + 3_600, 1059));
+    await settle();
+    storedOn.set(HONEST, [
+      signed("sent later, stamped earlier", SINCE + 600, 1059),
+    ]);
+    socketFor(HONEST).drop();
+    await settle(10_001);
+    await settle(100);
+
+    const [resumed] = socketFor(HONEST).reqs;
+    expect(resumed.filters[0].since).toBe(SINCE);
+    expect(seen).toEqual(["newest", "sent later, stamped earlier"]);
     client.close();
   });
 });

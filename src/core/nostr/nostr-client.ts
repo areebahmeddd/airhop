@@ -24,6 +24,7 @@
 
 import { BoundedIdSet } from "@utils/bounded-id-set";
 import type { Event } from "nostr-tools";
+import type { Subscription } from "nostr-tools/abstract-relay";
 import type { Filter } from "nostr-tools/filter";
 import type { SubCloser } from "nostr-tools/pool";
 import { SimplePool } from "nostr-tools/pool";
@@ -221,18 +222,15 @@ export class NostrClient {
   // traffic, which uses the default pool.
   // Returns a closer function; call it to cancel the subscription.
   //
-  // One pool subscription per relay and filter, never one across relays.
-  // nostr-tools (2.25.4) records an event ID as seen before it verifies the
-  // event, in a set shared by every relay in the call, so one relay sending a
-  // bad-signature copy under a genuine ID would hide the real event from every
-  // honest relay. Split per relay, that set only ever hides the relay that
-  // poisoned it. Dedup across relays is ours instead, in bitchat-ios's order:
-  // look up, verify, then record. An ID is recorded only once nostr-tools has
-  // verified the event and the pump has taken it. Each call also gets its own
-  // filter object, because a reconnect writes `since` into it, and a relay that
-  // sent a far-future event must move only its own (and `guardSince` bounds
-  // even that). Collapse back to one call per filter once a nostr-tools release
-  // carries nbd-wtf/nostr-tools#563.
+  // One pool subscription per relay and filter, never one across relays: the
+  // pool reports a close only once every relay in a call has closed, and each
+  // relay's subscription must be reopened on its own (see `open`). Dedup across
+  // relays is ours instead, in bitchat-ios's order: look up, verify, then
+  // record. An ID is recorded only once nostr-tools has verified the event and
+  // the pump has taken it.
+  //
+  // Where a reconnect resumes is set here, as each event lands, through
+  // nostr-tools' `lastEmitted` (see resumeCursor); dedup absorbs the replay.
   subscribe(
     filters: Filter[],
     onEvent: EventHandler,
@@ -279,10 +277,16 @@ export class NostrClient {
       attempt: number,
     ): void => {
       const openedAtMs = Date.now();
+      let newest: number | undefined;
       closers.set(
         key,
-        this.pool.subscribeMany([url], guardSince({ ...filter }), {
-          onevent: deliver,
+        this.pool.subscribeMany([url], filter, {
+          // The pool calls this on the relay's subscription.
+          onevent: function (this: Subscription, event: Event): void {
+            newest = Math.max(newest ?? event.created_at, event.created_at);
+            this.lastEmitted = resumeCursor(filter, newest);
+            deliver(event);
+          },
           oneose: attempt === 0 ? oneose : undefined,
           alreadyHaveEvent,
           onclose: () => {
@@ -449,19 +453,12 @@ export class NostrClient {
     for (const [url, live] of status) if (live) this.everLive.add(url);
   }
 
-  // Query relays and collect all matching events up to EOSE. One query per
-  // relay for the same reason subscribe splits (a poisoned relay must not hide
-  // another relay's copy), merged by ID. Every copy returned is verified.
-  async queryEvents(filter: Filter): Promise<Event[]> {
-    const params = { maxWait: QUERY_MAX_WAIT_MS };
-    const perRelay = await Promise.all(
-      this.relays.map((url) =>
-        this.pool.querySync([url], { ...filter }, params),
-      ),
-    );
-    const byID = new Map<string, Event>();
-    for (const event of perRelay.flat()) byID.set(event.id, event);
-    return [...byID.values()];
+  // Query relays and collect all matching events up to EOSE: each verified,
+  // each ID once, and a forged copy from one relay never hiding another's.
+  queryEvents(filter: Filter): Promise<Event[]> {
+    return this.pool.querySync(this.relays, filter, {
+      maxWait: QUERY_MAX_WAIT_MS,
+    });
   }
 
   // Close all relay connections. ALL of them, not just the default set.
@@ -498,33 +495,23 @@ export class NostrClient {
   }
 }
 
-// How far a reconnect's `since` stays behind the newest event seen, so a sender
-// whose clock runs slow is not skipped. The 15 minutes allowed elsewhere.
-const RECONNECT_SINCE_SKEW_SECONDS = 15 * 60;
+// How far a reconnect resumes behind the newest event seen, so a sender whose
+// clock runs slow is not skipped. The 15 minutes allowed elsewhere.
+const RECONNECT_SKEW_SECONDS = 15 * 60;
 
-// nostr-tools moves a subscription's `since` to just past the newest
-// `created_at` it has received whenever a relay reconnects. One validly signed
-// event dated years ahead would then have that relay withhold every real event
-// until the subscription is reopened, so a write is capped at now, then set
-// the skew further back, and never before the `since` the caller asked for.
-// A gift wrap's `created_at` is blurred 15 minutes either side of the send
-// time, so even that could pass over a newer wrap: a gift-wrap filter keeps
-// the `since` it was given and ignores the write.
-function guardSince(filter: Filter): Filter {
-  const giftWrap = filter.kinds?.includes(KIND_GIFT_WRAP) === true;
-  const { since: requested, ...rest } = filter;
-  let since = requested;
-  return Object.defineProperty(rest, "since", {
-    enumerable: true,
-    get: () => since,
-    set: (written: unknown) => {
-      if (giftWrap || typeof written !== "number") return;
-      const nowSeconds = Math.floor(Date.now() / 1000);
-      const bounded =
-        Math.min(written, nowSeconds) - RECONNECT_SINCE_SKEW_SECONDS;
-      since = requested === undefined ? bounded : Math.max(requested, bounded);
-    },
-  });
+// Where a reconnect resumes a subscription (nostr-tools' `lastEmitted`; it
+// caps the value at now itself). Left to nostr-tools it is the newest
+// `created_at` seen, so one validly signed event from a fast clock would have
+// every reconnect skip what was sent meanwhile; it trails the newest by the
+// skew instead, and never asks for more than the caller's `since`. A gift wrap
+// gets none: its `created_at` is blurred on purpose (15 minutes either side
+// here, up to two days back under NIP-59), so a wrap sent after the newest one
+// seen can carry an older stamp, and a reconnect repeats the opening `since`.
+function resumeCursor(filter: Filter, newest: number): number | undefined {
+  if (filter.kinds?.includes(KIND_GIFT_WRAP) === true) return undefined;
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const cursor = Math.min(newest, nowSeconds) - RECONNECT_SKEW_SECONDS;
+  return filter.since === undefined ? cursor : Math.max(filter.since, cursor);
 }
 
 // The key nostr-tools files a relay under in its pool, or null for a URL it
