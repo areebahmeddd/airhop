@@ -33,7 +33,7 @@ const SECTIONS: LegalSection[] = [
         bullets: [
           "**Identity keys.** An Ed25519 signing key and a Noise static key are generated locally when you set up the app and stored in your device's secure storage (iOS Keychain or Android Keystore). A Nostr key and a separate identity for each location cell you use are derived from that signing key rather than stored separately. One-time prekeys, which let someone leave you a protected message while you are away, are random keys kept in the same secure storage. Your public keys are shared with peers you communicate with. **Private keys never leave your device**, except when you move Airhop to a new phone of your own, which sends them directly between the two phones over your local network, encrypted, after your phone confirms it is you.",
           "**Display name and preferences.** Your generated display name and app settings are stored locally.",
-          "**Message history.** Conversations are stored locally on your device and are never sent to us. They are protected by the operating system's app sandbox and whole-device encryption, not by a separate app-level cipher, so a person with access to an unlocked device can read them. Delete a conversation at any time, or wipe everything with panic wipe.",
+          "**Message history.** Conversations are stored locally on your device and are never sent to us. They are protected by the operating system's app sandbox and whole-device encryption, not by a separate app-level cipher, so a person with access to an unlocked device can read them. Delete a conversation at any time, wipe everything with panic wipe, or turn on Disappearing messages in General to clear each message 1, 7 or 30 days after it arrives.",
           "**Private group state.** Group names, member lists, and the current group key are stored locally so you can keep reading the group. They are removed by panic wipe or by removing the app.",
           "**Bulletin board notices.** Signed public notices, and the deletion markers that retract them, persist until the author's chosen expiry, at most seven days. These are public to the mesh or area they were posted to, not private messages. A note left in a location channel with no expiry goes only to Nostr relays, which keep it under their own policies.",
           "**Media attachments.** Photos, videos, voice notes, and files you send or receive are written to the app's cache so they stay viewable. They are deleted automatically once they pass the retention window set in General (seven days by default), and also by panic wipe, by clearing the cache in settings, or by removing the app. Received files share a 100 MiB budget, and the oldest are removed first once it is full.",
@@ -50,7 +50,7 @@ const SECTIONS: LegalSection[] = [
       "When the app is running, nearby mesh devices can receive:",
       {
         bullets: [
-          "Your display name, which the app generates from your public key, and your public identity keys.",
+          "Your display name, which the app generates from your public key, and your public identity keys. Your Nostr key is never broadcast: it goes only to a contact, or someone you have messaged, inside your encrypted session.",
           "Messages you send to public channels or directly to another peer.",
           "Public notices you post to the bulletin board, which stay readable until they expire.",
           "A batch of single-use public keys, so someone can leave you a protected message while you are offline. These contain no private information.",
@@ -165,7 +165,8 @@ const SECTIONS: LegalSection[] = [
           "**Courier envelopes carried for others:** until handed over, or 24 hours.",
           "**Public bulletin-board notices:** until the author's chosen expiry, at most seven days.",
           "**Media attachments:** deleted automatically after the window you choose in General (7 days by default, or 14 or 30). There is no keep-forever option. Also removed by clearing the cache, a panic wipe, or removing the app.",
-          "**Conversations, groups, contacts, and keys:** until you delete them, run a panic wipe, or remove the app.",
+          "**Messages:** until you delete them, or for 1, 7 or 30 days after they reach your phone if you turn on Disappearing messages in General (off by default). It applies to your phone only; the other person keeps their copy. Messages still being delivered, and payments sent to you in a private chat that you have not claimed, stay until they are done.",
+          "**Groups, contacts, and keys:** until you delete them, run a panic wipe, or remove the app.",
           "**Wallet transaction history:** the most recent 500 entries, until you run a panic wipe or remove the app.",
           "**Anything sent to a Nostr relay:** according to that relay operator's own policy, which is outside our control.",
         ],

@@ -657,6 +657,7 @@ export const strings: Strings = {
   "chat.attach.send": "Отправить вложение",
   "chat.attach.generic": "Вложение",
   "chat.video_prep.preparing": "Подготовка видео",
+  "chat.video_prep.retrying": "Дополнительное сжатие",
   "chat.video_prep.waiting": "Видео ждёт подготовки",
   "chat.video_prep.cancel": "Остановить подготовку этого видео",
   "chat.video_prep.too_large":
@@ -688,8 +689,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Воспроизвести голосовую заметку",
   "chat.media.pause_video": "Приостановить видео",
   "chat.media.play_video": "Воспроизвести видео",
-  "chat.media.voice_position": "Позиция в голосовой заметке",
-  "chat.media.voice_scrub": "Коснитесь полосок, чтобы перейти к нужному месту",
+  "chat.media.voice_back": "Назад на 5 секунд",
+  "chat.media.voice_forward": "Вперёд на 5 секунд",
   "chat.media.image": "Изображение",
   "chat.media.tap_load_photo": "Нажмите, чтобы загрузить фото",
   "chat.media.open_document": "Открыть {name}",
@@ -747,6 +748,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Прямой эфир",
   "chat.live_video.go_live": "Начать эфир",
   "chat.live_video.end": "Завершить",
+  "chat.live_video.ending": "Завершение…",
   "chat.live_video.end_title": "Завершить эфир?",
   "chat.live_video.end_body":
     "При завершении запись останется в этом чате. При удалении всех зрителей попросят её стереть.",
@@ -759,9 +761,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Среднее",
   "chat.live_video.quality_high": "Высокое",
   "chat.live_video.quality_low_hint":
-    "Доходит до людей через несколько переходов",
-  "chat.live_video.quality_medium_hint": "Для людей в одном-двух переходах",
-  "chat.live_video.quality_high_hint": "Для людей совсем рядом с вами",
+    "По Bluetooth доходит до людей за несколько переходов",
+  "chat.live_video.quality_medium_hint":
+    "Чётче, для зрителей по Wi-Fi Aware или в той же сети Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "Чётче всего, для зрителей по Wi-Fi Aware или в той же сети Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Нужен Wi-Fi рядом",
+  "chat.live_video.quality_bluetooth_note":
+    "Среднему и Высокому нужен Wi-Fi рядом",
   "chat.live_video.signal_good": "Успевает",
   "chat.live_video.signal_weak": "Отстаёт",
   "chat.live_video.signal_poor":
@@ -777,6 +784,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Проведите вверх для записи без рук",
   "chat.voice.live_speaking": "{name} говорит",
   "chat.voice.live_ended": "Завершено",
+  "chat.voice.live_stopped": "Голосовой эфир завершён",
   "voice.unavailable": "Голосовая связь недоступна",
   "voice.recording_stopped": "Запись остановлена",
 
@@ -1873,13 +1881,15 @@ export const strings: Strings = {
     "Для этого контакта пока нет ключей. Напишите человеку или отсканируйте его код при встрече.",
   "contacts.verify.compare_title": "Прочитайте это друг другу",
   "contacts.verify.compare_body":
-    "{name} видит в Airhop те же шесть слов. Если они совпадают, вы оба знаете, что ключи настоящие. В bitchat таких слов нет, поэтому отсканируйте его код.",
-  "contacts.verify.codes_match": "Совпадают",
-  "contacts.verify.codes_differ": "Не совпадают",
+    "Прочитайте свой код собеседнику {name}, чтобы он сверил его на своём телефоне. Затем сверьте код, который он прочитает, с кодом собеседника здесь. Каждый из вас отмечает другого как подтверждённого на своём телефоне. В bitchat таких слов нет, поэтому отсканируйте его код.",
+  "contacts.verify.your_code": "Ваш код",
+  "contacts.verify.their_code": "Код собеседника",
+  "contacts.verify.codes_match": "Код собеседника совпадает",
+  "contacts.verify.codes_differ": "Код собеседника не совпадает",
   "contacts.verify.codes_differ_body":
     "Возможно, ключи на этом телефоне принадлежат не {name}. Прежде чем доверять этому чату, отсканируйте его код при встрече.",
   "contacts.verify.compared_body":
-    "Вы и {name} подтвердили один и тот же код. Контакт подтверждён.",
+    "Код, который прочитал {name}, совпадает, поэтому на этом телефоне контакт подтверждён. Вас он подтверждает на своём телефоне.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Назад",
@@ -2041,11 +2051,32 @@ export const strings: Strings = {
     "Золотая середина на неделю-другую без связи.",
   "settings.general.retention_30_desc":
     "Дольше всего сохраняет переписку читаемой и занимает больше всего места.",
+  "settings.general.message_retention": "Исчезающие сообщения",
+  "settings.general.message_retention_desc":
+    "Сообщения и их медиа удаляются с этого телефона по истечении выбранного срока",
+  "settings.general.message_retention_sheet":
+    "Отсчёт идёт с момента, когда сообщение пришло на этот телефон, и забывает только этот телефон. Телефон собеседника сохраняет свою копию, скриншоты не запретить, а платежи из личных чатов, которые вы ещё не получили, хранятся, пока вы их не получите.",
+  "settings.general.message_retention_off_desc":
+    "Сообщения хранятся, пока вы не очистите чат или не покинете его",
+  "settings.general.message_retention_1_desc":
+    "Остаётся меньше всего, если риск в самом телефоне",
+  "settings.general.message_retention_7_desc":
+    "Неделя, чтобы всё прочитать, потом они исчезают",
+  "settings.general.message_retention_30_desc":
+    "Дольше всего сохраняет переписку читаемой",
+  "settings.general.message_retention_confirm_title":
+    "Удалить старые сообщения?",
+  "settings.general.message_retention_confirm_1":
+    "Сообщения старше 1 дня будут удалены с этого телефона сейчас вместе с их медиа. Это нельзя отменить.",
+  "settings.general.message_retention_confirm_7":
+    "Сообщения старше 7 дней будут удалены с этого телефона сейчас вместе с их медиа. Это нельзя отменить.",
+  "settings.general.message_retention_confirm_30":
+    "Сообщения старше 30 дней будут удалены с этого телефона сейчас вместе с их медиа. Это нельзя отменить.",
   "settings.general.reset_desc":
     "Возвращает настройки к значениям по умолчанию, не трогая вашу личность, сообщения, контакты и кошелёк",
   "settings.general.reset_title": "Сбросить настройки?",
   "settings.general.reset_body":
-    "Настройки вернутся к значениям по умолчанию, включая оформление, язык, уведомления, отмену отправки и подключения (шлюз, мост сети, ретрансляторы). Блокировка Airhop, срок хранения медиа, переключатель интернета, Tor и его мосты, а также ваш статус останутся как есть. Ваша личность, сообщения, контакты и кошелёк не затрагиваются.",
+    "Настройки вернутся к значениям по умолчанию, включая оформление, язык, уведомления, отмену отправки и подключения (шлюз, мост сети, ретрансляторы). Блокировка Airhop, срок хранения сообщений и медиа, переключатель интернета, Tor и его мосты, а также ваш статус останутся как есть. Ваша личность, сообщения, контакты и кошелёк не затрагиваются.",
   "settings.general.reset_confirm": "Сбросить",
 
   // ---- Settings: privacy and security ----

@@ -652,6 +652,7 @@ export const strings: Strings = {
   "chat.attach.send": "Gửi tệp đính kèm",
   "chat.attach.generic": "Tệp đính kèm",
   "chat.video_prep.preparing": "Đang chuẩn bị video",
+  "chat.video_prep.retrying": "Đang thu nhỏ thêm",
   "chat.video_prep.waiting": "Đang chờ chuẩn bị video",
   "chat.video_prep.cancel": "Dừng chuẩn bị video này",
   "chat.video_prep.too_large": "Không thể thu nhỏ video này đủ để gửi.",
@@ -681,8 +682,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Phát tin nhắn thoại",
   "chat.media.pause_video": "Tạm dừng video",
   "chat.media.play_video": "Phát video",
-  "chat.media.voice_position": "Vị trí trong tin nhắn thoại",
-  "chat.media.voice_scrub": "Chạm dọc các vạch để nhảy tới điểm đó",
+  "chat.media.voice_back": "Lùi 5 giây",
+  "chat.media.voice_forward": "Tới 5 giây",
   "chat.media.image": "Hình ảnh",
   "chat.media.tap_load_photo": "Chạm để tải ảnh",
   "chat.media.open_document": "Mở {name}",
@@ -738,6 +739,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Video trực tiếp",
   "chat.live_video.go_live": "Phát trực tiếp",
   "chat.live_video.end": "Kết thúc",
+  "chat.live_video.ending": "Đang kết thúc…",
   "chat.live_video.end_title": "Kết thúc video trực tiếp?",
   "chat.live_video.end_body":
     "Kết thúc sẽ giữ bản ghi trong cuộc trò chuyện này. Hủy bỏ sẽ yêu cầu mọi người đang xem xóa nó.",
@@ -750,10 +752,14 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "Thấp",
   "chat.live_video.quality_medium": "Trung bình",
   "chat.live_video.quality_high": "Cao",
-  "chat.live_video.quality_low_hint": "Đến được người cách vài bước nhảy",
+  "chat.live_video.quality_low_hint":
+    "Đến được người cách vài bước nhảy qua Bluetooth",
   "chat.live_video.quality_medium_hint":
-    "Cho người cách một hoặc hai bước nhảy",
-  "chat.live_video.quality_high_hint": "Cho người ngay cạnh bạn",
+    "Nét hơn, cho người xem qua Wi-Fi Aware hoặc cùng Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "Nét nhất, cho người xem qua Wi-Fi Aware hoặc cùng Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Cần Wi-Fi ở gần",
+  "chat.live_video.quality_bluetooth_note": "Trung bình và Cao cần Wi-Fi ở gần",
   "chat.live_video.signal_good": "Đang theo kịp",
   "chat.live_video.signal_weak": "Đang chậm lại",
   "chat.live_video.signal_poor": "Quá chậm cho video, chỉ đang gửi âm thanh",
@@ -768,6 +774,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Trượt lên để ghi âm rảnh tay",
   "chat.voice.live_speaking": "{name} đang nói",
   "chat.voice.live_ended": "Đã kết thúc",
+  "chat.voice.live_stopped": "Giọng nói trực tiếp đã kết thúc",
   "voice.unavailable": "Không dùng được thoại trực tiếp",
   "voice.recording_stopped": "Đã dừng ghi âm",
 
@@ -1860,13 +1867,15 @@ export const strings: Strings = {
     "Chưa có khóa cho liên hệ này. Hãy nhắn tin cho họ, hoặc quét mã của họ khi gặp mặt.",
   "contacts.verify.compare_title": "Hãy đọc những từ này cho nhau nghe",
   "contacts.verify.compare_body":
-    "{name} thấy đúng sáu từ đó trên Airhop. Nếu chúng khớp, cả hai bạn đều biết các khóa là thật. bitchat không hiển thị những từ này, nên hãy quét mã của họ.",
-  "contacts.verify.codes_match": "Chúng khớp",
-  "contacts.verify.codes_differ": "Chúng không khớp",
+    "Đọc mã của bạn cho {name} để họ kiểm tra trên điện thoại của họ. Sau đó đối chiếu mã họ đọc với mã của họ ở đây. Mỗi người tự đánh dấu người kia đã xác minh trên điện thoại của mình. bitchat không hiển thị những từ này, nên hãy quét mã của họ.",
+  "contacts.verify.your_code": "Mã của bạn",
+  "contacts.verify.their_code": "Mã của họ",
+  "contacts.verify.codes_match": "Mã của họ khớp",
+  "contacts.verify.codes_differ": "Mã của họ không khớp",
   "contacts.verify.codes_differ_body":
     "Các khóa trên điện thoại này có thể không phải của {name}. Hãy quét mã của họ trực tiếp trước khi tin cuộc trò chuyện này.",
   "contacts.verify.compared_body":
-    "Bạn và {name} đã xác nhận cùng một mã. Liên hệ này đã được xác minh.",
+    "Mã {name} đọc đã khớp, nên họ được xác minh trên điện thoại này. Họ sẽ xác minh bạn trên điện thoại của họ.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Quay lại",
@@ -2023,11 +2032,32 @@ export const strings: Strings = {
     "Mức trung dung cho một hai tuần xa sóng.",
   "settings.general.retention_30_desc":
     "Giữ cuộc trò chuyện đọc được lâu nhất, và cũng chiếm đĩa nhiều nhất.",
+  "settings.general.message_retention": "Tin nhắn tự xóa",
+  "settings.general.message_retention_desc":
+    "Tin nhắn và phương tiện kèm theo bị xóa khỏi điện thoại này sau thời gian đã chọn",
+  "settings.general.message_retention_sheet":
+    "Tính từ lúc mỗi tin nhắn đến điện thoại này, và chỉ điện thoại này quên. Điện thoại của người kia vẫn giữ bản sao, không thể ngăn chụp màn hình, và các khoản thanh toán trong trò chuyện riêng mà bạn chưa nhận sẽ còn lại cho đến khi bạn nhận.",
+  "settings.general.message_retention_off_desc":
+    "Tin nhắn ở lại cho đến khi bạn xóa đoạn chat hoặc rời khỏi nó",
+  "settings.general.message_retention_1_desc":
+    "Để lại ít nhất, nếu chính điện thoại là rủi ro",
+  "settings.general.message_retention_7_desc":
+    "Một tuần để đọc lại, rồi biến mất",
+  "settings.general.message_retention_30_desc":
+    "Giữ các cuộc trò chuyện đọc được lâu nhất",
+  "settings.general.message_retention_confirm_title":
+    "Xóa các tin nhắn cũ hơn?",
+  "settings.general.message_retention_confirm_1":
+    "Các tin nhắn cũ hơn 1 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+  "settings.general.message_retention_confirm_7":
+    "Các tin nhắn cũ hơn 7 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+  "settings.general.message_retention_confirm_30":
+    "Các tin nhắn cũ hơn 30 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
   "settings.general.reset_desc":
     "Đưa các tùy chọn về mặc định, còn danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn",
   "settings.general.reset_title": "Đặt lại cài đặt?",
   "settings.general.reset_body":
-    "Các tùy chọn quay về mặc định, gồm giao diện, ngôn ngữ, thông báo, hoàn tác gửi, và kết nối (cổng kết nối, cầu nối mạng lưới, bộ chuyển tiếp). Khóa Airhop, thời gian giữ phương tiện, công tắc Internet, Tor cùng các cầu nối của nó, và trạng thái của bạn vẫn giữ như đã đặt. Danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn.",
+    "Các tùy chọn quay về mặc định, gồm giao diện, ngôn ngữ, thông báo, hoàn tác gửi, và kết nối (cổng kết nối, cầu nối mạng lưới, bộ chuyển tiếp). Khóa Airhop, thời gian giữ tin nhắn và phương tiện, công tắc Internet, Tor cùng các cầu nối của nó, và trạng thái của bạn vẫn giữ như đã đặt. Danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn.",
   "settings.general.reset_confirm": "Đặt lại",
 
   // ---- Settings: privacy and security ----

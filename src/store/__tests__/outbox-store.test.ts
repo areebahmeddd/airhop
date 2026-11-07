@@ -279,3 +279,15 @@ describe("relay resend pacing", () => {
     expect(nostrResendDue(msg, now + NOSTR_REPUBLISH_INTERVAL_MS)).toBe(true);
   });
 });
+
+// Disappearing messages: an undelivered copy holds the plaintext, so it goes
+// with its row.
+describe("discard", () => {
+  it("drops exactly the given messages, for every recipient", () => {
+    enqueue("m1", PEER_A);
+    enqueue("m2", PEER_A);
+    enqueue("m3", PEER_B);
+    state().discard(new Set(["m1", "m3", "unknown"]));
+    expect(state().pending.map((p) => p.id)).toEqual(["m2"]);
+  });
+});

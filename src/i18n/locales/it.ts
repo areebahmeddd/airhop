@@ -664,6 +664,7 @@ export const strings: Strings = {
   "chat.attach.send": "Invia l’allegato",
   "chat.attach.generic": "Allegato",
   "chat.video_prep.preparing": "Preparazione del video",
+  "chat.video_prep.retrying": "Riduzione ulteriore in corso",
   "chat.video_prep.waiting": "In attesa di preparare il video",
   "chat.video_prep.cancel": "Interrompi la preparazione di questo video",
   "chat.video_prep.too_large":
@@ -695,8 +696,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Riproduci la nota vocale",
   "chat.media.pause_video": "Metti in pausa il video",
   "chat.media.play_video": "Riproduci il video",
-  "chat.media.voice_position": "Posizione nella nota vocale",
-  "chat.media.voice_scrub": "Tocca lungo le barre per saltare a quel punto",
+  "chat.media.voice_back": "Indietro di 5 secondi",
+  "chat.media.voice_forward": "Avanti di 5 secondi",
   "chat.media.image": "Immagine",
   "chat.media.tap_load_photo": "Tocca per caricare la foto",
   "chat.media.open_document": "Apri {name}",
@@ -755,6 +756,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Video in diretta",
   "chat.live_video.go_live": "Vai in diretta",
   "chat.live_video.end": "Termina",
+  "chat.live_video.ending": "Chiusura in corso…",
   "chat.live_video.end_title": "Terminare il video in diretta?",
   "chat.live_video.end_body":
     "Terminando, la registrazione resta in questa chat. Scartandola, chi guarda riceve la richiesta di eliminarla.",
@@ -768,9 +770,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Media",
   "chat.live_video.quality_high": "Alta",
   "chat.live_video.quality_low_hint":
-    "Raggiunge persone a diversi salti di distanza",
-  "chat.live_video.quality_medium_hint": "Per persone a uno o due salti",
-  "chat.live_video.quality_high_hint": "Per persone proprio accanto a te",
+    "Raggiunge persone a diversi salti di distanza via Bluetooth",
+  "chat.live_video.quality_medium_hint":
+    "Più nitida, per chi guarda via Wi-Fi Aware o sulla stessa Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "La più nitida, per chi guarda via Wi-Fi Aware o sulla stessa Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Serve una Wi-Fi vicina",
+  "chat.live_video.quality_bluetooth_note":
+    "Media e Alta richiedono una Wi-Fi vicina",
   "chat.live_video.signal_good": "Tiene il passo",
   "chat.live_video.signal_weak": "Resta indietro",
   "chat.live_video.signal_poor":
@@ -787,6 +794,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Scorri verso l’alto per registrare a mani libere",
   "chat.voice.live_speaking": "{name} sta parlando",
   "chat.voice.live_ended": "Terminato",
+  "chat.voice.live_stopped": "Voce in diretta terminata",
   "voice.unavailable": "Voce in diretta non disponibile",
   "voice.recording_stopped": "Registrazione interrotta",
 
@@ -1902,13 +1910,15 @@ export const strings: Strings = {
     "Non ci sono ancora chiavi per questo contatto. Scrivi loro, oppure scansiona il loro codice quando vi incontrate.",
   "contacts.verify.compare_title": "Leggete questi a vicenda",
   "contacts.verify.compare_body":
-    "{name} vede le stesse sei parole su Airhop. Se corrispondono, entrambi sapete che le chiavi sono autentiche. bitchat non mostra queste parole, quindi scansiona il suo codice.",
-  "contacts.verify.codes_match": "Corrispondono",
-  "contacts.verify.codes_differ": "Non corrispondono",
+    "Leggi il tuo codice a {name}, che lo controllerà sul suo telefono. Poi confronta il codice che ti legge con il suo codice qui. Ognuno segna l’altro come verificato sul proprio telefono. bitchat non mostra queste parole, quindi scansiona il suo codice.",
+  "contacts.verify.your_code": "Il tuo codice",
+  "contacts.verify.their_code": "Il suo codice",
+  "contacts.verify.codes_match": "Il suo codice corrisponde",
+  "contacts.verify.codes_differ": "Il suo codice non corrisponde",
   "contacts.verify.codes_differ_body":
     "Le chiavi su questo telefono potrebbero non essere di {name}. Scansiona il suo codice di persona prima di fidarti di questa chat.",
   "contacts.verify.compared_body":
-    "Tu e {name} avete confermato lo stesso codice. Questo contatto è verificato.",
+    "Il codice letto da {name} corrisponde, quindi il contatto è verificato su questo telefono. Sul suo telefono, verifica te.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Torna indietro",
@@ -2072,11 +2082,32 @@ export const strings: Strings = {
     "Una via di mezzo per una o due settimane lontano dal segnale.",
   "settings.general.retention_30_desc":
     "Mantiene le conversazioni leggibili più a lungo e occupa più spazio.",
+  "settings.general.message_retention": "Messaggi effimeri",
+  "settings.general.message_retention_desc":
+    "I messaggi e i loro media vengono eliminati da questo telefono dopo il tempo scelto",
+  "settings.general.message_retention_sheet":
+    "Il conteggio parte da quando ogni messaggio è arrivato su questo telefono, e solo questo telefono dimentica. Il telefono dell’altra persona conserva la sua copia, gli screenshot non si possono impedire e i pagamenti ricevuti in chat private che non hai ancora riscosso restano finché non li riscuoti.",
+  "settings.general.message_retention_off_desc":
+    "I messaggi restano finché non svuoti la chat o la abbandoni",
+  "settings.general.message_retention_1_desc":
+    "Lascia meno tracce, se il rischio è il telefono stesso",
+  "settings.general.message_retention_7_desc":
+    "Una settimana per recuperare, poi spariscono",
+  "settings.general.message_retention_30_desc":
+    "Mantiene le conversazioni leggibili più a lungo",
+  "settings.general.message_retention_confirm_title":
+    "Eliminare i messaggi più vecchi?",
+  "settings.general.message_retention_confirm_1":
+    "I messaggi più vecchi di 1 giorno verranno eliminati ora da questo telefono, insieme ai loro media. Non si può annullare.",
+  "settings.general.message_retention_confirm_7":
+    "I messaggi più vecchi di 7 giorni verranno eliminati ora da questo telefono, insieme ai loro media. Non si può annullare.",
+  "settings.general.message_retention_confirm_30":
+    "I messaggi più vecchi di 30 giorni verranno eliminati ora da questo telefono, insieme ai loro media. Non si può annullare.",
   "settings.general.reset_desc":
     "Riporta le preferenze ai valori predefiniti, lasciando intatti identità, messaggi, contatti e portafoglio",
   "settings.general.reset_title": "Ripristinare le impostazioni?",
   "settings.general.reset_body":
-    "Le preferenze tornano ai valori predefiniti, compresi aspetto, lingua, notifiche, annulla invio e connettività (gateway, ponte mesh, relay). Il blocco di Airhop, la durata di conservazione dei media, l’interruttore di internet, Tor e i suoi bridge e il tuo stato restano come li hai impostati. Identità, messaggi, contatti e portafoglio restano intatti.",
+    "Le preferenze tornano ai valori predefiniti, compresi aspetto, lingua, notifiche, annulla invio e connettività (gateway, ponte mesh, relay). Il blocco di Airhop, la durata di conservazione di messaggi e media, l’interruttore di internet, Tor e i suoi bridge e il tuo stato restano come li hai impostati. Identità, messaggi, contatti e portafoglio restano intatti.",
   "settings.general.reset_confirm": "Ripristina",
 
   // ---- Settings: privacy and security ----

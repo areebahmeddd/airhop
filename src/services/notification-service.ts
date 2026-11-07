@@ -471,12 +471,21 @@ export async function dismissNearbyNotification(): Promise<void> {
 // every chat app clears a chat's notification when you read it. Opening the
 // thread also answers a ring, so the ring ends here too.
 export async function dismissNotificationsFor(channel: string): Promise<void> {
+  await dismissMessageNotificationFor(channel);
+  await endRingAlertFor(channel);
+}
+
+// Clear a conversation's message card and nothing else, for disappearing
+// messages: the card shows text the sweep just removed. A ring is left alone,
+// since a sweep is no answer to it.
+export async function dismissMessageNotificationFor(
+  channel: string,
+): Promise<void> {
   try {
     await Notifications.dismissNotificationAsync(channelToId(channel));
   } catch {
     // Nothing delivered for this channel, or the platform has no tray: ignore.
   }
-  await endRingAlertFor(channel);
 }
 
 // Stop a ring for this conversation wherever it is sounding: the overlay

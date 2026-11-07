@@ -618,6 +618,7 @@ export const strings: Strings = {
   "chat.attach.send": "傳送附件",
   "chat.attach.generic": "附件",
   "chat.video_prep.preparing": "正在準備影片",
+  "chat.video_prep.retrying": "正在進一步壓縮",
   "chat.video_prep.waiting": "等待準備影片",
   "chat.video_prep.cancel": "停止準備這部影片",
   "chat.video_prep.too_large": "無法把這部影片壓縮到足以傳送的大小。",
@@ -645,8 +646,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "播放語音留言",
   "chat.media.pause_video": "暫停影片",
   "chat.media.play_video": "播放影片",
-  "chat.media.voice_position": "語音留言位置",
-  "chat.media.voice_scrub": "沿著音條點一下就能跳到那個位置",
+  "chat.media.voice_back": "倒退 5 秒",
+  "chat.media.voice_forward": "快轉 5 秒",
   "chat.media.image": "圖片",
   "chat.media.tap_load_photo": "點一下載入照片",
   "chat.media.open_document": "開啟 {name}",
@@ -700,6 +701,7 @@ export const strings: Strings = {
   "chat.live_video.title": "直播影片",
   "chat.live_video.go_live": "開始直播",
   "chat.live_video.end": "結束",
+  "chat.live_video.ending": "正在結束…",
   "chat.live_video.end_title": "要結束直播嗎？",
   "chat.live_video.end_body":
     "結束後錄影會保留在此聊天中。捨棄會通知所有觀看者刪除它。",
@@ -711,9 +713,13 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "低",
   "chat.live_video.quality_medium": "中",
   "chat.live_video.quality_high": "高",
-  "chat.live_video.quality_low_hint": "可傳到隔幾跳的人",
-  "chat.live_video.quality_medium_hint": "適合隔一兩跳的人",
-  "chat.live_video.quality_high_hint": "適合就在你身邊的人",
+  "chat.live_video.quality_low_hint": "透過藍牙可傳到隔幾跳的人",
+  "chat.live_video.quality_medium_hint":
+    "更清晰，適合透過 Wi-Fi Aware 或同一 Wi-Fi 觀看的人",
+  "chat.live_video.quality_high_hint":
+    "最清晰，適合透過 Wi-Fi Aware 或同一 Wi-Fi 觀看的人",
+  "chat.live_video.quality_needs_wifi": "需要附近有 Wi-Fi",
+  "chat.live_video.quality_bluetooth_note": "中和高需要附近有 Wi-Fi",
   "chat.live_video.signal_good": "跟得上",
   "chat.live_video.signal_weak": "正在落後",
   "chat.live_video.signal_poor": "太慢無法傳影片，僅傳送聲音",
@@ -728,6 +734,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "向上滑動即可免持錄製",
   "chat.voice.live_speaking": "{name} 正在說話",
   "chat.voice.live_ended": "已結束",
+  "chat.voice.live_stopped": "語音直播已結束",
   "voice.unavailable": "即時語音無法使用",
   "voice.recording_stopped": "錄製已停止",
 
@@ -1746,13 +1753,15 @@ export const strings: Strings = {
     "這位聯絡人還沒有金鑰。傳則訊息給對方，或者見面時掃一下對方的代碼。",
   "contacts.verify.compare_title": "把這些念給彼此聽",
   "contacts.verify.compare_body":
-    "{name} 在 Airhop 上看到的是同樣的六個字。如果對得上，你們雙方就都知道這些金鑰是真的。bitchat 不顯示這樣的字，所以請改為掃描對方的 QR 碼。",
-  "contacts.verify.codes_match": "對得上",
-  "contacts.verify.codes_differ": "對不上",
+    "把你的代碼唸給 {name} 聽，讓對方在自己的手機上核對。然後把對方唸出的代碼與這裡的對方代碼核對。你們各自在自己的手機上把對方標記為已驗證。bitchat 不顯示這樣的字，所以請改為掃描對方的 QR 碼。",
+  "contacts.verify.your_code": "你的代碼",
+  "contacts.verify.their_code": "對方的代碼",
+  "contacts.verify.codes_match": "對方的代碼對得上",
+  "contacts.verify.codes_differ": "對方的代碼對不上",
   "contacts.verify.codes_differ_body":
     "這支手機上的金鑰可能不屬於 {name}。在信任這段聊天之前，請當面掃描對方的 QR 碼。",
   "contacts.verify.compared_body":
-    "你和 {name} 確認了同一段代碼。這位聯絡人已驗證。",
+    "{name} 唸出的代碼對得上，所以對方在這支手機上已驗證。對方會在自己的手機上驗證你。",
 
   // ---- Settings: shared chrome ----
   "settings.back": "返回",
@@ -1899,11 +1908,29 @@ export const strings: Strings = {
     "折衷的選擇，適合一兩週沒有訊號的情況。",
   "settings.general.retention_30_desc":
     "對話讀得到的時間最長，佔用的磁碟也最多。",
+  "settings.general.message_retention": "限時訊息",
+  "settings.general.message_retention_desc":
+    "訊息及其媒體會在所選時間後從這台裝置上刪除",
+  "settings.general.message_retention_sheet":
+    "從每則訊息抵達這台裝置時開始計算，而且只有這台裝置會忘記。對方的裝置仍保留副本，無法阻止螢幕截圖，私訊中尚未領取的付款會一直保留到你領取為止。",
+  "settings.general.message_retention_off_desc":
+    "訊息會一直保留，直到你清除或退出聊天",
+  "settings.general.message_retention_1_desc":
+    "留下的最少，適合裝置本身就是風險的情況",
+  "settings.general.message_retention_7_desc": "一週內可以補看，之後就會消失",
+  "settings.general.message_retention_30_desc": "讓對話保持可讀的時間最長",
+  "settings.general.message_retention_confirm_title": "刪除較舊的訊息？",
+  "settings.general.message_retention_confirm_1":
+    "超過 1 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+  "settings.general.message_retention_confirm_7":
+    "超過 7 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+  "settings.general.message_retention_confirm_30":
+    "超過 30 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
   "settings.general.reset_desc":
     "把偏好設定回復為預設值，你的身分、訊息、聯絡人和錢包都不受影響",
   "settings.general.reset_title": "重設設定？",
   "settings.general.reset_body":
-    "偏好設定會回復預設，包括外觀、語言、通知、收回傳送，以及連線相關項目（閘道、網狀網路橋接、中繼）。鎖定 Airhop、媒體保留時間、網路開關、Tor 及其橋接，以及你的狀態維持原樣。你的身分、訊息、聯絡人和錢包不受影響。",
+    "偏好設定會回復預設，包括外觀、語言、通知、收回傳送，以及連線相關項目（閘道、網狀網路橋接、中繼）。鎖定 Airhop、訊息和媒體保留時間、網路開關、Tor 及其橋接，以及你的狀態維持原樣。你的身分、訊息、聯絡人和錢包不受影響。",
   "settings.general.reset_confirm": "重設",
 
   // ---- Settings: privacy and security ----

@@ -663,6 +663,7 @@ export const strings: Strings = {
   "chat.attach.send": "Wyślij załącznik",
   "chat.attach.generic": "Załącznik",
   "chat.video_prep.preparing": "Przygotowywanie wideo",
+  "chat.video_prep.retrying": "Dalsze zmniejszanie",
   "chat.video_prep.waiting": "Wideo czeka na przygotowanie",
   "chat.video_prep.cancel": "Przerwij przygotowywanie tego wideo",
   "chat.video_prep.too_large":
@@ -694,9 +695,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Odtwórz notatkę głosową",
   "chat.media.pause_video": "Wstrzymaj wideo",
   "chat.media.play_video": "Odtwórz wideo",
-  "chat.media.voice_position": "Pozycja w notatce głosowej",
-  "chat.media.voice_scrub":
-    "Naciśnij wzdłuż słupków, żeby przeskoczyć w to miejsce",
+  "chat.media.voice_back": "5 sekund do tyłu",
+  "chat.media.voice_forward": "5 sekund do przodu",
   "chat.media.image": "Obraz",
   "chat.media.tap_load_photo": "Naciśnij, żeby wczytać zdjęcie",
   "chat.media.open_document": "Otwórz {name}",
@@ -756,6 +756,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Wideo na żywo",
   "chat.live_video.go_live": "Zacznij nadawać",
   "chat.live_video.end": "Zakończ",
+  "chat.live_video.ending": "Kończenie…",
   "chat.live_video.end_title": "Zakończyć wideo na żywo?",
   "chat.live_video.end_body":
     "Zakończenie zostawia nagranie w tym czacie. Odrzucenie prosi wszystkich oglądających o jego usunięcie.",
@@ -767,10 +768,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "Niska",
   "chat.live_video.quality_medium": "Średnia",
   "chat.live_video.quality_high": "Wysoka",
-  "chat.live_video.quality_low_hint": "Dociera do osób kilka przeskoków dalej",
+  "chat.live_video.quality_low_hint":
+    "Dociera przez Bluetooth do osób kilka przeskoków dalej",
   "chat.live_video.quality_medium_hint":
-    "Dla osób jeden lub dwa przeskoki dalej",
-  "chat.live_video.quality_high_hint": "Dla osób tuż obok ciebie",
+    "Ostrzejsza, dla widzów przez Wi-Fi Aware lub w tej samej sieci Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "Najostrzejsza, dla widzów przez Wi-Fi Aware lub w tej samej sieci Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Wymaga Wi-Fi w pobliżu",
+  "chat.live_video.quality_bluetooth_note":
+    "Średnia i Wysoka wymagają Wi-Fi w pobliżu",
   "chat.live_video.signal_good": "Nadąża",
   "chat.live_video.signal_weak": "Zostaje w tyle",
   "chat.live_video.signal_poor":
@@ -787,6 +793,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Przesuń w górę, żeby nagrywać bez trzymania",
   "chat.voice.live_speaking": "{name} mówi",
   "chat.voice.live_ended": "Zakończono",
+  "chat.voice.live_stopped": "Głos na żywo zakończony",
   "voice.unavailable": "Głos na żywo niedostępny",
   "voice.recording_stopped": "Nagrywanie zatrzymane",
 
@@ -1885,13 +1892,15 @@ export const strings: Strings = {
     "Brak jeszcze kluczy do tego kontaktu. Napisz do nich albo zeskanuj ich kod, gdy się spotkacie.",
   "contacts.verify.compare_title": "Odczytajcie to sobie nawzajem",
   "contacts.verify.compare_body":
-    "{name} widzi w Airhop te same sześć słów. Jeśli się zgadzają, oboje wiecie, że klucze są prawdziwe. bitchat nie pokazuje takich słów, więc zamiast tego zeskanuj ich kod.",
-  "contacts.verify.codes_match": "Zgadzają się",
-  "contacts.verify.codes_differ": "Nie zgadzają się",
+    "Przeczytaj swój kod osobie {name}, żeby sprawdziła go na swoim telefonie. Potem porównaj kod, który przeczyta, z jej kodem tutaj. Każde z was oznacza drugie jako zweryfikowane na własnym telefonie. bitchat nie pokazuje takich słów, więc zamiast tego zeskanuj ich kod.",
+  "contacts.verify.your_code": "Twój kod",
+  "contacts.verify.their_code": "Kod tej osoby",
+  "contacts.verify.codes_match": "Kod tej osoby się zgadza",
+  "contacts.verify.codes_differ": "Kod tej osoby się nie zgadza",
   "contacts.verify.codes_differ_body":
     "Klucze na tym telefonie mogą nie należeć do {name}. Zeskanuj ich kod osobiście, zanim zaufasz tej rozmowie.",
   "contacts.verify.compared_body":
-    "Ty i {name} potwierdziliście ten sam kod. Ten kontakt jest zweryfikowany.",
+    "Kod przeczytany przez {name} się zgadza, więc ta osoba jest zweryfikowana na tym telefonie. Ciebie weryfikuje na swoim.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Wstecz",
@@ -2051,11 +2060,32 @@ export const strings: Strings = {
     "Złoty środek na tydzień albo dwa bez zasięgu.",
   "settings.general.retention_30_desc":
     "Najdłużej utrzymuje wątki czytelnymi i najwięcej trzyma na dysku.",
+  "settings.general.message_retention": "Znikające wiadomości",
+  "settings.general.message_retention_desc":
+    "Wiadomości i ich multimedia są usuwane z tego telefonu po wybranym czasie",
+  "settings.general.message_retention_sheet":
+    "Liczone od chwili, gdy każda wiadomość dotarła na ten telefon, i zapomina tylko ten telefon. Telefon drugiej osoby zachowuje swoją kopię, zrzutom ekranu nie da się zapobiec, a nieodebrane płatności z czatów prywatnych zostają, dopóki ich nie odbierzesz.",
+  "settings.general.message_retention_off_desc":
+    "Wiadomości zostają, dopóki nie wyczyścisz czatu lub go nie opuścisz",
+  "settings.general.message_retention_1_desc":
+    "Zostawia najmniej, gdy ryzykiem jest sam telefon",
+  "settings.general.message_retention_7_desc":
+    "Tydzień na nadrobienie, potem znikają",
+  "settings.general.message_retention_30_desc":
+    "Najdłużej utrzymuje wątki do przeczytania",
+  "settings.general.message_retention_confirm_title":
+    "Usunąć starsze wiadomości?",
+  "settings.general.message_retention_confirm_1":
+    "Wiadomości starsze niż 1 dzień zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+  "settings.general.message_retention_confirm_7":
+    "Wiadomości starsze niż 7 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+  "settings.general.message_retention_confirm_30":
+    "Wiadomości starsze niż 30 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
   "settings.general.reset_desc":
     "Przywraca ustawieniom wartości domyślne, nie ruszając tożsamości, wiadomości, kontaktów ani portfela",
   "settings.general.reset_title": "Zresetować ustawienia?",
   "settings.general.reset_body":
-    "Ustawienia wracają do wartości domyślnych, w tym wygląd, język, powiadomienia, cofanie wysyłki i łączność (brama, most mesh, przekaźniki). Blokada Airhop, czas przechowywania multimediów, przełącznik internetu, Tor i jego mostki oraz twój status pozostają bez zmian. Twoja tożsamość, wiadomości, kontakty i portfel pozostają nietknięte.",
+    "Ustawienia wracają do wartości domyślnych, w tym wygląd, język, powiadomienia, cofanie wysyłki i łączność (brama, most mesh, przekaźniki). Blokada Airhop, czas przechowywania wiadomości i multimediów, przełącznik internetu, Tor i jego mostki oraz twój status pozostają bez zmian. Twoja tożsamość, wiadomości, kontakty i portfel pozostają nietknięte.",
   "settings.general.reset_confirm": "Zresetuj",
 
   // ---- Settings: privacy and security ----

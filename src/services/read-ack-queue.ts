@@ -42,4 +42,16 @@ export class ReadAckQueue {
       if (!keep(key)) this.pending.delete(key);
     }
   }
+
+  // Drop the given message IDs from every conversation, for messages that
+  // are gone from this phone (disappearing messages): a read receipt for one
+  // would claim a reading nobody did.
+  forget(messageIDs: ReadonlySet<string>): void {
+    for (const [key, ids] of this.pending) {
+      for (const id of ids) {
+        if (messageIDs.has(id)) ids.delete(id);
+      }
+      if (ids.size === 0) this.pending.delete(key);
+    }
+  }
 }

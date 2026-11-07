@@ -664,6 +664,7 @@ export const strings: Strings = {
   "chat.attach.send": "Enviar o anexo",
   "chat.attach.generic": "Anexo",
   "chat.video_prep.preparing": "Preparando vídeo",
+  "chat.video_prep.retrying": "Diminuindo ainda mais",
   "chat.video_prep.waiting": "Aguardando para preparar o vídeo",
   "chat.video_prep.cancel": "Parar de preparar este vídeo",
   "chat.video_prep.too_large":
@@ -694,9 +695,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Tocar a nota de voz",
   "chat.media.pause_video": "Pausar o vídeo",
   "chat.media.play_video": "Reproduzir o vídeo",
-  "chat.media.voice_position": "Posição na nota de voz",
-  "chat.media.voice_scrub":
-    "Toque ao longo das barras para pular para aquele ponto",
+  "chat.media.voice_back": "Voltar 5 segundos",
+  "chat.media.voice_forward": "Avançar 5 segundos",
   "chat.media.image": "Imagem",
   "chat.media.tap_load_photo": "Toque para carregar a foto",
   "chat.media.open_document": "Abrir {name}",
@@ -755,6 +755,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Vídeo ao vivo",
   "chat.live_video.go_live": "Fazer live",
   "chat.live_video.end": "Encerrar",
+  "chat.live_video.ending": "Encerrando…",
   "chat.live_video.end_title": "Encerrar o vídeo ao vivo?",
   "chat.live_video.end_body":
     "Encerrar mantém a gravação nesta conversa. Descartar pede a todos que estão assistindo para apagá-la.",
@@ -768,9 +769,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Média",
   "chat.live_video.quality_high": "Alta",
   "chat.live_video.quality_low_hint":
-    "Alcança pessoas a vários saltos de distância",
-  "chat.live_video.quality_medium_hint": "Para pessoas a um ou dois saltos",
-  "chat.live_video.quality_high_hint": "Para pessoas bem ao seu lado",
+    "Alcança pessoas a vários saltos de distância pelo Bluetooth",
+  "chat.live_video.quality_medium_hint":
+    "Mais nítida, para quem assiste por Wi-Fi Aware ou pelo mesmo Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "A mais nítida, para quem assiste por Wi-Fi Aware ou pelo mesmo Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Precisa de Wi-Fi por perto",
+  "chat.live_video.quality_bluetooth_note":
+    "Média e Alta precisam de Wi-Fi por perto",
   "chat.live_video.signal_good": "Acompanhando",
   "chat.live_video.signal_weak": "Ficando para trás",
   "chat.live_video.signal_poor": "Lento demais para vídeo, enviando só o som",
@@ -785,6 +791,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Deslize para cima para gravar sem segurar",
   "chat.voice.live_speaking": "{name} está falando",
   "chat.voice.live_ended": "Encerrado",
+  "chat.voice.live_stopped": "Voz ao vivo encerrada",
   "voice.unavailable": "Voz ao vivo indisponível",
   "voice.recording_stopped": "Gravação interrompida",
 
@@ -1893,13 +1900,15 @@ export const strings: Strings = {
     "Ainda não há chaves deste contato. Escreva para a pessoa, ou escaneie o código dela quando se encontrarem.",
   "contacts.verify.compare_title": "Leiam isto um para o outro",
   "contacts.verify.compare_body":
-    "{name} vê as mesmas seis palavras no Airhop. Se baterem, vocês dois sabem que as chaves são autênticas. O bitchat não mostra essas palavras, então escaneie o código da pessoa.",
-  "contacts.verify.codes_match": "Elas batem",
-  "contacts.verify.codes_differ": "Elas não batem",
+    "Leia seu código para {name} conferir no celular dela. Depois confira o código que a pessoa ler com o código dela aqui. Cada um marca o outro como verificado no próprio celular. O bitchat não mostra essas palavras, então escaneie o código da pessoa.",
+  "contacts.verify.your_code": "Seu código",
+  "contacts.verify.their_code": "Código da pessoa",
+  "contacts.verify.codes_match": "O código da pessoa bate",
+  "contacts.verify.codes_differ": "O código da pessoa não bate",
   "contacts.verify.codes_differ_body":
     "As chaves neste telefone podem não ser de {name}. Escaneie o código da pessoa pessoalmente antes de confiar nesta conversa.",
   "contacts.verify.compared_body":
-    "Você e {name} confirmaram o mesmo código. Este contato está verificado.",
+    "O código que {name} leu bate, então a pessoa está verificada neste celular. No celular dela, ela verifica você.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Voltar",
@@ -2061,11 +2070,32 @@ export const strings: Strings = {
     "Um meio-termo para uma ou duas semanas longe do sinal.",
   "settings.general.retention_30_desc":
     "Mantém as conversas legíveis por mais tempo e ocupa mais disco.",
+  "settings.general.message_retention": "Mensagens temporárias",
+  "settings.general.message_retention_desc":
+    "As mensagens e suas mídias são apagadas deste aparelho após o tempo escolhido",
+  "settings.general.message_retention_sheet":
+    "Contado a partir de quando cada mensagem chegou a este aparelho, e só este aparelho esquece. O aparelho da outra pessoa guarda a cópia dela, capturas de tela não podem ser impedidas e pagamentos de conversas privadas que você ainda não resgatou ficam até você resgatá-los.",
+  "settings.general.message_retention_off_desc":
+    "As mensagens ficam até você limpar a conversa ou sair dela",
+  "settings.general.message_retention_1_desc":
+    "Deixa o mínimo para trás, se o risco é o próprio aparelho",
+  "settings.general.message_retention_7_desc":
+    "Uma semana para pôr o papo em dia, depois some",
+  "settings.general.message_retention_30_desc":
+    "Mantém as conversas legíveis por mais tempo",
+  "settings.general.message_retention_confirm_title":
+    "Apagar mensagens mais antigas?",
+  "settings.general.message_retention_confirm_1":
+    "Mensagens com mais de 1 dia serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+  "settings.general.message_retention_confirm_7":
+    "Mensagens com mais de 7 dias serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+  "settings.general.message_retention_confirm_30":
+    "Mensagens com mais de 30 dias serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
   "settings.general.reset_desc":
     "Devolve as preferências ao padrão, sem mexer na sua identidade, mensagens, contatos e carteira",
   "settings.general.reset_title": "Redefinir as configurações?",
   "settings.general.reset_body":
-    "As preferências voltam ao padrão, incluindo aparência, idioma, notificações, desfazer envio e conectividade (ponte de internet, ponte de malha, relays). O bloqueio do Airhop, por quanto tempo a mídia é guardada, a chave de internet, o Tor e suas pontes, e seu status ficam como estão. Sua identidade, mensagens, contatos e carteira ficam intactos.",
+    "As preferências voltam ao padrão, incluindo aparência, idioma, notificações, desfazer envio e conectividade (ponte de internet, ponte de malha, relays). O bloqueio do Airhop, por quanto tempo as mensagens e a mídia são guardadas, a chave de internet, o Tor e suas pontes, e seu status ficam como estão. Sua identidade, mensagens, contatos e carteira ficam intactos.",
   "settings.general.reset_confirm": "Redefinir",
 
   // ---- Settings: privacy and security ----

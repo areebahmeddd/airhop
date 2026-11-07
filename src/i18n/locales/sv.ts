@@ -653,6 +653,7 @@ export const strings: Strings = {
   "chat.attach.send": "Skicka bilagan",
   "chat.attach.generic": "Bilaga",
   "chat.video_prep.preparing": "Förbereder video",
+  "chat.video_prep.retrying": "Krymper ytterligare",
   "chat.video_prep.waiting": "Väntar på att förbereda video",
   "chat.video_prep.cancel": "Sluta förbereda den här videon",
   "chat.video_prep.too_large":
@@ -683,9 +684,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Spela upp röstmeddelandet",
   "chat.media.pause_video": "Pausa videon",
   "chat.media.play_video": "Spela upp videon",
-  "chat.media.voice_position": "Position i röstmeddelandet",
-  "chat.media.voice_scrub":
-    "Tryck längs staplarna för att hoppa till den punkten",
+  "chat.media.voice_back": "5 sekunder bakåt",
+  "chat.media.voice_forward": "5 sekunder framåt",
   "chat.media.image": "Bild",
   "chat.media.tap_load_photo": "Tryck för att läsa in fotot",
   "chat.media.open_document": "Öppna {name}",
@@ -744,6 +744,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Livevideo",
   "chat.live_video.go_live": "Sänd live",
   "chat.live_video.end": "Avsluta",
+  "chat.live_video.ending": "Avslutar…",
   "chat.live_video.end_title": "Avsluta livevideon?",
   "chat.live_video.end_body":
     "Avslutar du stannar inspelningen i den här chatten. Slänger du ombeds alla som tittar att radera den.",
@@ -755,9 +756,14 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "Låg",
   "chat.live_video.quality_medium": "Mellan",
   "chat.live_video.quality_high": "Hög",
-  "chat.live_video.quality_low_hint": "Når folk flera hopp bort",
-  "chat.live_video.quality_medium_hint": "För folk ett eller två hopp bort",
-  "chat.live_video.quality_high_hint": "För folk precis bredvid dig",
+  "chat.live_video.quality_low_hint": "Når folk flera hopp bort via Bluetooth",
+  "chat.live_video.quality_medium_hint":
+    "Skarpare, för tittare via Wi-Fi Aware eller samma Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "Skarpast, för tittare via Wi-Fi Aware eller samma Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Behöver Wi-Fi i närheten",
+  "chat.live_video.quality_bluetooth_note":
+    "Mellan och Hög behöver Wi-Fi i närheten",
   "chat.live_video.signal_good": "Hänger med",
   "chat.live_video.signal_weak": "Halkar efter",
   "chat.live_video.signal_poor": "För långsamt för video, bara ljud skickas",
@@ -772,6 +778,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Dra uppåt för att spela in handsfree",
   "chat.voice.live_speaking": "{name} talar",
   "chat.voice.live_ended": "Avslutad",
+  "chat.voice.live_stopped": "Liveröst avslutad",
   "voice.unavailable": "Direktröst är inte tillgänglig",
   "voice.recording_stopped": "Inspelningen stoppades",
 
@@ -1858,13 +1865,15 @@ export const strings: Strings = {
     "Inga nycklar för den här kontakten än. Skriv till dem, eller skanna deras kod när ni ses.",
   "contacts.verify.compare_title": "Läs dessa för varandra",
   "contacts.verify.compare_body":
-    "{name} ser samma sex ord i Airhop. Om de stämmer vet ni båda att nycklarna är äkta. bitchat visar inga sådana ord, så skanna deras kod i stället.",
-  "contacts.verify.codes_match": "De stämmer",
-  "contacts.verify.codes_differ": "De stämmer inte",
+    "Läs upp din kod för {name} så att de kan kontrollera den i sin telefon. Jämför sedan koden de läser upp med deras kod här. Var och en markerar den andra som verifierad i sin egen telefon. bitchat visar inga sådana ord, så skanna deras kod i stället.",
+  "contacts.verify.your_code": "Din kod",
+  "contacts.verify.their_code": "Deras kod",
+  "contacts.verify.codes_match": "Deras kod stämmer",
+  "contacts.verify.codes_differ": "Deras kod stämmer inte",
   "contacts.verify.codes_differ_body":
     "Nycklarna på den här telefonen kanske inte tillhör {name}. Skanna deras kod på plats innan du litar på den här chatten.",
   "contacts.verify.compared_body":
-    "Du och {name} bekräftade samma kod. Kontakten är verifierad.",
+    "Koden som {name} läste upp stämmer, så de är verifierade i den här telefonen. De verifierar dig i sin egen.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Tillbaka",
@@ -2023,11 +2032,31 @@ export const strings: Strings = {
     "En medelväg för en eller två veckor utan täckning.",
   "settings.general.retention_30_desc":
     "Håller trådarna läsbara längst, och tar mest plats på disken.",
+  "settings.general.message_retention": "Försvinnande meddelanden",
+  "settings.general.message_retention_desc":
+    "Meddelanden och deras media raderas från den här telefonen efter vald tid",
+  "settings.general.message_retention_sheet":
+    "Räknas från när varje meddelande nådde den här telefonen, och bara den här telefonen glömmer. Den andra personens telefon behåller sin kopia, skärmbilder går inte att förhindra och betalningar i privata chattar som du inte har hämtat ligger kvar tills du hämtar dem.",
+  "settings.general.message_retention_off_desc":
+    "Meddelanden ligger kvar tills du rensar chatten eller lämnar den",
+  "settings.general.message_retention_1_desc":
+    "Lämnar minst efter sig, om telefonen själv är risken",
+  "settings.general.message_retention_7_desc":
+    "En vecka att läsa ikapp, sedan borta",
+  "settings.general.message_retention_30_desc": "Håller trådar läsbara längst",
+  "settings.general.message_retention_confirm_title":
+    "Radera äldre meddelanden?",
+  "settings.general.message_retention_confirm_1":
+    "Meddelanden äldre än 1 dag raderas från den här telefonen nu, tillsammans med deras media. Det går inte att ångra.",
+  "settings.general.message_retention_confirm_7":
+    "Meddelanden äldre än 7 dagar raderas från den här telefonen nu, tillsammans med deras media. Det går inte att ångra.",
+  "settings.general.message_retention_confirm_30":
+    "Meddelanden äldre än 30 dagar raderas från den här telefonen nu, tillsammans med deras media. Det går inte att ångra.",
   "settings.general.reset_desc":
     "Sätter tillbaka inställningar till sina standardvärden, medan identitet, meddelanden, kontakter och plånbok lämnas orörda",
   "settings.general.reset_title": "Återställa inställningarna?",
   "settings.general.reset_body":
-    "Inställningar går tillbaka till sina standardvärden, bland annat utseende, språk, aviseringar, ångra sändning och uppkoppling (gateway, meshbrygga, reläer). Applås, hur länge media sparas, internetbrytaren, Tor och dess bryggor samt din status förblir som du har ställt in dem. Din identitet, dina meddelanden, dina kontakter och din plånbok är orörda.",
+    "Inställningar går tillbaka till sina standardvärden, bland annat utseende, språk, aviseringar, ångra sändning och uppkoppling (gateway, meshbrygga, reläer). Applås, hur länge meddelanden och media sparas, internetbrytaren, Tor och dess bryggor samt din status förblir som du har ställt in dem. Din identitet, dina meddelanden, dina kontakter och din plånbok är orörda.",
   "settings.general.reset_confirm": "Återställ",
 
   // ---- Settings: privacy and security ----

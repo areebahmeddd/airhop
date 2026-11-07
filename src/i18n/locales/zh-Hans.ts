@@ -618,6 +618,7 @@ export const strings: Strings = {
   "chat.attach.send": "发送附件",
   "chat.attach.generic": "附件",
   "chat.video_prep.preparing": "正在准备视频",
+  "chat.video_prep.retrying": "正在进一步压缩",
   "chat.video_prep.waiting": "等待准备视频",
   "chat.video_prep.cancel": "停止准备这个视频",
   "chat.video_prep.too_large": "无法把这个视频压缩到足以发送的大小。",
@@ -645,8 +646,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "播放语音留言",
   "chat.media.pause_video": "暂停视频",
   "chat.media.play_video": "播放视频",
-  "chat.media.voice_position": "语音留言位置",
-  "chat.media.voice_scrub": "沿着音条点按可跳到该处",
+  "chat.media.voice_back": "后退 5 秒",
+  "chat.media.voice_forward": "前进 5 秒",
   "chat.media.image": "图片",
   "chat.media.tap_load_photo": "点按加载照片",
   "chat.media.open_document": "打开 {name}",
@@ -700,6 +701,7 @@ export const strings: Strings = {
   "chat.live_video.title": "直播视频",
   "chat.live_video.go_live": "开始直播",
   "chat.live_video.end": "结束",
+  "chat.live_video.ending": "正在结束…",
   "chat.live_video.end_title": "要结束直播吗？",
   "chat.live_video.end_body":
     "结束后录像会保留在此聊天中。舍弃会通知所有观看者删除它。",
@@ -711,9 +713,13 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "低",
   "chat.live_video.quality_medium": "中",
   "chat.live_video.quality_high": "高",
-  "chat.live_video.quality_low_hint": "可传到隔几跳的人",
-  "chat.live_video.quality_medium_hint": "适合隔一两跳的人",
-  "chat.live_video.quality_high_hint": "适合就在你身边的人",
+  "chat.live_video.quality_low_hint": "通过蓝牙可传到隔几跳的人",
+  "chat.live_video.quality_medium_hint":
+    "更清晰，适合通过 Wi-Fi Aware 或同一 Wi-Fi 观看的人",
+  "chat.live_video.quality_high_hint":
+    "最清晰，适合通过 Wi-Fi Aware 或同一 Wi-Fi 观看的人",
+  "chat.live_video.quality_needs_wifi": "需要附近有 Wi-Fi",
+  "chat.live_video.quality_bluetooth_note": "中和高需要附近有 Wi-Fi",
   "chat.live_video.signal_good": "跟得上",
   "chat.live_video.signal_weak": "正在落后",
   "chat.live_video.signal_poor": "太慢无法传视频，仅发送声音",
@@ -728,6 +734,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "向上滑动可免手持录制",
   "chat.voice.live_speaking": "{name} 正在说话",
   "chat.voice.live_ended": "已结束",
+  "chat.voice.live_stopped": "语音直播已结束",
   "voice.unavailable": "实时语音不可用",
   "voice.recording_stopped": "录制已停止",
 
@@ -1744,13 +1751,15 @@ export const strings: Strings = {
     "这位联系人还没有密钥。给对方发条消息，或者见面时扫一下对方的代码。",
   "contacts.verify.compare_title": "把这些念给彼此听",
   "contacts.verify.compare_body":
-    "{name} 在 Airhop 上看到的是同样的六个词。如果对得上，你们双方就都知道这些密钥是真的。bitchat 不显示这样的词，所以请改为扫描对方的二维码。",
-  "contacts.verify.codes_match": "对得上",
-  "contacts.verify.codes_differ": "对不上",
+    "把你的代码读给 {name} 听，让对方在自己的手机上核对。然后把对方读出的代码与这里的对方代码核对。你们各自在自己的手机上把对方标记为已验证。bitchat 不显示这样的词，所以请改为扫描对方的二维码。",
+  "contacts.verify.your_code": "你的代码",
+  "contacts.verify.their_code": "对方的代码",
+  "contacts.verify.codes_match": "对方的代码对得上",
+  "contacts.verify.codes_differ": "对方的代码对不上",
   "contacts.verify.codes_differ_body":
     "这部手机上的密钥可能不属于 {name}。在信任这段聊天之前，请当面扫描对方的二维码。",
   "contacts.verify.compared_body":
-    "你和 {name} 确认了同一段代码。这位联系人已验证。",
+    "{name} 读出的代码对得上，所以对方在这部手机上已验证。对方会在自己的手机上验证你。",
 
   // ---- Settings: shared chrome ----
   "settings.back": "返回",
@@ -1896,11 +1905,29 @@ export const strings: Strings = {
   "settings.general.retention_14_desc": "折中选择，适合一两周没有信号的情况。",
   "settings.general.retention_30_desc":
     "对话可读的时间最长，占用的磁盘也最多。",
+  "settings.general.message_retention": "限时消息",
+  "settings.general.message_retention_desc":
+    "消息及其媒体会在所选时长后从这台设备上删除",
+  "settings.general.message_retention_sheet":
+    "从每条消息到达这台设备时开始计算，而且只有这台设备会忘记。对方的设备仍保留副本，无法阻止截屏，私聊中尚未领取的付款会一直保留到你领取为止。",
+  "settings.general.message_retention_off_desc":
+    "消息会一直保留，直到你清空或退出聊天",
+  "settings.general.message_retention_1_desc":
+    "留下的最少，适合设备本身就是风险的情况",
+  "settings.general.message_retention_7_desc": "一周内可以补看，之后就会消失",
+  "settings.general.message_retention_30_desc": "让对话保持可读的时间最长",
+  "settings.general.message_retention_confirm_title": "删除较早的消息？",
+  "settings.general.message_retention_confirm_1":
+    "超过 1 天的消息会连同媒体立即从这台设备上删除。此操作无法撤销。",
+  "settings.general.message_retention_confirm_7":
+    "超过 7 天的消息会连同媒体立即从这台设备上删除。此操作无法撤销。",
+  "settings.general.message_retention_confirm_30":
+    "超过 30 天的消息会连同媒体立即从这台设备上删除。此操作无法撤销。",
   "settings.general.reset_desc":
     "把偏好设置恢复为默认值，你的身份、消息、联系人和钱包都不受影响",
   "settings.general.reset_title": "重置设置？",
   "settings.general.reset_body":
-    "偏好设置会恢复默认，包括外观、语言、通知、撤回发送，以及连接相关项（网关、网状网络桥接、中继）。锁定 Airhop、媒体保留时长、互联网开关、Tor 及其网桥，以及你的状态保持原样。你的身份、消息、联系人和钱包不受影响。",
+    "偏好设置会恢复默认，包括外观、语言、通知、撤回发送，以及连接相关项（网关、网状网络桥接、中继）。锁定 Airhop、消息和媒体保留时长、互联网开关、Tor 及其网桥，以及你的状态保持原样。你的身份、消息、联系人和钱包不受影响。",
   "settings.general.reset_confirm": "重置",
 
   // ---- Settings: privacy and security ----

@@ -616,6 +616,7 @@ export const strings: Strings = {
   "chat.attach.send": "አባሪ ላክ",
   "chat.attach.generic": "አባሪ",
   "chat.video_prep.preparing": "ቪዲዮ በማዘጋጀት ላይ",
+  "chat.video_prep.retrying": "መጠኑን በማሳነስ ላይ",
   "chat.video_prep.waiting": "ቪዲዮውን ለማዘጋጀት በመጠባበቅ ላይ",
   "chat.video_prep.cancel": "ይህን ቪዲዮ ማዘጋጀት አቁም",
   "chat.video_prep.too_large": "ይህን ቪዲዮ ለመላክ በቂ ማሳነስ አልተቻለም።",
@@ -642,8 +643,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "የድምፅ መልእክቱን አጫውት",
   "chat.media.pause_video": "ቪዲዮውን አቁም",
   "chat.media.play_video": "ቪዲዮውን አጫውት",
-  "chat.media.voice_position": "የድምፅ መልእክቱ ቦታ",
-  "chat.media.voice_scrub": "ወደዚያ ነጥብ ለመዝለል በአሞሌዎቹ ላይ ንካ",
+  "chat.media.voice_back": "5 ሰከንድ ወደ ኋላ",
+  "chat.media.voice_forward": "5 ሰከንድ ወደ ፊት",
   "chat.media.image": "ምስል",
   "chat.media.tap_load_photo": "ፎቶውን ለመጫን ንካ",
   "chat.media.open_document": "{name} ን ክፈት",
@@ -697,6 +698,7 @@ export const strings: Strings = {
   "chat.live_video.title": "ቀጥታ ቪዲዮ",
   "chat.live_video.go_live": "በቀጥታ ይልቀቁ",
   "chat.live_video.end": "ጨርስ",
+  "chat.live_video.ending": "በማብቃት ላይ…",
   "chat.live_video.end_title": "ቀጥታ ቪዲዮውን ይጨርሱ?",
   "chat.live_video.end_body":
     "መጨረስ ቅጂውን በዚህ ውይይት ውስጥ ያስቀምጣል። መሰረዝ የሚመለከቱ ሁሉ እንዲጥሉት ይነግራል።",
@@ -708,9 +710,14 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "ዝቅተኛ",
   "chat.live_video.quality_medium": "መካከለኛ",
   "chat.live_video.quality_high": "ከፍተኛ",
-  "chat.live_video.quality_low_hint": "ብዙ ዝላይ ርቀው ያሉ ሰዎችን ይደርሳል",
-  "chat.live_video.quality_medium_hint": "አንድ ወይም ሁለት ዝላይ ርቀው ላሉ ሰዎች",
-  "chat.live_video.quality_high_hint": "አጠገብዎ ላሉ ሰዎች",
+  "chat.live_video.quality_low_hint": "በብሉቱዝ ብዙ ዝላይ ርቀው ያሉ ሰዎችን ይደርሳል",
+  "chat.live_video.quality_medium_hint":
+    "የበለጠ ጥርት ያለ፣ በWi-Fi Aware ወይም በአንድ Wi-Fi ላይ ላሉ ተመልካቾች",
+  "chat.live_video.quality_high_hint":
+    "በጣም ጥርት ያለ፣ በWi-Fi Aware ወይም በአንድ Wi-Fi ላይ ላሉ ተመልካቾች",
+  "chat.live_video.quality_needs_wifi": "በአቅራቢያ Wi-Fi ያስፈልገዋል",
+  "chat.live_video.quality_bluetooth_note":
+    "መካከለኛ እና ከፍተኛ በአቅራቢያ Wi-Fi ያስፈልጋቸዋል",
   "chat.live_video.signal_good": "እየተከታተለ ነው",
   "chat.live_video.signal_weak": "ወደ ኋላ እየቀረ ነው",
   "chat.live_video.signal_poor": "ለቪዲዮ በጣም ቀርፋፋ፣ ድምፅ ብቻ እየተላከ ነው",
@@ -725,6 +732,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "ሳትይዝ ለመቅዳት ወደ ላይ አንሸራትት",
   "chat.voice.live_speaking": "{name} እየተናገረ ነው",
   "chat.voice.live_ended": "አብቅቷል",
+  "chat.voice.live_stopped": "የቀጥታ ድምፅ አብቅቷል",
   "voice.unavailable": "ቀጥታ ድምፅ አይገኝም",
   "voice.recording_stopped": "ቅጂ ቆሟል",
 
@@ -1743,13 +1751,15 @@ export const strings: Strings = {
     "ለዚህ እውቂያ ገና ቁልፎች የሉም። መልእክት ላክላቸው፣ ወይም ስትገናኙ ኮዳቸውን ቃኝ።",
   "contacts.verify.compare_title": "እነዚህን ለየራሳችሁ አንብቡ",
   "contacts.verify.compare_body":
-    "{name} በAirhop ላይ ተመሳሳዮቹን ስድስት ቃላት ያያል። ከተዛመዱ ሁለታችሁም ቁልፎቹ እውነተኛ መሆናቸውን ታውቃላችሁ። bitchat እንደዚህ ያሉ ቃላት አያሳይም፤ ስለዚህ በምትኩ ኮዳቸውን ቃኝ።",
-  "contacts.verify.codes_match": "እነዚህ ይዛመዳሉ",
-  "contacts.verify.codes_differ": "አይዛመዱም",
+    "ኮድህን ለ{name} አንብብ፤ እነሱ በስልካቸው ያረጋግጡታል። ከዚያ ያነበቡትን ኮድ እዚህ ካለው የእነሱ ኮድ ጋር አወዳድር። እያንዳንዳችሁ ሌላውን በራሳችሁ ስልክ ላይ እንደተረጋገጠ ምልክት ታደርጋላችሁ። bitchat እንደዚህ ያሉ ቃላት አያሳይም፤ ስለዚህ በምትኩ ኮዳቸውን ቃኝ።",
+  "contacts.verify.your_code": "የአንተ ኮድ",
+  "contacts.verify.their_code": "የእነሱ ኮድ",
+  "contacts.verify.codes_match": "የእነሱ ኮድ ይዛመዳል",
+  "contacts.verify.codes_differ": "የእነሱ ኮድ አይዛመድም",
   "contacts.verify.codes_differ_body":
     "በዚህ ስልክ ያሉት ቁልፎች የ{name} ላይሆኑ ይችላሉ። ይህን ውይይት ከማመንህ በፊት ኮዳቸውን በአካል ቃኝ።",
   "contacts.verify.compared_body":
-    "አንተና {name} አንድ አይነት ኮድ አረጋግጣችኋል። ይህ እውቂያ ተረጋግጧል።",
+    "{name} ያነበቡት ኮድ ይዛመዳል፤ ስለዚህ በዚህ ስልክ ላይ ተረጋግጠዋል። እነሱ ደግሞ አንተን በስልካቸው ላይ ያረጋግጣሉ።",
 
   // ---- Settings: shared chrome ----
   "settings.back": "ተመለስ",
@@ -1898,11 +1908,29 @@ export const strings: Strings = {
     "ከምልክት ርቀህ ለአንድ ወይም ለሁለት ሳምንት ስትቆይ መካከለኛ አማራጭ።",
   "settings.general.retention_30_desc":
     "ውይይቶችን ረዥሙን ጊዜ ሊነበቡ የሚችሉ ያደርጋቸዋል፤ በዲስክ ላይም በጣም ብዙ ይይዛል።",
+  "settings.general.message_retention": "የሚጠፉ መልእክቶች",
+  "settings.general.message_retention_desc":
+    "መልእክቶችና ሚዲያቸው ከተመረጠው ጊዜ በኋላ ከዚህ ስልክ ይሰረዛሉ",
+  "settings.general.message_retention_sheet":
+    "እያንዳንዱ መልእክት ይህን ስልክ ከደረሰበት ጊዜ ጀምሮ ይቆጠራል፣ የሚረሳውም ይህ ስልክ ብቻ ነው። የሌላው ሰው ስልክ ቅጂውን ይይዛል፣ ቅጽበታዊ ገጽ እይታዎችን መከላከል አይቻልም፣ በግል ውይይት የተላኩልህ ያልወሰድካቸው ክፍያዎችም እስክትወስዳቸው ድረስ ይቆያሉ።",
+  "settings.general.message_retention_off_desc":
+    "ውይይቱን እስክታጸዳ ወይም እስክትወጣ ድረስ መልእክቶች ይቆያሉ",
+  "settings.general.message_retention_1_desc": "ስልኩ ራሱ አደጋ ከሆነ በጣም ጥቂት ይተዋል",
+  "settings.general.message_retention_7_desc": "ለመከታተል አንድ ሳምንት፣ ከዚያ ይጠፋሉ",
+  "settings.general.message_retention_30_desc":
+    "ውይይቶችን ረጅሙን ጊዜ ሊነበቡ የሚችሉ ያደርጋል",
+  "settings.general.message_retention_confirm_title": "የቆዩ መልእክቶች ይሰረዙ?",
+  "settings.general.message_retention_confirm_1":
+    "ከ1 ቀን በላይ የቆዩ መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ይህ ሊቀለበስ አይችልም።",
+  "settings.general.message_retention_confirm_7":
+    "ከ7 ቀን በላይ የቆዩ መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ይህ ሊቀለበስ አይችልም።",
+  "settings.general.message_retention_confirm_30":
+    "ከ30 ቀን በላይ የቆዩ መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ይህ ሊቀለበስ አይችልም።",
   "settings.general.reset_desc":
     "ማንነትህን፣ መልእክቶችህን፣ እውቂያዎችህንና ቦርሳህን ሳይነካ ምርጫዎችን ወደ ነባሪያቸው ይመልሳል",
   "settings.general.reset_title": "ቅንብሮች ዳግም ይጀመሩ?",
   "settings.general.reset_body":
-    "መልክን፣ ቋንቋን፣ ማሳወቂያዎችን፣ መላክን መመለስን፣ እና ግንኙነትን (መተላለፊያ፣ የሜሽ ድልድይ፣ አስተላላፊዎች) ጨምሮ ምርጫዎች ወደ ነባሪያቸው ይመለሳሉ። የAirhop ቁልፍ፣ ሚዲያ የሚቆይበት ጊዜ፣ የኢንተርኔት ማብሪያ ማጥፊያ፣ Tor እና ድልድዮቹ፣ እንዲሁም ሁኔታህ እንዳስቀመጥካቸው ይቆያሉ። ማንነትህ፣ መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ አይነኩም።",
+    "መልክን፣ ቋንቋን፣ ማሳወቂያዎችን፣ መላክን መመለስን፣ እና ግንኙነትን (መተላለፊያ፣ የሜሽ ድልድይ፣ አስተላላፊዎች) ጨምሮ ምርጫዎች ወደ ነባሪያቸው ይመለሳሉ። የAirhop ቁልፍ፣ መልእክቶችና ሚዲያ የሚቆዩበት ጊዜ፣ የኢንተርኔት ማብሪያ ማጥፊያ፣ Tor እና ድልድዮቹ፣ እንዲሁም ሁኔታህ እንዳስቀመጥካቸው ይቆያሉ። ማንነትህ፣ መልእክቶችህ፣ እውቂያዎችህና ቦርሳህ አይነኩም።",
   "settings.general.reset_confirm": "ዳግም አስጀምር",
 
   // ---- Settings: privacy and security ----

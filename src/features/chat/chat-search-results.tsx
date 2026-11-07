@@ -46,6 +46,10 @@ import {
 import { conversationDisplayName } from "@utils/conversation-display-name";
 import { formatListTimestamp } from "@utils/format";
 import { BRIDGE_CHANNEL } from "@utils/media-policy";
+import {
+  messageRetentionWindowMs,
+  withoutExpiredInAll,
+} from "@utils/message-expiry";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
@@ -57,6 +61,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useAwaitingReceipt } from "./use-awaiting-receipt";
 
 // The filter chips shown above search, one per content kind Airhop supports.
 // Keys, not text: the component translates on render.
@@ -143,15 +148,35 @@ export default function ChatSearchResults({
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const channels = useChatStore((s) => s.channels);
-  const messages = useChatStore((s) => s.messages);
+  const storedMessages = useChatStore((s) => s.messages);
+  const messageRetentionDays = useSettingsStore((s) => s.messageRetentionDays);
   const boardPosts = useBoardStore((s) => s.posts);
   const notesByGeohash = useLocationNotesStore((s) => s.notesByGeohash);
 
   const [debouncedQuery, setDebouncedQuery] = useState(query);
+  // When the current query was asked, which is the moment its answer is for.
+  const [askedAt, setAskedAt] = useState(() => Date.now());
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(query), DEBOUNCE_MS);
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+      setAskedAt(Date.now());
+    }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [query]);
+
+  // A disappearing message the sweep has not reached yet is still gone from
+  // search.
+  const awaitingReceipt = useAwaitingReceipt();
+  const messages = useMemo(
+    () =>
+      withoutExpiredInAll(
+        storedMessages,
+        askedAt,
+        messageRetentionWindowMs(messageRetentionDays),
+        awaitingReceipt,
+      ),
+    [storedMessages, messageRetentionDays, askedAt, awaitingReceipt],
+  );
 
   const chatHits = useMemo(
     () => searchChats(debouncedQuery, channels),

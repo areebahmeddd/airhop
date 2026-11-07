@@ -72,6 +72,12 @@ jest.mock("../reachability", () => ({
 jest.mock("../media-retention", () => ({
   sweepMediaIfDue: () => mockSweepMedia(),
 }));
+jest.mock("../file-transfer-service", () => ({
+  startAttachmentCleanup: jest.fn(),
+}));
+jest.mock("../message-retention", () => ({
+  startMessageRetention: jest.fn(),
+}));
 jest.mock("../presence-service", () => ({
   applyStartupPresence: () => mockApplyStartupPresence(),
 }));

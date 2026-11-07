@@ -660,6 +660,7 @@ export const strings: Strings = {
   "chat.attach.send": "Eki gönder",
   "chat.attach.generic": "Ek",
   "chat.video_prep.preparing": "Video hazırlanıyor",
+  "chat.video_prep.retrying": "Daha da küçültülüyor",
   "chat.video_prep.waiting": "Video hazırlanmayı bekliyor",
   "chat.video_prep.cancel": "Bu videoyu hazırlamayı durdur",
   "chat.video_prep.too_large": "Bu video gönderilecek kadar küçültülemedi.",
@@ -689,8 +690,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Sesli notu oynat",
   "chat.media.pause_video": "Videoyu duraklat",
   "chat.media.play_video": "Videoyu oynat",
-  "chat.media.voice_position": "Sesli nottaki konum",
-  "chat.media.voice_scrub": "O noktaya atlamak için çubuklar boyunca dokun",
+  "chat.media.voice_back": "5 saniye geri",
+  "chat.media.voice_forward": "5 saniye ileri",
   "chat.media.image": "Görüntü",
   "chat.media.tap_load_photo": "Fotoğrafı yüklemek için dokun",
   "chat.media.open_document": "{name} dosyasını aç",
@@ -749,6 +750,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Canlı video",
   "chat.live_video.go_live": "Canlı yayına geç",
   "chat.live_video.end": "Bitir",
+  "chat.live_video.ending": "Bitiriliyor…",
   "chat.live_video.end_title": "Canlı video bitirilsin mi?",
   "chat.live_video.end_body":
     "Bitirirsen kayıt bu sohbette kalır. Atarsan izleyen herkesten silmesi istenir.",
@@ -760,10 +762,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "Düşük",
   "chat.live_video.quality_medium": "Orta",
   "chat.live_video.quality_high": "Yüksek",
-  "chat.live_video.quality_low_hint": "Birkaç atlama ötedeki kişilere ulaşır",
+  "chat.live_video.quality_low_hint":
+    "Bluetooth üzerinden birkaç atlama ötedeki kişilere ulaşır",
   "chat.live_video.quality_medium_hint":
-    "Bir veya iki atlama ötedeki kişiler için",
-  "chat.live_video.quality_high_hint": "Hemen yanındaki kişiler için",
+    "Daha net, Wi-Fi Aware ya da aynı Wi-Fi üzerinden izleyenler için",
+  "chat.live_video.quality_high_hint":
+    "En net, Wi-Fi Aware ya da aynı Wi-Fi üzerinden izleyenler için",
+  "chat.live_video.quality_needs_wifi": "Yakında Wi-Fi gerekir",
+  "chat.live_video.quality_bluetooth_note":
+    "Orta ve Yüksek için yakında Wi-Fi gerekir",
   "chat.live_video.signal_good": "Yetişiyor",
   "chat.live_video.signal_weak": "Geride kalıyor",
   "chat.live_video.signal_poor":
@@ -779,6 +786,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Eller serbest kaydetmek için yukarı kaydır",
   "chat.voice.live_speaking": "{name} konuşuyor",
   "chat.voice.live_ended": "Bitti",
+  "chat.voice.live_stopped": "Canlı ses sona erdi",
   "voice.unavailable": "Canlı ses kullanılamıyor",
   "voice.recording_stopped": "Kayıt durduruldu",
 
@@ -1869,13 +1877,15 @@ export const strings: Strings = {
     "Bu kişi için henüz anahtar yok. Onlara yaz ya da buluştuğunuzda kodlarını tara.",
   "contacts.verify.compare_title": "Bunları birbirinize okuyun",
   "contacts.verify.compare_body":
-    "{name} de Airhop'ta aynı altı kelimeyi görüyor. Uyuşuyorsa ikiniz de anahtarların gerçek olduğunu bilirsiniz. bitchat böyle kelimeler göstermez, bu yüzden onun yerine kodlarını tara.",
-  "contacts.verify.codes_match": "Bunlar uyuşuyor",
-  "contacts.verify.codes_differ": "Uyuşmuyorlar",
+    "Kodunu {name} kişisine oku, o da kendi telefonunda kontrol etsin. Ardından onun okuduğu kodu buradaki onun koduyla karşılaştır. Her biriniz diğerini kendi telefonunda doğrulanmış olarak işaretler. bitchat böyle kelimeler göstermez, bu yüzden onun yerine kodlarını tara.",
+  "contacts.verify.your_code": "Senin kodun",
+  "contacts.verify.their_code": "Onun kodu",
+  "contacts.verify.codes_match": "Onun kodu uyuşuyor",
+  "contacts.verify.codes_differ": "Onun kodu uyuşmuyor",
   "contacts.verify.codes_differ_body":
     "Bu telefondaki anahtarlar {name} kişisine ait olmayabilir. Bu sohbete güvenmeden önce kodlarını yüz yüze tara.",
   "contacts.verify.compared_body":
-    "Sen ve {name} aynı kodu doğruladınız. Bu kişi doğrulandı.",
+    "{name} kişisinin okuduğu kod uyuşuyor, yani bu telefonda doğrulandı. O da seni kendi telefonunda doğrular.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Geri dön",
@@ -2032,11 +2042,32 @@ export const strings: Strings = {
     "Kapsama dışında geçen bir iki hafta için orta yol.",
   "settings.general.retention_30_desc":
     "Konuşmaları en uzun süre okunabilir tutar ve diskte en çok yer kaplar.",
+  "settings.general.message_retention": "Kaybolan mesajlar",
+  "settings.general.message_retention_desc":
+    "Mesajlar ve medyaları seçilen sürenin ardından bu telefondan silinir",
+  "settings.general.message_retention_sheet":
+    "Her mesajın bu telefona ulaştığı andan itibaren sayılır ve yalnızca bu telefon unutur. Karşı tarafın telefonu kendi kopyasını saklar, ekran görüntüleri engellenemez ve özel sohbetlerde gelen ve henüz almadığın ödemeler sen alana kadar kalır.",
+  "settings.general.message_retention_off_desc":
+    "Sohbeti temizleyene ya da ondan ayrılana kadar mesajlar kalır",
+  "settings.general.message_retention_1_desc":
+    "En az iz bırakır, risk telefonun kendisiyse",
+  "settings.general.message_retention_7_desc":
+    "Okumak için bir hafta, sonra gider",
+  "settings.general.message_retention_30_desc":
+    "Sohbetleri en uzun süre okunur tutar",
+  "settings.general.message_retention_confirm_title":
+    "Eski mesajlar silinsin mi?",
+  "settings.general.message_retention_confirm_1":
+    "1 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+  "settings.general.message_retention_confirm_7":
+    "7 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+  "settings.general.message_retention_confirm_30":
+    "30 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
   "settings.general.reset_desc":
     "Tercihleri varsayılanlarına döndürür; kimliğine, mesajlarına, kişilerine ve cüzdanına dokunmaz",
   "settings.general.reset_title": "Ayarlar sıfırlansın mı?",
   "settings.general.reset_body":
-    "Görünüm, dil, bildirimler, göndermeyi geri alma ve bağlantı (geçit, mesh köprüsü, aktarıcılar) dahil tercihler varsayılanlarına döner. Airhop kilidi, medyanın ne kadar saklanacağı, internet anahtarı, Tor ve köprüleri ile durumun ayarladığın gibi kalır. Kimliğin, mesajların, kişilerin ve cüzdanın dokunulmadan kalır.",
+    "Görünüm, dil, bildirimler, göndermeyi geri alma ve bağlantı (geçit, mesh köprüsü, aktarıcılar) dahil tercihler varsayılanlarına döner. Airhop kilidi, mesajların ve medyanın ne kadar saklanacağı, internet anahtarı, Tor ve köprüleri ile durumun ayarladığın gibi kalır. Kimliğin, mesajların, kişilerin ve cüzdanın dokunulmadan kalır.",
   "settings.general.reset_confirm": "Sıfırla",
 
   // ---- Settings: privacy and security ----

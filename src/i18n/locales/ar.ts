@@ -638,6 +638,7 @@ export const strings: Strings = {
   "chat.attach.send": "إرسال المرفق",
   "chat.attach.generic": "مرفق",
   "chat.video_prep.preparing": "جارٍ تجهيز الفيديو",
+  "chat.video_prep.retrying": "جارٍ تصغير الحجم أكثر",
   "chat.video_prep.waiting": "بانتظار تجهيز الفيديو",
   "chat.video_prep.cancel": "أوقف تجهيز هذا الفيديو",
   "chat.video_prep.too_large": "تعذّر تصغير هذا الفيديو بما يكفي لإرساله.",
@@ -666,8 +667,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "تشغيل الملاحظة الصوتية",
   "chat.media.pause_video": "إيقاف الفيديو مؤقتًا",
   "chat.media.play_video": "تشغيل الفيديو",
-  "chat.media.voice_position": "الموضع في الملاحظة الصوتية",
-  "chat.media.voice_scrub": "اضغط على الأعمدة للانتقال إلى تلك النقطة",
+  "chat.media.voice_back": "رجوع 5 ثوانٍ",
+  "chat.media.voice_forward": "تقديم 5 ثوانٍ",
   "chat.media.image": "صورة",
   "chat.media.tap_load_photo": "اضغط لتحميل الصورة",
   "chat.media.open_document": "فتح {name}",
@@ -722,6 +723,7 @@ export const strings: Strings = {
   "chat.live_video.title": "فيديو مباشر",
   "chat.live_video.go_live": "ابدأ البث",
   "chat.live_video.end": "إنهاء",
+  "chat.live_video.ending": "جارٍ الإنهاء…",
   "chat.live_video.end_title": "إنهاء الفيديو المباشر؟",
   "chat.live_video.end_body":
     "الإنهاء يُبقي التسجيل في هذه المحادثة. أما التجاهل فيطلب من كل من يشاهد حذفه.",
@@ -733,9 +735,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "منخفضة",
   "chat.live_video.quality_medium": "متوسطة",
   "chat.live_video.quality_high": "عالية",
-  "chat.live_video.quality_low_hint": "تصل إلى أشخاص على بُعد عدة قفزات",
-  "chat.live_video.quality_medium_hint": "لأشخاص على بُعد قفزة أو قفزتين",
-  "chat.live_video.quality_high_hint": "لأشخاص بجانبك مباشرة",
+  "chat.live_video.quality_low_hint":
+    "تصل إلى أشخاص على بُعد عدة قفزات عبر البلوتوث",
+  "chat.live_video.quality_medium_hint":
+    "أوضح، للمشاهدين عبر Wi-Fi Aware أو شبكة Wi-Fi نفسها",
+  "chat.live_video.quality_high_hint":
+    "الأوضح، للمشاهدين عبر Wi-Fi Aware أو شبكة Wi-Fi نفسها",
+  "chat.live_video.quality_needs_wifi": "تحتاج إلى Wi-Fi قريب",
+  "chat.live_video.quality_bluetooth_note":
+    "المتوسطة والعالية تحتاجان إلى Wi-Fi قريب",
   "chat.live_video.signal_good": "يواكب",
   "chat.live_video.signal_weak": "يتأخر",
   "chat.live_video.signal_poor": "بطيء جدًا للفيديو، يُرسَل الصوت فقط",
@@ -750,6 +758,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "اسحب لأعلى للتسجيل دون استخدام اليدين",
   "chat.voice.live_speaking": "{name} يتحدث",
   "chat.voice.live_ended": "انتهى",
+  "chat.voice.live_stopped": "انتهى الصوت المباشر",
   "voice.unavailable": "الصوت المباشر غير متاح",
   "voice.recording_stopped": "توقف التسجيل",
 
@@ -1798,13 +1807,15 @@ export const strings: Strings = {
     "لا مفاتيح لجهة الاتصال هذه بعد. راسلهم، أو امسح رمزهم عند اللقاء.",
   "contacts.verify.compare_title": "اقرآ هذه لبعضكما",
   "contacts.verify.compare_body":
-    "يرى {name} الكلمات الست نفسها على Airhop. إن تطابقت، فكلاكما يعلم أن المفاتيح حقيقية. لا يعرض bitchat كلمات كهذه، فامسح رمزهم بدلًا من ذلك.",
-  "contacts.verify.codes_match": "متطابقة",
-  "contacts.verify.codes_differ": "غير متطابقة",
+    "اقرأ رمزك على {name} ليتحقق منه على هاتفه. ثم طابق الرمز الذي يقرؤه مع رمزهم هنا. يوثّق كلٌّ منكما الآخر على هاتفه. لا يعرض bitchat كلمات كهذه، فامسح رمزهم بدلًا من ذلك.",
+  "contacts.verify.your_code": "رمزك",
+  "contacts.verify.their_code": "رمزهم",
+  "contacts.verify.codes_match": "رمزهم مطابق",
+  "contacts.verify.codes_differ": "رمزهم غير مطابق",
   "contacts.verify.codes_differ_body":
     "قد لا تكون المفاتيح على هذا الهاتف لـ {name}. امسح رمزهم وجهًا لوجه قبل أن تثق بهذه المحادثة.",
   "contacts.verify.compared_body":
-    "أكدت أنت و{name} الرمز نفسه. جهة الاتصال هذه موثّقة.",
+    "الرمز الذي قرأه {name} مطابق، فهو موثّق على هذا الهاتف. وهو يوثّقك على هاتفه.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "رجوع",
@@ -1958,11 +1969,30 @@ export const strings: Strings = {
     "حل وسط لأسبوع أو أسبوعين بعيدًا عن التغطية.",
   "settings.general.retention_30_desc":
     "يبقي المحادثات مقروءة أطول مدة، ويشغل أكبر مساحة.",
+  "settings.general.message_retention": "الرسائل المؤقتة",
+  "settings.general.message_retention_desc":
+    "تُحذف الرسائل ووسائطها من هذا الهاتف بعد المدة المختارة",
+  "settings.general.message_retention_sheet":
+    "تُحسب المدة من وصول كل رسالة إلى هذا الهاتف، وهذا الهاتف وحده ينسى. يحتفظ هاتف الشخص الآخر بنسخته، ولا يمكن منع لقطات الشاشة، والمدفوعات التي وصلتك في محادثة خاصة ولم تستلمها تبقى حتى تستلمها.",
+  "settings.general.message_retention_off_desc":
+    "تبقى الرسائل حتى تمسح المحادثة أو تغادرها",
+  "settings.general.message_retention_1_desc":
+    "أقل ما يُترك خلفك، إن كان الهاتف نفسه هو الخطر",
+  "settings.general.message_retention_7_desc": "أسبوع لتلحق بها، ثم تختفي",
+  "settings.general.message_retention_30_desc":
+    "يبقي المحادثات مقروءة أطول مدة",
+  "settings.general.message_retention_confirm_title": "حذف الرسائل الأقدم؟",
+  "settings.general.message_retention_confirm_1":
+    "ستُحذف الرسائل الأقدم من يوم واحد من هذا الهاتف الآن مع وسائطها. لا يمكن التراجع عن ذلك.",
+  "settings.general.message_retention_confirm_7":
+    "ستُحذف الرسائل الأقدم من 7 أيام من هذا الهاتف الآن مع وسائطها. لا يمكن التراجع عن ذلك.",
+  "settings.general.message_retention_confirm_30":
+    "ستُحذف الرسائل الأقدم من 30 يومًا من هذا الهاتف الآن مع وسائطها. لا يمكن التراجع عن ذلك.",
   "settings.general.reset_desc":
     "يعيد التفضيلات إلى قيمها الافتراضية، مع ترك هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس",
   "settings.general.reset_title": "إعادة ضبط الإعدادات؟",
   "settings.general.reset_body":
-    "تعود التفضيلات إلى قيمها الافتراضية، بما فيها المظهر، واللغة، والإشعارات، والتراجع عن الإرسال، والاتصال (البوابة، جسر الشبكة، المُرحِّلات). أما قفل Airhop، ومدة الاحتفاظ بالوسائط، ومفتاح الإنترنت، وTor وجسوره، وحالتك فتبقى كما ضبطتها. هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس.",
+    "تعود التفضيلات إلى قيمها الافتراضية، بما فيها المظهر، واللغة، والإشعارات، والتراجع عن الإرسال، والاتصال (البوابة، جسر الشبكة، المُرحِّلات). أما قفل Airhop، ومدة الاحتفاظ بالرسائل والوسائط، ومفتاح الإنترنت، وTor وجسوره، وحالتك فتبقى كما ضبطتها. هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس.",
   "settings.general.reset_confirm": "إعادة الضبط",
 
   // ---- Settings: privacy and security ----

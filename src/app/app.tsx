@@ -59,6 +59,7 @@ import { watchAppLock } from "@services/app-lock";
 import { setAudioForPlayback } from "@services/audio-session";
 import { startBackgroundNotice } from "@services/background-notice";
 import { registerBootStartTask, syncBootStart } from "@services/boot-start";
+import { startAttachmentCleanup } from "@services/file-transfer-service";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
 import {
@@ -78,6 +79,10 @@ import {
   initMeshService,
   type MeshService,
 } from "@services/mesh-service";
+import {
+  startMessageRetention,
+  sweepMessagesIfDue,
+} from "@services/message-retention";
 import { clearMoveMarker, readMoveMarker } from "@services/move-marker";
 import { startNotificationPipeline } from "@services/notification-pipeline";
 import {
@@ -1131,9 +1136,15 @@ function AppContent(): React.JSX.Element {
   // Runs unconditionally, before any identity check: expired media belongs to
   // nobody, and a launch that ends at the onboarding screen is exactly the
   // launch after a wipe, where leftover files matter most.
+  //
+  // Disappearing messages start here too, swept at each deadline while the
+  // process runs, and so does deleting the files of rows that leave the chat
+  // store.
   useEffect(() => {
     sweepMediaIfDue();
     discardStaleVideoWork();
+    startAttachmentCleanup();
+    startMessageRetention((ids) => getMeshService()?.forgetReadAcks(ids));
   }, []);
 
   // Settle messages the last process left mid-send, once per JS runtime.
@@ -1300,6 +1311,8 @@ function AppContent(): React.JSX.Element {
         // The foreground service can keep this process alive for weeks, so a
         // launch alone does not keep media inside its window.
         sweepMediaIfDue();
+        // The sweep timer does not run while iOS has the app suspended.
+        sweepMessagesIfDue();
       }
     });
     return () => sub.remove();

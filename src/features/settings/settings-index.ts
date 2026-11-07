@@ -48,6 +48,7 @@ export type SettingId =
   | "wipe"
   | "undo"
   | "spam-filter"
+  | "message-retention"
   | "media-quality"
   | "media-retention"
   | "show-media"
@@ -320,6 +321,14 @@ export const SETTINGS_INDEX = [
     sectionKey: "settings.section.general",
     icon: "filter",
     target: { kind: "row", view: "general", id: "spam-filter" },
+  },
+  {
+    key: "message-retention",
+    labelKey: "settings.general.message_retention",
+    descriptionKey: "settings.general.message_retention_desc",
+    sectionKey: "settings.section.general",
+    icon: "watch",
+    target: { kind: "row", view: "general", id: "message-retention" },
   },
   {
     key: "media-quality",

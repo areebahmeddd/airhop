@@ -653,6 +653,7 @@ export const strings: Strings = {
   "chat.attach.send": "संलग्नक पठाउनुहोस्",
   "chat.attach.generic": "संलग्नक",
   "chat.video_prep.preparing": "भिडियो तयार हुँदैछ",
+  "chat.video_prep.retrying": "अझै सानो बनाउँदै",
   "chat.video_prep.waiting": "भिडियो तयार गर्न पर्खाइमा",
   "chat.video_prep.cancel": "यो भिडियो तयार गर्न रोक्नुहोस्",
   "chat.video_prep.too_large": "यो भिडियो पठाउन मिल्ने गरी सानो बनाउन सकिएन।",
@@ -682,8 +683,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "आवाज टिपोट बजाउनुहोस्",
   "chat.media.pause_video": "भिडियो रोक्नुहोस्",
   "chat.media.play_video": "भिडियो बजाउनुहोस्",
-  "chat.media.voice_position": "आवाज टिपोटमा ठाउँ",
-  "chat.media.voice_scrub": "त्यो बिन्दुमा जान धर्काहरूमा थिच्नुहोस्",
+  "chat.media.voice_back": "5 सेकेन्ड पछाडि",
+  "chat.media.voice_forward": "5 सेकेन्ड अगाडि",
   "chat.media.image": "तस्बिर",
   "chat.media.tap_load_photo": "तस्बिर ल्याउन थिच्नुहोस्",
   "chat.media.open_document": "{name} खोल्नुहोस्",
@@ -739,6 +740,7 @@ export const strings: Strings = {
   "chat.live_video.title": "लाइभ भिडियो",
   "chat.live_video.go_live": "लाइभ जानुहोस्",
   "chat.live_video.end": "अन्त्य गर्नुहोस्",
+  "chat.live_video.ending": "अन्त्य गर्दै…",
   "chat.live_video.end_title": "लाइभ भिडियो अन्त्य गर्ने?",
   "chat.live_video.end_body":
     "अन्त्य गर्दा रेकर्डिङ यही च्याटमा रहन्छ। खारेज गर्दा हेरिरहेका सबैलाई यो मेटाउन भनिन्छ।",
@@ -750,9 +752,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "कम",
   "chat.live_video.quality_medium": "मध्यम",
   "chat.live_video.quality_high": "उच्च",
-  "chat.live_video.quality_low_hint": "धेरै हप टाढाका मानिसहरूसम्म पुग्छ",
-  "chat.live_video.quality_medium_hint": "एक वा दुई हप टाढाका मानिसहरूका लागि",
-  "chat.live_video.quality_high_hint": "ठ्याक्कै तपाईंको छेउका मानिसहरूका लागि",
+  "chat.live_video.quality_low_hint":
+    "ब्लुटुथमार्फत धेरै हप टाढाका मानिसहरूसम्म पुग्छ",
+  "chat.live_video.quality_medium_hint":
+    "अझ स्पष्ट, Wi-Fi Aware वा उही Wi-Fi मा हेर्नेहरूका लागि",
+  "chat.live_video.quality_high_hint":
+    "सबैभन्दा स्पष्ट, Wi-Fi Aware वा उही Wi-Fi मा हेर्नेहरूका लागि",
+  "chat.live_video.quality_needs_wifi": "नजिकै Wi-Fi चाहिन्छ",
+  "chat.live_video.quality_bluetooth_note":
+    "मध्यम र उच्चलाई नजिकै Wi-Fi चाहिन्छ",
   "chat.live_video.signal_good": "गति मिलाइरहेको छ",
   "chat.live_video.signal_weak": "पछि पर्दैछ",
   "chat.live_video.signal_poor": "भिडियोका लागि धेरै ढिलो, आवाज मात्र पठाइँदैछ",
@@ -767,6 +775,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "हात छाडेर रेकर्ड गर्न माथि सार्नुहोस्",
   "chat.voice.live_speaking": "{name} बोल्दै हुनुहुन्छ",
   "chat.voice.live_ended": "सकियो",
+  "chat.voice.live_stopped": "लाइभ आवाज सकियो",
   "voice.unavailable": "प्रत्यक्ष आवाज उपलब्ध छैन",
   "voice.recording_stopped": "रेकर्डिङ रोकियो",
 
@@ -1840,13 +1849,15 @@ export const strings: Strings = {
     "यो सम्पर्कका लागि अझै कुञ्जी छैनन्। उनीहरूलाई सन्देश पठाउनुहोस्, वा भेट्दा उनीहरूको कोड स्क्यान गर्नुहोस्।",
   "contacts.verify.compare_title": "यी एकअर्कालाई पढेर सुनाउनुहोस्",
   "contacts.verify.compare_body":
-    "{name} लाई Airhop मा उही छ शब्द देखिन्छन्। ती मिले भने तपाईं दुवैलाई थाहा हुन्छ कि कुञ्जी साँचो हुन्। bitchat ले यस्ता शब्द देखाउँदैन, त्यसैले बरु उनीहरूको कोड स्क्यान गर्नुहोस्।",
-  "contacts.verify.codes_match": "यी मिल्छन्",
-  "contacts.verify.codes_differ": "यी मिल्दैनन्",
+    "आफ्नो कोड {name} लाई पढेर सुनाउनुहोस्, ताकि उहाँहरूले आफ्नो फोनमा जाँच्न सक्नुहोस्। त्यसपछि उहाँहरूले पढेको कोड यहाँ उहाँहरूको कोडसँग मिलाउनुहोस्। तपाईंहरू प्रत्येकले अर्कोलाई आफ्नै फोनमा प्रमाणित भनी चिनो लगाउनुहुन्छ। bitchat ले यस्ता शब्द देखाउँदैन, त्यसैले बरु उनीहरूको कोड स्क्यान गर्नुहोस्।",
+  "contacts.verify.your_code": "तपाईंको कोड",
+  "contacts.verify.their_code": "उहाँहरूको कोड",
+  "contacts.verify.codes_match": "उहाँहरूको कोड मिल्छ",
+  "contacts.verify.codes_differ": "उहाँहरूको कोड मिल्दैन",
   "contacts.verify.codes_differ_body":
     "यो फोनमा भएका कुञ्जी {name} का नहुन सक्छन्। यो च्याटमा भरोसा गर्नुअघि भेटेर उनीहरूको कोड स्क्यान गर्नुहोस्।",
   "contacts.verify.compared_body":
-    "तपाईं र {name} ले उही कोड पक्का गर्नुभयो। यो सम्पर्क प्रमाणित भयो।",
+    "{name} ले पढेको कोड मिल्यो, त्यसैले यो फोनमा उहाँहरू प्रमाणित हुनुभयो। उहाँहरूले तपाईंलाई आफ्नो फोनमा प्रमाणित गर्नुहुन्छ।",
 
   // ---- Settings: shared chrome ----
   "settings.back": "पछाडि जानुहोस्",
@@ -2003,11 +2014,32 @@ export const strings: Strings = {
     "सिग्नलबिनाका एक-दुई हप्ताका लागि बीचको बाटो।",
   "settings.general.retention_30_desc":
     "कुराकानी सबैभन्दा लामो समय पढ्न योग्य राख्छ, र डिस्कमा सबैभन्दा धेरै ठाउँ लिन्छ।",
+  "settings.general.message_retention": "हराउने सन्देशहरू",
+  "settings.general.message_retention_desc":
+    "सन्देशहरू र तिनका मिडिया छानिएको समयपछि यो फोनबाट मेटिन्छन्",
+  "settings.general.message_retention_sheet":
+    "हरेक सन्देश यो फोनमा आइपुगेदेखि गनिन्छ, र यो फोनले मात्र बिर्सन्छ। अर्को व्यक्तिको फोनले आफ्नो प्रति राख्छ, स्क्रिनसट रोक्न सकिँदैन, र निजी कुराकानीमा पठाइएका, तपाईंले नलिएका भुक्तानीहरू नलिउन्जेल रहन्छन्।",
+  "settings.general.message_retention_off_desc":
+    "तपाईंले च्याट खाली नगरेसम्म वा नछोडेसम्म सन्देशहरू रहन्छन्",
+  "settings.general.message_retention_1_desc":
+    "सबैभन्दा कम छोडिन्छ, यदि फोन आफैं जोखिम हो भने",
+  "settings.general.message_retention_7_desc":
+    "पढिसक्न एक हप्ता, त्यसपछि हराउँछन्",
+  "settings.general.message_retention_30_desc":
+    "कुराकानीलाई सबैभन्दा लामो समय पढ्न मिल्ने राख्छ",
+  "settings.general.message_retention_confirm_title":
+    "पुराना सन्देशहरू मेटाउने?",
+  "settings.general.message_retention_confirm_1":
+    "1 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। यो फिर्ता गर्न सकिँदैन।",
+  "settings.general.message_retention_confirm_7":
+    "7 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। यो फिर्ता गर्न सकिँदैन।",
+  "settings.general.message_retention_confirm_30":
+    "30 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। यो फिर्ता गर्न सकिँदैन।",
   "settings.general.reset_desc":
     "रोजाइहरूलाई पूर्वनिर्धारितमा फर्काउँछ, तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नछोई",
   "settings.general.reset_title": "सेटिङ रिसेट गर्ने?",
   "settings.general.reset_body":
-    "रोजाइहरू पूर्वनिर्धारितमा फर्कन्छन्, जसमा रूप, भाषा, सूचना, पठाएको फिर्ता, र जडान (गेटवे, मेश पुल, रिले) पर्छन्। Airhop लक, मिडिया कति समय राखिन्छ, इन्टरनेटको स्विच, Tor र यसका ब्रिज, र तपाईंको स्थिति जस्तो सेट गर्नुभएको छ त्यस्तै रहन्छन्। तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नछोइकनै रहन्छन्।",
+    "रोजाइहरू पूर्वनिर्धारितमा फर्कन्छन्, जसमा रूप, भाषा, सूचना, पठाएको फिर्ता, र जडान (गेटवे, मेश पुल, रिले) पर्छन्। Airhop लक, सन्देश र मिडिया कति समय राखिन्छन्, इन्टरनेटको स्विच, Tor र यसका ब्रिज, र तपाईंको स्थिति जस्तो सेट गर्नुभएको छ त्यस्तै रहन्छन्। तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नछोइकनै रहन्छन्।",
   "settings.general.reset_confirm": "रिसेट गर्नुहोस्",
 
   // ---- Settings: privacy and security ----

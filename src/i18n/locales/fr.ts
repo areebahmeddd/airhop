@@ -668,6 +668,7 @@ export const strings: Strings = {
   "chat.attach.send": "Envoyer la pièce jointe",
   "chat.attach.generic": "Pièce jointe",
   "chat.video_prep.preparing": "Préparation de la vidéo",
+  "chat.video_prep.retrying": "Réduction supplémentaire",
   "chat.video_prep.waiting": "Vidéo en attente de préparation",
   "chat.video_prep.cancel": "Arrêter de préparer cette vidéo",
   "chat.video_prep.too_large":
@@ -699,9 +700,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Lire la note vocale",
   "chat.media.pause_video": "Mettre la vidéo en pause",
   "chat.media.play_video": "Lire la vidéo",
-  "chat.media.voice_position": "Position dans la note vocale",
-  "chat.media.voice_scrub":
-    "Touche le long des barres pour aller à cet endroit",
+  "chat.media.voice_back": "Reculer de 5 secondes",
+  "chat.media.voice_forward": "Avancer de 5 secondes",
   "chat.media.image": "Image",
   "chat.media.tap_load_photo": "Touche pour charger la photo",
   "chat.media.open_document": "Ouvrir {name}",
@@ -761,6 +761,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Vidéo en direct",
   "chat.live_video.go_live": "Passer en direct",
   "chat.live_video.end": "Terminer",
+  "chat.live_video.ending": "Arrêt en cours…",
   "chat.live_video.end_title": "Terminer la vidéo en direct ?",
   "chat.live_video.end_body":
     "Terminer garde l’enregistrement dans cette discussion. Supprimer demande à tous ceux qui regardent de l’effacer.",
@@ -774,10 +775,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "Basse",
   "chat.live_video.quality_medium": "Moyenne",
   "chat.live_video.quality_high": "Haute",
-  "chat.live_video.quality_low_hint": "Atteint des personnes à plusieurs sauts",
+  "chat.live_video.quality_low_hint":
+    "Atteint des personnes à plusieurs sauts par Bluetooth",
   "chat.live_video.quality_medium_hint":
-    "Pour des personnes à un ou deux sauts",
-  "chat.live_video.quality_high_hint": "Pour des personnes juste à côté de toi",
+    "Plus nette, pour les spectateurs en Wi-Fi Aware ou sur le même Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "La plus nette, pour les spectateurs en Wi-Fi Aware ou sur le même Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Nécessite un Wi-Fi à proximité",
+  "chat.live_video.quality_bluetooth_note":
+    "Moyenne et Haute nécessitent un Wi-Fi à proximité",
   "chat.live_video.signal_good": "Suit le rythme",
   "chat.live_video.signal_weak": "Prend du retard",
   "chat.live_video.signal_poor":
@@ -794,6 +800,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Glisse vers le haut pour enregistrer mains libres",
   "chat.voice.live_speaking": "{name} parle",
   "chat.voice.live_ended": "Terminé",
+  "chat.voice.live_stopped": "Voix en direct terminée",
   "voice.unavailable": "Voix en direct indisponible",
   "voice.recording_stopped": "Enregistrement arrêté",
 
@@ -1916,13 +1923,15 @@ export const strings: Strings = {
     "Pas encore de clés pour ce contact. Écris-leur, ou scanne leur code quand vous vous verrez.",
   "contacts.verify.compare_title": "Lisez ceci à voix haute",
   "contacts.verify.compare_body":
-    "{name} voit les mêmes six mots dans Airhop. S’ils correspondent, vous savez tous les deux que les clés sont authentiques. bitchat n’affiche pas ces mots, scanne plutôt son code.",
-  "contacts.verify.codes_match": "Ils correspondent",
-  "contacts.verify.codes_differ": "Ils ne correspondent pas",
+    "Lis ton code à {name} pour qu’il le vérifie sur son téléphone. Compare ensuite le code qu’il te lit avec son code ici. Chacun marque l’autre comme vérifié sur son propre téléphone. bitchat n’affiche pas ces mots, scanne plutôt son code.",
+  "contacts.verify.your_code": "Ton code",
+  "contacts.verify.their_code": "Son code",
+  "contacts.verify.codes_match": "Son code correspond",
+  "contacts.verify.codes_differ": "Son code ne correspond pas",
   "contacts.verify.codes_differ_body":
     "Les clés sur ce téléphone ne sont peut-être pas celles de {name}. Scanne son code en personne avant de faire confiance à ce chat.",
   "contacts.verify.compared_body":
-    "{name} et toi avez confirmé le même code. Ce contact est vérifié.",
+    "Le code lu par {name} correspond, ce contact est donc vérifié sur ce téléphone. De son côté, il te vérifie sur le sien.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Revenir en arrière",
@@ -2084,11 +2093,32 @@ export const strings: Strings = {
     "Un entre-deux pour une ou deux semaines loin du réseau.",
   "settings.general.retention_30_desc":
     "Garde les conversations lisibles le plus longtemps, et occupe le plus d’espace.",
+  "settings.general.message_retention": "Messages éphémères",
+  "settings.general.message_retention_desc":
+    "Les messages et leurs médias sont supprimés de ce téléphone après la durée choisie",
+  "settings.general.message_retention_sheet":
+    "Compté à partir de l’arrivée de chaque message sur ce téléphone, et seul ce téléphone oublie. Le téléphone de l’autre personne garde sa copie, les captures d’écran ne peuvent pas être empêchées et les paiements reçus en discussion privée que tu n’as pas encaissés restent jusqu’à ce que tu les encaisses.",
+  "settings.general.message_retention_off_desc":
+    "Les messages restent jusqu’à ce que tu vides la conversation ou la quittes",
+  "settings.general.message_retention_1_desc":
+    "Laisse le moins de traces, si le risque, c’est le téléphone lui-même",
+  "settings.general.message_retention_7_desc":
+    "Une semaine pour rattraper, puis plus rien",
+  "settings.general.message_retention_30_desc":
+    "Garde les conversations lisibles le plus longtemps",
+  "settings.general.message_retention_confirm_title":
+    "Supprimer les messages plus anciens ?",
+  "settings.general.message_retention_confirm_1":
+    "Les messages de plus d’un jour seront supprimés de ce téléphone maintenant, avec leurs médias. C’est irréversible.",
+  "settings.general.message_retention_confirm_7":
+    "Les messages de plus de 7 jours seront supprimés de ce téléphone maintenant, avec leurs médias. C’est irréversible.",
+  "settings.general.message_retention_confirm_30":
+    "Les messages de plus de 30 jours seront supprimés de ce téléphone maintenant, avec leurs médias. C’est irréversible.",
   "settings.general.reset_desc":
     "Remet les préférences à leur valeur par défaut, sans toucher à ton identité, tes messages, tes contacts ni ton portefeuille",
   "settings.general.reset_title": "Réinitialiser les réglages ?",
   "settings.general.reset_body":
-    "Les préférences reviennent à leurs valeurs par défaut, dont l’apparence, la langue, les notifications, l’annulation d’envoi et la connectivité (passerelle, pont maillé, relais). Le verrouillage d’Airhop, la durée de conservation des médias, l’interrupteur internet, Tor et ses ponts, ainsi que ton statut restent tels que tu les as réglés. Ton identité, tes messages, tes contacts et ton portefeuille ne sont pas touchés.",
+    "Les préférences reviennent à leurs valeurs par défaut, dont l’apparence, la langue, les notifications, l’annulation d’envoi et la connectivité (passerelle, pont maillé, relais). Le verrouillage d’Airhop, la durée de conservation des messages et des médias, l’interrupteur internet, Tor et ses ponts, ainsi que ton statut restent tels que tu les as réglés. Ton identité, tes messages, tes contacts et ton portefeuille ne sont pas touchés.",
   "settings.general.reset_confirm": "Réinitialiser",
 
   // ---- Settings: privacy and security ----

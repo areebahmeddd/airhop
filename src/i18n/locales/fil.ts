@@ -675,6 +675,7 @@ export const strings: Strings = {
   "chat.attach.send": "Ipadala ang attachment",
   "chat.attach.generic": "Attachment",
   "chat.video_prep.preparing": "Inihahanda ang video",
+  "chat.video_prep.retrying": "Pinapaliit pa",
   "chat.video_prep.waiting": "Naghihintay na maihanda ang video",
   "chat.video_prep.cancel": "Itigil ang paghahanda ng video na ito",
   "chat.video_prep.too_large":
@@ -706,8 +707,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "I-play ang voice note",
   "chat.media.pause_video": "I-pause ang video",
   "chat.media.play_video": "I-play ang video",
-  "chat.media.voice_position": "Posisyon sa voice note",
-  "chat.media.voice_scrub": "I-tap sa mga bar para tumalon sa puntong iyon",
+  "chat.media.voice_back": "Bumalik nang 5 segundo",
+  "chat.media.voice_forward": "Sumulong nang 5 segundo",
   "chat.media.image": "Imahe",
   "chat.media.tap_load_photo": "I-tap para i-load ang larawan",
   "chat.media.open_document": "Buksan ang {name}",
@@ -768,6 +769,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Live na video",
   "chat.live_video.go_live": "Mag-live",
   "chat.live_video.end": "Tapusin",
+  "chat.live_video.ending": "Tinatapos…",
   "chat.live_video.end_title": "Tapusin ang live na video?",
   "chat.live_video.end_body":
     "Kapag tinapos, mananatili ang recording sa chat na ito. Kapag itinapon, sasabihan ang lahat ng nanonood na burahin ito.",
@@ -780,10 +782,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "Mababa",
   "chat.live_video.quality_medium": "Katamtaman",
   "chat.live_video.quality_high": "Mataas",
-  "chat.live_video.quality_low_hint": "Umaabot sa mga taong ilang hop ang layo",
+  "chat.live_video.quality_low_hint":
+    "Umaabot sa mga taong ilang hop ang layo sa Bluetooth",
   "chat.live_video.quality_medium_hint":
-    "Para sa mga taong isa o dalawang hop ang layo",
-  "chat.live_video.quality_high_hint": "Para sa mga taong katabi mo",
+    "Mas malinaw, para sa mga nanonood sa Wi-Fi Aware o sa parehong Wi-Fi",
+  "chat.live_video.quality_high_hint":
+    "Pinakamalinaw, para sa mga nanonood sa Wi-Fi Aware o sa parehong Wi-Fi",
+  "chat.live_video.quality_needs_wifi": "Kailangan ng Wi-Fi sa malapit",
+  "chat.live_video.quality_bluetooth_note":
+    "Kailangan ng Wi-Fi sa malapit para sa Katamtaman at Mataas",
   "chat.live_video.signal_good": "Nakakasabay",
   "chat.live_video.signal_weak": "Nahuhuli",
   "chat.live_video.signal_poor":
@@ -799,6 +806,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Mag-slide paitaas para mag-record nang hands-free",
   "chat.voice.live_speaking": "Nagsasalita si {name}",
   "chat.voice.live_ended": "Tapos na",
+  "chat.voice.live_stopped": "Tapos na ang live na boses",
   "voice.unavailable": "Hindi available ang live na boses",
   "voice.recording_stopped": "Itinigil ang pagre-record",
 
@@ -1924,13 +1932,15 @@ export const strings: Strings = {
     "Wala pang susi para sa contact na ito. Mag-mensahe sa kanila, o i-scan ang code nila kapag nagkita kayo.",
   "contacts.verify.compare_title": "Basahin ninyo ito sa isa't isa",
   "contacts.verify.compare_body":
-    "Pareho ang anim na salitang nakikita ni {name} sa Airhop. Kung tugma ang mga ito, alam ninyong dalawa na tunay ang mga susi. Walang ganitong mga salita sa bitchat, kaya i-scan na lang ang code nila.",
-  "contacts.verify.codes_match": "Tugma ang mga ito",
-  "contacts.verify.codes_differ": "Hindi tugma ang mga ito",
+    "Basahin ang code mo kay {name} para masuri nila ito sa phone nila. Pagkatapos, ihambing ang code na binasa nila sa code nila rito. Bawat isa sa inyo ang nagmamarka sa isa't isa bilang verified sa sariling phone. Walang ganitong mga salita sa bitchat, kaya i-scan na lang ang code nila.",
+  "contacts.verify.your_code": "Ang code mo",
+  "contacts.verify.their_code": "Ang code nila",
+  "contacts.verify.codes_match": "Tugma ang code nila",
+  "contacts.verify.codes_differ": "Hindi tugma ang code nila",
   "contacts.verify.codes_differ_body":
     "Maaaring hindi kay {name} ang mga susi sa phone na ito. I-scan nang personal ang code nila bago mo pagkatiwalaan ang chat na ito.",
   "contacts.verify.compared_body":
-    "Kinumpirma ninyo ni {name} ang parehong code. Na-verify ang contact na ito.",
+    "Tugma ang code na binasa ni {name}, kaya verified na sila sa phone na ito. Sila naman ang magve-verify sa iyo sa phone nila.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Bumalik",
@@ -2093,11 +2103,32 @@ export const strings: Strings = {
     "Gitnang landas para sa isa o dalawang linggong walang signal.",
   "settings.general.retention_30_desc":
     "Pinakamatagal na nananatiling mababasa ang mga usapan, at pinakamalaki ang kinakain sa disk.",
+  "settings.general.message_retention": "Naglalahong mga mensahe",
+  "settings.general.message_retention_desc":
+    "Binubura ang mga mensahe at ang media nito sa phone na ito pagkalipas ng napiling oras",
+  "settings.general.message_retention_sheet":
+    "Binibilang mula nang dumating ang bawat mensahe sa phone na ito, at ang phone na ito lang ang nakakalimot. Itinatago ng phone ng kausap mo ang kopya niya, hindi mapipigilan ang mga screenshot, at mananatili ang mga bayad mula sa pribadong chat na hindi mo pa naaangkin hanggang angkinin mo ang mga ito.",
+  "settings.general.message_retention_off_desc":
+    "Mananatili ang mga mensahe hanggang i-clear mo ang chat o umalis ka rito",
+  "settings.general.message_retention_1_desc":
+    "Pinakakaunti ang naiiwan, kung ang phone mismo ang panganib",
+  "settings.general.message_retention_7_desc":
+    "Isang linggo para makahabol, saka mawawala",
+  "settings.general.message_retention_30_desc":
+    "Pinakamatagal na nababasa ang mga usapan",
+  "settings.general.message_retention_confirm_title":
+    "Burahin ang mas lumang mga mensahe?",
+  "settings.general.message_retention_confirm_1":
+    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 1 araw, kasama ang media nila. Hindi na ito mababawi.",
+  "settings.general.message_retention_confirm_7":
+    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 7 araw, kasama ang media nila. Hindi na ito mababawi.",
+  "settings.general.message_retention_confirm_30":
+    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 30 araw, kasama ang media nila. Hindi na ito mababawi.",
   "settings.general.reset_desc":
     "Ibinabalik ang mga kagustuhan sa kanilang default, nang hindi ginagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet",
   "settings.general.reset_title": "I-reset ang mga setting?",
   "settings.general.reset_body":
-    "Babalik sa default ang mga kagustuhan, kasama ang anyo, wika, mga abiso, pag-undo ng pagpapadala, at koneksyon (gateway, mesh bridge, mga relay). Mananatili gaya ng itinakda mo ang lock ng Airhop, kung gaano katagal itinatago ang media, ang switch ng internet, ang Tor at ang mga bridge nito, at ang iyong status. Hindi magagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet.",
+    "Babalik sa default ang mga kagustuhan, kasama ang anyo, wika, mga abiso, pag-undo ng pagpapadala, at koneksyon (gateway, mesh bridge, mga relay). Mananatili gaya ng itinakda mo ang lock ng Airhop, kung gaano katagal itinatago ang mga mensahe at media, ang switch ng internet, ang Tor at ang mga bridge nito, at ang iyong status. Hindi magagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet.",
   "settings.general.reset_confirm": "I-reset",
 
   // ---- Settings: privacy and security ----

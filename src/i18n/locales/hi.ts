@@ -653,6 +653,7 @@ export const strings: Strings = {
   "chat.attach.send": "अटैचमेंट भेजें",
   "chat.attach.generic": "अटैचमेंट",
   "chat.video_prep.preparing": "वीडियो तैयार हो रहा है",
+  "chat.video_prep.retrying": "आकार और छोटा किया जा रहा है",
   "chat.video_prep.waiting": "वीडियो तैयार होने का इंतज़ार",
   "chat.video_prep.cancel": "इस वीडियो को तैयार करना रोकें",
   "chat.video_prep.too_large": "यह वीडियो भेजने लायक छोटा नहीं किया जा सका।",
@@ -683,8 +684,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "वॉइस नोट बजाएँ",
   "chat.media.pause_video": "वीडियो रोकें",
   "chat.media.play_video": "वीडियो चलाएँ",
-  "chat.media.voice_position": "वॉइस नोट की जगह",
-  "chat.media.voice_scrub": "उस बिंदु पर जाने के लिए पट्टियों पर टैप करें",
+  "chat.media.voice_back": "5 सेकंड पीछे",
+  "chat.media.voice_forward": "5 सेकंड आगे",
   "chat.media.image": "छवि",
   "chat.media.tap_load_photo": "फ़ोटो लाने के लिए टैप करें",
   "chat.media.open_document": "{name} खोलें",
@@ -741,6 +742,7 @@ export const strings: Strings = {
   "chat.live_video.title": "लाइव वीडियो",
   "chat.live_video.go_live": "लाइव जाएँ",
   "chat.live_video.end": "खत्म करें",
+  "chat.live_video.ending": "खत्म हो रहा है…",
   "chat.live_video.end_title": "लाइव वीडियो खत्म करें?",
   "chat.live_video.end_body":
     "खत्म करने पर रिकॉर्डिंग इसी चैट में रहती है। हटाने पर देखने वाले सभी लोगों से उसे मिटाने को कहा जाता है।",
@@ -752,9 +754,15 @@ export const strings: Strings = {
   "chat.live_video.quality_low": "कम",
   "chat.live_video.quality_medium": "मध्यम",
   "chat.live_video.quality_high": "ज़्यादा",
-  "chat.live_video.quality_low_hint": "कई हॉप दूर के लोगों तक पहुँचता है",
-  "chat.live_video.quality_medium_hint": "एक या दो हॉप दूर के लोगों के लिए",
-  "chat.live_video.quality_high_hint": "ठीक आपके पास वाले लोगों के लिए",
+  "chat.live_video.quality_low_hint":
+    "ब्लूटूथ पर कई हॉप दूर के लोगों तक पहुँचता है",
+  "chat.live_video.quality_medium_hint":
+    "ज़्यादा साफ़, Wi-Fi Aware या एक ही Wi-Fi पर देखने वालों के लिए",
+  "chat.live_video.quality_high_hint":
+    "सबसे साफ़, Wi-Fi Aware या एक ही Wi-Fi पर देखने वालों के लिए",
+  "chat.live_video.quality_needs_wifi": "पास में Wi-Fi चाहिए",
+  "chat.live_video.quality_bluetooth_note":
+    "मध्यम और ज़्यादा के लिए पास में Wi-Fi चाहिए",
   "chat.live_video.signal_good": "साथ चल रहा है",
   "chat.live_video.signal_weak": "पीछे छूट रहा है",
   "chat.live_video.signal_poor":
@@ -770,6 +778,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "बिना पकड़े रिकॉर्ड करने के लिए ऊपर सरकाएँ",
   "chat.voice.live_speaking": "{name} बोल रहे हैं",
   "chat.voice.live_ended": "समाप्त",
+  "chat.voice.live_stopped": "लाइव आवाज़ खत्म हुई",
   "voice.unavailable": "लाइव वॉइस उपलब्ध नहीं",
   "voice.recording_stopped": "रिकॉर्डिंग रुक गई",
 
@@ -1850,13 +1859,15 @@ export const strings: Strings = {
     "इस संपर्क के लिए अभी कोई कुंजी नहीं। उन्हें संदेश भेजें, या मिलने पर उनका कोड स्कैन करें।",
   "contacts.verify.compare_title": "ये एक-दूसरे को पढ़कर सुनाएँ",
   "contacts.verify.compare_body":
-    "{name} को Airhop में वही छह शब्द दिखते हैं। अगर वे मिलते हैं, तो आप दोनों जान गए कि कुंजियाँ असली हैं। bitchat ऐसे शब्द नहीं दिखाता, इसलिए उसकी जगह उनका कोड स्कैन करें।",
-  "contacts.verify.codes_match": "ये मिलते हैं",
-  "contacts.verify.codes_differ": "ये नहीं मिलते",
+    "अपना कोड {name} को पढ़कर सुनाएँ, ताकि वे इसे अपने फ़ोन पर जाँच सकें। फिर वे जो कोड पढ़ें, उसे यहाँ उनके कोड से मिलाएँ। आप दोनों एक-दूसरे को अपने-अपने फ़ोन पर सत्यापित के रूप में चिह्नित करते हैं। bitchat ऐसे शब्द नहीं दिखाता, इसलिए उसकी जगह उनका कोड स्कैन करें।",
+  "contacts.verify.your_code": "आपका कोड",
+  "contacts.verify.their_code": "उनका कोड",
+  "contacts.verify.codes_match": "उनका कोड मिलता है",
+  "contacts.verify.codes_differ": "उनका कोड नहीं मिलता",
   "contacts.verify.codes_differ_body":
     "हो सकता है इस फ़ोन पर रखी कुंजियाँ {name} की न हों। इस चैट पर भरोसा करने से पहले आमने-सामने उनका कोड स्कैन करें।",
   "contacts.verify.compared_body":
-    "आपने और {name} ने एक ही कोड की पुष्टि की। यह संपर्क सत्यापित है।",
+    "{name} का पढ़ा कोड मिलता है, इसलिए वे इस फ़ोन पर सत्यापित हैं। वे आपको अपने फ़ोन पर सत्यापित करते हैं।",
 
   // ---- Settings: shared chrome ----
   "settings.back": "वापस जाएँ",
@@ -2011,11 +2022,31 @@ export const strings: Strings = {
     "सिग्नल से एक-दो हफ़्ते दूर रहने के लिए बीच का रास्ता।",
   "settings.general.retention_30_desc":
     "बातचीत सबसे लंबे समय तक पढ़ने लायक रखता है, और डिस्क पर सबसे ज़्यादा।",
+  "settings.general.message_retention": "गायब होने वाले संदेश",
+  "settings.general.message_retention_desc":
+    "संदेश और उनका मीडिया चुने गए समय के बाद इस फ़ोन से मिट जाते हैं",
+  "settings.general.message_retention_sheet":
+    "हर संदेश के इस फ़ोन पर पहुँचने से गिना जाता है, और सिर्फ़ यही फ़ोन भूलता है। दूसरे व्यक्ति का फ़ोन अपनी कॉपी रखता है, स्क्रीनशॉट रोके नहीं जा सकते, और निजी चैट में भेजे गए जो भुगतान आपने अभी नहीं लिए हैं, वे लेने तक रहते हैं।",
+  "settings.general.message_retention_off_desc":
+    "जब तक आप चैट साफ़ न करें या उसे छोड़ न दें, संदेश बने रहते हैं",
+  "settings.general.message_retention_1_desc":
+    "सबसे कम पीछे छूटता है, अगर फ़ोन ही जोखिम हो",
+  "settings.general.message_retention_7_desc":
+    "पढ़ लेने के लिए एक हफ़्ता, फिर गायब",
+  "settings.general.message_retention_30_desc":
+    "बातचीत को सबसे लंबे समय तक पढ़ने लायक रखता है",
+  "settings.general.message_retention_confirm_title": "पुराने संदेश मिटाएँ?",
+  "settings.general.message_retention_confirm_1":
+    "1 दिन से पुराने संदेश उनके मीडिया के साथ अभी इस फ़ोन से मिटा दिए जाएँगे। इसे पलटा नहीं जा सकता।",
+  "settings.general.message_retention_confirm_7":
+    "7 दिन से पुराने संदेश उनके मीडिया के साथ अभी इस फ़ोन से मिटा दिए जाएँगे। इसे पलटा नहीं जा सकता।",
+  "settings.general.message_retention_confirm_30":
+    "30 दिन से पुराने संदेश उनके मीडिया के साथ अभी इस फ़ोन से मिटा दिए जाएँगे। इसे पलटा नहीं जा सकता।",
   "settings.general.reset_desc":
     "पसंदों को उनके डिफ़ॉल्ट पर लौटा देता है, आपकी पहचान, संदेश, संपर्क और वॉलेट को छुए बिना",
   "settings.general.reset_title": "सेटिंग्स रीसेट करें?",
   "settings.general.reset_body":
-    "पसंदें अपने डिफ़ॉल्ट पर लौट जाती हैं, जिनमें रूप-रंग, भाषा, सूचनाएँ, भेजना वापस लेना, और कनेक्टिविटी (गेटवे, मेश ब्रिज, रिले) शामिल हैं। Airhop लॉक, मीडिया कितने समय रखा जाए, इंटरनेट का स्विच, Tor और उसके ब्रिज, और आपकी स्थिति वैसे ही रहते हैं जैसे आपने तय किए थे। आपकी पहचान, संदेश, संपर्क और वॉलेट अछूते रहते हैं।",
+    "पसंदें अपने डिफ़ॉल्ट पर लौट जाती हैं, जिनमें रूप-रंग, भाषा, सूचनाएँ, भेजना वापस लेना, और कनेक्टिविटी (गेटवे, मेश ब्रिज, रिले) शामिल हैं। Airhop लॉक, संदेश और मीडिया कितने समय रखे जाएँ, इंटरनेट का स्विच, Tor और उसके ब्रिज, और आपकी स्थिति वैसे ही रहते हैं जैसे आपने तय किए थे। आपकी पहचान, संदेश, संपर्क और वॉलेट अछूते रहते हैं।",
   "settings.general.reset_confirm": "रीसेट करें",
 
   // ---- Settings: privacy and security ----

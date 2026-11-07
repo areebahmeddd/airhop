@@ -664,6 +664,7 @@ export const strings: Strings = {
   "chat.attach.send": "Tuma kiambatisho",
   "chat.attach.generic": "Kiambatisho",
   "chat.video_prep.preparing": "Inaandaa video",
+  "chat.video_prep.retrying": "Inapunguzwa zaidi",
   "chat.video_prep.waiting": "Inasubiri kuandaa video",
   "chat.video_prep.cancel": "Acha kuandaa video hii",
   "chat.video_prep.too_large":
@@ -695,8 +696,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "Cheza noti ya sauti",
   "chat.media.pause_video": "Sitisha video",
   "chat.media.play_video": "Cheza video",
-  "chat.media.voice_position": "Nafasi kwenye noti ya sauti",
-  "chat.media.voice_scrub": "Gusa kwenye mistari ili kurukia mahali hapo",
+  "chat.media.voice_back": "Rudi nyuma sekunde 5",
+  "chat.media.voice_forward": "Songa mbele sekunde 5",
   "chat.media.image": "Picha",
   "chat.media.tap_load_photo": "Gusa ili kupakia picha",
   "chat.media.open_document": "Fungua {name}",
@@ -754,6 +755,7 @@ export const strings: Strings = {
   "chat.live_video.title": "Video ya moja kwa moja",
   "chat.live_video.go_live": "Rusha moja kwa moja",
   "chat.live_video.end": "Maliza",
+  "chat.live_video.ending": "Inamaliza…",
   "chat.live_video.end_title": "Maliza video ya moja kwa moja?",
   "chat.live_video.end_body":
     "Kumaliza kunaacha rekodi kwenye gumzo hili. Kutupa kunawaambia wote wanaotazama waifute.",
@@ -767,10 +769,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "Wastani",
   "chat.live_video.quality_high": "Juu",
   "chat.live_video.quality_low_hint":
-    "Inawafikia watu walio hatua kadhaa mbali",
+    "Inawafikia watu walio hatua kadhaa mbali kupitia Bluetooth",
   "chat.live_video.quality_medium_hint":
-    "Kwa watu walio hatua moja au mbili mbali",
-  "chat.live_video.quality_high_hint": "Kwa watu walio karibu nawe kabisa",
+    "Wazi zaidi, kwa watazamaji kwenye Wi-Fi Aware au Wi-Fi ileile",
+  "chat.live_video.quality_high_hint":
+    "Wazi kabisa, kwa watazamaji kwenye Wi-Fi Aware au Wi-Fi ileile",
+  "chat.live_video.quality_needs_wifi": "Inahitaji Wi-Fi karibu",
+  "chat.live_video.quality_bluetooth_note":
+    "Wastani na Juu zinahitaji Wi-Fi karibu",
   "chat.live_video.signal_good": "Inaenda sawa",
   "chat.live_video.signal_weak": "Inachelewa",
   "chat.live_video.signal_poor": "Polepole mno kwa video, sauti pekee inatumwa",
@@ -786,6 +792,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "Telezesha juu ili kurekodi bila kushikilia",
   "chat.voice.live_speaking": "{name} anazungumza",
   "chat.voice.live_ended": "Imeisha",
+  "chat.voice.live_stopped": "Sauti ya moja kwa moja imeisha",
   "voice.unavailable": "Sauti ya moja kwa moja haipatikani",
   "voice.recording_stopped": "Kurekodi kumesimamishwa",
 
@@ -1895,13 +1902,15 @@ export const strings: Strings = {
     "Bado hakuna funguo za anwani hii. Watumie ujumbe, au changanua msimbo wao mtakapokutana.",
   "contacts.verify.compare_title": "Someni haya kwa kila mmoja",
   "contacts.verify.compare_body":
-    "{name} anaona maneno sita yaleyale kwenye Airhop. Yakilingana, nyote wawili mnajua funguo ni halisi. bitchat haionyeshi maneno kama haya, kwa hivyo changanua msimbo wake badala yake.",
-  "contacts.verify.codes_match": "Yanalingana",
-  "contacts.verify.codes_differ": "Hayalingani",
+    "Msomee {name} msimbo wako ili auhakiki kwenye simu yake. Kisha linganisha msimbo atakaousoma na msimbo wake hapa. Kila mmoja wenu humwekea mwenzake alama ya kuthibitishwa kwenye simu yake mwenyewe. bitchat haionyeshi maneno kama haya, kwa hivyo changanua msimbo wake badala yake.",
+  "contacts.verify.your_code": "Msimbo wako",
+  "contacts.verify.their_code": "Msimbo wake",
+  "contacts.verify.codes_match": "Msimbo wake unalingana",
+  "contacts.verify.codes_differ": "Msimbo wake haulingani",
   "contacts.verify.codes_differ_body":
     "Huenda funguo kwenye simu hii si za {name}. Changanua msimbo wake ana kwa ana kabla ya kuamini gumzo hili.",
   "contacts.verify.compared_body":
-    "Wewe na {name} mmethibitisha msimbo uleule. Anwani hii imethibitishwa.",
+    "Msimbo aliousoma {name} unalingana, kwa hivyo amethibitishwa kwenye simu hii. Yeye anakuthibitisha kwenye simu yake.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "Rudi nyuma",
@@ -2063,11 +2072,32 @@ export const strings: Strings = {
     "Njia ya kati kwa wiki moja au mbili bila mtandao.",
   "settings.general.retention_30_desc":
     "Huweka mazungumzo yakisomeka kwa muda mrefu zaidi, na huchukua nafasi kubwa zaidi kwenye diski.",
+  "settings.general.message_retention": "Jumbe zinazotoweka",
+  "settings.general.message_retention_desc":
+    "Jumbe na midia yake hufutwa kwenye simu hii baada ya muda uliochaguliwa",
+  "settings.general.message_retention_sheet":
+    "Huhesabiwa tangu kila ujumbe ulipofika kwenye simu hii, na ni simu hii pekee inayosahau. Simu ya mtu mwingine huhifadhi nakala yake, picha za skrini haziwezi kuzuiwa, na malipo uliyotumiwa kwenye mazungumzo ya faragha ambayo hujayadai hubaki hadi uyadai.",
+  "settings.general.message_retention_off_desc":
+    "Jumbe hubaki hadi usafishe gumzo au uliondoke",
+  "settings.general.message_retention_1_desc":
+    "Huacha kidogo zaidi, ikiwa hatari ni simu yenyewe",
+  "settings.general.message_retention_7_desc":
+    "Wiki moja ya kufuatilia, kisha zinatoweka",
+  "settings.general.message_retention_30_desc":
+    "Huweka mazungumzo yasomeke kwa muda mrefu zaidi",
+  "settings.general.message_retention_confirm_title":
+    "Futa jumbe za zamani zaidi?",
+  "settings.general.message_retention_confirm_1":
+    "Jumbe zilizozidi siku 1 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Hili haliwezi kutenduliwa.",
+  "settings.general.message_retention_confirm_7":
+    "Jumbe zilizozidi siku 7 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Hili haliwezi kutenduliwa.",
+  "settings.general.message_retention_confirm_30":
+    "Jumbe zilizozidi siku 30 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Hili haliwezi kutenduliwa.",
   "settings.general.reset_desc":
     "Hurudisha mapendeleo kwenye hali zake za kawaida, bila kugusa utambulisho, jumbe, anwani na pochi yako",
   "settings.general.reset_title": "Uweke upya mipangilio?",
   "settings.general.reset_body":
-    "Mapendeleo hurudi kwenye hali zake za kawaida, ikiwemo muonekano, lugha, arifa, tendua kutuma, na muunganisho (lango, daraja la mesh, relay). Kufuli ya Airhop, muda wa kuhifadhi midia, swichi ya intaneti, Tor na madaraja yake, na hali yako hubaki kama ulivyoweka. Utambulisho, jumbe, anwani na pochi yako hazitaguswa.",
+    "Mapendeleo hurudi kwenye hali zake za kawaida, ikiwemo muonekano, lugha, arifa, tendua kutuma, na muunganisho (lango, daraja la mesh, relay). Kufuli ya Airhop, muda wa kuhifadhi jumbe na midia, swichi ya intaneti, Tor na madaraja yake, na hali yako hubaki kama ulivyoweka. Utambulisho, jumbe, anwani na pochi yako hazitaguswa.",
   "settings.general.reset_confirm": "Weka upya",
 
   // ---- Settings: privacy and security ----

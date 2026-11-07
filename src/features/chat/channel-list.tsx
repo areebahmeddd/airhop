@@ -27,6 +27,7 @@ import { loadDraft } from "@store/composer-drafts";
 import { useGroupStore } from "@store/group-store";
 import { usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
+import { useSettingsStore } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
 import EmptyState from "@ui/components/empty-state";
 import UpperText from "@ui/components/upper-text";
@@ -47,6 +48,10 @@ import { isManualGeoChannel, manualGeohashOf } from "@utils/channel-key";
 import { channelMatches, type ChannelFilter } from "@utils/chat-filter";
 import { sortConversationsByActivity } from "@utils/conversation-order";
 import { formatListTimestamp } from "@utils/format";
+import {
+  messageRetentionWindowMs,
+  withoutExpiredInAll,
+} from "@utils/message-expiry";
 import { messagePreviewText } from "@utils/message-preview";
 import { sumUnread } from "@utils/unread";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -142,6 +147,25 @@ export default function ChannelList({
     toggleMuteChannel,
     clearChannelMessages,
   } = useChatStore();
+  // Rows disappearing messages retired leave the preview and the order within
+  // a tick of expiring, as they leave the thread, not at the next sweep. The
+  // clock ticks only while the setting is on.
+  const messageRetentionDays = useSettingsStore((s) => s.messageRetentionDays);
+  const [nowMs, setNowMs] = useState(Date.now);
+  useEffect(() => {
+    if (messageRetentionDays === 0) return;
+    const id = setInterval(() => setNowMs(Date.now()), 15_000);
+    return () => clearInterval(id);
+  }, [messageRetentionDays]);
+  const shownMessages = useMemo(
+    () =>
+      withoutExpiredInAll(
+        messages,
+        nowMs,
+        messageRetentionWindowMs(messageRetentionDays),
+      ),
+    [messages, nowMs, messageRetentionDays],
+  );
   // Live BLE peer count. This is the right number ONLY for #bluetooth, the
   // local-mesh channel; the geohash channels are populated over Nostr, not BLE.
   const peerCount = usePeerStore((s) => s.peers.size);
@@ -248,7 +272,7 @@ export default function ChannelList({
       ...publicChannels.filter((c) => !DEFAULT_CHANNEL_NAMES.has(c)),
       ...groupChannels,
     ],
-    messages,
+    shownMessages,
     pinnedChannels,
   );
 
@@ -346,7 +370,7 @@ export default function ChannelList({
     item: string,
     isYourChannel: boolean,
   ): React.JSX.Element {
-    const msgs = messages[item] ?? [];
+    const msgs = shownMessages[item] ?? [];
     const last = msgs[msgs.length - 1];
     // One line, as a preview is: newlines and runs of spaces collapse.
     const draft = loadDraft(item).replace(/\s+/g, " ").trim();

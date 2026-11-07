@@ -659,6 +659,7 @@ export const strings: Strings = {
   "chat.attach.send": "დანართის გაგზავნა",
   "chat.attach.generic": "დანართი",
   "chat.video_prep.preparing": "ვიდეო მზადდება",
+  "chat.video_prep.retrying": "კიდევ უფრო მცირდება",
   "chat.video_prep.waiting": "ვიდეო მომზადებას ელოდება",
   "chat.video_prep.cancel": "ამ ვიდეოს მომზადების შეწყვეტა",
   "chat.video_prep.too_large":
@@ -688,8 +689,8 @@ export const strings: Strings = {
   "chat.media.play_voice": "ხმოვანი ჩანაწერის დაკვრა",
   "chat.media.pause_video": "ვიდეოს პაუზა",
   "chat.media.play_video": "ვიდეოს დაკვრა",
-  "chat.media.voice_position": "პოზიცია ხმოვან ჩანაწერში",
-  "chat.media.voice_scrub": "შეეხე ზოლებს, რომ იმ წერტილზე გადახვიდე",
+  "chat.media.voice_back": "5 წამით უკან",
+  "chat.media.voice_forward": "5 წამით წინ",
   "chat.media.image": "სურათი",
   "chat.media.tap_load_photo": "შეეხე ფოტოს ჩასატვირთად",
   "chat.media.open_document": "{name}-ის გახსნა",
@@ -746,6 +747,7 @@ export const strings: Strings = {
   "chat.live_video.title": "პირდაპირი ვიდეო",
   "chat.live_video.go_live": "ეთერში გასვლა",
   "chat.live_video.end": "დასრულება",
+  "chat.live_video.ending": "სრულდება…",
   "chat.live_video.end_title": "დავასრულოთ პირდაპირი ვიდეო?",
   "chat.live_video.end_body":
     "დასრულებისას ჩანაწერი ამ ჩატში რჩება. გაუქმებისას ყველა მაყურებელს ეთხოვება მისი წაშლა.",
@@ -759,10 +761,14 @@ export const strings: Strings = {
   "chat.live_video.quality_medium": "საშუალო",
   "chat.live_video.quality_high": "მაღალი",
   "chat.live_video.quality_low_hint":
-    "აღწევს რამდენიმე ნახტომით დაშორებულ ადამიანებს",
+    "ბლუთუზით აღწევს რამდენიმე ნახტომით დაშორებულ ადამიანებს",
   "chat.live_video.quality_medium_hint":
-    "ერთი ან ორი ნახტომით დაშორებული ადამიანებისთვის",
-  "chat.live_video.quality_high_hint": "შენს გვერდით მყოფი ადამიანებისთვის",
+    "უფრო მკაფიო, მაყურებლებისთვის Wi-Fi Aware-ით ან იმავე Wi-Fi-ში",
+  "chat.live_video.quality_high_hint":
+    "ყველაზე მკაფიო, მაყურებლებისთვის Wi-Fi Aware-ით ან იმავე Wi-Fi-ში",
+  "chat.live_video.quality_needs_wifi": "საჭიროა ახლოს Wi-Fi",
+  "chat.live_video.quality_bluetooth_note":
+    "საშუალოს და მაღალს ახლოს Wi-Fi სჭირდება",
   "chat.live_video.signal_good": "ასწრებს",
   "chat.live_video.signal_weak": "ჩამორჩება",
   "chat.live_video.signal_poor":
@@ -778,6 +784,7 @@ export const strings: Strings = {
   "chat.voice.lift_lock": "გადაასრიალე ზემოთ ხელის აშვებით ჩასაწერად",
   "chat.voice.live_speaking": "{name} საუბრობს",
   "chat.voice.live_ended": "დასრულდა",
+  "chat.voice.live_stopped": "ხმოვანი ეთერი დასრულდა",
   "voice.unavailable": "პირდაპირი ხმა მიუწვდომელია",
   "voice.recording_stopped": "ჩაწერა შეწყდა",
 
@@ -1874,13 +1881,15 @@ export const strings: Strings = {
     "ამ კონტაქტის გასაღებები ჯერ არ არის. მისწერე, ან დაასკანერე მისი კოდი, როცა შეხვდებით.",
   "contacts.verify.compare_title": "წაუკითხეთ ეს ერთმანეთს",
   "contacts.verify.compare_body":
-    "{name} Airhop-ში იმავე ექვს სიტყვას ხედავს. თუ ემთხვევა, ორივემ იცით, რომ გასაღებები ნამდვილია. bitchat ასეთ სიტყვებს არ აჩვენებს, ამიტომ მის ნაცვლად დაასკანერე მისი კოდი.",
-  "contacts.verify.codes_match": "ემთხვევა",
-  "contacts.verify.codes_differ": "არ ემთხვევა",
+    "წაუკითხე შენი კოდი {name}-ს, რომ თავის ტელეფონზე შეამოწმოს. შემდეგ მის მიერ წაკითხული კოდი აქ მის კოდს შეადარე. თითოეული თქვენგანი მეორეს საკუთარ ტელეფონზე ნიშნავს გადამოწმებულად. bitchat ასეთ სიტყვებს არ აჩვენებს, ამიტომ მის ნაცვლად დაასკანერე მისი კოდი.",
+  "contacts.verify.your_code": "შენი კოდი",
+  "contacts.verify.their_code": "მისი კოდი",
+  "contacts.verify.codes_match": "მისი კოდი ემთხვევა",
+  "contacts.verify.codes_differ": "მისი კოდი არ ემთხვევა",
   "contacts.verify.codes_differ_body":
     "ამ ტელეფონზე არსებული გასაღებები შეიძლება {name}-ს არ ეკუთვნოდეს. სანამ ამ ჩატს ენდობი, პირადად დაასკანერე მისი კოდი.",
   "contacts.verify.compared_body":
-    "შენ და {name}-მა ერთი და იგივე კოდი დაადასტურეთ. ეს კონტაქტი გადამოწმებულია.",
+    "{name}-ის წაკითხული კოდი ემთხვევა, ამიტომ ამ ტელეფონზე ის გადამოწმებულია. შენ ის თავის ტელეფონზე გადაგამოწმებს.",
 
   // ---- Settings: shared chrome ----
   "settings.back": "უკან",
@@ -2041,11 +2050,32 @@ export const strings: Strings = {
     "შუალედური ვარიანტი ერთი-ორი კვირისთვის სიგნალის გარეშე.",
   "settings.general.retention_30_desc":
     "ყველაზე დიდხანს ინახავს მიმოწერებს წასაკითხად და დისკზეც ყველაზე მეტს იკავებს.",
+  "settings.general.message_retention": "ქრობადი შეტყობინებები",
+  "settings.general.message_retention_desc":
+    "შეტყობინებები და მათი მედია არჩეული დროის შემდეგ ამ ტელეფონიდან იშლება",
+  "settings.general.message_retention_sheet":
+    "ითვლება იმ მომენტიდან, როცა თითოეული შეტყობინება ამ ტელეფონს მიაღწია, და მხოლოდ ეს ტელეფონი ივიწყებს. მეორე ადამიანის ტელეფონი თავის ასლს ინახავს, ეკრანის ანაბეჭდებს ვერ აიცილებ და პირად ჩატში გამოგზავნილი გადახდები, რომლებიც ჯერ არ მიგიღია, მიღებამდე რჩება.",
+  "settings.general.message_retention_off_desc":
+    "შეტყობინებები რჩება, სანამ ჩატს არ გაასუფთავებ ან არ დატოვებ",
+  "settings.general.message_retention_1_desc":
+    "ყველაზე ცოტას ტოვებს, თუ რისკი თავად ტელეფონია",
+  "settings.general.message_retention_7_desc":
+    "ერთი კვირა წასაკითხად, მერე ქრება",
+  "settings.general.message_retention_30_desc":
+    "საუბრებს ყველაზე დიდხანს ინახავს წასაკითხად",
+  "settings.general.message_retention_confirm_title":
+    "წაიშალოს ძველი შეტყობინებები?",
+  "settings.general.message_retention_confirm_1":
+    "1 დღეზე ძველი შეტყობინებები მათ მედიასთან ერთად ახლავე წაიშლება ამ ტელეფონიდან. ამის გაუქმება შეუძლებელია.",
+  "settings.general.message_retention_confirm_7":
+    "7 დღეზე ძველი შეტყობინებები მათ მედიასთან ერთად ახლავე წაიშლება ამ ტელეფონიდან. ამის გაუქმება შეუძლებელია.",
+  "settings.general.message_retention_confirm_30":
+    "30 დღეზე ძველი შეტყობინებები მათ მედიასთან ერთად ახლავე წაიშლება ამ ტელეფონიდან. ამის გაუქმება შეუძლებელია.",
   "settings.general.reset_desc":
     "აბრუნებს პარამეტრებს საწყის მდგომარეობაში, შენს ვინაობას, შეტყობინებებს, კონტაქტებსა და საფულეს კი ხელუხლებლად ტოვებს",
   "settings.general.reset_title": "დავაბრუნოთ პარამეტრები საწყისზე?",
   "settings.general.reset_body":
-    "პარამეტრები საწყისს უბრუნდება, მათ შორის გარეგნობა, ენა, შეტყობინებები, გაგზავნის გაუქმება და კავშირი (კარიბჭე, მეშ-ხიდი, რელეები). Airhop-ის დაბლოკვა, მედიის შენახვის ვადა, ინტერნეტის გადამრთველი, Tor და მისი ხიდები და შენი სტატუსი ისე რჩება, როგორც დააყენე. შენი ვინაობა, შეტყობინებები, კონტაქტები და საფულე ხელუხლებელი რჩება.",
+    "პარამეტრები საწყისს უბრუნდება, მათ შორის გარეგნობა, ენა, შეტყობინებები, გაგზავნის გაუქმება და კავშირი (კარიბჭე, მეშ-ხიდი, რელეები). Airhop-ის დაბლოკვა, შეტყობინებებისა და მედიის შენახვის ვადა, ინტერნეტის გადამრთველი, Tor და მისი ხიდები და შენი სტატუსი ისე რჩება, როგორც დააყენე. შენი ვინაობა, შეტყობინებები, კონტაქტები და საფულე ხელუხლებელი რჩება.",
   "settings.general.reset_confirm": "დაბრუნება",
 
   // ---- Settings: privacy and security ----
