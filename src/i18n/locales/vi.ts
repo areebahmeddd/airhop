@@ -445,6 +445,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Đang gửi",
   "chat.status.receiving": "Đang nhận",
   "chat.thread.not_available": "Không dùng được ở đây",
+  "chat.thread.relay_no_media":
+    "Nút chuyển tiếp mang tin nhắn đi, nhưng không mở tệp đính kèm hay tin nhắn thoại.",
   "chat.thread.private_channel": "Kênh riêng tư",
   "chat.thread.location_channel": "Kênh vị trí",
   "chat.thread.public_channel": "Kênh công khai",
@@ -1114,6 +1116,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Nút chuyển tiếp",
   "mesh.peer.relay_body":
     "Một máy phát ai đó để chạy nhằm nới rộng mạng lưới. Nó mang những tin nhắn mà chính nó không đọc được. Ở đây không có ai để nhắn tin cả.",
+  "mesh.peer.relay_firmware": "Chương trình cơ sở {version}",
+  "mesh.peer.relay_named": "{name}, nút chuyển tiếp",
   "mesh.peer.send_dm": "Gửi một tin nhắn riêng",
   "mesh.peer.message": "Tin nhắn",
   "mesh.peer.send_sats": "Gửi ecash",
@@ -1958,6 +1962,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Chưa kết nối",
   "settings.diag.peer_direct": "Liên kết trực tiếp",
   "settings.diag.peer_relayed": "Nghe được qua một thiết bị khác",
+  "settings.diag.peer_relay_direct": "Nút chuyển tiếp · Liên kết trực tiếp",
+  "settings.diag.peer_relay_relayed":
+    "Nút chuyển tiếp · Nghe được qua một thiết bị khác",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Không có chỉ số tín hiệu",
   "settings.diag.no_peers": "Không có ai trong tầm",

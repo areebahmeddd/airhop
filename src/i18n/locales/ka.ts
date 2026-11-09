@@ -453,6 +453,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "იგზავნება",
   "chat.status.receiving": "მიიღება",
   "chat.thread.not_available": "აქ მიუწვდომელია",
+  "chat.thread.relay_no_media":
+    "სარელეო კვანძი შეტყობინებებს გადასცემს, მაგრამ დანართებსა და ხმოვან შეტყობინებებს არ ხსნის.",
   "chat.thread.private_channel": "პირადი არხი",
   "chat.thread.location_channel": "მდებარეობის არხი",
   "chat.thread.public_channel": "საჯარო არხი",
@@ -1122,6 +1124,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "სარელეო კვანძი",
   "mesh.peer.relay_body":
     "რადიო, რომელიც ვიღაცამ ჩართული დატოვა მეშის გასაფართოებლად. ის ატარებს შეტყობინებებს, რომლებსაც ვერ კითხულობს. აქ არავინაა, ვისაც მისწერდი.",
+  "mesh.peer.relay_firmware": "მიკროპროგრამა {version}",
+  "mesh.peer.relay_named": "{name}, სარელეო კვანძი",
   "mesh.peer.send_dm": "პირადი შეტყობინების გაგზავნა",
   "mesh.peer.message": "შეტყობინება",
   "mesh.peer.send_sats": "ecash-ის გაგზავნა",
@@ -1975,6 +1979,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "არ არის დაკავშირებული",
   "settings.diag.peer_direct": "პირდაპირი კავშირი",
   "settings.diag.peer_relayed": "მოისმინა სხვა მოწყობილობის მეშვეობით",
+  "settings.diag.peer_relay_direct": "სარელეო კვანძი · პირდაპირი კავშირი",
+  "settings.diag.peer_relay_relayed":
+    "სარელეო კვანძი · მოისმინა სხვა მოწყობილობის მეშვეობით",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "სიგნალის მაჩვენებელი არ არის",
   "settings.diag.no_peers": "მიღწევადობის ზონაში არავინაა",

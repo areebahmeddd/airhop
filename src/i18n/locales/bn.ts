@@ -449,6 +449,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "পাঠানো হচ্ছে",
   "chat.status.receiving": "পাওয়া হচ্ছে",
   "chat.thread.not_available": "এখানে পাওয়া যায় না",
+  "chat.thread.relay_no_media":
+    "রিলে নোড বার্তা বহন করে, কিন্তু কোনো সংযুক্তি বা ভয়েস বার্তা খোলে না।",
   "chat.thread.private_channel": "ব্যক্তিগত চ্যানেল",
   "chat.thread.location_channel": "অবস্থান চ্যানেল",
   "chat.thread.public_channel": "প্রকাশ্য চ্যানেল",
@@ -1101,6 +1103,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "রিলে নোড",
   "mesh.peer.relay_body":
     "মেশ বড় করতে কেউ চালু রেখে যাওয়া একটি রেডিও। এটি এমন বার্তা বয়ে নেয় যা নিজে পড়তে পারে না। এখানে বার্তা পাঠানোর মতো কেউ নেই।",
+  "mesh.peer.relay_firmware": "ফার্মওয়্যার {version}",
+  "mesh.peer.relay_named": "{name}, রিলে নোড",
   "mesh.peer.send_dm": "একটি ব্যক্তিগত বার্তা পাঠান",
   "mesh.peer.message": "বার্তা",
   "mesh.peer.send_sats": "ecash পাঠান",
@@ -1941,6 +1945,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "যুক্ত নয়",
   "settings.diag.peer_direct": "সরাসরি সংযোগ",
   "settings.diag.peer_relayed": "অন্য একটি ডিভাইসের মাধ্যমে শোনা",
+  "settings.diag.peer_relay_direct": "রিলে নোড · সরাসরি সংযোগ",
+  "settings.diag.peer_relay_relayed":
+    "রিলে নোড · অন্য একটি ডিভাইসের মাধ্যমে শোনা",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "কোনো সংকেতের পাঠ নেই",
   "settings.diag.no_peers": "নাগালে কেউ নেই",

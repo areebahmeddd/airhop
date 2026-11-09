@@ -12,7 +12,8 @@
 //   0x04  neighbor IDs       (bitchat; skipped, never written)
 //   0x05  capabilities       (bitchat bitfield)
 //   0x06  bridge cell        (bitchat; decoded, ignored)
-//   0xB1  Bitle relay role   (read, never written)
+//   0xB0  firmware version   (Airlink; read, never written)
+//   0xB1  relay role         (Airlink; read, never written)
 //
 // Nothing here names the phone's Nostr key. An announce floods to everyone in
 // range, so a key in it would tie the radio identity to an internet inbox for
@@ -93,20 +94,27 @@ const TLV_BRIDGE_GEOHASH = 0x06; // bitchat bridge cell (decoded, ignored)
 // A geohash is at most 12 characters; bitchat-ios writes and reads no longer cell.
 const MAX_GEOHASH_BYTES = 12;
 
-// Bitle's own TLV, read but never written (bitleproject/bitle, noise_handshake.c).
+// Airlink's own TLVs, read but never written.
 //
-// A Bitle relay is a full peer, not a repeater: it holds a Noise identity and
-// signs announces, so it lands in the roster looking like a person nobody can
-// reach. 0xB1 is the one byte that says otherwise, bit 0 meaning "dedicated
-// relay". It sits far outside the 0x01-0x06 range bitchat assigns, so there is
-// no collision to manage, and a phone that does not know it skips it.
+// An Airlink relay is a full peer, not a repeater: it holds a Noise identity
+// and signs announces, so it lands in the roster looking like a person nobody
+// can reach. 0xB1 is the one byte that says otherwise, bit 0 meaning
+// "dedicated relay"; 0xB0 beside it names the firmware's version. Both sit far
+// outside the 0x01-0x06 range bitchat assigns, so there is no collision to
+// manage, and a phone that does not know them skips them.
 //
-// Cosmetic, and it has to stay cosmetic. The byte is inside the signed payload,
-// but a node signs its own announce, so anyone can claim to be infrastructure.
-// All it does here is change a glyph and drop a Message button, which is nothing
-// worth forging. Bitle commits to the same contract where it writes the byte.
-const TLV_BITLE_ROLE = 0xb1;
-const BITLE_ROLE_INFRASTRUCTURE = 1 << 0;
+// Presentation only, and it has to stay that way. The byte is inside the signed
+// payload, but a node signs its own announce, so anyone can claim to be a relay.
+// The claim draws the peer as equipment, drops its message and pay actions and
+// leaves it out of the people counts and the nearby alert, none of which is
+// worth forging: a device that wants to go unnoticed can simply stay silent.
+// Airlink commits to the same contract where it writes the byte.
+const TLV_FIRMWARE_VERSION = 0xb0;
+const TLV_RELAY_ROLE = 0xb1;
+const RELAY_ROLE_DEDICATED = 1 << 0;
+// Big-endian `major << 16 | minor << 8 | patch`. Any other length is a value
+// this decoder does not know how to read, so it is skipped like an unknown tag.
+const FIRMWARE_VERSION_BYTES = 4;
 
 // Capability bits, byte-for-byte with bitchat PeerCapabilities (BitFoundation).
 // Advertised in ANNOUNCE TLV 0x05 so peers can degrade per-feature.
@@ -189,7 +197,8 @@ export interface AnnounceInfo {
   signingPubKey: Uint8Array; // 32 bytes Ed25519
   capabilities: number; // bitchat capability bits (TLV 0x05); 0 when absent
   bridgeGeohash?: string; // rendezvous cell a bridge peer advertises (TLV 0x06)
-  isInfrastructure: boolean; // Bitle relay marker (TLV 0xB1 bit 0); false when absent
+  firmwareVersion?: number; // relay firmware version (TLV 0xB0), packed
+  isRelay: boolean; // relay marker (TLV 0xB1 bit 0); false when absent
 }
 
 function writeTlv(buf: number[], type: number, value: Uint8Array): void {
@@ -242,7 +251,8 @@ export function decodeAnnouncePayload(
   let signingPubKey: Uint8Array | null = null;
   let capabilities = 0;
   let bridgeGeohash: string | undefined;
-  let isInfrastructure = false;
+  let firmwareVersion: number | undefined;
+  let isRelay = false;
 
   while (offset + 2 <= payload.length) {
     const type = payload[offset];
@@ -274,11 +284,19 @@ export function decodeAnnouncePayload(
           bridgeGeohash = new TextDecoder().decode(value);
         }
         break;
-      case TLV_BITLE_ROLE:
-        // Bit-tested rather than compared, so the clock-authority bit Bitle
-        // also carries here, and any bit it adds later, leave this alone.
-        isInfrastructure =
-          value.length >= 1 && (value[0] & BITLE_ROLE_INFRASTRUCTURE) !== 0;
+      case TLV_FIRMWARE_VERSION:
+        if (value.length === FIRMWARE_VERSION_BYTES) {
+          // Multiplied rather than shifted, which would go negative once the
+          // top bit is set.
+          firmwareVersion =
+            value[0] * 2 ** 24 +
+            ((value[1] << 16) | (value[2] << 8) | value[3]);
+        }
+        break;
+      case TLV_RELAY_ROLE:
+        // Bit-tested rather than compared, so a reserved bit set alongside it
+        // leaves this alone.
+        isRelay = value.length >= 1 && (value[0] & RELAY_ROLE_DEDICATED) !== 0;
         break;
     }
   }
@@ -292,7 +310,8 @@ export function decodeAnnouncePayload(
     signingPubKey,
     capabilities,
     bridgeGeohash,
-    isInfrastructure,
+    firmwareVersion,
+    isRelay,
   };
 }
 

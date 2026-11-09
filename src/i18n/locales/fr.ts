@@ -459,6 +459,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Envoi",
   "chat.status.receiving": "Réception",
   "chat.thread.not_available": "Indisponible ici",
+  "chat.thread.relay_no_media":
+    "Un nœud relais transporte les messages, mais n’ouvre ni pièces jointes ni messages vocaux.",
   "chat.thread.private_channel": "Canal privé",
   "chat.thread.location_channel": "Canal de localisation",
   "chat.thread.public_channel": "Canal public",
@@ -1148,6 +1150,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Nœud relais",
   "mesh.peer.relay_body":
     "Une radio que quelqu’un a laissée allumée pour élargir le maillage. Elle transporte des messages qu’elle ne peut pas lire. Il n’y a personne à qui écrire ici.",
+  "mesh.peer.relay_firmware": "Micrologiciel {version}",
+  "mesh.peer.relay_named": "{name}, nœud relais",
   "mesh.peer.send_dm": "Envoyer un message direct",
   "mesh.peer.message": "Message",
   "mesh.peer.send_sats": "Envoyer des ecash",
@@ -2017,6 +2021,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Non connecté",
   "settings.diag.peer_direct": "Liaison directe",
   "settings.diag.peer_relayed": "Entendu via un autre appareil",
+  "settings.diag.peer_relay_direct": "Nœud relais · Liaison directe",
+  "settings.diag.peer_relay_relayed":
+    "Nœud relais · Entendu via un autre appareil",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Aucune mesure de signal",
   "settings.diag.no_peers": "Personne à portée",

@@ -462,6 +462,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Alefa",
   "chat.status.receiving": "Raisina",
   "chat.thread.not_available": "Tsy misy eto",
+  "chat.thread.relay_no_media":
+    "Mampita hafatra ny teboka mpanelanelana, saingy tsy manokatra rakitra mipetaka na hafatra feo izy.",
   "chat.thread.private_channel": "Fantsona manokana",
   "chat.thread.location_channel": "Fantsonan-toerana",
   "chat.thread.public_channel": "Fantsona ho an'ny daholobe",
@@ -1155,6 +1157,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Teboka mpanelanelana",
   "mesh.peer.relay_body":
     "Radiô navelan'olona nandeha mba hanitatra ny harato. Mitondra hafatra tsy vakiny izy. Tsy misy olona hanoratana eto.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, teboka mpanelanelana",
   "mesh.peer.send_dm": "Mandefa hafatra mivantana",
   "mesh.peer.message": "Hafatra",
   "mesh.peer.send_sats": "Mandefa ecash",
@@ -2030,6 +2034,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Tsy mifandray",
   "settings.diag.peer_direct": "Rohy mivantana",
   "settings.diag.peer_relayed": "Re tamin'ny alalan'ny fitaovana hafa",
+  "settings.diag.peer_relay_direct": "Teboka mpanelanelana · Rohy mivantana",
+  "settings.diag.peer_relay_relayed":
+    "Teboka mpanelanelana · Re tamin'ny alalan'ny fitaovana hafa",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Tsy misy famakiana famantarana",
   "settings.diag.no_peers": "Tsy misy olona ao anatin'ny fetra",

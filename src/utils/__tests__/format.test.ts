@@ -13,6 +13,7 @@ import {
   formatClockTime,
   formatDateSeparator,
   formatDuration,
+  formatFirmwareVersion,
   formatListTimestamp,
   formatNumber,
   formatPercent,
@@ -162,6 +163,18 @@ describe("formatBytes", () => {
     expect(formatBytes(cap + 20_000)).toBe(formatBytes(cap));
     expect(formatBytes(cap + 20_000, true)).toBe("1.1 MiB");
     expect(formatBytes(cap, true)).toBe("1.0 MiB");
+  });
+});
+
+describe("formatFirmwareVersion", () => {
+  it("unpacks major, minor and patch", () => {
+    expect(formatFirmwareVersion(0x010000)).toBe("1.0.0");
+    expect(formatFirmwareVersion(0x020a03)).toBe("2.10.3");
+    expect(formatFirmwareVersion(0)).toBe("0.0.0");
+  });
+
+  it("keeps a major past 255 whole and never groups it", () => {
+    expect(formatFirmwareVersion(0x80000001)).toBe("32768.0.1");
   });
 });
 

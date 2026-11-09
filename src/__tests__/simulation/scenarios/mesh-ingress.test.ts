@@ -1,8 +1,8 @@
 // What a phone does with packets arriving in an awkward order or at an awkward
 // time: its own fragments echoed back, a prekey bundle that outran its owner's
 // announce, live voice from a talker whose clock runs ahead, live voice the
-// listener silenced by playing something else, and a DM held up by a handshake
-// that never answers.
+// listener silenced by playing something else, a DM held up by a handshake
+// that never answers, and a relay node's announce marking it as equipment.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
@@ -427,6 +427,54 @@ test("MI05 a DM waiting on a handshake is not spent like a failed send", async (
     "the message is still queued for him",
     alice.outboxSize() === 1,
     `outbox=${String(alice.outboxSize())}`,
+  );
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+test("MI06 a relay node's announce marks it as equipment until one without the mark", async () => {
+  // A relay firmware announce carries 0xB0 (its version) and 0xB1 (the role)
+  // after the keys. The newest announce decides both, and an older copy
+  // arriving late changes neither.
+  const s = (scenario = new Scenario({
+    id: "MI06",
+    title: "relay role from a real announce",
+    seed: 96,
+  }));
+  const { radio, alice, bob } = await pair(s);
+  const node = stranger(61);
+  const relayTlvs = [0xb0, 4, 0x00, 0x01, 0x00, 0x00, 0xb1, 1, 0x01];
+  const announce = (at: number, asRelay: boolean): string => {
+    const base = encodeAnnouncePayload(node, "AirhopRelay-61AB");
+    const payload = asRelay ? new Uint8Array([...base, ...relayTlvs]) : base;
+    return signed(node, PacketType.ANNOUNCE, payload, at);
+  };
+
+  const first = s.world.wallClock();
+  radio.injectTo(bob.id, alice.id, announce(first, true));
+  await s.world.advance(500);
+  const marked = bob.relayRole(node.peerID);
+  s.check(
+    "the node is held as a relay with its firmware version",
+    marked?.isRelay === true && marked.firmwareVersion === 0x010000,
+    JSON.stringify(marked),
+  );
+
+  radio.injectTo(bob.id, alice.id, announce(first - 30_000, false));
+  await s.world.advance(500);
+  s.check(
+    "an older announce without the mark changes nothing",
+    bob.relayRole(node.peerID)?.isRelay === true,
+    JSON.stringify(bob.relayRole(node.peerID)),
+  );
+
+  radio.injectTo(bob.id, alice.id, announce(s.world.wallClock(), false));
+  await s.world.advance(500);
+  const cleared = bob.relayRole(node.peerID);
+  s.check(
+    "a newer announce without it makes the node a person again",
+    cleared?.isRelay === false && cleared.firmwareVersion === undefined,
+    JSON.stringify(cleared),
   );
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();

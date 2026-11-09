@@ -108,6 +108,19 @@ function minKey(map: ReadonlyMap<number, unknown>): number | null {
   return min;
 }
 
+// Where a track's playback starts: the first unit to complete, unless a
+// keyframe before it is still arriving (its last fragment rebuilt from parity,
+// say). Starting past that keyframe would refuse its last fragment as already
+// played, and the picture would wait a whole GOP. Only a keyframe is worth the
+// gap deadline's wait: no delta before the first keyframe can be decoded.
+function playbackStart(track: TrackState, completed: number): number {
+  let start = completed;
+  for (const [sequence, unit] of track.pending) {
+    if (unit.keyframe && sequence < start) start = sequence;
+  }
+  return start;
+}
+
 // The unbounded value of a 16-bit wire counter closest to `reference`.
 export function expandSequence(value: number, reference: number): number {
   let candidate = reference - (reference & 0xffff) + value;
@@ -389,7 +402,7 @@ export class VideoStreamAssembler {
       data.set(fragment, offset);
       offset += fragment.length;
     }
-    if (track.next === null) track.next = sequence;
+    if (track.next === null) track.next = playbackStart(track, sequence);
     track.lastReference = sequence;
     track.ready.set(sequence, {
       ptsMs: pending.ptsMs,

@@ -10,8 +10,8 @@ build/
 
 # Project-specific Artifacts
 bitchat/
+firmware/
 landing/
-deck/
 
 # Testing
 coverage/

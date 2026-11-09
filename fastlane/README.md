@@ -35,7 +35,7 @@ fastlane/
 - **Zapstore** reads `android/en-US` from GitHub on every publish.
 - **App Store** is pushed by `fastlane ios metadata` after every TestFlight upload: `metadata/ios` plus `screenshots/`. What's New comes from `android/en-US/changelogs/<versionCode>.txt`, so one changelog file serves both stores.
 
-Screenshots and the Android images are rendered by `press/`, not captured. After changing a panel there, run `node press/build.mjs --fastlane=./fastlane` to refresh both sets.
+Screenshots and the Android images are rendered by `press/` on the `maintainer/press-kit` branch, not captured. After changing a panel there, run `node press/build.mjs --fastlane=./fastlane` on that branch to refresh both sets.
 
 ## Changelog files
 

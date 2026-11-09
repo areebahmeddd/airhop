@@ -458,6 +458,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Inatuma",
   "chat.status.receiving": "Inapokea",
   "chat.thread.not_available": "Haipatikani hapa",
+  "chat.thread.relay_no_media":
+    "Nodi ya relay hubeba ujumbe, lakini haifungui viambatisho wala ujumbe wa sauti.",
   "chat.thread.private_channel": "Kituo cha faragha",
   "chat.thread.location_channel": "Kituo cha mahali",
   "chat.thread.public_channel": "Kituo cha umma",
@@ -1131,6 +1133,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Nodi ya relay",
   "mesh.peer.relay_body":
     "Redio ambayo mtu aliiacha ikiendelea ili kupanua mesh. Hubeba jumbe ambazo haiwezi kuzisoma. Hakuna mtu hapa wa kumtumia ujumbe.",
+  "mesh.peer.relay_firmware": "Programu dhibiti {version}",
+  "mesh.peer.relay_named": "{name}, nodi ya relay",
   "mesh.peer.send_dm": "Tuma ujumbe wa moja kwa moja",
   "mesh.peer.message": "Ujumbe",
   "mesh.peer.send_sats": "Tuma ecash",
@@ -1995,6 +1999,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Haijaunganishwa",
   "settings.diag.peer_direct": "Kiungo cha moja kwa moja",
   "settings.diag.peer_relayed": "Amesikika kupitia kifaa kingine",
+  "settings.diag.peer_relay_direct": "Nodi ya relay · Kiungo cha moja kwa moja",
+  "settings.diag.peer_relay_relayed":
+    "Nodi ya relay · Amesikika kupitia kifaa kingine",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Hakuna usomaji wa ishara",
   "settings.diag.no_peers": "Hakuna mtu ndani ya masafa",

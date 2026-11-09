@@ -75,7 +75,7 @@ What each feature is for, and when someone would actually reach for it.
 - Multi-hop routing. Messages relay through up to seven phones, so two people who cannot see each other still connect through the strangers between them.
 - Wi-Fi fast path. Two Androids, or two iPhones, move large files over a direct Wi-Fi link, steadier than Bluetooth and leaving the radio free. It never crosses platforms.
 - Local network. On one shared Wi-Fi, an iPhone and an Android carry the whole mesh straight to each other. Off until you turn it on, since joining announces you to everyone else on the network.
-- Relay nodes. Bitle hardware speaks the same protocol as a phone, so a fixed node can hold a mesh open where nobody is standing.
+- Relay nodes. Airlink, Airhop's relay firmware, turns an ESP32 board into a node that speaks the same protocol as a phone, so a fixed node can hold a mesh open where nobody is standing.
 - bitchat compatibility. An Airhop phone and a bitchat phone join the same mesh and talk with no setup. bitchat ignores Airhop's own additions instead of breaking on them.
 
 ### Internet

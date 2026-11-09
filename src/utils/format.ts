@@ -198,6 +198,17 @@ export function formatCellSize(meters: number): string {
   return `${formatFixed(meters, 2)} m`;
 }
 
+// A relay's announced firmware version, `major << 16 | minor << 8 | patch`, as
+// "1.0.0". A version string rather than a number in the reader's language: no
+// grouping, Latin digits, the same three parts the firmware's release is named
+// by.
+export function formatFirmwareVersion(packed: number): string {
+  const major = Math.floor(packed / 0x10000);
+  const minor = Math.floor(packed / 0x100) % 0x100;
+  const patch = packed % 0x100;
+  return `${major}.${minor}.${patch}`;
+}
+
 function formatFixed(value: number, fractionDigits: number): string {
   return numberFormatter({
     minimumFractionDigits: fractionDigits,

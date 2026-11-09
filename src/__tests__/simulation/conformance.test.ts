@@ -52,6 +52,7 @@ import {
   MAX_VOICE_BYTES,
 } from "@core/mesh/wire/file-packet";
 import { decodePacket, PacketType } from "@core/mesh/wire/packet-codec";
+import { isRelayFirmwareType } from "@core/mesh/wire/packet-type";
 import {
   CELL_PRECISION as BRIDGE_CELL_PRECISION,
   DOWNLINK_EVENTS_PER_MINUTE as BRIDGE_DOWNLINK_PER_MINUTE,
@@ -887,6 +888,45 @@ testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
     "and none of them collides with a value bitchat has assigned",
     airhopOnly.every((t) => !bitchatTypes.includes(t)),
     `bitchat=[${bitchatTypes.map((t) => `0x${t.toString(16)}`).join(", ")}]`,
+  );
+  s.assert();
+});
+
+// Relay firmware's node-to-node updates (PROTOCOLS section 3). A relay node
+// takes 0xA0 to 0xA3 as its own and stops them at the first hop, and so does
+// an Airhop phone, so a packet type of ours there would never leave the link.
+//
+// Ungated, unlike X03: the registry checked is Airhop's own, read out of the
+// enum's source because a const enum has no runtime object to iterate, so a
+// type added there is covered the moment it is written.
+test("X05 no packet type sits in the range relay firmware reserves", () => {
+  const s = (scenario = new Scenario({
+    id: "X05",
+    title: "Airhop's packet type registry against relay firmware's",
+    seed: 404,
+  }));
+  const types = [
+    ...airhopSource("src/core/mesh/wire/packet-type.ts").matchAll(
+      /^\s+[A-Z][A-Z0-9_]*\s*=\s*0x([0-9a-fA-F]{2}),/gm,
+    ),
+  ].map((m) => parseInt(m[1], 16));
+  const listed = `[${types.map((t) => `0x${t.toString(16)}`).join(", ")}]`;
+  s.check(
+    "the enum was read, not assumed",
+    types.length > 10 && types.includes(PacketType.CHANNEL_MSG_AIRHOP),
+    listed,
+  );
+  s.check(
+    "and none of its values is a relay firmware type",
+    types.every((t) => !isRelayFirmwareType(t)),
+    listed,
+  );
+  s.check(
+    "the reserved range is exactly 0xA0 to 0xA3",
+    [0xa0, 0xa1, 0xa2, 0xa3].every(isRelayFirmwareType) &&
+      !isRelayFirmwareType(0x9f) &&
+      !isRelayFirmwareType(0xa4),
+    "isRelayFirmwareType",
   );
   s.assert();
 });

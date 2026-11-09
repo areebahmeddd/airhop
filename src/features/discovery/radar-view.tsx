@@ -6,8 +6,9 @@ import { t, useT, useTPlural, type TranslationKey } from "@i18n";
 import { acknowledged } from "@platform/haptics";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { useMeshStateStore, type BleBlocker } from "@store/mesh-state-store";
-import { REACHABLE_TTL_MS, type NearbyPeer } from "@store/peer-store";
+import { isPerson, REACHABLE_TTL_MS, type NearbyPeer } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
+import RelayGlyph from "@ui/components/relay-glyph";
 import StatusDot from "@ui/components/status-dot";
 import { useAnnounce } from "@ui/hooks/use-announce";
 import { useReducedMotion } from "@ui/hooks/use-reduced-motion";
@@ -30,7 +31,6 @@ import {
   Text,
   View,
 } from "react-native";
-import RelayGlyph from "./relay-glyph";
 
 // What the dial says when there are no peers, per reason.
 //
@@ -327,9 +327,13 @@ function RadarView({ peers, now, onSelectPeer }: Props): React.JSX.Element {
     top: C - outerR,
     left: C - outerR,
   };
+  // People, as the widget and the background notice count them, so the dial
+  // and the home screen agree. A relay node is still drawn and still earns the
+  // ring hint below, but a dial holding only relays says it is looking.
+  const peopleInRange = peers.filter(isPerson).length;
   const statusHeadline =
-    peers.length > 0
-      ? TP("mesh.peers_in_range", peers.length)
+    peopleInRange > 0
+      ? TP("mesh.peers_in_range", peopleInRange)
       : away
         ? T("mesh.radar.paused")
         : blockerHeadline(blocker);
@@ -496,6 +500,16 @@ interface PeerNodeProps {
   onPress: () => void;
 }
 
+// The label under a relay's dot. A person's generated name leads with its
+// readable word ("swift-otter-42" reads "swift"), but a node's name ends with
+// the part that tells one box from the next: "AirhopRelay-1A2B" by default, or
+// whatever its operator set, such as "relay-west". So the part after the last
+// dash, or the whole name when there is nothing after one.
+function relayLabel(name: string): string {
+  const tail = name.slice(name.lastIndexOf("-") + 1);
+  return tail.length > 0 ? tail : name;
+}
+
 // Presence comes from peer-store's REACHABLE_TTL_MS, so the same peer cannot
 // read "online" here and "offline" in the peer list.
 function PeerNode({
@@ -521,7 +535,7 @@ function PeerNode({
       // The glyph is what tells a sighted user this is equipment, so the label
       // has to say it too or the dial reads as one more person.
       accessibilityLabel={T(
-        peer.isInfrastructure === true
+        peer.isRelay === true
           ? isOnline
             ? "mesh.radar.relay_in_range"
             : "mesh.radar.relay_recent"
@@ -530,9 +544,12 @@ function PeerNode({
             : "mesh.radar.peer_recent",
         { name: username },
       )}
-      accessibilityHint={T("mesh.radar.peer_hint")}
+      // A relay's sheet offers nothing to message or pay.
+      accessibilityHint={
+        peer.isRelay === true ? undefined : T("mesh.radar.peer_hint")
+      }
     >
-      {peer.isInfrastructure === true ? (
+      {peer.isRelay === true ? (
         <RelayGlyph size={AVATAR_SIZE} />
       ) : (
         <Avatar username={username} peerID={peer.peerID} size={AVATAR_SIZE} />
@@ -545,7 +562,7 @@ function PeerNode({
         numberOfLines={1}
         maxFontSizeMultiplier={MaxFontScale.badge}
       >
-        {username.split("-")[0]}
+        {peer.isRelay === true ? relayLabel(username) : username.split("-")[0]}
       </Text>
     </Pressable>
   );

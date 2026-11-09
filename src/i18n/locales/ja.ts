@@ -452,6 +452,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "送信中",
   "chat.status.receiving": "受信中",
   "chat.thread.not_available": "ここでは利用できません",
+  "chat.thread.relay_no_media":
+    "リレーノードはメッセージを中継しますが、添付ファイルやボイスメッセージは開きません。",
   "chat.thread.private_channel": "プライベートチャンネル",
   "chat.thread.location_channel": "位置チャンネル",
   "chat.thread.public_channel": "公開チャンネル",
@@ -1119,6 +1121,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "リレーノード",
   "mesh.peer.relay_body":
     "誰かがメッシュを広げるために動かしている無線機です。読めないメッセージを運びます。ここに話し相手はいません。",
+  "mesh.peer.relay_firmware": "ファームウェア {version}",
+  "mesh.peer.relay_named": "{name}、リレーノード",
   "mesh.peer.send_dm": "ダイレクトメッセージを送る",
   "mesh.peer.message": "メッセージ",
   "mesh.peer.send_sats": "ecashを送る",
@@ -1963,6 +1967,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "未接続",
   "settings.diag.peer_direct": "直接リンク",
   "settings.diag.peer_relayed": "別の端末を経由して受信",
+  "settings.diag.peer_relay_direct": "リレーノード · 直接リンク",
+  "settings.diag.peer_relay_relayed": "リレーノード · 別の端末を経由して受信",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "電波強度の値がありません",
   "settings.diag.no_peers": "圏内に誰もいません",

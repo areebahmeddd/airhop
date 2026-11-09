@@ -27,13 +27,14 @@ function harness() {
   };
   const send = (
     content: string = prose(),
-    opts: { sender?: string; at?: number; id?: string } = {},
+    opts: { sender?: string; at?: number; id?: string; isText?: boolean } = {},
   ): SpamVerdict =>
     filter.check(
       opts.sender ?? "alice",
       opts.id ?? `m${nextID++}`,
       content,
       opts.at ?? now,
+      opts.isText,
     );
   return {
     filter,
@@ -104,6 +105,27 @@ describe("rate buckets", () => {
         "https://alpha.example/one and bravo.example plus www.charlie.example/three",
       ),
     ).toBe("link-rate");
+  });
+
+  test("an attachment spends one message from the budget its text shares", () => {
+    const h = harness();
+    const attachment = { isText: false };
+    for (let i = 0; i < 6; i++) expect(h.send("", attachment)).toBe("allowed");
+    expect(h.send()).toBe("message-rate");
+    expect(h.send("", attachment)).toBe("message-rate");
+  });
+
+  test("an attachment spends no characters or links and is never a repeat", () => {
+    const h = harness();
+    const name = "promo https://example.org/a https://example.org/b";
+    for (let i = 0; i < 3; i++) {
+      expect(h.send(name, { isText: false })).toBe("allowed");
+    }
+    // Both links and nearly all 1200 characters are still there for text.
+    expect(h.send("see https://example.org/c and www.example.net")).toBe(
+      "allowed",
+    );
+    expect(h.send(h.prose(1100))).toBe("allowed");
   });
 
   test("links skip email addresses and abbreviations", () => {

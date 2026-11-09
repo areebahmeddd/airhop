@@ -1231,6 +1231,11 @@ export class MeshService {
     });
     this.openVideo();
 
+    // A public attachment is one message on its sender's text budget.
+    this.fileXfer.hidesAsSpam = (sender, id, timestampMs) =>
+      this.spamFilter.check(`mesh:${sender}`, id, "", timestampMs, false) !==
+      "allowed";
+
     // Either way the switch flips, every sender starts from a full budget.
     this.spamFilter.enabled = useSettingsStore.getState().spamFilterEnabled;
     this.spamFilterUnsub?.();
@@ -4988,8 +4993,11 @@ export class MeshService {
         // bulk, one that arrived over a link we hold is not.
         isDirect: isDirectAnnounce,
         // Relay nodes announce like anyone else, so without this they sit in
-        // the Mesh tab as a person who never replies.
-        isInfrastructure: shown.isInfrastructure,
+        // the Mesh tab as a person who never replies. Both written on every
+        // announce, absent ones included, so a node that stops claiming the
+        // role is a person again on its next one.
+        isRelay: shown.isRelay,
+        firmwareVersion: shown.firmwareVersion,
         // On every announce, not only when a proof lands: this store evicts a
         // peer quiet for a minute, and the session and its proof outlive that.
         acceptsRing: this.registry.hasAuthenticatedCapability(

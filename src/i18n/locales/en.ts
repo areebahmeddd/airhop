@@ -482,6 +482,8 @@ export const strings = {
   "chat.status.sending_short": "Sending",
   "chat.status.receiving": "Receiving",
   "chat.thread.not_available": "Not available here",
+  "chat.thread.relay_no_media":
+    "A relay node carries messages but opens no attachments or voice messages.",
   "chat.thread.private_channel": "Private channel",
   "chat.thread.location_channel": "Location channel",
   "chat.thread.public_channel": "Public channel",
@@ -1136,6 +1138,8 @@ export const strings = {
   "mesh.peer.relay": "Relay node",
   "mesh.peer.relay_body":
     "A radio someone left running to widen the mesh. It carries messages it cannot read. There is nobody here to message.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, relay node",
   "mesh.peer.send_dm": "Send a direct message",
   "mesh.peer.message": "Message",
   "mesh.peer.send_sats": "Send ecash",
@@ -1968,6 +1972,9 @@ export const strings = {
   "settings.diag.disconnected": "Not connected",
   "settings.diag.peer_direct": "Direct link",
   "settings.diag.peer_relayed": "Heard through another device",
+  "settings.diag.peer_relay_direct": "Relay node · Direct link",
+  "settings.diag.peer_relay_relayed":
+    "Relay node · Heard through another device",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "No signal reading",
   "settings.diag.no_peers": "Nobody in range",

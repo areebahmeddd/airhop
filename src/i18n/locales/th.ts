@@ -440,6 +440,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "กำลังส่ง",
   "chat.status.receiving": "กำลังรับ",
   "chat.thread.not_available": "ใช้ไม่ได้ที่นี่",
+  "chat.thread.relay_no_media":
+    "โหนดรีเลย์ส่งต่อข้อความ แต่จะไม่เปิดไฟล์แนบหรือข้อความเสียง",
   "chat.thread.private_channel": "ช่องส่วนตัว",
   "chat.thread.location_channel": "ช่องตำแหน่ง",
   "chat.thread.public_channel": "ช่องสาธารณะ",
@@ -1083,6 +1085,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "โหนดรีเลย์",
   "mesh.peer.relay_body":
     "วิทยุที่มีคนเปิดทิ้งไว้เพื่อขยายเมช มันขนส่งข้อความที่ตัวมันเองอ่านไม่ได้ ที่นี่จึงไม่มีใครให้ส่งข้อความถึง",
+  "mesh.peer.relay_firmware": "เฟิร์มแวร์ {version}",
+  "mesh.peer.relay_named": "{name} โหนดรีเลย์",
   "mesh.peer.send_dm": "ส่งข้อความโดยตรง",
   "mesh.peer.message": "ข้อความ",
   "mesh.peer.send_sats": "ส่ง ecash",
@@ -1908,6 +1912,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "ไม่ได้เชื่อมต่อ",
   "settings.diag.peer_direct": "ลิงก์โดยตรง",
   "settings.diag.peer_relayed": "ได้ยินผ่านอุปกรณ์อื่น",
+  "settings.diag.peer_relay_direct": "โหนดรีเลย์ · ลิงก์โดยตรง",
+  "settings.diag.peer_relay_relayed": "โหนดรีเลย์ · ได้ยินผ่านอุปกรณ์อื่น",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "ไม่มีค่าอ่านสัญญาณ",
   "settings.diag.no_peers": "ไม่มีใครอยู่ในระยะ",

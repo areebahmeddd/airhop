@@ -4,6 +4,7 @@
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { avatarColor, FontWeight, useThemeColors, withAlpha } from "../theme";
+import PresenceBadge from "./presence-badge";
 
 // How strongly the peer's hashed color tints the circle behind its initials.
 // Low, so the initials stay the contrasting element and a wall of avatars in a
@@ -50,12 +51,6 @@ export default function Avatar({
         ? Colors.accent
         : Colors.border;
 
-  // Presence dot, matching the profile screen's status dot proportions:
-  // ~0.1875 of the avatar, a ~2% border in the background color, inset ~2%.
-  const dotSize = Math.max(8, Math.round(size * 0.1875));
-  const dotBorder = Math.max(1.5, Math.round(size * 0.02));
-  const dotInset = Math.max(1, Math.round(size * 0.02));
-
   return (
     <View
       style={[
@@ -73,19 +68,7 @@ export default function Avatar({
     >
       <Text style={[styles.initials, { fontSize, color: bg }]}>{initials}</Text>
       {presence === "online" && (
-        <View
-          style={{
-            position: "absolute",
-            end: dotInset,
-            bottom: dotInset,
-            width: dotSize,
-            height: dotSize,
-            borderRadius: dotSize / 2,
-            borderWidth: dotBorder,
-            borderColor: ringColor ?? Colors.bg,
-            backgroundColor: Colors.online,
-          }}
-        />
+        <PresenceBadge circleSize={size} ringColor={ringColor} />
       )}
     </View>
   );

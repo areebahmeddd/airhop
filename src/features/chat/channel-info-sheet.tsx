@@ -23,7 +23,7 @@ import { useChannelMembersStore } from "@store/channel-members-store";
 import { useChatStore } from "@store/chat-store";
 import { useGeohashBookmarksStore } from "@store/geohash-bookmarks-store";
 import { useGroupStore } from "@store/group-store";
-import { usePeerStore } from "@store/peer-store";
+import { isPerson, usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
@@ -87,7 +87,9 @@ export default function ChannelInfoSheet({
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const { channelKeys, channelReach, addChannel } = useChatStore();
   const { peers } = usePeerStore();
-  const peerList = [...peers.values()];
+  // People only, for the #bluetooth roster, its count and the group picker: a
+  // relay node carries the room but is nobody to message or to hand a group key.
+  const peerList = [...peers.values()].filter(isPerson);
   // Proven key-holders, for a private channel's roster. A store rather than a
   // polled subscription, so it updates the moment a member's message decrypts.
   const privateMembersByChannel = useChannelMembersStore((s) => s.byChannel);

@@ -3,7 +3,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import TextLink from "@/components/ui/TextLink";
 import { useSEO } from "@/hooks/useSEO";
 import { formatDate, useLanguage, useT, type LanguageCode, type Translator } from "@/i18n";
-import { AUTHOR_NAME, REPO_LINKS, REPO_URL } from "@/lib/links";
+import { AUTHOR_NAME, FIRMWARE_URL, REPO_LINKS, REPO_URL } from "@/lib/links";
 import { canonicalUrl, LAST_UPDATED, SEO } from "@/lib/seo";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -953,7 +953,8 @@ export default function ArchitecturePage() {
                   forwarding consults no registry and verifies no signature.
                 </strong>{" "}
                 A phone hands it bytes, it reads the header, spends a hop and puts them back on the
-                air. Nothing in this repository changes, and neither phone knows it is there.
+                air. A bare repeater like that needs nothing from the app, and neither phone knows
+                it is there.
               </p>
 
               <Table
@@ -982,19 +983,21 @@ export default function ArchitecturePage() {
                 behavior, and in the field it looks exactly like a delivery bug.
               </p>
 
-              <h3 className="text-ink pt-2 text-base font-bold">Bitle relay hardware</h3>
+              <h3 className="text-ink pt-2 text-base font-bold">Relay hardware</h3>
               <p>
-                <TextLink href="https://bitle.org">Bitle</TextLink> is firmware for an ESP32 relay
-                that speaks the same mesh protocol, carries gossip and courier mail, and links nodes
-                over 915 MHz LoRa, so Bluetooth clusters could reach one another without a phone
-                standing in the gap. The relay would carry the same encrypted packets as a phone,
-                with no Nostr and no internet connection.
+                <TextLink href={FIRMWARE_URL}>Airlink</TextLink>, Airhop's relay firmware, turns an
+                ESP32 board into a relay that speaks the same mesh protocol, carries gossip and
+                courier mail, and links nodes over LoRa, so Bluetooth clusters reach one another
+                without a phone standing in the gap. The relay carries the same encrypted packets as
+                a phone, with no Nostr and no internet connection.
               </p>
 
               <p>
-                Airhop's side of that is written and tested in simulation, but it has not yet been
-                run against real nodes. That run is on the{" "}
-                <TextLink href={REPO_LINKS.roadmapDoc}>roadmap</TextLink>.
+                Unlike a bare repeater, an Airlink node announces itself, and marks the announce as
+                a relay's. Phones draw it on the radar with a radio tower in place of an avatar,
+                offer nothing to message or pay, and never count it as a person. The mark is
+                self-signed, so it changes only how the node is shown, never what it is trusted
+                with.
               </p>
             </Section>
 

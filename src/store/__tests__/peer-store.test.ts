@@ -5,6 +5,7 @@
 import {
   countReachablePeers,
   hasUnseenPeers,
+  isPerson,
   REACHABLE_TTL_MS,
   usePeerStore,
   type NearbyPeer,
@@ -141,6 +142,43 @@ describe("countReachablePeers", () => {
   it("counts an empty map as an empty mesh", () => {
     expect(countReachablePeers(new Map(), 1_000_000)).toBe(0);
   });
+
+  it("does not count a relay node as someone nearby", () => {
+    const now = 1_000_000;
+    const peers = new Map<string, NearbyPeer>([
+      ["a", makePeer({ peerID: "a", lastSeenMs: now - 1_000 })],
+      [
+        "r",
+        makePeer({
+          peerID: "r",
+          lastSeenMs: now - 1_000,
+          isRelay: true,
+        }),
+      ],
+    ]);
+    expect(countReachablePeers(peers, now)).toBe(1);
+  });
+});
+
+describe("relay nodes", () => {
+  it("are not people, and everyone without the flag is", () => {
+    expect(isPerson(makePeer())).toBe(true);
+    expect(isPerson(makePeer({ isRelay: false }))).toBe(true);
+    expect(isPerson(makePeer({ isRelay: true }))).toBe(false);
+  });
+
+  // The flag and the version follow the latest announce. mesh-service writes
+  // both on every one, so a node that stops claiming the role, or a phone that
+  // stops forging it, is a person again on its next announce.
+  it("follow the latest announce, not the first", () => {
+    state().upsertPeer(makePeer({ isRelay: true, firmwareVersion: 0x010000 }));
+    state().upsertPeer(
+      makePeer({ isRelay: false, firmwareVersion: undefined }),
+    );
+    const peer = state().getPeer("aabbccdd00112233")!;
+    expect(isPerson(peer)).toBe(true);
+    expect(peer.firmwareVersion).toBeUndefined();
+  });
 });
 
 describe("unseen peers", () => {
@@ -169,6 +207,11 @@ describe("unseen peers", () => {
     state().removePeer(first.peerID);
     state().upsertPeer(makePeer({ peerID: "ffeeddcc99887766" }));
     expect(hasUnseenPeers(state())).toBe(true);
+  });
+
+  it("is not raised by a relay node coming into range", () => {
+    state().upsertPeer(makePeer({ isRelay: true }));
+    expect(hasUnseenPeers(state())).toBe(false);
   });
 
   it("ignores a peer who has gone stale", () => {

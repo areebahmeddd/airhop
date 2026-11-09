@@ -453,6 +453,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Bezig met sturen",
   "chat.status.receiving": "Bezig met ontvangen",
   "chat.thread.not_available": "Hier niet beschikbaar",
+  "chat.thread.relay_no_media":
+    "Een relayknooppunt geeft berichten door, maar opent geen bijlagen of spraakberichten.",
   "chat.thread.private_channel": "Privékanaal",
   "chat.thread.location_channel": "Locatiekanaal",
   "chat.thread.public_channel": "Openbaar kanaal",
@@ -1130,6 +1132,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Relayknooppunt",
   "mesh.peer.relay_body":
     "Een radio die iemand aan heeft laten staan om de mesh groter te maken. Hij draagt berichten die hij zelf niet kan lezen. Er is hier niemand om te schrijven.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, relayknooppunt",
   "mesh.peer.send_dm": "Een direct bericht sturen",
   "mesh.peer.message": "Bericht",
   "mesh.peer.send_sats": "Ecash sturen",
@@ -1989,6 +1993,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Niet verbonden",
   "settings.diag.peer_direct": "Directe verbinding",
   "settings.diag.peer_relayed": "Gehoord via een ander toestel",
+  "settings.diag.peer_relay_direct": "Relayknooppunt · Directe verbinding",
+  "settings.diag.peer_relay_relayed":
+    "Relayknooppunt · Gehoord via een ander toestel",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Geen signaalmeting",
   "settings.diag.no_peers": "Niemand binnen bereik",

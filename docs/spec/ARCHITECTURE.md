@@ -451,7 +451,7 @@ Five things still limit it:
 
 ### Nostr
 
-- **Relay list.** 300+ public relays from georelays (`nostr_relays.csv`, the directory both bitchat clients are built from), taken weekly at the snapshot bitchat-ios's own sync takes, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
+- **Relay list.** 300+ public relays from georelays (`nostr_relays.csv`, the directory bitchat's relay lists come from), taken weekly as published, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
 - **Choosing relays.** A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (the five nearest, which bitchat's clients use, plus five warm backups, all used for both publishing and subscribing), plus up to five the user adds. DMs use a pool of well-known relays, at most five
 - **DMs.** NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
 - **Channels and presence.** Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
@@ -1744,7 +1744,7 @@ persisted.
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Sync amplification       | `REQUEST_SYNC` is never relayed, and is answered only when it is the link peer's own: TTL 0, from the peer bound to that link, signed by it. It and every packet answering one ride at TTL 0, so a rejoining peer's catch-up cannot re-flood the mesh. Responses to one peer are capped at 8 per 30 s. Each kind of packet has its own store (public messages 1000, group 200, board 200, one announce per peer) and only accepted packets are kept, so forgeries neither evict real history nor get served |
 | Forged departure         | A LEAVE is checked against the signing key held for its sender before the relay decision, so an unverifiable one is neither acted on nor passed to nodes that may check less strictly. See [PROTOCOLS.md section 3.6](PROTOCOLS.md#36-leave-files-board-posts-and-voice-are-verified-before-they-are-relayed)                                                                                                                                                                                               |
-| Public spam              | bitchat-android's spam filter, ported with its limits: per sender 6 messages then one per 10 s, 1200 characters and 2 links a minute, and near-copies hidden whether one sender repeats a text or many identities spread it, with disguises folded away first. Runs on message time, so backfill is judged as it was sent. Local only: a hidden message is still relayed, and the user can switch it off                                                                                                    |
+| Public spam              | bitchat-android's spam filter, ported with its limits: per sender 6 messages then one per 10 s (a public photo or file counts as one), 1200 characters and 2 links a minute, and near-copies hidden whether one sender repeats a text or many identities spread it, with disguises folded away first. Runs on message time, so backfill is judged as it was sent. Local only: a hidden message is still relayed, and the user can switch it off                                                             |
 | Sybil flooding           | TTL bounds propagation. The registry and radar are capped with oldest-first eviction that never drops a peer holding a real BLE link                                                                                                                                                                                                                                                                                                                                                                        |
 | Relay abuse              | A forged file, board post, voice or video frame, or LEAVE is dropped before it is relayed; nothing addressed to this phone or sent under its own ID is relayed by it. A receiving card is shown only for a sender whose key is held, at most three at once, unnamed in public rooms                                                                                                                                                                                                                         |
 | Confused-deputy delivery | Directed packets are relayed but rendered only by the addressee, so a relay never surfaces someone else's private content                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -2084,15 +2084,16 @@ runtimes agree on safely. The full per-module contract is in
 7. `requestEnableBluetooth` / `openLocationSettings`: one-tap fixes for the Mesh banner
 8. `setBackgroundServiceEnabled`: hold the process up, independent of advertising
 
-What the foreground service's notice says is not a radio's business. `AirhopAppModule`
-takes it in `setMeshSnapshot`, one reading of the reachable count, whether the
-mesh runs, whether Bluetooth is off, and when. The notice and the home screen
-widget on both platforms draw it, and `clearMeshSnapshot` puts them back for
-the panic wipe. On iOS each push reloads the widget against a daily budget, so
-`background-notice.ts` holds pushes to one per 45 minutes while the app is in
-the background, and the widget retires a reading after an hour rather than
-Android's 15 minutes. On Android an alarm redraws the widget when its reading
-turns stale, so a killed process cannot leave an old count up.
+What the foreground service's notice says is not a radio's business.
+`AirhopAppModule` takes it in `setMeshSnapshot`, one reading of how many people
+are reachable (relay nodes left out, by the same `isPerson` rule as the radar
+headline), whether the mesh runs, whether Bluetooth is off, and when. The notice
+and the home screen widget on both platforms draw it, and `clearMeshSnapshot`
+puts them back for the panic wipe. On iOS each push reloads the widget against a
+daily budget, so `background-notice.ts` holds pushes to one per 45 minutes while
+the app is in the background, and the widget retires a reading after an hour
+rather than Android's 15 minutes. On Android an alarm redraws the widget when
+its reading turns stale, so a killed process cannot leave an old count up.
 
 Nothing about Tor is asked of the BLE module. `AirhopTorModule` owns that and
 answers directly; a radio module reporting on Tor would be a boundary violation.

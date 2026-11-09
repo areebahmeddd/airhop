@@ -24,6 +24,7 @@ import {
   type Packet,
   type SendFn,
 } from "../wire/packet-codec";
+import { isRelayFirmwareType } from "../wire/packet-type";
 import { Deduplicator } from "./deduplicator";
 
 // bitchat-ios TransportConfig.messageTTLDefault. Anything higher is clamped.
@@ -148,6 +149,10 @@ export function relayDecision(
   // Link-local, never relayed: one crafted with TTL headroom would otherwise
   // turn every node it reached into a responder replaying its store.
   if (packet.type === PacketType.REQUEST_SYNC) return null;
+  // A relay node's firmware update traffic, link-local the same way. Sent at
+  // TTL 0, so this binds only on a copy claiming headroom, which a phone would
+  // otherwise flood across the mesh one firmware chunk at a time.
+  if (isRelayFirmwareType(packet.type)) return null;
 
   // Our own packet is ours to send, not to forward, and one addressed to us
   // has arrived. The caller still handles both: an announce under our ID

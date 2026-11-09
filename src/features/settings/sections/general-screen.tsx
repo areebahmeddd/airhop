@@ -347,6 +347,19 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
           </UpperText>
           <View style={styles.settingsGroup}>
             <SettingLinkRow
+              id="message-retention"
+              icon="watch"
+              label={T("settings.general.message_retention")}
+              description={T("settings.general.message_retention_desc")}
+              control={
+                <Text style={styles.settingValue}>
+                  {messageRetentionLabel(T, TP, messageRetentionDays)}
+                </Text>
+              }
+              onPress={() => setShowMessageRetentionSheet(true)}
+            />
+            <GroupDivider />
+            <SettingLinkRow
               id="undo"
               icon="rotate-ccw"
               label={T("settings.general.undo")}
@@ -370,21 +383,6 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   onValueChange={setSpamFilterEnabled}
                 />
               }
-            />
-            <GroupDivider />
-            {/* Last in Messages, the nearest it can sit to the media
-                retention row it mirrors, which follows the quality row. */}
-            <SettingLinkRow
-              id="message-retention"
-              icon="watch"
-              label={T("settings.general.message_retention")}
-              description={T("settings.general.message_retention_desc")}
-              control={
-                <Text style={styles.settingValue}>
-                  {messageRetentionLabel(T, TP, messageRetentionDays)}
-                </Text>
-              }
-              onPress={() => setShowMessageRetentionSheet(true)}
             />
           </View>
         </View>

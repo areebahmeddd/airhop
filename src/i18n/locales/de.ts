@@ -462,6 +462,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Senden",
   "chat.status.receiving": "Empfangen",
   "chat.thread.not_available": "Hier nicht verfügbar",
+  "chat.thread.relay_no_media":
+    "Ein Relay-Knoten leitet Nachrichten weiter, öffnet aber keine Anhänge oder Sprachnachrichten.",
   "chat.thread.private_channel": "Privater Kanal",
   "chat.thread.location_channel": "Standortkanal",
   "chat.thread.public_channel": "Öffentlicher Kanal",
@@ -1142,6 +1144,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Relay-Knoten",
   "mesh.peer.relay_body":
     "Ein Funkgerät, das jemand laufen lässt, um das Mesh zu vergrößern. Es trägt Nachrichten, die es nicht lesen kann. Hier ist niemand, dem du schreiben könntest.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, Relay-Knoten",
   "mesh.peer.send_dm": "Eine Direktnachricht senden",
   "mesh.peer.message": "Nachricht",
   "mesh.peer.send_sats": "Ecash senden",
@@ -2015,6 +2019,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Nicht verbunden",
   "settings.diag.peer_direct": "Direkte Verbindung",
   "settings.diag.peer_relayed": "Über ein anderes Gerät gehört",
+  "settings.diag.peer_relay_direct": "Relay-Knoten · Direkte Verbindung",
+  "settings.diag.peer_relay_relayed":
+    "Relay-Knoten · Über ein anderes Gerät gehört",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Kein Signalwert",
   "settings.diag.no_peers": "Niemand in Reichweite",

@@ -455,6 +455,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Invio",
   "chat.status.receiving": "Ricezione",
   "chat.thread.not_available": "Non disponibile qui",
+  "chat.thread.relay_no_media":
+    "Un nodo relay trasporta i messaggi, ma non apre allegati né messaggi vocali.",
   "chat.thread.private_channel": "Canale privato",
   "chat.thread.location_channel": "Canale di posizione",
   "chat.thread.public_channel": "Canale pubblico",
@@ -1139,6 +1141,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Nodo relay",
   "mesh.peer.relay_body":
     "Una radio che qualcuno ha lasciato accesa per allargare la mesh. Trasporta messaggi che non può leggere. Qui non c’è nessuno a cui scrivere.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, nodo relay",
   "mesh.peer.send_dm": "Invia un messaggio diretto",
   "mesh.peer.message": "Messaggio",
   "mesh.peer.send_sats": "Invia ecash",
@@ -2004,6 +2008,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Non connesso",
   "settings.diag.peer_direct": "Collegamento diretto",
   "settings.diag.peer_relayed": "Sentito tramite un altro dispositivo",
+  "settings.diag.peer_relay_direct": "Nodo relay · Collegamento diretto",
+  "settings.diag.peer_relay_relayed":
+    "Nodo relay · Sentito tramite un altro dispositivo",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Nessuna lettura del segnale",
   "settings.diag.no_peers": "Nessuno nel raggio",

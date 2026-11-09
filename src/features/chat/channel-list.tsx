@@ -25,7 +25,7 @@ import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
 import { loadDraft } from "@store/composer-drafts";
 import { useGroupStore } from "@store/group-store";
-import { usePeerStore } from "@store/peer-store";
+import { isPerson, usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import { useSettingsStore } from "@store/settings-store";
 import BottomSheet from "@ui/components/bottom-sheet";
@@ -168,7 +168,12 @@ export default function ChannelList({
   );
   // Live BLE peer count. This is the right number ONLY for #bluetooth, the
   // local-mesh channel; the geohash channels are populated over Nostr, not BLE.
-  const peerCount = usePeerStore((s) => s.peers.size);
+  // People in the room: a relay node carries it but posts nothing.
+  const peerCount = usePeerStore((s) => {
+    let people = 0;
+    for (const peer of s.peers.values()) if (isPerson(peer)) people++;
+    return people;
+  });
   // Live participant count per geohash channel, from Nostr presence + recent
   // posts in the cell (kind 20000/20001), polled since it updates off a network
   // subscription rather than a store. #bluetooth is absent here: it is BLE-only

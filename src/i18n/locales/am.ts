@@ -423,6 +423,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "እየተላከ",
   "chat.status.receiving": "እየተቀበለ",
   "chat.thread.not_available": "እዚህ አይገኝም",
+  "chat.thread.relay_no_media":
+    "የማስተላለፊያ ኖድ መልዕክቶችን ያስተላልፋል፣ ነገር ግን ዓባሪዎችን ወይም የድምፅ መልዕክቶችን አይከፍትም።",
   "chat.thread.private_channel": "የግል ሰርጥ",
   "chat.thread.location_channel": "የአካባቢ ሰርጥ",
   "chat.thread.public_channel": "ይፋዊ ሰርጥ",
@@ -1041,6 +1043,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "የማስተላለፊያ ኖድ",
   "mesh.peer.relay_body":
     "አንድ ሰው ሜሹን ለማስፋት አብርቶ የተወው ሬዲዮ ነው። ማንበብ የማይችላቸውን መልእክቶች ያጓጉዛል። እዚህ መልእክት የሚላክለት ሰው የለም።",
+  "mesh.peer.relay_firmware": "ፈርምዌር {version}",
+  "mesh.peer.relay_named": "{name}፣ የማስተላለፊያ ኖድ",
   "mesh.peer.send_dm": "ቀጥተኛ መልእክት ላክ",
   "mesh.peer.message": "መልእክት",
   "mesh.peer.send_sats": "ecash ላክ",
@@ -1838,6 +1842,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "አልተገናኘም",
   "settings.diag.peer_direct": "ቀጥተኛ አገናኝ",
   "settings.diag.peer_relayed": "በሌላ መሣሪያ በኩል የተሰማ",
+  "settings.diag.peer_relay_direct": "የማስተላለፊያ ኖድ · ቀጥተኛ አገናኝ",
+  "settings.diag.peer_relay_relayed": "የማስተላለፊያ ኖድ · በሌላ መሣሪያ በኩል የተሰማ",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "የምልክት ንባብ የለም",
   "settings.diag.no_peers": "በክልል ውስጥ ማንም የለም",

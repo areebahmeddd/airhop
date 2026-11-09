@@ -116,6 +116,29 @@ describe("FloodRouter", () => {
       jest.advanceTimersByTime(300);
       expect(sent.length).toBe(0);
     });
+
+    // A relay node's update protocol stops at the node beside it. One that
+    // claims headroom must not ride the phones across the mesh, and the
+    // types on either side of the range are ordinary traffic.
+    it("never relays relay firmware's 0xA0 to 0xA3, whatever TTL it claims", () => {
+      const sent: Packet[] = [];
+      for (const type of [0xa0, 0xa1, 0xa2, 0xa3]) {
+        const update = { ...makePacket(type, 7), type: type as PacketType };
+        expect(router.receive(update, (p) => sent.push(p))).toBe(true);
+      }
+      jest.advanceTimersByTime(300);
+      expect(sent.length).toBe(0);
+
+      for (const type of [0x9f, 0xa4]) {
+        const neighbor = { ...makePacket(type, 7), type: type as PacketType };
+        router.receive(neighbor, (p) => sent.push(p));
+      }
+      jest.advanceTimersByTime(300);
+      // Each relay waits its own jitter, so the order is not the arrival order.
+      expect(sent.map((p) => p.type).sort((a, b) => a - b)).toEqual([
+        0x9f, 0xa4,
+      ]);
+    });
   });
 
   describe("admit()", () => {

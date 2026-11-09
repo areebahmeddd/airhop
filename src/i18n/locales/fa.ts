@@ -446,6 +446,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "در حال فرستادن",
   "chat.status.receiving": "در حال دریافت",
   "chat.thread.not_available": "اینجا در دسترس نیست",
+  "chat.thread.relay_no_media":
+    "گرهٔ بازپخش پیام‌ها را جابه‌جا می‌کند، اما هیچ پیوست یا پیام صوتی را باز نمی‌کند.",
   "chat.thread.private_channel": "کانال خصوصی",
   "chat.thread.location_channel": "کانال موقعیت",
   "chat.thread.public_channel": "کانال عمومی",
@@ -1107,6 +1109,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "گرهٔ بازپخش",
   "mesh.peer.relay_body":
     "رادیویی که کسی روشن گذاشته تا مش را گسترده‌تر کند. پیام‌هایی را جابه‌جا می‌کند که خودش نمی‌تواند بخواند. اینجا کسی نیست که به او پیام بدهید.",
+  "mesh.peer.relay_firmware": "میان‌افزار {version}",
+  "mesh.peer.relay_named": "{name}، گرهٔ بازپخش",
   "mesh.peer.send_dm": "فرستادن پیام مستقیم",
   "mesh.peer.message": "پیام",
   "mesh.peer.send_sats": "فرستادن ecash",
@@ -1950,6 +1954,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "متصل نیست",
   "settings.diag.peer_direct": "پیوند مستقیم",
   "settings.diag.peer_relayed": "از راه دستگاهی دیگر شنیده شد",
+  "settings.diag.peer_relay_direct": "گرهٔ بازپخش · پیوند مستقیم",
+  "settings.diag.peer_relay_relayed":
+    "گرهٔ بازپخش · از راه دستگاهی دیگر شنیده شد",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "خوانشی از سیگنال نیست",
   "settings.diag.no_peers": "کسی در محدوده نیست",

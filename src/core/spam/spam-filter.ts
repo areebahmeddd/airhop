@@ -84,11 +84,16 @@ export class SpamFilter {
   // filter starts empty on each launch, and a replay that left out what it had
   // admitted would judge the copies it hid against nothing, and show them.
   // Later copies cost nothing, since the first verdict is remembered.
+  //
+  // An attachment passes `isText` false, as bitchat-android judges media: one
+  // message against the sender's rate, shared with their text, and nothing
+  // else, so a flood of photos is hidden where both bitchats hide it.
   check(
     senderKey: string,
     messageID: string,
     content: string,
     timestampMs: number,
+    isText = true,
   ): SpamVerdict {
     if (!this.enabled) return "allowed";
     const known = this.verdicts.get(messageID);
@@ -110,6 +115,37 @@ export class SpamFilter {
     state.lastActive = ++this.activity;
     state.rate.prune(oldestTrusted);
 
+    const verdict = isText
+      ? this.judgeText(senderKey, state, content, time)
+      : admitRate(state, [1, 0, 0], time);
+    this.senders.set(senderKey, state);
+    this.evictSenders();
+    this.verdicts.set(messageID, verdict);
+    if (this.verdicts.size > C.maxRememberedVerdicts) {
+      const oldest = this.verdicts.keys().next().value;
+      if (oldest !== undefined) this.verdicts.delete(oldest);
+    }
+    return verdict;
+  }
+
+  // Forgets every sender and text, as on a toggle.
+  reset(): void {
+    this.senders.clear();
+    this.activity = 0;
+    this.recentTexts = [];
+    this.recentStart = 0;
+    this.recentTrigrams.clear();
+    this.verdicts.clear();
+  }
+
+  // The repetition checks, then the rate, and the text joins the histories
+  // either way.
+  private judgeText(
+    senderKey: string,
+    state: SenderState,
+    content: string,
+    time: number,
+  ): SpamVerdict {
     const text = normalizeForComparison(content, C.maxAnalyzedLength);
     const compared = text.slice(0, C.maxComparedLength);
     const fingerprint: Fingerprint = {
@@ -129,7 +165,11 @@ export class SpamFilter {
     } else if (this.repeatsOthers(senderKey, text.length, fingerprint)) {
       verdict = "repeated-across-users";
     } else {
-      verdict = admitRate(state, content, time);
+      verdict = admitRate(
+        state,
+        [1, Array.from(content).length, countLinks(content)],
+        time,
+      );
     }
 
     state.history.push(fingerprint);
@@ -137,24 +177,7 @@ export class SpamFilter {
     if (text.length >= C.crossUserMinLength) {
       this.rememberRecent({ senderKey, fingerprint });
     }
-    this.senders.set(senderKey, state);
-    this.evictSenders();
-    this.verdicts.set(messageID, verdict);
-    if (this.verdicts.size > C.maxRememberedVerdicts) {
-      const oldest = this.verdicts.keys().next().value;
-      if (oldest !== undefined) this.verdicts.delete(oldest);
-    }
     return verdict;
-  }
-
-  // Forgets every sender and text, as on a toggle.
-  reset(): void {
-    this.senders.clear();
-    this.activity = 0;
-    this.recentTexts = [];
-    this.recentStart = 0;
-    this.recentTrigrams.clear();
-    this.verdicts.clear();
   }
 
   // Newest first: copies come in bursts, so the budget goes where they are, and
@@ -287,13 +310,13 @@ function isNearCopy(
   );
 }
 
-// Characters are code points, as bitchat counts them.
+// Costs are messages, characters and links, in bucket order. Characters are
+// code points, as bitchat counts them.
 function admitRate(
   state: SenderState,
-  content: string,
+  costs: readonly number[],
   time: number,
 ): SpamVerdict {
-  const costs = [1, Array.from(content).length, countLinks(content)];
   switch (state.rate.tryAdmit(time, costs)) {
     case null:
       return "allowed";

@@ -11,7 +11,6 @@ on:
       - "docs/dev/**"
       - "assets/data/**"
       - "fastlane/**"
-      - "press/out/**"
   push:
     branches: [main]
     paths-ignore:
@@ -22,7 +21,6 @@ on:
       - "docs/dev/**"
       - "assets/data/**"
       - "fastlane/**"
-      - "press/out/**"
   workflow_dispatch:
 
 permissions:

@@ -38,3 +38,12 @@ export const enum PacketType {
   // top of the Nostr copy bitchat already receives. `#bluetooth` keeps 0x02.
   CHANNEL_MSG_AIRHOP = 0x51,
 }
+
+// 0xA0 to 0xA3: Airlink's node-to-node update protocol (MANIFEST,
+// REQUEST, CHUNK, STATUS), reserved in PROTOCOLS.md section 3. A node sends
+// them at TTL 0 to the node beside it, so no phone ever relays one, and no
+// Airhop type may be allocated here: a node takes the range as its own and
+// stops it at the first hop.
+export function isRelayFirmwareType(type: number): boolean {
+  return type >= 0xa0 && type <= 0xa3;
+}

@@ -464,6 +464,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Ipinapadala",
   "chat.status.receiving": "Tumatanggap",
   "chat.thread.not_available": "Hindi available dito",
+  "chat.thread.relay_no_media":
+    "Nagdadala ng mga mensahe ang relay node, pero hindi nito binubuksan ang mga attachment o voice message.",
   "chat.thread.private_channel": "Pribadong channel",
   "chat.thread.location_channel": "Channel ng lokasyon",
   "chat.thread.public_channel": "Pampublikong channel",
@@ -1158,6 +1160,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Relay node",
   "mesh.peer.relay_body":
     "Isang radyong iniwang naka-on ng isang tao para palawakin ang mesh. Nagdadala ito ng mga mensaheng hindi nito mabasa. Walang taong mame-mensahe rito.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, relay node",
   "mesh.peer.send_dm": "Magpadala ng direktang mensahe",
   "mesh.peer.message": "Mensahe",
   "mesh.peer.send_sats": "Magpadala ng ecash",
@@ -2026,6 +2030,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Hindi nakakonekta",
   "settings.diag.peer_direct": "Direktang link",
   "settings.diag.peer_relayed": "Narinig sa pamamagitan ng ibang device",
+  "settings.diag.peer_relay_direct": "Relay node · Direktang link",
+  "settings.diag.peer_relay_relayed":
+    "Relay node · Narinig sa pamamagitan ng ibang device",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Walang pagbasa ng signal",
   "settings.diag.no_peers": "Walang tao sa saklaw",

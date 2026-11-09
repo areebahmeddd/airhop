@@ -448,6 +448,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Skickar",
   "chat.status.receiving": "Tar emot",
   "chat.thread.not_available": "Inte tillgängligt här",
+  "chat.thread.relay_no_media":
+    "En relänod vidarebefordrar meddelanden men öppnar inga bilagor eller röstmeddelanden.",
   "chat.thread.private_channel": "Privat kanal",
   "chat.thread.location_channel": "Platskanal",
   "chat.thread.public_channel": "Öppen kanal",
@@ -1112,6 +1114,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Relänod",
   "mesh.peer.relay_body":
     "En radio som någon lämnat igång för att vidga meshen. Den bär meddelanden den inte kan läsa. Här finns ingen att skriva till.",
+  "mesh.peer.relay_firmware": "Fast programvara {version}",
+  "mesh.peer.relay_named": "{name}, relänod",
   "mesh.peer.send_dm": "Skicka ett direktmeddelande",
   "mesh.peer.message": "Meddelande",
   "mesh.peer.send_sats": "Skicka ecash",
@@ -1958,6 +1962,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Inte ansluten",
   "settings.diag.peer_direct": "Direktlänk",
   "settings.diag.peer_relayed": "Hörd via en annan enhet",
+  "settings.diag.peer_relay_direct": "Relänod · Direktlänk",
+  "settings.diag.peer_relay_relayed": "Relänod · Hörd via en annan enhet",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Ingen signalavläsning",
   "settings.diag.no_peers": "Ingen inom räckhåll",

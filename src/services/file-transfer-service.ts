@@ -30,6 +30,7 @@ import {
 } from "@core/mesh/wire/file-packet";
 import {
   BROADCAST_ID,
+  computePacketId,
   encodePacket,
   Flags,
   isBroadcast,
@@ -745,6 +746,13 @@ export class FileTransferService {
     streamID: string,
     attachment: ChatAttachment,
   ) => boolean;
+  // Whether the spam filter hides a public attachment. Set by mesh-service,
+  // which owns the filter its public text goes through.
+  hidesAsSpam?: (
+    senderPeerID: string,
+    messageID: string,
+    timestampMs: number,
+  ) => boolean;
 
   // Throttles the "that attachment didn't arrive" line, per sender.
   private readonly failureNotifier = new AttachmentFailureNotifier();
@@ -1268,6 +1276,18 @@ export class FileTransferService {
     // stays out: a stranger's photo must not put it back in their list.
     // Silent, as for text: it is not the sender's failure.
     if (!isDM && !useChatStore.getState().channels.includes(channel)) return;
+    // Judged before anything is written, under the packet's own ID so every
+    // copy of it gets the one verdict. Silent, as hidden text is.
+    if (
+      !isDM &&
+      this.hidesAsSpam?.(
+        senderPeerID,
+        `file-${bytesToHex(computePacketId(packet))}`,
+        packet.timestamp,
+      ) === true
+    ) {
+      return;
+    }
     const type = typeFromMime(fp.mimeType);
 
     // A sealed photo or voice note is keyed by bitchat's stable ID, and an

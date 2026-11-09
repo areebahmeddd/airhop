@@ -453,6 +453,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Mengirim",
   "chat.status.receiving": "Menerima",
   "chat.thread.not_available": "Tidak tersedia di sini",
+  "chat.thread.relay_no_media":
+    "Simpul relai meneruskan pesan, tetapi tidak membuka lampiran atau pesan suara.",
   "chat.thread.private_channel": "Kanal pribadi",
   "chat.thread.location_channel": "Kanal lokasi",
   "chat.thread.public_channel": "Kanal publik",
@@ -1133,6 +1135,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Simpul relai",
   "mesh.peer.relay_body":
     "Radio yang seseorang biarkan menyala untuk memperluas mesh. Ia membawa pesan yang tidak bisa dibacanya. Tidak ada orang di sini untuk dikirimi pesan.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, simpul relai",
   "mesh.peer.send_dm": "Kirim pesan langsung",
   "mesh.peer.message": "Pesan",
   "mesh.peer.send_sats": "Kirim ecash",
@@ -1984,6 +1988,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Tidak tersambung",
   "settings.diag.peer_direct": "Tautan langsung",
   "settings.diag.peer_relayed": "Terdengar lewat perangkat lain",
+  "settings.diag.peer_relay_direct": "Simpul relai · Tautan langsung",
+  "settings.diag.peer_relay_relayed":
+    "Simpul relai · Terdengar lewat perangkat lain",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Tidak ada pembacaan sinyal",
   "settings.diag.no_peers": "Tidak ada siapa pun dalam jangkauan",

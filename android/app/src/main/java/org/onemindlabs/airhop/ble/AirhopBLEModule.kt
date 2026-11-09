@@ -724,14 +724,19 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
     private fun startPlatformScan() {
         if (scanBurstActive) return
         val scanner = adapter?.bluetoothLeScanner ?: return
+        // Raised before the call: startScanning reaches here on the module
+        // thread while onScanFailed runs on the main one, and a failure posted
+        // straight back must find the flag up, or its stopScan is skipped.
+        scanBurstActive = true
         try {
             val filter = ScanFilter.Builder().setServiceUuid(ParcelUuid(SERVICE_UUID)).build()
             val settings = ScanSettings.Builder().setScanMode(powerMode.scanMode).build()
             scanner.startScan(listOf(filter), settings, scanCallback)
-            scanBurstActive = true
         } catch (e: SecurityException) {
+            scanBurstActive = false
             Log.e(TAG, "BLUETOOTH_SCAN permission missing", e)
         } catch (e: Exception) {
+            scanBurstActive = false
             Log.w(TAG, "startScan failed: ${e.message}")
         }
     }
@@ -1861,7 +1866,11 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
                 // against SCAN_FAILED_SCANNING_TOO_FREQUENTLY spends the next window
                 // being refused again while JS holds a backoff it believes it is
                 // enforcing. The restart belongs to the reconciler.
-                scanBurstActive = false
+                //
+                // The scan is still stopped, not just marked stopped: a failure
+                // reported after registration leaves this callback registered,
+                // and then every restart is refused as ALREADY_STARTED until
+                // Bluetooth is toggled. stopScanCycle clears the flag itself.
                 stopScanCycle()
                 emitEvent(
                     EVT_SCAN_FAILED,

@@ -1,9 +1,11 @@
 // The contact sheet's ring grant has to say when the Privacy & security
 // master switch overrides it: with Ring alerts off every ring is refused, and a
-// row still reading "let them ring your phone" would promise one.
+// row still reading "let them ring your phone" would promise one. And a relay
+// node in range is shown as equipment, not as a contact to verify or pay.
 
 import { t } from "@i18n";
 import { useContactsStore } from "@store/contacts-store";
+import { usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
 import { act, render, screen } from "@testing-library/react-native";
 import type React from "react";
@@ -84,4 +86,42 @@ it("says the master switch refuses every ring while it is off", async () => {
       }),
     ),
   ).toBeTruthy();
+});
+
+// A relay node in range, in a thread opened from history: equipment, so the
+// sheet says what it is and offers nothing that assumes a person.
+describe("a relay node", () => {
+  afterEach(() => {
+    usePeerStore.getState().clearAll();
+  });
+
+  function announceRelay(isRelay: boolean): void {
+    usePeerStore.getState().upsertPeer({
+      peerID: PEER,
+      nickname: "AirhopRelay-A1B2",
+      lastSeenMs: Date.now(),
+      noisePubKeyHex: "11".repeat(32),
+      isRelay,
+    });
+  }
+
+  it("is named a relay, with no Verify, Pay or ring grant", async () => {
+    useSettingsStore.setState({ ringAlertsEnabled: true });
+    announceRelay(true);
+    await renderSheet();
+    expect(screen.getByText(t("mesh.peer.relay"))).toBeTruthy();
+    expect(screen.queryByText(t("wallet.pay.action"))).toBeNull();
+    expect(screen.queryByText(t("chat.contact.verify"))).toBeNull();
+    expect(screen.queryByText(t("chat.contact.allow_ring"))).toBeNull();
+  });
+
+  it("is a person again once it stops claiming the role", async () => {
+    useSettingsStore.setState({ ringAlertsEnabled: true });
+    announceRelay(false);
+    await renderSheet();
+    expect(screen.queryByText(t("mesh.peer.relay"))).toBeNull();
+    expect(screen.getByText(t("chat.contact.verify"))).toBeTruthy();
+    expect(screen.getByText(t("wallet.pay.action"))).toBeTruthy();
+    expect(screen.getByText(t("chat.contact.allow_ring"))).toBeTruthy();
+  });
 });

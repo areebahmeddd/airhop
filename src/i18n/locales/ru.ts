@@ -451,6 +451,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Отправка",
   "chat.status.receiving": "Приём",
   "chat.thread.not_available": "Здесь недоступно",
+  "chat.thread.relay_no_media":
+    "Узел-ретранслятор передаёт сообщения, но не открывает вложения и голосовые сообщения.",
   "chat.thread.private_channel": "Приватный канал",
   "chat.thread.location_channel": "Канал местоположения",
   "chat.thread.public_channel": "Открытый канал",
@@ -1121,6 +1123,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Узел-ретранслятор",
   "mesh.peer.relay_body":
     "Приёмник, который кто-то оставил работать, чтобы расширить сеть. Он несёт сообщения, которые не может прочитать. Здесь некому писать.",
+  "mesh.peer.relay_firmware": "Прошивка {version}",
+  "mesh.peer.relay_named": "{name}, узел-ретранслятор",
   "mesh.peer.send_dm": "Отправить личное сообщение",
   "mesh.peer.message": "Сообщение",
   "mesh.peer.send_sats": "Отправить ecash",
@@ -1975,6 +1979,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Не подключено",
   "settings.diag.peer_direct": "Прямая связь",
   "settings.diag.peer_relayed": "Слышно через другое устройство",
+  "settings.diag.peer_relay_direct": "Узел-ретранслятор · Прямая связь",
+  "settings.diag.peer_relay_relayed":
+    "Узел-ретранслятор · Слышно через другое устройство",
   "settings.diag.rssi": "{dbm} дБм",
   "settings.diag.no_rssi": "Нет данных о сигнале",
   "settings.diag.no_peers": "В зоне действия никого",

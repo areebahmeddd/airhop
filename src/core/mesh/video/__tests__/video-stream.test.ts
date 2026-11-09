@@ -363,6 +363,44 @@ describe("VideoStreamAssembler edge cases", () => {
     expect(videoOf(resumed).map((u) => u.sequence)).toEqual([3]);
   });
 
+  test("a delta completing first waits for the keyframe still arriving", () => {
+    const assembler = new VideoStreamAssembler();
+    const half = (fragmentIndex: number): LiveVideoEntry => ({
+      ...unit("video", 0, true),
+      fragmentIndex,
+      fragmentCount: 2,
+    });
+    const outputs = [
+      dataPacket(0, 0, [half(0)]),
+      // The delta after it lands whole before the keyframe's last fragment.
+      dataPacket(1, 1, [unit("video", 1)]),
+      dataPacket(2, 2, [half(1)]),
+    ].flatMap((packet, i) => assembler.onPacket(packet, 0, i * 10));
+    expect(videoOf(outputs).map((u) => [u.sequence, u.keyframe])).toEqual([
+      [0, true],
+      [1, false],
+    ]);
+    expect(assembler.stats().skippedVideoUnits).toBe(0);
+  });
+
+  test("a half-heard delta before the first keyframe holds nothing up", () => {
+    const assembler = new VideoStreamAssembler();
+    // A late joiner caught only the tail of delta 0, which can never decode.
+    assembler.onPacket(
+      dataPacket(0, 0, [
+        { ...unit("video", 0), fragmentIndex: 1, fragmentCount: 2 },
+      ]),
+      0,
+      0,
+    );
+    const outputs = assembler.onPacket(
+      dataPacket(1, 1, [unit("video", 1, true)]),
+      0,
+      10,
+    );
+    expect(videoOf(outputs).map((u) => u.sequence)).toEqual([1]);
+  });
+
   test("a ready backlog past the cap skips the head gap", () => {
     const assembler = new VideoStreamAssembler();
     const outputs = assembler.onPacket(

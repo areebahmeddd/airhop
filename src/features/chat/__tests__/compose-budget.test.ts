@@ -16,8 +16,14 @@ describe("clampCaption", () => {
   it("cuts to the caption budget in bytes, not UTF-16 units", () => {
     // 200 emoji are 400 UTF-16 units, which `maxLength` would count, and 800
     // bytes, which the encoder drops without a word.
-    const clamped = clampCaption("😀".repeat(200));
+    const clamped = clampCaption("😀".repeat(200), "#bluetooth");
     expect(clamped).toBe("😀".repeat(MAX_CAPTION_BYTES / 4));
+  });
+
+  it("holds a DM caption to the private-message budget", () => {
+    // A bitchat recipient gets it as a DM of its own.
+    const clamped = clampCaption("a".repeat(400), "dm:aabbccdd00112233");
+    expect(clamped).toHaveLength(PRIVATE_MESSAGE_MAX_CONTENT_BYTES);
   });
 });
 

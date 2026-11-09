@@ -784,6 +784,22 @@ export class SimDevice {
     return this.peers().length;
   }
 
+  // What this device holds about a peer's relay role, as its newest announce
+  // set it; null when the peer is not held at all.
+  relayRole(
+    peerID: string,
+  ): { isRelay: boolean; firmwareVersion: number | undefined } | null {
+    const peers = this.inner.stores.peerStore.getState().peers;
+    if (!(peers instanceof Map)) return null;
+    const peer = peers.get(peerID) as
+      { isRelay?: boolean; firmwareVersion?: number } | undefined;
+    if (peer === undefined) return null;
+    return {
+      isRelay: peer.isRelay === true,
+      firmwareVersion: peer.firmwareVersion,
+    };
+  }
+
   // Peers heard from inside REACHABLE_TTL_MS, which is what the radar draws.
   // The map outlives reachability, so `peers` is the wider set.
   reachablePeers(): string[] {

@@ -1,5 +1,4 @@
-// A bare relay node: an ESP32 on solar power, as bitle.org and bitchat-esp32
-// build them.
+// A bare relay node: an ESP32 on solar power that only repeats.
 //
 // No identity, no keys, no announces. It reads the packet header, decrements
 // TTL, and re-broadcasts on every link but the one the packet arrived on.

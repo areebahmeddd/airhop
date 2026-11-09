@@ -443,6 +443,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "보내는 중",
   "chat.status.receiving": "받는 중",
   "chat.thread.not_available": "여기서는 사용할 수 없음",
+  "chat.thread.relay_no_media":
+    "릴레이 노드는 메시지를 전달하지만 첨부 파일이나 음성 메시지는 열지 않습니다.",
   "chat.thread.private_channel": "비공개 채널",
   "chat.thread.location_channel": "위치 채널",
   "chat.thread.public_channel": "공개 채널",
@@ -1100,6 +1102,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "릴레이 노드",
   "mesh.peer.relay_body":
     "누군가 메시를 넓히려고 켜둔 무선 장치입니다. 읽을 수 없는 메시지를 실어 나릅니다. 여기에는 메시지를 보낼 사람이 없습니다.",
+  "mesh.peer.relay_firmware": "펌웨어 {version}",
+  "mesh.peer.relay_named": "{name}, 릴레이 노드",
   "mesh.peer.send_dm": "다이렉트 메시지 보내기",
   "mesh.peer.message": "메시지",
   "mesh.peer.send_sats": "ecash 보내기",
@@ -1933,6 +1937,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "연결되지 않음",
   "settings.diag.peer_direct": "직접 링크",
   "settings.diag.peer_relayed": "다른 기기를 통해 들음",
+  "settings.diag.peer_relay_direct": "릴레이 노드 · 직접 링크",
+  "settings.diag.peer_relay_relayed": "릴레이 노드 · 다른 기기를 통해 들음",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "신호 측정값 없음",
   "settings.diag.no_peers": "범위 내에 아무도 없음",

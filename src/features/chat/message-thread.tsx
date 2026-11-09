@@ -102,7 +102,7 @@ import { loadDraft, saveDraft } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
 import { useGroupStore } from "@store/group-store";
 import { locationOffBanner, useMeshStateStore } from "@store/mesh-state-store";
-import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
+import { isPerson, REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
 import { UPLOAD_QUALITY_VALUES, useSettingsStore } from "@store/settings-store";
 import {
@@ -117,6 +117,7 @@ import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
 import MeshStatusBar from "@ui/components/mesh-status-bar";
+import RelayGlyph from "@ui/components/relay-glyph";
 import Toast from "@ui/components/toast";
 import UpperText from "@ui/components/upper-text";
 import { useAnnounce } from "@ui/hooks/use-announce";
@@ -254,6 +255,7 @@ import {
   CANCEL_SLIDE_DISTANCE,
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
+import { keepAsContact } from "./keep-as-contact";
 import LiveBadge from "./live-badge";
 import LiveVideoStudio from "./live-video-studio";
 import LiveVideoViewer from "./live-video-viewer";
@@ -1784,7 +1786,17 @@ export default function MessageThread({
     const cutoff = peerClock - REACHABLE_TTL_MS;
     return [...peers.values()].filter((peer) => peer.lastSeenMs >= cutoff);
   }, [peerClock, peers]);
-  const peerCount = onlinePeers.length;
+  // People: a relay node carries the room but is nobody in it.
+  const peerCount = onlinePeers.filter(isPerson).length;
+  // A DM with a relay node in range, opened from an old thread or a pasted
+  // peer ID. Read live rather than kept on the contact: the flag lives only as
+  // long as the node's announces, and out of range nothing here can send to it
+  // anyway.
+  const dmWithRelay = usePeerStore(
+    (s) =>
+      channel.startsWith("dm:") &&
+      s.peers.get(channel.slice("dm:".length))?.isRelay === true,
+  );
 
   // Geohash channels live over Nostr, keyed by the user's location cell. The
   // location prompt itself happens once at mesh startup (alongside the Bluetooth
@@ -1795,11 +1807,15 @@ export default function MessageThread({
   // can actually deliver: the Bluetooth mesh channel and direct mesh DMs. Off in
   // location/teleported cells (Nostr-scoped) and private channels/groups
   // (encrypted text; media would broadcast in the clear). Matches bitchat.
-  const mediaAllowed = canSendMedia(channel);
+  // Never toward a relay node, which opens nothing it is sent: every
+  // attachment (ecash, location and live video included) and voice go with it.
+  const mediaAllowed = canSendMedia(channel) && !dmWithRelay;
   // Non-null exactly when media is off here. The attach and mic buttons stay on
   // screen but grayed, and say this when tapped: a control that vanishes leaves
   // people wondering whether the app is broken or they are in the wrong place.
-  const mediaBlocked = mediaBlockedReason(channel);
+  const mediaBlocked = dmWithRelay
+    ? t("chat.thread.relay_no_media")
+    : mediaBlockedReason(channel);
   function explainMediaBlocked(): void {
     if (mediaBlocked !== null)
       showAlert(t("chat.thread.not_available"), mediaBlocked);
@@ -1866,7 +1882,7 @@ export default function MessageThread({
   // A roster counts you, a presence count does not. A group's roster already
   // lists you, and a private channel's members are its key-holders plus you,
   // as the info sheet shows them. "Nearby" and "active" are others only, the
-  // same number the chat-list row shows.
+  // same number the chat-list row shows, relay nodes left out of both.
   const memberCount = isGroup
     ? (getMeshService()?.groupMemberCount(channel.slice("group:".length)) ?? 0)
     : isGeo
@@ -2083,7 +2099,8 @@ export default function MessageThread({
   // @-mention suggestions. Who can be tagged depends on the thread: a group's
   // roster, a location cell's active participants, or a channel's nearby peers.
   // A DM has only one other person, so mentions there add nothing. Nearby peers
-  // and participants already exclude blocked people; a roster does not.
+  // and participants already exclude blocked people; a roster does not. Relay
+  // nodes are left out: nobody reads a mention of one.
   const mentionCandidates = useMemo<{ id: string; nickname: string }[]>(() => {
     if (channel.startsWith("dm:")) return [];
     if (channel.startsWith("group:")) {
@@ -2098,7 +2115,7 @@ export default function MessageThread({
     if (isGeo) {
       return geoMembers.map((m) => ({ id: m.pubkey, nickname: m.nickname }));
     }
-    return [...peers.values()].map((p) => ({
+    return [...peers.values()].filter(isPerson).map((p) => ({
       id: p.peerID,
       nickname: p.nickname || peerIDToUsername(p.peerID),
     }));
@@ -3053,14 +3070,11 @@ export default function MessageThread({
       const dmPeerID = msgChannel.slice(3);
       // Sending to someone saves them as a contact too, so replying to a DM
       // that started inbound keeps them, not just DMs you initiated.
-      useContactsStore
-        .getState()
-        .saveIfAbsent(
-          dmPeerID,
-          usePeerStore.getState().getPeer(dmPeerID)?.nickname ??
-            resolveDisplayName(dmPeerID),
-          usePeerStore.getState().getPeer(dmPeerID)?.noisePubKeyHex ?? "",
-        );
+      keepAsContact(
+        dmPeerID,
+        usePeerStore.getState().getPeer(dmPeerID)?.nickname ??
+          resolveDisplayName(dmPeerID),
+      );
       const result = service.sendDm(dmPeerID, msg.text, msg.id);
       // "sent"/"sent-nostr" upgrade to delivered/read via receipts. When no
       // route exists now it is either "carried" (a courier took a sealed copy)
@@ -3927,13 +3941,7 @@ export default function MessageThread({
     }
     // Messaging someone from a channel saves them as a contact, the same as
     // messaging a peer from the Mesh tab. Unverified until a QR card confirms.
-    useContactsStore
-      .getState()
-      .saveIfAbsent(
-        peerID,
-        nickname,
-        usePeerStore.getState().getPeer(peerID)?.noisePubKeyHex ?? "",
-      );
+    keepAsContact(peerID, nickname);
     const dmChannel = `dm:${peerID}`;
     addChannel(dmChannel);
     setSenderInfoTarget(null);
@@ -4139,9 +4147,14 @@ export default function MessageThread({
   // undefined for a peer we have not identified, and a channel has recipients
   // of both kinds: sending there would double the caption for every Airhop
   // reader to fix it for some bitchat ones.
+  //
+  // A caption the composer did not clamp (a forwarded one, written for a room)
+  // goes only if it fits a DM whole. It is someone's words, so it is not cut,
+  // and a DM over the budget would sit in the outbox until its retries ran out.
   function sendCaptionForBitchat(targetChannel: string, caption: string): void {
     if (caption.length === 0) return;
     if (!targetChannel.startsWith("dm:")) return;
+    if (utf8ByteLength(caption) > PRIVATE_MESSAGE_MAX_CONTENT_BYTES) return;
     const service = getMeshService();
     const peerID = targetChannel.slice(3);
     if (service?.peerRunsAirhop(peerID) !== false) return;
@@ -5787,19 +5800,31 @@ export default function MessageThread({
               else setShowDMInfo(true);
             }}
             accessibilityRole="button"
+            // The relay glyph is silent, so the label says what it shows.
             accessibilityLabel={t("chat.thread.view_info", {
-              name: isDM ? displayName : channel,
+              name: dmWithRelay
+                ? t("mesh.peer.relay_named", { name: displayName })
+                : isDM
+                  ? displayName
+                  : channel,
             })}
           >
             {isDM ? (
               // DM: avatar + name, right after the back arrow.
               <View style={styles.headerDmId}>
-                <Avatar
-                  username={resolveDisplayName(channel.slice(3))}
-                  peerID={channel.slice(3)}
-                  size={28}
-                  presence={isDMPeerOnline ? "online" : "offline"}
-                />
+                {dmWithRelay ? (
+                  <RelayGlyph
+                    size={28}
+                    presence={isDMPeerOnline ? "online" : "offline"}
+                  />
+                ) : (
+                  <Avatar
+                    username={resolveDisplayName(channel.slice(3))}
+                    peerID={channel.slice(3)}
+                    size={28}
+                    presence={isDMPeerOnline ? "online" : "offline"}
+                  />
+                )}
                 <Text style={styles.channelTitle} numberOfLines={1}>
                   {displayName}
                 </Text>
@@ -7062,7 +7087,9 @@ export default function MessageThread({
             placeholder={T("chat.attach.caption")}
             placeholderTextColor={Colors.textMuted}
             value={captionDraft}
-            onChangeText={(next) => setCaptionDraft(clampCaption(next))}
+            onChangeText={(next) =>
+              setCaptionDraft(clampCaption(next, channel))
+            }
             multiline
           />
           <Pressable

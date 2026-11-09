@@ -437,6 +437,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "إرسال",
   "chat.status.receiving": "استقبال",
   "chat.thread.not_available": "غير متاح هنا",
+  "chat.thread.relay_no_media":
+    "عقدة التمرير تنقل الرسائل لكنها لا تفتح المرفقات ولا الرسائل الصوتية.",
   "chat.thread.private_channel": "قناة خاصة",
   "chat.thread.location_channel": "قناة موقع",
   "chat.thread.public_channel": "قناة عامة",
@@ -1077,6 +1079,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "عقدة تمرير",
   "mesh.peer.relay_body":
     "جهاز لاسلكي تركه أحدهم يعمل لتوسيع الشبكة. يحمل رسائل لا يستطيع قراءتها. لا أحد هنا لتراسله.",
+  "mesh.peer.relay_firmware": "البرنامج الثابت {version}",
+  "mesh.peer.relay_named": "{name}، عقدة تمرير",
   "mesh.peer.send_dm": "إرسال رسالة مباشرة",
   "mesh.peer.message": "رسالة",
   "mesh.peer.send_sats": "إرسال نقد إلكتروني",
@@ -1896,6 +1900,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "غير متصل",
   "settings.diag.peer_direct": "وصلة مباشرة",
   "settings.diag.peer_relayed": "سُمع عبر جهاز آخر",
+  "settings.diag.peer_relay_direct": "عقدة تمرير · وصلة مباشرة",
+  "settings.diag.peer_relay_relayed": "عقدة تمرير · سُمع عبر جهاز آخر",
   "settings.diag.rssi": "{dbm} ديسيبل مللي",
   "settings.diag.no_rssi": "لا قراءة إشارة",
   "settings.diag.no_peers": "لا أحد ضمن النطاق",

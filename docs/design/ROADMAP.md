@@ -82,13 +82,13 @@ What each milestone delivered, item by item, is in [PROGRESS.md](../dev/PROGRESS
 
 **Goal:** Run the relay path against real nodes.
 
-Relay support is written and simulated but has never met hardware; see [PROTOCOLS.md section 10](../spec/PROTOCOLS.md#10-relay-nodes). The firmware is [Bitle](https://github.com/bitleproject/bitle) (C, ESP-IDF, MIT), maintained as a fork in its own repository, since it shares nothing with this one but the protocol. It stays bitchat-compatible, and general fixes go back upstream. LoRa carries text in practice, not files or live voice, and its band is regional: 915 MHz in the US, 868 MHz in the EU.
+Relay support is written and simulated but has never met hardware; see [PROTOCOLS.md section 10](../spec/PROTOCOLS.md#10-relay-nodes). The firmware is Airlink (C, ESP-IDF, MIT), in its own repository, since it shares nothing with this one but the protocol. It stays bitchat-compatible. Its LoRa trunk carries text, not files or live voice, on a band set per region at provisioning, with no default.
 
-- [ ] Bitle firmware on the mesh: Noise XX, courier mailbox, gossip sync, and the `0xB1` relay flag read off a real announce
+- [ ] Airlink on the mesh: Noise XX, courier mailbox, gossip sync, and the `0xB1` relay flag read off a real announce
 - [ ] The LoRa trunk carrying messages between two nodes with no phone bridging the gap
 - [ ] The same runs against bitchat, so one deployed node serves both clients
 
-**Milestone:** A Bitle node relays between an Airhop phone and a bitchat phone, and two nodes carry traffic over LoRa alone.
+**Milestone:** An Airlink node relays between an Airhop phone and a bitchat phone, and two nodes carry traffic over LoRa alone.
 
 ##### Smartwatch Companions
 

@@ -10,7 +10,7 @@ import { t, useT } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { getMeshService } from "@services/mesh-service";
 import { groupChannel } from "@store/group-store";
-import { usePeerStore } from "@store/peer-store";
+import { isPerson, usePeerStore } from "@store/peer-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import UpperText from "@ui/components/upper-text";
@@ -53,8 +53,9 @@ export function NewGroupSheet({ visible, onClose, onBack, onCreated }: Props) {
   const styles = useMemo(() => createStyles(Colors), [Colors]);
 
   const peers = usePeerStore((s) => s.peers);
+  // A relay node holds a Noise key but no one to talk to, so it is no member.
   const reachable = useMemo(
-    () => [...peers.values()].filter((p) => p.noisePubKeyHex),
+    () => [...peers.values()].filter((p) => p.noisePubKeyHex && isPerson(p)),
     [peers],
   );
 

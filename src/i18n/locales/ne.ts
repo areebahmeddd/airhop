@@ -448,6 +448,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "पठाउँदै",
   "chat.status.receiving": "लिँदै",
   "chat.thread.not_available": "यहाँ उपलब्ध छैन",
+  "chat.thread.relay_no_media":
+    "रिले नोडले सन्देशहरू बोक्छ, तर कुनै संलग्नक वा भ्वाइस सन्देश खोल्दैन।",
   "chat.thread.private_channel": "निजी च्यानल",
   "chat.thread.location_channel": "स्थान च्यानल",
   "chat.thread.public_channel": "सार्वजनिक च्यानल",
@@ -1101,6 +1103,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "रिले नोड",
   "mesh.peer.relay_body":
     "मेश फैलाउन कसैले खुला छाडेको रेडियो। यसले आफूले पढ्न नसक्ने सन्देश बोक्छ। यहाँ सन्देश पठाउने कोही छैन।",
+  "mesh.peer.relay_firmware": "फर्मवेयर {version}",
+  "mesh.peer.relay_named": "{name}, रिले नोड",
   "mesh.peer.send_dm": "सिधा सन्देश पठाउनुहोस्",
   "mesh.peer.message": "सन्देश",
   "mesh.peer.send_sats": "ecash पठाउनुहोस्",
@@ -1939,6 +1943,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "जोडिएको छैन",
   "settings.diag.peer_direct": "सिधा जडान",
   "settings.diag.peer_relayed": "अर्को यन्त्रमार्फत सुनिएको",
+  "settings.diag.peer_relay_direct": "रिले नोड · सिधा जडान",
+  "settings.diag.peer_relay_relayed": "रिले नोड · अर्को यन्त्रमार्फत सुनिएको",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "सङ्केतको नाप छैन",
   "settings.diag.no_peers": "दायरामा कोही छैन",

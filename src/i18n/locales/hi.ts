@@ -448,6 +448,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "भेजा जा रहा है",
   "chat.status.receiving": "लिया जा रहा है",
   "chat.thread.not_available": "यहाँ उपलब्ध नहीं",
+  "chat.thread.relay_no_media":
+    "रिले नोड संदेश आगे पहुँचाता है, लेकिन कोई अटैचमेंट या वॉइस संदेश नहीं खोलता।",
   "chat.thread.private_channel": "निजी चैनल",
   "chat.thread.location_channel": "स्थान चैनल",
   "chat.thread.public_channel": "सार्वजनिक चैनल",
@@ -1110,6 +1112,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "रिले नोड",
   "mesh.peer.relay_body":
     "किसी ने मेश को फैलाने के लिए एक रेडियो चालू छोड़ रखा है। यह वे संदेश ढोता है जिन्हें पढ़ नहीं सकता। यहाँ संदेश भेजने के लिए कोई नहीं है।",
+  "mesh.peer.relay_firmware": "फ़र्मवेयर {version}",
+  "mesh.peer.relay_named": "{name}, रिले नोड",
   "mesh.peer.send_dm": "सीधा संदेश भेजें",
   "mesh.peer.message": "संदेश",
   "mesh.peer.send_sats": "ecash भेजें",
@@ -1948,6 +1952,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "जुड़ा नहीं",
   "settings.diag.peer_direct": "सीधा लिंक",
   "settings.diag.peer_relayed": "किसी दूसरे डिवाइस से सुना",
+  "settings.diag.peer_relay_direct": "रिले नोड · सीधा लिंक",
+  "settings.diag.peer_relay_relayed": "रिले नोड · किसी दूसरे डिवाइस से सुना",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "कोई सिग्नल रीडिंग नहीं",
   "settings.diag.no_peers": "पहुँच में कोई नहीं",

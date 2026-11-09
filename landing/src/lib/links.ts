@@ -4,6 +4,8 @@ export const SITE_URL = "https://airhop.1mindlabs.org";
 
 export const REPO_URL = `https://github.com/${GITHUB_OWNER}/airhop`;
 
+export const FIRMWARE_URL = `https://github.com/${GITHUB_OWNER}/airlink`;
+
 export const SPONSOR_URL = `https://github.com/sponsors/${GITHUB_OWNER}`;
 
 export const AUTHOR_NAME = "Areeb Ahmed";

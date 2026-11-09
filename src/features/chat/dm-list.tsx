@@ -21,6 +21,7 @@ import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import EmptyState from "@ui/components/empty-state";
+import RelayGlyph from "@ui/components/relay-glyph";
 import { usePullRefreshColors } from "@ui/hooks/use-pull-refresh";
 import {
   Duration,
@@ -268,6 +269,9 @@ export default function DmList({
           const isOnline =
             peerEntry !== undefined &&
             nowMs - peerEntry.lastSeenMs < REACHABLE_TTL_MS;
+          // Only while its announces arrive: nothing is kept on the contact,
+          // so an old thread with a node out of range reads like any other.
+          const isRelay = peerEntry?.isRelay === true;
           const isPinned = pinnedChannels.includes(item);
           const isMuted = mutedChannels.includes(item);
           const verified = isVerified(contacts[peerID]);
@@ -279,6 +283,8 @@ export default function DmList({
           // The whole row as one sentence, matching the channel list.
           const rowLabel = [
             username,
+            // Said, since the glyph that shows it is silent.
+            isRelay ? t("mesh.peer.relay") : null,
             verified ? t("chat.contact.verified") : null,
             isOnline ? t("chat.dm.in_range") : null,
             (unreadCounts[item] ?? 0) > 0
@@ -320,12 +326,19 @@ export default function DmList({
               accessibilityHint={t("chat.dm.row_hint")}
             >
               {/* Avatar with presence dot (green in range, gray otherwise) */}
-              <Avatar
-                username={username}
-                peerID={peerID}
-                size={46}
-                presence={isOnline ? "online" : "offline"}
-              />
+              {isRelay ? (
+                <RelayGlyph
+                  size={46}
+                  presence={isOnline ? "online" : "offline"}
+                />
+              ) : (
+                <Avatar
+                  username={username}
+                  peerID={peerID}
+                  size={46}
+                  presence={isOnline ? "online" : "offline"}
+                />
+              )}
 
               {/* Content */}
               <View style={styles.rowContent}>
@@ -498,12 +511,27 @@ export default function DmList({
         {moreOptionsDM && (
           <>
             <View style={styles.modalTitleRow}>
-              <Avatar
-                username={resolveDisplayName(moreOptionsDM.slice(3))}
-                peerID={moreOptionsDM.slice(3)}
-                size={32}
-              />
-              <Text style={styles.modalTitle} numberOfLines={1}>
+              {peerMap.get(moreOptionsDM.slice(3))?.isRelay === true ? (
+                <RelayGlyph size={32} />
+              ) : (
+                <Avatar
+                  username={resolveDisplayName(moreOptionsDM.slice(3))}
+                  peerID={moreOptionsDM.slice(3)}
+                  size={32}
+                />
+              )}
+              {/* Said, since the glyph that shows it is silent. */}
+              <Text
+                style={styles.modalTitle}
+                numberOfLines={1}
+                accessibilityLabel={
+                  peerMap.get(moreOptionsDM.slice(3))?.isRelay === true
+                    ? t("mesh.peer.relay_named", {
+                        name: resolveDisplayName(moreOptionsDM.slice(3)),
+                      })
+                    : undefined
+                }
+              >
                 {resolveDisplayName(moreOptionsDM.slice(3))}
               </Text>
             </View>

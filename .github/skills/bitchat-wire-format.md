@@ -107,6 +107,8 @@ A bitchat node never interprets a type it does not know, but it relays it: the u
 | `CHANNEL_ENC`        | `0x50`          | Broadcast         | Private channel, XChaCha20-Poly1305 (Airhop only)         |
 | `CHANNEL_MSG_AIRHOP` | `0x51`          | Broadcast         | Named public channel, a location cell (Airhop only)       |
 
+`0xA0` to `0xA3` are reserved for the node-to-node update protocol of Airlink, Airhop's relay firmware (MANIFEST, REQUEST, CHUNK, STATUS), sent at TTL 0 between two nodes. Never allocate an Airhop type there: `isRelayFirmwareType` in `packet-type.ts` names the range, `relayDecision` never relays one whatever TTL it claims, and conformance X05 reads every value of the `PacketType` enum and fails on one inside it.
+
 Every type has a decoded-payload ceiling in `payload-limits.ts`, mirroring bitchat-ios `PacketPayloadLimits`. A new type needing more than a v1 frame has to be added there before it ships, or receivers drop it.
 
 ## Public Channel Payloads
@@ -124,17 +126,18 @@ Location cells travel under `0x51`, where both bitchat clients see an unknown ty
 
 ## ANNOUNCE TLV
 
-`[type u8][length u8][value]`. Tags `0x01` to `0x06` are bitchat's.
+`[type u8][length u8][value]`. Tags `0x01` to `0x06` are bitchat's, `0xB0` and `0xB1` Airlink's.
 
-| Tag    | Field           | Size           | Notes                                                                                         |
-| ------ | --------------- | -------------- | --------------------------------------------------------------------------------------------- |
-| `0x01` | nickname        | up to 32 bytes | UTF-8, NFC-canonicalized, cut on a character boundary                                         |
-| `0x02` | Noise pub key   | 32 bytes       | X25519 static key; `senderID` must derive from it                                             |
-| `0x03` | signing pub key | 32 bytes       | Ed25519                                                                                       |
-| `0x04` | neighbor IDs    | up to 80 bytes | Skipped on decode, never written: it would hand a passive listener the room's adjacency graph |
-| `0x05` | capabilities    | 1 to 4 bytes   | Minimal little-endian bitfield; omitted when zero                                             |
-| `0x06` | bridge geohash  | up to 12 bytes | Rendezvous cell a bridge gateway serves                                                       |
-| `0xB1` | Bitle role      | 1 byte         | Read, never written. Bit 0 marks a dedicated relay; cosmetic only, since self-signed          |
+| Tag    | Field            | Size           | Notes                                                                                               |
+| ------ | ---------------- | -------------- | --------------------------------------------------------------------------------------------------- |
+| `0x01` | nickname         | up to 32 bytes | UTF-8, NFC-canonicalized, cut on a character boundary                                               |
+| `0x02` | Noise pub key    | 32 bytes       | X25519 static key; `senderID` must derive from it                                                   |
+| `0x03` | signing pub key  | 32 bytes       | Ed25519                                                                                             |
+| `0x04` | neighbor IDs     | up to 80 bytes | Skipped on decode, never written: it would hand a passive listener the room's adjacency graph       |
+| `0x05` | capabilities     | 1 to 4 bytes   | Minimal little-endian bitfield; omitted when zero                                                   |
+| `0x06` | bridge geohash   | up to 12 bytes | Rendezvous cell a bridge gateway serves                                                             |
+| `0xB0` | firmware version | 4 bytes        | Read, never written. Big-endian `(major << 16) + (minor << 8) + patch`; skipped at any other length |
+| `0xB1` | relay role       | 1 byte         | Read, never written. Bit 0 marks a dedicated relay; presentation only, since self-signed            |
 
 No announce carries a Nostr key; it goes inside the session as `0x54`. Receive rules: signature mandatory, and `senderID` must derive from the `0x02` key. Freshness is the ingress rule every packet meets (within 2 minutes of our clock, unless a solicited sync reply; see [`mesh-routing.md`](mesh-routing.md)), and the announce handler also refuses one more than 15 minutes off (`isAnnounceFresh`). An older announce arriving after a newer one still counts as presence, but the newest held (`GossipSync.newestAnnounce`) keeps the name and capabilities.
 

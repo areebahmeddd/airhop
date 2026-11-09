@@ -458,6 +458,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "ပို့နေသည်",
   "chat.status.receiving": "လက်ခံနေသည်",
   "chat.thread.not_available": "ဤနေရာတွင် မရနိုင်ပါ",
+  "chat.thread.relay_no_media":
+    "ထပ်ဆင့်လွှင့်ဆုံမှတ်သည် မက်ဆေ့ချ်များကို သယ်ဆောင်ပေးသော်လည်း ပူးတွဲဖိုင်များ သို့မဟုတ် အသံမက်ဆေ့ချ်များကို မဖွင့်ပါ။",
   "chat.thread.private_channel": "သီးသန့် ချန်နယ်",
   "chat.thread.location_channel": "တည်နေရာ ချန်နယ်",
   "chat.thread.public_channel": "အများသုံး ချန်နယ်",
@@ -1147,6 +1149,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "ထပ်ဆင့်လွှင့်ဆုံမှတ်",
   "mesh.peer.relay_body":
     "မက်ရှ်ကို ကျယ်ပြန့်စေရန် တစ်စုံတစ်ဦးက ဖွင့်ထားခဲ့သော ရေဒီယိုတစ်လုံးဖြစ်သည်။ ကိုယ်တိုင်မဖတ်နိုင်သော မက်ဆေ့ဂျ်များကို သယ်ဆောင်ပေးသည်။ ဤနေရာတွင် မက်ဆေ့ဂျ်ပို့စရာ လူမရှိပါ။",
+  "mesh.peer.relay_firmware": "ဖမ်းဝဲ {version}",
+  "mesh.peer.relay_named": "{name}၊ ထပ်ဆင့်လွှင့်ဆုံမှတ်",
   "mesh.peer.send_dm": "တိုက်ရိုက်မက်ဆေ့ဂျ် ပို့ပါ",
   "mesh.peer.message": "မက်ဆေ့ဂျ်",
   "mesh.peer.send_sats": "ecash ပို့ပါ",
@@ -2011,6 +2015,10 @@ export const strings: Strings = {
   "settings.diag.disconnected": "မချိတ်ဆက်ထားပါ",
   "settings.diag.peer_direct": "တိုက်ရိုက်ချိတ်ဆက်မှု",
   "settings.diag.peer_relayed": "အခြားစက်မှတစ်ဆင့် ကြားရသည်",
+  "settings.diag.peer_relay_direct":
+    "ထပ်ဆင့်လွှင့်ဆုံမှတ် · တိုက်ရိုက်ချိတ်ဆက်မှု",
+  "settings.diag.peer_relay_relayed":
+    "ထပ်ဆင့်လွှင့်ဆုံမှတ် · အခြားစက်မှတစ်ဆင့် ကြားရသည်",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "အချက်ပြဖတ်ချက် မရှိပါ",
   "settings.diag.no_peers": "အကွာအဝေးအတွင်း မည်သူမျှ မရှိပါ",

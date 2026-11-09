@@ -461,6 +461,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "அனுப்புகிறது",
   "chat.status.receiving": "பெறுகிறது",
   "chat.thread.not_available": "இங்கே கிடைக்கவில்லை",
+  "chat.thread.relay_no_media":
+    "ரிலே முனை செய்திகளைக் கடத்துகிறது, ஆனால் இணைப்புகளையோ குரல் செய்திகளையோ திறப்பதில்லை.",
   "chat.thread.private_channel": "தனிப்பட்ட சேனல்",
   "chat.thread.location_channel": "இடச் சேனல்",
   "chat.thread.public_channel": "பொது சேனல்",
@@ -1156,6 +1158,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "ரிலே முனை",
   "mesh.peer.relay_body":
     "மெஷை விரிவாக்க யாரோ இயக்கத்தில் விட்டுச்சென்ற ஒரு வானொலி. தன்னால் படிக்க முடியாத செய்திகளை இது சுமக்கிறது. இங்கே செய்தி அனுப்ப யாரும் இல்லை.",
+  "mesh.peer.relay_firmware": "ஃபர்ம்வேர் {version}",
+  "mesh.peer.relay_named": "{name}, ரிலே முனை",
   "mesh.peer.send_dm": "நேரடிச் செய்தி அனுப்பு",
   "mesh.peer.message": "செய்தி",
   "mesh.peer.send_sats": "ecash அனுப்பு",
@@ -2035,6 +2039,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "இணைக்கப்படவில்லை",
   "settings.diag.peer_direct": "நேரடி இணைப்பு",
   "settings.diag.peer_relayed": "மற்றொரு சாதனம் வழியாகக் கேட்கப்பட்டது",
+  "settings.diag.peer_relay_direct": "ரிலே முனை · நேரடி இணைப்பு",
+  "settings.diag.peer_relay_relayed":
+    "ரிலே முனை · மற்றொரு சாதனம் வழியாகக் கேட்கப்பட்டது",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "சமிக்ஞை அளவீடு இல்லை",
   "settings.diag.no_peers": "வரம்பில் யாரும் இல்லை",

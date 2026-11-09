@@ -13,10 +13,14 @@ import {
   decodeFilePacket,
   encodeFilePacket,
 } from "@core/mesh/wire/file-packet";
-import { PacketType, type Packet } from "@core/mesh/wire/packet-codec";
+import {
+  computePacketId,
+  PacketType,
+  type Packet,
+} from "@core/mesh/wire/packet-codec";
 import { privateMediaStableID } from "@core/mesh/wire/private-media-id";
 import { privateVideoStableID } from "@core/mesh/wire/private-video-id";
-import { hexToBytes } from "@noble/hashes/utils.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { useChatStore } from "@store/chat-store";
 import { useTransferStore } from "@store/transfer-store";
 import {
@@ -919,6 +923,36 @@ describe("receiving a file", () => {
     // On disk it is what its bytes are, whatever the sender called it.
     expect([...globalThis.__cache.keys()][0]?.endsWith(".jpg")).toBe(true);
   });
+  it("drops a public file the spam filter hides, before writing it", async () => {
+    useChatStore.getState().addChannel("#bluetooth");
+    const { service } = makeService();
+    const judged: string[] = [];
+    service.hidesAsSpam = (sender, id) => {
+      judged.push(`${sender} ${id}`);
+      return true;
+    };
+    const packet = broadcast(photo());
+    service.onFileTransfer(packet);
+    service.onFileTransfer(packet);
+    await settle();
+    expect(useChatStore.getState().messages["#bluetooth"] ?? []).toEqual([]);
+    expect(globalThis.__cache.size).toBe(0);
+    // One ID for every copy, so the filter counts it once.
+    expect(new Set(judged)).toEqual(
+      new Set([`1122334455667788 file-${bytesToHex(computePacketId(packet))}`]),
+    );
+  });
+
+  it("never asks the spam filter about a sealed file", async () => {
+    const { service } = makeService();
+    service.hidesAsSpam = () => true;
+    service.onSealedFile("1122334455667788", photo());
+    await settle();
+    expect(
+      useChatStore.getState().messages["dm:1122334455667788"],
+    ).toHaveLength(1);
+  });
+
   it("does not put back a public room the person left, nor keep the file", async () => {
     useChatStore.getState().removeChannel("#bluetooth");
     expect(useChatStore.getState().channels).not.toContain("#bluetooth");

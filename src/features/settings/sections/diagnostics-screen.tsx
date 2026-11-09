@@ -22,6 +22,7 @@ import {
 import { GCS_MAX_BYTES, GCS_TARGET_FPR } from "@core/mesh/sync/gossip-sync";
 import { t, useT, useTPlural } from "@i18n";
 import { Feather } from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import {
   getDiagnosticsReport,
   shareDiagnostics,
@@ -30,6 +31,7 @@ import { getMeshService } from "@services/mesh-service";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import BottomSheet, { afterSheetsClose } from "@ui/components/bottom-sheet";
+import { RELAY_ICON } from "@ui/components/relay-glyph";
 import Toast from "@ui/components/toast";
 import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
@@ -253,25 +255,27 @@ export default function DiagnosticsScreen({
                   <SettingRow
                     // Relay first: what a peer IS outranks how we reached it,
                     // and a relay we hold a link to is still not a person.
-                    icon={
-                      peer.isInfrastructure === true
-                        ? "radio"
-                        : peer.isDirect
-                          ? "link"
-                          : "share-2"
+                    // The tower is the relay's glyph everywhere else too.
+                    icon={peer.isDirect ? "link" : "share-2"}
+                    iconOverride={
+                      peer.isRelay === true ? (
+                        <MaterialDesignIcons
+                          name={RELAY_ICON}
+                          size={18}
+                          color={Colors.textSecondary}
+                        />
+                      ) : undefined
                     }
                     label={resolveDisplayName(peer.peerID)}
-                    description={
-                      peer.isInfrastructure === true
-                        ? `${t("mesh.peer.relay")} · ${
-                            peer.isDirect
-                              ? t("settings.diag.peer_direct")
-                              : t("settings.diag.peer_relayed")
-                          }`
+                    description={T(
+                      peer.isRelay === true
+                        ? peer.isDirect
+                          ? "settings.diag.peer_relay_direct"
+                          : "settings.diag.peer_relay_relayed"
                         : peer.isDirect
-                          ? T("settings.diag.peer_direct")
-                          : T("settings.diag.peer_relayed")
-                    }
+                          ? "settings.diag.peer_direct"
+                          : "settings.diag.peer_relayed",
+                    )}
                     control={
                       <View style={local.peerMeta}>
                         <Text style={local.peerID}>{peer.peerID}</Text>

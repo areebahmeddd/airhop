@@ -454,6 +454,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "A enviar",
   "chat.status.receiving": "A receber",
   "chat.thread.not_available": "Indisponível aqui",
+  "chat.thread.relay_no_media":
+    "Um nó repetidor transporta mensagens, mas não abre anexos nem mensagens de voz.",
   "chat.thread.private_channel": "Canal privado",
   "chat.thread.location_channel": "Canal de localização",
   "chat.thread.public_channel": "Canal público",
@@ -1134,6 +1136,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Nó repetidor",
   "mesh.peer.relay_body":
     "Um rádio que alguém deixou ligado para alargar a malha. Leva mensagens que não consegue ler. Não há aqui ninguém a quem escrever.",
+  "mesh.peer.relay_firmware": "Firmware {version}",
+  "mesh.peer.relay_named": "{name}, nó repetidor",
   "mesh.peer.send_dm": "Enviar uma mensagem direta",
   "mesh.peer.message": "Mensagem",
   "mesh.peer.send_sats": "Enviar ecash",
@@ -1999,6 +2003,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Não ligado",
   "settings.diag.peer_direct": "Ligação direta",
   "settings.diag.peer_relayed": "Ouvido através de outro dispositivo",
+  "settings.diag.peer_relay_direct": "Nó repetidor · Ligação direta",
+  "settings.diag.peer_relay_relayed":
+    "Nó repetidor · Ouvido através de outro dispositivo",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Sem leitura de sinal",
   "settings.diag.no_peers": "Ninguém ao alcance",

@@ -1,6 +1,7 @@
 // The ANNOUNCE packet beyond its keys: the freshness window, the capability
-// bits (TLV 0x05), the bridge rendezvous cell (TLV 0x06), Bitle's relay role
-// (TLV 0xB1), and telling our own echo from this identity on another phone.
+// bits (TLV 0x05), the bridge rendezvous cell (TLV 0x06), the relay firmware
+// version and role (TLVs 0xB0, 0xB1), and telling our own echo from this
+// identity on another phone.
 //
 // The freshness window is the only thing stopping a captured announce being
 // replayed later to fake a presence, and phone clocks disagree, so it has to be
@@ -267,77 +268,119 @@ describe("ANNOUNCE bridge geohash TLV (0x06)", () => {
   });
 });
 
-// Bitle's own TLVs, which we read and never write. A Bitle node is a full peer
-// with keys and a signed announce, so the only thing separating it from a person
-// in the roster is this byte. See bitleproject/bitle, main/noise_handshake.c.
-describe("Bitle role TLV (0xB1)", () => {
-  // Appended, because Bitle appends: 0xB0 then 0xB1, after the signing key. The
-  // shape matters as much as the value, since a decoder that mishandles a
-  // trailing unknown TLV loses nothing visible until a relay is in the room.
-  function withBitleTail(payload: Uint8Array, flags: number): Uint8Array {
-    const fw = [0xb0, 4, 0x00, 0x00, 0x00, 0x07];
+// Airlink's own TLVs, which we read and never write. A relay node is a
+// full peer with keys and a signed announce, so the only thing separating it
+// from a person in the roster is the 0xB1 byte.
+describe("relay TLVs (0xB0, 0xB1)", () => {
+  // Version 1.0.0, packed `major << 16 | minor << 8 | patch`, big-endian.
+  const FIRMWARE_1_0_0 = [0x00, 0x01, 0x00, 0x00];
+
+  // Appended, because the firmware appends: 0xB0 then 0xB1, after the signing
+  // key. The shape matters as much as the value, since a decoder that mishandles
+  // a trailing unknown TLV loses nothing visible until a relay is in the room.
+  function withRelayTail(
+    payload: Uint8Array,
+    flags: number,
+    version: number[] = FIRMWARE_1_0_0,
+  ): Uint8Array {
+    const fw = [0xb0, version.length, ...version];
     const role = [0xb1, 1, flags];
     return new Uint8Array([...payload, ...fw, ...role]);
   }
 
-  test("a relay announce decodes as infrastructure", () => {
+  test("a relay announce decodes as a relay", () => {
     const id = makeIdentity();
-    const base = encodeAnnouncePayload(id, "Bitle-4213");
+    const base = encodeAnnouncePayload(id, "AirhopRelay-4213");
     const info = decodeAnnouncePayload(
-      withBitleTail(base, 0x01),
+      withRelayTail(base, 0x01),
       new Uint8Array(8),
     );
-    expect(info?.isInfrastructure).toBe(true);
+    expect(info?.isRelay).toBe(true);
   });
 
-  test("the clock-authority bit alone does not make a peer infrastructure", () => {
-    // 0xB1 bit 1 says a node's clock traces back to a phone, which a phone can
-    // set about itself. Only bit 0 means "not a person".
+  test("a reserved bit alone does not make a peer a relay", () => {
+    // Only bit 0 means "not a person".
     const id = makeIdentity();
-    const base = encodeAnnouncePayload(id, "Bitle-4213");
+    const base = encodeAnnouncePayload(id, "AirhopRelay-4213");
     const info = decodeAnnouncePayload(
-      withBitleTail(base, 0x02),
+      withRelayTail(base, 0x02),
       new Uint8Array(8),
     );
-    expect(info?.isInfrastructure).toBe(false);
+    expect(info?.isRelay).toBe(false);
   });
 
-  test("bits Bitle has not defined yet are ignored", () => {
+  test("reserved bits beside bit 0 are ignored", () => {
     const id = makeIdentity();
-    const base = encodeAnnouncePayload(id, "Bitle-4213");
+    const base = encodeAnnouncePayload(id, "AirhopRelay-4213");
     const info = decodeAnnouncePayload(
-      withBitleTail(base, 0xff),
+      withRelayTail(base, 0xff),
       new Uint8Array(8),
     );
-    expect(info?.isInfrastructure).toBe(true);
+    expect(info?.isRelay).toBe(true);
   });
 
-  test("an ordinary peer is not infrastructure", () => {
+  test("an ordinary peer is not a relay and carries no firmware version", () => {
     const id = makeIdentity();
     const info = decodeAnnouncePayload(
       encodeAnnouncePayload(id, "grace"),
       new Uint8Array(8),
     );
-    expect(info?.isInfrastructure).toBe(false);
+    expect(info?.isRelay).toBe(false);
+    expect(info?.firmwareVersion).toBeUndefined();
   });
 
-  test("the Bitle tail does not disturb the keys ahead of it", () => {
+  test("the firmware version decodes as the packed big-endian number", () => {
+    const id = makeIdentity();
+    const base = encodeAnnouncePayload(id, "AirhopRelay-4213");
+    const first = decodeAnnouncePayload(
+      withRelayTail(base, 0x01),
+      new Uint8Array(8),
+    );
+    expect(first?.firmwareVersion).toBe(0x010000);
+    // 2.10.3, and a top byte set, which a 32-bit shift would turn negative.
+    const later = decodeAnnouncePayload(
+      withRelayTail(base, 0x01, [0x00, 0x02, 0x0a, 0x03]),
+      new Uint8Array(8),
+    );
+    expect(later?.firmwareVersion).toBe(0x020a03);
+    const top = decodeAnnouncePayload(
+      withRelayTail(base, 0x01, [0x80, 0x00, 0x00, 0x01]),
+      new Uint8Array(8),
+    );
+    expect(top?.firmwareVersion).toBe(0x80000001);
+  });
+
+  test("a firmware version of any other length is skipped, not misread", () => {
+    const id = makeIdentity();
+    const base = encodeAnnouncePayload(id, "AirhopRelay-4213");
+    for (const version of [[], [0x01, 0x00, 0x00], [0, 0, 1, 0, 0]]) {
+      const info = decodeAnnouncePayload(
+        withRelayTail(base, 0x01, version),
+        new Uint8Array(8),
+      );
+      expect(info?.firmwareVersion).toBeUndefined();
+      // The TLV after it is still read: the length is honored, not the value.
+      expect(info?.isRelay).toBe(true);
+    }
+  });
+
+  test("the relay tail does not disturb the keys ahead of it", () => {
     // The half that actually matters. A relay is only useful if we still learn
     // its Noise and signing keys, which is what lets it join the mesh at all.
     const id = makeIdentity();
-    const base = encodeAnnouncePayload(id, "Bitle-4213");
+    const base = encodeAnnouncePayload(id, "AirhopRelay-4213");
     const info = decodeAnnouncePayload(
-      withBitleTail(base, 0x03),
+      withRelayTail(base, 0x03),
       new Uint8Array(8),
     );
     expect(info).not.toBeNull();
     expect(info!.noisePubKey).toEqual(id.noiseStaticPubKey);
     expect(info!.signingPubKey).toEqual(id.signingPubKey);
-    expect(info!.nickname).toBe("Bitle-4213");
+    expect(info!.nickname).toBe("AirhopRelay-4213");
   });
 
   test("we never advertise the role TLV ourselves", () => {
-    // Airhop is a phone. Claiming to be infrastructure would put us behind the
+    // Airhop is a phone. Claiming to be a relay would put us behind the
     // glyph and take our own Message button away on every other device.
     const id = makeIdentity();
     const payload = encodeAnnouncePayload(
@@ -357,19 +400,19 @@ describe("Bitle role TLV (0xB1)", () => {
     // decides presentation and never capability.
     const id = makeIdentity();
     const mgr = new AnnounceManager();
-    const pkt = mgr.buildPacket(id, "Bitle-4213");
-    pkt.payload = withBitleTail(pkt.payload, 0x01);
+    const pkt = mgr.buildPacket(id, "AirhopRelay-4213");
+    pkt.payload = withRelayTail(pkt.payload, 0x01);
     pkt.signature = signPacket(pkt, id.signingPrivKey);
     const info = mgr.validateAndParse(pkt);
     expect(info).not.toBeNull();
-    expect(info!.isInfrastructure).toBe(true);
+    expect(info!.isRelay).toBe(true);
   });
 
   test("a tampered role byte takes the whole announce down", () => {
     const id = makeIdentity();
     const mgr = new AnnounceManager();
-    const pkt = mgr.buildPacket(id, "Bitle-4213");
-    pkt.payload = withBitleTail(pkt.payload, 0x01);
+    const pkt = mgr.buildPacket(id, "AirhopRelay-4213");
+    pkt.payload = withRelayTail(pkt.payload, 0x01);
     pkt.signature = signPacket(pkt, id.signingPrivKey);
     // Flip the flag in flight. Nothing special protects this byte; it is covered
     // by the same signature as the keys, so the packet is simply dropped.

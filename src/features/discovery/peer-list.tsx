@@ -15,7 +15,6 @@ import { describePayResult, payPerson } from "@services/payment-router";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore } from "@store/chat-store";
-import { useContactsStore } from "@store/contacts-store";
 import {
   type NearbyPeer,
   REACHABLE_TTL_MS,
@@ -25,6 +24,7 @@ import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
 import EmptyState from "@ui/components/empty-state";
+import RelayGlyph from "@ui/components/relay-glyph";
 import StatusDot from "@ui/components/status-dot";
 import { useCopy } from "@ui/hooks/use-copy";
 import {
@@ -39,7 +39,12 @@ import {
   TAB_BAR_CLEARANCE,
   useThemeColors,
 } from "@ui/theme";
-import { amountParts, formatAgo, parseWholeNumber } from "@utils/format";
+import {
+  amountParts,
+  formatAgo,
+  formatFirmwareVersion,
+  parseWholeNumber,
+} from "@utils/format";
 import {
   resolveDisplayName,
   resolvePeerOwnName,
@@ -54,9 +59,9 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { keepAsContact } from "../chat/keep-as-contact";
 import AddContactScreen from "../contacts/add-contact-screen";
 import RadarView from "./radar-view";
-import RelayGlyph from "./relay-glyph";
 
 type ViewMode = "list" | "radar";
 
@@ -168,9 +173,7 @@ export default function PeerList({
     // Messaging someone saves them as a contact (Signal-style: people you talk
     // to are kept), so the thread and their identity survive them going out of
     // range. Unverified until a QR card confirms the keys.
-    useContactsStore
-      .getState()
-      .saveIfAbsent(peer.peerID, peer.nickname, peer.noisePubKeyHex);
+    keepAsContact(peer.peerID, peer.nickname);
     addChannel(channel);
     closeSheet();
     onOpenDM?.(channel);
@@ -289,14 +292,14 @@ export default function PeerList({
                 // A relay keeps the online label a person gets: whether the box
                 // on the pole is still answering matters just as much.
                 accessibilityLabel={t(
-                  item.isInfrastructure === true
+                  item.isRelay === true
                     ? "mesh.peer.view_relay_online"
                     : "mesh.peer.view_peer_online",
                   { name: username },
                 )}
               >
                 <View style={styles.avatarWrapper}>
-                  {item.isInfrastructure === true ? (
+                  {item.isRelay === true ? (
                     <RelayGlyph size={46} />
                   ) : (
                     <Avatar
@@ -316,7 +319,7 @@ export default function PeerList({
                   </Text>
                   {/* A relay's ID is of no use: it will never be a contact and
                       there is nothing to look it up against. */}
-                  {item.isInfrastructure === true ? (
+                  {item.isRelay === true ? (
                     <Text style={styles.rowRelay}>{T("mesh.peer.relay")}</Text>
                   ) : (
                     <Text style={styles.rowPeerID}>
@@ -353,7 +356,7 @@ export default function PeerList({
         {shownPeer && (
           <>
             <View style={styles.sheetIdentity}>
-              {shownPeer.isInfrastructure === true ? (
+              {shownPeer.isRelay === true ? (
                 <RelayGlyph size={64} />
               ) : (
                 <Avatar
@@ -412,8 +415,9 @@ export default function PeerList({
                 </Text>
               </View>
               {/* In range only: a peer unheard for a minute cannot answer a
-                  ping, and a relay is not somebody you are trying to find. */}
-              {shownPeer.isInfrastructure !== true && isOnline(shownPeer) && (
+                  ping. A relay answers too, and whoever mounted it wants to
+                  know how many hops away it sits. */}
+              {isOnline(shownPeer) && (
                 <DistanceRow
                   isDirect={shownPeer.isDirect === true}
                   probe={
@@ -426,7 +430,7 @@ export default function PeerList({
 
             {/* A relay gets an explanation instead of actions: nobody reads
                 its messages and it has no wallet to receive sats. */}
-            {shownPeer.isInfrastructure === true ? (
+            {shownPeer.isRelay === true ? (
               <View style={styles.relayNote}>
                 <Text style={styles.relayNoteTitle}>
                   {T("mesh.peer.relay")}
@@ -434,6 +438,15 @@ export default function PeerList({
                 <Text style={styles.relayNoteBody}>
                   {T("mesh.peer.relay_body")}
                 </Text>
+                {/* Only when announced: a node without the TLV, or a phone
+                    claiming the role, has no version worth guessing at. */}
+                {shownPeer.firmwareVersion !== undefined && (
+                  <Text style={styles.relayNoteVersion}>
+                    {T("mesh.peer.relay_firmware", {
+                      version: formatFirmwareVersion(shownPeer.firmwareVersion),
+                    })}
+                  </Text>
+                )}
               </View>
             ) : (
               // Message + Send sats: a tight pair of actions, not spread apart
@@ -811,6 +824,13 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontSize: FontSize.sm,
       color: Colors.textSecondary,
       lineHeight: LineHeight.sm,
+    },
+    // Prose, not data: the version arrives through a catalog sentence, so it
+    // takes the reading face rather than the monospace the peer ID uses.
+    relayNoteVersion: {
+      fontSize: FontSize.xs,
+      color: Colors.textMuted,
+      lineHeight: LineHeight.xs,
     },
     sheetMessageBtn: {
       backgroundColor: Colors.accent,

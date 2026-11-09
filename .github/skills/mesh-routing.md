@@ -39,7 +39,7 @@ A packet rebuilt from fragments goes through `admit`, not `receive`: it is dedup
 
 `relayDecision` in `flood-router.ts` transcribes bitchat-ios `RelayController.decide`. TTL is capped at 7 and decremented **before** the relay.
 
-- **Never relayed:** `REQUEST_SYNC`, anything with `ttl <= 1`, and a packet whose sender or recipient is this node. The caller still handles it, which is how an announce under our own ID reveals the identity running elsewhere.
+- **Never relayed:** `REQUEST_SYNC`, relay firmware's update types `0xA0` to `0xA3` (`isRelayFirmwareType`), anything with `ttl <= 1`, and a packet whose sender or recipient is this node. The caller still handles it, which is how an announce under our own ID reveals the identity running elsewhere.
 - **Full depth** (`ttl - 1`): handshakes, and with a recipient `NOISE_ENCRYPTED`, `DR_ENCRYPTED`, `COURIER_ENV`, `PING`, `PONG`, `NOSTR_CARRIER` and fragments.
 - **Clamped by degree** (`relayLimit`), the relayed copy carrying one less than the cap or its own TTL, whichever is lower:
 
@@ -105,7 +105,7 @@ Three deliberate differences from bitchat-ios: its chunk is 469 bytes from a sma
 
 ## Gossip Sync
 
-`REQUEST_SYNC` is link-local: sent at TTL 0 to one link peer, never relayed whatever TTL it arrives with.
+`REQUEST_SYNC` is link-local: sent at TTL 0 to one link peer, never relayed whatever TTL it arrives with. So are relay firmware's `0xA0` to `0xA3`, which a node sends at TTL 0 to the node beside it.
 
 - **Answering.** Only a request that is plainly the link peer's own, as bitchat-ios answers (`BLEService.handleRequestSync`): TTL 0, `senderID` equal to the peer bound to the link it arrived on, a signature verifying against the key held for that peer, and a recipient that is this node or no one. A request for another phone is dropped before the duplicate filter, since one sender's requests share a packet ID. The budget is 8 responses per 30 s per peer, and replies go back down that link only, at TTL 0 with `IS_RSR` set.
 - **Accepting a reply.** An `IS_RSR` packet is judged on the sync rules alone, fresh or not (bitchat-ios `BLEIngressPacketGuard`): TTL 0, arriving on the link bound to a peer we asked in the last 30 s, never dated past the 2 minute skew, and a type we sync within the age we serve it for (`isSyncReplyInWindow`).

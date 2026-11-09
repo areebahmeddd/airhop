@@ -447,6 +447,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "ਭੇਜ ਰਹੇ ਹਾਂ",
   "chat.status.receiving": "ਮਿਲ ਰਿਹਾ ਹੈ",
   "chat.thread.not_available": "ਇੱਥੇ ਉਪਲਬਧ ਨਹੀਂ",
+  "chat.thread.relay_no_media":
+    "ਰਿਲੇ ਨੋਡ ਸੁਨੇਹੇ ਅੱਗੇ ਪਹੁੰਚਾਉਂਦਾ ਹੈ, ਪਰ ਕੋਈ ਅਟੈਚਮੈਂਟ ਜਾਂ ਵੌਇਸ ਸੁਨੇਹਾ ਨਹੀਂ ਖੋਲ੍ਹਦਾ।",
   "chat.thread.private_channel": "ਨਿੱਜੀ ਚੈਨਲ",
   "chat.thread.location_channel": "ਟਿਕਾਣਾ ਚੈਨਲ",
   "chat.thread.public_channel": "ਜਨਤਕ ਚੈਨਲ",
@@ -1112,6 +1114,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "ਰਿਲੇ ਨੋਡ",
   "mesh.peer.relay_body":
     "ਇੱਕ ਰੇਡੀਓ ਜੋ ਕਿਸੇ ਨੇ ਮੈਸ਼ ਫੈਲਾਉਣ ਲਈ ਚੱਲਦਾ ਛੱਡਿਆ ਹੈ। ਇਹ ਉਹ ਸੁਨੇਹੇ ਲੈ ਕੇ ਜਾਂਦਾ ਹੈ ਜੋ ਇਹ ਪੜ੍ਹ ਨਹੀਂ ਸਕਦਾ। ਇੱਥੇ ਸੁਨੇਹਾ ਭੇਜਣ ਲਈ ਕੋਈ ਨਹੀਂ ਹੈ।",
+  "mesh.peer.relay_firmware": "ਫ਼ਰਮਵੇਅਰ {version}",
+  "mesh.peer.relay_named": "{name}, ਰਿਲੇ ਨੋਡ",
   "mesh.peer.send_dm": "ਸਿੱਧਾ ਸੁਨੇਹਾ ਭੇਜੋ",
   "mesh.peer.message": "ਸੁਨੇਹਾ",
   "mesh.peer.send_sats": "ecash ਭੇਜੋ",
@@ -1951,6 +1955,8 @@ export const strings: Strings = {
   "settings.diag.disconnected": "ਜੁੜਿਆ ਨਹੀਂ",
   "settings.diag.peer_direct": "ਸਿੱਧਾ ਲਿੰਕ",
   "settings.diag.peer_relayed": "ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ਰਾਹੀਂ ਸੁਣਿਆ",
+  "settings.diag.peer_relay_direct": "ਰਿਲੇ ਨੋਡ · ਸਿੱਧਾ ਲਿੰਕ",
+  "settings.diag.peer_relay_relayed": "ਰਿਲੇ ਨੋਡ · ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ਰਾਹੀਂ ਸੁਣਿਆ",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "ਸਿਗਨਲ ਦਾ ਕੋਈ ਪਾਠ ਨਹੀਂ",
   "settings.diag.no_peers": "ਪਹੁੰਚ ਵਿੱਚ ਕੋਈ ਨਹੀਂ",

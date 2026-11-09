@@ -13,8 +13,17 @@ import { truncateToUtf8Bytes, utf8ByteLength } from "@utils/utf8-budget";
 // Applied on every keystroke, the way the DM composer clamps its draft. The
 // encoder drops a longer caption without a word rather than cutting it, so the
 // photo would arrive bare.
-export function clampCaption(text: string): string {
-  return truncateToUtf8Bytes(text, MAX_CAPTION_BYTES);
+//
+// In a DM it is held to a DM's own budget: a bitchat recipient gets the caption
+// as a private message of its own, which carries no more, and whether the peer
+// runs bitchat may not be known yet while it is typed.
+export function clampCaption(text: string, channel: string): string {
+  return truncateToUtf8Bytes(
+    text,
+    channel.startsWith("dm:")
+      ? PRIVATE_MESSAGE_MAX_CONTENT_BYTES
+      : MAX_CAPTION_BYTES,
+  );
 }
 
 // Characters, counted as code points the way bitchat counts them.

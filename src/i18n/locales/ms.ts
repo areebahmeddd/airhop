@@ -451,6 +451,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Menghantar",
   "chat.status.receiving": "Menerima",
   "chat.thread.not_available": "Tidak tersedia di sini",
+  "chat.thread.relay_no_media":
+    "Nod geganti membawa mesej, tetapi tidak membuka lampiran atau mesej suara.",
   "chat.thread.private_channel": "Saluran peribadi",
   "chat.thread.location_channel": "Saluran lokasi",
   "chat.thread.public_channel": "Saluran awam",
@@ -1131,6 +1133,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Nod geganti",
   "mesh.peer.relay_body":
     "Radio yang seseorang biarkan hidup untuk meluaskan mesh. Ia membawa mesej yang tidak boleh dibacanya. Tiada sesiapa di sini untuk dihantar mesej.",
+  "mesh.peer.relay_firmware": "Perisian tegar {version}",
+  "mesh.peer.relay_named": "{name}, nod geganti",
   "mesh.peer.send_dm": "Hantar mesej terus",
   "mesh.peer.message": "Mesej",
   "mesh.peer.send_sats": "Hantar ecash",
@@ -1988,6 +1992,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Tidak bersambung",
   "settings.diag.peer_direct": "Pautan terus",
   "settings.diag.peer_relayed": "Didengari melalui peranti lain",
+  "settings.diag.peer_relay_direct": "Nod geganti · Pautan terus",
+  "settings.diag.peer_relay_relayed":
+    "Nod geganti · Didengari melalui peranti lain",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Tiada bacaan isyarat",
   "settings.diag.no_peers": "Tiada sesiapa dalam jangkauan",

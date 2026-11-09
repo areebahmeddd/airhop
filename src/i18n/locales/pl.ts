@@ -453,6 +453,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Wysyłanie",
   "chat.status.receiving": "Odbieranie",
   "chat.thread.not_available": "Niedostępne tutaj",
+  "chat.thread.relay_no_media":
+    "Węzeł przekaźnikowy przenosi wiadomości, ale nie otwiera załączników ani wiadomości głosowych.",
   "chat.thread.private_channel": "Kanał prywatny",
   "chat.thread.location_channel": "Kanał lokalizacyjny",
   "chat.thread.public_channel": "Kanał publiczny",
@@ -1135,6 +1137,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Węzeł przekaźnikowy",
   "mesh.peer.relay_body":
     "Radio, które ktoś zostawił włączone, żeby poszerzyć sieć mesh. Przenosi wiadomości, których nie potrafi odczytać. Nie ma tu do kogo napisać.",
+  "mesh.peer.relay_firmware": "Oprogramowanie układowe {version}",
+  "mesh.peer.relay_named": "{name}, węzeł przekaźnikowy",
   "mesh.peer.send_dm": "Wyślij wiadomość bezpośrednią",
   "mesh.peer.message": "Wiadomość",
   "mesh.peer.send_sats": "Wyślij ecash",
@@ -1985,6 +1989,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Brak połączenia",
   "settings.diag.peer_direct": "Łącze bezpośrednie",
   "settings.diag.peer_relayed": "Słyszany przez inne urządzenie",
+  "settings.diag.peer_relay_direct": "Węzeł przekaźnikowy · Łącze bezpośrednie",
+  "settings.diag.peer_relay_relayed":
+    "Węzeł przekaźnikowy · Słyszany przez inne urządzenie",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Brak odczytu sygnału",
   "settings.diag.no_peers": "Nikogo w zasięgu",

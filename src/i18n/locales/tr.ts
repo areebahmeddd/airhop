@@ -453,6 +453,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Gönderiliyor",
   "chat.status.receiving": "Alınıyor",
   "chat.thread.not_available": "Burada kullanılamıyor",
+  "chat.thread.relay_no_media":
+    "Aktarma düğümü mesajları taşır, ancak ekleri veya sesli mesajları açmaz.",
   "chat.thread.private_channel": "Özel kanal",
   "chat.thread.location_channel": "Konum kanalı",
   "chat.thread.public_channel": "Herkese açık kanal",
@@ -1121,6 +1123,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Aktarma düğümü",
   "mesh.peer.relay_body":
     "Birinin mesh'i genişletmek için açık bıraktığı bir telsiz. Okuyamadığı mesajları taşır. Burada mesaj yazılacak kimse yok.",
+  "mesh.peer.relay_firmware": "Donanım yazılımı {version}",
+  "mesh.peer.relay_named": "{name}, aktarma düğümü",
   "mesh.peer.send_dm": "Doğrudan mesaj gönder",
   "mesh.peer.message": "Mesaj",
   "mesh.peer.send_sats": "Ecash gönder",
@@ -1968,6 +1972,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Bağlı değil",
   "settings.diag.peer_direct": "Doğrudan bağlantı",
   "settings.diag.peer_relayed": "Başka bir cihaz üzerinden duyuldu",
+  "settings.diag.peer_relay_direct": "Aktarma düğümü · Doğrudan bağlantı",
+  "settings.diag.peer_relay_relayed":
+    "Aktarma düğümü · Başka bir cihaz üzerinden duyuldu",
   "settings.diag.rssi": "{dbm} dBm",
   "settings.diag.no_rssi": "Sinyal okuması yok",
   "settings.diag.no_peers": "Menzilde kimse yok",

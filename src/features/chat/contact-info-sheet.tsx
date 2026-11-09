@@ -15,6 +15,7 @@ import {
   Feather,
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
+import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import { getMeshService } from "@services/mesh-service";
 import { useChatStore } from "@store/chat-store";
 import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
@@ -25,6 +26,7 @@ import { useSettingsStore } from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
+import RelayGlyph, { RELAY_ICON } from "@ui/components/relay-glyph";
 import UpperText from "@ui/components/upper-text";
 import { useCopy } from "@ui/hooks/use-copy";
 import {
@@ -97,13 +99,20 @@ export default function ContactInfoSheet({
   const name = peerID ? resolveDisplayName(peerID) : "";
   const isOnline =
     peer !== undefined && nowMs - peer.lastSeenMs < REACHABLE_TTL_MS;
+  // A relay node in range, in a thread opened from history or a pasted peer
+  // ID. Equipment, so the sheet draws its glyph and says what it is in place of
+  // the verification line, and drops what assumes a person on the other end:
+  // Verify (a node shows no code to scan), Pay (it holds no wallet) and the
+  // ring grant. Read live, as the thread reads it.
+  const isRelay = peer?.isRelay === true;
   const firstMessage =
     messages && messages.length > 0 ? messages[0] : undefined;
   const verified = isVerified(contact);
   // Applies to a lasting identity, so a 16-hex mesh peer ID and not a per-cell
   // geohash pseudonym. Being able to meet is not required: the screen offers a
   // scan for somebody present and a code comparison for somebody on a call.
-  const canVerify = !!peerID && !verified && /^[0-9a-f]{16}$/i.test(peerID);
+  const canVerify =
+    !!peerID && !verified && !isRelay && /^[0-9a-f]{16}$/i.test(peerID);
   // A Nostr/geohash peer is an anonymous, per-cell pseudonym with no lasting
   // identity to verify, so the sheet says "Anonymous" rather than the "Not
   // verified" line a mesh peer gets.
@@ -125,6 +134,8 @@ export default function ContactInfoSheet({
   // Renaming needs their keys, not their verification, matching bitchat's
   // `canEditLocalAlias`. See setLocalNickname for why that is the whole gate.
   const renameable = hasKeys(contact);
+  // The ring grant needs the same keys, and a person to grant it to.
+  const ringGrantable = renameable && !isRelay;
   // Held as "which peer is this about" rather than a bare boolean, and derived
   // back below.
   //
@@ -239,7 +250,7 @@ export default function ContactInfoSheet({
   // "nearby only" rather than a haptic and silence; keyed by peer, since this
   // sheet is reused for everyone.
   const [ringFailedFor, setRingFailedFor] = useState<string | null>(null);
-  const ringHint: string | null = !renameable
+  const ringHint: string | null = !ringGrantable
     ? null
     : ringSending
       ? null
@@ -284,7 +295,9 @@ export default function ContactInfoSheet({
   // always-on encryption guarantee, then verification (the trust signal).
   const infoRows: {
     key: string;
-    icon: FeatherIconName;
+    icon?: FeatherIconName;
+    // A glyph from another family, drawn in place of `icon`, as on SettingRow.
+    iconOverride?: React.ReactNode;
     iconColor: string;
     label: string;
     sub?: string;
@@ -309,40 +322,54 @@ export default function ContactInfoSheet({
       : T("chat.contact.e2ee_mesh"),
   });
   infoRows.push(
-    isAnonymous
+    isRelay
       ? {
           key: "verify",
-          icon: "shield-off",
-          iconColor: Colors.danger,
-          label: T("chat.contact.anonymous"),
-          sub: T("chat.contact.anonymous_desc"),
+          iconOverride: (
+            <MaterialDesignIcons
+              name={RELAY_ICON}
+              size={16}
+              color={Colors.textSecondary}
+            />
+          ),
+          iconColor: Colors.textSecondary,
+          label: T("mesh.peer.relay"),
+          sub: T("mesh.peer.relay_body"),
         }
-      : verified
+      : isAnonymous
         ? {
-            key: "verify",
-            icon: "shield",
-            iconColor: Colors.verified,
-            // When the check happened, not when the contact was saved.
-            label:
-              contact?.verifiedAtMs !== undefined
-                ? T("chat.contact.verified_since", {
-                    date: formatLongDate(contact.verifiedAtMs),
-                  })
-                : T("chat.contact.verified"),
-            // Which channel did the confirming. Equally strong either way; the
-            // line is so somebody can tell later how they checked.
-            sub:
-              contact?.verification === "fingerprint"
-                ? T("chat.contact.verified_desc_compared")
-                : T("chat.contact.verified_desc"),
-          }
-        : {
             key: "verify",
             icon: "shield-off",
             iconColor: Colors.danger,
-            label: T("chat.contact.not_verified"),
-            sub: T("chat.contact.not_verified_desc"),
-          },
+            label: T("chat.contact.anonymous"),
+            sub: T("chat.contact.anonymous_desc"),
+          }
+        : verified
+          ? {
+              key: "verify",
+              icon: "shield",
+              iconColor: Colors.verified,
+              // When the check happened, not when the contact was saved.
+              label:
+                contact?.verifiedAtMs !== undefined
+                  ? T("chat.contact.verified_since", {
+                      date: formatLongDate(contact.verifiedAtMs),
+                    })
+                  : T("chat.contact.verified"),
+              // Which channel did the confirming. Equally strong either way; the
+              // line is so somebody can tell later how they checked.
+              sub:
+                contact?.verification === "fingerprint"
+                  ? T("chat.contact.verified_desc_compared")
+                  : T("chat.contact.verified_desc"),
+            }
+          : {
+              key: "verify",
+              icon: "shield-off",
+              iconColor: Colors.danger,
+              label: T("chat.contact.not_verified"),
+              sub: T("chat.contact.not_verified_desc"),
+            },
   );
 
   return (
@@ -377,13 +404,21 @@ export default function ContactInfoSheet({
               </Pressable>
             )}
             <View style={styles.body}>
-              <Avatar
-                username={name}
-                peerID={peerID}
-                size={64}
-                presence={isOnline ? "online" : "offline"}
-                ringColor={Colors.surface}
-              />
+              {isRelay ? (
+                <RelayGlyph
+                  size={64}
+                  presence={isOnline ? "online" : "offline"}
+                  ringColor={Colors.surface}
+                />
+              ) : (
+                <Avatar
+                  username={name}
+                  peerID={peerID}
+                  size={64}
+                  presence={isOnline ? "online" : "offline"}
+                  ringColor={Colors.surface}
+                />
+              )}
               {editingName ? (
                 <View style={styles.renameRow}>
                   <TextInput
@@ -501,7 +536,14 @@ export default function ContactInfoSheet({
                     {i > 0 && <View style={styles.infoDivider} />}
                     <View style={styles.infoRow}>
                       <View style={styles.infoIcon}>
-                        <Feather name={r.icon} size={16} color={r.iconColor} />
+                        {r.iconOverride ??
+                          (r.icon && (
+                            <Feather
+                              name={r.icon}
+                              size={16}
+                              color={r.iconColor}
+                            />
+                          ))}
                       </View>
                       <View style={styles.infoText}>
                         <Text style={styles.infoLabel}>{r.label}</Text>
@@ -515,7 +557,7 @@ export default function ContactInfoSheet({
               </View>
               {/* Needs real keys (renameable is setAllowRing's hasKeys gate).
                   A keyless peer sees it disabled, pointing at Verify. */}
-              {(renameable || canVerify) && (
+              {(ringGrantable || canVerify) && (
                 <View style={styles.infoCard}>
                   <SettingRow
                     icon="bell"
@@ -583,15 +625,17 @@ export default function ContactInfoSheet({
                   </Text>
                 </Pressable>
               )}
-              <Pressable
-                style={styles.payBtn}
-                onPress={() => setPaying(true)}
-                accessibilityRole="button"
-                accessibilityLabel={T("wallet.pay.action")}
-              >
-                <Feather name="zap" size={16} color={Colors.textPrimary} />
-                <Text style={styles.payText}>{T("wallet.pay.action")}</Text>
-              </Pressable>
+              {!isRelay && (
+                <Pressable
+                  style={styles.payBtn}
+                  onPress={() => setPaying(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel={T("wallet.pay.action")}
+                >
+                  <Feather name="zap" size={16} color={Colors.textPrimary} />
+                  <Text style={styles.payText}>{T("wallet.pay.action")}</Text>
+                </Pressable>
+              )}
               {/* Same disabled-not-vanished treatment `kept` gets above. */}
               {canRing && (
                 <Pressable

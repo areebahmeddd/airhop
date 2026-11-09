@@ -71,16 +71,7 @@ android/captures/
 # Project-specific Artifacts
 landing/node_modules/
 landing/dist/
-press/.build/
-press/film/.claude/
-press/film/.tools/
-press/film/renders/
-press/film/**/assets/
-press/film/**/data.js
-press/film/**/index.html
-press/film/**/snapshots/
-press/film/**/vendor/
-deck/
+firmware/
 
 # macOS
 .DS_Store

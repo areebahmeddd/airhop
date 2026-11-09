@@ -451,6 +451,8 @@ export const strings: Strings = {
   "chat.status.sending_short": "Надсилаємо",
   "chat.status.receiving": "Отримуємо",
   "chat.thread.not_available": "Тут недоступно",
+  "chat.thread.relay_no_media":
+    "Вузол-релей передає повідомлення, але не відкриває вкладення чи голосові повідомлення.",
   "chat.thread.private_channel": "Приватний канал",
   "chat.thread.location_channel": "Канал місцевості",
   "chat.thread.public_channel": "Публічний канал",
@@ -1124,6 +1126,8 @@ export const strings: Strings = {
   "mesh.peer.relay": "Вузол-релей",
   "mesh.peer.relay_body":
     "Радіо, яке хтось лишив увімкненим, щоб розширити mesh. Воно переносить повідомлення, яких не може прочитати. Тут немає кому писати.",
+  "mesh.peer.relay_firmware": "Мікропрограма {version}",
+  "mesh.peer.relay_named": "{name}, вузол-релей",
   "mesh.peer.send_dm": "Надіслати пряме повідомлення",
   "mesh.peer.message": "Повідомлення",
   "mesh.peer.send_sats": "Надіслати ecash",
@@ -1970,6 +1974,9 @@ export const strings: Strings = {
   "settings.diag.disconnected": "Не з’єднано",
   "settings.diag.peer_direct": "Прямий зв’язок",
   "settings.diag.peer_relayed": "Почуто через інший пристрій",
+  "settings.diag.peer_relay_direct": "Вузол-релей · Прямий зв’язок",
+  "settings.diag.peer_relay_relayed":
+    "Вузол-релей · Почуто через інший пристрій",
   "settings.diag.rssi": "{dbm} дБм",
   "settings.diag.no_rssi": "Немає показника сигналу",
   "settings.diag.no_peers": "У радіусі нікого немає",

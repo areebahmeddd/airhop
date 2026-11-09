@@ -15,11 +15,15 @@ export interface NearbyPeer {
   // actual GATT connection. That makes it the one thing worth protecting when
   // the list has to be trimmed.
   isDirect?: boolean;
-  // A relay node rather than a person, per the Bitle role TLV. Changes how the
-  // peer is drawn and takes away the actions that make no sense against a box
-  // on a pole. Self-declared and therefore forgeable, which is why it decides
-  // nothing beyond presentation. See announce-manager.
-  isInfrastructure?: boolean;
+  // A relay node rather than a person, per the relay role TLV. Changes how the
+  // peer is drawn, takes away the actions that make no sense against a box on
+  // a pole, and keeps it out of every count of people (see isPerson).
+  // Self-declared and therefore forgeable, which is why it decides nothing
+  // beyond presentation. See announce-manager.
+  isRelay?: boolean;
+  // The relay's firmware version as announced (TLV 0xB0), packed
+  // `major << 16 | minor << 8 | patch`. Shown on a relay's sheet only.
+  firmwareVersion?: number;
   // Whether this peer has proven, inside the Noise session we hold with them,
   // that they currently accept a Ring from us. A projection of the registry's
   // authenticated capability, so the contact sheet can subscribe to it; the
@@ -77,18 +81,30 @@ export const REACHABLE_TTL_MS = PEER_REACHABLE_TTL_MS;
 // reason.
 const MAX_TRACKED_PEERS = 200;
 
-// How many of a peer map's entries are still reachable. Exported because the
-// map outlives reachability: a peer who walks out of range without a LEAVE (or
-// a BLE disconnect) sits in the map until something evicts it, so counting
-// entries would report a mesh that is no longer there. Takes the map rather
-// than reading the store so a caller can measure a previous state too.
+// Whether a peer is somebody rather than a relay node: the one test every count
+// of people and every list of recipients uses, so no two of them disagree about
+// the same box. Where the question is reach rather than people, a relay still
+// counts: the radar draws it, a route runs through it, and the "no local peers"
+// banner stays down for it.
+export function isPerson(peer: NearbyPeer): boolean {
+  return peer.isRelay !== true;
+}
+
+// How many people in a peer map are still reachable: the "someone nearby" the
+// notification and the widget report. Exported because the map outlives
+// reachability: a peer who walks out of range without a LEAVE (or a BLE
+// disconnect) sits in the map until something evicts it, so counting entries
+// would report a mesh that is no longer there. Takes the map rather than
+// reading the store so a caller can measure a previous state too.
 export function countReachablePeers(
   peers: Map<string, NearbyPeer>,
   nowMs: number = Date.now(),
 ): number {
   const cutoff = nowMs - REACHABLE_TTL_MS;
   let count = 0;
-  for (const peer of peers.values()) if (peer.lastSeenMs >= cutoff) count++;
+  for (const peer of peers.values()) {
+    if (peer.lastSeenMs >= cutoff && isPerson(peer)) count++;
+  }
   return count;
 }
 
@@ -229,14 +245,18 @@ export const usePeerStore = create<PeerState>()((set, get) => ({
 }));
 
 // Whether anyone reachable has arrived since the user last looked at the Mesh
-// screen.
+// screen. A relay node coming into range is no one arriving.
 //
 // By peer ID, not by count: a count cannot tell a newcomer from a swap, so one
 // person leaving as another arrives would report nothing changed.
 export function hasUnseenPeers(state: PeerState, nowMs = Date.now()): boolean {
   const cutoff = nowMs - REACHABLE_TTL_MS;
   for (const peer of state.peers.values()) {
-    if (peer.lastSeenMs >= cutoff && !state.seenPeerIDs.has(peer.peerID)) {
+    if (
+      peer.lastSeenMs >= cutoff &&
+      isPerson(peer) &&
+      !state.seenPeerIDs.has(peer.peerID)
+    ) {
       return true;
     }
   }

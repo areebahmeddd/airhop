@@ -78,7 +78,7 @@ import {
 import { showAlert, useAlertStore } from "@store/alert-store";
 import { useContactsStore } from "@store/contacts-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
-import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
+import { isPerson, REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { useSettingsStore } from "@store/settings-store";
 import {
   isWalletStorageReady,
@@ -233,9 +233,12 @@ export default function WalletScreen({
     const timer = setInterval(() => setPeerClock(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
+  // People only: a relay node has no wallet, and its sheet offers no payment.
   const onlinePeers = useMemo(() => {
     const cutoff = peerClock - REACHABLE_TTL_MS;
-    return [...peers.values()].filter((peer) => peer.lastSeenMs >= cutoff);
+    return [...peers.values()].filter(
+      (peer) => peer.lastSeenMs >= cutoff && isPerson(peer),
+    );
   }, [peerClock, peers]);
 
   // ---- Sheet state ----

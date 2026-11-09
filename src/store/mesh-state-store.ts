@@ -789,6 +789,7 @@ export function useMeshBanners(): MeshBanner[] {
   const bridgeActive = useMeshStateStore((s) => s.bridgeActive);
   const bridgePeopleAcross = useMeshStateStore((s) => s.bridgePeopleAcross);
   const internetEnabled = useSettingsStore((s) => s.internetEnabled);
+  // Every peer, relay nodes included: a relay is a real path into the mesh.
   const peerCount = usePeerStore((s) => s.peers.size);
   // Read once and only while it still matters: an acknowledged note is gone for
   // good, and on stock Android or iOS there is nothing to say in the first place.
