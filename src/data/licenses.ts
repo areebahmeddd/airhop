@@ -358,7 +358,7 @@ const CATALOG: {
       },
       {
         name: "lyrebird",
-        version: "bundled with IPtProxy",
+        version: "obfs4, bundled with IPtProxy",
         license: "BSD-3-Clause",
         repo: "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird",
       },
@@ -367,6 +367,12 @@ const CATALOG: {
         version: "bundled with IPtProxy",
         license: "BSD-3-Clause",
         repo: "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake",
+      },
+      {
+        name: "webtunnel",
+        version: "bundled with IPtProxy",
+        license: "MIT",
+        repo: "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel",
       },
     ],
   },

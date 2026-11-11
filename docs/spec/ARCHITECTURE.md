@@ -2005,8 +2005,9 @@ Android:
 
 React Native caps both. Gradle 9.7 and later embed Kotlin 2.4, which React
 Native's and Expo's Gradle plugins, compiled with Kotlin 2.2, cannot read, so
-Gradle stays on 9.6. React Native recommends JDK 17 and compiles to Java 17
-bytecode, so the JDK stays on 21.
+Gradle stays on 9.6. React Native recommends JDK 17 and warns about newer ones,
+and compiles every module to Java 17 bytecode whichever JDK runs Gradle, so the
+JDK stays on the 21 CI already runs.
 
 AGP 9's built-in Kotlin and new DSL are switched off in
 `android/gradle.properties` while the app and several native dependencies still
