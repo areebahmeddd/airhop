@@ -162,7 +162,7 @@ export const strings: Strings = {
     "Mahita ny fitaovana akaiky ary mampita hafatra eo amin'izy ireo. Izay no mamorona ny harato, ary miasa tsy misy fifandraisana Internet.",
   "onboarding.primer.location.title": "Toerana",
   "onboarding.primer.location.body":
-    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop, ary tsy mivoaka ny fitaovanao ny toeranao marina raha tsy mandefa marika toerana amin'olona ianao.",
+    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop, ary tsy mivoaka mihitsy ny fitaovanao ny toeranao marina.",
   "onboarding.primer.notifications.title": "Fampandrenesana",
   "onboarding.primer.notifications.body":
     "Mandraisa fampandrenesana momba ny hafatra vaovao na dia mihidy aza ny rindranasa. Amboarina eo amin'ny fitaovanao ny fampandrenesana, tsy misy mpizara mandray anjara.",

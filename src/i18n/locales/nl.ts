@@ -163,7 +163,7 @@ export const strings: Strings = {
     "Vindt toestellen in de buurt en geeft berichten tussen ze door. Zo ontstaat de mesh, en het werkt zonder internetverbinding.",
   "onboarding.primer.location.title": "Locatie",
   "onboarding.primer.location.body":
-    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit, en je precieze locatie verlaat je toestel alleen als je iemand je locatie stuurt.",
+    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit, en je precieze locatie verlaat je toestel nooit.",
   "onboarding.primer.notifications.title": "Meldingen",
   "onboarding.primer.notifications.body":
     "Krijg meldingen van nieuwe berichten, ook als de app dicht is. Meldingen worden op je eigen toestel gemaakt, zonder server ertussen.",

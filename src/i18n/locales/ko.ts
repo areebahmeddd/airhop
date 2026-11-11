@@ -159,7 +159,7 @@ export const strings: Strings = {
     "근처 기기를 찾고 그 사이에서 메시지를 중계합니다. 이렇게 메시가 만들어지며 인터넷 연결 없이 작동합니다.",
   "onboarding.primer.location.title": "위치",
   "onboarding.primer.location.body":
-    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며, 정확한 위치는 누군가에게 위치를 보낼 때만 기기 밖으로 나갑니다.",
+    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며, 정확한 위치는 절대 기기 밖으로 나가지 않습니다.",
   "onboarding.primer.notifications.title": "알림",
   "onboarding.primer.notifications.body":
     "앱이 닫혀 있을 때도 새 메시지 알림을 받습니다. 알림은 기기 안에서 만들어지며 서버는 관여하지 않습니다.",

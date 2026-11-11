@@ -164,7 +164,7 @@ export const strings: Strings = {
     "Yakındaki cihazları bulur ve mesajları aralarında aktarır. Mesh böyle kurulur ve internet bağlantısı olmadan çalışır.",
   "onboarding.primer.location.title": "Konum",
   "onboarding.primer.location.body":
-    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumun cihazından yalnızca birine konum işareti gönderdiğinde çıkar.",
+    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumun cihazından asla çıkmaz.",
   "onboarding.primer.notifications.title": "Bildirimler",
   "onboarding.primer.notifications.body":
     "Uygulama kapalıyken bile yeni mesajlar için uyarı al. Bildirimler cihazında yerel olarak oluşturulur, hiçbir sunucu işin içinde değildir.",

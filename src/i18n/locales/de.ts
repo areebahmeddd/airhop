@@ -165,7 +165,7 @@ export const strings: Strings = {
     "Findet Geräte in der Nähe und leitet Nachrichten zwischen ihnen weiter. Das bildet das Mesh und funktioniert ohne Internetverbindung.",
   "onboarding.primer.location.title": "Standort",
   "onboarding.primer.location.body":
-    "Ordnet dich Kanälen in deiner Umgebung zu, vom Häuserblock bis zur Region. Airhop verfolgt dich nie, und dein genauer Standort verlässt dein Gerät nur, wenn du jemandem eine Standortmarkierung schickst.",
+    "Ordnet dich Kanälen in deiner Umgebung zu, vom Häuserblock bis zur Region. Airhop verfolgt dich nie, und dein genauer Standort verlässt dein Gerät nie.",
   "onboarding.primer.notifications.title": "Mitteilungen",
   "onboarding.primer.notifications.body":
     "Erhalte Hinweise auf neue Nachrichten, auch wenn die App geschlossen ist. Mitteilungen entstehen lokal auf deinem Gerät, ganz ohne Server.",

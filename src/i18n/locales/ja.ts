@@ -160,7 +160,7 @@ export const strings: Strings = {
     "近くの端末を見つけ、その間でメッセージを中継します。これがメッシュを作り、インターネットなしで動きます。",
   "onboarding.primer.location.title": "位置情報",
   "onboarding.primer.location.body":
-    "街区から地域まで、近くのエリアチャンネルにあなたを配置します。Airhopがあなたを追跡することはなく、正確な位置が端末の外に出るのは、誰かに位置情報を送ったときだけです。",
+    "街区から地域まで、近くのエリアチャンネルにあなたを配置します。Airhopがあなたを追跡することはなく、正確な位置が端末の外に出ることもありません。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "アプリを閉じていても新着メッセージの通知を受け取れます。通知は端末内で作られ、サーバーは関与しません。",

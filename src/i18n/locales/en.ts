@@ -196,7 +196,7 @@ export const strings = {
     "Finds nearby devices and relays messages between them. This creates the mesh and works without an internet connection.",
   "onboarding.primer.location.title": "Location",
   "onboarding.primer.location.body":
-    "Places you in nearby area channels, from a block to a region. Airhop never tracks you, and your precise location leaves your device only when you send someone a location pin.",
+    "Places you in nearby area channels, from a block to a region. Airhop never tracks you, and your precise location never leaves your device.",
   "onboarding.primer.notifications.title": "Notifications",
   "onboarding.primer.notifications.body":
     "Receive alerts for new messages even when the app is closed. Notifications are created locally on your device, with no server involvement.",

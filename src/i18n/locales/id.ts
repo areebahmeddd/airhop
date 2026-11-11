@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Menemukan perangkat di dekat sini dan meneruskan pesan di antaranya. Begitulah mesh terbentuk, dan ia bekerja tanpa koneksi internet.",
   "onboarding.primer.location.title": "Lokasi",
   "onboarding.primer.location.body":
-    "Menempatkanmu di kanal wilayah terdekat, dari satu blok sampai satu kawasan. Airhop tidak pernah melacakmu, dan lokasi persismu hanya keluar dari perangkat saat kamu mengirim penanda lokasi ke seseorang.",
+    "Menempatkanmu di kanal wilayah terdekat, dari satu blok sampai satu kawasan. Airhop tidak pernah melacakmu, dan lokasi persismu tidak pernah keluar dari perangkatmu.",
   "onboarding.primer.notifications.title": "Notifikasi",
   "onboarding.primer.notifications.body":
     "Terima peringatan untuk pesan baru bahkan saat aplikasi tertutup. Notifikasi dibuat secara lokal di perangkatmu, tanpa keterlibatan server.",

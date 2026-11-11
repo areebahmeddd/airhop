@@ -165,7 +165,7 @@ export const strings: Strings = {
     "Naghahanap ng mga device sa malapit at nagpapasa ng mensahe sa pagitan nila. Ganito nabubuo ang mesh, at gumagana ito nang walang koneksyon sa internet.",
   "onboarding.primer.location.title": "Lokasyon",
   "onboarding.primer.location.body":
-    "Inilalagay ka sa mga channel ng lugar sa malapit, mula sa isang bloke hanggang sa isang rehiyon. Hindi ka kailanman sinusubaybayan ng Airhop, at lumalabas lang sa device mo ang tumpak mong lokasyon kapag nagpadala ka ng location pin sa isang tao.",
+    "Inilalagay ka sa mga channel ng lugar sa malapit, mula sa isang bloke hanggang sa isang rehiyon. Hindi ka kailanman sinusubaybayan ng Airhop, at hindi kailanman lumalabas sa device mo ang tumpak mong lokasyon.",
   "onboarding.primer.notifications.title": "Mga Abiso",
   "onboarding.primer.notifications.body":
     "Tumanggap ng alerto para sa bagong mensahe kahit sarado ang app. Ginagawa ang mga abiso nang lokal sa device mo, walang server na kasangkot.",

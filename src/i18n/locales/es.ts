@@ -163,7 +163,7 @@ export const strings: Strings = {
     "Encuentra dispositivos cercanos y retransmite mensajes entre ellos. Así se crea la malla, y funciona sin conexión a internet.",
   "onboarding.primer.location.title": "Ubicación",
   "onboarding.primer.location.body":
-    "Te sitúa en los canales de las zonas cercanas, desde una manzana hasta una región. Airhop nunca te rastrea, y tu ubicación exacta solo sale de tu dispositivo cuando le envías tu ubicación a alguien.",
+    "Te sitúa en los canales de las zonas cercanas, desde una manzana hasta una región. Airhop nunca te rastrea, y tu ubicación exacta nunca sale de tu dispositivo.",
   "onboarding.primer.notifications.title": "Notificaciones",
   "onboarding.primer.notifications.body":
     "Recibe avisos de mensajes nuevos incluso con la app cerrada. Las notificaciones se crean en tu dispositivo, sin que intervenga ningún servidor.",

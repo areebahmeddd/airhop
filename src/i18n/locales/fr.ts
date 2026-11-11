@@ -164,7 +164,7 @@ export const strings: Strings = {
     "Trouve les appareils à proximité et relaie les messages entre eux. C’est ainsi que naît le maillage, et ça fonctionne sans connexion internet.",
   "onboarding.primer.location.title": "Localisation",
   "onboarding.primer.location.body":
-    "Te place dans les canaux des zones proches, du pâté de maisons à la région. Airhop ne te suit jamais, et ta position précise ne quitte ton appareil que lorsque tu envoies ta position à quelqu’un.",
+    "Te place dans les canaux des zones proches, du pâté de maisons à la région. Airhop ne te suit jamais, et ta position précise ne quitte jamais ton appareil.",
   "onboarding.primer.notifications.title": "Notifications",
   "onboarding.primer.notifications.body":
     "Reçois des alertes pour les nouveaux messages même quand l’app est fermée. Les notifications sont créées sur ton appareil, sans aucun serveur.",

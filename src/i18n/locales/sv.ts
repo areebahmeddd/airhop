@@ -159,7 +159,7 @@ export const strings: Strings = {
     "Hittar enheter i närheten och skickar meddelanden vidare mellan dem. Det är så meshen bildas, och den fungerar utan internet.",
   "onboarding.primer.location.title": "Plats",
   "onboarding.primer.location.body":
-    "Placerar dig i områdeskanaler i närheten, från ett kvarter till en region. Airhop spårar dig aldrig, och din exakta plats lämnar bara enheten när du skickar din plats till någon.",
+    "Placerar dig i områdeskanaler i närheten, från ett kvarter till en region. Airhop spårar dig aldrig, och din exakta plats lämnar aldrig enheten.",
   "onboarding.primer.notifications.title": "Aviseringar",
   "onboarding.primer.notifications.body":
     "Få aviseringar om nya meddelanden även när appen är stängd. Aviseringarna skapas lokalt på enheten, utan att någon server är inblandad.",

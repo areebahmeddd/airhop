@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Znajduje urządzenia w pobliżu i przekazuje wiadomości między nimi. Tak powstaje sieć mesh i działa bez internetu.",
   "onboarding.primer.location.title": "Lokalizacja",
   "onboarding.primer.location.body":
-    "Umieszcza cię w kanałach okolicy, od kwartału po region. Airhop nigdy cię nie śledzi, a twoja dokładna lokalizacja opuszcza urządzenie tylko wtedy, gdy wyślesz komuś pinezkę z lokalizacją.",
+    "Umieszcza cię w kanałach okolicy, od kwartału po region. Airhop nigdy cię nie śledzi, a twoja dokładna lokalizacja nigdy nie opuszcza urządzenia.",
   "onboarding.primer.notifications.title": "Powiadomienia",
   "onboarding.primer.notifications.body":
     "Dostajesz alerty o nowych wiadomościach, nawet gdy aplikacja jest zamknięta. Powiadomienia powstają lokalnie na urządzeniu, bez udziału serwera.",

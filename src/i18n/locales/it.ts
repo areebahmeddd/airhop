@@ -164,7 +164,7 @@ export const strings: Strings = {
     "Trova i dispositivi vicini e inoltra i messaggi tra loro. È così che nasce la mesh, e funziona senza connessione a internet.",
   "onboarding.primer.location.title": "Posizione",
   "onboarding.primer.location.body":
-    "Ti colloca nei canali delle zone vicine, dall’isolato alla regione. Airhop non ti traccia mai, e la tua posizione precisa lascia il dispositivo solo quando invii la tua posizione a qualcuno.",
+    "Ti colloca nei canali delle zone vicine, dall’isolato alla regione. Airhop non ti traccia mai, e la tua posizione precisa non lascia mai il tuo dispositivo.",
   "onboarding.primer.notifications.title": "Notifiche",
   "onboarding.primer.notifications.body":
     "Ricevi avvisi per i nuovi messaggi anche ad app chiusa. Le notifiche vengono create sul tuo dispositivo, senza alcun server coinvolto.",

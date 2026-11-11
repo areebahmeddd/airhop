@@ -154,7 +154,7 @@ export const strings: Strings = {
     "用來找出附近裝置並在它們之間中繼訊息。網狀網路由此成形，沒有網路連線也能用。",
   "onboarding.primer.location.title": "定位",
   "onboarding.primer.location.body":
-    "把你放進附近的區域頻道，小到一個街廓，大到一整個地區。Airhop 從不追蹤你，只有在你傳送位置給別人時，你的精確位置才會離開這台裝置。",
+    "把你放進附近的區域頻道，小到一個街廓，大到一整個地區。Airhop 從不追蹤你，你的精確位置也從不離開這台裝置。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "就算 App 關著也能收到新訊息提醒。通知是在你的裝置本機產生的，不經過任何伺服器。",

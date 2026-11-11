@@ -160,7 +160,7 @@ export const strings: Strings = {
     "Encontra dispositivos por perto e passa mensagens entre eles. É assim que a malha nasce, e funciona sem ligação à Internet.",
   "onboarding.primer.location.title": "Localização",
   "onboarding.primer.location.body":
-    "Coloca-te nos canais das áreas próximas, do quarteirão à região. O Airhop nunca te segue, e a tua localização exata só sai do dispositivo quando envias a tua localização a alguém.",
+    "Coloca-te nos canais das áreas próximas, do quarteirão à região. O Airhop nunca te segue, e a tua localização exata nunca sai do dispositivo.",
   "onboarding.primer.notifications.title": "Notificações",
   "onboarding.primer.notifications.body":
     "Recebe avisos de mensagens novas mesmo com a aplicação fechada. As notificações são criadas no teu dispositivo, sem nenhum servidor envolvido.",

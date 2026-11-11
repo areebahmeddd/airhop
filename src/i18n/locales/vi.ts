@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Tìm các thiết bị ở gần và chuyển tiếp tin nhắn giữa chúng. Đây là thứ tạo nên mạng lưới và chạy được mà không cần kết nối Internet.",
   "onboarding.primer.location.title": "Vị trí",
   "onboarding.primer.location.body":
-    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn, và vị trí chính xác của bạn chỉ rời khỏi thiết bị khi bạn gửi vị trí cho ai đó.",
+    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn, và vị trí chính xác của bạn không bao giờ rời khỏi thiết bị.",
   "onboarding.primer.notifications.title": "Thông báo",
   "onboarding.primer.notifications.body":
     "Nhận báo tin nhắn mới ngay cả khi ứng dụng đã đóng. Thông báo được tạo ngay trên thiết bị của bạn, không có máy chủ nào tham gia.",

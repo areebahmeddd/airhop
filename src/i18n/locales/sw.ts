@@ -165,7 +165,7 @@ export const strings: Strings = {
     "Hutafuta vifaa vilivyo karibu na kupitisha jumbe kati yake. Hivi ndivyo mesh inavyoundwa, na hufanya kazi bila muunganisho wa intaneti.",
   "onboarding.primer.location.title": "Mahali",
   "onboarding.primer.location.body":
-    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe, na mahali ulipo hasa hutoka kwenye kifaa chako tu unapomtumia mtu pini ya mahali.",
+    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe, na mahali ulipo hasa hapatoki kamwe kwenye kifaa chako.",
   "onboarding.primer.notifications.title": "Arifa",
   "onboarding.primer.notifications.body":
     "Pokea taarifa za jumbe mpya hata programu ikiwa imefungwa. Arifa hutengenezwa hapa kwenye kifaa chako, bila seva yoyote kuhusika.",

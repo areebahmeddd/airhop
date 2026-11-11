@@ -154,7 +154,7 @@ export const strings: Strings = {
     "用于发现附近设备并在它们之间中继消息。网状网络由此形成，没有互联网连接也能用。",
   "onboarding.primer.location.title": "定位",
   "onboarding.primer.location.body":
-    "把你放进附近的区域频道，小到一个街区，大到一整个地区。Airhop 从不追踪你，只有当你给别人发送位置时，你的精确位置才会离开这台设备。",
+    "把你放进附近的区域频道，小到一个街区，大到一整个地区。Airhop 从不追踪你，你的精确位置也从不离开这台设备。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "即使应用已关闭也能收到新消息提醒。通知在你的设备本地生成，不经过任何服务器。",
