@@ -1993,15 +1993,20 @@ Expo and move only when those do.
 
 Android:
 
-| Tool                  | Version         | Pinned in                                    | Free to bump                 |
-| --------------------- | --------------- | -------------------------------------------- | ---------------------------- |
-| JDK (Temurin)         | `21`            | `setup-android/action.yml`                   | Yes, within what AGP accepts |
-| Gradle                | `9.4.1`         | `android/gradle/wrapper/`, checksum included | Yes                          |
-| Kotlin                | `2.2.0`         | React Native's `libs.versions.toml`          | No                           |
-| Android Gradle plugin | `9.2.1`         | React Native's catalog                       | No                           |
-| NDK                   | `27.1.12297006` | `setup-android/action.yml`                   | No, matches React Native     |
-| `minSdk`              | `26`            | `android/gradle.properties`                  | Yes                          |
-| `compileSdk`          | Expo's          | the `expo-root-project` plugin               | No, bump Expo                |
+| Tool                  | Version         | Pinned in                                    | Free to bump             |
+| --------------------- | --------------- | -------------------------------------------- | ------------------------ |
+| JDK (Temurin)         | `21`            | `setup-android/action.yml`                   | Yes, see below           |
+| Gradle                | `9.6.1`         | `android/gradle/wrapper/`, checksum included | Yes, see below           |
+| Kotlin                | `2.2.0`         | React Native's `libs.versions.toml`          | No                       |
+| Android Gradle plugin | `9.2.1`         | React Native's catalog                       | No                       |
+| NDK                   | `27.1.12297006` | `setup-android/action.yml`                   | No, matches React Native |
+| `minSdk`              | `26`            | `android/gradle.properties`                  | Yes                      |
+| `compileSdk`          | Expo's          | the `expo-root-project` plugin               | No, bump Expo            |
+
+React Native caps both. Gradle 9.7 and later embed Kotlin 2.4, which React
+Native's and Expo's Gradle plugins, compiled with Kotlin 2.2, cannot read, so
+Gradle stays on 9.6. React Native recommends JDK 17 and compiles to Java 17
+bytecode, so the JDK stays on 21.
 
 AGP 9's built-in Kotlin and new DSL are switched off in
 `android/gradle.properties` while the app and several native dependencies still
