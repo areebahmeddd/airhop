@@ -135,7 +135,7 @@ PODS:
   - hermes-engine (260318099.0.5):
     - hermes-engine/Pre-built (= 260318099.0.5)
   - hermes-engine/Pre-built (260318099.0.5)
-  - IPtProxy (5.7.0)
+  - IPtProxy (5.8.1)
   - MMKVCore (2.4.0)
   - NitroMmkv (4.3.2):
     - hermes-engine
@@ -1617,7 +1617,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-skia (3.9.1):
+  - react-native-skia (3.10.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2737,7 +2737,7 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: 79484fc4e58f328d01b9339ef899ca633d3702ee
-  IPtProxy: 675171dbf3670c9a77a37bcf7f06f7a29b096e92
+  IPtProxy: ff4260c6cd327f15f240ef04877a940ef48b7afd
   MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
   NitroMmkv: 1cbda910413acda474751ac9b2522a6d466f74ad
   NitroModules: f1a11047ebbb0202a7d0033d6e99ad0527d34b00
@@ -2783,7 +2783,7 @@ SPEC CHECKSUMS:
   React-mutationobservernativemodule: b97a67c29f724d18a92379e7390f24350acb433a
   react-native-get-random-values: 625b34d7f8a66d85c594071603f748d756bd90da
   react-native-safe-area-context: 56700b839169ce88ffcec68c40447916fe512462
-  react-native-skia: 0258cfbbb3e865e2db6feaf9850e887d2cd6cd90
+  react-native-skia: 99c1ce738deb84d3ac84b1a3de259d9319fe2934
   react-native-vector-icons-feather: 32f485a696f1ac4c3e17216782e7b26475e9e6d4
   react-native-vector-icons-material-design-icons: 811f6c4447a60d8a66394644093dcffdc546772f
   React-NativeModulesApple: 8cfb2f308f48c48068c96b932e7f0e4297c23342
