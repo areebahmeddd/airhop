@@ -346,13 +346,13 @@ const CATALOG: {
     packages: [
       {
         name: "arti",
-        version: "0.47.0",
+        version: "0.48.0",
         license: "MIT OR Apache-2.0",
         repo: "https://gitlab.torproject.org/tpo/core/arti",
       },
       {
         name: "IPtProxy",
-        version: "5.7.0",
+        version: "5.8.1",
         license: "MIT",
         repo: "https://github.com/tladesignz/IPtProxy",
       },

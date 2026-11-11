@@ -65,7 +65,13 @@ Neither script trusts its toolchain:
 2. Regenerate `Cargo.lock` and **review every dependency change**. This is a Tor client; the dependency graph is part of the security review.
 3. Rebuild both platforms, re-record the hashes, and update the `arti` entry in `src/data/licenses.ts`.
 4. Read the upstream changelog for API and cargo-feature breaks. Both happen, and a dropped feature fails at resolve time with a list of what is available, which is the easy case; an API change fails at compile time in `lib.rs`.
-5. Run `cargo audit` in this directory, by hand rather than in CI, as with govulncheck for the transports. Two findings are known and accepted: RUSTSEC-2023-0071 (`rsa`, a timing attack on decryption, while Arti only verifies RSA signatures) and RUSTSEC-2024-0436 (`paste`, unmaintained). Anything else goes upstream, and the update waits for a release that carries the fix.
+5. Run `cargo audit` in this directory, by hand rather than in CI, as with govulncheck for the transports. These findings are known and accepted:
+   - RUSTSEC-2023-0071 (`rsa`): a timing attack on decryption, while Arti only verifies RSA signatures.
+   - RUSTSEC-2024-0436 (`paste`) and RUSTSEC-2025-0141 (`bincode`): unmaintained.
+   - RUSTSEC-2026-0387 (`crypto-bigint` 0.5): listed in `Cargo.lock` but compiled into nothing.
+   - RUSTSEC-2026-0459 (bundled SQLite): needs crafted files in Arti's private state directory. Fixed once `tor-dirmgr` takes `rusqlite` 0.41.
+
+   Anything else goes upstream, and the update waits for a release that carries the fix.
 
 A compiler bump moves `RUST_VERSION` in `TOOLCHAIN.env` and the channel in `rust-toolchain.toml` together. The build asserts they agree.
 

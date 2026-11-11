@@ -67,8 +67,4 @@ rm -rf "$SRC_DIR/iptproxy/dnstt"
 mkdir -p "$SRC_DIR/iptproxy/dnstt"
 git -C "$SRC_DIR/dnstt" archive HEAD | tar -x -C "$SRC_DIR/iptproxy/dnstt"
 
-# Upstream commits a prebuilt xcframework, and their build script skips the
-# build when one is present. Airhop ships only what it compiled.
-rm -rf "$SRC_DIR/iptproxy/IPtProxy.xcframework"
-
 info "Sources ready in $SRC_DIR"

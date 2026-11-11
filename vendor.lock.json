@@ -1,9 +1,9 @@
 {
   "files": {
-    "android/app/libs/IPtProxy.aar": "4e0294da882816455af4c2136bd87d6e876142a5bfe1345c04b9f978129bbc17",
-    "android/app/src/main/jniLibs/arm64-v8a/libarti_airhop.so": "f5907c8d9c5954de34e1727ef3c31a27fd0fb04f6818aa4f4996dd830550ab27",
-    "android/app/src/main/jniLibs/armeabi-v7a/libarti_airhop.so": "1517c94a66edef3d0a16315739d30863618dea78e1f78cca82762ab950782aa3",
-    "android/app/src/main/jniLibs/x86_64/libarti_airhop.so": "3baa6cb39f8091b0d2d78a38c7d57771588c497f63e18b66f89ee40ddd9ad0ff",
+    "android/app/libs/IPtProxy.aar": "802baec0215fc0c08b20ecafbb61e427c04ae0d5dd88fcc494877cb4f87f78a9",
+    "android/app/src/main/jniLibs/arm64-v8a/libarti_airhop.so": "49dacd4d3abade4e52da3b39d923145b24562d47bbe8f7a1f06f83576d2e8426",
+    "android/app/src/main/jniLibs/armeabi-v7a/libarti_airhop.so": "f07433e3b86cc36816e4b08878fbf572eb018b6e6e7e2cd9d83d8e0d3b7f6199",
+    "android/app/src/main/jniLibs/x86_64/libarti_airhop.so": "589457b3e568fa175a77b13560ad571f5bec12f7a4874f95edcef82323cd1e6b",
     "ios/Frameworks/IPtProxy.xcframework/Info.plist": "56b4c8bd152622ff6cb6e9fb66901e53ede763af79c10826dde3e1fac3c9e785",
     "ios/Frameworks/IPtProxy.xcframework/ios-arm64/IPtProxy.framework/Headers/IPtProxy.h": "c6a68ea0f813315dae83ba6db40d9c8ad586a9f1491cd7e323132855fcdf444c",
     "ios/Frameworks/IPtProxy.xcframework/ios-arm64/IPtProxy.framework/Headers/IPtProxy.objc.h": "25504bcee63a13362a12726cf01f625fdaff0858a4bcb6cc13f1297e1c35ed8e",

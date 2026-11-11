@@ -2026,13 +2026,13 @@ The Tor client and its transports, all in `native/arti/TOOLCHAIN.env`:
 
 | Tool        | Version         | Note                                                     |
 | ----------- | --------------- | -------------------------------------------------------- |
-| Rust        | `1.98.1`        |                                                          |
-| Arti client | `0.47.0`        |                                                          |
+| Rust        | `1.99.1`        |                                                          |
+| Arti client | `0.48.0`        |                                                          |
 | cbindgen    | `0.29.4`        | Generates `arti.h`                                       |
-| Go          | `1.26.9`        |                                                          |
-| IPtProxy    | `5.7.0`         | Release and commit, so a tag cannot move under the build |
+| Go          | `1.27.4`        |                                                          |
+| IPtProxy    | `5.8.1`         | Release and commit, so a tag cannot move under the build |
 | gomobile    | pinned commit   | Upstream would otherwise resolve `@latest`               |
-| NDK         | `28.2.13676358` | r28 aligns to the 16 KiB Play requires                   |
+| NDK         | `30.0.16248370` | r28 and later align to the 16 KiB Play requires          |
 
 One value, several files. Each carries a comment saying so, and a mismatch fails
 a build rather than drifting quietly:
