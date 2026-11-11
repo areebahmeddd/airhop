@@ -49,7 +49,7 @@ import {
   type EventSubscription,
   type NativeEventSubscription,
 } from "react-native";
-import { adoptIntoAttachmentCache } from "./file-transfer-service";
+import { adoptIntoAttachmentCache } from "./attachment-cache";
 import {
   currentWipeGeneration,
   isCurrentWipeGeneration,

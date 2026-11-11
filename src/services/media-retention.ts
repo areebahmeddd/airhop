@@ -16,7 +16,7 @@
 // gone.
 
 import { useSettingsStore } from "@store/settings-store";
-import { sweepExpiredAttachments } from "./file-transfer-service";
+import { sweepExpiredAttachments } from "./attachment-cache";
 
 // Keeps any file within half a day of its deadline, against a shortest window
 // of a week. More often would repeat a directory listing on every app switch

@@ -13,7 +13,7 @@
 import {
   clearAttachmentCache,
   getAttachmentCacheBytes,
-} from "@services/file-transfer-service";
+} from "@services/attachment-cache";
 import { getMeshService } from "@services/mesh-service";
 import { MMKV_STORE_IDS } from "@services/panic-wipe";
 import { showAlert } from "@store/alert-store";

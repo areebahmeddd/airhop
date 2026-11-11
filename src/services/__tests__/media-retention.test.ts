@@ -1,12 +1,12 @@
 // When the retention sweep runs. What it deletes is
-// file-transfer-service-retention.test.ts; this pins that a process kept alive
+// attachment-cache-retention.test.ts; this pins that a process kept alive
 // for weeks still enforces the window, without listing the cache directory on
 // every app switch.
 
 const mockSweep = jest.fn<number, [number, number]>(() => 0);
 let mockDays = 7;
 
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   sweepExpiredAttachments: (now: number, maxAgeMs: number) =>
     mockSweep(now, maxAgeMs),
 }));

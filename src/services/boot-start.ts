@@ -20,7 +20,7 @@ import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
 import { startBackgroundNotice } from "./background-notice";
 
-import { startAttachmentCleanup } from "./file-transfer-service";
+import { startAttachmentCleanup } from "./attachment-cache";
 import { sweepMediaIfDue } from "./media-retention";
 import { startMessageRetention } from "./message-retention";
 import { readMoveMarker } from "./move-marker";

@@ -1,6 +1,6 @@
 // FileTransferService: how a file is paced onto the radio, the
 // BitchatFilePacket it sends, and what the receive path writes to the cache.
-// Retention and the cache clears are file-transfer-service-retention.test.ts.
+// Retention and the cache clears are attachment-cache-retention.test.ts.
 //
 // Pacing is the half whose failure is invisible on one device: dispatching
 // every fragment in a tight loop "works" locally (the callbacks all fire) and
@@ -26,9 +26,9 @@ import { useTransferStore } from "@store/transfer-store";
 import {
   CACHE_FILE_PREFIX,
   enforceIncomingQuota,
-  FileTransferService,
   INCOMING_FILE_PREFIX,
-} from "../file-transfer-service";
+} from "../attachment-cache";
+import { FileTransferService } from "../file-transfer-service";
 import { sweepMediaIfDue } from "../media-retention";
 
 // When the sweep is due is media-retention.test.ts; here only that a received

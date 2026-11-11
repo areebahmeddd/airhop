@@ -356,7 +356,7 @@ export function subscribeInboundMessages(fn: InboundListener): () => void {
 // conversation, the oldest rows a full thread trims, and expired ones. Fired
 // after the state no longer holds them, so an observer counting what still
 // references a file sees the store as it now is. A side channel for the same
-// reason as the inbound one: file deletion (services/file-transfer-service)
+// reason as the inbound one: file deletion (services/attachment-cache)
 // stays out of this store.
 //
 // Not fired by clearAll: the panic wipe empties the cache directory itself.

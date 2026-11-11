@@ -56,10 +56,10 @@ import {
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
 import { watchAppLock } from "@services/app-lock";
+import { startAttachmentCleanup } from "@services/attachment-cache";
 import { setAudioForPlayback } from "@services/audio-session";
 import { startBackgroundNotice } from "@services/background-notice";
 import { registerBootStartTask, syncBootStart } from "@services/boot-start";
-import { startAttachmentCleanup } from "@services/file-transfer-service";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
 import {

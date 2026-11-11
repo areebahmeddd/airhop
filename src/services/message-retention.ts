@@ -12,7 +12,7 @@
 // otherwise no more than hourly.
 //
 // A sweep removes every copy this phone holds: the row (whose files go through
-// file-transfer-service's reference-counted cleanup), its line in the bell,
+// attachment-cache's reference-counted cleanup), its line in the bell,
 // its outbox entry once a relay holds a copy, a read receipt still owed for
 // it, and the conversation's card in the tray once nothing in it is left
 // unread. A card

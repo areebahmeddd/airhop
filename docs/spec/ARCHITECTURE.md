@@ -1516,7 +1516,7 @@ it with the chat history.
 History leaves the phone row by row as well as all at once. Leaving or clearing
 a conversation, removing a message, the 200-message trim and disappearing
 messages all report the rows they take (`subscribeRemovedMessages` in
-`chat-store.ts`), and `file-transfer-service` deletes each attachment file no
+`chat-store.ts`), and `attachment-cache` deletes each attachment file no
 remaining row references, counted across every conversation since forwards
 share files, and never one a send or receive still holds. Leaving or clearing
 also drops the conversation's lines in the bell, which keep a preview of each

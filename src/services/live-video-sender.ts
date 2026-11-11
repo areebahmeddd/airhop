@@ -40,7 +40,7 @@ import { t } from "@i18n";
 import { bytesToHex, randomBytes } from "@noble/hashes/utils.js";
 import * as FileSystem from "expo-file-system";
 import { NativeEventEmitter, type EventSubscription } from "react-native";
-import { CACHE_FILE_PREFIX } from "./file-transfer-service";
+import { CACHE_FILE_PREFIX } from "./attachment-cache";
 import type { NativeAudioCapture } from "./voice-audio-backend";
 import {
   currentWipeGeneration,

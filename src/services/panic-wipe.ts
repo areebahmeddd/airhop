@@ -55,13 +55,13 @@ import {
   wipeWalletStorage,
 } from "@store/wallet-store";
 import { settleOr, withTimeout } from "@utils/with-timeout";
+import { wipeCacheDirectory } from "./attachment-cache";
 import {
   clearBackgroundNotice,
   stopBackgroundNotice,
 } from "./background-notice";
 import { resetBoardAlerts } from "./board-alerts";
 import { syncAutoStartOnBoot } from "./boot-sync";
-import { wipeCacheDirectory } from "./file-transfer-service";
 import { settleLiveVideoWork } from "./live-video-work";
 import { clearLocationCache } from "./location-service";
 import { stopNotificationPipeline } from "./notification-pipeline";

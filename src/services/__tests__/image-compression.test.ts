@@ -73,7 +73,7 @@ jest.mock("expo-image-manipulator", () => ({
   },
 }));
 
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   adoptIntoAttachmentCache: jest.fn((uri: string) => Promise.resolve(uri)),
   discardPickerCopy: jest.fn(),
 }));
@@ -81,7 +81,7 @@ jest.mock("../file-transfer-service", () => ({
 const fileTransfer = jest.requireMock<{
   adoptIntoAttachmentCache: jest.Mock;
   discardPickerCopy: jest.Mock;
-}>("../file-transfer-service");
+}>("../attachment-cache");
 
 beforeEach(() => {
   mockDisk.clear();

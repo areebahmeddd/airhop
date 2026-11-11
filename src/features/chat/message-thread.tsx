@@ -51,15 +51,17 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import {
+  adoptIntoAttachmentCache,
+  CACHE_FILE_PREFIX,
+  discardPickerCopy,
+  holdAttachmentFile,
+} from "@services/attachment-cache";
+import {
   setAudioForPlayback,
   setAudioForRecording,
 } from "@services/audio-session";
 import {
-  adoptIntoAttachmentCache,
   AttachmentTooLargeError,
-  CACHE_FILE_PREFIX,
-  discardPickerCopy,
-  holdAttachmentFile,
   sizeLabel,
 } from "@services/file-transfer-service";
 import {
