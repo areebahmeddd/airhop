@@ -1233,10 +1233,9 @@ function AppContent(): React.JSX.Element {
         // actually moved, in either direction.
         //
         // Leaving for system Settings and coming back is the main way a location
-        // grant changes. A grant opens the named channels; a revoke has to
-        // close them and take the bridge off its cell, which nothing else does
-        // while iOS keeps the process alive across it. Gated on the change so
-        // an ordinary resume does not re-subscribe every cell.
+        // grant changes: a grant opens the named channels, a revoke closes them
+        // and takes the bridge off its cell. Gated on the change so an ordinary
+        // resume does not re-subscribe every cell.
         if (changed) getMeshService()?.refreshGeoChannels();
       });
       // Re-check the radios unconditionally.

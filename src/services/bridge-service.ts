@@ -325,10 +325,12 @@ export class BridgeService {
     this.emitStatus();
   }
 
+  // The cell is resolved again before any heartbeat: location may have been
+  // revoked while off screen, and iOS keeps the process alive across that.
   setForeground(foreground: boolean): void {
     if (this.foreground === foreground) return;
     this.foreground = foreground;
-    if (foreground) this.publishPresence();
+    if (foreground) void this.refresh();
   }
 
   // Internet switched off: deposits were accepted on the promise of putting
@@ -783,9 +785,8 @@ export class BridgeService {
       this.presenceTimer = null;
       if (!this.networkAllowed()) return;
       this.pruneParticipants();
-      this.publishPresence();
-      // Recover a launch that raced the location permission, and migrate cells
-      // on a moving device.
+      // Picks up a move, a revoked permission or a launch that raced the
+      // permission, then sends the heartbeat.
       void this.refresh();
       this.armPresenceTimer();
     };

@@ -34,8 +34,10 @@ import {
   type BridgeStatus,
 } from "../bridge-service";
 
-// Bengaluru, so the cell is one the relay directory has neighbors for.
-const mockCoords = { lat: 12.9716, lng: 77.5946 };
+// A cell the relay directory has neighbors for.
+const MOCK_COORDS = { lat: 12.9716, lng: 77.5946 };
+// Null while a test has location revoked.
+let mockCoords: typeof MOCK_COORDS | null = MOCK_COORDS;
 jest.mock("../location-service", () => ({
   getCoarseLocation: () => Promise.resolve(mockCoords),
 }));
@@ -54,7 +56,7 @@ jest.mock("nostr-tools", () => {
   };
 });
 
-const CELL = encodeGeohash(mockCoords.lat, mockCoords.lng, 6);
+const CELL = encodeGeohash(MOCK_COORDS.lat, MOCK_COORDS.lng, 6);
 
 interface FakeSub {
   filters: { "#r"?: string[] }[];
@@ -563,6 +565,25 @@ describe("the presence heartbeat", () => {
     expect(heartbeats()).toBe(0);
 
     r.bridge.setForeground(true);
+    await jest.advanceTimersByTimeAsync(0);
     expect(heartbeats()).toBe(1);
+  });
+
+  // iOS keeps the process alive while location is revoked in Settings.
+  it("names no cell once location was revoked while off screen", async () => {
+    const r = rig();
+    await online(r);
+    r.bridge.setForeground(false);
+    mockCoords = null;
+    try {
+      await jest.advanceTimersByTimeAsync(60_000);
+      const before = r.client.published.length;
+      r.bridge.setForeground(true);
+      await jest.advanceTimersByTimeAsync(0);
+      expect(r.client.published.length).toBe(before);
+      expect(r.bridge.advertisedBridgeGeohash()).toBeUndefined();
+    } finally {
+      mockCoords = MOCK_COORDS;
+    }
   });
 });
