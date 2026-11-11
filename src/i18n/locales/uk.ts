@@ -2219,6 +2219,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Прямий ефір",
   "settings.conn.live_video_desc":
     "Транслюйте камеру людям поблизу й дивіться їхні ефіри",
+  "settings.conn.live_video_on_title": "Увімкнути прямий ефір?",
+  "settings.conn.live_video_on_body":
+    "Ви зможете виходити в ефір з камери для тих, хто в радіусі Bluetooth, а їхні ефіри з’являтимуться у ваших чатах і записуватимуться на цей телефон.",
+  "settings.conn.live_video_off_title": "Вимкнути прямий ефір?",
+  "settings.conn.live_video_off_body":
+    "Ви більше не зможете виходити в ефір, а чужі ефіри не показуватимуться й не записуватимуться. Короткий все одно надійде як звичайне відео.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Маршрутизація через Tor",
   "settings.conn.tor_desc":

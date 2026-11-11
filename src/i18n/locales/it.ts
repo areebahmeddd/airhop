@@ -2258,6 +2258,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video in diretta",
   "settings.conn.live_video_desc":
     "Trasmetti la fotocamera alle persone vicine e guarda la loro",
+  "settings.conn.live_video_on_title": "Attivare il video in diretta?",
+  "settings.conn.live_video_on_body":
+    "Potrai andare in diretta con la fotocamera per chi è nel raggio del Bluetooth, e le loro dirette compariranno nelle tue chat e verranno registrate su questo telefono.",
+  "settings.conn.live_video_off_title": "Disattivare il video in diretta?",
+  "settings.conn.live_video_off_body":
+    "Non potrai più andare in diretta, e le dirette degli altri non verranno mostrate né registrate. Una diretta breve arriva comunque come un normale video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Instradamento su Tor",
   "settings.conn.tor_desc":

@@ -2245,6 +2245,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video ya moja kwa moja",
   "settings.conn.live_video_desc":
     "Tiririsha kamera yako kwa watu walio karibu, na utazame zao",
+  "settings.conn.live_video_on_title": "Uwashe video ya moja kwa moja?",
+  "settings.conn.live_video_on_body":
+    "Utaweza kurusha moja kwa moja kutoka kwenye kamera kwa watu walio ndani ya masafa ya Bluetooth, na matangazo yao yataonekana kwenye mazungumzo yako na kurekodiwa kwenye simu hii.",
+  "settings.conn.live_video_off_title": "Uzime video ya moja kwa moja?",
+  "settings.conn.live_video_off_body":
+    "Hutaweza tena kurusha moja kwa moja, na matangazo ya wengine hayataonyeshwa wala kurekodiwa. Tangazo fupi bado litafika kama video ya kawaida.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Uelekezaji wa Tor",
   "settings.conn.tor_desc":

@@ -2183,6 +2183,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "लाइभ भिडियो",
   "settings.conn.live_video_desc":
     "आफ्नो क्यामेरा नजिकका मानिसहरूलाई स्ट्रिम गर्नुहोस्, र उनीहरूको हेर्नुहोस्",
+  "settings.conn.live_video_on_title": "लाइभ भिडियो खोल्ने?",
+  "settings.conn.live_video_on_body":
+    "तपाईं क्यामेराबाट ब्लुटुथ दायराका मानिसहरूका लागि लाइभ जान सक्नुहुन्छ, र उनीहरूको लाइभ तपाईंको च्याटमा देखिन्छ र यो फोनमा रेकर्ड हुन्छ।",
+  "settings.conn.live_video_off_title": "लाइभ भिडियो बन्द गर्ने?",
+  "settings.conn.live_video_off_body":
+    "तपाईं अब लाइभ जान सक्नुहुन्न, र अरूको लाइभ न देखिन्छ न रेकर्ड हुन्छ। छोटो लाइभ भने साधारण भिडियोका रूपमा आइपुग्छ।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor बाटो",
   "settings.conn.tor_desc":

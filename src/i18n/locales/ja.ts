@@ -2203,6 +2203,12 @@ export const strings: Strings = {
     "マイクを押すと、代わりにボイスメモを録音します。指を離すと送信され、相手が再生するまで誰にも聞かれません。",
   "settings.conn.live_video": "ライブ動画",
   "settings.conn.live_video_desc": "近くの人にカメラを配信し、相手の配信も視聴",
+  "settings.conn.live_video_on_title": "ライブ動画をオンにしますか",
+  "settings.conn.live_video_on_body":
+    "カメラからBluetooth圏内の人に配信でき、相手の配信もチャットに表示されてこの端末に録画されます。",
+  "settings.conn.live_video_off_title": "ライブ動画をオフにしますか",
+  "settings.conn.live_video_off_body":
+    "配信できなくなり、他の人の配信も表示や録画をしなくなります。短い配信は通常の動画として届きます。",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor経由の通信",
   "settings.conn.tor_desc":

@@ -2266,6 +2266,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Live-Video",
   "settings.conn.live_video_desc":
     "Streame deine Kamera an Menschen in der Nähe und sieh ihre",
+  "settings.conn.live_video_on_title": "Live-Video einschalten?",
+  "settings.conn.live_video_on_body":
+    "Du kannst mit der Kamera live gehen, für alle in Bluetooth-Reichweite, und ihre Streams erscheinen in deinen Chats und werden auf diesem Telefon aufgezeichnet.",
+  "settings.conn.live_video_off_title": "Live-Video ausschalten?",
+  "settings.conn.live_video_off_body":
+    "Du kannst nicht mehr live gehen, und Streams von anderen werden weder angezeigt noch aufgezeichnet. Ein kurzer kommt trotzdem als normales Video an.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-Routing",
   "settings.conn.tor_desc":

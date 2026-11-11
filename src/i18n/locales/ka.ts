@@ -2220,6 +2220,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "პირდაპირი ვიდეო",
   "settings.conn.live_video_desc":
     "გაუზიარე კამერა ახლომყოფებს და უყურე მათსას",
+  "settings.conn.live_video_on_title": "ჩავრთოთ პირდაპირი ვიდეო?",
+  "settings.conn.live_video_on_body":
+    "შეძლებ კამერით ეთერში გასვლას ბლუთუზის რადიუსში მყოფებისთვის, მათი ეთერები კი შენს ჩატებში გამოჩნდება და ამ ტელეფონზე ჩაიწერება.",
+  "settings.conn.live_video_off_title": "გამოვრთოთ პირდაპირი ვიდეო?",
+  "settings.conn.live_video_off_body":
+    "ეთერში ვეღარ გახვალ, სხვების ეთერები კი აღარ გამოჩნდება და აღარ ჩაიწერება. მოკლე ეთერი მაინც ჩვეულებრივ ვიდეოდ მოვა.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-ით მიმართვა",
   "settings.conn.tor_desc":

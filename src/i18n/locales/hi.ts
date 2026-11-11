@@ -2189,6 +2189,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "लाइव वीडियो",
   "settings.conn.live_video_desc":
     "अपना कैमरा आस-पास के लोगों तक स्ट्रीम करें, और उनका देखें",
+  "settings.conn.live_video_on_title": "लाइव वीडियो चालू करें?",
+  "settings.conn.live_video_on_body":
+    "आप कैमरे से ब्लूटूथ की पहुँच में मौजूद लोगों के लिए लाइव जा सकेंगे, और उनकी लाइव स्ट्रीम आपकी चैट में दिखेंगी और इस फ़ोन पर रिकॉर्ड होंगी।",
+  "settings.conn.live_video_off_title": "लाइव वीडियो बंद करें?",
+  "settings.conn.live_video_off_body":
+    "आप अब लाइव नहीं जा सकेंगे, और दूसरों की लाइव स्ट्रीम न दिखेंगी, न रिकॉर्ड होंगी। छोटी स्ट्रीम फिर भी साधारण वीडियो के रूप में आएगी।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor रूटिंग",
   "settings.conn.tor_desc":

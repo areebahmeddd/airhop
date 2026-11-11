@@ -140,14 +140,14 @@ export default function PrivacyPage() {
                 members of that group.
               </li>
               <li>
-                Live voice, on unless you turn it off. Holding the mic streams your voice to
+                Live voice, only if you turn it on. Holding the mic then streams your voice to
                 everyone in Bluetooth range as you speak. A public burst is signed but not
                 encrypted, the same as a room attachment. In a direct message it stays inside that
                 peer's encrypted session. When you let go, the same audio is also sent as an
                 ordinary voice note.
               </li>
               <li>
-                Live video, on unless you turn it off, and only while you choose to go live. Your
+                Live video, only if you turn it on, and only while you choose to go live. Your
                 camera, and your microphone unless you mute it, stream to everyone in Bluetooth
                 range. Like live voice, a public stream is signed but not encrypted, and in a direct
                 message it stays inside that peer's encrypted session. When it ends, a short stream

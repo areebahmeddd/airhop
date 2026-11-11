@@ -109,6 +109,7 @@ export interface DeviceSpec {
   // wants it has to say so, the same way a person would.
   lanEnabled?: boolean;
   liveVoiceEnabled?: boolean;
+  liveVideoEnabled?: boolean;
   // Loads the real panic wipe into the sandbox. Opt-in because it pulls in the
   // notification stack, which every phone that never wipes would pay to build.
   wipeable?: boolean;
@@ -1803,6 +1804,11 @@ function buildSandbox(
       stores.settingsStore,
       "setLiveVoiceEnabled",
       spec.liveVoiceEnabled ?? true,
+    );
+    call(
+      stores.settingsStore,
+      "setLiveVideoEnabled",
+      spec.liveVideoEnabled ?? true,
     );
 
     // Swap the socket BEFORE mesh-service can build a pool. nostr-tools keeps

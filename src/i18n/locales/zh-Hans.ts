@@ -2060,6 +2060,12 @@ export const strings: Strings = {
     "按住麦克风会改为录一条语音留言。松手后才发出，别人不点开就听不到。",
   "settings.conn.live_video": "直播视频",
   "settings.conn.live_video_desc": "向附近的人直播你的摄像头，也观看他们的直播",
+  "settings.conn.live_video_on_title": "开启直播视频？",
+  "settings.conn.live_video_on_body":
+    "你可以用摄像头向蓝牙范围内的人直播，他们的直播也会显示在你的聊天中，并录在这部手机上。",
+  "settings.conn.live_video_off_title": "关闭直播视频？",
+  "settings.conn.live_video_off_body":
+    "你将无法再直播，别人的直播也不会显示或录下。较短的直播仍会作为普通视频送达。",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 路由",
   "settings.conn.tor_desc": "把 Nostr 流量经 Tor 转发，进一步保护隐私",

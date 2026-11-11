@@ -2194,6 +2194,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "ویدیوی زنده",
   "settings.conn.live_video_desc":
     "دوربینت را برای افراد نزدیک پخش کن و پخش آن‌ها را ببین",
+  "settings.conn.live_video_on_title": "ویدیوی زنده روشن شود؟",
+  "settings.conn.live_video_on_body":
+    "می‌توانید با دوربین برای کسانی که در محدودهٔ بلوتوث‌اند پخش زنده کنید، و پخش‌های آن‌ها در گفتگوهایتان نمایش داده و روی این گوشی ضبط می‌شود.",
+  "settings.conn.live_video_off_title": "ویدیوی زنده خاموش شود؟",
+  "settings.conn.live_video_off_body":
+    "دیگر نمی‌توانید پخش زنده کنید، و پخش‌های دیگران نه نمایش داده می‌شود و نه ضبط. پخش کوتاه همچنان به‌صورت یک ویدیوی معمولی می‌رسد.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "مسیردهی Tor",
   "settings.conn.tor_desc":

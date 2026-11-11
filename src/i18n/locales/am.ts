@@ -2066,6 +2066,12 @@ export const strings: Strings = {
     "ማይኩን ተጭነህ ስትይዝ በምትኩ የድምፅ መልእክት ይቀዳል። ስትለቀው ይላካል፤ እስኪያጫውቱትም ማንም አይሰማውም።",
   "settings.conn.live_video": "ቀጥታ ቪዲዮ",
   "settings.conn.live_video_desc": "ካሜራዎን በአቅራቢያ ላሉ ሰዎች ያሰራጩ፣ የእነሱንም ይመልከቱ",
+  "settings.conn.live_video_on_title": "ቀጥታ ቪዲዮ ይብራ?",
+  "settings.conn.live_video_on_body":
+    "ከካሜራው በብሉቱዝ ክልል ውስጥ ላሉ ሰዎች በቀጥታ መልቀቅ ትችላለህ፤ የእነሱም ስርጭቶች በውይይቶችህ ውስጥ ይታያሉ፣ በዚህ ስልክም ይቀዳሉ።",
+  "settings.conn.live_video_off_title": "ቀጥታ ቪዲዮ ይጥፋ?",
+  "settings.conn.live_video_off_body":
+    "ከእንግዲህ በቀጥታ መልቀቅ አትችልም፤ የሌሎች ስርጭቶችም አይታዩም፣ አይቀዱምም። አጭር ስርጭት ግን እንደ ተራ ቪዲዮ ይደርሳል።",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "የTor አቅጣጫ",
   "settings.conn.tor_desc": "ለተጨማሪ ግላዊነት የNostr ትራፊክን በTor በኩል አሳልፍ",

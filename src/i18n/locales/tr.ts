@@ -2213,6 +2213,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Canlı video",
   "settings.conn.live_video_desc":
     "Kameranı yakındaki kişilere yayınla ve onlarınkini izle",
+  "settings.conn.live_video_on_title": "Canlı video açılsın mı?",
+  "settings.conn.live_video_on_body":
+    "Kameradan Bluetooth menzilindeki kişilere canlı yayın yapabilirsin, onların yayınları da sohbetlerinde görünür ve bu telefona kaydedilir.",
+  "settings.conn.live_video_off_title": "Canlı video kapatılsın mı?",
+  "settings.conn.live_video_off_body":
+    "Artık canlı yayın yapamazsın, başkalarının yayınları da gösterilmez ve kaydedilmez. Kısa bir yayın yine de normal bir video olarak gelir.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor yönlendirmesi",
   "settings.conn.tor_desc":

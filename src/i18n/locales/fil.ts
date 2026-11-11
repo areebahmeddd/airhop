@@ -2279,6 +2279,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Live na video",
   "settings.conn.live_video_desc":
     "I-stream ang camera mo sa mga tao sa malapit, at panoorin ang kanila",
+  "settings.conn.live_video_on_title": "I-on ang live na video?",
+  "settings.conn.live_video_on_body":
+    "Makakapag-live ka mula sa camera sa mga nasa saklaw ng Bluetooth, at lalabas sa mga chat mo ang kanilang mga live at mare-record sa teleponong ito.",
+  "settings.conn.live_video_off_title": "I-off ang live na video?",
+  "settings.conn.live_video_off_body":
+    "Hindi ka na makakapag-live, at hindi na ipapakita o ire-record ang mga live ng iba. Darating pa rin ang maikling live bilang karaniwang video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Pagruruta sa Tor",
   "settings.conn.tor_desc":

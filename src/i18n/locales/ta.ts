@@ -2291,6 +2291,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "நேரலை வீடியோ",
   "settings.conn.live_video_desc":
     "அருகிலுள்ளவர்களுக்கு உங்கள் கேமராவை நேரலையாக்குங்கள், அவர்களுடையதையும் பாருங்கள்",
+  "settings.conn.live_video_on_title": "நேரலை வீடியோவை இயக்கவா?",
+  "settings.conn.live_video_on_body":
+    "புளூடூத் வரம்பில் உள்ளவர்களுக்குக் கேமராவிலிருந்து நேரலை செய்யலாம், அவர்களின் நேரலைகள் உங்கள் உரையாடல்களில் தோன்றி இந்தத் தொலைபேசியில் பதிவாகும்.",
+  "settings.conn.live_video_off_title": "நேரலை வீடியோவை முடக்கவா?",
+  "settings.conn.live_video_off_body":
+    "இனி நீங்கள் நேரலை செய்ய முடியாது, மற்றவர்களின் நேரலைகள் காட்டப்படவோ பதிவாகவோ மாட்டாது. சிறிய நேரலை மட்டும் சாதாரண வீடியோவாக வந்து சேரும்.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor திசைவழி",
   "settings.conn.tor_desc":

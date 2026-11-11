@@ -2271,6 +2271,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "တိုက်ရိုက်ဗီဒီယို",
   "settings.conn.live_video_desc":
     "အနီးရှိလူများထံ သင့်ကင်မရာကို လွှင့်ပြီး သူတို့၏ကိုလည်း ကြည့်ပါ",
+  "settings.conn.live_video_on_title": "တိုက်ရိုက်ဗီဒီယိုကို ဖွင့်မလား?",
+  "settings.conn.live_video_on_body":
+    "ကင်မရာမှ ဘလူးတုသ်အကွာအဝေးအတွင်းရှိ လူများထံ တိုက်ရိုက်ထုတ်လွှင့်နိုင်ပြီး ၎င်းတို့၏ တိုက်ရိုက်လွှင့်မှုများလည်း သင့်ချက်တွင် ပေါ်ကာ ဤဖုန်းတွင် မှတ်တမ်းတင်ပါမည်။",
+  "settings.conn.live_video_off_title": "တိုက်ရိုက်ဗီဒီယိုကို ပိတ်မလား?",
+  "settings.conn.live_video_off_body":
+    "တိုက်ရိုက်ထုတ်လွှင့်၍ မရတော့ဘဲ အခြားသူများ၏ တိုက်ရိုက်လွှင့်မှုများကိုလည်း မပြတော့၊ မှတ်တမ်းမတင်တော့ပါ။ တိုတောင်းသော လွှင့်မှုကိုမူ ရိုးရိုးဗီဒီယိုအဖြစ် ရရှိပါမည်။",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor လမ်းကြောင်း",
   "settings.conn.tor_desc":

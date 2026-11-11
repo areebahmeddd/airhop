@@ -1251,7 +1251,7 @@ export default function ArchitecturePage() {
               id="voice"
               eyebrow="The system · 11"
               title="Live voice"
-              lede="Holding the mic is a walkie-talkie, not a recording. Audio leaves as you speak and arrives about half a second later."
+              lede="Turned on, holding the mic is a walkie-talkie, not a recording. Audio leaves as you speak and arrives about half a second later."
             >
               <p>
                 A voice note is a file: you record it, it sends, they play it. Live voice takes the
@@ -1409,8 +1409,9 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">
                   A stream that fits 100 KiB is resent as an ordinary file
                 </strong>{" "}
-                and replaces every copy; a longer one stays as each phone rebuilt it. Turning off
-                Live video in settings stops your phone from showing or recording streams.
+                and replaces every copy; a longer one stays as each phone rebuilt it. Live video is
+                opt-in: until you turn it on in settings, your phone neither shows nor records
+                streams.
               </Note>
 
               <p>

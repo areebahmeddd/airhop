@@ -2172,6 +2172,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "라이브 영상",
   "settings.conn.live_video_desc":
     "근처 사람들에게 카메라를 스트리밍하고 그들의 방송도 보세요",
+  "settings.conn.live_video_on_title": "라이브 영상을 켤까요?",
+  "settings.conn.live_video_on_body":
+    "카메라로 블루투스 범위 안의 사람들에게 라이브를 할 수 있고, 다른 사람의 라이브도 채팅에 표시되며 이 휴대폰에 녹화됩니다.",
+  "settings.conn.live_video_off_title": "라이브 영상을 끌까요?",
+  "settings.conn.live_video_off_body":
+    "더 이상 라이브를 할 수 없고, 다른 사람의 라이브도 표시되거나 녹화되지 않습니다. 짧은 라이브는 일반 영상으로 도착합니다.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 경로 설정",
   "settings.conn.tor_desc":

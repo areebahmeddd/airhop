@@ -2200,6 +2200,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Livevideo",
   "settings.conn.live_video_desc":
     "Strömma din kamera till folk i närheten och se deras",
+  "settings.conn.live_video_on_title": "Slå på livevideo?",
+  "settings.conn.live_video_on_body":
+    "Du kan sända live med kameran till alla inom Bluetooth-räckhåll, och deras sändningar visas i dina chattar och spelas in på den här telefonen.",
+  "settings.conn.live_video_off_title": "Stänga av livevideo?",
+  "settings.conn.live_video_off_body":
+    "Du kan inte längre sända live, och andras sändningar visas eller spelas inte in. En kort kommer ändå fram som en vanlig video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-routing",
   "settings.conn.tor_desc":

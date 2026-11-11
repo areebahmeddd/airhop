@@ -2290,6 +2290,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Horonan-tsary mivantana",
   "settings.conn.live_video_desc":
     "Alefaso mivantana amin'ny olona akaiky ny fakantsarinao, ary jereo ny azy ireo",
+  "settings.conn.live_video_on_title": "Alefa ny horonan-tsary mivantana?",
+  "settings.conn.live_video_on_body":
+    "Afaka mandefa mivantana avy amin'ny fakantsary ho an'ny olona ao anatin'ny fetran'ny Bluetooth ianao, ary miseho ao amin'ny resakao ny fandefasan'izy ireo ary voarakitra amin'ity finday ity.",
+  "settings.conn.live_video_off_title": "Vonoina ny horonan-tsary mivantana?",
+  "settings.conn.live_video_off_body":
+    "Tsy afaka mandefa mivantana intsony ianao, ary tsy aseho na raketina intsony ny fandefasan'ny hafa. Ny fandefasana fohy kosa dia tonga ho horonan-tsary tsotra ihany.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Fitondrana amin'ny Tor",
   "settings.conn.tor_desc":

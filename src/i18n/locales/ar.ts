@@ -2131,6 +2131,12 @@ export const strings: Strings = {
     "الضغط المستمر على الميكروفون يسجّل ملاحظة صوتية بدلًا من ذلك. تُرسل عندما تفلت، ولا يسمعها أحد حتى يشغّلها.",
   "settings.conn.live_video": "فيديو مباشر",
   "settings.conn.live_video_desc": "بث الكاميرا للأشخاص القريبين، ومشاهدة بثهم",
+  "settings.conn.live_video_on_title": "تفعيل الفيديو المباشر؟",
+  "settings.conn.live_video_on_body":
+    "يمكنك البث مباشرة من الكاميرا إلى من هم ضمن نطاق البلوتوث، وتظهر بثوثهم في محادثاتك وتُسجَّل على هذا الهاتف.",
+  "settings.conn.live_video_off_title": "تعطيل الفيديو المباشر؟",
+  "settings.conn.live_video_off_body":
+    "لن تتمكن من البث المباشر بعد الآن، ولن تُعرض بثوث الآخرين أو تُسجَّل. أما البث القصير فيصل كفيديو عادي.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "توجيه Tor",
   "settings.conn.tor_desc": "وجّه حركة Nostr عبر Tor لخصوصية إضافية",

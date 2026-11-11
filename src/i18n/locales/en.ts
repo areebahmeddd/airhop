@@ -2205,6 +2205,12 @@ export const strings = {
   "settings.conn.live_video": "Live video",
   "settings.conn.live_video_desc":
     "Stream your camera to people nearby, and watch theirs",
+  "settings.conn.live_video_on_title": "Turn on live video?",
+  "settings.conn.live_video_on_body":
+    "You can go live from the camera to people in Bluetooth range, and their streams show in your chats and are recorded on this phone.",
+  "settings.conn.live_video_off_title": "Turn off live video?",
+  "settings.conn.live_video_off_body":
+    "You can no longer go live, and streams from others are not shown or recorded. A short one still arrives as an ordinary video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor routing",
   "settings.conn.tor_desc": "Route Nostr traffic through Tor for extra privacy",

@@ -2189,6 +2189,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "لائیو ویڈیو",
   "settings.conn.live_video_desc":
     "اپنا کیمرہ قریبی لوگوں تک اسٹریم کریں، اور ان کا دیکھیں",
+  "settings.conn.live_video_on_title": "لائیو ویڈیو چالو کریں؟",
+  "settings.conn.live_video_on_body":
+    "آپ کیمرے سے بلوٹوتھ کی حدود میں موجود لوگوں کے لیے لائیو جا سکیں گے، اور ان کی لائیو اسٹریمیں آپ کی گفتگو میں دکھیں گی اور اس فون پر ریکارڈ ہوں گی۔",
+  "settings.conn.live_video_off_title": "لائیو ویڈیو بند کریں؟",
+  "settings.conn.live_video_off_body":
+    "آپ اب لائیو نہیں جا سکیں گے، اور دوسروں کی لائیو اسٹریمیں نہ دکھیں گی نہ ریکارڈ ہوں گی۔ مختصر اسٹریم پھر بھی عام ویڈیو کے طور پر آئے گی۔",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor سے رخ بندی",
   "settings.conn.tor_desc":

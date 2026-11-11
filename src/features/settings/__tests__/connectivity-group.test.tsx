@@ -6,7 +6,12 @@
 import { t } from "@i18n";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { useSettingsStore } from "@store/settings-store";
-import { render, screen, userEvent } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  userEvent,
+} from "@testing-library/react-native";
 import type React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import ConnectivityGroup from "../connectivity-group";
@@ -72,6 +77,30 @@ async function pressGrant(): Promise<void> {
       screen.getByRole("button", { name: t("settings.conn.grant_location") }),
     );
 }
+
+describe("turning on live video", () => {
+  it("asks first, as live voice does, and turns it on only on a yes", async () => {
+    useSettingsStore.setState({ liveVideoEnabled: false });
+    await render(
+      <SafeAreaProvider initialMetrics={METRICS}>
+        <ConnectivityGroup onOpenTor={() => {}} />
+      </SafeAreaProvider>,
+    );
+    // A Switch reports a flip through onValueChange, not a press.
+    await fireEvent(
+      screen.getByRole("switch", { name: t("settings.conn.live_video") }),
+      "valueChange",
+      true,
+    );
+    expect(useSettingsStore.getState().liveVideoEnabled).toBe(false);
+    expect(
+      screen.getByText(t("settings.conn.live_video_on_body")),
+    ).toBeTruthy();
+
+    await userEvent.setup().press(screen.getByText(t("settings.conn.turn_on")));
+    expect(useSettingsStore.getState().liveVideoEnabled).toBe(true);
+  });
+});
 
 describe("granting location for the bridge", () => {
   it("asks, and re-resolves the bridge cell on a yes", async () => {

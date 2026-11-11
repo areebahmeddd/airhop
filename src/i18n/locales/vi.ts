@@ -2206,6 +2206,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video trực tiếp",
   "settings.conn.live_video_desc":
     "Phát camera của bạn cho người ở gần, và xem buổi phát của họ",
+  "settings.conn.live_video_on_title": "Bật video trực tiếp?",
+  "settings.conn.live_video_on_body":
+    "Bạn có thể phát trực tiếp từ camera tới mọi người trong tầm Bluetooth, và các buổi phát của họ hiện trong cuộc trò chuyện của bạn và được ghi lại trên điện thoại này.",
+  "settings.conn.live_video_off_title": "Tắt video trực tiếp?",
+  "settings.conn.live_video_off_body":
+    "Bạn không thể phát trực tiếp nữa, và các buổi phát của người khác không được hiển thị hay ghi lại. Buổi phát ngắn vẫn tới dưới dạng video thông thường.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Định tuyến qua Tor",
   "settings.conn.tor_desc": "Đưa lưu lượng Nostr qua Tor để riêng tư hơn",

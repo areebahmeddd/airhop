@@ -2192,6 +2192,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "ਲਾਈਵ ਵੀਡੀਓ",
   "settings.conn.live_video_desc":
     "ਆਪਣਾ ਕੈਮਰਾ ਨੇੜਲੇ ਲੋਕਾਂ ਤੱਕ ਸਟ੍ਰੀਮ ਕਰੋ, ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਦੇਖੋ",
+  "settings.conn.live_video_on_title": "ਲਾਈਵ ਵੀਡੀਓ ਚਾਲੂ ਕਰਨੀ ਹੈ?",
+  "settings.conn.live_video_on_body":
+    "ਤੁਸੀਂ ਕੈਮਰੇ ਤੋਂ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿਚਲੇ ਲੋਕਾਂ ਲਈ ਲਾਈਵ ਜਾ ਸਕੋਗੇ, ਅਤੇ ਉਹਨਾਂ ਦੀਆਂ ਲਾਈਵ ਸਟ੍ਰੀਮਾਂ ਤੁਹਾਡੀਆਂ ਗੱਲਾਂ ਵਿੱਚ ਦਿਸਣਗੀਆਂ ਅਤੇ ਇਸ ਫ਼ੋਨ ’ਤੇ ਰਿਕਾਰਡ ਹੋਣਗੀਆਂ।",
+  "settings.conn.live_video_off_title": "ਲਾਈਵ ਵੀਡੀਓ ਬੰਦ ਕਰਨੀ ਹੈ?",
+  "settings.conn.live_video_off_body":
+    "ਤੁਸੀਂ ਹੁਣ ਲਾਈਵ ਨਹੀਂ ਜਾ ਸਕੋਗੇ, ਅਤੇ ਦੂਜਿਆਂ ਦੀਆਂ ਲਾਈਵ ਸਟ੍ਰੀਮਾਂ ਨਾ ਦਿਸਣਗੀਆਂ, ਨਾ ਰਿਕਾਰਡ ਹੋਣਗੀਆਂ। ਛੋਟੀ ਸਟ੍ਰੀਮ ਫਿਰ ਵੀ ਆਮ ਵੀਡੀਓ ਵਜੋਂ ਆਵੇਗੀ।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor ਰਾਊਟਿੰਗ",
   "settings.conn.tor_desc": "ਵਾਧੂ ਨਿੱਜਤਾ ਲਈ Nostr ਦੀ ਆਵਾਜਾਈ Tor ਰਾਹੀਂ ਭੇਜੋ",

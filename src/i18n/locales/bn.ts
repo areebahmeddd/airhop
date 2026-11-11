@@ -2184,6 +2184,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "লাইভ ভিডিও",
   "settings.conn.live_video_desc":
     "কাছের মানুষদের কাছে আপনার ক্যামেরা স্ট্রিম করুন, আর তাদেরটা দেখুন",
+  "settings.conn.live_video_on_title": "লাইভ ভিডিও চালু করবেন?",
+  "settings.conn.live_video_on_body":
+    "ক্যামেরা থেকে ব্লুটুথের নাগালের মানুষদের কাছে লাইভে যেতে পারবেন, আর তাদের লাইভ আপনার চ্যাটে দেখা যাবে ও এই ফোনে রেকর্ড হবে।",
+  "settings.conn.live_video_off_title": "লাইভ ভিডিও বন্ধ করবেন?",
+  "settings.conn.live_video_off_body":
+    "আপনি আর লাইভে যেতে পারবেন না, আর অন্যদের লাইভ দেখানো বা রেকর্ড করা হবে না। ছোট লাইভ অবশ্য সাধারণ ভিডিও হিসেবে আসবে।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor রাউটিং",
   "settings.conn.tor_desc":

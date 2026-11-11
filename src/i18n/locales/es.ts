@@ -2250,6 +2250,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Vídeo en directo",
   "settings.conn.live_video_desc":
     "Transmite tu cámara a la gente cercana y mira la suya",
+  "settings.conn.live_video_on_title": "¿Activar el vídeo en directo?",
+  "settings.conn.live_video_on_body":
+    "Podrás emitir con la cámara para quienes estén al alcance del Bluetooth, y sus emisiones aparecerán en tus chats y se grabarán en este teléfono.",
+  "settings.conn.live_video_off_title": "¿Desactivar el vídeo en directo?",
+  "settings.conn.live_video_off_body":
+    "Ya no podrás emitir, y las emisiones de otros no se mostrarán ni se grabarán. Una corta llegará igualmente como un vídeo normal.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Enrutado por Tor",
   "settings.conn.tor_desc":

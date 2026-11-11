@@ -2244,6 +2244,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Vídeo ao vivo",
   "settings.conn.live_video_desc":
     "Transmita sua câmera para pessoas por perto e assista às delas",
+  "settings.conn.live_video_on_title": "Ligar o vídeo ao vivo?",
+  "settings.conn.live_video_on_body":
+    "Você pode fazer live com a câmera para quem estiver no alcance do Bluetooth, e as lives deles aparecem nas suas conversas e são gravadas neste celular.",
+  "settings.conn.live_video_off_title": "Desligar o vídeo ao vivo?",
+  "settings.conn.live_video_off_body":
+    "Você não pode mais fazer live, e as lives dos outros não são mostradas nem gravadas. Uma live curta ainda chega como um vídeo comum.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Roteamento por Tor",
   "settings.conn.tor_desc":

@@ -2234,6 +2234,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Wideo na żywo",
   "settings.conn.live_video_desc":
     "Transmituj kamerę do osób w pobliżu i oglądaj ich transmisje",
+  "settings.conn.live_video_on_title": "Włączyć wideo na żywo?",
+  "settings.conn.live_video_on_body":
+    "Możesz nadawać na żywo z kamery do osób w zasięgu Bluetooth, a ich transmisje pojawią się w twoich czatach i zostaną nagrane na tym telefonie.",
+  "settings.conn.live_video_off_title": "Wyłączyć wideo na żywo?",
+  "settings.conn.live_video_off_body":
+    "Nie możesz już nadawać na żywo, a transmisje innych nie są pokazywane ani nagrywane. Krótka i tak dotrze jako zwykłe wideo.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Trasowanie przez Tor",
   "settings.conn.tor_desc":

@@ -2063,6 +2063,12 @@ export const strings: Strings = {
     "按住麥克風會改成錄一則語音留言。放開後才送出，別人不點開就聽不到。",
   "settings.conn.live_video": "直播影片",
   "settings.conn.live_video_desc": "向附近的人直播你的相機，也觀看他們的直播",
+  "settings.conn.live_video_on_title": "要開啟直播影片嗎？",
+  "settings.conn.live_video_on_body":
+    "你可以用相機向藍牙範圍內的人直播，他們的直播也會顯示在你的聊天中，並錄在這支手機上。",
+  "settings.conn.live_video_off_title": "要關閉直播影片嗎？",
+  "settings.conn.live_video_off_body":
+    "你將無法再直播，別人的直播也不會顯示或錄下。較短的直播仍會作為一般影片送達。",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 路由",
   "settings.conn.tor_desc": "把 Nostr 流量經 Tor 轉送，多一層隱私",

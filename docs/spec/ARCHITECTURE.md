@@ -901,7 +901,10 @@ neighbor once, on its fastest link, from their origin and at every relay, and
 a live write left in a Bluetooth link's queue past 1.5 s is dropped unsent
 there. That queue's depth is what a video stream paces itself by, and the
 radio is asked for a faster connection interval while live video is sent or
-received.
+received. Both are opt-in, since live voice streams before the mic is let go
+and both play what anyone in range sends. While they are off, holding the mic
+records a voice note, and a stream arrives only if it is short enough for its
+sender to resend as a file.
 The formats are in
 [PROTOCOLS.md section 3.1](PROTOCOLS.md#31-voice-burst-payload) and
 [section 3.10](PROTOCOLS.md#310-live-video).

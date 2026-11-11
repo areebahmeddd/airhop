@@ -2234,6 +2234,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video langsung",
   "settings.conn.live_video_desc":
     "Siarkan kamera Anda ke orang di sekitar, dan tonton siaran mereka",
+  "settings.conn.live_video_on_title": "Nyalakan video langsung?",
+  "settings.conn.live_video_on_body":
+    "Kamu bisa siaran langsung dari kamera ke orang-orang dalam jangkauan Bluetooth, dan siaran mereka muncul di obrolanmu serta direkam di ponsel ini.",
+  "settings.conn.live_video_off_title": "Matikan video langsung?",
+  "settings.conn.live_video_off_body":
+    "Kamu tidak bisa lagi siaran langsung, dan siaran orang lain tidak ditampilkan atau direkam. Siaran yang singkat tetap tiba sebagai video biasa.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Perutean Tor",
   "settings.conn.tor_desc":

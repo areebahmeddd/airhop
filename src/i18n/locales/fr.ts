@@ -2269,6 +2269,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Vidéo en direct",
   "settings.conn.live_video_desc":
     "Diffuse ta caméra aux personnes à proximité et regarde la leur",
+  "settings.conn.live_video_on_title": "Activer la vidéo en direct ?",
+  "settings.conn.live_video_on_body":
+    "Tu peux passer en direct avec la caméra pour ceux qui sont à portée du Bluetooth, et leurs directs s’affichent dans tes conversations et sont enregistrés sur ce téléphone.",
+  "settings.conn.live_video_off_title": "Désactiver la vidéo en direct ?",
+  "settings.conn.live_video_off_body":
+    "Tu ne peux plus passer en direct, et les directs des autres ne sont ni affichés ni enregistrés. Un direct court arrive tout de même comme une vidéo ordinaire.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Routage par Tor",
   "settings.conn.tor_desc":

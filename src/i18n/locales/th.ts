@@ -2143,6 +2143,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "วิดีโอสด",
   "settings.conn.live_video_desc":
     "ถ่ายทอดกล้องของคุณให้คนใกล้ ๆ และดูของพวกเขา",
+  "settings.conn.live_video_on_title": "เปิดวิดีโอสดหรือไม่",
+  "settings.conn.live_video_on_body":
+    "คุณจะไลฟ์จากกล้องให้คนในระยะบลูทูธดูได้ และไลฟ์ของพวกเขาจะแสดงในแชตของคุณและถูกบันทึกไว้ในโทรศัพท์เครื่องนี้",
+  "settings.conn.live_video_off_title": "ปิดวิดีโอสดหรือไม่",
+  "settings.conn.live_video_off_body":
+    "คุณจะไลฟ์ไม่ได้อีก และไลฟ์ของคนอื่นจะไม่แสดงหรือถูกบันทึก ไลฟ์สั้นๆ ยังคงมาถึงเป็นวิดีโอธรรมดา",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "การกำหนดเส้นทางผ่าน Tor",
   "settings.conn.tor_desc":
