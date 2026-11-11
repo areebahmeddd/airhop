@@ -44,6 +44,7 @@ pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStart<'l
     bridge_lines: JString<'local>,
     obfs4_port: jint,
     snowflake_port: jint,
+    webtunnel_port: jint,
 ) -> jint {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || {
         with_env(&mut env, crate::AIRHOP_TOR_ERR_RUNTIME, |env| {
@@ -57,7 +58,8 @@ pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStart<'l
             }
             // A transport port of 0 is meaningful: it says that transport is
             // not running.
-            if !(0..=65535).contains(&obfs4_port) || !(0..=65535).contains(&snowflake_port) {
+            let transport_ports = [obfs4_port, snowflake_port, webtunnel_port];
+            if !transport_ports.iter().all(|p| (0..=65535).contains(p)) {
                 return Ok(crate::AIRHOP_TOR_ERR_BRIDGE_TRANSPORT);
             }
             let lines = if bridge_lines.is_null() {
@@ -75,6 +77,7 @@ pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStart<'l
                 crate::TransportPorts {
                     obfs4: obfs4_port as u16,
                     snowflake: snowflake_port as u16,
+                    webtunnel: webtunnel_port as u16,
                 },
             ))
         })

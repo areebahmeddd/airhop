@@ -1331,7 +1331,7 @@ unlisted entry point, and the transport in front of it disguises the connection.
 | Direct     | The IP, from the relay                    | None. The default                      |
 | obfs4      | That Tor is in use, as random bytes       | Public lines, some networks block them |
 | Snowflake  | That Tor is in use, with no list to block | Slowest to connect                     |
-| WebTunnel  | That Tor is in use, as an HTTPS visit     | Fewer bridges exist                    |
+| WebTunnel  | That Tor is in use, as an HTTPS visit     | No built-in lines, so through Custom   |
 | Custom     | The same, from lines you supply           | You fetch them yourself                |
 
 Bridges stay off by default: one is slower than a direct connection and only

@@ -31,7 +31,8 @@ private func airhop_tor_start(
   _ socksPort: UInt16,
   _ bridgeLines: UnsafePointer<CChar>?,
   _ obfs4Port: UInt16,
-  _ snowflakePort: UInt16
+  _ snowflakePort: UInt16,
+  _ webtunnelPort: UInt16
 ) -> Int32
 
 @_silgen_name("airhop_tor_stop")
@@ -254,7 +255,8 @@ public final class AirhopTorManager: ObservableObject {
             UInt16(AirhopTorEndpoint.socksPort),
             linesPtr,
             ports[.obfs4] ?? 0,
-            ports[.snowflake] ?? 0
+            ports[.snowflake] ?? 0,
+            ports[.webtunnel] ?? 0
           )
         }
       }

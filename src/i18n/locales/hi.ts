@@ -2225,12 +2225,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "छिपाता है कि आप Tor इस्तेमाल कर रहे हैं। Snowflake से तेज़, लेकिन ये ब्रिज सार्वजनिक हैं और कुछ नेटवर्क इन्हें रोकते हैं।",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "यह सामान्य वेबसाइट विज़िट जैसा दिखकर छिपाता है कि आप Tor इस्तेमाल करते हैं। बाकियों से ब्लॉक करना कठिन।",
   "settings.tor.mode_custom": "अपने ब्रिज",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org से मिली obfs4 ब्रिज लाइनें इस्तेमाल करें। बाकी विफल होने पर यह आज़माएँ।",
+    "bridges.torproject.org से मिली obfs4 या WebTunnel ब्रिज लाइनें इस्तेमाल करें। बाकी विफल होने पर यह आज़माएँ।",
   "settings.tor.custom_placeholder": "हर पंक्ति में एक ब्रिज लाइन चिपकाएँ",
   "settings.tor.custom_apply_hint":
     "कनेक्ट करने के लिए बॉक्स के बाहर टैप करें।",

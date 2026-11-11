@@ -2282,12 +2282,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Huficha kuwa unatumia Tor. Haraka kuliko Snowflake, lakini madaraja haya ni ya umma na baadhi ya mitandao huyazuia.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Huficha kuwa unatumia Tor kwa kuonekana kama kutembelea tovuti ya kawaida. Ngumu kuzuia kuliko nyingine.",
   "settings.tor.mode_custom": "Madaraja yako",
   "settings.tor.mode_custom_desc":
-    "Tumia mistari ya daraja ya obfs4 kutoka bridges.torproject.org. Jaribu hii wakati nyingine zinashindwa.",
+    "Tumia mistari ya daraja ya obfs4 au WebTunnel kutoka bridges.torproject.org. Jaribu hii wakati nyingine zinashindwa.",
   "settings.tor.custom_placeholder":
     "Bandika mstari mmoja wa daraja kwa kila mstari",
   "settings.tor.custom_apply_hint": "Gusa nje ya kisanduku ili kuunganisha.",

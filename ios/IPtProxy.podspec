@@ -3,7 +3,8 @@ Pod::Spec.new do |s|
   s.version          = '5.8.1'
   s.summary          = "Airhop's pluggable transports"
   s.description      = <<~DESC
-    Binary xcframework wrapping Lyrebird (obfs4) and Snowflake as a library.
+    Binary xcframework wrapping Lyrebird (obfs4, WebTunnel) and Snowflake as a
+    library.
 
     Built from pinned sources by native/iptproxy/build-apple.sh, not taken from
     upstream, which ships a prebuilt binary. Everything Airhop ships is compiled

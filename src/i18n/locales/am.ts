@@ -2100,12 +2100,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor እንደምትጠቀም ይደብቃል። ከ Snowflake ይፈጥናል፣ ግን እነዚህ ድልድዮች ይፋዊ ናቸው እና አንዳንድ አውታረ መረቦች ያግዷቸዋል።",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ተራ የድር ጣቢያ ጉብኝት በመምሰል Tor መጠቀምህን ይደብቃል። ከሌሎቹ ለማገድ ይከብዳል።",
   "settings.tor.mode_custom": "ብጁ ድልድዮች",
   "settings.tor.mode_custom_desc":
-    "ከ bridges.torproject.org የተገኙ የ obfs4 ድልድይ መስመሮችን ተጠቀም። ሌሎቹ ሲወድቁ ይህን ሞክር።",
+    "ከ bridges.torproject.org የተገኙ የ obfs4 ወይም WebTunnel ድልድይ መስመሮችን ተጠቀም። ሌሎቹ ሲወድቁ ይህን ሞክር።",
   "settings.tor.custom_placeholder": "በአንድ መስመር አንድ የድልድይ መስመር ለጥፍ",
   "settings.tor.custom_apply_hint": "ለመገናኘት ከሳጥኑ ውጭ ንካ።",
   "settings.tor.custom_empty": "መጀመሪያ ቢያንስ አንድ የድልድይ መስመር ጨምር።",

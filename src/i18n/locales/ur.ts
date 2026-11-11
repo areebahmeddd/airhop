@@ -2225,12 +2225,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "چھپاتا ہے کہ آپ Tor استعمال کر رہے ہیں۔ Snowflake سے تیز، مگر یہ پل عوامی ہیں اور کچھ نیٹ ورک انہیں بلاک کرتے ہیں۔",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "عام ویب سائٹ وزٹ جیسا دکھ کر چھپاتا ہے کہ آپ Tor استعمال کرتے ہیں۔ باقیوں سے بلاک کرنا مشکل۔",
   "settings.tor.mode_custom": "اپنے پل",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org سے حاصل کردہ obfs4 برج لائنیں استعمال کریں۔ باقی ناکام ہونے پر یہ آزمائیں۔",
+    "bridges.torproject.org سے حاصل کردہ obfs4 یا WebTunnel برج لائنیں استعمال کریں۔ باقی ناکام ہونے پر یہ آزمائیں۔",
   "settings.tor.custom_placeholder": "ہر سطر میں ایک پل کی سطر چسپاں کریں",
   "settings.tor.custom_apply_hint": "جڑنے کے لیے باکس سے باہر ٹیپ کریں۔",
   "settings.tor.custom_empty": "پہلے کم از کم ایک پل کی سطر شامل کریں۔",

@@ -12,13 +12,16 @@ class AirhopTransportTest {
         "snowflake 192.0.2.3:80 2B280B23E1107BB62ABFC40DDCC8824814F80A72 " +
             "fingerprint=2B280B23E1107BB62ABFC40DDCC8824814F80A72 " +
             "url=https://1098762253.rsc.cdn77.org/ fronts=app.datapacket.com,www.datapacket.com"
+    private val webtunnel =
+        "webtunnel [2001:db8::1]:443 0123456789ABCDEF0123456789ABCDEF01234567 " +
+            "url=https://example.invalid/0123456789abcdef ver=0.0.1"
 
     @Test
     fun eachTransportNamedIsStarted() {
         assertEquals(setOf(AirhopTransport.OBFS4), AirhopTransport.namedIn("$obfs4\n$obfs4"))
         assertEquals(
-            setOf(AirhopTransport.OBFS4, AirhopTransport.SNOWFLAKE),
-            AirhopTransport.namedIn("$obfs4\n$snowflake"),
+            setOf(AirhopTransport.OBFS4, AirhopTransport.SNOWFLAKE, AirhopTransport.WEBTUNNEL),
+            AirhopTransport.namedIn("$obfs4\n$snowflake\n$webtunnel"),
         )
     }
 
@@ -42,7 +45,7 @@ class AirhopTransportTest {
                 "# $obfs4",
                 "192.0.2.9:9001 0123456789ABCDEF0123456789ABCDEF01234567",
                 obfs4.replaceFirst("obfs4", "meek_lite"),
-                obfs4.replaceFirst("obfs4", "webtunnel"),
+                obfs4.replaceFirst("obfs4", "dnstt"),
             )
         assertEquals(emptySet<AirhopTransport>(), AirhopTransport.namedIn(lines.joinToString("\n")))
     }

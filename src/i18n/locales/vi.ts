@@ -2241,12 +2241,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Che giấu việc bạn dùng Tor. Nhanh hơn Snowflake, nhưng các cầu nối này công khai và một số mạng chặn chúng.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Ẩn việc bạn dùng Tor bằng cách trông như một lượt truy cập web bình thường. Khó chặn hơn các cách khác.",
   "settings.tor.mode_custom": "Cầu nối riêng",
   "settings.tor.mode_custom_desc":
-    "Dùng các dòng cầu nối obfs4 từ bridges.torproject.org. Hãy thử cách này khi các cách khác thất bại.",
+    "Dùng các dòng cầu nối obfs4 hoặc WebTunnel từ bridges.torproject.org. Hãy thử cách này khi các cách khác thất bại.",
   "settings.tor.custom_placeholder": "Dán mỗi dòng một dòng cầu nối",
   "settings.tor.custom_apply_hint": "Chạm bên ngoài ô để kết nối.",
   "settings.tor.custom_empty": "Hãy thêm ít nhất một dòng cầu nối trước.",

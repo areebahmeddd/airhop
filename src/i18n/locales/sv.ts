@@ -2237,12 +2237,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Döljer att du använder Tor. Snabbare än Snowflake, men dessa bryggor är offentliga och vissa nätverk blockerar dem.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Döljer att du använder Tor genom att likna ett vanligt webbplatsbesök. Svårare att blockera än de andra.",
   "settings.tor.mode_custom": "Egna bryggor",
   "settings.tor.mode_custom_desc":
-    "Använd obfs4-bryggrader från bridges.torproject.org. Prova detta när de andra inte fungerar.",
+    "Använd obfs4- eller WebTunnel-bryggrader från bridges.torproject.org. Prova detta när de andra inte fungerar.",
   "settings.tor.custom_placeholder": "Klistra in en bryggrad per rad",
   "settings.tor.custom_apply_hint": "Tryck utanför rutan för att ansluta.",
   "settings.tor.custom_empty": "Lägg först till minst en bryggrad.",

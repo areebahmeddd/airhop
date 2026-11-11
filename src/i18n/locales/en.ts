@@ -2240,12 +2240,9 @@ export const strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Hides that you use Tor. Faster than Snowflake, but these bridges are public and some networks block them.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Hides that you use Tor by looking like an ordinary website visit. Harder to block than the others.",
   "settings.tor.mode_custom": "Custom bridges",
   "settings.tor.mode_custom_desc":
-    "Use obfs4 bridge lines from bridges.torproject.org. Try this when the others fail.",
+    "Use obfs4 or WebTunnel bridge lines from bridges.torproject.org. Try this when the others fail.",
   "settings.tor.custom_placeholder": "Paste one bridge line per line",
   "settings.tor.custom_apply_hint": "Tap outside the box to connect.",
   "settings.tor.custom_empty": "Add at least one bridge line first.",

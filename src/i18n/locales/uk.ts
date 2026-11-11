@@ -2256,12 +2256,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Приховує, що ви користуєтесь Tor. Швидше за Snowflake, але ці мости загальнодоступні й частина мереж їх блокує.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Приховує використання Tor, виглядаючи як звичайний візит на сайт. Заблокувати складніше, ніж інші.",
   "settings.tor.mode_custom": "Власні мости",
   "settings.tor.mode_custom_desc":
-    "Використовуйте рядки мостів obfs4 з bridges.torproject.org. Спробуйте це, коли інші не працюють.",
+    "Використовуйте рядки мостів obfs4 або WebTunnel з bridges.torproject.org. Спробуйте це, коли інші не працюють.",
   "settings.tor.custom_placeholder": "Вставте по одному рядку моста в рядок",
   "settings.tor.custom_apply_hint": "Торкніться поза полем, щоб підключитися.",
   "settings.tor.custom_empty": "Спершу додайте хоча б один рядок моста.",

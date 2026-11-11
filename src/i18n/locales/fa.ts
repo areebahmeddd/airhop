@@ -2229,12 +2229,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "پنهان می‌کند که از Tor استفاده می‌کنید. سریع‌تر از Snowflake، اما این پل‌ها عمومی‌اند و برخی شبکه‌ها آنها را مسدود می‌کنند.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "با شبیه‌سازی بازدید معمولی از یک وب‌سایت، استفاده از Tor را پنهان می‌کند. مسدود کردنش از بقیه سخت‌تر است.",
   "settings.tor.mode_custom": "پل‌های دلخواه",
   "settings.tor.mode_custom_desc":
-    "از خطوط پل obfs4 از bridges.torproject.org استفاده کنید. وقتی بقیه کار نکردند این را امتحان کنید.",
+    "از خطوط پل obfs4 یا WebTunnel از bridges.torproject.org استفاده کنید. وقتی بقیه کار نکردند این را امتحان کنید.",
   "settings.tor.custom_placeholder": "در هر خط یک خط پل را بچسبانید",
   "settings.tor.custom_apply_hint": "برای اتصال، بیرون کادر را لمس کنید.",
   "settings.tor.custom_empty": "ابتدا دست‌کم یک خط پل اضافه کنید.",

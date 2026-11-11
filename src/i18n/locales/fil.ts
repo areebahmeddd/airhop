@@ -2315,12 +2315,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Itinatago na gumagamit ka ng Tor. Mas mabilis kaysa Snowflake, pero pampubliko ang mga bridge na ito at hinaharangan ng ilang network.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Itinatago na gumagamit ka ng Tor sa pamamagitan ng pagmukhang karaniwang pagbisita sa website. Mas mahirap harangan kaysa sa iba.",
   "settings.tor.mode_custom": "Sariling bridge",
   "settings.tor.mode_custom_desc":
-    "Gumamit ng mga obfs4 bridge line mula sa bridges.torproject.org. Subukan ito kapag nabigo ang iba.",
+    "Gumamit ng mga obfs4 o WebTunnel bridge line mula sa bridges.torproject.org. Subukan ito kapag nabigo ang iba.",
   "settings.tor.custom_placeholder": "I-paste ang isang bridge line kada linya",
   "settings.tor.custom_apply_hint": "I-tap sa labas ng kahon para kumonekta.",
   "settings.tor.custom_empty": "Magdagdag muna ng kahit isang bridge line.",

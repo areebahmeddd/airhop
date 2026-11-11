@@ -2328,12 +2328,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "நீங்கள் Tor பயன்படுத்துவதை மறைக்கிறது. Snowflake ஐ விட வேகமானது, ஆனால் இந்தப் பாலங்கள் பொதுவானவை, சில நெட்வொர்க்குகள் தடுக்கின்றன.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "சாதாரண இணையதள வருகை போலத் தோன்றி நீங்கள் Tor பயன்படுத்துவதை மறைக்கிறது. மற்றவற்றை விட தடுப்பது கடினம்.",
   "settings.tor.mode_custom": "சொந்தப் பாலங்கள்",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org இலிருந்து பெற்ற obfs4 பிரிட்ஜ் வரிகளைப் பயன்படுத்தவும். மற்றவை தோல்வியடையும்போது இதை முயற்சிக்கவும்.",
+    "bridges.torproject.org இலிருந்து பெற்ற obfs4 அல்லது WebTunnel பிரிட்ஜ் வரிகளைப் பயன்படுத்தவும். மற்றவை தோல்வியடையும்போது இதை முயற்சிக்கவும்.",
   "settings.tor.custom_placeholder": "ஒரு வரிக்கு ஒரு பாலம் வரியை ஒட்டவும்",
   "settings.tor.custom_apply_hint": "இணைக்க பெட்டிக்கு வெளியே தட்டவும்.",
   "settings.tor.custom_empty":

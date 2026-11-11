@@ -2255,12 +2255,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "მალავს, რომ Tor-ს იყენებ. Snowflake-ზე სწრაფია, თუმცა ეს ხიდები საჯაროა და ზოგი ქსელი ბლოკავს.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "მალავს Tor-ის გამოყენებას ჩვეულებრივი ვებგვერდის მონახულების იმიტაციით. სხვებზე რთულად დასაბლოკია.",
   "settings.tor.mode_custom": "საკუთარი ხიდები",
   "settings.tor.mode_custom_desc":
-    "გამოიყენე obfs4 ხიდის ხაზები bridges.torproject.org-იდან. სცადე ეს, როცა დანარჩენები ვერ მუშაობს.",
+    "გამოიყენე obfs4 ან WebTunnel ხიდის ხაზები bridges.torproject.org-იდან. სცადე ეს, როცა დანარჩენები ვერ მუშაობს.",
   "settings.tor.custom_placeholder": "ჩასვი თითო ხიდის ხაზი თითო სტრიქონში",
   "settings.tor.custom_apply_hint": "დასაკავშირებლად შეეხე ველის გარეთ.",
   "settings.tor.custom_empty": "ჯერ დაამატე ერთი ხიდის ხაზი მაინც.",

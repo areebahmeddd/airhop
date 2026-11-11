@@ -17,10 +17,10 @@ use std::ffi::{c_char, c_int, CStr};
 /// reaching the network through `bridge_lines` when any are given.
 ///
 /// `bridge_lines` is a newline-separated list in standard Tor format; empty or
-/// null is a direct connection to a public relay. `obfs4_port` and
-/// `snowflake_port` are where the app already has each transport listening on
-/// loopback, or `0` when it does not, and a line naming a transport whose port
-/// is `0` is refused rather than started without it.
+/// null is a direct connection to a public relay. `obfs4_port`,
+/// `snowflake_port` and `webtunnel_port` are where the app already has each
+/// transport listening on loopback, or `0` when it does not, and a line naming
+/// a transport whose port is `0` is refused rather than started without it.
 ///
 /// Returns `0` once the listener is accepting, which is before the first
 /// circuit exists. Any other value is one of the `AIRHOP_TOR_ERR_*` codes. A bad
@@ -37,6 +37,7 @@ pub unsafe extern "C" fn airhop_tor_start(
     bridge_lines: *const c_char,
     obfs4_port: u16,
     snowflake_port: u16,
+    webtunnel_port: u16,
 ) -> c_int {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || {
         if data_dir.is_null() {
@@ -60,6 +61,7 @@ pub unsafe extern "C" fn airhop_tor_start(
             crate::TransportPorts {
                 obfs4: obfs4_port,
                 snowflake: snowflake_port,
+                webtunnel: webtunnel_port,
             },
         )
     })

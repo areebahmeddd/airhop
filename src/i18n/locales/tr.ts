@@ -2249,12 +2249,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor kullandığını gizler. Snowflake'ten hızlıdır, ancak bu köprüler herkese açıktır ve bazı ağlar engeller.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Sıradan bir web sitesi ziyareti gibi görünerek Tor kullandığını gizler. Diğerlerinden daha zor engellenir.",
   "settings.tor.mode_custom": "Kendi köprülerin",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org adresinden aldığın obfs4 köprü satırlarını kullan. Diğerleri başarısız olduğunda bunu dene.",
+    "bridges.torproject.org adresinden aldığın obfs4 veya WebTunnel köprü satırlarını kullan. Diğerleri başarısız olduğunda bunu dene.",
   "settings.tor.custom_placeholder": "Her satıra bir köprü satırı yapıştır",
   "settings.tor.custom_apply_hint": "Bağlanmak için kutunun dışına dokun.",
   "settings.tor.custom_empty": "Önce en az bir köprü satırı ekle.",

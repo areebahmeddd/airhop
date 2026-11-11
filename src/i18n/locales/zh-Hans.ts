@@ -2094,12 +2094,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "隐藏你在使用 Tor。比 Snowflake 快，但这些网桥是公开的，有些网络会封锁。",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "让流量看起来像普通的网站访问，从而隐藏你在使用 Tor。比其他方式更难封锁。",
   "settings.tor.mode_custom": "自定义网桥",
   "settings.tor.mode_custom_desc":
-    "使用来自 bridges.torproject.org 的 obfs4 网桥行。其他方式失败时可尝试此项。",
+    "使用来自 bridges.torproject.org 的 obfs4 或 WebTunnel 网桥行。其他方式失败时可尝试此项。",
   "settings.tor.custom_placeholder": "每行粘贴一条网桥",
   "settings.tor.custom_apply_hint": "点按框外即可连接。",
   "settings.tor.custom_empty": "请先添加至少一条网桥。",

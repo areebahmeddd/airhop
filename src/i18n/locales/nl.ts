@@ -2272,12 +2272,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Verbergt dat je Tor gebruikt. Sneller dan Snowflake, maar deze bridges zijn openbaar en sommige netwerken blokkeren ze.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Verbergt dat je Tor gebruikt door op een gewoon websitebezoek te lijken. Moeilijker te blokkeren dan de andere.",
   "settings.tor.mode_custom": "Eigen bridges",
   "settings.tor.mode_custom_desc":
-    "Gebruik obfs4-bridgeregels van bridges.torproject.org. Probeer dit als de andere niet werken.",
+    "Gebruik obfs4- of WebTunnel-bridgeregels van bridges.torproject.org. Probeer dit als de andere niet werken.",
   "settings.tor.custom_placeholder": "Plak één bridge-regel per regel",
   "settings.tor.custom_apply_hint":
     "Tik buiten het vak om verbinding te maken.",

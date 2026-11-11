@@ -2307,12 +2307,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor သုံးနေကြောင်း ဖုံးကွယ်ပေးသည်။ Snowflake ထက် မြန်သော်လည်း ဤတံတားများမှာ အများသိဖြစ်ပြီး အချို့ကွန်ရက်များက ပိတ်ဆို့သည်။",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "သာမန်ဝဘ်ဆိုက်လည်ပတ်မှုပုံစံဖြင့် Tor သုံးနေကြောင်း ဖုံးကွယ်ပေးသည်။ အခြားနည်းများထက် ပိတ်ဆို့ရန် ခက်သည်။",
   "settings.tor.mode_custom": "ကိုယ်ပိုင်တံတားများ",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org မှ obfs4 တံတားလိုင်းများကို သုံးပါ။ အခြားနည်းများ မအောင်မြင်လျှင် ဤနည်းကို စမ်းပါ။",
+    "bridges.torproject.org မှ obfs4 သို့မဟုတ် WebTunnel တံတားလိုင်းများကို သုံးပါ။ အခြားနည်းများ မအောင်မြင်လျှင် ဤနည်းကို စမ်းပါ။",
   "settings.tor.custom_placeholder":
     "တစ်ကြောင်းလျှင် တံတားတစ်ကြောင်း ကူးထည့်ပါ",
   "settings.tor.custom_apply_hint": "ချိတ်ဆက်ရန် အကွက်ပြင်ပကို တို့ပါ။",

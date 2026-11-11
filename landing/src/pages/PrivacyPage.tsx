@@ -345,9 +345,9 @@ export default function PrivacyPage() {
               Tor hides your address from the relay, but not the fact that you are using Tor. On a
               direct connection the first hop goes to a publicly listed relay, so whoever runs your
               network can see Tor in use, and may block it. Bridges close that. A bridge is an
-              unlisted entry point, and obfs4 or Snowflake sits in front of it so the connection
-              looks like random noise or ordinary web traffic rather than Tor. Both are built into
-              the app, and bridges are off by default.
+              unlisted entry point, and obfs4, Snowflake or WebTunnel sits in front of it so the
+              connection looks like random noise or ordinary web traffic rather than Tor. All three
+              are built into the app, and bridges are off by default.
             </p>
             <p className="text-[15px] leading-[1.75]">
               A bridge replaces the public relay your connection would normally start from, so it

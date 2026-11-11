@@ -1628,11 +1628,11 @@ export default function ArchitecturePage() {
                   [
                     "WebTunnel",
                     "That you use Tor, behind traffic shaped like an ordinary visit to a real HTTPS website",
-                    "Fewer bridges exist, since each needs a real website in front of it",
+                    "No built-in lines, so they are pasted under Custom bridges, and fewer exist since each needs a real website in front of it",
                   ],
                   [
                     "Custom bridges",
-                    "The same as obfs4, using lines the built-in list does not carry",
+                    "The same as obfs4 or WebTunnel, using lines the built-in list does not carry",
                     "You fetch them yourself, and they are only as good as their source",
                   ],
                 ]}

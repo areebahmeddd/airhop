@@ -2179,12 +2179,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "ซ่อนว่าคุณใช้ Tor เร็วกว่า Snowflake แต่บริดจ์เหล่านี้เป็นสาธารณะและบางเครือข่ายบล็อกไว้",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ซ่อนว่าคุณใช้ Tor โดยทำให้ดูเหมือนการเข้าชมเว็บไซต์ทั่วไป บล็อกยากกว่าวิธีอื่น",
   "settings.tor.mode_custom": "บริดจ์ของคุณเอง",
   "settings.tor.mode_custom_desc":
-    "ใช้บรรทัดบริดจ์ obfs4 จาก bridges.torproject.org ลองวิธีนี้เมื่อวิธีอื่นไม่ได้ผล",
+    "ใช้บรรทัดบริดจ์ obfs4 หรือ WebTunnel จาก bridges.torproject.org ลองวิธีนี้เมื่อวิธีอื่นไม่ได้ผล",
   "settings.tor.custom_placeholder": "วางบรรทัดบริดจ์หนึ่งบรรทัดต่อหนึ่งแถว",
   "settings.tor.custom_apply_hint": "แตะนอกกล่องเพื่อเชื่อมต่อ",
   "settings.tor.custom_empty": "เพิ่มบรรทัดบริดจ์อย่างน้อยหนึ่งบรรทัดก่อน",

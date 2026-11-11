@@ -2209,12 +2209,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor 사용 사실을 숨깁니다. Snowflake보다 빠르지만 이 브리지는 공개되어 있어 차단하는 망도 있습니다.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "일반 웹사이트 방문처럼 보이게 해 Tor 사용을 숨깁니다. 다른 방법보다 차단하기 어렵습니다.",
   "settings.tor.mode_custom": "사용자 브리지",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org에서 받은 obfs4 브리지 라인을 사용하세요. 다른 방법이 안 될 때 시도하세요.",
+    "bridges.torproject.org에서 받은 obfs4 또는 WebTunnel 브리지 라인을 사용하세요. 다른 방법이 안 될 때 시도하세요.",
   "settings.tor.custom_placeholder": "한 줄에 브리지 라인 하나씩 붙여넣기",
   "settings.tor.custom_apply_hint": "연결하려면 입력란 밖을 누르세요.",
   "settings.tor.custom_empty": "먼저 브리지 라인을 하나 이상 추가하세요.",

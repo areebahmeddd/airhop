@@ -2275,12 +2275,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Menyembunyikan penggunaan Tor. Lebih laju daripada Snowflake, tetapi jambatan ini awam dan sesetengah rangkaian menyekatnya.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Menyembunyikan penggunaan Tor dengan kelihatan seperti lawatan laman web biasa. Lebih sukar disekat daripada yang lain.",
   "settings.tor.mode_custom": "Jambatan sendiri",
   "settings.tor.mode_custom_desc":
-    "Gunakan baris jambatan obfs4 daripada bridges.torproject.org. Cuba ini apabila yang lain gagal.",
+    "Gunakan baris jambatan obfs4 atau WebTunnel daripada bridges.torproject.org. Cuba ini apabila yang lain gagal.",
   "settings.tor.custom_placeholder": "Tampal satu baris jambatan setiap baris",
   "settings.tor.custom_apply_hint": "Ketik di luar kotak untuk menyambung.",
   "settings.tor.custom_empty":

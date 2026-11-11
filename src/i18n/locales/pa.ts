@@ -2227,12 +2227,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "ਲੁਕਾਉਂਦਾ ਹੈ ਕਿ ਤੁਸੀਂ Tor ਵਰਤ ਰਹੇ ਹੋ। Snowflake ਤੋਂ ਤੇਜ਼, ਪਰ ਇਹ ਬ੍ਰਿਜ ਜਨਤਕ ਹਨ ਅਤੇ ਕੁਝ ਨੈੱਟਵਰਕ ਇਨ੍ਹਾਂ ਨੂੰ ਰੋਕਦੇ ਹਨ।",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ਆਮ ਵੈੱਬਸਾਈਟ ਵਿਜ਼ਿਟ ਵਾਂਗ ਦਿਖ ਕੇ ਲੁਕਾਉਂਦਾ ਹੈ ਕਿ ਤੁਸੀਂ Tor ਵਰਤਦੇ ਹੋ। ਬਾਕੀਆਂ ਨਾਲੋਂ ਬਲਾਕ ਕਰਨਾ ਔਖਾ।",
   "settings.tor.mode_custom": "ਆਪਣੇ ਬ੍ਰਿਜ",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org ਤੋਂ ਮਿਲੀਆਂ obfs4 ਬ੍ਰਿਜ ਲਾਈਨਾਂ ਵਰਤੋ। ਬਾਕੀ ਅਸਫਲ ਹੋਣ ਉੱਤੇ ਇਹ ਅਜ਼ਮਾਓ।",
+    "bridges.torproject.org ਤੋਂ ਮਿਲੀਆਂ obfs4 ਜਾਂ WebTunnel ਬ੍ਰਿਜ ਲਾਈਨਾਂ ਵਰਤੋ। ਬਾਕੀ ਅਸਫਲ ਹੋਣ ਉੱਤੇ ਇਹ ਅਜ਼ਮਾਓ।",
   "settings.tor.custom_placeholder": "ਹਰ ਲਾਈਨ ਵਿੱਚ ਇੱਕ ਬ੍ਰਿਜ ਲਾਈਨ ਚਿਪਕਾਓ",
   "settings.tor.custom_apply_hint": "ਕਨੈਕਟ ਕਰਨ ਲਈ ਬਾਕਸ ਤੋਂ ਬਾਹਰ ਟੈਪ ਕਰੋ।",
   "settings.tor.custom_empty": "ਪਹਿਲਾਂ ਘੱਟੋ-ਘੱਟ ਇੱਕ ਬ੍ਰਿਜ ਲਾਈਨ ਸ਼ਾਮਲ ਕਰੋ।",

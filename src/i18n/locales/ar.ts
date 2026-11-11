@@ -2165,12 +2165,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "يخفي استخدامك لـ Tor. أسرع من Snowflake، لكن هذه الجسور علنية وبعض الشبكات تحجبها.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "يخفي استخدامك لـ Tor بجعله يبدو كزيارة عادية لموقع ويب. حظره أصعب من غيره.",
   "settings.tor.mode_custom": "جسور مخصصة",
   "settings.tor.mode_custom_desc":
-    "استخدم أسطر جسور obfs4 من bridges.torproject.org. جرّب هذا عندما تفشل الخيارات الأخرى.",
+    "استخدم أسطر جسور obfs4 أو WebTunnel من bridges.torproject.org. جرّب هذا عندما تفشل الخيارات الأخرى.",
   "settings.tor.custom_placeholder": "الصق سطر جسر واحد في كل سطر",
   "settings.tor.custom_apply_hint": "انقر خارج المربع للاتصال.",
   "settings.tor.custom_empty": "أضف سطر جسر واحدًا على الأقل أولًا.",

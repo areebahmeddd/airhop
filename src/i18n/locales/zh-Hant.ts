@@ -2097,12 +2097,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "隱藏你正在使用 Tor。比 Snowflake 快，但這些橋接是公開的，有些網路會封鎖。",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "讓流量看起來像一般的網站瀏覽，藉此隱藏你在使用 Tor。比其他方式更難封鎖。",
   "settings.tor.mode_custom": "自訂橋接",
   "settings.tor.mode_custom_desc":
-    "使用來自 bridges.torproject.org 的 obfs4 橋接行。其他方式失敗時可嘗試此項。",
+    "使用來自 bridges.torproject.org 的 obfs4 或 WebTunnel 橋接行。其他方式失敗時可嘗試此項。",
   "settings.tor.custom_placeholder": "每行貼上一條橋接",
   "settings.tor.custom_apply_hint": "點按框外即可連線。",
   "settings.tor.custom_empty": "請先新增至少一條橋接。",

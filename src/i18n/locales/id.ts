@@ -2271,12 +2271,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Menyembunyikan bahwa kamu memakai Tor. Lebih cepat dari Snowflake, tetapi bridge ini publik dan sebagian jaringan memblokirnya.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Menyembunyikan bahwa kamu memakai Tor dengan tampak seperti kunjungan situs web biasa. Lebih sulit diblokir daripada yang lain.",
   "settings.tor.mode_custom": "Bridge sendiri",
   "settings.tor.mode_custom_desc":
-    "Gunakan baris bridge obfs4 dari bridges.torproject.org. Coba ini saat yang lain gagal.",
+    "Gunakan baris bridge obfs4 atau WebTunnel dari bridges.torproject.org. Coba ini saat yang lain gagal.",
   "settings.tor.custom_placeholder": "Tempel satu baris bridge per baris",
   "settings.tor.custom_apply_hint": "Ketuk di luar kotak untuk menyambung.",
   "settings.tor.custom_empty": "Tambahkan setidaknya satu baris bridge dahulu.",

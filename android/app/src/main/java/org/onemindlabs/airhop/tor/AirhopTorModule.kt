@@ -124,6 +124,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                     bridgeLines,
                     ports[AirhopTransport.OBFS4] ?: 0,
                     ports[AirhopTransport.SNOWFLAKE] ?: 0,
+                    ports[AirhopTransport.WEBTUNNEL] ?: 0,
                 )
             if (rc != ArtiNative.OK && rc != ArtiNative.ERR_ALREADY_RUNNING) {
                 Log.e(TAG, "arti start failed (rc=$rc)")
