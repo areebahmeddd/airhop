@@ -65,6 +65,7 @@ import { prekeysHeldFor, SimDevice } from "./harness/device";
 import { noCrashes, noForgedSenders } from "./harness/invariants";
 import { media } from "./harness/media-fabric";
 import { RadioFabric } from "./harness/radio-fabric";
+import { RelayNode } from "./harness/relay-node";
 import { Scenario, waitFor } from "./harness/scenario";
 
 let scenario: Scenario | null = null;
@@ -2338,5 +2339,115 @@ test("C17 an older announce arriving late does not roll a peer's name back", asy
   s.check("a newer announce still renames her", nickname() === "carol-later");
 
   s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+test("C18 a replayed announce on a silent link takes no carried mail", async () => {
+  // A carrier hands mail over, and lets go of it, only down a link a Noise
+  // handshake proved. Bob's genuine announce, caught where he really is and
+  // replayed onto a link that never announced, binds that link to him, and
+  // passes every check an announce can: signed, fresh, never seen here. Only
+  // the handshake that link cannot complete tells it from Bob. The carrier
+  // floods a copy toward him and keeps the original.
+  const s = (scenario = new Scenario({
+    id: "C18",
+    title: "courier handover waits for a proven link",
+    seed: 1801,
+  }));
+  const radio = new RadioFabric(s.world);
+  const [alice, carrier, bob] = (
+    [
+      ["alice", 11],
+      ["carrier", 22],
+      ["bob", 33],
+    ] as const
+  ).map(([id, seedByte]) =>
+    SimDevice.create(s.world, { id, platform: "android", seedByte }),
+  );
+  // Two boxes that only repeat, so neither ever announces: the attacker's
+  // radio beside the carrier, and the ear beside Bob.
+  const pole = new RelayNode(s.world, { id: "pole" });
+  const ear = new RelayNode(s.world, { id: "ear" });
+  const cast = [alice, carrier, bob];
+  for (const d of cast) radio.add(d);
+  radio.add(pole);
+  radio.add(ear);
+  s.track(...cast);
+  radio.setTopology([
+    ["alice", "carrier"],
+    ["alice", "bob"],
+    ["carrier", "bob"],
+  ]);
+  for (const d of cast) d.launch();
+  pole.launch();
+  ear.launch();
+
+  const met = await waitFor(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 2),
+    30_000,
+  );
+  await s.world.advance(10_000);
+  s.check("everyone met", met);
+
+  // Bob leaves for good, so alice's DM goes to the carrier.
+  radio.setTopology([["alice", "carrier"]]);
+  await waitFor(s.world, () => !radio.isLinked("carrier", "bob"), 20_000);
+  await s.world.advance(90_000);
+  const text = "the key is under the mat";
+  const status = alice.send(`dm:${bob.peerID}`, text);
+  s.check("alice handed it to a carrier", status === "carried", status);
+  const bag = (carrier.mesh as unknown as { courier: { size: number } })
+    .courier;
+  s.check(
+    "the carrier holds it",
+    await waitFor(s.world, () => bag.size > 0, 60_000),
+  );
+
+  // Bob is across town, heard only by the ear; the pole is beside the carrier.
+  radio.setTopology([
+    ["carrier", "pole"],
+    ["bob", "ear"],
+  ]);
+  let caught: string | undefined;
+  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
+    if (who !== bob.id || caught !== undefined) return;
+    if (decodeWrite(dataBase64)?.type === PacketType.ANNOUNCE) {
+      caught = dataBase64;
+    }
+  });
+  const heard = await waitFor(
+    s.world,
+    () => caught !== undefined && radio.isLinked("carrier", "pole"),
+    60_000,
+  );
+  stopTap();
+  s.check("bob's live announce was caught", heard);
+  s.check(
+    "and replayed to the carrier down the pole's link",
+    caught !== undefined && radio.injectTo(carrier.id, "pole", caught),
+  );
+  await s.world.advance(60_000);
+  s.check(
+    "the carrier keeps the mail it could not prove it handed over",
+    bag.size > 0,
+    `size=${String(bag.size)}`,
+  );
+
+  // Bob really walks up: his link completes the handshake, and the mail goes.
+  radio.setTopology([["carrier", "bob"]]);
+  const delivered = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes(text),
+    180_000,
+  );
+  s.check("bob gets it once he is really there", delivered);
+  s.check(
+    "and the carrier lets go of it",
+    await waitFor(s.world, () => bag.size === 0, 30_000),
+    `size=${String(bag.size)}`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
   s.assert();
 });

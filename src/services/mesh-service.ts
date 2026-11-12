@@ -57,6 +57,7 @@ import {
 import {
   LinkRegistry,
   TRANSPORT_KINDS,
+  type Link,
   type TransportKind,
 } from "@core/mesh/links/link-registry";
 import {
@@ -2225,7 +2226,7 @@ export class MeshService {
         this.onChannelEnc(packet);
         break;
       case PacketType.NOISE_HANDSHAKE:
-        this.onNoiseHandshake(packet);
+        this.onNoiseHandshake(packet, linkID);
         break;
       case PacketType.NOISE_ENCRYPTED:
         this.onNoiseEncrypted(packet);
@@ -3042,7 +3043,7 @@ export class MeshService {
   // Dispatch an incoming NOISE_HANDSHAKE packet through the correct leg of the
   // three-message Noise XX exchange, and release whatever waited on the session
   // once it completes.
-  private onNoiseHandshake(packet: Packet): void {
+  private onNoiseHandshake(packet: Packet, linkID: string): void {
     const senderID = bytesToHex(packet.senderID);
     if (senderID === this.identity.peerID) return;
 
@@ -3165,6 +3166,7 @@ export class MeshService {
       // to keep sending under.
       const msg3Pkt = this.makeHandshakePacket(packet.senderID.slice(), msg3);
       this.unicastFn(senderID, msg3Pkt);
+      this.noteLinkProven(senderID, linkID);
 
       // Now that the far side can decrypt, prove who we are before anything
       // else rides the session. Order matters: the proof is what binds our
@@ -3208,6 +3210,17 @@ export class MeshService {
     // This proof is also what tells a rekeying initiator its msg3 landed.
     this.sendPeerState(senderID);
     this.releaseToSession(senderID);
+    this.noteLinkProven(senderID, linkID);
+  }
+
+  // A handshake that completed over a link bound to its peer proves who holds
+  // that link, which is what a handover waits for. The mail goes at once rather
+  // than at the peer's next announce.
+  private noteLinkProven(peerID: string, linkID: string): void {
+    if (this.links.peerOf(linkID) !== peerID) return;
+    const first = this.links.provenLinkFor(peerID) === undefined;
+    this.links.prove(linkID, peerID);
+    if (first && this.courier.size > 0) this.sprayCourierTo(peerID, true);
   }
 
   // File a completed, bound session as the one sent under, with an unseeded
@@ -5299,9 +5312,11 @@ export class MeshService {
   // several hops away resolves FALSE, which is not a failure but the signal to
   // keep carrying: a multi-hop send has nothing to acknowledge it. bitchat draws
   // the same line between handoverEnvelopes and envelopesForRemoteHandover.
+  // `via` names the link, for a write that must go down a proven one.
   private async sendCourierPayloadTo(
     payload: Uint8Array,
     peerID: string,
+    via: Link | undefined = this.links.linkFor(peerID),
   ): Promise<boolean> {
     const packet: Packet = {
       type: PacketType.COURIER_ENV,
@@ -5320,8 +5335,7 @@ export class MeshService {
     // rather than a flood. A full envelope passes a Bluetooth frame, and one
     // written whole there is refused by the far side, so the mail would be
     // deleted as handed over when nobody holds it.
-    const link = this.links.linkFor(peerID);
-    if (link !== undefined) return this.sendPacketOnLink(link.id, packet);
+    if (via !== undefined) return this.sendPacketOnLink(via.id, packet);
     // No direct link: let the flood carry it to them. Speculative, so it is
     // never reported as a handover however many links took the bytes.
     this.broadcastPacket(packet);
@@ -5504,9 +5518,11 @@ export class MeshService {
     }
   }
 
-  // Hand carried envelopes to a peer whose announce we just heard.
+  // Hand carried envelopes to a peer whose announce we just heard, or whose
+  // link a handshake just proved.
   //
-  // A peer on a link we hold gets two distinct operations, never merged:
+  // A peer on a link a handshake proved gets two distinct operations, never
+  // merged, both written down that link:
   //
   //   1. HANDOVER  mail addressed to this peer. They are the destination, so
   //      the copy carries no spray budget and the envelope is retired once it
@@ -5519,27 +5535,44 @@ export class MeshService {
   // Both commit only after the transport confirms, which is why neither loop
   // mutates the store directly.
   //
-  // A peer heard only through relays gets their own mail flooded toward them
-  // and nothing else, at most once per envelope per cooldown, and it stays
-  // carried: nothing acknowledges a flood. Never a spray, since a flood cannot
-  // confirm a carrier took it, so no budget would ever be spent and every peer
-  // within seven hops would end up carrying a copy. This is bitchat-ios's split
-  // on the same announce.
+  // Anyone else, heard through relays or on a link no handshake has proved (a
+  // direct announce can be replayed onto someone else's link), gets their own
+  // mail flooded toward them, at most once per envelope per cooldown, and it
+  // stays carried, since nothing acknowledges a flood. Never a spray: no budget
+  // would ever be spent, and every peer within seven hops would end up carrying
+  // a copy. A direct peer owed anything is then asked for the handshake that
+  // proves its link (noteLinkProven).
   private sprayCourierTo(peerID: string, isDirectAnnounce: boolean): void {
     const peer = this.registry.get(peerID);
     if (!peer?.noisePubKey) return;
     const peerPub = peer.noisePubKey;
     const tags = candidateTags(peerPub);
+    const proven = isDirectAnnounce
+      ? this.links.provenLinkFor(peerID)
+      : undefined;
 
-    if (!isDirectAnnounce) {
+    if (proven === undefined) {
       for (const env of this.courier.offerRemoteHandover(tags)) {
         void this.sendCourierPayloadTo(encodeEnvelopePayload(env), peerID);
+      }
+      const owed =
+        isDirectAnnounce &&
+        (this.courier.offerHandover(tags).length > 0 ||
+          this.courier.offerSpray(peerPub).length > 0);
+      if (owed) {
+        // A session can outlive the link it was made on, so one already held
+        // is run again, as a rekey, rather than trusted for this link.
+        this.initiateHandshake(
+          peerID,
+          this.registry.sessionFor(peerID) !== undefined,
+        );
       }
       return;
     }
 
     for (const env of this.courier.offerHandover(tags)) {
-      void this.sendCourierPayloadTo(encodeEnvelopePayload(env), peerID).then(
+      const payload = encodeEnvelopePayload(env);
+      void this.sendCourierPayloadTo(payload, peerID, proven).then(
         (delivered) => {
           // Only a write accepted onto THIS peer's link retires the envelope. A
           // refusal leaves it carried for the next encounter. Accepted means
@@ -5552,7 +5585,8 @@ export class MeshService {
     }
 
     for (const env of this.courier.offerSpray(peerPub)) {
-      void this.sendCourierPayloadTo(encodeEnvelopePayload(env), peerID).then(
+      const payload = encodeEnvelopePayload(env);
+      void this.sendCourierPayloadTo(payload, peerID, proven).then(
         (delivered) => {
           // Same rule for the budget: spent only if the copy left the device,
           // so a full GATT queue costs this branch nothing and the peer stays
