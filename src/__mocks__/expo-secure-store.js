@@ -38,12 +38,12 @@ module.exports = {
   // keychain.ts reads one of these at module scope, so they must exist or
   // importing it throws before any test runs. Values match the real module,
   // ordered by value, so keychain.test.ts can assert the one writes pass.
-  WHEN_UNLOCKED: 0,
-  AFTER_FIRST_UNLOCK: 1,
-  AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 2,
-  ALWAYS: 3,
-  WHEN_PASSCODE_SET_THIS_DEVICE_ONLY: 4,
-  ALWAYS_THIS_DEVICE_ONLY: 5,
+  AFTER_FIRST_UNLOCK: 0,
+  AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 1,
+  ALWAYS: 2,
+  WHEN_PASSCODE_SET_THIS_DEVICE_ONLY: 3,
+  ALWAYS_THIS_DEVICE_ONLY: 4,
+  WHEN_UNLOCKED: 5,
   WHEN_UNLOCKED_THIS_DEVICE_ONLY: 6,
   __reset: () => {
     store.clear();
