@@ -384,7 +384,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "हर सदस्य तक नहीं पहुँच सके। जब वे आस-पास हों तब फिर कोशिश करें।",
   "chat.group.you_were_added": "आपको {name} में जोड़ा गया।",
-  "chat.group.added_you": "आपको {name} में जोड़ा",
+  "chat.group.invited": "आपको {name} में आमंत्रित किया गया है।",
+  "chat.group.invited_you": "आपको {name} में आमंत्रित किया",
+  "chat.group.decline": "अस्वीकार करें",
   "chat.group.you_were_removed":
     "आपको {name} से हटा दिया गया। अब आप यहाँ न पढ़ सकते हैं न भेज सकते हैं।",
   "chat.group.removed_you": "आपको {name} से हटाया",

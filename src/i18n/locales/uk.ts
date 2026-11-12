@@ -387,7 +387,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Не вдалося дістатися кожного учасника. Спробуйте ще раз, поки вони поблизу.",
   "chat.group.you_were_added": "Вас додано до {name}.",
-  "chat.group.added_you": "Додає вас до {name}",
+  "chat.group.invited": "Вас запрошено до {name}.",
+  "chat.group.invited_you": "Запрошує вас до {name}",
+  "chat.group.decline": "Відхилити",
   "chat.group.you_were_removed":
     "Вас вилучено з {name}. Ви більше не можете тут читати чи надсилати повідомлення.",
   "chat.group.removed_you": "Вилучає вас із {name}",

@@ -394,7 +394,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "အဖွဲ့ဝင်တိုင်းထံ မရောက်နိုင်ခဲ့ပါ။ ၎င်းတို့ အနီးအနားရှိချိန်တွင် ထပ်စမ်းကြည့်ပါ။",
   "chat.group.you_were_added": "သင့်ကို {name} ထဲသို့ ထည့်လိုက်ပါပြီ။",
-  "chat.group.added_you": "သင့်ကို {name} ထဲသို့ ထည့်ခဲ့သည်",
+  "chat.group.invited": "သင့်ကို {name} သို့ ဖိတ်ခေါ်ထားသည်။",
+  "chat.group.invited_you": "သင့်ကို {name} သို့ ဖိတ်ခေါ်ခဲ့သည်",
+  "chat.group.decline": "ငြင်းပယ်ပါ",
   "chat.group.you_were_removed":
     "သင့်ကို {name} မှ ဖယ်ရှားလိုက်ပါပြီ။ ဤနေရာတွင် ဖတ်ခြင်း၊ ပို့ခြင်း မလုပ်နိုင်တော့ပါ။",
   "chat.group.removed_you": "သင့်ကို {name} မှ ဖယ်ရှားခဲ့သည်",

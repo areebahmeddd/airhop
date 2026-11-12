@@ -362,7 +362,9 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "ሁሉንም አባላት መድረስ አልተቻለም። በአቅራቢያ ሲሆኑ እንደገና ሞክር።",
   "chat.group.you_were_added": "ወደ {name} ተጨምረሃል።",
-  "chat.group.added_you": "ወደ {name} ጨምሮሃል",
+  "chat.group.invited": "ወደ {name} ተጋብዘሃል።",
+  "chat.group.invited_you": "ወደ {name} ጋብዞሃል",
+  "chat.group.decline": "አትቀበል",
   "chat.group.you_were_removed": "ከ{name} ተወግደሃል። ከእንግዲህ እዚህ ማንበብም መላክም አትችልም።",
   "chat.group.removed_you": "ከ{name} አስወግዶሃል",
   "chat.group.add_failed": "እነሱን መጨመር አልተቻለም",

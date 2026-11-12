@@ -384,7 +384,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Alla medlemmar kunde inte nås. Försök igen medan de är i närheten.",
   "chat.group.you_were_added": "Du lades till i {name}.",
-  "chat.group.added_you": "Lade till dig i {name}",
+  "chat.group.invited": "Du har bjudits in till {name}.",
+  "chat.group.invited_you": "Bjöd in dig till {name}",
+  "chat.group.decline": "Avböj",
   "chat.group.you_were_removed":
     "Du togs bort från {name}. Du kan inte längre läsa eller skicka meddelanden här.",
   "chat.group.removed_you": "Tog bort dig från {name}",

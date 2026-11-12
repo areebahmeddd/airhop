@@ -387,7 +387,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "全員には届きませんでした。相手が近くにいるときにもう一度お試しください。",
   "chat.group.you_were_added": "{name}に追加されました。",
-  "chat.group.added_you": "{name}にあなたを追加しました",
+  "chat.group.invited": "{name}に招待されました。",
+  "chat.group.invited_you": "{name}にあなたを招待しました",
+  "chat.group.decline": "辞退",
   "chat.group.you_were_removed":
     "{name}から削除されました。ここでの読み書きはできません。",
   "chat.group.removed_you": "{name}からあなたを削除しました",

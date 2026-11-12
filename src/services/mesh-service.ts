@@ -6950,9 +6950,9 @@ export class MeshService {
     );
   }
 
-  // A creator-signed group invite / key update arrived over Noise. Verify the
-  // signature AND that the Noise peer who sent it is the group's creator, then
-  // store the group and surface its channel.
+  // A creator-signed group invite or key update arrived over Noise. Verify the
+  // signature and that the Noise peer who sent it is the group's creator, then
+  // update the group, or hold a new one as an invite for the user to answer.
   private onGroupState(
     body: Uint8Array,
     senderPeerID: string,
@@ -6983,16 +6983,61 @@ export class MeshService {
     // What this state means for us, and in which order the questions are
     // asked. See groupStateAction: the creator pin has to come before the
     // removal branch, or anyone who has seen a group ID can evict its members.
-    const held = useGroupStore.getState().get(groupIDHex);
+    // A pending invite is pinned the same way as a group we hold.
+    const groups = useGroupStore.getState();
+    const held = groups.get(groupIDHex);
+    const invited = held === undefined ? groups.invite(groupIDHex) : undefined;
+    const known = held ?? invited;
     const action = groupStateAction(state, {
-      heldCreatorFingerprint: held?.creatorFingerprint,
-      heldCreatorSigningKey: held?.members.find(
-        (m) => m.fingerprint === held.creatorFingerprint,
+      heldCreatorFingerprint: known?.creatorFingerprint,
+      heldCreatorSigningKey: known?.members.find(
+        (m) => m.fingerprint === known.creatorFingerprint,
       )?.signingKey,
-      heldEpoch: held?.epoch,
+      heldEpoch: known?.epoch,
       myFingerprint,
     });
     if (action === "reject") return;
+
+    // Not a member yet: the state is an invite, and joins nothing until the
+    // user does. A removal is the creator taking it back before we answered.
+    if (held === undefined) {
+      if (action === "remove") {
+        groups.leave(groupIDHex);
+        useChatStore.getState().removeChannel(channel);
+        return;
+      }
+      const dropped = groups.addInvite(state);
+      if (dropped === null) return;
+      for (const id of dropped) {
+        useChatStore.getState().removeChannel(groupChannel(id));
+      }
+      if (invited !== undefined) return;
+      const nowMs = Date.now();
+      useChatStore.getState().addChannel(channel);
+      useChatStore.getState().addMessage({
+        id: `sys-group-invite-${groupIDHex}`,
+        channel,
+        senderID: "",
+        senderNickname: "",
+        ...systemRow("chat.group.invited", { name: state.name }),
+        timestampMs: nowMs,
+        isMine: false,
+        isSystem: true,
+      });
+      const creator = state.members.find(
+        (m) => m.fingerprint === state.creatorFingerprint,
+      );
+      useActivityStore.getState().record({
+        id: `group-invite-${groupIDHex}`,
+        channel,
+        isDM: false,
+        senderID: state.creatorFingerprint.slice(0, 16),
+        senderNickname: creator?.nickname ?? state.name,
+        ...systemPreview("chat.group.invited_you", { name: state.name }),
+        timestampMs: nowMs,
+      });
+      return;
+    }
 
     // A creator-signed roster that no longer lists us is a removal: drop the
     // group's key so nothing further can be read. (The notice carries a throwaway
@@ -7029,37 +7074,8 @@ export class MeshService {
       return;
     }
 
-    // The first sight of this group is a genuine "you were added", surfaced as
-    // a local system notice so the new room isn't a silent surprise.
-    const wasNew = held === undefined;
     useGroupStore.getState().upsertFromState(state);
     useChatStore.getState().addChannel(channel);
-    if (wasNew) {
-      const nowMs = Date.now();
-      useChatStore.getState().addMessage({
-        id: `sys-group-join-${groupIDHex}`,
-        channel,
-        senderID: "",
-        senderNickname: "",
-        ...systemRow("chat.group.you_were_added", { name: state.name }),
-        timestampMs: nowMs,
-        isMine: false,
-        isSystem: true,
-      });
-      // Ring the bell too, so the invite is found without opening the channel.
-      const creator = state.members.find(
-        (m) => m.fingerprint === state.creatorFingerprint,
-      );
-      useActivityStore.getState().record({
-        id: `group-join-${groupIDHex}`,
-        channel,
-        isDM: false,
-        senderID: state.creatorFingerprint.slice(0, 16),
-        senderNickname: creator?.nickname ?? state.name,
-        ...systemPreview("chat.group.added_you", { name: state.name }),
-        timestampMs: nowMs,
-      });
-    }
   }
 
   // Seal a message under the group's current epoch key and broadcast it as a
@@ -7113,9 +7129,12 @@ export class MeshService {
     };
   }
 
-  // Group roster size, for the group chat header.
+  // Group roster size, for the group chat header, a pending invite's included.
   groupMemberCount(groupIDHex: string): number {
-    return useGroupStore.getState().get(groupIDHex)?.members.length ?? 0;
+    const groups = useGroupStore.getState();
+    return (
+      (groups.get(groupIDHex) ?? groups.invite(groupIDHex))?.members.length ?? 0
+    );
   }
 
   // Decrypt and render an incoming group message, if we hold the group and the

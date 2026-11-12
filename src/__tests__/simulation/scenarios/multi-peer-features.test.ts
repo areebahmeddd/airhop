@@ -143,17 +143,25 @@ test("F01 a private group is unreadable to the phone standing next to it", async
     return;
   }
 
-  // The roster and key travel to each member inside their Noise session, so
-  // members have to learn the group before they can read anything.
-  const membersKnow = await waitForCoarse(
+  // The roster and key travel to each member inside their Noise session, as
+  // an invite that joins nobody until they accept it.
+  const invited = await waitForCoarse(
     s.world,
-    () => bob.knowsGroup(groupID) && carol.knowsGroup(groupID),
+    () => bob.isInvitedTo(groupID) && carol.isInvitedTo(groupID),
     45_000,
   );
   s.check(
     "both invited members received the signed roster",
-    membersKnow,
-    `bob=${String(bob.knowsGroup(groupID))} carol=${String(carol.knowsGroup(groupID))}`,
+    invited,
+    `bob=${String(bob.isInvitedTo(groupID))} carol=${String(carol.isInvitedTo(groupID))}`,
+  );
+  s.check(
+    "an invite joins nobody until they accept it",
+    !bob.knowsGroup(groupID) && !carol.knowsGroup(groupID),
+  );
+  s.check(
+    "both accept",
+    bob.acceptGroupInvite(groupID) && carol.acceptGroupInvite(groupID),
   );
 
   const channel = `group:${groupID}`;
@@ -172,7 +180,7 @@ test("F01 a private group is unreadable to the phone standing next to it", async
   );
   s.check(
     "the outsider in the same room never learned the group",
-    !dave.knowsGroup(groupID),
+    !dave.knowsGroup(groupID) && !dave.isInvitedTo(groupID),
     `dave groups=[${dave.groups().join(",")}]`,
   );
   const daveSawIt = Object.values(dave.allMessages())
@@ -459,9 +467,9 @@ test("F04 Tor that cannot connect holds the relays rather than using the clear n
   s.assert(true);
 });
 
-test("F07 a group you left stays left through the creator's next rotation", async () => {
-  // Leaving is local: the creator is never told, so its next roster change
-  // sends the leaver a key update. That must not bring the group back.
+test("F07 a group you left, or declined, stays left through the creator's next rotation", async () => {
+  // Leaving and declining are local: the creator is never told, so its next
+  // roster change sends a key update. That must bring back neither.
   const s = (scenario = new Scenario({
     id: "F07",
     title: "leave, then a rotation the creator did not know to skip",
@@ -472,32 +480,50 @@ test("F07 a group you left stays left through the creator's next rotation", asyn
   const bob = SimDevice.create(s.world, android("bob", 22));
   const carol = SimDevice.create(s.world, android("carol", 33));
   const dave = SimDevice.create(s.world, android("dave", 44));
-  const cast = [alice, bob, carol, dave];
+  const erin = SimDevice.create(s.world, android("erin", 55));
+  const cast = [alice, bob, carol, dave, erin];
   for (const d of cast) radio.add(d);
   s.track(...cast);
   for (const d of cast) d.launch();
-  await waitForCoarse(
+  const met = await waitForCoarse(
     s.world,
-    () => cast.every((d) => d.peerCount() === 3),
-    30_000,
+    () => cast.every((d) => d.peerCount() === 4),
+    60_000,
   );
+  s.check("everyone met", met);
 
-  const groupID = alice.createGroup("crew", [bob.peerID, carol.peerID]);
+  const groupID = alice.createGroup("crew", [
+    bob.peerID,
+    carol.peerID,
+    erin.peerID,
+  ]);
   if (groupID === null) {
     s.check("the group was created", false);
     s.assert();
     return;
   }
-  const joined = await waitForCoarse(
+  const invited = await waitForCoarse(
     s.world,
-    () => bob.knowsGroup(groupID) && carol.knowsGroup(groupID),
+    () =>
+      bob.isInvitedTo(groupID) &&
+      carol.isInvitedTo(groupID) &&
+      erin.isInvitedTo(groupID),
     45_000,
   );
-  s.check("both members joined", joined);
-
-  (bob.store("groupStore").getState().leave as (groupIDHex: string) => void)(
-    groupID,
+  s.check(
+    "both members joined",
+    invited &&
+      bob.acceptGroupInvite(groupID) &&
+      carol.acceptGroupInvite(groupID),
   );
+
+  // Bob leaves after joining; erin declines, which the invite bar does by
+  // leaving.
+  for (const d of [bob, erin]) {
+    (d.store("groupStore").getState().leave as (groupIDHex: string) => void)(
+      groupID,
+    );
+  }
   // The rotation has to actually reach bob for his leave to be tested: a
   // creator that skipped him would pass the check below for nothing.
   const router = (
@@ -521,7 +547,7 @@ test("F07 a group you left stays left through the creator's next rotation", asyn
 
   const rotated = await waitForCoarse(
     s.world,
-    () => dave.knowsGroup(groupID),
+    () => dave.isInvitedTo(groupID),
     45_000,
   );
   // A four-member roster is larger than one Bluetooth frame, so this also
@@ -547,7 +573,11 @@ test("F07 a group you left stays left through the creator's next rotation", asyn
   await s.world.settle(15_000);
   s.check(
     "the member who left did not get the group back",
-    !bob.knowsGroup(groupID),
+    !bob.knowsGroup(groupID) && !bob.isInvitedTo(groupID),
+  );
+  s.check(
+    "nor did the member who declined, as a group or an invite",
+    !erin.knowsGroup(groupID) && !erin.isInvitedTo(groupID),
   );
   s.check("a member who stayed is still in it", carol.knowsGroup(groupID));
 
@@ -870,7 +900,7 @@ test("F11 a message read after its sender left still reports read, over Nostr", 
   s.assert(true);
 });
 
-test("F12 a group invite to someone who just walked off waits for them", async () => {
+test("F12 a group invite to someone who just walked off waits for them, and can be taken back", async () => {
   // Their session outlives the link, so a live session is no proof the invite
   // was written anywhere: it has to queue until they are back. addGroupMembers
   // skips existing members, so nothing would send it again.
@@ -903,12 +933,36 @@ test("F12 a group invite to someone who just walked off waits for them", async (
   }
 
   radio.setIsolated("bob", false);
-  const joined = await waitForCoarse(
+  const invited = await waitForCoarse(
     s.world,
-    () => bob.knowsGroup(groupID),
+    () => bob.isInvitedTo(groupID),
     45_000,
   );
-  s.check("bob gets the invite once he is back", joined);
+  s.check("bob gets the invite once he is back", invited);
+
+  // Removing him before he answers is how the creator takes it back.
+  const roster = (
+    alice.store("groupStore").getState().get as (id: string) => {
+      members: { fingerprint: string }[];
+      creatorFingerprint: string;
+    }
+  )(groupID);
+  const bobFingerprint = roster.members.find(
+    (m) => m.fingerprint !== roster.creatorFingerprint,
+  )!.fingerprint;
+  const removed = (
+    alice.mesh as unknown as {
+      removeGroupMember: (id: string, fingerprint: string) => boolean;
+    }
+  ).removeGroupMember(groupID, bobFingerprint);
+  s.check("alice removed bob", removed);
+  const withdrawn = await waitForCoarse(
+    s.world,
+    () =>
+      !bob.isInvitedTo(groupID) && !bob.channels().includes(`group:${groupID}`),
+    45_000,
+  );
+  s.check("the invite and its chat are gone", withdrawn);
 
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);

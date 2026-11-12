@@ -380,7 +380,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "모든 멤버에게 닿지는 못했습니다. 그들이 근처에 있을 때 다시 시도하세요.",
   "chat.group.you_were_added": "{name}에 추가되었습니다.",
-  "chat.group.added_you": "{name}에 나를 추가했습니다",
+  "chat.group.invited": "{name}에 초대되었습니다.",
+  "chat.group.invited_you": "{name}에 나를 초대했습니다",
+  "chat.group.decline": "거절",
   "chat.group.you_were_removed":
     "{name}에서 제외되었습니다. 여기서는 더 이상 읽거나 보낼 수 없습니다.",
   "chat.group.removed_you": "{name}에서 나를 제외했습니다",

@@ -102,7 +102,7 @@ import {
 } from "@store/chat-store";
 import { loadDraft, saveDraft } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
-import { useGroupStore } from "@store/group-store";
+import { groupChannel, useGroupStore } from "@store/group-store";
 import { locationOffBanner, useMeshStateStore } from "@store/mesh-state-store";
 import { isPerson, REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
@@ -252,6 +252,7 @@ import {
   PUBLIC_FORWARD_BURST,
 } from "./forward-rules";
 import ForwardSheet from "./forward-sheet";
+import GroupInviteBar from "./group-invite-bar";
 import {
   CANCEL_SLIDE_DISARM,
   CANCEL_SLIDE_DISTANCE,
@@ -1830,6 +1831,23 @@ export default function MessageThread({
   // sealed under the group's epoch key and broadcast as 0x25, not plaintext.
   const isGroup = channel.startsWith("group:");
   const groupName = useGroupStore((s) => s.nameForChannel(channel));
+  const invitePending = useGroupStore(
+    (s) =>
+      isGroup && s.invites.some((i) => groupChannel(i.groupID) === channel),
+  );
+  // The creator withdrew the invite while it was open: its chat is gone, so
+  // there is nothing left here to show.
+  const inviteWithdrawn = useChatStore(
+    (s) =>
+      isGroup &&
+      !s.channels.includes(channel) &&
+      !invitePending &&
+      useGroupStore.getState().get(channel.slice("group:".length)) ===
+        undefined,
+  );
+  useEffect(() => {
+    if (inviteWithdrawn) onBack();
+  }, [inviteWithdrawn, onBack]);
   // A private channel is exactly one that holds an encryption key: the same test
   // the info sheet makes as `isPrivate`, so the header and the sheet you reach
   // by tapping it cannot disagree about the room. One predicate, two uses.
@@ -6645,7 +6663,10 @@ export default function MessageThread({
       {/* The compose row and the recording bar under it, measured as one: a
           video note's camera stops above both. */}
       <View onLayout={(e) => setComposeAreaHeight(e.nativeEvent.layout.height)}>
-        {!selecting && (
+        {!selecting && invitePending && (
+          <GroupInviteBar channel={channel} onDeclined={onBack} />
+        )}
+        {!selecting && !invitePending && (
           <View style={styles.composeBar}>
             {/* Attach. Always present, grayed where media cannot be delivered, so
             the bar keeps its shape and the reason is one tap away. */}

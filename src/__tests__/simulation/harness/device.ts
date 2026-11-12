@@ -981,6 +981,21 @@ export class SimDevice {
     return call(this.inner.stores.groupStore, "get", groupIDHex) !== undefined;
   }
 
+  // An invite to this group waits for the user.
+  isInvitedTo(groupIDHex: string): boolean {
+    return (
+      call(this.inner.stores.groupStore, "invite", groupIDHex) !== undefined
+    );
+  }
+
+  // Join a group the user was invited to, as the invite bar's Join does.
+  acceptGroupInvite(groupIDHex: string): boolean {
+    this.log("ACCEPT_GROUP", groupIDHex.slice(0, 8));
+    return (
+      call(this.inner.stores.groupStore, "acceptInvite", groupIDHex) === true
+    );
+  }
+
   // ---- bulletin board ----
 
   // Pin a signed notice. `geohash` empty means the mesh-local board.

@@ -382,7 +382,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "به همهٔ اعضا نرسید. وقتی نزدیک بودند دوباره تلاش کنید.",
   "chat.group.you_were_added": "شما به {name} افزوده شدید.",
-  "chat.group.added_you": "شما را به {name} افزود",
+  "chat.group.invited": "شما به {name} دعوت شدید.",
+  "chat.group.invited_you": "شما را به {name} دعوت کرد",
+  "chat.group.decline": "رد کردن",
   "chat.group.you_were_removed":
     "شما از {name} برداشته شدید. دیگر نمی‌توانید اینجا بخوانید یا بفرستید.",
   "chat.group.removed_you": "شما را از {name} برداشت",

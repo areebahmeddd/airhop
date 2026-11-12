@@ -389,7 +389,9 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "Her üyeye ulaşılamadı. Yakındayken yeniden dene.",
   "chat.group.you_were_added": "{name} grubuna eklendin.",
-  "chat.group.added_you": "Seni {name} grubuna ekledi",
+  "chat.group.invited": "{name} grubuna davet edildin.",
+  "chat.group.invited_you": "Seni {name} grubuna davet etti",
+  "chat.group.decline": "Reddet",
   "chat.group.you_were_removed":
     "{name} grubundan çıkarıldın. Burada artık okuyamaz ya da mesaj gönderemezsin.",
   "chat.group.removed_you": "Seni {name} grubundan çıkardı",

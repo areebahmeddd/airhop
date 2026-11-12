@@ -387,7 +387,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tidak semua ahli dapat dicapai. Cuba lagi semasa mereka berdekatan.",
   "chat.group.you_were_added": "Anda ditambah ke dalam {name}.",
-  "chat.group.added_you": "Menambah anda ke dalam {name}",
+  "chat.group.invited": "Anda dijemput ke {name}.",
+  "chat.group.invited_you": "Menjemput anda ke {name}",
+  "chat.group.decline": "Tolak",
   "chat.group.you_were_removed":
     "Anda dikeluarkan daripada {name}. Anda tidak lagi boleh membaca atau menghantar mesej di sini.",
   "chat.group.removed_you": "Mengeluarkan anda daripada {name}",

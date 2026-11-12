@@ -389,7 +389,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Niet alle leden konden worden bereikt. Probeer het opnieuw als ze in de buurt zijn.",
   "chat.group.you_were_added": "Je bent toegevoegd aan {name}.",
-  "chat.group.added_you": "Heeft je toegevoegd aan {name}",
+  "chat.group.invited": "Je bent uitgenodigd voor {name}.",
+  "chat.group.invited_you": "Heeft je uitgenodigd voor {name}",
+  "chat.group.decline": "Weigeren",
   "chat.group.you_were_removed":
     "Je bent weggehaald uit {name}. Je kunt hier niet meer lezen of sturen.",
   "chat.group.removed_you": "Heeft je weggehaald uit {name}",

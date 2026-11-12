@@ -391,7 +391,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Non è stato possibile raggiungere tutti i membri. Riprova quando sono nelle vicinanze.",
   "chat.group.you_were_added": "Sei stato aggiunto a {name}.",
-  "chat.group.added_you": "Ti ha aggiunto a {name}",
+  "chat.group.invited": "Sei stato invitato a {name}.",
+  "chat.group.invited_you": "Ti ha invitato a {name}",
+  "chat.group.decline": "Rifiuta",
   "chat.group.you_were_removed":
     "Sei stato rimosso da {name}. Qui non puoi più leggere né inviare messaggi.",
   "chat.group.removed_you": "Ti ha rimosso da {name}",

@@ -32,7 +32,7 @@ function member(nick: string): { member: GroupMember; signPriv: Uint8Array } {
 
 describe("group store", () => {
   beforeEach(() => {
-    useGroupStore.setState({ groups: [] });
+    useGroupStore.setState({ groups: [], left: [], invites: [] });
     createMMKV({ id: "group-store" }).clearAll();
   });
 
@@ -249,6 +249,96 @@ describe("group store", () => {
     const rt = useGroupStore.getState().getByID(groupID)!;
     expect(rt.epoch).toBe(4);
     expect([...rt.key]).toEqual([...rotated]);
+  });
+
+  describe("invites", () => {
+    function invite(name = "trip", epoch = 0) {
+      const creator = member("creator");
+      const me = member("me");
+      const group: BitchatGroup = {
+        groupID: newGroupID(),
+        name,
+        epoch,
+        members: [creator.member, me.member],
+        creatorFingerprint: creator.member.fingerprint,
+      };
+      const key = newGroupKey();
+      return {
+        creator,
+        me,
+        group,
+        key,
+        id: bytesToHexLocal(group.groupID),
+        state: signGroupState(group, key, creator.signPriv)!,
+      };
+    }
+
+    it("holds an invite without joining, and joins on accept", () => {
+      const { state, id, key } = invite();
+      const store = useGroupStore.getState();
+      expect(store.addInvite(state)).toEqual([]);
+      expect(store.get(id)).toBeUndefined();
+      expect(store.invite(id)?.name).toBe("trip");
+      expect(store.nameForChannel(groupChannel(id))).toBe("trip");
+
+      expect(store.acceptInvite(id)).toBe(true);
+      expect([...useGroupStore.getState().get(id)!.key]).toEqual([...key]);
+      expect(useGroupStore.getState().invite(id)).toBeUndefined();
+      expect(useGroupStore.getState().acceptInvite(id)).toBe(false);
+    });
+
+    it("remembers a declined invite as left, so a rotation does not ask again", () => {
+      const { state, id } = invite();
+      const store = useGroupStore.getState();
+      store.addInvite(state);
+      store.leave(id);
+      expect(useGroupStore.getState().invite(id)).toBeUndefined();
+      expect(useGroupStore.getState().hasLeft(id)).toBe(true);
+    });
+
+    it("pins an invite to its creator and takes only a newer epoch", () => {
+      const { state, group, key, creator } = invite();
+      const store = useGroupStore.getState();
+      store.addInvite(state);
+
+      const impostor = member("impostor");
+      const hijack = signGroupState(
+        {
+          ...group,
+          epoch: 1,
+          members: [impostor.member, ...group.members],
+          creatorFingerprint: impostor.member.fingerprint,
+        },
+        key,
+        impostor.signPriv,
+      )!;
+      expect(store.addInvite(hijack)).toBeNull();
+
+      const rotated = signGroupState(
+        { ...group, epoch: 2, name: "trip 2" },
+        key,
+        creator.signPriv,
+      )!;
+      expect(store.addInvite(rotated)).toEqual([]);
+      expect(store.addInvite(state)).toBeNull();
+      expect(store.invite(bytesToHexLocal(group.groupID))?.epoch).toBe(2);
+    });
+
+    it("keeps the newest twenty however many arrive", () => {
+      const store = useGroupStore.getState();
+      const dropped: string[] = [];
+      const ids: string[] = [];
+      for (let i = 0; i < 25; i++) {
+        const next = invite(`g${i}`);
+        ids.push(next.id);
+        dropped.push(...(store.addInvite(next.state) ?? []));
+      }
+      const names = useGroupStore.getState().invites.map((i) => i.name);
+      expect(names).toHaveLength(20);
+      expect(names[0]).toBe("g5");
+      // The caller removes the rows of the ones pushed out.
+      expect(dropped).toEqual(ids.slice(0, 5));
+    });
   });
 
   it("clears everything on wipe", () => {

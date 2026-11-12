@@ -366,7 +366,9 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "無法觸及每一位成員。等對方在附近時再試一次。",
   "chat.group.you_were_added": "你被加進了 {name}。",
-  "chat.group.added_you": "把你加進了 {name}",
+  "chat.group.invited": "你被邀請加入 {name}。",
+  "chat.group.invited_you": "邀請你加入 {name}",
+  "chat.group.decline": "拒絕",
   "chat.group.you_were_removed":
     "你被移出了 {name}。你在這裡不能再閱讀或傳送訊息了。",
   "chat.group.removed_you": "把你移出了 {name}",

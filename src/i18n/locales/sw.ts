@@ -394,7 +394,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Haikuweza kumfikia kila mwanachama. Jaribu tena wakiwa karibu.",
   "chat.group.you_were_added": "Umeongezwa kwenye {name}.",
-  "chat.group.added_you": "Amekuongeza kwenye {name}",
+  "chat.group.invited": "Umealikwa kwenye {name}.",
+  "chat.group.invited_you": "Amekualika kwenye {name}",
+  "chat.group.decline": "Kataa",
   "chat.group.you_were_removed":
     "Umeondolewa kwenye {name}. Huwezi tena kusoma wala kutuma jumbe hapa.",
   "chat.group.removed_you": "Amekuondoa kwenye {name}",

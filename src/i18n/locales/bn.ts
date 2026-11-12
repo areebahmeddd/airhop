@@ -385,7 +385,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "সব সদস্যের কাছে পৌঁছানো গেল না। তারা কাছে থাকলে আবার চেষ্টা করুন।",
   "chat.group.you_were_added": "আপনাকে {name}-এ যোগ করা হয়েছে।",
-  "chat.group.added_you": "আপনাকে {name}-এ যোগ করেছেন",
+  "chat.group.invited": "আপনাকে {name}-এ আমন্ত্রণ জানানো হয়েছে।",
+  "chat.group.invited_you": "আপনাকে {name}-এ আমন্ত্রণ জানিয়েছেন",
+  "chat.group.decline": "প্রত্যাখ্যান",
   "chat.group.you_were_removed":
     "আপনাকে {name} থেকে সরানো হয়েছে। আপনি এখানে আর পড়তে বা বার্তা পাঠাতে পারবেন না।",
   "chat.group.removed_you": "আপনাকে {name} থেকে সরিয়েছেন",

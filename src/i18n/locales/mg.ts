@@ -398,7 +398,9 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tsy tratra ny mpikambana rehetra. Andramo indray rehefa akaiky izy ireo.",
   "chat.group.you_were_added": "Nampidirina tao amin'ny {name} ianao.",
-  "chat.group.added_you": "Nampiditra anao tao amin'ny {name}",
+  "chat.group.invited": "Nasaina ho ao amin'ny {name} ianao.",
+  "chat.group.invited_you": "Nanasa anao ho ao amin'ny {name}",
+  "chat.group.decline": "Lavina",
   "chat.group.you_were_removed":
     "Nesorina tao amin'ny {name} ianao. Tsy afaka mamaky na mandefa hafatra eto intsony ianao.",
   "chat.group.removed_you": "Nanaisotra anao tao amin'ny {name}",
