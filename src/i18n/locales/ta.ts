@@ -1233,6 +1233,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "டோக்கனை உருவாக்க முடியவில்லை",
+  "wallet.send.unverified_note":
+    "இந்தப் பணம் செலுத்தலின் ஒரு பகுதி நாணயச்சாலை இன்னும் உறுதிசெய்யாத ecash.",
   "wallet.send.title": "ecash அனுப்பு",
   "wallet.send.amount_in": "{unit} இல் தொகை",
   "wallet.send.body":
@@ -1778,6 +1780,10 @@ export const strings: Strings = {
     "இந்தப் பணப்பரிமாற்றம் உங்கள் பணப்பைக்குப் பூட்டப்பட்டுள்ளது.",
   "wallet.svc.locked_ours_offline_body":
     "ஆன்லைனுக்கு வந்ததும் இதைப் பெறுங்கள். அதுவரை வேறு யாரும் இதை எடுக்க முடியாது.",
+  "wallet.svc.offline_cap":
+    "இந்த நாணயச்சாலையின் உறுதிசெய்யப்படாத ecash ஏற்கெனவே போதுமான அளவு காத்திருக்கிறது.",
+  "wallet.svc.offline_cap_body":
+    "ஆன்லைனுக்கு வந்து, நாணயச்சாலை இதை உறுதிசெய்ய முடியும்போது இதைப் பெறுங்கள். அதுவரை இது அரட்டையில் இருக்கும்.",
   "wallet.svc.already_spent": "இந்த ecash ஏற்கெனவே செலவழிக்கப்பட்டுவிட்டது.",
   "wallet.svc.already_spent_body":
     "இந்த டோக்கனை அனுப்பியவர் அதை முதலில் பணமாக்கிவிட்டார், அல்லது அதே டோக்கனை வேறு யாருக்கோ அனுப்பியிருக்கிறார்.",

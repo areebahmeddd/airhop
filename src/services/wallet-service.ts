@@ -7,8 +7,8 @@
 //  1. Proofs are never deleted to send. They are reserved against a transaction
 //     id and dropped only once delivery is confirmed (`reclaimSend` recovers).
 //  2. Nothing counts as verified until the mint has signed for it, and a token
-//     whose DLEQ check fails is refused. Offline credits are marked unverified
-//     and redeemed first when online.
+//     whose DLEQ check fails is refused. Offline credits are marked unverified,
+//     capped per account, spent last and redeemed first when online.
 //  3. No mint call goes over the clear net while Tor is on (iOS: Arti wraps
 //     only WebSockets, not fetch).
 //  4. A (mint, unit) pair is one account; units never mix.
@@ -1681,6 +1681,9 @@ async function receiveTokenOnce(
     if (signingKey !== undefined) {
       throw walletErr.code === "tor-blocked" ? walletErr : lockedToUsOffline();
     }
+    // Past the cap the claim waits for the mint: the token stays in the chat
+    // and a staged request keeps its preview for `reconcile`.
+    if (overOfflineCap(url, info.unit, info.amount)) throw offlineCapError();
     // The request may never have left, or only its answer was lost. Store
     // the proofs unverified and keep the preview on the same transaction; a
     // replay drops them as it credits the real outputs, so nothing counts
@@ -1690,6 +1693,37 @@ async function receiveTokenOnce(
       ...(staged ? { txId } : {}),
     });
   }
+}
+
+// The most ecash one account takes offline before its mint has confirmed it,
+// in the account's unit, so a token spent twice and passed on costs at most
+// this. Only bitcoin units: nothing here can price a mint's own currency.
+const OFFLINE_UNVERIFIED_CAP: Readonly<Record<string, number>> = {
+  sat: 10_000,
+  msat: 10_000_000,
+};
+
+function overOfflineCap(
+  mintUrl: string,
+  unit: string,
+  amount: number,
+): boolean {
+  const cap = OFFLINE_UNVERIFIED_CAP[unit];
+  if (cap === undefined) return false;
+  const held = (
+    useWalletStore.getState().proofs[accountKey(mintUrl, unit)] ?? []
+  )
+    .filter((p) => p.verified !== true)
+    .reduce((sum, p) => sum + p.amount, 0);
+  return held + amount > cap;
+}
+
+function offlineCapError(): WalletError {
+  return new WalletError(
+    "offline",
+    { key: "wallet.svc.offline_cap" },
+    t("wallet.svc.offline_cap_body"),
+  );
 }
 
 // Keep the token's own proofs unverified: the offline mesh case, redeemed first
@@ -1794,6 +1828,8 @@ export interface SendQuote {
   // it; a mint that raised fees since will take more. Undefined when live.
   pricedFromCacheAgeMs?: number;
   proofs: StoredProof[];
+  // Some of `proofs` the mint never confirmed, so the confirm says so.
+  unverified: boolean;
 }
 
 export interface PreparedSend extends SendQuote {
@@ -1841,15 +1877,18 @@ export async function quoteSend(params: {
   const record = storedMint(account.mintUrl);
 
   // With keysets cached, defer to cashu-ts's selector and fee handling, which
-  // get rotated keysets and mixed fee schedules right.
+  // get rotated keysets and mixed fee schedules right. Coins the mint signed
+  // for us go first, so ecash it never confirmed is passed on only when they
+  // cannot make the amount.
   try {
     const wallet = await getWallet(account.mintUrl, unit, { offline: true });
-    const proofLikes = account.proofs.map(toProofLike);
-    const result = wallet.sendOffline(amount, proofLikes, {
-      includeFees: true,
-      exactMatch: true,
-    });
-    const selected = matchStored(account.proofs, result.send);
+    const send = (pool: StoredProof[]): Proof[] =>
+      wallet.sendOffline(amount, pool.map(toProofLike), {
+        includeFees: true,
+        exactMatch: true,
+      }).send;
+    const chosen = verifiedFirst(account.proofs, send);
+    const selected = matchStored(account.proofs, chosen);
     const spend = selected.reduce((s, p) => s + p.amount, 0);
     // `matchStored` silently drops proofs it cannot map. Trusted blindly, that
     // quotes `exact: true` with a short or empty list and a negative fee, and
@@ -1857,10 +1896,10 @@ export async function quoteSend(params: {
     // the payment sent; nothing downstream can tell. Throw into the catch,
     // which re-selects with our own selector: the same path as a cold cache,
     // so no new failure mode.
-    if (selected.length !== result.send.length || spend < amount) {
+    if (selected.length !== chosen.length || spend < amount) {
       throw new Error(
         // Not user-facing: an invariant breach for the stack trace.
-        `offline selection did not map back to stored proofs (matched ${String(selected.length)} of ${String(result.send.length)}, covering ${String(spend)} of ${String(amount)})`,
+        `offline selection did not map back to stored proofs (matched ${String(selected.length)} of ${String(chosen.length)}, covering ${String(spend)} of ${String(amount)})`,
       );
     }
     return {
@@ -1872,6 +1911,7 @@ export async function quoteSend(params: {
       exact: true,
       proofs: selected,
       pricedFromCacheAgeMs: feeCacheAgeMs(account.mintUrl),
+      unverified: selected.some((p) => p.verified !== true),
     };
   } catch (err) {
     if (err instanceof WalletError && err.code === "locked") throw err;
@@ -1896,6 +1936,7 @@ export async function quoteSend(params: {
       exact: selection.exact,
       proofs: selection.selected,
       pricedFromCacheAgeMs: feeCacheAgeMs(account.mintUrl),
+      unverified: selection.selected.some((p) => p.verified !== true),
     };
   }
 }
@@ -2115,6 +2156,24 @@ function pickAccount(
     key: "wallet.svc.have_tried_send",
     vars: { total, unit, amount },
   });
+}
+
+// A selection from the verified coins alone when they can make it, else from
+// all of them. `select` throws, or comes back short, when the pool cannot.
+function verifiedFirst(
+  proofs: StoredProof[],
+  select: (pool: StoredProof[]) => Proof[],
+): Proof[] {
+  const verified = proofs.filter((p) => p.verified === true);
+  if (verified.length > 0 && verified.length < proofs.length) {
+    try {
+      const chosen = select(verified);
+      if (chosen.length > 0) return chosen;
+    } catch {
+      // Not enough among the verified: every coin is a candidate.
+    }
+  }
+  return select(proofs);
 }
 
 // By secret, so a reservation removes exactly the rows cashu-ts chose. Drops
@@ -3625,9 +3684,9 @@ interface MeltSelection {
   total: number;
 }
 
-// cashu-ts's selector first: ours ranks unverified proofs first, right for a
-// send but wrong for a melt, where the mint checks every input at once. Ours is
-// the cold-cache fallback.
+// cashu-ts's selector first, over the verified coins before all of them, since
+// the mint checks every input at once and one it never confirmed only raises
+// the failure odds. Ours is the cold-cache fallback.
 function selectForMelt(
   wallet: Wallet,
   quote: MeltQuote,
@@ -3635,15 +3694,16 @@ function selectForMelt(
 ): MeltSelection {
   let selected: StoredProof[];
   try {
-    const result = wallet.selectProofsToSend(
-      available.map(toProofLike),
-      quote.total,
-      true,
+    const chosen = verifiedFirst(
+      available,
+      (pool) =>
+        wallet.selectProofsToSend(pool.map(toProofLike), quote.total, true)
+          .send,
     );
-    selected = matchStored(available, result.send);
+    selected = matchStored(available, chosen);
     // `matchStored` drops unmapped proofs, which would under-fund the melt.
     if (
-      selected.length !== result.send.length ||
+      selected.length !== chosen.length ||
       selected.reduce((s, p) => s + p.amount, 0) < quote.total
     ) {
       throw new Error("melt selection did not map back to stored proofs");

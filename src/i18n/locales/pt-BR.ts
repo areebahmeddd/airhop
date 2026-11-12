@@ -1210,6 +1210,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Não foi possível montar o token",
+  "wallet.send.unverified_note":
+    "Parte deste pagamento é ecash que a casa de emissão ainda não confirmou.",
   "wallet.send.title": "Enviar ecash",
   "wallet.send.amount_in": "Valor em {unit}",
   "wallet.send.body":
@@ -1746,6 +1748,10 @@ export const strings: Strings = {
     "Este pagamento está travado para a sua carteira.",
   "wallet.svc.locked_ours_offline_body":
     "Resgate quando estiver online. Ninguém mais pode pegá-lo enquanto isso.",
+  "wallet.svc.offline_cap":
+    "Já há ecash não confirmado suficiente desta casa de emissão aguardando.",
+  "wallet.svc.offline_cap_body":
+    "Resgate este quando estiver online e a casa de emissão puder confirmá-lo. Até lá ele fica no chat.",
   "wallet.svc.already_spent": "Este ecash já foi gasto.",
   "wallet.svc.already_spent_body":
     "Quem enviou este token resgatou primeiro, ou mandou o mesmo token para outra pessoa.",

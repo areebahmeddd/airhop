@@ -1210,6 +1210,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Nie udało się zbudować tokena",
+  "wallet.send.unverified_note":
+    "Część tej płatności to ecash, którego mennica jeszcze nie potwierdziła.",
   "wallet.send.title": "Wyślij ecash",
   "wallet.send.amount_in": "Kwota w {unit}",
   "wallet.send.body":
@@ -1739,6 +1741,10 @@ export const strings: Strings = {
     "Ta płatność jest zablokowana dla twojego portfela.",
   "wallet.svc.locked_ours_offline_body":
     "Odbierz ją, gdy będziesz online. Nikt inny nie może jej w międzyczasie zabrać.",
+  "wallet.svc.offline_cap":
+    "Z tej mennicy czeka już dość niepotwierdzonego ecash.",
+  "wallet.svc.offline_cap_body":
+    "Odbierz tę płatność, gdy będziesz online i mennica będzie mogła ją potwierdzić. Do tego czasu zostaje w czacie.",
   "wallet.svc.already_spent": "Ten ecash został już wydany.",
   "wallet.svc.already_spent_body":
     "Ten, kto wysłał ten token, zrealizował go pierwszy albo wysłał ten sam token jeszcze komuś innemu.",

@@ -1182,6 +1182,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ٹوکن نہ بن سکا",
+  "wallet.send.unverified_note":
+    "اس ادائیگی کا کچھ حصہ ایسا ecash ہے جس کی ٹکسال نے ابھی تصدیق نہیں کی۔",
   "wallet.send.title": "ecash بھیجیں",
   "wallet.send.amount_in": "{unit} میں رقم",
   "wallet.send.body":
@@ -1704,6 +1706,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "یہ ادائیگی آپ کے بٹوے سے بندھی ہے۔",
   "wallet.svc.locked_ours_offline_body":
     "آن لائن ہونے پر اسے لیں۔ تب تک کوئی اور اسے نہیں لے سکتا۔",
+  "wallet.svc.offline_cap":
+    "اس ٹکسال کا کافی غیر تصدیق شدہ ecash پہلے ہی انتظار میں ہے۔",
+  "wallet.svc.offline_cap_body":
+    "آن لائن ہونے پر، جب ٹکسال اس کی تصدیق کر سکے، اسے لیں۔ تب تک یہ چیٹ میں رہے گا۔",
   "wallet.svc.already_spent": "یہ ecash پہلے ہی خرچ ہو چکا ہے۔",
   "wallet.svc.already_spent_body":
     "جس نے یہ ٹوکن بھیجا اس نے پہلے خود بھنا لیا، یا وہی ٹوکن کسی اور کو بھی بھیج دیا۔",

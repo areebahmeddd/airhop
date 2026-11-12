@@ -1189,6 +1189,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Không dựng được token",
+  "wallet.send.unverified_note":
+    "Một phần khoản thanh toán này là ecash nhà đúc chưa xác nhận.",
   "wallet.send.title": "Gửi ecash",
   "wallet.send.amount_in": "Số tiền tính bằng {unit}",
   "wallet.send.body":
@@ -1714,6 +1716,10 @@ export const strings: Strings = {
     "Khoản thanh toán này đã được khóa vào ví của bạn.",
   "wallet.svc.locked_ours_offline_body":
     "Hãy nhận nó khi bạn có mạng. Trong lúc đó không ai khác lấy được nó.",
+  "wallet.svc.offline_cap":
+    "Đã có đủ ecash chưa được xác nhận từ nhà đúc này đang chờ.",
+  "wallet.svc.offline_cap_body":
+    "Hãy nhận khoản này khi bạn có mạng và nhà đúc có thể xác nhận nó. Đến lúc đó nó vẫn nằm trong cuộc trò chuyện.",
   "wallet.svc.already_spent": "Khoản ecash này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":
     "Người gửi token này đã đổi nó trước, hoặc đã gửi cùng token đó cho người khác.",

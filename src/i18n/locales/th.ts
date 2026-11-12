@@ -1156,6 +1156,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "สร้างโทเคนไม่สำเร็จ",
+  "wallet.send.unverified_note":
+    "บางส่วนของการชำระเงินนี้เป็น ecash ที่มินต์ยังไม่ได้ยืนยัน",
   "wallet.send.title": "ส่ง ecash",
   "wallet.send.amount_in": "จำนวนเป็น {unit}",
   "wallet.send.body":
@@ -1671,6 +1673,10 @@ export const strings: Strings = {
     "การชำระเงินนี้ถูกล็อกไว้กับกระเป๋าเงินของคุณ",
   "wallet.svc.locked_ours_offline_body":
     "เคลมได้เมื่อคุณออนไลน์ ระหว่างนี้ไม่มีใครเอาไปได้",
+  "wallet.svc.offline_cap":
+    "มี ecash ที่ยังไม่ได้ยืนยันจากมินต์นี้รออยู่มากพอแล้ว",
+  "wallet.svc.offline_cap_body":
+    "เคลมรายการนี้เมื่อคุณออนไลน์และมินต์ยืนยันได้ ระหว่างนี้จะยังอยู่ในแชต",
   "wallet.svc.already_spent": "ecash นี้ถูกใช้ไปแล้ว",
   "wallet.svc.already_spent_body":
     "ผู้ที่ส่งโทเคนนี้แลกมันไปก่อน หรือส่งโทเคนใบเดียวกันให้คนอื่นด้วย",

@@ -1208,6 +1208,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Token tidak dapat dibina",
+  "wallet.send.unverified_note":
+    "Sebahagian bayaran ini ialah ecash yang belum disahkan oleh mint.",
   "wallet.send.title": "Hantar ecash",
   "wallet.send.amount_in": "Jumlah dalam {unit}",
   "wallet.send.body":
@@ -1737,6 +1739,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Bayaran ini dikunci kepada dompet anda.",
   "wallet.svc.locked_ours_offline_body":
     "Tuntut sebaik anda dalam talian. Sementara itu, tiada orang lain boleh mengambilnya.",
+  "wallet.svc.offline_cap":
+    "Sudah cukup ecash yang belum disahkan daripada mint ini sedang menunggu.",
+  "wallet.svc.offline_cap_body":
+    "Tuntut yang ini sebaik anda dalam talian, apabila mint boleh mengesahkannya. Ia kekal dalam sembang sehingga itu.",
   "wallet.svc.already_spent": "Ecash ini sudah dibelanjakan.",
   "wallet.svc.already_spent_body":
     "Sesiapa yang menghantar token ini menebusnya dahulu, atau menghantar token yang sama kepada orang lain juga.",

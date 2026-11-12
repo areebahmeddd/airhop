@@ -1218,6 +1218,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Der Token konnte nicht erstellt werden",
+  "wallet.send.unverified_note":
+    "Ein Teil dieser Zahlung ist Ecash, das der Mint noch nicht bestätigt hat.",
   "wallet.send.title": "Ecash senden",
   "wallet.send.amount_in": "Betrag in {unit}",
   "wallet.send.body":
@@ -1758,6 +1760,10 @@ export const strings: Strings = {
     "Diese Zahlung ist an deine Wallet gebunden.",
   "wallet.svc.locked_ours_offline_body":
     "Löse sie ein, sobald du online bist. Bis dahin kann sie niemand sonst nehmen.",
+  "wallet.svc.offline_cap":
+    "Von diesem Mint wartet schon genug unbestätigtes Ecash.",
+  "wallet.svc.offline_cap_body":
+    "Löse diese Zahlung ein, sobald du online bist und der Mint sie bestätigen kann. Bis dahin bleibt sie im Chat.",
   "wallet.svc.already_spent": "Dieses Ecash wurde bereits ausgegeben.",
   "wallet.svc.already_spent_body":
     "Wer diesen Token gesendet hat, hat ihn zuerst eingelöst, oder denselben Token an jemand anderen geschickt.",

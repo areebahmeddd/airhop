@@ -1208,6 +1208,8 @@ export const strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Could not build the token",
+  "wallet.send.unverified_note":
+    "Part of this payment is ecash the mint has not confirmed yet.",
   "wallet.send.title": "Send ecash",
   "wallet.send.amount_in": "Amount in {unit}",
   "wallet.send.body":
@@ -1729,6 +1731,10 @@ export const strings = {
   "wallet.svc.locked_ours_offline": "This payment is locked to your wallet.",
   "wallet.svc.locked_ours_offline_body":
     "Claim it once you are online. Nobody else can take it meanwhile.",
+  "wallet.svc.offline_cap":
+    "Enough unconfirmed ecash from this mint is already waiting.",
+  "wallet.svc.offline_cap_body":
+    "Claim this one once you are online, when the mint can confirm it. It stays in the chat until then.",
   "wallet.svc.already_spent": "This ecash has already been spent.",
   "wallet.svc.already_spent_body":
     "Whoever sent this token redeemed it first, or sent the same token to someone else.",

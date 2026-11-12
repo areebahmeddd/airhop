@@ -1234,6 +1234,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tsy voaforona ny tapakila",
+  "wallet.send.unverified_note":
+    "Ecash mbola tsy nohamarinin'ny mpamoaka ny ampahany amin'ity fandoavam-bola ity.",
   "wallet.send.title": "Mandefa ecash",
   "wallet.send.amount_in": "Sanda amin'ny {unit}",
   "wallet.send.body":
@@ -1777,6 +1779,10 @@ export const strings: Strings = {
     "Mihidy amin'ny kitapom-bolanao ity fandoavam-bola ity.",
   "wallet.svc.locked_ours_offline_body":
     "Raiso rehefa an-tserasera ianao. Tsy misy olon-kafa afaka maka azy mandritra izany.",
+  "wallet.svc.offline_cap":
+    "Efa ampy ny ecash avy amin'ity mpamoaka ity mbola tsy voamarina miandry.",
+  "wallet.svc.offline_cap_body":
+    "Raiso ity rehefa an-tserasera ianao, rehefa afaka manamarina azy ny mpamoaka. Mijanona ao amin'ny resaka izy mandra-pahatongan'izany.",
   "wallet.svc.already_spent": "Efa lany ity ecash ity.",
   "wallet.svc.already_spent_body":
     "Ilay nandefa ity tapakila ity no nividy azy voalohany, na nandefa tapakila mitovy tamin'olon-kafa koa.",

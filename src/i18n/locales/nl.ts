@@ -1205,6 +1205,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Het token kon niet worden gemaakt",
+  "wallet.send.unverified_note":
+    "Een deel van deze betaling is ecash die de mint nog niet heeft bevestigd.",
   "wallet.send.title": "Ecash sturen",
   "wallet.send.amount_in": "Bedrag in {unit}",
   "wallet.send.body":
@@ -1738,6 +1740,10 @@ export const strings: Strings = {
     "Deze betaling is vergrendeld voor jouw portemonnee.",
   "wallet.svc.locked_ours_offline_body":
     "Haal hem op zodra je online bent. Niemand anders kan hem ondertussen pakken.",
+  "wallet.svc.offline_cap":
+    "Er wacht al genoeg onbevestigde ecash van deze mint.",
+  "wallet.svc.offline_cap_body":
+    "Haal deze op zodra je online bent en de mint hem kan bevestigen. Tot dan blijft hij in de chat.",
   "wallet.svc.already_spent": "Deze ecash is al besteed.",
   "wallet.svc.already_spent_body":
     "Wie dit token stuurde heeft het eerder ingewisseld, of hetzelfde token ook naar iemand anders gestuurd.",

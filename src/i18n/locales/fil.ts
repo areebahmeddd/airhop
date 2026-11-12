@@ -1235,6 +1235,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Hindi nabuo ang token",
+  "wallet.send.unverified_note":
+    "Bahagi ng bayad na ito ang ecash na hindi pa kinukumpirma ng minto.",
   "wallet.send.title": "Magpadala ng ecash",
   "wallet.send.amount_in": "Halaga sa {unit}",
   "wallet.send.body":
@@ -1773,6 +1775,10 @@ export const strings: Strings = {
     "Nakakandado sa wallet mo ang bayad na ito.",
   "wallet.svc.locked_ours_offline_body":
     "Angkinin ito kapag online ka na. Walang ibang makakakuha nito samantala.",
+  "wallet.svc.offline_cap":
+    "Sapat na ang hindi pa kumpirmadong ecash mula sa mintong ito na naghihintay.",
+  "wallet.svc.offline_cap_body":
+    "Angkinin ito kapag online ka na at kaya na itong kumpirmahin ng minto. Mananatili ito sa chat hanggang doon.",
   "wallet.svc.already_spent": "Nagastos na ang ecash na ito.",
   "wallet.svc.already_spent_body":
     "Ang nagpadala ng token na ito ang unang tumubos nito, o ipinadala rin ang parehong token sa iba.",

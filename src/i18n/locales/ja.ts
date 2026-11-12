@@ -1194,6 +1194,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "トークンを作成できませんでした",
+  "wallet.send.unverified_note":
+    "この支払いの一部は、ミントがまだ確認していないecashです。",
   "wallet.send.title": "ecashを送る",
   "wallet.send.amount_in": "金額（{unit}）",
   "wallet.send.body":
@@ -1720,6 +1722,10 @@ export const strings: Strings = {
     "この支払いはあなたのウォレットにロックされています。",
   "wallet.svc.locked_ours_offline_body":
     "オンラインになってから受け取ってください。その間、ほかの誰も受け取れません。",
+  "wallet.svc.offline_cap":
+    "このミントの未確認のecashがすでに十分待機しています。",
+  "wallet.svc.offline_cap_body":
+    "オンラインになり、ミントが確認できるようになってから受け取ってください。それまではチャットに残ります。",
   "wallet.svc.already_spent": "このecashはすでに使用されています。",
   "wallet.svc.already_spent_body":
     "このトークンを送った人が先に引き換えたか、同じトークンを別の人にも送ったかのどちらかです。",

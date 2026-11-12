@@ -1195,6 +1195,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Jeton oluşturulamadı",
+  "wallet.send.unverified_note":
+    "Bu ödemenin bir kısmı darphanenin henüz onaylamadığı ecash.",
   "wallet.send.title": "Ecash gönder",
   "wallet.send.amount_in": "{unit} cinsinden tutar",
   "wallet.send.body":
@@ -1723,6 +1725,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Bu ödeme senin cüzdanına kilitli.",
   "wallet.svc.locked_ours_offline_body":
     "Çevrimiçi olduğunda al. Bu arada başka kimse onu alamaz.",
+  "wallet.svc.offline_cap":
+    "Bu darphaneden yeterince onaylanmamış ecash zaten bekliyor.",
+  "wallet.svc.offline_cap_body":
+    "Bunu çevrimiçi olduğunda, darphane onaylayabildiğinde al. O zamana kadar sohbette kalır.",
   "wallet.svc.already_spent": "Bu ecash zaten harcanmış.",
   "wallet.svc.already_spent_body":
     "Bu jetonu gönderen onu önce kendisi bozdurmuş ya da aynı jetonu başka birine de göndermiş.",

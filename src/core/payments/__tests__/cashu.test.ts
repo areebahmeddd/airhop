@@ -520,13 +520,13 @@ describe("selectProofsForAmount", () => {
     expect(result!.total - result!.fee).toBe(result!.receivable);
   });
 
-  it("spends unverified proofs before confirmed ones", () => {
+  it("spends confirmed proofs before unverified ones", () => {
     const proofs: StoredProof[] = [
       { ...proofSet([8])[0], secret: "confirmed", verified: true },
       { ...proofSet([8])[0], secret: "unconfirmed", verified: false },
     ];
     const result = selectProofsForAmount(proofs, 8);
-    expect(result?.selected[0].secret).toBe("unconfirmed");
+    expect(result?.selected[0].secret).toBe("confirmed");
   });
 });
 

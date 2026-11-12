@@ -1187,6 +1187,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tokenet kunde inte byggas",
+  "wallet.send.unverified_note":
+    "En del av den här betalningen är ecash som minten ännu inte har bekräftat.",
   "wallet.send.title": "Skicka ecash",
   "wallet.send.amount_in": "Belopp i {unit}",
   "wallet.send.body":
@@ -1710,6 +1712,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Betalningen är låst till din plånbok.",
   "wallet.svc.locked_ours_offline_body":
     "Hämta den när du är online. Ingen annan kan ta den under tiden.",
+  "wallet.svc.offline_cap":
+    "Det väntar redan tillräckligt med obekräftad ecash från den här minten.",
+  "wallet.svc.offline_cap_body":
+    "Hämta den här när du är online och minten kan bekräfta den. Tills dess stannar den i chatten.",
   "wallet.svc.already_spent": "Den här ecashen är redan förbrukad.",
   "wallet.svc.already_spent_body":
     "Den som skickade tokenet löste in det först, eller skickade samma token till någon annan också.",

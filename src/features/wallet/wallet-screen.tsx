@@ -963,6 +963,7 @@ export default function WalletScreen({
                         unit: result.unit,
                         mintUrl: result.mintUrl,
                         proofs: [],
+                        unverified: false,
                       }),
                     ),
                 },
@@ -2705,6 +2706,11 @@ export default function WalletScreen({
             {pendingStaleDays !== null && (
               <Text style={styles.generatedMint}>
                 {TP("wallet.send.stale_fee_note", pendingStaleDays)}
+              </Text>
+            )}
+            {pending?.unverified === true && (
+              <Text style={styles.generatedMint}>
+                {T("wallet.send.unverified_note")}
               </Text>
             )}
           </View>

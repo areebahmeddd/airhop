@@ -1227,6 +1227,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "တိုကင်ကို မတည်ဆောက်နိုင်ပါ",
+  "wallet.send.unverified_note":
+    "ဤငွေပေးချေမှု၏ တစ်စိတ်တစ်ပိုင်းသည် မင့်က အတည်မပြုရသေးသော ecash ဖြစ်သည်။",
   "wallet.send.title": "ecash ပို့ပါ",
   "wallet.send.amount_in": "ပမာဏ {unit} ဖြင့်",
   "wallet.send.body":
@@ -1762,6 +1764,10 @@ export const strings: Strings = {
     "ဤငွေပေးချေမှုကို သင့်ပိုက်ဆံအိတ်ဖြင့် သော့ခတ်ထားသည်။",
   "wallet.svc.locked_ours_offline_body":
     "အွန်လိုင်းဖြစ်မှ ရယူပါ။ ထိုအတောအတွင်း အခြားမည်သူမျှ ယူ၍ မရပါ။",
+  "wallet.svc.offline_cap":
+    "ဤမင့်မှ အတည်မပြုရသေးသော ecash လုံလောက်စွာ စောင့်ဆိုင်းနေပြီဖြစ်သည်။",
+  "wallet.svc.offline_cap_body":
+    "အွန်လိုင်းဖြစ်ပြီး မင့်က အတည်ပြုနိုင်သည့်အခါမှ ဤတစ်ခုကို ရယူပါ။ ထိုအချိန်အထိ ချက်ထဲတွင် ရှိနေပါမည်။",
   "wallet.svc.already_spent": "ဤ ecash ကို သုံးပြီးဖြစ်သည်။",
   "wallet.svc.already_spent_body":
     "ဤတိုကင်ကို ပို့သူက အရင်ရွေးနုတ်လိုက်သည်၊ သို့မဟုတ် တူညီသောတိုကင်ကို အခြားသူတစ်ဦးထံ ပို့ခဲ့သည်။",

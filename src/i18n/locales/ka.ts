@@ -1197,6 +1197,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ტოკენის აწყობა ვერ მოხერხდა",
+  "wallet.send.unverified_note":
+    "ამ გადახდის ნაწილი ისეთი ecash-ია, რომელიც ზარაფხანას ჯერ არ დაუდასტურებია.",
   "wallet.send.title": "ecash-ის გაგზავნა",
   "wallet.send.amount_in": "თანხა {unit}-ში",
   "wallet.send.body":
@@ -1725,6 +1727,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "ეს გადახდა შენს საფულეზეა დაკეტილი.",
   "wallet.svc.locked_ours_offline_body":
     "მიიღე, როცა ონლაინ იქნები. მანამდე მას სხვა ვერავინ წაიღებს.",
+  "wallet.svc.offline_cap":
+    "ამ ზარაფხანის საკმარისი დაუდასტურებელი ecash უკვე ელოდება.",
+  "wallet.svc.offline_cap_body":
+    "მიიღე, როცა ონლაინ იქნები და ზარაფხანა შეძლებს მის დადასტურებას. მანამდე ჩატში დარჩება.",
   "wallet.svc.already_spent": "ეს ecash უკვე დახარჯულია.",
   "wallet.svc.already_spent_body":
     "ვინც ეს ტოკენი გამოგზავნა, ჯერ თვითონ გამოისყიდა, ან იგივე ტოკენი სხვასაც გაუგზავნა.",

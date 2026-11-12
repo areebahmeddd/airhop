@@ -1176,6 +1176,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "टोकन बन्न सकेन",
+  "wallet.send.unverified_note":
+    "यो भुक्तानीको केही भाग टकसारले अझै पुष्टि नगरेको ecash हो।",
   "wallet.send.title": "ecash पठाउनुहोस्",
   "wallet.send.amount_in": "{unit} मा रकम",
   "wallet.send.body":
@@ -1698,6 +1700,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "यो भुक्तानी तपाईंको वालेटमा बाँधिएको छ।",
   "wallet.svc.locked_ours_offline_body":
     "अनलाइन भएपछि यसलाई लिनुहोस्। त्यतिन्जेल अरू कसैले यसलाई लिन सक्दैन।",
+  "wallet.svc.offline_cap":
+    "यो टकसारको पर्याप्त अपुष्ट ecash पहिल्यै पर्खिरहेको छ।",
+  "wallet.svc.offline_cap_body":
+    "अनलाइन भएपछि, टकसारले पुष्टि गर्न सक्दा यसलाई लिनुहोस्। त्यतिन्जेल यो च्याटमै रहन्छ।",
   "wallet.svc.already_spent": "यो ecash पहिल्यै खर्च भइसकेको छ।",
   "wallet.svc.already_spent_body":
     "यो टोकन पठाउनेले पहिले नै साट्यो, वा उही टोकन अरू कसैलाई पनि पठायो।",

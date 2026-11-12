@@ -139,6 +139,7 @@ beforeEach(() => {
     fee: 0,
     exact: true,
     proofs: [],
+    unverified: false,
   });
   mockedPrepare.mockResolvedValue({
     mintUrl: MINT,
@@ -148,6 +149,7 @@ beforeEach(() => {
     fee: 0,
     exact: true,
     proofs: [],
+    unverified: false,
     txId: "tx-token-1",
     token: "cashuBtoken",
   });
@@ -433,6 +435,7 @@ describe("payPerson asks before money moves", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       pricedFromCacheAgeMs: 2 * 86_400_000 + 5_000,
     });
 
@@ -461,6 +464,7 @@ describe("payPerson asks before money moves", () => {
       fee: 0,
       exact: false,
       proofs: [],
+      unverified: false,
       pricedFromCacheAgeMs: 86_400_000,
     });
 
@@ -505,6 +509,7 @@ describe("payPerson asks before money moves", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       pricedFromCacheAgeMs: 3 * 86_400_000,
     });
 
@@ -548,6 +553,7 @@ describe("a token too large for the queue", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       txId: "tx-token-1",
       token: LARGE,
     });
@@ -592,6 +598,7 @@ describe("a token too large for the queue", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       txId: "tx-token-1",
       token: "cashuBtoken",
     });

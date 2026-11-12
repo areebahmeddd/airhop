@@ -1149,6 +1149,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "تعذّر بناء التوكن",
+  "wallet.send.unverified_note":
+    "جزء من هذه الدفعة نقد إلكتروني لم تؤكده دار السك بعد.",
   "wallet.send.title": "إرسال نقد إلكتروني",
   "wallet.send.amount_in": "المبلغ بـ {unit}",
   "wallet.send.body":
@@ -1660,6 +1662,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "هذه الدفعة مقفلة على محفظتك.",
   "wallet.svc.locked_ours_offline_body":
     "استلمها عندما تتصل بالإنترنت. لا يستطيع أحد غيرك أخذها في الأثناء.",
+  "wallet.svc.offline_cap":
+    "ينتظر بالفعل ما يكفي من النقد الإلكتروني غير المؤكد من دار السك هذه.",
+  "wallet.svc.offline_cap_body":
+    "استلم هذه الدفعة عندما تتصل بالإنترنت، حين تستطيع دار السك تأكيدها. تبقى في المحادثة حتى ذلك الحين.",
   "wallet.svc.already_spent": "هذا النقد الإلكتروني أُنفق بالفعل.",
   "wallet.svc.already_spent_body":
     "من أرسل هذا التوكن صرفه أولًا، أو أرسل التوكن نفسه إلى شخص آخر.",

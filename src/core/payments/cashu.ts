@@ -650,15 +650,12 @@ export function selectProofsForAmount(
     };
   };
 
-  // Unverified first, then largest: an unverified proof's double-spend risk
-  // grows while held, so pass it on toward a mint sooner than we would reach
-  // one (the recipient sees it as unverified, and may have no signal either).
-  // Wrong for a melt, where the mint checks every input and an unverified one
-  // only raises the failure odds, so `payLightningInvoice` selects with cashu-ts
-  // instead.
+  // Verified first, then largest: a coin the mint never confirmed hands its
+  // double-spend risk to whoever takes it, so it goes only when the verified
+  // coins cannot make the amount. The account redeems its own at the mint.
   const ranked = [...proofs].sort(
     (a, b) =>
-      Number(a.verified === true) - Number(b.verified === true) ||
+      Number(b.verified === true) - Number(a.verified === true) ||
       b.amount - a.amount,
   );
 

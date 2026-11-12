@@ -1175,6 +1175,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "토큰을 만들지 못했습니다",
+  "wallet.send.unverified_note":
+    "이 결제의 일부는 민트가 아직 확인하지 않은 ecash입니다.",
   "wallet.send.title": "ecash 보내기",
   "wallet.send.amount_in": "{unit} 단위 금액",
   "wallet.send.body":
@@ -1694,6 +1696,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "이 결제는 내 지갑에 잠겨 있습니다.",
   "wallet.svc.locked_ours_offline_body":
     "온라인이 되면 받으세요. 그동안 다른 누구도 가져갈 수 없습니다.",
+  "wallet.svc.offline_cap":
+    "이 민트의 확인되지 않은 ecash가 이미 충분히 대기 중입니다.",
+  "wallet.svc.offline_cap_body":
+    "온라인이 되어 민트가 확인할 수 있을 때 받으세요. 그때까지 채팅에 남아 있습니다.",
   "wallet.svc.already_spent": "이 ecash는 이미 사용되었습니다.",
   "wallet.svc.already_spent_body":
     "이 토큰을 보낸 사람이 먼저 교환했거나, 같은 토큰을 다른 사람에게도 보냈습니다.",

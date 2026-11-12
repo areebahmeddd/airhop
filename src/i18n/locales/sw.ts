@@ -1206,6 +1206,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tokeni haikuweza kutengenezwa",
+  "wallet.send.unverified_note":
+    "Sehemu ya malipo haya ni ecash ambayo mint bado haijaithibitisha.",
   "wallet.send.title": "Tuma ecash",
   "wallet.send.amount_in": "Kiasi katika {unit}",
   "wallet.send.body":
@@ -1744,6 +1746,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Malipo haya yamefungwa kwenye pochi yako.",
   "wallet.svc.locked_ours_offline_body":
     "Yadai ukiwa mtandaoni. Kwa sasa hakuna mtu mwingine anayeweza kuyachukua.",
+  "wallet.svc.offline_cap":
+    "Tayari kuna ecash ya kutosha isiyothibitishwa kutoka mint hii inayosubiri.",
+  "wallet.svc.offline_cap_body":
+    "Dai hii ukiwa mtandaoni, mint itakapoweza kuithibitisha. Itabaki kwenye mazungumzo hadi wakati huo.",
   "wallet.svc.already_spent": "Ecash hii tayari imetumika.",
   "wallet.svc.already_spent_body":
     "Yeyote aliyetuma tokeni hii aliikomboa kwanza, au alituma tokeni ileile kwa mtu mwingine pia.",

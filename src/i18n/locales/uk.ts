@@ -1198,6 +1198,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Не вдалося зібрати токен",
+  "wallet.send.unverified_note":
+    "Частина цього платежу складається з ecash, який мінт ще не підтвердив.",
   "wallet.send.title": "Надіслати ecash",
   "wallet.send.amount_in": "Сума в {unit}",
   "wallet.send.body":
@@ -1723,6 +1725,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Цей платіж прив’язано до вашого гаманця.",
   "wallet.svc.locked_ours_offline_body":
     "Отримайте його, коли будете онлайн. Тим часом ніхто інший не зможе його забрати.",
+  "wallet.svc.offline_cap":
+    "Від цього мінту вже чекає достатньо непідтвердженого ecash.",
+  "wallet.svc.offline_cap_body":
+    "Отримайте цей платіж, коли будете онлайн і мінт зможе його підтвердити. До того часу він лишається в чаті.",
   "wallet.svc.already_spent": "Цей ecash уже витрачено.",
   "wallet.svc.already_spent_body":
     "Той, хто надіслав цей токен, викупив його першим або надіслав той самий токен ще комусь.",

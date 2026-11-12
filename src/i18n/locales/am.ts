@@ -1112,6 +1112,7 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ቶከኑ ሊገነባ አልቻለም",
+  "wallet.send.unverified_note": "የዚህ ክፍያ ከፊሉ ሚንቱ ገና ያላረጋገጠው ecash ነው።",
   "wallet.send.title": "ecash ላክ",
   "wallet.send.amount_in": "መጠን በ{unit}",
   "wallet.send.body":
@@ -1612,6 +1613,9 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "ይህ ክፍያ ለቦርሳህ ተቆልፏል።",
   "wallet.svc.locked_ours_offline_body":
     "በመስመር ላይ ስትሆን ውሰደው። እስከዚያው ሌላ ማንም ሊወስደው አይችልም።",
+  "wallet.svc.offline_cap": "ከዚህ ሚንት ያልተረጋገጠ ecash በቂ ያህል እየጠበቀ ነው።",
+  "wallet.svc.offline_cap_body":
+    "በመስመር ላይ ስትሆን፣ ሚንቱ ሊያረጋግጠው ሲችል ይህንን ውሰደው። እስከዚያው በውይይቱ ውስጥ ይቆያል።",
   "wallet.svc.already_spent": "ይህ ecash አስቀድሞ ወጪ ሆኗል።",
   "wallet.svc.already_spent_body":
     "ይህን ቶከን የላከው ሰው መጀመሪያ መንዝሮታል፣ ወይም ተመሳሳዩን ቶከን ለሌላ ሰው ልኮታል።",

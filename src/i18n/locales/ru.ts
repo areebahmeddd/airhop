@@ -1197,6 +1197,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Не удалось собрать токен",
+  "wallet.send.unverified_note":
+    "Часть этого платежа составляет ecash, который монетный двор ещё не подтвердил.",
   "wallet.send.title": "Отправить ecash",
   "wallet.send.amount_in": "Сумма в {unit}",
   "wallet.send.body":
@@ -1727,6 +1729,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Этот платёж привязан к вашему кошельку.",
   "wallet.svc.locked_ours_offline_body":
     "Получите его, когда будете в сети. Пока никто другой не сможет его забрать.",
+  "wallet.svc.offline_cap":
+    "От этого монетного двора уже ждёт достаточно неподтверждённого ecash.",
+  "wallet.svc.offline_cap_body":
+    "Получите этот платёж, когда будете в сети и монетный двор сможет его подтвердить. До тех пор он останется в чате.",
   "wallet.svc.already_spent": "Этот ecash уже потрачен.",
   "wallet.svc.already_spent_body":
     "Отправитель погасил токен первым или отправил тот же токен кому-то ещё.",

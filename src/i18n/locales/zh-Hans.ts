@@ -1111,6 +1111,7 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "无法构建该代币",
+  "wallet.send.unverified_note": "这笔付款中有一部分是铸币厂尚未确认的 ecash。",
   "wallet.send.title": "发送 ecash",
   "wallet.send.amount_in": "金额（{unit}）",
   "wallet.send.body":
@@ -1610,6 +1611,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "这笔付款已锁定到你的钱包。",
   "wallet.svc.locked_ours_offline_body":
     "联网后再领取即可。在此期间，别人无法拿走它。",
+  "wallet.svc.offline_cap":
+    "来自这个铸币厂的未确认 ecash 已经够多了，正在等待中。",
+  "wallet.svc.offline_cap_body":
+    "等你联网、铸币厂能确认时再领取这笔。在那之前它会留在聊天里。",
   "wallet.svc.already_spent": "这笔 ecash 已经被花掉了。",
   "wallet.svc.already_spent_body":
     "发这个代币的人自己先兑付了，或者把同一个代币也发给了别人。",
