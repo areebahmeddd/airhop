@@ -2134,6 +2134,12 @@ export default function ArchitecturePage() {
                 milestones.
               </p>
               <p className="text-secondary mt-4 text-sm leading-relaxed">
+                For the full design, read the{" "}
+                <TextLink href={REPO_LINKS.airhopWhitepaper}>Airhop whitepaper</TextLink> and, for
+                the relay nodes, the{" "}
+                <TextLink href={REPO_LINKS.airlinkWhitepaper}>Airlink whitepaper</TextLink>.
+              </p>
+              <p className="text-secondary mt-4 text-sm leading-relaxed">
                 For the protocol Airhop inherits, read the{" "}
                 <TextLink href="https://github.com/permissionlesstech/bitchat/blob/main/WHITEPAPER.md">
                   bitchat protocol whitepaper
