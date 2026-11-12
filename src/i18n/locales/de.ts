@@ -1279,15 +1279,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Bei {mint} eingelöst. Es gehört jetzt nachweislich dir: Die Kopie dieses Tokens auf der Absenderseite funktioniert nicht mehr.",
   "wallet.receive.pending_unconfirmed":
-    "Von {mint} gespeichert, aber der Mint hat noch nicht bestätigt, dass es unverbraucht ist. Sobald du online bist, wird es automatisch mit dem Mint bestätigt.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Von {mint} gespeichert, aber der Mint hat noch nicht bestätigt, dass es unverbraucht ist. Die Signatur stimmt, der Token ist also echt. Sobald du online bist, wird es automatisch mit dem Mint bestätigt.",
   "wallet.receive.dleq_ok":
     "Die Signatur des Mints stimmt, der Token ist also echt.",
-  "wallet.receive.dleq_uncached":
-    "Die Schlüssel des Mints sind hier nicht zwischengespeichert, deshalb ließ sich die Signatur offline nicht prüfen.",
-  "wallet.receive.dleq_missing":
-    "Nicht jede Münze darin trägt den Signaturnachweis des Mints, deshalb ließ es sich offline nicht prüfen.",
   "wallet.receive.dleq_warning":
     "Bis es online bestätigt ist, könnte die Absenderseite es im Prinzip anderswo ausgegeben haben.",
   "wallet.receive.failed": "Empfang nicht möglich",
@@ -1762,7 +1756,9 @@ export const strings: Strings = {
     "Löse sie ein, sobald du online bist. Bis dahin kann sie niemand sonst nehmen.",
   "wallet.svc.offline_cap":
     "Von diesem Mint wartet schon genug unbestätigtes Ecash.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Dieses Ecash lässt sich offline nicht prüfen.",
+  "wallet.svc.claim_online_body":
     "Löse diese Zahlung ein, sobald du online bist und der Mint sie bestätigen kann. Bis dahin bleibt sie im Chat.",
   "wallet.svc.already_spent": "Dieses Ecash wurde bereits ausgegeben.",
   "wallet.svc.already_spent_body":

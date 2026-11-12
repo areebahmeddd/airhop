@@ -1243,14 +1243,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} पर भुनाया गया। अब यह प्रमाणित रूप से आपका है: भेजने वाले के पास इस टोकन की प्रति अब काम नहीं करती।",
   "wallet.receive.pending_unconfirmed":
-    "{mint} से रखा गया, पर मिंट ने अभी पुष्टि नहीं की कि यह खर्च नहीं हुआ। ऑनलाइन होते ही मिंट से अपने-आप पुष्टि हो जाती है।",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} से रखा गया, पर मिंट ने अभी पुष्टि नहीं की कि यह खर्च नहीं हुआ। इसका हस्ताक्षर सही है, इसलिए टोकन असली है। ऑनलाइन होते ही मिंट से अपने-आप पुष्टि हो जाती है।",
   "wallet.receive.dleq_ok": "मिंट का हस्ताक्षर सही निकलता है, तो टोकन असली है।",
-  "wallet.receive.dleq_uncached":
-    "मिंट की कुंजियाँ यहाँ कैश नहीं हैं, इसलिए हस्ताक्षर ऑफ़लाइन जाँचा नहीं जा सका।",
-  "wallet.receive.dleq_missing":
-    "इसके हर सिक्के में मिंट के हस्ताक्षर का प्रमाण नहीं है, इसलिए इसे ऑफ़लाइन जाँचा नहीं जा सका।",
   "wallet.receive.dleq_warning":
     "जब तक ऑनलाइन पुष्टि न हो, भेजने वाला सैद्धांतिक रूप से इसे कहीं और खर्च कर चुका हो सकता है।",
   "wallet.receive.failed": "लिया नहीं जा सका",
@@ -1709,7 +1703,8 @@ export const strings: Strings = {
     "ऑनलाइन होने पर इसे लें। तब तक कोई और इसे नहीं ले सकता।",
   "wallet.svc.offline_cap":
     "इस मिंट का पर्याप्त अपुष्ट ecash पहले से इंतज़ार में है।",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "यह ecash ऑफ़लाइन जाँचा नहीं जा सकता।",
+  "wallet.svc.claim_online_body":
     "ऑनलाइन होने पर, जब मिंट इसकी पुष्टि कर सके, इसे लें। तब तक यह चैट में रहेगा।",
   "wallet.svc.already_spent": "यह ecash पहले ही खर्च हो चुका है।",
   "wallet.svc.already_spent_body":

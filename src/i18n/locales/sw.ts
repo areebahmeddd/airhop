@@ -1267,15 +1267,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Imekombolewa kwenye {mint}. Sasa ni yako kwa uthibitisho: nakala ya tokeni hii aliyo nayo mtumaji haifanyi kazi tena.",
   "wallet.receive.pending_unconfirmed":
-    "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika. Itathibitishwa na mint kiotomatiki utakapokuwa mtandaoni.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika. Saini yake inalingana, kwa hivyo tokeni ni halisi. Itathibitishwa na mint kiotomatiki utakapokuwa mtandaoni.",
   "wallet.receive.dleq_ok":
     "Saini ya mint inalingana, kwa hivyo tokeni ni halisi.",
-  "wallet.receive.dleq_uncached":
-    "Funguo za mint hazipo hapa, kwa hivyo saini haikuweza kukaguliwa nje ya mtandao.",
-  "wallet.receive.dleq_missing":
-    "Si kila sarafu ndani yake ina uthibitisho wa saini ya mint, kwa hivyo haikuweza kukaguliwa nje ya mtandao.",
   "wallet.receive.dleq_warning":
     "Hadi itakapothibitishwa mtandaoni, kimsingi mtumaji anaweza kuwa ameitumia mahali pengine.",
   "wallet.receive.failed": "Haikuweza kupokelewa",
@@ -1748,7 +1742,9 @@ export const strings: Strings = {
     "Yadai ukiwa mtandaoni. Kwa sasa hakuna mtu mwingine anayeweza kuyachukua.",
   "wallet.svc.offline_cap":
     "Tayari kuna ecash ya kutosha isiyothibitishwa kutoka mint hii inayosubiri.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Ecash hii haiwezi kukaguliwa nje ya mtandao.",
+  "wallet.svc.claim_online_body":
     "Dai hii ukiwa mtandaoni, mint itakapoweza kuithibitisha. Itabaki kwenye mazungumzo hadi wakati huo.",
   "wallet.svc.already_spent": "Ecash hii tayari imetumika.",
   "wallet.svc.already_spent_body":

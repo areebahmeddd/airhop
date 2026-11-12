@@ -1248,14 +1248,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Inlöst hos {mint}. Det är bevisligen ditt nu: avsändarens kopia av tokenet fungerar inte längre.",
   "wallet.receive.pending_unconfirmed":
-    "Sparat från {mint}, men minten har ännu inte bekräftat att det är oförbrukat. Det bekräftas automatiskt hos minten när du är online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Sparat från {mint}, men minten har ännu inte bekräftat att det är oförbrukat. Signaturen stämmer, så tokenet är äkta. Det bekräftas automatiskt hos minten när du är online.",
   "wallet.receive.dleq_ok": "Mintens signatur stämmer, så tokenet är äkta.",
-  "wallet.receive.dleq_uncached":
-    "Mintens nycklar finns inte här, så signaturen kunde inte kontrolleras offline.",
-  "wallet.receive.dleq_missing":
-    "Inte alla mynt i det har mintens signaturbevis, så det kunde inte kontrolleras offline.",
   "wallet.receive.dleq_warning":
     "Tills det har bekräftats online kan avsändaren i princip ha gjort av med det någon annanstans.",
   "wallet.receive.failed": "Kunde inte ta emot",
@@ -1714,7 +1708,9 @@ export const strings: Strings = {
     "Hämta den när du är online. Ingen annan kan ta den under tiden.",
   "wallet.svc.offline_cap":
     "Det väntar redan tillräckligt med obekräftad ecash från den här minten.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Den här ecashen kan inte kontrolleras offline.",
+  "wallet.svc.claim_online_body":
     "Hämta den här när du är online och minten kan bekräfta den. Tills dess stannar den i chatten.",
   "wallet.svc.already_spent": "Den här ecashen är redan förbrukad.",
   "wallet.svc.already_spent_body":

@@ -1276,15 +1276,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Riscosso presso {mint}. Ora è tuo in modo dimostrabile: la copia di questo token che ha il mittente non funziona più.",
   "wallet.receive.pending_unconfirmed":
-    "Token di {mint} conservato, ma il mint non ha ancora confermato che non sia stato speso. Viene confermato automaticamente con il mint appena sei online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Token di {mint} conservato, ma il mint non ha ancora confermato che non sia stato speso. La sua firma risulta valida, quindi il token è autentico. Viene confermato automaticamente con il mint appena sei online.",
   "wallet.receive.dleq_ok":
     "La firma del mint risulta valida, quindi il token è autentico.",
-  "wallet.receive.dleq_uncached":
-    "Le chiavi del mint non sono conservate qui, quindi non è stato possibile verificare la firma offline.",
-  "wallet.receive.dleq_missing":
-    "Non tutte le sue monete hanno la prova di firma del mint, quindi non è stato possibile verificarlo offline.",
   "wallet.receive.dleq_warning":
     "Finché non viene confermato online, il mittente potrebbe in linea di principio averlo speso altrove.",
   "wallet.receive.failed": "Non è stato possibile ricevere",
@@ -1753,7 +1747,8 @@ export const strings: Strings = {
     "Riscuotilo quando sei online. Nel frattempo nessun altro può prenderlo.",
   "wallet.svc.offline_cap":
     "C’è già abbastanza ecash non confermato di questo mint in attesa.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "Questo ecash non si può verificare offline.",
+  "wallet.svc.claim_online_body":
     "Riscuoti questo quando sei online e il mint può confermarlo. Fino ad allora resta nella chat.",
   "wallet.svc.already_spent": "Questo ecash è già stato speso.",
   "wallet.svc.already_spent_body":

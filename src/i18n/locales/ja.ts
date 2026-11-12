@@ -1255,14 +1255,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}で引き換えました。これで証明可能にあなたのものとなり、送信者側のこのトークンの控えはもう使えません。",
   "wallet.receive.pending_unconfirmed":
-    "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。オンラインになると自動的にミントで確認されます。",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。署名は正しいので、トークンは本物です。オンラインになると自動的にミントで確認されます。",
   "wallet.receive.dleq_ok": "ミントの署名は正しく、トークンは本物です。",
-  "wallet.receive.dleq_uncached":
-    "ミントの鍵がここに保存されていないため、オフラインでは署名を確認できませんでした。",
-  "wallet.receive.dleq_missing":
-    "一部のコインにミントの署名証明が付いていないため、オフラインでは確認できませんでした。",
   "wallet.receive.dleq_warning":
     "オンラインで確認されるまでは、送信者が別の場所で使っていた可能性も原理的には残ります。",
   "wallet.receive.failed": "受け取れませんでした",
@@ -1724,7 +1718,8 @@ export const strings: Strings = {
     "オンラインになってから受け取ってください。その間、ほかの誰も受け取れません。",
   "wallet.svc.offline_cap":
     "このミントの未確認のecashがすでに十分待機しています。",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "このecashはオフラインでは確認できません。",
+  "wallet.svc.claim_online_body":
     "オンラインになり、ミントが確認できるようになってから受け取ってください。それまではチャットに残ります。",
   "wallet.svc.already_spent": "このecashはすでに使用されています。",
   "wallet.svc.already_spent_body":

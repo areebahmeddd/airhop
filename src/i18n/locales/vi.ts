@@ -1250,14 +1250,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Đã đổi tại {mint}. Giờ nó chứng minh được là của bạn: bản sao token này của người gửi không còn dùng được.",
   "wallet.receive.pending_unconfirmed":
-    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Chữ ký của nó hợp lệ, nên token là thật. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
   "wallet.receive.dleq_ok": "Chữ ký của nhà đúc hợp lệ, nên token là thật.",
-  "wallet.receive.dleq_uncached":
-    "Khóa của nhà đúc không được lưu sẵn ở đây, nên không kiểm tra được chữ ký khi ngoại tuyến.",
-  "wallet.receive.dleq_missing":
-    "Không phải đồng nào trong đó cũng mang bằng chứng chữ ký của nhà đúc, nên không kiểm tra được khi ngoại tuyến.",
   "wallet.receive.dleq_warning":
     "Cho tới khi nó được xác nhận lúc có mạng, về lý thuyết người gửi có thể đã tiêu nó ở nơi khác.",
   "wallet.receive.failed": "Không nhận được",
@@ -1718,7 +1712,9 @@ export const strings: Strings = {
     "Hãy nhận nó khi bạn có mạng. Trong lúc đó không ai khác lấy được nó.",
   "wallet.svc.offline_cap":
     "Đã có đủ ecash chưa được xác nhận từ nhà đúc này đang chờ.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Không thể kiểm tra ecash này khi ngoại tuyến.",
+  "wallet.svc.claim_online_body":
     "Hãy nhận khoản này khi bạn có mạng và nhà đúc có thể xác nhận nó. Đến lúc đó nó vẫn nằm trong cuộc trò chuyện.",
   "wallet.svc.already_spent": "Khoản ecash này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":

@@ -7,8 +7,9 @@
 //  1. Proofs are never deleted to send. They are reserved against a transaction
 //     id and dropped only once delivery is confirmed (`reclaimSend` recovers).
 //  2. Nothing counts as verified until the mint has signed for it, and a token
-//     whose DLEQ check fails is refused. Offline credits are marked unverified,
-//     capped per account, spent last and redeemed first when online.
+//     whose DLEQ check fails is refused. Offline, only coins whose DLEQ proves
+//     the mint signed them are credited, marked unverified, capped per account,
+//     spent last and redeemed first when online.
 //  3. No mint call goes over the clear net while Tor is on (iOS: Arti wraps
 //     only WebSockets, not fetch).
 //  4. A (mint, unit) pair is one account; units never mix.
@@ -1305,30 +1306,24 @@ export interface ReceiveResult {
   mintUrl: string;
   memo?: string;
   // "swapped"     redeemed at the mint; the value is now provably ours
-  // "stored"      kept offline, unverified: the mint has not confirmed it is
-  //               unspent, and `dleq` says whether it is even genuine
+  // "stored"      kept offline, unverified: genuine by DLEQ, but the mint has
+  //               not confirmed it is unspent
   // "duplicate"   every proof was already in the wallet; nothing was credited
   // "own-pending" the coins are our own unsettled send; reclaim it instead
   // "claiming"    an earlier claim of these coins waits on the mint's answer
   outcome: "swapped" | "stored" | "duplicate" | "own-pending" | "claiming";
   // Why we did not swap, when outcome is "stored".
   offlineReason?: string;
-  // The offline DLEQ check, for the receipt UI. "valid" only when every coin
-  // carries a witness that verifies.
+  // The offline DLEQ check. "valid" only when every coin carries a witness
+  // that verifies; "unchecked" when the sender left one out or this phone
+  // lacks the mint's keys.
   dleq: "valid" | "unchecked";
-  // Why "unchecked": the sender left witnesses out, or this phone lacks the
-  // mint's keys.
-  dleqGap?: "witness" | "keys";
 }
 
-type DleqVerdict = Pick<ReceiveResult, "dleq" | "dleqGap">;
+type DleqVerdict = Pick<ReceiveResult, "dleq">;
 
 function dleqVerdict(result: DleqResult): DleqVerdict {
-  if (result.status === "valid") return { dleq: "valid" };
-  const byWitness =
-    result.status === "unchecked" &&
-    (result.code === "no-witness" || result.code === "partial-witness");
-  return { dleq: "unchecked", dleqGap: byWitness ? "witness" : "keys" };
+  return { dleq: result.status === "valid" ? "valid" : "unchecked" };
 }
 
 // Throttle for keyset fetches triggered by chat tokens, keyed by mint alone:
@@ -1681,9 +1676,15 @@ async function receiveTokenOnce(
     if (signingKey !== undefined) {
       throw walletErr.code === "tor-blocked" ? walletErr : lockedToUsOffline();
     }
-    // Past the cap the claim waits for the mint: the token stays in the chat
+    // Taken without the mint only when every coin proves the mint signed it,
+    // since a token with no DLEQ to check could be forged, and only up to the
+    // cap. Otherwise the claim waits for the mint: the token stays in the chat
     // and a staged request keeps its preview for `reconcile`.
-    if (overOfflineCap(url, info.unit, info.amount)) throw offlineCapError();
+    const unchecked = verdict.dleq !== "valid";
+    if (unchecked || overOfflineCap(url, info.unit, info.amount)) {
+      if (walletErr.code === "tor-blocked") throw walletErr;
+      throw unchecked ? uncheckedOfflineError() : offlineCapError();
+    }
     // The request may never have left, or only its answer was lost. Store
     // the proofs unverified and keep the preview on the same transaction; a
     // replay drops them as it credits the real outputs, so nothing counts
@@ -1722,7 +1723,15 @@ function offlineCapError(): WalletError {
   return new WalletError(
     "offline",
     { key: "wallet.svc.offline_cap" },
-    t("wallet.svc.offline_cap_body"),
+    t("wallet.svc.claim_online_body"),
+  );
+}
+
+function uncheckedOfflineError(): WalletError {
+  return new WalletError(
+    "offline",
+    { key: "wallet.svc.offline_unchecked" },
+    t("wallet.svc.claim_online_body"),
   );
 }
 

@@ -1238,14 +1238,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}-এ ভাঙানো হয়েছে। এটি এখন প্রমাণসহ আপনার: প্রেরকের কাছে থাকা এই টোকেনের অনুলিপি আর কাজ করে না।",
   "wallet.receive.pending_unconfirmed":
-    "{mint} থেকে রাখা হয়েছে, কিন্তু মিন্ট এখনো নিশ্চিত করেনি যে এটি খরচ হয়নি। অনলাইনে এলে মিন্টের সঙ্গে আপনাআপনি নিশ্চিত হয়ে যায়।",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} থেকে রাখা হয়েছে, কিন্তু মিন্ট এখনো নিশ্চিত করেনি যে এটি খরচ হয়নি। এর সই মিলে যায়, তাই টোকেনটি আসল। অনলাইনে এলে মিন্টের সঙ্গে আপনাআপনি নিশ্চিত হয়ে যায়।",
   "wallet.receive.dleq_ok": "মিন্টের সই মিলে যায়, তাই টোকেনটি আসল।",
-  "wallet.receive.dleq_uncached":
-    "এই মিন্টের কী এখানে জমা নেই, তাই অফলাইনে সই মিলিয়ে দেখা গেল না।",
-  "wallet.receive.dleq_missing":
-    "এর সব মুদ্রায় মিন্টের সইয়ের প্রমাণ নেই, তাই অফলাইনে মিলিয়ে দেখা গেল না।",
   "wallet.receive.dleq_warning":
     "অনলাইনে নিশ্চিত না হওয়া পর্যন্ত প্রেরক নীতিগতভাবে এটি অন্যত্র খরচ করে থাকতে পারেন।",
   "wallet.receive.failed": "নেওয়া গেল না",
@@ -1700,7 +1694,8 @@ export const strings: Strings = {
     "অনলাইনে এলে এটি নিন। এর মধ্যে অন্য কেউ এটি নিতে পারবে না।",
   "wallet.svc.offline_cap":
     "এই মিন্টের নিশ্চিত না হওয়া যথেষ্ট ecash ইতিমধ্যে অপেক্ষায় আছে।",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "এই ecash অফলাইনে যাচাই করা যায় না।",
+  "wallet.svc.claim_online_body":
     "অনলাইনে এলে, যখন মিন্ট এটি নিশ্চিত করতে পারবে, তখন এটি নিন। ততক্ষণ এটি চ্যাটে থাকবে।",
   "wallet.svc.already_spent": "এই ecash আগেই খরচ হয়ে গেছে।",
   "wallet.svc.already_spent_body":

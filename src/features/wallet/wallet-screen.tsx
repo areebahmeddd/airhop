@@ -604,11 +604,7 @@ export default function WalletScreen({
               mint: where,
               reason: result.offlineReason ?? t("wallet.receive.offline"),
             }),
-            result.dleq === "valid"
-              ? t("wallet.receive.dleq_ok")
-              : result.dleqGap === "witness"
-                ? t("wallet.receive.dleq_missing")
-                : t("wallet.receive.dleq_uncached"),
+            t("wallet.receive.dleq_ok"),
             t("wallet.receive.dleq_warning"),
           ].join(" ") +
             (result.memo

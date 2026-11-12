@@ -1040,8 +1040,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             Offline, Airhop still checks the mint's signature on every coin it receives (a{" "}
             <TextLink href="https://github.com/cashubtc/nuts/blob/main/12.md">DLEQ proof</TextLink>
-            ), so a coin whose proof fails is rejected outright, and a token only reads as genuine
-            when every coin in it checks out. That proves the mint issued it.{" "}
+            ), so a coin whose proof fails is rejected outright, and a token is only taken when
+            every coin in it checks out. That proves the mint issued it.{" "}
             <strong>
               It can never prove it is unspent, because only the mint knows that.
             </strong>{" "}

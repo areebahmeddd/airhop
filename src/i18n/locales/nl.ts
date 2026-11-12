@@ -1266,15 +1266,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ingewisseld bij {mint}. Het is nu aantoonbaar van jou: de kopie van dit token bij de afzender werkt niet meer.",
   "wallet.receive.pending_unconfirmed":
-    "Opgeslagen van {mint}, maar de mint heeft nog niet bevestigd dat het onbesteed is. Het wordt automatisch bij de mint bevestigd zodra je online bent.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Opgeslagen van {mint}, maar de mint heeft nog niet bevestigd dat het onbesteed is. De handtekening klopt wel, dus het token is echt. Het wordt automatisch bij de mint bevestigd zodra je online bent.",
   "wallet.receive.dleq_ok":
     "De handtekening van de mint klopt, dus het token is echt.",
-  "wallet.receive.dleq_uncached":
-    "De sleutels van de mint staan hier niet, dus de handtekening kon offline niet worden gecontroleerd.",
-  "wallet.receive.dleq_missing":
-    "Niet elke munt erin heeft het handtekeningbewijs van de mint, dus het kon offline niet worden gecontroleerd.",
   "wallet.receive.dleq_warning":
     "Tot het online is bevestigd, kan de afzender het in principe elders hebben uitgegeven.",
   "wallet.receive.failed": "Ontvangen lukte niet",
@@ -1742,7 +1736,9 @@ export const strings: Strings = {
     "Haal hem op zodra je online bent. Niemand anders kan hem ondertussen pakken.",
   "wallet.svc.offline_cap":
     "Er wacht al genoeg onbevestigde ecash van deze mint.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Deze ecash kan offline niet worden gecontroleerd.",
+  "wallet.svc.claim_online_body":
     "Haal deze op zodra je online bent en de mint hem kan bevestigen. Tot dan blijft hij in de chat.",
   "wallet.svc.already_spent": "Deze ecash is al besteed.",
   "wallet.svc.already_spent_body":

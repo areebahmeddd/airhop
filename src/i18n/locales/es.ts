@@ -1273,15 +1273,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Canjeado en {mint}. Ahora es tuyo de forma demostrable: la copia de este token que tiene el remitente ya no funciona.",
   "wallet.receive.pending_unconfirmed":
-    "Guardado de {mint}, pero la casa de moneda aún no ha confirmado que esté sin gastar. Se confirma con la casa de moneda automáticamente cuando tengas conexión.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Guardado de {mint}, pero la casa de moneda aún no ha confirmado que esté sin gastar. Su firma es válida, así que el token es auténtico. Se confirma con la casa de moneda automáticamente cuando tengas conexión.",
   "wallet.receive.dleq_ok":
     "La firma de la casa de moneda cuadra, así que el token es auténtico.",
-  "wallet.receive.dleq_uncached":
-    "Las claves de la casa de moneda no están guardadas aquí, así que la firma no se pudo comprobar sin conexión.",
-  "wallet.receive.dleq_missing":
-    "No todas sus monedas llevan la prueba de firma de la casa de moneda, así que no se pudo comprobar sin conexión.",
   "wallet.receive.dleq_warning":
     "Hasta que se confirme con conexión, el remitente podría en principio haberlo gastado en otro sitio.",
   "wallet.receive.failed": "No se pudo recibir",
@@ -1754,7 +1748,9 @@ export const strings: Strings = {
     "Reclámalo cuando tengas conexión. Mientras tanto, nadie más puede quedárselo.",
   "wallet.svc.offline_cap":
     "Ya espera suficiente ecash sin confirmar de esta casa de moneda.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Este ecash no se puede comprobar sin conexión.",
+  "wallet.svc.claim_online_body":
     "Reclama este cuando tengas conexión y la casa de moneda pueda confirmarlo. Hasta entonces se queda en el chat.",
   "wallet.svc.already_spent": "Este ecash ya se ha gastado.",
   "wallet.svc.already_spent_body":

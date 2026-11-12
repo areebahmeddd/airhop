@@ -2890,12 +2890,9 @@ export default function MessageThread({
         `+${formatUnitAmount(result.amount, result.unit)}`,
         result.outcome === "swapped"
           ? t("wallet.receive.redeemed_at", { mint: hostOf(result.mintUrl) })
-          : t(
-              result.dleq === "valid"
-                ? "wallet.receive.pending_unconfirmed_genuine"
-                : "wallet.receive.pending_unconfirmed",
-              { mint: hostOf(result.mintUrl) },
-            ),
+          : t("wallet.receive.pending_unconfirmed", {
+              mint: hostOf(result.mintUrl),
+            }),
       );
     } catch (err) {
       reportWalletError(err);

@@ -1256,14 +1256,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} darphanesinde bozduruldu. Artık kanıtlanabilir biçimde senin: gönderendeki kopyası artık çalışmıyor.",
   "wallet.receive.pending_unconfirmed":
-    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. İmzası tutuyor, yani jeton gerçek. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
   "wallet.receive.dleq_ok": "Darphanenin imzası tutuyor, yani jeton gerçek.",
-  "wallet.receive.dleq_uncached":
-    "Darphanenin anahtarları burada yok, bu yüzden imza çevrimdışı denetlenemedi.",
-  "wallet.receive.dleq_missing":
-    "İçindeki paraların hepsi darphanenin imza kanıtını taşımıyor, bu yüzden çevrimdışı denetlenemedi.",
   "wallet.receive.dleq_warning":
     "Çevrimiçi onaylanana kadar gönderen ilkece onu başka bir yerde harcamış olabilir.",
   "wallet.receive.failed": "Alınamadı",
@@ -1727,7 +1721,8 @@ export const strings: Strings = {
     "Çevrimiçi olduğunda al. Bu arada başka kimse onu alamaz.",
   "wallet.svc.offline_cap":
     "Bu darphaneden yeterince onaylanmamış ecash zaten bekliyor.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "Bu ecash çevrimdışıyken doğrulanamaz.",
+  "wallet.svc.claim_online_body":
     "Bunu çevrimiçi olduğunda, darphane onaylayabildiğinde al. O zamana kadar sohbette kalır.",
   "wallet.svc.already_spent": "Bu ecash zaten harcanmış.",
   "wallet.svc.already_spent_body":

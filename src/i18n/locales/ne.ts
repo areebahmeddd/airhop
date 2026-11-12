@@ -1237,14 +1237,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} मा साटियो। अब यो प्रमाणसहित तपाईंको हो: पठाउनेसँग भएको यो टोकनको प्रतिलिपि अब चल्दैन।",
   "wallet.receive.pending_unconfirmed":
-    "{mint} बाट राखियो, तर टकसारले यो नखर्चिएको हो भनेर अझै पुष्टि गरेको छैन। अनलाइन भएपछि टकसारसँग आफैं पुष्टि हुन्छ।",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} बाट राखियो, तर टकसारले यो नखर्चिएको हो भनेर अझै पुष्टि गरेको छैन। यसको हस्ताक्षर मिल्छ, त्यसैले टोकन साँचो हो। अनलाइन भएपछि टकसारसँग आफैं पुष्टि हुन्छ।",
   "wallet.receive.dleq_ok": "टकसारको हस्ताक्षर मिल्छ, त्यसैले टोकन साँचो हो।",
-  "wallet.receive.dleq_uncached":
-    "टकसारका कुञ्जी यहाँ छैनन्, त्यसैले हस्ताक्षर अफलाइन जाँच्न सकिएन।",
-  "wallet.receive.dleq_missing":
-    "यसका सबै सिक्कामा टकसारको हस्ताक्षर प्रमाण छैन, त्यसैले अफलाइन जाँच्न सकिएन।",
   "wallet.receive.dleq_warning":
     "अनलाइन पुष्टि नभएसम्म, सिद्धान्ततः पठाउनेले यो अन्तै खर्च गरिसकेको हुन सक्छ।",
   "wallet.receive.failed": "लिन सकिएन",
@@ -1702,7 +1696,8 @@ export const strings: Strings = {
     "अनलाइन भएपछि यसलाई लिनुहोस्। त्यतिन्जेल अरू कसैले यसलाई लिन सक्दैन।",
   "wallet.svc.offline_cap":
     "यो टकसारको पर्याप्त अपुष्ट ecash पहिल्यै पर्खिरहेको छ।",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "यो ecash अफलाइनमा जाँच गर्न सकिँदैन।",
+  "wallet.svc.claim_online_body":
     "अनलाइन भएपछि, टकसारले पुष्टि गर्न सक्दा यसलाई लिनुहोस्। त्यतिन्जेल यो च्याटमै रहन्छ।",
   "wallet.svc.already_spent": "यो ecash पहिल्यै खर्च भइसकेको छ।",
   "wallet.svc.already_spent_body":

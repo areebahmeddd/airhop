@@ -1170,14 +1170,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "已在 {mint} 兑付。现在它可被证明属于你：发送方手里的这份代币副本不再有效。",
   "wallet.receive.pending_unconfirmed":
-    "已从 {mint} 存入，但铸币厂尚未确认它未被花费。联网后会自动与铸币厂确认。",
-  "wallet.receive.pending_unconfirmed_genuine":
     "已从 {mint} 存入，但铸币厂尚未确认它未被花费。它的签名对得上，所以这个代币是真的。联网后会自动与铸币厂确认。",
   "wallet.receive.dleq_ok": "铸币厂的签名对得上，所以这个代币是真的。",
-  "wallet.receive.dleq_uncached":
-    "这个铸币厂的密钥没有缓存在这里，所以无法离线核验签名。",
-  "wallet.receive.dleq_missing":
-    "其中并非每个币都带有铸币厂的签名证明，所以无法离线核验。",
   "wallet.receive.dleq_warning":
     "在联网确认之前，发送方理论上有可能已经把它花在别处。",
   "wallet.receive.failed": "无法接收",
@@ -1613,7 +1607,8 @@ export const strings: Strings = {
     "联网后再领取即可。在此期间，别人无法拿走它。",
   "wallet.svc.offline_cap":
     "来自这个铸币厂的未确认 ecash 已经够多了，正在等待中。",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "这笔 ecash 无法离线验证。",
+  "wallet.svc.claim_online_body":
     "等你联网、铸币厂能确认时再领取这笔。在那之前它会留在聊天里。",
   "wallet.svc.already_spent": "这笔 ecash 已经被花掉了。",
   "wallet.svc.already_spent_body":

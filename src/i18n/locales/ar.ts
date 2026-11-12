@@ -1210,14 +1210,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "صُرف عند {mint}. أصبح لك بشكل مثبت: نسخة المرسل من هذا التوكن لم تعد تعمل.",
   "wallet.receive.pending_unconfirmed":
-    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. توقيعه صحيح، فالتوكن أصلي. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
   "wallet.receive.dleq_ok": "توقيع دار السك صحيح، فالتوكن أصلي.",
-  "wallet.receive.dleq_uncached":
-    "مفاتيح دار السك غير مخزّنة هنا، لذا تعذّر فحص التوقيع دون اتصال.",
-  "wallet.receive.dleq_missing":
-    "ليست كل عملة فيه تحمل إثبات توقيع دار السك، لذا تعذّر فحصه دون اتصال.",
   "wallet.receive.dleq_warning":
     "إلى أن يُؤكَّد عبر الإنترنت، يمكن للمرسل نظريًا أن يكون قد أنفقه في مكان آخر.",
   "wallet.receive.failed": "تعذّر الاستقبال",
@@ -1664,7 +1658,9 @@ export const strings: Strings = {
     "استلمها عندما تتصل بالإنترنت. لا يستطيع أحد غيرك أخذها في الأثناء.",
   "wallet.svc.offline_cap":
     "ينتظر بالفعل ما يكفي من النقد الإلكتروني غير المؤكد من دار السك هذه.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "لا يمكن التحقق من هذا النقد الإلكتروني دون اتصال.",
+  "wallet.svc.claim_online_body":
     "استلم هذه الدفعة عندما تتصل بالإنترنت، حين تستطيع دار السك تأكيدها. تبقى في المحادثة حتى ذلك الحين.",
   "wallet.svc.already_spent": "هذا النقد الإلكتروني أُنفق بالفعل.",
   "wallet.svc.already_spent_body":

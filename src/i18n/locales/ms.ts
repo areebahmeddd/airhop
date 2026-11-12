@@ -1269,14 +1269,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ditebus di {mint}. Ia kini terbukti milik anda: salinan token ini pada pengirim tidak lagi berfungsi.",
   "wallet.receive.pending_unconfirmed":
-    "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan. Tandatangannya sah, jadi tokennya tulen. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
   "wallet.receive.dleq_ok": "Tandatangan mint sah, jadi tokennya tulen.",
-  "wallet.receive.dleq_uncached":
-    "Kunci mint tidak tersimpan di sini, jadi tandatangannya tidak dapat disemak secara luar talian.",
-  "wallet.receive.dleq_missing":
-    "Bukan setiap syiling di dalamnya membawa bukti tandatangan mint, jadi ia tidak dapat disemak secara luar talian.",
   "wallet.receive.dleq_warning":
     "Sehingga ia disahkan dalam talian, pengirim pada dasarnya mungkin sudah membelanjakannya di tempat lain.",
   "wallet.receive.failed": "Tidak dapat menerima",
@@ -1741,7 +1735,9 @@ export const strings: Strings = {
     "Tuntut sebaik anda dalam talian. Sementara itu, tiada orang lain boleh mengambilnya.",
   "wallet.svc.offline_cap":
     "Sudah cukup ecash yang belum disahkan daripada mint ini sedang menunggu.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Ecash ini tidak boleh disemak secara luar talian.",
+  "wallet.svc.claim_online_body":
     "Tuntut yang ini sebaik anda dalam talian, apabila mint boleh mengesahkannya. Ia kekal dalam sembang sehingga itu.",
   "wallet.svc.already_spent": "Ecash ini sudah dibelanjakan.",
   "wallet.svc.already_spent_body":

@@ -1296,15 +1296,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Natubos sa {mint}. Napatutunayang sa iyo na ito ngayon: hindi na gumagana ang kopya ng token na ito sa nagpadala.",
   "wallet.receive.pending_unconfirmed":
-    "Nakaimbak mula sa {mint}, pero hindi pa kinukumpirma ng mint na hindi pa ito nagagastos. Awtomatiko itong kinukumpirma sa mint kapag online ka na.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Nakaimbak mula sa {mint}, pero hindi pa kinukumpirma ng mint na hindi pa ito nagagastos. Tumutugma ang lagda nito, kaya tunay ang token. Awtomatiko itong kinukumpirma sa mint kapag online ka na.",
   "wallet.receive.dleq_ok":
     "Tumutugma ang lagda ng mint, kaya tunay ang token.",
-  "wallet.receive.dleq_uncached":
-    "Wala rito ang mga susi ng mint, kaya hindi nasuri ang lagda nang offline.",
-  "wallet.receive.dleq_missing":
-    "Hindi lahat ng barya rito ay may patunay ng lagda ng mint, kaya hindi ito nasuri nang offline.",
   "wallet.receive.dleq_warning":
     "Hangga't hindi ito nakukumpirma online, sa prinsipyo ay maaaring nagastos na ito ng nagpadala sa ibang lugar.",
   "wallet.receive.failed": "Hindi natanggap",
@@ -1777,7 +1771,8 @@ export const strings: Strings = {
     "Angkinin ito kapag online ka na. Walang ibang makakakuha nito samantala.",
   "wallet.svc.offline_cap":
     "Sapat na ang hindi pa kumpirmadong ecash mula sa mintong ito na naghihintay.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "Hindi masusuri offline ang ecash na ito.",
+  "wallet.svc.claim_online_body":
     "Angkinin ito kapag online ka na at kaya na itong kumpirmahin ng minto. Mananatili ito sa chat hanggang doon.",
   "wallet.svc.already_spent": "Nagastos na ang ecash na ito.",
   "wallet.svc.already_spent_body":

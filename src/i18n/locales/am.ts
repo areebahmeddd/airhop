@@ -1172,14 +1172,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "በ{mint} ተመንዝሯል። አሁን በማስረጃ የአንተ ነው፦ የላኪው የዚህ ቶከን ቅጂ ከእንግዲህ አይሠራም።",
   "wallet.receive.pending_unconfirmed":
-    "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም። በመስመር ላይ ስትሆን ከሚንቱ ጋር በራሱ ይረጋገጣል።",
-  "wallet.receive.pending_unconfirmed_genuine":
     "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም። ፊርማው ትክክል ነው፤ ስለዚህ ቶከኑ እውነተኛ ነው። በመስመር ላይ ስትሆን ከሚንቱ ጋር በራሱ ይረጋገጣል።",
   "wallet.receive.dleq_ok": "የሚንቱ ፊርማ ትክክል ሆኖ ተገኝቷል፤ ስለዚህ ቶከኑ እውነተኛ ነው።",
-  "wallet.receive.dleq_uncached":
-    "የሚንቱ ቁልፎች እዚህ አልተከማቹም፤ ስለዚህ ፊርማው ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
-  "wallet.receive.dleq_missing":
-    "በውስጡ ያሉት ሳንቲሞች ሁሉም የሚንቱን የፊርማ ማስረጃ አልያዙም፤ ስለዚህ ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
   "wallet.receive.dleq_warning":
     "በመስመር ላይ እስኪረጋገጥ ድረስ ላኪው በመርህ ደረጃ ሌላ ቦታ አውጥቶት ሊሆን ይችላል።",
   "wallet.receive.failed": "መቀበል አልተቻለም",
@@ -1614,7 +1608,8 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "በመስመር ላይ ስትሆን ውሰደው። እስከዚያው ሌላ ማንም ሊወስደው አይችልም።",
   "wallet.svc.offline_cap": "ከዚህ ሚንት ያልተረጋገጠ ecash በቂ ያህል እየጠበቀ ነው።",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "ይህ ecash ከመስመር ውጭ ሊረጋገጥ አይችልም።",
+  "wallet.svc.claim_online_body":
     "በመስመር ላይ ስትሆን፣ ሚንቱ ሊያረጋግጠው ሲችል ይህንን ውሰደው። እስከዚያው በውይይቱ ውስጥ ይቆያል።",
   "wallet.svc.already_spent": "ይህ ecash አስቀድሞ ወጪ ሆኗል።",
   "wallet.svc.already_spent_body":

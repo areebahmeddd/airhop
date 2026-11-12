@@ -1236,14 +1236,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}에서 교환했습니다. 이제 증명 가능하게 내 것이며, 보낸 사람이 가진 이 토큰의 사본은 더 이상 작동하지 않습니다.",
   "wallet.receive.pending_unconfirmed":
-    "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 서명이 확인되므로 토큰은 진짜입니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
   "wallet.receive.dleq_ok": "민트의 서명이 확인되므로 토큰은 진짜입니다.",
-  "wallet.receive.dleq_uncached":
-    "민트의 키가 여기에 캐시되어 있지 않아 서명을 오프라인에서 확인하지 못했습니다.",
-  "wallet.receive.dleq_missing":
-    "일부 코인에 민트의 서명 증명이 없어 오프라인에서 확인하지 못했습니다.",
   "wallet.receive.dleq_warning":
     "온라인에서 확인되기 전까지는 보낸 사람이 다른 곳에서 이미 썼을 가능성이 원칙적으로 남아 있습니다.",
   "wallet.receive.failed": "받지 못했습니다",
@@ -1698,7 +1692,8 @@ export const strings: Strings = {
     "온라인이 되면 받으세요. 그동안 다른 누구도 가져갈 수 없습니다.",
   "wallet.svc.offline_cap":
     "이 민트의 확인되지 않은 ecash가 이미 충분히 대기 중입니다.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "이 ecash는 오프라인에서 확인할 수 없습니다.",
+  "wallet.svc.claim_online_body":
     "온라인이 되어 민트가 확인할 수 있을 때 받으세요. 그때까지 채팅에 남아 있습니다.",
   "wallet.svc.already_spent": "이 ecash는 이미 사용되었습니다.",
   "wallet.svc.already_spent_body":

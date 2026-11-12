@@ -1269,14 +1269,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ditukar di {mint}. Kini terbukti milikmu: salinan token ini di pengirim tidak lagi bekerja.",
   "wallet.receive.pending_unconfirmed":
-    "Tersimpan dari {mint}, tetapi mint belum memastikan bahwa token ini belum terpakai. Token ini dikonfirmasi ke mint secara otomatis begitu kamu daring.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Tersimpan dari {mint}, tetapi mint belum memastikan bahwa token ini belum terpakai. Tanda tangannya cocok, jadi tokennya asli. Token ini dikonfirmasi ke mint secara otomatis begitu kamu daring.",
   "wallet.receive.dleq_ok": "Tanda tangan mint cocok, jadi tokennya asli.",
-  "wallet.receive.dleq_uncached":
-    "Kunci mint tidak tersimpan di sini, jadi tanda tangannya tidak bisa diperiksa secara luring.",
-  "wallet.receive.dleq_missing":
-    "Tidak semua koin di dalamnya membawa bukti tanda tangan mint, jadi token ini tidak bisa diperiksa secara luring.",
   "wallet.receive.dleq_warning":
     "Sampai token ini dikonfirmasi secara daring, pengirim pada prinsipnya bisa saja sudah membelanjakannya di tempat lain.",
   "wallet.receive.failed": "Tidak bisa menerima",
@@ -1738,7 +1732,8 @@ export const strings: Strings = {
     "Klaim setelah kamu daring. Sementara itu tidak ada orang lain yang bisa mengambilnya.",
   "wallet.svc.offline_cap":
     "Sudah cukup banyak ecash belum terkonfirmasi dari mint ini yang menunggu.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "Ecash ini tidak bisa diperiksa saat luring.",
+  "wallet.svc.claim_online_body":
     "Klaim yang ini setelah kamu daring, saat mint bisa mengonfirmasinya. Sampai saat itu ia tetap di obrolan.",
   "wallet.svc.already_spent": "Ecash ini sudah terpakai.",
   "wallet.svc.already_spent_body":

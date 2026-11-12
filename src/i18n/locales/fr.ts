@@ -1286,15 +1286,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Encaissé chez {mint}. C’est désormais à toi de façon démontrable : la copie de ce jeton que possède l’expéditeur ne fonctionne plus.",
   "wallet.receive.pending_unconfirmed":
-    "Stocké depuis {mint}, mais le mint n’a pas encore confirmé qu’il n’était pas dépensé. Il est confirmé automatiquement auprès du mint dès que tu es en ligne.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Stocké depuis {mint}, mais le mint n’a pas encore confirmé qu’il n’était pas dépensé. Sa signature est valide, le jeton est donc authentique. Il est confirmé automatiquement auprès du mint dès que tu es en ligne.",
   "wallet.receive.dleq_ok":
     "La signature du mint est valide, le jeton est donc authentique.",
-  "wallet.receive.dleq_uncached":
-    "Les clés du mint ne sont pas conservées ici, la signature n’a donc pas pu être vérifiée hors ligne.",
-  "wallet.receive.dleq_missing":
-    "Ses pièces ne portent pas toutes la preuve de signature du mint, il n’a donc pas pu être vérifié hors ligne.",
   "wallet.receive.dleq_warning":
     "Tant qu’il n’est pas confirmé en ligne, l’expéditeur pourrait en principe l’avoir dépensé ailleurs.",
   "wallet.receive.failed": "Impossible de recevoir",
@@ -1767,7 +1761,9 @@ export const strings: Strings = {
     "Encaisse-le une fois en ligne. Personne d’autre ne peut le prendre en attendant.",
   "wallet.svc.offline_cap":
     "Assez d’ecash non confirmés de ce mint attendent déjà.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Cet ecash ne peut pas être vérifié hors ligne.",
+  "wallet.svc.claim_online_body":
     "Encaisse celui-ci une fois en ligne, quand le mint pourra le confirmer. Il reste dans la discussion d’ici là.",
   "wallet.svc.already_spent": "Ces ecash ont déjà été dépensés.",
   "wallet.svc.already_spent_body":

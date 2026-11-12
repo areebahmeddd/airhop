@@ -1297,15 +1297,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Novidina tao amin'i {mint}. Azo porofoina fa anao izy izao: tsy miasa intsony ny dikan'ity tapakila ity teo an-tanan'ny mpandefa.",
   "wallet.receive.pending_unconfirmed":
-    "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy. Hohamarinina ho azy amin'ny mpamoaka izy raha vao an-tserasera ianao.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy. Mifanaraka ny soniany, ka tena izy ny tapakila. Hohamarinina ho azy amin'ny mpamoaka izy raha vao an-tserasera ianao.",
   "wallet.receive.dleq_ok":
     "Mifanaraka ny sonian'ny mpamoaka, ka tena izy ny tapakila.",
-  "wallet.receive.dleq_uncached":
-    "Tsy voatahiry eto ny lakilen'ny mpamoaka, ka tsy voamarina tsy misy Internet ny sonia.",
-  "wallet.receive.dleq_missing":
-    "Tsy ny vola madinika rehetra ao anatiny no mitondra ny porofon'ny sonian'ny mpamoaka, ka tsy voamarina tsy misy Internet izy.",
   "wallet.receive.dleq_warning":
     "Mandra-pahamarina azy an-tserasera, dia mety efa nolanian'ny mpandefa tany an-toeran-kafa izy.",
   "wallet.receive.failed": "Tsy voaray",
@@ -1781,7 +1775,9 @@ export const strings: Strings = {
     "Raiso rehefa an-tserasera ianao. Tsy misy olon-kafa afaka maka azy mandritra izany.",
   "wallet.svc.offline_cap":
     "Efa ampy ny ecash avy amin'ity mpamoaka ity mbola tsy voamarina miandry.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked":
+    "Tsy azo hamarinina ity ecash ity raha tsy misy Internet.",
+  "wallet.svc.claim_online_body":
     "Raiso ity rehefa an-tserasera ianao, rehefa afaka manamarina azy ny mpamoaka. Mijanona ao amin'ny resaka izy mandra-pahatongan'izany.",
   "wallet.svc.already_spent": "Efa lany ity ecash ity.",
   "wallet.svc.already_spent_body":

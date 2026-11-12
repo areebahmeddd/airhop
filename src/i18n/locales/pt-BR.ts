@@ -1271,15 +1271,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Resgatado em {mint}. Agora é seu de forma comprovável: a cópia deste token que quem enviou tem não funciona mais.",
   "wallet.receive.pending_unconfirmed":
-    "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. Ele é confirmado com a casa de emissão automaticamente assim que você estiver online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. A assinatura confere, então o token é autêntico. Ele é confirmado com a casa de emissão automaticamente assim que você estiver online.",
   "wallet.receive.dleq_ok":
     "A assinatura da casa de emissão confere, então o token é autêntico.",
-  "wallet.receive.dleq_uncached":
-    "As chaves da casa de emissão não estão guardadas aqui, então a assinatura não pôde ser conferida offline.",
-  "wallet.receive.dleq_missing":
-    "Nem toda moeda nele traz a prova de assinatura da casa de emissão, então não deu para conferir offline.",
   "wallet.receive.dleq_warning":
     "Até ser confirmado online, quem enviou poderia em princípio já ter gasto em outro lugar.",
   "wallet.receive.failed": "Não foi possível receber",
@@ -1750,7 +1744,8 @@ export const strings: Strings = {
     "Resgate quando estiver online. Ninguém mais pode pegá-lo enquanto isso.",
   "wallet.svc.offline_cap":
     "Já há ecash não confirmado suficiente desta casa de emissão aguardando.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "Este ecash não pode ser verificado offline.",
+  "wallet.svc.claim_online_body":
     "Resgate este quando estiver online e a casa de emissão puder confirmá-lo. Até lá ele fica no chat.",
   "wallet.svc.already_spent": "Este ecash já foi gasto.",
   "wallet.svc.already_spent_body":

@@ -1243,14 +1243,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} پر بھنا لیا گیا۔ اب یہ ثابت شدہ طور پر آپ کا ہے: بھیجنے والے کے پاس اس ٹوکن کی نقل اب کام نہیں کرتی۔",
   "wallet.receive.pending_unconfirmed":
-    "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا۔ اس کا دستخط درست ہے، سو ٹوکن اصلی ہے۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
   "wallet.receive.dleq_ok": "ٹکسال کا دستخط ٹھیک نکلتا ہے، سو ٹوکن اصلی ہے۔",
-  "wallet.receive.dleq_uncached":
-    "ٹکسال کی کلیدیں یہاں موجود نہیں، اس لیے دستخط آف لائن جانچا نہ جا سکا۔",
-  "wallet.receive.dleq_missing":
-    "اس کے ہر سکے پر ٹکسال کے دستخط کا ثبوت نہیں، اس لیے اسے آف لائن جانچا نہ جا سکا۔",
   "wallet.receive.dleq_warning":
     "جب تک آن لائن تصدیق نہ ہو، اصولاً ممکن ہے بھیجنے والے نے اسے کہیں اور خرچ کر دیا ہو۔",
   "wallet.receive.failed": "وصول نہ ہو سکا",
@@ -1708,7 +1702,8 @@ export const strings: Strings = {
     "آن لائن ہونے پر اسے لیں۔ تب تک کوئی اور اسے نہیں لے سکتا۔",
   "wallet.svc.offline_cap":
     "اس ٹکسال کا کافی غیر تصدیق شدہ ecash پہلے ہی انتظار میں ہے۔",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "یہ ecash آف لائن جانچا نہیں جا سکتا۔",
+  "wallet.svc.claim_online_body":
     "آن لائن ہونے پر، جب ٹکسال اس کی تصدیق کر سکے، اسے لیں۔ تب تک یہ چیٹ میں رہے گا۔",
   "wallet.svc.already_spent": "یہ ecash پہلے ہی خرچ ہو چکا ہے۔",
   "wallet.svc.already_spent_body":

@@ -1242,15 +1242,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "در {mint} بازخرید شد. اکنون به شکل اثبات‌پذیر از آن شماست: نسخهٔ فرستنده از این توکن دیگر کار نمی‌کند.",
   "wallet.receive.pending_unconfirmed":
-    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. امضایش درست است، پس توکن اصل است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
   "wallet.receive.dleq_ok":
     "امضای ضراب‌خانه درست از آب درمی‌آید، پس توکن اصل است.",
-  "wallet.receive.dleq_uncached":
-    "کلیدهای ضراب‌خانه اینجا ذخیره نیستند، پس امضا به شکل برون‌خط بررسی نشد.",
-  "wallet.receive.dleq_missing":
-    "همهٔ سکه‌های آن گواه امضای ضراب‌خانه را ندارند، پس نشد آن را برون‌خط بررسی کرد.",
   "wallet.receive.dleq_warning":
     "تا وقتی برخط تأیید نشده، در اصل ممکن است فرستنده آن را جای دیگری خرج کرده باشد.",
   "wallet.receive.failed": "دریافت نشد",
@@ -1710,7 +1704,8 @@ export const strings: Strings = {
     "وقتی برخط شدید آن را دریافت کنید. در این میان هیچ‌کس دیگری نمی‌تواند آن را بردارد.",
   "wallet.svc.offline_cap":
     "به اندازه کافی ecash تأییدنشده از این ضراب‌خانه در انتظار است.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "این ecash را نمی‌توان برون‌خط بررسی کرد.",
+  "wallet.svc.claim_online_body":
     "این یکی را وقتی برخط شدید دریافت کنید، زمانی که ضراب‌خانه بتواند آن را تأیید کند. تا آن موقع در گفتگو می‌ماند.",
   "wallet.svc.already_spent": "این ecash از پیش خرج شده است.",
   "wallet.svc.already_spent_body":

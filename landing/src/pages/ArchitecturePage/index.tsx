@@ -1733,9 +1733,9 @@ export default function ArchitecturePage() {
                 proof shows the mint really signed that coin. It can never show the sender did not
                 already spend it, because only the mint knows that. So a coin received offline is
                 shown as unconfirmed on its own line, not folded silently into your balance, and a
-                token reads as genuine only when every coin in it carries a proof that verifies.
-                Once the mint is reachable, the wallet swaps it by itself, which is what confirms
-                it.
+                token is taken offline only when every coin in it carries a proof that verifies; any
+                other waits in the chat until the mint can be asked. Once the mint is reachable, the
+                wallet swaps it by itself, which is what confirms it.
                 <br />
                 <br />
                 <strong className="text-ink">Reclaiming settles at the mint.</strong> An undelivered

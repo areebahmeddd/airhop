@@ -1271,15 +1271,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Zrealizowane w {mint}. Teraz w sposób sprawdzalny należy do ciebie: kopia tego tokena u nadawcy już nie działa.",
   "wallet.receive.pending_unconfirmed":
-    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Podpis się zgadza, więc token jest prawdziwy. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
   "wallet.receive.dleq_ok":
     "Podpis mennicy się zgadza, więc token jest prawdziwy.",
-  "wallet.receive.dleq_uncached":
-    "Kluczy tej mennicy tu nie ma, więc podpisu nie dało się sprawdzić offline.",
-  "wallet.receive.dleq_missing":
-    "Nie każda moneta w nim ma dowód podpisu mennicy, więc nie dało się go sprawdzić offline.",
   "wallet.receive.dleq_warning":
     "Dopóki nie zostanie potwierdzone online, nadawca mógł w zasadzie wydać to gdzie indziej.",
   "wallet.receive.failed": "Nie udało się odebrać",
@@ -1743,7 +1737,8 @@ export const strings: Strings = {
     "Odbierz ją, gdy będziesz online. Nikt inny nie może jej w międzyczasie zabrać.",
   "wallet.svc.offline_cap":
     "Z tej mennicy czeka już dość niepotwierdzonego ecash.",
-  "wallet.svc.offline_cap_body":
+  "wallet.svc.offline_unchecked": "Tego ecash nie da się sprawdzić offline.",
+  "wallet.svc.claim_online_body":
     "Odbierz tę płatność, gdy będziesz online i mennica będzie mogła ją potwierdzić. Do tego czasu zostaje w czacie.",
   "wallet.svc.already_spent": "Ten ecash został już wydany.",
   "wallet.svc.already_spent_body":
