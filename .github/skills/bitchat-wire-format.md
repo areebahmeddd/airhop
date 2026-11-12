@@ -168,12 +168,12 @@ A Nostr DM carries the same bytes: an unsigned `NOISE_ENCRYPTED` packet holding 
 
 These never change without a coordinated protocol version bump.
 
-| Identifier          | Value                                                                                        |
-| ------------------- | -------------------------------------------------------------------------------------------- |
-| Service UUID        | `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`                                                       |
-| Characteristic UUID | `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D`                                                       |
-| Protocol version    | `2`                                                                                          |
-| Peer ID in advert   | Android: 8 bytes in scan-response service data. iOS: none, service UUID only, as bitchat-ios |
+| Identifier          | Value                                                                        |
+| ------------------- | ---------------------------------------------------------------------------- |
+| Service UUID        | `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`                                       |
+| Characteristic UUID | `A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D`                                       |
+| Protocol version    | `2`                                                                          |
+| Peer ID in advert   | Android: 8 bytes in scan-response service data. iOS: none, service UUID only |
 
 ```text
 peerID = hex(SHA-256(noiseStaticPubKey)).slice(0, 16)

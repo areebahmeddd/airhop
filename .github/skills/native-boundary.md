@@ -96,7 +96,7 @@ openLocationSettings(): Promise<boolean>
 | `AirhopBLE.powerStateChanged`   | `{ batteryPercent, charging }`, Android, coalesced  |
 | `AirhopBLE.meshStopRequested`   | `{}`, Android notification button                   |
 
-`localName` is Android's peer ID for scan-response service data; iOS accepts it for signature parity and advertises the service UUID alone, as bitchat-ios does.
+`localName` is Android's peer ID for scan-response service data; iOS accepts it for signature parity and advertises the service UUID alone.
 
 `stopScanning` also disconnects every central-role link, pending dials included, and emits `linkDisconnected` for each, on both platforms (bitchat-ios `stopServices`). Duty cycling and power-mode changes go through the internal scan cycle and keep their links; `stopAdvertising` (Invisible) touches no central link.
 
@@ -113,7 +113,7 @@ openLocationSettings(): Promise<boolean>
 ## Voice Contract
 
 - **`startCapture` refuses, never pretends.** It resolves only once the microphone is really recording (Android: `AudioRecord` in `RECORDSTATE_RECORDING`, encoder configured) and rejects with `MIC_BUSY` or `CAPTURE_FAILED` (Android also `PERMISSION_DENIED`). Push-to-talk falls back to a voice note on `CAPTURE_FAILED` (not on `MIC_BUSY`, where a note would record silence too) and live video goes on silent, so a start that resolves early strands both. iOS reports a session a call outranks, and an input route at 0 Hz, as `MIC_BUSY`. A microphone lost later is `AirhopVoice.captureError`.
-- **iOS playback category.** Playback runs under `.playback` with `.spokenAudio` and `.mixWithOthers` while nothing captures, as bitchat-ios does, and moves to `.playAndRecord` only for capture.
+- **iOS playback category.** Playback runs under `.playback` with `.spokenAudio` and `.mixWithOthers` while nothing captures, and moves to `.playAndRecord` only for capture.
 
 ## Tor Contract
 

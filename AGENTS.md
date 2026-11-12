@@ -58,7 +58,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 | Stateless helpers                                                | `src/utils/`                                       |
 | Generated and static tables (relays, bridges, licenses)          | `src/data/`                                        |
 | Bundled relay list, refreshed by CI                              | `assets/data/nostr_relays.csv`                     |
-| Globe picker geometry (Natural Earth, as bitchat bundles it)     | `assets/data/world/`, `src/data/world-geometry.ts` |
+| Globe picker geometry (Natural Earth)                            | `assets/data/world/`, `src/data/world-geometry.ts` |
 | Globe picker projection, camera and detail rules (pure)          | `src/utils/globe-*.ts`                             |
 | Native module specs (hand-maintained, interop layer)             | `src/bridge/`                                      |
 | Root component and tab state machine                             | `src/app/`                                         |
