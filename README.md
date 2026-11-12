@@ -42,6 +42,8 @@ Airhop is an iOS + Android app (macOS and Windows coming soon) for private, offl
 
 I built this at a 24-hour hackathon (July 2026) during my final year of undergrad, on top of the foundation of [bitchat](https://bitchat.free). It uses the same [BLE wire protocol](docs/spec/PROTOCOLS.md) and [service UUIDs](docs/spec/PROTOCOLS.md#1-ble-identifiers), meaning Airhop-installed devices can automatically discover and join the same mesh as nearby bitchat-installed devices, relay messages, and exchange DMs with zero setup. It also extends the protocol with [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) forward secrecy, offline ecash payments, and offline AI (not present in bitchat _at the time_). [ [Project Trailer](https://youtube.com/watch?v=6gnkkEt1uqY) / [Project Demo](https://youtube.com/watch?v=78kaIALZhKM) ]
 
+Read the [Airhop whitepaper](docs/paper/airhop/airhop-whitepaper.pdf) for the full design.
+
 > [!NOTE]
 > Airhop is an independent side project built and maintained by [Areeb Ahmed](https://github.com/areebahmeddd) in his free time. It is not backed by any company or organization, not affiliated with or endorsed by permissionlesstech or the bitchat project, and not an impersonation of any existing app or service.
 

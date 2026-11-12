@@ -1436,6 +1436,8 @@ Airhop's relay node is Airlink: an ESP32 on solar power, built against this
 specification, a full peer (Noise XX, courier mailbox, gossip sync) with a LoRa
 trunk between nodes that carries text.
 
+The rules below are the least any relay must keep, and all a bare repeater does:
+
 | Rule            | Value                                                  |
 | --------------- | ------------------------------------------------------ |
 | Forward         | Every unseen packet, on every link but the arrival one |
@@ -1443,8 +1445,22 @@ trunk between nodes that carries text.
 | Dedup           | On packet ID, so a ring forwards each packet once      |
 | Malformed frame | Drop, never fail                                       |
 
-A relay must not decrypt and must not reassemble fragments. Fragments are
-forwarded individually; only the addressee reassembles.
+A relay never relays a packet it reassembled or decrypted. Fragments are
+forwarded individually. A bare repeater reassembles and decrypts nothing. A
+peer relay ([section 10.1](#101-two-kinds-of-relay)) also checks the five types
+of
+[section 3.6](#36-leave-files-board-posts-and-voice-are-verified-before-they-are-relayed)
+before relaying them, as the phones do. It reassembles only what it keeps for
+sync or holds as courier mail, and decrypts only what is addressed to it.
+
+Airlink departs from Airhop's phones in three places. It sends directed traffic
+only to the recipient's link when the recipient is its neighbor, as bitchat-ios
+does, where a phone follows a source route or floods. Once its clock is
+confirmed it takes an announce dated up to 15 minutes from it, not 2, so a
+phone a few minutes off still binds and gets its mail. And it relays a packet
+outside the freshness window
+([section 5.1](#51-solicited-responses-and-the-freshness-window)), acting on
+none, since its time may rest on one phone's word or on other nodes'.
 
 ### 10.1 Two kinds of relay
 
