@@ -102,6 +102,7 @@ import {
   type StoredMint,
   type WalletTx,
 } from "@store/wallet-store";
+import { formatUnitAmount } from "@utils/format";
 import {
   translateStored,
   txFailure,
@@ -167,6 +168,8 @@ export type WalletErrorCode =
   | "mint-error"
   // The token string did not decode.
   | "invalid-token"
+  // What was pasted to pay is not a Lightning invoice.
+  | "invalid-invoice"
   // The token is not what it claims: a DLEQ witness that fails, a unit its
   // coins do not have, coins locked to someone else. Do not credit it.
   | "forged-token"
@@ -368,17 +371,16 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
     );
   }
   if (isMintOperationError(err)) {
-    return new WalletError("mint-error", err.message, String(err), {
+    // No detail: `String(err)` is the same text again behind a class name.
+    return new WalletError("mint-error", err.message, undefined, {
       mintCode: err.code,
     });
   }
   const message = err instanceof Error ? err.message : String(err);
+  // The platform's own text ("Network request failed") would follow ours in
+  // whatever language the OS speaks, adding nothing.
   if (isNetworkFailure(err)) {
-    return new WalletError(
-      "offline",
-      { key: "wallet.svc.mint_unreachable" },
-      message,
-    );
+    return new WalletError("offline", { key: "wallet.svc.mint_unreachable" });
   }
   // A server error, a rate limit or a proxy's page in the mint's place. The
   // body can be a whole HTML page, so it is not shown; the status says enough.
@@ -391,7 +393,7 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
       vars: { status: err.status },
     });
   }
-  return new WalletError(fallback, message, String(err));
+  return new WalletError(fallback, message);
 }
 
 // ---- Network policy ----
@@ -912,6 +914,8 @@ export async function restoreFromRecoveryPhrase(params: {
 
   const store = useWalletStore.getState();
   const recovered: Record<string, number> = {};
+  // Per account, for the history: each mint's balance is its own.
+  const credits = new Map<string, number>();
   const mintsScanned: string[] = [];
   const mintsFailed: { mintUrl: string; reason: string }[] = [];
   let proofCount = 0;
@@ -973,6 +977,11 @@ export async function restoreFromRecoveryPhrase(params: {
           proofCount += credited.added;
           alreadyHeld += live.length - credited.added;
           recovered[unit] = (recovered[unit] ?? 0) + credited.addedValue;
+          const account = accountKey(url, unit);
+          credits.set(
+            account,
+            (credits.get(account) ?? 0) + credited.addedValue,
+          );
         }
       }
       mintsScanned.push(url);
@@ -985,15 +994,15 @@ export async function restoreFromRecoveryPhrase(params: {
     }
   }
 
-  // One row per unit: summing sat and usd would be no currency at all.
-  for (const [unit, amount] of Object.entries(recovered)) {
+  for (const [account, amount] of credits) {
     if (amount <= 0) continue;
+    const { mintUrl, unit } = parseAccountKey(account);
     recordTx({
       kind: "receive",
       status: "completed",
       amount,
       unit,
-      mintUrl: mintsScanned[0] ?? params.mintUrls[0],
+      mintUrl,
       memo: t("wallet.svc.restored"),
     });
   }
@@ -1587,6 +1596,21 @@ async function receiveTokenOnce(
     };
   }
 
+  // One claim of a token at a time. The chat card and the Receive screen can
+  // both ask, and the slower swap would meet "already spent" and leave a
+  // receive row that no coins of its own ever close.
+  if (firstSecret !== undefined && tokenClaimsInFlight.has(firstSecret)) {
+    return {
+      amount: info.amount,
+      unit: info.unit,
+      mintUrl: url,
+      memo: info.memo,
+      outcome: "claiming",
+      ...verdict,
+    };
+  }
+  if (firstSecret !== undefined) tokenClaimsInFlight.add(firstSecret);
+
   // Swap so the proofs are provably unspent and unknown to the sender.
   const txId = newTxId();
   // Whether the mint could have seen the request.
@@ -1683,7 +1707,7 @@ async function receiveTokenOnce(
     const unchecked = verdict.dleq !== "valid";
     if (unchecked || overOfflineCap(url, info.unit, info.amount)) {
       if (walletErr.code === "tor-blocked") throw walletErr;
-      throw unchecked ? uncheckedOfflineError() : offlineCapError();
+      throw unchecked ? uncheckedOfflineError() : offlineCapError(info.unit);
     }
     // The request may never have left, or only its answer was lost. Store
     // the proofs unverified and keep the preview on the same transaction; a
@@ -1693,8 +1717,13 @@ async function receiveTokenOnce(
       counterparty: opts.counterparty,
       ...(staged ? { txId } : {}),
     });
+  } finally {
+    if (firstSecret !== undefined) tokenClaimsInFlight.delete(firstSecret);
   }
 }
+
+// First secrets of the tokens being claimed right now.
+const tokenClaimsInFlight = new Set<string>();
 
 // The most ecash one account takes offline before its mint has confirmed it,
 // in the account's unit, so a token spent twice and passed on costs at most
@@ -1719,10 +1748,15 @@ function overOfflineCap(
   return held + amount > cap;
 }
 
-function offlineCapError(): WalletError {
+function offlineCapError(unit: string): WalletError {
   return new WalletError(
     "offline",
-    { key: "wallet.svc.offline_cap" },
+    {
+      key: "wallet.svc.offline_cap",
+      vars: {
+        limit: formatUnitAmount(OFFLINE_UNVERIFIED_CAP[unit] ?? 0, unit),
+      },
+    },
     t("wallet.svc.claim_online_body"),
   );
 }
@@ -2995,10 +3029,15 @@ function voidSendsSpentBySwap(spent: Set<string>): void {
     if (send?.kind !== "send") continue;
     const { mintUrl, unit } = parseAccountKey(entry.account);
     store.dropReserved(txId);
-    store.addProofs(
+    const rest = entry.proofs.filter((p) => !spent.has(p.secret));
+    store.addProofs(mintUrl, unit, rest);
+    // The recipient still holds these in the token, as after a reclaim, so
+    // they are spent last and swapped by the next refresh.
+    store.markUnverified(
       mintUrl,
       unit,
-      entry.proofs.filter((p) => !spent.has(p.secret)),
+      rest.map((p) => p.secret),
+      txId,
     );
     // The token is dead, so the row offers nothing to copy.
     store.updateTx(txId, {
@@ -3130,8 +3169,12 @@ async function runReconcilePass(): Promise<void> {
 
   // Unanswered melts: if paid, the change is signed against blanks only this
   // device can unblind.
-  for (const tx of state.history) {
-    if (tx.kind !== "melt" || tx.status !== "pending") continue;
+  for (const seen of state.history) {
+    if (seen.kind !== "melt" || seen.status !== "pending") continue;
+    // Read again: the deposits above take seconds, long enough for a melt
+    // that was in flight when the pass began to settle or gain its blanks.
+    const tx = useWalletStore.getState().history.find((t) => t.id === seen.id);
+    if (tx?.status !== "pending") continue;
     // Its answer is not late, it is still on its way.
     if (meltsInFlight.has(tx.id)) continue;
     // No blanks means it died before its request: the mint never saw it.
@@ -3365,6 +3408,11 @@ async function claimLightningDepositOnce(
   if (quote.state === "ISSUED") {
     if (tx.mintOutputs !== undefined) {
       return recoverMintOutputs(wallet, tx, quote);
+    }
+    // Credited already, by `reconcile` when the app came back from the wallet
+    // that paid it. Reported, so the deposit sheet still waiting shows it.
+    if (tx.status === "completed") {
+      return tx.errorKey === "wallet.svc.mint_lost" ? 0 : tx.amount;
     }
     store.updateTx(tx.id, { status: "completed" });
     return 0;
@@ -3643,7 +3691,7 @@ export async function quoteLightningWithdrawal(params: {
   const invoice = params.invoice.trim().replace(/^lightning:/i, "");
   if (!/^ln(bc|tb|bcrt)[0-9a-z]+$/i.test(invoice)) {
     throw new WalletError(
-      "invalid-token",
+      "invalid-invoice",
       { key: "wallet.svc.not_an_invoice" },
       t("wallet.svc.not_an_invoice_body"),
     );

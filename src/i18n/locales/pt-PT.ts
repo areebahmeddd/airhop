@@ -1748,10 +1748,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Resgata-o quando estiveres online. Entretanto, mais ninguém o pode levar.",
   "wallet.svc.offline_cap":
-    "Já há ecash não confirmado suficiente desta casa de emissão à espera.",
+    "Offline, o ecash não confirmado está limitado a {limit} por casa de emissão.",
   "wallet.svc.offline_unchecked": "Este ecash não pode ser verificado offline.",
   "wallet.svc.claim_online_body":
-    "Resgata este quando estiveres online e a casa de emissão o puder confirmar. Até lá fica na conversa.",
+    "Resgata este quando estiveres online e a casa de emissão o puder confirmar.",
   "wallet.svc.already_spent": "Este ecash já foi gasto.",
   "wallet.svc.already_spent_body":
     "Quem enviou este token resgatou-o primeiro, ou mandou o mesmo token a outra pessoa.",

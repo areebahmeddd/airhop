@@ -1731,10 +1731,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Klaim setelah kamu daring. Sementara itu tidak ada orang lain yang bisa mengambilnya.",
   "wallet.svc.offline_cap":
-    "Sudah cukup banyak ecash belum terkonfirmasi dari mint ini yang menunggu.",
+    "Saat luring, ecash belum terkonfirmasi dibatasi {limit} per mint.",
   "wallet.svc.offline_unchecked": "Ecash ini tidak bisa diperiksa saat luring.",
   "wallet.svc.claim_online_body":
-    "Klaim yang ini setelah kamu daring, saat mint bisa mengonfirmasinya. Sampai saat itu ia tetap di obrolan.",
+    "Klaim yang ini setelah kamu daring, saat mint bisa mengonfirmasinya.",
   "wallet.svc.already_spent": "Ecash ini sudah terpakai.",
   "wallet.svc.already_spent_body":
     "Pengirim token ini menukarkannya lebih dulu, atau mengirim token yang sama ke orang lain juga.",

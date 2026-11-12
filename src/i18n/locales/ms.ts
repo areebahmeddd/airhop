@@ -1734,11 +1734,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Tuntut sebaik anda dalam talian. Sementara itu, tiada orang lain boleh mengambilnya.",
   "wallet.svc.offline_cap":
-    "Sudah cukup ecash yang belum disahkan daripada mint ini sedang menunggu.",
+    "Semasa luar talian, ecash yang belum disahkan dihadkan kepada {limit} bagi setiap mint.",
   "wallet.svc.offline_unchecked":
     "Ecash ini tidak boleh disemak secara luar talian.",
   "wallet.svc.claim_online_body":
-    "Tuntut yang ini sebaik anda dalam talian, apabila mint boleh mengesahkannya. Ia kekal dalam sembang sehingga itu.",
+    "Tuntut yang ini sebaik anda dalam talian, apabila mint boleh mengesahkannya.",
   "wallet.svc.already_spent": "Ecash ini sudah dibelanjakan.",
   "wallet.svc.already_spent_body":
     "Sesiapa yang menghantar token ini menebusnya dahulu, atau menghantar token yang sama kepada orang lain juga.",

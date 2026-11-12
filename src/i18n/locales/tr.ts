@@ -1720,10 +1720,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Çevrimiçi olduğunda al. Bu arada başka kimse onu alamaz.",
   "wallet.svc.offline_cap":
-    "Bu darphaneden yeterince onaylanmamış ecash zaten bekliyor.",
+    "Çevrimdışıyken onaylanmamış ecash, darphane başına {limit} ile sınırlıdır.",
   "wallet.svc.offline_unchecked": "Bu ecash çevrimdışıyken doğrulanamaz.",
   "wallet.svc.claim_online_body":
-    "Bunu çevrimiçi olduğunda, darphane onaylayabildiğinde al. O zamana kadar sohbette kalır.",
+    "Bunu çevrimiçi olduğunda, darphane onaylayabildiğinde al.",
   "wallet.svc.already_spent": "Bu ecash zaten harcanmış.",
   "wallet.svc.already_spent_body":
     "Bu jetonu gönderen onu önce kendisi bozdurmuş ya da aynı jetonu başka birine de göndermiş.",

@@ -1508,6 +1508,16 @@ export default function WalletScreen({
         ),
       );
     } catch (err) {
+      // Paid, or not knowable yet: the quote must not be offered again, and
+      // `reconcile` settles the rest.
+      if (
+        err instanceof WalletError &&
+        (err.inDoubt || err.code === "change-pending")
+      ) {
+        setShowWithdraw(false);
+        setWithdrawQuote(null);
+        setWithdrawInvoice("");
+      }
       reportError(err, t("wallet.ln.payment_failed"));
     } finally {
       setBusy(null);

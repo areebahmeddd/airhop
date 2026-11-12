@@ -1717,10 +1717,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "オンラインになってから受け取ってください。その間、ほかの誰も受け取れません。",
   "wallet.svc.offline_cap":
-    "このミントの未確認のecashがすでに十分待機しています。",
+    "オフラインでは、未確認のecashはミントごとに{limit}までです。",
   "wallet.svc.offline_unchecked": "このecashはオフラインでは確認できません。",
   "wallet.svc.claim_online_body":
-    "オンラインになり、ミントが確認できるようになってから受け取ってください。それまではチャットに残ります。",
+    "オンラインになり、ミントが確認できるようになってから受け取ってください。",
   "wallet.svc.already_spent": "このecashはすでに使用されています。",
   "wallet.svc.already_spent_body":
     "このトークンを送った人が先に引き換えたか、同じトークンを別の人にも送ったかのどちらかです。",

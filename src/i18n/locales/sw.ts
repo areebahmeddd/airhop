@@ -1741,11 +1741,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Yadai ukiwa mtandaoni. Kwa sasa hakuna mtu mwingine anayeweza kuyachukua.",
   "wallet.svc.offline_cap":
-    "Tayari kuna ecash ya kutosha isiyothibitishwa kutoka mint hii inayosubiri.",
+    "Ukiwa nje ya mtandao, ecash isiyothibitishwa ina kikomo cha {limit} kwa kila mint.",
   "wallet.svc.offline_unchecked":
     "Ecash hii haiwezi kukaguliwa nje ya mtandao.",
   "wallet.svc.claim_online_body":
-    "Dai hii ukiwa mtandaoni, mint itakapoweza kuithibitisha. Itabaki kwenye mazungumzo hadi wakati huo.",
+    "Dai hii ukiwa mtandaoni, mint itakapoweza kuithibitisha.",
   "wallet.svc.already_spent": "Ecash hii tayari imetumika.",
   "wallet.svc.already_spent_body":
     "Yeyote aliyetuma tokeni hii aliikomboa kwanza, au alituma tokeni ileile kwa mtu mwingine pia.",

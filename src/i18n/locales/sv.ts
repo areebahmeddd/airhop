@@ -1707,11 +1707,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Hämta den när du är online. Ingen annan kan ta den under tiden.",
   "wallet.svc.offline_cap":
-    "Det väntar redan tillräckligt med obekräftad ecash från den här minten.",
+    "Offline är obekräftad ecash begränsad till {limit} per mint.",
   "wallet.svc.offline_unchecked":
     "Den här ecashen kan inte kontrolleras offline.",
   "wallet.svc.claim_online_body":
-    "Hämta den här när du är online och minten kan bekräfta den. Tills dess stannar den i chatten.",
+    "Hämta den här när du är online och minten kan bekräfta den.",
   "wallet.svc.already_spent": "Den här ecashen är redan förbrukad.",
   "wallet.svc.already_spent_body":
     "Den som skickade tokenet löste in det först, eller skickade samma token till någon annan också.",

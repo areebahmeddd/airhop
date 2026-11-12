@@ -1770,10 +1770,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Angkinin ito kapag online ka na. Walang ibang makakakuha nito samantala.",
   "wallet.svc.offline_cap":
-    "Sapat na ang hindi pa kumpirmadong ecash mula sa mintong ito na naghihintay.",
+    "Kapag offline, hanggang {limit} lang ang hindi pa kumpirmadong ecash bawat minto.",
   "wallet.svc.offline_unchecked": "Hindi masusuri offline ang ecash na ito.",
   "wallet.svc.claim_online_body":
-    "Angkinin ito kapag online ka na at kaya na itong kumpirmahin ng minto. Mananatili ito sa chat hanggang doon.",
+    "Angkinin ito kapag online ka na at kaya na itong kumpirmahin ng minto.",
   "wallet.svc.already_spent": "Nagastos na ang ecash na ito.",
   "wallet.svc.already_spent_body":
     "Ang nagpadala ng token na ito ang unang tumubos nito, o ipinadala rin ang parehong token sa iba.",

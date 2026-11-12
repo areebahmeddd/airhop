@@ -1755,11 +1755,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Löse sie ein, sobald du online bist. Bis dahin kann sie niemand sonst nehmen.",
   "wallet.svc.offline_cap":
-    "Von diesem Mint wartet schon genug unbestätigtes Ecash.",
+    "Offline ist unbestätigtes Ecash auf {limit} pro Mint begrenzt.",
   "wallet.svc.offline_unchecked":
     "Dieses Ecash lässt sich offline nicht prüfen.",
   "wallet.svc.claim_online_body":
-    "Löse diese Zahlung ein, sobald du online bist und der Mint sie bestätigen kann. Bis dahin bleibt sie im Chat.",
+    "Löse diese Zahlung ein, sobald du online bist und der Mint sie bestätigen kann.",
   "wallet.svc.already_spent": "Dieses Ecash wurde bereits ausgegeben.",
   "wallet.svc.already_spent_body":
     "Wer diesen Token gesendet hat, hat ihn zuerst eingelöst, oder denselben Token an jemand anderen geschickt.",

@@ -1607,10 +1607,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "ይህ ክፍያ ለቦርሳህ ተቆልፏል።",
   "wallet.svc.locked_ours_offline_body":
     "በመስመር ላይ ስትሆን ውሰደው። እስከዚያው ሌላ ማንም ሊወስደው አይችልም።",
-  "wallet.svc.offline_cap": "ከዚህ ሚንት ያልተረጋገጠ ecash በቂ ያህል እየጠበቀ ነው።",
+  "wallet.svc.offline_cap":
+    "ከመስመር ውጭ፣ ያልተረጋገጠ ecash በአንድ ሚንት እስከ {limit} ብቻ ነው።",
   "wallet.svc.offline_unchecked": "ይህ ecash ከመስመር ውጭ ሊረጋገጥ አይችልም።",
-  "wallet.svc.claim_online_body":
-    "በመስመር ላይ ስትሆን፣ ሚንቱ ሊያረጋግጠው ሲችል ይህንን ውሰደው። እስከዚያው በውይይቱ ውስጥ ይቆያል።",
+  "wallet.svc.claim_online_body": "በመስመር ላይ ስትሆን፣ ሚንቱ ሊያረጋግጠው ሲችል ይህንን ውሰደው።",
   "wallet.svc.already_spent": "ይህ ecash አስቀድሞ ወጪ ሆኗል።",
   "wallet.svc.already_spent_body":
     "ይህን ቶከን የላከው ሰው መጀመሪያ መንዝሮታል፣ ወይም ተመሳሳዩን ቶከን ለሌላ ሰው ልኮታል።",

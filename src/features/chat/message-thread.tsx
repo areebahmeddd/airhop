@@ -536,6 +536,9 @@ const VOICE_PLAY_SIZE = 32;
 // Header action circles. Same 32pt as the app header's pills, so a circular
 // icon button is one size everywhere it appears in chrome.
 const HEADER_ICON_SIZE = 32;
+// A payment card's Claim pill, kept small inside the bubble; nothing else in
+// the card is tappable, so its slop overlaps nothing.
+const PAYMENT_CLAIM_HEIGHT = 28;
 
 // Slash commands offered by the "/" quick-picker. Only the ones handleSend
 // actually acts on appear here, so the list never advertises a command that does
@@ -5575,10 +5578,12 @@ export default function MessageThread({
             </View>
           ) : (
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.paymentCardClaim,
+                pressed && styles.paymentCardClaimPressed,
                 claimingToken !== null && styles.paymentCardClaimBusy,
               ]}
+              hitSlop={hitSlopFor(PAYMENT_CLAIM_HEIGHT)}
               disabled={claimingToken !== null}
               onPress={() => void claimToken(token)}
               accessibilityRole="button"
@@ -8224,11 +8229,15 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.sm,
       backgroundColor: Colors.accent,
       paddingHorizontal: Spacing.sm,
-      paddingVertical: Spacing.xs,
+      minHeight: PAYMENT_CLAIM_HEIGHT,
+      justifyContent: "center",
       alignSelf: "flex-start",
     },
+    paymentCardClaimPressed: {
+      opacity: PRESSED_OPACITY,
+    },
     paymentCardClaimBusy: {
-      opacity: 0.5,
+      opacity: DISABLED_OPACITY,
     },
     paymentCardClaimed: {
       flexDirection: "row",

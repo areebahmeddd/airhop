@@ -1701,10 +1701,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "آن لائن ہونے پر اسے لیں۔ تب تک کوئی اور اسے نہیں لے سکتا۔",
   "wallet.svc.offline_cap":
-    "اس ٹکسال کا کافی غیر تصدیق شدہ ecash پہلے ہی انتظار میں ہے۔",
+    "آف لائن، ہر ٹکسال کے لیے غیر تصدیق شدہ ecash کی حد {limit} ہے۔",
   "wallet.svc.offline_unchecked": "یہ ecash آف لائن جانچا نہیں جا سکتا۔",
   "wallet.svc.claim_online_body":
-    "آن لائن ہونے پر، جب ٹکسال اس کی تصدیق کر سکے، اسے لیں۔ تب تک یہ چیٹ میں رہے گا۔",
+    "آن لائن ہونے پر، جب ٹکسال اس کی تصدیق کر سکے، اسے لیں۔",
   "wallet.svc.already_spent": "یہ ecash پہلے ہی خرچ ہو چکا ہے۔",
   "wallet.svc.already_spent_body":
     "جس نے یہ ٹوکن بھیجا اس نے پہلے خود بھنا لیا، یا وہی ٹوکن کسی اور کو بھی بھیج دیا۔",

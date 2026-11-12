@@ -217,6 +217,16 @@ describe("ecash taken offline", () => {
     expect(held()).toBe(12_000);
   });
 
+  it("refuses one token past the cap even with nothing waiting, naming it", async () => {
+    const large = encode((await mintedProofs(15_000)).proofs);
+    fabric.setConditions({ offline: true });
+    await expect(receiveToken(large)).rejects.toMatchObject({
+      code: "offline",
+      copy: { key: "wallet.svc.offline_cap", vars: { limit: "10,000 sat" } },
+    });
+    expect(held()).toBe(0);
+  });
+
   it("takes more offline once the mint has confirmed what is held", async () => {
     const first = encode((await mintedProofs(8_000)).proofs);
     const second = encode((await mintedProofs(4_000)).proofs);
@@ -230,6 +240,27 @@ describe("ecash taken offline", () => {
     fabric.setConditions({ offline: true });
     expect((await receiveToken(second)).outcome).toBe("stored");
     expect(held()).toBe(12_000);
+  });
+});
+
+describe("one token claimed twice at once", () => {
+  // The chat card and the Receive screen: the slower claim would meet
+  // "already spent" and leave a receive row nothing ever closes.
+  it("swaps once and tells the second claim to wait", async () => {
+    const token = encode((await mintedProofs(16)).proofs);
+    fabric.setConditions({ latencyMs: 200 });
+
+    const outcomes = (
+      await Promise.all([receiveToken(token), receiveToken(token)])
+    ).map((r) => r.outcome);
+
+    expect(outcomes.sort()).toEqual(["claiming", "swapped"]);
+    expect(held()).toBe(16);
+    expect(
+      useWalletStore
+        .getState()
+        .history.filter((t) => t.kind === "receive" && t.status === "pending"),
+    ).toHaveLength(0);
   });
 });
 

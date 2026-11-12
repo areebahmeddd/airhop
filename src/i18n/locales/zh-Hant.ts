@@ -1606,11 +1606,9 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "這筆付款已鎖到你的錢包。",
   "wallet.svc.locked_ours_offline_body":
     "連上網路後再領取即可。在這段期間，別人無法拿走它。",
-  "wallet.svc.offline_cap":
-    "來自這個鑄幣廠的未確認 ecash 已經夠多了，正在等待中。",
+  "wallet.svc.offline_cap": "離線時，每個鑄幣廠的未確認 ecash 上限為 {limit}。",
   "wallet.svc.offline_unchecked": "這筆 ecash 無法離線驗證。",
-  "wallet.svc.claim_online_body":
-    "等你連上網路、鑄幣廠能確認時再領取這筆。在那之前它會留在聊天裡。",
+  "wallet.svc.claim_online_body": "等你連上網路、鑄幣廠能確認時再領取這筆。",
   "wallet.svc.already_spent": "這筆 ecash 已經被花掉了。",
   "wallet.svc.already_spent_body":
     "送這個代幣的人自己先兌付了，或者把同一個代幣也送給了別人。",

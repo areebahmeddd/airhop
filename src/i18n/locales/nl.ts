@@ -1735,11 +1735,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Haal hem op zodra je online bent. Niemand anders kan hem ondertussen pakken.",
   "wallet.svc.offline_cap":
-    "Er wacht al genoeg onbevestigde ecash van deze mint.",
+    "Offline is onbevestigde ecash beperkt tot {limit} per mint.",
   "wallet.svc.offline_unchecked":
     "Deze ecash kan offline niet worden gecontroleerd.",
   "wallet.svc.claim_online_body":
-    "Haal deze op zodra je online bent en de mint hem kan bevestigen. Tot dan blijft hij in de chat.",
+    "Haal deze op zodra je online bent en de mint hem kan bevestigen.",
   "wallet.svc.already_spent": "Deze ecash is al besteed.",
   "wallet.svc.already_spent_body":
     "Wie dit token stuurde heeft het eerder ingewisseld, of hetzelfde token ook naar iemand anders gestuurd.",

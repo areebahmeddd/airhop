@@ -1774,11 +1774,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Raiso rehefa an-tserasera ianao. Tsy misy olon-kafa afaka maka azy mandritra izany.",
   "wallet.svc.offline_cap":
-    "Efa ampy ny ecash avy amin'ity mpamoaka ity mbola tsy voamarina miandry.",
+    "Raha tsy misy Internet, ny ecash tsy voamarina dia voafetra ho {limit} isaky ny mpamoaka.",
   "wallet.svc.offline_unchecked":
     "Tsy azo hamarinina ity ecash ity raha tsy misy Internet.",
   "wallet.svc.claim_online_body":
-    "Raiso ity rehefa an-tserasera ianao, rehefa afaka manamarina azy ny mpamoaka. Mijanona ao amin'ny resaka izy mandra-pahatongan'izany.",
+    "Raiso ity rehefa an-tserasera ianao, rehefa afaka manamarina azy ny mpamoaka.",
   "wallet.svc.already_spent": "Efa lany ity ecash ity.",
   "wallet.svc.already_spent_body":
     "Ilay nandefa ity tapakila ity no nividy azy voalohany, na nandefa tapakila mitovy tamin'olon-kafa koa.",

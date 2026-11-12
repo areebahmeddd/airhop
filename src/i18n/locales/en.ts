@@ -1726,10 +1726,10 @@ export const strings = {
   "wallet.svc.locked_ours_offline_body":
     "Claim it once you are online. Nobody else can take it meanwhile.",
   "wallet.svc.offline_cap":
-    "Enough unconfirmed ecash from this mint is already waiting.",
+    "Offline, unconfirmed ecash is limited to {limit} per mint.",
   "wallet.svc.offline_unchecked": "This ecash can’t be checked offline.",
   "wallet.svc.claim_online_body":
-    "Claim this one once you are online, when the mint can confirm it. It stays in the chat until then.",
+    "Claim this one once you are online, when the mint can confirm it.",
   "wallet.svc.already_spent": "This ecash has already been spent.",
   "wallet.svc.already_spent_body":
     "Whoever sent this token redeemed it first, or sent the same token to someone else.",

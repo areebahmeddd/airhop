@@ -1747,11 +1747,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Reclámalo cuando tengas conexión. Mientras tanto, nadie más puede quedárselo.",
   "wallet.svc.offline_cap":
-    "Ya espera suficiente ecash sin confirmar de esta casa de moneda.",
+    "Sin conexión, el ecash sin confirmar se limita a {limit} por casa de moneda.",
   "wallet.svc.offline_unchecked":
     "Este ecash no se puede comprobar sin conexión.",
   "wallet.svc.claim_online_body":
-    "Reclama este cuando tengas conexión y la casa de moneda pueda confirmarlo. Hasta entonces se queda en el chat.",
+    "Reclama este cuando tengas conexión y la casa de moneda pueda confirmarlo.",
   "wallet.svc.already_spent": "Este ecash ya se ha gastado.",
   "wallet.svc.already_spent_body":
     "Quien envió este token lo canjeó antes, o envió el mismo token a otra persona.",

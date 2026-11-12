@@ -1702,10 +1702,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "ऑनलाइन होने पर इसे लें। तब तक कोई और इसे नहीं ले सकता।",
   "wallet.svc.offline_cap":
-    "इस मिंट का पर्याप्त अपुष्ट ecash पहले से इंतज़ार में है।",
+    "ऑफ़लाइन, हर मिंट के लिए अपुष्ट ecash की सीमा {limit} है।",
   "wallet.svc.offline_unchecked": "यह ecash ऑफ़लाइन जाँचा नहीं जा सकता।",
   "wallet.svc.claim_online_body":
-    "ऑनलाइन होने पर, जब मिंट इसकी पुष्टि कर सके, इसे लें। तब तक यह चैट में रहेगा।",
+    "ऑनलाइन होने पर, जब मिंट इसकी पुष्टि कर सके, इसे लें।",
   "wallet.svc.already_spent": "यह ecash पहले ही खर्च हो चुका है।",
   "wallet.svc.already_spent_body":
     "जिसने यह टोकन भेजा उसने पहले ही इसे भुना लिया, या वही टोकन किसी और को भी भेज दिया।",

@@ -1711,11 +1711,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Hãy nhận nó khi bạn có mạng. Trong lúc đó không ai khác lấy được nó.",
   "wallet.svc.offline_cap":
-    "Đã có đủ ecash chưa được xác nhận từ nhà đúc này đang chờ.",
+    "Khi ngoại tuyến, ecash chưa được xác nhận bị giới hạn ở {limit} cho mỗi nhà đúc.",
   "wallet.svc.offline_unchecked":
     "Không thể kiểm tra ecash này khi ngoại tuyến.",
   "wallet.svc.claim_online_body":
-    "Hãy nhận khoản này khi bạn có mạng và nhà đúc có thể xác nhận nó. Đến lúc đó nó vẫn nằm trong cuộc trò chuyện.",
+    "Hãy nhận khoản này khi bạn có mạng và nhà đúc có thể xác nhận nó.",
   "wallet.svc.already_spent": "Khoản ecash này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":
     "Người gửi token này đã đổi nó trước, hoặc đã gửi cùng token đó cho người khác.",

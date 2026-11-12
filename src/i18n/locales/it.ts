@@ -1746,10 +1746,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline_body":
     "Riscuotilo quando sei online. Nel frattempo nessun altro può prenderlo.",
   "wallet.svc.offline_cap":
-    "C’è già abbastanza ecash non confermato di questo mint in attesa.",
+    "Offline, l’ecash non confermato è limitato a {limit} per mint.",
   "wallet.svc.offline_unchecked": "Questo ecash non si può verificare offline.",
   "wallet.svc.claim_online_body":
-    "Riscuoti questo quando sei online e il mint può confermarlo. Fino ad allora resta nella chat.",
+    "Riscuoti questo quando sei online e il mint può confermarlo.",
   "wallet.svc.already_spent": "Questo ecash è già stato speso.",
   "wallet.svc.already_spent_body":
     "Chi ha inviato questo token l’ha riscosso prima, oppure ha mandato lo stesso token a qualcun altro.",

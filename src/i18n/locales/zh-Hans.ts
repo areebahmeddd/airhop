@@ -1605,11 +1605,9 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "这笔付款已锁定到你的钱包。",
   "wallet.svc.locked_ours_offline_body":
     "联网后再领取即可。在此期间，别人无法拿走它。",
-  "wallet.svc.offline_cap":
-    "来自这个铸币厂的未确认 ecash 已经够多了，正在等待中。",
+  "wallet.svc.offline_cap": "离线时，每个铸币厂的未确认 ecash 上限为 {limit}。",
   "wallet.svc.offline_unchecked": "这笔 ecash 无法离线验证。",
-  "wallet.svc.claim_online_body":
-    "等你联网、铸币厂能确认时再领取这笔。在那之前它会留在聊天里。",
+  "wallet.svc.claim_online_body": "等你联网、铸币厂能确认时再领取这笔。",
   "wallet.svc.already_spent": "这笔 ecash 已经被花掉了。",
   "wallet.svc.already_spent_body":
     "发这个代币的人自己先兑付了，或者把同一个代币也发给了别人。",
