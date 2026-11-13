@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Znajduje urządzenia w pobliżu i przekazuje wiadomości między nimi. Tak powstaje sieć mesh i działa bez internetu.",
   "onboarding.primer.location.title": "Lokalizacja",
   "onboarding.primer.location.body":
-    "Umieszcza cię w kanałach okolicy, od kwartału po region. Airhop nigdy cię nie śledzi, a twoja dokładna lokalizacja opuszcza urządzenie tylko wtedy, gdy wyślesz komuś pinezkę z lokalizacją.",
+    "Umieszcza cię w kanałach okolicy, od kwartału po region. Airhop nigdy cię nie śledzi, a twoja dokładna lokalizacja nigdy nie opuszcza urządzenia.",
   "onboarding.primer.notifications.title": "Powiadomienia",
   "onboarding.primer.notifications.body":
     "Dostajesz alerty o nowych wiadomościach, nawet gdy aplikacja jest zamknięta. Powiadomienia powstają lokalnie na urządzeniu, bez udziału serwera.",
@@ -389,7 +389,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Nie udało się dotrzeć do każdego członka. Spróbuj ponownie, gdy będą w pobliżu.",
   "chat.group.you_were_added": "Dodano cię do {name}.",
-  "chat.group.added_you": "Dodał cię do {name}",
+  "chat.group.invited": "Zaproszono cię do {name}.",
+  "chat.group.invited_you": "Zaprosił cię do {name}",
+  "chat.group.decline": "Odrzuć",
+  "chat.group.decline_title": "Odrzucić zaproszenie do {name}?",
+  "chat.group.decline_body":
+    "{name} nie ma w twoich kontaktach. Zablokuj tę osobę, a nie dostaniesz od niej więcej zaproszeń ani wiadomości.",
+  "chat.group.decline_block": "Odrzuć i zablokuj",
   "chat.group.you_were_removed":
     "Usunięto cię z {name}. Nie możesz już tu czytać ani wysyłać wiadomości.",
   "chat.group.removed_you": "Usunął cię z {name}",
@@ -1208,6 +1214,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Nie udało się zbudować tokena",
+  "wallet.send.unverified_note":
+    "Część tej płatności to ecash, którego mennica jeszcze nie potwierdziła.",
   "wallet.send.title": "Wyślij ecash",
   "wallet.send.amount_in": "Kwota w {unit}",
   "wallet.send.body":
@@ -1267,15 +1275,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Zrealizowane w {mint}. Teraz w sposób sprawdzalny należy do ciebie: kopia tego tokena u nadawcy już nie działa.",
   "wallet.receive.pending_unconfirmed":
-    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Podpis się zgadza, więc token jest prawdziwy. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
   "wallet.receive.dleq_ok":
     "Podpis mennicy się zgadza, więc token jest prawdziwy.",
-  "wallet.receive.dleq_uncached":
-    "Kluczy tej mennicy tu nie ma, więc podpisu nie dało się sprawdzić offline.",
-  "wallet.receive.dleq_missing":
-    "Nie każda moneta w nim ma dowód podpisu mennicy, więc nie dało się go sprawdzić offline.",
   "wallet.receive.dleq_warning":
     "Dopóki nie zostanie potwierdzone online, nadawca mógł w zasadzie wydać to gdzie indziej.",
   "wallet.receive.failed": "Nie udało się odebrać",
@@ -1636,6 +1638,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Wyceluj w kod QR tokena, faktury lub npub.",
   "wallet.scan.no_any":
     "Nie znaleziono tokena, faktury ani npub na tym obrazie.",
+  "wallet.scan.not_usable": "Airhop nie może tu użyć tego kodu QR.",
   "wallet.scan.use_camera_a11y": "Skanuj aparatem",
   "wallet.scan.use_camera": "Użyj aparatu",
   "wallet.scan.pick_image_a11y": "Odczytaj kod QR z zapisanego obrazu",
@@ -1737,6 +1740,11 @@ export const strings: Strings = {
     "Ta płatność jest zablokowana dla twojego portfela.",
   "wallet.svc.locked_ours_offline_body":
     "Odbierz ją, gdy będziesz online. Nikt inny nie może jej w międzyczasie zabrać.",
+  "wallet.svc.offline_cap":
+    "Offline niepotwierdzony ecash jest ograniczony do {limit} na mennicę.",
+  "wallet.svc.offline_unchecked": "Tego ecash nie da się sprawdzić offline.",
+  "wallet.svc.claim_online_body":
+    "Odbierz tę płatność, gdy będziesz online i mennica będzie mogła ją potwierdzić.",
   "wallet.svc.already_spent": "Ten ecash został już wydany.",
   "wallet.svc.already_spent_body":
     "Ten, kto wysłał ten token, zrealizował go pierwszy albo wysłał ten sam token jeszcze komuś innemu.",
@@ -2234,6 +2242,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Wideo na żywo",
   "settings.conn.live_video_desc":
     "Transmituj kamerę do osób w pobliżu i oglądaj ich transmisje",
+  "settings.conn.live_video_on_title": "Włączyć wideo na żywo?",
+  "settings.conn.live_video_on_body":
+    "Możesz nadawać na żywo z kamery do osób w zasięgu Bluetooth, a ich transmisje pojawią się w twoich czatach i zostaną nagrane na tym telefonie.",
+  "settings.conn.live_video_off_title": "Wyłączyć wideo na żywo?",
+  "settings.conn.live_video_off_body":
+    "Nie możesz już nadawać na żywo, a transmisje innych nie są pokazywane ani nagrywane. Krótka i tak dotrze jako zwykłe wideo.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Trasowanie przez Tor",
   "settings.conn.tor_desc":
@@ -2265,12 +2279,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Ukrywa, że używasz Tor. Szybsze niż Snowflake, ale te mostki są publiczne i część sieci je blokuje.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Ukrywa korzystanie z Tor, wyglądając jak zwykłe odwiedziny strony. Trudniejszy do zablokowania niż pozostałe.",
   "settings.tor.mode_custom": "Własne mostki",
   "settings.tor.mode_custom_desc":
-    "Użyj linii mostków obfs4 z bridges.torproject.org. Spróbuj tego, gdy inne zawiodą.",
+    "Użyj linii mostków obfs4 lub WebTunnel z bridges.torproject.org. Spróbuj tego, gdy inne zawiodą.",
   "settings.tor.custom_placeholder": "Wklej jedną linię mostka w wierszu",
   "settings.tor.custom_apply_hint": "Dotknij poza polem, aby połączyć.",
   "settings.tor.custom_empty": "Najpierw dodaj co najmniej jedną linię mostka.",

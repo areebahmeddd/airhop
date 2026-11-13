@@ -129,6 +129,11 @@ export class LinkRegistry {
   // unbind the other.
   private readonly linksByPeer = new Map<string, string[]>();
 
+  // linkID to the peer a Noise handshake completed with over it while bound to
+  // that peer: an announce can be replayed onto any link, a completed
+  // handshake cannot. Gone with the binding.
+  private readonly provenByLink = new Map<string, string>();
+
   // linkID to the queue depth its last accepted write reported, and when. A
   // refused write leaves it alone: the refusal says the queue is full without
   // saying how full.
@@ -217,6 +222,7 @@ export class LinkRegistry {
   // Drops one link from a peer's list. Reports whether that was its last, which
   // is what separates a link closing from a peer leaving.
   private dropBinding(peerID: string, linkID: string): boolean {
+    this.provenByLink.delete(linkID);
     const linkIDs = this.linksByPeer.get(peerID);
     if (linkIDs === undefined) return false;
     const at = linkIDs.indexOf(linkID);
@@ -224,6 +230,15 @@ export class LinkRegistry {
     if (linkIDs.length > 0) return false;
     this.linksByPeer.delete(peerID);
     return true;
+  }
+
+  // A handshake with `peerID` completed over this link. Taken only while the
+  // link is bound to that peer: one completed over a relay's link proves only
+  // that the peer is somewhere beyond it.
+  prove(linkID: string, peerID: string): void {
+    if (this.peerByLink.get(linkID) === peerID) {
+      this.provenByLink.set(linkID, peerID);
+    }
   }
 
   // ---- Queries ----
@@ -271,6 +286,14 @@ export class LinkRegistry {
       }
     }
     return links;
+  }
+
+  // The peer's preferred link among those a handshake proved, for a write that
+  // cannot be taken back, such as handing over carried mail.
+  provenLinkFor(peerID: string): Link | undefined {
+    return this.linksFor(peerID).find(
+      (link) => this.provenByLink.get(link.id) === peerID,
+    );
   }
 
   // One link per announced peer, its fastest, plus every link no peer has

@@ -14,7 +14,7 @@ import {
 } from "@core/mesh/wire/file-packet";
 import { useVideoPrepStore } from "@store/video-prep-store";
 import { AppState, DeviceEventEmitter, Platform } from "react-native";
-import { adoptIntoAttachmentCache } from "../file-transfer-service";
+import { adoptIntoAttachmentCache } from "../attachment-cache";
 import {
   cancelAllVideoPreparation,
   cancelVideoPreparation,
@@ -38,7 +38,7 @@ jest.mock("@bridge/NativeAirhopVideo", () => ({
   },
 }));
 
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   adoptIntoAttachmentCache: jest.fn((_uri: string, name: string) =>
     Promise.resolve(`file:///cache/airhop_${name}`),
   ),

@@ -165,7 +165,7 @@ export const strings: Strings = {
     "Hutafuta vifaa vilivyo karibu na kupitisha jumbe kati yake. Hivi ndivyo mesh inavyoundwa, na hufanya kazi bila muunganisho wa intaneti.",
   "onboarding.primer.location.title": "Mahali",
   "onboarding.primer.location.body":
-    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe, na mahali ulipo hasa hutoka kwenye kifaa chako tu unapomtumia mtu pini ya mahali.",
+    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe, na mahali ulipo hasa hapatoki kamwe kwenye kifaa chako.",
   "onboarding.primer.notifications.title": "Arifa",
   "onboarding.primer.notifications.body":
     "Pokea taarifa za jumbe mpya hata programu ikiwa imefungwa. Arifa hutengenezwa hapa kwenye kifaa chako, bila seva yoyote kuhusika.",
@@ -394,7 +394,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Haikuweza kumfikia kila mwanachama. Jaribu tena wakiwa karibu.",
   "chat.group.you_were_added": "Umeongezwa kwenye {name}.",
-  "chat.group.added_you": "Amekuongeza kwenye {name}",
+  "chat.group.invited": "Umealikwa kwenye {name}.",
+  "chat.group.invited_you": "Amekualika kwenye {name}",
+  "chat.group.decline": "Kataa",
+  "chat.group.decline_title": "Kataa mwaliko wa {name}?",
+  "chat.group.decline_body":
+    "{name} hayumo kwenye anwani zako. Mzuie pia, na hutapokea tena mialiko wala jumbe kutoka kwake.",
+  "chat.group.decline_block": "Kataa na zuia",
   "chat.group.you_were_removed":
     "Umeondolewa kwenye {name}. Huwezi tena kusoma wala kutuma jumbe hapa.",
   "chat.group.removed_you": "Amekuondoa kwenye {name}",
@@ -1204,6 +1210,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tokeni haikuweza kutengenezwa",
+  "wallet.send.unverified_note":
+    "Sehemu ya malipo haya ni ecash ambayo mint bado haijaithibitisha.",
   "wallet.send.title": "Tuma ecash",
   "wallet.send.amount_in": "Kiasi katika {unit}",
   "wallet.send.body":
@@ -1263,15 +1271,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Imekombolewa kwenye {mint}. Sasa ni yako kwa uthibitisho: nakala ya tokeni hii aliyo nayo mtumaji haifanyi kazi tena.",
   "wallet.receive.pending_unconfirmed":
-    "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika. Itathibitishwa na mint kiotomatiki utakapokuwa mtandaoni.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika. Saini yake inalingana, kwa hivyo tokeni ni halisi. Itathibitishwa na mint kiotomatiki utakapokuwa mtandaoni.",
   "wallet.receive.dleq_ok":
     "Saini ya mint inalingana, kwa hivyo tokeni ni halisi.",
-  "wallet.receive.dleq_uncached":
-    "Funguo za mint hazipo hapa, kwa hivyo saini haikuweza kukaguliwa nje ya mtandao.",
-  "wallet.receive.dleq_missing":
-    "Si kila sarafu ndani yake ina uthibitisho wa saini ya mint, kwa hivyo haikuweza kukaguliwa nje ya mtandao.",
   "wallet.receive.dleq_warning":
     "Hadi itakapothibitishwa mtandaoni, kimsingi mtumaji anaweza kuwa ameitumia mahali pengine.",
   "wallet.receive.failed": "Haikuweza kupokelewa",
@@ -1641,6 +1643,7 @@ export const strings: Strings = {
     "Elekeza kwenye msimbo wa QR wa tokeni, ankara au npub.",
   "wallet.scan.no_any":
     "Hakuna tokeni, ankara au npub iliyopatikana kwenye picha hiyo.",
+  "wallet.scan.not_usable": "Airhop haiwezi kutumia msimbo huu wa QR hapa.",
   "wallet.scan.use_camera_a11y": "Changanua kwa kamera",
   "wallet.scan.use_camera": "Tumia kamera",
   "wallet.scan.pick_image_a11y":
@@ -1742,6 +1745,12 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Malipo haya yamefungwa kwenye pochi yako.",
   "wallet.svc.locked_ours_offline_body":
     "Yadai ukiwa mtandaoni. Kwa sasa hakuna mtu mwingine anayeweza kuyachukua.",
+  "wallet.svc.offline_cap":
+    "Ukiwa nje ya mtandao, ecash isiyothibitishwa ina kikomo cha {limit} kwa kila mint.",
+  "wallet.svc.offline_unchecked":
+    "Ecash hii haiwezi kukaguliwa nje ya mtandao.",
+  "wallet.svc.claim_online_body":
+    "Dai hii ukiwa mtandaoni, mint itakapoweza kuithibitisha.",
   "wallet.svc.already_spent": "Ecash hii tayari imetumika.",
   "wallet.svc.already_spent_body":
     "Yeyote aliyetuma tokeni hii aliikomboa kwanza, au alituma tokeni ileile kwa mtu mwingine pia.",
@@ -2245,6 +2254,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video ya moja kwa moja",
   "settings.conn.live_video_desc":
     "Tiririsha kamera yako kwa watu walio karibu, na utazame zao",
+  "settings.conn.live_video_on_title": "Uwashe video ya moja kwa moja?",
+  "settings.conn.live_video_on_body":
+    "Utaweza kurusha moja kwa moja kutoka kwenye kamera kwa watu walio ndani ya masafa ya Bluetooth, na matangazo yao yataonekana kwenye mazungumzo yako na kurekodiwa kwenye simu hii.",
+  "settings.conn.live_video_off_title": "Uzime video ya moja kwa moja?",
+  "settings.conn.live_video_off_body":
+    "Hutaweza tena kurusha moja kwa moja, na matangazo ya wengine hayataonyeshwa wala kurekodiwa. Tangazo fupi bado litafika kama video ya kawaida.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Uelekezaji wa Tor",
   "settings.conn.tor_desc":
@@ -2276,12 +2291,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Huficha kuwa unatumia Tor. Haraka kuliko Snowflake, lakini madaraja haya ni ya umma na baadhi ya mitandao huyazuia.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Huficha kuwa unatumia Tor kwa kuonekana kama kutembelea tovuti ya kawaida. Ngumu kuzuia kuliko nyingine.",
   "settings.tor.mode_custom": "Madaraja yako",
   "settings.tor.mode_custom_desc":
-    "Tumia mistari ya daraja ya obfs4 kutoka bridges.torproject.org. Jaribu hii wakati nyingine zinashindwa.",
+    "Tumia mistari ya daraja ya obfs4 au WebTunnel kutoka bridges.torproject.org. Jaribu hii wakati nyingine zinashindwa.",
   "settings.tor.custom_placeholder":
     "Bandika mstari mmoja wa daraja kwa kila mstari",
   "settings.tor.custom_apply_hint": "Gusa nje ya kisanduku ili kuunganisha.",

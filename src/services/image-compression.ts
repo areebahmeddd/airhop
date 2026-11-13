@@ -36,7 +36,7 @@ import {
 import {
   adoptIntoAttachmentCache,
   discardPickerCopy,
-} from "./file-transfer-service";
+} from "./attachment-cache";
 
 // Longest edge of a sent photo. 1600 is still worth looking at full screen on a
 // phone, and is where WhatsApp and Signal settle; past it the extra pixels cost

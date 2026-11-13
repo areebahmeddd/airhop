@@ -28,15 +28,14 @@ Airhop's open security and product work: what each item buys a user, what it wou
 | 4   | Deniable private messages               | A DM can't be proven to a third party                      | None, then Airhop only | S, then S to M |
 | 5   | Forward secrecy for groups and channels | A leaked room key doesn't open the room's history          | Airhop only            | L              |
 | 6   | Post-quantum key agreement              | Recorded traffic stays safe from a future quantum attack   | Airhop only            | M              |
-| 7   | Retire old one-time prekeys             | An unused offline-mail key doesn't live for months         | None                   | S              |
-| 8   | High-risk preset                        | Safe settings in one tap for the people who need them      | None                   | S to M         |
-| 9   | Passphrase mode for data at rest        | A seized, locked phone gives up nothing                    | None                   | M to L         |
-| 10  | Shared disappearing timer               | The other phone's copy expires too                         | Airhop only            | M              |
-| 11  | Byte budget for live video reassembly   | A hostile stream can't exhaust a viewer's memory           | None                   | S              |
-| 12  | Reed-Solomon vector from bitchat-ios    | Proof that live video repair works across the two apps     | None                   | S              |
-| 13  | Relay sign-in (NIP-42)                  | Relays that demand sign-in serve Airhop too                | None                   | S              |
-| 14  | Rotating radio IDs                      | No tracking a phone across places by its radio ID          | bitchat-wide           | XL             |
-| 15  | Multiple devices per identity           | One identity on a phone and a tablet                       | bitchat-wide           | XL             |
+| 7   | High-risk preset                        | Safe settings in one tap for the people who need them      | None                   | S to M         |
+| 8   | Passphrase mode for data at rest        | A seized, locked phone gives up nothing                    | None                   | M to L         |
+| 9   | Shared disappearing timer               | The other phone's copy expires too                         | Airhop only            | M              |
+| 10  | Byte budget for live video reassembly   | A hostile stream can't exhaust a viewer's memory           | None                   | S              |
+| 11  | Reed-Solomon vector from bitchat-ios    | Proof that live video repair works across the two apps     | None                   | S              |
+| 12  | Relay sign-in (NIP-42)                  | Relays that demand sign-in serve Airhop too                | None                   | S              |
+| 13  | Rotating radio IDs                      | No tracking a phone across places by its radio ID          | bitchat-wide           | XL             |
+| 14  | Multiple devices per identity           | One identity on a phone and a tablet                       | bitchat-wide           | XL             |
 
 ## Assurance
 
@@ -104,17 +103,9 @@ An adversary recording traffic now could decrypt it once quantum computers break
 
 **Breaking:** Airhop only. **Size:** M.
 
-### 7. Retire old one-time prekeys
-
-An unused one-time prekey lives until someone seals offline mail to it, which on a quiet phone can be months. bitchat-ios drops an unused key after 30 days. Airhop re-dates its bundle every 3 days so senders keep their forward secrecy, which means a sender may still seal to an old key for up to 7 days after the last bundle that listed it. Dropping it outright, as bitchat-ios does, would lose that mail.
-
-**What it takes.** Record when each key was made. At 30 days stop listing it in the bundle, then keep its private half for the 7-day sealing window before deleting it.
-
-**Breaking:** None. **Size:** S.
-
 ## On the device
 
-### 8. High-risk preset
+### 7. High-risk preset
 
 Airhop's defaults favor reach: the internet is on without Tor, Wi-Fi Aware is on, the app lock is off, and messages are kept until deleted. Someone at a protest, or facing a border search, has to find and set each switch alone. Briar routes everything through Tor by default.
 
@@ -122,7 +113,7 @@ Airhop's defaults favor reach: the internet is on without Tor, Wi-Fi Aware is on
 
 **Breaking:** None. **Size:** S to M.
 
-### 9. Passphrase mode for data at rest
+### 8. Passphrase mode for data at rest
 
 Keys are readable any time after the phone's first unlock since boot [11], which iOS needs to relaunch Airhop for a Bluetooth event while the phone is locked. History relies on the operating system's file encryption with the same availability, so a phone seized while on, even locked, is in its weakest state. A second key in the keychain would add nothing, since it shares that availability. A passphrase isn't on the phone at all. Briar derives its database key from a password, and Threema offers a passphrase lock.
 
@@ -130,7 +121,7 @@ Keys are readable any time after the phone's first unlock since boot [11], which
 
 **Breaking:** None. **Size:** M to L.
 
-### 10. Shared disappearing timer
+### 9. Shared disappearing timer
 
 Disappearing messages clear this phone's copy only. The other person's phone keeps theirs for as long as they like. Signal, Threema, SimpleX and Session let a chat agree a timer both phones honor.
 
@@ -140,7 +131,7 @@ Disappearing messages clear this phone's copy only. The other person's phone kee
 
 ## Live and recorded media
 
-### 11. Byte budget for live video reassembly
+### 10. Byte budget for live video reassembly
 
 The live video assembler bounds pending frames by count, not by bytes. A hostile sender, or a few, signing valid streams over Wi-Fi Aware or LAN could make a viewer hold far more memory than a low-end Android phone gives an app, and the OS would kill it. One stream per sender, a per-stream cap and closing a stream that runs over its rate keep this well contained, so it's hardening rather than a hole.
 
@@ -148,7 +139,7 @@ The live video assembler bounds pending frames by count, not by bytes. A hostile
 
 **Breaking:** None. **Size:** S.
 
-### 12. Reed-Solomon vector from bitchat-ios
+### 11. Reed-Solomon vector from bitchat-ios
 
 Live video's erasure code uses bitchat-ios's polynomial and coefficients, but its tests check Airhop only against itself. If the coefficient order differed, streams would play between the two apps until the first lost packet, and then repair would silently fail.
 
@@ -158,7 +149,7 @@ Live video's erasure code uses bitchat-ios's polynomial and coefficients, but it
 
 ## Internet reach
 
-### 13. Relay sign-in (NIP-42)
+### 12. Relay sign-in (NIP-42)
 
 Some relays ask a client to sign a challenge before they serve a subscription or take a post. Airhop never signs in, so it treats such a relay as one that refuses. Of the 368 relays in the bundled list that answered a probe on 7 November 2026, 74 sent a challenge and 25 refused a read without one, about 7%. Location channels and DMs use several relays at once, so nothing visibly breaks today; the share is likely to grow as relays fight spam.
 
@@ -170,7 +161,7 @@ Some relays ask a client to sign a challenge before they serve a subscription or
 
 ## Parked until bitchat moves
 
-### 14. Rotating radio IDs
+### 13. Rotating radio IDs
 
 Every packet carries a peer ID derived from the long-term key, so anyone sniffing Bluetooth can follow a phone between places and across days. SimpleX has no user identifiers [12], and Briar talks only to contacts. bitchat's own whitepaper lists this as future work.
 
@@ -178,7 +169,7 @@ Every packet carries a peer ID derived from the long-term key, so anyone sniffin
 
 **Breaking:** bitchat-wide. **Size:** XL.
 
-### 15. Multiple devices per identity
+### 14. Multiple devices per identity
 
 Signal, Threema and Session let one identity run on several devices. Airhop's device transfer moves an identity from one phone to another and never copies it.
 

@@ -72,7 +72,7 @@ jest.mock("../reachability", () => ({
 jest.mock("../media-retention", () => ({
   sweepMediaIfDue: () => mockSweepMedia(),
 }));
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   startAttachmentCleanup: jest.fn(),
 }));
 jest.mock("../message-retention", () => ({

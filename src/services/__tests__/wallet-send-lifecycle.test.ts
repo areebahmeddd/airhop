@@ -183,6 +183,27 @@ describe("preparing a send", () => {
       });
     }
   });
+  // A coin the mint never confirmed hands its double-spend risk to whoever
+  // takes it, so it goes only when the confirmed ones cannot make the amount,
+  // and the quote says so.
+  it("pays with confirmed coins before ecash the mint never saw", async () => {
+    useWalletStore.getState().clearAll();
+    useWalletStore.getState().addMint(MINT, { units: [UNIT] });
+    const [confirmed] = proofsOf([8]);
+    const unconfirmed = {
+      ...confirmed,
+      secret: "unconfirmed",
+      verified: false,
+    };
+    useWalletStore.getState().addProofs(MINT, UNIT, [unconfirmed, confirmed]);
+
+    const one = await quoteSend({ amount: 8 });
+    expect(one.proofs.map((p) => p.secret)).toEqual([confirmed.secret]);
+    expect(one.unverified).toBe(false);
+
+    const both = await quoteSend({ amount: 16 });
+    expect(both.unverified).toBe(true);
+  });
 });
 
 describe("resolving a send", () => {

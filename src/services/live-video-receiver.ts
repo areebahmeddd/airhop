@@ -43,7 +43,7 @@ import {
   deleteUnreferencedAttachments,
   enforceIncomingQuota,
   INCOMING_FILE_PREFIX,
-} from "./file-transfer-service";
+} from "./attachment-cache";
 import { trackLiveVideoWork } from "./live-video-work";
 import { sweepMediaIfDue } from "./media-retention";
 

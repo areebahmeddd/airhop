@@ -160,7 +160,7 @@ export const strings: Strings = {
     "Encontra dispositivos por perto e passa mensagens entre eles. É assim que a malha nasce, e funciona sem ligação à Internet.",
   "onboarding.primer.location.title": "Localização",
   "onboarding.primer.location.body":
-    "Coloca-te nos canais das áreas próximas, do quarteirão à região. O Airhop nunca te segue, e a tua localização exata só sai do dispositivo quando envias a tua localização a alguém.",
+    "Coloca-te nos canais das áreas próximas, do quarteirão à região. O Airhop nunca te segue, e a tua localização exata nunca sai do dispositivo.",
   "onboarding.primer.notifications.title": "Notificações",
   "onboarding.primer.notifications.body":
     "Recebe avisos de mensagens novas mesmo com a aplicação fechada. As notificações são criadas no teu dispositivo, sem nenhum servidor envolvido.",
@@ -390,7 +390,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Não foi possível alcançar todos os membros. Tenta de novo quando estiverem por perto.",
   "chat.group.you_were_added": "Foste adicionado a {name}.",
-  "chat.group.added_you": "Adicionou-te a {name}",
+  "chat.group.invited": "Foste convidado para {name}.",
+  "chat.group.invited_you": "Convidou-te para {name}",
+  "chat.group.decline": "Recusar",
+  "chat.group.decline_title": "Recusar o convite para {name}?",
+  "chat.group.decline_body":
+    "{name} não está nos teus contactos. Bloqueia também e não voltarás a receber convites nem mensagens dessa pessoa.",
+  "chat.group.decline_block": "Recusar e bloquear",
   "chat.group.you_were_removed":
     "Foste removido de {name}. Já não podes ler nem enviar mensagens aqui.",
   "chat.group.removed_you": "Removeu-te de {name}",
@@ -1209,6 +1215,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Não foi possível montar o token",
+  "wallet.send.unverified_note":
+    "Parte deste pagamento é ecash que a casa de emissão ainda não confirmou.",
   "wallet.send.title": "Enviar ecash",
   "wallet.send.amount_in": "Valor em {unit}",
   "wallet.send.body":
@@ -1268,15 +1276,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Resgatado em {mint}. Agora é teu de forma comprovável: a cópia deste token que quem enviou tem já não funciona.",
   "wallet.receive.pending_unconfirmed":
-    "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. É confirmado automaticamente com a casa de emissão assim que estiveres online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. A assinatura confere, por isso o token é autêntico. É confirmado automaticamente com a casa de emissão assim que estiveres online.",
   "wallet.receive.dleq_ok":
     "A assinatura da casa de emissão confere, por isso o token é autêntico.",
-  "wallet.receive.dleq_uncached":
-    "As chaves da casa de emissão não estão guardadas aqui, por isso não foi possível verificar a assinatura offline.",
-  "wallet.receive.dleq_missing":
-    "Nem todas as moedas nele trazem a prova de assinatura da casa de emissão, por isso não foi possível verificá-lo offline.",
   "wallet.receive.dleq_warning":
     "Até ser confirmado online, quem enviou poderia em princípio já o ter gasto noutro sítio.",
   "wallet.receive.failed": "Não foi possível receber",
@@ -1641,6 +1643,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any":
     "Aponta para o código QR de um token, uma fatura ou um npub.",
   "wallet.scan.no_any": "Nenhum token, fatura ou npub encontrado nessa imagem.",
+  "wallet.scan.not_usable": "O Airhop não consegue usar este código QR aqui.",
   "wallet.scan.use_camera_a11y": "Ler com a câmara",
   "wallet.scan.use_camera": "Usar a câmara",
   "wallet.scan.pick_image_a11y":
@@ -1749,6 +1752,11 @@ export const strings: Strings = {
     "Este pagamento está trancado para a tua carteira.",
   "wallet.svc.locked_ours_offline_body":
     "Resgata-o quando estiveres online. Entretanto, mais ninguém o pode levar.",
+  "wallet.svc.offline_cap":
+    "Offline, o ecash não confirmado está limitado a {limit} por casa de emissão.",
+  "wallet.svc.offline_unchecked": "Este ecash não pode ser verificado offline.",
+  "wallet.svc.claim_online_body":
+    "Resgata este quando estiveres online e a casa de emissão o puder confirmar.",
   "wallet.svc.already_spent": "Este ecash já foi gasto.",
   "wallet.svc.already_spent_body":
     "Quem enviou este token resgatou-o primeiro, ou mandou o mesmo token a outra pessoa.",
@@ -2251,6 +2259,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Vídeo em direto",
   "settings.conn.live_video_desc":
     "Transmite a tua câmara para pessoas por perto e vê as delas",
+  "settings.conn.live_video_on_title": "Ligar o vídeo em direto?",
+  "settings.conn.live_video_on_body":
+    "Podes emitir em direto com a câmara para quem estiver dentro do alcance do Bluetooth, e as emissões deles aparecem nas tuas conversas e são gravadas neste telemóvel.",
+  "settings.conn.live_video_off_title": "Desligar o vídeo em direto?",
+  "settings.conn.live_video_off_body":
+    "Deixas de poder emitir em direto, e as emissões dos outros não são mostradas nem gravadas. Uma emissão curta chega na mesma como um vídeo normal.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Encaminhamento por Tor",
   "settings.conn.tor_desc":
@@ -2282,12 +2296,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Esconde que usas o Tor. Mais rápido do que o Snowflake, mas estas pontes são públicas e algumas redes bloqueiam-nas.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Esconde que usas o Tor parecendo uma visita comum a um site. Mais difícil de bloquear do que os outros.",
   "settings.tor.mode_custom": "Pontes próprias",
   "settings.tor.mode_custom_desc":
-    "Usa linhas de ponte obfs4 de bridges.torproject.org. Tenta isto quando as outras falharem.",
+    "Usa linhas de ponte obfs4 ou WebTunnel de bridges.torproject.org. Tenta isto quando as outras falharem.",
   "settings.tor.custom_placeholder": "Cola uma linha de ponte por linha",
   "settings.tor.custom_apply_hint": "Toca fora da caixa para ligar.",
   "settings.tor.custom_empty":

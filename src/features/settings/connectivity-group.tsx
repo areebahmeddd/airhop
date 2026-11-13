@@ -31,7 +31,12 @@ import {
 } from "./settings-primitives";
 
 type ToggleKey =
-  "background" | "autoStartOnBoot" | "liveVoice" | "bridge" | "gateway";
+  | "background"
+  | "autoStartOnBoot"
+  | "liveVoice"
+  | "liveVideo"
+  | "bridge"
+  | "gateway";
 
 // Keys, translated on render.
 interface ConfirmCopy {
@@ -78,6 +83,18 @@ const CONFIRM: Record<ToggleKey, { on: ConfirmCopy; off: ConfirmCopy }> = {
     off: {
       title: "settings.conn.live_voice_off_title",
       body: "settings.conn.live_voice_off_body",
+      action: "settings.conn.turn_off",
+    },
+  },
+  liveVideo: {
+    on: {
+      title: "settings.conn.live_video_on_title",
+      body: "settings.conn.live_video_on_body",
+      action: "settings.conn.turn_on",
+    },
+    off: {
+      title: "settings.conn.live_video_off_title",
+      body: "settings.conn.live_video_off_body",
       action: "settings.conn.turn_off",
     },
   },
@@ -199,6 +216,9 @@ export default function ConnectivityGroup({
       case "liveVoice":
         setLiveVoiceEnabled(next);
         break;
+      case "liveVideo":
+        setLiveVideoEnabled(next);
+        break;
       case "bridge":
         setBridgeEnabled(next);
         break;
@@ -284,7 +304,7 @@ export default function ConnectivityGroup({
           control={
             <SettingSwitch
               value={liveVideoEnabled}
-              onValueChange={setLiveVideoEnabled}
+              onValueChange={(v) => requestToggle("liveVideo", v)}
             />
           }
         />

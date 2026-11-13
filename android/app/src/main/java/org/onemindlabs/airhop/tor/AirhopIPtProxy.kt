@@ -1,7 +1,7 @@
 // The pluggable transports Arti dials to reach a bridge, built from
 // native/iptproxy.
 //
-// Arti would normally run obfs4 and Snowflake as child processes, which iOS
+// Arti would normally run the transports as child processes, which iOS
 // forbids, so both platforms run them in-process behind a SOCKS5 listener each.
 // This owns their lifecycle and reports the ports they landed on.
 //
@@ -15,7 +15,8 @@ import java.io.File
 
 enum class AirhopTransport(val id: String) {
     OBFS4("obfs4"),
-    SNOWFLAKE("snowflake");
+    SNOWFLAKE("snowflake"),
+    WEBTUNNEL("webtunnel");
 
     companion object {
         // The transports named by a newline-separated list of bridge lines.
@@ -32,10 +33,7 @@ enum class AirhopTransport(val id: String) {
                 val words = line.split(" ").filter { it.isNotEmpty() }.toMutableList()
                 // The word `Bridge` may lead the line; the transport follows it.
                 if (words.firstOrNull()?.lowercase() == "bridge") words.removeAt(0)
-                when (words.firstOrNull()) {
-                    OBFS4.id -> found.add(OBFS4)
-                    SNOWFLAKE.id -> found.add(SNOWFLAKE)
-                }
+                entries.find { it.id == words.firstOrNull() }?.let(found::add)
             }
             return found
         }

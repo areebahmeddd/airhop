@@ -46,7 +46,7 @@ can identify and de-duplicate a device before opening a link:
 
 - **Android** puts the first 8 bytes of the peer ID in scan-response service
   data under the service UUID, and advertises no local name.
-- **iOS** advertises the service UUID and nothing else, as bitchat-ios does.
+- **iOS** advertises the service UUID and nothing else.
   CoreBluetooth has no API for service data, and a local name would be a
   stable identifier in the clear.
 
@@ -395,7 +395,7 @@ wire changes.
 > [!IMPORTANT]
 > **The 1 MiB ceiling cannot be raised unilaterally.** bitchat-ios refuses any packet whose declared expanded size passes `FileTransferLimits.maxFramedFileBytes` (`maxPayloadBytes` plus the TLV and binary envelopes, about 1.13 MiB), and it refuses by returning nil with nothing logged. Raising `MAX_FILE_BYTES` past that would leave sending, Android delivery and the local UI all working while every attachment to an iPhone silently stopped arriving. bitchat-android's codec allows 10 MiB, but its fragment reassembler accepts at most 256 fragments per stream (about 117 KiB), so on the mesh it is the stricter receiver and there is no cross-platform number to raise to.
 >
-> Each packet type is capped at what its encoders can produce, before anything is inflated ([section 4](#4-routing-constants)), as bitchat-ios does. The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that approaches it.
+> Each packet type is capped at what its encoders can produce, before anything is inflated ([section 4](#4-routing-constants)). The file ceiling (`MAX_FRAMED_FILE_BYTES`) uses the iOS formula verbatim, because a file is the only payload that approaches it.
 >
 > `conformance.test.ts` reads `maxPayloadBytes` from `FileTransferLimits.swift` in a local bitchat checkout, when one is present, and fails if the caps above no longer fit under the ceiling it implies.
 
@@ -701,7 +701,7 @@ own echoed back, or a late copy after completion) is relayed or not as before,
 but never fed to reassembly.
 
 Any packet, not only a file, is written as fragments once it passes the frame on
-a Bluetooth link, as bitchat's BLE service does: a group roster of four or more
+a Bluetooth link: a group roster of four or more
 members, a long message, a full courier envelope, a gossip sync reply. Wi-Fi and
 LAN links carry it whole, so a relay that received one whole re-cuts it for its
 Bluetooth neighbors. Fragments name the inner packet's author as their
@@ -751,8 +751,8 @@ right default: a relay carries traffic for peers whose signing keys it has never
 seen, and demanding a key before forwarding would break multi-hop delivery for
 exactly the strangers the mesh exists to reach.
 
-Five types are the exception, as in bitchat-ios, which handles them before it
-schedules a relay and relays only what its handler accepted. Each costs nothing
+Five types are the exception: each is handled before a relay is scheduled, and
+relayed only if its handler accepted it. Each costs nothing
 to forge under any peer ID in earshot, and forwarding one already refused spends
 the room's airtime and carries the attack onward to any node that checks less
 strictly; a whole file arriving over Wi-Fi or LAN would be cut into thousands of
@@ -932,8 +932,8 @@ is not 1 to 12 base32 geohash characters is dropped before anything is parsed.
 Every other rule is the receiver's:
 
 - **Deposits** (`0x01`, `0x03`) must be addressed to this node and signed at the
-  packet layer by the peer they name, as bitchat-ios requires of every directed
-  carrier, because the gateway's budget is keyed by depositor.
+  packet layer by the peer they name, because the gateway's budget is keyed by
+  depositor.
 - **A gateway** publishes only a kind 20000 geohash note, fresh within 15
   minutes, whose `g` tag names the carrier's cell. The cell itself is not
   restricted: a teleported channel, or a region channel above the gateway's own
@@ -1015,7 +1015,7 @@ enters the median at that depth. A refused write is a queue already full: any re
 a queue at its high water, and refusals for half the link writes as one far
 enough behind to skip video, so one refusing neighbor of three is a third. The
 bitrate backs off as the queue grows and video is skipped until a fresh
-keyframe once it is far behind, audio carrying on. As in bitchat, a live write
+keyframe once it is far behind, audio carrying on. A live write
 that has waited over 1.5 s in a link queue is dropped there unsent, and the
 radio is asked for a faster connection interval while a stream is sent or
 received. Sound and picture are stamped from one origin, taken when the
@@ -1032,8 +1032,8 @@ clock later by the last one's lateness plus the lead, so a path that slowed for
 good plays on in step rather than silent. Bounds per phone and
 stream: 4 streams, 24 MiB, 96 kB/s with 3 s of burst, 48 blocks, 192 units a
 track. A sender holds one stream at a time, so a new one ends its last even if
-that END was lost; an END or CANCELED for a stream never followed is ignored,
-as bitchat ignores it. A stream with no picture after 10 s gives its slot back
+that END was lost; an END or CANCELED for a stream never followed is ignored.
+A stream with no picture after 10 s gives its slot back
 but not for good: a sender sending sound only has no keyframe to offer, and its
 picture opens the stream again.
 A stream quiet for 4 s shows as reconnecting; one whose END arrived
@@ -1178,7 +1178,7 @@ response covering the types it does.
 | `10` | `GROUP_MESSAGE`      | Yes    | Yes     |
 | `24` | `CHANNEL_MSG_AIRHOP` | Yes    | n/a     |
 
-Airhop asks in bitchat-ios's rounds, each its own request with the whole
+Airhop asks in rounds, each its own request with the whole
 400-byte filter and its own since-cursor: one for announces, public and group
 messages (and bit 24) every 15 s, and one for board posts alone every 60 s. In
 one filter over everything, a busy room's messages would push board posts
@@ -1250,23 +1250,29 @@ since the outbox outlives an envelope by six days. Every re-seal of one
 message, for a new courier or a retry, targets the same one-time prekey, unless
 the recipient's bundle is over 7 days old, when it seals to their static key
 instead (as bitchat-ios does). Airhop re-dates its own bundle every 3 days, so
-a pool with unused keys never ages into that fallback. A received envelope is
-dated from its seal (expiry less the lifetime), never from its hand-over, so a
-late copy cannot bring back a cleared message.
+a pool with unused keys never ages into that fallback. An unused key leaves
+the bundle 30 days after it was made and still opens for 8 days and an hour
+more: the last bundle to list it may be dated the day it left, a sender may
+seal to that bundle for 7 days, and the envelope may travel for 25 hours. A
+received envelope is dated from its seal (expiry less the lifetime), never from
+its hand-over, so a late copy cannot bring back a cleared message.
 
-A carrier acts on each verified announce, as bitchat-ios does:
+A carrier acts on each verified announce:
 
-- **Announce on a link this node holds:** hand over the peer's own mail
+- **Announce on a link a handshake proved:** hand over the peer's own mail
   (retired once the write lands), then spray them half the budget of anything
-  else, once per peer. Mail addressed to the peer is never sprayed to them.
-- **Announce heard through relays:** flood the peer's own mail toward them, at
-  most once per envelope per cooldown, and keep carrying it, because nothing
-  acknowledges a flood. Never spray: a flood cannot confirm that a carrier took
-  the copy, so no budget would be spent.
-
-bitchat-ios also requires the link to be Noise-authenticated before a
-destructive handover. Airhop does not track which link a session was made on,
-so it hands over on any link bound by a direct announce.
+  else, once per peer, both down that link. Mail addressed to the peer is never
+  sprayed to them. A link is proved when a Noise handshake with the peer
+  completes over it while it is bound to them, and stays proved until it closes
+  or its binding changes. An announce alone proves nothing: anyone in range can
+  replay a peer's fresh one onto a link of their own.
+- **Any other announce,** heard through relays or on a link not yet proved:
+  flood the peer's own mail toward them, at most once per envelope per
+  cooldown, and keep carrying it, because nothing acknowledges a flood. Never
+  spray: a flood cannot confirm that a carrier took the copy, so no budget
+  would be spent. On a direct announce the carrier then opens a handshake, or
+  runs the session it holds again, since a session can outlive the link it was
+  made on; completing it proves the link and hands the mail over at once.
 
 ### 6.2 Envelope plaintext
 
@@ -1436,6 +1442,8 @@ Airhop's relay node is Airlink: an ESP32 on solar power, built against this
 specification, a full peer (Noise XX, courier mailbox, gossip sync) with a LoRa
 trunk between nodes that carries text.
 
+The rules below are the least any relay must keep, and all a bare repeater does:
+
 | Rule            | Value                                                  |
 | --------------- | ------------------------------------------------------ |
 | Forward         | Every unseen packet, on every link but the arrival one |
@@ -1443,8 +1451,22 @@ trunk between nodes that carries text.
 | Dedup           | On packet ID, so a ring forwards each packet once      |
 | Malformed frame | Drop, never fail                                       |
 
-A relay must not decrypt and must not reassemble fragments. Fragments are
-forwarded individually; only the addressee reassembles.
+A relay never relays a packet it reassembled or decrypted. Fragments are
+forwarded individually. A bare repeater reassembles and decrypts nothing. A
+peer relay ([section 10.1](#101-two-kinds-of-relay)) also checks the five types
+of
+[section 3.6](#36-leave-files-board-posts-and-voice-are-verified-before-they-are-relayed)
+before relaying them, as the phones do. It reassembles only what it keeps for
+sync or holds as courier mail, and decrypts only what is addressed to it.
+
+Airlink departs from Airhop's phones in three places. It sends directed traffic
+only to the recipient's link when the recipient is its neighbor, as bitchat-ios
+does, where a phone follows a source route or floods. Once its clock is
+confirmed it takes an announce dated up to 15 minutes from it, not 2, so a
+phone a few minutes off still binds and gets its mail. And it relays a packet
+outside the freshness window
+([section 5.1](#51-solicited-responses-and-the-freshness-window)), acting on
+none, since its time may rest on one phone's word or on other nodes'.
 
 ### 10.1 Two kinds of relay
 

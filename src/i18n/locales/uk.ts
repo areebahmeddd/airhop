@@ -160,7 +160,7 @@ export const strings: Strings = {
     "Знаходить пристрої поблизу та передає повідомлення між ними. Саме так утворюється mesh, і працює це без інтернету.",
   "onboarding.primer.location.title": "Місцезнаходження",
   "onboarding.primer.location.body":
-    "Розміщує вас у сусідніх каналах місцевості, від кварталу до цілого регіону. Airhop ніколи не стежить за вами, а ваше точне місцезнаходження залишає пристрій, лише коли ви надсилаєте комусь мітку місцезнаходження.",
+    "Розміщує вас у сусідніх каналах місцевості, від кварталу до цілого регіону. Airhop ніколи не стежить за вами, а ваше точне місцезнаходження ніколи не залишає пристрій.",
   "onboarding.primer.notifications.title": "Сповіщення",
   "onboarding.primer.notifications.body":
     "Отримуйте сигнали про нові повідомлення, навіть коли застосунок закрито. Сповіщення створюються локально на вашому пристрої, без жодного сервера.",
@@ -387,7 +387,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Не вдалося дістатися кожного учасника. Спробуйте ще раз, поки вони поблизу.",
   "chat.group.you_were_added": "Вас додано до {name}.",
-  "chat.group.added_you": "Додає вас до {name}",
+  "chat.group.invited": "Вас запрошено до {name}.",
+  "chat.group.invited_you": "Запрошує вас до {name}",
+  "chat.group.decline": "Відхилити",
+  "chat.group.decline_title": "Відхилити запрошення до {name}?",
+  "chat.group.decline_body":
+    "{name} немає у ваших контактах. Заблокуйте і цю людину, і ви більше не отримуватимете від неї запрошень чи повідомлень.",
+  "chat.group.decline_block": "Відхилити й заблокувати",
   "chat.group.you_were_removed":
     "Вас вилучено з {name}. Ви більше не можете тут читати чи надсилати повідомлення.",
   "chat.group.removed_you": "Вилучає вас із {name}",
@@ -1196,6 +1202,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Не вдалося зібрати токен",
+  "wallet.send.unverified_note":
+    "Частина цього платежу складається з ecash, який мінт ще не підтвердив.",
   "wallet.send.title": "Надіслати ecash",
   "wallet.send.amount_in": "Сума в {unit}",
   "wallet.send.body":
@@ -1255,14 +1263,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Викуплено в {mint}. Тепер це доказово ваше: копія цього токена у відправника більше не працює.",
   "wallet.receive.pending_unconfirmed":
-    "Збережено з {mint}, але мінт ще не підтвердив, що воно не витрачене. Мінт підтвердить це автоматично, щойно ви будете онлайн.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Збережено з {mint}, але мінт ще не підтвердив, що воно не витрачене. Підпис збігається, тож токен справжній. Мінт підтвердить це автоматично, щойно ви будете онлайн.",
   "wallet.receive.dleq_ok": "Підпис мінта збігається, тож токен справжній.",
-  "wallet.receive.dleq_uncached":
-    "Ключів мінта тут немає, тож підпис не вдалося перевірити офлайн.",
-  "wallet.receive.dleq_missing":
-    "Не кожна монета в ньому має доказ підпису мінта, тож перевірити його офлайн не вдалося.",
   "wallet.receive.dleq_warning":
     "Доки це не підтверджено онлайн, відправник у принципі міг витратити це деінде.",
   "wallet.receive.failed": "Не вдалося отримати",
@@ -1622,6 +1624,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Наведіть на QR-код токена, рахунку або npub.",
   "wallet.scan.no_any":
     "На тому зображенні не знайдено токена, рахунку чи npub.",
+  "wallet.scan.not_usable": "Airhop не може використати цей QR-код тут.",
   "wallet.scan.use_camera_a11y": "Сканувати камерою",
   "wallet.scan.use_camera": "Скористатися камерою",
   "wallet.scan.pick_image_a11y": "Прочитати QR-код зі збереженого зображення",
@@ -1721,6 +1724,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Цей платіж прив’язано до вашого гаманця.",
   "wallet.svc.locked_ours_offline_body":
     "Отримайте його, коли будете онлайн. Тим часом ніхто інший не зможе його забрати.",
+  "wallet.svc.offline_cap":
+    "Офлайн непідтверджений ecash обмежено сумою {limit} на мінт.",
+  "wallet.svc.offline_unchecked": "Цей ecash не можна перевірити офлайн.",
+  "wallet.svc.claim_online_body":
+    "Отримайте цей платіж, коли будете онлайн і мінт зможе його підтвердити.",
   "wallet.svc.already_spent": "Цей ecash уже витрачено.",
   "wallet.svc.already_spent_body":
     "Той, хто надіслав цей токен, викупив його першим або надіслав той самий токен ще комусь.",
@@ -2219,6 +2227,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Прямий ефір",
   "settings.conn.live_video_desc":
     "Транслюйте камеру людям поблизу й дивіться їхні ефіри",
+  "settings.conn.live_video_on_title": "Увімкнути прямий ефір?",
+  "settings.conn.live_video_on_body":
+    "Ви зможете виходити в ефір з камери для тих, хто в радіусі Bluetooth, а їхні ефіри з’являтимуться у ваших чатах і записуватимуться на цей телефон.",
+  "settings.conn.live_video_off_title": "Вимкнути прямий ефір?",
+  "settings.conn.live_video_off_body":
+    "Ви більше не зможете виходити в ефір, а чужі ефіри не показуватимуться й не записуватимуться. Короткий все одно надійде як звичайне відео.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Маршрутизація через Tor",
   "settings.conn.tor_desc":
@@ -2250,12 +2264,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Приховує, що ви користуєтесь Tor. Швидше за Snowflake, але ці мости загальнодоступні й частина мереж їх блокує.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Приховує використання Tor, виглядаючи як звичайний візит на сайт. Заблокувати складніше, ніж інші.",
   "settings.tor.mode_custom": "Власні мости",
   "settings.tor.mode_custom_desc":
-    "Використовуйте рядки мостів obfs4 з bridges.torproject.org. Спробуйте це, коли інші не працюють.",
+    "Використовуйте рядки мостів obfs4 або WebTunnel з bridges.torproject.org. Спробуйте це, коли інші не працюють.",
   "settings.tor.custom_placeholder": "Вставте по одному рядку моста в рядок",
   "settings.tor.custom_apply_hint": "Торкніться поза полем, щоб підключитися.",
   "settings.tor.custom_empty": "Спершу додайте хоча б один рядок моста.",

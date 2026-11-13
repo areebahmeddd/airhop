@@ -159,7 +159,7 @@ export const strings: Strings = {
     "Hittar enheter i närheten och skickar meddelanden vidare mellan dem. Det är så meshen bildas, och den fungerar utan internet.",
   "onboarding.primer.location.title": "Plats",
   "onboarding.primer.location.body":
-    "Placerar dig i områdeskanaler i närheten, från ett kvarter till en region. Airhop spårar dig aldrig, och din exakta plats lämnar bara enheten när du skickar din plats till någon.",
+    "Placerar dig i områdeskanaler i närheten, från ett kvarter till en region. Airhop spårar dig aldrig, och din exakta plats lämnar aldrig enheten.",
   "onboarding.primer.notifications.title": "Aviseringar",
   "onboarding.primer.notifications.body":
     "Få aviseringar om nya meddelanden även när appen är stängd. Aviseringarna skapas lokalt på enheten, utan att någon server är inblandad.",
@@ -384,7 +384,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Alla medlemmar kunde inte nås. Försök igen medan de är i närheten.",
   "chat.group.you_were_added": "Du lades till i {name}.",
-  "chat.group.added_you": "Lade till dig i {name}",
+  "chat.group.invited": "Du har bjudits in till {name}.",
+  "chat.group.invited_you": "Bjöd in dig till {name}",
+  "chat.group.decline": "Avböj",
+  "chat.group.decline_title": "Avböja inbjudan till {name}?",
+  "chat.group.decline_body":
+    "{name} finns inte bland dina kontakter. Blockera hen också, så får du inga fler inbjudningar eller meddelanden därifrån.",
+  "chat.group.decline_block": "Avböj och blockera",
   "chat.group.you_were_removed":
     "Du togs bort från {name}. Du kan inte längre läsa eller skicka meddelanden här.",
   "chat.group.removed_you": "Tog bort dig från {name}",
@@ -1185,6 +1191,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tokenet kunde inte byggas",
+  "wallet.send.unverified_note":
+    "En del av den här betalningen är ecash som minten ännu inte har bekräftat.",
   "wallet.send.title": "Skicka ecash",
   "wallet.send.amount_in": "Belopp i {unit}",
   "wallet.send.body":
@@ -1244,14 +1252,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Inlöst hos {mint}. Det är bevisligen ditt nu: avsändarens kopia av tokenet fungerar inte längre.",
   "wallet.receive.pending_unconfirmed":
-    "Sparat från {mint}, men minten har ännu inte bekräftat att det är oförbrukat. Det bekräftas automatiskt hos minten när du är online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Sparat från {mint}, men minten har ännu inte bekräftat att det är oförbrukat. Signaturen stämmer, så tokenet är äkta. Det bekräftas automatiskt hos minten när du är online.",
   "wallet.receive.dleq_ok": "Mintens signatur stämmer, så tokenet är äkta.",
-  "wallet.receive.dleq_uncached":
-    "Mintens nycklar finns inte här, så signaturen kunde inte kontrolleras offline.",
-  "wallet.receive.dleq_missing":
-    "Inte alla mynt i det har mintens signaturbevis, så det kunde inte kontrolleras offline.",
   "wallet.receive.dleq_warning":
     "Tills det har bekräftats online kan avsändaren i princip ha gjort av med det någon annanstans.",
   "wallet.receive.failed": "Kunde inte ta emot",
@@ -1611,6 +1613,7 @@ export const strings: Strings = {
     "Rikta mot QR-koden för ett token, en faktura eller en npub.",
   "wallet.scan.no_any":
     "Inget token, ingen faktura eller npub hittades i bilden.",
+  "wallet.scan.not_usable": "Airhop kan inte använda den här QR-koden här.",
   "wallet.scan.use_camera_a11y": "Skanna med kameran",
   "wallet.scan.use_camera": "Använd kameran",
   "wallet.scan.pick_image_a11y": "Läs en QR-kod ur en sparad bild",
@@ -1708,6 +1711,12 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Betalningen är låst till din plånbok.",
   "wallet.svc.locked_ours_offline_body":
     "Hämta den när du är online. Ingen annan kan ta den under tiden.",
+  "wallet.svc.offline_cap":
+    "Offline är obekräftad ecash begränsad till {limit} per mint.",
+  "wallet.svc.offline_unchecked":
+    "Den här ecashen kan inte kontrolleras offline.",
+  "wallet.svc.claim_online_body":
+    "Hämta den här när du är online och minten kan bekräfta den.",
   "wallet.svc.already_spent": "Den här ecashen är redan förbrukad.",
   "wallet.svc.already_spent_body":
     "Den som skickade tokenet löste in det först, eller skickade samma token till någon annan också.",
@@ -2200,6 +2209,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Livevideo",
   "settings.conn.live_video_desc":
     "Strömma din kamera till folk i närheten och se deras",
+  "settings.conn.live_video_on_title": "Slå på livevideo?",
+  "settings.conn.live_video_on_body":
+    "Du kan sända live med kameran till alla inom Bluetooth-räckhåll, och deras sändningar visas i dina chattar och spelas in på den här telefonen.",
+  "settings.conn.live_video_off_title": "Stänga av livevideo?",
+  "settings.conn.live_video_off_body":
+    "Du kan inte längre sända live, och andras sändningar visas eller spelas inte in. En kort kommer ändå fram som en vanlig video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-routing",
   "settings.conn.tor_desc":
@@ -2231,12 +2246,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Döljer att du använder Tor. Snabbare än Snowflake, men dessa bryggor är offentliga och vissa nätverk blockerar dem.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Döljer att du använder Tor genom att likna ett vanligt webbplatsbesök. Svårare att blockera än de andra.",
   "settings.tor.mode_custom": "Egna bryggor",
   "settings.tor.mode_custom_desc":
-    "Använd obfs4-bryggrader från bridges.torproject.org. Prova detta när de andra inte fungerar.",
+    "Använd obfs4- eller WebTunnel-bryggrader från bridges.torproject.org. Prova detta när de andra inte fungerar.",
   "settings.tor.custom_placeholder": "Klistra in en bryggrad per rad",
   "settings.tor.custom_apply_hint": "Tryck utanför rutan för att ansluta.",
   "settings.tor.custom_empty": "Lägg först till minst en bryggrad.",

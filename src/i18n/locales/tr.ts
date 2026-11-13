@@ -164,7 +164,7 @@ export const strings: Strings = {
     "Yakındaki cihazları bulur ve mesajları aralarında aktarır. Mesh böyle kurulur ve internet bağlantısı olmadan çalışır.",
   "onboarding.primer.location.title": "Konum",
   "onboarding.primer.location.body":
-    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumun cihazından yalnızca birine konum işareti gönderdiğinde çıkar.",
+    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumun cihazından asla çıkmaz.",
   "onboarding.primer.notifications.title": "Bildirimler",
   "onboarding.primer.notifications.body":
     "Uygulama kapalıyken bile yeni mesajlar için uyarı al. Bildirimler cihazında yerel olarak oluşturulur, hiçbir sunucu işin içinde değildir.",
@@ -389,7 +389,13 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "Her üyeye ulaşılamadı. Yakındayken yeniden dene.",
   "chat.group.you_were_added": "{name} grubuna eklendin.",
-  "chat.group.added_you": "Seni {name} grubuna ekledi",
+  "chat.group.invited": "{name} grubuna davet edildin.",
+  "chat.group.invited_you": "Seni {name} grubuna davet etti",
+  "chat.group.decline": "Reddet",
+  "chat.group.decline_title": "{name} daveti reddedilsin mi?",
+  "chat.group.decline_body":
+    "{name} kişilerinde değil. Onu da engellersen ondan bir daha davet ya da mesaj almazsın.",
+  "chat.group.decline_block": "Reddet ve engelle",
   "chat.group.you_were_removed":
     "{name} grubundan çıkarıldın. Burada artık okuyamaz ya da mesaj gönderemezsin.",
   "chat.group.removed_you": "Seni {name} grubundan çıkardı",
@@ -1193,6 +1199,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Jeton oluşturulamadı",
+  "wallet.send.unverified_note":
+    "Bu ödemenin bir kısmı darphanenin henüz onaylamadığı ecash.",
   "wallet.send.title": "Ecash gönder",
   "wallet.send.amount_in": "{unit} cinsinden tutar",
   "wallet.send.body":
@@ -1252,14 +1260,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} darphanesinde bozduruldu. Artık kanıtlanabilir biçimde senin: gönderendeki kopyası artık çalışmıyor.",
   "wallet.receive.pending_unconfirmed":
-    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. İmzası tutuyor, yani jeton gerçek. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
   "wallet.receive.dleq_ok": "Darphanenin imzası tutuyor, yani jeton gerçek.",
-  "wallet.receive.dleq_uncached":
-    "Darphanenin anahtarları burada yok, bu yüzden imza çevrimdışı denetlenemedi.",
-  "wallet.receive.dleq_missing":
-    "İçindeki paraların hepsi darphanenin imza kanıtını taşımıyor, bu yüzden çevrimdışı denetlenemedi.",
   "wallet.receive.dleq_warning":
     "Çevrimiçi onaylanana kadar gönderen ilkece onu başka bir yerde harcamış olabilir.",
   "wallet.receive.failed": "Alınamadı",
@@ -1619,6 +1621,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR kodu tara",
   "wallet.scan.aim_any": "Bir jeton, fatura veya npub QR koduna doğrult.",
   "wallet.scan.no_any": "O görüntüde jeton, fatura veya npub bulunamadı.",
+  "wallet.scan.not_usable": "Airhop bu QR kodunu burada kullanamaz.",
   "wallet.scan.use_camera_a11y": "Kamerayla tara",
   "wallet.scan.use_camera": "Kamerayı kullan",
   "wallet.scan.pick_image_a11y": "Kayıtlı bir görüntüden QR kod oku",
@@ -1721,6 +1724,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Bu ödeme senin cüzdanına kilitli.",
   "wallet.svc.locked_ours_offline_body":
     "Çevrimiçi olduğunda al. Bu arada başka kimse onu alamaz.",
+  "wallet.svc.offline_cap":
+    "Çevrimdışıyken onaylanmamış ecash, darphane başına {limit} ile sınırlıdır.",
+  "wallet.svc.offline_unchecked": "Bu ecash çevrimdışıyken doğrulanamaz.",
+  "wallet.svc.claim_online_body":
+    "Bunu çevrimiçi olduğunda, darphane onaylayabildiğinde al.",
   "wallet.svc.already_spent": "Bu ecash zaten harcanmış.",
   "wallet.svc.already_spent_body":
     "Bu jetonu gönderen onu önce kendisi bozdurmuş ya da aynı jetonu başka birine de göndermiş.",
@@ -2213,6 +2221,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Canlı video",
   "settings.conn.live_video_desc":
     "Kameranı yakındaki kişilere yayınla ve onlarınkini izle",
+  "settings.conn.live_video_on_title": "Canlı video açılsın mı?",
+  "settings.conn.live_video_on_body":
+    "Kameradan Bluetooth menzilindeki kişilere canlı yayın yapabilirsin, onların yayınları da sohbetlerinde görünür ve bu telefona kaydedilir.",
+  "settings.conn.live_video_off_title": "Canlı video kapatılsın mı?",
+  "settings.conn.live_video_off_body":
+    "Artık canlı yayın yapamazsın, başkalarının yayınları da gösterilmez ve kaydedilmez. Kısa bir yayın yine de normal bir video olarak gelir.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor yönlendirmesi",
   "settings.conn.tor_desc":
@@ -2243,12 +2257,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor kullandığını gizler. Snowflake'ten hızlıdır, ancak bu köprüler herkese açıktır ve bazı ağlar engeller.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Sıradan bir web sitesi ziyareti gibi görünerek Tor kullandığını gizler. Diğerlerinden daha zor engellenir.",
   "settings.tor.mode_custom": "Kendi köprülerin",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org adresinden aldığın obfs4 köprü satırlarını kullan. Diğerleri başarısız olduğunda bunu dene.",
+    "bridges.torproject.org adresinden aldığın obfs4 veya WebTunnel köprü satırlarını kullan. Diğerleri başarısız olduğunda bunu dene.",
   "settings.tor.custom_placeholder": "Her satıra bir köprü satırı yapıştır",
   "settings.tor.custom_apply_hint": "Bağlanmak için kutunun dışına dokun.",
   "settings.tor.custom_empty": "Önce en az bir köprü satırı ekle.",

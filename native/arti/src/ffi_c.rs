@@ -17,10 +17,10 @@ use std::ffi::{c_char, c_int, CStr};
 /// reaching the network through `bridge_lines` when any are given.
 ///
 /// `bridge_lines` is a newline-separated list in standard Tor format; empty or
-/// null is a direct connection to a public relay. `obfs4_port` and
-/// `snowflake_port` are where the app already has each transport listening on
-/// loopback, or `0` when it does not, and a line naming a transport whose port
-/// is `0` is refused rather than started without it.
+/// null is a direct connection to a public relay. `obfs4_port`,
+/// `snowflake_port` and `webtunnel_port` are where the app already has each
+/// transport listening on loopback, or `0` when it does not, and a line naming
+/// a transport whose port is `0` is refused rather than started without it.
 ///
 /// Returns `0` once the listener is accepting, which is before the first
 /// circuit exists. Any other value is one of the `AIRHOP_TOR_ERR_*` codes. A bad
@@ -30,13 +30,14 @@ use std::ffi::{c_char, c_int, CStr};
 ///
 /// `data_dir` must be a non-null, NUL-terminated C string, and `bridge_lines`
 /// either null or the same. Both must stay valid for the duration of the call.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn airhop_tor_start(
     data_dir: *const c_char,
     socks_port: u16,
     bridge_lines: *const c_char,
     obfs4_port: u16,
     snowflake_port: u16,
+    webtunnel_port: u16,
 ) -> c_int {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || {
         if data_dir.is_null() {
@@ -60,6 +61,7 @@ pub unsafe extern "C" fn airhop_tor_start(
             crate::TransportPorts {
                 obfs4: obfs4_port,
                 snowflake: snowflake_port,
+                webtunnel: webtunnel_port,
             },
         )
     })
@@ -67,14 +69,14 @@ pub unsafe extern "C" fn airhop_tor_start(
 
 /// Stop Tor, drop its client and release the port. Returns `0`, or
 /// `AIRHOP_TOR_ERR_NOT_RUNNING` when there was nothing to stop.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn airhop_tor_stop() -> c_int {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, crate::stop)
 }
 
 /// Put Tor to sleep or wake it, for the app leaving and re-entering the
 /// foreground. Returns `0`, or `AIRHOP_TOR_ERR_NOT_RUNNING`.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn airhop_tor_set_dormant(dormant: bool) -> c_int {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || crate::set_dormant(dormant))
 }
@@ -93,7 +95,7 @@ pub extern "C" fn airhop_tor_set_dormant(dormant: bool) -> c_int {
 /// after a stop, where it reports a stopped client rather than an error. That is
 /// why it returns the status directly rather than a status code with an out
 /// parameter: there is no failure for a caller to handle.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn airhop_tor_status() -> c_int {
     // The fallback is a stopped client: a status word has no value a caller
     // could read as an error, and "not running" is the safe answer as well as
@@ -111,7 +113,7 @@ pub extern "C" fn airhop_tor_status() -> c_int {
 /// # Safety
 ///
 /// `buf` must be non-null and point at `len` writable bytes.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn airhop_tor_summary(buf: *mut c_char, len: c_int) -> c_int {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || {
         if buf.is_null() || len <= 0 {
@@ -125,7 +127,7 @@ pub unsafe extern "C" fn airhop_tor_summary(buf: *mut c_char, len: c_int) -> c_i
         }
         let bytes = &summary.as_bytes()[..end];
         unsafe {
-            std::ptr::copy_nonoverlapping(bytes.as_ptr(), buf as *mut u8, end);
+            std::ptr::copy_nonoverlapping(bytes.as_ptr(), buf.cast::<u8>(), end);
             buf.add(end).write(0);
         }
         end as c_int
@@ -150,9 +152,10 @@ mod test {
 
         // Two whole characters fit in seven bytes; the third does not.
         assert_eq!(written, 6);
-        let bytes: Vec<u8> = buf[..written as usize].iter().map(|b| *b as u8).collect();
+        let bytes =
+            unsafe { std::slice::from_raw_parts(buf.as_ptr().cast::<u8>(), written as usize) };
         assert_eq!(
-            String::from_utf8(bytes).expect("valid UTF-8"),
+            std::str::from_utf8(bytes).expect("valid UTF-8"),
             "\u{9375}\u{9375}"
         );
         assert_eq!(buf[written as usize], 0, "the result is NUL terminated");

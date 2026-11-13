@@ -1251,7 +1251,7 @@ export default function ArchitecturePage() {
               id="voice"
               eyebrow="The system · 11"
               title="Live voice"
-              lede="Holding the mic is a walkie-talkie, not a recording. Audio leaves as you speak and arrives about half a second later."
+              lede="Turned on, holding the mic is a walkie-talkie, not a recording. Audio leaves as you speak and arrives about half a second later."
             >
               <p>
                 A voice note is a file: you record it, it sends, they play it. Live voice takes the
@@ -1409,8 +1409,9 @@ export default function ArchitecturePage() {
                 <strong className="text-ink">
                   A stream that fits 100 KiB is resent as an ordinary file
                 </strong>{" "}
-                and replaces every copy; a longer one stays as each phone rebuilt it. Turning off
-                Live video in settings stops your phone from showing or recording streams.
+                and replaces every copy; a longer one stays as each phone rebuilt it. Live video is
+                opt-in: until you turn it on in settings, your phone neither shows nor records
+                streams.
               </Note>
 
               <p>
@@ -1627,11 +1628,11 @@ export default function ArchitecturePage() {
                   [
                     "WebTunnel",
                     "That you use Tor, behind traffic shaped like an ordinary visit to a real HTTPS website",
-                    "Fewer bridges exist, since each needs a real website in front of it",
+                    "No built-in lines, so they are pasted under Custom bridges, and fewer exist since each needs a real website in front of it",
                   ],
                   [
                     "Custom bridges",
-                    "The same as obfs4, using lines the built-in list does not carry",
+                    "The same as obfs4 or WebTunnel, using lines the built-in list does not carry",
                     "You fetch them yourself, and they are only as good as their source",
                   ],
                 ]}
@@ -1732,9 +1733,9 @@ export default function ArchitecturePage() {
                 proof shows the mint really signed that coin. It can never show the sender did not
                 already spend it, because only the mint knows that. So a coin received offline is
                 shown as unconfirmed on its own line, not folded silently into your balance, and a
-                token reads as genuine only when every coin in it carries a proof that verifies.
-                Once the mint is reachable, the wallet swaps it by itself, which is what confirms
-                it.
+                token is taken offline only when every coin in it carries a proof that verifies; any
+                other waits in the chat until the mint can be asked. Once the mint is reachable, the
+                wallet swaps it by itself, which is what confirms it.
                 <br />
                 <br />
                 <strong className="text-ink">Reclaiming settles at the mint.</strong> An undelivered
@@ -2131,6 +2132,12 @@ export default function ArchitecturePage() {
                 <TextLink href={REPO_LINKS.glossaryDoc}>GLOSSARY.md</TextLink> for terminology, and{" "}
                 <TextLink href={REPO_LINKS.progressDoc}>PROGRESS.md</TextLink> for build status and
                 milestones.
+              </p>
+              <p className="text-secondary mt-4 text-sm leading-relaxed">
+                For the full design, read the{" "}
+                <TextLink href={REPO_LINKS.airhopWhitepaper}>Airhop whitepaper</TextLink> and, for
+                the relay nodes, the{" "}
+                <TextLink href={REPO_LINKS.airlinkWhitepaper}>Airlink whitepaper</TextLink>.
               </p>
               <p className="text-secondary mt-4 text-sm leading-relaxed">
                 For the protocol Airhop inherits, read the{" "}

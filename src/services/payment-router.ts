@@ -372,21 +372,23 @@ async function payAsToken(params: {
   confirmed: boolean;
 }): Promise<PayResult | null> {
   const quote = await quoteSend({ amount: params.amount, unit: params.unit });
-  // A stale fee schedule is noted in whichever confirmation this quote gets.
+  // A stale fee schedule, and ecash the mint never confirmed, are noted in
+  // whichever confirmation this quote gets.
   const staleDays = staleFeeDays(quote.pricedFromCacheAgeMs);
-  const staleNote =
-    staleDays === null
+  const confirmNote =
+    (staleDays === null
       ? ""
-      : `\n\n${tPlural("wallet.send.stale_fee_note", staleDays)}`;
-  // A confirm already given was the nutzap's, which carried no fee note, so a
-  // stale one asks again about the token that actually goes.
-  if (quote.exact && (!params.confirmed || staleNote !== "")) {
+      : `\n\n${tPlural("wallet.send.stale_fee_note", staleDays)}`) +
+    (quote.unverified ? `\n\n${t("wallet.send.unverified_note")}` : "");
+  // A confirm already given was the nutzap's, which carried no note, so a
+  // noted one asks again about the token that actually goes.
+  if (quote.exact && (!params.confirmed || confirmNote !== "")) {
     const confirmed = await confirmPayment(
       params.amount,
       params.unit,
       params.name,
       false,
-      staleNote,
+      confirmNote,
     );
     if (!confirmed) return null;
   }
@@ -398,7 +400,7 @@ async function payAsToken(params: {
         ...amountParts(params.amount, params.unit),
         spend: amountParts(quote.spend, params.unit).amount,
         extra: amountParts(quote.spend - params.amount, params.unit).amount,
-      }) + staleNote,
+      }) + confirmNote,
       t("wallet.xfer.send_amount", {
         amount: amountParts(quote.spend, params.unit).amount,
       }),

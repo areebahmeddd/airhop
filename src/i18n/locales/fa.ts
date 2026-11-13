@@ -158,7 +158,7 @@ export const strings: Strings = {
     "دستگاه‌های نزدیک را پیدا می‌کند و پیام‌ها را میانشان جابه‌جا می‌کند. مش از همین ساخته می‌شود و بدون اتصال اینترنت کار می‌کند.",
   "onboarding.primer.location.title": "موقعیت مکانی",
   "onboarding.primer.location.body":
-    "شما را در کانال‌های منطقهٔ نزدیک قرار می‌دهد، از یک محله تا یک استان. Airhop هرگز شما را ردیابی نمی‌کند، و موقعیت دقیقتان تنها وقتی از دستگاهتان بیرون می‌رود که موقعیتی را برای کسی بفرستید.",
+    "شما را در کانال‌های منطقهٔ نزدیک قرار می‌دهد، از یک محله تا یک استان. Airhop هرگز شما را ردیابی نمی‌کند، و موقعیت دقیقتان هرگز از دستگاهتان بیرون نمی‌رود.",
   "onboarding.primer.notifications.title": "اعلان‌ها",
   "onboarding.primer.notifications.body":
     "حتی وقتی برنامه بسته است، از پیام‌های تازه باخبر شوید. اعلان‌ها روی خود دستگاه شما ساخته می‌شوند و هیچ سروری در کار نیست.",
@@ -382,7 +382,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "به همهٔ اعضا نرسید. وقتی نزدیک بودند دوباره تلاش کنید.",
   "chat.group.you_were_added": "شما به {name} افزوده شدید.",
-  "chat.group.added_you": "شما را به {name} افزود",
+  "chat.group.invited": "شما به {name} دعوت شدید.",
+  "chat.group.invited_you": "شما را به {name} دعوت کرد",
+  "chat.group.decline": "رد کردن",
+  "chat.group.decline_title": "دعوت به {name} رد شود؟",
+  "chat.group.decline_body":
+    "{name} در مخاطبان شما نیست. او را هم مسدود کنید تا دیگر دعوت یا پیامی از او نگیرید.",
+  "chat.group.decline_block": "رد کردن و مسدود کردن",
   "chat.group.you_were_removed":
     "شما از {name} برداشته شدید. دیگر نمی‌توانید اینجا بخوانید یا بفرستید.",
   "chat.group.removed_you": "شما را از {name} برداشت",
@@ -1179,6 +1185,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "توکن ساخته نشد",
+  "wallet.send.unverified_note":
+    "بخشی از این پرداخت ecash است که ضراب‌خانه هنوز آن را تأیید نکرده است.",
   "wallet.send.title": "فرستادن ecash",
   "wallet.send.amount_in": "مبلغ به {unit}",
   "wallet.send.body":
@@ -1238,15 +1246,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "در {mint} بازخرید شد. اکنون به شکل اثبات‌پذیر از آن شماست: نسخهٔ فرستنده از این توکن دیگر کار نمی‌کند.",
   "wallet.receive.pending_unconfirmed":
-    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. امضایش درست است، پس توکن اصل است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
   "wallet.receive.dleq_ok":
     "امضای ضراب‌خانه درست از آب درمی‌آید، پس توکن اصل است.",
-  "wallet.receive.dleq_uncached":
-    "کلیدهای ضراب‌خانه اینجا ذخیره نیستند، پس امضا به شکل برون‌خط بررسی نشد.",
-  "wallet.receive.dleq_missing":
-    "همهٔ سکه‌های آن گواه امضای ضراب‌خانه را ندارند، پس نشد آن را برون‌خط بررسی کرد.",
   "wallet.receive.dleq_warning":
     "تا وقتی برخط تأیید نشده، در اصل ممکن است فرستنده آن را جای دیگری خرج کرده باشد.",
   "wallet.receive.failed": "دریافت نشد",
@@ -1604,6 +1606,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "اسکن کد QR",
   "wallet.scan.aim_any": "روی کد QR یک توکن، صورتحساب یا npub بگیرید.",
   "wallet.scan.no_any": "در آن تصویر توکن، صورتحساب یا npub پیدا نشد.",
+  "wallet.scan.not_usable": "Airhop نمی‌تواند از این کد QR اینجا استفاده کند.",
   "wallet.scan.use_camera_a11y": "پویش با دوربین",
   "wallet.scan.use_camera": "استفاده از دوربین",
   "wallet.scan.pick_image_a11y": "خواندن یک کد QR از تصویری ذخیره‌شده",
@@ -1704,6 +1707,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "این پرداخت به کیف پول شما قفل شده است.",
   "wallet.svc.locked_ours_offline_body":
     "وقتی برخط شدید آن را دریافت کنید. در این میان هیچ‌کس دیگری نمی‌تواند آن را بردارد.",
+  "wallet.svc.offline_cap":
+    "در حالت برون‌خط، ecash تأییدنشده به {limit} برای هر ضراب‌خانه محدود است.",
+  "wallet.svc.offline_unchecked": "این ecash را نمی‌توان برون‌خط بررسی کرد.",
+  "wallet.svc.claim_online_body":
+    "این یکی را وقتی برخط شدید دریافت کنید، زمانی که ضراب‌خانه بتواند آن را تأیید کند.",
   "wallet.svc.already_spent": "این ecash از پیش خرج شده است.",
   "wallet.svc.already_spent_body":
     "هر کس این توکن را فرستاده زودتر بازخریدش کرده، یا همان توکن را به کس دیگری هم داده است.",
@@ -2194,6 +2202,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "ویدیوی زنده",
   "settings.conn.live_video_desc":
     "دوربینت را برای افراد نزدیک پخش کن و پخش آن‌ها را ببین",
+  "settings.conn.live_video_on_title": "ویدیوی زنده روشن شود؟",
+  "settings.conn.live_video_on_body":
+    "می‌توانید با دوربین برای کسانی که در محدودهٔ بلوتوث‌اند پخش زنده کنید، و پخش‌های آن‌ها در گفتگوهایتان نمایش داده و روی این گوشی ضبط می‌شود.",
+  "settings.conn.live_video_off_title": "ویدیوی زنده خاموش شود؟",
+  "settings.conn.live_video_off_body":
+    "دیگر نمی‌توانید پخش زنده کنید، و پخش‌های دیگران نه نمایش داده می‌شود و نه ضبط. پخش کوتاه همچنان به‌صورت یک ویدیوی معمولی می‌رسد.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "مسیردهی Tor",
   "settings.conn.tor_desc":
@@ -2223,12 +2237,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "پنهان می‌کند که از Tor استفاده می‌کنید. سریع‌تر از Snowflake، اما این پل‌ها عمومی‌اند و برخی شبکه‌ها آنها را مسدود می‌کنند.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "با شبیه‌سازی بازدید معمولی از یک وب‌سایت، استفاده از Tor را پنهان می‌کند. مسدود کردنش از بقیه سخت‌تر است.",
   "settings.tor.mode_custom": "پل‌های دلخواه",
   "settings.tor.mode_custom_desc":
-    "از خطوط پل obfs4 از bridges.torproject.org استفاده کنید. وقتی بقیه کار نکردند این را امتحان کنید.",
+    "از خطوط پل obfs4 یا WebTunnel از bridges.torproject.org استفاده کنید. وقتی بقیه کار نکردند این را امتحان کنید.",
   "settings.tor.custom_placeholder": "در هر خط یک خط پل را بچسبانید",
   "settings.tor.custom_apply_hint": "برای اتصال، بیرون کادر را لمس کنید.",
   "settings.tor.custom_empty": "ابتدا دست‌کم یک خط پل اضافه کنید.",

@@ -156,7 +156,7 @@ export const strings: Strings = {
     "يعثر على الأجهزة القريبة ويمرّر الرسائل بينها. هذا ما يصنع الشبكة، ويعمل دون اتصال بالإنترنت.",
   "onboarding.primer.location.title": "الموقع",
   "onboarding.primer.location.body":
-    "يضعك في قنوات المناطق القريبة، من الحي إلى الإقليم. لا يتتبعك Airhop أبدًا، ولا يغادر موقعك الدقيق جهازك إلا حين ترسل موقعك إلى شخص ما.",
+    "يضعك في قنوات المناطق القريبة، من الحي إلى الإقليم. لا يتتبعك Airhop أبدًا، ولا يغادر موقعك الدقيق جهازك أبدًا.",
   "onboarding.primer.notifications.title": "الإشعارات",
   "onboarding.primer.notifications.body":
     "تصلك تنبيهات بالرسائل الجديدة حتى عندما يكون التطبيق مغلقًا. تُنشأ الإشعارات محليًا على جهازك، دون أي خادم.",
@@ -373,7 +373,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "تعذّر الوصول إلى كل الأعضاء. حاول مرة أخرى وهم بالجوار.",
   "chat.group.you_were_added": "تمت إضافتك إلى {name}.",
-  "chat.group.added_you": "أضافك إلى {name}",
+  "chat.group.invited": "أنت مدعو إلى {name}.",
+  "chat.group.invited_you": "دعاك إلى {name}",
+  "chat.group.decline": "رفض",
+  "chat.group.decline_title": "رفض الدعوة إلى {name}؟",
+  "chat.group.decline_body":
+    "{name} ليس ضمن جهات اتصالك. احظره أيضًا، ولن تصلك منه دعوات أو رسائل بعد الآن.",
+  "chat.group.decline_block": "رفض وحظر",
   "chat.group.you_were_removed":
     "تمت إزالتك من {name}. لم يعد بإمكانك القراءة أو الإرسال هنا.",
   "chat.group.removed_you": "أزالك من {name}",
@@ -1147,6 +1153,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "تعذّر بناء التوكن",
+  "wallet.send.unverified_note":
+    "جزء من هذه الدفعة نقد إلكتروني لم تؤكده دار السك بعد.",
   "wallet.send.title": "إرسال نقد إلكتروني",
   "wallet.send.amount_in": "المبلغ بـ {unit}",
   "wallet.send.body":
@@ -1206,14 +1214,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "صُرف عند {mint}. أصبح لك بشكل مثبت: نسخة المرسل من هذا التوكن لم تعد تعمل.",
   "wallet.receive.pending_unconfirmed":
-    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. توقيعه صحيح، فالتوكن أصلي. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
   "wallet.receive.dleq_ok": "توقيع دار السك صحيح، فالتوكن أصلي.",
-  "wallet.receive.dleq_uncached":
-    "مفاتيح دار السك غير مخزّنة هنا، لذا تعذّر فحص التوقيع دون اتصال.",
-  "wallet.receive.dleq_missing":
-    "ليست كل عملة فيه تحمل إثبات توقيع دار السك، لذا تعذّر فحصه دون اتصال.",
   "wallet.receive.dleq_warning":
     "إلى أن يُؤكَّد عبر الإنترنت، يمكن للمرسل نظريًا أن يكون قد أنفقه في مكان آخر.",
   "wallet.receive.failed": "تعذّر الاستقبال",
@@ -1561,6 +1563,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any":
     "وجّه الكاميرا نحو رمز استجابة سريعة لتوكن أو فاتورة أو npub.",
   "wallet.scan.no_any": "لم يُعثر على توكن أو فاتورة أو npub في تلك الصورة.",
+  "wallet.scan.not_usable": "لا يستطيع Airhop استخدام رمز QR هذا هنا.",
   "wallet.scan.use_camera_a11y": "المسح بالكاميرا",
   "wallet.scan.use_camera": "استخدام الكاميرا",
   "wallet.scan.pick_image_a11y": "قراءة رمز استجابة سريعة من صورة محفوظة",
@@ -1658,6 +1661,12 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "هذه الدفعة مقفلة على محفظتك.",
   "wallet.svc.locked_ours_offline_body":
     "استلمها عندما تتصل بالإنترنت. لا يستطيع أحد غيرك أخذها في الأثناء.",
+  "wallet.svc.offline_cap":
+    "دون اتصال، يقتصر النقد الإلكتروني غير المؤكد على {limit} لكل دار سك.",
+  "wallet.svc.offline_unchecked":
+    "لا يمكن التحقق من هذا النقد الإلكتروني دون اتصال.",
+  "wallet.svc.claim_online_body":
+    "استلم هذه الدفعة عندما تتصل بالإنترنت، حين تستطيع دار السك تأكيدها.",
   "wallet.svc.already_spent": "هذا النقد الإلكتروني أُنفق بالفعل.",
   "wallet.svc.already_spent_body":
     "من أرسل هذا التوكن صرفه أولًا، أو أرسل التوكن نفسه إلى شخص آخر.",
@@ -2131,6 +2140,12 @@ export const strings: Strings = {
     "الضغط المستمر على الميكروفون يسجّل ملاحظة صوتية بدلًا من ذلك. تُرسل عندما تفلت، ولا يسمعها أحد حتى يشغّلها.",
   "settings.conn.live_video": "فيديو مباشر",
   "settings.conn.live_video_desc": "بث الكاميرا للأشخاص القريبين، ومشاهدة بثهم",
+  "settings.conn.live_video_on_title": "تفعيل الفيديو المباشر؟",
+  "settings.conn.live_video_on_body":
+    "يمكنك البث مباشرة من الكاميرا إلى من هم ضمن نطاق البلوتوث، وتظهر بثوثهم في محادثاتك وتُسجَّل على هذا الهاتف.",
+  "settings.conn.live_video_off_title": "تعطيل الفيديو المباشر؟",
+  "settings.conn.live_video_off_body":
+    "لن تتمكن من البث المباشر بعد الآن، ولن تُعرض بثوث الآخرين أو تُسجَّل. أما البث القصير فيصل كفيديو عادي.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "توجيه Tor",
   "settings.conn.tor_desc": "وجّه حركة Nostr عبر Tor لخصوصية إضافية",
@@ -2159,12 +2174,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "يخفي استخدامك لـ Tor. أسرع من Snowflake، لكن هذه الجسور علنية وبعض الشبكات تحجبها.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "يخفي استخدامك لـ Tor بجعله يبدو كزيارة عادية لموقع ويب. حظره أصعب من غيره.",
   "settings.tor.mode_custom": "جسور مخصصة",
   "settings.tor.mode_custom_desc":
-    "استخدم أسطر جسور obfs4 من bridges.torproject.org. جرّب هذا عندما تفشل الخيارات الأخرى.",
+    "استخدم أسطر جسور obfs4 أو WebTunnel من bridges.torproject.org. جرّب هذا عندما تفشل الخيارات الأخرى.",
   "settings.tor.custom_placeholder": "الصق سطر جسر واحد في كل سطر",
   "settings.tor.custom_apply_hint": "انقر خارج المربع للاتصال.",
   "settings.tor.custom_empty": "أضف سطر جسر واحدًا على الأقل أولًا.",

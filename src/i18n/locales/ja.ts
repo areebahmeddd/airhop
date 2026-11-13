@@ -160,7 +160,7 @@ export const strings: Strings = {
     "近くの端末を見つけ、その間でメッセージを中継します。これがメッシュを作り、インターネットなしで動きます。",
   "onboarding.primer.location.title": "位置情報",
   "onboarding.primer.location.body":
-    "街区から地域まで、近くのエリアチャンネルにあなたを配置します。Airhopがあなたを追跡することはなく、正確な位置が端末の外に出るのは、誰かに位置情報を送ったときだけです。",
+    "街区から地域まで、近くのエリアチャンネルにあなたを配置します。Airhopがあなたを追跡することはなく、正確な位置が端末の外に出ることもありません。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "アプリを閉じていても新着メッセージの通知を受け取れます。通知は端末内で作られ、サーバーは関与しません。",
@@ -387,7 +387,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "全員には届きませんでした。相手が近くにいるときにもう一度お試しください。",
   "chat.group.you_were_added": "{name}に追加されました。",
-  "chat.group.added_you": "{name}にあなたを追加しました",
+  "chat.group.invited": "{name}に招待されました。",
+  "chat.group.invited_you": "{name}にあなたを招待しました",
+  "chat.group.decline": "辞退",
+  "chat.group.decline_title": "{name}への招待を辞退しますか。",
+  "chat.group.decline_body":
+    "{name}は連絡先にいません。ブロックもすると、今後この人から招待やメッセージは届きません。",
+  "chat.group.decline_block": "辞退してブロック",
   "chat.group.you_were_removed":
     "{name}から削除されました。ここでの読み書きはできません。",
   "chat.group.removed_you": "{name}からあなたを削除しました",
@@ -1192,6 +1198,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "トークンを作成できませんでした",
+  "wallet.send.unverified_note":
+    "この支払いの一部は、ミントがまだ確認していないecashです。",
   "wallet.send.title": "ecashを送る",
   "wallet.send.amount_in": "金額（{unit}）",
   "wallet.send.body":
@@ -1251,14 +1259,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}で引き換えました。これで証明可能にあなたのものとなり、送信者側のこのトークンの控えはもう使えません。",
   "wallet.receive.pending_unconfirmed":
-    "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。オンラインになると自動的にミントで確認されます。",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。署名は正しいので、トークンは本物です。オンラインになると自動的にミントで確認されます。",
   "wallet.receive.dleq_ok": "ミントの署名は正しく、トークンは本物です。",
-  "wallet.receive.dleq_uncached":
-    "ミントの鍵がここに保存されていないため、オフラインでは署名を確認できませんでした。",
-  "wallet.receive.dleq_missing":
-    "一部のコインにミントの署名証明が付いていないため、オフラインでは確認できませんでした。",
   "wallet.receive.dleq_warning":
     "オンラインで確認されるまでは、送信者が別の場所で使っていた可能性も原理的には残ります。",
   "wallet.receive.failed": "受け取れませんでした",
@@ -1617,6 +1619,7 @@ export const strings: Strings = {
     "トークン、請求書、npubのQRコードにカメラを向けてください。",
   "wallet.scan.no_any":
     "その画像にトークン、請求書、npubは見つかりませんでした。",
+  "wallet.scan.not_usable": "このQRコードはここではAirhopで使えません。",
   "wallet.scan.use_camera_a11y": "カメラで読み取る",
   "wallet.scan.use_camera": "カメラを使う",
   "wallet.scan.pick_image_a11y": "保存した画像からQRコードを読み取る",
@@ -1718,6 +1721,11 @@ export const strings: Strings = {
     "この支払いはあなたのウォレットにロックされています。",
   "wallet.svc.locked_ours_offline_body":
     "オンラインになってから受け取ってください。その間、ほかの誰も受け取れません。",
+  "wallet.svc.offline_cap":
+    "オフラインでは、未確認のecashはミントごとに{limit}までです。",
+  "wallet.svc.offline_unchecked": "このecashはオフラインでは確認できません。",
+  "wallet.svc.claim_online_body":
+    "オンラインになり、ミントが確認できるようになってから受け取ってください。",
   "wallet.svc.already_spent": "このecashはすでに使用されています。",
   "wallet.svc.already_spent_body":
     "このトークンを送った人が先に引き換えたか、同じトークンを別の人にも送ったかのどちらかです。",
@@ -2203,6 +2211,12 @@ export const strings: Strings = {
     "マイクを押すと、代わりにボイスメモを録音します。指を離すと送信され、相手が再生するまで誰にも聞かれません。",
   "settings.conn.live_video": "ライブ動画",
   "settings.conn.live_video_desc": "近くの人にカメラを配信し、相手の配信も視聴",
+  "settings.conn.live_video_on_title": "ライブ動画をオンにしますか",
+  "settings.conn.live_video_on_body":
+    "カメラからBluetooth圏内の人に配信でき、相手の配信もチャットに表示されてこの端末に録画されます。",
+  "settings.conn.live_video_off_title": "ライブ動画をオフにしますか",
+  "settings.conn.live_video_off_body":
+    "配信できなくなり、他の人の配信も表示や録画をしなくなります。短い配信は通常の動画として届きます。",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor経由の通信",
   "settings.conn.tor_desc":
@@ -2233,12 +2247,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Torの利用を隠します。Snowflakeより速いものの、これらのブリッジは公開されており遮断する回線もあります。",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "通常のウェブサイト閲覧のように見せて、Torの利用を隠します。他より遮断されにくい方法です。",
   "settings.tor.mode_custom": "カスタムブリッジ",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.orgで入手したobfs4のブリッジ行を使います。他が失敗したときに試してください。",
+    "bridges.torproject.orgで入手したobfs4またはWebTunnelのブリッジ行を使います。他が失敗したときに試してください。",
   "settings.tor.custom_placeholder": "1行につき1つのブリッジ行を貼り付け",
   "settings.tor.custom_apply_hint": "接続するにはボックスの外をタップします。",
   "settings.tor.custom_empty": "まず1つ以上のブリッジ行を追加してください。",

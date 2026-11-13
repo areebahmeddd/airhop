@@ -162,7 +162,7 @@ export const strings: Strings = {
     "Mahita ny fitaovana akaiky ary mampita hafatra eo amin'izy ireo. Izay no mamorona ny harato, ary miasa tsy misy fifandraisana Internet.",
   "onboarding.primer.location.title": "Toerana",
   "onboarding.primer.location.body":
-    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop, ary tsy mivoaka ny fitaovanao ny toeranao marina raha tsy mandefa marika toerana amin'olona ianao.",
+    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop, ary tsy mivoaka mihitsy ny fitaovanao ny toeranao marina.",
   "onboarding.primer.notifications.title": "Fampandrenesana",
   "onboarding.primer.notifications.body":
     "Mandraisa fampandrenesana momba ny hafatra vaovao na dia mihidy aza ny rindranasa. Amboarina eo amin'ny fitaovanao ny fampandrenesana, tsy misy mpizara mandray anjara.",
@@ -398,7 +398,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tsy tratra ny mpikambana rehetra. Andramo indray rehefa akaiky izy ireo.",
   "chat.group.you_were_added": "Nampidirina tao amin'ny {name} ianao.",
-  "chat.group.added_you": "Nampiditra anao tao amin'ny {name}",
+  "chat.group.invited": "Nasaina ho ao amin'ny {name} ianao.",
+  "chat.group.invited_you": "Nanasa anao ho ao amin'ny {name}",
+  "chat.group.decline": "Lavina",
+  "chat.group.decline_title": "Lavina ny fanasana ho ao amin'ny {name}?",
+  "chat.group.decline_body":
+    "Tsy ao amin'ny mpifandraisanao i {name}. Sakano koa izy, dia tsy handray fanasana na hafatra avy aminy intsony ianao.",
+  "chat.group.decline_block": "Lavina sy sakanana",
   "chat.group.you_were_removed":
     "Nesorina tao amin'ny {name} ianao. Tsy afaka mamaky na mandefa hafatra eto intsony ianao.",
   "chat.group.removed_you": "Nanaisotra anao tao amin'ny {name}",
@@ -1232,6 +1238,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tsy voaforona ny tapakila",
+  "wallet.send.unverified_note":
+    "Ecash mbola tsy nohamarinin'ny mpamoaka ny ampahany amin'ity fandoavam-bola ity.",
   "wallet.send.title": "Mandefa ecash",
   "wallet.send.amount_in": "Sanda amin'ny {unit}",
   "wallet.send.body":
@@ -1293,15 +1301,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Novidina tao amin'i {mint}. Azo porofoina fa anao izy izao: tsy miasa intsony ny dikan'ity tapakila ity teo an-tanan'ny mpandefa.",
   "wallet.receive.pending_unconfirmed":
-    "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy. Hohamarinina ho azy amin'ny mpamoaka izy raha vao an-tserasera ianao.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy. Mifanaraka ny soniany, ka tena izy ny tapakila. Hohamarinina ho azy amin'ny mpamoaka izy raha vao an-tserasera ianao.",
   "wallet.receive.dleq_ok":
     "Mifanaraka ny sonian'ny mpamoaka, ka tena izy ny tapakila.",
-  "wallet.receive.dleq_uncached":
-    "Tsy voatahiry eto ny lakilen'ny mpamoaka, ka tsy voamarina tsy misy Internet ny sonia.",
-  "wallet.receive.dleq_missing":
-    "Tsy ny vola madinika rehetra ao anatiny no mitondra ny porofon'ny sonian'ny mpamoaka, ka tsy voamarina tsy misy Internet izy.",
   "wallet.receive.dleq_warning":
     "Mandra-pahamarina azy an-tserasera, dia mety efa nolanian'ny mpandefa tany an-toeran-kafa izy.",
   "wallet.receive.failed": "Tsy voaray",
@@ -1668,6 +1670,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Atodiho amin'ny kaody QR tapakila, faktiora na npub.",
   "wallet.scan.no_any":
     "Tsy nahitana tapakila, faktiora na npub tao amin'io sary io.",
+  "wallet.scan.not_usable": "Tsy azon'i Airhop ampiasaina eto io kaody QR io.",
   "wallet.scan.use_camera_a11y": "Alaivo sary amin'ny fakan-tsary",
   "wallet.scan.use_camera": "Ampiasao ny fakan-tsary",
   "wallet.scan.pick_image_a11y": "Vakio ny kaody QR avy amin'ny sary voatahiry",
@@ -1775,6 +1778,12 @@ export const strings: Strings = {
     "Mihidy amin'ny kitapom-bolanao ity fandoavam-bola ity.",
   "wallet.svc.locked_ours_offline_body":
     "Raiso rehefa an-tserasera ianao. Tsy misy olon-kafa afaka maka azy mandritra izany.",
+  "wallet.svc.offline_cap":
+    "Raha tsy misy Internet, ny ecash tsy voamarina dia voafetra ho {limit} isaky ny mpamoaka.",
+  "wallet.svc.offline_unchecked":
+    "Tsy azo hamarinina ity ecash ity raha tsy misy Internet.",
+  "wallet.svc.claim_online_body":
+    "Raiso ity rehefa an-tserasera ianao, rehefa afaka manamarina azy ny mpamoaka.",
   "wallet.svc.already_spent": "Efa lany ity ecash ity.",
   "wallet.svc.already_spent_body":
     "Ilay nandefa ity tapakila ity no nividy azy voalohany, na nandefa tapakila mitovy tamin'olon-kafa koa.",
@@ -2290,6 +2299,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Horonan-tsary mivantana",
   "settings.conn.live_video_desc":
     "Alefaso mivantana amin'ny olona akaiky ny fakantsarinao, ary jereo ny azy ireo",
+  "settings.conn.live_video_on_title": "Alefa ny horonan-tsary mivantana?",
+  "settings.conn.live_video_on_body":
+    "Afaka mandefa mivantana avy amin'ny fakantsary ho an'ny olona ao anatin'ny fetran'ny Bluetooth ianao, ary miseho ao amin'ny resakao ny fandefasan'izy ireo ary voarakitra amin'ity finday ity.",
+  "settings.conn.live_video_off_title": "Vonoina ny horonan-tsary mivantana?",
+  "settings.conn.live_video_off_body":
+    "Tsy afaka mandefa mivantana intsony ianao, ary tsy aseho na raketina intsony ny fandefasan'ny hafa. Ny fandefasana fohy kosa dia tonga ho horonan-tsary tsotra ihany.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Fitondrana amin'ny Tor",
   "settings.conn.tor_desc":
@@ -2321,12 +2336,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Manafina fa mampiasa Tor ianao. Haingana noho ny Snowflake, saingy ampahibemaso ireo tetezana ireo ka sakanan'ny tambajotra sasany.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Manafina ny fampiasanao Tor amin'ny fanaovana azy ho toy ny fitsidihana tranonkala mahazatra. Sarotra sakanana noho ny hafa.",
   "settings.tor.mode_custom": "Tetezana manokana",
   "settings.tor.mode_custom_desc":
-    "Ampiasao ny andalana tetezana obfs4 avy amin'ny bridges.torproject.org. Andramo ity rehefa tsy mety ny hafa.",
+    "Ampiasao ny andalana tetezana obfs4 na WebTunnel avy amin'ny bridges.torproject.org. Andramo ity rehefa tsy mety ny hafa.",
   "settings.tor.custom_placeholder":
     "Apetaho tsipika tetezana iray isaky ny andalana",
   "settings.tor.custom_apply_hint": "Tsindrio ivelan'ny boaty mba hifandray.",

@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Tìm các thiết bị ở gần và chuyển tiếp tin nhắn giữa chúng. Đây là thứ tạo nên mạng lưới và chạy được mà không cần kết nối Internet.",
   "onboarding.primer.location.title": "Vị trí",
   "onboarding.primer.location.body":
-    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn, và vị trí chính xác của bạn chỉ rời khỏi thiết bị khi bạn gửi vị trí cho ai đó.",
+    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn, và vị trí chính xác của bạn không bao giờ rời khỏi thiết bị.",
   "onboarding.primer.notifications.title": "Thông báo",
   "onboarding.primer.notifications.body":
     "Nhận báo tin nhắn mới ngay cả khi ứng dụng đã đóng. Thông báo được tạo ngay trên thiết bị của bạn, không có máy chủ nào tham gia.",
@@ -382,7 +382,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Không tới được mọi thành viên. Hãy thử lại khi họ ở gần.",
   "chat.group.you_were_added": "Bạn đã được thêm vào {name}.",
-  "chat.group.added_you": "Đã thêm bạn vào {name}",
+  "chat.group.invited": "Bạn được mời vào {name}.",
+  "chat.group.invited_you": "Đã mời bạn vào {name}",
+  "chat.group.decline": "Từ chối",
+  "chat.group.decline_title": "Từ chối lời mời vào {name}?",
+  "chat.group.decline_body":
+    "{name} không có trong danh bạ của bạn. Chặn luôn họ, bạn sẽ không nhận lời mời hay tin nhắn từ họ nữa.",
+  "chat.group.decline_block": "Từ chối và chặn",
   "chat.group.you_were_removed":
     "Bạn đã bị gỡ khỏi {name}. Bạn không còn đọc hay gửi tin nhắn ở đây được nữa.",
   "chat.group.removed_you": "Đã gỡ bạn khỏi {name}",
@@ -1187,6 +1193,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Không dựng được token",
+  "wallet.send.unverified_note":
+    "Một phần khoản thanh toán này là ecash nhà đúc chưa xác nhận.",
   "wallet.send.title": "Gửi ecash",
   "wallet.send.amount_in": "Số tiền tính bằng {unit}",
   "wallet.send.body":
@@ -1246,14 +1254,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Đã đổi tại {mint}. Giờ nó chứng minh được là của bạn: bản sao token này của người gửi không còn dùng được.",
   "wallet.receive.pending_unconfirmed":
-    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Chữ ký của nó hợp lệ, nên token là thật. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
   "wallet.receive.dleq_ok": "Chữ ký của nhà đúc hợp lệ, nên token là thật.",
-  "wallet.receive.dleq_uncached":
-    "Khóa của nhà đúc không được lưu sẵn ở đây, nên không kiểm tra được chữ ký khi ngoại tuyến.",
-  "wallet.receive.dleq_missing":
-    "Không phải đồng nào trong đó cũng mang bằng chứng chữ ký của nhà đúc, nên không kiểm tra được khi ngoại tuyến.",
   "wallet.receive.dleq_warning":
     "Cho tới khi nó được xác nhận lúc có mạng, về lý thuyết người gửi có thể đã tiêu nó ở nơi khác.",
   "wallet.receive.failed": "Không nhận được",
@@ -1613,6 +1615,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Hãy hướng vào mã QR của token, hóa đơn hoặc npub.",
   "wallet.scan.no_any":
     "Không tìm thấy token, hóa đơn hay npub nào trong hình đó.",
+  "wallet.scan.not_usable": "Airhop không thể dùng mã QR này ở đây.",
   "wallet.scan.use_camera_a11y": "Quét bằng máy ảnh",
   "wallet.scan.use_camera": "Dùng máy ảnh",
   "wallet.scan.pick_image_a11y": "Đọc một mã QR từ hình ảnh đã lưu",
@@ -1712,6 +1715,12 @@ export const strings: Strings = {
     "Khoản thanh toán này đã được khóa vào ví của bạn.",
   "wallet.svc.locked_ours_offline_body":
     "Hãy nhận nó khi bạn có mạng. Trong lúc đó không ai khác lấy được nó.",
+  "wallet.svc.offline_cap":
+    "Khi ngoại tuyến, ecash chưa được xác nhận bị giới hạn ở {limit} cho mỗi nhà đúc.",
+  "wallet.svc.offline_unchecked":
+    "Không thể kiểm tra ecash này khi ngoại tuyến.",
+  "wallet.svc.claim_online_body":
+    "Hãy nhận khoản này khi bạn có mạng và nhà đúc có thể xác nhận nó.",
   "wallet.svc.already_spent": "Khoản ecash này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":
     "Người gửi token này đã đổi nó trước, hoặc đã gửi cùng token đó cho người khác.",
@@ -2206,6 +2215,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video trực tiếp",
   "settings.conn.live_video_desc":
     "Phát camera của bạn cho người ở gần, và xem buổi phát của họ",
+  "settings.conn.live_video_on_title": "Bật video trực tiếp?",
+  "settings.conn.live_video_on_body":
+    "Bạn có thể phát trực tiếp từ camera tới mọi người trong tầm Bluetooth, và các buổi phát của họ hiện trong cuộc trò chuyện của bạn và được ghi lại trên điện thoại này.",
+  "settings.conn.live_video_off_title": "Tắt video trực tiếp?",
+  "settings.conn.live_video_off_body":
+    "Bạn không thể phát trực tiếp nữa, và các buổi phát của người khác không được hiển thị hay ghi lại. Buổi phát ngắn vẫn tới dưới dạng video thông thường.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Định tuyến qua Tor",
   "settings.conn.tor_desc": "Đưa lưu lượng Nostr qua Tor để riêng tư hơn",
@@ -2235,12 +2250,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Che giấu việc bạn dùng Tor. Nhanh hơn Snowflake, nhưng các cầu nối này công khai và một số mạng chặn chúng.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Ẩn việc bạn dùng Tor bằng cách trông như một lượt truy cập web bình thường. Khó chặn hơn các cách khác.",
   "settings.tor.mode_custom": "Cầu nối riêng",
   "settings.tor.mode_custom_desc":
-    "Dùng các dòng cầu nối obfs4 từ bridges.torproject.org. Hãy thử cách này khi các cách khác thất bại.",
+    "Dùng các dòng cầu nối obfs4 hoặc WebTunnel từ bridges.torproject.org. Hãy thử cách này khi các cách khác thất bại.",
   "settings.tor.custom_placeholder": "Dán mỗi dòng một dòng cầu nối",
   "settings.tor.custom_apply_hint": "Chạm bên ngoài ô để kết nối.",
   "settings.tor.custom_empty": "Hãy thêm ít nhất một dòng cầu nối trước.",

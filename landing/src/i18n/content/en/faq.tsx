@@ -161,10 +161,10 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Can I talk instead of typing?",
         a: (
           <>
-            Yes. Hold the mic button and it behaves like a walkie-talkie: your voice leaves as you
-            speak and arrives about half a second later, instead of being recorded and sent when you
-            let go. When you release it, the same audio also lands in the chat as an ordinary voice
-            note, so anyone who was out of range or joined late still gets it.
+            Yes. Hold the mic button and it records a voice note that sends when you let go. Turn on
+            live voice in Settings and the same button works like a walkie-talkie: your voice leaves
+            as you speak and arrives about half a second later, and when you release it the audio
+            also lands in the chat as a voice note, so anyone out of range or late still gets it.
             <br />
             <br />
             It is offered in the public Bluetooth channel and in direct messages.{" "}
@@ -172,12 +172,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
             room is broadcast unencrypted, so streaming one into a room whose text is encrypted
             would quietly undo the thing that makes it private. Location channels are excluded too,
             since that would put your voice on public relays. Holding the mic in any of them records
-            a voice note instead, and it does the same when nobody is in range to hear you live, so
-            the same gesture always produces something.
+            a voice note instead, as it does when nobody is in range to hear you live.
             <br />
             <br />
-            Live voice can be switched off entirely in Settings, and incoming audio only plays while
-            you have that conversation open in front of you. The{" "}
+            Live voice is off by default because it streams before you let go, and incoming live
+            audio only plays while that conversation is open in front of you. The{" "}
             <TextLink href="/architecture/">architecture page</TextLink> describes how the frames
             travel.
           </>
@@ -1041,8 +1040,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             <br />
             Offline, Airhop still checks the mint's signature on every coin it receives (a{" "}
             <TextLink href="https://github.com/cashubtc/nuts/blob/main/12.md">DLEQ proof</TextLink>
-            ), so a coin whose proof fails is rejected outright, and a token only reads as genuine
-            when every coin in it checks out. That proves the mint issued it.{" "}
+            ), so a coin whose proof fails is rejected outright, and a token is only taken when
+            every coin in it checks out. That proves the mint issued it.{" "}
             <strong>
               It can never prove it is unspent, because only the mint knows that.
             </strong>{" "}

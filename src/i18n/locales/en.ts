@@ -196,7 +196,7 @@ export const strings = {
     "Finds nearby devices and relays messages between them. This creates the mesh and works without an internet connection.",
   "onboarding.primer.location.title": "Location",
   "onboarding.primer.location.body":
-    "Places you in nearby area channels, from a block to a region. Airhop never tracks you, and your precise location leaves your device only when you send someone a location pin.",
+    "Places you in nearby area channels, from a block to a region. Airhop never tracks you, and your precise location never leaves your device.",
   "onboarding.primer.notifications.title": "Notifications",
   "onboarding.primer.notifications.body":
     "Receive alerts for new messages even when the app is closed. Notifications are created locally on your device, with no server involvement.",
@@ -418,7 +418,13 @@ export const strings = {
   "chat.group.unreachable":
     "Could not reach every member. Try again while they’re nearby.",
   "chat.group.you_were_added": "You were added to {name}.",
-  "chat.group.added_you": "Added you to {name}",
+  "chat.group.invited": "You’re invited to {name}.",
+  "chat.group.invited_you": "Invited you to {name}",
+  "chat.group.decline": "Decline",
+  "chat.group.decline_title": "Decline the invite to {name}?",
+  "chat.group.decline_body":
+    "{name} isn’t in your contacts. Block them too, and you won’t get invites or messages from them again.",
+  "chat.group.decline_block": "Decline and block",
   "chat.group.you_were_removed":
     "You were removed from {name}. You can no longer read or send messages here.",
   "chat.group.removed_you": "Removed you from {name}",
@@ -1206,6 +1212,8 @@ export const strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Could not build the token",
+  "wallet.send.unverified_note":
+    "Part of this payment is ecash the mint has not confirmed yet.",
   "wallet.send.title": "Send ecash",
   "wallet.send.amount_in": "Amount in {unit}",
   "wallet.send.body":
@@ -1265,15 +1273,9 @@ export const strings = {
   "wallet.receive.redeemed_at":
     "Redeemed at {mint}. It is provably yours now: the sender’s copy of this token no longer works.",
   "wallet.receive.pending_unconfirmed":
-    "Stored from {mint}, but the mint has not confirmed it is unspent yet. It is confirmed with the mint automatically once you are online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Stored from {mint}, but the mint has not confirmed it is unspent yet. Its signature checks out, so the token is genuine. It is confirmed with the mint automatically once you are online.",
   "wallet.receive.dleq_ok":
     "The mint’s signature checks out, so the token is genuine.",
-  "wallet.receive.dleq_uncached":
-    "The mint’s keys are not cached here, so the signature could not be checked offline.",
-  "wallet.receive.dleq_missing":
-    "Not every coin in it carries the mint’s signature proof, so it could not be checked offline.",
   "wallet.receive.dleq_warning":
     "Until it is confirmed online, the sender could in principle have spent it elsewhere.",
   "wallet.receive.failed": "Could not receive",
@@ -1629,6 +1631,7 @@ export const strings = {
   "wallet.scan.title_any": "Scan a QR code",
   "wallet.scan.aim_any": "Point at a token, invoice or npub QR code.",
   "wallet.scan.no_any": "No token, invoice or npub found in that image.",
+  "wallet.scan.not_usable": "That QR code isn’t one Airhop can use here.",
   "wallet.scan.use_camera_a11y": "Scan with the camera",
   "wallet.scan.use_camera": "Use camera",
   "wallet.scan.pick_image_a11y": "Read a QR code from a saved image",
@@ -1727,6 +1730,11 @@ export const strings = {
   "wallet.svc.locked_ours_offline": "This payment is locked to your wallet.",
   "wallet.svc.locked_ours_offline_body":
     "Claim it once you are online. Nobody else can take it meanwhile.",
+  "wallet.svc.offline_cap":
+    "Offline, unconfirmed ecash is limited to {limit} per mint.",
+  "wallet.svc.offline_unchecked": "This ecash can’t be checked offline.",
+  "wallet.svc.claim_online_body":
+    "Claim this one once you are online, when the mint can confirm it.",
   "wallet.svc.already_spent": "This ecash has already been spent.",
   "wallet.svc.already_spent_body":
     "Whoever sent this token redeemed it first, or sent the same token to someone else.",
@@ -2205,6 +2213,12 @@ export const strings = {
   "settings.conn.live_video": "Live video",
   "settings.conn.live_video_desc":
     "Stream your camera to people nearby, and watch theirs",
+  "settings.conn.live_video_on_title": "Turn on live video?",
+  "settings.conn.live_video_on_body":
+    "You can go live from the camera to people in Bluetooth range, and their streams show in your chats and are recorded on this phone.",
+  "settings.conn.live_video_off_title": "Turn off live video?",
+  "settings.conn.live_video_off_body":
+    "You can no longer go live, and streams from others are not shown or recorded. A short one still arrives as an ordinary video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor routing",
   "settings.conn.tor_desc": "Route Nostr traffic through Tor for extra privacy",
@@ -2234,12 +2248,9 @@ export const strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Hides that you use Tor. Faster than Snowflake, but these bridges are public and some networks block them.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Hides that you use Tor by looking like an ordinary website visit. Harder to block than the others.",
   "settings.tor.mode_custom": "Custom bridges",
   "settings.tor.mode_custom_desc":
-    "Use obfs4 bridge lines from bridges.torproject.org. Try this when the others fail.",
+    "Use obfs4 or WebTunnel bridge lines from bridges.torproject.org. Try this when the others fail.",
   "settings.tor.custom_placeholder": "Paste one bridge line per line",
   "settings.tor.custom_apply_hint": "Tap outside the box to connect.",
   "settings.tor.custom_empty": "Add at least one bridge line first.",

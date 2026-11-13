@@ -51,15 +51,17 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import {
+  adoptIntoAttachmentCache,
+  CACHE_FILE_PREFIX,
+  discardPickerCopy,
+  holdAttachmentFile,
+} from "@services/attachment-cache";
+import {
   setAudioForPlayback,
   setAudioForRecording,
 } from "@services/audio-session";
 import {
-  adoptIntoAttachmentCache,
   AttachmentTooLargeError,
-  CACHE_FILE_PREFIX,
-  discardPickerCopy,
-  holdAttachmentFile,
   sizeLabel,
 } from "@services/file-transfer-service";
 import {
@@ -100,7 +102,7 @@ import {
 } from "@store/chat-store";
 import { loadDraft, saveDraft } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
-import { useGroupStore } from "@store/group-store";
+import { groupChannel, useGroupStore } from "@store/group-store";
 import { locationOffBanner, useMeshStateStore } from "@store/mesh-state-store";
 import { isPerson, REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
@@ -212,6 +214,7 @@ import {
   TextInput,
   View,
   type GestureResponderEvent,
+  type ListViewToken,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type StyleProp,
@@ -250,6 +253,7 @@ import {
   PUBLIC_FORWARD_BURST,
 } from "./forward-rules";
 import ForwardSheet from "./forward-sheet";
+import GroupInviteBar from "./group-invite-bar";
 import {
   CANCEL_SLIDE_DISARM,
   CANCEL_SLIDE_DISTANCE,
@@ -268,6 +272,7 @@ import { activateOnly } from "./screen-reader-actions";
 import SendLocationSheet from "./send-location-sheet";
 import { useAwaitingReceipt } from "./use-awaiting-receipt";
 import { useExclusivePlayback } from "./use-exclusive-playback";
+import { videoNoteIds, videoNotePlayback } from "./video-note-playback";
 import {
   useVideoNoteRecorder,
   type RecordedVideoNote,
@@ -533,6 +538,9 @@ const VOICE_PLAY_SIZE = 32;
 // Header action circles. Same 32pt as the app header's pills, so a circular
 // icon button is one size everywhere it appears in chrome.
 const HEADER_ICON_SIZE = 32;
+// A payment card's Claim pill, kept small inside the bubble; nothing else in
+// the card is tappable, so its slop overlaps nothing.
+const PAYMENT_CLAIM_HEIGHT = 28;
 
 // Slash commands offered by the "/" quick-picker. Only the ones handleSend
 // actually acts on appear here, so the list never advertises a command that does
@@ -666,16 +674,19 @@ function videoTrackAspect(track: VideoTrack | null): number | null {
 // autoplay is what makes it read as a face rather than a file, and it stops for
 // anyone who asked the OS for less motion, who gets a still frame and a tap.
 // Sound is the thread's to give, one clip at a time as for voice notes, and a
-// live voice burst turns it off as it pauses a voice note.
+// live voice burst turns it off as it pauses a voice note. `looping` is the
+// thread's too: only the newest notes on screen move (video-note-playback.ts).
 function VideoNoteAttachment({
   uri,
   withSound,
+  looping,
   onToggleSound,
   onFinished,
   onAskResend,
 }: {
   uri: string;
   withSound: boolean;
+  looping: boolean;
   onToggleSound: () => void;
   onFinished: () => void;
   onAskResend?: () => void;
@@ -708,9 +719,12 @@ function VideoNoteAttachment({
     // its silent loop, rather than repeating someone's words until tapped.
     player.loop = !withSound;
     if (withSound) player.replay();
-    else if (reduceMotion) player.pause();
+  }, [player, withSound]);
+  useEffect(() => {
+    if (withSound) return;
+    if (reduceMotion || !looping) player.pause();
     else player.play();
-  }, [player, reduceMotion, withSound]);
+  }, [player, reduceMotion, withSound, looping]);
   const onFinishedRef = useRef(onFinished);
   const withSoundRef = useRef(withSound);
   useEffect(() => {
@@ -783,6 +797,30 @@ function VideoNoteAttachment({
         )}
       </View>
     </Pressable>
+  );
+}
+
+// A video note off screen: the same circle with no player behind it, so the
+// list's window can hold any number of notes while only those in view take a
+// decoder. Still a button, so a screen reader can play it from here.
+function VideoNotePlaceholder({
+  onToggleSound,
+}: {
+  onToggleSound: () => void;
+}): React.JSX.Element {
+  const T = useT();
+  const Colors = useThemeColors();
+  return (
+    <Pressable
+      onPress={onToggleSound}
+      accessibilityRole="button"
+      accessibilityLabel={T("chat.video_note.a11y")}
+      accessibilityState={{ checked: false }}
+      style={[
+        videoAttachmentStyles.note,
+        { backgroundColor: Colors.mediaBackdrop },
+      ]}
+    />
   );
 }
 
@@ -1828,6 +1866,23 @@ export default function MessageThread({
   // sealed under the group's epoch key and broadcast as 0x25, not plaintext.
   const isGroup = channel.startsWith("group:");
   const groupName = useGroupStore((s) => s.nameForChannel(channel));
+  const invitePending = useGroupStore(
+    (s) =>
+      isGroup && s.invites.some((i) => groupChannel(i.groupID) === channel),
+  );
+  // The creator withdrew the invite while it was open: its chat is gone, so
+  // there is nothing left here to show.
+  const inviteWithdrawn = useChatStore(
+    (s) =>
+      isGroup &&
+      !s.channels.includes(channel) &&
+      !invitePending &&
+      useGroupStore.getState().get(channel.slice("group:".length)) ===
+        undefined,
+  );
+  useEffect(() => {
+    if (inviteWithdrawn) onBack();
+  }, [inviteWithdrawn, onBack]);
   // A private channel is exactly one that holds an encryption key: the same test
   // the info sheet makes as `isPrivate`, so the header and the sheet you reach
   // by tapping it cannot disagree about the room. One predicate, two uses.
@@ -2301,6 +2356,27 @@ export default function MessageThread({
   const releasePlaying = useCallback((id: string): void => {
     setPlayingMessageId((current) => (current === id ? null : current));
   }, []);
+  // Video notes on screen, oldest first, which decide who holds a player
+  // (video-note-playback.ts).
+  const [visibleNoteIds, setVisibleNoteIds] = useState<readonly string[]>([]);
+  // Stable across renders, as FlatList requires of both.
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ListViewToken[] }): void => {
+      const ids = videoNoteIds(
+        viewableItems.map((token) => token.item as ChatMessage),
+      );
+      setVisibleNoteIds((prev) =>
+        prev.length === ids.length && prev.every((id, i) => id === ids[i])
+          ? prev
+          : ids,
+      );
+    },
+  ).current;
+  // A note only flung past never gets a player.
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 10,
+    minimumViewTime: 150,
+  }).current;
   // Each mounted voice note's seek, by message id, so the bubble's
   // screen-reader actions can move through a note the way a tap on its bars
   // does.
@@ -2308,8 +2384,8 @@ export default function MessageThread({
   // A live stream's sound is the same speaker: a note given sound silences the
   // stream, and a stream unmuted stops the note. Whatever the user starts (a
   // note, a video, the trimmer's preview, a stream's sound) also silences a
-  // live voice burst, as bitchat-ios does; the burst still shows as talking and
-  // still arrives as a voice note.
+  // live voice burst; the burst still shows as talking and still arrives as a
+  // voice note.
   const liveVideoReceiver = getMeshService()?.liveVideoReceiver ?? null;
   useEffect(() => {
     if (playingMessageId === null) return;
@@ -2592,10 +2668,22 @@ export default function MessageThread({
   const [appActive, setAppActive] = useState(
     () => AppState.currentState === "active",
   );
+  // Read by the listener below, which is subscribed once.
+  const playingVideoRef = useRef(false);
+  playingVideoRef.current = msgs.some(
+    (m) => m.id === playingMessageId && m.attachment?.type === "video",
+  );
   useEffect(() => {
-    const sub = AppState.addEventListener("change", (next) =>
-      setAppActive(next === "active"),
-    );
+    const sub = AppState.addEventListener("change", (next) => {
+      setAppActive(next === "active");
+      // The OS pauses video players in the background, a call included, so a
+      // video given sound gives up the speaker rather than come back paused
+      // with its sound badge still on. Not on "inactive": a glance at Control
+      // Center must not stop it.
+      if (next === "background" && playingVideoRef.current) {
+        setPlayingMessageId(null);
+      }
+    });
     return () => sub.remove();
   }, []);
   // Nobody reads behind the app lock, so receipts and live audio wait for it.
@@ -2870,12 +2958,9 @@ export default function MessageThread({
         `+${formatUnitAmount(result.amount, result.unit)}`,
         result.outcome === "swapped"
           ? t("wallet.receive.redeemed_at", { mint: hostOf(result.mintUrl) })
-          : t(
-              result.dleq === "valid"
-                ? "wallet.receive.pending_unconfirmed_genuine"
-                : "wallet.receive.pending_unconfirmed",
-              { mint: hostOf(result.mintUrl) },
-            ),
+          : t("wallet.receive.pending_unconfirmed", {
+              mint: hostOf(result.mintUrl),
+            }),
       );
     } catch (err) {
       reportWalletError(err);
@@ -4825,6 +4910,10 @@ export default function MessageThread({
   // The mesh holds incoming live sound while a note records; see
   // setNoteRecording.
   const noteRecording = isRecording || videoNote.active;
+  // Video notes hold still while the camera or a live stream has the screen,
+  // and while nobody can see them (background, the app lock).
+  const notesMayLoop =
+    present && liveViewer === null && liveStudio === null && !videoNote.active;
   useEffect(() => {
     const service = getMeshService();
     if (!service) return;
@@ -5379,19 +5468,32 @@ export default function MessageThread({
             />
           );
         }
-        return isVideoNoteName(attachment.name) ? (
-          <VideoNoteAttachment
-            uri={attachment.uri}
-            withSound={playingMessageId === messageId}
-            onToggleSound={() =>
-              setPlayingMessageId((current) =>
-                current === messageId ? null : messageId,
-              )
-            }
-            onFinished={() => releasePlaying(messageId)}
-            onAskResend={onAskResend}
-          />
-        ) : (
+        if (isVideoNoteName(attachment.name)) {
+          const playback = videoNotePlayback(
+            messageId,
+            visibleNoteIds,
+            playingMessageId,
+            notesMayLoop,
+          );
+          const toggleSound = (): void =>
+            setPlayingMessageId((current) =>
+              current === messageId ? null : messageId,
+            );
+          if (playback === "none") {
+            return <VideoNotePlaceholder onToggleSound={toggleSound} />;
+          }
+          return (
+            <VideoNoteAttachment
+              uri={attachment.uri}
+              withSound={playingMessageId === messageId}
+              looping={playback === "loop"}
+              onToggleSound={toggleSound}
+              onFinished={() => releasePlaying(messageId)}
+              onAskResend={onAskResend}
+            />
+          );
+        }
+        return (
           <VideoAttachment
             uri={attachment.uri}
             liveRecording={liveVideoStreamOf(attachment.name) !== null}
@@ -5532,7 +5634,7 @@ export default function MessageThread({
         )}
         {paid && (
           <View style={styles.paymentCardClaimed}>
-            <Feather name="check" size={13} color={Colors.online} />
+            <Feather name="check" size={13} color={Colors.success} />
             <Text style={styles.paymentCardClaimedText}>
               {t("chat.ecash.claimed")}
             </Text>
@@ -5543,7 +5645,7 @@ export default function MessageThread({
         {!isMine &&
           (isTokenClaimed(token) ? (
             <View style={styles.paymentCardClaimed}>
-              <Feather name="check" size={13} color={Colors.online} />
+              <Feather name="check" size={13} color={Colors.success} />
               <Text style={styles.paymentCardClaimedText}>
                 {t("chat.ecash.claimed")}
               </Text>
@@ -5558,10 +5660,12 @@ export default function MessageThread({
             </View>
           ) : (
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.paymentCardClaim,
+                pressed && styles.paymentCardClaimPressed,
                 claimingToken !== null && styles.paymentCardClaimBusy,
               ]}
+              hitSlop={hitSlopFor(PAYMENT_CLAIM_HEIGHT)}
               disabled={claimingToken !== null}
               onPress={() => void claimToken(token)}
               accessibilityRole="button"
@@ -5929,6 +6033,8 @@ export default function MessageThread({
           maxToRenderPerBatch={12}
           windowSize={11}
           updateCellsBatchingPeriod={50}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
           // Hold the reader's place when rows are removed above them. A thread
           // keeps 200 messages (chat-store MAX_PER_CHANNEL) and trims the
           // oldest, so in a busy room someone reading back has the ground move
@@ -6028,6 +6134,12 @@ export default function MessageThread({
             const renderState = [
               revealedAttachments.has(item.id) ? "reveal" : "",
               playingMessageId === item.id ? "play" : "",
+              videoNotePlayback(
+                item.id,
+                visibleNoteIds,
+                playingMessageId,
+                notesMayLoop,
+              ),
               autoDownloadMedia ? "auto" : "",
               tokens.length === 0
                 ? ""
@@ -6643,7 +6755,10 @@ export default function MessageThread({
       {/* The compose row and the recording bar under it, measured as one: a
           video note's camera stops above both. */}
       <View onLayout={(e) => setComposeAreaHeight(e.nativeEvent.layout.height)}>
-        {!selecting && (
+        {!selecting && invitePending && (
+          <GroupInviteBar channel={channel} onDeclined={onBack} />
+        )}
+        {!selecting && !invitePending && (
           <View style={styles.composeBar}>
             {/* Attach. Always present, grayed where media cannot be delivered, so
             the bar keeps its shape and the reason is one tap away. */}
@@ -8204,11 +8319,15 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.sm,
       backgroundColor: Colors.accent,
       paddingHorizontal: Spacing.sm,
-      paddingVertical: Spacing.xs,
+      minHeight: PAYMENT_CLAIM_HEIGHT,
+      justifyContent: "center",
       alignSelf: "flex-start",
     },
+    paymentCardClaimPressed: {
+      opacity: PRESSED_OPACITY,
+    },
     paymentCardClaimBusy: {
-      opacity: 0.5,
+      opacity: DISABLED_OPACITY,
     },
     paymentCardClaimed: {
       flexDirection: "row",
@@ -8219,7 +8338,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     paymentCardClaimedText: {
       fontSize: FontSize.xs,
-      color: Colors.online,
+      color: Colors.success,
       fontWeight: FontWeight.semibold,
     },
     paymentCardVoid: {

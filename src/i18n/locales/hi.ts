@@ -159,7 +159,7 @@ export const strings: Strings = {
     "आस-पास के डिवाइस ढूँढ़ता है और उनके बीच संदेश पहुँचाता है। इसी से मेश बनता है और यह बिना इंटरनेट के काम करता है।",
   "onboarding.primer.location.title": "स्थान",
   "onboarding.primer.location.body":
-    "आपको आस-पास के क्षेत्र चैनलों में रखता है, एक मोहल्ले से लेकर पूरे क्षेत्र तक। Airhop कभी आपको ट्रैक नहीं करता, और आपका सटीक स्थान आपके डिवाइस से तभी बाहर जाता है जब आप किसी को अपना स्थान भेजते हैं।",
+    "आपको आस-पास के क्षेत्र चैनलों में रखता है, एक मोहल्ले से लेकर पूरे क्षेत्र तक। Airhop कभी आपको ट्रैक नहीं करता, और आपका सटीक स्थान कभी आपके डिवाइस से बाहर नहीं जाता।",
   "onboarding.primer.notifications.title": "सूचनाएँ",
   "onboarding.primer.notifications.body":
     "ऐप बंद होने पर भी नए संदेशों की सूचना पाएँ। सूचनाएँ आपके डिवाइस पर ही बनती हैं, किसी सर्वर की भूमिका नहीं होती।",
@@ -384,7 +384,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "हर सदस्य तक नहीं पहुँच सके। जब वे आस-पास हों तब फिर कोशिश करें।",
   "chat.group.you_were_added": "आपको {name} में जोड़ा गया।",
-  "chat.group.added_you": "आपको {name} में जोड़ा",
+  "chat.group.invited": "आपको {name} में आमंत्रित किया गया है।",
+  "chat.group.invited_you": "आपको {name} में आमंत्रित किया",
+  "chat.group.decline": "अस्वीकार करें",
+  "chat.group.decline_title": "{name} का आमंत्रण अस्वीकार करें?",
+  "chat.group.decline_body":
+    "{name} आपके संपर्कों में नहीं हैं। उन्हें भी ब्लॉक करें, फिर उनसे कोई आमंत्रण या संदेश नहीं आएगा।",
+  "chat.group.decline_block": "अस्वीकार करें और ब्लॉक करें",
   "chat.group.you_were_removed":
     "आपको {name} से हटा दिया गया। अब आप यहाँ न पढ़ सकते हैं न भेज सकते हैं।",
   "chat.group.removed_you": "आपको {name} से हटाया",
@@ -1180,6 +1186,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "टोकन नहीं बन सका",
+  "wallet.send.unverified_note":
+    "इस भुगतान का कुछ हिस्सा ऐसा ecash है जिसकी मिंट ने अभी पुष्टि नहीं की है।",
   "wallet.send.title": "ecash भेजें",
   "wallet.send.amount_in": "{unit} में राशि",
   "wallet.send.body":
@@ -1239,14 +1247,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} पर भुनाया गया। अब यह प्रमाणित रूप से आपका है: भेजने वाले के पास इस टोकन की प्रति अब काम नहीं करती।",
   "wallet.receive.pending_unconfirmed":
-    "{mint} से रखा गया, पर मिंट ने अभी पुष्टि नहीं की कि यह खर्च नहीं हुआ। ऑनलाइन होते ही मिंट से अपने-आप पुष्टि हो जाती है।",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} से रखा गया, पर मिंट ने अभी पुष्टि नहीं की कि यह खर्च नहीं हुआ। इसका हस्ताक्षर सही है, इसलिए टोकन असली है। ऑनलाइन होते ही मिंट से अपने-आप पुष्टि हो जाती है।",
   "wallet.receive.dleq_ok": "मिंट का हस्ताक्षर सही निकलता है, तो टोकन असली है।",
-  "wallet.receive.dleq_uncached":
-    "मिंट की कुंजियाँ यहाँ कैश नहीं हैं, इसलिए हस्ताक्षर ऑफ़लाइन जाँचा नहीं जा सका।",
-  "wallet.receive.dleq_missing":
-    "इसके हर सिक्के में मिंट के हस्ताक्षर का प्रमाण नहीं है, इसलिए इसे ऑफ़लाइन जाँचा नहीं जा सका।",
   "wallet.receive.dleq_warning":
     "जब तक ऑनलाइन पुष्टि न हो, भेजने वाला सैद्धांतिक रूप से इसे कहीं और खर्च कर चुका हो सकता है।",
   "wallet.receive.failed": "लिया नहीं जा सका",
@@ -1601,6 +1603,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR कोड स्कैन करें",
   "wallet.scan.aim_any": "किसी टोकन, इनवॉइस या npub के QR कोड पर निशाना लगाएँ।",
   "wallet.scan.no_any": "उस छवि में कोई टोकन, इनवॉइस या npub नहीं मिला।",
+  "wallet.scan.not_usable": "Airhop यहाँ इस QR कोड का उपयोग नहीं कर सकता।",
   "wallet.scan.use_camera_a11y": "कैमरे से स्कैन करें",
   "wallet.scan.use_camera": "कैमरा इस्तेमाल करें",
   "wallet.scan.pick_image_a11y": "किसी सहेजी हुई छवि से QR कोड पढ़ें",
@@ -1703,6 +1706,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "यह भुगतान आपके वॉलेट से बँधा है।",
   "wallet.svc.locked_ours_offline_body":
     "ऑनलाइन होने पर इसे लें। तब तक कोई और इसे नहीं ले सकता।",
+  "wallet.svc.offline_cap":
+    "ऑफ़लाइन, हर मिंट के लिए अपुष्ट ecash की सीमा {limit} है।",
+  "wallet.svc.offline_unchecked": "यह ecash ऑफ़लाइन जाँचा नहीं जा सकता।",
+  "wallet.svc.claim_online_body":
+    "ऑनलाइन होने पर, जब मिंट इसकी पुष्टि कर सके, इसे लें।",
   "wallet.svc.already_spent": "यह ecash पहले ही खर्च हो चुका है।",
   "wallet.svc.already_spent_body":
     "जिसने यह टोकन भेजा उसने पहले ही इसे भुना लिया, या वही टोकन किसी और को भी भेज दिया।",
@@ -2189,6 +2197,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "लाइव वीडियो",
   "settings.conn.live_video_desc":
     "अपना कैमरा आस-पास के लोगों तक स्ट्रीम करें, और उनका देखें",
+  "settings.conn.live_video_on_title": "लाइव वीडियो चालू करें?",
+  "settings.conn.live_video_on_body":
+    "आप कैमरे से ब्लूटूथ की पहुँच में मौजूद लोगों के लिए लाइव जा सकेंगे, और उनकी लाइव स्ट्रीम आपकी चैट में दिखेंगी और इस फ़ोन पर रिकॉर्ड होंगी।",
+  "settings.conn.live_video_off_title": "लाइव वीडियो बंद करें?",
+  "settings.conn.live_video_off_body":
+    "आप अब लाइव नहीं जा सकेंगे, और दूसरों की लाइव स्ट्रीम न दिखेंगी, न रिकॉर्ड होंगी। छोटी स्ट्रीम फिर भी साधारण वीडियो के रूप में आएगी।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor रूटिंग",
   "settings.conn.tor_desc":
@@ -2219,12 +2233,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "छिपाता है कि आप Tor इस्तेमाल कर रहे हैं। Snowflake से तेज़, लेकिन ये ब्रिज सार्वजनिक हैं और कुछ नेटवर्क इन्हें रोकते हैं।",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "यह सामान्य वेबसाइट विज़िट जैसा दिखकर छिपाता है कि आप Tor इस्तेमाल करते हैं। बाकियों से ब्लॉक करना कठिन।",
   "settings.tor.mode_custom": "अपने ब्रिज",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org से मिली obfs4 ब्रिज लाइनें इस्तेमाल करें। बाकी विफल होने पर यह आज़माएँ।",
+    "bridges.torproject.org से मिली obfs4 या WebTunnel ब्रिज लाइनें इस्तेमाल करें। बाकी विफल होने पर यह आज़माएँ।",
   "settings.tor.custom_placeholder": "हर पंक्ति में एक ब्रिज लाइन चिपकाएँ",
   "settings.tor.custom_apply_hint":
     "कनेक्ट करने के लिए बॉक्स के बाहर टैप करें।",

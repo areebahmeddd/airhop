@@ -204,7 +204,7 @@ jest.mock("../move-link", () => {
   return rigState.__moveBus.linkFor(rigState.__moveSide);
 });
 jest.mock("../mesh-service", () => ({ destroyMeshService: jest.fn() }));
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   wipeCacheDirectory: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("../notification-service", () => ({

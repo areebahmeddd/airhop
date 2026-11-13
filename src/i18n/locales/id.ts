@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Menemukan perangkat di dekat sini dan meneruskan pesan di antaranya. Begitulah mesh terbentuk, dan ia bekerja tanpa koneksi internet.",
   "onboarding.primer.location.title": "Lokasi",
   "onboarding.primer.location.body":
-    "Menempatkanmu di kanal wilayah terdekat, dari satu blok sampai satu kawasan. Airhop tidak pernah melacakmu, dan lokasi persismu hanya keluar dari perangkat saat kamu mengirim penanda lokasi ke seseorang.",
+    "Menempatkanmu di kanal wilayah terdekat, dari satu blok sampai satu kawasan. Airhop tidak pernah melacakmu, dan lokasi persismu tidak pernah keluar dari perangkatmu.",
   "onboarding.primer.notifications.title": "Notifikasi",
   "onboarding.primer.notifications.body":
     "Terima peringatan untuk pesan baru bahkan saat aplikasi tertutup. Notifikasi dibuat secara lokal di perangkatmu, tanpa keterlibatan server.",
@@ -389,7 +389,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tidak semua anggota bisa dijangkau. Coba lagi selagi mereka di dekat sini.",
   "chat.group.you_were_added": "Kamu ditambahkan ke {name}.",
-  "chat.group.added_you": "Menambahkanmu ke {name}",
+  "chat.group.invited": "Kamu diundang ke {name}.",
+  "chat.group.invited_you": "Mengundangmu ke {name}",
+  "chat.group.decline": "Tolak",
+  "chat.group.decline_title": "Tolak undangan ke {name}?",
+  "chat.group.decline_body":
+    "{name} tidak ada di kontakmu. Blokir juga, dan kamu tidak akan menerima undangan atau pesan dari mereka lagi.",
+  "chat.group.decline_block": "Tolak dan blokir",
   "chat.group.you_were_removed":
     "Kamu dikeluarkan dari {name}. Kamu tidak bisa lagi membaca atau mengirim pesan di sini.",
   "chat.group.removed_you": "Mengeluarkanmu dari {name}",
@@ -1206,6 +1212,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Token tidak bisa dirakit",
+  "wallet.send.unverified_note":
+    "Sebagian pembayaran ini adalah ecash yang belum dikonfirmasi mint.",
   "wallet.send.title": "Kirim ecash",
   "wallet.send.amount_in": "Jumlah dalam {unit}",
   "wallet.send.body":
@@ -1265,14 +1273,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ditukar di {mint}. Kini terbukti milikmu: salinan token ini di pengirim tidak lagi bekerja.",
   "wallet.receive.pending_unconfirmed":
-    "Tersimpan dari {mint}, tetapi mint belum memastikan bahwa token ini belum terpakai. Token ini dikonfirmasi ke mint secara otomatis begitu kamu daring.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Tersimpan dari {mint}, tetapi mint belum memastikan bahwa token ini belum terpakai. Tanda tangannya cocok, jadi tokennya asli. Token ini dikonfirmasi ke mint secara otomatis begitu kamu daring.",
   "wallet.receive.dleq_ok": "Tanda tangan mint cocok, jadi tokennya asli.",
-  "wallet.receive.dleq_uncached":
-    "Kunci mint tidak tersimpan di sini, jadi tanda tangannya tidak bisa diperiksa secara luring.",
-  "wallet.receive.dleq_missing":
-    "Tidak semua koin di dalamnya membawa bukti tanda tangan mint, jadi token ini tidak bisa diperiksa secara luring.",
   "wallet.receive.dleq_warning":
     "Sampai token ini dikonfirmasi secara daring, pengirim pada prinsipnya bisa saja sudah membelanjakannya di tempat lain.",
   "wallet.receive.failed": "Tidak bisa menerima",
@@ -1633,6 +1635,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "Pindai kode QR",
   "wallet.scan.aim_any": "Arahkan ke kode QR token, faktur, atau npub.",
   "wallet.scan.no_any": "Tidak ada token, faktur, atau npub pada gambar itu.",
+  "wallet.scan.not_usable": "Airhop tidak bisa memakai kode QR ini di sini.",
   "wallet.scan.use_camera_a11y": "Pindai dengan kamera",
   "wallet.scan.use_camera": "Pakai kamera",
   "wallet.scan.pick_image_a11y": "Baca kode QR dari gambar tersimpan",
@@ -1732,6 +1735,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Pembayaran ini terkunci ke dompetmu.",
   "wallet.svc.locked_ours_offline_body":
     "Klaim setelah kamu daring. Sementara itu tidak ada orang lain yang bisa mengambilnya.",
+  "wallet.svc.offline_cap":
+    "Saat luring, ecash belum terkonfirmasi dibatasi {limit} per mint.",
+  "wallet.svc.offline_unchecked": "Ecash ini tidak bisa diperiksa saat luring.",
+  "wallet.svc.claim_online_body":
+    "Klaim yang ini setelah kamu daring, saat mint bisa mengonfirmasinya.",
   "wallet.svc.already_spent": "Ecash ini sudah terpakai.",
   "wallet.svc.already_spent_body":
     "Pengirim token ini menukarkannya lebih dulu, atau mengirim token yang sama ke orang lain juga.",
@@ -2234,6 +2242,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video langsung",
   "settings.conn.live_video_desc":
     "Siarkan kamera Anda ke orang di sekitar, dan tonton siaran mereka",
+  "settings.conn.live_video_on_title": "Nyalakan video langsung?",
+  "settings.conn.live_video_on_body":
+    "Kamu bisa siaran langsung dari kamera ke orang-orang dalam jangkauan Bluetooth, dan siaran mereka muncul di obrolanmu serta direkam di ponsel ini.",
+  "settings.conn.live_video_off_title": "Matikan video langsung?",
+  "settings.conn.live_video_off_body":
+    "Kamu tidak bisa lagi siaran langsung, dan siaran orang lain tidak ditampilkan atau direkam. Siaran yang singkat tetap tiba sebagai video biasa.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Perutean Tor",
   "settings.conn.tor_desc":
@@ -2265,12 +2279,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Menyembunyikan bahwa kamu memakai Tor. Lebih cepat dari Snowflake, tetapi bridge ini publik dan sebagian jaringan memblokirnya.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Menyembunyikan bahwa kamu memakai Tor dengan tampak seperti kunjungan situs web biasa. Lebih sulit diblokir daripada yang lain.",
   "settings.tor.mode_custom": "Bridge sendiri",
   "settings.tor.mode_custom_desc":
-    "Gunakan baris bridge obfs4 dari bridges.torproject.org. Coba ini saat yang lain gagal.",
+    "Gunakan baris bridge obfs4 atau WebTunnel dari bridges.torproject.org. Coba ini saat yang lain gagal.",
   "settings.tor.custom_placeholder": "Tempel satu baris bridge per baris",
   "settings.tor.custom_apply_hint": "Ketuk di luar kotak untuk menyambung.",
   "settings.tor.custom_empty": "Tambahkan setidaknya satu baris bridge dahulu.",

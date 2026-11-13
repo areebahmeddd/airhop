@@ -154,7 +154,7 @@ export const strings: Strings = {
     "用于发现附近设备并在它们之间中继消息。网状网络由此形成，没有互联网连接也能用。",
   "onboarding.primer.location.title": "定位",
   "onboarding.primer.location.body":
-    "把你放进附近的区域频道，小到一个街区，大到一整个地区。Airhop 从不追踪你，只有当你给别人发送位置时，你的精确位置才会离开这台设备。",
+    "把你放进附近的区域频道，小到一个街区，大到一整个地区。Airhop 从不追踪你，你的精确位置也从不离开这台设备。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "即使应用已关闭也能收到新消息提醒。通知在你的设备本地生成，不经过任何服务器。",
@@ -366,7 +366,13 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "无法触达所有成员。等对方在附近时再试一次。",
   "chat.group.you_were_added": "你被加入了 {name}。",
-  "chat.group.added_you": "把你加入了 {name}",
+  "chat.group.invited": "你被邀请加入 {name}。",
+  "chat.group.invited_you": "邀请你加入 {name}",
+  "chat.group.decline": "拒绝",
+  "chat.group.decline_title": "拒绝加入 {name} 的邀请？",
+  "chat.group.decline_body":
+    "{name} 不在你的联系人中。一并屏蔽后，你将不会再收到对方的邀请或消息。",
+  "chat.group.decline_block": "拒绝并屏蔽",
   "chat.group.you_were_removed":
     "你被移出了 {name}。你在这里不能再阅读或发送消息了。",
   "chat.group.removed_you": "把你移出了 {name}",
@@ -1109,6 +1115,7 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "无法构建该代币",
+  "wallet.send.unverified_note": "这笔付款中有一部分是铸币厂尚未确认的 ecash。",
   "wallet.send.title": "发送 ecash",
   "wallet.send.amount_in": "金额（{unit}）",
   "wallet.send.body":
@@ -1167,14 +1174,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "已在 {mint} 兑付。现在它可被证明属于你：发送方手里的这份代币副本不再有效。",
   "wallet.receive.pending_unconfirmed":
-    "已从 {mint} 存入，但铸币厂尚未确认它未被花费。联网后会自动与铸币厂确认。",
-  "wallet.receive.pending_unconfirmed_genuine":
     "已从 {mint} 存入，但铸币厂尚未确认它未被花费。它的签名对得上，所以这个代币是真的。联网后会自动与铸币厂确认。",
   "wallet.receive.dleq_ok": "铸币厂的签名对得上，所以这个代币是真的。",
-  "wallet.receive.dleq_uncached":
-    "这个铸币厂的密钥没有缓存在这里，所以无法离线核验签名。",
-  "wallet.receive.dleq_missing":
-    "其中并非每个币都带有铸币厂的签名证明，所以无法离线核验。",
   "wallet.receive.dleq_warning":
     "在联网确认之前，发送方理论上有可能已经把它花在别处。",
   "wallet.receive.failed": "无法接收",
@@ -1514,6 +1515,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "扫描二维码",
   "wallet.scan.aim_any": "对准代币、发票或 npub 的二维码。",
   "wallet.scan.no_any": "那张图里没有找到代币、发票或 npub。",
+  "wallet.scan.not_usable": "Airhop 无法在这里使用这个二维码。",
   "wallet.scan.use_camera_a11y": "用相机扫描",
   "wallet.scan.use_camera": "使用相机",
   "wallet.scan.pick_image_a11y": "从已保存的图片中读取二维码",
@@ -1608,6 +1610,9 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "这笔付款已锁定到你的钱包。",
   "wallet.svc.locked_ours_offline_body":
     "联网后再领取即可。在此期间，别人无法拿走它。",
+  "wallet.svc.offline_cap": "离线时，每个铸币厂的未确认 ecash 上限为 {limit}。",
+  "wallet.svc.offline_unchecked": "这笔 ecash 无法离线验证。",
+  "wallet.svc.claim_online_body": "等你联网、铸币厂能确认时再领取这笔。",
   "wallet.svc.already_spent": "这笔 ecash 已经被花掉了。",
   "wallet.svc.already_spent_body":
     "发这个代币的人自己先兑付了，或者把同一个代币也发给了别人。",
@@ -2060,6 +2065,12 @@ export const strings: Strings = {
     "按住麦克风会改为录一条语音留言。松手后才发出，别人不点开就听不到。",
   "settings.conn.live_video": "直播视频",
   "settings.conn.live_video_desc": "向附近的人直播你的摄像头，也观看他们的直播",
+  "settings.conn.live_video_on_title": "开启直播视频？",
+  "settings.conn.live_video_on_body":
+    "你可以用摄像头向蓝牙范围内的人直播，他们的直播也会显示在你的聊天中，并录在这部手机上。",
+  "settings.conn.live_video_off_title": "关闭直播视频？",
+  "settings.conn.live_video_off_body":
+    "你将无法再直播，别人的直播也不会显示或录下。较短的直播仍会作为普通视频送达。",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 路由",
   "settings.conn.tor_desc": "把 Nostr 流量经 Tor 转发，进一步保护隐私",
@@ -2088,12 +2099,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "隐藏你在使用 Tor。比 Snowflake 快，但这些网桥是公开的，有些网络会封锁。",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "让流量看起来像普通的网站访问，从而隐藏你在使用 Tor。比其他方式更难封锁。",
   "settings.tor.mode_custom": "自定义网桥",
   "settings.tor.mode_custom_desc":
-    "使用来自 bridges.torproject.org 的 obfs4 网桥行。其他方式失败时可尝试此项。",
+    "使用来自 bridges.torproject.org 的 obfs4 或 WebTunnel 网桥行。其他方式失败时可尝试此项。",
   "settings.tor.custom_placeholder": "每行粘贴一条网桥",
   "settings.tor.custom_apply_hint": "点按框外即可连接。",
   "settings.tor.custom_empty": "请先添加至少一条网桥。",

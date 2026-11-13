@@ -189,7 +189,12 @@ final class AirhopWiFiPairing: RCTEventEmitter {
   /// that guard runs on the bridge queue. Zero until the watcher's first value,
   /// which is correct: attaching earlier would run a radio for devices we have
   /// not confirmed exist.
-  private(set) static var pairedDeviceCount = 0
+  static var pairedDeviceCount: Int { pairedCountLock.withLock { pairedCount } }
+
+  // The watcher writes the count on the main actor; the bridge queue and the
+  // Wi-Fi transport read it.
+  private static let pairedCountLock = NSLock()
+  private nonisolated(unsafe) static var pairedCount = 0
 
   private var watchTask: Task<Void, Never>?
   /// Held so a second `presentPairing` while one is on screen resolves rather
@@ -237,9 +242,12 @@ final class AirhopWiFiPairing: RCTEventEmitter {
 
   @MainActor
   private func publish(count: Int) {
-    guard AirhopWiFiPairing.pairedDeviceCount != count else { return }
-    AirhopWiFiPairing.pairedDeviceCount = count
-    guard bridge != nil else { return }
+    let changed = Self.pairedCountLock.withLock {
+      guard Self.pairedCount != count else { return false }
+      Self.pairedCount = count
+      return true
+    }
+    guard changed, bridge != nil else { return }
     sendEvent(withName: PairingEvent.devicesChanged, body: ["count": count])
   }
 

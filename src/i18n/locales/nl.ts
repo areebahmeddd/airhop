@@ -163,7 +163,7 @@ export const strings: Strings = {
     "Vindt toestellen in de buurt en geeft berichten tussen ze door. Zo ontstaat de mesh, en het werkt zonder internetverbinding.",
   "onboarding.primer.location.title": "Locatie",
   "onboarding.primer.location.body":
-    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit, en je precieze locatie verlaat je toestel alleen als je iemand je locatie stuurt.",
+    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit, en je precieze locatie verlaat je toestel nooit.",
   "onboarding.primer.notifications.title": "Meldingen",
   "onboarding.primer.notifications.body":
     "Krijg meldingen van nieuwe berichten, ook als de app dicht is. Meldingen worden op je eigen toestel gemaakt, zonder server ertussen.",
@@ -389,7 +389,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Niet alle leden konden worden bereikt. Probeer het opnieuw als ze in de buurt zijn.",
   "chat.group.you_were_added": "Je bent toegevoegd aan {name}.",
-  "chat.group.added_you": "Heeft je toegevoegd aan {name}",
+  "chat.group.invited": "Je bent uitgenodigd voor {name}.",
+  "chat.group.invited_you": "Heeft je uitgenodigd voor {name}",
+  "chat.group.decline": "Weigeren",
+  "chat.group.decline_title": "Uitnodiging voor {name} weigeren?",
+  "chat.group.decline_body":
+    "{name} staat niet in je contacten. Blokkeer diegene ook, dan krijg je geen uitnodigingen of berichten meer.",
+  "chat.group.decline_block": "Weigeren en blokkeren",
   "chat.group.you_were_removed":
     "Je bent weggehaald uit {name}. Je kunt hier niet meer lezen of sturen.",
   "chat.group.removed_you": "Heeft je weggehaald uit {name}",
@@ -1203,6 +1209,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Het token kon niet worden gemaakt",
+  "wallet.send.unverified_note":
+    "Een deel van deze betaling is ecash die de mint nog niet heeft bevestigd.",
   "wallet.send.title": "Ecash sturen",
   "wallet.send.amount_in": "Bedrag in {unit}",
   "wallet.send.body":
@@ -1262,15 +1270,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ingewisseld bij {mint}. Het is nu aantoonbaar van jou: de kopie van dit token bij de afzender werkt niet meer.",
   "wallet.receive.pending_unconfirmed":
-    "Opgeslagen van {mint}, maar de mint heeft nog niet bevestigd dat het onbesteed is. Het wordt automatisch bij de mint bevestigd zodra je online bent.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Opgeslagen van {mint}, maar de mint heeft nog niet bevestigd dat het onbesteed is. De handtekening klopt wel, dus het token is echt. Het wordt automatisch bij de mint bevestigd zodra je online bent.",
   "wallet.receive.dleq_ok":
     "De handtekening van de mint klopt, dus het token is echt.",
-  "wallet.receive.dleq_uncached":
-    "De sleutels van de mint staan hier niet, dus de handtekening kon offline niet worden gecontroleerd.",
-  "wallet.receive.dleq_missing":
-    "Niet elke munt erin heeft het handtekeningbewijs van de mint, dus het kon offline niet worden gecontroleerd.",
   "wallet.receive.dleq_warning":
     "Tot het online is bevestigd, kan de afzender het in principe elders hebben uitgegeven.",
   "wallet.receive.failed": "Ontvangen lukte niet",
@@ -1630,6 +1632,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Richt op de QR-code van een token, factuur of npub.",
   "wallet.scan.no_any":
     "Geen token, factuur of npub gevonden in die afbeelding.",
+  "wallet.scan.not_usable": "Airhop kan deze QR-code hier niet gebruiken.",
   "wallet.scan.use_camera_a11y": "Scannen met de camera",
   "wallet.scan.use_camera": "Camera gebruiken",
   "wallet.scan.pick_image_a11y":
@@ -1736,6 +1739,12 @@ export const strings: Strings = {
     "Deze betaling is vergrendeld voor jouw portemonnee.",
   "wallet.svc.locked_ours_offline_body":
     "Haal hem op zodra je online bent. Niemand anders kan hem ondertussen pakken.",
+  "wallet.svc.offline_cap":
+    "Offline is onbevestigde ecash beperkt tot {limit} per mint.",
+  "wallet.svc.offline_unchecked":
+    "Deze ecash kan offline niet worden gecontroleerd.",
+  "wallet.svc.claim_online_body":
+    "Haal deze op zodra je online bent en de mint hem kan bevestigen.",
   "wallet.svc.already_spent": "Deze ecash is al besteed.",
   "wallet.svc.already_spent_body":
     "Wie dit token stuurde heeft het eerder ingewisseld, of hetzelfde token ook naar iemand anders gestuurd.",
@@ -2236,6 +2245,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Livevideo",
   "settings.conn.live_video_desc":
     "Stream je camera naar mensen in de buurt en kijk naar die van hen",
+  "settings.conn.live_video_on_title": "Livevideo aanzetten?",
+  "settings.conn.live_video_on_body":
+    "Je kunt met de camera live gaan voor iedereen binnen Bluetooth-bereik, en hun streams verschijnen in je chats en worden op deze telefoon opgenomen.",
+  "settings.conn.live_video_off_title": "Livevideo uitzetten?",
+  "settings.conn.live_video_off_body":
+    "Je kunt niet meer live gaan, en streams van anderen worden niet getoond of opgenomen. Een korte komt toch aan als gewone video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Via Tor routeren",
   "settings.conn.tor_desc":
@@ -2266,12 +2281,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Verbergt dat je Tor gebruikt. Sneller dan Snowflake, maar deze bridges zijn openbaar en sommige netwerken blokkeren ze.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Verbergt dat je Tor gebruikt door op een gewoon websitebezoek te lijken. Moeilijker te blokkeren dan de andere.",
   "settings.tor.mode_custom": "Eigen bridges",
   "settings.tor.mode_custom_desc":
-    "Gebruik obfs4-bridgeregels van bridges.torproject.org. Probeer dit als de andere niet werken.",
+    "Gebruik obfs4- of WebTunnel-bridgeregels van bridges.torproject.org. Probeer dit als de andere niet werken.",
   "settings.tor.custom_placeholder": "Plak één bridge-regel per regel",
   "settings.tor.custom_apply_hint":
     "Tik buiten het vak om verbinding te maken.",

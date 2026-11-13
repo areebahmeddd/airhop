@@ -159,7 +159,7 @@ export const strings: Strings = {
     "근처 기기를 찾고 그 사이에서 메시지를 중계합니다. 이렇게 메시가 만들어지며 인터넷 연결 없이 작동합니다.",
   "onboarding.primer.location.title": "위치",
   "onboarding.primer.location.body":
-    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며, 정확한 위치는 누군가에게 위치를 보낼 때만 기기 밖으로 나갑니다.",
+    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며, 정확한 위치는 절대 기기 밖으로 나가지 않습니다.",
   "onboarding.primer.notifications.title": "알림",
   "onboarding.primer.notifications.body":
     "앱이 닫혀 있을 때도 새 메시지 알림을 받습니다. 알림은 기기 안에서 만들어지며 서버는 관여하지 않습니다.",
@@ -380,7 +380,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "모든 멤버에게 닿지는 못했습니다. 그들이 근처에 있을 때 다시 시도하세요.",
   "chat.group.you_were_added": "{name}에 추가되었습니다.",
-  "chat.group.added_you": "{name}에 나를 추가했습니다",
+  "chat.group.invited": "{name}에 초대되었습니다.",
+  "chat.group.invited_you": "{name}에 나를 초대했습니다",
+  "chat.group.decline": "거절",
+  "chat.group.decline_title": "{name} 초대를 거절할까요?",
+  "chat.group.decline_body":
+    "{name}은(는) 연락처에 없습니다. 함께 차단하면 더 이상 초대나 메시지를 받지 않습니다.",
+  "chat.group.decline_block": "거절하고 차단",
   "chat.group.you_were_removed":
     "{name}에서 제외되었습니다. 여기서는 더 이상 읽거나 보낼 수 없습니다.",
   "chat.group.removed_you": "{name}에서 나를 제외했습니다",
@@ -1173,6 +1179,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "토큰을 만들지 못했습니다",
+  "wallet.send.unverified_note":
+    "이 결제의 일부는 민트가 아직 확인하지 않은 ecash입니다.",
   "wallet.send.title": "ecash 보내기",
   "wallet.send.amount_in": "{unit} 단위 금액",
   "wallet.send.body":
@@ -1232,14 +1240,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}에서 교환했습니다. 이제 증명 가능하게 내 것이며, 보낸 사람이 가진 이 토큰의 사본은 더 이상 작동하지 않습니다.",
   "wallet.receive.pending_unconfirmed":
-    "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 서명이 확인되므로 토큰은 진짜입니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
   "wallet.receive.dleq_ok": "민트의 서명이 확인되므로 토큰은 진짜입니다.",
-  "wallet.receive.dleq_uncached":
-    "민트의 키가 여기에 캐시되어 있지 않아 서명을 오프라인에서 확인하지 못했습니다.",
-  "wallet.receive.dleq_missing":
-    "일부 코인에 민트의 서명 증명이 없어 오프라인에서 확인하지 못했습니다.",
   "wallet.receive.dleq_warning":
     "온라인에서 확인되기 전까지는 보낸 사람이 다른 곳에서 이미 썼을 가능성이 원칙적으로 남아 있습니다.",
   "wallet.receive.failed": "받지 못했습니다",
@@ -1594,6 +1596,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR 코드 스캔",
   "wallet.scan.aim_any": "토큰, 인보이스 또는 npub QR 코드를 비추세요.",
   "wallet.scan.no_any": "그 이미지에서 토큰, 인보이스, npub을 찾지 못했습니다.",
+  "wallet.scan.not_usable": "이 QR 코드는 여기서 Airhop이 사용할 수 없습니다.",
   "wallet.scan.use_camera_a11y": "카메라로 스캔",
   "wallet.scan.use_camera": "카메라 사용",
   "wallet.scan.pick_image_a11y": "저장된 이미지에서 QR 코드 읽기",
@@ -1692,6 +1695,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "이 결제는 내 지갑에 잠겨 있습니다.",
   "wallet.svc.locked_ours_offline_body":
     "온라인이 되면 받으세요. 그동안 다른 누구도 가져갈 수 없습니다.",
+  "wallet.svc.offline_cap":
+    "오프라인에서는 확인되지 않은 ecash를 민트마다 최대 {limit}까지 받을 수 있습니다.",
+  "wallet.svc.offline_unchecked": "이 ecash는 오프라인에서 확인할 수 없습니다.",
+  "wallet.svc.claim_online_body":
+    "온라인이 되어 민트가 확인할 수 있을 때 받으세요.",
   "wallet.svc.already_spent": "이 ecash는 이미 사용되었습니다.",
   "wallet.svc.already_spent_body":
     "이 토큰을 보낸 사람이 먼저 교환했거나, 같은 토큰을 다른 사람에게도 보냈습니다.",
@@ -2172,6 +2180,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "라이브 영상",
   "settings.conn.live_video_desc":
     "근처 사람들에게 카메라를 스트리밍하고 그들의 방송도 보세요",
+  "settings.conn.live_video_on_title": "라이브 영상을 켤까요?",
+  "settings.conn.live_video_on_body":
+    "카메라로 블루투스 범위 안의 사람들에게 라이브를 할 수 있고, 다른 사람의 라이브도 채팅에 표시되며 이 휴대폰에 녹화됩니다.",
+  "settings.conn.live_video_off_title": "라이브 영상을 끌까요?",
+  "settings.conn.live_video_off_body":
+    "더 이상 라이브를 할 수 없고, 다른 사람의 라이브도 표시되거나 녹화되지 않습니다. 짧은 라이브는 일반 영상으로 도착합니다.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 경로 설정",
   "settings.conn.tor_desc":
@@ -2203,12 +2217,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor 사용 사실을 숨깁니다. Snowflake보다 빠르지만 이 브리지는 공개되어 있어 차단하는 망도 있습니다.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "일반 웹사이트 방문처럼 보이게 해 Tor 사용을 숨깁니다. 다른 방법보다 차단하기 어렵습니다.",
   "settings.tor.mode_custom": "사용자 브리지",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org에서 받은 obfs4 브리지 라인을 사용하세요. 다른 방법이 안 될 때 시도하세요.",
+    "bridges.torproject.org에서 받은 obfs4 또는 WebTunnel 브리지 라인을 사용하세요. 다른 방법이 안 될 때 시도하세요.",
   "settings.tor.custom_placeholder": "한 줄에 브리지 라인 하나씩 붙여넣기",
   "settings.tor.custom_apply_hint": "연결하려면 입력란 밖을 누르세요.",
   "settings.tor.custom_empty": "먼저 브리지 라인을 하나 이상 추가하세요.",

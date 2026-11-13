@@ -69,7 +69,7 @@ bitchat-ios counts every handshake message in its global bucket, so a flood of f
 
 ## Rekey
 
-A session is renewed by a fresh XX handshake at 21.6 h of age (90% of 24 h), checked every 60 s (`rekeyAgedSessions`), as bitchat-ios renews its own. A leaked transport key then reads at most a day of traffic.
+A session is renewed by a fresh XX handshake at 21.6 h of age (90% of 24 h), checked every 60 s (`rekeyAgedSessions`). A leaked transport key then reads at most a day of traffic.
 
 | Rule                  | Value                                                                                                                                                                                                   |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

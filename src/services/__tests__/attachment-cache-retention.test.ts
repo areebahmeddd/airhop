@@ -1,4 +1,4 @@
-// What file-transfer-service's retention sweep deletes, and the cache clears
+// What the attachment cache's retention sweep deletes, and the cache clears
 // beside it; when the sweep runs is media-retention.test.ts. Without the sweep
 // only the panic wipe deletes media, and a photo outlives the conversation it
 // belonged to by months. These pin what gets deleted, and more importantly what
@@ -79,7 +79,7 @@ import {
   MEDIA_MAX_AGE_MS,
   sweepExpiredAttachments,
   wipeCacheDirectory,
-} from "../file-transfer-service";
+} from "../attachment-cache";
 
 function setPlatform(os: "ios" | "android"): void {
   Object.defineProperty(Platform, "OS", { value: os, configurable: true });

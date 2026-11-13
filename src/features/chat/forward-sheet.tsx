@@ -17,6 +17,7 @@ import {
 import { isGeoChannel } from "@services/geohash-channel-service";
 import { showAlert } from "@store/alert-store";
 import { useChatStore } from "@store/chat-store";
+import { groupChannel, useGroupStore } from "@store/group-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import UpperText from "@ui/components/upper-text";
@@ -116,16 +117,22 @@ export default function ForwardSheet({
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
   const channels = useChatStore((s) => s.channels);
+  const groups = useGroupStore((s) => s.groups);
   const [sentTo, setSentTo] = useState<string | null>(null);
 
   const sections = useMemo(() => {
-    const targets = channels.filter((c) => c !== excludeChannel);
+    // Only groups this phone holds the key to: a pending invite or a group
+    // that removed us can seal nothing.
+    const held = new Set(groups.map((g) => groupChannel(g.groupID)));
+    const targets = channels.filter(
+      (c) => c !== excludeChannel && (kindOf(c) !== "group" || held.has(c)),
+    );
     return SECTION_ORDER.map(({ kind, titleKey }) => ({
       kind,
       titleKey,
       data: targets.filter((c) => kindOf(c) === kind),
     })).filter((s) => s.data.length > 0);
-  }, [channels, excludeChannel]);
+  }, [channels, excludeChannel, groups]);
 
   // The half-second before the sheet closes is there to let the checkmark
   // register as confirmation. It has to be cancellable: the sheet is draggable,

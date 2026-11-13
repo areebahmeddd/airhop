@@ -6,7 +6,9 @@
 //   their public halves in a signed bundle (0x24); a sender seals courier mail
 //   to one, and we open it with the matching private key, then consume it.
 //   Consumed keys are kept for a grace window so in-flight envelopes still open
-//   before the key is dropped, giving forward secrecy.
+//   before the key is dropped, giving forward secrecy. A key nobody uses is
+//   retired after a month, so a phone taken later opens no mail sealed to it
+//   long ago.
 //
 //   PeerPrekeyStore: verified bundles from other peers. When we courier mail to
 //   a peer we hold a bundle for, we assign one of their unused prekeys and seal
@@ -48,29 +50,41 @@ const MAX_PEERS = 200;
 // the prekey, so the envelope would be dropped unread; the static-key seal
 // always opens. bitchat-ios PrekeyBundleStore.maxBundleAgeForSealingSeconds.
 const MAX_BUNDLE_AGE_FOR_SEALING_MS = 7 * 24 * 60 * 60 * 1000;
-// Our own bundle is re-dated well inside that age. The pool keeps its unused
-// keys indefinitely, so a quiet one is still good, and without this senders
-// would fall back to the static seal and lose forward secrecy after a week.
+// Our own bundle is re-dated well inside that age, so a quiet pool is still
+// sealed to: without it senders would fall back to the static seal and lose
+// forward secrecy after a week.
 const BUNDLE_REDATE_MS = 3 * 24 * 60 * 60 * 1000;
+// An unused key leaves the bundle this long after it was made.
+const LISTED_MS = 30 * 24 * 60 * 60 * 1000;
+// And still opens for this long after. Re-dating means the last bundle to list
+// it can be dated the day it left, a sender may seal to that bundle for
+// MAX_BUNDLE_AGE_FOR_SEALING_MS, and the envelope then travels for up to a
+// day (ENVELOPE_TTL_MS and its slack).
+const RETIRED_GRACE_MS = MAX_BUNDLE_AGE_FOR_SEALING_MS + 25 * 60 * 60 * 1000;
 
-// Blob layout, big-endian: nextId u32, generatedAt u64, then one 44-byte
-// record per key: id u32, private key (32), consumedAt u64 (0 while unused).
-// Public keys are derived on load.
+// Blob layout, big-endian: nextId u32, generatedAt u64, then one 52-byte
+// record per key: id u32, private key (32), createdAt u64, consumedAt u64 (0
+// while unused). Public keys are derived on load.
 const HEADER_BYTES = 12;
-const RECORD_BYTES = 44;
+const RECORD_BYTES = 52;
 
 interface LocalPrekey {
   id: number;
   priv: Uint8Array;
   pub: Uint8Array;
+  createdAt: number;
 }
 interface ConsumedPrekey extends LocalPrekey {
   consumedAt: number;
 }
+// `prekeys` are published; `retired` are past LISTED_MS, unused and still
+// openable, never more than one batch, since all were published together when
+// the oldest left.
 interface LocalState {
   nextId: number;
   generatedAt: number;
   prekeys: LocalPrekey[];
+  retired: LocalPrekey[];
   consumed: ConsumedPrekey[];
 }
 
@@ -87,12 +101,13 @@ const KEYCHAIN_SLOT: PrekeySecretSlot = {
 };
 
 function emptyState(): LocalState {
-  return { nextId: 1, generatedAt: 0, prekeys: [], consumed: [] };
+  return { nextId: 1, generatedAt: 0, prekeys: [], retired: [], consumed: [] };
 }
 
 function encodeState(state: LocalState): string {
   const records = [
     ...state.prekeys.map((p) => ({ ...p, consumedAt: 0 })),
+    ...state.retired.map((p) => ({ ...p, consumedAt: 0 })),
     ...state.consumed,
   ];
   const out = new Uint8Array(HEADER_BYTES + records.length * RECORD_BYTES);
@@ -103,14 +118,18 @@ function encodeState(state: LocalState): string {
     const off = HEADER_BYTES + i * RECORD_BYTES;
     view.setUint32(off, r.id >>> 0, false);
     out.set(r.priv, off + 4);
-    view.setBigUint64(off + 36, BigInt(r.consumedAt), false);
+    view.setBigUint64(off + 36, BigInt(r.createdAt), false);
+    view.setBigUint64(off + 44, BigInt(r.consumedAt), false);
   });
   return bytesToBase64(out);
 }
 
 // Null for a blob that does not parse, which is then replaced: keys that
-// cannot be read are lost either way.
-function decodeState(blob: string): LocalState | null {
+// cannot be read are lost either way. A time a year ahead of the clock is no
+// record this store wrote, while one a little ahead is a clock set back. An
+// unused key comes back published, and the next `ensure` retires it if due.
+function decodeState(blob: string, now: number): LocalState | null {
+  const ceiling = now + 365 * 24 * 60 * 60 * 1000;
   let bytes: Uint8Array;
   try {
     bytes = base64ToBytes(blob);
@@ -128,16 +147,22 @@ function decodeState(blob: string): LocalState | null {
     nextId: view.getUint32(0, false),
     generatedAt: Number(view.getBigUint64(4, false)),
     prekeys: [],
+    retired: [],
     consumed: [],
   };
   for (let off = HEADER_BYTES; off < bytes.length; off += RECORD_BYTES) {
     const priv = bytes.slice(off + 4, off + 36);
+    const createdAt = Number(view.getBigUint64(off + 36, false));
+    const consumedAt = Number(view.getBigUint64(off + 44, false));
+    if (createdAt === 0 || createdAt > ceiling || consumedAt > ceiling) {
+      return null;
+    }
     const record = {
       id: view.getUint32(off, false),
       priv,
       pub: x25519.getPublicKey(priv),
+      createdAt,
     };
-    const consumedAt = Number(view.getBigUint64(off + 36, false));
     if (consumedAt === 0) state.prekeys.push(record);
     else state.consumed.push({ ...record, consumedAt });
   }
@@ -165,7 +190,8 @@ export class LocalPrekeyStore {
     } catch {
       return null;
     }
-    this.state = (blob === null ? null : decodeState(blob)) ?? emptyState();
+    this.state =
+      (blob === null ? null : decodeState(blob, Date.now())) ?? emptyState();
     this.ensure();
     return this.state;
   }
@@ -181,14 +207,16 @@ export class LocalPrekeyStore {
     }
   }
 
-  // Ensure the pool holds a full batch of unused prekeys, generating fresh
-  // Curve25519 keypairs as needed. Bumps generatedAt when the pool changes so a
-  // freshly built bundle supersedes older copies for our noise key, and every
-  // BUNDLE_REDATE_MS, well before senders stop sealing to it.
+  // Ensure the pool holds a full batch of unused prekeys, retiring the ones
+  // past LISTED_MS and generating fresh Curve25519 keypairs in their place.
+  // Bumps generatedAt when the pool changes so a freshly built bundle
+  // supersedes older copies for our noise key, and every BUNDLE_REDATE_MS,
+  // well before senders stop sealing to it.
   private ensure(): void {
     const state = this.state;
     if (state === null) return;
-    const pruned = this.pruneConsumed(state);
+    const now = Date.now();
+    const pruned = this.prune(state, now);
     let minted = false;
     while (state.prekeys.length < PREKEY_MAX_PREKEYS) {
       const priv = crypto.getRandomValues(new Uint8Array(32));
@@ -196,13 +224,14 @@ export class LocalPrekeyStore {
         id: state.nextId,
         priv,
         pub: x25519.getPublicKey(priv),
+        createdAt: now,
       });
       state.nextId = (state.nextId + 1) >>> 0 || 1;
       minted = true;
     }
-    const stale = Date.now() - state.generatedAt > BUNDLE_REDATE_MS;
+    const stale = now - state.generatedAt > BUNDLE_REDATE_MS;
     if (minted || stale) {
-      state.generatedAt = Math.max(Date.now(), state.generatedAt + 1);
+      state.generatedAt = Math.max(now, state.generatedAt + 1);
     }
     if (minted || stale || pruned || this.unsaved) this.persist();
   }
@@ -230,13 +259,19 @@ export class LocalPrekeyStore {
     );
   }
 
-  // The private key for a prekey id, from the live pool or, inside its grace
-  // window, the consumed set.
+  // The private key for a prekey id, from the live pool or, inside their grace
+  // windows, the retired and consumed sets.
   privForId(id: number, now: number = Date.now()): Uint8Array | null {
     const state = this.load();
     if (state === null) return null;
     const live = state.prekeys.find((p) => p.id === id);
     if (live !== undefined) return live.priv;
+    const retired = state.retired.find((p) => p.id === id);
+    if (retired !== undefined) {
+      return now - retired.createdAt > LISTED_MS + RETIRED_GRACE_MS
+        ? null
+        : retired.priv;
+    }
     const spent = state.consumed.find((p) => p.id === id);
     if (spent === undefined || now - spent.consumedAt > CONSUMED_GRACE_MS) {
       return null;
@@ -245,29 +280,42 @@ export class LocalPrekeyStore {
   }
 
   // Mark a prekey used: move it to the grace window and replenish the pool.
-  // False when it was not live (already spent, or unknown), since then the
-  // published bundle has not changed.
+  // A retired key opened once is spent too, which only shortens how long it
+  // opens. True only when a published key was spent, since only then has the
+  // bundle changed.
   consume(id: number): boolean {
     const state = this.load();
     if (state === null) return false;
-    const idx = state.prekeys.findIndex((p) => p.id === id);
+    const now = Date.now();
+    const live = state.prekeys.findIndex((p) => p.id === id);
+    const from = live >= 0 ? state.prekeys : state.retired;
+    const idx = live >= 0 ? live : from.findIndex((p) => p.id === id);
     if (idx < 0) return false;
-    const [used] = state.prekeys.splice(idx, 1);
-    state.consumed.push({ ...used, consumedAt: Date.now() });
-    this.pruneConsumed(state);
+    const [used] = from.splice(idx, 1);
+    state.consumed.push({ ...used, consumedAt: now });
+    this.prune(state, now);
     this.persist();
     this.ensure();
-    return true;
+    return live >= 0;
   }
 
-  // Drop consumed keys past their grace, and all but the newest batch.
-  private pruneConsumed(state: LocalState): boolean {
-    const cutoff = Date.now() - CONSUMED_GRACE_MS;
-    const kept = state.consumed
-      .filter((p) => p.consumedAt > cutoff)
+  // Retire published keys past LISTED_MS, drop retired and consumed keys past
+  // their grace, and keep at most the newest batch of the consumed.
+  private prune(state: LocalState, now: number): boolean {
+    const due = state.prekeys.filter((p) => now - p.createdAt >= LISTED_MS);
+    state.prekeys = state.prekeys.filter((p) => now - p.createdAt < LISTED_MS);
+    const retired = [...state.retired, ...due].filter(
+      (p) => now - p.createdAt <= LISTED_MS + RETIRED_GRACE_MS,
+    );
+    const consumed = state.consumed
+      .filter((p) => now - p.consumedAt <= CONSUMED_GRACE_MS)
       .slice(-MAX_CONSUMED);
-    const changed = kept.length !== state.consumed.length;
-    state.consumed = kept;
+    const changed =
+      due.length > 0 ||
+      retired.length !== state.retired.length + due.length ||
+      consumed.length !== state.consumed.length;
+    state.retired = retired;
+    state.consumed = consumed;
     return changed;
   }
 }

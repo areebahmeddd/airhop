@@ -6,84 +6,102 @@
 //! the two phones can only come from the app layer, never from Tor.
 //!
 //! There is no log callback: `status` reports the same thing as data, so
-//! nothing has to pattern match log lines and no `GlobalRef` has to stay alive
-//! across threads.
+//! nothing has to pattern match log lines and no `Global` reference has to stay
+//! alive across threads.
 //!
 //! Every entry point runs inside `crate::catch_panic`: unwinding into a JNI
-//! frame is undefined behavior.
+//! frame is undefined behavior. `Env` is taken with `with_env_no_catch`, so a
+//! panic reaches that guard and is reported as the C ABI reports it, and a
+//! failure returns as a value, never a Java exception.
 
 use jni::objects::{JClass, JString};
-use jni::sys::{jboolean, jint, jstring, JNI_TRUE};
-use jni::JNIEnv;
+use jni::sys::{jboolean, jint, jstring};
+use jni::{Env, EnvUnowned, Outcome};
 
-#[no_mangle]
-pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStart(
-    mut env: JNIEnv,
-    _class: JClass,
-    data_dir: JString,
+/// Run `f` with an `Env`, returning `failed` on a JNI error.
+fn with_env<'local, T>(
+    env: &mut EnvUnowned<'local>,
+    failed: T,
+    f: impl FnOnce(&mut Env<'local>) -> jni::errors::Result<T>,
+) -> T {
+    match env.with_env_no_catch(f).into_outcome() {
+        Outcome::Ok(value) => value,
+        // `Panic` cannot occur here: without a catch, a panic unwinds to
+        // `catch_panic` instead.
+        Outcome::Err(_) | Outcome::Panic(_) => failed,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStart<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    data_dir: JString<'local>,
     socks_port: jint,
-    bridge_lines: JString,
+    bridge_lines: JString<'local>,
     obfs4_port: jint,
     snowflake_port: jint,
+    webtunnel_port: jint,
 ) -> jint {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || {
-        let Ok(dir) = env.get_string(&data_dir) else {
-            return crate::AIRHOP_TOR_ERR_DATA_DIR;
-        };
-        let dir: String = dir.into();
-        // A port outside the u16 range is a caller bug, not something to clamp
-        // into a port nobody asked for.
-        if !(1..=65535).contains(&socks_port) {
-            return crate::AIRHOP_TOR_ERR_BIND;
-        }
-        // A transport port of 0 is meaningful: it says that transport is not
-        // running.
-        if !(0..=65535).contains(&obfs4_port) || !(0..=65535).contains(&snowflake_port) {
-            return crate::AIRHOP_TOR_ERR_BRIDGE_TRANSPORT;
-        }
-        let lines: String = if bridge_lines.is_null() {
-            String::new()
-        } else {
-            match env.get_string(&bridge_lines) {
-                Ok(s) => s.into(),
-                Err(_) => return crate::AIRHOP_TOR_ERR_BRIDGE_LINE,
+        with_env(&mut env, crate::AIRHOP_TOR_ERR_RUNTIME, |env| {
+            let Ok(dir) = data_dir.try_to_string(env) else {
+                return Ok(crate::AIRHOP_TOR_ERR_DATA_DIR);
+            };
+            // A port outside the u16 range is a caller bug, not something to
+            // clamp into a port nobody asked for.
+            if !(1..=65535).contains(&socks_port) {
+                return Ok(crate::AIRHOP_TOR_ERR_BIND);
             }
-        };
-        crate::start(
-            &dir,
-            socks_port as u16,
-            &lines,
-            crate::TransportPorts {
-                obfs4: obfs4_port as u16,
-                snowflake: snowflake_port as u16,
-            },
-        )
+            // A transport port of 0 is meaningful: it says that transport is
+            // not running.
+            let transport_ports = [obfs4_port, snowflake_port, webtunnel_port];
+            if !transport_ports.iter().all(|p| (0..=65535).contains(p)) {
+                return Ok(crate::AIRHOP_TOR_ERR_BRIDGE_TRANSPORT);
+            }
+            let lines = if bridge_lines.is_null() {
+                String::new()
+            } else {
+                match bridge_lines.try_to_string(env) {
+                    Ok(s) => s,
+                    Err(_) => return Ok(crate::AIRHOP_TOR_ERR_BRIDGE_LINE),
+                }
+            };
+            Ok(crate::start(
+                &dir,
+                socks_port as u16,
+                &lines,
+                crate::TransportPorts {
+                    obfs4: obfs4_port as u16,
+                    snowflake: snowflake_port as u16,
+                    webtunnel: webtunnel_port as u16,
+                },
+            ))
+        })
     })
 }
 
-#[no_mangle]
-pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStop(
-    _env: JNIEnv,
-    _class: JClass,
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStop<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
 ) -> jint {
     crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, crate::stop)
 }
 
-#[no_mangle]
-pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeSetDormant(
-    _env: JNIEnv,
-    _class: JClass,
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeSetDormant<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
     dormant: jboolean,
 ) -> jint {
-    crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || {
-        crate::set_dormant(dormant == JNI_TRUE)
-    })
+    crate::catch_panic(crate::AIRHOP_TOR_ERR_PANIC, || crate::set_dormant(dormant))
 }
 
-#[no_mangle]
-pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStatus(
-    _env: JNIEnv,
-    _class: JClass,
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStatus<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
 ) -> jint {
     // The same packing the C ABI returns, so the Swift and Kotlin decoders are
     // reading one format, not two that have to be kept in step. The fallback is
@@ -92,17 +110,15 @@ pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeStatus(
     crate::catch_panic(0, crate::packed_status)
 }
 
-#[no_mangle]
-pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeSummary(
-    env: JNIEnv,
-    _class: JClass,
+#[unsafe(no_mangle)]
+pub extern "system" fn Java_org_onemindlabs_airhop_tor_ArtiNative_nativeSummary<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
 ) -> jstring {
     crate::catch_panic(std::ptr::null_mut(), || {
-        match env.new_string(crate::status().summary) {
-            Ok(s) => s.into_raw(),
-            // Allocation failed, so a JVM exception is already pending. Null
-            // lets Kotlin see an empty summary instead of deciding here.
-            Err(_) => std::ptr::null_mut(),
-        }
+        // Null if allocation fails, which Kotlin shows as an empty summary.
+        with_env(&mut env, std::ptr::null_mut(), |env| {
+            Ok(JString::from_str(env, crate::status().summary)?.into_raw())
+        })
     })
 }

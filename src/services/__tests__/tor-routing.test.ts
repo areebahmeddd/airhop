@@ -947,7 +947,7 @@ describe("bridge modes", () => {
       rebuiltWhileOff.push(!mockTorEnabled || !mockNostrBlocked);
     });
 
-    const result = await setTorBridgeMode("custom", "webtunnel 192.0.2.1:443");
+    const result = await setTorBridgeMode("custom", "meek_lite 192.0.2.1:443");
 
     expect(result).toEqual({ ok: false, reason: "error" });
     expect(mockTorEnabled).toBe(true);

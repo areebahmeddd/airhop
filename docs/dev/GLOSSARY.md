@@ -112,7 +112,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[CLDR plural category](https://cldr.unicode.org/index/cldr-spec/plural-rules)**: The grammatical number forms a language uses. English has `one` and `other`, Russian four, Arabic six, Chinese only `other`. `tPlural` picks one per call through the rules in `src/i18n/plurals.ts`.
 
-**Endonym**: A language's name in its own script (`فارسی`, `русский`, `简体中文`). What the language picker lists, as bitchat's `AppLanguageSettings.endonym(for:)` does.
+**Endonym**: A language's name in its own script (`فارسی`, `русский`, `简体中文`). What the language picker lists.
 
 **[ICU](https://icu.unicode.org/)**: The Unicode internationalization library behind `Intl`. It backs date, time and number formatting, so `src/utils/format.ts` pins the locale and numbering system to keep output stable across OS versions. Hermes exposes `DateTimeFormat`, `NumberFormat` and `Collator` from it, but not `PluralRules`.
 

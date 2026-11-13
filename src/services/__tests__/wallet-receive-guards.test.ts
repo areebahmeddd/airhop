@@ -29,6 +29,7 @@ import {
   addMint,
   initWalletService,
   receiveToken,
+  reconcile,
   resetWalletService,
 } from "../wallet-service";
 
@@ -192,6 +193,74 @@ describe("coins locked to a key", () => {
       useSettingsStore.setState({ torEnabled: false });
     }
     expect(held()).toBe(0);
+  });
+});
+
+describe("ecash taken offline", () => {
+  // A token spent twice and passed on offline is found out only at a mint, so
+  // one account holds at most 10,000 sat of it. Past that the claim waits: the
+  // token stays in the chat, unclaimed, and nothing is lost.
+  it("stops at the cap and claims the rest once online", async () => {
+    const first = encode((await mintedProofs(8_000)).proofs);
+    const second = encode((await mintedProofs(4_000)).proofs);
+    fabric.setConditions({ offline: true });
+
+    expect((await receiveToken(first)).outcome).toBe("stored");
+    await expect(receiveToken(second)).rejects.toMatchObject({
+      code: "offline",
+    });
+    expect(held()).toBe(8_000);
+    expect(useWalletStore.getState().claimedTokens).toHaveLength(1);
+
+    fabric.setConditions({ offline: false });
+    expect((await receiveToken(second)).outcome).toBe("swapped");
+    expect(held()).toBe(12_000);
+  });
+
+  it("refuses one token past the cap even with nothing waiting, naming it", async () => {
+    const large = encode((await mintedProofs(15_000)).proofs);
+    fabric.setConditions({ offline: true });
+    await expect(receiveToken(large)).rejects.toMatchObject({
+      code: "offline",
+      copy: { key: "wallet.svc.offline_cap", vars: { limit: "10,000 sat" } },
+    });
+    expect(held()).toBe(0);
+  });
+
+  it("takes more offline once the mint has confirmed what is held", async () => {
+    const first = encode((await mintedProofs(8_000)).proofs);
+    const second = encode((await mintedProofs(4_000)).proofs);
+    fabric.setConditions({ offline: true });
+    expect((await receiveToken(first)).outcome).toBe("stored");
+
+    // Back online, reconciling settles the claim at the mint, which verifies
+    // its coins and frees the cap.
+    fabric.setConditions({ offline: false });
+    await reconcile();
+    fabric.setConditions({ offline: true });
+    expect((await receiveToken(second)).outcome).toBe("stored");
+    expect(held()).toBe(12_000);
+  });
+});
+
+describe("one token claimed twice at once", () => {
+  // The chat card and the Receive screen: the slower claim would meet
+  // "already spent" and leave a receive row nothing ever closes.
+  it("swaps once and tells the second claim to wait", async () => {
+    const token = encode((await mintedProofs(16)).proofs);
+    fabric.setConditions({ latencyMs: 200 });
+
+    const outcomes = (
+      await Promise.all([receiveToken(token), receiveToken(token)])
+    ).map((r) => r.outcome);
+
+    expect(outcomes.sort()).toEqual(["claiming", "swapped"]);
+    expect(held()).toBe(16);
+    expect(
+      useWalletStore
+        .getState()
+        .history.filter((t) => t.kind === "receive" && t.status === "pending"),
+    ).toHaveLength(0);
   });
 });
 

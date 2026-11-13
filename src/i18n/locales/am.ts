@@ -153,7 +153,7 @@ export const strings: Strings = {
     "በአቅራቢያ ያሉ መሣሪያዎችን ያገኛል፤ በመካከላቸውም መልእክቶችን ያስተላልፋል። ሜሹ የሚፈጠረው በዚህ ነው፤ ያለ ኢንተርኔት ግንኙነትም ይሠራል።",
   "onboarding.primer.location.title": "አካባቢ",
   "onboarding.primer.location.body":
-    "ከሰፈር እስከ ክልል ድረስ በአቅራቢያ ባሉ የአካባቢ ሰርጦች ውስጥ ያስገባሃል። Airhop ፈጽሞ አይከታተልህም፤ ትክክለኛ አካባቢህም ከመሣሪያህ የሚወጣው ለአንድ ሰው የአካባቢ ምልክት ስትልክ ብቻ ነው።",
+    "ከሰፈር እስከ ክልል ድረስ በአቅራቢያ ባሉ የአካባቢ ሰርጦች ውስጥ ያስገባሃል። Airhop ፈጽሞ አይከታተልህም፤ ትክክለኛ አካባቢህም ከመሣሪያህ ፈጽሞ አይወጣም።",
   "onboarding.primer.notifications.title": "ማሳወቂያዎች",
   "onboarding.primer.notifications.body":
     "መተግበሪያው ተዘግቶም እንኳ ስለ አዲስ መልእክቶች ማሳወቂያ ተቀበል። ማሳወቂያዎች የሚፈጠሩት በመሣሪያህ ውስጥ ነው፤ ምንም አገልጋይ አይሳተፍም።",
@@ -362,7 +362,13 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "ሁሉንም አባላት መድረስ አልተቻለም። በአቅራቢያ ሲሆኑ እንደገና ሞክር።",
   "chat.group.you_were_added": "ወደ {name} ተጨምረሃል።",
-  "chat.group.added_you": "ወደ {name} ጨምሮሃል",
+  "chat.group.invited": "ወደ {name} ተጋብዘሃል።",
+  "chat.group.invited_you": "ወደ {name} ጋብዞሃል",
+  "chat.group.decline": "አትቀበል",
+  "chat.group.decline_title": "ወደ {name} የቀረበውን ግብዣ አትቀበልም?",
+  "chat.group.decline_body":
+    "{name} በእውቂያዎችህ ውስጥ የለም። ይህንንም ሰው አግድ፤ ከዚያ በኋላ ከዚህ ሰው ግብዣዎችን ወይም መልእክቶችን አትቀበልም።",
+  "chat.group.decline_block": "አትቀበል እና አግድ",
   "chat.group.you_were_removed": "ከ{name} ተወግደሃል። ከእንግዲህ እዚህ ማንበብም መላክም አትችልም።",
   "chat.group.removed_you": "ከ{name} አስወግዶሃል",
   "chat.group.add_failed": "እነሱን መጨመር አልተቻለም",
@@ -1110,6 +1116,7 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ቶከኑ ሊገነባ አልቻለም",
+  "wallet.send.unverified_note": "የዚህ ክፍያ ከፊሉ ሚንቱ ገና ያላረጋገጠው ecash ነው።",
   "wallet.send.title": "ecash ላክ",
   "wallet.send.amount_in": "መጠን በ{unit}",
   "wallet.send.body":
@@ -1169,14 +1176,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "በ{mint} ተመንዝሯል። አሁን በማስረጃ የአንተ ነው፦ የላኪው የዚህ ቶከን ቅጂ ከእንግዲህ አይሠራም።",
   "wallet.receive.pending_unconfirmed":
-    "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም። በመስመር ላይ ስትሆን ከሚንቱ ጋር በራሱ ይረጋገጣል።",
-  "wallet.receive.pending_unconfirmed_genuine":
     "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም። ፊርማው ትክክል ነው፤ ስለዚህ ቶከኑ እውነተኛ ነው። በመስመር ላይ ስትሆን ከሚንቱ ጋር በራሱ ይረጋገጣል።",
   "wallet.receive.dleq_ok": "የሚንቱ ፊርማ ትክክል ሆኖ ተገኝቷል፤ ስለዚህ ቶከኑ እውነተኛ ነው።",
-  "wallet.receive.dleq_uncached":
-    "የሚንቱ ቁልፎች እዚህ አልተከማቹም፤ ስለዚህ ፊርማው ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
-  "wallet.receive.dleq_missing":
-    "በውስጡ ያሉት ሳንቲሞች ሁሉም የሚንቱን የፊርማ ማስረጃ አልያዙም፤ ስለዚህ ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
   "wallet.receive.dleq_warning":
     "በመስመር ላይ እስኪረጋገጥ ድረስ ላኪው በመርህ ደረጃ ሌላ ቦታ አውጥቶት ሊሆን ይችላል።",
   "wallet.receive.failed": "መቀበል አልተቻለም",
@@ -1517,6 +1518,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR ኮድ ቃኝ",
   "wallet.scan.aim_any": "ወደ ቶከን፣ ደረሰኝ ወይም npub QR ኮድ አነጣጥር።",
   "wallet.scan.no_any": "በዚያ ምስል ውስጥ ቶከን፣ ደረሰኝ ወይም npub አልተገኘም።",
+  "wallet.scan.not_usable": "ያ የQR ኮድ እዚህ Airhop ሊጠቀምበት የሚችል አይደለም።",
   "wallet.scan.use_camera_a11y": "በካሜራ ቃኝ",
   "wallet.scan.use_camera": "ካሜራ ተጠቀም",
   "wallet.scan.pick_image_a11y": "ከተቀመጠ ምስል የQR ኮድ አንብብ",
@@ -1610,6 +1612,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "ይህ ክፍያ ለቦርሳህ ተቆልፏል።",
   "wallet.svc.locked_ours_offline_body":
     "በመስመር ላይ ስትሆን ውሰደው። እስከዚያው ሌላ ማንም ሊወስደው አይችልም።",
+  "wallet.svc.offline_cap":
+    "ከመስመር ውጭ፣ ያልተረጋገጠ ecash በአንድ ሚንት እስከ {limit} ብቻ ነው።",
+  "wallet.svc.offline_unchecked": "ይህ ecash ከመስመር ውጭ ሊረጋገጥ አይችልም።",
+  "wallet.svc.claim_online_body": "በመስመር ላይ ስትሆን፣ ሚንቱ ሊያረጋግጠው ሲችል ይህንን ውሰደው።",
   "wallet.svc.already_spent": "ይህ ecash አስቀድሞ ወጪ ሆኗል።",
   "wallet.svc.already_spent_body":
     "ይህን ቶከን የላከው ሰው መጀመሪያ መንዝሮታል፣ ወይም ተመሳሳዩን ቶከን ለሌላ ሰው ልኮታል።",
@@ -2066,6 +2072,12 @@ export const strings: Strings = {
     "ማይኩን ተጭነህ ስትይዝ በምትኩ የድምፅ መልእክት ይቀዳል። ስትለቀው ይላካል፤ እስኪያጫውቱትም ማንም አይሰማውም።",
   "settings.conn.live_video": "ቀጥታ ቪዲዮ",
   "settings.conn.live_video_desc": "ካሜራዎን በአቅራቢያ ላሉ ሰዎች ያሰራጩ፣ የእነሱንም ይመልከቱ",
+  "settings.conn.live_video_on_title": "ቀጥታ ቪዲዮ ይብራ?",
+  "settings.conn.live_video_on_body":
+    "ከካሜራው በብሉቱዝ ክልል ውስጥ ላሉ ሰዎች በቀጥታ መልቀቅ ትችላለህ፤ የእነሱም ስርጭቶች በውይይቶችህ ውስጥ ይታያሉ፣ በዚህ ስልክም ይቀዳሉ።",
+  "settings.conn.live_video_off_title": "ቀጥታ ቪዲዮ ይጥፋ?",
+  "settings.conn.live_video_off_body":
+    "ከእንግዲህ በቀጥታ መልቀቅ አትችልም፤ የሌሎች ስርጭቶችም አይታዩም፣ አይቀዱምም። አጭር ስርጭት ግን እንደ ተራ ቪዲዮ ይደርሳል።",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "የTor አቅጣጫ",
   "settings.conn.tor_desc": "ለተጨማሪ ግላዊነት የNostr ትራፊክን በTor በኩል አሳልፍ",
@@ -2094,12 +2106,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor እንደምትጠቀም ይደብቃል። ከ Snowflake ይፈጥናል፣ ግን እነዚህ ድልድዮች ይፋዊ ናቸው እና አንዳንድ አውታረ መረቦች ያግዷቸዋል።",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ተራ የድር ጣቢያ ጉብኝት በመምሰል Tor መጠቀምህን ይደብቃል። ከሌሎቹ ለማገድ ይከብዳል።",
   "settings.tor.mode_custom": "ብጁ ድልድዮች",
   "settings.tor.mode_custom_desc":
-    "ከ bridges.torproject.org የተገኙ የ obfs4 ድልድይ መስመሮችን ተጠቀም። ሌሎቹ ሲወድቁ ይህን ሞክር።",
+    "ከ bridges.torproject.org የተገኙ የ obfs4 ወይም WebTunnel ድልድይ መስመሮችን ተጠቀም። ሌሎቹ ሲወድቁ ይህን ሞክር።",
   "settings.tor.custom_placeholder": "በአንድ መስመር አንድ የድልድይ መስመር ለጥፍ",
   "settings.tor.custom_apply_hint": "ለመገናኘት ከሳጥኑ ውጭ ንካ።",
   "settings.tor.custom_empty": "መጀመሪያ ቢያንስ አንድ የድልድይ መስመር ጨምር።",

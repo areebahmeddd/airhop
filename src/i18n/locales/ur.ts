@@ -161,7 +161,7 @@ export const strings: Strings = {
     "قریبی آلات ڈھونڈتا ہے اور ان کے درمیان پیغامات پہنچاتا ہے۔ میش اسی طرح بنتی ہے، اور یہ انٹرنیٹ کے بغیر کام کرتی ہے۔",
   "onboarding.primer.location.title": "مقام",
   "onboarding.primer.location.body":
-    "آپ کو قریبی علاقے کے چینلوں میں رکھتا ہے، ایک محلے سے لے کر پورے خطے تک۔ Airhop آپ کا تعاقب کبھی نہیں کرتا، اور آپ کا درست مقام آپ کے آلے سے صرف تب باہر جاتا ہے جب آپ کسی کو اپنا مقام بھیجتے ہیں۔",
+    "آپ کو قریبی علاقے کے چینلوں میں رکھتا ہے، ایک محلے سے لے کر پورے خطے تک۔ Airhop آپ کا تعاقب کبھی نہیں کرتا، اور آپ کا درست مقام کبھی آپ کے آلے سے باہر نہیں جاتا۔",
   "onboarding.primer.notifications.title": "اطلاعات",
   "onboarding.primer.notifications.body":
     "ایپ بند ہونے پر بھی نئے پیغامات کی اطلاع پائیں۔ اطلاعات آپ کے آلے پر مقامی طور پر بنتی ہیں، کسی سرور کی شمولیت کے بغیر۔",
@@ -384,7 +384,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "ہر رکن تک نہ پہنچا جا سکا۔ جب وہ قریب ہوں تو دوبارہ کوشش کریں۔",
   "chat.group.you_were_added": "آپ کو {name} میں شامل کیا گیا۔",
-  "chat.group.added_you": "آپ کو {name} میں شامل کیا",
+  "chat.group.invited": "آپ کو {name} میں مدعو کیا گیا ہے۔",
+  "chat.group.invited_you": "آپ کو {name} میں مدعو کیا",
+  "chat.group.decline": "مسترد کریں",
+  "chat.group.decline_title": "{name} کی دعوت مسترد کریں؟",
+  "chat.group.decline_body":
+    "{name} آپ کے رابطوں میں نہیں ہیں۔ انہیں بھی مسدود کریں، پھر ان سے مزید دعوتیں یا پیغام نہیں آئیں گے۔",
+  "chat.group.decline_block": "مسترد کریں اور مسدود کریں",
   "chat.group.you_were_removed":
     "آپ کو {name} سے نکال دیا گیا۔ اب آپ یہاں نہ پڑھ سکتے ہیں نہ پیغام بھیج سکتے ہیں۔",
   "chat.group.removed_you": "آپ کو {name} سے نکال دیا",
@@ -1180,6 +1186,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ٹوکن نہ بن سکا",
+  "wallet.send.unverified_note":
+    "اس ادائیگی کا کچھ حصہ ایسا ecash ہے جس کی ٹکسال نے ابھی تصدیق نہیں کی۔",
   "wallet.send.title": "ecash بھیجیں",
   "wallet.send.amount_in": "{unit} میں رقم",
   "wallet.send.body":
@@ -1239,14 +1247,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} پر بھنا لیا گیا۔ اب یہ ثابت شدہ طور پر آپ کا ہے: بھیجنے والے کے پاس اس ٹوکن کی نقل اب کام نہیں کرتی۔",
   "wallet.receive.pending_unconfirmed":
-    "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} سے محفوظ، مگر ٹکسال نے ابھی تصدیق نہیں کی کہ یہ خرچ نہیں ہوا۔ اس کا دستخط درست ہے، سو ٹوکن اصلی ہے۔ آن لائن ہوتے ہی ٹکسال سے خودبخود تصدیق ہو جاتی ہے۔",
   "wallet.receive.dleq_ok": "ٹکسال کا دستخط ٹھیک نکلتا ہے، سو ٹوکن اصلی ہے۔",
-  "wallet.receive.dleq_uncached":
-    "ٹکسال کی کلیدیں یہاں موجود نہیں، اس لیے دستخط آف لائن جانچا نہ جا سکا۔",
-  "wallet.receive.dleq_missing":
-    "اس کے ہر سکے پر ٹکسال کے دستخط کا ثبوت نہیں، اس لیے اسے آف لائن جانچا نہ جا سکا۔",
   "wallet.receive.dleq_warning":
     "جب تک آن لائن تصدیق نہ ہو، اصولاً ممکن ہے بھیجنے والے نے اسے کہیں اور خرچ کر دیا ہو۔",
   "wallet.receive.failed": "وصول نہ ہو سکا",
@@ -1602,6 +1604,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR کوڈ اسکین کریں",
   "wallet.scan.aim_any": "ٹوکن، بل یا npub کے QR کوڈ پر رکھیں۔",
   "wallet.scan.no_any": "اس تصویر میں کوئی ٹوکن، بل یا npub نہیں ملا۔",
+  "wallet.scan.not_usable": "Airhop یہاں اس QR کوڈ کو استعمال نہیں کر سکتا۔",
   "wallet.scan.use_camera_a11y": "کیمرے سے اسکین کریں",
   "wallet.scan.use_camera": "کیمرا استعمال کریں",
   "wallet.scan.pick_image_a11y": "محفوظ تصویر سے QR کوڈ پڑھیں",
@@ -1702,6 +1705,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "یہ ادائیگی آپ کے بٹوے سے بندھی ہے۔",
   "wallet.svc.locked_ours_offline_body":
     "آن لائن ہونے پر اسے لیں۔ تب تک کوئی اور اسے نہیں لے سکتا۔",
+  "wallet.svc.offline_cap":
+    "آف لائن، ہر ٹکسال کے لیے غیر تصدیق شدہ ecash کی حد {limit} ہے۔",
+  "wallet.svc.offline_unchecked": "یہ ecash آف لائن جانچا نہیں جا سکتا۔",
+  "wallet.svc.claim_online_body":
+    "آن لائن ہونے پر، جب ٹکسال اس کی تصدیق کر سکے، اسے لیں۔",
   "wallet.svc.already_spent": "یہ ecash پہلے ہی خرچ ہو چکا ہے۔",
   "wallet.svc.already_spent_body":
     "جس نے یہ ٹوکن بھیجا اس نے پہلے خود بھنا لیا، یا وہی ٹوکن کسی اور کو بھی بھیج دیا۔",
@@ -2189,6 +2197,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "لائیو ویڈیو",
   "settings.conn.live_video_desc":
     "اپنا کیمرہ قریبی لوگوں تک اسٹریم کریں، اور ان کا دیکھیں",
+  "settings.conn.live_video_on_title": "لائیو ویڈیو چالو کریں؟",
+  "settings.conn.live_video_on_body":
+    "آپ کیمرے سے بلوٹوتھ کی حدود میں موجود لوگوں کے لیے لائیو جا سکیں گے، اور ان کی لائیو اسٹریمیں آپ کی گفتگو میں دکھیں گی اور اس فون پر ریکارڈ ہوں گی۔",
+  "settings.conn.live_video_off_title": "لائیو ویڈیو بند کریں؟",
+  "settings.conn.live_video_off_body":
+    "آپ اب لائیو نہیں جا سکیں گے، اور دوسروں کی لائیو اسٹریمیں نہ دکھیں گی نہ ریکارڈ ہوں گی۔ مختصر اسٹریم پھر بھی عام ویڈیو کے طور پر آئے گی۔",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor سے رخ بندی",
   "settings.conn.tor_desc":
@@ -2219,12 +2233,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "چھپاتا ہے کہ آپ Tor استعمال کر رہے ہیں۔ Snowflake سے تیز، مگر یہ پل عوامی ہیں اور کچھ نیٹ ورک انہیں بلاک کرتے ہیں۔",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "عام ویب سائٹ وزٹ جیسا دکھ کر چھپاتا ہے کہ آپ Tor استعمال کرتے ہیں۔ باقیوں سے بلاک کرنا مشکل۔",
   "settings.tor.mode_custom": "اپنے پل",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org سے حاصل کردہ obfs4 برج لائنیں استعمال کریں۔ باقی ناکام ہونے پر یہ آزمائیں۔",
+    "bridges.torproject.org سے حاصل کردہ obfs4 یا WebTunnel برج لائنیں استعمال کریں۔ باقی ناکام ہونے پر یہ آزمائیں۔",
   "settings.tor.custom_placeholder": "ہر سطر میں ایک پل کی سطر چسپاں کریں",
   "settings.tor.custom_apply_hint": "جڑنے کے لیے باکس سے باہر ٹیپ کریں۔",
   "settings.tor.custom_empty": "پہلے کم از کم ایک پل کی سطر شامل کریں۔",

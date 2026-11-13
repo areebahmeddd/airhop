@@ -176,6 +176,56 @@ describe("replaying a lost swap", () => {
       .history.find((t) => t.kind === "receive");
     expect(receipt?.status).toBe("completed");
   });
+
+  it("swaps the killed send's other coins, which its token still holds", async () => {
+    await fund(16);
+    const token = await strangersToken(8);
+    fabric.setConditions({ swapResponseLost: true });
+    expect((await receiveToken(token)).outcome).toBe("stored");
+    const forwarded = await prepareSend({ amount: 24 });
+    const others = useWalletStore
+      .getState()
+      .reserved[forwarded.txId]!.proofs.filter((p) => p.verified === true)
+      .map((p) => p.secret);
+    expect(others.length).toBeGreaterThan(0);
+
+    fabric.setConditions({ swapResponseLost: false });
+    await reconcile();
+
+    // Whoever holds the token could still redeem these, so they were swapped
+    // for fresh ones rather than put back as confirmed.
+    expect(tx(forwarded.txId)?.status).toBe("failed");
+    for (const secret of others) expect(fabric.isSpent(secret)).toBe(true);
+    expect(spendable()).toBe(24);
+  });
+
+  it("closes the receipt the killed send's other coins came in under", async () => {
+    // One token staged and unanswered, one stored with the internet off: both
+    // offline receipts, both handed on in one send.
+    fabric.setConditions({ swapResponseLost: true });
+    expect((await receiveToken(await strangersToken(8))).outcome).toBe(
+      "stored",
+    );
+    fabric.setConditions({ swapResponseLost: false });
+    useSettingsStore.setState({ internetEnabled: false });
+    try {
+      expect((await receiveToken(await strangersToken(16))).outcome).toBe(
+        "stored",
+      );
+    } finally {
+      useSettingsStore.setState({ internetEnabled: true });
+    }
+    const stored = useWalletStore
+      .getState()
+      .history.find((t) => t.kind === "receive" && t.amount === 16);
+    await prepareSend({ amount: 24 });
+
+    await reconcile();
+
+    // Its coins went back under the send, so it holds none and is not left
+    // reading unconfirmed for good.
+    expect(tx(stored!.id)?.status).toBe("completed");
+  });
 });
 
 describe("swaps hold their inputs", () => {
@@ -326,6 +376,71 @@ describe("a melt in flight", () => {
     expect(melt?.status).toBe("completed");
     expect(reservedTotal()).toBe(0);
     expect(spendable()).toBe(32);
+  });
+
+  it("is not failed by a pass that began before its blanks and outlived it", async () => {
+    await fund(64);
+    const unpaid = await createLightningDeposit({
+      amount: 8,
+      mintUrl: fabric.url,
+    });
+    const quote = await quoteLightningWithdrawal({
+      invoice: simInvoice(32),
+      mintUrl: fabric.url,
+    });
+
+    // The pass starts the moment the melt row exists, before its blanks, so
+    // that is the history it reads. It then waits on an unpaid deposit until
+    // the melt has finished.
+    const direct = globalThis.fetch;
+    let meltDone = false;
+    globalThis.fetch = (async (input: unknown, init?: unknown) => {
+      if (String(input).includes(`/v1/mint/quote/bolt11/${unpaid.quoteId}`)) {
+        await waitFor(() => meltDone);
+      }
+      return direct(input as RequestInfo, init as RequestInit);
+    }) as typeof globalThis.fetch;
+    let pass: Promise<void> | undefined;
+    const stop = useWalletStore.subscribe((state) => {
+      if (pass !== undefined) return;
+      const melt = state.history.find((t) => t.kind === "melt");
+      if (melt !== undefined && melt.meltOutputs === undefined) {
+        pass = reconcile();
+      }
+    });
+    try {
+      await payLightningInvoice(quote);
+      meltDone = true;
+      await pass;
+    } finally {
+      stop();
+      globalThis.fetch = direct;
+    }
+
+    expect(pass).toBeDefined();
+    const melt = useWalletStore
+      .getState()
+      .history.find((t) => t.kind === "melt");
+    expect(melt?.status).toBe("completed");
+    expect(reservedTotal()).toBe(0);
+  });
+});
+
+describe("a deposit reconcile claimed first", () => {
+  // Paid from another wallet app: coming back runs a reconcile, which claims
+  // it before the deposit sheet's next poll.
+  it("still reads as credited to the sheet that was waiting on it", async () => {
+    const deposit = await createLightningDeposit({
+      amount: 16,
+      mintUrl: fabric.url,
+    });
+    await reconcile();
+    expect(spendable()).toBe(16);
+
+    expect(await claimLightningDeposit(fabric.url, UNIT, deposit.quoteId)).toBe(
+      16,
+    );
+    expect(spendable()).toBe(16);
   });
 });
 

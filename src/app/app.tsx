@@ -56,10 +56,10 @@ import {
   type FeatherIconName,
 } from "@react-native-vector-icons/feather/static";
 import { watchAppLock } from "@services/app-lock";
+import { startAttachmentCleanup } from "@services/attachment-cache";
 import { setAudioForPlayback } from "@services/audio-session";
 import { startBackgroundNotice } from "@services/background-notice";
 import { registerBootStartTask, syncBootStart } from "@services/boot-start";
-import { startAttachmentCleanup } from "@services/file-transfer-service";
 import { registerKeepAliveTask } from "@services/keep-alive";
 import { planLaunch, readLaunchIdentity } from "@services/launch-identity";
 import {
@@ -1233,10 +1233,9 @@ function AppContent(): React.JSX.Element {
         // actually moved, in either direction.
         //
         // Leaving for system Settings and coming back is the main way a location
-        // grant changes. A grant opens the named channels; a revoke has to
-        // close them and take the bridge off its cell, which nothing else does
-        // while iOS keeps the process alive across it. Gated on the change so
-        // an ordinary resume does not re-subscribe every cell.
+        // grant changes: a grant opens the named channels, a revoke closes them
+        // and takes the bridge off its cell. Gated on the change so an ordinary
+        // resume does not re-subscribe every cell.
         if (changed) getMeshService()?.refreshGeoChannels();
       });
       // Re-check the radios unconditionally.

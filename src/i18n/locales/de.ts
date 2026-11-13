@@ -165,7 +165,7 @@ export const strings: Strings = {
     "Findet Geräte in der Nähe und leitet Nachrichten zwischen ihnen weiter. Das bildet das Mesh und funktioniert ohne Internetverbindung.",
   "onboarding.primer.location.title": "Standort",
   "onboarding.primer.location.body":
-    "Ordnet dich Kanälen in deiner Umgebung zu, vom Häuserblock bis zur Region. Airhop verfolgt dich nie, und dein genauer Standort verlässt dein Gerät nur, wenn du jemandem eine Standortmarkierung schickst.",
+    "Ordnet dich Kanälen in deiner Umgebung zu, vom Häuserblock bis zur Region. Airhop verfolgt dich nie, und dein genauer Standort verlässt dein Gerät nie.",
   "onboarding.primer.notifications.title": "Mitteilungen",
   "onboarding.primer.notifications.body":
     "Erhalte Hinweise auf neue Nachrichten, auch wenn die App geschlossen ist. Mitteilungen entstehen lokal auf deinem Gerät, ganz ohne Server.",
@@ -398,7 +398,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Es konnten nicht alle Mitglieder erreicht werden. Versuche es erneut, während sie in der Nähe sind.",
   "chat.group.you_were_added": "Du wurdest zu {name} hinzugefügt.",
-  "chat.group.added_you": "Hat dich zu {name} hinzugefügt",
+  "chat.group.invited": "Du wurdest zu {name} eingeladen.",
+  "chat.group.invited_you": "Hat dich zu {name} eingeladen",
+  "chat.group.decline": "Ablehnen",
+  "chat.group.decline_title": "Einladung zu {name} ablehnen?",
+  "chat.group.decline_body":
+    "{name} ist nicht in deinen Kontakten. Blockiere die Person auch, dann bekommst du keine Einladungen oder Nachrichten mehr von ihr.",
+  "chat.group.decline_block": "Ablehnen und blockieren",
   "chat.group.you_were_removed":
     "Du wurdest aus {name} entfernt. Du kannst hier nicht mehr lesen oder schreiben.",
   "chat.group.removed_you": "Hat dich aus {name} entfernt",
@@ -1216,6 +1222,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Der Token konnte nicht erstellt werden",
+  "wallet.send.unverified_note":
+    "Ein Teil dieser Zahlung ist Ecash, das der Mint noch nicht bestätigt hat.",
   "wallet.send.title": "Ecash senden",
   "wallet.send.amount_in": "Betrag in {unit}",
   "wallet.send.body":
@@ -1275,15 +1283,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Bei {mint} eingelöst. Es gehört jetzt nachweislich dir: Die Kopie dieses Tokens auf der Absenderseite funktioniert nicht mehr.",
   "wallet.receive.pending_unconfirmed":
-    "Von {mint} gespeichert, aber der Mint hat noch nicht bestätigt, dass es unverbraucht ist. Sobald du online bist, wird es automatisch mit dem Mint bestätigt.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Von {mint} gespeichert, aber der Mint hat noch nicht bestätigt, dass es unverbraucht ist. Die Signatur stimmt, der Token ist also echt. Sobald du online bist, wird es automatisch mit dem Mint bestätigt.",
   "wallet.receive.dleq_ok":
     "Die Signatur des Mints stimmt, der Token ist also echt.",
-  "wallet.receive.dleq_uncached":
-    "Die Schlüssel des Mints sind hier nicht zwischengespeichert, deshalb ließ sich die Signatur offline nicht prüfen.",
-  "wallet.receive.dleq_missing":
-    "Nicht jede Münze darin trägt den Signaturnachweis des Mints, deshalb ließ es sich offline nicht prüfen.",
   "wallet.receive.dleq_warning":
     "Bis es online bestätigt ist, könnte die Absenderseite es im Prinzip anderswo ausgegeben haben.",
   "wallet.receive.failed": "Empfang nicht möglich",
@@ -1650,6 +1652,8 @@ export const strings: Strings = {
     "Richte die Kamera auf den QR-Code eines Tokens, einer Rechnung oder eines npub.",
   "wallet.scan.no_any":
     "In diesem Bild wurde kein Token, keine Rechnung und kein npub gefunden.",
+  "wallet.scan.not_usable":
+    "Mit diesem QR-Code kann Airhop hier nichts anfangen.",
   "wallet.scan.use_camera_a11y": "Mit der Kamera scannen",
   "wallet.scan.use_camera": "Kamera nutzen",
   "wallet.scan.pick_image_a11y":
@@ -1756,6 +1760,12 @@ export const strings: Strings = {
     "Diese Zahlung ist an deine Wallet gebunden.",
   "wallet.svc.locked_ours_offline_body":
     "Löse sie ein, sobald du online bist. Bis dahin kann sie niemand sonst nehmen.",
+  "wallet.svc.offline_cap":
+    "Offline ist unbestätigtes Ecash auf {limit} pro Mint begrenzt.",
+  "wallet.svc.offline_unchecked":
+    "Dieses Ecash lässt sich offline nicht prüfen.",
+  "wallet.svc.claim_online_body":
+    "Löse diese Zahlung ein, sobald du online bist und der Mint sie bestätigen kann.",
   "wallet.svc.already_spent": "Dieses Ecash wurde bereits ausgegeben.",
   "wallet.svc.already_spent_body":
     "Wer diesen Token gesendet hat, hat ihn zuerst eingelöst, oder denselben Token an jemand anderen geschickt.",
@@ -2266,6 +2276,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Live-Video",
   "settings.conn.live_video_desc":
     "Streame deine Kamera an Menschen in der Nähe und sieh ihre",
+  "settings.conn.live_video_on_title": "Live-Video einschalten?",
+  "settings.conn.live_video_on_body":
+    "Du kannst mit der Kamera live gehen, für alle in Bluetooth-Reichweite, und ihre Streams erscheinen in deinen Chats und werden auf diesem Telefon aufgezeichnet.",
+  "settings.conn.live_video_off_title": "Live-Video ausschalten?",
+  "settings.conn.live_video_off_body":
+    "Du kannst nicht mehr live gehen, und Streams von anderen werden weder angezeigt noch aufgezeichnet. Ein kurzer kommt trotzdem als normales Video an.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-Routing",
   "settings.conn.tor_desc":
@@ -2297,12 +2313,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Verbirgt, dass du Tor nutzt. Schneller als Snowflake, aber diese Bridges sind öffentlich und manche Netzwerke blockieren sie.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Verbirgt die Tor-Nutzung, indem es wie ein gewöhnlicher Website-Besuch aussieht. Schwerer zu blockieren als die anderen.",
   "settings.tor.mode_custom": "Eigene Bridges",
   "settings.tor.mode_custom_desc":
-    "Verwende obfs4-Bridge-Zeilen von bridges.torproject.org. Versuche das, wenn die anderen fehlschlagen.",
+    "Verwende obfs4- oder WebTunnel-Bridge-Zeilen von bridges.torproject.org. Versuche das, wenn die anderen fehlschlagen.",
   "settings.tor.custom_placeholder": "Eine Bridge-Zeile pro Zeile einfügen",
   "settings.tor.custom_apply_hint": "Zum Verbinden außerhalb des Felds tippen.",
   "settings.tor.custom_empty":

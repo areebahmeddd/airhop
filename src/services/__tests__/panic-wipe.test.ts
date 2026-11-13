@@ -8,11 +8,11 @@ import {
   resetWalletStorage,
   WALLET_STORAGE_ID,
 } from "@store/wallet-store";
+import { wipeCacheDirectory } from "../attachment-cache";
 import {
   clearBackgroundNotice,
   stopBackgroundNotice,
 } from "../background-notice";
-import { wipeCacheDirectory } from "../file-transfer-service";
 import { stopNotificationPipeline } from "../notification-pipeline";
 import { dismissAllNotifications } from "../notification-service";
 import { setNutzapWatcher } from "../nutzap-watcher-handle";
@@ -40,7 +40,7 @@ jest.mock("@core/crypto/keychain", () => ({
 
 // The cache wipe touches expo-file-system; mock the whole module so the test
 // stays a pure unit and can assert the wipe was invoked.
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   wipeCacheDirectory: jest.fn().mockResolvedValue(undefined),
 }));
 

@@ -157,7 +157,7 @@ export const strings: Strings = {
     "ค้นหาอุปกรณ์ที่อยู่ใกล้เคียงและส่งต่อข้อความระหว่างกัน สิ่งนี้สร้างเมชขึ้นมาและทำงานได้โดยไม่ต้องเชื่อมต่ออินเทอร์เน็ต",
   "onboarding.primer.location.title": "ตำแหน่ง",
   "onboarding.primer.location.body":
-    "จัดคุณเข้าช่องพื้นที่ใกล้เคียง ตั้งแต่ระดับบล็อกไปจนถึงระดับภูมิภาค Airhop ไม่เคยติดตามคุณ และตำแหน่งที่แม่นยำของคุณจะออกจากเครื่องก็ต่อเมื่อคุณส่งตำแหน่งให้ใครสักคนเท่านั้น",
+    "จัดคุณเข้าช่องพื้นที่ใกล้เคียง ตั้งแต่ระดับบล็อกไปจนถึงระดับภูมิภาค Airhop ไม่เคยติดตามคุณ และตำแหน่งที่แม่นยำของคุณไม่เคยออกจากเครื่อง",
   "onboarding.primer.notifications.title": "การแจ้งเตือน",
   "onboarding.primer.notifications.body":
     "รับการแจ้งเตือนข้อความใหม่แม้ในขณะที่ปิดแอปอยู่ การแจ้งเตือนถูกสร้างขึ้นภายในเครื่องของคุณ โดยไม่มีเซิร์ฟเวอร์เข้ามาเกี่ยวข้อง",
@@ -376,7 +376,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "ติดต่อสมาชิกไม่ครบทุกคน ลองอีกครั้งขณะที่พวกเขาอยู่ใกล้",
   "chat.group.you_were_added": "คุณถูกเพิ่มเข้า {name}",
-  "chat.group.added_you": "เพิ่มคุณเข้า {name}",
+  "chat.group.invited": "คุณได้รับเชิญเข้า {name}",
+  "chat.group.invited_you": "เชิญคุณเข้า {name}",
+  "chat.group.decline": "ปฏิเสธ",
+  "chat.group.decline_title": "ปฏิเสธคำเชิญเข้า {name} หรือไม่",
+  "chat.group.decline_body":
+    "{name} ไม่ได้อยู่ในรายชื่อติดต่อของคุณ บล็อกพวกเขาด้วย แล้วคุณจะไม่ได้รับคำเชิญหรือข้อความจากพวกเขาอีก",
+  "chat.group.decline_block": "ปฏิเสธและบล็อก",
   "chat.group.you_were_removed":
     "คุณถูกนำออกจาก {name} คุณอ่านหรือส่งข้อความที่นี่ไม่ได้อีกต่อไป",
   "chat.group.removed_you": "นำคุณออกจาก {name}",
@@ -1154,6 +1160,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "สร้างโทเคนไม่สำเร็จ",
+  "wallet.send.unverified_note":
+    "บางส่วนของการชำระเงินนี้เป็น ecash ที่มินต์ยังไม่ได้ยืนยัน",
   "wallet.send.title": "ส่ง ecash",
   "wallet.send.amount_in": "จำนวนเป็น {unit}",
   "wallet.send.body":
@@ -1213,14 +1221,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "แลกที่ {mint} แล้ว ตอนนี้มันเป็นของคุณอย่างพิสูจน์ได้ สำเนาโทเคนนี้ของผู้ส่งใช้ไม่ได้อีกต่อไป",
   "wallet.receive.pending_unconfirmed":
-    "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้ ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
-  "wallet.receive.pending_unconfirmed_genuine":
     "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้ ลายเซ็นของมันตรวจสอบผ่าน โทเคนจึงเป็นของแท้ ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
   "wallet.receive.dleq_ok": "ลายเซ็นของมินต์ตรวจสอบผ่าน โทเคนจึงเป็นของแท้",
-  "wallet.receive.dleq_uncached":
-    "กุญแจของมินต์ไม่ได้แคชไว้ที่นี่ จึงตรวจสอบลายเซ็นแบบออฟไลน์ไม่ได้",
-  "wallet.receive.dleq_missing":
-    "เหรียญบางส่วนในนั้นไม่มีหลักฐานลายเซ็นของมินต์ จึงตรวจสอบแบบออฟไลน์ไม่ได้",
   "wallet.receive.dleq_warning":
     "จนกว่าจะได้รับการยืนยันขณะออนไลน์ ผู้ส่งอาจใช้มันไปที่อื่นแล้วก็เป็นได้",
   "wallet.receive.failed": "รับไม่สำเร็จ",
@@ -1571,6 +1573,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "สแกนคิวอาร์โค้ด",
   "wallet.scan.aim_any": "หันไปที่คิวอาร์โค้ดของโทเคน ใบแจ้งหนี้ หรือ npub",
   "wallet.scan.no_any": "ไม่พบโทเคน ใบแจ้งหนี้ หรือ npub ในรูปนั้น",
+  "wallet.scan.not_usable": "Airhop ใช้คิวอาร์โค้ดนี้ที่นี่ไม่ได้",
   "wallet.scan.use_camera_a11y": "สแกนด้วยกล้อง",
   "wallet.scan.use_camera": "ใช้กล้อง",
   "wallet.scan.pick_image_a11y": "อ่านคิวอาร์โค้ดจากรูปที่บันทึกไว้",
@@ -1669,6 +1672,11 @@ export const strings: Strings = {
     "การชำระเงินนี้ถูกล็อกไว้กับกระเป๋าเงินของคุณ",
   "wallet.svc.locked_ours_offline_body":
     "เคลมได้เมื่อคุณออนไลน์ ระหว่างนี้ไม่มีใครเอาไปได้",
+  "wallet.svc.offline_cap":
+    "ขณะออฟไลน์ ecash ที่ยังไม่ได้ยืนยันรับได้ไม่เกิน {limit} ต่อมินต์",
+  "wallet.svc.offline_unchecked": "ตรวจสอบ ecash นี้แบบออฟไลน์ไม่ได้",
+  "wallet.svc.claim_online_body":
+    "เคลมรายการนี้เมื่อคุณออนไลน์และมินต์ยืนยันได้",
   "wallet.svc.already_spent": "ecash นี้ถูกใช้ไปแล้ว",
   "wallet.svc.already_spent_body":
     "ผู้ที่ส่งโทเคนนี้แลกมันไปก่อน หรือส่งโทเคนใบเดียวกันให้คนอื่นด้วย",
@@ -2143,6 +2151,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "วิดีโอสด",
   "settings.conn.live_video_desc":
     "ถ่ายทอดกล้องของคุณให้คนใกล้ ๆ และดูของพวกเขา",
+  "settings.conn.live_video_on_title": "เปิดวิดีโอสดหรือไม่",
+  "settings.conn.live_video_on_body":
+    "คุณจะไลฟ์จากกล้องให้คนในระยะบลูทูธดูได้ และไลฟ์ของพวกเขาจะแสดงในแชตของคุณและถูกบันทึกไว้ในโทรศัพท์เครื่องนี้",
+  "settings.conn.live_video_off_title": "ปิดวิดีโอสดหรือไม่",
+  "settings.conn.live_video_off_body":
+    "คุณจะไลฟ์ไม่ได้อีก และไลฟ์ของคนอื่นจะไม่แสดงหรือถูกบันทึก ไลฟ์สั้นๆ ยังคงมาถึงเป็นวิดีโอธรรมดา",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "การกำหนดเส้นทางผ่าน Tor",
   "settings.conn.tor_desc":
@@ -2173,12 +2187,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "ซ่อนว่าคุณใช้ Tor เร็วกว่า Snowflake แต่บริดจ์เหล่านี้เป็นสาธารณะและบางเครือข่ายบล็อกไว้",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ซ่อนว่าคุณใช้ Tor โดยทำให้ดูเหมือนการเข้าชมเว็บไซต์ทั่วไป บล็อกยากกว่าวิธีอื่น",
   "settings.tor.mode_custom": "บริดจ์ของคุณเอง",
   "settings.tor.mode_custom_desc":
-    "ใช้บรรทัดบริดจ์ obfs4 จาก bridges.torproject.org ลองวิธีนี้เมื่อวิธีอื่นไม่ได้ผล",
+    "ใช้บรรทัดบริดจ์ obfs4 หรือ WebTunnel จาก bridges.torproject.org ลองวิธีนี้เมื่อวิธีอื่นไม่ได้ผล",
   "settings.tor.custom_placeholder": "วางบรรทัดบริดจ์หนึ่งบรรทัดต่อหนึ่งแถว",
   "settings.tor.custom_apply_hint": "แตะนอกกล่องเพื่อเชื่อมต่อ",
   "settings.tor.custom_empty": "เพิ่มบรรทัดบริดจ์อย่างน้อยหนึ่งบรรทัดก่อน",

@@ -3,7 +3,7 @@
 // clock, and never on a clock that went back; swept at each deadline, never
 // taking a token the wallet has not claimed, and never let back in by a
 // resend. Uses the real stores over the in-memory MMKV mock, and
-// file-transfer-service's reference-counted cleanup over a fake disk.
+// attachment-cache's reference-counted cleanup over a fake disk.
 
 declare global {
   var __files: Set<string>;
@@ -61,7 +61,7 @@ import {
 import {
   INCOMING_FILE_PREFIX,
   startAttachmentCleanup,
-} from "../file-transfer-service";
+} from "../attachment-cache";
 import {
   startMessageRetention,
   stopMessageRetention,

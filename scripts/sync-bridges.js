@@ -17,9 +17,9 @@ const path = require("path");
 
 const OUTPUT = path.join("src", "data", "bridges.ts");
 
-// Transports Airhop ships. Moat also returns meek and meek-azure, which Airhop
-// does not run, so they are dropped rather than written to a file that implies
-// they work.
+// The built-in lists Airhop uses. Moat also returns meek and meek-azure, which
+// Airhop does not run, so they are dropped rather than written to a file that
+// implies they work. Moat publishes no WebTunnel lines; those go in Custom.
 const WANTED = ["obfs4", "snowflake"];
 
 // Sanity bounds on the upstream answer. A response that parses but carries one

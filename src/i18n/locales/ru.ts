@@ -159,7 +159,7 @@ export const strings: Strings = {
     "Находит устройства поблизости и передаёт сообщения между ними. Так возникает сеть, и она работает без интернета.",
   "onboarding.primer.location.title": "Геопозиция",
   "onboarding.primer.location.body":
-    "Помещает вас в каналы окрестных зон, от квартала до региона. Airhop никогда не отслеживает вас, а ваша точная геопозиция покидает устройство, только когда вы отправляете кому-то метку геопозиции.",
+    "Помещает вас в каналы окрестных зон, от квартала до региона. Airhop никогда не отслеживает вас, а ваша точная геопозиция никогда не покидает устройство.",
   "onboarding.primer.notifications.title": "Уведомления",
   "onboarding.primer.notifications.body":
     "Получайте оповещения о новых сообщениях, даже когда приложение закрыто. Уведомления создаются локально на вашем устройстве, без участия сервера.",
@@ -387,7 +387,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Удалось связаться не со всеми участниками. Попробуйте снова, когда они будут рядом.",
   "chat.group.you_were_added": "Вас добавили в {name}.",
-  "chat.group.added_you": "Добавил вас в {name}",
+  "chat.group.invited": "Вас пригласили в {name}.",
+  "chat.group.invited_you": "Пригласил вас в {name}",
+  "chat.group.decline": "Отклонить",
+  "chat.group.decline_title": "Отклонить приглашение в {name}?",
+  "chat.group.decline_body":
+    "{name} нет в ваших контактах. Заблокируйте и этого человека, и вы больше не получите от него приглашений и сообщений.",
+  "chat.group.decline_block": "Отклонить и заблокировать",
   "chat.group.you_were_removed":
     "Вас удалили из {name}. Здесь больше нельзя читать и писать.",
   "chat.group.removed_you": "Удалил вас из {name}",
@@ -1195,6 +1201,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Не удалось собрать токен",
+  "wallet.send.unverified_note":
+    "Часть этого платежа составляет ecash, который монетный двор ещё не подтвердил.",
   "wallet.send.title": "Отправить ecash",
   "wallet.send.amount_in": "Сумма в {unit}",
   "wallet.send.body":
@@ -1254,15 +1262,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Погашено в {mint}. Теперь это доказуемо ваше: копия этого токена у отправителя больше не работает.",
   "wallet.receive.pending_unconfirmed":
-    "Сохранено от {mint}, но монетный двор ещё не подтвердил, что оно не потрачено. Подтверждение у монетного двора пройдёт автоматически, как только вы выйдете в сеть.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Сохранено от {mint}, но монетный двор ещё не подтвердил, что оно не потрачено. Подпись сходится, так что токен подлинный. Подтверждение у монетного двора пройдёт автоматически, как только вы выйдете в сеть.",
   "wallet.receive.dleq_ok":
     "Подпись монетного двора сходится, значит токен подлинный.",
-  "wallet.receive.dleq_uncached":
-    "Ключи монетного двора здесь не сохранены, поэтому подпись нельзя было проверить офлайн.",
-  "wallet.receive.dleq_missing":
-    "Не все монеты в нём несут подтверждение подписи монетного двора, поэтому проверить его офлайн не удалось.",
   "wallet.receive.dleq_warning":
     "Пока это не подтверждено в сети, отправитель в принципе мог потратить их где-то ещё.",
   "wallet.receive.failed": "Не удалось получить",
@@ -1621,6 +1623,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "Сканировать QR-код",
   "wallet.scan.aim_any": "Наведите камеру на QR-код токена, счёта или npub.",
   "wallet.scan.no_any": "На этом изображении не найден токен, счёт или npub.",
+  "wallet.scan.not_usable": "Airhop не может использовать этот QR-код здесь.",
   "wallet.scan.use_camera_a11y": "Сканировать камерой",
   "wallet.scan.use_camera": "Использовать камеру",
   "wallet.scan.pick_image_a11y": "Прочитать QR-код из сохранённого изображения",
@@ -1725,6 +1728,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Этот платёж привязан к вашему кошельку.",
   "wallet.svc.locked_ours_offline_body":
     "Получите его, когда будете в сети. Пока никто другой не сможет его забрать.",
+  "wallet.svc.offline_cap":
+    "Офлайн неподтверждённый ecash ограничен суммой {limit} на монетный двор.",
+  "wallet.svc.offline_unchecked": "Этот ecash нельзя проверить офлайн.",
+  "wallet.svc.claim_online_body":
+    "Получите этот платёж, когда будете в сети и монетный двор сможет его подтвердить.",
   "wallet.svc.already_spent": "Этот ecash уже потрачен.",
   "wallet.svc.already_spent_body":
     "Отправитель погасил токен первым или отправил тот же токен кому-то ещё.",
@@ -2226,6 +2234,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Прямой эфир",
   "settings.conn.live_video_desc":
     "Транслируйте камеру людям поблизости и смотрите их эфиры",
+  "settings.conn.live_video_on_title": "Включить прямой эфир?",
+  "settings.conn.live_video_on_body":
+    "Вы сможете выходить в эфир с камеры для тех, кто в зоне действия Bluetooth, а их эфиры будут появляться в ваших чатах и записываться на этот телефон.",
+  "settings.conn.live_video_off_title": "Выключить прямой эфир?",
+  "settings.conn.live_video_off_body":
+    "Вы больше не сможете выходить в эфир, а чужие эфиры не будут показываться и записываться. Короткий всё равно придёт как обычное видео.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Маршрутизация через Tor",
   "settings.conn.tor_desc":
@@ -2257,12 +2271,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Скрывает использование Tor. Быстрее Snowflake, но эти мосты общедоступны и часть сетей их блокирует.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Скрывает использование Tor, выглядя как обычный визит на сайт. Заблокировать сложнее, чем остальные.",
   "settings.tor.mode_custom": "Свои мосты",
   "settings.tor.mode_custom_desc":
-    "Используйте строки мостов obfs4 с bridges.torproject.org. Попробуйте это, когда остальные не работают.",
+    "Используйте строки мостов obfs4 или WebTunnel с bridges.torproject.org. Попробуйте это, когда остальные не работают.",
   "settings.tor.custom_placeholder": "Вставьте по одной строке моста в строке",
   "settings.tor.custom_apply_hint": "Нажмите вне поля, чтобы подключиться.",
   "settings.tor.custom_empty": "Сначала добавьте хотя бы одну строку моста.",

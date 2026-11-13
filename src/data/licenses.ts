@@ -346,19 +346,19 @@ const CATALOG: {
     packages: [
       {
         name: "arti",
-        version: "0.47.0",
+        version: "0.48.0",
         license: "MIT OR Apache-2.0",
         repo: "https://gitlab.torproject.org/tpo/core/arti",
       },
       {
         name: "IPtProxy",
-        version: "5.7.0",
+        version: "5.8.1",
         license: "MIT",
         repo: "https://github.com/tladesignz/IPtProxy",
       },
       {
         name: "lyrebird",
-        version: "bundled with IPtProxy",
+        version: "obfs4, bundled with IPtProxy",
         license: "BSD-3-Clause",
         repo: "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/lyrebird",
       },
@@ -367,6 +367,12 @@ const CATALOG: {
         version: "bundled with IPtProxy",
         license: "BSD-3-Clause",
         repo: "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake",
+      },
+      {
+        name: "webtunnel",
+        version: "bundled with IPtProxy",
+        license: "MIT",
+        repo: "https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/webtunnel",
       },
     ],
   },

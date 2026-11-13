@@ -66,7 +66,7 @@ bitchat never puts raw text in a Nostr DM. The rumor's content is `"bitchat1:" +
 
 - Content is capped at one `PrivateMessagePacket`, 255 UTF-8 bytes; `encodeBitchatDmEnvelope` returns null past it.
 - A pseudonymous (location-channel) DM puts random bytes in `senderID`, never our mesh ID, which would tie the cell identity to it.
-- **Receipts.** A message read after its sender left range has no mesh route for its receipt, so `sendReadReceipts` sends it over Nostr, as bitchat-ios routes one; a DM that arrived over Nostr is acknowledged over Nostr. Couriered mail is acknowledged over both routes.
+- **Receipts.** A message read after its sender left range has no mesh route for its receipt, so `sendReadReceipts` sends it over Nostr; a DM that arrived over Nostr is acknowledged over Nostr. Couriered mail is acknowledged over both routes.
 
 ## Courier Drop (Kind 1401)
 

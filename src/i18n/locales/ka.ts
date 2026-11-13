@@ -161,7 +161,7 @@ export const strings: Strings = {
     "პოულობს ახლომდებარე მოწყობილობებს და მათ შორის შეტყობინებებს გადასცემს. სწორედ ასე იქმნება მეში და მუშაობს ინტერნეტ-კავშირის გარეშე.",
   "onboarding.primer.location.title": "მდებარეობა",
   "onboarding.primer.location.body":
-    "გათავსებს ახლომდებარე ზონის არხებში, კვარტლიდან რეგიონამდე. Airhop არასოდეს გადევნებს თვალს, შენი ზუსტი მდებარეობა კი მოწყობილობას მხოლოდ მაშინ ტოვებს, როცა ვინმეს მდებარეობის ნიშნულს უგზავნი.",
+    "გათავსებს ახლომდებარე ზონის არხებში, კვარტლიდან რეგიონამდე. Airhop არასოდეს გადევნებს თვალს, შენი ზუსტი მდებარეობა კი მოწყობილობას არასოდეს ტოვებს.",
   "onboarding.primer.notifications.title": "შეტყობინებები",
   "onboarding.primer.notifications.body":
     "მიიღე ახალი შეტყობინებების შესახებ ცნობები მაშინაც, როცა აპლიკაცია დახურულია. შეტყობინებები შენს მოწყობილობაზე იქმნება, სერვერის ჩარევის გარეშე.",
@@ -389,7 +389,13 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "ყველა წევრს ვერ მივწვდით. სცადე მაშინ, როცა ახლოს იქნებიან.",
   "chat.group.you_were_added": "დაგამატეს {name}-ში.",
-  "chat.group.added_you": "დაგამატა {name}-ში",
+  "chat.group.invited": "მოგიწვიეს {name}-ში.",
+  "chat.group.invited_you": "მოგიწვია {name}-ში",
+  "chat.group.decline": "უარყოფა",
+  "chat.group.decline_title": "უარვყოთ მოწვევა {name}-ში?",
+  "chat.group.decline_body":
+    "{name} შენს კონტაქტებში არ არის. დაბლოკე ისიც და მისგან მოწვევებს ან შეტყობინებებს აღარ მიიღებ.",
+  "chat.group.decline_block": "უარყოფა და დაბლოკვა",
   "chat.group.you_were_removed":
     "წაგშალეს {name}-იდან. აქ ვეღარ წაიკითხავ და ვეღარ გააგზავნი შეტყობინებებს.",
   "chat.group.removed_you": "წაგშალა {name}-იდან",
@@ -1195,6 +1201,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ტოკენის აწყობა ვერ მოხერხდა",
+  "wallet.send.unverified_note":
+    "ამ გადახდის ნაწილი ისეთი ecash-ია, რომელიც ზარაფხანას ჯერ არ დაუდასტურებია.",
   "wallet.send.title": "ecash-ის გაგზავნა",
   "wallet.send.amount_in": "თანხა {unit}-ში",
   "wallet.send.body":
@@ -1254,15 +1262,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "გამოსყიდულია {mint}-ში. ახლა დამტკიცებულად შენია: ამ ტოკენის გამგზავნისეული ასლი აღარ მუშაობს.",
   "wallet.receive.pending_unconfirmed":
-    "შენახულია {mint}-იდან, მაგრამ ზარაფხანას ჯერ არ დაუდასტურებია, რომ დაუხარჯავია. ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ონლაინ იქნები.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "შენახულია {mint}-იდან, მაგრამ ზარაფხანას ჯერ არ დაუდასტურებია, რომ დაუხარჯავია. მისი ხელმოწერა სწორია, ამიტომ ტოკენი ნამდვილია. ზარაფხანასთან ავტომატურად დადასტურდება, როგორც კი ონლაინ იქნები.",
   "wallet.receive.dleq_ok":
     "ზარაფხანის ხელმოწერა სწორია, ამიტომ ტოკენი ნამდვილია.",
-  "wallet.receive.dleq_uncached":
-    "ამ ზარაფხანის გასაღებები აქ არ ინახება, ამიტომ ხელმოწერის ოფლაინში შემოწმება ვერ მოხერხდა.",
-  "wallet.receive.dleq_missing":
-    "მასში ყველა მონეტას არ ახლავს ზარაფხანის ხელმოწერის მტკიცებულება, ამიტომ ოფლაინში შემოწმება ვერ მოხერხდა.",
   "wallet.receive.dleq_warning":
     "სანამ ონლაინ არ დადასტურდება, გამგზავნს პრინციპში შეეძლო ის სხვაგან დაეხარჯა.",
   "wallet.receive.failed": "მიღება ვერ მოხერხდა",
@@ -1621,6 +1623,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR კოდის სკანირება",
   "wallet.scan.aim_any": "მიმართე ტოკენის, ინვოისის ან npub-ის QR კოდზე.",
   "wallet.scan.no_any": "ამ სურათში ტოკენი, ინვოისი ან npub არ მოიძებნა.",
+  "wallet.scan.not_usable": "Airhop-ს აქ ამ QR კოდის გამოყენება არ შეუძლია.",
   "wallet.scan.use_camera_a11y": "სკანირება კამერით",
   "wallet.scan.use_camera": "კამერის გამოყენება",
   "wallet.scan.pick_image_a11y": "QR კოდის წაკითხვა შენახული სურათიდან",
@@ -1723,6 +1726,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "ეს გადახდა შენს საფულეზეა დაკეტილი.",
   "wallet.svc.locked_ours_offline_body":
     "მიიღე, როცა ონლაინ იქნები. მანამდე მას სხვა ვერავინ წაიღებს.",
+  "wallet.svc.offline_cap":
+    "ოფლაინ რეჟიმში დაუდასტურებელი ecash-ის ლიმიტი თითო ზარაფხანაზე არის {limit}.",
+  "wallet.svc.offline_unchecked": "ამ ecash-ის შემოწმება ოფლაინ შეუძლებელია.",
+  "wallet.svc.claim_online_body":
+    "მიიღე, როცა ონლაინ იქნები და ზარაფხანა შეძლებს მის დადასტურებას.",
   "wallet.svc.already_spent": "ეს ecash უკვე დახარჯულია.",
   "wallet.svc.already_spent_body":
     "ვინც ეს ტოკენი გამოგზავნა, ჯერ თვითონ გამოისყიდა, ან იგივე ტოკენი სხვასაც გაუგზავნა.",
@@ -2220,6 +2228,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "პირდაპირი ვიდეო",
   "settings.conn.live_video_desc":
     "გაუზიარე კამერა ახლომყოფებს და უყურე მათსას",
+  "settings.conn.live_video_on_title": "ჩავრთოთ პირდაპირი ვიდეო?",
+  "settings.conn.live_video_on_body":
+    "შეძლებ კამერით ეთერში გასვლას ბლუთუზის რადიუსში მყოფებისთვის, მათი ეთერები კი შენს ჩატებში გამოჩნდება და ამ ტელეფონზე ჩაიწერება.",
+  "settings.conn.live_video_off_title": "გამოვრთოთ პირდაპირი ვიდეო?",
+  "settings.conn.live_video_off_body":
+    "ეთერში ვეღარ გახვალ, სხვების ეთერები კი აღარ გამოჩნდება და აღარ ჩაიწერება. მოკლე ეთერი მაინც ჩვეულებრივ ვიდეოდ მოვა.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor-ით მიმართვა",
   "settings.conn.tor_desc":
@@ -2249,12 +2263,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "მალავს, რომ Tor-ს იყენებ. Snowflake-ზე სწრაფია, თუმცა ეს ხიდები საჯაროა და ზოგი ქსელი ბლოკავს.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "მალავს Tor-ის გამოყენებას ჩვეულებრივი ვებგვერდის მონახულების იმიტაციით. სხვებზე რთულად დასაბლოკია.",
   "settings.tor.mode_custom": "საკუთარი ხიდები",
   "settings.tor.mode_custom_desc":
-    "გამოიყენე obfs4 ხიდის ხაზები bridges.torproject.org-იდან. სცადე ეს, როცა დანარჩენები ვერ მუშაობს.",
+    "გამოიყენე obfs4 ან WebTunnel ხიდის ხაზები bridges.torproject.org-იდან. სცადე ეს, როცა დანარჩენები ვერ მუშაობს.",
   "settings.tor.custom_placeholder": "ჩასვი თითო ხიდის ხაზი თითო სტრიქონში",
   "settings.tor.custom_apply_hint": "დასაკავშირებლად შეეხე ველის გარეთ.",
   "settings.tor.custom_empty": "ჯერ დაამატე ერთი ხიდის ხაზი მაინც.",
