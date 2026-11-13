@@ -23,13 +23,18 @@ export function videoNoteIds(rows: readonly ChatMessage[]): string[] {
 }
 
 // "none" off screen, unless it is the one being heard, which keeps its player
-// as it scrolls away.
+// as it scrolls away. `canLoop` is false while the camera or a live stream
+// holds the screen: that work needs the codecs, and the notes behind it are
+// out of sight.
 export function videoNotePlayback(
   id: string,
   onScreen: readonly string[],
   heardId: string | null,
+  canLoop = true,
 ): VideoNotePlayback {
   const index = onScreen.indexOf(id);
   if (index < 0) return id === heardId ? "still" : "none";
-  return index >= onScreen.length - MAX_LOOPING_NOTES ? "loop" : "still";
+  return canLoop && index >= onScreen.length - MAX_LOOPING_NOTES
+    ? "loop"
+    : "still";
 }

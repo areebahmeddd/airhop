@@ -53,6 +53,12 @@ describe("videoNotePlayback", () => {
     expect(videoNotePlayback("heard", onScreen, "heard")).toBe("still");
   });
 
+  it("holds every note still while the camera or a stream has the screen", () => {
+    for (const id of onScreen) {
+      expect(videoNotePlayback(id, onScreen, null, false)).toBe("still");
+    }
+  });
+
   it("holds a dozen notes to at most what the screen shows", () => {
     const thread = Array.from({ length: 12 }, (_, i) => `n${i}`);
     const visible = thread.slice(5, 8);

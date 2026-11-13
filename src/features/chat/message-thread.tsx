@@ -2384,8 +2384,8 @@ export default function MessageThread({
   // A live stream's sound is the same speaker: a note given sound silences the
   // stream, and a stream unmuted stops the note. Whatever the user starts (a
   // note, a video, the trimmer's preview, a stream's sound) also silences a
-  // live voice burst; the burst still shows as talking and
-  // still arrives as a voice note.
+  // live voice burst; the burst still shows as talking and still arrives as a
+  // voice note.
   const liveVideoReceiver = getMeshService()?.liveVideoReceiver ?? null;
   useEffect(() => {
     if (playingMessageId === null) return;
@@ -2668,10 +2668,22 @@ export default function MessageThread({
   const [appActive, setAppActive] = useState(
     () => AppState.currentState === "active",
   );
+  // Read by the listener below, which is subscribed once.
+  const playingVideoRef = useRef(false);
+  playingVideoRef.current = msgs.some(
+    (m) => m.id === playingMessageId && m.attachment?.type === "video",
+  );
   useEffect(() => {
-    const sub = AppState.addEventListener("change", (next) =>
-      setAppActive(next === "active"),
-    );
+    const sub = AppState.addEventListener("change", (next) => {
+      setAppActive(next === "active");
+      // The OS pauses video players in the background, a call included, so a
+      // video given sound gives up the speaker rather than come back paused
+      // with its sound badge still on. Not on "inactive": a glance at Control
+      // Center must not stop it.
+      if (next === "background" && playingVideoRef.current) {
+        setPlayingMessageId(null);
+      }
+    });
     return () => sub.remove();
   }, []);
   // Nobody reads behind the app lock, so receipts and live audio wait for it.
@@ -4898,6 +4910,10 @@ export default function MessageThread({
   // The mesh holds incoming live sound while a note records; see
   // setNoteRecording.
   const noteRecording = isRecording || videoNote.active;
+  // Video notes hold still while the camera or a live stream has the screen,
+  // and while nobody can see them (background, the app lock).
+  const notesMayLoop =
+    present && liveViewer === null && liveStudio === null && !videoNote.active;
   useEffect(() => {
     const service = getMeshService();
     if (!service) return;
@@ -5457,6 +5473,7 @@ export default function MessageThread({
             messageId,
             visibleNoteIds,
             playingMessageId,
+            notesMayLoop,
           );
           const toggleSound = (): void =>
             setPlayingMessageId((current) =>
@@ -6117,7 +6134,12 @@ export default function MessageThread({
             const renderState = [
               revealedAttachments.has(item.id) ? "reveal" : "",
               playingMessageId === item.id ? "play" : "",
-              videoNotePlayback(item.id, visibleNoteIds, playingMessageId),
+              videoNotePlayback(
+                item.id,
+                visibleNoteIds,
+                playingMessageId,
+                notesMayLoop,
+              ),
               autoDownloadMedia ? "auto" : "",
               tokens.length === 0
                 ? ""
