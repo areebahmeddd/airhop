@@ -91,7 +91,7 @@ export interface StartTarget {
 
 // Where the picker opens: the given cell, else the coarsest of the cells the
 // phone is standing in, else a wide default. The coarsest rather than the
-// finest, as bitchat does: the picker shows a country to choose from, not the
+// finest: the picker shows a country to choose from, not the
 // user's street to whoever is looking at the screen. Callers pass only valid
 // geohashes.
 export function startTarget(

@@ -39,7 +39,7 @@ export const INCOMING_FILE_PREFIX = `${CACHE_FILE_PREFIX}in_`;
 export const INCOMING_QUOTA_BYTES = 100 * 1024 * 1024;
 
 // Make room for a received file of `reservingBytes` by deleting the oldest
-// received files first, as bitchat-ios does before every save. Sent files are
+// received files first, before every save. Sent files are
 // never touched: the person chose to keep those. A file that is evicted shows
 // as no longer on this device, the same as one retention removed.
 export function enforceIncomingQuota(reservingBytes: number): void {

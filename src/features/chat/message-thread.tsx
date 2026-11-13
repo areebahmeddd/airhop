@@ -2384,7 +2384,7 @@ export default function MessageThread({
   // A live stream's sound is the same speaker: a note given sound silences the
   // stream, and a stream unmuted stops the note. Whatever the user starts (a
   // note, a video, the trimmer's preview, a stream's sound) also silences a
-  // live voice burst, as bitchat-ios does; the burst still shows as talking and
+  // live voice burst; the burst still shows as talking and
   // still arrives as a voice note.
   const liveVideoReceiver = getMeshService()?.liveVideoReceiver ?? null;
   useEffect(() => {
