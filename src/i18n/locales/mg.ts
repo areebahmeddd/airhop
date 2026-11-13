@@ -401,6 +401,10 @@ export const strings: Strings = {
   "chat.group.invited": "Nasaina ho ao amin'ny {name} ianao.",
   "chat.group.invited_you": "Nanasa anao ho ao amin'ny {name}",
   "chat.group.decline": "Lavina",
+  "chat.group.decline_title": "Lavina ny fanasana ho ao amin'ny {name}?",
+  "chat.group.decline_body":
+    "Tsy ao amin'ny mpifandraisanao i {name}. Sakano koa izy, dia tsy handray fanasana na hafatra avy aminy intsony ianao.",
+  "chat.group.decline_block": "Lavina sy sakanana",
   "chat.group.you_were_removed":
     "Nesorina tao amin'ny {name} ianao. Tsy afaka mamaky na mandefa hafatra eto intsony ianao.",
   "chat.group.removed_you": "Nanaisotra anao tao amin'ny {name}",

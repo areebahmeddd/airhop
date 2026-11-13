@@ -392,6 +392,10 @@ export const strings: Strings = {
   "chat.group.invited": "Kamu diundang ke {name}.",
   "chat.group.invited_you": "Mengundangmu ke {name}",
   "chat.group.decline": "Tolak",
+  "chat.group.decline_title": "Tolak undangan ke {name}?",
+  "chat.group.decline_body":
+    "{name} tidak ada di kontakmu. Blokir juga, dan kamu tidak akan menerima undangan atau pesan dari mereka lagi.",
+  "chat.group.decline_block": "Tolak dan blokir",
   "chat.group.you_were_removed":
     "Kamu dikeluarkan dari {name}. Kamu tidak bisa lagi membaca atau mengirim pesan di sini.",
   "chat.group.removed_you": "Mengeluarkanmu dari {name}",

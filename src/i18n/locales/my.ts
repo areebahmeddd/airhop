@@ -397,6 +397,10 @@ export const strings: Strings = {
   "chat.group.invited": "သင့်ကို {name} သို့ ဖိတ်ခေါ်ထားသည်။",
   "chat.group.invited_you": "သင့်ကို {name} သို့ ဖိတ်ခေါ်ခဲ့သည်",
   "chat.group.decline": "ငြင်းပယ်ပါ",
+  "chat.group.decline_title": "{name} သို့ ဖိတ်ခေါ်ချက်ကို ငြင်းပယ်မလား?",
+  "chat.group.decline_body":
+    "{name} သည် သင့်အဆက်အသွယ်များတွင် မရှိပါ။ ၎င်းတို့ကိုပါ ပိတ်ဆို့ပါက ၎င်းတို့ထံမှ ဖိတ်ခေါ်ချက် သို့မဟုတ် မက်ဆေ့ဂျ် ထပ်မရတော့ပါ။",
+  "chat.group.decline_block": "ငြင်းပယ်ပြီး ပိတ်ဆို့ပါ",
   "chat.group.you_were_removed":
     "သင့်ကို {name} မှ ဖယ်ရှားလိုက်ပါပြီ။ ဤနေရာတွင် ဖတ်ခြင်း၊ ပို့ခြင်း မလုပ်နိုင်တော့ပါ။",
   "chat.group.removed_you": "သင့်ကို {name} မှ ဖယ်ရှားခဲ့သည်",

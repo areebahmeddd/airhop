@@ -392,6 +392,10 @@ export const strings: Strings = {
   "chat.group.invited": "{name} grubuna davet edildin.",
   "chat.group.invited_you": "Seni {name} grubuna davet etti",
   "chat.group.decline": "Reddet",
+  "chat.group.decline_title": "{name} daveti reddedilsin mi?",
+  "chat.group.decline_body":
+    "{name} kişilerinde değil. Onu da engellersen ondan bir daha davet ya da mesaj almazsın.",
+  "chat.group.decline_block": "Reddet ve engelle",
   "chat.group.you_were_removed":
     "{name} grubundan çıkarıldın. Burada artık okuyamaz ya da mesaj gönderemezsin.",
   "chat.group.removed_you": "Seni {name} grubundan çıkardı",

@@ -385,6 +385,10 @@ export const strings: Strings = {
   "chat.group.invited": "شما به {name} دعوت شدید.",
   "chat.group.invited_you": "شما را به {name} دعوت کرد",
   "chat.group.decline": "رد کردن",
+  "chat.group.decline_title": "دعوت به {name} رد شود؟",
+  "chat.group.decline_body":
+    "{name} در مخاطبان شما نیست. او را هم مسدود کنید تا دیگر دعوت یا پیامی از او نگیرید.",
+  "chat.group.decline_block": "رد کردن و مسدود کردن",
   "chat.group.you_were_removed":
     "شما از {name} برداشته شدید. دیگر نمی‌توانید اینجا بخوانید یا بفرستید.",
   "chat.group.removed_you": "شما را از {name} برداشت",

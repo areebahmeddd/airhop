@@ -399,6 +399,10 @@ export const strings: Strings = {
   "chat.group.invited": "நீங்கள் {name} இல் அழைக்கப்பட்டுள்ளீர்கள்.",
   "chat.group.invited_you": "உங்களை {name} இல் அழைத்தார்",
   "chat.group.decline": "நிராகரி",
+  "chat.group.decline_title": "{name} அழைப்பை நிராகரிக்கவா?",
+  "chat.group.decline_body":
+    "{name} உங்கள் தொடர்புகளில் இல்லை. அவர்களையும் தடுத்தால், இனி அவர்களிடமிருந்து அழைப்புகளோ செய்திகளோ வராது.",
+  "chat.group.decline_block": "நிராகரித்துத் தடு",
   "chat.group.you_were_removed":
     "நீங்கள் {name} இலிருந்து நீக்கப்பட்டீர்கள். இனி இங்கே படிக்கவோ செய்தி அனுப்பவோ முடியாது.",
   "chat.group.removed_you": "உங்களை {name} இலிருந்து நீக்கினார்",

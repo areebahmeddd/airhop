@@ -390,6 +390,10 @@ export const strings: Strings = {
   "chat.group.invited": "Anda dijemput ke {name}.",
   "chat.group.invited_you": "Menjemput anda ke {name}",
   "chat.group.decline": "Tolak",
+  "chat.group.decline_title": "Tolak jemputan ke {name}?",
+  "chat.group.decline_body":
+    "{name} tiada dalam kenalan anda. Sekat mereka juga, dan anda tidak akan menerima jemputan atau mesej daripada mereka lagi.",
+  "chat.group.decline_block": "Tolak dan sekat",
   "chat.group.you_were_removed":
     "Anda dikeluarkan daripada {name}. Anda tidak lagi boleh membaca atau menghantar mesej di sini.",
   "chat.group.removed_you": "Mengeluarkan anda daripada {name}",

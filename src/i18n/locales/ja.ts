@@ -390,6 +390,10 @@ export const strings: Strings = {
   "chat.group.invited": "{name}に招待されました。",
   "chat.group.invited_you": "{name}にあなたを招待しました",
   "chat.group.decline": "辞退",
+  "chat.group.decline_title": "{name}への招待を辞退しますか。",
+  "chat.group.decline_body":
+    "{name}は連絡先にいません。ブロックもすると、今後この人から招待やメッセージは届きません。",
+  "chat.group.decline_block": "辞退してブロック",
   "chat.group.you_were_removed":
     "{name}から削除されました。ここでの読み書きはできません。",
   "chat.group.removed_you": "{name}からあなたを削除しました",

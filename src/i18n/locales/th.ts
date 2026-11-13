@@ -379,6 +379,10 @@ export const strings: Strings = {
   "chat.group.invited": "คุณได้รับเชิญเข้า {name}",
   "chat.group.invited_you": "เชิญคุณเข้า {name}",
   "chat.group.decline": "ปฏิเสธ",
+  "chat.group.decline_title": "ปฏิเสธคำเชิญเข้า {name} หรือไม่",
+  "chat.group.decline_body":
+    "{name} ไม่ได้อยู่ในรายชื่อติดต่อของคุณ บล็อกพวกเขาด้วย แล้วคุณจะไม่ได้รับคำเชิญหรือข้อความจากพวกเขาอีก",
+  "chat.group.decline_block": "ปฏิเสธและบล็อก",
   "chat.group.you_were_removed":
     "คุณถูกนำออกจาก {name} คุณอ่านหรือส่งข้อความที่นี่ไม่ได้อีกต่อไป",
   "chat.group.removed_you": "นำคุณออกจาก {name}",

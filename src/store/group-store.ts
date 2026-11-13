@@ -55,8 +55,12 @@ interface GroupState {
   upsertFromState: (payload: GroupStatePayload) => void;
   // Holds a verified state as an invite, or updates the one held. Null when
   // refused (another creator, or an older epoch); otherwise the invites the
-  // cap pushed out, whose rows the caller removes.
-  addInvite: (payload: GroupStatePayload) => string[] | null;
+  // cap pushed out, whose rows the caller removes. A contact's invites are not
+  // held to the per-creator share.
+  addInvite: (
+    payload: GroupStatePayload,
+    opts?: { fromContact?: boolean },
+  ) => string[] | null;
   invite: (groupIDHex: string) => RuntimeGroup | undefined;
   acceptInvite: (groupIDHex: string) => boolean;
   get: (groupIDHex: string) => RuntimeGroup | undefined;
@@ -75,8 +79,10 @@ const STORAGE_KEY = "groups";
 const LEFT_KEY = "left";
 const INVITES_KEY = "invites";
 // Newest kept. Anyone who completes a handshake can invite us, so the list is
-// bounded however many arrive.
+// bounded however many arrive, and one creator holds only a few of its places:
+// pushing out someone else's invite then takes seven identities, not one.
 const MAX_INVITES = 20;
+const MAX_INVITES_PER_CREATOR = 3;
 const storage = getStorage(STORAGE_ID);
 
 function toStoredMember(m: GroupMember): StoredMember {
@@ -252,7 +258,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
       put(stateToStored(payload));
     },
 
-    addInvite(payload) {
+    addInvite(payload, opts = {}) {
       const entry = stateToStored(payload);
       const existing = get().invites.find((i) => i.groupID === entry.groupID);
       if (existing !== undefined && !supersedes(entry, existing)) return null;
@@ -260,8 +266,20 @@ export const useGroupStore = create<GroupState>((set, get) => {
         ...get().invites.filter((i) => i.groupID !== entry.groupID),
         { ...entry, receivedAtMs: existing?.receivedAtMs ?? Date.now() },
       ];
-      setInvites(all.slice(-MAX_INVITES));
-      return all.slice(0, -MAX_INVITES).map((i) => i.groupID);
+      const overShare = new Set(
+        opts.fromContact === true
+          ? []
+          : all
+              .filter((i) => i.creatorFingerprint === entry.creatorFingerprint)
+              .slice(0, -MAX_INVITES_PER_CREATOR)
+              .map((i) => i.groupID),
+      );
+      const kept = all.filter((i) => !overShare.has(i.groupID));
+      setInvites(kept.slice(-MAX_INVITES));
+      return [
+        ...overShare,
+        ...kept.slice(0, -MAX_INVITES).map((i) => i.groupID),
+      ];
     },
 
     invite(groupIDHex) {

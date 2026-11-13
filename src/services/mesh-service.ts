@@ -7006,7 +7006,12 @@ export class MeshService {
         useChatStore.getState().removeChannel(channel);
         return;
       }
-      const dropped = groups.addInvite(state);
+      const dropped = groups.addInvite(state, {
+        fromContact:
+          useContactsStore
+            .getState()
+            .getContact(state.creatorFingerprint.slice(0, 16)) !== undefined,
+      });
       if (dropped === null) return;
       for (const id of dropped) {
         useChatStore.getState().removeChannel(groupChannel(id));

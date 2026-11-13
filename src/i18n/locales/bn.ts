@@ -388,6 +388,10 @@ export const strings: Strings = {
   "chat.group.invited": "আপনাকে {name}-এ আমন্ত্রণ জানানো হয়েছে।",
   "chat.group.invited_you": "আপনাকে {name}-এ আমন্ত্রণ জানিয়েছেন",
   "chat.group.decline": "প্রত্যাখ্যান",
+  "chat.group.decline_title": "{name}-এর আমন্ত্রণ প্রত্যাখ্যান করবেন?",
+  "chat.group.decline_body":
+    "{name} আপনার পরিচিতিতে নেই। তাদেরও ব্লক করুন, তাহলে তাদের কাছ থেকে আর আমন্ত্রণ বা বার্তা পাবেন না।",
+  "chat.group.decline_block": "প্রত্যাখ্যান ও ব্লক",
   "chat.group.you_were_removed":
     "আপনাকে {name} থেকে সরানো হয়েছে। আপনি এখানে আর পড়তে বা বার্তা পাঠাতে পারবেন না।",
   "chat.group.removed_you": "আপনাকে {name} থেকে সরিয়েছেন",

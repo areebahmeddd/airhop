@@ -390,6 +390,10 @@ export const strings: Strings = {
   "chat.group.invited": "Вас пригласили в {name}.",
   "chat.group.invited_you": "Пригласил вас в {name}",
   "chat.group.decline": "Отклонить",
+  "chat.group.decline_title": "Отклонить приглашение в {name}?",
+  "chat.group.decline_body":
+    "{name} нет в ваших контактах. Заблокируйте и этого человека, и вы больше не получите от него приглашений и сообщений.",
+  "chat.group.decline_block": "Отклонить и заблокировать",
   "chat.group.you_were_removed":
     "Вас удалили из {name}. Здесь больше нельзя читать и писать.",
   "chat.group.removed_you": "Удалил вас из {name}",

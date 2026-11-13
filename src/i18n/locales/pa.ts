@@ -386,6 +386,10 @@ export const strings: Strings = {
   "chat.group.invited": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚ ਸੱਦਾ ਦਿੱਤਾ ਗਿਆ ਹੈ।",
   "chat.group.invited_you": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚ ਸੱਦਾ ਦਿੱਤਾ",
   "chat.group.decline": "ਇਨਕਾਰ ਕਰੋ",
+  "chat.group.decline_title": "{name} ਦਾ ਸੱਦਾ ਇਨਕਾਰ ਕਰਨਾ ਹੈ?",
+  "chat.group.decline_body":
+    "{name} ਤੁਹਾਡੇ ਸੰਪਰਕਾਂ ਵਿੱਚ ਨਹੀਂ ਹਨ। ਉਹਨਾਂ ਨੂੰ ਵੀ ਬਲਾਕ ਕਰੋ, ਫਿਰ ਉਹਨਾਂ ਤੋਂ ਹੋਰ ਸੱਦੇ ਜਾਂ ਸੁਨੇਹੇ ਨਹੀਂ ਆਉਣਗੇ।",
+  "chat.group.decline_block": "ਇਨਕਾਰ ਕਰੋ ਅਤੇ ਬਲਾਕ ਕਰੋ",
   "chat.group.you_were_removed":
     "ਤੁਹਾਨੂੰ {name} ਵਿੱਚੋਂ ਹਟਾ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਤੁਸੀਂ ਹੁਣ ਇੱਥੇ ਨਾ ਪੜ੍ਹ ਸਕਦੇ ਹੋ ਨਾ ਭੇਜ ਸਕਦੇ ਹੋ।",
   "chat.group.removed_you": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚੋਂ ਹਟਾਇਆ",

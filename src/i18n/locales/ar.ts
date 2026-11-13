@@ -376,6 +376,10 @@ export const strings: Strings = {
   "chat.group.invited": "أنت مدعو إلى {name}.",
   "chat.group.invited_you": "دعاك إلى {name}",
   "chat.group.decline": "رفض",
+  "chat.group.decline_title": "رفض الدعوة إلى {name}؟",
+  "chat.group.decline_body":
+    "{name} ليس ضمن جهات اتصالك. احظره أيضًا، ولن تصلك منه دعوات أو رسائل بعد الآن.",
+  "chat.group.decline_block": "رفض وحظر",
   "chat.group.you_were_removed":
     "تمت إزالتك من {name}. لم يعد بإمكانك القراءة أو الإرسال هنا.",
   "chat.group.removed_you": "أزالك من {name}",

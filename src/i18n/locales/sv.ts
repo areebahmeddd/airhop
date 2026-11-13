@@ -387,6 +387,10 @@ export const strings: Strings = {
   "chat.group.invited": "Du har bjudits in till {name}.",
   "chat.group.invited_you": "Bjöd in dig till {name}",
   "chat.group.decline": "Avböj",
+  "chat.group.decline_title": "Avböja inbjudan till {name}?",
+  "chat.group.decline_body":
+    "{name} finns inte bland dina kontakter. Blockera hen också, så får du inga fler inbjudningar eller meddelanden därifrån.",
+  "chat.group.decline_block": "Avböj och blockera",
   "chat.group.you_were_removed":
     "Du togs bort från {name}. Du kan inte längre läsa eller skicka meddelanden här.",
   "chat.group.removed_you": "Tog bort dig från {name}",

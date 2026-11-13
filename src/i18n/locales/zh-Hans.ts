@@ -369,6 +369,10 @@ export const strings: Strings = {
   "chat.group.invited": "你被邀请加入 {name}。",
   "chat.group.invited_you": "邀请你加入 {name}",
   "chat.group.decline": "拒绝",
+  "chat.group.decline_title": "拒绝加入 {name} 的邀请？",
+  "chat.group.decline_body":
+    "{name} 不在你的联系人中。一并屏蔽后，你将不会再收到对方的邀请或消息。",
+  "chat.group.decline_block": "拒绝并屏蔽",
   "chat.group.you_were_removed":
     "你被移出了 {name}。你在这里不能再阅读或发送消息了。",
   "chat.group.removed_you": "把你移出了 {name}",

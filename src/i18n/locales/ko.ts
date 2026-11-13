@@ -383,6 +383,10 @@ export const strings: Strings = {
   "chat.group.invited": "{name}에 초대되었습니다.",
   "chat.group.invited_you": "{name}에 나를 초대했습니다",
   "chat.group.decline": "거절",
+  "chat.group.decline_title": "{name} 초대를 거절할까요?",
+  "chat.group.decline_body":
+    "{name}은(는) 연락처에 없습니다. 함께 차단하면 더 이상 초대나 메시지를 받지 않습니다.",
+  "chat.group.decline_block": "거절하고 차단",
   "chat.group.you_were_removed":
     "{name}에서 제외되었습니다. 여기서는 더 이상 읽거나 보낼 수 없습니다.",
   "chat.group.removed_you": "{name}에서 나를 제외했습니다",

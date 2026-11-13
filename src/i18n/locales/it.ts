@@ -394,6 +394,10 @@ export const strings: Strings = {
   "chat.group.invited": "Sei stato invitato a {name}.",
   "chat.group.invited_you": "Ti ha invitato a {name}",
   "chat.group.decline": "Rifiuta",
+  "chat.group.decline_title": "Rifiutare l’invito a {name}?",
+  "chat.group.decline_body":
+    "{name} non è tra i tuoi contatti. Blocca anche questa persona e non riceverai più i suoi inviti o messaggi.",
+  "chat.group.decline_block": "Rifiuta e blocca",
   "chat.group.you_were_removed":
     "Sei stato rimosso da {name}. Qui non puoi più leggere né inviare messaggi.",
   "chat.group.removed_you": "Ti ha rimosso da {name}",

@@ -385,6 +385,10 @@ export const strings: Strings = {
   "chat.group.invited": "Bạn được mời vào {name}.",
   "chat.group.invited_you": "Đã mời bạn vào {name}",
   "chat.group.decline": "Từ chối",
+  "chat.group.decline_title": "Từ chối lời mời vào {name}?",
+  "chat.group.decline_body":
+    "{name} không có trong danh bạ của bạn. Chặn luôn họ, bạn sẽ không nhận lời mời hay tin nhắn từ họ nữa.",
+  "chat.group.decline_block": "Từ chối và chặn",
   "chat.group.you_were_removed":
     "Bạn đã bị gỡ khỏi {name}. Bạn không còn đọc hay gửi tin nhắn ở đây được nữa.",
   "chat.group.removed_you": "Đã gỡ bạn khỏi {name}",

@@ -397,6 +397,10 @@ export const strings: Strings = {
   "chat.group.invited": "Umealikwa kwenye {name}.",
   "chat.group.invited_you": "Amekualika kwenye {name}",
   "chat.group.decline": "Kataa",
+  "chat.group.decline_title": "Kataa mwaliko wa {name}?",
+  "chat.group.decline_body":
+    "{name} hayumo kwenye anwani zako. Mzuie pia, na hutapokea tena mialiko wala jumbe kutoka kwake.",
+  "chat.group.decline_block": "Kataa na zuia",
   "chat.group.you_were_removed":
     "Umeondolewa kwenye {name}. Huwezi tena kusoma wala kutuma jumbe hapa.",
   "chat.group.removed_you": "Amekuondoa kwenye {name}",

@@ -339,6 +339,51 @@ describe("group store", () => {
       // The caller removes the rows of the ones pushed out.
       expect(dropped).toEqual(ids.slice(0, 5));
     });
+
+    it("keeps three per creator, so a flood pushes out only its own", () => {
+      const store = useGroupStore.getState();
+      const friend = invite("friend");
+      store.addInvite(friend.state);
+
+      const spammer = member("spammer");
+      const me = member("me");
+      const dropped: string[] = [];
+      const ids: string[] = [];
+      for (let i = 0; i < 5; i++) {
+        const group: BitchatGroup = {
+          groupID: newGroupID(),
+          name: `spam${i}`,
+          epoch: 0,
+          members: [spammer.member, me.member],
+          creatorFingerprint: spammer.member.fingerprint,
+        };
+        ids.push(bytesToHexLocal(group.groupID));
+        const state = signGroupState(group, newGroupKey(), spammer.signPriv)!;
+        dropped.push(...(store.addInvite(state) ?? []));
+      }
+
+      const names = useGroupStore.getState().invites.map((i) => i.name);
+      expect(names).toEqual(["friend", "spam2", "spam3", "spam4"]);
+      expect(dropped).toEqual(ids.slice(0, 2));
+    });
+
+    it("holds a contact's invites past the per-creator share", () => {
+      const store = useGroupStore.getState();
+      const friend = member("friend");
+      const me = member("me");
+      for (let i = 0; i < 5; i++) {
+        const group: BitchatGroup = {
+          groupID: newGroupID(),
+          name: `plan${i}`,
+          epoch: 0,
+          members: [friend.member, me.member],
+          creatorFingerprint: friend.member.fingerprint,
+        };
+        const state = signGroupState(group, newGroupKey(), friend.signPriv)!;
+        expect(store.addInvite(state, { fromContact: true })).toEqual([]);
+      }
+      expect(useGroupStore.getState().invites).toHaveLength(5);
+    });
   });
 
   it("clears everything on wipe", () => {

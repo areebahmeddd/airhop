@@ -392,6 +392,10 @@ export const strings: Strings = {
   "chat.group.invited": "Je bent uitgenodigd voor {name}.",
   "chat.group.invited_you": "Heeft je uitgenodigd voor {name}",
   "chat.group.decline": "Weigeren",
+  "chat.group.decline_title": "Uitnodiging voor {name} weigeren?",
+  "chat.group.decline_body":
+    "{name} staat niet in je contacten. Blokkeer diegene ook, dan krijg je geen uitnodigingen of berichten meer.",
+  "chat.group.decline_block": "Weigeren en blokkeren",
   "chat.group.you_were_removed":
     "Je bent weggehaald uit {name}. Je kunt hier niet meer lezen of sturen.",
   "chat.group.removed_you": "Heeft je weggehaald uit {name}",

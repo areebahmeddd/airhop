@@ -365,6 +365,10 @@ export const strings: Strings = {
   "chat.group.invited": "ወደ {name} ተጋብዘሃል።",
   "chat.group.invited_you": "ወደ {name} ጋብዞሃል",
   "chat.group.decline": "አትቀበል",
+  "chat.group.decline_title": "ወደ {name} የቀረበውን ግብዣ አትቀበልም?",
+  "chat.group.decline_body":
+    "{name} በእውቂያዎችህ ውስጥ የለም። ይህንንም ሰው አግድ፤ ከዚያ በኋላ ከዚህ ሰው ግብዣዎችን ወይም መልእክቶችን አትቀበልም።",
+  "chat.group.decline_block": "አትቀበል እና አግድ",
   "chat.group.you_were_removed": "ከ{name} ተወግደሃል። ከእንግዲህ እዚህ ማንበብም መላክም አትችልም።",
   "chat.group.removed_you": "ከ{name} አስወግዶሃል",
   "chat.group.add_failed": "እነሱን መጨመር አልተቻለም",

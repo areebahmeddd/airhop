@@ -392,6 +392,10 @@ export const strings: Strings = {
   "chat.group.invited": "მოგიწვიეს {name}-ში.",
   "chat.group.invited_you": "მოგიწვია {name}-ში",
   "chat.group.decline": "უარყოფა",
+  "chat.group.decline_title": "უარვყოთ მოწვევა {name}-ში?",
+  "chat.group.decline_body":
+    "{name} შენს კონტაქტებში არ არის. დაბლოკე ისიც და მისგან მოწვევებს ან შეტყობინებებს აღარ მიიღებ.",
+  "chat.group.decline_block": "უარყოფა და დაბლოკვა",
   "chat.group.you_were_removed":
     "წაგშალეს {name}-იდან. აქ ვეღარ წაიკითხავ და ვეღარ გააგზავნი შეტყობინებებს.",
   "chat.group.removed_you": "წაგშალა {name}-იდან",

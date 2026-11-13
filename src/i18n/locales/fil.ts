@@ -402,6 +402,10 @@ export const strings: Strings = {
   "chat.group.invited": "Inimbitahan ka sa {name}.",
   "chat.group.invited_you": "Inimbitahan ka sa {name}",
   "chat.group.decline": "Tanggihan",
+  "chat.group.decline_title": "Tanggihan ang imbitasyon sa {name}?",
+  "chat.group.decline_body":
+    "Wala si {name} sa iyong mga contact. I-block din sila, at hindi ka na makakatanggap ng imbitasyon o mensahe mula sa kanila.",
+  "chat.group.decline_block": "Tanggihan at i-block",
   "chat.group.you_were_removed":
     "Inalis ka sa {name}. Hindi ka na makakabasa o makakapagpadala ng mensahe rito.",
   "chat.group.removed_you": "Inalis ka sa {name}",
