@@ -214,6 +214,7 @@ import {
   TextInput,
   View,
   type GestureResponderEvent,
+  type ListViewToken,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type StyleProp,
@@ -271,6 +272,7 @@ import { activateOnly } from "./screen-reader-actions";
 import SendLocationSheet from "./send-location-sheet";
 import { useAwaitingReceipt } from "./use-awaiting-receipt";
 import { useExclusivePlayback } from "./use-exclusive-playback";
+import { videoNoteIds, videoNotePlayback } from "./video-note-playback";
 import {
   useVideoNoteRecorder,
   type RecordedVideoNote,
@@ -672,16 +674,19 @@ function videoTrackAspect(track: VideoTrack | null): number | null {
 // autoplay is what makes it read as a face rather than a file, and it stops for
 // anyone who asked the OS for less motion, who gets a still frame and a tap.
 // Sound is the thread's to give, one clip at a time as for voice notes, and a
-// live voice burst turns it off as it pauses a voice note.
+// live voice burst turns it off as it pauses a voice note. `looping` is the
+// thread's too: only the newest notes on screen move (video-note-playback.ts).
 function VideoNoteAttachment({
   uri,
   withSound,
+  looping,
   onToggleSound,
   onFinished,
   onAskResend,
 }: {
   uri: string;
   withSound: boolean;
+  looping: boolean;
   onToggleSound: () => void;
   onFinished: () => void;
   onAskResend?: () => void;
@@ -714,9 +719,12 @@ function VideoNoteAttachment({
     // its silent loop, rather than repeating someone's words until tapped.
     player.loop = !withSound;
     if (withSound) player.replay();
-    else if (reduceMotion) player.pause();
+  }, [player, withSound]);
+  useEffect(() => {
+    if (withSound) return;
+    if (reduceMotion || !looping) player.pause();
     else player.play();
-  }, [player, reduceMotion, withSound]);
+  }, [player, reduceMotion, withSound, looping]);
   const onFinishedRef = useRef(onFinished);
   const withSoundRef = useRef(withSound);
   useEffect(() => {
@@ -789,6 +797,30 @@ function VideoNoteAttachment({
         )}
       </View>
     </Pressable>
+  );
+}
+
+// A video note off screen: the same circle with no player behind it, so the
+// list's window can hold any number of notes while only those in view take a
+// decoder. Still a button, so a screen reader can play it from here.
+function VideoNotePlaceholder({
+  onToggleSound,
+}: {
+  onToggleSound: () => void;
+}): React.JSX.Element {
+  const T = useT();
+  const Colors = useThemeColors();
+  return (
+    <Pressable
+      onPress={onToggleSound}
+      accessibilityRole="button"
+      accessibilityLabel={T("chat.video_note.a11y")}
+      accessibilityState={{ checked: false }}
+      style={[
+        videoAttachmentStyles.note,
+        { backgroundColor: Colors.mediaBackdrop },
+      ]}
+    />
   );
 }
 
@@ -2324,6 +2356,27 @@ export default function MessageThread({
   const releasePlaying = useCallback((id: string): void => {
     setPlayingMessageId((current) => (current === id ? null : current));
   }, []);
+  // Video notes on screen, oldest first, which decide who holds a player
+  // (video-note-playback.ts).
+  const [visibleNoteIds, setVisibleNoteIds] = useState<readonly string[]>([]);
+  // Stable across renders, as FlatList requires of both.
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ListViewToken[] }): void => {
+      const ids = videoNoteIds(
+        viewableItems.map((token) => token.item as ChatMessage),
+      );
+      setVisibleNoteIds((prev) =>
+        prev.length === ids.length && prev.every((id, i) => id === ids[i])
+          ? prev
+          : ids,
+      );
+    },
+  ).current;
+  // A note only flung past never gets a player.
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 10,
+    minimumViewTime: 150,
+  }).current;
   // Each mounted voice note's seek, by message id, so the bubble's
   // screen-reader actions can move through a note the way a tap on its bars
   // does.
@@ -5399,19 +5452,31 @@ export default function MessageThread({
             />
           );
         }
-        return isVideoNoteName(attachment.name) ? (
-          <VideoNoteAttachment
-            uri={attachment.uri}
-            withSound={playingMessageId === messageId}
-            onToggleSound={() =>
-              setPlayingMessageId((current) =>
-                current === messageId ? null : messageId,
-              )
-            }
-            onFinished={() => releasePlaying(messageId)}
-            onAskResend={onAskResend}
-          />
-        ) : (
+        if (isVideoNoteName(attachment.name)) {
+          const playback = videoNotePlayback(
+            messageId,
+            visibleNoteIds,
+            playingMessageId,
+          );
+          const toggleSound = (): void =>
+            setPlayingMessageId((current) =>
+              current === messageId ? null : messageId,
+            );
+          if (playback === "none") {
+            return <VideoNotePlaceholder onToggleSound={toggleSound} />;
+          }
+          return (
+            <VideoNoteAttachment
+              uri={attachment.uri}
+              withSound={playingMessageId === messageId}
+              looping={playback === "loop"}
+              onToggleSound={toggleSound}
+              onFinished={() => releasePlaying(messageId)}
+              onAskResend={onAskResend}
+            />
+          );
+        }
+        return (
           <VideoAttachment
             uri={attachment.uri}
             liveRecording={liveVideoStreamOf(attachment.name) !== null}
@@ -5951,6 +6016,8 @@ export default function MessageThread({
           maxToRenderPerBatch={12}
           windowSize={11}
           updateCellsBatchingPeriod={50}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
           // Hold the reader's place when rows are removed above them. A thread
           // keeps 200 messages (chat-store MAX_PER_CHANNEL) and trims the
           // oldest, so in a busy room someone reading back has the ground move
@@ -6050,6 +6117,7 @@ export default function MessageThread({
             const renderState = [
               revealedAttachments.has(item.id) ? "reveal" : "",
               playingMessageId === item.id ? "play" : "",
+              videoNotePlayback(item.id, visibleNoteIds, playingMessageId),
               autoDownloadMedia ? "auto" : "",
               tokens.length === 0
                 ? ""
