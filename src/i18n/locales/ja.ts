@@ -1615,6 +1615,7 @@ export const strings: Strings = {
     "トークン、請求書、npubのQRコードにカメラを向けてください。",
   "wallet.scan.no_any":
     "その画像にトークン、請求書、npubは見つかりませんでした。",
+  "wallet.scan.not_usable": "このQRコードはここではAirhopで使えません。",
   "wallet.scan.use_camera_a11y": "カメラで読み取る",
   "wallet.scan.use_camera": "カメラを使う",
   "wallet.scan.pick_image_a11y": "保存した画像からQRコードを読み取る",

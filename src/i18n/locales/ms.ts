@@ -1632,6 +1632,8 @@ export const strings: Strings = {
   "wallet.scan.title_any": "Imbas kod QR",
   "wallet.scan.aim_any": "Halakan ke kod QR token, invois atau npub.",
   "wallet.scan.no_any": "Tiada token, invois atau npub ditemui dalam imej itu.",
+  "wallet.scan.not_usable":
+    "Airhop tidak boleh menggunakan kod QR ini di sini.",
   "wallet.scan.use_camera_a11y": "Imbas dengan kamera",
   "wallet.scan.use_camera": "Guna kamera",
   "wallet.scan.pick_image_a11y": "Baca kod QR daripada imej tersimpan",

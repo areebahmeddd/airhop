@@ -1666,6 +1666,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Atodiho amin'ny kaody QR tapakila, faktiora na npub.",
   "wallet.scan.no_any":
     "Tsy nahitana tapakila, faktiora na npub tao amin'io sary io.",
+  "wallet.scan.not_usable": "Tsy azon'i Airhop ampiasaina eto io kaody QR io.",
   "wallet.scan.use_camera_a11y": "Alaivo sary amin'ny fakan-tsary",
   "wallet.scan.use_camera": "Ampiasao ny fakan-tsary",
   "wallet.scan.pick_image_a11y": "Vakio ny kaody QR avy amin'ny sary voatahiry",

@@ -1628,6 +1628,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Richt op de QR-code van een token, factuur of npub.",
   "wallet.scan.no_any":
     "Geen token, factuur of npub gevonden in die afbeelding.",
+  "wallet.scan.not_usable": "Airhop kan deze QR-code hier niet gebruiken.",
   "wallet.scan.use_camera_a11y": "Scannen met de camera",
   "wallet.scan.use_camera": "Camera gebruiken",
   "wallet.scan.pick_image_a11y":

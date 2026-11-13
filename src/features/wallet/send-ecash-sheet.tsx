@@ -13,9 +13,8 @@ import {
 } from "@services/payment-router";
 import { showAlert } from "@store/alert-store";
 import BottomSheet from "@ui/components/bottom-sheet";
+import PrimaryButton from "@ui/components/primary-button";
 import {
-  BUTTON_HEIGHT,
-  DISABLED_OPACITY,
   FontSize,
   FontWeight,
   LineHeight,
@@ -25,7 +24,7 @@ import {
 } from "@ui/theme";
 import { amountParts, parseWholeNumber } from "@utils/format";
 import React, { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 interface Props {
   visible: boolean;
@@ -120,31 +119,19 @@ export default function SendEcashSheet({
         selectionColor={Colors.selection}
       />
       <View style={styles.actions}>
-        <Pressable
-          style={[
-            styles.confirm,
-            (!amount.trim() || sending) && styles.confirmDisabled,
-          ]}
+        <PrimaryButton
+          label={sending ? T("wallet.pay.sending") : T("wallet.pay.send")}
           onPress={() => void handleSend()}
           disabled={!amount.trim() || sending}
-          accessibilityRole="button"
-          accessibilityLabel={T("wallet.pay.send")}
-        >
-          <Text style={styles.confirmText}>
-            {sending ? T("wallet.pay.sending") : T("wallet.pay.send")}
-          </Text>
-        </Pressable>
-        <Pressable
-          style={styles.cancel}
+        />
+        <PrimaryButton
+          label={T("common.cancel")}
+          variant="outline"
           onPress={() => {
             reset();
             onClose();
           }}
-          accessibilityRole="button"
-          accessibilityLabel={T("common.cancel")}
-        >
-          <Text style={styles.cancelText}>{T("common.cancel")}</Text>
-        </Pressable>
+        />
       </View>
     </BottomSheet>
   );
@@ -182,39 +169,8 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     actions: {
       width: "100%",
+      gap: Spacing.sm,
       marginTop: Spacing.xs,
-    },
-    confirm: {
-      width: "100%",
-      minHeight: BUTTON_HEIGHT,
-      backgroundColor: Colors.accent,
-      borderRadius: Radius.full,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    confirmDisabled: {
-      opacity: DISABLED_OPACITY,
-    },
-    confirmText: {
-      fontSize: FontSize.base,
-      fontWeight: FontWeight.bold,
-      color: Colors.textInverse,
-    },
-    cancel: {
-      width: "100%",
-      minHeight: BUTTON_HEIGHT,
-      marginTop: Spacing.sm,
-      backgroundColor: Colors.surfaceRaised,
-      borderWidth: 1,
-      borderColor: Colors.border,
-      borderRadius: Radius.full,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    cancelText: {
-      fontSize: FontSize.base,
-      color: Colors.textPrimary,
-      fontWeight: FontWeight.semibold,
     },
   });
 }

@@ -1666,6 +1666,8 @@ export const strings: Strings = {
     "டோக்கன், பட்டியல் அல்லது npub QR குறியீட்டில் காட்டுங்கள்.",
   "wallet.scan.no_any":
     "அந்தப் படத்தில் டோக்கன், பட்டியல் அல்லது npub எதுவும் கிடைக்கவில்லை.",
+  "wallet.scan.not_usable":
+    "இந்த QR குறியீட்டை Airhop இங்கே பயன்படுத்த முடியாது.",
   "wallet.scan.use_camera_a11y": "கேமராவால் ஸ்கேன் செய்",
   "wallet.scan.use_camera": "கேமராவைப் பயன்படுத்து",
   "wallet.scan.pick_image_a11y": "சேமித்த படத்திலிருந்து QR குறியீட்டைப் படி",

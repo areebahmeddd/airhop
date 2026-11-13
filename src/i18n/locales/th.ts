@@ -1569,6 +1569,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "สแกนคิวอาร์โค้ด",
   "wallet.scan.aim_any": "หันไปที่คิวอาร์โค้ดของโทเคน ใบแจ้งหนี้ หรือ npub",
   "wallet.scan.no_any": "ไม่พบโทเคน ใบแจ้งหนี้ หรือ npub ในรูปนั้น",
+  "wallet.scan.not_usable": "Airhop ใช้คิวอาร์โค้ดนี้ที่นี่ไม่ได้",
   "wallet.scan.use_camera_a11y": "สแกนด้วยกล้อง",
   "wallet.scan.use_camera": "ใช้กล้อง",
   "wallet.scan.pick_image_a11y": "อ่านคิวอาร์โค้ดจากรูปที่บันทึกไว้",

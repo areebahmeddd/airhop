@@ -1611,6 +1611,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Hãy hướng vào mã QR của token, hóa đơn hoặc npub.",
   "wallet.scan.no_any":
     "Không tìm thấy token, hóa đơn hay npub nào trong hình đó.",
+  "wallet.scan.not_usable": "Airhop không thể dùng mã QR này ở đây.",
   "wallet.scan.use_camera_a11y": "Quét bằng máy ảnh",
   "wallet.scan.use_camera": "Dùng máy ảnh",
   "wallet.scan.pick_image_a11y": "Đọc một mã QR từ hình ảnh đã lưu",

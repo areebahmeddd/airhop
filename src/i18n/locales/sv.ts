@@ -1609,6 +1609,7 @@ export const strings: Strings = {
     "Rikta mot QR-koden för ett token, en faktura eller en npub.",
   "wallet.scan.no_any":
     "Inget token, ingen faktura eller npub hittades i bilden.",
+  "wallet.scan.not_usable": "Airhop kan inte använda den här QR-koden här.",
   "wallet.scan.use_camera_a11y": "Skanna med kameran",
   "wallet.scan.use_camera": "Använd kameran",
   "wallet.scan.pick_image_a11y": "Läs en QR-kod ur en sparad bild",

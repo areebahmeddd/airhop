@@ -1592,6 +1592,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR 코드 스캔",
   "wallet.scan.aim_any": "토큰, 인보이스 또는 npub QR 코드를 비추세요.",
   "wallet.scan.no_any": "그 이미지에서 토큰, 인보이스, npub을 찾지 못했습니다.",
+  "wallet.scan.not_usable": "이 QR 코드는 여기서 Airhop이 사용할 수 없습니다.",
   "wallet.scan.use_camera_a11y": "카메라로 스캔",
   "wallet.scan.use_camera": "카메라 사용",
   "wallet.scan.pick_image_a11y": "저장된 이미지에서 QR 코드 읽기",

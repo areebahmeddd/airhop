@@ -1648,6 +1648,8 @@ export const strings: Strings = {
     "Richte die Kamera auf den QR-Code eines Tokens, einer Rechnung oder eines npub.",
   "wallet.scan.no_any":
     "In diesem Bild wurde kein Token, keine Rechnung und kein npub gefunden.",
+  "wallet.scan.not_usable":
+    "Mit diesem QR-Code kann Airhop hier nichts anfangen.",
   "wallet.scan.use_camera_a11y": "Mit der Kamera scannen",
   "wallet.scan.use_camera": "Kamera nutzen",
   "wallet.scan.pick_image_a11y":

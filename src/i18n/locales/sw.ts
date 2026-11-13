@@ -1639,6 +1639,7 @@ export const strings: Strings = {
     "Elekeza kwenye msimbo wa QR wa tokeni, ankara au npub.",
   "wallet.scan.no_any":
     "Hakuna tokeni, ankara au npub iliyopatikana kwenye picha hiyo.",
+  "wallet.scan.not_usable": "Airhop haiwezi kutumia msimbo huu wa QR hapa.",
   "wallet.scan.use_camera_a11y": "Changanua kwa kamera",
   "wallet.scan.use_camera": "Tumia kamera",
   "wallet.scan.pick_image_a11y":

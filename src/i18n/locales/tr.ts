@@ -1617,6 +1617,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR kodu tara",
   "wallet.scan.aim_any": "Bir jeton, fatura veya npub QR koduna doğrult.",
   "wallet.scan.no_any": "O görüntüde jeton, fatura veya npub bulunamadı.",
+  "wallet.scan.not_usable": "Airhop bu QR kodunu burada kullanamaz.",
   "wallet.scan.use_camera_a11y": "Kamerayla tara",
   "wallet.scan.use_camera": "Kamerayı kullan",
   "wallet.scan.pick_image_a11y": "Kayıtlı bir görüntüden QR kod oku",

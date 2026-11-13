@@ -1595,6 +1595,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR কোড স্ক্যান করুন",
   "wallet.scan.aim_any": "টোকেন, ইনভয়েস বা npub-এর QR কোডের দিকে ধরুন।",
   "wallet.scan.no_any": "সেই ছবিতে কোনো টোকেন, ইনভয়েস বা npub পাওয়া যায়নি।",
+  "wallet.scan.not_usable": "এই QR কোডটি Airhop এখানে ব্যবহার করতে পারে না।",
   "wallet.scan.use_camera_a11y": "ক্যামেরা দিয়ে স্ক্যান করুন",
   "wallet.scan.use_camera": "ক্যামেরা ব্যবহার করুন",
   "wallet.scan.pick_image_a11y": "সংরক্ষিত একটি ছবি থেকে QR কোড পড়ুন",

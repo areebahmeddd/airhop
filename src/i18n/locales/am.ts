@@ -1514,6 +1514,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR ኮድ ቃኝ",
   "wallet.scan.aim_any": "ወደ ቶከን፣ ደረሰኝ ወይም npub QR ኮድ አነጣጥር።",
   "wallet.scan.no_any": "በዚያ ምስል ውስጥ ቶከን፣ ደረሰኝ ወይም npub አልተገኘም።",
+  "wallet.scan.not_usable": "ያ የQR ኮድ እዚህ Airhop ሊጠቀምበት የሚችል አይደለም።",
   "wallet.scan.use_camera_a11y": "በካሜራ ቃኝ",
   "wallet.scan.use_camera": "ካሜራ ተጠቀም",
   "wallet.scan.pick_image_a11y": "ከተቀመጠ ምስል የQR ኮድ አንብብ",

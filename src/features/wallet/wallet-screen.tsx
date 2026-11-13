@@ -1653,7 +1653,10 @@ export default function WalletScreen({
 
       <View style={styles.backupActions}>
         <Pressable
-          style={styles.backupBtn}
+          style={({ pressed }) => [
+            styles.backupBtn,
+            pressed && styles.neutralPressed,
+          ]}
           onPress={() =>
             switchSheet(() => {
               if (backupEnabled) void handleViewPhrase();
@@ -1677,7 +1680,11 @@ export default function WalletScreen({
           </Text>
         </Pressable>
         <Pressable
-          style={[styles.backupBtn, networkBlocked && styles.smallBtnDisabled]}
+          style={({ pressed }) => [
+            styles.backupBtn,
+            networkBlocked && styles.smallBtnDisabled,
+            pressed && styles.neutralPressed,
+          ]}
           disabled={networkBlocked}
           onPress={() =>
             switchSheet(() => {
@@ -1934,7 +1941,10 @@ export default function WalletScreen({
                 {token !== undefined && (
                   <>
                     <Pressable
-                      style={styles.pendingBtn}
+                      style={({ pressed }) => [
+                        styles.pendingBtn,
+                        pressed && styles.neutralPressed,
+                      ]}
                       onPress={() => setQrToken(tx)}
                       accessibilityRole="button"
                       accessibilityLabel={t("wallet.pending.show_qr")}
@@ -1942,7 +1952,10 @@ export default function WalletScreen({
                       <Text style={styles.pendingBtnText}>QR</Text>
                     </Pressable>
                     <Pressable
-                      style={styles.pendingBtn}
+                      style={({ pressed }) => [
+                        styles.pendingBtn,
+                        pressed && styles.neutralPressed,
+                      ]}
                       onPress={() => void handleCopyToken(token)}
                       accessibilityRole="button"
                       accessibilityLabel={t("wallet.pending.copy_again")}
@@ -1952,7 +1965,10 @@ export default function WalletScreen({
                       </Text>
                     </Pressable>
                     <Pressable
-                      style={styles.pendingBtn}
+                      style={({ pressed }) => [
+                        styles.pendingBtn,
+                        pressed && styles.neutralPressed,
+                      ]}
                       onPress={() => handleShareToken(token)}
                       accessibilityRole="button"
                       accessibilityLabel={t("wallet.pending.share_again")}
@@ -1965,7 +1981,10 @@ export default function WalletScreen({
                 )}
                 {reclaimable && (
                   <Pressable
-                    style={styles.pendingBtn}
+                    style={({ pressed }) => [
+                      styles.pendingBtn,
+                      pressed && styles.neutralPressed,
+                    ]}
                     onPress={() => markDelivered(tx.id)}
                     accessibilityRole="button"
                     accessibilityLabel={t("wallet.pending.mark_delivered")}
@@ -1977,7 +1996,11 @@ export default function WalletScreen({
                 )}
                 {reclaimable && (
                   <Pressable
-                    style={[styles.pendingBtn, styles.pendingBtnDanger]}
+                    style={({ pressed }) => [
+                      styles.pendingBtn,
+                      styles.pendingBtnDanger,
+                      pressed && styles.accentPressed,
+                    ]}
                     onPress={() => handleReclaim(tx)}
                     accessibilityRole="button"
                     accessibilityLabel={t("wallet.pending.reclaim_into")}
@@ -2034,7 +2057,11 @@ export default function WalletScreen({
                         failed row keeps one for nothing else. */}
                     {tx.status === "failed" && tx.token !== undefined ? (
                       <Pressable
-                        style={[styles.pendingBtn, styles.historyTokenBtn]}
+                        style={({ pressed }) => [
+                          styles.pendingBtn,
+                          styles.historyTokenBtn,
+                          pressed && styles.neutralPressed,
+                        ]}
                         onPress={() =>
                           void handleCopyRefusedToken(tx.token ?? "")
                         }
@@ -2073,7 +2100,10 @@ export default function WalletScreen({
               <>
                 <View style={styles.historyDivider} />
                 <Pressable
-                  style={styles.historyMoreRow}
+                  style={({ pressed }) => [
+                    styles.historyMoreRow,
+                    pressed && styles.listRowPressed,
+                  ]}
                   onPress={() => setShowAllActivity((v) => !v)}
                   accessibilityRole="button"
                   accessibilityState={{ expanded: showAllActivity }}
@@ -2443,7 +2473,10 @@ export default function WalletScreen({
         <Text style={styles.modalSubtitle}>{T("wallet.receive.body")}</Text>
         {myNpub !== null && (
           <Pressable
-            style={styles.npubRow}
+            style={({ pressed }) => [
+              styles.npubRow,
+              pressed && styles.neutralPressed,
+            ]}
             onPress={() => {
               void Clipboard.setStringAsync(myNpub);
               acknowledged();
@@ -2474,7 +2507,10 @@ export default function WalletScreen({
           selectionColor={Colors.selection}
         />
         <Pressable
-          style={styles.generatedActionBtn}
+          style={({ pressed }) => [
+            styles.generatedActionBtn,
+            pressed && styles.generatedActionBtnPressed,
+          ]}
           onPress={() => void handlePasteToken()}
           accessibilityRole="button"
           accessibilityLabel={T("wallet.receive.paste")}
@@ -2485,7 +2521,10 @@ export default function WalletScreen({
           </Text>
         </Pressable>
         <Pressable
-          style={styles.generatedActionBtn}
+          style={({ pressed }) => [
+            styles.generatedActionBtn,
+            pressed && styles.generatedActionBtnPressed,
+          ]}
           onPress={() => openScanner("token")}
           accessibilityRole="button"
           accessibilityLabel={T("wallet.receive.scan")}
@@ -2565,9 +2604,10 @@ export default function WalletScreen({
               return (
                 <Pressable
                   key={contact.peerID}
-                  style={[
+                  style={({ pressed }) => [
                     styles.zapContactChip,
                     selected && styles.zapContactChipOn,
+                    pressed && styles.neutralPressed,
                   ]}
                   onPress={() => setZapNpub(selected ? "" : hex)}
                   accessibilityRole="button"
@@ -2683,7 +2723,7 @@ export default function WalletScreen({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.generatedHeader}>
-            <Feather name="check-circle" size={28} color={Colors.online} />
+            <Feather name="check-circle" size={28} color={Colors.success} />
             <View style={styles.generatedAmountRow}>
               <Text style={styles.generatedAmount}>
                 {pending === null
@@ -2754,7 +2794,10 @@ export default function WalletScreen({
           </Text>
           <View style={styles.generatedActions}>
             <Pressable
-              style={styles.generatedActionBtn}
+              style={({ pressed }) => [
+                styles.generatedActionBtn,
+                pressed && styles.generatedActionBtnPressed,
+              ]}
               onPress={() => pending && void handleCopyToken(pending.token)}
               accessibilityRole="button"
               accessibilityLabel={T("wallet.send.copy_token")}
@@ -2763,7 +2806,10 @@ export default function WalletScreen({
               <Text style={styles.generatedActionText}>{T("common.copy")}</Text>
             </Pressable>
             <Pressable
-              style={styles.generatedActionBtn}
+              style={({ pressed }) => [
+                styles.generatedActionBtn,
+                pressed && styles.generatedActionBtnPressed,
+              ]}
               onPress={() => pending && handleShareToken(pending.token)}
               accessibilityRole="button"
               accessibilityLabel={T("wallet.send.share_token")}
@@ -2774,7 +2820,10 @@ export default function WalletScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.generatedActionBtn}
+              style={({ pressed }) => [
+                styles.generatedActionBtn,
+                pressed && styles.generatedActionBtnPressed,
+              ]}
               onPress={() => pending && void openTokenInWallet(pending.token)}
               accessibilityRole="button"
               accessibilityLabel={T("wallet.send.open_in_wallet")}
@@ -2785,7 +2834,10 @@ export default function WalletScreen({
               </Text>
             </Pressable>
             <Pressable
-              style={styles.generatedActionBtn}
+              style={({ pressed }) => [
+                styles.generatedActionBtn,
+                pressed && styles.generatedActionBtnPressed,
+              ]}
               onPress={() => setShowPeerPicker(true)}
               accessibilityRole="button"
               accessibilityLabel={T("wallet.send.to_peer")}
@@ -2920,7 +2972,10 @@ export default function WalletScreen({
                       and leads, Copy serves other routes, Close walks away. */}
                   <View style={styles.generatedActions}>
                     <Pressable
-                      style={styles.generatedPrimaryBtn}
+                      style={({ pressed }) => [
+                        styles.generatedPrimaryBtn,
+                        pressed && styles.accentPressed,
+                      ]}
                       onPress={() => void openInvoiceInWallet(deposit.invoice)}
                       accessibilityRole="button"
                       accessibilityLabel={T("wallet.ln.open_wallet")}
@@ -3044,7 +3099,10 @@ export default function WalletScreen({
           selectionColor={Colors.selection}
         />
         <Pressable
-          style={styles.generatedActionBtn}
+          style={({ pressed }) => [
+            styles.generatedActionBtn,
+            pressed && styles.generatedActionBtnPressed,
+          ]}
           onPress={() => openScanner("invoice")}
           accessibilityRole="button"
           accessibilityLabel={T("wallet.ln.scan_invoice")}
@@ -3181,7 +3239,10 @@ export default function WalletScreen({
               ))}
             </View>
             <Pressable
-              style={styles.generatedActionBtn}
+              style={({ pressed }) => [
+                styles.generatedActionBtn,
+                pressed && styles.generatedActionBtnPressed,
+              ]}
               onPress={() => void handleCopyPhrase()}
               accessibilityRole="button"
               accessibilityLabel={T("wallet.backup.copy_phrase")}
@@ -3328,7 +3389,7 @@ export default function WalletScreen({
                 size={28}
                 color={
                   restoreResult.proofCount > 0
-                    ? Colors.online
+                    ? Colors.success
                     : Colors.textMuted
                 }
               />
@@ -3408,7 +3469,11 @@ export default function WalletScreen({
           return (
             <Pressable
               key={account.key}
-              style={[styles.pickRow, isTarget && styles.pickRowSelected]}
+              style={({ pressed }) => [
+                styles.pickRow,
+                isTarget && styles.pickRowSelected,
+                pressed && styles.neutralPressed,
+              ]}
               onPress={() => setConsolidateTarget(account.mintUrl)}
               accessibilityRole="radio"
               accessibilityState={{ selected: isTarget }}
@@ -3514,7 +3579,10 @@ export default function WalletScreen({
             return (
               <Pressable
                 key={peer.peerID}
-                style={styles.peerPickerRow}
+                style={({ pressed }) => [
+                  styles.peerPickerRow,
+                  pressed && styles.listRowPressed,
+                ]}
                 onPress={() => handleSendTokenToPeer(peer.peerID)}
                 accessibilityRole="button"
                 accessibilityLabel={T("wallet.send.send_to", {
@@ -3659,7 +3727,11 @@ function MintPicker({
         return (
           <Pressable
             key={option.mintUrl}
-            style={[styles.pickRow, active && styles.pickRowSelected]}
+            style={({ pressed }) => [
+              styles.pickRow,
+              active && styles.pickRowSelected,
+              pressed && styles.neutralPressed,
+            ]}
             onPress={() => onSelect(option.mintUrl)}
             accessibilityRole="radio"
             accessibilityState={{ selected: active }}
@@ -4344,7 +4416,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       fontWeight: FontWeight.semibold,
     },
     historyCredit: {
-      color: Colors.online,
+      color: Colors.success,
     },
     historyDebit: {
       color: Colors.danger,

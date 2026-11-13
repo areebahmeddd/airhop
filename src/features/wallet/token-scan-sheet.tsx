@@ -22,6 +22,7 @@ import {
   FontWeight,
   HIT_SLOP,
   LineHeight,
+  PRESSED_OPACITY,
   Radius,
   Spacing,
   useThemeColors,
@@ -60,6 +61,8 @@ export default function TokenScanSheet({
   // True only once permission is granted; gates the camera mount.
   const [cameraReady, setCameraReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The camera has seen a QR code it cannot use.
+  const [missed, setMissed] = useState(false);
   const [, requestCameraPermission, getCameraPermission] =
     useCameraPermissions();
   const hasScannedRef = useRef(false);
@@ -67,6 +70,7 @@ export default function TokenScanSheet({
   function reset(): void {
     setCameraReady(false);
     setError(null);
+    setMissed(false);
     hasScannedRef.current = false;
   }
 
@@ -143,8 +147,12 @@ export default function TokenScanSheet({
   function handleBarcodeScanned(raw: string): void {
     if (hasScannedRef.current) return;
     const value = readScan(raw, target);
-    // No latch on a miss: an unrelated QR keeps the camera scanning.
-    if (value === null) return;
+    // No latch on a miss: an unrelated QR keeps the camera scanning, and says
+    // so, or a code it cannot use looks like a scanner that does nothing.
+    if (value === null) {
+      setMissed(true);
+      return;
+    }
     hasScannedRef.current = true;
     finish(value);
   }
@@ -176,7 +184,10 @@ export default function TokenScanSheet({
             <View style={styles.cameraTopBar}>
               <Pressable
                 onPress={dismiss}
-                style={styles.cameraIconBtn}
+                style={({ pressed }) => [
+                  styles.cameraIconBtn,
+                  pressed && styles.cameraIconBtnPressed,
+                ]}
                 hitSlop={HIT_SLOP}
                 accessibilityRole="button"
                 accessibilityLabel={T("wallet.scan.close")}
@@ -185,6 +196,11 @@ export default function TokenScanSheet({
               </Pressable>
             </View>
             <View style={styles.reticle} />
+            {missed && (
+              <Text style={styles.cameraMiss} accessibilityLiveRegion="polite">
+                {T("wallet.scan.not_usable")}
+              </Text>
+            )}
             <Text style={styles.cameraHint}>
               {T(
                 target === "token"
@@ -235,7 +251,10 @@ export default function TokenScanSheet({
             ]}
           />
           <Pressable
-            style={styles.cancel}
+            style={({ pressed }) => [
+              styles.cancel,
+              pressed && styles.cancelPressed,
+            ]}
             onPress={dismiss}
             accessibilityRole="button"
             accessibilityLabel={T("common.cancel")}
@@ -273,12 +292,25 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       justifyContent: "center",
       backgroundColor: "rgba(0,0,0,0.45)",
     },
+    // Dims: it sits on the live camera, where a fill change would not show.
+    cameraIconBtnPressed: {
+      opacity: PRESSED_OPACITY,
+    },
     reticle: {
       width: 240,
       height: 240,
       borderRadius: Radius.xl,
       borderWidth: 2,
       borderColor: "rgba(255,255,255,0.85)",
+    },
+    cameraMiss: {
+      color: "#FFFFFF",
+      fontSize: FontSize.sm,
+      fontWeight: FontWeight.semibold,
+      textAlign: "center",
+      paddingHorizontal: Spacing.xl,
+      paddingBottom: Spacing.sm,
+      lineHeight: LineHeight.sm,
     },
     cameraHint: {
       color: "#FFFFFF",
@@ -314,6 +346,9 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       backgroundColor: Colors.surfaceRaised,
       borderWidth: 1,
       borderColor: Colors.border,
+    },
+    cancelPressed: {
+      backgroundColor: Colors.surfacePressed,
     },
     cancelText: {
       fontSize: FontSize.base,

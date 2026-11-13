@@ -1559,6 +1559,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any":
     "وجّه الكاميرا نحو رمز استجابة سريعة لتوكن أو فاتورة أو npub.",
   "wallet.scan.no_any": "لم يُعثر على توكن أو فاتورة أو npub في تلك الصورة.",
+  "wallet.scan.not_usable": "لا يستطيع Airhop استخدام رمز QR هذا هنا.",
   "wallet.scan.use_camera_a11y": "المسح بالكاميرا",
   "wallet.scan.use_camera": "استخدام الكاميرا",
   "wallet.scan.pick_image_a11y": "قراءة رمز استجابة سريعة من صورة محفوظة",

@@ -5617,7 +5617,7 @@ export default function MessageThread({
         )}
         {paid && (
           <View style={styles.paymentCardClaimed}>
-            <Feather name="check" size={13} color={Colors.online} />
+            <Feather name="check" size={13} color={Colors.success} />
             <Text style={styles.paymentCardClaimedText}>
               {t("chat.ecash.claimed")}
             </Text>
@@ -5628,7 +5628,7 @@ export default function MessageThread({
         {!isMine &&
           (isTokenClaimed(token) ? (
             <View style={styles.paymentCardClaimed}>
-              <Feather name="check" size={13} color={Colors.online} />
+              <Feather name="check" size={13} color={Colors.success} />
               <Text style={styles.paymentCardClaimedText}>
                 {t("chat.ecash.claimed")}
               </Text>
@@ -8316,7 +8316,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     paymentCardClaimedText: {
       fontSize: FontSize.xs,
-      color: Colors.online,
+      color: Colors.success,
       fontWeight: FontWeight.semibold,
     },
     paymentCardVoid: {

@@ -1602,6 +1602,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "اسکن کد QR",
   "wallet.scan.aim_any": "روی کد QR یک توکن، صورتحساب یا npub بگیرید.",
   "wallet.scan.no_any": "در آن تصویر توکن، صورتحساب یا npub پیدا نشد.",
+  "wallet.scan.not_usable": "Airhop نمی‌تواند از این کد QR اینجا استفاده کند.",
   "wallet.scan.use_camera_a11y": "پویش با دوربین",
   "wallet.scan.use_camera": "استفاده از دوربین",
   "wallet.scan.pick_image_a11y": "خواندن یک کد QR از تصویری ذخیره‌شده",

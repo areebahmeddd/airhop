@@ -1619,6 +1619,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR კოდის სკანირება",
   "wallet.scan.aim_any": "მიმართე ტოკენის, ინვოისის ან npub-ის QR კოდზე.",
   "wallet.scan.no_any": "ამ სურათში ტოკენი, ინვოისი ან npub არ მოიძებნა.",
+  "wallet.scan.not_usable": "Airhop-ს აქ ამ QR კოდის გამოყენება არ შეუძლია.",
   "wallet.scan.use_camera_a11y": "სკანირება კამერით",
   "wallet.scan.use_camera": "კამერის გამოყენება",
   "wallet.scan.pick_image_a11y": "QR კოდის წაკითხვა შენახული სურათიდან",

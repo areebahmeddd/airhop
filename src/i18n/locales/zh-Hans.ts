@@ -1511,6 +1511,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "扫描二维码",
   "wallet.scan.aim_any": "对准代币、发票或 npub 的二维码。",
   "wallet.scan.no_any": "那张图里没有找到代币、发票或 npub。",
+  "wallet.scan.not_usable": "Airhop 无法在这里使用这个二维码。",
   "wallet.scan.use_camera_a11y": "用相机扫描",
   "wallet.scan.use_camera": "使用相机",
   "wallet.scan.pick_image_a11y": "从已保存的图片中读取二维码",

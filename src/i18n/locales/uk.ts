@@ -1620,6 +1620,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Наведіть на QR-код токена, рахунку або npub.",
   "wallet.scan.no_any":
     "На тому зображенні не знайдено токена, рахунку чи npub.",
+  "wallet.scan.not_usable": "Airhop не може використати цей QR-код тут.",
   "wallet.scan.use_camera_a11y": "Сканувати камерою",
   "wallet.scan.use_camera": "Скористатися камерою",
   "wallet.scan.pick_image_a11y": "Прочитати QR-код зі збереженого зображення",

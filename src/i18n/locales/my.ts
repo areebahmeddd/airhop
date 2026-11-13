@@ -1654,6 +1654,7 @@ export const strings: Strings = {
     "တိုကင်၊ ငွေတောင်းခံလွှာ သို့မဟုတ် npub QR ကုဒ်ဆီ ချိန်ပါ။",
   "wallet.scan.no_any":
     "ထိုပုံတွင် တိုကင်၊ ငွေတောင်းခံလွှာ သို့မဟုတ် npub မတွေ့ပါ။",
+  "wallet.scan.not_usable": "ဤ QR ကုဒ်ကို Airhop က ဤနေရာတွင် အသုံးမပြုနိုင်ပါ။",
   "wallet.scan.use_camera_a11y": "ကင်မရာဖြင့် စကန်ဖတ်ပါ",
   "wallet.scan.use_camera": "ကင်မရာ သုံးပါ",
   "wallet.scan.pick_image_a11y": "သိမ်းထားသောပုံမှ QR ကုဒ်ကို ဖတ်ပါ",

@@ -1512,6 +1512,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "掃描 QR 碼",
   "wallet.scan.aim_any": "對準代幣、發票或 npub 的 QR 碼。",
   "wallet.scan.no_any": "那張圖裡沒有找到代幣、發票或 npub。",
+  "wallet.scan.not_usable": "Airhop 無法在這裡使用這個 QR 碼。",
   "wallet.scan.use_camera_a11y": "用相機掃描",
   "wallet.scan.use_camera": "使用相機",
   "wallet.scan.pick_image_a11y": "從已儲存的圖片中讀取 QR 碼",

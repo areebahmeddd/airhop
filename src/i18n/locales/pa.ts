@@ -1603,6 +1603,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
   "wallet.scan.aim_any": "ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਦੇ QR ਕੋਡ ਵੱਲ ਸੇਧੋ।",
   "wallet.scan.no_any": "ਉਸ ਤਸਵੀਰ ਵਿੱਚ ਕੋਈ ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਨਹੀਂ ਮਿਲਿਆ।",
+  "wallet.scan.not_usable": "Airhop ਇੱਥੇ ਇਸ QR ਕੋਡ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਸਕਦਾ।",
   "wallet.scan.use_camera_a11y": "ਕੈਮਰੇ ਨਾਲ ਸਕੈਨ ਕਰੋ",
   "wallet.scan.use_camera": "ਕੈਮਰਾ ਵਰਤੋ",
   "wallet.scan.pick_image_a11y": "ਸੰਭਾਲੀ ਤਸਵੀਰ ਵਿੱਚੋਂ QR ਕੋਡ ਪੜ੍ਹੋ",

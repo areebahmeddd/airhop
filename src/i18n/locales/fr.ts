@@ -1654,6 +1654,7 @@ export const strings: Strings = {
     "Vise le code QR d’un jeton, d’une facture ou d’un npub.",
   "wallet.scan.no_any":
     "Aucun jeton, aucune facture ni aucun npub trouvé dans cette image.",
+  "wallet.scan.not_usable": "Airhop ne peut pas utiliser ce QR code ici.",
   "wallet.scan.use_camera_a11y": "Scanner avec la caméra",
   "wallet.scan.use_camera": "Utiliser la caméra",
   "wallet.scan.pick_image_a11y": "Lire un code QR depuis une image enregistrée",
