@@ -2154,13 +2154,14 @@ design exists to prevent.
 | Matrix          | Rejected     | Requires a homeserver, which is a single point of failure. Federated but not serverless                                                           |
 | XMPP            | Rejected     | Also requires an always-on server, with a complex extension ecosystem and a limited offline story                                                 |
 | Signal Protocol | Rejected     | Signal owns the relay infrastructure and requires a phone number, so it is not permissionless                                                     |
+| MLS (Marmot)    | Rejected     | Needs one ordered stream of group changes, which a mesh split while offline cannot give, so group state forks. Not bitchat-compatible either      |
 | SimpleX         | Close second | No persistent identifiers and privacy-first, but no BLE mesh story, a smaller ecosystem and fewer relays                                          |
 | Nostr           | Chosen       | Permissionless keypair identity, 300+ independent relays, NIP-17 gift-wrap for DMs, NIP-61 for payments, and bitchat already validated the choice |
 
 ### Noise XX over TLS or X3DH
 
 - TLS requires CAs and server certificates, which a serverless system cannot have
-- X3DH alone does not mutually authenticate: the receiver does not authenticate the sender in the handshake
+- X3DH starts a session with a peer who is offline. Noise XX already authenticates both sides when they meet, and courier mail's one-time prekeys cover the offline case
 - Noise XX gives mutual authentication and forward secrecy with no CAs, is proven in WireGuard, and is what bitchat uses
 
 ### Relay URLs stay strict
