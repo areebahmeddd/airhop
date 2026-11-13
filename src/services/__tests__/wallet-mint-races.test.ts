@@ -198,6 +198,34 @@ describe("replaying a lost swap", () => {
     for (const secret of others) expect(fabric.isSpent(secret)).toBe(true);
     expect(spendable()).toBe(24);
   });
+
+  it("closes the receipt the killed send's other coins came in under", async () => {
+    // One token staged and unanswered, one stored with the internet off: both
+    // offline receipts, both handed on in one send.
+    fabric.setConditions({ swapResponseLost: true });
+    expect((await receiveToken(await strangersToken(8))).outcome).toBe(
+      "stored",
+    );
+    fabric.setConditions({ swapResponseLost: false });
+    useSettingsStore.setState({ internetEnabled: false });
+    try {
+      expect((await receiveToken(await strangersToken(16))).outcome).toBe(
+        "stored",
+      );
+    } finally {
+      useSettingsStore.setState({ internetEnabled: true });
+    }
+    const stored = useWalletStore
+      .getState()
+      .history.find((t) => t.kind === "receive" && t.amount === 16);
+    await prepareSend({ amount: 24 });
+
+    await reconcile();
+
+    // Its coins went back under the send, so it holds none and is not left
+    // reading unconfirmed for good.
+    expect(tx(stored!.id)?.status).toBe("completed");
+  });
 });
 
 describe("swaps hold their inputs", () => {

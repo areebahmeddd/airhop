@@ -3039,6 +3039,8 @@ function voidSendsSpentBySwap(spent: Set<string>): void {
       rest.map((p) => p.secret),
       txId,
     );
+    // The send is their receipt now, so one they came in under has none left.
+    closeReceipts(receiptsOf(rest));
     // The token is dead, so the row offers nothing to copy.
     store.updateTx(txId, {
       status: "failed",
