@@ -26,7 +26,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** A live DM runs on one Noise XX session, so a leaked session key exposes the whole session. Courier mail exists only on bitchat-ios, sealed to a one-time prekey when it holds one and to the recipient's long-term key otherwise, where a leak of that key exposes every piece of mail still waiting.
 
-**Airhop:** Signal's Double Ratchet inside the Noise session for Airhop-to-Airhop DMs, so every message has its own key. One-time prekeys for courier mail on both platforms, in bitchat-ios's format: bundles travel signed over the mesh and never touch Nostr, and an envelope seals to a one-time prekey, so waiting mail survives the long-term key leaking later.
+**Airhop:** Signal's Double Ratchet inside the Noise session for Airhop-to-Airhop DMs, so every message has its own key. One-time prekeys for courier mail on both platforms, in bitchat-ios's format: bundles travel signed over the mesh and never touch Nostr, and an envelope seals to a one-time prekey, so waiting mail survives the long-term key leaking later. Internet DMs between Airhop phones seal to keys each phone hands the other privately.
 
 ### Gap 5: Files and Video
 
@@ -194,7 +194,7 @@ Since v1.2.0 the engine lives in `src/core/`, so it can ship on its own, and shi
 
 **Goal:** Independent verification of every security guarantee before the v2.0.0 flagship release.
 
-This phase exists because cryptographic correctness cannot be self-certified. The Noise XX state machine, Double Ratchet ratchet steps, key storage boundaries, and packet signing paths all require external eyes before Airhop can be recommended for high-risk use. The v1.6.0 SDK packages are included in the audit scope, because a public API that ships without independent review is a liability for every downstream developer building on it. [OTF's Security Lab](https://www.opentech.fund/labs/security-lab/) funds audits of internet freedom tools and publishes the reports.
+This phase exists because cryptographic correctness cannot be self-certified. The Noise XX state machine, the Double Ratchet's steps, key storage boundaries, and packet signing paths all require external eyes before Airhop can be recommended for high-risk use. The v1.6.0 SDK packages are included in the audit scope, because a public API that ships without independent review is a liability for every downstream developer building on it. [OTF's Security Lab](https://www.opentech.fund/labs/security-lab/) funds audits of internet freedom tools and publishes the reports.
 
 - [ ] Engage a third-party security firm (Cure53 or equivalent) for a full cryptographic audit covering `src/core/crypto/`, packet signing, key storage, the wallet, and the public API surface of `@airhop/core`
 - [ ] Engage a second independent auditor for the BLE mesh layer, Nostr bridge, device transfer, Tor integration, and `@airhop/ble`
@@ -206,7 +206,7 @@ This phase exists because cryptographic correctness cannot be self-certified. Th
 
 #### v2.0.0: Flagship Interface
 
-**Goal:** A production-grade chat interface once the SDK and audit are complete, plus a standing transparency commitment.
+**Goal:** A production-grade chat interface once the SDK and the audits are complete, plus a standing transparency commitment.
 
 Private communication should be understandable, not merely trusted. v2.0.0 redesigns the interface for both modern and constrained devices, and makes the documentation and audit trail a permanent obligation rather than a release artifact.
 

@@ -40,7 +40,7 @@ A packet rebuilt from fragments goes through `admit`, not `receive`: it is dedup
 `relayDecision` in `flood-router.ts` transcribes bitchat-ios `RelayController.decide`. TTL is capped at 7 and decremented **before** the relay.
 
 - **Never relayed:** `REQUEST_SYNC`, relay firmware's update types `0xA0` to `0xA3` (`isRelayFirmwareType`), anything with `ttl <= 1`, and a packet whose sender or recipient is this node. The caller still handles it, which is how an announce under our own ID reveals the identity running elsewhere.
-- **Full depth** (`ttl - 1`): handshakes, and with a recipient `NOISE_ENCRYPTED`, `DR_ENCRYPTED`, `COURIER_ENV`, `PING`, `PONG`, `NOSTR_CARRIER` and fragments.
+- **Full depth** (`ttl - 1`): handshakes, and with a recipient `NOISE_ENCRYPTED`, `COURIER_ENV`, `PING`, `PONG`, `NOSTR_CARRIER` and fragments.
 - **Clamped by degree** (`relayLimit`), the relayed copy carrying one less than the cap or its own TTL, whichever is lower:
 
 | Class                                     | Degree ≤ 2 | 3 to 5 | ≥ 6 |

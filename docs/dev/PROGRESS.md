@@ -1,20 +1,20 @@
 # Airhop: Build Progress
 
-Where the build stands: what exists and how it is verified, what is in flight, and what is blocked. Read it before starting work. It is updated when a milestone completes, a blocker appears or a decision is made. What comes next, and when, is in [ROADMAP.md](../design/ROADMAP.md); what each release contained is in [CHANGELOG.md](CHANGELOG.md).
+Where the build stands: what exists, how it is verified, and which gaps are accepted. Read it before starting work. It is updated when a milestone completes, a blocker appears or a decision is made. What comes next, and when, is in [ROADMAP.md](../design/ROADMAP.md); what each release contained is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Current Version: v1.0.0
 
-**Verified by tests:** the packet codec (v1 and v2 headers, padding, compression), fragment format and reassembly, Noise XX, the Double Ratchet, courier envelopes (static and prekey-sealed), one-time prekey bundles, gossip filters (including type-aware board rounds), bulletin-board wire and store quotas, private-group wire and epoch keys, the gateway carrier codec, mesh ping and pong, outbox delivery, contact-card binding, geohash derivation and relay determinism, the geohash DM round trip, Nostr gift wrap and the bitchat envelope, and proof selection. Wire decoders are fuzzed, and where bitchat publishes or implies a byte layout a vector test pins it: packet frames, payloads, courier seals ([`courier-seal-vectors.json`](../spec/courier-seal-vectors.json)), private media IDs and Nostr DMs.
+**Verified by tests:** the packet codec (v1 and v2 headers, padding, compression), fragment format and reassembly, Noise XX, the Double Ratchet, courier envelopes (static and prekey-sealed), one-time prekey bundles, gossip filters (including type-aware board rounds), bulletin-board wire and store quotas, private-group wire and epoch keys, the gateway carrier codec, mesh ping and pong, outbox delivery, contact-card binding, geohash derivation and relay determinism, the geohash DM round trip, Nostr gift wrap and the bitchat envelope, internet DM prekeys and their seal, relay sign-in, the disappearing timer, LAN endpoints, and proof selection. Wire decoders are fuzzed, and where bitchat publishes or implies a byte layout a vector test pins it: packet frames, payloads, courier seals ([`courier-seal-vectors.json`](../spec/courier-seal-vectors.json)), private media IDs and Nostr DMs.
 
 **Verified by the multi-device simulation** (`src/__tests__/simulation/`): multi-hop delivery across a chain of phones that cannot hear each other, a 25-phone room converging on one channel, a live mixed Airhop and bitchat mesh in both directions, parallel attachment transfers, live push-to-talk sharing a radio with a file transfer, offline ecash transfer and double-spend refusal against a real BDHKE mint, recovery from a swap whose answer never came back, replay and Sybil floods, panic wipe, crash recovery, and a seeded soak of hundreds of random events across eight phones. Each simulated phone is a fully isolated copy of the app driven through a modeled OS and radio. `conformance.test.ts` checks Airhop's constants against a local bitchat checkout, and skips when there is none.
 
 **Still cannot be verified without hardware:** real BLE discovery timing, MTU negotiation, CoreBluetooth on real silicon, OEM battery managers, and real Tor circuits. The simulation models the OS contract; it cannot prove the hardware honors it.
 
-**Built with:** Claude Opus 5 in Claude Code, working against local checkouts of bitchat-ios and bitchat-android as the protocol source of truth. The multi-device simulation, the adversarial scenarios, and the security review below were produced the same way. Every claim here is meant to be checkable against the code rather than taken on trust.
+**Built with:** Claude Opus 5 in Claude Code, working against local checkouts of bitchat-ios and bitchat-android as the protocol source of truth. The multi-device simulation, the adversarial scenarios, and the [security review](SECURITY-REVIEW.md) were produced the same way. Every claim here is meant to be checkable against the code rather than taken on trust.
 
 **Known gaps, accepted:**
 
-- More than 1,000 lost Double Ratchet messages in one chain (`MAX_SKIP`) leave a pair out of step until a restart or a `LEAVE`. A replay raises the same error, so healing on it would let any listener tear a session down; bitchat-ios makes the same trade.
+- More than 1,000 lost Double Ratchet messages in one chain (`MAX_SKIP`) leave a pair out of step until a restart, a `LEAVE` or the daily rekey, which seeds a fresh ratchet. A ratchet message arrives inside its authenticated session, so healing on the error at once would be safe; it is left to the rekey, since that many losses in a row is rare.
 - A courier hands mail over on any link bound by a direct announce, where bitchat-ios also requires a Noise session made on that link ([PROTOCOLS.md](../spec/PROTOCOLS.md#61-depositing-and-carrying)).
 - The app-switcher snapshot cover needs Android API 33, leaving API 26 to 32 exposed ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#countermeasures)).
 - A screenshot in a private chat is not announced on Android 13 alone, where detecting one needs a media read permission Airhop does not hold ([ARCHITECTURE.md](../spec/ARCHITECTURE.md#countermeasures)).
@@ -43,7 +43,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 ### v0.6.0: Core Messaging
 
 - [x] `src/core/crypto/noise-xx.ts`: the full XX pattern over `@noble`, transport encrypt and decrypt, replay window
-- [x] `src/core/crypto/noise-x.ts`: one-way Noise X for courier sealing
+- [x] `src/core/crypto/noise-x.ts`: one-way Noise X for courier and internet DM seals
 - [x] `src/core/mesh/routing/fragment-manager.ts`: split and reassemble (467 data bytes per 512-byte frame), 30 s idle timeout, 128 concurrent assemblies
 - [x] `src/core/mesh/sync/gossip-sync.ts`: GCS filter reconciliation (Golomb-Rice, TLV wire format)
 - [x] `src/core/mesh/courier/courier-store.ts`: sealed envelopes, trust tiers, spray-and-wait, daily recipient tags
@@ -53,7 +53,8 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 
 ### v0.7.0: Internet Bridge and Voice
 
-- [x] `src/core/nostr/nostr-client.ts`: SimplePool, auto-reconnect, proxy config
+- [x] `src/core/nostr/nostr-client.ts`: SimplePool, auto-reconnect, proxy config, and relay sign-in (NIP-42) with each operation's own key, one key per connection
+- [x] Forward-secret internet DMs between Airhop phones: sealed to a one-time or weekly last-resort key handed over privately (`src/core/nostr/dm-prekeys.ts`, `dm-prekey-store.ts`); bitchat peers keep plain NIP-17
 - [x] `src/core/nostr/gift-wrap.ts`: NIP-17/59 gift-wrap DMs, HKDF key derivation
 - [x] `src/core/nostr/geo-relay.ts`: Haversine nearest relays from the bundled CSV; the channel info sheet lists the relays carrying a cell and marks the ones the user added
 - [x] `src/core/nostr/geohash-presence.ts`: kind 20001 heartbeats every 40 to 80 s, never finer than precision 5
@@ -67,6 +68,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 
 ### v0.8.0: Identity and Forward Secrecy
 
+- [x] Deniable DMs over the mesh: Noise transport goes unsigned, as bitchat-ios sends it, the Double Ratchet rides inside the session (`0x55`), and the time a message shows travels under it (`0x52`)
 - [x] `src/core/crypto/double-ratchet.ts`: Signal Double Ratchet, per-message forward secrecy. The root key comes from the Noise XX **exporter secret**, so it cannot be rebuilt from long-lived keys or from the public handshake bytes
 - [x] One-time prekey bundles (`src/core/mesh/wire/prekey-bundle.ts`, `src/core/mesh/courier/prekey-store.ts`) flooded as `0x24`, never published to Nostr. **X3DH is not used**: the handshake already seeds the ratchet ([ARCHITECTURE.md section 5](../spec/ARCHITECTURE.md#5-encryption))
 - [x] `src/core/crypto/contact-exchange.ts`: binary contact card over the `airhop:v1/<base64url>` QR scheme, signed by the card's own signing key, peer ID checked against the keys it carries; a card arriving by link is recorded unverified
@@ -76,7 +78,8 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 ### v0.9.0: Wi-Fi Transports
 
 - [x] Wi-Fi Aware on both platforms: Apple's `WiFiAware` framework on iOS, `WifiAwareManager` on Android, on by default
-- [x] `AirhopLANModule`: mDNS discovery plus TCP links (`NWListener` / `NWBrowser`, `NsdManager`), carrying the same packets the radio carries
+- [x] `AirhopLANModule`: mDNS discovery plus TCP links (`NWListener` / `NWBrowser`, `NsdManager`), carrying the same packets the radio carries, and a direct dial at the address a session peer hands over (`0x56`, `src/services/lan-direct-dial.ts`) where the network filters mDNS
+- [x] Disappearing messages per mesh chat, shared between Airhop phones: each message keeps the timer it was sent with (`src/core/mesh/wire/dm-timer.ts`), counted from sending or from first being read, changed by either side with a row in both threads when the duration changes; local with bitchat peers, and rooms and location chats follow the default on this phone (`src/services/message-retention.ts`)
 - [x] `src/services/lan-controller.ts`: link lifecycle, registered beside BLE and Wi-Fi Aware, off by default behind `lanTransportEnabled`
 - [x] `src/services/lan-dial-policy.ts`: the ring that caps LAN at 8 links per phone
 - [x] Video and any other allowed file type shared as attachments, played inline. A video is trimmed to the part chosen on the caption sheet, at most a minute, and shrunk first, to bitchat-ios's 100 KiB clip budget wherever a bitchat phone may receive it and to the 1 MiB ceiling for another Airhop phone (`src/core/mesh/video/transcode-plan.ts`, `src/services/video-prepare.ts`, `src/features/chat/video-trimmer.tsx`, one native pass on each platform)
@@ -121,6 +124,6 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] Onboarding: welcome, animated identity generation, username reveal
 - [x] Visual design: design tokens (`Colors`, `FontSize`, `FontWeight`, `Spacing`) in `src/ui/theme.ts`, light and dark themes, Feather icons
 - [x] Animations: keyframe spin and fade during identity generation, fade-up reveal on the username screen
-- [x] Navigation shell: 4-tab state machine (Chats / Mesh / Wallet / Profile), sub-tab segment (Channels / Direct)
+- [x] Navigation shell: 4-tab state machine (Chats / Mesh / Wallet / You), sub-tab segment (Channels / Direct)
 - [x] Accessibility audit
 - [x] App Store and Play Store submission

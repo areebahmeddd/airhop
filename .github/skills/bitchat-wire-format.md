@@ -65,7 +65,7 @@ signature     64 bytes   only with SIGNED (Ed25519)
 **Padding** means two different things ([PROTOCOLS section 2.1](../../docs/spec/PROTOCOLS.md#21-padding-two-different-rules)):
 
 - The **signing preimage** is padded for every type, always.
-- The **outbound frame** is PKCS#7-padded only where ciphertext length leaks plaintext length: `NOISE_ENCRYPTED`, `NOISE_HANDSHAKE`, `DR_ENCRYPTED` and `CHANNEL_ENC` (`padsBLEFrame`). Decoders accept either form.
+- The **outbound frame** is PKCS#7-padded only where ciphertext length leaks plaintext length: `NOISE_ENCRYPTED`, `NOISE_HANDSHAKE` and `CHANNEL_ENC` (`padsBLEFrame`). Decoders accept either form.
 
 ## Signing and Packet ID
 
@@ -81,7 +81,7 @@ No nonce field; deduplication is content-addressed (`computePacketId`, bitchat's
 
 ## Packet Type Registry
 
-Everything below `0x50` except `0x12` is bitchat's. bitchat allocates forward and has reached `0x2D` (`0x2A` and `0x2B` reserved for courier spray-ack, `0x2C` `announceV2`, `0x2D` live video, which Airhop sends and plays), so Airhop's extensions start at `0x50`. `conformance.test.ts` parses bitchat's `MessageType.swift` and fails if its frontier comes within 16 of an Airhop type; `DR_ENCRYPTED` (`0x12`, never assigned by bitchat) is the one listed exemption. bitchat-android implements only `0x01` to `0x03`, `0x10`, `0x11`, `0x20` to `0x22` and `0x29`.
+Everything below `0x50` is bitchat's. bitchat allocates forward and has reached `0x2D` (`0x2A` and `0x2B` reserved for courier spray-ack, `0x2C` `announceV2`, `0x2D` live video, which Airhop sends and plays), so Airhop's extensions start at `0x50`. `conformance.test.ts` parses bitchat's `MessageType.swift` and fails if its frontier comes within 16 of an Airhop type. bitchat-android implements only `0x01` to `0x03`, `0x10`, `0x11`, `0x20` to `0x22` and `0x29`.
 
 A bitchat node never interprets a type it does not know, but it relays it: the unknown case falls through to `scheduleRelayIfNeeded`, and `RelayController.decide` treats it as an ordinary broadcast. An Airhop-only type therefore crosses a mesh of bitchat phones, invisible to their users. Two projects giving one number two meanings is the risk, not relaying.
 
@@ -92,8 +92,7 @@ A bitchat node never interprets a type it does not know, but it relays it: the u
 | `LEAVE`              | `0x03`          | Broadcast         | Peer departing, signed                                    |
 | `COURIER_ENV`        | `0x04`          | Directed          | Sealed store-and-forward envelope                         |
 | `NOISE_HANDSHAKE`    | `0x10`          | Unicast           | Noise XX msg1, msg2 or msg3                               |
-| `NOISE_ENCRYPTED`    | `0x11`          | Unicast           | Typed Noise payload (below)                               |
-| `DR_ENCRYPTED`       | `0x12`          | Unicast           | Double Ratchet DM, signed (Airhop only)                   |
+| `NOISE_ENCRYPTED`    | `0x11`          | Unicast           | Typed Noise payload (below), unsigned                     |
 | `FRAGMENT`           | `0x20`          | Broadcast/Unicast | One fragment of a larger packet                           |
 | `REQUEST_SYNC`       | `0x21`          | Unicast           | GCS gossip request, TTL 0, addressed to one link peer     |
 | `FILE_TRANSFER`      | `0x22`          | Broadcast/Unicast | `BitchatFilePacket`, 1 MiB content cap                    |
@@ -153,13 +152,17 @@ The plaintext of `NOISE_ENCRYPTED` is `[type u8][body]` (`NoisePayloadType`). bi
 | `0x06`/`0x07` | `GROUP_INVITE` / `GROUP_KEY_UPDATE` | `0x22`           | `CONTACT_CARD` (Airhop)                                     |
 | `0x08`        | `VOICE_FRAME`                       | `0x50` to `0x53` | `LOCATION_PIN`, `RING`, `RING_ACK`, `RING_REFUSED` (Airhop) |
 | `0x0A`        | `VIDEO_FRAME`                       | `0x54`           | `NOSTR_KEY` (Airhop), 32-byte x-only key                    |
+|               |                                     | `0x55`           | `RATCHET_MESSAGE` (Airhop), one Double Ratchet message      |
+|               |                                     | `0x56`           | `LAN_ENDPOINT` (Airhop), where the LAN transport listens    |
+|               |                                     | `0x57`           | `DM_PREKEYS` (Airhop), a signed internet DM key batch       |
 
-- `PRIVATE_MESSAGE` fields have one-byte lengths, so message ID and content are each capped at 255 UTF-8 bytes on all three clients.
+- A `NOISE_ENCRYPTED` packet is unsigned, as bitchat-ios sends it, so a DM over the mesh is deniable (courier mail and internet DMs are not: a courier deposit and a gift wrap's seal are signed); a signature arriving on one (bitchat-ios signs a DM it source-routes) is ignored.
+- `PRIVATE_MESSAGE` fields have one-byte lengths, so message ID and content are each capped at 255 UTF-8 bytes on all three clients. To a peer proven by bit 26, the disappearing timer TLVs `0x50`/`0x51` follow the content.
 - A DM attachment goes only sealed as `0x20`, and only to a peer that proved capability bit 8 inside its `0x21`. The cleartext directed `FILE_TRANSFER` is still received, never sent.
 - A sealed photo or voice note is keyed by `privateMediaStableID` (`media-<32 hex>`, from sender, recipient and an `img_<UUID>.jpg` or `voice_<UUID>.m4a` name), and the receiver answers with a `DELIVERED` naming it.
 - A sealed Airhop video note or clip (`note_<UUID>.mp4`, `clip_<UUID>.mp4`) is keyed by `privateVideoStableID` instead: the same shape under Airhop's own domain, `airhop-private-video-message-v1`. bitchat has no video ID and ignores the `DELIVERED`. Never widen it to bitchat's `clip_<8 hex>` names.
 - Capabilities in `0x21` are authoritative; announced bits are a hint that chooses wording, never how to send.
-- Bits 24 to 26 (`ring`, `locationPin`, `doubleRatchet`) travel in `0x21` only, never in an announce. Bit 26 marks an Airhop peer: it gates seeding the Double Ratchet and sending `0x54`, so bitchat never receives a type it does not know.
+- Bits 24 to 26 (`ring`, `locationPin`, `doubleRatchet`) travel in `0x21` only, never in an announce. Bit 26 marks an Airhop peer: it gates every Airhop-only session payload (`0x54` to `0x57`) and the timer TLVs `0x50`/`0x51`, so bitchat never receives a type it does not know.
 - Airhop's own Noise payload types start at `0x50`; `0x22` is the one exception.
 
 A Nostr DM carries the same bytes: an unsigned `NOISE_ENCRYPTED` packet holding a Noise payload, base64url behind `bitchat1:` (`bitchat-envelope.ts`, see [`nostr-gift-wrap.md`](nostr-gift-wrap.md)).

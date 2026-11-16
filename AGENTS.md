@@ -50,6 +50,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 | Payments: tokens, DLEQ, NIP-61, seed (pure)                      | `src/core/payments/`                               |
 | Runtime wiring: mesh, wallet, Tor, anything touching a mint      | `src/services/`                                    |
 | Which peers the LAN transport dials, and the cap on it           | `src/services/lan-dial-policy.ts`                  |
+| Dialing a session peer at the LAN address it handed over         | `src/services/lan-direct-dial.ts`                  |
 | Screen logic                                                     | `src/features/`                                    |
 | UI components, hooks, theme tokens                               | `src/ui/`                                          |
 | Thin wrappers over OS APIs (permissions, haptics)                | `src/platform/`                                    |
@@ -94,7 +95,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 - Never change the `packet-codec.ts` byte layout without bumping the protocol version and keeping a decode path for the old one.
 - Never change the BLE Service UUID (`F47B5E2D...`) or Characteristic UUID (`A1B2C3D4...`). A change partitions the network.
 - Never change peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`, defined once in `src/core/crypto/peer-id.ts`). Gossip sync and DM addressing depend on it.
-- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical, and so is `0x2D`, sent and played exactly as bitchat does (LIVE_VIDEO_V1). `0xA0` to `0xA3` are Airlink's link-local update types and never allocated here. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
+- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) and `0x2D` are bitchat's too and stay wire-identical; `0x2D` is sent and played exactly as bitchat does (LIVE_VIDEO_V1). `0xA0` to `0xA3` are Airlink's link-local update types and never allocated here. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
 - A protocol change ships only after a message exchange across Airhop, bitchat-ios and bitchat-android.
 
 ### Native Code

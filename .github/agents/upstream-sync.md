@@ -30,7 +30,7 @@ Airhop treats bitchat-ios as the canonical spec. Both bitchat platforms use `Noi
 
 ## Invocation Modes
 
-The user will invoke you in one of three ways:
+The user invokes you in one of three ways:
 
 1. **"Check latest"**: fetch the latest releases from both repos and compare them with the bitchat versions named at the top of `docs/dev/BITCHAT.md`, the last ones Airhop was checked against.
 2. **"Sync from [tag/commit]"**: fetch all changes since the given tag/commit.
@@ -61,9 +61,7 @@ For each non-MAINTENANCE change, identify:
 - The changed upstream file (Swift or Kotlin)
 - The Airhop TypeScript equivalent in `src/core/`
 - Whether Airhop already has this handled
-- Whether it conflicts with any Airhop extension (packet types `0x50+`), or
-  moves bitchat's own allocation closer to them. bitchat assigns forward and is
-  at `0x2D`; `conformance.test.ts` fails when the gap closes to 16.
+- Whether it conflicts with any Airhop extension (packet types `0x50+`), or moves bitchat's own allocation closer to them. bitchat assigns forward and is at `0x2D`; `conformance.test.ts` fails when the gap closes to 16.
 
 Use these standard mappings:
 
@@ -129,6 +127,6 @@ Output the checklist in this format:
 ## Important Notes
 
 - **Protocol changes are not automatically bad.** They may fix bitchat bugs. Assess each one.
-- **If a security patch fixes a vulnerability Airhop shares**, it must be applied. Check if the same code path exists in Airhop.
+- **If a security patch fixes a vulnerability Airhop shares**, it must be applied. Check whether the same code path exists in Airhop.
 - **Update the baseline.** Once the checklist is worked through, the versions named at the top of `docs/dev/BITCHAT.md` move to the ones just compared.
 - If a change only affects UI (Views/, ViewModels/ in iOS, or Compose screens in Android), it is ⚪ MAINTENANCE for Airhop.
