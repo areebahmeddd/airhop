@@ -33,9 +33,10 @@ Airhop's open security and product work: what each item buys a user, what it wou
 | 9   | Shared disappearing timer               | The other phone's copy expires too                         | Airhop only            | M              |
 | 10  | Byte budget for live video reassembly   | A hostile stream can't exhaust a viewer's memory           | None                   | S              |
 | 11  | Reed-Solomon vector from bitchat-ios    | Proof that live video repair works across the two apps     | None                   | S              |
-| 12  | Relay sign-in (NIP-42)                  | Relays that demand sign-in serve Airhop too                | None                   | S              |
-| 13  | Rotating radio IDs                      | No tracking a phone across places by its radio ID          | bitchat-wide           | XL             |
-| 14  | Multiple devices per identity           | One identity on a phone and a tablet                       | bitchat-wide           | XL             |
+| 12  | Direct dial on the local network        | Contacts meet over Wi-Fi where the network blocks mDNS     | Airhop only            | M              |
+| 13  | Relay sign-in (NIP-42)                  | Relays that demand sign-in serve Airhop too                | None                   | S              |
+| 14  | Rotating radio IDs                      | No tracking a phone across places by its radio ID          | bitchat-wide           | XL             |
+| 15  | Multiple devices per identity           | One identity on a phone and a tablet                       | bitchat-wide           | XL             |
 
 ## Assurance
 
@@ -59,9 +60,9 @@ A user who can't rebuild the APK has to trust that it matches the source. Signal
 
 ### 3. Forward-secret internet DMs
 
-Internet DMs are the automatic route to a contact out of radio range, and the internet is on by default. They follow bitchat's NIP-17 gift-wrap format [5], encrypted to long-term keys, and relays keep the ciphertext. A key leaked later, from a seized phone for example, decrypts every internet DM anyone captured. They're unpadded too, so lengths show. Mesh DMs between Airhop phones and courier mail already have forward secrecy, which leaves the internet, the one route where ciphertext is stored, as the weak link. Signal, Threema [1] and SimpleX give every message forward secrecy.
+Internet DMs are the automatic route to a contact out of radio range, and the internet is on by default. They follow bitchat's NIP-17 gift-wrap format [5], encrypted to long-term keys, and relays keep the ciphertext. A key leaked later, from a seized phone for example, decrypts every internet DM anyone captured. Padding stops at 2 KiB, so a longer message shows its length. Mesh DMs between Airhop phones and courier mail already have forward secrecy, which leaves the internet, the one route where ciphertext is stored, as the weak link. Signal, Threema [1] and SimpleX give every message forward secrecy.
 
-**What it takes.** Between Airhop phones, seal each internet DM to one of the recipient's one-time prekeys, the same ones courier mail uses, pad it to a fixed bucket, and carry it inside the existing gift wrap so relays see nothing new. bitchat keeps getting plain NIP-17. Two decisions first:
+**What it takes.** Between Airhop phones, seal each internet DM to one of the recipient's one-time prekeys, the same ones courier mail uses, extend padding past 2 KiB, and carry it inside the existing gift wrap so relays see nothing new. bitchat keeps getting plain NIP-17. Two decisions first:
 
 - **Running out of prekeys.** Prekeys travel only over the mesh and are never published to Nostr. A contact who stays away long enough exhausts the supply, so decide between falling back to the long-term key (and saying so) or refilling prekeys over an internet DM.
 - **Prekeys or a ratchet.** A Double Ratchet carried over Nostr would heal after a compromise, but the ratchet lives in memory and is bound to one Noise session, so it would need persisted state. Prekeys are the smaller step.
@@ -147,9 +148,17 @@ Live video's erasure code uses bitchat-ios's polynomial and coefficients, but it
 
 **Breaking:** None. **Size:** S.
 
-## Internet reach
+## Reach
 
-### 12. Relay sign-in (NIP-42)
+### 12. Direct dial on the local network
+
+The local network transport finds phones by mDNS, which many venue networks filter (ships, hotels, conferences) while still letting devices connect to each other. There Airhop falls back to Bluetooth, though the phones could reach each other directly. Briar never relies on discovery for this: contacts tell each other their local address and dial it [13].
+
+**What it takes.** Keep mDNS for finding anyone, and add a second way in for people already known. Inside an existing encrypted session, each phone sends its local address and port, and again when its network changes; a phone on the same subnet dials that address directly. The link is the same one mDNS opens (same frames, the 8-link cap, identity proven in the ANNOUNCE), so this is not a new transport. Dial only private addresses on the local subnet, only the peer who sent them, rate-limited, and close a link whose ANNOUNCE names someone else. Native gains a dial-by-address call beside dial-by-name. Strangers on a filtered network still meet over Bluetooth, and a network that blocks device-to-device traffic stops this as it stops everything local. Never scan the network: it is hostile, and managed Wi-Fi disconnects a device that does.
+
+**Breaking:** Airhop only. **Size:** M.
+
+### 13. Relay sign-in (NIP-42)
 
 Some relays ask a client to sign a challenge before they serve a subscription or take a post. Airhop never signs in, so it treats such a relay as one that refuses. Of the 368 relays in the bundled list that answered a probe on 7 November 2026, 74 sent a challenge and 25 refused a read without one, about 7%. Location channels and DMs use several relays at once, so nothing visibly breaks today; the share is likely to grow as relays fight spam.
 
@@ -161,7 +170,7 @@ Some relays ask a client to sign a challenge before they serve a subscription or
 
 ## Parked until bitchat moves
 
-### 13. Rotating radio IDs
+### 14. Rotating radio IDs
 
 Every packet carries a peer ID derived from the long-term key, so anyone sniffing Bluetooth can follow a phone between places and across days. SimpleX has no user identifiers [12], and Briar talks only to contacts. bitchat's own whitepaper lists this as future work.
 
@@ -169,7 +178,7 @@ Every packet carries a peer ID derived from the long-term key, so anyone sniffin
 
 **Breaking:** bitchat-wide. **Size:** XL.
 
-### 14. Multiple devices per identity
+### 15. Multiple devices per identity
 
 Signal, Threema and Session let one identity run on several devices. Airhop's device transfer moves an identity from one phone to another and never copies it.
 
@@ -191,3 +200,4 @@ Signal, Threema and Session let one identity run on several devices. Airhop's de
 10. noble-post-quantum: <https://github.com/paulmillr/noble-post-quantum>
 11. Apple, data protection classes: <https://support.apple.com/guide/security/data-protection-classes-secb010e978a/web>
 12. SimpleX Chat: <https://github.com/simplex-chat/simplex-chat>
+13. Briar, LAN plugin: <https://github.com/briar/briar/blob/master/bramble-core/src/main/java/org/briarproject/bramble/plugin/tcp/LanTcpPlugin.java>
