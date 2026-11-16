@@ -6,7 +6,7 @@ PODS:
     - ReactNativeDependencies
   - EXConstants (58.0.16):
     - ExpoModulesCore
-  - Expo (58.0.24):
+  - Expo (58.0.25):
     - ExpoModulesCore
     - ExpoModulesJSI
     - hermes-engine
@@ -65,7 +65,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLocalization (58.0.5):
     - ExpoModulesCore
-  - ExpoLocation (58.0.21):
+  - ExpoLocation (58.0.22):
     - ExpoModulesCore
   - ExpoLogBox (58.0.15):
     - React-Core
@@ -1620,7 +1620,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-skia (3.10.0):
+  - react-native-skia (3.10.2):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2706,7 +2706,7 @@ SPEC CHECKSUMS:
   boost: 8502bfdc46e2804408af2e163049ece181009af4
   DoubleConversion: 501a575c40c0b50c89685762dd3e415e6bb26fb0
   EXConstants: aeda76f4be923fc719522ae162dd0b8c6483f9cc
-  Expo: c9c0816dfb08ecb3f0a23fc3ff548708e899ccdc
+  Expo: c11bb32bebda9fafb2e1b8482ddeae4eaf69594d
   ExpoApplication: c83355b2f69f996b5d26b64fef39228e7f1e1208
   ExpoAsset: eda9e4844b55b78d4e71a0e2de767a038f3a0806
   ExpoAudio: 04b22b00783fe443c15121138f827b808fdf8c71
@@ -2723,7 +2723,7 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: 3dc7cce59bdc13796f772ac54d3af1ca6b6954cd
   ExpoLocalAuthentication: bed4d1e82a02a372fc7e2d82d9cde527a9a60e95
   ExpoLocalization: ed930f5d68e7b3c2073a04787358839e1a8e1680
-  ExpoLocation: 7922c89279ae805871b08a39f35b328f28d417d4
+  ExpoLocation: c218990b798e212f2f2184e11e675637da8ca1ae
   ExpoLogBox: 9bfba7bb99c806b678703e6c62323f3c4785e706
   ExpoMediaLibrary: 2576d9af48cc4c71f71089b4e6c5aeb6b9ade0d1
   ExpoMediaLibraryImageLoader: 0a39917c5154e9c1fcc7330e7e2452ab125a9fe5
@@ -2790,7 +2790,7 @@ SPEC CHECKSUMS:
   React-mutationobservernativemodule: b97a67c29f724d18a92379e7390f24350acb433a
   react-native-get-random-values: 625b34d7f8a66d85c594071603f748d756bd90da
   react-native-safe-area-context: 56700b839169ce88ffcec68c40447916fe512462
-  react-native-skia: 99c1ce738deb84d3ac84b1a3de259d9319fe2934
+  react-native-skia: 339249ce6546e570be72c511622ac8873b69ad07
   react-native-vector-icons-feather: 32f485a696f1ac4c3e17216782e7b26475e9e6d4
   react-native-vector-icons-material-design-icons: 811f6c4447a60d8a66394644093dcffdc546772f
   React-NativeModulesApple: 8cfb2f308f48c48068c96b932e7f0e4297c23342
