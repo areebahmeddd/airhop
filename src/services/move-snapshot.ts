@@ -21,6 +21,7 @@
 import { loadIdentity } from "@core/crypto/identity";
 import {
   deleteSecret,
+  IDENTITY_PREKEY_ITEMS,
   KEYCHAIN_ITEMS,
   readSecret,
   writeSecret,
@@ -167,6 +168,12 @@ const SECRETS: Record<SecretName, "move" | "regenerate"> = {
   walletRecoveryPhrase: "move",
   // One-time keys never leave their phone; the new one mints its own batch.
   localPrekeys: "regenerate",
+  // Never leave their phone, as courier prekeys do not: contacts sealing to
+  // the old ones are answered with a fresh batch and their outboxes reseal.
+  dmPrekeys: "regenerate",
+  dmPrekeys2: "regenerate",
+  dmPrekeys3: "regenerate",
+  dmPrekeys4: "regenerate",
 };
 
 const PARTITION_PREFIX = "mmkv:";
@@ -353,10 +360,10 @@ export async function applyMove(
         await writeAndVerify(KEYCHAIN_ITEMS[name], fromUtf8.decode(data));
       }
     }
-    // Any one-time keys here belong to an earlier identity, a condemned one
-    // whose delete was refused, and the arriving identity must not publish
-    // them: that would link the two.
-    await deleteSecret(KEYCHAIN_ITEMS.localPrekeys);
+    // Any prekeys here belong to an earlier identity, a condemned one whose
+    // delete was refused, and the arriving identity must not hand them out:
+    // that would link the two.
+    await Promise.all(IDENTITY_PREKEY_ITEMS.map(deleteSecret));
     await writeAndVerify(KEYCHAIN_ITEMS.identity, identityRaw);
   } catch (error) {
     if (error instanceof MoveApplyError) throw error;

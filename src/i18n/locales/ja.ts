@@ -387,6 +387,27 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "全員には届きませんでした。相手が近くにいるときにもう一度お試しください。",
   "chat.group.you_were_added": "{name}に追加されました。",
+  "chat.timer.you_set_1": "消えるメッセージを1日に設定しました",
+  "chat.timer.you_set_7": "消えるメッセージを7日に設定しました",
+  "chat.timer.you_set_30": "消えるメッセージを30日に設定しました",
+  "chat.timer.you_off": "消えるメッセージをオフにしました",
+  "chat.timer.you_set_local_1": "この端末で消えるメッセージを1日に設定しました",
+  "chat.timer.you_set_local_7": "この端末で消えるメッセージを7日に設定しました",
+  "chat.timer.you_set_local_30":
+    "この端末で消えるメッセージを30日に設定しました",
+  "chat.timer.you_off_local": "この端末で消えるメッセージをオフにしました",
+  "chat.timer.peer_set_1": "{name}さんが消えるメッセージを1日に設定しました",
+  "chat.timer.peer_set_7": "{name}さんが消えるメッセージを7日に設定しました",
+  "chat.timer.peer_set_30": "{name}さんが消えるメッセージを30日に設定しました",
+  "chat.timer.peer_off": "{name}さんが消えるメッセージをオフにしました",
+  "chat.timer.sheet_shared":
+    "今後送るメッセージに、両方の端末で適用されます。各メッセージは、送信側の端末では送信した時から、相手の端末では初めて読まれた時から、それぞれカウントダウンします。スクリーンショットは防げません。",
+  "chat.timer.sheet_pending":
+    "この端末で設定しました。次に接続したときに{name}さんに届き、その後は両方の端末で適用されます。",
+  "chat.timer.sheet_bitchat":
+    "この端末のみです。{name}さんのアプリは共有タイマーに対応していません。",
+  "chat.timer.sheet_local":
+    "今はこの端末のみです。{name}さんのアプリが共有タイマーに対応していれば、次に接続したときに相手に届きます。",
   "chat.group.invited": "{name}に招待されました。",
   "chat.group.invited_you": "{name}にあなたを招待しました",
   "chat.group.decline": "辞退",
@@ -2050,10 +2071,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "会話を最も長く読める状態に保ち、その分ディスクも使います。",
   "settings.general.message_retention": "消えるメッセージ",
-  "settings.general.message_retention_desc":
-    "メッセージとそのメディアは、選んだ期間が過ぎるとこの端末から削除されます",
-  "settings.general.message_retention_sheet":
-    "各メッセージがこの端末に届いた時点から数え、忘れるのはこの端末だけです。相手の端末には写しが残り、スクリーンショットは防げず、個別チャットで届いた支払いのうち、まだ受け取っていないものは受け取るまで残ります。",
+  "settings.general.message_retention_default":
+    "新しいチャットのデフォルトタイマー",
+  "settings.general.message_retention_default_desc":
+    "新しいダイレクトメッセージと、この端末のルーム、チャンネル、グループに適用",
+  "settings.general.message_retention_default_sheet":
+    "新しいダイレクトメッセージはこのタイマーで始まり、どちらもチャット内で変更できます。ルーム、チャンネル、グループはこの端末でのみこれに従い、各メッセージが届いた時点から数えます。スクリーンショットは防げません。ダイレクトメッセージで送られた支払いは受け取るまで残ります。",
   "settings.general.message_retention_off_desc":
     "チャットを消去するか退出するまでメッセージは残ります",
   "settings.general.message_retention_1_desc":
@@ -2065,11 +2088,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "古いメッセージを削除しますか",
   "settings.general.message_retention_confirm_1":
-    "1日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+    "1日より前に届いた、ルーム、チャンネル、グループ、および位置チャンネルから始めたチャットのメッセージが、メディアごと今すぐこの端末から削除されます。その他のダイレクトメッセージはそれぞれのタイマーに従います。元に戻すことはできません。",
   "settings.general.message_retention_confirm_7":
-    "7日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+    "7日より前に届いた、ルーム、チャンネル、グループ、および位置チャンネルから始めたチャットのメッセージが、メディアごと今すぐこの端末から削除されます。その他のダイレクトメッセージはそれぞれのタイマーに従います。元に戻すことはできません。",
   "settings.general.message_retention_confirm_30":
-    "30日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+    "30日より前に届いた、ルーム、チャンネル、グループ、および位置チャンネルから始めたチャットのメッセージが、メディアごと今すぐこの端末から削除されます。その他のダイレクトメッセージはそれぞれのタイマーに従います。元に戻すことはできません。",
   "settings.general.reset_desc":
     "識別情報、メッセージ、連絡先、ウォレットはそのままに、設定を初期値へ戻します",
   "settings.general.reset_title": "設定をリセットしますか",

@@ -17,6 +17,19 @@ RCT_EXTERN_METHOD(connectToPeer:(NSString *)serviceName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(lanPort:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(connectToAddress:(NSString *)host
+                  port:(double)port
+                  linkID:(NSString *)linkID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(closeLANLink:(NSString *)linkID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(writeToLANLink:(NSString *)linkID
                   dataBase64:(NSString *)dataBase64
                   resolver:(RCTPromiseResolveBlock)resolve

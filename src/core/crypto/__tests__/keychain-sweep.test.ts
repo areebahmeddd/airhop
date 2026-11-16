@@ -12,17 +12,21 @@ jest.mock("expo-secure-store", () => ({
   setItemAsync: () => Promise.resolve(),
 }));
 
-import { KEYCHAIN_ITEMS, sweepOrphanedSecrets } from "../keychain";
+import {
+  IDENTITY_PREKEY_ITEMS,
+  KEYCHAIN_ITEMS,
+  sweepOrphanedSecrets,
+} from "../keychain";
 
 // Everything the sweep may touch: the registry minus the identity, which
 // onboarding is about to write and which must survive an in-flight sweep,
 // minus the wallet's file key, which the wallet partition is already open
-// under, and minus the local prekeys, which the mesh may mint straight after.
+// under, and minus the prekeys, which the mesh may mint straight after.
 const ORPHANABLE = Object.values(KEYCHAIN_ITEMS).filter(
   (item) =>
     item !== KEYCHAIN_ITEMS.identity &&
     item !== KEYCHAIN_ITEMS.walletEncryptionKey &&
-    item !== KEYCHAIN_ITEMS.localPrekeys,
+    !(IDENTITY_PREKEY_ITEMS as readonly string[]).includes(item),
 );
 
 beforeEach(() => {
@@ -77,13 +81,15 @@ describe("sweepOrphanedSecrets", () => {
 
   // The mesh can mint and publish a prekey batch right after onboarding; a
   // late delete would drop keys peers are already sealing to.
-  it("never touches the local prekeys", async () => {
+  it("never touches the prekeys", async () => {
     mockDelete.mockResolvedValue(undefined);
     mockGet.mockResolvedValue(null);
 
     await sweepOrphanedSecrets();
 
-    expect(mockDelete).not.toHaveBeenCalledWith(KEYCHAIN_ITEMS.localPrekeys);
+    for (const item of IDENTITY_PREKEY_ITEMS) {
+      expect(mockDelete).not.toHaveBeenCalledWith(item);
+    }
   });
 
   // And it must not report one either: a surviving identity is exactly what a

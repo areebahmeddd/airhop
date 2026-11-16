@@ -390,6 +390,32 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Não foi possível alcançar todos os membros. Tenta de novo quando estiverem por perto.",
   "chat.group.you_were_added": "Foste adicionado a {name}.",
+  "chat.timer.you_set_1": "Definiu as mensagens temporárias para 1 dia",
+  "chat.timer.you_set_7": "Definiu as mensagens temporárias para 7 dias",
+  "chat.timer.you_set_30": "Definiu as mensagens temporárias para 30 dias",
+  "chat.timer.you_off": "Desativou as mensagens temporárias",
+  "chat.timer.you_set_local_1":
+    "Definiu as mensagens temporárias para 1 dia neste telemóvel",
+  "chat.timer.you_set_local_7":
+    "Definiu as mensagens temporárias para 7 dias neste telemóvel",
+  "chat.timer.you_set_local_30":
+    "Definiu as mensagens temporárias para 30 dias neste telemóvel",
+  "chat.timer.you_off_local":
+    "Desativou as mensagens temporárias neste telemóvel",
+  "chat.timer.peer_set_1": "{name} definiu as mensagens temporárias para 1 dia",
+  "chat.timer.peer_set_7":
+    "{name} definiu as mensagens temporárias para 7 dias",
+  "chat.timer.peer_set_30":
+    "{name} definiu as mensagens temporárias para 30 dias",
+  "chat.timer.peer_off": "{name} desativou as mensagens temporárias",
+  "chat.timer.sheet_shared":
+    "Para as mensagens enviadas a partir de agora, nos dois telemóveis. No telemóvel de quem envia, o tempo de cada uma conta a partir do envio, e no outro, a partir da primeira leitura. Não é possível impedir capturas de ecrã.",
+  "chat.timer.sheet_pending":
+    "Definido neste telemóvel. O temporizador chega a {name} da próxima vez que se ligarem e depois aplica-se nos dois telemóveis.",
+  "chat.timer.sheet_bitchat":
+    "Só neste telemóvel. A app de {name} não suporta temporizadores partilhados.",
+  "chat.timer.sheet_local":
+    "Só neste telemóvel, por agora. Se a app de {name} suportar temporizadores partilhados, o temporizador chega a essa pessoa da próxima vez que se ligarem.",
   "chat.group.invited": "Foste convidado para {name}.",
   "chat.group.invited_you": "Convidou-te para {name}",
   "chat.group.decline": "Recusar",
@@ -2091,10 +2117,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantém as conversas legíveis mais tempo, e ocupa mais disco.",
   "settings.general.message_retention": "Mensagens temporárias",
-  "settings.general.message_retention_desc":
-    "As mensagens e a sua multimédia são eliminadas deste telemóvel após o tempo escolhido",
-  "settings.general.message_retention_sheet":
-    "Contado a partir do momento em que cada mensagem chegou a este telemóvel, e só este telemóvel esquece. O telemóvel da outra pessoa guarda a sua cópia, as capturas de ecrã não podem ser impedidas e os pagamentos de conversas privadas que ainda não resgataste ficam até os resgatares.",
+  "settings.general.message_retention_default":
+    "Temporizador predefinido para novas conversas",
+  "settings.general.message_retention_default_desc":
+    "Para novas mensagens diretas, e para salas, canais e grupos neste telemóvel",
+  "settings.general.message_retention_default_sheet":
+    "As novas mensagens diretas começam com este temporizador, e qualquer um dos dois o pode mudar na conversa. Salas, canais e grupos seguem-no apenas neste telemóvel, contando a partir da chegada de cada mensagem. Não é possível impedir capturas de ecrã, e os pagamentos que lhe enviem numa mensagem direta ficam até os resgatar.",
   "settings.general.message_retention_off_desc":
     "As mensagens ficam até limpares a conversa ou saíres dela",
   "settings.general.message_retention_1_desc":
@@ -2106,11 +2134,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Eliminar mensagens mais antigas?",
   "settings.general.message_retention_confirm_1":
-    "As mensagens com mais de 1 dia vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. Não é possível anular.",
+    "As mensagens com mais de 1 dia em salas, canais, grupos e conversas iniciadas a partir de um canal de localização vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. As restantes mensagens diretas mantêm os seus próprios temporizadores. Não é possível anular.",
   "settings.general.message_retention_confirm_7":
-    "As mensagens com mais de 7 dias vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. Não é possível anular.",
+    "As mensagens com mais de 7 dias em salas, canais, grupos e conversas iniciadas a partir de um canal de localização vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. As restantes mensagens diretas mantêm os seus próprios temporizadores. Não é possível anular.",
   "settings.general.message_retention_confirm_30":
-    "As mensagens com mais de 30 dias vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. Não é possível anular.",
+    "As mensagens com mais de 30 dias em salas, canais, grupos e conversas iniciadas a partir de um canal de localização vão ser eliminadas deste telemóvel agora, juntamente com a sua multimédia. As restantes mensagens diretas mantêm os seus próprios temporizadores. Não é possível anular.",
   "settings.general.reset_desc":
     "Repõe as preferências nos valores originais, deixando intactos a tua identidade, mensagens, contactos e carteira",
   "settings.general.reset_title": "Repor as definições?",

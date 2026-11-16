@@ -21,6 +21,8 @@
 //
 // The window is read at each sweep. Shortening it in General sweeps at once
 // (sweepMessagesNow), after a confirmation, since what goes cannot come back.
+// A private message carries its own timer instead (utils/message-expiry),
+// which the same sweep honors.
 
 import { useActivityStore } from "@store/activity-store";
 import { useChatStore } from "@store/chat-store";
@@ -73,10 +75,9 @@ function currentWindowMs(): number {
   );
 }
 
-// Remove what the window has retired.
+// Remove what the window, or a private message's own timer, has retired.
 function sweepExpiredMessages(nowMs: number): void {
   const windowMs = currentWindowMs();
-  if (!(windowMs > 0)) return;
   const removed = useChatStore
     .getState()
     .removeExpired(
@@ -88,7 +89,9 @@ function sweepExpiredMessages(nowMs: number): void {
   const ids = new Set(removed.map((m) => m.id));
   // Run even when no row went: the bell keeps entries for messages the
   // 200-message trim took long before they could expire.
-  useActivityStore.getState().expire(ids, nowMs - windowMs);
+  useActivityStore
+    .getState()
+    .expire(ids, windowMs > 0 ? nowMs - windowMs : -Infinity);
   if (ids.size > 0) {
     useOutboxStore.getState().discard(ids);
     onExpired?.(ids);

@@ -114,7 +114,8 @@ export class LinkRegistry {
   // One table rather than one per transport because the native modules namespace
   // link IDs and they cannot collide: BLE issues `c:<id>` and `p:<id>` on both
   // platforms, WiFi issues `wifi-<n>` / `wifi-in-<n>` / `wifi-out-<n>`, and LAN
-  // issues `lan-in-<n>` / `lan-out-<n>`.
+  // issues `lan-in-<n>` / `lan-out-<n>`, beside the `lan-direct-<n>` a dial at
+  // a peer's address takes from TypeScript.
   private readonly kindByLink = new Map<string, TransportKind>();
 
   // linkID to the peer bound to it. Not every open link has one: a link is a

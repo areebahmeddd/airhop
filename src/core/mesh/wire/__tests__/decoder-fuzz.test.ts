@@ -63,6 +63,7 @@ import {
   decodeRing,
   decodeRingAck,
   decodeRingRefused,
+  encodeRing,
   encodeRingRefused,
   RingRefusalReason,
 } from "../ring-payload";
@@ -329,7 +330,11 @@ const targets: Target[] = [
       }),
   },
   { name: "decodeMeshPing", decode: decodeMeshPing },
-  { name: "decodeRing", decode: decodeRing },
+  {
+    name: "decodeRing",
+    decode: decodeRing,
+    seed: () => encodeRing(`r${String(int(1e6))}`, 1_700_000_000_000),
+  },
   { name: "decodeRingAck", decode: decodeRingAck },
   {
     name: "decodeRingRefused",

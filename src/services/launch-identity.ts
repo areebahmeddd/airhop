@@ -22,6 +22,7 @@ import {
 } from "@core/crypto/identity";
 import {
   deleteSecret,
+  IDENTITY_PREKEY_ITEMS,
   KEYCHAIN_ITEMS,
   wipeAllSecrets,
 } from "@core/crypto/keychain";
@@ -61,14 +62,13 @@ export async function readLaunchIdentity(): Promise<LaunchIdentity> {
     return { kind: "present", identity };
   }
 
-  // The one-time prekeys go with it, here and not in the launch sweep: this
-  // runs before any mesh can mint a batch, and a new identity must not publish
-  // the old one's prekeys, which would link the two.
+  // The prekeys go with it, here and not in the launch sweep: this runs before
+  // any mesh can mint a batch, and a new identity must not hand out the old
+  // one's prekeys, which would link the two.
   const deleted = await withTimeout(
-    Promise.all([
-      deleteSecret(KEYCHAIN_ITEMS.identity),
-      deleteSecret(KEYCHAIN_ITEMS.localPrekeys),
-    ]).then(() => true),
+    Promise.all(
+      [KEYCHAIN_ITEMS.identity, ...IDENTITY_PREKEY_ITEMS].map(deleteSecret),
+    ).then(() => true),
     IDENTITY_LOAD_TIMEOUT_MS,
     false,
   ).catch(() => false);
@@ -80,13 +80,13 @@ export async function readLaunchIdentity(): Promise<LaunchIdentity> {
 // and rejects when any keychain step is refused, which onboarding offers to
 // retry.
 //
-// The prekey item is deleted first: `LocalPrekeyStore` adopts any blob it
-// finds, so one a refused delete or a reinstall left behind would be published
-// in a bundle signed by the new key, linking the two identities. No mesh runs
-// during onboarding, so unlike the launch sweep no batch can be in flight.
+// The prekey items are deleted first (IDENTITY_PREKEY_ITEMS): one a refused
+// delete or a reinstall left behind would go out signed by the new key,
+// linking the two identities. No mesh runs during onboarding, so unlike the
+// launch sweep no batch can be in flight.
 export async function writeNewIdentity(): Promise<string> {
   const identity = await generateIdentity();
-  await deleteSecret(KEYCHAIN_ITEMS.localPrekeys);
+  await Promise.all(IDENTITY_PREKEY_ITEMS.map(deleteSecret));
   // Recorded before the save, so a crash between the two cannot leave a new
   // identity that the next launch takes for a reinstall's leftover. Launch has
   // already cleared any leftover before onboarding shows.

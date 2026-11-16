@@ -308,8 +308,8 @@ export const SETTINGS_INDEX = [
   // ---- General ----
   {
     key: "message-retention",
-    labelKey: "settings.general.message_retention",
-    descriptionKey: "settings.general.message_retention_desc",
+    labelKey: "settings.general.message_retention_default",
+    descriptionKey: "settings.general.message_retention_default_desc",
     sectionKey: "settings.section.general",
     icon: "watch",
     target: { kind: "row", view: "general", id: "message-retention" },

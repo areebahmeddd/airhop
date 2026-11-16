@@ -14,7 +14,13 @@ import {
   encodeNoisePrivateMessage,
   NoisePayloadType,
 } from "../../mesh/wire/noise-payload";
-import { Flags, PacketType, type Packet } from "../../mesh/wire/packet-codec";
+import {
+  decodePacket,
+  encodePacket,
+  Flags,
+  PacketType,
+  type Packet,
+} from "../../mesh/wire/packet-codec";
 import {
   decodeAirhopChannelPayload,
   decodeMeshPublicPayload,
@@ -410,6 +416,11 @@ describe("MessageRouter", () => {
     expect(unicasts.length).toBe(1);
     expect(unicasts[0].peerID).toBe(recipientPeerID);
     expect(unicasts[0].packet.type).toBe(PacketType.NOISE_ENCRYPTED);
+    // Unsigned, as bitchat-ios sends it, so the DM is deniable: the session
+    // proves the sender to the recipient and no one else.
+    const packet = unicasts[0].packet;
+    expect(packet.flags & Flags.SIGNED).toBe(0);
+    expect(decodePacket(encodePacket(packet))!.flags & Flags.SIGNED).toBe(0);
 
     // The recipient decrypts to a bitchat NoisePayload private message.
     const decrypted = sessionR.decrypt(unicasts[0].packet.payload);

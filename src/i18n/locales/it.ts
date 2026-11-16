@@ -391,6 +391,33 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Non è stato possibile raggiungere tutti i membri. Riprova quando sono nelle vicinanze.",
   "chat.group.you_were_added": "Sei stato aggiunto a {name}.",
+  "chat.timer.you_set_1": "Hai impostato i messaggi effimeri su 1 giorno",
+  "chat.timer.you_set_7": "Hai impostato i messaggi effimeri su 7 giorni",
+  "chat.timer.you_set_30": "Hai impostato i messaggi effimeri su 30 giorni",
+  "chat.timer.you_off": "Hai disattivato i messaggi effimeri",
+  "chat.timer.you_set_local_1":
+    "Su questo telefono hai impostato i messaggi effimeri su 1 giorno",
+  "chat.timer.you_set_local_7":
+    "Su questo telefono hai impostato i messaggi effimeri su 7 giorni",
+  "chat.timer.you_set_local_30":
+    "Su questo telefono hai impostato i messaggi effimeri su 30 giorni",
+  "chat.timer.you_off_local":
+    "Su questo telefono hai disattivato i messaggi effimeri",
+  "chat.timer.peer_set_1":
+    "{name} ha impostato i messaggi effimeri su 1 giorno",
+  "chat.timer.peer_set_7":
+    "{name} ha impostato i messaggi effimeri su 7 giorni",
+  "chat.timer.peer_set_30":
+    "{name} ha impostato i messaggi effimeri su 30 giorni",
+  "chat.timer.peer_off": "{name} ha disattivato i messaggi effimeri",
+  "chat.timer.sheet_shared":
+    "Per i messaggi inviati da ora in poi, su entrambi i telefoni. Sul telefono di chi invia, il tempo di ognuno parte dall’invio, e sull’altro dalla prima lettura. Gli screenshot non si possono impedire.",
+  "chat.timer.sheet_pending":
+    "Impostato su questo telefono. Arriverà a {name} la prossima volta che vi collegate, poi varrà su entrambi i telefoni.",
+  "chat.timer.sheet_bitchat":
+    "Solo su questo telefono. L’app di {name} non supporta i timer condivisi.",
+  "chat.timer.sheet_local":
+    "Per ora solo su questo telefono. Se l’app di {name} supporta i timer condivisi, il timer le arriverà la prossima volta che vi collegate.",
   "chat.group.invited": "Sei stato invitato a {name}.",
   "chat.group.invited_you": "Ti ha invitato a {name}",
   "chat.group.decline": "Rifiuta",
@@ -2098,10 +2125,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantiene le conversazioni leggibili più a lungo e occupa più spazio.",
   "settings.general.message_retention": "Messaggi effimeri",
-  "settings.general.message_retention_desc":
-    "I messaggi e i loro media vengono eliminati da questo telefono dopo il tempo scelto",
-  "settings.general.message_retention_sheet":
-    "Il conteggio parte da quando ogni messaggio è arrivato su questo telefono, e solo questo telefono dimentica. Il telefono dell’altra persona conserva la sua copia, gli screenshot non si possono impedire e i pagamenti ricevuti in chat private che non hai ancora riscosso restano finché non li riscuoti.",
+  "settings.general.message_retention_default":
+    "Timer predefinito per le nuove chat",
+  "settings.general.message_retention_default_desc":
+    "Per i nuovi messaggi diretti, e per stanze, canali e gruppi su questo telefono",
+  "settings.general.message_retention_default_sheet":
+    "I nuovi messaggi diretti partono con questo timer, e ciascuno dei due può cambiarlo nella chat. Stanze, canali e gruppi lo seguono solo su questo telefono, contando dall’arrivo di ogni messaggio. Gli screenshot non si possono impedire, e i pagamenti ricevuti in un messaggio diretto restano finché non li riscuoti.",
   "settings.general.message_retention_off_desc":
     "I messaggi restano finché non svuoti la chat o la abbandoni",
   "settings.general.message_retention_1_desc":
@@ -2113,11 +2142,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Eliminare i messaggi più vecchi?",
   "settings.general.message_retention_confirm_1":
-    "I messaggi più vecchi di 1 giorno verranno eliminati ora da questo telefono, insieme ai loro media. Non si può annullare.",
+    "I messaggi più vecchi di 1 giorno in stanze, canali, gruppi e chat avviate da un canale di posizione verranno eliminati ora da questo telefono, insieme ai loro media. Gli altri messaggi diretti mantengono i propri timer. Non si può annullare.",
   "settings.general.message_retention_confirm_7":
-    "I messaggi più vecchi di 7 giorni verranno eliminati ora da questo telefono, insieme ai loro media. Non si può annullare.",
+    "I messaggi più vecchi di 7 giorni in stanze, canali, gruppi e chat avviate da un canale di posizione verranno eliminati ora da questo telefono, insieme ai loro media. Gli altri messaggi diretti mantengono i propri timer. Non si può annullare.",
   "settings.general.message_retention_confirm_30":
-    "I messaggi più vecchi di 30 giorni verranno eliminati ora da questo telefono, insieme ai loro media. Non si può annullare.",
+    "I messaggi più vecchi di 30 giorni in stanze, canali, gruppi e chat avviate da un canale di posizione verranno eliminati ora da questo telefono, insieme ai loro media. Gli altri messaggi diretti mantengono i propri timer. Non si può annullare.",
   "settings.general.reset_desc":
     "Riporta le preferenze ai valori predefiniti, lasciando intatti identità, messaggi, contatti e portafoglio",
   "settings.general.reset_title": "Ripristinare le impostazioni?",

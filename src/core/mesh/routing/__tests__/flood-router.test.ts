@@ -356,9 +356,8 @@ describe("FloodRouter time-critical relay policy", () => {
 });
 
 // A transcription of bitchat-ios RelayController.decide, fed the inputs
-// BLEReceivePipeline.relayDecision derives, with Airhop's DR_ENCRYPTED in the
-// directed set. Each row: the packet, the degree, the TTL the relayed copy
-// carries (null for no relay) and the delay window.
+// BLEReceivePipeline.relayDecision derives. Each row: the packet, the degree,
+// the TTL the relayed copy carries (null for no relay) and the delay window.
 describe("relayDecision", () => {
   const PEER = new Uint8Array(8).fill(0x11);
   const OTHER = new Uint8Array(8).fill(0x22);
@@ -465,7 +464,6 @@ describe("relayDecision", () => {
     (deg) => {
       for (const type of [
         PacketType.NOISE_ENCRYPTED,
-        PacketType.DR_ENCRYPTED,
         PacketType.COURIER_ENV,
         PacketType.PING,
         PacketType.PONG,
@@ -520,7 +518,6 @@ describe("relayDecision", () => {
       PacketType.NOISE_ENCRYPTED,
       PacketType.NOISE_HANDSHAKE,
       PacketType.FRAGMENT,
-      PacketType.DR_ENCRYPTED,
     ]) {
       expectRelay(pkt(type, { to: LOCAL }), deg, null);
     }

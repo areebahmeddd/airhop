@@ -380,6 +380,29 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "모든 멤버에게 닿지는 못했습니다. 그들이 근처에 있을 때 다시 시도하세요.",
   "chat.group.you_were_added": "{name}에 추가되었습니다.",
+  "chat.timer.you_set_1": "사라지는 메시지를 1일로 설정했습니다",
+  "chat.timer.you_set_7": "사라지는 메시지를 7일로 설정했습니다",
+  "chat.timer.you_set_30": "사라지는 메시지를 30일로 설정했습니다",
+  "chat.timer.you_off": "사라지는 메시지를 껐습니다",
+  "chat.timer.you_set_local_1":
+    "이 휴대폰에서 사라지는 메시지를 1일로 설정했습니다",
+  "chat.timer.you_set_local_7":
+    "이 휴대폰에서 사라지는 메시지를 7일로 설정했습니다",
+  "chat.timer.you_set_local_30":
+    "이 휴대폰에서 사라지는 메시지를 30일로 설정했습니다",
+  "chat.timer.you_off_local": "이 휴대폰에서 사라지는 메시지를 껐습니다",
+  "chat.timer.peer_set_1": "{name}님이 사라지는 메시지를 1일로 설정했습니다",
+  "chat.timer.peer_set_7": "{name}님이 사라지는 메시지를 7일로 설정했습니다",
+  "chat.timer.peer_set_30": "{name}님이 사라지는 메시지를 30일로 설정했습니다",
+  "chat.timer.peer_off": "{name}님이 사라지는 메시지를 껐습니다",
+  "chat.timer.sheet_shared":
+    "지금부터 보내는 메시지에 두 휴대폰 모두 적용됩니다. 보낸 사람의 휴대폰에서는 보낸 때부터, 상대 휴대폰에서는 처음 읽힌 때부터 각 메시지의 시간을 셉니다. 스크린샷은 막을 수 없습니다.",
+  "chat.timer.sheet_pending":
+    "이 휴대폰에 설정했습니다. 다음에 연결될 때 {name}님에게 전달되고, 그 후 두 휴대폰 모두에 적용됩니다.",
+  "chat.timer.sheet_bitchat":
+    "이 휴대폰에만 적용됩니다. {name}님의 앱은 공유 타이머를 지원하지 않습니다.",
+  "chat.timer.sheet_local":
+    "지금은 이 휴대폰에만 적용됩니다. {name}님의 앱이 공유 타이머를 지원하면 다음에 연결될 때 상대에게 전달됩니다.",
   "chat.group.invited": "{name}에 초대되었습니다.",
   "chat.group.invited_you": "{name}에 나를 초대했습니다",
   "chat.group.decline": "거절",
@@ -2020,10 +2043,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "대화를 가장 오래 읽을 수 있게 해주며, 저장 공간도 가장 많이 씁니다.",
   "settings.general.message_retention": "사라지는 메시지",
-  "settings.general.message_retention_desc":
-    "메시지와 미디어가 선택한 기간이 지나면 이 기기에서 삭제됩니다",
-  "settings.general.message_retention_sheet":
-    "각 메시지가 이 기기에 도착한 때부터 계산하며, 잊는 것은 이 기기뿐입니다. 상대방 기기에는 사본이 남고, 스크린숏은 막을 수 없으며, 개인 대화로 온 결제 중 아직 받지 않은 것은 받을 때까지 남아 있습니다.",
+  "settings.general.message_retention_default": "새 채팅의 기본 타이머",
+  "settings.general.message_retention_default_desc":
+    "새 다이렉트 메시지와 이 휴대폰의 방, 채널, 그룹에 적용",
+  "settings.general.message_retention_default_sheet":
+    "새 다이렉트 메시지는 이 타이머로 시작하며, 누구든 채팅에서 바꿀 수 있습니다. 방, 채널, 그룹은 이 휴대폰에서만 이를 따르며 각 메시지가 도착한 때부터 셉니다. 스크린샷은 막을 수 없으며, 다이렉트 메시지로 받은 결제는 직접 받을 때까지 남습니다.",
   "settings.general.message_retention_off_desc":
     "채팅을 비우거나 나갈 때까지 메시지가 남아 있습니다",
   "settings.general.message_retention_1_desc":
@@ -2035,11 +2059,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "오래된 메시지를 삭제할까요?",
   "settings.general.message_retention_confirm_1":
-    "1일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+    "1일이 지난 방, 채널, 그룹, 위치 채널에서 시작한 채팅의 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 그 밖의 다이렉트 메시지는 각자의 타이머를 따릅니다. 되돌릴 수 없습니다.",
   "settings.general.message_retention_confirm_7":
-    "7일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+    "7일이 지난 방, 채널, 그룹, 위치 채널에서 시작한 채팅의 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 그 밖의 다이렉트 메시지는 각자의 타이머를 따릅니다. 되돌릴 수 없습니다.",
   "settings.general.message_retention_confirm_30":
-    "30일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+    "30일이 지난 방, 채널, 그룹, 위치 채널에서 시작한 채팅의 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 그 밖의 다이렉트 메시지는 각자의 타이머를 따릅니다. 되돌릴 수 없습니다.",
   "settings.general.reset_desc":
     "신원, 메시지, 연락처, 지갑은 그대로 둔 채 환경설정을 기본값으로 되돌립니다",
   "settings.general.reset_title": "설정을 초기화할까요?",

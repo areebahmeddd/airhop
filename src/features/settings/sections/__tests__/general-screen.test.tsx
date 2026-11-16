@@ -178,7 +178,9 @@ describe("Keep media for", () => {
 describe("Disappearing messages", () => {
   async function pickMessageRetention(days: 0 | 1 | 7 | 30): Promise<void> {
     const user = userEvent.setup();
-    await user.press(screen.getByText(t("settings.general.message_retention")));
+    await user.press(
+      screen.getByText(t("settings.general.message_retention_default")),
+    );
     await user.press(
       screen.getByRole("button", {
         name:

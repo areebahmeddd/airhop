@@ -393,6 +393,31 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "No se pudo llegar a todos los miembros. Inténtalo cuando estén cerca.",
   "chat.group.you_were_added": "Te han añadido a {name}.",
+  "chat.timer.you_set_1": "Configuraste los mensajes temporales en 1 día",
+  "chat.timer.you_set_7": "Configuraste los mensajes temporales en 7 días",
+  "chat.timer.you_set_30": "Configuraste los mensajes temporales en 30 días",
+  "chat.timer.you_off": "Desactivaste los mensajes temporales",
+  "chat.timer.you_set_local_1":
+    "Configuraste los mensajes temporales en 1 día en este teléfono",
+  "chat.timer.you_set_local_7":
+    "Configuraste los mensajes temporales en 7 días en este teléfono",
+  "chat.timer.you_set_local_30":
+    "Configuraste los mensajes temporales en 30 días en este teléfono",
+  "chat.timer.you_off_local":
+    "Desactivaste los mensajes temporales en este teléfono",
+  "chat.timer.peer_set_1": "{name} configuró los mensajes temporales en 1 día",
+  "chat.timer.peer_set_7": "{name} configuró los mensajes temporales en 7 días",
+  "chat.timer.peer_set_30":
+    "{name} configuró los mensajes temporales en 30 días",
+  "chat.timer.peer_off": "{name} desactivó los mensajes temporales",
+  "chat.timer.sheet_shared":
+    "Para los mensajes enviados desde ahora, en ambos teléfonos. En el teléfono de quien envía, el tiempo de cada uno cuenta desde el envío, y en el otro, desde la primera lectura. No se pueden evitar las capturas de pantalla.",
+  "chat.timer.sheet_pending":
+    "Configurado en este teléfono. Le llegará a {name} la próxima vez que se conecten, y luego se aplicará en ambos teléfonos.",
+  "chat.timer.sheet_bitchat":
+    "Solo en este teléfono. La app de {name} no admite temporizadores compartidos.",
+  "chat.timer.sheet_local":
+    "Solo en este teléfono por ahora. Si la app de {name} admite temporizadores compartidos, le llegará la próxima vez que se conecten.",
   "chat.group.invited": "Te han invitado a {name}.",
   "chat.group.invited_you": "Te invitó a {name}",
   "chat.group.decline": "Rechazar",
@@ -2094,10 +2119,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantiene las conversaciones legibles más tiempo y ocupa más disco.",
   "settings.general.message_retention": "Mensajes temporales",
-  "settings.general.message_retention_desc":
-    "Los mensajes y sus medios se eliminan de este teléfono tras el tiempo elegido",
-  "settings.general.message_retention_sheet":
-    "Se cuenta desde que cada mensaje llegó a este teléfono, y solo este teléfono olvida. El teléfono de la otra persona conserva su copia, las capturas de pantalla no se pueden impedir y los pagos de chats privados que no hayas reclamado se quedan hasta que los reclames.",
+  "settings.general.message_retention_default":
+    "Temporizador predeterminado para chats nuevos",
+  "settings.general.message_retention_default_desc":
+    "Para mensajes directos nuevos, y para salas, canales y grupos en este teléfono",
+  "settings.general.message_retention_default_sheet":
+    "Los mensajes directos nuevos empiezan con este temporizador, y cualquiera de los dos puede cambiarlo en el chat. Las salas, los canales y los grupos lo siguen solo en este teléfono, contando desde que llegó cada mensaje. No se pueden evitar las capturas de pantalla, y los pagos que te envíen en un mensaje directo se quedan hasta que los cobres.",
   "settings.general.message_retention_off_desc":
     "Los mensajes se quedan hasta que vacíes el chat o salgas de él",
   "settings.general.message_retention_1_desc":
@@ -2109,11 +2136,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "¿Eliminar los mensajes más antiguos?",
   "settings.general.message_retention_confirm_1":
-    "Los mensajes de hace más de 1 día se eliminarán ahora de este teléfono, junto con sus medios. No se puede deshacer.",
+    "Los mensajes de hace más de 1 día en salas, canales, grupos y chats iniciados desde un canal de ubicación se eliminarán ahora de este teléfono, junto con sus medios. Los demás mensajes directos conservan sus propios temporizadores. No se puede deshacer.",
   "settings.general.message_retention_confirm_7":
-    "Los mensajes de hace más de 7 días se eliminarán ahora de este teléfono, junto con sus medios. No se puede deshacer.",
+    "Los mensajes de hace más de 7 días en salas, canales, grupos y chats iniciados desde un canal de ubicación se eliminarán ahora de este teléfono, junto con sus medios. Los demás mensajes directos conservan sus propios temporizadores. No se puede deshacer.",
   "settings.general.message_retention_confirm_30":
-    "Los mensajes de hace más de 30 días se eliminarán ahora de este teléfono, junto con sus medios. No se puede deshacer.",
+    "Los mensajes de hace más de 30 días en salas, canales, grupos y chats iniciados desde un canal de ubicación se eliminarán ahora de este teléfono, junto con sus medios. Los demás mensajes directos conservan sus propios temporizadores. No se puede deshacer.",
   "settings.general.reset_desc":
     "Devuelve las preferencias a su valor por defecto y deja intactos tu identidad, tus mensajes, tus contactos y tu cartera",
   "settings.general.reset_title": "¿Restablecer los ajustes?",

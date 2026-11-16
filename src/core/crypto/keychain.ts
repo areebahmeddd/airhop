@@ -21,9 +21,31 @@ export const KEYCHAIN_ITEMS = {
   walletRecoveryPhrase: "airhop.wallet.recovery.v1",
   // Base64 blob: our one-time prekey private keys (courier/prekey-store.ts).
   localPrekeys: "airhop.prekeys.local.v1",
+  // Base64 blobs: our internet DM prekey private keys, split across four so
+  // each fits the 2 KiB some keychains allow (nostr/dm-prekey-store.ts).
+  dmPrekeys: "airhop.prekeys.dm.v1",
+  dmPrekeys2: "airhop.prekeys.dm2.v1",
+  dmPrekeys3: "airhop.prekeys.dm3.v1",
+  dmPrekeys4: "airhop.prekeys.dm4.v1",
 } as const;
 
 export type KeychainItem = (typeof KEYCHAIN_ITEMS)[keyof typeof KEYCHAIN_ITEMS];
+
+export const DM_PREKEY_ITEMS = [
+  KEYCHAIN_ITEMS.dmPrekeys,
+  KEYCHAIN_ITEMS.dmPrekeys2,
+  KEYCHAIN_ITEMS.dmPrekeys3,
+  KEYCHAIN_ITEMS.dmPrekeys4,
+] as const;
+
+// The prekeys an identity hands out, which no other identity may: each store
+// adopts any blob it finds, so one a refused delete left behind would go out
+// signed by the next identity, linking the two. Deleted wherever an identity
+// is replaced, and never by the launch sweep (sweepOrphanedSecrets).
+export const IDENTITY_PREKEY_ITEMS = [
+  KEYCHAIN_ITEMS.localPrekeys,
+  ...DM_PREKEY_ITEMS,
+] as const;
 
 // iOS only; Android uses Keystore either way.
 //
@@ -111,10 +133,10 @@ export async function wipeAllSecrets(): Promise<void> {
 // writing under a key the next launch cannot find. It guards nothing a wipe has
 // not already cleared.
 //
-// Nor are the local prekeys, for the identity's reason: the mesh can mint and
-// publish a batch right after onboarding, and a delete landing late would drop
-// keys peers are already sealing to. The panic wipe deletes them, and so does
-// the launch that deletes a condemned identity.
+// Nor are the prekeys (IDENTITY_PREKEY_ITEMS), for the identity's reason: the
+// mesh can mint and hand out a batch right after onboarding, and a delete
+// landing late would drop keys peers are already sealing to. The panic wipe
+// deletes them, and so does the launch that deletes a condemned identity.
 //
 // Returns true ONLY when a leftover is positively confirmed: the delete was
 // refused AND a read afterwards still hands back a value. A keychain that
@@ -125,7 +147,7 @@ export async function sweepOrphanedSecrets(): Promise<boolean> {
     (item) =>
       item !== KEYCHAIN_ITEMS.identity &&
       item !== KEYCHAIN_ITEMS.walletEncryptionKey &&
-      item !== KEYCHAIN_ITEMS.localPrekeys,
+      !(IDENTITY_PREKEY_ITEMS as readonly string[]).includes(item),
   );
   const deletes = await Promise.allSettled(orphanable.map(deleteSecret));
   if (deletes.every((r) => r.status === "fulfilled")) return false;

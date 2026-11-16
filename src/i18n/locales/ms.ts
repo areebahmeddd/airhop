@@ -387,6 +387,34 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tidak semua ahli dapat dicapai. Cuba lagi semasa mereka berdekatan.",
   "chat.group.you_were_added": "Anda ditambah ke dalam {name}.",
+  "chat.timer.you_set_1": "Anda menetapkan mesej hilang sendiri kepada 1 hari",
+  "chat.timer.you_set_7": "Anda menetapkan mesej hilang sendiri kepada 7 hari",
+  "chat.timer.you_set_30":
+    "Anda menetapkan mesej hilang sendiri kepada 30 hari",
+  "chat.timer.you_off": "Anda mematikan mesej hilang sendiri",
+  "chat.timer.you_set_local_1":
+    "Anda menetapkan mesej hilang sendiri kepada 1 hari pada telefon ini",
+  "chat.timer.you_set_local_7":
+    "Anda menetapkan mesej hilang sendiri kepada 7 hari pada telefon ini",
+  "chat.timer.you_set_local_30":
+    "Anda menetapkan mesej hilang sendiri kepada 30 hari pada telefon ini",
+  "chat.timer.you_off_local":
+    "Anda mematikan mesej hilang sendiri pada telefon ini",
+  "chat.timer.peer_set_1":
+    "{name} menetapkan mesej hilang sendiri kepada 1 hari",
+  "chat.timer.peer_set_7":
+    "{name} menetapkan mesej hilang sendiri kepada 7 hari",
+  "chat.timer.peer_set_30":
+    "{name} menetapkan mesej hilang sendiri kepada 30 hari",
+  "chat.timer.peer_off": "{name} mematikan mesej hilang sendiri",
+  "chat.timer.sheet_shared":
+    "Untuk mesej yang dihantar mulai sekarang, pada kedua-dua telefon. Pada telefon pengirim, tempoh setiap mesej dikira dari masa dihantar, dan pada telefon yang satu lagi dari kali pertama dibaca. Tangkapan skrin tidak dapat dihalang.",
+  "chat.timer.sheet_pending":
+    "Ditetapkan pada telefon ini. Pemasa ini akan sampai kepada {name} apabila anda berhubung lagi, kemudian berkuat kuasa pada kedua-dua telefon.",
+  "chat.timer.sheet_bitchat":
+    "Telefon ini sahaja. Aplikasi {name} tidak menyokong pemasa dikongsi.",
+  "chat.timer.sheet_local":
+    "Telefon ini sahaja buat masa ini. Jika aplikasi {name} menyokong pemasa dikongsi, pemasa ini akan sampai kepadanya apabila anda berhubung lagi.",
   "chat.group.invited": "Anda dijemput ke {name}.",
   "chat.group.invited_you": "Menjemput anda ke {name}",
   "chat.group.decline": "Tolak",
@@ -2083,10 +2111,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mengekalkan perbualan boleh dibaca paling lama, dan paling banyak memakan ruang cakera.",
   "settings.general.message_retention": "Mesej hilang sendiri",
-  "settings.general.message_retention_desc":
-    "Mesej dan medianya dipadam daripada telefon ini selepas tempoh yang dipilih",
-  "settings.general.message_retention_sheet":
-    "Dikira dari saat setiap mesej sampai ke telefon ini, dan hanya telefon ini yang lupa. Telefon orang lain menyimpan salinannya, tangkapan skrin tidak boleh dihalang dan bayaran dalam sembang peribadi yang belum anda tuntut kekal sehingga anda menuntutnya.",
+  "settings.general.message_retention_default":
+    "Pemasa lalai untuk sembang baharu",
+  "settings.general.message_retention_default_desc":
+    "Untuk mesej terus baharu, serta bilik, saluran dan kumpulan pada telefon ini",
+  "settings.general.message_retention_default_sheet":
+    "Mesej terus baharu bermula dengan pemasa ini, dan mana-mana pihak boleh mengubahnya dalam sembang. Bilik, saluran dan kumpulan mengikutinya pada telefon ini sahaja, dikira dari masa setiap mesej tiba. Tangkapan skrin tidak dapat dihalang, dan bayaran yang dihantar kepada anda melalui mesej terus kekal sehingga anda menuntutnya.",
   "settings.general.message_retention_off_desc":
     "Mesej kekal sehingga anda mengosongkan sembang atau keluar daripadanya",
   "settings.general.message_retention_1_desc":
@@ -2098,11 +2128,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Padam mesej yang lebih lama?",
   "settings.general.message_retention_confirm_1":
-    "Mesej yang lebih lama daripada 1 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+    "Mesej bilik, saluran, kumpulan dan sembang yang dimulakan dari saluran lokasi yang lebih lama daripada 1 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Mesej terus lain mengekalkan pemasanya sendiri. Ini tidak boleh dibuat asal.",
   "settings.general.message_retention_confirm_7":
-    "Mesej yang lebih lama daripada 7 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+    "Mesej bilik, saluran, kumpulan dan sembang yang dimulakan dari saluran lokasi yang lebih lama daripada 7 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Mesej terus lain mengekalkan pemasanya sendiri. Ini tidak boleh dibuat asal.",
   "settings.general.message_retention_confirm_30":
-    "Mesej yang lebih lama daripada 30 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+    "Mesej bilik, saluran, kumpulan dan sembang yang dimulakan dari saluran lokasi yang lebih lama daripada 30 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Mesej terus lain mengekalkan pemasanya sendiri. Ini tidak boleh dibuat asal.",
   "settings.general.reset_desc":
     "Mengembalikan keutamaan kepada nilai lalainya, tanpa menyentuh identiti, mesej, kenalan dan dompet anda",
   "settings.general.reset_title": "Tetap semula tetapan?",

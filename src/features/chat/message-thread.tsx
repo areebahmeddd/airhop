@@ -248,6 +248,9 @@ import {
   publicCharsLeft,
 } from "./compose-budget";
 import ContactInfoSheet from "./contact-info-sheet";
+import DisappearingTimerSheet, {
+  useDmTimerDays,
+} from "./disappearing-timer-sheet";
 import { dmReachesOverInternet } from "./dm-reaches-over-internet";
 import {
   carriesEcash,
@@ -511,7 +514,7 @@ function mediaHeightForAspect(aspect: number | null): number {
 
 function systemRowIcon(
   key: string | undefined,
-): "camera" | "alert-circle" | "info" {
+): "camera" | "alert-circle" | "watch" | "info" {
   if (
     key?.startsWith("chat.board.urgent") === true ||
     key === "chat.dm.signing_key_refused"
@@ -519,6 +522,8 @@ function systemRowIcon(
     return "alert-circle";
   }
   if (key?.startsWith("chat.screenshot") === true) return "camera";
+  // The icon the timer's own controls carry.
+  if (key?.startsWith("chat.timer.") === true) return "watch";
   return "info";
 }
 
@@ -2442,6 +2447,7 @@ export default function MessageThread({
   const keysetRefs = useMemo(() => keysetRefsOf(mints), [mints]);
   const [showChannelInfo, setShowChannelInfo] = useState(false);
   const [showDMInfo, setShowDMInfo] = useState(false);
+  const [pickingTimer, setPickingTimer] = useState(false);
   // Channel-message sender profile sheet: tap a message's avatar/name to
   // see who they are and message them, same as tapping a peer on the Mesh
   // tab. Not used in a DM thread (only one other participant there,
@@ -2548,11 +2554,13 @@ export default function MessageThread({
   const blockedPeerIDs = useBlockedStore((s) => s.blockedPeerIDs);
   const blockedAliases = useBlockedStore((s) => s.blockedAliases);
   // Disappearing messages leave the screen when they expire, whenever the
-  // sweep gets to them. Checked on the peer clock, and only while the setting
-  // is on, so a thread with it off never recomputes for the clock.
+  // sweep gets to them. Checked on the peer clock, in a private chat always,
+  // since its messages carry their own timers, and elsewhere only while the
+  // default is on, so a room with it off never recomputes for the clock.
   const messageRetentionDays = useSettingsStore((s) => s.messageRetentionDays);
   const retentionWindowMs = messageRetentionWindowMs(messageRetentionDays);
-  const expiryClock = retentionWindowMs > 0 ? peerClock : 0;
+  const expiryClock =
+    retentionWindowMs > 0 || channel.startsWith("dm:") ? peerClock : 0;
   const awaitingReceipt = useAwaitingReceipt();
   const msgs = useMemo(() => {
     const all = withoutExpired(
@@ -2588,6 +2596,8 @@ export default function MessageThread({
   // A DM with a durable mesh identity rather than a per-cell geohash
   // pseudonym. Gates the attach options that need a Noise session to exist.
   const isMeshDM = isDM && dmPeerID !== null && !isNostrId(dmPeerID);
+  // A location pseudonym's chat follows the default, as a room does.
+  const dmTimerDays = useDmTimerDays(isMeshDM ? channel : null);
   // Read at render, which the attach menu does each time it opens. Only a
   // peer that has proven it reads pins is offered one.
   const acceptsLocationPin =
@@ -5814,6 +5824,23 @@ export default function MessageThread({
           </Pressable>
         )}
 
+        {/* The chat's timer, shown while it is on, and the way to change it
+            without opening the info sheet. */}
+        {isMeshDM && !dmWithRelay && !selecting && dmTimerDays > 0 && (
+          <Pressable
+            style={styles.headerAction}
+            onPress={() => setPickingTimer(true)}
+            hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
+            accessibilityRole="button"
+            accessibilityLabel={T("settings.general.message_retention")}
+            accessibilityValue={{
+              text: TP("settings.general.retention_days", dmTimerDays),
+            }}
+          >
+            <Feather name="watch" size={18} color={Colors.textSecondary} />
+          </Pressable>
+        )}
+
         {/* Separate circles, as on the Chats header: a joined track reads as
             one control, and these do two unrelated things. */}
         {!isDM && !isGroup && !selecting && (
@@ -7008,6 +7035,12 @@ export default function MessageThread({
         <ContactInfoSheet
           channel={showDMInfo ? channel : null}
           onClose={() => setShowDMInfo(false)}
+        />
+      )}
+      {isMeshDM && (
+        <DisappearingTimerSheet
+          peerID={pickingTimer ? channel.slice(3) : null}
+          onClose={() => setPickingTimer(false)}
         />
       )}
 

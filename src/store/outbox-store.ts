@@ -28,6 +28,12 @@ export interface PendingMessage {
   // A relay acknowledged a copy. Sticky: a later republish every relay refuses
   // does not take back the copy an earlier one left.
   relayAccepted?: boolean;
+  // The disappearing timer the message was sent with, so every retry carries
+  // it (core/mesh/wire/dm-timer).
+  timerMs?: number;
+  // On an entry that changes the chat's timer rather than carrying words:
+  // when the change was made.
+  timerSetAtMs?: number;
 }
 
 // Give up after this long. A week-old "hi" is noise, not a message.
@@ -94,6 +100,9 @@ interface OutboxState {
   markNostrSent: (id: string, nowMs?: number) => void;
   // A relay acknowledged a copy.
   markRelayAccepted: (id: string) => void;
+  // A peer handed over fresh keys for sealing internet DMs (a copy sealed to
+  // keys they no longer hold never opens): every entry to them goes again.
+  markDueForPeer: (peerID: string) => void;
   // Drop anything past OUTBOX_TTL_MS, or past MAX_SEND_ATTEMPTS with no relay
   // copy. Returns what was dropped so the sender's bubble can stop claiming it
   // is still coming.
@@ -170,6 +179,16 @@ export const useOutboxStore = create<OutboxState>()(
         set((state) => ({
           pending: state.pending.map((p) =>
             p.id === id ? { ...p, nostrSentMs: nowMs } : p,
+          ),
+        }));
+      },
+
+      markDueForPeer(peerID) {
+        set((state) => ({
+          pending: state.pending.map((m) =>
+            m.recipientPeerID === peerID && m.nostrSentMs !== undefined
+              ? { ...m, nostrSentMs: undefined }
+              : m,
           ),
         }));
       },

@@ -392,6 +392,32 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Não foi possível alcançar todos os membros. Tente de novo quando estiverem por perto.",
   "chat.group.you_were_added": "Você foi adicionado a {name}.",
+  "chat.timer.you_set_1": "Você definiu as mensagens temporárias para 1 dia",
+  "chat.timer.you_set_7": "Você definiu as mensagens temporárias para 7 dias",
+  "chat.timer.you_set_30": "Você definiu as mensagens temporárias para 30 dias",
+  "chat.timer.you_off": "Você desativou as mensagens temporárias",
+  "chat.timer.you_set_local_1":
+    "Você definiu as mensagens temporárias para 1 dia neste celular",
+  "chat.timer.you_set_local_7":
+    "Você definiu as mensagens temporárias para 7 dias neste celular",
+  "chat.timer.you_set_local_30":
+    "Você definiu as mensagens temporárias para 30 dias neste celular",
+  "chat.timer.you_off_local":
+    "Você desativou as mensagens temporárias neste celular",
+  "chat.timer.peer_set_1": "{name} definiu as mensagens temporárias para 1 dia",
+  "chat.timer.peer_set_7":
+    "{name} definiu as mensagens temporárias para 7 dias",
+  "chat.timer.peer_set_30":
+    "{name} definiu as mensagens temporárias para 30 dias",
+  "chat.timer.peer_off": "{name} desativou as mensagens temporárias",
+  "chat.timer.sheet_shared":
+    "Para as mensagens enviadas a partir de agora, nos dois celulares. No celular de quem envia, o tempo de cada uma conta a partir do envio, e no outro, a partir da primeira leitura. Não dá para impedir capturas de tela.",
+  "chat.timer.sheet_pending":
+    "Definido neste celular. O temporizador chega a {name} na próxima vez que vocês se conectarem e depois vale nos dois celulares.",
+  "chat.timer.sheet_bitchat":
+    "Só neste celular. O app de {name} não aceita temporizadores compartilhados.",
+  "chat.timer.sheet_local":
+    "Só neste celular por enquanto. Se o app de {name} aceitar temporizadores compartilhados, o temporizador chega a essa pessoa na próxima vez que vocês se conectarem.",
   "chat.group.invited": "Você foi convidado para {name}.",
   "chat.group.invited_you": "Convidou você para {name}",
   "chat.group.decline": "Recusar",
@@ -2086,10 +2112,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantém as conversas legíveis por mais tempo e ocupa mais disco.",
   "settings.general.message_retention": "Mensagens temporárias",
-  "settings.general.message_retention_desc":
-    "As mensagens e suas mídias são apagadas deste aparelho após o tempo escolhido",
-  "settings.general.message_retention_sheet":
-    "Contado a partir de quando cada mensagem chegou a este aparelho, e só este aparelho esquece. O aparelho da outra pessoa guarda a cópia dela, capturas de tela não podem ser impedidas e pagamentos de conversas privadas que você ainda não resgatou ficam até você resgatá-los.",
+  "settings.general.message_retention_default":
+    "Temporizador padrão para novos chats",
+  "settings.general.message_retention_default_desc":
+    "Para novas mensagens diretas, e para salas, canais e grupos neste celular",
+  "settings.general.message_retention_default_sheet":
+    "Novas mensagens diretas começam com este temporizador, e qualquer um dos dois pode mudá-lo no chat. Salas, canais e grupos o seguem só neste celular, contando a partir da chegada de cada mensagem. Não dá para impedir capturas de tela, e os pagamentos enviados a você em uma mensagem direta ficam até você resgatá-los.",
   "settings.general.message_retention_off_desc":
     "As mensagens ficam até você limpar a conversa ou sair dela",
   "settings.general.message_retention_1_desc":
@@ -2101,11 +2129,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Apagar mensagens mais antigas?",
   "settings.general.message_retention_confirm_1":
-    "Mensagens com mais de 1 dia serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+    "Mensagens com mais de 1 dia em salas, canais, grupos e chats iniciados a partir de um canal de localização serão apagadas deste aparelho agora, junto com suas mídias. As demais mensagens diretas mantêm seus próprios temporizadores. Isso não pode ser desfeito.",
   "settings.general.message_retention_confirm_7":
-    "Mensagens com mais de 7 dias serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+    "Mensagens com mais de 7 dias em salas, canais, grupos e chats iniciados a partir de um canal de localização serão apagadas deste aparelho agora, junto com suas mídias. As demais mensagens diretas mantêm seus próprios temporizadores. Isso não pode ser desfeito.",
   "settings.general.message_retention_confirm_30":
-    "Mensagens com mais de 30 dias serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+    "Mensagens com mais de 30 dias em salas, canais, grupos e chats iniciados a partir de um canal de localização serão apagadas deste aparelho agora, junto com suas mídias. As demais mensagens diretas mantêm seus próprios temporizadores. Isso não pode ser desfeito.",
   "settings.general.reset_desc":
     "Devolve as preferências ao padrão, sem mexer na sua identidade, mensagens, contatos e carteira",
   "settings.general.reset_title": "Redefinir as configurações?",

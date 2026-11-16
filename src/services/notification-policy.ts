@@ -273,7 +273,7 @@ export function ringVerdict(p: {
   // Milliseconds since we last accepted a ring from this sender, or null
   // if never.
   msSinceLastReceived: number | null;
-  // Age of the ring packet at decrypt time: now minus its signed timestamp.
+  // Age of the ring at decrypt time: now minus the send time sealed in it.
   ringAgeMs: number;
 }): RingVerdict {
   if (p.ringAgeMs > RING_STALENESS_MS) return "stale";

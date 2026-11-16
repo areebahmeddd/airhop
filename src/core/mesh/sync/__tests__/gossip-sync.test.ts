@@ -426,7 +426,7 @@ describe("isSyncReplyInWindow", () => {
   test("a type sync never serves is no reply at any age", () => {
     for (const type of [
       PacketType.LEAVE,
-      PacketType.DR_ENCRYPTED,
+      PacketType.NOISE_ENCRYPTED,
       PacketType.PREKEY_BUNDLE,
       PacketType.COURIER_ENV,
       PacketType.FILE_TRANSFER,

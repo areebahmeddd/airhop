@@ -72,6 +72,23 @@ export interface Spec extends TurboModule {
   // both mean no link, and the next pass asks again.
   connectToPeer(serviceName: string): Promise<void>;
 
+  // The port the mesh listener accepts links on, or 0 while it is not
+  // listening. A peer in a session is told it with this phone's addresses.
+  lanPort(): Promise<number>;
+
+  // Open a link to an IPv4 address and port a peer handed over inside its
+  // session (services/lan-direct-dial.ts decides which, and whether). The one
+  // link whose ID the caller chooses, so it is known before `linkConnected`
+  // names it: nothing is written to it until the peer has proven itself.
+  // Never resolves a name, so it cannot leak a lookup. Rejects with
+  // CONNECT_FAILED, including while the transport is stopped or the ID is
+  // taken.
+  connectToAddress(host: string, port: number, linkID: string): Promise<void>;
+
+  // Close one mesh link; `linkDisconnected` follows. A link that is gone, or
+  // is a transfer connection, is left alone.
+  closeLANLink(linkID: string): Promise<void>;
+
   // Base64 bytes to an active link; native frames them with a 4-byte big-endian
   // length prefix, byte-identical to AirhopWiFi. Rejects with UNKNOWN_LINK,
   // INVALID_DATA, FRAME_TOO_LARGE, WRITE_FAILED or LINK_CLOSED.

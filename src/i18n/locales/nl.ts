@@ -389,6 +389,32 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Niet alle leden konden worden bereikt. Probeer het opnieuw als ze in de buurt zijn.",
   "chat.group.you_were_added": "Je bent toegevoegd aan {name}.",
+  "chat.timer.you_set_1": "Je hebt verdwijnende berichten op 1 dag gezet",
+  "chat.timer.you_set_7": "Je hebt verdwijnende berichten op 7 dagen gezet",
+  "chat.timer.you_set_30": "Je hebt verdwijnende berichten op 30 dagen gezet",
+  "chat.timer.you_off": "Je hebt verdwijnende berichten uitgezet",
+  "chat.timer.you_set_local_1":
+    "Je hebt verdwijnende berichten op deze telefoon op 1 dag gezet",
+  "chat.timer.you_set_local_7":
+    "Je hebt verdwijnende berichten op deze telefoon op 7 dagen gezet",
+  "chat.timer.you_set_local_30":
+    "Je hebt verdwijnende berichten op deze telefoon op 30 dagen gezet",
+  "chat.timer.you_off_local":
+    "Je hebt verdwijnende berichten op deze telefoon uitgezet",
+  "chat.timer.peer_set_1": "{name} heeft verdwijnende berichten op 1 dag gezet",
+  "chat.timer.peer_set_7":
+    "{name} heeft verdwijnende berichten op 7 dagen gezet",
+  "chat.timer.peer_set_30":
+    "{name} heeft verdwijnende berichten op 30 dagen gezet",
+  "chat.timer.peer_off": "{name} heeft verdwijnende berichten uitgezet",
+  "chat.timer.sheet_shared":
+    "Voor berichten die je vanaf nu stuurt, op beide telefoons. Op de telefoon van de afzender telt elk bericht af vanaf het versturen, op de andere vanaf het eerste lezen. Screenshots zijn niet te voorkomen.",
+  "chat.timer.sheet_pending":
+    "Ingesteld op deze telefoon. De timer komt bij {name} aan zodra jullie weer verbinding maken, en geldt dan op beide telefoons.",
+  "chat.timer.sheet_bitchat":
+    "Alleen op deze telefoon. De app van {name} ondersteunt geen gedeelde timers.",
+  "chat.timer.sheet_local":
+    "Voorlopig alleen op deze telefoon. Als de app van {name} gedeelde timers ondersteunt, komt de timer daar aan zodra jullie weer verbinding maken.",
   "chat.group.invited": "Je bent uitgenodigd voor {name}.",
   "chat.group.invited_you": "Heeft je uitgenodigd voor {name}",
   "chat.group.decline": "Weigeren",
@@ -2081,10 +2107,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Houdt gesprekken het langst leesbaar, en neemt de meeste ruimte in.",
   "settings.general.message_retention": "Verdwijnende berichten",
-  "settings.general.message_retention_desc":
-    "Berichten en hun media worden na de gekozen tijd van deze telefoon verwijderd",
-  "settings.general.message_retention_sheet":
-    "Geteld vanaf het moment dat elk bericht deze telefoon bereikte, en alleen deze telefoon vergeet. De telefoon van de ander houdt zijn kopie, screenshots zijn niet te voorkomen en betalingen uit privéchats die je nog niet hebt opgehaald, blijven tot je ze ophaalt.",
+  "settings.general.message_retention_default":
+    "Standaardtimer voor nieuwe chats",
+  "settings.general.message_retention_default_desc":
+    "Voor nieuwe directe berichten, en voor ruimtes, kanalen en groepen op deze telefoon",
+  "settings.general.message_retention_default_sheet":
+    "Nieuwe directe berichten beginnen met deze timer, en jullie kunnen hem allebei in de chat wijzigen. Ruimtes, kanalen en groepen volgen hem alleen op deze telefoon, gerekend vanaf de aankomst van elk bericht. Screenshots zijn niet te voorkomen, en betalingen die je in een direct bericht ontvangt, blijven tot je ze int.",
   "settings.general.message_retention_off_desc":
     "Berichten blijven tot je de chat leegmaakt of verlaat",
   "settings.general.message_retention_1_desc":
@@ -2096,11 +2124,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Oudere berichten verwijderen?",
   "settings.general.message_retention_confirm_1":
-    "Berichten ouder dan 1 dag worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+    "Berichten ouder dan 1 dag in ruimtes, kanalen, groepen en chats die vanuit een locatiekanaal zijn gestart, worden nu van deze telefoon verwijderd, samen met hun media. Andere directe berichten houden hun eigen timers. Dit kan niet ongedaan worden gemaakt.",
   "settings.general.message_retention_confirm_7":
-    "Berichten ouder dan 7 dagen worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+    "Berichten ouder dan 7 dagen in ruimtes, kanalen, groepen en chats die vanuit een locatiekanaal zijn gestart, worden nu van deze telefoon verwijderd, samen met hun media. Andere directe berichten houden hun eigen timers. Dit kan niet ongedaan worden gemaakt.",
   "settings.general.message_retention_confirm_30":
-    "Berichten ouder dan 30 dagen worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+    "Berichten ouder dan 30 dagen in ruimtes, kanalen, groepen en chats die vanuit een locatiekanaal zijn gestart, worden nu van deze telefoon verwijderd, samen met hun media. Andere directe berichten houden hun eigen timers. Dit kan niet ongedaan worden gemaakt.",
   "settings.general.reset_desc":
     "Zet voorkeuren terug op de standaard en laat je identiteit, berichten, contacten en portemonnee met rust",
   "settings.general.reset_title": "Instellingen resetten?",

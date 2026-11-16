@@ -24,14 +24,18 @@ import {
   type Packet,
 } from "../mesh/wire/packet-codec";
 
+import type { DmTimer } from "../mesh/wire/dm-timer";
+
 const PREFIX = "bitchat1:";
 
 export interface BitchatDmContent {
   type: number; // NoisePayloadType
   messageID: string;
   content: string; // empty for receipts
-  // Raw payload body, for the types that carry bytes rather than text: only
-  // CONTACT_CARD. `content` stays the text channel.
+  // An Airhop peer's disappearing timer for a private message (dm-timer.ts).
+  timer?: DmTimer;
+  // Raw payload body, for the types that carry bytes rather than text:
+  // CONTACT_CARD and DM_PREKEYS. `content` stays the text channel.
   body?: Uint8Array;
   // The mesh peer ID the sender names for itself, as 16 hex digits. Only a
   // claim: the seal proves the npub wrote it, not that the npub owns that peer
@@ -80,8 +84,9 @@ export function encodeBitchatDmEnvelope(
   recipientPeerID: string | null,
   messageID: string,
   content: string,
+  timer?: DmTimer,
 ): string | null {
-  const np = encodeNoisePrivateMessage(messageID, content);
+  const np = encodeNoisePrivateMessage(messageID, content, timer);
   if (np === null) return null;
   return wrap(senderPeerID, recipientPeerID, np);
 }
@@ -99,6 +104,17 @@ export function encodeBitchatAckEnvelope(
     recipientPeerID,
     encodeNoiseReceipt(type, messageID),
   );
+}
+
+// An Airhop peer's internet DM prekeys (dm-prekeys.ts), as a card is carried.
+export function encodeBitchatPrekeysEnvelope(
+  senderPeerID: string | null,
+  batch: Uint8Array,
+): string {
+  const payload = new Uint8Array(1 + batch.length);
+  payload[0] = NoisePayloadType.DM_PREKEYS;
+  payload.set(batch, 1);
+  return wrap(senderPeerID, null, payload);
 }
 
 // Build the "bitchat1:" content for a contact card handed over inside a
@@ -144,6 +160,7 @@ export function decodeBitchatEnvelope(s: string): BitchatDmContent | null {
       type: np.type,
       messageID: pm.messageID,
       content: pm.content,
+      ...(pm.timer === undefined ? {} : { timer: pm.timer }),
       senderPeerID,
     };
   }
@@ -158,7 +175,10 @@ export function decodeBitchatEnvelope(s: string): BitchatDmContent | null {
       senderPeerID,
     };
   }
-  if (np.type === NoisePayloadType.CONTACT_CARD) {
+  if (
+    np.type === NoisePayloadType.CONTACT_CARD ||
+    np.type === NoisePayloadType.DM_PREKEYS
+  ) {
     // Handed back as bytes and validated by the caller, not here: a card is only
     // trustworthy once its peer ID is checked against SHA-256 of its Noise key,
     // and that check lives with the one place that already does it.

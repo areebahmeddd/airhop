@@ -2,6 +2,7 @@
 // defaults by the panic wipe (via reset()), so a wipe leaves a true first-run
 // state with no trace of the previous user's choices.
 
+import { DISAPPEARING_TIMER_DAYS } from "@core/mesh/wire/dm-timer";
 import { MAX_CUSTOM_RELAYS, validateRelayUrl } from "@core/nostr/geo-relay";
 import type { BitcoinUnit } from "@core/payments/cashu";
 import type { LanguageCode, LanguagePreference } from "@i18n";
@@ -40,12 +41,11 @@ export const UPLOAD_QUALITY_VALUES: Record<UploadQuality, number> = {
 export const MEDIA_RETENTION_DAY_OPTIONS = [7, 14, 30] as const;
 export type MediaRetentionDays = (typeof MEDIA_RETENTION_DAY_OPTIONS)[number];
 
-// How long a message stays on this phone (disappearing messages); 0 is Off.
-//
-// Off by default, so nothing disappears that nobody asked to lose. Counted from
-// when each message reached this phone, and local: the other phone keeps its
-// copy. See utils/message-expiry and services/message-retention.
-export const MESSAGE_RETENTION_DAY_OPTIONS = [0, 1, 7, 30] as const;
+// The disappearing-messages default, in days; 0 is Off. New mesh chats start
+// on it, and rooms and other chats follow it on this phone, counted from when
+// each message arrived (utils/message-expiry, services/message-retention).
+// Off by default, so nothing disappears that nobody asked to lose.
+export const MESSAGE_RETENTION_DAY_OPTIONS = DISAPPEARING_TIMER_DAYS;
 export type MessageRetentionDays =
   (typeof MESSAGE_RETENTION_DAY_OPTIONS)[number];
 

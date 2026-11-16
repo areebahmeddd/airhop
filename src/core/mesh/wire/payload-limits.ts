@@ -33,7 +33,6 @@ export function maxPayloadBytes(type: PacketType): number {
     case PacketType.CHANNEL_MSG_AIRHOP:
     case PacketType.CHANNEL_ENC:
     case PacketType.GROUP_MESSAGE:
-    case PacketType.DR_ENCRYPTED:
       return TWICE_V1_FRAME_BYTES;
     case PacketType.COURIER_ENV:
     case PacketType.NOSTR_CARRIER:

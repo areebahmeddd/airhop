@@ -398,6 +398,31 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tsy tratra ny mpikambana rehetra. Andramo indray rehefa akaiky izy ireo.",
   "chat.group.you_were_added": "Nampidirina tao amin'ny {name} ianao.",
+  "chat.timer.you_set_1": "Napetrakao ho 1 andro ny hafatra manjavona",
+  "chat.timer.you_set_7": "Napetrakao ho 7 andro ny hafatra manjavona",
+  "chat.timer.you_set_30": "Napetrakao ho 30 andro ny hafatra manjavona",
+  "chat.timer.you_off": "Novonoinao ny hafatra manjavona",
+  "chat.timer.you_set_local_1":
+    "Napetrakao ho 1 andro amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.you_set_local_7":
+    "Napetrakao ho 7 andro amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.you_set_local_30":
+    "Napetrakao ho 30 andro amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.you_off_local":
+    "Novonoinao amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.peer_set_1": "Napetrak'i {name} ho 1 andro ny hafatra manjavona",
+  "chat.timer.peer_set_7": "Napetrak'i {name} ho 7 andro ny hafatra manjavona",
+  "chat.timer.peer_set_30":
+    "Napetrak'i {name} ho 30 andro ny hafatra manjavona",
+  "chat.timer.peer_off": "Novonoin'i {name} ny hafatra manjavona",
+  "chat.timer.sheet_shared":
+    "Ho an'ny hafatra alefa manomboka izao, amin'ireo finday roa. Amin'ny finday nandefa azy, isaina manomboka amin'ny nandefasana azy ny fotoanan'ny hafatra tsirairay, ary amin'ilay finday iray hafa, manomboka amin'ny namakiana azy voalohany. Tsy azo sakanana ny pikantsary.",
+  "chat.timer.sheet_pending":
+    "Napetraka amin'ity finday ity. Ho tonga any amin'i {name} izy amin'ny fifandraisanareo manaraka, ary avy eo dia hihatra amin'ny finday roa.",
+  "chat.timer.sheet_bitchat":
+    "Amin'ity finday ity ihany. Tsy mahay fameram-potoana iombonana ny fampiharan'i {name}.",
+  "chat.timer.sheet_local":
+    "Amin'ity finday ity ihany aloha. Raha mahay fameram-potoana iombonana ny fampiharan'i {name}, dia ho tonga any aminy izy amin'ny fifandraisanareo manaraka.",
   "chat.group.invited": "Nasaina ho ao amin'ny {name} ianao.",
   "chat.group.invited_you": "Nanasa anao ho ao amin'ny {name}",
   "chat.group.decline": "Lavina",
@@ -2125,10 +2150,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mitazona ny resaka ho vakiana ela indrindra, ary mitana kapila be indrindra.",
   "settings.general.message_retention": "Hafatra manjavona",
-  "settings.general.message_retention_desc":
-    "Voafafa amin'ity finday ity ny hafatra sy ny media miaraka aminy aorian'ny fotoana voafidy",
-  "settings.general.message_retention_sheet":
-    "Isaina manomboka amin'ny fotoana nahatongavan'ny hafatra tsirairay teto amin'ity finday ity, ary ity finday ity ihany no manadino. Mitazona ny dika mitovy aminy ny findain'ilay olona hafa, tsy azo sakanana ny pikantsary, ary mijanona ny fandoavana nalefa taminao tamin'ny resaka manokana mbola tsy noraisinao mandra-pandraisinao azy.",
+  "settings.general.message_retention_default":
+    "Fameram-potoana mahazatra ho an'ny resaka vaovao",
+  "settings.general.message_retention_default_desc":
+    "Ho an'ny hafatra mivantana vaovao, ary ho an'ny efitrano, fantsona sy vondrona amin'ity finday ity",
+  "settings.general.message_retention_default_sheet":
+    "Manomboka amin'ity fameram-potoana ity ny hafatra mivantana vaovao, ary samy afaka manova azy ao anatin'ny resaka ianareo. Manaraka azy amin'ity finday ity ihany ny efitrano, fantsona ary vondrona, isaina manomboka amin'ny nahatongavan'ny hafatra tsirairay. Tsy azo sakanana ny pikantsary, ary mijanona mandra-pakanao azy ny fandoavam-bola nalefa taminao tamin'ny hafatra mivantana.",
   "settings.general.message_retention_off_desc":
     "Mijanona ny hafatra mandra-pamafanao ny resaka na mandra-pialanao aminy",
   "settings.general.message_retention_1_desc":
@@ -2140,11 +2167,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Hamafa ny hafatra taloha kokoa?",
   "settings.general.message_retention_confirm_1":
-    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 1 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+    "Ho voafafa amin'ity finday ity izao ny hafatra amin'ny efitrano, fantsona, vondrona ary resaka natomboka tamin'ny fantsonan-toerana mihoatra ny 1 andro, miaraka amin'ny media. Mitazona ny fameram-potoanany manokana ny hafatra mivantana hafa. Tsy azo foanana izany.",
   "settings.general.message_retention_confirm_7":
-    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 7 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+    "Ho voafafa amin'ity finday ity izao ny hafatra amin'ny efitrano, fantsona, vondrona ary resaka natomboka tamin'ny fantsonan-toerana mihoatra ny 7 andro, miaraka amin'ny media. Mitazona ny fameram-potoanany manokana ny hafatra mivantana hafa. Tsy azo foanana izany.",
   "settings.general.message_retention_confirm_30":
-    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 30 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+    "Ho voafafa amin'ity finday ity izao ny hafatra amin'ny efitrano, fantsona, vondrona ary resaka natomboka tamin'ny fantsonan-toerana mihoatra ny 30 andro, miaraka amin'ny media. Mitazona ny fameram-potoanany manokana ny hafatra mivantana hafa. Tsy azo foanana izany.",
   "settings.general.reset_desc":
     "Mamerina ny safidy amin'ny laoniny, fa tsy mikasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao",
   "settings.general.reset_title": "Averina ny fandrindrana?",

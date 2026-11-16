@@ -451,6 +451,16 @@ export class SimDevice {
       connectToPeer: async (serviceName: string) => {
         port.connect(serviceName);
       },
+      lanPort: async () => port.listenPort(),
+      connectToAddress: async (host: string, at: number, linkID: string) => {
+        if (!port.connectAddress(host, at, linkID)) {
+          throw Object.assign(new Error("refused"), { code: "CONNECT_FAILED" });
+        }
+      },
+      closeLANLink: async (linkID: string) => {
+        port.closeLink(linkID);
+      },
+      localSubnets: async () => port.localSubnets(),
       writeToLANLink: async (linkID: string, dataBase64: string) => {
         port.write(linkID, dataBase64);
       },

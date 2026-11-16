@@ -366,6 +366,25 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "无法触达所有成员。等对方在附近时再试一次。",
   "chat.group.you_were_added": "你被加入了 {name}。",
+  "chat.timer.you_set_1": "你将限时消息设为 1 天",
+  "chat.timer.you_set_7": "你将限时消息设为 7 天",
+  "chat.timer.you_set_30": "你将限时消息设为 30 天",
+  "chat.timer.you_off": "你关闭了限时消息",
+  "chat.timer.you_set_local_1": "你在此手机上将限时消息设为 1 天",
+  "chat.timer.you_set_local_7": "你在此手机上将限时消息设为 7 天",
+  "chat.timer.you_set_local_30": "你在此手机上将限时消息设为 30 天",
+  "chat.timer.you_off_local": "你在此手机上关闭了限时消息",
+  "chat.timer.peer_set_1": "{name} 将限时消息设为 1 天",
+  "chat.timer.peer_set_7": "{name} 将限时消息设为 7 天",
+  "chat.timer.peer_set_30": "{name} 将限时消息设为 30 天",
+  "chat.timer.peer_off": "{name} 关闭了限时消息",
+  "chat.timer.sheet_shared":
+    "适用于从现在起发送的消息，两部手机都会执行。在发送方的手机上，每条消息从发送时开始计时；在另一部手机上，从首次阅读时开始计时。无法阻止截图。",
+  "chat.timer.sheet_pending":
+    "已在此手机上设置。下次你们连接时会同步给 {name}，之后在两台手机上生效。",
+  "chat.timer.sheet_bitchat": "仅此手机。{name} 的应用不支持共享计时。",
+  "chat.timer.sheet_local":
+    "目前仅此手机。如果 {name} 的应用支持共享计时，下次你们连接时会同步给对方。",
   "chat.group.invited": "你被邀请加入 {name}。",
   "chat.group.invited_you": "邀请你加入 {name}",
   "chat.group.decline": "拒绝",
@@ -1916,10 +1935,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "对话可读的时间最长，占用的磁盘也最多。",
   "settings.general.message_retention": "限时消息",
-  "settings.general.message_retention_desc":
-    "消息及其媒体会在所选时长后从这台设备上删除",
-  "settings.general.message_retention_sheet":
-    "从每条消息到达这台设备时开始计算，而且只有这台设备会忘记。对方的设备仍保留副本，无法阻止截屏，私聊中尚未领取的付款会一直保留到你领取为止。",
+  "settings.general.message_retention_default": "新聊天的默认计时",
+  "settings.general.message_retention_default_desc":
+    "用于新的私信，以及此手机上的房间、频道和群组",
+  "settings.general.message_retention_default_sheet":
+    "新的私信以此计时开始，双方都可以在聊天中更改。房间、频道和群组仅在此手机上遵循，从每条消息到达时开始计算。无法阻止截图，私信中发给你的付款会一直保留，直到你领取。",
   "settings.general.message_retention_off_desc":
     "消息会一直保留，直到你清空或退出聊天",
   "settings.general.message_retention_1_desc":
@@ -1928,11 +1948,11 @@ export const strings: Strings = {
   "settings.general.message_retention_30_desc": "让对话保持可读的时间最长",
   "settings.general.message_retention_confirm_title": "删除较早的消息？",
   "settings.general.message_retention_confirm_1":
-    "超过 1 天的消息会连同媒体立即从这台设备上删除。此操作无法撤销。",
+    "房间、频道、群组以及从位置频道发起的聊天中超过 1 天的消息会连同媒体立即从这台设备上删除。其他私信保留各自的计时。此操作无法撤销。",
   "settings.general.message_retention_confirm_7":
-    "超过 7 天的消息会连同媒体立即从这台设备上删除。此操作无法撤销。",
+    "房间、频道、群组以及从位置频道发起的聊天中超过 7 天的消息会连同媒体立即从这台设备上删除。其他私信保留各自的计时。此操作无法撤销。",
   "settings.general.message_retention_confirm_30":
-    "超过 30 天的消息会连同媒体立即从这台设备上删除。此操作无法撤销。",
+    "房间、频道、群组以及从位置频道发起的聊天中超过 30 天的消息会连同媒体立即从这台设备上删除。其他私信保留各自的计时。此操作无法撤销。",
   "settings.general.reset_desc":
     "把偏好设置恢复为默认值，你的身份、消息、联系人和钱包都不受影响",
   "settings.general.reset_title": "重置设置？",

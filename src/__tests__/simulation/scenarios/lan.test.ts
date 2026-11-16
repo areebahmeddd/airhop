@@ -518,3 +518,127 @@ test("L08 a packet too long for Bluetooth crosses from LAN onto Bluetooth", asyn
   s.expectNone("process health", noCrashes(devices));
   s.assert(true);
 });
+
+// Ships, hotels and conferences drop mDNS while still passing the TCP. Two
+// phones that met over Bluetooth hand each other their LAN address inside the
+// session, and the lower peer ID dials it, so the conversation carries on over
+// Wi-Fi once they walk out of Bluetooth range.
+test("L09 phones in a session meet over the network where mDNS is filtered", async () => {
+  const s = (scenario = new Scenario({
+    id: "L09",
+    title: "direct dial past a filtered network",
+    seed: 709,
+  }));
+  const { radio, lan, devices } = room(s, [
+    phone("a", 11, "android"),
+    phone("b", 22, "ios"),
+  ]);
+  const [a, b] = devices;
+  s.track(a, b);
+  lan.setMdnsFiltered("hotel", true);
+  lan.join("a", "hotel");
+  lan.join("b", "hotel");
+  radio.setTopology([["a", "b"]]);
+  a.launch();
+  b.launch();
+
+  s.check(
+    "they meet over Bluetooth",
+    await waitFor(
+      s.world,
+      () => a.peers().includes(b.peerID) && b.peers().includes(a.peerID),
+      40_000,
+    ),
+  );
+  s.check(
+    "the filtered network never revealed them to each other",
+    lan.dialsAttempted === 0 && lan.linkCount() === 0,
+  );
+  a.send(`dm:${b.peerID}`, "hello over the radio");
+  s.check(
+    "and talk, which opens the session",
+    await waitFor(
+      s.world,
+      () => b.texts(`dm:${a.peerID}`).includes("hello over the radio"),
+      30_000,
+    ),
+  );
+  s.check(
+    "inside the session they find each other on the network",
+    await waitFor(s.world, () => lan.isLinked("a", "b"), 60_000),
+    `dials=${lan.dialsAttempted} refused=${lan.dialsRefused}`,
+  );
+  s.check(
+    "with one dial, at the right address, and nothing refused",
+    lan.dialsAttempted === 1 && lan.dialsRefused === 0,
+    `dials=${lan.dialsAttempted} refused=${lan.dialsRefused}`,
+  );
+
+  radio.setTopology([]);
+  await s.world.advance(2_000);
+  b.send(`dm:${a.peerID}`, "and now over wifi");
+  s.check(
+    "out of Bluetooth range the conversation carries on over the LAN",
+    await waitFor(
+      s.world,
+      () => a.texts(`dm:${b.peerID}`).includes("and now over wifi"),
+      30_000,
+    ),
+    `frames=${lan.framesCarried}`,
+  );
+  s.check(
+    "with no Bluetooth link between them",
+    a.bleLinkCount() === 0 && b.bleLinkCount() === 0,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("L09b with the local network switched off, no address is handed over or dialed", async () => {
+  const s = (scenario = new Scenario({
+    id: "L09b",
+    title: "direct dial follows the local network setting",
+    seed: 710,
+  }));
+  const { radio, lan, devices } = room(s, [
+    phone("a", 11, "android"),
+    phone("b", 22, "android", false),
+  ]);
+  const [a, b] = devices;
+  s.track(a, b);
+  lan.setMdnsFiltered("hotel", true);
+  lan.join("a", "hotel");
+  lan.join("b", "hotel");
+  radio.setTopology([["a", "b"]]);
+  a.launch();
+  b.launch();
+  await waitFor(
+    s.world,
+    () => a.peers().includes(b.peerID) && b.peers().includes(a.peerID),
+    40_000,
+  );
+  a.send(`dm:${b.peerID}`, "hello");
+  await waitFor(
+    s.world,
+    () => b.texts(`dm:${a.peerID}`).includes("hello"),
+    30_000,
+  );
+  await s.world.advance(60_000);
+  s.check(
+    "nobody dialed an address",
+    lan.dialsAttempted === 0 && lan.linkCount() === 0,
+    `dials=${lan.dialsAttempted}`,
+  );
+
+  // Turned on, it comes up and the peers meet on the network.
+  b.setSetting("lanTransportEnabled", true);
+  s.check(
+    "switched on, they meet over the network",
+    await waitFor(s.world, () => lan.isLinked("a", "b"), 60_000),
+    `dials=${lan.dialsAttempted} refused=${lan.dialsRefused}`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});

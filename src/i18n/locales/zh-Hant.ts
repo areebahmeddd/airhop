@@ -366,6 +366,25 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "無法觸及每一位成員。等對方在附近時再試一次。",
   "chat.group.you_were_added": "你被加進了 {name}。",
+  "chat.timer.you_set_1": "你將限時訊息設為 1 天",
+  "chat.timer.you_set_7": "你將限時訊息設為 7 天",
+  "chat.timer.you_set_30": "你將限時訊息設為 30 天",
+  "chat.timer.you_off": "你關閉了限時訊息",
+  "chat.timer.you_set_local_1": "你在此手機上將限時訊息設為 1 天",
+  "chat.timer.you_set_local_7": "你在此手機上將限時訊息設為 7 天",
+  "chat.timer.you_set_local_30": "你在此手機上將限時訊息設為 30 天",
+  "chat.timer.you_off_local": "你在此手機上關閉了限時訊息",
+  "chat.timer.peer_set_1": "{name} 將限時訊息設為 1 天",
+  "chat.timer.peer_set_7": "{name} 將限時訊息設為 7 天",
+  "chat.timer.peer_set_30": "{name} 將限時訊息設為 30 天",
+  "chat.timer.peer_off": "{name} 關閉了限時訊息",
+  "chat.timer.sheet_shared":
+    "適用於從現在起傳送的訊息，兩支手機都會執行。在傳送方的手機上，每則訊息從傳送時開始計時；在另一支手機上，從首次閱讀時開始計時。無法阻止截圖。",
+  "chat.timer.sheet_pending":
+    "已在此手機上設定。下次你們連線時會同步給 {name}，之後在兩支手機上生效。",
+  "chat.timer.sheet_bitchat": "僅此手機。{name} 的應用程式不支援共用計時。",
+  "chat.timer.sheet_local":
+    "目前僅此手機。如果 {name} 的應用程式支援共用計時，下次你們連線時會同步給對方。",
   "chat.group.invited": "你被邀請加入 {name}。",
   "chat.group.invited_you": "邀請你加入 {name}",
   "chat.group.decline": "拒絕",
@@ -1919,10 +1938,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "對話讀得到的時間最長，佔用的磁碟也最多。",
   "settings.general.message_retention": "限時訊息",
-  "settings.general.message_retention_desc":
-    "訊息及其媒體會在所選時間後從這台裝置上刪除",
-  "settings.general.message_retention_sheet":
-    "從每則訊息抵達這台裝置時開始計算，而且只有這台裝置會忘記。對方的裝置仍保留副本，無法阻止螢幕截圖，私訊中尚未領取的付款會一直保留到你領取為止。",
+  "settings.general.message_retention_default": "新聊天的預設計時",
+  "settings.general.message_retention_default_desc":
+    "用於新的私訊，以及此手機上的房間、頻道和群組",
+  "settings.general.message_retention_default_sheet":
+    "新的私訊以此計時開始，雙方都可以在聊天中更改。房間、頻道和群組僅在此手機上遵循，從每則訊息抵達時開始計算。無法阻止截圖，私訊中傳給你的付款會一直保留，直到你領取。",
   "settings.general.message_retention_off_desc":
     "訊息會一直保留，直到你清除或退出聊天",
   "settings.general.message_retention_1_desc":
@@ -1931,11 +1951,11 @@ export const strings: Strings = {
   "settings.general.message_retention_30_desc": "讓對話保持可讀的時間最長",
   "settings.general.message_retention_confirm_title": "刪除較舊的訊息？",
   "settings.general.message_retention_confirm_1":
-    "超過 1 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+    "房間、頻道、群組以及從位置頻道發起的聊天中超過 1 天的訊息會連同媒體立即從這台裝置上刪除。其他私訊保留各自的計時。此動作無法復原。",
   "settings.general.message_retention_confirm_7":
-    "超過 7 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+    "房間、頻道、群組以及從位置頻道發起的聊天中超過 7 天的訊息會連同媒體立即從這台裝置上刪除。其他私訊保留各自的計時。此動作無法復原。",
   "settings.general.message_retention_confirm_30":
-    "超過 30 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+    "房間、頻道、群組以及從位置頻道發起的聊天中超過 30 天的訊息會連同媒體立即從這台裝置上刪除。其他私訊保留各自的計時。此動作無法復原。",
   "settings.general.reset_desc":
     "把偏好設定回復為預設值，你的身分、訊息、聯絡人和錢包都不受影響",
   "settings.general.reset_title": "重設設定？",

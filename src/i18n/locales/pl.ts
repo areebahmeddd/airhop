@@ -389,6 +389,29 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Nie udało się dotrzeć do każdego członka. Spróbuj ponownie, gdy będą w pobliżu.",
   "chat.group.you_were_added": "Dodano cię do {name}.",
+  "chat.timer.you_set_1": "Ustawiono znikające wiadomości na 1 dzień",
+  "chat.timer.you_set_7": "Ustawiono znikające wiadomości na 7 dni",
+  "chat.timer.you_set_30": "Ustawiono znikające wiadomości na 30 dni",
+  "chat.timer.you_off": "Wyłączono znikające wiadomości",
+  "chat.timer.you_set_local_1":
+    "Ustawiono znikające wiadomości na 1 dzień na tym telefonie",
+  "chat.timer.you_set_local_7":
+    "Ustawiono znikające wiadomości na 7 dni na tym telefonie",
+  "chat.timer.you_set_local_30":
+    "Ustawiono znikające wiadomości na 30 dni na tym telefonie",
+  "chat.timer.you_off_local": "Wyłączono znikające wiadomości na tym telefonie",
+  "chat.timer.peer_set_1": "{name} ustawia znikające wiadomości na 1 dzień",
+  "chat.timer.peer_set_7": "{name} ustawia znikające wiadomości na 7 dni",
+  "chat.timer.peer_set_30": "{name} ustawia znikające wiadomości na 30 dni",
+  "chat.timer.peer_off": "{name} wyłącza znikające wiadomości",
+  "chat.timer.sheet_shared":
+    "Dla wiadomości wysyłanych od teraz, na obu telefonach. Na telefonie nadawcy czas każdej liczy się od wysłania, a na drugim od pierwszego przeczytania. Zrzutów ekranu nie da się zablokować.",
+  "chat.timer.sheet_pending":
+    "Ustawiono na tym telefonie. {name} otrzyma licznik przy następnym połączeniu, a potem zacznie on działać na obu telefonach.",
+  "chat.timer.sheet_bitchat":
+    "Tylko na tym telefonie. Aplikacja {name} nie obsługuje wspólnych liczników.",
+  "chat.timer.sheet_local":
+    "Na razie tylko na tym telefonie. Jeśli aplikacja {name} obsługuje wspólne liczniki, licznik dotrze do tej osoby przy następnym połączeniu.",
   "chat.group.invited": "Zaproszono cię do {name}.",
   "chat.group.invited_you": "Zaprosił cię do {name}",
   "chat.group.decline": "Odrzuć",
@@ -2076,10 +2099,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Najdłużej utrzymuje wątki czytelnymi i najwięcej trzyma na dysku.",
   "settings.general.message_retention": "Znikające wiadomości",
-  "settings.general.message_retention_desc":
-    "Wiadomości i ich multimedia są usuwane z tego telefonu po wybranym czasie",
-  "settings.general.message_retention_sheet":
-    "Liczone od chwili, gdy każda wiadomość dotarła na ten telefon, i zapomina tylko ten telefon. Telefon drugiej osoby zachowuje swoją kopię, zrzutom ekranu nie da się zapobiec, a nieodebrane płatności z czatów prywatnych zostają, dopóki ich nie odbierzesz.",
+  "settings.general.message_retention_default":
+    "Domyślny licznik dla nowych czatów",
+  "settings.general.message_retention_default_desc":
+    "Dla nowych wiadomości bezpośrednich oraz dla pokojów, kanałów i grup na tym telefonie",
+  "settings.general.message_retention_default_sheet":
+    "Nowe wiadomości bezpośrednie zaczynają z tym licznikiem, a każda ze stron może go zmienić w czacie. Pokoje, kanały i grupy stosują go tylko na tym telefonie, licząc od nadejścia każdej wiadomości. Zrzutów ekranu nie da się zablokować, a płatności wysłane ci w wiadomości bezpośredniej zostają, dopóki ich nie odbierzesz.",
   "settings.general.message_retention_off_desc":
     "Wiadomości zostają, dopóki nie wyczyścisz czatu lub go nie opuścisz",
   "settings.general.message_retention_1_desc":
@@ -2091,11 +2116,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Usunąć starsze wiadomości?",
   "settings.general.message_retention_confirm_1":
-    "Wiadomości starsze niż 1 dzień zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+    "Wiadomości z pokojów, kanałów, grup i czatów rozpoczętych z kanału lokalizacyjnego starsze niż 1 dzień zostaną teraz usunięte z tego telefonu razem z multimediami. Pozostałe wiadomości bezpośrednie zachowują własne liczniki. Tego nie da się cofnąć.",
   "settings.general.message_retention_confirm_7":
-    "Wiadomości starsze niż 7 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+    "Wiadomości z pokojów, kanałów, grup i czatów rozpoczętych z kanału lokalizacyjnego starsze niż 7 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Pozostałe wiadomości bezpośrednie zachowują własne liczniki. Tego nie da się cofnąć.",
   "settings.general.message_retention_confirm_30":
-    "Wiadomości starsze niż 30 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+    "Wiadomości z pokojów, kanałów, grup i czatów rozpoczętych z kanału lokalizacyjnego starsze niż 30 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Pozostałe wiadomości bezpośrednie zachowują własne liczniki. Tego nie da się cofnąć.",
   "settings.general.reset_desc":
     "Przywraca ustawieniom wartości domyślne, nie ruszając tożsamości, wiadomości, kontaktów ani portfela",
   "settings.general.reset_title": "Zresetować ustawienia?",

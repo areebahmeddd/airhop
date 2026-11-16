@@ -389,6 +389,29 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "Her üyeye ulaşılamadı. Yakındayken yeniden dene.",
   "chat.group.you_were_added": "{name} grubuna eklendin.",
+  "chat.timer.you_set_1": "Kaybolan mesajları 1 gün olarak ayarladınız",
+  "chat.timer.you_set_7": "Kaybolan mesajları 7 gün olarak ayarladınız",
+  "chat.timer.you_set_30": "Kaybolan mesajları 30 gün olarak ayarladınız",
+  "chat.timer.you_off": "Kaybolan mesajları kapattınız",
+  "chat.timer.you_set_local_1":
+    "Bu telefonda kaybolan mesajları 1 gün olarak ayarladınız",
+  "chat.timer.you_set_local_7":
+    "Bu telefonda kaybolan mesajları 7 gün olarak ayarladınız",
+  "chat.timer.you_set_local_30":
+    "Bu telefonda kaybolan mesajları 30 gün olarak ayarladınız",
+  "chat.timer.you_off_local": "Bu telefonda kaybolan mesajları kapattınız",
+  "chat.timer.peer_set_1": "{name} kaybolan mesajları 1 gün olarak ayarladı",
+  "chat.timer.peer_set_7": "{name} kaybolan mesajları 7 gün olarak ayarladı",
+  "chat.timer.peer_set_30": "{name} kaybolan mesajları 30 gün olarak ayarladı",
+  "chat.timer.peer_off": "{name} kaybolan mesajları kapattı",
+  "chat.timer.sheet_shared":
+    "Bundan sonra gönderilen mesajlar için, iki telefonda da. Her mesajın süresi gönderenin telefonunda gönderildiği andan, diğer telefonda ilk kez okunduğu andan itibaren işler. Ekran görüntüleri engellenemez.",
+  "chat.timer.sheet_pending":
+    "Bu telefonda ayarlandı. Bir sonraki bağlantınızda {name} kişisine ulaşır, ardından iki telefonda da geçerli olur.",
+  "chat.timer.sheet_bitchat":
+    "Yalnızca bu telefonda. {name} kişisinin uygulaması ortak zamanlayıcıları desteklemiyor.",
+  "chat.timer.sheet_local":
+    "Şimdilik yalnızca bu telefonda. {name} kişisinin uygulaması ortak zamanlayıcıları destekliyorsa, zamanlayıcı bir sonraki bağlantınızda ona ulaşır.",
   "chat.group.invited": "{name} grubuna davet edildin.",
   "chat.group.invited_you": "Seni {name} grubuna davet etti",
   "chat.group.decline": "Reddet",
@@ -2058,10 +2081,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Konuşmaları en uzun süre okunabilir tutar ve diskte en çok yer kaplar.",
   "settings.general.message_retention": "Kaybolan mesajlar",
-  "settings.general.message_retention_desc":
-    "Mesajlar ve medyaları seçilen sürenin ardından bu telefondan silinir",
-  "settings.general.message_retention_sheet":
-    "Her mesajın bu telefona ulaştığı andan itibaren sayılır ve yalnızca bu telefon unutur. Karşı tarafın telefonu kendi kopyasını saklar, ekran görüntüleri engellenemez ve özel sohbetlerde gelen ve henüz almadığın ödemeler sen alana kadar kalır.",
+  "settings.general.message_retention_default":
+    "Yeni sohbetler için varsayılan zamanlayıcı",
+  "settings.general.message_retention_default_desc":
+    "Yeni doğrudan mesajlar için, ve bu telefondaki odalar, kanallar ve gruplar için",
+  "settings.general.message_retention_default_sheet":
+    "Yeni doğrudan mesajlar bu zamanlayıcıyla başlar ve ikinizden biri sohbette değiştirebilir. Odalar, kanallar ve gruplar buna yalnızca bu telefonda uyar, her mesajın ulaştığı andan itibaren sayılır. Ekran görüntüleri engellenemez ve doğrudan mesajla size gönderilen ödemeler siz alana kadar kalır.",
   "settings.general.message_retention_off_desc":
     "Sohbeti temizleyene ya da ondan ayrılana kadar mesajlar kalır",
   "settings.general.message_retention_1_desc":
@@ -2073,11 +2098,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Eski mesajlar silinsin mi?",
   "settings.general.message_retention_confirm_1":
-    "1 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+    "Odalar, kanallar, gruplar ve bir konum kanalından başlatılan sohbetlerdeki 1 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Diğer doğrudan mesajlar kendi zamanlayıcılarını korur. Bu geri alınamaz.",
   "settings.general.message_retention_confirm_7":
-    "7 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+    "Odalar, kanallar, gruplar ve bir konum kanalından başlatılan sohbetlerdeki 7 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Diğer doğrudan mesajlar kendi zamanlayıcılarını korur. Bu geri alınamaz.",
   "settings.general.message_retention_confirm_30":
-    "30 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+    "Odalar, kanallar, gruplar ve bir konum kanalından başlatılan sohbetlerdeki 30 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Diğer doğrudan mesajlar kendi zamanlayıcılarını korur. Bu geri alınamaz.",
   "settings.general.reset_desc":
     "Tercihleri varsayılanlarına döndürür; kimliğine, mesajlarına, kişilerine ve cüzdanına dokunmaz",
   "settings.general.reset_title": "Ayarlar sıfırlansın mı?",

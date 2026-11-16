@@ -46,9 +46,10 @@ const FRAG_HEADER_LEN = 13; // 8 + 2 + 2 + 1
 //    8  recipientID, present on a DM fragment (a public one omits it)
 //   13  the fragment header above
 // Fragments are deliberately unsigned, so no 64-byte signature: authenticity is
-// carried by the inner packet, which is itself signed and re-verified after
-// reassembly. bitchat does the same (BLEOutboundFragmentPlanner sends
-// `signature: nil`), and neither side's fragment path inspects one.
+// carried by the inner packet, checked after reassembly (verified when signed,
+// authenticated by its Noise session when a DM). bitchat does the same
+// (BLEOutboundFragmentPlanner sends `signature: nil`), and neither side's
+// fragment path inspects one.
 const FRAME_OVERHEAD = 16 + 8 + 8 + FRAG_HEADER_LEN; // 45
 
 // Maximum data bytes per fragment, derived so the encoded frame lands exactly on

@@ -85,6 +85,10 @@ export interface LanNativeModule {
   startLAN(instanceName: string): Promise<void>;
   stopLAN(): Promise<void>;
   connectToPeer(serviceName: string): Promise<void>;
+  lanPort(): Promise<number>;
+  connectToAddress(host: string, port: number, linkID: string): Promise<void>;
+  closeLANLink(linkID: string): Promise<void>;
+  localSubnets(): Promise<{ address: string; prefixLength: number }[]>;
   writeToLANLink(linkID: string, dataBase64: string): Promise<void>;
   addListener(eventName: string): void;
   removeListeners(count: number): void;
@@ -102,6 +106,17 @@ export const lanBridge = {
   stopLAN: async (): Promise<void> => currentLan?.stopLAN(),
   connectToPeer: async (serviceName: string): Promise<void> =>
     currentLan?.connectToPeer(serviceName),
+  lanPort: async (): Promise<number> => (await currentLan?.lanPort()) ?? 0,
+  connectToAddress: async (
+    host: string,
+    port: number,
+    linkID: string,
+  ): Promise<void> => currentLan?.connectToAddress(host, port, linkID),
+  closeLANLink: async (linkID: string): Promise<void> =>
+    currentLan?.closeLANLink(linkID),
+  localSubnets: async (): Promise<
+    { address: string; prefixLength: number }[]
+  > => (await currentLan?.localSubnets()) ?? [],
   writeToLANLink: async (linkID: string, dataBase64: string): Promise<void> =>
     currentLan?.writeToLANLink(linkID, dataBase64),
   addListener: (e: string): void => currentLan?.addListener(e),

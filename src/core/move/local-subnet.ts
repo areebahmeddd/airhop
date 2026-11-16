@@ -15,16 +15,18 @@ export interface LocalSubnet {
 const MIN_PREFIX = 8;
 const IPV4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
 
-function ipv4ToInt(host: string): number | null {
+// The four octets of a dotted IPv4 literal, or null for anything else.
+export function ipv4Octets(host: string): number[] | null {
   const match = IPV4.exec(host);
   if (match === null) return null;
-  let value = 0;
-  for (const part of match.slice(1)) {
-    const octet = Number(part);
-    if (octet > 255) return null;
-    value = value * 256 + octet;
-  }
-  return value;
+  const octets = match.slice(1).map(Number);
+  return octets.every((octet) => octet <= 255) ? octets : null;
+}
+
+function ipv4ToInt(host: string): number | null {
+  return (
+    ipv4Octets(host)?.reduce((value, octet) => value * 256 + octet, 0) ?? null
+  );
 }
 
 export function isOnLocalSubnet(

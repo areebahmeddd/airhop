@@ -13,6 +13,7 @@
 const mockStartLAN = jest.fn<Promise<void>, [string]>();
 const mockStopLAN = jest.fn<Promise<void>, []>();
 const mockConnectToPeer = jest.fn<Promise<void>, [string]>();
+const mockLanPort = jest.fn<Promise<number>, []>();
 
 jest.mock("@bridge/NativeAirhopLAN", () => ({
   __esModule: true,
@@ -20,6 +21,7 @@ jest.mock("@bridge/NativeAirhopLAN", () => ({
     startLAN: (name: string) => mockStartLAN(name),
     stopLAN: () => mockStopLAN(),
     connectToPeer: (name: string) => mockConnectToPeer(name),
+    lanPort: () => mockLanPort(),
     writeToLANLink: () => Promise.resolve(),
     addListener: () => undefined,
     removeListeners: () => undefined,
@@ -66,6 +68,8 @@ beforeEach(() => {
   mockStopLAN.mockResolvedValue(undefined);
   mockConnectToPeer.mockReset();
   mockConnectToPeer.mockResolvedValue(undefined);
+  mockLanPort.mockReset();
+  mockLanPort.mockResolvedValue(40_123);
 });
 
 afterEach(() => {
@@ -120,6 +124,67 @@ describe("consent", () => {
 
     expect(mockStopLAN).toHaveBeenCalled();
     expect(lan.isStarted).toBe(false);
+  });
+});
+
+// A peer in a session is told where to dial this phone (lan-direct-dial.ts),
+// so the port is reported as the listener comes and goes.
+describe("the listening port", () => {
+  test("is reported once started, and withdrawn once stopped", async () => {
+    const ports: (number | null)[] = [];
+    const lan = new LANController(
+      () => SELF,
+      undefined,
+      (port) => ports.push(port),
+    );
+    lan.start();
+    lan.setEnabled(true);
+    await settle();
+    expect(ports).toEqual([40_123]);
+    expect(lan.port).toBe(40_123);
+
+    lan.setEnabled(false);
+    await settle();
+    expect(ports).toEqual([40_123, null]);
+    expect(lan.port).toBeNull();
+  });
+
+  test("is withdrawn when the network goes away", async () => {
+    const ports: (number | null)[] = [];
+    const lan = new LANController(
+      () => SELF,
+      undefined,
+      (port) => ports.push(port),
+    );
+    lan.start();
+    lan.setEnabled(true);
+    await settle();
+    lan.onAvailabilityChanged(false);
+    expect(ports).toEqual([40_123, null]);
+    lan.dispose();
+  });
+
+  test("is not reported by a start the switch overtook", async () => {
+    const ports: (number | null)[] = [];
+    let release: (port: number) => void = () => undefined;
+    mockLanPort.mockReturnValue(
+      new Promise<number>((resolve) => {
+        release = resolve;
+      }),
+    );
+    const lan = new LANController(
+      () => SELF,
+      undefined,
+      (port) => ports.push(port),
+    );
+    lan.start();
+    lan.setEnabled(true);
+    await settle();
+    lan.setEnabled(false);
+    release(40_123);
+    await settle();
+    expect(ports).toEqual([]);
+    expect(lan.port).toBeNull();
   });
 });
 

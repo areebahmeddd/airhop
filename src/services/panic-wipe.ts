@@ -116,8 +116,8 @@ export const MMKV_STORE_IDS = [
   // board-store holds signed public bulletin-board posts tied to this identity's
   // signing key; a wipe erases them along with the rest of this identity's data.
   "board-store",
-  // prekey-store holds peers' prekey bundles, which say who this identity
-  // talks to. Our own one-time prekey private keys are a keychain item.
+  // prekey-store holds peers' prekey bundles and internet DM prekeys, which say
+  // who this identity talks to. Our own prekey private keys are keychain items.
   "prekey-store",
   // courier-store holds sealed envelopes carried for other people. Unreadable
   // here (each is Noise X to a key this device does not hold), but a bag of a

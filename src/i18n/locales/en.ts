@@ -418,6 +418,30 @@ export const strings = {
   "chat.group.unreachable":
     "Could not reach every member. Try again while they’re nearby.",
   "chat.group.you_were_added": "You were added to {name}.",
+  "chat.timer.you_set_1": "You set disappearing messages to 1 day",
+  "chat.timer.you_set_7": "You set disappearing messages to 7 days",
+  "chat.timer.you_set_30": "You set disappearing messages to 30 days",
+  "chat.timer.you_off": "You turned off disappearing messages",
+  "chat.timer.you_set_local_1":
+    "You set disappearing messages to 1 day on this phone",
+  "chat.timer.you_set_local_7":
+    "You set disappearing messages to 7 days on this phone",
+  "chat.timer.you_set_local_30":
+    "You set disappearing messages to 30 days on this phone",
+  "chat.timer.you_off_local":
+    "You turned off disappearing messages on this phone",
+  "chat.timer.peer_set_1": "{name} set disappearing messages to 1 day",
+  "chat.timer.peer_set_7": "{name} set disappearing messages to 7 days",
+  "chat.timer.peer_set_30": "{name} set disappearing messages to 30 days",
+  "chat.timer.peer_off": "{name} turned off disappearing messages",
+  "chat.timer.sheet_shared":
+    "For messages sent from now on, on both phones. Each one counts down from when it’s sent on the sender’s phone, and from when it’s first read on the other. Screenshots can’t be prevented.",
+  "chat.timer.sheet_pending":
+    "Set on this phone. It reaches {name} the next time you’re connected, then applies on both phones.",
+  "chat.timer.sheet_bitchat":
+    "Only on this phone. {name}’s app doesn’t support shared timers.",
+  "chat.timer.sheet_local":
+    "Only on this phone for now. If {name}’s app supports shared timers, it reaches them the next time you connect.",
   "chat.group.invited": "You’re invited to {name}.",
   "chat.group.invited_you": "Invited you to {name}",
   "chat.group.decline": "Decline",
@@ -2056,10 +2080,11 @@ export const strings = {
   "settings.general.retention_30_desc":
     "Keeps threads readable longest, and keeps the most on disk.",
   "settings.general.message_retention": "Disappearing messages",
-  "settings.general.message_retention_desc":
-    "Messages and their media are deleted from this phone after the selected time",
-  "settings.general.message_retention_sheet":
-    "Counted from when each message reached this phone, and only this phone forgets. The other person’s phone keeps its copy, screenshots can’t be prevented, and payments sent to you in a private chat stay until you claim them.",
+  "settings.general.message_retention_default": "Default timer for new chats",
+  "settings.general.message_retention_default_desc":
+    "For new direct messages, and for rooms, channels and groups on this phone",
+  "settings.general.message_retention_default_sheet":
+    "New direct messages start with this timer, and either person can change it in the chat. Rooms, channels and groups follow it on this phone only, counted from when each message arrived. Screenshots can’t be prevented, and payments sent to you in a direct message stay until you claim them.",
   "settings.general.message_retention_off_desc":
     "Messages stay until you clear the chat or leave it",
   "settings.general.message_retention_1_desc":
@@ -2069,11 +2094,11 @@ export const strings = {
     "Keeps threads readable longest",
   "settings.general.message_retention_confirm_title": "Delete older messages?",
   "settings.general.message_retention_confirm_1":
-    "Messages older than 1 day will be deleted from this phone now, with their media. This can’t be undone.",
+    "Messages older than 1 day in rooms, channels, groups and chats started from a location channel will be deleted from this phone now, with their media. Other direct messages keep their own timers. This can’t be undone.",
   "settings.general.message_retention_confirm_7":
-    "Messages older than 7 days will be deleted from this phone now, with their media. This can’t be undone.",
+    "Messages older than 7 days in rooms, channels, groups and chats started from a location channel will be deleted from this phone now, with their media. Other direct messages keep their own timers. This can’t be undone.",
   "settings.general.message_retention_confirm_30":
-    "Messages older than 30 days will be deleted from this phone now, with their media. This can’t be undone.",
+    "Messages older than 30 days in rooms, channels, groups and chats started from a location channel will be deleted from this phone now, with their media. Other direct messages keep their own timers. This can’t be undone.",
   "settings.general.reset_desc":
     "Puts preferences back to their defaults, leaving your identity, messages, contacts and wallet untouched",
   "settings.general.reset_title": "Reset settings?",

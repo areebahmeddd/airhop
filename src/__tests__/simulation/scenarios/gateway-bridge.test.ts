@@ -100,7 +100,6 @@ function publishedText(relay: RelayFabric, text: string): boolean {
 // The types bitchat has no case for and relays uninterpreted. Anything else it
 // drops as unknown is a registry divergence, not an Airhop extension.
 const AIRHOP_ONLY_TYPES: ReadonlySet<number> = new Set([
-  PacketType.DR_ENCRYPTED,
   PacketType.CHANNEL_ENC,
   PacketType.CHANNEL_MSG_AIRHOP,
 ]);

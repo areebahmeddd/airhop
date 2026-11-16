@@ -7,11 +7,13 @@ import { useActivityStore } from "../activity-store";
 import {
   dropPendingChatPersistence,
   flushChatPersistence,
+  isLaterTimerChange,
   MAX_PER_CHANNEL,
   subscribeInboundMessages,
   subscribeRemovedMessages,
   useChatStore,
   type ChatMessage,
+  type DmChatTimer,
 } from "../chat-store";
 
 beforeEach(() => {
@@ -1120,7 +1122,14 @@ describe("removeExpired", () => {
       makeMessage({ id: "new", receivedAtMs: NOW - 1000, timestampMs: 2 }),
     );
     state().addMessage(
-      makeMessage({ id: "dm", channel: "dm:x", receivedAtMs: NOW - 3 * DAY }),
+      // A private message goes by its own timer, from when it was read.
+      makeMessage({
+        id: "dm",
+        channel: "dm:x",
+        receivedAtMs: NOW - 3 * DAY,
+        disappearAfterMs: DAY,
+        seenAtMs: NOW - 2 * DAY,
+      }),
     );
     const gone = state().removeExpired(NOW, DAY);
     expect(gone.map((m) => m.id).sort()).toEqual(["dm", "old"]);
@@ -1160,6 +1169,8 @@ describe("removeExpired", () => {
         id: "dm-gone",
         channel: "dm:x",
         receivedAtMs: NOW - 2 * DAY,
+        disappearAfterMs: DAY,
+        seenAtMs: NOW - 2 * DAY,
       });
       state().addMessage(dm);
       heard.length = 0;
@@ -1181,5 +1192,142 @@ describe("removeExpired", () => {
     state().addMessage(room);
     state().removeExpired(NOW, DAY);
     expect(state().addMessage({ ...room, receivedAtMs: undefined })).toBe(true);
+  });
+});
+
+describe("a private chat's disappearing timer", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  it("stamps each message with the chat's timer, and keeps one it carried", () => {
+    state().setDmTimer("dm:x", { ms: DAY, setAtMs: 5, setBy: "aa" });
+    state().addMessage(makeMessage({ id: "a", channel: "dm:x" }));
+    state().addMessage(
+      makeMessage({ id: "b", channel: "dm:x", disappearAfterMs: 7 * DAY }),
+    );
+    const rows = state().messages["dm:x"];
+    expect(rows.map((m) => m.disappearAfterMs)).toEqual([DAY, 7 * DAY]);
+  });
+
+  // A pin or a payment row must not outlive the words around it.
+  it("gives a row written into the chat its timer, and settles nothing on it", () => {
+    state().setDmTimer("dm:s", { ms: DAY, setAtMs: 5, setBy: "aa" });
+    state().addMessage(
+      makeMessage({
+        id: "pin",
+        channel: "dm:s",
+        systemKey: "chat.location.received_summary",
+        senderID: "ffffffffffffffff",
+      }),
+    );
+    expect(state().messages["dm:s"][0].disappearAfterMs).toBe(DAY);
+    expect(state().dmTimers["dm:s"]).toEqual({
+      ms: DAY,
+      setAtMs: 5,
+      setBy: "aa",
+    });
+  });
+
+  // Signal keeps it too: a chat started again picks up the timer both phones
+  // agreed on, rather than one phone falling back to its default.
+  it("keeps the timer when the chat is deleted", () => {
+    state().setDmTimer("dm:r", { ms: 7 * DAY, setAtMs: 5, setBy: "bb" });
+    state().addMessage(makeMessage({ id: "a", channel: "dm:r" }));
+    state().removeChannel("dm:r");
+    expect(state().dmTimers["dm:r"]?.ms).toBe(7 * DAY);
+  });
+
+  it("starts a chat on the default, as its first row's sender's", () => {
+    state().addMessage(makeMessage({ id: "a", channel: "dm:y" }));
+    expect(state().dmTimers["dm:y"]).toEqual({
+      ms: 0,
+      setAtMs: 0,
+      setBy: "aabbccdd00112233",
+    });
+  });
+
+  // Two phones that started on different defaults: each one's first message
+  // carries its own, and both keep the higher peer ID's.
+  it("settles two defaults on the higher peer ID's", () => {
+    const mine = { isMine: true, senderID: "11aa000000000000" };
+    state().addMessage(
+      makeMessage({ id: "a", channel: "dm:v", disappearAfterMs: DAY, ...mine }),
+    );
+    state().addMessage(
+      makeMessage({
+        id: "b",
+        channel: "dm:v",
+        disappearAfterMs: 7 * DAY,
+        senderID: "ffbb000000000000",
+      }),
+    );
+    expect(state().dmTimers["dm:v"]?.ms).toBe(7 * DAY);
+    state().addMessage(
+      makeMessage({
+        id: "c",
+        channel: "dm:v",
+        disappearAfterMs: DAY,
+        senderID: "0000000000000001",
+      }),
+    );
+    expect(state().dmTimers["dm:v"]?.ms).toBe(7 * DAY);
+  });
+
+  it("never lets a message outrank a timer someone set", () => {
+    state().setDmTimer("dm:u", { ms: DAY, setAtMs: 5, setBy: "00" });
+    state().addMessage(
+      makeMessage({
+        id: "a",
+        channel: "dm:u",
+        disappearAfterMs: 30 * DAY,
+        senderID: "ffffffffffffff00",
+      }),
+    );
+    expect(state().dmTimers["dm:u"]?.ms).toBe(DAY);
+  });
+
+  // A location chat has no picker: it follows the default, like a room.
+  it("keeps no timer for a Nostr-only chat", () => {
+    state().addMessage(
+      makeMessage({ id: "a", channel: "dm:nostr_abcd", disappearAfterMs: DAY }),
+    );
+    expect(state().dmTimers["dm:nostr_abcd"]).toBeUndefined();
+  });
+
+  // So the two phones' headers agree when an Airhop peer starts the chat.
+  it("starts a chat on the timer its first message came with", () => {
+    state().addMessage(
+      makeMessage({ id: "a", channel: "dm:w", disappearAfterMs: 7 * DAY }),
+    );
+    state().addMessage(makeMessage({ id: "b", channel: "dm:w" }));
+    expect(state().dmTimers["dm:w"]?.ms).toBe(7 * DAY);
+    expect(state().messages["dm:w"].map((m) => m.disappearAfterMs)).toEqual([
+      7 * DAY,
+      7 * DAY,
+    ]);
+  });
+
+  it("starts a received message's countdown only once it is on screen", () => {
+    state().addMessage(makeMessage({ id: "a", channel: "dm:z" }));
+    state().addMessage(
+      makeMessage({ id: "b", channel: "dm:z", isMine: true, timestampMs: 2 }),
+    );
+    state().markSeen("dm:z", 1234);
+    const seenAt = (id: string): number | undefined =>
+      state().messages["dm:z"].find((m) => m.id === id)?.seenAtMs;
+    expect([seenAt("a"), seenAt("b")]).toEqual([1234, undefined]);
+    state().markSeen("dm:z", 9999);
+    expect(seenAt("a")).toBe(1234);
+  });
+
+  it("takes the later change, and between two at once the higher peer ID", () => {
+    const at = (setAtMs: number, setBy: string): DmChatTimer => ({
+      ms: DAY,
+      setAtMs,
+      setBy,
+    });
+    expect(isLaterTimerChange(at(2, "aa"), at(1, "bb"))).toBe(true);
+    expect(isLaterTimerChange(at(1, "bb"), at(2, "aa"))).toBe(false);
+    expect(isLaterTimerChange(at(1, "bb"), at(1, "aa"))).toBe(true);
+    expect(isLaterTimerChange(at(1, "aa"), at(1, "bb"))).toBe(false);
   });
 });

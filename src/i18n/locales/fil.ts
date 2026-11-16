@@ -399,6 +399,33 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Hindi naabot ang bawat miyembro. Subukan ulit habang malapit sila.",
   "chat.group.you_were_added": "Naidagdag ka sa {name}.",
+  "chat.timer.you_set_1": "Itinakda mo ang naglalahong mga mensahe sa 1 araw",
+  "chat.timer.you_set_7": "Itinakda mo ang naglalahong mga mensahe sa 7 araw",
+  "chat.timer.you_set_30": "Itinakda mo ang naglalahong mga mensahe sa 30 araw",
+  "chat.timer.you_off": "Pinatay mo ang naglalahong mga mensahe",
+  "chat.timer.you_set_local_1":
+    "Itinakda mo ang naglalahong mga mensahe sa 1 araw sa teleponong ito",
+  "chat.timer.you_set_local_7":
+    "Itinakda mo ang naglalahong mga mensahe sa 7 araw sa teleponong ito",
+  "chat.timer.you_set_local_30":
+    "Itinakda mo ang naglalahong mga mensahe sa 30 araw sa teleponong ito",
+  "chat.timer.you_off_local":
+    "Pinatay mo ang naglalahong mga mensahe sa teleponong ito",
+  "chat.timer.peer_set_1":
+    "Itinakda ni {name} ang naglalahong mga mensahe sa 1 araw",
+  "chat.timer.peer_set_7":
+    "Itinakda ni {name} ang naglalahong mga mensahe sa 7 araw",
+  "chat.timer.peer_set_30":
+    "Itinakda ni {name} ang naglalahong mga mensahe sa 30 araw",
+  "chat.timer.peer_off": "Pinatay ni {name} ang naglalahong mga mensahe",
+  "chat.timer.sheet_shared":
+    "Para sa mga mensaheng ipapadala mula ngayon, sa parehong telepono. Sa telepono ng nagpadala, binibilang ang oras ng bawat isa mula nang ipadala, at sa kabilang telepono, mula nang unang mabasa. Hindi mapipigilan ang mga screenshot.",
+  "chat.timer.sheet_pending":
+    "Nakatakda sa teleponong ito. Makakarating ito kay {name} sa susunod ninyong pagkonekta, saka ito iiral sa parehong telepono.",
+  "chat.timer.sheet_bitchat":
+    "Sa teleponong ito lang. Hindi sinusuportahan ng app ni {name} ang magkasamang timer.",
+  "chat.timer.sheet_local":
+    "Sa teleponong ito lang muna. Kung sinusuportahan ng app ni {name} ang magkasamang timer, makakarating ito sa kanya sa susunod ninyong pagkonekta.",
   "chat.group.invited": "Inimbitahan ka sa {name}.",
   "chat.group.invited_you": "Inimbitahan ka sa {name}",
   "chat.group.decline": "Tanggihan",
@@ -2120,10 +2147,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Pinakamatagal na nananatiling mababasa ang mga usapan, at pinakamalaki ang kinakain sa disk.",
   "settings.general.message_retention": "Naglalahong mga mensahe",
-  "settings.general.message_retention_desc":
-    "Binubura ang mga mensahe at ang media nito sa phone na ito pagkalipas ng napiling oras",
-  "settings.general.message_retention_sheet":
-    "Binibilang mula nang dumating ang bawat mensahe sa phone na ito, at ang phone na ito lang ang nakakalimot. Itinatago ng phone ng kausap mo ang kopya niya, hindi mapipigilan ang mga screenshot, at mananatili ang mga bayad mula sa pribadong chat na hindi mo pa naaangkin hanggang angkinin mo ang mga ito.",
+  "settings.general.message_retention_default":
+    "Default na timer para sa mga bagong chat",
+  "settings.general.message_retention_default_desc":
+    "Para sa mga bagong direktang mensahe, at sa mga room, channel at grupo sa teleponong ito",
+  "settings.general.message_retention_default_sheet":
+    "Nagsisimula ang mga bagong direktang mensahe sa timer na ito, at puwede itong palitan ng sinuman sa inyo sa chat. Sinusunod ito ng mga room, channel at grupo sa teleponong ito lang, bilang mula nang dumating ang bawat mensahe. Hindi mapipigilan ang mga screenshot, at mananatili ang mga bayad na ipinadala sa iyo sa direktang mensahe hanggang kunin mo ang mga ito.",
   "settings.general.message_retention_off_desc":
     "Mananatili ang mga mensahe hanggang i-clear mo ang chat o umalis ka rito",
   "settings.general.message_retention_1_desc":
@@ -2135,11 +2164,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Burahin ang mas lumang mga mensahe?",
   "settings.general.message_retention_confirm_1":
-    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 1 araw, kasama ang media nila. Hindi na ito mababawi.",
+    "Buburahin na ngayon sa phone na ito ang mga mensahe sa room, channel, grupo at mga chat na sinimulan mula sa channel ng lokasyon na mas luma sa 1 araw, kasama ang media nila. May sariling timer ang ibang direktang mensahe. Hindi na ito mababawi.",
   "settings.general.message_retention_confirm_7":
-    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 7 araw, kasama ang media nila. Hindi na ito mababawi.",
+    "Buburahin na ngayon sa phone na ito ang mga mensahe sa room, channel, grupo at mga chat na sinimulan mula sa channel ng lokasyon na mas luma sa 7 araw, kasama ang media nila. May sariling timer ang ibang direktang mensahe. Hindi na ito mababawi.",
   "settings.general.message_retention_confirm_30":
-    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 30 araw, kasama ang media nila. Hindi na ito mababawi.",
+    "Buburahin na ngayon sa phone na ito ang mga mensahe sa room, channel, grupo at mga chat na sinimulan mula sa channel ng lokasyon na mas luma sa 30 araw, kasama ang media nila. May sariling timer ang ibang direktang mensahe. Hindi na ito mababawi.",
   "settings.general.reset_desc":
     "Ibinabalik ang mga kagustuhan sa kanilang default, nang hindi ginagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet",
   "settings.general.reset_title": "I-reset ang mga setting?",

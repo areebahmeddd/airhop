@@ -389,6 +389,29 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tidak semua anggota bisa dijangkau. Coba lagi selagi mereka di dekat sini.",
   "chat.group.you_were_added": "Kamu ditambahkan ke {name}.",
+  "chat.timer.you_set_1": "Anda mengatur pesan sementara ke 1 hari",
+  "chat.timer.you_set_7": "Anda mengatur pesan sementara ke 7 hari",
+  "chat.timer.you_set_30": "Anda mengatur pesan sementara ke 30 hari",
+  "chat.timer.you_off": "Anda mematikan pesan sementara",
+  "chat.timer.you_set_local_1":
+    "Anda mengatur pesan sementara ke 1 hari di ponsel ini",
+  "chat.timer.you_set_local_7":
+    "Anda mengatur pesan sementara ke 7 hari di ponsel ini",
+  "chat.timer.you_set_local_30":
+    "Anda mengatur pesan sementara ke 30 hari di ponsel ini",
+  "chat.timer.you_off_local": "Anda mematikan pesan sementara di ponsel ini",
+  "chat.timer.peer_set_1": "{name} mengatur pesan sementara ke 1 hari",
+  "chat.timer.peer_set_7": "{name} mengatur pesan sementara ke 7 hari",
+  "chat.timer.peer_set_30": "{name} mengatur pesan sementara ke 30 hari",
+  "chat.timer.peer_off": "{name} mematikan pesan sementara",
+  "chat.timer.sheet_shared":
+    "Untuk pesan yang dikirim mulai sekarang, di kedua ponsel. Di ponsel pengirim, waktu setiap pesan dihitung sejak dikirim, dan di ponsel lain sejak pertama kali dibaca. Tangkapan layar tidak bisa dicegah.",
+  "chat.timer.sheet_pending":
+    "Diatur di ponsel ini. Timer ini akan sampai ke {name} saat kalian terhubung lagi, lalu berlaku di kedua ponsel.",
+  "chat.timer.sheet_bitchat":
+    "Hanya di ponsel ini. Aplikasi {name} tidak mendukung timer bersama.",
+  "chat.timer.sheet_local":
+    "Untuk sekarang hanya di ponsel ini. Jika aplikasi {name} mendukung timer bersama, timer ini akan sampai kepadanya saat kalian terhubung lagi.",
   "chat.group.invited": "Kamu diundang ke {name}.",
   "chat.group.invited_you": "Mengundangmu ke {name}",
   "chat.group.decline": "Tolak",
@@ -2075,10 +2098,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Menjaga utasnya paling lama terbaca, sekaligus paling banyak memakan ruang.",
   "settings.general.message_retention": "Pesan sementara",
-  "settings.general.message_retention_desc":
-    "Pesan dan medianya dihapus dari ponsel ini setelah waktu yang dipilih",
-  "settings.general.message_retention_sheet":
-    "Dihitung sejak tiap pesan sampai di ponsel ini, dan hanya ponsel ini yang lupa. Ponsel orang lain tetap menyimpan salinannya, tangkapan layar tidak bisa dicegah, dan pembayaran dari obrolan pribadi yang belum kamu klaim tetap ada sampai kamu mengklaimnya.",
+  "settings.general.message_retention_default":
+    "Timer bawaan untuk obrolan baru",
+  "settings.general.message_retention_default_desc":
+    "Untuk pesan langsung baru, serta ruang, kanal, dan grup di ponsel ini",
+  "settings.general.message_retention_default_sheet":
+    "Pesan langsung baru dimulai dengan timer ini, dan siapa pun dari kalian bisa mengubahnya di obrolan. Ruang, kanal, dan grup mengikutinya di ponsel ini saja, dihitung sejak setiap pesan tiba. Tangkapan layar tidak bisa dicegah, dan pembayaran yang dikirim kepada Anda lewat pesan langsung tetap ada sampai Anda mengklaimnya.",
   "settings.general.message_retention_off_desc":
     "Pesan tetap ada sampai kamu mengosongkan obrolan atau keluar darinya",
   "settings.general.message_retention_1_desc":
@@ -2090,11 +2115,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Hapus pesan yang lebih lama?",
   "settings.general.message_retention_confirm_1":
-    "Pesan yang lebih lama dari 1 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Ini tidak bisa dibatalkan.",
+    "Pesan ruang, kanal, grup, dan obrolan yang dimulai dari kanal lokasi yang lebih lama dari 1 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Pesan langsung lainnya tetap memakai timernya sendiri. Ini tidak bisa dibatalkan.",
   "settings.general.message_retention_confirm_7":
-    "Pesan yang lebih lama dari 7 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Ini tidak bisa dibatalkan.",
+    "Pesan ruang, kanal, grup, dan obrolan yang dimulai dari kanal lokasi yang lebih lama dari 7 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Pesan langsung lainnya tetap memakai timernya sendiri. Ini tidak bisa dibatalkan.",
   "settings.general.message_retention_confirm_30":
-    "Pesan yang lebih lama dari 30 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Ini tidak bisa dibatalkan.",
+    "Pesan ruang, kanal, grup, dan obrolan yang dimulai dari kanal lokasi yang lebih lama dari 30 hari akan dihapus dari ponsel ini sekarang, beserta medianya. Pesan langsung lainnya tetap memakai timernya sendiri. Ini tidak bisa dibatalkan.",
   "settings.general.reset_desc":
     "Mengembalikan preferensi ke bawaannya, tanpa menyentuh identitas, pesan, kontak, dan dompetmu",
   "settings.general.reset_title": "Setel ulang pengaturan?",

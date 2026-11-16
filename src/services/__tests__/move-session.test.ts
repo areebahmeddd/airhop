@@ -620,6 +620,10 @@ describe("device transfer, end to end", () => {
         p.keychain.KEYCHAIN_ITEMS.localPrekeys,
         "old-prekeys",
       );
+      await p.keychain.writeSecret(
+        p.keychain.KEYCHAIN_ITEMS.dmPrekeys,
+        "old-dm-prekeys",
+      );
       p.wipeMarker.condemnIdentity();
     });
     r.send();
@@ -634,11 +638,9 @@ describe("device transfer, end to end", () => {
     expect(r.newPhone.wipeMarker.isIdentityCondemned()).toBe(false);
     // The condemned identity's one-time keys must not be published by the
     // identity that replaced it.
-    expect(
-      await r.newPhone.keychain.readSecret(
-        r.newPhone.keychain.KEYCHAIN_ITEMS.localPrekeys,
-      ),
-    ).toBeNull();
+    for (const item of r.newPhone.keychain.IDENTITY_PREKEY_ITEMS) {
+      expect(await r.newPhone.keychain.readSecret(item)).toBeNull();
+    }
     r.receiver.dispose();
   });
 

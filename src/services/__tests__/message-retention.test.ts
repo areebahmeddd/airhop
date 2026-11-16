@@ -79,7 +79,9 @@ const PHOTO = `file:///app/Library/Caches/${INCOMING_FILE_PREFIX}1_photo.jpg`;
 const forgotten: string[][] = [];
 
 let seq = 0;
-// A message from someone else, arriving at the faked clock's now.
+// A message from someone else, arriving at the faked clock's now and read at
+// once: a private message's countdown starts when it is first on screen
+// (message-expiry's own tests cover one nobody has read).
 function arrive(overrides: Partial<ChatMessage> = {}): ChatMessage {
   seq += 1;
   const msg: ChatMessage = {
@@ -90,6 +92,7 @@ function arrive(overrides: Partial<ChatMessage> = {}): ChatMessage {
     text: "words",
     timestampMs: Date.now(),
     isMine: false,
+    seenAtMs: Date.now(),
     ...overrides,
   };
   useChatStore.getState().addMessage(msg);
@@ -200,12 +203,14 @@ describe("a message arriving already past the window", () => {
   });
 });
 
-describe("the window shortened while a thread is open", () => {
+// A private chat keeps the timer it started with (or one its members set), so
+// the default reaches existing threads only in rooms.
+describe("the window shortened while a room is open", () => {
   it("hides the older messages at once and removes them with the sweep", () => {
     setDays(30);
-    arriveAt(NOW - 3 * DAY);
-    const fresh = arriveAt(NOW - HOUR);
-    const thread = useChatStore.getState().messages["dm:alice"];
+    arriveAt(NOW - 3 * DAY, { channel: "#room" });
+    const fresh = arriveAt(NOW - HOUR, { channel: "#room" });
+    const thread = useChatStore.getState().messages["#room"];
     const month = messageRetentionWindowMs(30);
     expect(withoutExpired(thread, NOW, month)).toBe(thread);
 
@@ -217,7 +222,7 @@ describe("the window shortened while a thread is open", () => {
 
     // What General runs after the confirm.
     sweepMessagesNow(NOW);
-    expect(ids()).toEqual([fresh.id]);
+    expect(ids("#room")).toEqual([fresh.id]);
   });
 });
 

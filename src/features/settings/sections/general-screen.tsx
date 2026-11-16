@@ -38,6 +38,10 @@ import { useThemeColors } from "@ui/theme";
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import {
+  MESSAGE_RETENTION_DESCRIPTION,
+  messageRetentionLabel,
+} from "../message-retention-labels";
+import {
   GroupDivider,
   SettingLinkRow,
   SettingRow,
@@ -124,17 +128,6 @@ const RETENTION_DESCRIPTION: Record<MediaRetentionDays, TranslationKey> = {
   30: "settings.general.retention_30_desc",
 };
 
-// Disappearing messages, keyed on their union for the same reason.
-const MESSAGE_RETENTION_DESCRIPTION: Record<
-  MessageRetentionDays,
-  TranslationKey
-> = {
-  0: "settings.general.message_retention_off_desc",
-  1: "settings.general.message_retention_1_desc",
-  7: "settings.general.message_retention_7_desc",
-  30: "settings.general.message_retention_30_desc",
-};
-
 // What a shorter window deletes, said before it does. A whole sentence per
 // window rather than a count spliced in, since "older than 1 day" declines
 // differently from the bare "1 day" the picker shows.
@@ -146,16 +139,6 @@ const MESSAGE_RETENTION_CONFIRM: Record<
   7: "settings.general.message_retention_confirm_7",
   30: "settings.general.message_retention_confirm_30",
 };
-
-function messageRetentionLabel(
-  T: Translator,
-  TP: PluralTranslator,
-  days: MessageRetentionDays,
-): string {
-  return days === 0
-    ? T("common.off")
-    : TP("settings.general.retention_days", days);
-}
 
 // What Reset settings leaves alone, as its confirm says.
 //   stayInvisible        status belongs to the Profile picker, and the running
@@ -349,13 +332,18 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
             <SettingLinkRow
               id="message-retention"
               icon="watch"
-              label={T("settings.general.message_retention")}
-              description={T("settings.general.message_retention_desc")}
+              label={T("settings.general.message_retention_default")}
+              description={T("settings.general.message_retention_default_desc")}
               control={
                 <Text style={styles.settingValue}>
                   {messageRetentionLabel(T, TP, messageRetentionDays)}
                 </Text>
               }
+              accessibilityValue={messageRetentionLabel(
+                T,
+                TP,
+                messageRetentionDays,
+              )}
               onPress={() => setShowMessageRetentionSheet(true)}
             />
             <GroupDivider />
@@ -564,10 +552,10 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         sheetStyle={styles.sheet}
       >
         <Text style={styles.sheetTitle}>
-          {T("settings.general.message_retention")}
+          {T("settings.general.message_retention_default")}
         </Text>
         <Text style={styles.sheetSubtitle}>
-          {T("settings.general.message_retention_sheet")}
+          {T("settings.general.message_retention_default_sheet")}
         </Text>
         <View style={styles.optionGroup}>
           {MESSAGE_RETENTION_DAY_OPTIONS.map((days, i) => {

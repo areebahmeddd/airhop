@@ -395,6 +395,32 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Impossible de joindre tous les membres. Réessaie quand ils sont à proximité.",
   "chat.group.you_were_added": "Tu as été ajouté à {name}.",
+  "chat.timer.you_set_1": "Vous avez réglé les messages éphémères sur 1 jour",
+  "chat.timer.you_set_7": "Vous avez réglé les messages éphémères sur 7 jours",
+  "chat.timer.you_set_30":
+    "Vous avez réglé les messages éphémères sur 30 jours",
+  "chat.timer.you_off": "Vous avez désactivé les messages éphémères",
+  "chat.timer.you_set_local_1":
+    "Sur ce téléphone, vous avez réglé les messages éphémères sur 1 jour",
+  "chat.timer.you_set_local_7":
+    "Sur ce téléphone, vous avez réglé les messages éphémères sur 7 jours",
+  "chat.timer.you_set_local_30":
+    "Sur ce téléphone, vous avez réglé les messages éphémères sur 30 jours",
+  "chat.timer.you_off_local":
+    "Sur ce téléphone, vous avez désactivé les messages éphémères",
+  "chat.timer.peer_set_1": "{name} a réglé les messages éphémères sur 1 jour",
+  "chat.timer.peer_set_7": "{name} a réglé les messages éphémères sur 7 jours",
+  "chat.timer.peer_set_30":
+    "{name} a réglé les messages éphémères sur 30 jours",
+  "chat.timer.peer_off": "{name} a désactivé les messages éphémères",
+  "chat.timer.sheet_shared":
+    "Pour les messages envoyés à partir de maintenant, sur les deux téléphones. Sur le téléphone de l’expéditeur, le délai de chacun court à partir de l’envoi, et sur l’autre, à partir de la première lecture. Les captures d’écran ne peuvent pas être empêchées.",
+  "chat.timer.sheet_pending":
+    "Réglé sur ce téléphone. Le minuteur parviendra à {name} la prochaine fois que vous vous connecterez, puis s’appliquera sur les deux téléphones.",
+  "chat.timer.sheet_bitchat":
+    "Sur ce téléphone uniquement. L’app de {name} ne prend pas en charge les minuteurs partagés.",
+  "chat.timer.sheet_local":
+    "Sur ce téléphone uniquement pour l’instant. Si l’app de {name} prend en charge les minuteurs partagés, le minuteur lui parviendra la prochaine fois que vous vous connecterez.",
   "chat.group.invited": "Tu es invité à {name}.",
   "chat.group.invited_you": "T’a invité à {name}",
   "chat.group.decline": "Refuser",
@@ -2110,10 +2136,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Garde les conversations lisibles le plus longtemps, et occupe le plus d’espace.",
   "settings.general.message_retention": "Messages éphémères",
-  "settings.general.message_retention_desc":
-    "Les messages et leurs médias sont supprimés de ce téléphone après la durée choisie",
-  "settings.general.message_retention_sheet":
-    "Compté à partir de l’arrivée de chaque message sur ce téléphone, et seul ce téléphone oublie. Le téléphone de l’autre personne garde sa copie, les captures d’écran ne peuvent pas être empêchées et les paiements reçus en discussion privée que tu n’as pas encaissés restent jusqu’à ce que tu les encaisses.",
+  "settings.general.message_retention_default":
+    "Minuteur par défaut des nouvelles discussions",
+  "settings.general.message_retention_default_desc":
+    "Pour les nouveaux messages directs, et pour les salons, canaux et groupes sur ce téléphone",
+  "settings.general.message_retention_default_sheet":
+    "Les nouveaux messages directs commencent avec ce minuteur, et chacun peut le changer dans la discussion. Les salons, canaux et groupes le suivent sur ce téléphone uniquement, à compter de l’arrivée de chaque message. Les captures d’écran ne peuvent pas être empêchées, et les paiements reçus dans un message direct restent jusqu’à ce que vous les encaissiez.",
   "settings.general.message_retention_off_desc":
     "Les messages restent jusqu’à ce que tu vides la conversation ou la quittes",
   "settings.general.message_retention_1_desc":
@@ -2125,11 +2153,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Supprimer les messages plus anciens ?",
   "settings.general.message_retention_confirm_1":
-    "Les messages de plus d’un jour seront supprimés de ce téléphone maintenant, avec leurs médias. C’est irréversible.",
+    "Les messages de plus d’un jour des salons, canaux, groupes et discussions lancées depuis un canal de localisation seront supprimés de ce téléphone maintenant, avec leurs médias. Les autres messages directs gardent leur propre minuteur. C’est irréversible.",
   "settings.general.message_retention_confirm_7":
-    "Les messages de plus de 7 jours seront supprimés de ce téléphone maintenant, avec leurs médias. C’est irréversible.",
+    "Les messages de plus de 7 jours des salons, canaux, groupes et discussions lancées depuis un canal de localisation seront supprimés de ce téléphone maintenant, avec leurs médias. Les autres messages directs gardent leur propre minuteur. C’est irréversible.",
   "settings.general.message_retention_confirm_30":
-    "Les messages de plus de 30 jours seront supprimés de ce téléphone maintenant, avec leurs médias. C’est irréversible.",
+    "Les messages de plus de 30 jours des salons, canaux, groupes et discussions lancées depuis un canal de localisation seront supprimés de ce téléphone maintenant, avec leurs médias. Les autres messages directs gardent leur propre minuteur. C’est irréversible.",
   "settings.general.reset_desc":
     "Remet les préférences à leur valeur par défaut, sans toucher à ton identité, tes messages, tes contacts ni ton portefeuille",
   "settings.general.reset_title": "Réinitialiser les réglages ?",

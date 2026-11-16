@@ -4,7 +4,12 @@
 // they are checked over a whole simulated room rather than one device: every
 // pair agrees, nobody dials twice, the graph stays connected, and no device
 // carries more links than the cap allows.
-import { dialTargets, MAX_LAN_LINKS } from "../lan-dial-policy";
+import {
+  dialTargets,
+  directDialHost,
+  isPrivateIPv4,
+  MAX_LAN_LINKS,
+} from "../lan-dial-policy";
 
 // Stand-ins for mDNS instance names: fixed-width lowercase hex, so a plain
 // string sort is the numeric one.
@@ -127,5 +132,61 @@ describe("dialTargets", () => {
         shuffled.filter((p) => p !== peers[3]),
       ),
     );
+  });
+});
+
+// A peer's LAN endpoint is dialed only at a private address on one of this
+// phone's own subnets: nothing a peer names can point a dial off the network.
+describe("direct dial address", () => {
+  const home = [{ address: "192.168.1.10", prefixLength: 24 }];
+
+  it("knows the private ranges and nothing else", () => {
+    for (const host of [
+      "10.0.0.1",
+      "10.255.255.255",
+      "172.16.0.1",
+      "172.31.255.254",
+      "192.168.0.1",
+      "192.168.255.255",
+    ]) {
+      expect(isPrivateIPv4(host)).toBe(true);
+    }
+    for (const host of [
+      "8.8.8.8",
+      "172.15.0.1",
+      "172.32.0.1",
+      "192.167.1.1",
+      "169.254.1.1",
+      "127.0.0.1",
+      "100.64.0.1",
+      "192.168.1.256",
+      "example.com",
+      "",
+    ]) {
+      expect(isPrivateIPv4(host)).toBe(false);
+    }
+  });
+
+  it("dials a private address on this phone's own subnet", () => {
+    expect(directDialHost(["192.168.1.23"], home)).toBe("192.168.1.23");
+  });
+
+  it("refuses a public, off-subnet or own address", () => {
+    // A campus network's public address stays with mDNS.
+    const campus = [{ address: "128.32.10.4", prefixLength: 16 }];
+    expect(directDialHost(["128.32.10.9"], campus)).toBeNull();
+    expect(directDialHost(["10.0.0.5"], home)).toBeNull();
+    expect(directDialHost(["192.168.2.23"], home)).toBeNull();
+    expect(directDialHost(["192.168.1.10"], home)).toBeNull();
+    expect(directDialHost(["192.168.1.23"], [])).toBeNull();
+  });
+
+  it("picks one address, the first that qualifies, never a sweep", () => {
+    expect(
+      directDialHost(
+        ["8.8.8.8", "10.0.0.5", "192.168.1.30", "192.168.1.31"],
+        home,
+      ),
+    ).toBe("192.168.1.30");
   });
 });

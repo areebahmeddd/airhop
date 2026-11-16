@@ -384,6 +384,33 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Alla medlemmar kunde inte nås. Försök igen medan de är i närheten.",
   "chat.group.you_were_added": "Du lades till i {name}.",
+  "chat.timer.you_set_1": "Du ställde in försvinnande meddelanden på 1 dag",
+  "chat.timer.you_set_7": "Du ställde in försvinnande meddelanden på 7 dagar",
+  "chat.timer.you_set_30": "Du ställde in försvinnande meddelanden på 30 dagar",
+  "chat.timer.you_off": "Du stängde av försvinnande meddelanden",
+  "chat.timer.you_set_local_1":
+    "Du ställde in försvinnande meddelanden på 1 dag på den här telefonen",
+  "chat.timer.you_set_local_7":
+    "Du ställde in försvinnande meddelanden på 7 dagar på den här telefonen",
+  "chat.timer.you_set_local_30":
+    "Du ställde in försvinnande meddelanden på 30 dagar på den här telefonen",
+  "chat.timer.you_off_local":
+    "Du stängde av försvinnande meddelanden på den här telefonen",
+  "chat.timer.peer_set_1":
+    "{name} ställde in försvinnande meddelanden på 1 dag",
+  "chat.timer.peer_set_7":
+    "{name} ställde in försvinnande meddelanden på 7 dagar",
+  "chat.timer.peer_set_30":
+    "{name} ställde in försvinnande meddelanden på 30 dagar",
+  "chat.timer.peer_off": "{name} stängde av försvinnande meddelanden",
+  "chat.timer.sheet_shared":
+    "För meddelanden som skickas från och med nu, på båda telefonerna. På avsändarens telefon räknas vart och ett ner från när det skickades, och på den andra från när det först lästes. Skärmdumpar går inte att förhindra.",
+  "chat.timer.sheet_pending":
+    "Inställt på den här telefonen. Timern når {name} nästa gång ni ansluter till varandra och gäller sedan på båda telefonerna.",
+  "chat.timer.sheet_bitchat":
+    "Bara på den här telefonen. Appen som {name} använder stöder inte delade timers.",
+  "chat.timer.sheet_local":
+    "Bara på den här telefonen tills vidare. Om appen som {name} använder stöder delade timers når timern fram nästa gång ni ansluter till varandra.",
   "chat.group.invited": "Du har bjudits in till {name}.",
   "chat.group.invited_you": "Bjöd in dig till {name}",
   "chat.group.decline": "Avböj",
@@ -2048,10 +2075,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Håller trådarna läsbara längst, och tar mest plats på disken.",
   "settings.general.message_retention": "Försvinnande meddelanden",
-  "settings.general.message_retention_desc":
-    "Meddelanden och deras media raderas från den här telefonen efter vald tid",
-  "settings.general.message_retention_sheet":
-    "Räknas från när varje meddelande nådde den här telefonen, och bara den här telefonen glömmer. Den andra personens telefon behåller sin kopia, skärmbilder går inte att förhindra och betalningar i privata chattar som du inte har hämtat ligger kvar tills du hämtar dem.",
+  "settings.general.message_retention_default": "Standardtimer för nya chattar",
+  "settings.general.message_retention_default_desc":
+    "För nya direktmeddelanden, och för rum, kanaler och grupper på den här telefonen",
+  "settings.general.message_retention_default_sheet":
+    "Nya direktmeddelanden börjar med den här timern, och ni kan båda ändra den i chatten. Rum, kanaler och grupper följer den bara på den här telefonen, räknat från när varje meddelande kom fram. Skärmdumpar går inte att förhindra, och betalningar som skickas till dig i ett direktmeddelande finns kvar tills du löser in dem.",
   "settings.general.message_retention_off_desc":
     "Meddelanden ligger kvar tills du rensar chatten eller lämnar den",
   "settings.general.message_retention_1_desc":
@@ -2062,11 +2090,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Radera äldre meddelanden?",
   "settings.general.message_retention_confirm_1":
-    "Meddelanden äldre än 1 dag raderas från den här telefonen nu, tillsammans med deras media. Det går inte att ångra.",
+    "Meddelanden äldre än 1 dag i rum, kanaler, grupper och chattar som startats från en platskanal raderas från den här telefonen nu, tillsammans med deras media. Andra direktmeddelanden behåller sina egna timers. Det går inte att ångra.",
   "settings.general.message_retention_confirm_7":
-    "Meddelanden äldre än 7 dagar raderas från den här telefonen nu, tillsammans med deras media. Det går inte att ångra.",
+    "Meddelanden äldre än 7 dagar i rum, kanaler, grupper och chattar som startats från en platskanal raderas från den här telefonen nu, tillsammans med deras media. Andra direktmeddelanden behåller sina egna timers. Det går inte att ångra.",
   "settings.general.message_retention_confirm_30":
-    "Meddelanden äldre än 30 dagar raderas från den här telefonen nu, tillsammans med deras media. Det går inte att ångra.",
+    "Meddelanden äldre än 30 dagar i rum, kanaler, grupper och chattar som startats från en platskanal raderas från den här telefonen nu, tillsammans med deras media. Andra direktmeddelanden behåller sina egna timers. Det går inte att ångra.",
   "settings.general.reset_desc":
     "Sätter tillbaka inställningar till sina standardvärden, medan identitet, meddelanden, kontakter och plånbok lämnas orörda",
   "settings.general.reset_title": "Återställa inställningarna?",

@@ -398,6 +398,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Es konnten nicht alle Mitglieder erreicht werden. Versuche es erneut, während sie in der Nähe sind.",
   "chat.group.you_were_added": "Du wurdest zu {name} hinzugefügt.",
+  "chat.timer.you_set_1":
+    "Du hast verschwindende Nachrichten auf 1 Tag gestellt",
+  "chat.timer.you_set_7":
+    "Du hast verschwindende Nachrichten auf 7 Tage gestellt",
+  "chat.timer.you_set_30":
+    "Du hast verschwindende Nachrichten auf 30 Tage gestellt",
+  "chat.timer.you_off": "Du hast verschwindende Nachrichten ausgeschaltet",
+  "chat.timer.you_set_local_1":
+    "Du hast verschwindende Nachrichten auf diesem Handy auf 1 Tag gestellt",
+  "chat.timer.you_set_local_7":
+    "Du hast verschwindende Nachrichten auf diesem Handy auf 7 Tage gestellt",
+  "chat.timer.you_set_local_30":
+    "Du hast verschwindende Nachrichten auf diesem Handy auf 30 Tage gestellt",
+  "chat.timer.you_off_local":
+    "Du hast verschwindende Nachrichten auf diesem Handy ausgeschaltet",
+  "chat.timer.peer_set_1":
+    "{name} hat verschwindende Nachrichten auf 1 Tag gestellt",
+  "chat.timer.peer_set_7":
+    "{name} hat verschwindende Nachrichten auf 7 Tage gestellt",
+  "chat.timer.peer_set_30":
+    "{name} hat verschwindende Nachrichten auf 30 Tage gestellt",
+  "chat.timer.peer_off": "{name} hat verschwindende Nachrichten ausgeschaltet",
+  "chat.timer.sheet_shared":
+    "Für Nachrichten, die ab jetzt gesendet werden, auf beiden Handys. Auf dem sendenden Handy läuft der Timer jeder Nachricht ab dem Senden, auf dem anderen ab dem ersten Lesen. Screenshots lassen sich nicht verhindern.",
+  "chat.timer.sheet_pending":
+    "Auf diesem Handy eingestellt. Beim nächsten Verbinden erreicht der Timer {name} und gilt dann auf beiden Handys.",
+  "chat.timer.sheet_bitchat":
+    "Nur auf diesem Handy. Die App von {name} unterstützt keine gemeinsamen Timer.",
+  "chat.timer.sheet_local":
+    "Vorerst gilt der Timer nur auf diesem Handy. Unterstützt die App von {name} gemeinsame Timer, wird er beim nächsten Verbinden übertragen.",
   "chat.group.invited": "Du wurdest zu {name} eingeladen.",
   "chat.group.invited_you": "Hat dich zu {name} eingeladen",
   "chat.group.decline": "Ablehnen",
@@ -2108,10 +2138,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Hält Verläufe am längsten lesbar und belegt am meisten Speicher.",
   "settings.general.message_retention": "Verschwindende Nachrichten",
-  "settings.general.message_retention_desc":
-    "Nachrichten und ihre Medien werden nach der gewählten Zeit von diesem Telefon gelöscht",
-  "settings.general.message_retention_sheet":
-    "Gezählt ab der Ankunft jeder Nachricht auf diesem Telefon, und nur dieses Telefon vergisst. Das Telefon der anderen Person behält seine Kopie, Screenshots lassen sich nicht verhindern, und Zahlungen aus privaten Chats, die du noch nicht eingelöst hast, bleiben, bis du sie einlöst.",
+  "settings.general.message_retention_default": "Standard-Timer für neue Chats",
+  "settings.general.message_retention_default_desc":
+    "Für neue Direktnachrichten sowie für Räume, Kanäle und Gruppen auf diesem Handy",
+  "settings.general.message_retention_default_sheet":
+    "Neue Direktnachrichten beginnen mit diesem Timer, und beide können ihn im Chat ändern. Räume, Kanäle und Gruppen folgen ihm nur auf diesem Handy, gezählt ab dem Eintreffen jeder Nachricht. Screenshots lassen sich nicht verhindern, und Zahlungen, die dir in einer Direktnachricht geschickt werden, bleiben, bis du sie einlöst.",
   "settings.general.message_retention_off_desc":
     "Nachrichten bleiben, bis du den Chat leerst oder verlässt",
   "settings.general.message_retention_1_desc":
@@ -2123,11 +2154,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Ältere Nachrichten löschen?",
   "settings.general.message_retention_confirm_1":
-    "Nachrichten, die älter als 1 Tag sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Das lässt sich nicht rückgängig machen.",
+    "Nachrichten in Räumen, Kanälen, Gruppen und aus einem Standortkanal gestarteten Chats, die älter als 1 Tag sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Andere Direktnachrichten behalten ihre eigenen Timer. Das lässt sich nicht rückgängig machen.",
   "settings.general.message_retention_confirm_7":
-    "Nachrichten, die älter als 7 Tage sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Das lässt sich nicht rückgängig machen.",
+    "Nachrichten in Räumen, Kanälen, Gruppen und aus einem Standortkanal gestarteten Chats, die älter als 7 Tage sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Andere Direktnachrichten behalten ihre eigenen Timer. Das lässt sich nicht rückgängig machen.",
   "settings.general.message_retention_confirm_30":
-    "Nachrichten, die älter als 30 Tage sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Das lässt sich nicht rückgängig machen.",
+    "Nachrichten in Räumen, Kanälen, Gruppen und aus einem Standortkanal gestarteten Chats, die älter als 30 Tage sind, werden jetzt samt ihren Medien von diesem Telefon gelöscht. Andere Direktnachrichten behalten ihre eigenen Timer. Das lässt sich nicht rückgängig machen.",
   "settings.general.reset_desc":
     "Setzt Einstellungen auf ihren Standard zurück und lässt Identität, Nachrichten, Kontakte und Wallet unberührt",
   "settings.general.reset_title": "Einstellungen zurücksetzen?",

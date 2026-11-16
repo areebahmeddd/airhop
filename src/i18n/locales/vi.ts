@@ -382,6 +382,29 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Không tới được mọi thành viên. Hãy thử lại khi họ ở gần.",
   "chat.group.you_were_added": "Bạn đã được thêm vào {name}.",
+  "chat.timer.you_set_1": "Bạn đã đặt tin nhắn tự xóa là 1 ngày",
+  "chat.timer.you_set_7": "Bạn đã đặt tin nhắn tự xóa là 7 ngày",
+  "chat.timer.you_set_30": "Bạn đã đặt tin nhắn tự xóa là 30 ngày",
+  "chat.timer.you_off": "Bạn đã tắt tin nhắn tự xóa",
+  "chat.timer.you_set_local_1":
+    "Bạn đã đặt tin nhắn tự xóa là 1 ngày trên điện thoại này",
+  "chat.timer.you_set_local_7":
+    "Bạn đã đặt tin nhắn tự xóa là 7 ngày trên điện thoại này",
+  "chat.timer.you_set_local_30":
+    "Bạn đã đặt tin nhắn tự xóa là 30 ngày trên điện thoại này",
+  "chat.timer.you_off_local": "Bạn đã tắt tin nhắn tự xóa trên điện thoại này",
+  "chat.timer.peer_set_1": "{name} đã đặt tin nhắn tự xóa là 1 ngày",
+  "chat.timer.peer_set_7": "{name} đã đặt tin nhắn tự xóa là 7 ngày",
+  "chat.timer.peer_set_30": "{name} đã đặt tin nhắn tự xóa là 30 ngày",
+  "chat.timer.peer_off": "{name} đã tắt tin nhắn tự xóa",
+  "chat.timer.sheet_shared":
+    "Cho tin nhắn gửi từ bây giờ, trên cả hai điện thoại. Trên điện thoại người gửi, mỗi tin được tính giờ từ lúc gửi, và trên điện thoại kia từ lần đầu được đọc. Không thể ngăn chụp màn hình.",
+  "chat.timer.sheet_pending":
+    "Đã đặt trên điện thoại này. Hẹn giờ sẽ đến với {name} vào lần tới hai bạn kết nối, rồi áp dụng trên cả hai điện thoại.",
+  "chat.timer.sheet_bitchat":
+    "Chỉ trên điện thoại này. Ứng dụng của {name} không hỗ trợ hẹn giờ chung.",
+  "chat.timer.sheet_local":
+    "Tạm thời chỉ trên điện thoại này. Nếu ứng dụng của {name} hỗ trợ hẹn giờ chung, hẹn giờ sẽ đến với họ vào lần tới hai bạn kết nối.",
   "chat.group.invited": "Bạn được mời vào {name}.",
   "chat.group.invited_you": "Đã mời bạn vào {name}",
   "chat.group.decline": "Từ chối",
@@ -2049,10 +2072,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Giữ cuộc trò chuyện đọc được lâu nhất, và cũng chiếm đĩa nhiều nhất.",
   "settings.general.message_retention": "Tin nhắn tự xóa",
-  "settings.general.message_retention_desc":
-    "Tin nhắn và phương tiện kèm theo bị xóa khỏi điện thoại này sau thời gian đã chọn",
-  "settings.general.message_retention_sheet":
-    "Tính từ lúc mỗi tin nhắn đến điện thoại này, và chỉ điện thoại này quên. Điện thoại của người kia vẫn giữ bản sao, không thể ngăn chụp màn hình, và các khoản thanh toán trong trò chuyện riêng mà bạn chưa nhận sẽ còn lại cho đến khi bạn nhận.",
+  "settings.general.message_retention_default":
+    "Hẹn giờ mặc định cho cuộc trò chuyện mới",
+  "settings.general.message_retention_default_desc":
+    "Cho tin nhắn riêng mới, và cho phòng, kênh và nhóm trên điện thoại này",
+  "settings.general.message_retention_default_sheet":
+    "Tin nhắn riêng mới bắt đầu với hẹn giờ này, và ai cũng có thể đổi nó trong cuộc trò chuyện. Phòng, kênh và nhóm chỉ theo nó trên điện thoại này, tính từ khi mỗi tin nhắn đến. Không thể ngăn chụp màn hình, và các khoản thanh toán gửi cho bạn qua tin nhắn riêng sẽ ở lại đến khi bạn nhận.",
   "settings.general.message_retention_off_desc":
     "Tin nhắn ở lại cho đến khi bạn xóa đoạn chat hoặc rời khỏi nó",
   "settings.general.message_retention_1_desc":
@@ -2064,11 +2089,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Xóa các tin nhắn cũ hơn?",
   "settings.general.message_retention_confirm_1":
-    "Các tin nhắn cũ hơn 1 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+    "Các tin nhắn cũ hơn 1 ngày trong phòng, kênh, nhóm và các cuộc trò chuyện bắt đầu từ một kênh vị trí sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Các tin nhắn riêng khác giữ hẹn giờ riêng của chúng. Không thể hoàn tác.",
   "settings.general.message_retention_confirm_7":
-    "Các tin nhắn cũ hơn 7 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+    "Các tin nhắn cũ hơn 7 ngày trong phòng, kênh, nhóm và các cuộc trò chuyện bắt đầu từ một kênh vị trí sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Các tin nhắn riêng khác giữ hẹn giờ riêng của chúng. Không thể hoàn tác.",
   "settings.general.message_retention_confirm_30":
-    "Các tin nhắn cũ hơn 30 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+    "Các tin nhắn cũ hơn 30 ngày trong phòng, kênh, nhóm và các cuộc trò chuyện bắt đầu từ một kênh vị trí sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Các tin nhắn riêng khác giữ hẹn giờ riêng của chúng. Không thể hoàn tác.",
   "settings.general.reset_desc":
     "Đưa các tùy chọn về mặc định, còn danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn",
   "settings.general.reset_title": "Đặt lại cài đặt?",
