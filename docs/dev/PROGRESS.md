@@ -68,7 +68,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 
 ### v0.8.0: Identity and Forward Secrecy
 
-- [x] Deniable DMs over the mesh: Noise transport goes unsigned, as bitchat-ios sends it, the Double Ratchet rides inside the session (`0x55`), and the time a message shows travels under it (`0x52`)
+- [x] Deniable DMs over the mesh: Noise transport goes unsigned, the Double Ratchet rides inside the session (`0x55`), and the time a message shows travels under it (`0x52`)
 - [x] `src/core/crypto/double-ratchet.ts`: Signal Double Ratchet, per-message forward secrecy. The root key comes from the Noise XX **exporter secret**, so it cannot be rebuilt from long-lived keys or from the public handshake bytes
 - [x] One-time prekey bundles (`src/core/mesh/wire/prekey-bundle.ts`, `src/core/mesh/courier/prekey-store.ts`) flooded as `0x24`, never published to Nostr. **X3DH is not used**: the handshake already seeds the ratchet ([ARCHITECTURE.md section 5](../spec/ARCHITECTURE.md#5-encryption))
 - [x] `src/core/crypto/contact-exchange.ts`: binary contact card over the `airhop:v1/<base64url>` QR scheme, signed by the card's own signing key, peer ID checked against the keys it carries; a card arriving by link is recorded unverified

@@ -801,15 +801,15 @@ prekey.
 Noise handshake messages are unsigned, matching bitchat, because the peer may
 not hold this phone's signing key yet and the handshake authenticates itself.
 Messages inside a Noise session, the Double Ratchet's included, carry no
-signature, as bitchat-ios sends them: the session already authenticates them to
-the recipient, and a long-term signature would let anyone holding a packet and
-its message key prove who wrote it, so DMs over the mesh stay deniable (courier
-mail and internet DMs do not: the deposit and the gift wrap's seal are signed).
-Fragments are unsigned, since the reassembled packet is checked as any other:
-verified when signed, authenticated by its session when it is Noise. Signatures
-are required where a claimed sender is otherwise unverifiable: announces, public
-and private channel messages, attachments, voice frames, board posts, sync
-requests, LEAVE, and gateway and bridge deposits.
+signature: the session already authenticates them to the recipient, and a
+long-term signature would let anyone holding a packet and its message key prove
+who wrote it, so DMs over the mesh stay deniable (courier mail and internet DMs
+do not: the deposit and the gift wrap's seal are signed). Fragments are
+unsigned, since the reassembled packet is checked as any other: verified when
+signed, authenticated by its session when it is Noise. Signatures are required
+where a claimed sender is otherwise unverifiable: announces, public and private
+channel messages, attachments, voice frames, board posts, sync requests, LEAVE,
+and gateway and bridge deposits.
 
 ## 6. Messaging
 

@@ -732,9 +732,9 @@ export class MessageRouter {
   }
 
   // A NOISE_ENCRYPTED unicast packet around an already-encrypted payload.
-  // Unsigned, as bitchat-ios sends it: the session's AEAD already proves the
-  // sender to the recipient, and a signature would let anyone holding the
-  // packet and its message key prove to a third party who wrote it.
+  // Unsigned: the session's AEAD already proves the sender to the recipient,
+  // and a signature would let anyone holding the packet and its message key
+  // prove to a third party who wrote it.
   private makeNoisePacket(
     recipientPeerID: string,
     encryptedPayload: Uint8Array,
