@@ -199,8 +199,8 @@ export function extensionForMime(mimeType: string): string {
 
 // The name a received file is stored under. A known type takes the extension
 // its validated MIME implies, since the OS opens a file by its extension and
-// the sender chose this one. Anything else keeps the sender's, as bitchat-ios
-// does, or a .docx sent as octet-stream would open in nothing.
+// the sender chose this one. Anything else keeps the sender's, or a .docx sent
+// as octet-stream would open in nothing.
 export function receivedFileName(name: string, mimeType: string): string {
   const extension = EXTENSION_BY_MIME[mimeType.trim().toLowerCase()];
   if (extension === undefined) return ensureFileExtension(name, mimeType);

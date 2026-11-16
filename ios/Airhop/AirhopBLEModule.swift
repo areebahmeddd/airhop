@@ -73,7 +73,7 @@ final class AirhopBLEModule: RCTEventEmitter {
   // Off screen a dial is never expired: iOS completes a pending connect when
   // the peer comes back and wakes the app, which is how the mesh reconnects in
   // a pocket. Dials whose deadline passed meanwhile are canceled on return to
-  // the foreground, as bitchat-ios's BLERadioController does. Both on `queue`.
+  // the foreground. Both on `queue`.
   private var appActive = true
   private var overdueDials: Set<String> = []
   // A scan without duplicates reports each peer once, so a central link that
@@ -307,7 +307,7 @@ final class AirhopBLEModule: RCTEventEmitter {
   private func registerService() {
     guard let manager = peripheralManager else { return }
     // Remove first so a rebuild after a power cycle cannot land on top of a
-    // stale registration. Mirrors bitchat-ios (BLEService+LinkLayerPeripheralRole).
+    // stale registration.
     manager.removeAllServices()
 
     let char = CBMutableCharacteristic(
@@ -332,9 +332,8 @@ final class AirhopBLEModule: RCTEventEmitter {
     // central here dedups on the CBPeripheral identifier, and the Android
     // central reads the 8-byte peer ID out of scan-response service data.
     //
-    // bitchat-ios does the same (BLERadioController.advertisementData()). It
-    // costs the ability to dedup an iPhone before connecting to it, which the
-    // mesh tolerates: one peer on two links.
+    // It costs the ability to dedup an iPhone before connecting to it, which
+    // the mesh tolerates: one peer on two links.
     //
     // The localName parameter stays on the bridge method, since Android uses it
     // and the two platforms keep one signature.

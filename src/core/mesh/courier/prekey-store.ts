@@ -14,10 +14,10 @@
 //   a peer we hold a bundle for, we assign one of their unused prekeys and seal
 //   to it instead of their long-lived static key.
 //
-// The private prekeys live in one keychain item, as bitchat-ios keeps them in
-// one Keychain blob. Forward secrecy rests on a dropped key being gone, and
-// MMKV appends, so a deleted value lingers in its file until a rewrite. Peer
-// bundles are public and stay in MMKV. Both are wiped on panic.
+// The private prekeys live in one keychain item. Forward secrecy rests on a
+// dropped key being gone, and MMKV appends, so a deleted value lingers in its
+// file until a rewrite. Peer bundles are public and stay in MMKV. Both are
+// wiped on panic.
 
 import { x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";

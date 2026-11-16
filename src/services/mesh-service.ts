@@ -1187,8 +1187,7 @@ export class MeshService {
       // relayed copy arriving first.
       //
       // So this is the one broadcast that goes on every link rather than once
-      // per neighbor (see everyLink), as bitchat-ios skips its per-peer
-      // collapse for direct announces. Two links to one peer means two copies
+      // per neighbor (see everyLink). Two links to one peer means two copies
       // and the deduplicator drops one.
       //
       // A refused write is NOT a disconnect. The link's queue may simply be
@@ -2802,11 +2801,10 @@ export class MeshService {
   }
 
   // Silence the live voice playing now, for a note or a video the user just
-  // started, as bitchat-ios stops a burst when a note starts: one sound at a
-  // time, and the user chose the newer one. Queued audio goes too. The bursts
-  // heard at this moment stay quiet to their end (they still show as talking,
-  // and each still arrives as a voice note); a burst that starts later is
-  // heard as usual. A no-op with nothing playing.
+  // started: one sound at a time, and the user chose the newer one. Queued
+  // audio goes too. The bursts heard at this moment stay quiet to their end
+  // (they still show as talking, and each still arrives as a voice note); a
+  // burst that starts later is heard as usual. A no-op with nothing playing.
   silenceLiveVoice(): void {
     const sessions = this.pttPlayer?.activeSessions ?? [];
     for (const { burstIDHex } of sessions) {
@@ -3256,11 +3254,10 @@ export class MeshService {
   }
 
   // Raises the Bluetooth connection priority while live video is sent or
-  // received here, and lowers it once neither is, as bitchat does while a
-  // stream is sent or watched: a stream needs the short connection interval
-  // that chat does not. Received counts whether or not the chat is open, since
-  // a stream being received is also being relayed. A hint: a radio that
-  // refuses it changes nothing else.
+  // received here, and lowers it once neither is: a stream needs the short
+  // connection interval that chat does not. Received counts whether or not the
+  // chat is open, since a stream being received is also being relayed. A hint:
+  // a radio that refuses it changes nothing else.
   private syncLiveMedia(): void {
     const active =
       this.liveVideoSend !== null || (this.liveVideo?.streamCount ?? 0) > 0;
@@ -4271,10 +4268,10 @@ export class MeshService {
 
   // Someone announced another signing key under a peer whose key is settled
   // (proven in a session, or verified in person) and was refused. The chat
-  // already held with them says so, as bitchat-ios does, so an impersonation
-  // attempt is not invisible. One notice per refused key, none while the newest
-  // message already is one (keys cost nothing to mint), and no chat is opened
-  // for it. An unsettled key gets no notice: a session decides which is right.
+  // already held with them says so, so an impersonation attempt is not
+  // invisible. One notice per refused key, none while the newest message
+  // already is one (keys cost nothing to mint), and no chat is opened for it.
+  // An unsettled key gets no notice: a session decides which is right.
   private warnOfRefusedSigningKey(peerID: string, refused: Uint8Array): void {
     const channel = `dm:${peerID}`;
     const chat = useChatStore.getState();
@@ -5107,9 +5104,9 @@ export class MeshService {
     const nostrPubkey = this.receiptNostrPubkey(peerID);
 
     // A message read after its sender left range has no mesh route for its
-    // receipt, so it goes over Nostr, as bitchat-ios routes one. Only with a
-    // DM relay live: a client with none publishes into a dead pool and the
-    // receipt is gone, where queued it goes the moment either route returns.
+    // receipt, so it goes over Nostr. Only with a DM relay live: a client with
+    // none publishes into a dead pool and the receipt is gone, where queued it
+    // goes the moment either route returns.
     const overMesh = this.registry.isReachable(peerID);
     for (const messageId of this.pendingReadAcks.take(peerID)) {
       if (
@@ -5365,11 +5362,9 @@ export class MeshService {
 
     // The pin is decided here, before anything is written: an announce whose
     // signing key contradicts the one we already hold for this peer is refused
-    // whole, nickname and Nostr key included, as bitchat-ios refuses it
-    // (BLEAnnounceHandler falls back to the persisted identity when the
-    // registry has no pin). Consulting the saved contact is what makes a
-    // restart safe: the registry starts empty, and without it whoever announced
-    // a contact's ID first would be pinned as them.
+    // whole, nickname and Nostr key included. Consulting the saved contact is
+    // what makes a restart safe: the registry starts empty, and without it
+    // whoever announced a contact's ID first would be pinned as them.
     //
     // What cannot be settled from here is which of two keys is right when
     // nobody has proven or verified the one we hold: an announce pinned first,
@@ -5497,8 +5492,8 @@ export class MeshService {
       this.flushPendingGroupInvites(peerID);
       // And hand them any envelopes we're carrying for third parties.
       this.sprayCourierTo(peerID, direct);
-      // A new neighbor is also a new carrier for mail we owe people nobody
-      // here reaches, as bitchat-ios's courierBecameAvailable.
+      // A new neighbor is also a new carrier for mail we owe people nobody here
+      // reaches.
       if (direct) this.courierQueuedMail();
       // A saved contact on a link we hold gets a session now rather than on
       // the first message, so everything a session proves (signing key, ring
@@ -6052,9 +6047,9 @@ export class MeshService {
         (delivered) => {
           // Only a write accepted onto THIS peer's link retires the envelope. A
           // refusal leaves it carried for the next encounter. Accepted means
-          // queued, as bitchat-ios commits on its write: a link lost before
-          // that queue drains loses this copy, and the sender's outbox, which
-          // keeps the message until a receipt, is what covers it.
+          // queued: a link lost before that queue drains loses this copy, and
+          // the sender's outbox, which keeps the message until a receipt, is
+          // what covers it.
           if (delivered) this.courier.commitHandover(env.ciphertext);
         },
       );
@@ -6139,9 +6134,8 @@ export class MeshService {
     void this.links.broadcast(bytesToBase64(encodePacket(packet)));
   }
 
-  // A second after a peer's first link binds, as bitchat-ios: long enough for
-  // our announce-back to bind us on their side, which a request needs before
-  // it is answered.
+  // A second after a peer's first link binds: long enough for our announce-back
+  // to bind us on their side, which a request needs before it is answered.
   private scheduleInitialSync(peerID: string): void {
     if (this.initialSyncTimers.has(peerID)) return;
     const timer = setTimeout(() => {
@@ -6276,8 +6270,7 @@ export class MeshService {
     const senderID = bytesToHex(packet.senderID);
 
     // Our own message, never a second row. A sync reply is carried again, so a
-    // phone that relaunched can still serve what it wrote, as bitchat-ios
-    // accepts its own replays.
+    // phone that relaunched can still serve what it wrote.
     if (senderID === this.identity.peerID) {
       if (
         packet.isRSR === true &&
@@ -7186,12 +7179,11 @@ export class MeshService {
   // them is sealed to, so accepting one signed by anyone else hands them that
   // mail. Unverifiable bundles are ignored here and still relayed for others.
   //
-  // One whose owner has no key here yet is held instead, as bitchat-ios holds
-  // it, and retried when an announce pins one (onAnnounce). Our own link-up
-  // sends the announce and the bundle together, so a node two hops away gets
-  // the bundle first about half the time. Evicting the oldest owner, rather
-  // than refusing new ones at the cap, keeps a burst of invented owners from
-  // closing the stash for good.
+  // One whose owner has no key here yet is held instead, and retried when an
+  // announce pins one (onAnnounce). Our own link-up sends the announce and the
+  // bundle together, so a node two hops away gets the bundle first about half
+  // the time. Evicting the oldest owner, rather than refusing new ones at the
+  // cap, keeps a burst of invented owners from closing the stash for good.
   private onPrekeyBundle(packet: Packet): void {
     const bundle = decodePrekeyBundle(packet.payload);
     if (bundle === null) return;
@@ -7542,8 +7534,7 @@ export class MeshService {
     // zero key, so there is nothing to keep anyway.)
     //
     // The thread stays, read-only by virtue of having no key, with a system
-    // line saying what happened, as bitchat tells the user
-    // (system.group.removed_from). `removeChannel` would take the whole message
+    // line saying what happened. `removeChannel` would take the whole message
     // history with it, and a conversation and every message in it would vanish
     // with no explanation. The user can delete the thread themselves.
     if (action === "remove") {
@@ -7957,10 +7948,10 @@ export class MeshService {
   }
 
   // Hold one of our own room posts whose relay copy did not go out while its
-  // radio copy did. The composer shows such a post sent, and nothing else
-  // would put it on the internet, so members out of range would never get it.
-  // Republished as the same message when a relay connects, as bitchat-ios
-  // holds its relay sends; receivers collapse a second copy by row.
+  // radio copy did. The composer shows such a post sent, and nothing else would
+  // put it on the internet, so members out of range would never get it.
+  // Republished as the same message when a relay connects; receivers collapse a
+  // second copy by row.
   private holdRelayPost(
     publish: () => Promise<boolean>,
     heldAtMs = Date.now(),
@@ -8440,8 +8431,7 @@ export class MeshService {
   // A pool with no live relay is not a route: there is no signal, or Tor is
   // still building circuits. Claiming "sent" there skips the courier copy and
   // leaves the bubble ticked for a message still on this phone. The outbox
-  // publishes it when a relay connects, as bitchat-ios does
-  // (NostrTransport.canDeliverPromptly).
+  // publishes it when a relay connects.
   //
   // True is optimistic: no relay has answered yet. The answer lands on the
   // outbox entry the caller queued (onRelayAnswer).
@@ -9394,8 +9384,8 @@ export class MeshService {
         useMeshStateStore
           .getState()
           .setBridgeState(status.active, status.peopleAcross),
-      // As bitchat-ios does on onActiveCellChanged: mesh-only neighbors
-      // compose for the cell they last heard, so a new one goes out now.
+      // Mesh-only neighbors compose for the cell they last heard, so a new one
+      // goes out now.
       onActiveCellChanged: () => this.announceManager.announceNow(),
     });
   }

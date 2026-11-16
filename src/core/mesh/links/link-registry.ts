@@ -430,9 +430,8 @@ export class LinkRegistry {
   //
   // One per peer because Bluetooth is dual-role: two phones that meet each dial
   // the other, and writing both links doubles the airtime of everything the
-  // mesh floods for a copy the far deduplicator throws away. As bitchat-ios
-  // (BLEFanoutSelector). Per transport, so a peer also held on LAN keeps
-  // getting its Bluetooth copy.
+  // mesh floods for a copy the far deduplicator throws away. Per transport, so
+  // a peer also held on LAN keeps getting its Bluetooth copy.
   private fanout(options: BroadcastOptions): string[][] {
     const ingressPeer =
       options.exclude === undefined

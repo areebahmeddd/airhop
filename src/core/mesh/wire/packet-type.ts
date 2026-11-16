@@ -22,8 +22,8 @@ export const enum PacketType {
   PING = 0x26, // Directed mesh echo request (nonce + origin TTL)
   PONG = 0x27, // Directed mesh echo reply (echoed nonce + origin TTL)
   NOSTR_CARRIER = 0x28, // Gateway-ferried signed Nostr event
-  VOICE_FRAME = 0x29, // PTT audio burst (matches bitchat-ios voiceFrame)
-  VIDEO_FRAME = 0x2d, // Live video packet (bitchat videoFrame)
+  VOICE_FRAME = 0x29, // PTT audio burst
+  VIDEO_FRAME = 0x2d, // Live video packet
 
   // Airhop extensions, allocated at 0x50 to stay clear of bitchat's frontier.
   // bitchat assigns forward and has reached 0x2D, so anything just past their

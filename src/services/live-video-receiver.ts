@@ -151,7 +151,7 @@ export class LiveVideoReceiver {
   // either over or will reopen with a fresh START. Nor can the partial
   // recordings behind them, sent or received, which no row points at any more
   // and which would otherwise sit unplayable against the received-media quota
-  // until retention, as bitchat-ios sweeps its own at start.
+  // until retention.
   dropStaleRows(): void {
     const chat = useChatStore.getState();
     for (const [channel, list] of Object.entries(chat.messages)) {

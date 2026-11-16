@@ -197,7 +197,7 @@ export class BridgeService {
   private subscription: { close: () => void } | null = null;
   private readonly identityCache = new Map<string, GeohashIdentity>();
 
-  // Loop prevention, as bitchat-ios BridgeService's caches.
+  // Loop prevention.
   private readonly publishedEventIDs = new BoundedIdSet(ID_SET_CAP); // our own published events
   private readonly receivedEventIDs = new BoundedIdSet(ID_SET_CAP); // acted-on once
   private readonly rebroadcastEventIDs = new BoundedIdSet(ID_SET_CAP); // ferried to mesh once

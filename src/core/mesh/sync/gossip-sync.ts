@@ -663,10 +663,10 @@ export class GossipSync {
     this.session = null;
   }
 
-  // Every round at once to one peer, for a neighbor just met, as bitchat-ios
-  // scheduleInitialSyncToPeer. Waiting for the tick leaves a phone that keeps
-  // relaunching with no history, and a holder that relaunches loses it for
-  // good. Two requests, well inside the eight a responder answers.
+  // Every round at once to one peer, for a neighbor just met. Waiting for the
+  // tick leaves a phone that keeps relaunching with no history, and a holder
+  // that relaunches loses it for good. Two requests, well inside the eight a
+  // responder answers.
   requestNow(peerID: string): void {
     const now = Date.now();
     for (const round of SYNC_ROUNDS) this.request(peerID, round.types, now);
@@ -700,9 +700,8 @@ export class GossipSync {
     this.rateLimiter.forget(peerID);
   }
 
-  // The user blocked this peer: stop carrying their public messages for
-  // others, as bitchat-ios does (removePublicMessages(from:)). Their messages
-  // are no longer accepted, so nothing re-adds them.
+  // The user blocked this peer: stop carrying their public messages for others.
+  // Their messages are no longer accepted, so nothing re-adds them.
   forgetMessagesFrom(peerID: string): void {
     this.messages.removeWhere(
       (packet) => bytesToHex(packet.senderID) === peerID,

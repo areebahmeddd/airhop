@@ -4894,8 +4894,8 @@ export default function MessageThread({
       const talking = names.length > 0;
       if (talking && !liveTalkingRef.current) {
         jumpToLatest();
-        // A live voice and a voice note would play over each other, so the
-        // note pauses, as bitchat-ios pauses it for a burst.
+        // A live voice and a voice note would play over each other, so the note
+        // pauses.
         setPlayingMessageId(null);
       }
       // Nobody is holding the floor any more, so the banner is about to go and

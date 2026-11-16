@@ -635,8 +635,8 @@ export class GeohashChannelService {
   //     the same instant, round after round, group by timing alone.
   private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // Presence only while on screen, as bitchat-ios. Position is re-read only on
-  // refresh, so a pocketed phone would keep claiming a cell it left.
+  // Presence only while on screen. Position is re-read only on refresh, so a
+  // pocketed phone would keep claiming a cell it left.
   private foreground = true;
 
   setForeground(foreground: boolean): void {

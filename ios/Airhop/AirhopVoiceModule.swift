@@ -268,8 +268,7 @@ final class AirhopVoiceModule: RCTEventEmitter {
       }
       do {
         let escalation = try self.configureSession(forCapture: true)
-        // Before the mic starts, as bitchat delivers onCategoryEscalated
-        // before acquire returns: a playback engine built under playback-only
+        // Before the mic starts: a playback engine built under playback-only
         // does not survive the switch, and rebuilding it first keeps the two
         // engines from starting against each other. Sync is safe: nothing on
         // the playback queue ever waits on this one.
@@ -321,10 +320,10 @@ final class AirhopVoiceModule: RCTEventEmitter {
     let options: AVAudioSession.CategoryOptions
   }
 
-  /// Listening only, as bitchat-ios plays bursts: mixed with whatever else is
-  /// playing rather than ducking it, and in a playback category, so AirPods
-  /// stay on their music profile instead of dropping to call quality, and no
-  /// route change eats a burst's first words.
+  /// Listening only: mixed with whatever else is playing rather than ducking
+  /// it, and in a playback category, so AirPods stay on their music profile
+  /// instead of dropping to call quality, and no route change eats a burst's
+  /// first words.
   private static let playbackSession = SessionConfig(
     category: .playback, mode: .spokenAudio, options: [.mixWithOthers])
 
@@ -350,9 +349,8 @@ final class AirhopVoiceModule: RCTEventEmitter {
 
   /// Applies the session the module's state calls for: the capture session
   /// while a capture holds it, the playback one otherwise. It escalates, and
-  /// never demotes under a live capture, as bitchat's AudioSessionCoordinator
-  /// does. Returns the new epoch when this call changed the category, so the
-  /// caller can rebuild engines built before it.
+  /// never demotes under a live capture. Returns the new epoch when this call
+  /// changed the category, so the caller can rebuild engines built before it.
   @discardableResult
   private func configureSession(forCapture: Bool) throws -> UInt64? {
     sessionLock.lock()
@@ -957,10 +955,9 @@ final class AirhopVoiceModule: RCTEventEmitter {
     teardownIfDrained()
   }
 
-  /// A capture changed the category to play-and-record. An engine built
-  /// before that is rebuilt now, as bitchat's onCategoryEscalated asks its
-  /// holders to; one already rebuilt since, by the configuration-change
-  /// notification, is left alone.
+  /// A capture changed the category to play-and-record. An engine built before
+  /// that is rebuilt now; one already rebuilt since, by the
+  /// configuration-change notification, is left alone.
   private func rebuildPlayback(olderThan epoch: UInt64) {
     guard isPlaying, playbackEngineEpoch < epoch else { return }
     restartPlayback()

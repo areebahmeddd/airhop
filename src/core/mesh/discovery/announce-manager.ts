@@ -232,7 +232,7 @@ export function encodeAnnouncePayload(
   // Bridge rendezvous cell (TLV 0x06): a bridge gateway advertises the geohash
   // cell it ferries so mesh-only peers know which cell to deposit into. Only
   // written when set, and left out rather than cut when longer than a geohash
-  // can be, as bitchat-ios does: a cut cell names a different place.
+  // can be: a cut cell names a different place.
   const cellBytes = new TextEncoder().encode(bridgeGeohash ?? "");
   if (cellBytes.length > 0 && cellBytes.length <= MAX_GEOHASH_BYTES) {
     writeTlv(buf, TLV_BRIDGE_GEOHASH, cellBytes);
