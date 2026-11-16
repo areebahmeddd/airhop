@@ -44,18 +44,18 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "How is it different from bitchat and other apps?",
         a: (
           <>
-            Most private messengers fall into three groups. Apps like Signal and Session are strong
-            on privacy but need the internet, so they go down when the network does. Meshtastic and
-            goTenna work offline but only with a separate radio you have to buy and carry. Briar,
-            Berty, Bridgefy and bitchat run phone to phone on hardware you already own, and that is
-            where Airhop sits.
+            Airhop is built on <TextLink href={BITCHAT_URL}>bitchat</TextLink> and stays
+            wire-compatible with it, but adds Double Ratchet forward secrecy, offline ecash
+            payments, and an offline AI assistant, none of which bitchat has today. Beyond the
+            protocol, <strong>user experience is everything to us</strong>. Great privacy tools
+            should be easy to use, not something people have to figure out.
             <br />
             <br />
-            Against <TextLink href={BITCHAT_URL}>bitchat</TextLink> specifically, Airhop is built on
-            top of it and stays wire-compatible, but adds Double Ratchet forward secrecy, offline
-            ecash payments, and an offline AI assistant, none of which bitchat has today. Beyond the
-            protocol itself, <strong>user experience is everything to us</strong>. Great privacy
-            tools should be easy to use, not something people have to figure out.
+            Most other private messengers fall into three groups. Apps like Signal and Session are
+            strong on privacy but need the internet, so they go down when the network does.
+            Meshtastic and goTenna work offline but only with a separate radio you have to buy and
+            carry. Briar, Berty, Bridgefy and bitchat run phone to phone on hardware you already
+            own, and that is where Airhop sits.
           </>
         ),
       },
@@ -155,7 +155,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "Can people tell when I have read their message?",
-        a: "In a direct message, yes, the same way most messengers work. The receipt is only sent when the app is actually open in front of you, so a message that arrives while Airhop is in your pocket stays unread until you look at it. If the sender has left Bluetooth range by then, the receipt follows them over the internet fallback when you are online. Public and location channels have no receipts at all.",
+        a: "In a direct message, yes, the same way most messengers work. The receipt is sent only when the app is open in front of you, so a message that arrives while Airhop is in your pocket stays unread until you look at it. If the sender has left Bluetooth range by then, the receipt follows them over the internet fallback when you are online. Public and location channels have no receipts at all.",
       },
       {
         q: "Can I talk instead of typing?",
@@ -223,8 +223,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             It is off by default, because announcing yourself on a network is visible to every
             device on it and to whoever runs it. It also depends on the network: many guest, hotel
             and airport networks block devices from talking to each other, which cannot be detected
-            in advance, so Airhop simply reports that it found nobody. Home, office and hotspot
-            networks generally work.
+            in advance, so Airhop reports that it found nobody. Where a network only hides devices
+            from discovery, two phones that have already talked connect by address instead. Home,
+            office and hotspot networks generally work.
           </>
         ),
       },
@@ -255,7 +256,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "How does the mesh relay messages?",
-        a: "Every phone listens and announces at the same time, so each one is both a receiver and a relay. When a message arrives, your phone drops it if it has already seen it, and otherwise passes it on to every other device it is linked to with one hop used up, out of at most 7. It waits a random fraction of a second first, somewhere between 10 and 220 milliseconds, so that a room full of phones does not all speak at once and drown each other out. The busier the room, the longer each phone waits and the fewer hops it lets a public message travel, since a crowd has plenty of phones close by to carry it and every extra hop there only multiplies copies. Nothing is shown to you until its signature checks out.",
+        a: "Every phone listens and announces at the same time, so each one is both a receiver and a relay. When a message arrives, your phone drops it if it has already seen it, and otherwise passes it on to every other device it is linked to with one hop used up, out of at most 7. It waits a random fraction of a second first, somewhere between 10 and 220 milliseconds, so that a room full of phones does not all speak at once and drown each other out. The busier the room, the longer each phone waits and the fewer hops it lets a public message travel, since a crowd has plenty of phones close by to carry it and every extra hop there only multiplies copies. Nothing is shown to you until it checks out: by its signature, or for a direct message, by the encrypted session it arrived in.",
       },
       {
         q: "How far can messages travel?",
@@ -263,7 +264,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
       },
       {
         q: "What media can I send?",
-        a: "Images, voice notes, videos, and any other file format, over Bluetooth or Wi-Fi. Each file is sent as one packet, split into fragments for the radio, paced so the radio is not overrun, and reassembled on the other side. Videos, round video notes included, are shrunk on your phone before they go and play inline: to 100 KiB for anyone who might be on bitchat, and up to 1 MiB between Airhop phones. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file; voice notes are capped tighter at 512 KiB, and photos are fitted to 256 KiB so they finish inside bitchat's 30 second reassembly window. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. A bitchat phone gives the whole file that same 30 seconds, so past about 350 KiB the app warns you it may not arrive. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
+        a: "Images, voice notes, videos, and any other file format, over Bluetooth or Wi-Fi. Each file is sent as one packet, split into fragments for the radio, paced so the radio is not overrun, and reassembled on the other side. Videos, round video notes included, are shrunk on your phone before they go and play inline: to 100 KiB for anyone who might be on bitchat, and up to 1 MiB between Airhop phones. The 1 MiB ceiling is bitchat's, enforced the moment it decodes a packet, so raising it would mean every bitchat peer silently dropping the file. Voice notes are capped tighter at 512 KiB, and photos are fitted to 256 KiB so they finish inside bitchat's 30-second reassembly window. Bluetooth carries roughly 18 KiB/s, so a file near the 1 MiB limit takes about 56 seconds, but it works with no internet at all. A bitchat phone gives the whole file that same 30 seconds, so past about 350 KiB the app warns you it may not arrive. Over Wi-Fi the gap between fragments is dropped, since it exists for the Bluetooth radio rather than for the protocol, and the same file moves in about a second.",
       },
       {
         q: "Why can I only send up to a minute of video?",
@@ -338,11 +339,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
           <>
             Because the fallback carries text, not media. Attachments travel on the Bluetooth
             file-transfer path and are never bridged to Nostr, so the attach button is offered only
-            where the file can actually arrive: the public Bluetooth channel, and direct messages
-            with someone you know over the mesh, where the file goes only while your phones are
-            directly linked. It is missing in location channels, in a cell you have teleported into,
-            and in a conversation with someone you only know through a relay, because everyone there
-            is reached over the internet and the file would go nowhere.
+            where the file can arrive: the public Bluetooth channel, and direct messages with
+            someone you know over the mesh, where the file goes only while your phones are directly
+            linked. It is missing in location channels, in a cell you have teleported into, and in a
+            conversation with someone you only know through a relay, because everyone there is
+            reached over the internet and the file would go nowhere.
             <br />
             <br />
             It is missing in private channels and groups for a different reason. A direct attachment
@@ -452,7 +453,7 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Does Airhop use Tor?",
         a: (
           <>
-            Yes, optionally, on both platforms. Both iOS and Android embed{" "}
+            Yes, optionally. Both iOS and Android embed{" "}
             <TextLink href="https://arti.torproject.org">Arti</TextLink>, the{" "}
             <TextLink href="https://torproject.org">Tor</TextLink> Project's own client, so there is
             no separate app to install. On a network that blocks Tor, it can connect through{" "}
@@ -503,11 +504,13 @@ export const FAQ_SECTIONS: FaqSection[] = [
                 <TextLink href="https://signal.org/docs/specifications/doubleratchet/">
                   Double Ratchet
                 </TextLink>{" "}
-                forward secrecy, plus{" "}
+                forward secrecy on the mesh, and{" "}
                 <TextLink href="https://github.com/nostr-protocol/nips/blob/master/17.md">
                   NIP-17
                 </TextLink>{" "}
-                gift-wrapping when they travel over the internet.
+                gift-wrapping over the internet. Between two Airhop phones the message inside the
+                gift wrap is also sealed to a short-lived key the recipient later deletes, so a key
+                leaked later cannot open what relays kept.
               </li>
               <li>
                 <strong>Private channels:</strong>{" "}
@@ -610,12 +613,14 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "Can someone impersonate me?",
         a: (
           <>
-            No. Your identity is your private key, and everything you post is Ed25519-signed. Every
-            phone checks the signature against your key before showing or acting on anything, so a
-            forged packet claiming to be from you is dropped. Airhop names come from your public
-            key, so no Airhop user can take yours. A bitchat user can pick any nickname, so public
-            messages show a short suffix from the sender's ID to tell look-alikes apart. Noise XX
-            mutual authentication prevents man-in-the-middle attacks on direct message sessions.
+            No. Your identity is your private key, and everything you post publicly is
+            Ed25519-signed. Every phone checks the signature against your key before showing or
+            acting on anything, so a forged packet claiming to be from you is dropped. A direct
+            message is authenticated by the encrypted session it travels in instead. Airhop names
+            come from your public key, so no Airhop user can take yours. A bitchat user can pick any
+            nickname, so public messages show a short suffix from the sender's ID to tell
+            look-alikes apart. Noise XX mutual authentication prevents man-in-the-middle attacks on
+            direct message sessions.
             <br />
             <br />
             For contacts you want to fully trust, scan their QR code in person, or check safety
@@ -644,8 +649,8 @@ export const FAQ_SECTIONS: FaqSection[] = [
             separate app-level cipher, so somebody holding your unlocked phone can read your chats
             the way they could read any other app's, unless you turn on Lock Airhop in Settings,
             Privacy &amp; security, which asks for your screen lock to open the app. Delete a
-            conversation at any time, empty everything with panic wipe, or turn on Disappearing
-            messages in General to clear each message 1, 7 or 30 days after it arrives.
+            conversation at any time, empty everything with panic wipe, or set Disappearing messages
+            for a chat, or as the default for new chats, to clear messages after 1, 7 or 30 days.
             <br />
             <br />
             The wallet is stricter still, because coins are bearer instruments: its storage is a
@@ -786,9 +791,9 @@ export const FAQ_SECTIONS: FaqSection[] = [
             your pocket and Airhop drops to a short look around every half a minute instead of
             listening continuously, and it turns down further as the battery gets low. Plugging it
             in brings back full speed only while the app is open. On an iPhone, iOS throttles
-            background Bluetooth by itself. That is where almost all of a day's saving comes from,
-            and none of it changes how the mesh works: messages still arrive, people are still
-            found, the radio just looks less often.{" "}
+            background Bluetooth by itself as well. Most of a day's saving comes from this
+            background slowdown, and none of it changes how the mesh works: messages still arrive,
+            people are still found, the radio just looks less often.{" "}
             <strong>
               If you want it to stop entirely, set your status to Away on the You tab:
             </strong>{" "}
@@ -1206,11 +1211,11 @@ export const FAQ_SECTIONS: FaqSection[] = [
         q: "What is the offline AI assistant?",
         a: (
           <>
-            The assistant is optional, and nothing happens until you choose a model. It is a small
-            language model that runs entirely on your phone, so you can ask it things when there is
-            no signal at all: first aid, navigation, general knowledge. Nothing is sent anywhere,
-            there is no API key, and no server sees the question or the answer. Conversation history
-            stays on the device with everything else.
+            It is a small language model that runs entirely on your phone, so you can ask it things
+            when there is no signal at all: first aid, navigation, general knowledge. It is
+            optional, and nothing happens until you choose a model. Nothing is sent anywhere, there
+            is no API key, and no server sees the question or the answer. Conversation history stays
+            on the device with everything else.
             <br />
             <br />
             <strong>Airhop does not ship a model of its own.</strong> The app lists a few small

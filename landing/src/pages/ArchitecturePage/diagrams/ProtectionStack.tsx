@@ -2,14 +2,19 @@ import { Caption, FILL, INK, LINE, MONO, MUTED } from "./primitives";
 
 export function ProtectionStack() {
   const rows = [
-    ["Direct message", "Noise XX + Double Ratchet", "yes", "yes"],
-    ["DM over the internet", "NIP-17 gift wrap", "yes", "yes"],
+    ["Direct message", "Noise XX + Double Ratchet", "yes", "no"],
+    [
+      "DM over the internet",
+      "NIP-17 gift wrap, sealed to a prekey between Airhop phones",
+      "yes",
+      "yes",
+    ],
     ["Courier envelope", "Noise X to a one-time prekey, else the static key", "yes", "yes"],
     ["Private channel", "XChaCha20-Poly1305, key in the link", "yes", "yes"],
     ["Private group", "ChaCha20-Poly1305 under an epoch key", "yes", "yes"],
     ["Public channel", "signed only, readable by design", "no", "yes"],
     ["Location channel", "signed only, readable by design", "no", "yes"],
-    ["Direct attachment", "sealed in the recipient's Noise session", "yes", "yes"],
+    ["Direct attachment", "sealed in the recipient's Noise session", "yes", "no"],
     ["Room attachment", "signed only, readable by design", "no", "yes"],
   ];
   return (
@@ -62,8 +67,15 @@ export function ProtectionStack() {
             >
               {enc ? "yes" : "no"}
             </text>
-            <text x={826} y={y + 21} fontFamily={MONO} fontSize={11} fontWeight={700} fill={INK}>
-              yes
+            <text
+              x={826}
+              y={y + 21}
+              fontFamily={MONO}
+              fontSize={11}
+              fontWeight={700}
+              fill={r[3] === "yes" ? INK : MUTED}
+            >
+              {r[3]}
             </text>
           </g>
         );

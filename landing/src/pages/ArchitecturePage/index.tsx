@@ -503,7 +503,7 @@ export default function ArchitecturePage() {
                   [
                     "Noise X",
                     "A one-way handshake, sender to recipient, with no reply",
-                    "Sealing a courier envelope to someone who is not there to answer",
+                    "Sealing a courier envelope, or an internet DM between Airhop phones, to someone who is not there to answer",
                   ],
                   [
                     "Forward secrecy",
@@ -512,8 +512,8 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Prekey",
-                    "A single-use public key published ahead of time",
-                    "Broadcast over the mesh as 0x24, so mail left for someone who is away is forward-secret whenever a bundle under a week old is known",
+                    "A public key handed out ahead of time and deleted once used",
+                    "Broadcast over the mesh as 0x24, so mail left for someone who is away is forward-secret whenever a bundle under a week old is known. Internet DMs between Airhop phones use prekeys handed over privately inside the conversation",
                   ],
                 ]}
               />
@@ -530,7 +530,7 @@ export default function ArchitecturePage() {
                   [
                     "Event kind",
                     "A number declaring what an event is for",
-                    "Eleven are used, listed in the internet layer section",
+                    "Twelve are used, listed in the internet layer section",
                   ],
                   [
                     "secp256k1",
@@ -638,6 +638,7 @@ export default function ArchitecturePage() {
                   ],
                   ["Ed25519 signing private key", "Keychain / Keystore", "No"],
                   ["One-time prekey private keys", "Keychain / Keystore", "No"],
+                  ["Internet DM prekey private keys", "Keychain / Keystore", "No"],
                   ["Wallet AES-256 key and nutzap key", "Keychain / Keystore", "No"],
                   ["Recovery phrase", "Keychain / Keystore", "No, unless you wrote it down"],
                   ["Cashu proofs", "MMKV, AES-256 encrypted", "No"],
@@ -672,9 +673,9 @@ export default function ArchitecturePage() {
                 the same six words. Nothing moves until you confirm they match on the new phone, so
                 a third device that read the code is turned away. The identity keys, contacts,
                 groups, rooms, chat history, outbox and wallet move to the new phone. The keys stay
-                the same, so the peer ID, name and safety codes do too. Media files, one-time
-                prekeys and live session state do not move. Once the new phone confirms the
-                transfer, the old phone erases its keys and local data.
+                the same, so the peer ID, name and safety codes do too. Media files, prekeys and
+                live session state do not move. Once the new phone confirms the transfer, the old
+                phone erases its keys and local data.
               </p>
             </Section>
 
@@ -767,9 +768,11 @@ export default function ArchitecturePage() {
                 has its own flow control, so nothing is paced. Being plain IP, it does not care
                 which phone you own: this is the path that joins an iPhone to an Android without the
                 internet. It shines where Bluetooth struggles but a network already exists, like a
-                ship with steel between decks, a hotel, a conference floor. Its one weak spot is
-                guest Wi-Fi: many hotels and venues block phones from reaching each other at the
-                access point, and nothing announces that in advance.
+                ship with steel between decks, a hotel, a conference floor. Venue Wi-Fi is its weak
+                spot. Where a network hides phones from discovery but lets them connect, two that
+                have already talked hand each other their address inside their session and connect
+                directly; where it blocks phones from reaching each other at all, which nothing
+                announces in advance, the mesh stays on Bluetooth.
               </p>
 
               <h3 className="text-ink pt-2 text-base font-bold">Wi-Fi Aware</h3>
@@ -1063,7 +1066,7 @@ export default function ArchitecturePage() {
               id="encryption"
               eyebrow="The system · 08"
               title="Encryption"
-              lede="Different things get different protection. Three rows in the grid below say no, and all three are trade-offs made on purpose."
+              lede="Different things get different protection. Every no in the grid below is a trade-off made on purpose."
             >
               <p>
                 Live sessions use{" "}
@@ -1098,7 +1101,7 @@ export default function ArchitecturePage() {
                 traffic.
               </p>
 
-              <Figure caption="Every message type and what actually protects it.">
+              <Figure caption="Every message type and what protects it. A direct message or attachment is not signed: its session proves the sender to the recipient alone, so it stays deniable.">
                 <ProtectionStack />
               </Figure>
 
@@ -1109,15 +1112,19 @@ export default function ArchitecturePage() {
                 nothing goes out in the clear. The older signed cleartext form is still accepted on
                 receipt. In the public Bluetooth room there is nobody to seal to, so{" "}
                 <strong className="text-ink">any device relaying that one can open it</strong>,
-                exactly like the text beside it. Either way the signature covers the file, so nobody
-                can forge or alter one.
+                exactly like the text beside it. A room attachment is signed and a direct one is
+                authenticated by its session, so either way nobody can forge or alter one.
               </Note>
 
               <Table
                 head={["Primitive", "Algorithm", "Used for"]}
                 rows={[
                   ["Handshake", "Noise_XX_25519_ChaChaPoly_SHA256", "Live DM sessions"],
-                  ["One-way seal", "Noise_X_25519_ChaChaPoly_SHA256", "Courier envelopes"],
+                  [
+                    "One-way seal",
+                    "Noise_X_25519_ChaChaPoly_SHA256",
+                    "Courier envelopes, internet DMs between Airhop phones",
+                  ],
                   ["Signatures", "Ed25519", "Signed packets, boards, prekeys, groups"],
                   ["Key agreement", "X25519", "Inside both Noise patterns"],
                   ["AEAD", "ChaCha20-Poly1305", "Noise transport, group messages"],
@@ -1420,7 +1427,8 @@ export default function ArchitecturePage() {
                 Live voice keeps the floor: someone talking takes the speaker, and the stream's
                 sound comes back when they stop. Live video is offered in the same two places as
                 live voice, for the same reasons, and a phone follows at most four streams at once,
-                one per sender.
+                one per sender. Each holds at most 2 MiB of frames still being assembled, and a
+                frame still unfinished after about 2.7 seconds is let go.
               </p>
             </Section>
 
@@ -1468,7 +1476,16 @@ export default function ArchitecturePage() {
                 The inner rumor carries no signature.{" "}
                 <strong className="text-ink">The seal around it is signed by you,</strong> so the
                 recipient knows who sent it, but the message itself cannot be reposted as a signed
-                note of yours.
+                note of yours. That signature also means an internet DM, unlike one over the mesh,
+                is not deniable.
+              </p>
+              <p>
+                Relays keep what they are sent, so between two Airhop phones the message inside the
+                rumor is sealed once more, with Noise X, to a one-time prekey the recipient handed
+                over privately inside your conversation, or to a weekly last-resort key deleted 15
+                days after it was made, so a key stolen later cannot open a message whose prekey is
+                already gone. With no prekey under a week old, as before the first one arrives, a
+                message goes under the long-term key, and bitchat peers always get plain NIP-17.
               </p>
 
               <Table
@@ -1495,6 +1512,14 @@ export default function ArchitecturePage() {
                     </>,
                   ],
                   ["10019", "Wallet info, where to send nutzaps"],
+                  [
+                    "22242",
+                    <>
+                      Relay sign-in (<NIP n="42" />
+                      ), only after a relay refuses, with the key the request belongs to, and never
+                      two of your keys on one connection
+                    </>,
+                  ],
                 ]}
               />
 
@@ -1858,7 +1883,7 @@ export default function ArchitecturePage() {
                   ["Social bridges", "Off. Individually, per plugin"],
                   [
                     "Disappearing messages",
-                    "Off. Once on, each message leaves this phone 1, 7 or 30 days after it arrived. The other phone keeps its copy",
+                    "Off for new chats. Set per chat. In a direct message between Airhop phones the timer is shared: each text leaves the sender's phone 1, 7 or 30 days after it was sent, and the recipient's that long after it was first read. Everywhere else, and for media, it applies to this phone only",
                   ],
                   [
                     "Ring",
@@ -1888,7 +1913,7 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "core/nostr/",
-                    "nostr-client, gift-wrap, geo-relay, geohash-presence, courier-relay, geohash-identity",
+                    "nostr-client, gift-wrap, dm-prekeys, geo-relay, geohash-presence, courier-relay, geohash-identity",
                   ],
                   ["core/payments/", "cashu, nutzap, wallet-seed"],
                   ["core/router/", "message-router, the peer registry"],
@@ -1946,11 +1971,11 @@ export default function ArchitecturePage() {
 
               <h3 className="text-ink pt-2 text-base font-bold">Packet types</h3>
               <p>
-                Everything up to <C>0x2D</C> except <C>0x12</C> is bitchat-defined and shared.
-                bitchat allocates forward and has reached <C>0x2D</C>, so Airhop's own types start
-                at <C>0x50</C>, well clear of the values bitchat is still handing out. A type one
-                side does not recognize is relayed, not read, so an Airhop extension crosses a mesh
-                of bitchat phones without ever being shown to their users.
+                Everything up to <C>0x2D</C> is bitchat-defined and shared. bitchat allocates
+                forward and has reached <C>0x2D</C>, so Airhop's own types start at <C>0x50</C>,
+                well clear of the values bitchat is still handing out. A type one side does not
+                recognize is relayed, not read, so an Airhop extension crosses a mesh of bitchat
+                phones without ever being shown to their users.
               </p>
 
               <Table
@@ -1961,8 +1986,11 @@ export default function ArchitecturePage() {
                   ["LEAVE", "0x03", "Peer departing"],
                   ["COURIER_ENV", "0x04", "Sealed store-and-forward envelope"],
                   ["NOISE_HANDSHAKE", "0x10", "Noise XX handshake message"],
-                  ["NOISE_ENCRYPTED", "0x11", "Post-handshake encrypted payload"],
-                  ["DR_ENCRYPTED", "0x12", "Double Ratchet DM · Airhop extension"],
+                  [
+                    "NOISE_ENCRYPTED",
+                    "0x11",
+                    "Post-handshake encrypted payload, Double Ratchet messages included",
+                  ],
                   ["FRAGMENT", "0x20", "One piece of a larger message, 467 bytes of data"],
                   ["REQUEST_SYNC", "0x21", "GCS gossip filter, never relayed"],
                   ["FILE_TRANSFER", "0x22", "File, image, voice note, 1 MiB cap"],
@@ -2016,7 +2044,7 @@ export default function ArchitecturePage() {
                   ],
                   [
                     "Message forgery",
-                    "Ed25519 checked against the key bound to the claimed sender, before anything is shown. A missing key fails the check, it does not skip it",
+                    "Ed25519 checked against the key bound to the claimed sender, before anything is shown, and a direct message authenticated by its Noise session. A missing key fails the check, it does not skip it",
                   ],
                   [
                     "System-line spoofing",
