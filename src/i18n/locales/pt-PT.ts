@@ -2671,6 +2671,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Toque",
   "notif.ring.title": "{sender} está a tocar-te",
   "notif.ring.body": "Verifica as tuas mensagens",
+  "notif.action.reply": "Responder",
+  "notif.action.send": "Enviar",
+  "notif.action.mark_read": "Marcar como lido",
+  "notif.reply.failed_title": "Não enviada",
+  "notif.reply.failed_body":
+    "A tua resposta para {chat} não foi enviada. Abre a conversa para tentar de novo.",
+  "notif.reply.held_title": "A aguardar envio",
+  "notif.reply.held_body":
+    "A tua resposta para {chat} será enviada quando o Airhop estiver a funcionar.",
+  "notif.reply.cut_title": "Enviada em parte",
+  "notif.reply.cut_body":
+    "A tua resposta para {chat} era demasiado longa, por isso o final não foi enviado.",
 };
 
 export const plurals: Plurals = {

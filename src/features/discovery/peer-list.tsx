@@ -10,6 +10,7 @@
 import { t, useT, useTPlural } from "@i18n";
 import { arrowForward } from "@i18n/layout";
 import { Feather } from "@react-native-vector-icons/feather/static";
+import { keepAsContact } from "@services/keep-as-contact";
 import { getMeshService, type MeshPingResult } from "@services/mesh-service";
 import { describePayResult, payPerson } from "@services/payment-router";
 import { showAlert } from "@store/alert-store";
@@ -59,7 +60,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { keepAsContact } from "../chat/keep-as-contact";
 import AddContactScreen from "../contacts/add-contact-screen";
 import RadarView from "./radar-view";
 

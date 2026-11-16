@@ -150,6 +150,9 @@ export const MMKV_STORE_IDS = [
   // nostr-keys-store pairs the npubs that wrote to this identity with the mesh
   // peers they claim to be, the same who-talks-to-whom the inbox IDs reveal.
   "nostr-keys-store",
+  // held-quick-actions holds replies typed into notifications and not sent
+  // yet: message content, like the conversations above.
+  "held-quick-actions",
 ] as const;
 
 // What the wipe managed to do. Only the one claim the caller must not make

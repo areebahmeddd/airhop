@@ -2532,6 +2532,16 @@ export const strings: Strings = {
   "notif.ring.hidden": "رنين",
   "notif.ring.title": "{sender} يرنّ لك",
   "notif.ring.body": "تحقق من رسائلك",
+  "notif.action.reply": "رد",
+  "notif.action.send": "إرسال",
+  "notif.action.mark_read": "وسم كمقروء",
+  "notif.reply.failed_title": "لم يُرسل",
+  "notif.reply.failed_body":
+    "لم يُرسل ردك إلى {chat}. افتح المحادثة لتحاول مرة أخرى.",
+  "notif.reply.held_title": "بانتظار الإرسال",
+  "notif.reply.held_body": "سيُرسل ردك إلى {chat} عندما يعمل Airhop.",
+  "notif.reply.cut_title": "أُرسل جزئيًا",
+  "notif.reply.cut_body": "كان ردك إلى {chat} طويلًا جدًا، فلم تُرسل نهايته.",
 };
 
 export const plurals: Plurals = {

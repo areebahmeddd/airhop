@@ -2591,6 +2591,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "घण्टी",
   "notif.ring.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
   "notif.ring.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
+  "notif.action.reply": "जवाफ दिनुहोस्",
+  "notif.action.send": "पठाउनुहोस्",
+  "notif.action.mark_read": "पढियो चिनो लगाउनुहोस्",
+  "notif.reply.failed_title": "पठाइएन",
+  "notif.reply.failed_body":
+    "{chat} लाई तपाईंको जवाफ पठाइएन। फेरि प्रयास गर्न च्याट खोल्नुहोस्।",
+  "notif.reply.held_title": "पठाउन पर्खँदै",
+  "notif.reply.held_body": "Airhop चलेपछि {chat} लाई तपाईंको जवाफ पठाइनेछ।",
+  "notif.reply.cut_title": "आंशिक रूपमा पठाइयो",
+  "notif.reply.cut_body":
+    "{chat} लाई तपाईंको जवाफ धेरै लामो थियो, त्यसैले यसको अन्तिम भाग पठाइएन।",
 };
 
 export const plurals: Plurals = {

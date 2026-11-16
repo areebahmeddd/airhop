@@ -2636,6 +2636,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Дзвінок",
   "notif.ring.title": "{sender} дзвонить вам",
   "notif.ring.body": "Перевірте свої повідомлення",
+  "notif.action.reply": "Відповісти",
+  "notif.action.send": "Надіслати",
+  "notif.action.mark_read": "Позначити прочитаним",
+  "notif.reply.failed_title": "Не надіслано",
+  "notif.reply.failed_body":
+    "Вашу відповідь ({chat}) не надіслано. Відкрийте чат, щоб спробувати ще раз.",
+  "notif.reply.held_title": "Очікує надсилання",
+  "notif.reply.held_body":
+    "Вашу відповідь ({chat}) буде надіслано, коли Airhop працюватиме.",
+  "notif.reply.cut_title": "Надіслано частково",
+  "notif.reply.cut_body":
+    "Ваша відповідь ({chat}) була задовгою, тож її кінець не надіслано.",
 };
 
 export const plurals: Plurals = {

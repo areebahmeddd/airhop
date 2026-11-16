@@ -2615,6 +2615,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "呼び出し",
   "notif.ring.title": "{sender}があなたを呼び出しています",
   "notif.ring.body": "メッセージを確認してください",
+  "notif.action.reply": "返信",
+  "notif.action.send": "送信",
+  "notif.action.mark_read": "既読にする",
+  "notif.reply.failed_title": "送信されませんでした",
+  "notif.reply.failed_body":
+    "{chat} への返信は送信されませんでした。チャットを開いてもう一度お試しください。",
+  "notif.reply.held_title": "送信待ち",
+  "notif.reply.held_body": "{chat} への返信は Airhop の動作中に送信されます。",
+  "notif.reply.cut_title": "一部のみ送信",
+  "notif.reply.cut_body":
+    "{chat} への返信が長すぎたため、最後の部分は送信されませんでした。",
 };
 
 export const plurals: Plurals = {

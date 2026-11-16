@@ -2596,6 +2596,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "घंटी",
   "notif.ring.title": "{sender} आपको घंटी बजा रहे हैं",
   "notif.ring.body": "अपने संदेश जाँचें",
+  "notif.action.reply": "जवाब दें",
+  "notif.action.send": "भेजें",
+  "notif.action.mark_read": "पढ़ा हुआ लिखें",
+  "notif.reply.failed_title": "नहीं भेजा गया",
+  "notif.reply.failed_body":
+    "{chat} को आपका जवाब नहीं भेजा जा सका। फिर कोशिश करने के लिए चैट खोलें।",
+  "notif.reply.held_title": "भेजे जाने की प्रतीक्षा में",
+  "notif.reply.held_body": "Airhop चलने पर {chat} को आपका जवाब भेज दिया जाएगा।",
+  "notif.reply.cut_title": "कुछ हिस्सा भेजा गया",
+  "notif.reply.cut_body":
+    "{chat} को आपका जवाब बहुत लंबा था, इसलिए उसका आखिरी हिस्सा नहीं भेजा गया।",
 };
 
 export const plurals: Plurals = {

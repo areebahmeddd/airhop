@@ -2589,6 +2589,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "রিং",
   "notif.ring.title": "{sender} আপনাকে রিং করছেন",
   "notif.ring.body": "আপনার বার্তা দেখুন",
+  "notif.action.reply": "উত্তর দিন",
+  "notif.action.send": "পাঠান",
+  "notif.action.mark_read": "পঠিত চিহ্নিত করুন",
+  "notif.reply.failed_title": "পাঠানো হয়নি",
+  "notif.reply.failed_body":
+    "{chat}-এ আপনার উত্তর পাঠানো যায়নি। আবার চেষ্টা করতে চ্যাটটি খুলুন।",
+  "notif.reply.held_title": "পাঠানোর অপেক্ষায়",
+  "notif.reply.held_body": "Airhop চালু হলে {chat}-এ আপনার উত্তর পাঠানো হবে।",
+  "notif.reply.cut_title": "আংশিক পাঠানো হয়েছে",
+  "notif.reply.cut_body":
+    "{chat}-এ আপনার উত্তর খুব দীর্ঘ ছিল, তাই শেষ অংশ পাঠানো হয়নি।",
 };
 
 export const plurals: Plurals = {

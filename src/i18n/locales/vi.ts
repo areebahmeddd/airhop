@@ -2617,6 +2617,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Chuông",
   "notif.ring.title": "{sender} đang gọi chuông cho bạn",
   "notif.ring.body": "Hãy kiểm tra tin nhắn của bạn",
+  "notif.action.reply": "Trả lời",
+  "notif.action.send": "Gửi",
+  "notif.action.mark_read": "Đánh dấu đã đọc",
+  "notif.reply.failed_title": "Chưa gửi được",
+  "notif.reply.failed_body":
+    "Câu trả lời của bạn tới {chat} chưa gửi được. Hãy mở cuộc trò chuyện để thử lại.",
+  "notif.reply.held_title": "Đang chờ gửi",
+  "notif.reply.held_body":
+    "Câu trả lời của bạn tới {chat} sẽ được gửi khi Airhop đang chạy.",
+  "notif.reply.cut_title": "Đã gửi một phần",
+  "notif.reply.cut_body":
+    "Câu trả lời của bạn tới {chat} quá dài nên phần cuối chưa được gửi.",
 };
 
 export const plurals: Plurals = {

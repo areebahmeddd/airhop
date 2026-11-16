@@ -2546,6 +2546,16 @@ export const strings: Strings = {
   "notif.ring.hidden": "เสียงเรียก",
   "notif.ring.title": "{sender} กำลังโทรเรียกคุณ",
   "notif.ring.body": "ตรวจสอบข้อความของคุณ",
+  "notif.action.reply": "ตอบกลับ",
+  "notif.action.send": "ส่ง",
+  "notif.action.mark_read": "ทำเครื่องหมายว่าอ่านแล้ว",
+  "notif.reply.failed_title": "ส่งไม่สำเร็จ",
+  "notif.reply.failed_body":
+    "ส่งคำตอบถึง {chat} ไม่สำเร็จ เปิดแชทเพื่อลองอีกครั้ง",
+  "notif.reply.held_title": "รอส่ง",
+  "notif.reply.held_body": "คำตอบถึง {chat} จะถูกส่งเมื่อ Airhop ทำงาน",
+  "notif.reply.cut_title": "ส่งไปบางส่วน",
+  "notif.reply.cut_body": "คำตอบถึง {chat} ยาวเกินไป จึงไม่ได้ส่งส่วนท้าย",
 };
 
 export const plurals: Plurals = {

@@ -2443,6 +2443,15 @@ export const strings: Strings = {
   "notif.ring.hidden": "响铃",
   "notif.ring.title": "{sender} 正在响铃通知你",
   "notif.ring.body": "请查看你的消息",
+  "notif.action.reply": "回复",
+  "notif.action.send": "发送",
+  "notif.action.mark_read": "标为已读",
+  "notif.reply.failed_title": "未发送",
+  "notif.reply.failed_body": "你发给 {chat} 的回复未能发送。打开聊天重试。",
+  "notif.reply.held_title": "等待发送",
+  "notif.reply.held_body": "你发给 {chat} 的回复将在 Airhop 运行时发送。",
+  "notif.reply.cut_title": "部分已发送",
+  "notif.reply.cut_body": "你发给 {chat} 的回复太长，结尾部分未发送。",
 };
 
 export const plurals: Plurals = {

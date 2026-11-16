@@ -2656,6 +2656,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Bellen",
   "notif.ring.title": "{sender} belt je",
   "notif.ring.body": "Bekijk je berichten",
+  "notif.action.reply": "Beantwoorden",
+  "notif.action.send": "Sturen",
+  "notif.action.mark_read": "Als gelezen markeren",
+  "notif.reply.failed_title": "Niet verstuurd",
+  "notif.reply.failed_body":
+    "Je antwoord aan {chat} is niet verstuurd. Open de chat om het opnieuw te proberen.",
+  "notif.reply.held_title": "Wacht op verzending",
+  "notif.reply.held_body":
+    "Je antwoord aan {chat} wordt verstuurd zodra Airhop draait.",
+  "notif.reply.cut_title": "Deels verstuurd",
+  "notif.reply.cut_body":
+    "Je antwoord aan {chat} was te lang, dus het einde is niet verstuurd.",
 };
 
 export const plurals: Plurals = {

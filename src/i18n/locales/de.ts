@@ -2692,6 +2692,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Klingeln",
   "notif.ring.title": "{sender} klingelt bei dir",
   "notif.ring.body": "Sieh dir deine Nachrichten an",
+  "notif.action.reply": "Antworten",
+  "notif.action.send": "Senden",
+  "notif.action.mark_read": "Als gelesen markieren",
+  "notif.reply.failed_title": "Nicht gesendet",
+  "notif.reply.failed_body":
+    "Deine Antwort an {chat} wurde nicht gesendet. Öffne den Chat, um es erneut zu versuchen.",
+  "notif.reply.held_title": "Wartet auf Versand",
+  "notif.reply.held_body":
+    "Deine Antwort an {chat} wird gesendet, sobald Airhop läuft.",
+  "notif.reply.cut_title": "Teilweise gesendet",
+  "notif.reply.cut_body":
+    "Deine Antwort an {chat} war zu lang, daher wurde ihr Ende nicht gesendet.",
 };
 
 export const plurals: Plurals = {

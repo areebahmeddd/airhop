@@ -1562,6 +1562,8 @@ default, in Privacy & security) closes that gap. Decisions live in
   lock asks. Back leaves the app; screen readers cannot reach beneath.
 - **Nobody reads behind it.** Receipts, marking read, live voice and the Mesh
   and Wallet "seen" states wait, and messages notify as if the app were away.
+- **Nobody answers past it.** Message notifications lose Reply and Mark as
+  read while it is on, and turning it on takes the cards already shown down.
 - **Reset settings leaves it on**, with its delay, as it leaves the media
   retention window, the internet switch and Tor, and its confirm says so:
   dropping any of them would lower a protection or delete media unasked. The

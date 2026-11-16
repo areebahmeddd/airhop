@@ -96,7 +96,6 @@ Relay support is written and simulated but has never met hardware; see [PROTOCOL
 
 Neither watchOS nor Wear OS lets an app run the background Bluetooth a mesh node needs, so both are interfaces to the phone app rather than nodes. The watch holds no keys and no history: the phone pushes a little state to it and runs what it asks. Both watches already mirror the phone's notifications, rings included, so reading and replying start on the phone. What the watch shows follows the notification preview setting, and message text never sits on an always-on face. Each ships inside the phone app's store listing: embedded in the iPhone app, and as a Wear OS bundle in the same Play listing.
 
-- [ ] A reply action on message notifications, which both watches mirror
 - [ ] Apple Watch app over WatchConnectivity: panic trigger and an unread-count complication
 - [ ] Wear OS app over the Wearable Data Layer: panic trigger and an unread-count tile
 - [ ] Panic trigger guarded against accidental taps, acting only while the two are connected

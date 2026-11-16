@@ -129,6 +129,26 @@ export function shouldSystemNotify(p: {
   return !p.isMine && !p.isSystem && !p.appActive;
 }
 
+// Whether a message card offers Reply and Mark as read. Only where the audience
+// is known and bounded (a DM, a private group, a private channel): a public room
+// or a location cell reaches whoever is there, too much to post into from a
+// lock screen. Never with previews hidden, which would be a reply to words not
+// shown, or with the app lock on, which an action taken from the shade walks
+// past.
+export function offersQuickActions(p: {
+  channel: string;
+  hasChannelKey: boolean;
+  hidePreviews: boolean;
+  appLockEnabled: boolean;
+}): boolean {
+  if (p.hidePreviews || p.appLockEnabled) return false;
+  return (
+    p.channel.startsWith("dm:") ||
+    p.channel.startsWith("group:") ||
+    p.hasChannelKey
+  );
+}
+
 // Older public-room messages are replayed history (relay lookback, mesh sync),
 // not news. The notice bell and board badges use the same window, so a
 // subscription's replay or a gossip backfill rings none of them.

@@ -2617,6 +2617,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "Ring",
   "notif.ring.title": "{sender} ringer dig",
   "notif.ring.body": "Kolla dina meddelanden",
+  "notif.action.reply": "Svara",
+  "notif.action.send": "Skicka",
+  "notif.action.mark_read": "Markera som läst",
+  "notif.reply.failed_title": "Inte skickat",
+  "notif.reply.failed_body":
+    "Ditt svar till {chat} skickades inte. Öppna chatten för att försöka igen.",
+  "notif.reply.held_title": "Väntar på att skickas",
+  "notif.reply.held_body": "Ditt svar till {chat} skickas när Airhop körs.",
+  "notif.reply.cut_title": "Delvis skickat",
+  "notif.reply.cut_body":
+    "Ditt svar till {chat} var för långt, så slutet skickades inte.",
 };
 
 export const plurals: Plurals = {

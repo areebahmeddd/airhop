@@ -14,6 +14,8 @@ const mockSetAppActive = jest.fn();
 const mockConfigure = jest.fn();
 const mockEndAllRings = jest.fn();
 const mockDismissPreviews = jest.fn();
+const mockDismissMessages = jest.fn();
+const mockSetQuickAction = jest.fn();
 let mockReading = false;
 let mockAppActive = false;
 
@@ -85,6 +87,7 @@ jest.mock("@utils/message-text", () => ({
 }));
 jest.mock("../notification-service", () => ({
   configureNotifications: () => mockConfigure(),
+  dismissMessageNotifications: () => mockDismissMessages(),
   dismissPreviewNotifications: () => mockDismissPreviews(),
   endAllRingAlerts: () => mockEndAllRings(),
   handleInboundMessage: (...args: unknown[]) => mockHandleInbound(...args),
@@ -94,6 +97,7 @@ jest.mock("../notification-service", () => ({
   raiseRingNotification: (...args: unknown[]) => mockRaiseRing(...args),
   setAppBadgeCount: (n: number) => mockSetBadge(n),
   setNotificationsAppActive: (a: boolean) => mockSetAppActive(a),
+  setQuickActionHandler: (fn: unknown) => mockSetQuickAction(fn),
 }));
 
 import { useAppLockStore } from "@store/app-lock-store";
@@ -132,7 +136,11 @@ beforeEach(() => {
   };
   mockReading = false;
   mockAppActive = false;
-  useSettingsStore.setState({ ringAlertsEnabled: true });
+  useSettingsStore.setState({
+    ringAlertsEnabled: true,
+    hideNotificationPreviews: false,
+    appLockEnabled: false,
+  });
 });
 
 describe("startNotificationPipeline", () => {
@@ -296,6 +304,40 @@ describe("startNotificationPipeline", () => {
     useSettingsStore.setState({ hideNotificationPreviews: true });
     useSettingsStore.setState({ hideNotificationPreviews: false });
     expect(mockDismissPreviews).toHaveBeenCalledTimes(1);
+  });
+
+  test("offers Reply on a DM card, and not on a room's or behind the lock", () => {
+    startNotificationPipeline(() => "alice");
+
+    arrive(message({ channel: "dm:x" }));
+    arrive(message({ id: "m2" }));
+    useSettingsStore.setState({ appLockEnabled: true });
+    arrive(message({ id: "m3", channel: "dm:x" }));
+
+    expect(mockHandleInbound.mock.calls.map((c) => c[3])).toEqual([
+      true,
+      false,
+      false,
+    ]);
+  });
+
+  // Cards already in the shade carry buttons that would answer past it.
+  test("switching the app lock on takes the message cards down", () => {
+    startNotificationPipeline(() => "alice");
+
+    useSettingsStore.setState({ appLockEnabled: true });
+    useSettingsStore.setState({ appLockEnabled: true });
+
+    expect(mockDismissMessages).toHaveBeenCalledTimes(1);
+  });
+
+  test("hands the quick action handler over, and the wipe takes it back", () => {
+    const handler = jest.fn();
+    startNotificationPipeline(() => "alice", undefined, handler);
+    expect(mockSetQuickAction).toHaveBeenLastCalledWith(handler);
+
+    stopNotificationPipeline();
+    expect(mockSetQuickAction).toHaveBeenLastCalledWith(null);
   });
 
   test("configures channels and the handler, for a start with no screen", () => {

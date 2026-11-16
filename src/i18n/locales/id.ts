@@ -2648,6 +2648,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Bel",
   "notif.ring.title": "{sender} membunyikan bel untukmu",
   "notif.ring.body": "Periksa pesanmu",
+  "notif.action.reply": "Balas",
+  "notif.action.send": "Kirim",
+  "notif.action.mark_read": "Tandai terbaca",
+  "notif.reply.failed_title": "Tidak terkirim",
+  "notif.reply.failed_body":
+    "Balasanmu ke {chat} tidak terkirim. Buka obrolan untuk mencoba lagi.",
+  "notif.reply.held_title": "Menunggu dikirim",
+  "notif.reply.held_body":
+    "Balasanmu ke {chat} akan terkirim saat Airhop berjalan.",
+  "notif.reply.cut_title": "Terkirim sebagian",
+  "notif.reply.cut_body":
+    "Balasanmu ke {chat} terlalu panjang, jadi bagian akhirnya tidak terkirim.",
 };
 
 export const plurals: Plurals = {

@@ -2695,6 +2695,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Sonnerie",
   "notif.ring.title": "{sender} fait sonner ton téléphone",
   "notif.ring.body": "Consulte tes messages",
+  "notif.action.reply": "Répondre",
+  "notif.action.send": "Envoyer",
+  "notif.action.mark_read": "Marquer comme lu",
+  "notif.reply.failed_title": "Non envoyé",
+  "notif.reply.failed_body":
+    "Ta réponse à {chat} n’a pas été envoyée. Ouvre la discussion pour réessayer.",
+  "notif.reply.held_title": "En attente d’envoi",
+  "notif.reply.held_body":
+    "Ta réponse à {chat} partira dès qu’Airhop sera lancé.",
+  "notif.reply.cut_title": "Envoyé en partie",
+  "notif.reply.cut_body":
+    "Ta réponse à {chat} était trop longue, sa fin n’a donc pas été envoyée.",
 };
 
 export const plurals: Plurals = {

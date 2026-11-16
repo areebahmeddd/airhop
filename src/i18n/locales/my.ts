@@ -2692,6 +2692,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "ဖုန်းမြည်သံ",
   "notif.ring.title": "{sender} က သင့်ကို ဖုန်းမြည်နေသည်",
   "notif.ring.body": "သင့်စာများကို စစ်ဆေးပါ",
+  "notif.action.reply": "ပြန်ဖြေပါ",
+  "notif.action.send": "ပို့ပါ",
+  "notif.action.mark_read": "ဖတ်ပြီးဟု မှတ်သားပါ",
+  "notif.reply.failed_title": "မပို့ရပါ",
+  "notif.reply.failed_body":
+    "{chat} သို့ သင့်ပြန်စာ မပို့နိုင်ခဲ့ပါ။ ထပ်စမ်းရန် ချတ်ကို ဖွင့်ပါ။",
+  "notif.reply.held_title": "ပို့ရန် စောင့်နေသည်",
+  "notif.reply.held_body":
+    "Airhop လည်ပတ်သည့်အခါ {chat} သို့ သင့်ပြန်စာကို ပို့ပါမည်။",
+  "notif.reply.cut_title": "တစ်စိတ်တစ်ပိုင်း ပို့ပြီး",
+  "notif.reply.cut_body":
+    "{chat} သို့ သင့်ပြန်စာ ရှည်လွန်းသဖြင့် နောက်ဆုံးပိုင်းကို မပို့ရပါ။",
 };
 
 export const plurals: Plurals = {

@@ -69,10 +69,12 @@ import {
   type GeoParticipant,
 } from "@services/geohash-channel-service";
 import { prepareImageForSend } from "@services/image-compression";
+import { keepAsContact } from "@services/keep-as-contact";
 import { LiveVideoReceiver } from "@services/live-video-receiver";
 import type { FinishedLiveVideo } from "@services/live-video-sender";
 import { hasLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
+import { transmitMessage } from "@services/message-send";
 import {
   receiveTrustingMint,
   reportWalletError,
@@ -147,7 +149,7 @@ import {
 import { isManualGeoChannel, manualGeohashOf } from "@utils/channel-key";
 import { channelInviteLink } from "@utils/deep-link";
 import { unconfirmedSince } from "@utils/delivery-silence";
-import { emoteLine, screenshotNotice } from "@utils/emote";
+import { emoteLine, expandEmote, screenshotNotice } from "@utils/emote";
 import {
   amountParts,
   formatBytes,
@@ -259,7 +261,6 @@ import {
   CANCEL_SLIDE_DISTANCE,
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
-import { keepAsContact } from "./keep-as-contact";
 import LiveBadge from "./live-badge";
 import LiveVideoStudio from "./live-video-studio";
 import LiveVideoViewer from "./live-video-viewer";
@@ -2988,10 +2989,6 @@ export default function MessageThread({
     }, 4000);
   }
 
-  function showQueuedStatus(): void {
-    showStatus("queued");
-  }
-
   // ---- Composer length budget ----
   //
   // A DM rides a TLV with a one-byte length field, so its budget is 255 UTF-8
@@ -3141,124 +3138,9 @@ export default function MessageThread({
   ]);
 
   // The real transmission, run when the hold window elapses or is committed.
-  // Reads everything from the message and from live getters, so it is safe to
-  // call from a stale closure (a fired timer, or the unmount flush).
+  // Safe from a stale closure (a fired timer, or the unmount flush).
   function transmit(msg: ChatMessage): void {
-    const setStatus = useChatStore.getState().setMessageStatus;
-    const msgChannel = msg.channel;
-    const service = getMeshService();
-    if (!service) {
-      setStatus(msgChannel, msg.id, "failed");
-      return;
-    }
-    if (msgChannel.startsWith("dm:")) {
-      const dmPeerID = msgChannel.slice(3);
-      // Sending to someone saves them as a contact too, so replying to a DM
-      // that started inbound keeps them, not just DMs you initiated.
-      keepAsContact(
-        dmPeerID,
-        usePeerStore.getState().getPeer(dmPeerID)?.nickname ??
-          resolveDisplayName(dmPeerID),
-      );
-      const result = service.sendDm(dmPeerID, msg.text, msg.id);
-      // "sent"/"sent-nostr" upgrade to delivered/read via receipts. When no
-      // route exists now it is either "carried" (a courier took a sealed copy)
-      // or "queued" (held locally for retry); both surface the queued notice.
-      setStatus(
-        msgChannel,
-        msg.id,
-        result === "needs-courier"
-          ? "carried"
-          : result === "queued"
-            ? "queued"
-            : "sent",
-      );
-      if (result === "needs-courier" || result === "queued") {
-        showQueuedStatus();
-      }
-    } else if (msgChannel.startsWith("group:")) {
-      // Private group: seal under the epoch key and broadcast (0x25).
-      //
-      // A group is Bluetooth-only, so reach is the same question a channel
-      // broadcast faces, and it gets the same three answers. Reporting "sent"
-      // whenever the packet is merely sealed gives a message to a group nobody is
-      // in range of a tick it has not earned. Groups have no delivery receipts on
-      // either client, so this tick is all the user gets and it has to be true.
-      const sent = service.sendGroupMessage(
-        msgChannel.slice("group:".length),
-        msg.text,
-        msg.id,
-      );
-      if (!sent.sealed) {
-        // We no longer hold the group's key, so the creator removed us. Terminal:
-        // unlike every other failure here, walking around does not fix it.
-        setStatus(msgChannel, msg.id, "failed");
-        showStatus("no-group-key");
-      } else if (sent.meshLinks > 0) {
-        setStatus(msgChannel, msg.id, "sent");
-      } else {
-        // Sealed but nobody in range. NOT a failure: the packet is now a gossip
-        // candidate for six hours, so the first member to come into range
-        // and ask for a sync gets it. "queued" is exactly that, and it is the
-        // common case for a group, whose members are specific people who are
-        // usually not all nearby. Marking it failed would paint most group
-        // messages red for something that is about to work.
-        setStatus(msgChannel, msg.id, "queued");
-        showStatus("group-queued");
-      }
-    } else {
-      // Three outcomes: it reached a link or a live relay ("sent"), a gateway
-      // peer took it to publish for us ("carried"), or it went nowhere. Read
-      // from what happened, not from whether the channel may use the internet,
-      // or a location channel on Bluetooth alone shows a sent tick.
-      //
-      // The row's id is the wire id, so a retry is the same message again and
-      // collapses with the first copy wherever both land.
-      const sent = service.sendChannelMessage(
-        msgChannel,
-        msg.text,
-        msg.id,
-        msg.nearbyOnly === true,
-      );
-      const settle = (reach: typeof sent, announce: boolean): void => {
-        if (reach.meshLinks > 0 || reach.nostr) {
-          setStatus(msgChannel, msg.id, "sent");
-        } else if (reach.gateway) {
-          setStatus(msgChannel, msg.id, "carried");
-          if (announce) showStatus("gateway");
-        } else if (
-          isGeoChannel(msgChannel) ||
-          useChatStore.getState().channelKeys[msgChannel] !== undefined
-        ) {
-          // A location cell's audience is everyone in it, reached over the
-          // internet. A Bluetooth neighbor arriving later will sync the packet,
-          // but the cell itself never sees it, so this is as far as it goes.
-          //
-          // A private channel's sealed packet is never kept for sync and its
-          // relay publish is one-shot, so nothing sends it later either. Failed
-          // is what offers Retry.
-          setStatus(msgChannel, msg.id, "failed");
-          if (announce) showNoReachStatus();
-        } else {
-          // A public mesh room's audience IS whoever is in range, and the packet
-          // stays a gossip candidate for six hours, so the next neighbor to
-          // turn up gets it. Same reasoning as the group branch above: this is
-          // waiting, not broken, and painting it red would be the harsher of
-          // two lies.
-          setStatus(msgChannel, msg.id, "queued");
-          if (announce) showNoReachStatus();
-        }
-      };
-      settle(sent, true);
-      // Only a relay carried it, on the strength of an open socket. Every relay
-      // may still refuse or never answer, so the answer has the last word. No
-      // hint then: it could land on whatever thread is open by the time.
-      if (sent.meshLinks === 0 && sent.nostr) {
-        void sent.settled?.then((reach) => {
-          if (!reach.nostr) settle(reach, false);
-        });
-      }
-    }
+    transmitMessage(msg, { notice: showStatus });
   }
 
   // Latest transmit, so the unmount flush uses current closures without
@@ -3332,40 +3214,22 @@ export default function MessageThread({
   function handleSend(): void {
     let text = draft.trim();
     if (!text) return;
-    // Fun IRC-style emotes, matching bitchat: /hug and /slap become an action
-    // message both sides see. In a DM the target defaults to the peer; in a
-    // channel it comes from a trailing @name.
-    //
-    // A DM uses the second person, matching bitchat: its handleEmote sends
-    // "slaps you around a bit with a large trout" on the private-chat branch,
-    // and its reader matches that literal string. The recipient's nickname would
-    // read as a third-person line about them in their own DM. English, never
-    // translated: this text crosses the wire and bitchat matches it as a
-    // substring.
-    const emote = /^\/(hug|slap)(?:\s+(.*))?$/i.exec(text);
-    if (emote) {
-      const kind = emote[1].toLowerCase();
-      // A DM has exactly one recipient, so a trailing @name cannot redirect it
-      // and is ignored: the target is always "you".
-      const target = isDM ? "you" : (emote[2] ?? "").trim().replace(/^@/, "");
-      // A channel emote needs a @name. The draft stays so it can be finished,
-      // and the toast says what is missing rather than the send going quiet.
-      if (target.length === 0) {
-        setToast({
-          message: t("chat.cmd.emote_needs_target", { command: kind }),
-          icon: "at-sign",
-        });
-        return;
-      }
-      const emoji = kind === "hug" ? "🫂" : "🐟";
-      const action = kind === "hug" ? "hugs" : "slaps";
-      const suffix = kind === "slap" ? " around a bit with a large trout" : "";
-      text = `* ${emoji} ${localNickname} ${action} ${target}${suffix} *`;
+    const emote = expandEmote(text, localNickname, isDM);
+    // A channel emote needs a @name. The draft stays so it can be finished,
+    // and the toast says what is missing rather than the send going quiet.
+    if (emote.kind === "needs-target") {
+      setToast({
+        message: t("chat.cmd.emote_needs_target", { command: emote.command }),
+        icon: "at-sign",
+      });
+      return;
+    }
+    if (emote.kind === "emote") {
       // An emote expands a short command into a whole sentence, so it is the
       // one way text can pass the composer budget and still overrun it. Clamp
       // again rather than refuse: the emote is decoration, and a trimmed trout
       // beats a message that encodes to null and vanishes.
-      text = clampDraft(text);
+      text = clampDraft(emote.text);
     }
     // At most one message is ever held: commit the previous one first.
     commitHeld();

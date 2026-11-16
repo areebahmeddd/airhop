@@ -2669,6 +2669,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Kengele",
   "notif.ring.title": "{sender} anakupigia kengele",
   "notif.ring.body": "Angalia ujumbe wako",
+  "notif.action.reply": "Jibu",
+  "notif.action.send": "Tuma",
+  "notif.action.mark_read": "Weka alama kuwa imesomwa",
+  "notif.reply.failed_title": "Haikutumwa",
+  "notif.reply.failed_body":
+    "Jibu lako kwa {chat} halikutumwa. Fungua mazungumzo ujaribu tena.",
+  "notif.reply.held_title": "Inasubiri kutumwa",
+  "notif.reply.held_body":
+    "Jibu lako kwa {chat} litatumwa Airhop ikiwa inafanya kazi.",
+  "notif.reply.cut_title": "Imetumwa sehemu",
+  "notif.reply.cut_body":
+    "Jibu lako kwa {chat} lilikuwa refu mno, kwa hiyo mwisho wake haukutumwa.",
 };
 
 export const plurals: Plurals = {

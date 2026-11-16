@@ -154,6 +154,8 @@ const PARTITIONS: Record<StoreId, MovedPartition | null> = {
   "ring-store": null,
   // This phone's own progress.
   "move-marker": null,
+  // Sent by this phone's next mesh start, which a move ends.
+  "held-quick-actions": null,
 };
 
 const SECRETS: Record<SecretName, "move" | "regenerate"> = {

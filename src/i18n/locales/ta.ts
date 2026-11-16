@@ -2722,6 +2722,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "அழைப்பு",
   "notif.ring.title": "{sender} உங்களை அழைக்கிறார்",
   "notif.ring.body": "உங்கள் செய்திகளைச் சரிபார்க்கவும்",
+  "notif.action.reply": "பதில்",
+  "notif.action.send": "அனுப்பு",
+  "notif.action.mark_read": "படித்ததாகக் குறி",
+  "notif.reply.failed_title": "அனுப்பப்படவில்லை",
+  "notif.reply.failed_body":
+    "{chat}: உங்கள் பதில் அனுப்பப்படவில்லை. மீண்டும் முயல அரட்டையைத் திறக்கவும்.",
+  "notif.reply.held_title": "அனுப்பக் காத்திருக்கிறது",
+  "notif.reply.held_body":
+    "{chat}: Airhop இயங்கும்போது உங்கள் பதில் அனுப்பப்படும்.",
+  "notif.reply.cut_title": "பகுதியாக அனுப்பப்பட்டது",
+  "notif.reply.cut_body":
+    "{chat}: உங்கள் பதில் மிக நீளமாக இருந்ததால், அதன் இறுதிப் பகுதி அனுப்பப்படவில்லை.",
 };
 
 export const plurals: Plurals = {

@@ -24,6 +24,7 @@ import { startAttachmentCleanup } from "./attachment-cache";
 import { sweepMediaIfDue } from "./media-retention";
 import { startMessageRetention } from "./message-retention";
 import { readMoveMarker } from "./move-marker";
+import { handleQuickAction } from "./notification-actions";
 import { startNotificationPipeline } from "./notification-pipeline";
 import { applyStartupPresence } from "./presence-service";
 import { startReachabilityWatch } from "./reachability";
@@ -76,6 +77,7 @@ async function bootStartMesh(): Promise<void> {
   startNotificationPipeline(
     () => nickname,
     (channel) => getMeshService()?.mentionSuffixFor(channel) ?? null,
+    handleQuickAction,
   );
   startBackgroundNotice();
   startReachabilityWatch();

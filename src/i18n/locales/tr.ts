@@ -2624,6 +2624,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Çağrı",
   "notif.ring.title": "{sender} seni arıyor",
   "notif.ring.body": "Mesajlarını kontrol et",
+  "notif.action.reply": "Yanıtla",
+  "notif.action.send": "Gönder",
+  "notif.action.mark_read": "Okundu işaretle",
+  "notif.reply.failed_title": "Gönderilmedi",
+  "notif.reply.failed_body":
+    "{chat} sohbetine yanıtın gönderilmedi. Yeniden denemek için sohbeti aç.",
+  "notif.reply.held_title": "Gönderilmeyi bekliyor",
+  "notif.reply.held_body":
+    "{chat} sohbetine yanıtın Airhop çalıştığında gönderilecek.",
+  "notif.reply.cut_title": "Kısmen gönderildi",
+  "notif.reply.cut_body":
+    "{chat} sohbetine yanıtın çok uzundu, bu yüzden sonu gönderilmedi.",
 };
 
 export const plurals: Plurals = {

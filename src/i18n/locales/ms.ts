@@ -2656,6 +2656,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Dering",
   "notif.ring.title": "{sender} sedang mendering anda",
   "notif.ring.body": "Semak mesej anda",
+  "notif.action.reply": "Balas",
+  "notif.action.send": "Hantar",
+  "notif.action.mark_read": "Tandakan sudah dibaca",
+  "notif.reply.failed_title": "Tidak dihantar",
+  "notif.reply.failed_body":
+    "Balasan anda kepada {chat} tidak dihantar. Buka sembang untuk mencuba lagi.",
+  "notif.reply.held_title": "Menunggu dihantar",
+  "notif.reply.held_body":
+    "Balasan anda kepada {chat} akan dihantar apabila Airhop berjalan.",
+  "notif.reply.cut_title": "Dihantar sebahagian",
+  "notif.reply.cut_body":
+    "Balasan anda kepada {chat} terlalu panjang, jadi bahagian akhirnya tidak dihantar.",
 };
 
 export const plurals: Plurals = {

@@ -2640,6 +2640,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Звонок",
   "notif.ring.title": "{sender} звонит вам",
   "notif.ring.body": "Проверьте свои сообщения",
+  "notif.action.reply": "Ответить",
+  "notif.action.send": "Отправить",
+  "notif.action.mark_read": "Отметить прочитанным",
+  "notif.reply.failed_title": "Не отправлено",
+  "notif.reply.failed_body":
+    "Ваш ответ ({chat}) не отправлен. Откройте чат, чтобы попробовать снова.",
+  "notif.reply.held_title": "Ожидает отправки",
+  "notif.reply.held_body":
+    "Ваш ответ ({chat}) отправится, когда Airhop будет запущен.",
+  "notif.reply.cut_title": "Отправлено частично",
+  "notif.reply.cut_body":
+    "Ваш ответ ({chat}) оказался слишком длинным, поэтому его конец не отправлен.",
 };
 
 export const plurals: Plurals = {

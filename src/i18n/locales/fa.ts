@@ -2601,6 +2601,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "زنگ",
   "notif.ring.title": "{sender} برای شما زنگ می‌زند",
   "notif.ring.body": "پیام‌هایتان را بررسی کنید",
+  "notif.action.reply": "پاسخ",
+  "notif.action.send": "بفرست",
+  "notif.action.mark_read": "خوانده‌شده علامت بزن",
+  "notif.reply.failed_title": "فرستاده نشد",
+  "notif.reply.failed_body":
+    "پاسخ شما به {chat} فرستاده نشد. برای تلاش دوباره، گفتگو را باز کنید.",
+  "notif.reply.held_title": "در انتظار ارسال",
+  "notif.reply.held_body":
+    "پاسخ شما به {chat} وقتی Airhop در حال اجرا باشد فرستاده می‌شود.",
+  "notif.reply.cut_title": "بخشی فرستاده شد",
+  "notif.reply.cut_body":
+    "پاسخ شما به {chat} خیلی طولانی بود، برای همین انتهای آن فرستاده نشد.",
 };
 
 export const plurals: Plurals = {

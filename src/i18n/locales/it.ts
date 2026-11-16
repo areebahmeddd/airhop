@@ -2681,6 +2681,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Squillo",
   "notif.ring.title": "{sender} ti sta facendo uno squillo",
   "notif.ring.body": "Controlla i tuoi messaggi",
+  "notif.action.reply": "Rispondi",
+  "notif.action.send": "Invia",
+  "notif.action.mark_read": "Segna come letto",
+  "notif.reply.failed_title": "Non inviato",
+  "notif.reply.failed_body":
+    "La tua risposta a {chat} non è stata inviata. Apri la chat per riprovare.",
+  "notif.reply.held_title": "In attesa di invio",
+  "notif.reply.held_body":
+    "La tua risposta a {chat} verrà inviata quando Airhop sarà attivo.",
+  "notif.reply.cut_title": "Inviato in parte",
+  "notif.reply.cut_body":
+    "La tua risposta a {chat} era troppo lunga, quindi la parte finale non è stata inviata.",
 };
 
 export const plurals: Plurals = {

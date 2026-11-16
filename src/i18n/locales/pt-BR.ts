@@ -2663,6 +2663,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Chamada",
   "notif.ring.title": "{sender} está chamando você",
   "notif.ring.body": "Confira suas mensagens",
+  "notif.action.reply": "Responder",
+  "notif.action.send": "Enviar",
+  "notif.action.mark_read": "Marcar como lido",
+  "notif.reply.failed_title": "Não enviada",
+  "notif.reply.failed_body":
+    "Sua resposta para {chat} não foi enviada. Abra a conversa para tentar de novo.",
+  "notif.reply.held_title": "Aguardando envio",
+  "notif.reply.held_body":
+    "Sua resposta para {chat} será enviada quando o Airhop estiver em execução.",
+  "notif.reply.cut_title": "Enviada em parte",
+  "notif.reply.cut_body":
+    "Sua resposta para {chat} era longa demais, então o final não foi enviado.",
 };
 
 export const plurals: Plurals = {

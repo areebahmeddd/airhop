@@ -2613,6 +2613,18 @@ export const strings = {
   "notif.ring.hidden": "Ring",
   "notif.ring.title": "{sender} is ringing you",
   "notif.ring.body": "Check your messages",
+  "notif.action.reply": "Reply",
+  "notif.action.send": "Send",
+  "notif.action.mark_read": "Mark as read",
+  "notif.reply.failed_title": "Not sent",
+  "notif.reply.failed_body":
+    "Your reply to {chat} didn’t send. Open the chat to try again.",
+  "notif.reply.held_title": "Waiting to send",
+  "notif.reply.held_body":
+    "Your reply to {chat} will send once Airhop is running.",
+  "notif.reply.cut_title": "Partly sent",
+  "notif.reply.cut_body":
+    "Your reply to {chat} was too long, so its end wasn’t sent.",
 } as const;
 
 // Plural forms live apart from the flat strings because plural categories are

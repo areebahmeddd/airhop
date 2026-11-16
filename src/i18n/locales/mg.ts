@@ -2718,6 +2718,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Antso",
   "notif.ring.title": "Miantso anao i {sender}",
   "notif.ring.body": "Jereo ny hafatrao",
+  "notif.action.reply": "Valio",
+  "notif.action.send": "Alefaso",
+  "notif.action.mark_read": "Mariho ho voavaky",
+  "notif.reply.failed_title": "Tsy lasa",
+  "notif.reply.failed_body":
+    "{chat}: tsy lasa ny valinteninao. Sokafy ny resaka mba hanandramana indray.",
+  "notif.reply.held_title": "Miandry halefa",
+  "notif.reply.held_body":
+    "{chat}: halefa ny valinteninao rehefa mandeha ny Airhop.",
+  "notif.reply.cut_title": "Lasa ny ampahany",
+  "notif.reply.cut_body":
+    "{chat}: lava loatra ny valinteninao, ka tsy lasa ny faran'izy io.",
 };
 
 export const plurals: Plurals = {

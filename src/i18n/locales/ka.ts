@@ -2636,6 +2636,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "ზარი",
   "notif.ring.title": "{sender} გირეკავს",
   "notif.ring.body": "შეამოწმე შენი შეტყობინებები",
+  "notif.action.reply": "პასუხი",
+  "notif.action.send": "გაგზავნა",
+  "notif.action.mark_read": "წაკითხულად მონიშვნა",
+  "notif.reply.failed_title": "არ გაიგზავნა",
+  "notif.reply.failed_body":
+    "{chat}: შენი პასუხი არ გაიგზავნა. გახსენი ჩატი და ხელახლა სცადე.",
+  "notif.reply.held_title": "გაგზავნის მოლოდინში",
+  "notif.reply.held_body":
+    "{chat}: შენი პასუხი გაიგზავნება, როცა Airhop ჩაირთვება.",
+  "notif.reply.cut_title": "ნაწილობრივ გაიგზავნა",
+  "notif.reply.cut_body":
+    "{chat}: შენი პასუხი ზედმეტად გრძელი იყო, ამიტომ მისი ბოლო არ გაიგზავნა.",
 };
 
 export const plurals: Plurals = {

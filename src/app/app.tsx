@@ -84,6 +84,7 @@ import {
   sweepMessagesIfDue,
 } from "@services/message-retention";
 import { clearMoveMarker, readMoveMarker } from "@services/move-marker";
+import { handleQuickAction } from "@services/notification-actions";
 import { startNotificationPipeline } from "@services/notification-pipeline";
 import {
   configureNotifications,
@@ -464,6 +465,7 @@ function startMeshDependents(): void {
   startNotificationPipeline(
     () => nickname,
     (channel) => getMeshService()?.mentionSuffixFor(channel) ?? null,
+    handleQuickAction,
   );
   startBackgroundNotice();
 

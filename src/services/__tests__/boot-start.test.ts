@@ -17,6 +17,7 @@ let mockMesh: {
 const mockPrimeTor = jest.fn();
 const mockNotifyTorForeground = jest.fn();
 const mockStartPipeline = jest.fn();
+const mockHandleQuickAction = jest.fn();
 const mockStartReachability = jest.fn();
 const mockStartNotice = jest.fn();
 const mockSweepMedia = jest.fn();
@@ -60,8 +61,10 @@ jest.mock("@store/settings-store", () => ({
 }));
 jest.mock("../boot-sync", () => ({ syncBootStart: jest.fn() }));
 jest.mock("../notification-pipeline", () => ({
-  startNotificationPipeline: (nickname: () => string) =>
-    mockStartPipeline(nickname),
+  startNotificationPipeline: (...args: unknown[]) => mockStartPipeline(...args),
+}));
+jest.mock("../notification-actions", () => ({
+  handleQuickAction: (action: unknown) => mockHandleQuickAction(action),
 }));
 jest.mock("../background-notice", () => ({
   startBackgroundNotice: () => mockStartNotice(),
@@ -137,6 +140,15 @@ describe("bootStartMesh", () => {
     // The mention check reads the name the mesh announces.
     const nickname = mockStartPipeline.mock.calls[0][0] as () => string;
     expect(nickname()).toBe(mockInitMeshService.mock.calls[0][1]);
+    // A reply typed into a card while no screen exists still goes out.
+    const quickAction = mockStartPipeline.mock.calls[0][2] as (
+      action: unknown,
+    ) => void;
+    quickAction({ kind: "read", channel: "dm:x" });
+    expect(mockHandleQuickAction).toHaveBeenCalledWith({
+      kind: "read",
+      channel: "dm:x",
+    });
   });
 
   // No screen exists, so the mesh and Tor start at off-screen power rather

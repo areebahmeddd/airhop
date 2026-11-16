@@ -2574,6 +2574,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "벨 알림",
   "notif.ring.title": "{sender}님이 벨을 울리고 있습니다",
   "notif.ring.body": "메시지를 확인하세요",
+  "notif.action.reply": "답장",
+  "notif.action.send": "보내기",
+  "notif.action.mark_read": "읽음으로 표시",
+  "notif.reply.failed_title": "보내지 못함",
+  "notif.reply.failed_body":
+    "{chat}에 답장을 보내지 못했습니다. 채팅을 열어 다시 시도하세요.",
+  "notif.reply.held_title": "전송 대기 중",
+  "notif.reply.held_body": "Airhop이 실행되면 {chat}에 답장이 전송됩니다.",
+  "notif.reply.cut_title": "일부만 전송됨",
+  "notif.reply.cut_body":
+    "{chat}에 보낸 답장이 너무 길어 끝부분은 전송되지 않았습니다.",
 };
 
 export const plurals: Plurals = {

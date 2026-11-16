@@ -2603,6 +2603,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "ਘੰਟੀ",
   "notif.ring.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
   "notif.ring.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
+  "notif.action.reply": "ਜਵਾਬ ਦਿਓ",
+  "notif.action.send": "ਭੇਜੋ",
+  "notif.action.mark_read": "ਪੜ੍ਹਿਆ ਨਿਸ਼ਾਨ ਲਾਓ",
+  "notif.reply.failed_title": "ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ",
+  "notif.reply.failed_body":
+    "{chat} ਨੂੰ ਤੁਹਾਡਾ ਜਵਾਬ ਨਹੀਂ ਭੇਜਿਆ ਜਾ ਸਕਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਲਈ ਚੈਟ ਖੋਲ੍ਹੋ।",
+  "notif.reply.held_title": "ਭੇਜਣ ਦੀ ਉਡੀਕ ਵਿੱਚ",
+  "notif.reply.held_body":
+    "Airhop ਚੱਲਣ ’ਤੇ {chat} ਨੂੰ ਤੁਹਾਡਾ ਜਵਾਬ ਭੇਜ ਦਿੱਤਾ ਜਾਵੇਗਾ।",
+  "notif.reply.cut_title": "ਕੁਝ ਹਿੱਸਾ ਭੇਜਿਆ ਗਿਆ",
+  "notif.reply.cut_body":
+    "{chat} ਨੂੰ ਤੁਹਾਡਾ ਜਵਾਬ ਬਹੁਤ ਲੰਮਾ ਸੀ, ਇਸ ਲਈ ਉਸਦਾ ਆਖਰੀ ਹਿੱਸਾ ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ।",
 };
 
 export const plurals: Plurals = {

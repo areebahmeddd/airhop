@@ -2451,6 +2451,15 @@ export const strings: Strings = {
   "notif.ring.hidden": "ደወል",
   "notif.ring.title": "{sender} እየደወለልህ ነው",
   "notif.ring.body": "መልእክቶችህን አረጋግጥ",
+  "notif.action.reply": "መልስ",
+  "notif.action.send": "ላክ",
+  "notif.action.mark_read": "እንደተነበበ ምልክት አድርግ",
+  "notif.reply.failed_title": "አልተላከም",
+  "notif.reply.failed_body": "{chat}፦ መልስህ አልተላከም። እንደገና ለመሞከር ውይይቱን ክፈት።",
+  "notif.reply.held_title": "ለመላክ በመጠበቅ ላይ",
+  "notif.reply.held_body": "{chat}፦ መልስህ Airhop ሲሰራ ይላካል።",
+  "notif.reply.cut_title": "በከፊል ተልኳል",
+  "notif.reply.cut_body": "{chat}፦ መልስህ በጣም ረጅም ስለነበር መጨረሻው አልተላከም።",
 };
 
 export const plurals: Plurals = {

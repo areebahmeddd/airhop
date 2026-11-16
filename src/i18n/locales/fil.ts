@@ -2698,6 +2698,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Tawag",
   "notif.ring.title": "Tinatawagan ka ni {sender}",
   "notif.ring.body": "Suriin ang iyong mga mensahe",
+  "notif.action.reply": "Sumagot",
+  "notif.action.send": "Ipadala",
+  "notif.action.mark_read": "Markahang nabasa",
+  "notif.reply.failed_title": "Hindi naipadala",
+  "notif.reply.failed_body":
+    "Hindi naipadala ang sagot mo sa {chat}. Buksan ang chat para subukan ulit.",
+  "notif.reply.held_title": "Naghihintay maipadala",
+  "notif.reply.held_body":
+    "Maipapadala ang sagot mo sa {chat} kapag tumatakbo na ang Airhop.",
+  "notif.reply.cut_title": "Bahagyang naipadala",
+  "notif.reply.cut_body":
+    "Masyadong mahaba ang sagot mo sa {chat}, kaya hindi naipadala ang dulo nito.",
 };
 
 export const plurals: Plurals = {

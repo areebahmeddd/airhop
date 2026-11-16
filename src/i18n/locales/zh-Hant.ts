@@ -2448,6 +2448,15 @@ export const strings: Strings = {
   "notif.ring.hidden": "響鈴",
   "notif.ring.title": "{sender} 正在響鈴通知你",
   "notif.ring.body": "請查看你的訊息",
+  "notif.action.reply": "回覆",
+  "notif.action.send": "傳送",
+  "notif.action.mark_read": "標為已讀",
+  "notif.reply.failed_title": "未傳送",
+  "notif.reply.failed_body": "你傳給 {chat} 的回覆未能傳送。開啟聊天再試一次。",
+  "notif.reply.held_title": "等待傳送",
+  "notif.reply.held_body": "你傳給 {chat} 的回覆將在 Airhop 執行時傳送。",
+  "notif.reply.cut_title": "部分已傳送",
+  "notif.reply.cut_body": "你傳給 {chat} 的回覆太長，結尾部分未傳送。",
 };
 
 export const plurals: Plurals = {

@@ -19,6 +19,7 @@ import { ringPulse } from "@platform/haptics";
 import { useActivityStore } from "@store/activity-store";
 import { selectLockOpen, useAppLockStore } from "@store/app-lock-store";
 import { subscribeInboundMessages, useChatStore } from "@store/chat-store";
+import type { QuickAction } from "@store/held-quick-actions";
 import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { countReachablePeers, usePeerStore } from "@store/peer-store";
 import { subscribeInboundRings } from "@store/ring-store";
@@ -28,9 +29,13 @@ import { messagePreviewEntry } from "@utils/message-preview";
 import { systemPreview } from "@utils/message-text";
 import { sumUnread } from "@utils/unread";
 import { AppState, Platform } from "react-native";
-import { isReplayedRoomMessage } from "./notification-policy";
+import {
+  isReplayedRoomMessage,
+  offersQuickActions,
+} from "./notification-policy";
 import {
   configureNotifications,
+  dismissMessageNotifications,
   dismissPreviewNotifications,
   endAllRingAlerts,
   handleInboundMessage,
@@ -40,6 +45,7 @@ import {
   raiseRingNotification,
   setAppBadgeCount,
   setNotificationsAppActive,
+  setQuickActionHandler,
 } from "./notification-service";
 
 let stops: (() => void)[] | null = null;
@@ -50,12 +56,17 @@ let ownMentionSuffix: (channel: string) => string | null = () => null;
 
 // Idempotent: a second call only refreshes the getters, so every path that
 // brings a mesh up may call it without stacking listeners.
+//
+// `quickAction` answers a card's Reply and Mark as read, passed in by whoever
+// started the mesh, since sending needs the mesh this module must not load.
 export function startNotificationPipeline(
   nickname: () => string,
   mentionSuffix: (channel: string) => string | null = () => null,
+  quickAction: ((action: QuickAction) => void) | null = null,
 ): void {
   ownNickname = nickname;
   ownMentionSuffix = mentionSuffix;
+  setQuickActionHandler(quickAction);
   if (stops !== null) return;
 
   // Whether a banner is owed depends on the app being in front, and nothing
@@ -97,10 +108,17 @@ export function startNotificationPipeline(
     // A muted conversation otherwise stays silent: no system notification, no
     // haptic, and no bell entry. Its unread still shows on its own row.
     if (isMuted && !mentionsMe) return;
+    const settings = useSettingsStore.getState();
     void handleInboundMessage(
       msg,
       sumUnread(chat.unreadCounts, chat.mutedChannels),
       mentionsMe,
+      offersQuickActions({
+        channel: msg.channel,
+        hasChannelKey: chat.channelKeys[msg.channel] !== undefined,
+        hidePreviews: settings.hideNotificationPreviews,
+        appLockEnabled: settings.appLockEnabled,
+      }),
     );
     // Bell history logs real notifications only: skip the conversation being
     // read (that is not a notification), the same activeChannel rule the
@@ -187,6 +205,9 @@ export function startNotificationPipeline(
     if (!prev.hideNotificationPreviews && state.hideNotificationPreviews) {
       void dismissPreviewNotifications();
     }
+    if (!prev.appLockEnabled && state.appLockEnabled) {
+      void dismissMessageNotifications();
+    }
   });
 
   // Channels and the notification handler, which a boot start needs before its
@@ -211,5 +232,6 @@ export function stopNotificationPipeline(): void {
   stops = null;
   ownNickname = () => "";
   ownMentionSuffix = () => null;
+  setQuickActionHandler(null);
   current?.forEach((stop) => stop());
 }

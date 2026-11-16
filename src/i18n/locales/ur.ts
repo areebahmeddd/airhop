@@ -2598,6 +2598,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "گھنٹی",
   "notif.ring.title": "{sender} آپ کو گھنٹی بجا رہے ہیں",
   "notif.ring.body": "اپنے پیغامات دیکھیں",
+  "notif.action.reply": "جواب دیں",
+  "notif.action.send": "بھیجیں",
+  "notif.action.mark_read": "پڑھا ہوا نشان زد کریں",
+  "notif.reply.failed_title": "نہیں بھیجا گیا",
+  "notif.reply.failed_body":
+    "{chat} کو آپ کا جواب نہیں بھیجا جا سکا۔ دوبارہ کوشش کرنے کے لیے چیٹ کھولیں۔",
+  "notif.reply.held_title": "بھیجنے کا انتظار",
+  "notif.reply.held_body":
+    "Airhop چلنے پر {chat} کو آپ کا جواب بھیج دیا جائے گا۔",
+  "notif.reply.cut_title": "جزوی طور پر بھیجا گیا",
+  "notif.reply.cut_body":
+    "{chat} کو آپ کا جواب بہت طویل تھا، اس لیے اس کا آخری حصہ نہیں بھیجا گیا۔",
 };
 
 export const plurals: Plurals = {
