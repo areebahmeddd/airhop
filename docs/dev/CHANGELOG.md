@@ -6,9 +6,9 @@ All notable changes are documented here. The format follows [Keep a Changelog](h
 
 ### What's New
 
-- feat: upgrade to Expo SDK 58 and React Native 0.88 (#85) (by @areebahmeddd) [75cd869]
+- feat: upgrade to Expo SDK 58 and React Native 0.88 (by @areebahmeddd) [75cd869]
 - feat: video notes, spam filter and widgets (by @areebahmeddd) [e165b20]
-- fix: improve voice, chat, wallet and background reliability; add an optional app lock (#84) (by @areebahmeddd) [792c580]
+- fix: improve voice, chat, wallet and background reliability; add an optional app lock (by @areebahmeddd) [792c580]
 
 Special thanks to @robdplatt for identifying and reporting several issues in production! 🙂
 
