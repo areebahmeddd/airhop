@@ -593,7 +593,7 @@ describe("framesToAdtsFile", () => {
 
 describe("burst duration ceiling", () => {
   it("stops emitting once the burst passes two minutes", async () => {
-    const now = jest.spyOn(Date, "now");
+    const now = jest.spyOn(performance, "now");
     try {
       now.mockReturnValue(1_000_000);
       const { packets, session, feed } = makeSession();
@@ -615,7 +615,7 @@ describe("burst duration ceiling", () => {
   });
 
   it("still ends the burst properly when the user finally releases", async () => {
-    const now = jest.spyOn(Date, "now");
+    const now = jest.spyOn(performance, "now");
     try {
       now.mockReturnValue(2_000_000);
       const { packets, session, feed } = makeSession();

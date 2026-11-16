@@ -96,6 +96,7 @@ interface Deps {
   onFailure: () => void;
   // Packets a second the route carries; see live-video-quality.ts.
   packetBudget: number;
+  // Monotonic milliseconds.
   now?: () => number;
 }
 
@@ -149,7 +150,9 @@ export class LiveVideoSendSession {
     private readonly quality: LiveVideoQuality,
     private readonly deps: Deps,
   ) {
-    this.now = deps.now ?? Date.now;
+    // Monotonic, so the phone's clock set mid stream neither shifts the sound
+    // against the picture nor cuts the final drain short.
+    this.now = deps.now ?? (() => performance.now());
     this.withSound = deps.audio !== null;
     const id = randomBytes(STREAM_ID_BYTES);
     this.streamID = bytesToHex(id);
@@ -178,7 +181,7 @@ export class LiveVideoSendSession {
     });
     this.recording = new FileSystem.File(
       FileSystem.Paths.cache,
-      `${CACHE_FILE_PREFIX}${String(this.now())}_${liveVideoFileName(this.streamID)}`,
+      `${CACHE_FILE_PREFIX}${String(Date.now())}_${liveVideoFileName(this.streamID)}`,
     );
   }
 
