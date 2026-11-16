@@ -72,3 +72,41 @@ describe("Reed-Solomon erasure", () => {
     expect(reconstruct([null], new Map([[0, parity]]))).toEqual([source]);
   });
 });
+
+// Every test above checks this code against itself, which a coefficient
+// order differing from bitchat's would pass while repair between the two
+// apps fails after the first loss. These bytes come from bitchat-ios's
+// ReedSolomonErasure.encode, not from this code, so they hold only if both
+// apps build the same Cauchy rows.
+describe("parity vector from bitchat-ios", () => {
+  const hex = (s: string): Uint8Array =>
+    Uint8Array.from(s.split(" ").map((b) => parseInt(b, 16)));
+  const sources = [
+    hex("00 01 02 03 04 05 06 07"),
+    hex("80 40 20 10 08 04 02 01"),
+    hex("ff de ad be ef 00 1d c3"),
+  ];
+  const parity = [
+    hex("bf 0a 48 b7 1c 01 1e bb"),
+    hex("dd d0 9f 5e 07 e0 57 c1"),
+  ];
+
+  test("three sources make the same two parity symbols", () => {
+    expect(
+      [0, 1].map((row) => [0, 1, 2].map((i) => coefficient(3, row, i))),
+    ).toEqual([
+      [244, 142, 1],
+      [71, 167, 122],
+    ]);
+    expect(encodeParity(sources, 2)).toEqual(parity);
+  });
+
+  test("its parity rebuilds two lost sources", () => {
+    const kept = new Map([
+      [0, parity[0]],
+      [1, parity[1]],
+    ]);
+    expect(reconstruct([null, null, sources[2]], kept)).toEqual(sources);
+    expect(reconstruct([sources[0], null, null], kept)).toEqual(sources);
+  });
+});

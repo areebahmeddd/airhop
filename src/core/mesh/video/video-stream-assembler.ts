@@ -24,6 +24,17 @@ import {
 const MAX_TRACKED_BLOCKS = 48;
 const MAX_PENDING_UNITS = 192;
 const MAX_READY_UNITS = 192;
+// Bytes in pending and ready units, both tracks together. The counts alone
+// let a signed stream strand its whole receive allowance (24 MiB) in units
+// that never finish. The High preset sends about 48 KB/s, and an honest
+// stream holds one gap wait of it plus a keyframe, under 200 KB.
+const DEFAULT_MAX_BUFFERED_BYTES = 2 * 1024 * 1024;
+// A pending unit goes this many gap waits (2.7 s) after its first piece
+// landed: a cap, not a bound every path stays under. The sender drops what
+// waited 1.2 s in its queue and parity repairs within one gap wait, which
+// leaves 0.6 s for relay jitter; a path that spreads one unit's pieces wider
+// loses it as packet loss rather than holding memory for it.
+const PENDING_EXPIRY_GAPS = 3;
 // Sequences behind the recent-loss figure the viewer's quality badge shows.
 const LOSS_WINDOW = 128;
 // Longer than the widest block window plus relay jitter, so parity can land.
@@ -55,6 +66,8 @@ export interface LiveVideoReceiveStats {
   videoUnits: number;
   audioUnits: number;
   skippedVideoUnits: number;
+  // Bytes held in units not yet released.
+  bufferedBytes: number;
   // Packet loss over the last LOSS_WINDOW sequences, 0 to 1.
   recentLoss: number;
 }
@@ -73,6 +86,7 @@ interface PendingUnit {
   fragments: (Uint8Array | null)[];
   received: number;
   bytes: number;
+  firstMs: number;
 }
 
 interface ReadyUnit {
@@ -154,10 +168,12 @@ export class VideoStreamAssembler {
   private skippedVideo = 0;
   private highestSequence: number | null = null;
   private readonly recent = new Set<number>();
+  private buffered = 0;
 
   constructor(
     private readonly gapMs = DEFAULT_GAP_MS,
     private readonly maxUnitBytes = DEFAULT_MAX_UNIT_BYTES,
+    private readonly maxBufferedBytes = DEFAULT_MAX_BUFFERED_BYTES,
   ) {}
 
   private static track(): TrackState {
@@ -201,6 +217,7 @@ export class VideoStreamAssembler {
       videoUnits: this.tracks.video.released,
       audioUnits: this.tracks.audio.released,
       skippedVideoUnits: this.skippedVideo,
+      bufferedBytes: this.buffered,
       recentLoss,
     };
   }
@@ -223,10 +240,10 @@ export class VideoStreamAssembler {
         }
         break;
       case "data":
-        this.onData(packet.block, packet.index, packet.region);
+        this.onData(packet.block, packet.index, packet.region, nowMs);
         break;
       case "parity":
-        this.onParity(packet);
+        this.onParity(packet, nowMs);
         break;
       case "end":
         this.expectedUnits = {
@@ -269,16 +286,24 @@ export class VideoStreamAssembler {
 
   // ---- Blocks ----
 
-  private onData(block: number, index: number, region: Uint8Array): void {
+  private onData(
+    block: number,
+    index: number,
+    region: Uint8Array,
+    nowMs: number,
+  ): void {
     const state = this.blockState(block);
     if (state.complete || state.sources.has(index)) return;
     if (state.sourceCount !== null && index >= state.sourceCount) return;
     state.sources.set(index, region);
-    this.ingestRegion(region);
-    this.tryRecover(state);
+    this.ingestRegion(region, nowMs);
+    this.tryRecover(state, nowMs);
   }
 
-  private onParity(p: Extract<VideoBurstPacket, { kind: "parity" }>): void {
+  private onParity(
+    p: Extract<VideoBurstPacket, { kind: "parity" }>,
+    nowMs: number,
+  ): void {
     const state = this.blockState(p.block);
     if (state.complete) return;
     if (
@@ -298,10 +323,10 @@ export class VideoStreamAssembler {
     if (!state.parities.has(p.parityIndex)) {
       state.parities.set(p.parityIndex, p.symbol);
     }
-    this.tryRecover(state);
+    this.tryRecover(state, nowMs);
   }
 
-  private tryRecover(state: BlockState): void {
+  private tryRecover(state: BlockState, nowMs: number): void {
     const k = state.sourceCount;
     if (k === null) return;
     if (state.sources.size >= k) {
@@ -331,7 +356,7 @@ export class VideoStreamAssembler {
       if (region === null) continue;
       state.sources.set(i, region);
       this.recoveredShards++;
-      this.ingestRegion(region);
+      this.ingestRegion(region, nowMs);
     }
   }
 
@@ -354,11 +379,13 @@ export class VideoStreamAssembler {
 
   // ---- Units ----
 
-  private ingestRegion(region: Uint8Array): void {
-    for (const entry of decodeEntries(region) ?? []) this.ingestEntry(entry);
+  private ingestRegion(region: Uint8Array, nowMs: number): void {
+    for (const entry of decodeEntries(region) ?? []) {
+      this.ingestEntry(entry, nowMs);
+    }
   }
 
-  private ingestEntry(entry: LiveVideoEntry): void {
+  private ingestEntry(entry: LiveVideoEntry, nowMs: number): void {
     const track = this.tracks[entry.track];
     const sequence = expandSequence(
       entry.unitSequence,
@@ -369,7 +396,7 @@ export class VideoStreamAssembler {
     let pending = track.pending.get(sequence);
     if (pending === undefined) {
       if (track.pending.size >= MAX_PENDING_UNITS) {
-        track.pending.delete(track.pending.keys().next().value as number);
+        this.dropPending(track, track.pending.keys().next().value as number);
       }
       pending = {
         keyframe: entry.keyframe,
@@ -377,6 +404,7 @@ export class VideoStreamAssembler {
         fragments: new Array<Uint8Array | null>(entry.fragmentCount).fill(null),
         received: 0,
         bytes: 0,
+        firstMs: nowMs,
       };
       track.pending.set(sequence, pending);
     }
@@ -387,11 +415,12 @@ export class VideoStreamAssembler {
     ) {
       return;
     }
-    pending.bytes += entry.bytes.length;
-    if (pending.bytes > this.maxUnitBytes) {
-      track.pending.delete(sequence);
+    if (pending.bytes + entry.bytes.length > this.maxUnitBytes) {
+      this.dropPending(track, sequence);
       return;
     }
+    pending.bytes += entry.bytes.length;
+    this.buffered += entry.bytes.length;
     pending.fragments[entry.fragmentIndex] = entry.bytes;
     pending.received++;
     if (pending.received < pending.fragments.length) return;
@@ -417,6 +446,7 @@ export class VideoStreamAssembler {
 
   private release(nowMs: number): LiveVideoOutput[] {
     const out: LiveVideoOutput[] = [];
+    this.trimPending(nowMs);
     for (const type of TRACKS) {
       const track = this.tracks[type];
       while (track.next !== null) {
@@ -424,6 +454,7 @@ export class VideoStreamAssembler {
         const unit = track.ready.get(next);
         if (unit !== undefined) {
           track.ready.delete(next);
+          this.buffered -= unit.data.length;
           track.gapSinceMs = null;
           track.next = next + 1;
           track.released++;
@@ -437,7 +468,14 @@ export class VideoStreamAssembler {
         }
         const since = track.gapSinceMs ?? nowMs;
         track.gapSinceMs = since;
-        if (nowMs === Infinity || nowMs - since >= this.gapMs) {
+        // Over budget with nothing pending left to let go, ready units alone
+        // are the excess: the track holding most of them skips its gap now,
+        // as a full ready queue does, and the other plays on.
+        if (
+          nowMs === Infinity ||
+          nowMs - since >= this.gapMs ||
+          (this.buffered > this.maxBufferedBytes && this.holdsMostReady(type))
+        ) {
           const skipped = this.skip(type, target);
           if (type === "video" && skipped > 0) {
             out.push({ kind: "videoSkipped", count: skipped });
@@ -462,6 +500,18 @@ export class VideoStreamAssembler {
       }
     }
     return out;
+  }
+
+  private holdsMostReady(type: VideoTrack): boolean {
+    const readyBytes = (track: VideoTrack): number => {
+      let bytes = 0;
+      for (const unit of this.tracks[track].ready.values()) {
+        bytes += unit.data.length;
+      }
+      return bytes;
+    };
+    const mine = readyBytes(type);
+    return TRACKS.every((other) => other === type || readyBytes(other) <= mine);
   }
 
   private emit(
@@ -495,7 +545,7 @@ export class VideoStreamAssembler {
     const skipped = Math.max(target - track.next, 0);
     if (skipped > 0) {
       for (const sequence of track.pending.keys()) {
-        if (sequence < target) track.pending.delete(sequence);
+        if (sequence < target) this.dropPending(track, sequence);
       }
       if (type === "video") {
         this.videoChainBroken = true;
@@ -504,6 +554,41 @@ export class VideoStreamAssembler {
     }
     track.next = target;
     return skipped;
+  }
+
+  // Pending units past their expiry go, then the oldest while still over the
+  // byte budget. To the viewer it is packet loss: the gap is skipped, the
+  // picture freezes until the next keyframe, and the stream stays up.
+  private trimPending(nowMs: number): void {
+    const expiry = this.gapMs * PENDING_EXPIRY_GAPS;
+    for (const type of TRACKS) {
+      const track = this.tracks[type];
+      for (const [sequence, unit] of track.pending) {
+        if (nowMs - unit.firstMs >= expiry) this.dropPending(track, sequence);
+      }
+    }
+    while (this.buffered > this.maxBufferedBytes) {
+      // Each map's first entry is its track's oldest unit.
+      let oldest: { track: TrackState; sequence: number } | null = null;
+      let oldestMs = Infinity;
+      for (const type of TRACKS) {
+        const track = this.tracks[type];
+        const head = track.pending.entries().next().value;
+        if (head !== undefined && head[1].firstMs < oldestMs) {
+          oldest = { track, sequence: head[0] };
+          oldestMs = head[1].firstMs;
+        }
+      }
+      if (oldest === null) return;
+      this.dropPending(oldest.track, oldest.sequence);
+    }
+  }
+
+  private dropPending(track: TrackState, sequence: number): void {
+    const unit = track.pending.get(sequence);
+    if (unit === undefined) return;
+    this.buffered -= unit.bytes;
+    track.pending.delete(sequence);
   }
 
   // ---- Sequence numbers ----
