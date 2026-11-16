@@ -69,7 +69,7 @@ export async function publishCourierDrop(
     throwawayKey,
   );
 
-  await client.publish(event);
+  await client.publish(event, undefined, "throwaway");
 }
 
 // Subscribe to incoming courier drops addressed to the given recipient tags.

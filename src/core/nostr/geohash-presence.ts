@@ -185,7 +185,13 @@ export class GeohashPresence {
       since: Math.floor(Date.now() / 1000) - CHANNEL_LOOKBACK_SECONDS,
       limit: CHANNEL_INITIAL_LIMIT,
     };
-    const closer = this.client.subscribe([filter], onEvent, onEose, relays);
+    const closer = this.client.subscribe(
+      [filter],
+      onEvent,
+      onEose,
+      relays,
+      this.privKey,
+    );
     return () => closer.close();
   }
 
@@ -248,7 +254,7 @@ export class GeohashPresence {
     // signed event straight back so the caller can ferry it over the mesh.
     if (!relaysConnected) return { event, delivered: false };
     try {
-      await this.client.publish(event, relays);
+      await this.client.publish(event, relays, this.privKey);
       return { event, delivered: true };
     } catch {
       // No relay ACKed (offline, or none reachable for this cell). The event is
@@ -274,7 +280,7 @@ export class GeohashPresence {
       },
       this.privKey,
     );
-    await this.client.publish(event, relays);
+    await this.client.publish(event, relays, this.privKey);
   }
 }
 

@@ -50,6 +50,8 @@ describe("publishCourierDrop", () => {
     expect(client.publish).toHaveBeenCalledTimes(1);
     const published = (client.publish as jest.Mock).mock.calls[0][0] as Event;
     expect(published.kind).toBe(1401);
+    // A relay that wants sign-in is shown a throwaway key, never the device's.
+    expect((client.publish as jest.Mock).mock.calls[0][2]).toBe("throwaway");
     const xTag = published.tags.find(([t]) => t === "x");
     expect(xTag?.[1]).toBe(bytesToHex(envelope.recipientTag));
   });
