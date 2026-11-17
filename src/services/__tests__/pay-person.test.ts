@@ -290,6 +290,18 @@ describe("payPerson commits exactly once", () => {
     expect(mockedPrepare).not.toHaveBeenCalled();
   });
 
+  it("does not fall through to a token when publishing throws after the lock", async () => {
+    // Rule 1 for an error that is not the relay's answer, such as a timeout.
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY, route: "sent" });
+    mockedPublish.mockRejectedValue(new Error("relay timeout"));
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(result).toBeNull();
+    expect(mockedLock).toHaveBeenCalledTimes(1);
+    expect(mockedPrepare).not.toHaveBeenCalled();
+  });
+
   it("falls through to a token when the lock itself failed, reserving once", async () => {
     useMesh({
       directLink: false,

@@ -46,7 +46,7 @@ import { clearMoveMarker, setMoveMarker } from "./move-marker";
 import { snapshotForMove } from "./move-snapshot";
 import { stopNutzapWatcher } from "./nutzap-watcher-handle";
 import { panicWipe } from "./panic-wipe";
-import { resetWalletService } from "./wallet-service";
+import { resetWalletService, resumeWalletService } from "./wallet-service";
 
 export type SenderFailure =
   // Another network, one that isolates clients, or a code whose address is on
@@ -322,6 +322,8 @@ export class MoveSender {
     if (!this.frozen) return;
     this.frozen = false;
     clearMoveMarker();
+    // freeze dropped the recovery phrase with the rest of the wallet's state.
+    void resumeWalletService();
     this.hooks.onResume();
   }
 

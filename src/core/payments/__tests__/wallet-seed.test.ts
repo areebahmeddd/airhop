@@ -45,8 +45,8 @@ describe("generateRecoveryPhrase", () => {
 
 describe("normalizeRecoveryPhrase", () => {
   it("survives the shapes people actually paste", () => {
-    // Line breaks from a photo transcription, numbering from a notes app,
-    // stray capitals, and doubled spaces.
+    // Line breaks and tabs from a photo transcription, stray capitals, and
+    // doubled spaces.
     const messy =
       "  Legal   WINNER\nthank\tyear wave sausage\n worth useful legal winner thank yellow  ";
     expect(normalizeRecoveryPhrase(messy)).toBe(KNOWN);

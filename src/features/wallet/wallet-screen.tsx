@@ -1807,7 +1807,8 @@ export default function WalletScreen({
           <Text style={styles.balanceUnit}>{headline.label}</Text>
         </Pressable>
 
-        {/* Anything not plainly spendable is stated, never folded in. */}
+        {/* Unconfirmed coins are spendable, so the headline counts them and
+            this names them; what is not spendable is never folded in. */}
         {primary.unverified > 0 && (
           <View style={styles.balanceNote}>
             <Feather name="clock" size={12} color={Colors.textInverse} />

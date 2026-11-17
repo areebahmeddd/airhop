@@ -536,7 +536,9 @@ function newWallet(url: string, unit: string): Wallet {
 async function getWallet(
   mintUrl: string,
   unit: string,
-  opts: { offline?: boolean; forceRefresh?: boolean } = {},
+  // `create` lists the mint if it is not listed yet: restore names mints a
+  // fresh install has never seen.
+  opts: { offline?: boolean; forceRefresh?: boolean; create?: boolean } = {},
 ): Promise<Wallet> {
   const url = normalizeMintUrl(mintUrl);
   const key = accountKey(url, unit);
@@ -597,7 +599,7 @@ async function getWallet(
   }
   // The snapshot re-adds the mint, so a wipe during the fetch must stop it.
   if (walletEpoch !== epoch) throw lockedError();
-  persistMintSnapshot(url, unit, wallet);
+  persistMintSnapshot(url, unit, wallet, opts.create === true);
   cacheWallet(key, wallet);
   return wallet;
 }
@@ -614,12 +616,16 @@ function cacheWallet(key: string, wallet: Wallet): void {
 }
 
 // Persist what the mint told us so a cold start works offline: keys for DLEQ,
-// fees for selection, units and NUTs for feature gating.
+// fees for selection, units and NUTs for feature gating. Only addMint and a
+// restore (`create`) make the record: an operation still in flight when its
+// mint is removed must not put it back on the list for later passes to contact.
 function persistMintSnapshot(
   mintUrl: string,
   unit: string,
   wallet: Wallet,
+  create = false,
 ): void {
+  if (!create && storedMint(mintUrl) === undefined) return;
   const store = useWalletStore.getState();
   let cache: KeyChainCache | undefined;
   let feePpkByKeysetId: Record<string, number> | undefined;
@@ -693,6 +699,15 @@ export function resetWalletService(): void {
   activeSeed = null;
   nutzapPrivKey = null;
   nutzapKeySeen = undefined;
+}
+
+// The wallet again after resetWalletService left the same storage in place (a
+// device transfer that failed or was canceled): new coins derive from the
+// recovery phrase again, not from random secrets nothing can restore.
+export async function resumeWalletService(): Promise<void> {
+  if (!isWalletStorageReady()) return;
+  await loadBackupState();
+  void peekNutzapKey();
 }
 
 // ---- Store readiness ----
@@ -930,7 +945,7 @@ export async function restoreFromRecoveryPhrase(params: {
       // rather than "not looked", and leaves their counters behind coins the
       // mint has signed. The forced refresh records every unit the mint
       // issues, even on a fresh install.
-      await getWallet(url, "sat", { forceRefresh: true });
+      await getWallet(url, "sat", { forceRefresh: true, create: true });
       const units = storedMint(url)?.units ?? ["sat"];
 
       for (const unit of units) {
@@ -1107,12 +1122,15 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
   assertMintNetworkAllowed();
 
   const wallet = newWallet(url, "sat");
+  const epoch = walletEpoch;
   try {
     await wallet.loadMint(true);
   } catch (err) {
     throw asWalletError(err, "no-mint");
   }
-  persistMintSnapshot(url, "sat", wallet);
+  // A panic wipe during the fetch must not get the mint written back.
+  if (walletEpoch !== epoch) throw lockedError();
+  persistMintSnapshot(url, "sat", wallet, true);
   cacheWallet(accountKey(url, "sat"), wallet);
 
   const record = storedMint(url);
@@ -1779,6 +1797,9 @@ function storeOffline(
   verdict: DleqVerdict,
   opts: { counterparty?: string; txId?: string } = {},
 ): ReceiveResult {
+  // Removed while the claim waited on it: as with creditProofs, nothing is
+  // filed under a mint the user dropped, and the token stays unclaimed.
+  if (storedMint(mintUrl) === undefined) throw cause;
   const store = useWalletStore.getState();
   // The coins are filed under their receipt, which a refresh swaps (or
   // refuses) on its own.
@@ -1844,6 +1865,10 @@ function creditProofs(
   proofs: Proof[],
   opts: { verified: boolean },
 ): { added: number; addedValue: number } {
+  // An answer that lands after its mint was removed: the removal gave up what
+  // was held there, and coins written now would bring the account back for
+  // the next pass to contact.
+  if (storedMint(mintUrl) === undefined) return { added: 0, addedValue: 0 };
   const store = useWalletStore.getState();
   const derived = isSeedActive();
   return store.addProofs(
@@ -2212,6 +2237,22 @@ function verifiedFirst(
     try {
       const chosen = select(verified);
       if (chosen.length > 0) return chosen;
+    } catch {
+      // Not enough among the verified: every coin is a candidate.
+    }
+  }
+  return select(proofs);
+}
+
+// verifiedFirst for a selection that resolves later.
+async function verifiedFirstAsync<T>(
+  proofs: StoredProof[],
+  select: (pool: StoredProof[]) => Promise<T>,
+): Promise<T> {
+  const verified = proofs.filter((p) => p.verified === true);
+  if (verified.length > 0 && verified.length < proofs.length) {
+    try {
+      return await select(verified);
     } catch {
       // Not enough among the verified: every coin is a candidate.
     }
@@ -2739,7 +2780,9 @@ export async function reconcile(): Promise<void> {
 // await minutes of round trips.
 export function reconcileIfDue(): void {
   if (reconcileInFlight !== null) return;
-  if (Date.now() - lastReconcileAtMs < RECONCILE_MIN_INTERVAL_MS) return;
+  // A clock moved back counts as due, not as hours of waiting.
+  const since = Date.now() - lastReconcileAtMs;
+  if (since >= 0 && since < RECONCILE_MIN_INTERVAL_MS) return;
   void reconcile().catch(() => {
     // Offline, or a mint is down. The next trigger tries again.
   });
@@ -3652,12 +3695,22 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
     }
   }
 
+  // What the inputs paid beyond the invoice, as the live path counts it. The
+  // change also returns the inputs' overage, so the reserve less the change
+  // would understate it.
+  const inputs = useWalletStore
+    .getState()
+    .reserved[tx.id]?.proofs.reduce((sum, p) => sum + p.amount, 0);
   spendReserved(tx.id);
   store.updateTx(tx.id, {
     status: "completed",
     error: undefined,
     meltOutputs: undefined,
-    ...(recovered > 0 ? { fee: Math.max(0, (tx.fee ?? 0) - recovered) } : {}),
+    ...(inputs !== undefined
+      ? { fee: Math.max(0, inputs - recovered - tx.amount) }
+      : recovered > 0
+        ? { fee: Math.max(0, (tx.fee ?? 0) - recovered) }
+        : {}),
   });
 }
 
@@ -4512,12 +4565,18 @@ async function lockProofsOnce(
   let result: SendResponse;
   let staged = false;
   try {
+    // Confirmed coins first, as a send takes them: a coin the mint never saw
+    // may already be spent, and its refusal would read as in doubt.
     const { preview, stored } = await prepareRecoverableSwap(wallet, () =>
-      wallet.prepareSwapToSend(
-        params.amount,
-        available.map(toProofLike),
-        { includeFees: true },
-        { send: { type: "p2pk", options: { pubkey: params.recipientPubkey } } },
+      verifiedFirstAsync(available, (pool) =>
+        wallet.prepareSwapToSend(
+          params.amount,
+          pool.map(toProofLike),
+          { includeFees: true },
+          {
+            send: { type: "p2pk", options: { pubkey: params.recipientPubkey } },
+          },
+        ),
       ),
     );
     assertSameWallet(epoch);

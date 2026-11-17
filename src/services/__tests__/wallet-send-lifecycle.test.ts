@@ -183,6 +183,7 @@ describe("preparing a send", () => {
       });
     }
   });
+
   // A coin the mint never confirmed hands its double-spend risk to whoever
   // takes it, so it goes only when the confirmed ones cannot make the amount,
   // and the quote says so.

@@ -38,8 +38,10 @@ import {
   reclaimSend,
   reconcile,
   refreshAccount,
+  removeMint,
   resetWalletService,
   restoreFromRecoveryPhrase,
+  resumeWalletService,
 } from "../wallet-service";
 import { strangersTokenAt } from "./wallet-test-helpers";
 
@@ -616,6 +618,89 @@ describe("a nutzap, once locked to their key", () => {
     expect(reclaimSend(txId)).toBe(false);
     expect(spendable()).toBe(8);
     expect(reservedTotal()).toBe(0);
+  });
+});
+
+// A coin the mint never confirmed may already be spent, and its refusal would
+// read as in doubt, so the lock offers it only when confirmed coins fall short.
+describe("a nutzap lock", () => {
+  it("spends confirmed coins before ecash the mint never saw", async () => {
+    // The unconfirmed 8 fits exactly, so a selection blind to it takes it
+    // over the confirmed 16.
+    await fund(16);
+    const [confirmed] = useWalletStore.getState().proofs[key()] ?? [];
+    const unconfirmed = {
+      ...confirmed,
+      amount: 8,
+      secret: "never-seen-by-the-mint",
+      verified: false,
+    };
+    useWalletStore.setState((state) => ({
+      proofs: { ...state.proofs, [key()]: [unconfirmed, confirmed] },
+    }));
+
+    await lockProofsForNutzap({
+      amount: 8,
+      mintUrl: fabric.url,
+      unit: UNIT,
+      recipientPubkey: RECIPIENT_P2PK,
+    });
+    expect(
+      (useWalletStore.getState().proofs[key()] ?? []).map((p) => p.secret),
+    ).toContain(unconfirmed.secret);
+    expect(spendable()).toBe(16);
+  });
+});
+
+describe("removing a mint while it answers", () => {
+  it("keeps it removed when the answer lands", async () => {
+    await fund(64);
+    fabric.setConditions({ latencyMs: 60 });
+    const refreshing = refreshAccount(fabric.url, UNIT).catch(() => null);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    removeMint(fabric.url);
+    await refreshing;
+    expect(useWalletStore.getState().mints[fabric.url]).toBeUndefined();
+  });
+
+  it("credits nothing there when a receive's answer lands afterwards", async () => {
+    const token = await strangersToken(8);
+    fabric.setConditions({ latencyMs: 60 });
+    const receiving = receiveToken(token).catch(() => null);
+    await waitFor(() =>
+      useWalletStore.getState().history.some((t) => t.kind === "receive"),
+    );
+    removeMint(fabric.url);
+    await receiving;
+    expect(useWalletStore.getState().proofs[key()] ?? []).toEqual([]);
+    expect(useWalletStore.getState().mints[fabric.url]).toBeUndefined();
+  });
+
+  it("files nothing there when the claim then falls back to storing offline", async () => {
+    const token = await strangersToken(8);
+    fabric.setConditions({ latencyMs: 60 });
+    const receiving = receiveToken(token).catch(() => null);
+    await waitFor(() =>
+      useWalletStore.getState().history.some((t) => t.kind === "receive"),
+    );
+    removeMint(fabric.url);
+    fabric.setConditions({ offline: true });
+    await receiving;
+    expect(useWalletStore.getState().proofs[key()] ?? []).toEqual([]);
+    expect(useWalletStore.getState().mints[fabric.url]).toBeUndefined();
+  });
+});
+
+// A transfer freezes the wallet with resetWalletService and, when it fails or
+// is canceled, hands the same storage back.
+describe("a wallet resumed after a transfer that did not finish", () => {
+  it("derives new coins from the recovery phrase again", async () => {
+    resetWalletService();
+    await resumeWalletService();
+    await fund(8);
+    const held = useWalletStore.getState().proofs[key()] ?? [];
+    expect(held.length).toBeGreaterThan(0);
+    expect(held.every((p) => p.derived === true)).toBe(true);
   });
 });
 

@@ -353,6 +353,11 @@ export function readToken(
   if (!Array.isArray(token.proofs) || token.proofs.length === 0) {
     return MALFORMED;
   }
+  // A coin listed twice is one coin: the mint refuses the pair, but offline
+  // the stored balance would dedupe it while the card and receipt read double.
+  if (new Set(token.proofs.map((p) => p.secret)).size !== token.proofs.length) {
+    return MALFORMED;
+  }
   let amount = 0;
   for (const proof of token.proofs) {
     const value = proof.amount.toNumber();

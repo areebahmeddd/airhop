@@ -24,7 +24,7 @@ jest.mock("@bridge/NativeAirhopWiFi", () => ({
 import type { StoredProof } from "@core/payments/stored-proof";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useOutboxStore } from "@store/outbox-store";
-import { useWalletStore, type WalletTx } from "@store/wallet-store";
+import { accountKey, useWalletStore, type WalletTx } from "@store/wallet-store";
 import { reclaimTokenSend, startReclaimFollow } from "../payment-router";
 
 const MINT = "https://mint.example.com";
@@ -102,12 +102,17 @@ describe("reclaimTokenSend", () => {
     expect(useOutboxStore.getState().forPeer(PEER)).toHaveLength(0);
   });
 
-  it("puts the proofs back and marks the transaction reclaimed", () => {
+  it("puts the proofs back unconfirmed and marks the transaction reclaimed", () => {
     seedQueuedSend();
 
     reclaimTokenSend(TX);
 
     expect(useWalletStore.getState().reserved[TX]).toBeUndefined();
+    // Back in the balance, but the copy handed out may be redeemed first, so
+    // only the mint can confirm them again.
+    expect(
+      useWalletStore.getState().proofs[accountKey(MINT, "sat")],
+    ).toMatchObject([{ secret: makeProof(100).secret, verified: false }]);
     expect(
       useWalletStore.getState().history.find((tx) => tx.id === TX)?.status,
     ).toBe("reclaimed");

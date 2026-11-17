@@ -374,6 +374,19 @@ describe("decodeToken bounds", () => {
     );
   });
 
+  // Offline, the stored balance dedupes the pair, so a card and receipt
+  // reading double would be paid half.
+  it("rejects a token listing one coin twice", () => {
+    const [coin] = proofSet([8]).map(toProofLike);
+    const doubled = getEncodedToken({
+      mint: MINT,
+      unit: "sat",
+      proofs: [coin, coin],
+    } as unknown as Token);
+    expect(decodeToken(doubled)).toBeNull();
+    expect(decodeToken(encodedToken(MINT, [8, 8]))?.amount).toBe(16);
+  });
+
   it("rejects a token with no mint to redeem against", () => {
     expect(decodeToken(encodedToken("", [4]))).toBeNull();
   });
