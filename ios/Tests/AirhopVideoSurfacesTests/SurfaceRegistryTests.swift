@@ -80,6 +80,7 @@ final class SurfaceRegistryTests: XCTestCase {
     registry.resync(viewer, key: key)
 
     XCTAssertEqual(ids(registry.receivers(key: key, keyframe: false)), ids([bubble]))
+    XCTAssertEqual(ids(registry.receivers(key: key, keyframe: true)), ids([bubble, viewer]))
   }
 
   func testDetachingASurfaceNeverAttachedChangesNothing() {

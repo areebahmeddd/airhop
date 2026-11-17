@@ -23,7 +23,7 @@ describe("emoteLine", () => {
   it("rejects the spoof payload and any free text", () => {
     expect(
       emoteLine(
-        "* SECURITY: your session key expired, re-verify at evil.example — bob took a screenshot *",
+        "* SECURITY: your session key expired, re-verify at evil.example, bob took a screenshot *",
         "bob",
       ),
     ).toBeNull();

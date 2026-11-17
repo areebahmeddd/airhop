@@ -118,6 +118,7 @@ beforeAll(async () => {
 beforeEach(() => {
   mockDismiss.mockClear();
   mockSchedule.mockClear();
+  mockLanguage = "en";
   setNotificationNavigator(null);
   setTabNavigator(null);
   setQuickActionHandler(null);
@@ -330,7 +331,6 @@ describe("a message card", () => {
     mockLanguage = "de";
     await handleInboundMessage(msg, 1, false, true);
     expect(mockSetCategory).toHaveBeenCalledTimes(2);
-    mockLanguage = "en";
   });
 
   test("says when a reply typed into it did not go out, and opens its chat", async () => {

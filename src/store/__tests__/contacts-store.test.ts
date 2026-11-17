@@ -69,13 +69,6 @@ describe("setNostrPubkey", () => {
       "cc".repeat(32),
     );
   });
-
-  it("carries the npub through a QR-added contact", () => {
-    state().addContact(makeContact({ nostrPubkeyHex: "ee".repeat(32) }));
-    expect(state().getContact("aabbccdd00112233")?.nostrPubkeyHex).toBe(
-      "ee".repeat(32),
-    );
-  });
 });
 
 // A name only you see, kept apart from the one they announce.

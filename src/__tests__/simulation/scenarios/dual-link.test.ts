@@ -1,4 +1,4 @@
-// Tier L: two Bluetooth links to one neighbor.
+// Tier DL: two Bluetooth links to one neighbor.
 //
 // Two phones that meet each scan, each see the other and each dial, so on
 // hardware a neighbor is usually two links. Fanout goes per peer, not per

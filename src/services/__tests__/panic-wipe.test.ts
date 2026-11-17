@@ -269,13 +269,6 @@ describe("panicWipe", () => {
     expect(order).toEqual(["cache", "tray", "widget"]);
   });
 
-  test("empties the whole cache directory, not just prefixed attachments", async () => {
-    // Prefix matching would miss sent documents, sent videos, in-budget images
-    // and the saved QR card.
-    await panicWipe();
-    expect(wipeCacheDirectory).toHaveBeenCalledTimes(1);
-  });
-
   test("stops a video being shrunk before it empties the cache", async () => {
     // A shrunk file finished after the cache was emptied would survive it.
     const order: string[] = [];

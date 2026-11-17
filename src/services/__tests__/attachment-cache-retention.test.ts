@@ -218,7 +218,7 @@ describe("sweepExpiredAttachments", () => {
     expect(sweepExpiredAttachments(NOW)).toBe(0);
   });
 
-  it("a failed delete does not stop the rest of the sweep", () => {
+  it("keeps sweeping past a delete that fails", () => {
     const locked = put({ name: "airhop_locked.jpg", ageMs: 10 * DAY });
     locked.delete = (): never => {
       throw new Error("EBUSY");
@@ -378,20 +378,20 @@ describe("wipeCacheDirectory", () => {
     expect(stray.deleted).toBe(false);
   });
 
-  it("empties the whole directory, whatever a file is called", () => {
+  it("empties the whole directory, whatever a file is called", async () => {
     // A wipe takes everything under the cache, prefixed or not: sent documents,
     // in-budget images and the saved QR card carry no prefix.
     const ours = put({ name: "airhop_photo.jpg" });
     const theirs = put({ name: "IMG_4021.HEIC" });
     const qr = put({ name: "airhop-qr-a1b2c3d4.png" });
 
-    return wipeCacheDirectory().then(() => {
-      expect([ours.deleted, theirs.deleted, qr.deleted]).toEqual([
-        true,
-        true,
-        true,
-      ]);
-    });
+    await wipeCacheDirectory();
+
+    expect([ours.deleted, theirs.deleted, qr.deleted]).toEqual([
+      true,
+      true,
+      true,
+    ]);
   });
 
   it("walks into a subdirectory instead of handing it to one opaque delete", async () => {

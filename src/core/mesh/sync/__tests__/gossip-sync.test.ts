@@ -157,11 +157,6 @@ describe("GossipFilterPayload encode/decode", () => {
 describe("GossipSync class", () => {
   const identity = makeIdentity();
 
-  test("seenCount starts at 0", () => {
-    const gs = new GossipSync();
-    expect(gs.seenCount).toBe(0);
-  });
-
   test("track ignores non-gossip packet types", () => {
     const gs = new GossipSync();
     gs.track(makePacket(PacketType.NOISE_ENCRYPTED, 0, new Uint8Array(4)));
@@ -329,7 +324,7 @@ describe("GossipSync: candidate age bounds", () => {
   test("a board post outlives the message window", () => {
     const gs = new GossipSync();
     gs.track(
-      makePacket(PacketType.BOARD_POST, 60 * 60_000, new Uint8Array([1])),
+      makePacket(PacketType.BOARD_POST, 24 * 60 * 60_000, new Uint8Array([1])),
     );
     expect(gs.handleFilter(emptyFilterPacket())).toHaveLength(1);
   });

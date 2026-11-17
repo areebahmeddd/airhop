@@ -277,7 +277,7 @@ describe("cold start and permissions", () => {
     });
     const v = new Verdict(
       "S04",
-      "location refused on API 31+ - BLUETOOTH_SCAN asserts neverForLocation, so nothing about the mesh depends on it",
+      "location refused on API 31+, where BLUETOOTH_SCAN asserts neverForLocation, so nothing about the mesh depends on it",
       os,
     );
     const native = androidDevice(os);
@@ -1023,7 +1023,7 @@ describe("launch identity: absent, unreadable, condemned", () => {
     ).resolves.toBeNull();
   });
 
-  // An install from a build before the record existed has its stores, and
+  // An install with no record (its write failed) still has its stores, and
   // keeps its identity rather than being taken for a reinstall.
   test("K12 an identity with this install's data around it boots and is recorded", async () => {
     const id = await generateIdentity();

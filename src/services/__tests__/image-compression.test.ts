@@ -78,7 +78,7 @@ jest.mock("../attachment-cache", () => ({
   discardPickerCopy: jest.fn(),
 }));
 
-const fileTransfer = jest.requireMock<{
+const attachmentCache = jest.requireMock<{
   adoptIntoAttachmentCache: jest.Mock;
   discardPickerCopy: jest.Mock;
 }>("../attachment-cache");
@@ -89,8 +89,8 @@ beforeEach(() => {
   mockManipulator.saves = 0;
   mockManipulator.failFrom = Infinity;
   mockManipulator.rungSizes = [];
-  fileTransfer.adoptIntoAttachmentCache.mockClear();
-  fileTransfer.discardPickerCopy.mockClear();
+  attachmentCache.adoptIntoAttachmentCache.mockClear();
+  attachmentCache.discardPickerCopy.mockClear();
 });
 
 describe("prepareImageForSend", () => {
@@ -101,7 +101,7 @@ describe("prepareImageForSend", () => {
     expect(ready?.uri).toBe("file:///rung0.jpg");
     expect(ready?.mimeType).toBe("image/jpeg");
     // The picker's copy, EXIF and all, does not stay behind either.
-    expect(fileTransfer.discardPickerCopy).toHaveBeenCalledWith(
+    expect(attachmentCache.discardPickerCopy).toHaveBeenCalledWith(
       "file:///a.jpg",
     );
   });
@@ -127,11 +127,11 @@ describe("prepareImageForSend", () => {
     expect(ready?.uri).toBe("file:///g.gif");
     expect(ready?.mimeType).toBe("image/gif");
     // Moved under the attachment prefix, so retention and Clear see it.
-    expect(fileTransfer.adoptIntoAttachmentCache).toHaveBeenCalledWith(
+    expect(attachmentCache.adoptIntoAttachmentCache).toHaveBeenCalledWith(
       "file:///g.gif",
       "g.gif",
     );
-    expect(fileTransfer.discardPickerCopy).not.toHaveBeenCalled();
+    expect(attachmentCache.discardPickerCopy).not.toHaveBeenCalled();
   });
 
   it("re-encodes a PNG that a .jpg name would have labeled JPEG", async () => {
@@ -159,8 +159,8 @@ describe("prepareImageForSend", () => {
     mockManipulator.failFrom = 1;
     const ready = await prepareImageForSend("file:///a.jpg", "a.jpg");
     expect(ready).toBeNull();
-    expect(fileTransfer.adoptIntoAttachmentCache).not.toHaveBeenCalled();
-    expect(fileTransfer.discardPickerCopy).toHaveBeenCalledWith(
+    expect(attachmentCache.adoptIntoAttachmentCache).not.toHaveBeenCalled();
+    expect(attachmentCache.discardPickerCopy).toHaveBeenCalledWith(
       "file:///a.jpg",
     );
   });
@@ -174,7 +174,7 @@ describe("prepareImageForSend", () => {
       "image/webp",
     );
     expect(ready).toBeNull();
-    expect(fileTransfer.adoptIntoAttachmentCache).not.toHaveBeenCalled();
+    expect(attachmentCache.adoptIntoAttachmentCache).not.toHaveBeenCalled();
   });
 
   // Only the version that is sent is adopted; every other rung is deleted, or
@@ -184,12 +184,12 @@ describe("prepareImageForSend", () => {
     mockManipulator.rungSizes = [400 * 1024, 300 * 1024, 100 * 1024];
     const ready = await prepareImageForSend("file:///a.jpg", "a.jpg");
     expect(ready?.uri).toBe("file:///rung2.jpg");
-    expect(fileTransfer.adoptIntoAttachmentCache).toHaveBeenCalledTimes(1);
-    expect(fileTransfer.adoptIntoAttachmentCache).toHaveBeenCalledWith(
+    expect(attachmentCache.adoptIntoAttachmentCache).toHaveBeenCalledTimes(1);
+    expect(attachmentCache.adoptIntoAttachmentCache).toHaveBeenCalledWith(
       "file:///rung2.jpg",
       "a.jpg",
     );
-    const discarded = fileTransfer.discardPickerCopy.mock.calls.map(
+    const discarded = attachmentCache.discardPickerCopy.mock.calls.map(
       (call: unknown[]) => call[0],
     );
     expect(discarded).toEqual(

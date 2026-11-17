@@ -16,7 +16,7 @@ class TranscodeMediaTest {
     }
 
     @Test
-    fun aHalfTurnKeepsIt() {
+    fun noTurnOrAHalfTurnKeepsIt() {
         assertEquals(1920 to 1080, TranscodeMedia.uprightSize(1920, 1080, 0))
         assertEquals(1920 to 1080, TranscodeMedia.uprightSize(1920, 1080, 180))
     }

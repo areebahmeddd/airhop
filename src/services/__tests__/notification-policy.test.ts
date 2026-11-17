@@ -127,7 +127,7 @@ describe("shouldHapticPing", () => {
 
 describe("notificationContentFor", () => {
   it("shows sender as the title for a DM", () => {
-    // Hiding content is off unless asked for, so the default call shows it.
+    // The hide argument defaults to off, so a call without it shows the content.
     expect(notificationContentFor(msg({ text: "yo" }))).toEqual({
       title: "alice",
       body: "yo",

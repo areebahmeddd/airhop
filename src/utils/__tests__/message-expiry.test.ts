@@ -39,8 +39,11 @@ describe("isMessageExpired", () => {
   });
 
   it("falls back to the sender's clock for a row without an arrival time", () => {
-    const legacy = msg({ timestampMs: NOW - 2 * DAY, receivedAtMs: undefined });
-    expect(isMessageExpired(legacy, NOW, DAY)).toBe(true);
+    const unstamped = msg({
+      timestampMs: NOW - 2 * DAY,
+      receivedAtMs: undefined,
+    });
+    expect(isMessageExpired(unstamped, NOW, DAY)).toBe(true);
   });
 
   it.each([

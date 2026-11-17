@@ -239,13 +239,18 @@ describe("packetizer budget", () => {
   it("drops a frame too large to ever fit its own packet", async () => {
     const { packets, session, feed } = makeSession();
     await session.startPtt();
-    const before = packets.length;
+    hold(feed);
     feed(new Uint8Array(400).fill(9));
+    hold(feed);
     await session.stopPtt();
-    // START and END only: the oversize frame produced no data packet, rather
-    // than an oversize one that would have been fragmented.
-    const dataPackets = packets.slice(before, packets.length - 1);
-    expect(dataPackets).toHaveLength(0);
+    // Every ordinary frame went out and the oversize one in none of them,
+    // rather than in a packet that would have been fragmented.
+    const sent = packets.flatMap((p) => {
+      const burst = decodeBurstPacket(p.payload);
+      return burst?.kind === "data" ? burst.frames : [];
+    });
+    expect(sent).toHaveLength(KEEPABLE_FRAMES * 2);
+    expect(sent.every((f) => f.length === frame().length)).toBe(true);
   });
 });
 

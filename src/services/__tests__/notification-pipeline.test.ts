@@ -306,16 +306,22 @@ describe("startNotificationPipeline", () => {
     expect(mockDismissPreviews).toHaveBeenCalledTimes(1);
   });
 
-  test("offers Reply on a DM card, and not on a room's or behind the lock", () => {
+  test("offers Reply on a DM card, and not on a room's, behind the lock or with previews hidden", () => {
     startNotificationPipeline(() => "alice");
 
     arrive(message({ channel: "dm:x" }));
     arrive(message({ id: "m2" }));
     useSettingsStore.setState({ appLockEnabled: true });
     arrive(message({ id: "m3", channel: "dm:x" }));
+    useSettingsStore.setState({
+      appLockEnabled: false,
+      hideNotificationPreviews: true,
+    });
+    arrive(message({ id: "m4", channel: "dm:x" }));
 
     expect(mockHandleInbound.mock.calls.map((c) => c[3])).toEqual([
       true,
+      false,
       false,
       false,
     ]);

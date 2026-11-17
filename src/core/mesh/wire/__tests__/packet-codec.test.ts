@@ -474,6 +474,9 @@ describe("packet-codec", () => {
         payload: new Uint8Array([1]),
       });
       expect(computePacketId(a)).not.toEqual(computePacketId(b));
+      expect(computePacketId(a)).not.toEqual(
+        computePacketId({ ...a, payload: new Uint8Array([2]) }),
+      );
     });
   });
 

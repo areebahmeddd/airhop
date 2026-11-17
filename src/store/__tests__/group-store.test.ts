@@ -12,6 +12,7 @@ import {
   type GroupMember,
 } from "@core/mesh/rooms/group-protocol";
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import { createMMKV } from "react-native-mmkv";
 import { groupChannel, useGroupStore } from "../group-store";
 
@@ -52,7 +53,7 @@ describe("group store", () => {
     expect(rt.name).toBe("crew");
     expect([...rt.key]).toEqual([...key]);
     expect(rt.members[0].signingKey).toBeInstanceOf(Uint8Array);
-    const channel = groupChannel(bytesToHexLocal(group.groupID));
+    const channel = groupChannel(bytesToHex(group.groupID));
     expect(useGroupStore.getState().nameForChannel(channel)).toBe("crew");
   });
 
@@ -73,9 +74,7 @@ describe("group store", () => {
     useGroupStore
       .getState()
       .upsertLocal({ ...base, epoch: 2, members: [forged] }, newGroupKey());
-    expect(useGroupStore.getState().get(bytesToHexLocal(groupID))!.epoch).toBe(
-      1,
-    );
+    expect(useGroupStore.getState().get(bytesToHex(groupID))!.epoch).toBe(1);
   });
 
   it("keeps one valid entry per group when loading", () => {
@@ -126,13 +125,11 @@ describe("group store", () => {
     useGroupStore.getState().upsertLocal(base, newGroupKey());
     // Older epoch: ignored.
     useGroupStore.getState().upsertLocal({ ...base, epoch: 0 }, newGroupKey());
-    expect(useGroupStore.getState().get(bytesToHexLocal(groupID))!.epoch).toBe(
-      1,
-    );
+    expect(useGroupStore.getState().get(bytesToHex(groupID))!.epoch).toBe(1);
     // Newer epoch: adopted.
     const newKey = newGroupKey();
     useGroupStore.getState().upsertLocal({ ...base, epoch: 2 }, newKey);
-    const rt = useGroupStore.getState().get(bytesToHexLocal(groupID))!;
+    const rt = useGroupStore.getState().get(bytesToHex(groupID))!;
     expect(rt.epoch).toBe(2);
     expect([...rt.key]).toEqual([...newKey]);
   });
@@ -268,7 +265,7 @@ describe("group store", () => {
         me,
         group,
         key,
-        id: bytesToHexLocal(group.groupID),
+        id: bytesToHex(group.groupID),
         state: signGroupState(group, key, creator.signPriv)!,
       };
     }
@@ -321,7 +318,7 @@ describe("group store", () => {
       )!;
       expect(store.addInvite(rotated)).toEqual([]);
       expect(store.addInvite(state)).toBeNull();
-      expect(store.invite(bytesToHexLocal(group.groupID))?.epoch).toBe(2);
+      expect(store.invite(bytesToHex(group.groupID))?.epoch).toBe(2);
     });
 
     it("keeps the newest twenty however many arrive", () => {
@@ -357,7 +354,7 @@ describe("group store", () => {
           members: [spammer.member, me.member],
           creatorFingerprint: spammer.member.fingerprint,
         };
-        ids.push(bytesToHexLocal(group.groupID));
+        ids.push(bytesToHex(group.groupID));
         const state = signGroupState(group, newGroupKey(), spammer.signPriv)!;
         dropped.push(...(store.addInvite(state) ?? []));
       }
@@ -405,9 +402,3 @@ describe("group store", () => {
     ).toBeUndefined();
   });
 });
-
-function bytesToHexLocal(b: Uint8Array): string {
-  let s = "";
-  for (const x of b) s += x.toString(16).padStart(2, "0");
-  return s;
-}

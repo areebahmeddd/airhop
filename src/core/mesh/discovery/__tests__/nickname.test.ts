@@ -88,9 +88,8 @@ describe("announce nickname round-trip", () => {
       0,
     );
     const value = payload.slice(2, 2 + payload[1]);
+    // A fatal decoder throws on a split sequence rather than substituting.
     const decoded = new TextDecoder("utf-8", { fatal: true }).decode(value);
-    // No lone surrogate, so no replacement character on the far side.
-    expect(decoded).not.toContain("�");
     expect([...decoded].every((c) => c === "\u{1f600}")).toBe(true);
   });
 });

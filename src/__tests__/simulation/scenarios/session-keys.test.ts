@@ -8,6 +8,9 @@
 //              keeps decrypting (longer while a file is arriving), a peer
 //              that restarted, and a wipe mid-rekey.
 //   SK08       A session alone earns no Nostr key: a DM has to pass first.
+//   SK09-SK10c The disappearing timer: shared by both phones, held until the
+//              peer proves it runs Airhop, and sent again until acknowledged.
+//   SK11       A ratchet message held back and restamped is not shown as new.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
@@ -896,6 +899,39 @@ test("SK09 a disappearing timer set on one phone holds on both, message by messa
   s.assert();
 });
 
+test("SK10 a timer set before the peer proves it runs Airhop waits for that proof", async () => {
+  const s = (scenario = new Scenario({
+    id: "SK10",
+    title: "a local-only disappearing timer",
+    seed: 1310,
+  }));
+  const { alice, bob } = pair(s);
+  s.check("alice and bob hear each other", await met(s, alice, bob));
+  (
+    alice.mesh as unknown as {
+      setDisappearingTimer: (peerID: string, ms: number) => void;
+    }
+  ).setDisappearingTimer(bob.peerID, 7 * DAY_MS);
+  await advanceFor(s.world, 10_000);
+  s.check("alice's chat keeps it", chatTimer(alice, bob) === 7 * DAY_MS);
+  s.check(
+    "nothing reached bob",
+    chatTimer(bob, alice) === undefined && rowKeys(bob, alice).length === 0,
+  );
+  s.check(
+    "once they talk and bob proves Airhop, it reaches him",
+    (await talking(s, alice, bob)) &&
+      (await waitFor(
+        s.world,
+        () => chatTimer(bob, alice) === 7 * DAY_MS,
+        20_000,
+      )) &&
+      rowKeys(bob, alice).join() === "chat.timer.peer_set_7",
+  );
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
 // The registry forgets a stranger, and with them the proof that they run
 // Airhop. A timer change queued before then would go as an empty message.
 test("SK10b a queued timer change waits rather than arriving without its timer", async () => {
@@ -942,39 +978,6 @@ test("SK10b a queued timer change waits rather than arriving without its timer",
         pending: { id: string }[];
       }
     ).pending.some((m) => m.id === "timer-held"),
-  );
-  s.expectNone("process health", noCrashes([alice, bob]));
-  s.assert();
-});
-
-test("SK10 a timer set before the peer proves it runs Airhop waits for that proof", async () => {
-  const s = (scenario = new Scenario({
-    id: "SK10",
-    title: "a local-only disappearing timer",
-    seed: 1310,
-  }));
-  const { alice, bob } = pair(s);
-  s.check("alice and bob hear each other", await met(s, alice, bob));
-  (
-    alice.mesh as unknown as {
-      setDisappearingTimer: (peerID: string, ms: number) => void;
-    }
-  ).setDisappearingTimer(bob.peerID, 7 * DAY_MS);
-  await advanceFor(s.world, 10_000);
-  s.check("alice's chat keeps it", chatTimer(alice, bob) === 7 * DAY_MS);
-  s.check(
-    "nothing reached bob",
-    chatTimer(bob, alice) === undefined && rowKeys(bob, alice).length === 0,
-  );
-  s.check(
-    "once they talk and bob proves Airhop, it reaches him",
-    (await talking(s, alice, bob)) &&
-      (await waitFor(
-        s.world,
-        () => chatTimer(bob, alice) === 7 * DAY_MS,
-        20_000,
-      )) &&
-      rowKeys(bob, alice).join() === "chat.timer.peer_set_7",
   );
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();

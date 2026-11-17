@@ -363,7 +363,7 @@ describe("teardown, replacement and races", () => {
       `mode=${native.powerMode}`,
     );
     v.check(
-      "and the mesh is still scanning - quieter, not stopped",
+      "and the mesh is still scanning, quieter rather than stopped",
       native.scanning && native.advertising,
       "a duty cycle is invisible above the native boundary; JS asked for scanning and must still have it",
     );

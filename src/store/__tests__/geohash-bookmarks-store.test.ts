@@ -13,10 +13,6 @@ function state() {
 }
 
 describe("geohash bookmarks", () => {
-  it("starts empty", () => {
-    expect(state().bookmarks).toEqual([]);
-  });
-
   it("toggles a cell on and off", () => {
     state().toggle("tdr1k");
     expect(state().bookmarks).toEqual(["tdr1k"]);

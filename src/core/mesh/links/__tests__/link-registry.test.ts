@@ -197,9 +197,6 @@ describe("LinkRegistry", () => {
     });
   });
 
-  // A link closing and a peer leaving are different events. Only the second
-  // owes the caller anything, so `close` reports the peer only when it was its
-  // last link.
   describe("proof", () => {
     it("takes a handshake's proof only on a link bound to that peer", () => {
       links.open("ble", "c:1");
@@ -254,6 +251,9 @@ describe("LinkRegistry", () => {
     });
   });
 
+  // A link closing and a peer leaving are different events. Only the second
+  // owes the caller anything, so `close` reports the peer only when it was its
+  // last link.
   describe("departure", () => {
     it("reports nothing while the peer still holds another link on the same radio", () => {
       links.open("ble", "c:1");
@@ -277,7 +277,7 @@ describe("LinkRegistry", () => {
   });
 
   describe("selection", () => {
-    it("prefers WiFi when a peer is held on both radios", () => {
+    it("prefers Wi-Fi when a peer is held on both radios", () => {
       links.open("ble", "c:1");
       links.open("wifi", "wifi-1");
       links.bind("c:1", "peer-a");

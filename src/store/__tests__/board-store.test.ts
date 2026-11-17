@@ -19,6 +19,17 @@ function author(): { priv: Uint8Array; pub: Uint8Array } {
 
 const DAY = 24 * 60 * 60 * 1000;
 
+// Reads prune against Date.now(), so the clock is pinned for every case.
+const NOW = 1_800_000_000_000;
+
+beforeEach(() => {
+  jest.useFakeTimers({ now: NOW });
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+});
+
 function makePost(
   a: { priv: Uint8Array; pub: Uint8Array },
   opts: { createdAt: number; lifetimeMs?: number; geohash?: string } = {
@@ -46,8 +57,7 @@ function post(p: BoardPost): BoardWire {
 }
 
 describe("board store", () => {
-  // Reads prune against the real wall clock, so anchor the test clock there too.
-  const now = Date.now();
+  const now = NOW;
 
   beforeEach(() => {
     useBoardStore.setState({ posts: [], tombstones: [] });
@@ -138,7 +148,7 @@ describe("board store", () => {
 
   it("restores a tombstone under the deadline recorded when it was applied", () => {
     const a = author();
-    const at = Date.now();
+    const at = NOW;
     const p = makePost(a, { createdAt: at - 1000, lifetimeMs: DAY });
     useBoardStore.getState().ingest(post(p), at);
     const tombstone = signBoardTombstone(p.postID, a.pub, at, a.priv);
@@ -165,7 +175,7 @@ describe("board store", () => {
 // The time rules ingest applies, without a store: what a relay consults before
 // forwarding a post, so it never carries one every board would refuse.
 describe("isLivePost", () => {
-  const now = Date.now();
+  const now = NOW;
   const a = author();
 
   it("admits a post inside its lifetime", () => {
@@ -200,7 +210,7 @@ describe("isLivePost", () => {
 // A bridged notice's NIP-09 retraction stays owed until a relay accepts it, so
 // a delete made offline still reaches the relays later, across a relaunch.
 describe("bridged retractions", () => {
-  const now = Date.now();
+  const now = NOW;
 
   beforeEach(() => {
     useBoardStore.getState().clearAll();

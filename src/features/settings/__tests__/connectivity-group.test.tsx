@@ -97,7 +97,9 @@ describe("turning on live video", () => {
       screen.getByText(t("settings.conn.live_video_on_body")),
     ).toBeTruthy();
 
-    await userEvent.setup().press(screen.getByText(t("settings.conn.turn_on")));
+    await userEvent
+      .setup()
+      .press(screen.getByRole("button", { name: t("settings.conn.turn_on") }));
     expect(useSettingsStore.getState().liveVideoEnabled).toBe(true);
   });
 });

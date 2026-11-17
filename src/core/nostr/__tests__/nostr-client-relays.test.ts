@@ -129,7 +129,7 @@ describe("NostrClient relay targeting", () => {
     );
   });
 
-  test("the default DM pool is unchanged: defaults only, no override applied", async () => {
+  test("a publish with no relay list goes to the default DM pool", async () => {
     const client = open();
     expect(client.activeRelays).toEqual([
       "wss://nos.lol",

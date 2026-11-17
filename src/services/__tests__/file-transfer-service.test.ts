@@ -122,6 +122,15 @@ const META = {
   durationMs: 0,
 };
 
+// Big enough to exceed one 469-byte fragment several times over. High-entropy
+// fill so the codec's raw-DEFLATE compression can't shrink it into one frame
+// (an all-one-byte file would compress away and never fragment).
+const FILE = (() => {
+  const f = new Uint8Array(4000);
+  for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
+  return f;
+})();
+
 // The transport answers whether it ACCEPTED the packet, and the pacer waits for
 // that answer before offering the next fragment. `accepted` lets a test play a
 // radio that is refusing writes, the case where a file can be lost.
@@ -163,15 +172,6 @@ afterEach(() => {
 });
 
 describe("outbound pacing", () => {
-  // Big enough to exceed one 469-byte fragment several times over. High-entropy
-  // fill so the codec's raw-DEFLATE compression can't shrink it into one frame
-  // (an all-one-byte file would compress away and never fragment).
-  const FILE = (() => {
-    const f = new Uint8Array(4000);
-    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
-    return f;
-  })();
-
   // A second transfer starting while the first is mid-write must not open a
   // parallel drain loop: `drainTimer` is cleared before the transport is
   // awaited, so a fresh timer could be set in that window. Two loops on one
@@ -351,12 +351,6 @@ describe("outbound pacing", () => {
 // marches to 100% and reports "sent". Nothing on this wire acknowledges a
 // fragment, so holding on to a refused one is the only thing that can save it.
 describe("radio backpressure", () => {
-  const FILE = (() => {
-    const f = new Uint8Array(4000);
-    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
-    return f;
-  })();
-
   it("keeps a refused fragment instead of counting it as sent", async () => {
     const { service, broadcast } = makeService(false);
 
@@ -598,12 +592,6 @@ describe("an attachment that cannot be read", () => {
 // A send waiting behind another in the shared queue has moved no bytes because
 // it has not had a turn, not because its peer is gone.
 describe("a send queued behind another", () => {
-  const FILE = (() => {
-    const f = new Uint8Array(4000);
-    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
-    return f;
-  })();
-
   it("is not declared failed while it waits", () => {
     const { service } = makeService(false);
     service.sendBytes(FILE, META, "#test");
@@ -628,12 +616,6 @@ describe("a send queued behind another", () => {
 });
 
 describe("a DM to a peer who has left", () => {
-  const FILE = (() => {
-    const f = new Uint8Array(4000);
-    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
-    return f;
-  })();
-
   it("fails on the first refusal instead of holding the queue", async () => {
     const unicast = jest.fn().mockResolvedValue(false);
     const broadcast = jest.fn().mockResolvedValue(true);
@@ -680,11 +662,6 @@ describe("a DM to a peer who has left", () => {
 // accepted is not the file being sent: it is sent once the queue has had time
 // to drain, and lost if the link goes first.
 describe("a file still in a Bluetooth queue", () => {
-  const FILE = (() => {
-    const f = new Uint8Array(4000);
-    for (let i = 0; i < f.length; i++) f[i] = (i * 167 + 13) & 0xff;
-    return f;
-  })();
   const DM = "dm:1122334455667788";
   const DEPTH = 40;
   // DEPTH writes at the directed spacing (25 ms), plus the 500 ms margin.
@@ -923,6 +900,7 @@ describe("receiving a file", () => {
     // On disk it is what its bytes are, whatever the sender called it.
     expect([...globalThis.__cache.keys()][0]?.endsWith(".jpg")).toBe(true);
   });
+
   it("drops a public file the spam filter hides, before writing it", async () => {
     useChatStore.getState().addChannel("#bluetooth");
     const { service } = makeService();

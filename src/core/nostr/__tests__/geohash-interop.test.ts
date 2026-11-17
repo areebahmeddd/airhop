@@ -1,7 +1,6 @@
 // Cells a real bitchat-ios build displayed, pinning that our geohash encoder
-// agrees with theirs on the actual characters. That
-// each channel maps to the same character count is a service table, pinned in
-// geohash-channels.test.ts.
+// agrees with theirs on the actual characters. That each channel maps to the
+// same character count is a service table, pinned in geohash-channels.test.ts.
 //
 // Only coarse precisions assert exact strings: their cells are large enough
 // (about 1250 km and 39 km) that central Bengaluru lands in the same ones, so the

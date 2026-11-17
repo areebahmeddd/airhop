@@ -9,7 +9,7 @@ describe("dmReachesOverInternet", () => {
     expect(dmReachesOverInternet(PEER, NPUB, true)).toBe(true);
   });
 
-  it("does not while every relay is down, whatever address we hold", () => {
+  it("does not claim it while every relay is down, whatever address is held", () => {
     expect(dmReachesOverInternet(PEER, NPUB, false)).toBe(false);
     expect(dmReachesOverInternet(`nostr_${NPUB}`, undefined, false)).toBe(
       false,
@@ -20,7 +20,7 @@ describe("dmReachesOverInternet", () => {
     expect(dmReachesOverInternet(`nostr_${NPUB}`, undefined, true)).toBe(true);
   });
 
-  it("never for a contact with no npub", () => {
+  it("never claims it for a contact with no npub", () => {
     expect(dmReachesOverInternet(PEER, undefined, true)).toBe(false);
     expect(dmReachesOverInternet(PEER, "", true)).toBe(false);
   });

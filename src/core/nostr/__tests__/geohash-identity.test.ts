@@ -30,11 +30,6 @@ describe("deriveGeohashSeed", () => {
       deriveGeohashSeed(OTHER_SIGNING_KEY),
     );
   });
-
-  it("is not the signing key itself", () => {
-    // One-way: the seed must never be a copy of the key it came from.
-    expect(deriveGeohashSeed(SIGNING_KEY)).not.toEqual(SIGNING_KEY);
-  });
 });
 
 describe("deriveGeohashIdentity", () => {

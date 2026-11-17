@@ -30,7 +30,7 @@ describe("BoundedIdSet", () => {
     expect(set.has("b")).toBe(true);
   });
 
-  it("clears", () => {
+  it("empties on clear", () => {
     const set = new BoundedIdSet(2);
     set.add("a");
     set.clear();

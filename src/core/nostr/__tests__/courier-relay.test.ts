@@ -56,7 +56,7 @@ describe("publishCourierDrop", () => {
     expect(xTag?.[1]).toBe(bytesToHex(envelope.recipientTag));
   });
 
-  it("event has an expiration tag within range of the envelope expiry", async () => {
+  it("tags the event to expire with the envelope", async () => {
     let published: Event | null = null;
     const client = makeClient({
       publish: jest.fn().mockImplementation((event: Event) => {
@@ -80,7 +80,7 @@ describe("publishCourierDrop", () => {
 });
 
 describe("subscribeCourierDrops", () => {
-  it("calls client.subscribe with a kind 1401 filter", () => {
+  it("subscribes with a kind 1401 filter", () => {
     const client = makeClient();
     const tag = crypto.getRandomValues(new Uint8Array(16));
 

@@ -9,6 +9,12 @@
 //         claim on that npub, and keeps the key past the launch.
 //   NK03  The key a session handed over outlives a relaunch for a peer whose
 //         DM went unanswered, without making them a contact.
+//   NK04  Internet DMs between Airhop phones go sealed to one-time keys the
+//         session handed over, and a phone that lost its keys is handed fresh
+//         ones and the DM goes again.
+//   NK05  A sealed DM from an npub nobody maps proves its sender, and a phone
+//         holding none of the peer's keys sends under the long-term key and
+//         is handed a batch.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>

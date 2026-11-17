@@ -877,15 +877,15 @@ describe("unread count at the per-thread cap", () => {
   }
 
   it("counts a new message in a full thread that was read", () => {
-    fill(200, 0);
+    fill(MAX_PER_CHANNEL, 0);
     state().markChannelRead("#test");
     fill(3, 1000);
-    expect(state().messages["#test"]).toHaveLength(200);
+    expect(state().messages["#test"]).toHaveLength(MAX_PER_CHANNEL);
     expect(state().unreadCounts["#test"]).toBe(3);
   });
 
   it("keeps climbing rather than plateauing", () => {
-    fill(200, 0);
+    fill(MAX_PER_CHANNEL, 0);
     state().markChannelRead("#test");
     fill(5, 1000);
     fill(5, 2000);
@@ -893,12 +893,12 @@ describe("unread count at the per-thread cap", () => {
   });
 
   it("stays at the cap when every message kept is unread", () => {
-    fill(205, 0);
-    expect(state().unreadCounts["#test"]).toBe(200);
+    fill(MAX_PER_CHANNEL + 5, 0);
+    expect(state().unreadCounts["#test"]).toBe(MAX_PER_CHANNEL);
   });
 
   it("does not count trimmed messages of my own", () => {
-    fill(200, 0, true);
+    fill(MAX_PER_CHANNEL, 0, true);
     fill(2, 1000);
     expect(state().unreadCounts["#test"]).toBe(2);
   });

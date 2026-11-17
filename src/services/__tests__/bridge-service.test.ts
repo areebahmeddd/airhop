@@ -439,7 +439,7 @@ describe("a deposit while the relays are down", () => {
 });
 
 describe("receiving a bridged message over the radio", () => {
-  it("works with the bridge off and no internet", () => {
+  it("shows it with the bridge off and no internet", () => {
     const r = rig();
     r.bridge.handleMeshCarrier(
       carrier(CarrierDirection.FROM_BRIDGE, remoteMessage("carried to us")),

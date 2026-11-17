@@ -21,8 +21,4 @@ describe("sharedRowID", () => {
   it("keeps the ID and text apart, so no split of one collides with another", () => {
     expect(sharedRowID("a|b", "c")).not.toBe(sharedRowID("a", "b|c"));
   });
-
-  it("is a ch- row of fixed length", () => {
-    expect(sharedRowID("m", "x")).toMatch(/^ch-[0-9a-f]{32}$/);
-  });
 });

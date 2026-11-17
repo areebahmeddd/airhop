@@ -399,7 +399,7 @@ describe("posts", () => {
     client.close();
   });
 
-  test("a post with no key is refused as before", async () => {
+  test("a post with no key is refused without signing in", async () => {
     const client = new NostrClient();
     const event = note("hello");
     const result = client.publish(event, [RELAY]);
@@ -413,7 +413,6 @@ describe("posts", () => {
   });
 
   test("a post on a connection signed in as someone else is not proven again", async () => {
-    rules.readsNeedAuth = true;
     const client = new NostrClient();
     const cell = generateSecretKey();
     client.subscribe([filter], () => {}, undefined, [RELAY], cell);

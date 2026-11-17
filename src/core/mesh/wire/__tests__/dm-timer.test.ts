@@ -106,7 +106,7 @@ describe("PrivateMessagePacket with a timer", () => {
     expect(timerOf(0)).toBe(0);
   });
 
-  test("refuses a bad length, or a change with no timer", () => {
+  test("refuses a bad length, a change with no timer, or an unknown TLV", () => {
     const base = Array.from(encodePrivateMessagePacket("m1", "hi")!);
     const refuse = (extra: number[]): void =>
       expect(

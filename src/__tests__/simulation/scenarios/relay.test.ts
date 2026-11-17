@@ -1,7 +1,8 @@
 // Tier R: bare relay nodes, the ESP32-on-a-pole case.
 //
 // A bare relay works with Airhop for one reason: forwarding consults no
-// registry and verifies no signature. If that ever changes, these fail. See PROTOCOLS.md section 10.
+// registry and verifies no signature. If that ever changes, these fail. See
+// PROTOCOLS.md section 10.
 //
 // R08 onward are the other side: what an Airhop phone, which does check a few
 // types before forwarding them as bitchat-ios does, refuses to carry.
