@@ -133,7 +133,11 @@ import { isPanicWipePending } from "@services/wipe-marker";
 import { useActivityStore } from "@store/activity-store";
 import { showAlert } from "@store/alert-store";
 import { selectLockOpen, useAppLockStore } from "@store/app-lock-store";
-import { flushChatPersistence, useChatStore } from "@store/chat-store";
+import {
+  flushChatPersistence,
+  settleStaleSendsOnce,
+  useChatStore,
+} from "@store/chat-store";
 import {
   useMeshBanners,
   useMeshStateStore,
@@ -286,12 +290,6 @@ const PERMISSION_PROMPT_TIMEOUT_MS = 60_000;
 // A `PermissionsAndroid.check` is a synchronous binder call behind a promise, so
 // anything past this is the binder wedged rather than a slow answer.
 const PERMISSION_CHECK_TIMEOUT_MS = 3_000;
-
-// Whether this JS runtime has settled the sends a dead process left behind.
-// Module scope, not component state: an Android Activity recreated under a
-// live runtime remounts App while its transfers are still running, and a fresh
-// process starts with every "sending" row an orphan, however young.
-let staleSendsSettled = false;
 
 // Request the BLE runtime permissions the OS requires, THEN start the mesh.
 // Without the grant, native startScanning/startAdvertising throw and are
@@ -1155,9 +1153,7 @@ function AppContent(): React.JSX.Element {
   // owns them. See failStaleSending for why they are failed rather than
   // re-sent.
   useEffect(() => {
-    if (staleSendsSettled) return;
-    staleSendsSettled = true;
-    useChatStore.getState().failStaleSending(0);
+    settleStaleSendsOnce();
   }, []);
 
   // Claim an audible audio session once. Otherwise it is the OS default, which

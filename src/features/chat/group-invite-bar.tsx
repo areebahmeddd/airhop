@@ -3,6 +3,7 @@
 
 import { t, useT } from "@i18n";
 import { getMeshService } from "@services/mesh-service";
+import { dismissNotificationsFor } from "@services/notification-service";
 import { showAlert } from "@store/alert-store";
 import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore } from "@store/chat-store";
@@ -67,6 +68,7 @@ function declineGroupInvite(channel: string, onDeclined: () => void): void {
         onPress: () => {
           useBlockedStore.getState().blockPeer(creatorID);
           getMeshService()?.forgetPeer(creatorID);
+          void dismissNotificationsFor(`dm:${creatorID}`);
           for (const pending of useGroupStore.getState().invites) {
             if (pending.creatorFingerprint === creator.fingerprint) {
               leaveConversation(groupChannel(pending.groupID));

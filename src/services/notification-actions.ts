@@ -4,10 +4,12 @@
 //
 // The card was posted under settings that may have changed since, so both ask
 // the policy again: a card left in the shade must not reply past an app lock
-// switched on afterwards, or into a group or channel since left.
+// switched on afterwards, into a group or channel since left, or to a peer
+// since blocked.
 
 import { PRIVATE_MESSAGE_MAX_CONTENT_BYTES } from "@core/mesh/wire/noise-payload";
 import { newMessageId } from "@core/router/message-router";
+import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { groupChannel, useGroupStore } from "@store/group-store";
 import type { QuickAction } from "@store/held-quick-actions";
@@ -25,7 +27,7 @@ const MAX_DM_PARTS = 8;
 
 export function handleQuickAction(action: QuickAction): void {
   const channel = useChatStore.getState().resolveChannel(action.channel);
-  if (!mayAnswer(channel)) {
+  if (!mayAnswer(channel) || blockedDm(action.channel)) {
     // Typed in good faith on a card shown before the change: say it did not go.
     if (action.kind === "reply" && action.text.trim().length > 0) {
       void notifyReply(action.channel, "failed");
@@ -49,10 +51,21 @@ function mayAnswer(channel: string): boolean {
   ) {
     return false;
   }
+  if (blockedDm(channel)) return false;
   if (!channel.startsWith("group:")) return true;
   return useGroupStore
     .getState()
     .groups.some((g) => groupChannel(g.groupID) === channel);
+}
+
+// The card's own channel is checked as well as the thread it now folds into: a
+// room sender blocked by their `nostr_` key may since have been folded into a
+// peer the block does not name.
+function blockedDm(channel: string): boolean {
+  return (
+    channel.startsWith("dm:") &&
+    useBlockedStore.getState().isBlocked(channel.slice(3))
+  );
 }
 
 // Stamped when it is sent, as the wire copy is: a reply held over a restart

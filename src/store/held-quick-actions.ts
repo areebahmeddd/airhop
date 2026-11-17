@@ -1,9 +1,13 @@
 // Reply and Mark as read taken from a notification before anything could act
-// on them: an iOS background launch that never got as far as the mesh, or an
-// Android process the OS reclaimed after posting the card. Kept on disk until
-// the next mesh start sends them, so a reply typed into a card is never lost to
-// the process ending. A reply is message content, so it lives where messages
-// do, and the panic wipe clears this partition with theirs.
+// on them: an iOS background launch that never got as far as the mesh, or a
+// tap that arrived while the mesh was down. Kept on disk until the next mesh
+// start sends them, so a reply typed into a card is not lost to the process
+// ending. An Android process the OS reclaimed is not covered: the tray wakes
+// it with no JavaScript to take the action, so the reply waits in that
+// process's memory, sent only if the app opens before the process ends
+// (expo-notifications runs only TaskManager tasks headless).
+// A reply is message content, so it lives where messages do, and the panic
+// wipe clears this partition with theirs.
 
 import { getStorage } from "./mmkv";
 import { OUTBOX_TTL_MS } from "./outbox-store";

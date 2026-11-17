@@ -75,6 +75,7 @@ import type { FinishedLiveVideo } from "@services/live-video-sender";
 import { hasLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
 import { transmitMessage } from "@services/message-send";
+import { dismissNotificationsFor } from "@services/notification-service";
 import {
   receiveTrustingMint,
   reportWalletError,
@@ -3053,6 +3054,8 @@ export default function MessageThread({
             if (!message.senderID.startsWith("nostr_")) {
               getMeshService()?.forgetPeer(message.senderID);
             }
+            // Their DM card would otherwise sit in the tray, offering Reply.
+            void dismissNotificationsFor(`dm:${message.senderID}`);
           },
         },
       ],

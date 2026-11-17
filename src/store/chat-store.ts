@@ -1311,6 +1311,19 @@ export const useChatStore = create<ChatState>()(
   ),
 );
 
+// Settle the sends a dead process left behind, once per JS runtime, by
+// whichever comes first: the app's first mount, or a boot start running the
+// mesh headless. Module scope, not component state: an Android Activity
+// recreated under a live runtime remounts the app while its sends are still
+// running, and settling then would fail rows this runtime is carrying.
+let staleSendsSettled = false;
+
+export function settleStaleSendsOnce(): void {
+  if (staleSendsSettled) return;
+  staleSendsSettled = true;
+  useChatStore.getState().failStaleSending(0);
+}
+
 // A location-channel message arrives over BLE and Nostr; only the first counts.
 export function hasStoredMessage(channel: string, id: string): boolean {
   return (

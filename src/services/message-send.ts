@@ -16,7 +16,8 @@ export type SendNotice =
 export interface TransmitCallbacks {
   // A hint about how the send went, given only while it is still news.
   notice?: (notice: SendNotice) => void;
-  // The row ended "failed", now or when a relay later refused it.
+  // The row ended "failed": now, or for a channel post when a relay later
+  // refused it. A DM the outbox gives up on later fails in its thread only.
   failed?: () => void;
 }
 
@@ -82,11 +83,10 @@ export function transmitMessage(
     } else if (sent.meshLinks > 0) {
       setStatus(msgChannel, msg.id, "sent");
     } else {
-      // Sealed but nobody in range. NOT a failure: the packet is now a gossip
-      // candidate for six hours, so the first member to come into range
-      // and ask for a sync gets it. "queued" is exactly that, and it is the
-      // common case for a group, whose members are specific people who are
-      // usually not all nearby. Marking it failed would paint most group
+      // Sealed but nobody in range. NOT a failure: the packet stays a gossip
+      // candidate for six hours, so the first member to come into range and
+      // ask for a sync gets it. That is the common case for a group, whose
+      // members are rarely all nearby, so failing it would paint most group
       // messages red for something that is about to work.
       setStatus(msgChannel, msg.id, "queued");
       notice("group-queued");
@@ -127,9 +127,7 @@ export function transmitMessage(
       } else {
         // A public mesh room's audience IS whoever is in range, and the packet
         // stays a gossip candidate for six hours, so the next neighbor to
-        // turn up gets it. Same reasoning as the group branch above: this is
-        // waiting, not broken, and painting it red would be the harsher of
-        // two lies.
+        // turn up gets it: waiting, not broken, as in the group branch above.
         setStatus(msgChannel, msg.id, "queued");
         if (announce) notice("no-reach");
       }

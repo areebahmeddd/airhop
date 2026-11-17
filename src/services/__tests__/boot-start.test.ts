@@ -22,6 +22,7 @@ const mockStartReachability = jest.fn();
 const mockStartNotice = jest.fn();
 const mockSweepMedia = jest.fn();
 const mockApplyStartupPresence = jest.fn();
+const mockSettleStaleSends = jest.fn();
 let mockWipePending = false;
 let mockMoveMarker: string | null = null;
 let mockSettings = { autoStartOnBoot: true, backgroundMeshEnabled: true };
@@ -55,6 +56,9 @@ jest.mock("@services/tor-routing", () => ({
   primeTorRoutingOnStartup: () => mockPrimeTor(),
   notifyTorAppForeground: (foreground: boolean) =>
     mockNotifyTorForeground(foreground),
+}));
+jest.mock("@store/chat-store", () => ({
+  settleStaleSendsOnce: () => mockSettleStaleSends(),
 }));
 jest.mock("@store/settings-store", () => ({
   useSettingsStore: { getState: () => mockSettings },
@@ -151,6 +155,17 @@ describe("bootStartMesh", () => {
     });
   });
 
+  // Settled here, before anything is sent, so the app's first mount later
+  // does not fail what this headless run is still carrying.
+  test("settles the last process's sends before the mesh starts", async () => {
+    mockSettleStaleSends.mockImplementation(() => {
+      expect(mockInitMeshService).not.toHaveBeenCalled();
+    });
+    await runBoot();
+    expect(mockSettleStaleSends).toHaveBeenCalledTimes(1);
+    expect(mockInitMeshService).toHaveBeenCalledTimes(1);
+  });
+
   // No screen exists, so the mesh and Tor start at off-screen power rather
   // than the on-screen defaults a later foreground raises them to.
   test("starts the radios and Tor at background power", async () => {
@@ -175,7 +190,7 @@ describe("bootStartMesh", () => {
     );
   });
 
-  test("an unfinished panic wipe keeps the identity down, keychain unread", async () => {
+  test("starts nothing, keychain unread, while a panic wipe is unfinished", async () => {
     mockWipePending = true;
 
     await runBoot();

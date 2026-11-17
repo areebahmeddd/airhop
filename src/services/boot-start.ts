@@ -15,6 +15,7 @@ import {
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
 } from "@services/tor-routing";
+import { settleStaleSendsOnce } from "@store/chat-store";
 import { useSettingsStore } from "@store/settings-store";
 import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
@@ -64,6 +65,9 @@ async function bootStartMesh(): Promise<void> {
   } catch {
     // Tor is a preference, not a prerequisite.
   }
+  // Before the mesh carries anything, so the app's first mount later does not
+  // fail what this headless run is still sending.
+  settleStaleSendsOnce();
   const nickname = peerIDToUsername(identity.peerID);
   initMeshService(identity, nickname);
   applyStartupPresence();

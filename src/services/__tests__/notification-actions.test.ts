@@ -38,6 +38,7 @@ jest.mock("../notification-service", () => ({
     mockReplyCard(channel, outcome),
 }));
 
+import { useBlockedStore } from "@store/blocked-store";
 import { useChatStore, type ChatMessage } from "@store/chat-store";
 import { useGroupStore } from "@store/group-store";
 import { useSettingsStore } from "@store/settings-store";
@@ -66,6 +67,7 @@ beforeEach(() => {
     appLockEnabled: false,
   });
   useGroupStore.setState({ groups: [] });
+  useBlockedStore.setState({ blockedPeerIDs: [], blockedAliases: {} });
 });
 
 describe("Reply", () => {
@@ -162,6 +164,32 @@ describe("Reply", () => {
     expect(rows(channel)[0].status).toBe("sent");
   });
 
+  // Blocking from a room bubble leaves the DM thread, and its card, behind.
+  test("does not answer a peer blocked since the card was posted", () => {
+    useBlockedStore.getState().blockPeer(PEER);
+
+    act({ kind: "reply", channel: DM, text: "hi" });
+    act({ kind: "read", channel: DM });
+
+    expect(mockSendDm).not.toHaveBeenCalled();
+    expect(mockReceipts).not.toHaveBeenCalled();
+    expect(rows(DM)).toEqual([]);
+    expect(mockReplyCard).toHaveBeenCalledWith(DM, "failed");
+  });
+
+  // A room sender blocked by their Nostr key whose DM thread has since been
+  // folded into a peer the block does not name.
+  test("does not answer a card whose own sender is blocked, whatever it folds into", () => {
+    const alias = "nostr_" + "ab".repeat(32);
+    useChatStore.setState({ channelRedirects: { [`dm:${alias}`]: DM } });
+    useBlockedStore.getState().blockPeer(alias);
+
+    act({ kind: "reply", channel: `dm:${alias}`, text: "hi" });
+
+    expect(mockSendDm).not.toHaveBeenCalled();
+    expect(rows(DM)).toEqual([]);
+  });
+
   // Nobody is watching the thread turn red, so the card says it instead.
   test("says once when a private channel reply reaches nobody", () => {
     const channel = "#secret";
@@ -173,19 +201,19 @@ describe("Reply", () => {
     expect(mockReplyCard).toHaveBeenCalledTimes(1);
     expect(mockReplyCard).toHaveBeenCalledWith(channel, "failed");
   });
-});
 
-// Stamped when it goes, as its wire copy is, so a thread cleared in between
-// cannot swallow it.
-test("a held reply is stamped when it is sent", () => {
-  const before = Date.now();
-  handleQuickAction({
-    kind: "reply",
-    channel: DM,
-    text: "hi",
-    atMs: before - 60_000,
+  // Stamped when it goes, as its wire copy is, so a thread cleared in between
+  // cannot swallow it.
+  test("stamps a held reply when it is sent", () => {
+    const before = Date.now();
+    handleQuickAction({
+      kind: "reply",
+      channel: DM,
+      text: "hi",
+      atMs: before - 60_000,
+    });
+    expect(rows(DM)[0].timestampMs).toBeGreaterThanOrEqual(before);
   });
-  expect(rows(DM)[0].timestampMs).toBeGreaterThanOrEqual(before);
 });
 
 describe("Mark as read", () => {
