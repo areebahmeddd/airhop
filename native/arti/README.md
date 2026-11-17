@@ -85,6 +85,8 @@ Run the container build twice from clean and confirm `SHA256SUMS.android` does n
 
 **A cryptographic provider is chosen here.** rustls needs one and arti does not pick: `tor-rtcompat` takes rustls with no provider feature and requires the application to install one, or rustls panics inside `TorClient::builder`. `ring` rather than the `aws-lc-rs` upstream prefers, because aws-lc-rs needs cmake and libclang inside the container for three Android ABIs and two Apple slices, while ring builds with the NDK clang and is already in the graph under `rustls-webpki`. The hybrid post-quantum handshake aws-lc-rs would add is tracked separately. Both the cargo feature and an explicit `install_default` are set, because feature unification is something a later dependency change can undo silently.
 
+**`libc` is held at 0.2.189 in `Cargo.lock`.** `tor-memquota` needs `sysinfo` 0.38, whose Apple process code calls `proc_pidinfo`, which `libc` 0.2.191 declares for macOS only, so the iOS slices fail to compile. A `cargo update` that raises `libc` has to wait for a `sysinfo` that builds for iOS against it.
+
 **Panics are caught, not aborted.** Unwinding across an FFI boundary is undefined behavior, so every entry point runs inside `catch_panic`, which returns `AIRHOP_TOR_ERR_PANIC` and puts the message in the status summary. Aborting is the simpler way to be sound and the wrong trade: it takes the Bluetooth mesh, the wallet and the courier store with it, none of which depend on Tor.
 
 **The listener binds before bootstrap.** `start` returns only once the port is accepting, so a caller that gets `AIRHOP_TOR_OK` may dial immediately. This is also why neither platform needs to probe the port to find out whether it is up.
