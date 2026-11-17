@@ -23,7 +23,7 @@ import {
   type LiveVideoQualityName,
 } from "@core/mesh/video/live-video-quality";
 import { t, useT, type TranslationKey } from "@i18n";
-import { acknowledged, held } from "@platform/haptics";
+import { acknowledged } from "@platform/haptics";
 import {
   Feather,
   type FeatherIconName,
@@ -220,7 +220,6 @@ export default function LiveVideoStudio({
   const goLive = useCallback(async (): Promise<void> => {
     const mesh = getMeshService();
     if (mesh === null || phaseRef.current !== "preview") return;
-    held();
     setPhaseBoth("starting");
     const session = await mesh.startLiveVideo(
       channel,
@@ -245,6 +244,8 @@ export default function LiveVideoStudio({
     }
     sessionRef.current = session;
     setLiveWithSound(session.summary().withSound);
+    // Felt once, when the stream is actually on air, not on the tap: starting
+    // can take a moment, and the user is facing the camera.
     acknowledged();
     setPhaseBoth("live");
     // Sent to the background while starting, which the AppState listener
