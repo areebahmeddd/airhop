@@ -26,12 +26,13 @@
 //   carried over from a network this phone has since left, whose private
 //   range the new one may reuse.
 //
-// A new address is first dialed MDNS_FIRST_MS after it arrives: endpoints are
-// traded the moment the listener comes up, when mDNS has not yet found
-// anyone, and on a network that lets mDNS through its link would land beside
-// this one and take a second of the eight slots for the same pair. An mDNS
-// link that lands anyway, after a slow resolve, replaces the dialed one: the
-// dialer closes its own, so only one side acts.
+// A new address is first dialed at the first review past MDNS_FIRST_MS after
+// it arrives (20 to 35 s): endpoints are traded the moment the listener comes
+// up, when mDNS has not yet found anyone, and on a network that lets mDNS
+// through its link would land beside this one and take a second of the eight
+// slots for the same pair. An mDNS link that lands anyway, after a slow
+// resolve, replaces the dialed one: the dialer closes its own, so only one
+// side acts.
 
 import type { LanEndpoint } from "@core/mesh/wire/lan-endpoint-payload";
 import type { LocalSubnet } from "@core/move/local-subnet";
@@ -237,7 +238,7 @@ export class LanDirectDial {
 
   private connectBudgetLeft(now: number): boolean {
     this.recentDials = this.recentDials.filter(
-      (at) => now - at < DIAL_RETRY_MS,
+      (at) => at <= now && now - at < DIAL_RETRY_MS,
     );
     return this.recentDials.length < MAX_LAN_LINKS;
   }
@@ -264,12 +265,16 @@ export class LanDirectDial {
     ) {
       return;
     }
+    // A clock moved back counts as time passed, not as hours left to wait.
     const now = this.now();
-    if (now - held.heldSince < (this.deps.mdnsFirstMs ?? MDNS_FIRST_MS)) {
+    const heldFor = now - held.heldSince;
+    if (heldFor >= 0 && heldFor < (this.deps.mdnsFirstMs ?? MDNS_FIRST_MS)) {
       return;
     }
     const last = this.lastDialAt.get(peerID);
-    if (last !== undefined && now - last < DIAL_RETRY_MS) return;
+    if (last !== undefined && now >= last && now - last < DIAL_RETRY_MS) {
+      return;
+    }
     if (!this.connectBudgetLeft(now)) return;
     this.lastDialAt.delete(peerID);
     this.lastDialAt.set(peerID, now);

@@ -769,7 +769,9 @@ export class BridgeService {
     if (!this.enabled || client === null || this.activeCell === null) return;
     if (!this.foreground || !this.hooks.relaysConnected()) return;
     const now = Date.now();
-    if (now - this.lastPresenceAtMs < PRESENCE_MIN_INTERVAL_MS) return;
+    // A clock moved back counts as due, not as hours of looking absent.
+    const since = now - this.lastPresenceAtMs;
+    if (since >= 0 && since < PRESENCE_MIN_INTERVAL_MS) return;
     this.lastPresenceAtMs = now;
     const identity = this.identityFor(this.activeCell);
     const event = createBridgePresenceEvent(this.activeCell, identity.privKey);

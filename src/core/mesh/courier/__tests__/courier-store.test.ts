@@ -4,7 +4,8 @@
 // Recipient tags decide who a stored envelope is offered to. A tag has to be
 // stable for a day so a courier can match it repeatedly, and unlinkable across
 // days so the same recipient cannot be tracked over time. Those two pull
-// against each other, and both are asserted here.
+// against each other: stability within a day is asserted here, rotation across
+// days against the published vectors in courier-vectors.test.ts.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { getStorage } from "@store/mmkv";
@@ -347,6 +348,21 @@ describe("CourierStore remote handover", () => {
     expect(store.offerRemoteHandover([tag], t0 + 10 * 60_000)).toHaveLength(1);
     // A handover over their own link is not held back by it.
     expect(store.offerHandover([tag])).toHaveLength(1);
+  });
+
+  test("a clock moved back does not hold the mail", () => {
+    const store = freshStore();
+    const tag = new Uint8Array(16).fill(0x49);
+    store.deposit(
+      makeEnvelopePayload(tag, 4),
+      makeNoiseKeypair().pub,
+      "verified",
+    );
+    const t0 = Date.now();
+    store.offerRemoteHandover([tag], t0);
+    expect(store.offerRemoteHandover([tag], t0 - 2 * 60 * 60_000)).toHaveLength(
+      1,
+    );
   });
 
   test("the cooldown survives a restart", () => {

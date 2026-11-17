@@ -497,8 +497,10 @@ export class CourierStore {
     const offered: SealedEnvelope[] = [];
     for (const e of this.envelopes) {
       if (!tags.some((t) => sameBytes(e.recipientTag, t))) continue;
+      // A clock moved back counts as cooled down, not as hours left to wait.
       if (
         e.lastRemoteHandoverAt !== undefined &&
+        now >= e.lastRemoteHandoverAt &&
         now - e.lastRemoteHandoverAt < REMOTE_HANDOVER_COOLDOWN_MS
       ) {
         continue;

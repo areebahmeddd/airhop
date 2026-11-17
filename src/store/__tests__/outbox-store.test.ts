@@ -269,6 +269,14 @@ describe("relay resend pacing", () => {
     expect(nostrResendDue(msg, now + ATTEMPT_MIN_INTERVAL_MS)).toBe(true);
   });
 
+  it("is due when the clock has moved back past the last copy", () => {
+    const now = Date.now();
+    enqueue("m1", PEER_A, now);
+    state().markNostrSent("m1", now);
+    const msg = state().forPeer(PEER_A)[0];
+    expect(nostrResendDue(msg, now - 60 * 60_000)).toBe(true);
+  });
+
   it("waits a day after a copy a relay accepted", () => {
     const now = Date.now();
     enqueue("m1", PEER_A, now);

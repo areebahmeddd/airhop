@@ -17,6 +17,13 @@ describe("SlidingWindowLimiter", () => {
     expect(l.tryAcquire("b", 1001)).toBe(true);
   });
 
+  test("a clock moved back does not hold a key closed", () => {
+    const l = new SlidingWindowLimiter(1, 1000);
+    expect(l.tryAcquire("a", 10_000)).toBe(true);
+    expect(l.tryAcquire("a", 10_500)).toBe(false);
+    expect(l.tryAcquire("a", 2_000)).toBe(true);
+  });
+
   test("allows records nothing", () => {
     const l = new SlidingWindowLimiter(1, 1000);
     expect(l.allows("a", 0)).toBe(true);

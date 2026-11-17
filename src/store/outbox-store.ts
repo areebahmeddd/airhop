@@ -67,7 +67,9 @@ export function nostrResendDue(msg: PendingMessage, nowMs: number): boolean {
     msg.relayAccepted === true
       ? NOSTR_REPUBLISH_INTERVAL_MS
       : ATTEMPT_MIN_INTERVAL_MS;
-  return nowMs - msg.nostrSentMs >= wait;
+  // A clock moved back counts as due, not as a day of waiting.
+  const elapsed = nowMs - msg.nostrSentMs;
+  return elapsed < 0 || elapsed >= wait;
 }
 
 // The messages whose only way to arrive is this outbox: no relay accepted a

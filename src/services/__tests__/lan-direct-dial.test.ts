@@ -105,6 +105,45 @@ describe("who dials", () => {
     h.dial.dispose();
   });
 
+  test("a clock moved back does not hold off the next dial", async () => {
+    const h = harness();
+    h.dial.setListening(true);
+    h.dial.offer(PEER, ENDPOINT);
+    await settle();
+    expect(h.connects).toHaveLength(1);
+    // The link never proves itself, so it closes and the peer is due again.
+    await settle(15_000);
+    jest.setSystemTime(Date.now() - 2 * 60 * 60_000);
+    await settle(60_000);
+    expect(h.connects.length).toBeGreaterThan(1);
+    h.dial.dispose();
+  });
+
+  // The budget across peers too: dials stamped before the clock went back
+  // must not hold every new peer off until it catches up.
+  test("a clock moved back does not use up the connect budget", async () => {
+    const h = harness();
+    h.dial.setListening(true);
+    for (let i = 0; i < MAX_LAN_LINKS; i++) {
+      h.dial.offer(`20000000000000${String(10 + i)}`, {
+        port: 40_123,
+        hosts: [`192.168.1.${String(30 + i)}`],
+      });
+    }
+    await settle();
+    expect(h.connects).toHaveLength(MAX_LAN_LINKS);
+    // The links never prove themselves, so they close and free their slots.
+    await settle(15_000);
+    jest.setSystemTime(Date.now() - 2 * 60 * 60_000);
+    h.dial.offer("2000000000000099", {
+      port: 40_123,
+      hosts: ["192.168.1.99"],
+    });
+    await settle();
+    expect(h.connects.map((c) => c.host)).toContain("192.168.1.99");
+    h.dial.dispose();
+  });
+
   // Peers on another subnet, or gone without a goodbye, must not use up the
   // dials a reachable one needs.
   test("addresses that never answer cannot starve one that would", async () => {
@@ -386,28 +425,20 @@ describe("lifecycle", () => {
   });
 
   test("a peer that leaves and comes back keeps its rate", async () => {
-    const h = harness({ connect: () => Promise.reject(new Error("refused")) });
     let calls = 0;
-    const dial = new LanDirectDial({
-      selfPeerID: () => SELF,
-      isLinked: () => false,
-      linkCount: () => 0,
-      localSubnets: () => Promise.resolve(HOME),
+    const h = harness({
       connect: () => {
         calls++;
         return Promise.reject(new Error("refused"));
       },
-      close: () => undefined,
-      mdnsFirstMs: 0,
     });
-    dial.setListening(true);
-    dial.offer(PEER, ENDPOINT);
+    h.dial.setListening(true);
+    h.dial.offer(PEER, ENDPOINT);
     await settle(1_000);
-    dial.forget(PEER);
-    dial.offer(PEER, { port: 2, hosts: ["192.168.1.40"] });
+    h.dial.forget(PEER);
+    h.dial.offer(PEER, { port: 2, hosts: ["192.168.1.40"] });
     await settle(1_000);
     expect(calls).toBe(1);
-    dial.dispose();
     h.dial.dispose();
   });
 

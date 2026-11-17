@@ -44,9 +44,11 @@ export class SlidingWindowLimiter {
     return this.hits.size;
   }
 
+  // A hit stamped after `now` is from before a clock moved back, and counting
+  // it would hold the key closed until the clock caught up.
   private recent(key: string, now: number): number[] {
     const cutoff = now - this.windowMs;
-    return (this.hits.get(key) ?? []).filter((t) => t > cutoff);
+    return (this.hits.get(key) ?? []).filter((t) => t > cutoff && t <= now);
   }
 
   // Drop keys with no hit left in the window. Every check calls it, but it
@@ -54,7 +56,8 @@ export class SlidingWindowLimiter {
   // saw. A caller with a tick of its own calls it too, so keys stop
   // accumulating when nobody asks.
   prune(now: number): void {
-    if (now - this.lastSweep < this.windowMs) return;
+    const since = now - this.lastSweep;
+    if (since >= 0 && since < this.windowMs) return;
     this.lastSweep = now;
     const cutoff = now - this.windowMs;
     for (const [key, times] of this.hits) {
