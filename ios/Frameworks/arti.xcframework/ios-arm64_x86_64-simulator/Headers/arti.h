@@ -104,10 +104,10 @@ extern "C" {
  * reaching the network through `bridge_lines` when any are given.
  *
  * `bridge_lines` is a newline-separated list in standard Tor format; empty or
- * null is a direct connection to a public relay. `obfs4_port` and
- * `snowflake_port` are where the app already has each transport listening on
- * loopback, or `0` when it does not, and a line naming a transport whose port
- * is `0` is refused rather than started without it.
+ * null is a direct connection to a public relay. `obfs4_port`,
+ * `snowflake_port` and `webtunnel_port` are where the app already has each
+ * transport listening on loopback, or `0` when it does not, and a line naming
+ * a transport whose port is `0` is refused rather than started without it.
  *
  * Returns `0` once the listener is accepting, which is before the first
  * circuit exists. Any other value is one of the `AIRHOP_TOR_ERR_*` codes. A bad
@@ -118,7 +118,7 @@ extern "C" {
  * `data_dir` must be a non-null, NUL-terminated C string, and `bridge_lines`
  * either null or the same. Both must stay valid for the duration of the call.
  */
-int airhop_tor_start(const char *data_dir, uint16_t socks_port, const char *bridge_lines, uint16_t obfs4_port, uint16_t snowflake_port);
+int airhop_tor_start(const char *data_dir, uint16_t socks_port, const char *bridge_lines, uint16_t obfs4_port, uint16_t snowflake_port, uint16_t webtunnel_port);
 
 /**
  * Stop Tor, drop its client and release the port. Returns `0`, or
