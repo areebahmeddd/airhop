@@ -2,6 +2,7 @@
 // never throws (so trial-decryption is safe), the content round-trips exactly,
 // and every member derives the same unlinkable Nostr identity from the key.
 
+import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   deriveChannelNostrIdentity,
   generateChannelKey,
@@ -85,6 +86,22 @@ describe("channel Nostr identity", () => {
     const b = deriveChannelNostrIdentity(key);
     expect(a?.pubKeyHex).toBe(b?.pubKeyHex);
     expect(a?.pubKeyHex).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  // Computed outside this code (HMAC-SHA256 of "airhop-channel-nostr-v1" and
+  // a zero counter under the key, then secp256k1): a change to the derivation
+  // would put two app versions in different Nostr rooms for the same channel.
+  it("derives the pinned keypair for a known key", () => {
+    // Bytes 0x00 to 0x1f.
+    const id = deriveChannelNostrIdentity(
+      "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+    );
+    expect(id?.pubKeyHex).toBe(
+      "637f475e76d700c6147ac3796b06a4f1230911704c74a039ecfc2e854660dc22",
+    );
+    expect(bytesToHex(id?.privKey ?? new Uint8Array())).toBe(
+      "12de481ecb4e90e60bc4244990c946fe208de55f3bcd92a5b2feb393e16e4af8",
+    );
   });
 
   it("differs per channel key", () => {
