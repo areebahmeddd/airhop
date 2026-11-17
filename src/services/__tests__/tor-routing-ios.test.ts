@@ -8,8 +8,9 @@
 // The gap these cover: `enableTorRouting` awaits `awaitTorReady` before it
 // claims anything, so a user toggling Tor on gets an honest answer. But
 // `primeTorRoutingOnStartup` cannot wait, since it runs before the mesh exists.
-// It routes the relay socket through Tor and lets Arti bootstrap behind it, and the claim
-// rises only when the status feed or a foreground revalidation reports ready.
+// It routes the relay socket through Tor and lets Arti bootstrap behind it, and
+// the claim rises only when the status feed or a foreground revalidation
+// reports ready.
 //
 // Every relay socket goes through Arti's SOCKS, so a bootstrap that has not
 // finished means relays fail rather than falling back to clear net. A banner
@@ -262,7 +263,6 @@ describe("enabling Tor on iOS", () => {
   // on the Tor socket, never open on the direct one.
   it("keeps the Tor route through a bridge change", async () => {
     await setTorRouting(true);
-    mockTorEnabled = true;
     let viaTorWhileStopped: boolean | null = null;
     mockStopTor.mockImplementationOnce(async () => {
       viaTorWhileStopped = nextSocketViaTor();

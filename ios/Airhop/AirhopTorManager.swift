@@ -5,8 +5,8 @@
 //
 // Binary dependency: ios/Frameworks/arti.xcframework, built by
 // native/arti/build-apple.sh from native/arti/src. The header beside the
-// library is generated from src/ffi_c.rs, so the declarations below and the Rust
-// they bind to cannot drift without the build saying so.
+// library is generated from src/ffi_c.rs, but the declarations below bind by
+// symbol name, so a change there needs them changed and the slices rebuilt.
 
 import Foundation
 import OSLog

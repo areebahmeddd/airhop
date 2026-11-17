@@ -543,6 +543,39 @@ describe("surviving a Tor client that kills the process", () => {
 
     expect(mockTorStartPending).toBe(false);
   });
+
+  // The first start answers after the internet went off and on and a second
+  // start began: the marker is the second start's until it answers.
+  test("an older start answering late leaves a newer start's marker", async () => {
+    mockTorEnabled = true;
+    let finishFirst: () => void = () => {};
+    let finishSecond: () => void = () => {};
+    mockStartTor.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finishFirst = resolve;
+      }),
+    );
+    mockStartTor.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finishSecond = resolve;
+      }),
+    );
+    primeTorRoutingOnStartup();
+    applyInternetAvailability(false);
+    applyInternetAvailability(true);
+    expect(mockStartTor).toHaveBeenCalledTimes(2);
+
+    finishFirst();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockTorStartPending).toBe(true);
+
+    // The newer start clears its own.
+    finishSecond();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockTorStartPending).toBe(false);
+  });
 });
 
 describe("startup priming on Android", () => {
@@ -608,6 +641,69 @@ describe("startup priming on Android", () => {
 
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
     expect(useMeshStateStore.getState().torActive).toBe(false);
+  });
+
+  // Turned off while the start was running: Tor is already idle, and a
+  // "blocked" written now would stay with nothing left to clear it.
+  test("a start refused after Tor was turned off reports nothing", async () => {
+    mockTorEnabled = true;
+    let refuse: (err: Error) => void = () => {};
+    mockStartTor.mockReturnValue(
+      new Promise<void>((_, reject) => {
+        refuse = reject;
+      }),
+    );
+    primeTorRoutingOnStartup();
+    mockTorEnabled = false;
+
+    refuse(new Error("port busy"));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
+  });
+
+  // The internet switch already stopped Arti and set the state, so a "blocked"
+  // written now would contradict a switch the user turned off on purpose.
+  test("a start refused after the internet was switched off reports nothing", async () => {
+    mockTorEnabled = true;
+    let refuse: (err: Error) => void = () => {};
+    mockStartTor.mockReturnValue(
+      new Promise<void>((_, reject) => {
+        refuse = reject;
+      }),
+    );
+    primeTorRoutingOnStartup();
+    mockInternetEnabled = false;
+
+    refuse(new Error("port busy"));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
+  });
+
+  // An older start refused while a newer one is still running: the newer one
+  // reports for itself.
+  test("an older start refused while a newer one runs reports nothing", async () => {
+    mockTorEnabled = true;
+    let refuseFirst: (err: Error) => void = () => {};
+    mockStartTor.mockReturnValueOnce(
+      new Promise<void>((_, reject) => {
+        refuseFirst = reject;
+      }),
+    );
+    mockStartTor.mockReturnValueOnce(new Promise(() => {}));
+    primeTorRoutingOnStartup();
+    applyInternetAvailability(false);
+    applyInternetAvailability(true);
+    expect(mockStartTor).toHaveBeenCalledTimes(2);
+
+    refuseFirst(new Error("port busy"));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
   });
 
   test("holds the relay pool until Arti reports it is ready", () => {
@@ -962,6 +1058,24 @@ describe("bridge modes", () => {
     // same way) rather than offering a Try again for a crash.
     expect(mockTorStartPending).toBe(false);
     mockRestartNostr.mockReset();
+  });
+
+  // The user backs out of a bridge change and turns Tor off while the new
+  // start runs, and then it is refused (every WebTunnel line on a stale iPhone
+  // build is): Tor off already set the state, so no hold may follow it.
+  test("a restart refused after Tor was turned off holds nothing", async () => {
+    await setTorRouting(true);
+    mockStartTor.mockImplementation(async () => {
+      mockTorEnabled = false;
+      throw new Error("bridge line");
+    });
+    mockHoldRoute.mockClear();
+    mockSetTorBootstrap.mockClear();
+
+    await setTorBridgeMode("custom", "webtunnel 192.0.2.1:443 url=https://x");
+
+    expect(mockHoldRoute).not.toHaveBeenCalled();
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
   });
 
   // The preference is what the iOS mint gate and every other Tor claim read.
