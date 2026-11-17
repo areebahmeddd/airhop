@@ -15,6 +15,7 @@
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\hx}[1]{\texttt{0x#1}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setlength{\IEEEiedtopsep}{2pt}
 
 \tikzset{
   >={Stealth[length=4pt]},
@@ -34,13 +35,13 @@
 
 \author{\IEEEauthorblockN{Areeb Ahmed Shariff}
 \IEEEauthorblockA{Bengaluru, India\\
-areebahmed0709@gmail.com\\[4pt]
+areebshariff@acm.org\\[4pt]
 Version 1.0, December 2026}}
 
 \maketitle
 
 \begin{abstract}
-Airhop phones form an offline, end-to-end encrypted messaging mesh over Bluetooth Low Energy (BLE), but the mesh reaches only as far as phones are close together and present. Airlink is firmware that turns an ESP32-S3 or ESP32-C6 board into a fixed relay node in that mesh. The node forwards every packet unchanged under the phones' own rules and cannot read what it carries. It keeps recent public history for phones that return, holds sealed mail for phones that are away, and, with an SX1262 radio, links to nodes kilometers away over a LoRa trunk. This paper describes how the node does this within a microcontroller's limits. Every table is sized once at boot, and every costly operation (signature checks, decompression, flash writes, airtime) is charged to a budget per link or per hour, so on a board without external RAM the node's tables take 119 to 124~KiB. The trunk authenticates every frame between each pair of nodes without spending airtime on a handshake, sends one transfer to several neighbors, and keeps each region's duty limit through resets and power cuts with a ledger charged before every emission. Nodes update each other with owner-signed images under a rollback trial. We give a threat model and the mechanism that answers each attack. Validation so far is on a host: unit tests and multi-node simulations under sanitizers, interoperability vectors from independent sources, fuzzing, and size gates for every supported board. No board has yet run Airlink with phones; the field-test plan is given as the evaluation that follows.
+Airhop phones form an offline, end-to-end encrypted messaging mesh over Bluetooth Low Energy (BLE), but the mesh reaches only as far as phones are close together and present. Airlink is firmware that turns an ESP32-S3 or ESP32-C6 board into a fixed relay node in that mesh. The node forwards every packet unchanged under the phones' own rules and cannot read what it carries. It keeps recent public history for phones that return, holds sealed mail for phones that are away, and, with an SX1262 radio, links to nodes kilometers away over a LoRa trunk. To fit a microcontroller, every table is sized once at boot, and every costly operation (signature checks, decompression, flash writes, airtime) is charged to a budget per link or per hour, so on a board without external RAM the node's tables take 119 to 124~KiB. The trunk authenticates every frame between each pair of nodes without spending airtime on a handshake, sends one transfer to several neighbors, and keeps each region's duty limit through resets and power cuts with a ledger charged before every emission. Nodes update each other with owner-signed images under a rollback trial. We describe the design, give a threat model with the mechanism that answers each attack, and report what has been validated on a host: unit tests and multi-node simulations under sanitizers, interoperability vectors from independent sources, fuzzing, and size gates for every supported board. No board has yet run Airlink with phones; we state what that evaluation needs.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -51,13 +52,13 @@ Bluetooth Low Energy, mesh networking, LoRa, duty cycle, embedded systems, delay
 \section{Introduction}
 \label{sec:intro}
 
-Airhop~\cite{airhop} lets phones exchange public and private messages over Bluetooth Low Energy (BLE) with no network operator, no internet connection and no accounts. Each phone relays what it hears, so a message crosses several hops. Airhop's wire format~\cite{airhopspec} is shared with bitchat~\cite{bitchat}, so the same mesh carries both.
+Airhop~\cite{airhop,airhopwp} lets phones exchange public and private messages over Bluetooth Low Energy (BLE) with no network operator, no internet connection and no accounts. Each phone relays what it hears, so a message crosses several hops. Airhop's wire format~\cite{airhopspec} is shared with bitchat~\cite{bitchat}, so the same mesh carries both.
 
 A mesh made only of phones has three weak points. Its reach depends on density: a BLE hop between phones spans tens of meters, so two groups a few hundred meters apart never meet. It depends on presence: a phone that walks away or switches off takes its share of the mesh with it, and a message for a phone that is away has nowhere to wait. And it has no long links: two sites kilometers apart stay separate however many phones each holds.
 
 A fixed node addresses all three. It stays where it is put, it stays on, it can hold messages for phones that come back, and with a long-range radio it can join sites that phones cannot. It also brings problems of its own. It must not change how the mesh behaves. It runs on a microcontroller with a few hundred kilobytes of RAM. It sits unattended, often on a pole or a roof, where anyone can reach it and power can fail at any moment. Its long-range radio shares spectrum under rules that limit power and airtime, and must keep to them through every reset. And a fixed node that announced which phones were near it would tell anyone listening where people are.
 
-Airlink is firmware for such a node. It joins the mesh as a peer: it relays every packet byte for byte, answers gossip sync so returning phones catch up, carries mail for absent phones, and over an SX1262 radio forms a LoRa trunk with other nodes. This paper explains how each of these works inside the node's limits and what each costs.
+Airlink is firmware for such a node. It joins the mesh as a peer: it relays every packet byte for byte, answers gossip sync so returning phones catch up, carries mail for absent phones, and over an SX1262 radio forms a LoRa trunk with other nodes. This paper describes Airlink 1.0.0.
 
 \textbf{Contributions.}
 \begin{enumerate}
@@ -69,7 +70,7 @@ Airlink is firmware for such a node. It joins the mesh as a peer: it relays ever
 
 \textbf{Status.} Airlink 1.0.0 builds for seven boards and passes its host tests, simulations and fuzzers. It has not yet run on a board with phones, so nothing about its radio, timing or power has been measured. Every result here is labeled as host-tested, simulated or computed.
 
-The rest of the paper is organized as follows. Section~\ref{sec:background} gives background, Section~\ref{sec:goals} the goals, constraints and threat model, and Section~\ref{sec:overview} an overview of the node. Section~\ref{sec:design} covers the design one subsystem at a time and Section~\ref{sec:impl} the implementation. Sections~\ref{sec:security} and~\ref{sec:validation} give the security analysis and validation, Section~\ref{sec:related} related work, and Section~\ref{sec:limits} limitations and future work.
+The rest of the paper is organized as follows. Section~\ref{sec:background} gives background, Section~\ref{sec:goals} the goals, constraints and threat model, and Section~\ref{sec:overview} an overview of the node. Section~\ref{sec:design} covers the design one subsystem at a time and Section~\ref{sec:impl} the implementation. Sections~\ref{sec:security} and~\ref{sec:validation} give the security analysis and validation, Section~\ref{sec:related} related work, Sections~\ref{sec:limits} and~\ref{sec:future} limitations and future work, and Section~\ref{sec:conclusion} concludes.
 
 % ===================================================================
 \section{Background}
@@ -78,7 +79,7 @@ The rest of the paper is organized as follows. Section~\ref{sec:background} give
 \subsection{The mesh}
 A packet has a fixed header (version 1 or 2), a type, a time-to-live (TTL), a timestamp, the sender's 8-byte peer ID, an optional recipient ID, a payload that may be compressed with DEFLATE~\cite{rfc1951}, and an Ed25519 signature~\cite{rfc8032}. A peer ID is the first 8 bytes of the SHA-256 hash~\cite{fips180_4} of the device's static X25519 key~\cite{rfc7748}. A device introduces itself with a signed \emph{announce} carrying its nickname and both public keys as type-length-value (TLV) fields. The other packet types this paper mentions are public, location-channel and group messages, board posts (signed public notices), leave, ping and pong, file transfers, live voice and video frames, and prekey bundles.
 
-Packets flood: each device forwards a packet it has not seen with its TTL reduced by one. A packet starts at TTL 7, so one that arrives at 7 came straight from its sender; that is how a device tells a direct neighbor from one heard through others. A device recognizes a repeat by its \emph{packet ID}, a hash over the type, sender, timestamp and decoded payload, so a packet reached by two paths is forwarded once.
+Packets flood: each device forwards a packet it has not seen with its TTL reduced by one. An announce starts at TTL 7, so one that arrives at 7 came straight from its sender; that is how a device tells a direct neighbor from one heard through others. A device recognizes a repeat by its \emph{packet ID}, a hash over the type, sender, timestamp and decoded payload, so a packet reached by two paths is forwarded once.
 
 Private messages travel inside Noise XX sessions~\cite{noise} with ChaCha20-Poly1305~\cite{rfc8439}. Two mechanisms help devices that were away. In \emph{gossip sync}, a device sends a compact summary of what it holds, a Golomb-coded set (GCS)~\cite{putze2007,golomb1966}, and receives the packets it lacks. \emph{Courier envelopes} are sealed messages left with other devices, which carry them until they meet the recipient, in the store-carry-forward style of delay-tolerant networking~\cite{fall2003,rfc4838}. Airhop's specification~\cite{airhopspec} defines all of this byte for byte and reserves packet types \hx{A0} to \hx{A3} and announce TLVs \hx{B0} and \hx{B1} for relay firmware.
 
@@ -185,11 +186,11 @@ Fig.~\ref{fig:arch} shows the node inside. A protocol core in plain C (wire form
   comp/.default=2.2cm]
 \node[draw,fill=black!6,minimum width=8.15cm,minimum height=13.5mm] (core) at (0,0.12) {};
 \node[font=\scriptsize\bfseries,anchor=north,inner sep=1.5pt] at (core.north) {Protocol core: C23, no ESP-IDF, host-tested};
-\node[comp=1.3cm,fill=white,minimum height=7.5mm] at (-3.2,-0.06) {\texttt{ah\_proto}\\[-1pt]{\tiny wire format}};
-\node[comp=1.3cm,fill=white,minimum height=7.5mm] at (-1.6,-0.06) {\texttt{ah\_crypto}\\[-1pt]{\tiny Monocypher}};
-\node[comp=1.3cm,fill=white,minimum height=7.5mm] at (0,-0.06) {\texttt{ah\_noise}\\[-1pt]{\tiny Noise XX}};
-\node[comp=1.3cm,fill=white,minimum height=7.5mm] at (1.6,-0.06) {\texttt{ah\_mesh}\\[-1pt]{\tiny relay, clock, sync, mail}};
-\node[comp=1.3cm,fill=white,minimum height=7.5mm] at (3.2,-0.06) {\texttt{lora/core}\\[-1pt]{\tiny trunk, regions}};
+\node[comp=1.38cm,fill=white,minimum height=7.5mm] at (-3.2,-0.06) {\texttt{ah\_proto}\\[-1pt]{\tiny wire format}};
+\node[comp=1.38cm,fill=white,minimum height=7.5mm] at (-1.6,-0.06) {\texttt{ah\_crypto}\\[-1pt]{\tiny Monocypher}};
+\node[comp=1.38cm,fill=white,minimum height=7.5mm] at (0,-0.06) {\texttt{ah\_noise}\\[-1pt]{\tiny Noise XX}};
+\node[comp=1.38cm,fill=white,minimum height=7.5mm] at (1.6,-0.06) {\texttt{ah\_mesh}\\[-1pt]{\tiny relay, clock, sync, mail}};
+\node[comp=1.38cm,fill=white,minimum height=7.5mm] at (3.2,-0.06) {\texttt{lora/core}\\[-1pt]{\tiny trunk, regions}};
 \node[comp=1.9cm] (ble) at (-2.75,-1.75) {NimBLE host task\\[-1pt]{\tiny GATT server, node dialer}};
 \node[comp=1.9cm,thick] (mesh) at (0,-1.75) {\textbf{mesh} task, prio 5\\[-1pt]{\tiny the only caller of the mesh logic}};
 \node[comp=1.9cm] (lora) at (2.75,-1.75) {\textbf{lora} task, prio 6\\[-1pt]{\tiny trunk, tags, duty ledger}};
@@ -246,7 +247,7 @@ Fig.~\ref{fig:flow} follows one packet through the node. The BLE task copies a p
 \section{Design}
 \label{sec:design}
 
-Each subsection states the problem a part of the node solves, how it works and its key numbers, and closes with the trade-off it makes where one matters. Defaults are for a board with PSRAM. Boards without it run the \emph{compact} set, whose value follows where it differs, as in ``1024 (compact: 256)''.
+Each subsection states the problem a part of the node solves, how it works and its key numbers, and closes with the trade-off it makes where one matters. Defaults are for a board with PSRAM. Boards without it run the \emph{compact} set, whose value follows where it differs, as in ``1,024 (compact: 256)''.
 
 \subsection{Inbound path and relay}
 \label{sec:relay}
@@ -283,14 +284,14 @@ Noise handshake & received TTL $-$ 1 & 10 to 35~ms \\
 \end{tabular}
 \end{table}
 
-\textbf{Fanout and queues.} A relayed copy is the received buffer with only its TTL byte changed, so its signature still verifies everywhere. One pooled buffer serves every link it is queued on. Each link queue serves eight priority levels strictly (announce, handshake, directed, public, a phone's periodic announce on LoRa, live, bulk, sync), oldest first within a level. A live frame still queued after 1.5~s is dropped, since it would arrive too late to play; anything else after 10~s, or 5~minutes on a LoRa link, which waits on its duty budget. One queue holds at most a quarter of the frame buffers, and relays always leave four buffers for the node's own frames, so a stalled link cannot starve the rest.
+\textbf{Fan-out and queues.} A relayed copy is the received buffer with only its TTL byte changed, so its signature still verifies everywhere. One pooled buffer serves every link it is queued on. Each link queue serves eight priority levels strictly (announce, handshake, directed, public, a phone's periodic announce on LoRa, live, bulk, sync), oldest first within a level. A live frame still queued after 1.5~s is dropped, since it would arrive too late to play; anything else after 10~s, or 5~minutes on a LoRa link, which waits on its duty budget. One queue holds at most a quarter of the frame buffers, and relays always leave four buffers for the node's own frames, so a stalled link cannot starve the rest.
 
 \textbf{Trade-off.} The node verifies only what the phones verify before relaying. A broken copy of a live stream that reaches it first is relayed and the genuine one dropped as its duplicate; the phones beyond drop the broken copy and lose one frame, which jamming would achieve more cheaply.
 
 \subsection{Peers, links and time}
 \label{sec:time}
 
-\textbf{Binding.} A link (a BLE connection or a LoRa neighbor) binds once, to the first identity whose signed announce arrives over it directly at TTL 7, and only by an announce newer than any held from that peer, so a replay binds nothing. A LoRa link binds only to the node whose key authenticates its frames, and only to an announce marked as a node. Peers heard through others never evict a peer with a live link. A peer given up for room keeps its signing-key pin in a separate ring, so its ID cannot be claimed under another key until 1024 (compact: 256) more peers have been given up. Links that never bind are dropped after 45~s.
+\textbf{Binding.} A link (a BLE connection or a LoRa neighbor) binds once, to the first identity whose signed announce arrives over it directly at TTL 7, and only by an announce newer than any held from that peer, so a replay binds nothing. A LoRa link binds only to the node whose key authenticates its frames, and only to an announce marked as a node. Peers heard through others never evict a peer with a live link. A peer given up for room keeps its signing-key pin in a separate ring, so its ID cannot be claimed under another key until 1,024 (compact: 256) more peers have been given up. Links that never bind are dropped after 45~s.
 
 \textbf{A clock from the mesh.} The node has no real-time clock, and every phone drops a packet more than 2~minutes off its own time. So the node originates nothing time-checked, its announce included, until it has a time, which it takes only from verified announces that arrived directly. Each source is one \emph{voice}, counted per link and per identity, whichever is fewer, so a phone on two connections, or minting identities on one, is one voice.
 
@@ -320,9 +321,9 @@ Once confirmed, the clock never jumps: it slews toward agreeing voices at most 5
 \subsection{Gossip sync}
 \label{sec:sync}
 
-A returning phone catches up from the node as it would from another phone. The node keeps four stores, one per kind, so no kind crowds out another: announces, public and location-channel messages, group messages, and board posts, sized as in Section~\ref{sec:memory}. Each store is a ring of whole frames, up to a reassembled 64~KiB packet, that never overwrites what it still holds, and keeps each kind for its protocol age: 60~s for announces, 6~h for messages, 7~days for board posts.
+A returning phone catches up from the node as it would from another phone. The node keeps four stores, one per kind, so no kind crowds out another: announces, public and location-channel messages, group messages, and board posts, sized as in Section~\ref{sec:memory}. Each store is a ring of whole frames, up to a reassembled 64~KiB packet, that never overwrites what it still holds, and keeps each kind for its protocol age: 60~s for announces, 6~hours for messages, 7~days for board posts.
 
-Every 15~s, and 1~s after a link binds, the node exchanges signed requests with each linked peer, each carrying a 400-byte GCS filter (Golomb-Rice parameter $P=7$) of what its sender holds, and answers with what the peer's filter lacks; board posts sync every 60~s. A request is answered only at TTL 0, from the link's bound peer, signed, and at most 8 times per 30~s; one past that rate is refused before its signature is checked. Replies are sent at TTL 0 and never relayed. A reply that fails its check against a known key is forgotten, not declined, because the packet ID does not cover the signature and declining it would hide the genuine packet.
+Every 15~s, and 1~s after a link binds, the node exchanges signed requests with each linked peer, each carrying a 400-byte GCS filter (Golomb-Rice parameter $P=7$) of what its sender holds, and answers with what the peer's filter lacks; board posts sync every 60~s. A request is answered only at TTL 0, from the link's bound peer, signed, and at most eight times per 30~s; one past that rate is refused before its signature is checked. Replies are sent at TTL 0 and never relayed. A reply that fails its check against a known key is forgotten, not declined, because the packet ID does not cover the signature and declining it would hide the genuine packet.
 
 \subsection{The courier mailbox}
 \label{sec:mail}
@@ -356,7 +357,7 @@ A phone sending to someone the mesh cannot reach leaves a sealed envelope with n
 \label{fig:mail}
 \end{figure}
 
-\textbf{Deposit and handover.} Fig.~\ref{fig:mail} shows an envelope's life. The node accepts a signed deposit of up to 16~KiB of ciphertext with a lifetime of at most 24~h plus 1~h of slack, and refuses one past either bound rather than clamping it. Mail is bounded per depositor and in total, 4 of 64 envelopes in 256~KiB (compact: 2 of 4 in 8~KiB), and a full mailbox or a depositor at quota refuses, as the phones do. Refusing rather than evicting means a crowd of fresh identities can fill the mailbox but never empty it.
+\textbf{Deposit and handover.} Fig.~\ref{fig:mail} shows an envelope's life. The node accepts a signed deposit of up to 16~KiB of ciphertext with a lifetime of at most 24~hours plus 1~hour of slack, and refuses one past either bound rather than clamping it. Mail is bounded per depositor and in total, 4 of 64 envelopes in 256~KiB (compact: 2 of 4 in 8~KiB), and a full mailbox or a depositor at quota refuses, as the phones do. Refusing rather than evicting means a crowd of fresh identities can fill the mailbox but never empty it.
 
 The node hands mail over only when the recipient announces directly and proves its key in a Noise session on that same link. A session's proof ends with its link, so a device that takes over the link slot and replays the recipient's announce gets nothing. Mail is retired only when every piece of the handover has been written; a piece lost in a queue sends the envelope again after a minute. As the phones do, the node gives half of an envelope's remaining copies to each peer that proves its key, once per peer, as in binary spray and wait~\cite{spyropoulos2005}. It writes the reduced count back so a reboot never mints copies, and floods toward a recipient heard only through relays at most every 10~minutes.
 
@@ -376,7 +377,7 @@ The trunk carries traffic between nodes kilometers apart at about 1~kbit/s, unde
 \begin{figure*}[t]
 \centering
 \begin{tikzpicture}[node distance=3mm,font=\scriptsize]
-\node[box,text width=1.45cm] (fan) {Mesh fanout to a LoRa link};
+\node[box,text width=1.45cm] (fan) {Mesh fan-out to a LoRa link};
 \node[box,right=of fan,text width=2.3cm] (adm) {Admission: text classes; token bucket 4, +1/15~s; announce ahead within 45~s};
 \node[box,right=of adm,text width=1.75cm] (q) {Per-neighbor queue: $\le$4 packets, strict priority};
 \node[box,right=of q,text width=1.9cm] (tx) {Transfer: copies join within 20~ms; $\le$7 destinations, $\le$3 pieces};
@@ -428,7 +429,7 @@ A beacon (47 bytes plus 8 per tagged neighbor) goes 2 to 12~s after boot and the
 \centering
 \scriptsize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}L{0.5cm}L{1.2cm}L{0.95cm}L{1.75cm}L{1.25cm}L{1.2cm}@{}}
+\begin{tabular}{@{}L{0.5cm}L{1.35cm}L{0.95cm}L{1.6cm}L{1.25cm}L{1.2cm}@{}}
 \toprule
 Code & Channel & SF, BW & Power limit & Duty per hour & Rule \\
 \midrule
@@ -446,15 +447,16 @@ Code & Channel & SF, BW & Power limit & Duty per hour & Rule \\
 \label{tab:airtime}
 \centering
 \scriptsize
+\setlength{\tabcolsep}{5pt}
 \begin{tabular}{@{}lrrrl@{}}
 \toprule
 Frame & SF10, 125~kHz & SF12, 500~kHz & SF9, 125~kHz & Example \\
 \midrule
 28~B & 412~ms & 371~ms & 227~ms & acknowledgment \\
 55~B & 658~ms & 576~ms & 350~ms & beacon, one tag \\
-128~B & 1231~ms & 1067~ms & 677~ms & short public message \\
-200~B & 1846~ms & 1559~ms & 1005~ms & signed announce \\
-255~B & 2296~ms & 1928~ms & 1251~ms & largest frame \\
+128~B & 1,231~ms & 1,067~ms & 677~ms & short public message \\
+200~B & 1,846~ms & 1,559~ms & 1,005~ms & signed announce \\
+255~B & 2,296~ms & 1,928~ms & 1,251~ms & largest frame \\
 \midrule
 \multicolumn{5}{@{}l}{Largest frames per hour in the data share: \code{eu} 141, \code{in} 35, \code{sea} 25, \code{us} and \code{anz} 420} \\
 \bottomrule
@@ -463,7 +465,7 @@ Frame & SF10, 125~kHz & SF12, 500~kHz & SF9, 125~kHz & Example \\
 
 \textbf{A worked example.} A phone at site A posts a short public message, and its sender's announce has not crossed the trunk in the last 45~s. In India's profile, the node sends the announce ahead (a 200-byte frame, 1.85~s) and then the message (128 bytes, 1.23~s), 3.08~s of its own airtime; with no loss, the far node spends 0.82~s on two acknowledgments. Against a data share of 81~s an hour, the sender can carry about 26 such first messages an hour, or about 65 that follow within 45~s and need no announce.
 
-\textbf{Trade-off.} The example and Table~\ref{tab:airtime} show why the trunk carries only text: India's 90~s an hour fit 35 full frames of data. Making each LoRa neighbor an ordinary mesh link, with multi-hop as the mesh's TTL flood, keeps dedup, fanout and priority identical on both radios and leaves no trunk routes to hijack, at the cost of carrying a flood over every trunk link. One fixed modulation per region gives up link adaptation in exchange for nodes that always hear each other.
+\textbf{Trade-off.} The example and Table~\ref{tab:airtime} show why the trunk carries only text: India's 90~s an hour fit 35 full frames of data. Making each LoRa neighbor an ordinary mesh link, with multi-hop as the mesh's TTL flood, keeps deduplication, fan-out and priority identical on both radios and leaves no trunk routes to hijack, at the cost of carrying a flood over every trunk link. One fixed modulation per region gives up link adaptation in exchange for nodes that always hear each other.
 
 \subsection{Updates between nodes}
 \label{sec:ota}
@@ -501,7 +503,7 @@ A deployed node is out of reach of a cable, so it must update over the air. A ba
 
 \textbf{Boot and recovery.} Boot brings up power management, the settings and mailbox stores, the board's rails, the update state, the mesh and LoRa tasks, BLE and the console. An unreadable settings store is erased and the node starts over with a new identity; an unreadable mailbox leaves mail in RAM only; a failed rail leaves out what it feeds, and the LoRa radio stays off when the board's output power is unknown. The mesh task handles events for at most 250~ms before running its timers and feeding a 10~s task watchdog. Its longest pass, estimated at about 2.5~s, is shown at the console, since only a board can measure it. A crash writes a core dump to its own partition, encrypted on release builds because task stacks can hold session keys.
 
-\textbf{What survives a reboot.} Identity keys, nickname, region, owner key, the provisioning lock, the clock floor (saved every 10~minutes), the duty ledger, every envelope and the update state persist in flash. Peers, links, dedup sets, Noise sessions, the sync stores and the trunk's neighbors live in RAM and start empty.
+\textbf{What survives a reboot.} Identity keys, nickname, region, owner key, the provisioning lock, the clock floor (saved every 10~minutes), the duty ledger, every envelope and the update state persist in flash. Peers, links, seen-sets, Noise sessions, the sync stores and the trunk's neighbors live in RAM and start empty.
 
 \textbf{Release hardening.} A release image turns on Secure Boot V2, flash encryption in release mode, NVS encryption with keys generated on the chip and protected by flash encryption~\cite{espidf_flashenc,espidf_nvsenc}, the ROM's secure download mode, and anti-rollback. These eFuse changes are permanent: the board then runs only images signed with the same Secure Boot key and updates only over the air. Secure download mode still lets someone with a cable write flash, enough to erase the settings and reset the node to a new, unprovisioned identity. The console command \code{lock yes} closes that path: it refuses until an owner key is set, then burns the eFuse that disables the serial loader entirely. Neither path yields a key, a plaintext message or code of the attacker's own.
 
@@ -545,8 +547,8 @@ Table & With PSRAM & Without PSRAM \\
 \midrule
 Inflate window & 32~KiB & 4~KiB \\
 Frame buffers (518~B) & 256 & 24 \\
-Peers (112~B) / pins kept & 256 / 1024 & 32 / 256 \\
-Dedup slots: message, fragment, live & 4096, 8192, 16384 & 1024 each \\
+Peers (112~B) / pins kept & 256 / 1,024 & 32 / 256 \\
+Seen-set slots: message, fragment, live & 4,096, 8,192, 16,384 & 1,024 each \\
 Sync: announce, message, group, board & 256, 512, 128, 256 in 64, 256, 64, 128~KiB & 12, 32, 8, 12 in 3, 8, 2, 3~KiB \\
 Courier envelopes & 64 in 256~KiB, 4 each & 4 in 8~KiB, 2 each \\
 Largest packet reassembled & 17~KiB, 4 at once & 4~KiB, 1 at once \\
@@ -556,7 +558,7 @@ All node tables & 1.39~MiB, nearly all PSRAM & 118.7 to 123.9~KiB internal \\
 \end{tabular}
 \end{table}
 
-The compact set gives up capacity, not behavior. Its dedup sets hold 512 IDs per class: a message every 0.6~s over the 5-minute message window, or about 21~s of one peak-rate video stream (about 24 packets per second), after which a repeat may be forwarded once more. A compressed packet decoding to more than 4~KiB is refused, which text in a 512-byte frame cannot reach without better than 8 to 1 compression. Mail is limited to envelopes of about 4~KiB, and a returning phone catches up on the last 32 public messages rather than 512.
+The compact set gives up capacity, not behavior. Its seen-sets hold 512 IDs per class: a message every 0.6~s over the 5-minute message window, or about 21~s of one peak-rate video stream (about 24 packets per second), after which a repeat may be forwarded once more. A compressed packet decoding to more than 4~KiB is refused, which text in a 512-byte frame cannot reach without better than 8 to 1 compression. Mail is limited to envelopes of about 4~KiB, and a returning phone catches up on the last 32 public messages rather than 512.
 
 % ===================================================================
 \section{Implementation}
@@ -586,23 +588,13 @@ console & either & ESP-IDF's & Serial console: status and settings \\
 \end{tabular}
 \end{table}
 
-\textbf{BLE.} The node exposes the mesh's GATT service with the same UUIDs as the phones, one frame per write up to 512 bytes, and requests an ATT MTU of 517. Of six connections it dials at most two to other nodes, found by a 3~s scan each minute, and keeps four for phones. A connection handle carries a generation, so a reused handle never inherits a stale link.
-
-\textbf{Boards and builds.} A board is declared in one file: its target, flash size, PSRAM, console and wiring. Each builds in a development and a release profile inside one pinned container image, and CI fails a change that grows static RAM by more than 1~KiB or the image by more than 2\,\% against a recorded baseline.
-
-% ===================================================================
-\section{Security Analysis}
-\label{sec:security}
-
-Table~\ref{tab:threats} walks the threat model of Section~\ref{sec:goals}: each attack, what stops or bounds it, and what remains. Three properties do most of the work. The node reads nothing it relays, so capturing one yields no message content and no one else's keys. Every resource an adversary can make the node spend, from signature checks to flash writes and airtime, is charged to a budget it shares with no one else, or capped in total. And no deletion, update or emission rests on an unauthenticated claim: a time must be confirmed by two phones, an image must carry the owner's signature and pass Secure Boot, and a trunk frame must carry the receiver's tag.
-
 \begin{table*}[t]
 \caption{Threat model: attacks, mitigations and residual risk}
 \label{tab:threats}
 \centering
 \scriptsize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{@{}L{3.5cm}cL{6.6cm}L{5.4cm}@{}}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}L{3.5cm}cL{6.5cm}L{5.4cm}@{}}
 \toprule
 Attack & Adversary & Mitigation & Residual risk \\
 \midrule
@@ -625,6 +617,16 @@ Slow, lying or disconnecting server & A4 & Exact-size pieces; 512~B/s floor afte
 \end{tabular}
 \end{table*}
 
+\textbf{BLE.} The node exposes the mesh's GATT service with the same UUIDs as the phones, one frame per write up to 512 bytes, and requests an ATT MTU of 517. Of six connections it dials at most two to other nodes, found by a 3~s scan each minute, and keeps four for phones. A connection handle carries a generation, so a reused handle never inherits a stale link.
+
+\textbf{Boards and builds.} A board is declared in one file: its target, flash size, PSRAM, console and wiring. Each builds in a development and a release profile inside one pinned container image, and CI fails a change that grows static RAM by more than 1~KiB or the image by more than 2\,\% against a recorded baseline.
+
+% ===================================================================
+\section{Security Analysis}
+\label{sec:security}
+
+Table~\ref{tab:threats} walks the threat model of Section~\ref{sec:goals}: each attack, what stops or bounds it, and what remains. Three properties carry most of the weight. The node reads nothing it relays, so capturing one yields no message content and no one else's keys. Every resource an adversary can make the node spend, from signature checks to flash writes and airtime, is charged to a budget it shares with no one else, or capped in total. And no deletion, update or emission rests on an unauthenticated claim: a time must be confirmed by two phones, an image must carry the owner's signature and pass Secure Boot, and a trunk frame must carry the receiver's tag.
+
 \textbf{What is not stopped.} A radio in range can jam the trunk, and a BLE device can occupy connection slots; both require continuous presence. Phones and nodes in BLE reach share the trunk's data budget without a per-link share, so the identities that announce first can spend it on text. Under made-up senders, fragments and the public types other than plain messages, location-channel messages and leave can still cross the trunk within the budget, and the far side drops what it cannot verify. A modified client can claim the relay flag, which gains it nothing. Finally, the node's trust rests on one chip's eFuses, ROM and flash encryption~\cite{espidf_security}.
 
 % ===================================================================
@@ -639,7 +641,7 @@ Everything in this section ran on a host or in a build, not on a board.
 
 \textbf{Simulations.} The node tests run phones and nodes in a simulated world with controlled time, MTUs and link backpressure. Scenarios include a ring of three nodes forwarding each packet once; a late phone catching up on public, group and location-channel messages; mail surviving a simulated reboot and being handed over; clock attacks by skewed and duplicated phones; a flood on one link leaving other links' checks intact; and nodes joined by LoRa links that carry text and refuse media, including a middle node with no phones that keeps time from its neighbors. In these simulations a LoRa link is lossless; the trunk's link layer is simulated separately, below.
 
-\textbf{Interoperability vectors.} The codec is tested against three sources that share no code with it: packets recorded from bitchat's reference client~\cite{bitchat}, including 19 whose signing preimages and signatures the node matches; Airhop's courier fixtures; and a Python generator that writes packets, GCS filters, DEFLATE streams, Noise transcripts and update manifests from Airhop's specification and RFC~1951 alone. Regenerating its output reproduced the committed vectors byte for byte. The primitives meet their standards' published vectors (RFC~8032, RFC~7748, RFC~8439, FIPS~180-4, RFC~4231). On the host, SHA-256 comes from OpenSSL, so the device's PSA path rests on Espressif's own tests.
+\textbf{Interoperability vectors.} The codec is tested against three sources that share no code with it: packets recorded from bitchat~\cite{bitchat}, including 19 whose signing preimages and signatures the node matches; Airhop's courier fixtures; and a Python generator that writes packets, GCS filters, DEFLATE streams, Noise transcripts and update manifests from Airhop's specification and RFC~1951 alone. Regenerating its output reproduced the committed vectors byte for byte. The primitives meet their standards' published vectors (RFC~8032, RFC~7748, RFC~8439, FIPS~180-4, RFC~4231). On the host, SHA-256 comes from OpenSSL, so the device's PSA path rests on Espressif's own tests.
 
 \textbf{The trunk under loss.} The trunk tests run trunks between simulated radios with airtime, channel waits and random frame loss. At 30\,\% loss in both directions, 10 packets of 480 bytes, three pieces each, must be delivered at least 9 times and confirmed at least 8; the test passes. That is a pass bar, not a rate. For a rate, we reimplemented the ARQ state machine independently and ran $2\times10^5$ simulated transfers, each frame lost independently with probability 0.3 in either direction and no collisions: 99.2\,\% of three-piece packets were delivered and the sender learned of 97.2\,\%, the gap being transfers whose every completion message was lost. Other trunk tests check that the budget is never exceeded, that reset loops and a power cut after heavy use keep to the limit, and that replayed pieces never spend more than a third of the budget. Every airtime in Table~\ref{tab:airtime} was recomputed with an independent script and matches the firmware.
 
@@ -650,7 +652,7 @@ Everything in this section ran on a host or in a build, not on a board.
 \textbf{Not yet measured.} Range on either radio, latency and delivery through real nodes, current draw, signature-check speed on either chip, heap headroom on boards without PSRAM, the trunk's real cost in acknowledgment turns and channel checks, update spread and rollback on hardware, and the spectral density of the US and Australian profiles. Each is a scenario in the firmware's hardware test plan, summarized in Table~\ref{tab:field}.
 
 \begin{table}[t]
-\caption{Field-test plan, not yet run; pass bars are targets, not results}
+\caption{Field evaluation plan, not yet run; pass bars are targets, not results}
 \label{tab:field}
 \centering
 \scriptsize
@@ -677,7 +679,9 @@ US and AU profiles on a spectrum analyzer & 6~dB bandwidth, density per 3~kHz & 
 \section{Related Work}
 \label{sec:related}
 
-\textbf{Phone meshes.} Airhop and bitchat~\cite{airhop,bitchat} carry encrypted messages between phones over BLE, as Briar~\cite{briar} does over Bluetooth and Wi-Fi and the Serval Mesh~\cite{serval} did over Wi-Fi. Albrecht et al.'s analysis of Bridgefy showed how hard such systems are to secure~\cite{bridgefy}. Airlink adds infrastructure to such a mesh without changing the phones or their trust model: a node is one more peer that cannot read what it carries.
+Table~\ref{tab:compare} summarizes the differences that matter for a relay.
+
+\textbf{Phone meshes.} Airhop and bitchat~\cite{airhopwp,bitchat} carry encrypted messages between phones over BLE, as Briar~\cite{briar} does over Bluetooth and Wi-Fi and the Serval Mesh~\cite{serval} did over Wi-Fi. Albrecht et al.'s analysis of Bridgefy showed how hard such systems are to secure~\cite{bridgefy}. Airlink adds infrastructure to such a mesh without changing the phones or their trust model: a node is one more peer that cannot read what it carries.
 
 \textbf{Bluetooth Mesh.} The Bluetooth SIG's mesh protocol~\cite{btmesh} has relay nodes and friend nodes, which store messages for low-power nodes until they poll. These are the closest standard counterparts to a relay with a mailbox, but they serve devices provisioned into one managed network, not phones running a messaging app, and they have no long-range link.
 
@@ -689,14 +693,14 @@ US and AU profiles on a spectrum analyzer & 6~dB bandwidth, density per 3~kHz & 
 
 \textbf{Secure updates.} The IETF SUIT architecture and information model~\cite{rfc9019,rfc9124} describe signed manifests that bind an image to a device class and a monotonic version. Airlink's manifest carries the same essentials (signer, board, version, digest) in a fixed 125-byte layout, adds a trial that must outlast early failures, and spreads node to node over BLE, with Espressif's Secure Boot and anti-rollback beneath it~\cite{espidf_secureboot,espidf_ota}.
 
-Table~\ref{tab:compare} summarizes the differences that matter for a relay. In short, Airlink is a relay for an unmodified phone mesh that needs no extra radio from the people using it, reads nothing it carries, and keeps a legal duty budget on its own, with no server to coordinate it.
+In short, Airlink is a relay for an unmodified phone mesh that needs no extra radio from the people using it, reads nothing it carries, and keeps a legal duty budget on its own, with no server to coordinate it.
 
 \begin{table}[t]
 \caption{Airlink and related systems}
 \label{tab:compare}
 \centering
 \scriptsize
-\begin{tabular}{@{}L{1.45cm}L{2.15cm}L{2.0cm}L{1.75cm}@{}}
+\begin{tabular}{@{}L{1.6cm}L{2.1cm}L{1.9cm}L{1.75cm}@{}}
 \toprule
 System & User device & Long-range hop & Fixed nodes \\
 \midrule
@@ -711,7 +715,7 @@ LoRaWAN~\cite{lorawan} & End device & LoRa to a gateway & Gateways, network serv
 \end{table}
 
 % ===================================================================
-\section{Limitations and Future Work}
+\section{Limitations}
 \label{sec:limits}
 
 \textbf{Unmeasured.} Range, delivery, latency and power await the field tests of Table~\ref{tab:field}, and the verify budget and the mesh task's longest pass rest on estimates.
@@ -720,7 +724,19 @@ LoRaWAN~\cite{lorawan} & End device & LoRa to a gateway & Gateways, network serv
 
 \textbf{Limits kept on purpose.} A power-on after a busy hour can silence a node for up to an hour. Without two phones, mail expiry lags real time by every hour a node was off. A node with no newer node of its board in BLE reach never updates, and a release board takes no wired image. Nodes that dial a node take connection slots from phones. Prekey bundles are relayed but not cached, since a per-owner store does not fit the compact set.
 
-\textbf{Future work.} The first step is the field evaluation of Table~\ref{tab:field} with phones running Airhop. It would set the verify budget from each chip's measured signature time, confirm heap headroom on the compact set, and decide whether BLE controller sleep or light sleep can meet a solar budget. A combined evaluation of Airhop and Airlink would then measure what the node is meant to provide: the delivery and reach of a mesh with and without nodes, over BLE and across the trunk. Further directions named in the firmware's documentation are turning on LE Coded PHY between nodes, already built behind an option, once a two-node test shows links surviving where 1M PHY drops; a fair queue per link on the trunk; letting an acknowledgment pre-empt a frame not yet on air; and profiles for more regions, each added only with its rule cited.
+% ===================================================================
+\section{Future Work}
+\label{sec:future}
+
+The first step is the field evaluation of Table~\ref{tab:field} with phones running Airhop. It would set the verify budget from each chip's measured signature time, confirm heap headroom on the compact set, and decide whether BLE controller sleep or light sleep can meet a solar budget. The firmware's documentation names the directions below.
+
+\textbf{Airhop.} A combined evaluation of Airhop and Airlink, measuring what the node is meant to provide: the delivery and reach of a mesh with and without nodes, over BLE and across the trunk.
+
+\textbf{Longer BLE links.} LE Coded PHY between nodes, already built behind an option, turned on once a two-node test shows links surviving where 1M PHY drops.
+
+\textbf{Trunk scheduling.} A fair queue per link on the trunk, and an acknowledgment that may pre-empt a frame not yet on air.
+
+\textbf{More regions.} Profiles for more regions, each added only with its rule cited.
 
 % ===================================================================
 \section{Conclusion}
