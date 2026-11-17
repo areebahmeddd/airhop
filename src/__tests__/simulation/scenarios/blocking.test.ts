@@ -523,3 +523,78 @@ test("BL06 mail queued for a folded pseudonym moves to the contact and never lea
   s.expectNone("process health", noCrashes(cast));
   s.assert(true);
 });
+
+// The room bubble's Block keeps the contact and the thread, and forgetPeer
+// drops the npub mapping with the session. Unblocking has to give the mapping
+// back, or their internet DMs and receipts land in a stranger's thread.
+test("BL07 unblocking a contact blocked from a room hears them on Nostr in their thread", async () => {
+  const s = (scenario = new Scenario({
+    id: "BL07",
+    title: "a bubble block lifted keeps one thread over the internet",
+    seed: 817,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, online("alice", 11), relay);
+  const bob = SimDevice.create(s.world, online("bob", 22), relay);
+  const cast = [alice, bob];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () =>
+      alice.peers().includes(bob.peerID) &&
+      bob.peers().includes(alice.peerID) &&
+      relay.connectionCount("alice") > 0 &&
+      relay.connectionCount("bob") > 0,
+    30_000,
+  );
+  alice.send(`dm:${bob.peerID}`, "hello on the mesh");
+  await waitForCoarse(
+    s.world,
+    () =>
+      alice
+        .messages(`dm:${bob.peerID}`)
+        .some(
+          (m) => m.text === "hello on the mesh" && m.status === "delivered",
+        ),
+    60_000,
+  );
+  radio.setIsolated("bob", true);
+  await waitForCoarse(s.world, () => !radio.isLinked("alice", "bob"), 20_000);
+
+  // What the room bubble's Block does, then the Blocked list's Unblock.
+  (alice.store("blockedStore").getState().blockPeer as (p: string) => void)(
+    bob.peerID,
+  );
+  (alice.mesh as unknown as { forgetPeer: (p: string) => void }).forgetPeer(
+    bob.peerID,
+  );
+  (alice.store("blockedStore").getState().unblockPeer as (p: string) => void)(
+    bob.peerID,
+  );
+
+  alice.send(`dm:${bob.peerID}`, "after the unblock");
+  s.check(
+    "their receipt finds the message in their thread",
+    await waitForCoarse(
+      s.world,
+      () =>
+        alice
+          .messages(`dm:${bob.peerID}`)
+          .some(
+            (m) => m.text === "after the unblock" && m.status === "delivered",
+          ),
+      60_000,
+    ),
+  );
+  s.check(
+    "and no stranger's thread opens for their Nostr key",
+    !Object.keys(alice.allMessages()).some((c) => c.startsWith("dm:nostr_")),
+    Object.keys(alice.allMessages()).join(","),
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});

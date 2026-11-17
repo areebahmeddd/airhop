@@ -585,6 +585,151 @@ test("F07 a group you left, or declined, stays left through the creator's next r
   s.assert(true);
 });
 
+test("F07b a member back after a rotation reads what was posted under the new key", async () => {
+  // Dave is away while alice rotates the key. He comes back next to bob, who
+  // posted under the new epoch, before alice's key update reaches him: sync
+  // hands him bob's post while he still holds the old key, and serves no
+  // packet twice, so it must wait for the key rather than be dropped.
+  const s = (scenario = new Scenario({
+    id: "F07b",
+    title: "a post under a newer epoch waits for its key",
+    seed: 617,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const bob = SimDevice.create(s.world, android("bob", 22));
+  const carol = SimDevice.create(s.world, android("carol", 33));
+  const dave = SimDevice.create(s.world, android("dave", 44));
+  const cast = [alice, bob, carol, dave];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 3),
+    60_000,
+  );
+
+  const groupID = alice.createGroup("crew", [
+    bob.peerID,
+    carol.peerID,
+    dave.peerID,
+  ]);
+  if (groupID === null) {
+    s.check("the group was created", false);
+    s.assert();
+    return;
+  }
+  const members = [bob, carol, dave];
+  await waitForCoarse(
+    s.world,
+    () => members.every((d) => d.isInvitedTo(groupID)),
+    45_000,
+  );
+  s.check(
+    "everyone joined",
+    members.every((d) => d.acceptGroupInvite(groupID)),
+  );
+
+  radio.setIsolated("dave", true);
+  await s.world.advance(5_000);
+  const roster = (
+    alice.store("groupStore").getState().get as (
+      id: string,
+    ) => { members: { fingerprint: string }[] } | undefined
+  )(groupID);
+  const carolPrint = roster?.members.find((m) =>
+    m.fingerprint.startsWith(carol.peerID),
+  )?.fingerprint;
+  const removed =
+    carolPrint !== undefined &&
+    (
+      alice.mesh as unknown as {
+        removeGroupMember: (id: string, fingerprint: string) => boolean;
+      }
+    ).removeGroupMember(groupID, carolPrint);
+  s.check("alice removed carol, rotating the key", removed);
+  await s.world.advance(15_000);
+  bob.send(`group:${groupID}`, "after the rotation");
+  await s.world.advance(5_000);
+
+  // Back next to bob only, then everyone.
+  radio.setTopology([["bob", "dave"]]);
+  await s.world.advance(120_000);
+  radio.setTopology([
+    ["alice", "bob"],
+    ["alice", "dave"],
+    ["bob", "dave"],
+  ]);
+  s.check(
+    "dave reads bob's post once the new key reaches him",
+    await waitForCoarse(
+      s.world,
+      () => dave.texts(`group:${groupID}`).includes("after the rotation"),
+      180_000,
+    ),
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
+test("F07c an invite declined over a hop stays declined", async () => {
+  // Dave hears alice only through bob, so the invite reaches him by flood.
+  // Nothing may send it again after he declines.
+  const s = (scenario = new Scenario({
+    id: "F07c",
+    title: "a declined invite is not repeated",
+    seed: 627,
+  }));
+  const radio = new RadioFabric(s.world);
+  const alice = SimDevice.create(s.world, android("alice", 11));
+  const bob = SimDevice.create(s.world, android("bob", 22));
+  const dave = SimDevice.create(s.world, android("dave", 44));
+  const cast = [alice, bob, dave];
+  for (const d of cast) radio.add(d);
+  s.track(...cast);
+  radio.setTopology([
+    ["alice", "bob"],
+    ["bob", "dave"],
+  ]);
+  for (const d of cast) d.launch();
+  await waitForCoarse(
+    s.world,
+    () =>
+      alice.peers().includes(dave.peerID) &&
+      dave.peers().includes(alice.peerID),
+    60_000,
+  );
+  // A session first, as a group invite needs one.
+  alice.send(`dm:${dave.peerID}`, "hello");
+  await waitForCoarse(
+    s.world,
+    () => dave.texts(`dm:${alice.peerID}`).includes("hello"),
+    60_000,
+  );
+
+  const groupID = alice.createGroup("crew", [dave.peerID]);
+  if (groupID === null) {
+    s.check("the group was created", false);
+    s.assert();
+    return;
+  }
+  s.check(
+    "the invite reaches dave over the hop",
+    await waitForCoarse(s.world, () => dave.isInvitedTo(groupID), 45_000),
+  );
+  (dave.store("groupStore").getState().leave as (id: string) => void)(groupID);
+  await s.world.advance(120_000);
+  s.check(
+    "and once declined it does not come back",
+    !dave.isInvitedTo(groupID) && !dave.knowsGroup(groupID),
+  );
+
+  s.expectNone("process health", noCrashes(cast));
+  s.assert(true);
+});
+
 test("F08 a message for someone long gone is carried, past one frame, from the composer", async () => {
   // The case store-and-forward exists for: the recipient left more than a
   // minute ago, so the registry no longer shows them, and a carrier is in

@@ -524,6 +524,12 @@ const SEALED_FILE_CARD_MIN_BYTES = 8 * 1024;
 // a thread. Three is as many senders as scenario M02 has sending together.
 const MAX_INBOUND_CARDS = 3;
 
+// Group posts held, across every group, for a key not here yet. A post can
+// be twice a frame, about 128 KiB, so this bounds the hold near 8 MiB. Anyone
+// can name a group and an epoch in the clear, so past the bound the post
+// furthest ahead goes first: the next epoch is the one a key is coming for.
+const MAX_POSTS_AHEAD_OF_EPOCH = 64;
+
 interface BoundRatchet {
   session: NoiseSession;
   // Our side of the handshake that made `session`. Only the responder may seed
@@ -659,6 +665,13 @@ export class MeshService {
   // rate limiting keyed on the physical link (pings are unsigned, so the claimed
   // sender is untrusted).
   private readonly lastPongAtByLink = new Map<string, number>();
+  // Group posts under an epoch newer than the key held, by group: a member
+  // back from away can hear one through sync before the key update, and sync
+  // never serves a packet twice. Replayed when that epoch's roster lands.
+  private readonly postsAheadOfEpoch = new Map<
+    string,
+    { packet: Packet; ahead: number }[]
+  >();
   // Nostr event ids seen via gateway carriers, to break rebroadcast loops and
   // drop duplicate ferries.
   private readonly seenCarrierEventIDs = new BoundedIdSet(GATEWAY_ID_SET_CAP);
@@ -712,6 +725,7 @@ export class MeshService {
   // Unsubscribe for the contacts-store listener that binds a peer's durable
   // Nostr pubkey from the registry when a contact is created.
   private contactsUnsub: (() => void) | null = null;
+  private blockedUnsub: (() => void) | null = null;
   // Null when the service is stopped.
   private outboxSweepTimer: ReturnType<typeof setInterval> | null = null;
   private lastOutboxRetryMs = 0;
@@ -1370,6 +1384,22 @@ export class MeshService {
     // being a saved contact is not evidence of being nearby.
     this.hydrateContactNostrKeys();
     this.oweReadReceiptsForUnread();
+    // forgetPeer drops the npub mapping with the session, and a block from a
+    // room keeps the contact. Lifting the block gives the contact's npub back,
+    // or their internet DMs and receipts would land in a stranger's thread.
+    this.blockedUnsub = useBlockedStore.subscribe((state, prev) => {
+      if (state.blockedPeerIDs === prev.blockedPeerIDs) return;
+      for (const peerID of prev.blockedPeerIDs) {
+        if (state.blockedPeerIDs.includes(peerID)) continue;
+        const npub = useContactsStore
+          .getState()
+          .getContact(peerID)?.nostrPubkeyHex;
+        // As launch binds a contact's key: theirs, whoever claimed it since.
+        if (npub !== undefined && npub.length > 0) {
+          this.nostrPubkeyToPeerID.set(npub, peerID);
+        }
+      }
+    });
     // When a contact is created (typically the moment you first DM a nearby
     // peer), bind their npub from the registry if their session already
     // delivered it. That may have happened before the contact existed, and
@@ -1701,6 +1731,10 @@ export class MeshService {
           // closed unwritten.
           const held = this.lanDirect.onConnected(linkID);
           if (held === "hold") return;
+          // Not capped here: the dialer holds MAX_LAN_LINKS, and native caps
+          // what one phone accepts at twice that. A cap on this side too
+          // would leave a phone that arrives at a full room with no link at
+          // all, since no phone ever drops a link to make room.
           if (held === "close") {
             void NativeAirhopLAN?.closeLANLink(linkID).catch(() => {});
             return;
@@ -3790,6 +3824,7 @@ export class MeshService {
         peerID,
         type as NoisePayloadTypeValue,
         stateBytes,
+        false,
       );
     }
   }
@@ -7287,17 +7322,27 @@ export class MeshService {
   // ARE the peer ID). Sends over their Noise session; if none is up yet, or no
   // link is held to carry it, queues it so it lands once they reconnect. The
   // session outlives a dropped link, so it alone does not mean the state left.
+  //
+  // Nor does a flood: a member who walked off moments ago still looks
+  // reachable, and a key update lost then leaves them on the old epoch. So a
+  // key update to a member with no link of their own is also held for their
+  // next announce; it applies once, and the flush keeps no copy
+  // (`holdUnlessLinked` false). Not an invite: a repeat after a decline would
+  // bring the group back.
   private sendGroupStateQueued(
     peerID: string,
     type: NoisePayloadTypeValue,
     stateBytes: Uint8Array,
+    holdUnlessLinked = true,
   ): void {
-    if (
+    const sent =
       this.links.size() > 0 &&
-      this.router.sendNoisePayload(peerID, type, stateBytes)
-    ) {
-      return;
-    }
+      this.router.sendNoisePayload(peerID, type, stateBytes);
+    const holdRepeat =
+      holdUnlessLinked &&
+      type === NoisePayloadType.GROUP_KEY_UPDATE &&
+      !this.links.hasPeer(peerID);
+    if (sent && !holdRepeat) return;
     this.queueGroupState(peerID, type, stateBytes);
   }
 
@@ -7539,6 +7584,7 @@ export class MeshService {
     // with no explanation. The user can delete the thread themselves.
     if (action === "remove") {
       const name = held?.name ?? state.name;
+      this.postsAheadOfEpoch.delete(groupIDHex);
       useGroupStore.getState().remove(groupIDHex);
       const nowMs = Date.now();
       useChatStore.getState().addMessage({
@@ -7565,6 +7611,12 @@ export class MeshService {
 
     useGroupStore.getState().upsertFromState(state);
     useChatStore.getState().addChannel(channel);
+    // Posts that were waiting for this key. Any still ahead are held again.
+    const waiting = this.postsAheadOfEpoch.get(groupIDHex);
+    if (waiting !== undefined) {
+      this.postsAheadOfEpoch.delete(groupIDHex);
+      for (const { packet } of waiting) this.onGroupMessage(packet);
+    }
   }
 
   // Seal a message under the group's current epoch key and broadcast it as a
@@ -7637,7 +7689,16 @@ export class MeshService {
     const env = decodeGroupEnvelope(packet.payload);
     if (env === null) return;
     const group = useGroupStore.getState().getByID(env.groupID);
-    if (group === undefined || group.epoch !== env.epoch) return;
+    if (group === undefined) return;
+    if (env.epoch > group.epoch) {
+      this.holdPostAheadOfEpoch(
+        bytesToHex(env.groupID),
+        packet,
+        env.epoch - group.epoch,
+      );
+      return;
+    }
+    if (group.epoch !== env.epoch) return;
 
     const plain = openGroupMessage(env, group.key);
     if (plain === null) return;
@@ -7677,6 +7738,35 @@ export class MeshService {
       timestampMs: Math.min(plain.timestampMs, Date.now()),
       isMine: false,
     });
+  }
+
+  private holdPostAheadOfEpoch(
+    groupIDHex: string,
+    packet: Packet,
+    ahead: number,
+  ): void {
+    const held = this.postsAheadOfEpoch.get(groupIDHex) ?? [];
+    held.push({ packet, ahead });
+    this.postsAheadOfEpoch.set(groupIDHex, held);
+    let total = 0;
+    for (const posts of this.postsAheadOfEpoch.values()) total += posts.length;
+    if (total <= MAX_POSTS_AHEAD_OF_EPOCH) return;
+    // The furthest ahead anywhere, the latest held of those.
+    let worstGroup = groupIDHex;
+    let worstIndex = held.length - 1;
+    let worstAhead = ahead;
+    for (const [group, posts] of this.postsAheadOfEpoch) {
+      for (let i = 0; i < posts.length; i++) {
+        if (posts[i].ahead >= worstAhead) {
+          worstGroup = group;
+          worstIndex = i;
+          worstAhead = posts[i].ahead;
+        }
+      }
+    }
+    const posts = this.postsAheadOfEpoch.get(worstGroup) ?? [];
+    posts.splice(worstIndex, 1);
+    if (posts.length === 0) this.postsAheadOfEpoch.delete(worstGroup);
   }
 
   // Surface an incoming file as a receive card while its fragments reassemble,
@@ -9872,6 +9962,8 @@ export class MeshService {
     this.relayPrefsUnsub = null;
     this.contactsUnsub?.();
     this.contactsUnsub = null;
+    this.blockedUnsub?.();
+    this.blockedUnsub = null;
     if (this.outboxSweepTimer !== null) {
       clearInterval(this.outboxSweepTimer);
       this.outboxSweepTimer = null;
