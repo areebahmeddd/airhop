@@ -5,9 +5,9 @@
 // blob, and the fragment layer splits it into frames that fit a single BLE write.
 // There is no app-level chunking and no JSON metadata. Canonical tags are
 // fileName (0x01), fileSize (0x02), mimeType (0x03) and content (0x04); Airhop
-// appends channel (0x05) and duration (0x06), which bitchat skips as unknown, so
-// multi-channel routing and voice-note durations survive without breaking its
-// parsing.
+// appends channel (0x05), duration (0x06) and caption (0x07), which bitchat
+// skips as unknown, so multi-channel routing, voice-note durations and captions
+// survive without breaking its parsing.
 
 // Limits. MAX_FILE_BYTES is bitchat's FileTransferLimits ceiling, which both
 // clients accept on receive for a file of any type. The per-type figures are

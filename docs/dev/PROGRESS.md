@@ -38,7 +38,7 @@ Each milestone lists what it delivered. The plan each one answered is in [ROADMA
 - [x] `src/core/mesh/links/link-registry.ts`: open links per radio, peer bindings, writes
 - [x] `src/core/mesh/discovery/announce-manager.ts`: signed presence broadcasts
 - [x] `src/core/crypto/identity.ts`: key generation, keychain storage, peer ID derivation
-- [x] Local notifications (`expo-notifications`, no push server): per-conversation heads-up, tap to open, Reply and Mark as read on DM, group and private channel cards, badge synced to unread
+- [x] Local notifications (`expo-notifications`, no push server): per-conversation heads-up, tap to open, Reply and Mark as read on DM, group and private channel cards when previews are shown and the app lock is off, badge synced to unread
 
 ### v0.6.0: Core Messaging
 

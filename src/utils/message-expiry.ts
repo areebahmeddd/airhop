@@ -7,9 +7,9 @@
 //
 // A private message keeps the timer it was sent with (disappearAfterMs),
 // which both phones apply alike: ours from sending, theirs from when it was
-// first read (seenAtMs), so a copy nobody has read does not disappear unseen. Every
-// other row, a location chat's included, follows the default on this phone
-// alone, timed from when it reached this phone (ChatMessage.receivedAtMs).
+// first read (seenAtMs), so a copy nobody has read does not disappear unseen.
+// Every other row, a location chat's included, follows the default on this
+// phone alone, timed from when it reached this phone (ChatMessage.receivedAtMs).
 //
 // Rows still in flight are kept past the window (see isMessageExpired), and so
 // is a Cashu token received in a DM. It is claimed only by hand, from its bubble, so deleting the row deletes the

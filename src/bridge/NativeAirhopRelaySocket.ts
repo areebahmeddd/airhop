@@ -41,10 +41,9 @@ export interface RelaySocketEvent {
   message?: string;
 }
 
-// Whether the native module is compiled in and callable. False on Android and on
-// any build without the native file. Callers check this before installing the
-// relay WebSocket implementation, so a missing module cannot break Nostr: it
-// stays on React Native's socket.
+// Whether the native module is compiled in and callable. Callers check this
+// before installing the relay WebSocket implementation, so a missing module
+// cannot break Nostr: it stays on React Native's socket.
 export function isRelaySocketNativeAvailable(): boolean {
   return nativeModule != null && typeof nativeModule.connect === "function";
 }

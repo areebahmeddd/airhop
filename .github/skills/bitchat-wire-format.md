@@ -156,7 +156,7 @@ The plaintext of `NOISE_ENCRYPTED` is `[type u8][body]` (`NoisePayloadType`). bi
 |               |                                     | `0x56`           | `LAN_ENDPOINT` (Airhop), where the LAN transport listens    |
 |               |                                     | `0x57`           | `DM_PREKEYS` (Airhop), a signed internet DM key batch       |
 
-- A `NOISE_ENCRYPTED` packet is unsigned, so a DM over the mesh is deniable (courier mail and internet DMs are not: a courier deposit and a gift wrap's seal are signed); a signature arriving on one (bitchat-ios signs a DM it source-routes) is ignored.
+- A `NOISE_ENCRYPTED` packet is unsigned, so a DM over the mesh is deniable (courier mail and internet DMs are not: a courier deposit and a gift wrap's seal are signed; the `0x57` prekey batch inside is signed and names its recipient, so it shows two phones exchanged keys, never what they said); a signature arriving on one (bitchat-ios signs a DM it source-routes) is ignored.
 - `PRIVATE_MESSAGE` fields have one-byte lengths, so message ID and content are each capped at 255 UTF-8 bytes on all three clients. To a peer proven by bit 26, the disappearing timer TLVs `0x50`/`0x51` follow the content.
 - A DM attachment goes only sealed as `0x20`, and only to a peer that proved capability bit 8 inside its `0x21`. The cleartext directed `FILE_TRANSFER` is still received, never sent.
 - A sealed photo or voice note is keyed by `privateMediaStableID` (`media-<32 hex>`, from sender, recipient and an `img_<UUID>.jpg` or `voice_<UUID>.m4a` name), and the receiver answers with a `DELIVERED` naming it.

@@ -17,14 +17,9 @@ import { Platform } from "react-native";
 // image-compression) has to land under the same prefix, or the Storage screen
 // would report a size that its Clear button cannot free.
 //
-// The prefix bounds the ROUTINE sweeps (sweepExpiredAttachments,
+// The prefix bounds the routine sweeps (sweepExpiredAttachments,
 // getAttachmentCacheBytes and clearAttachmentCache) and deliberately not the
-// panic wipe, which empties the directory outright. Everything sent is adopted
-// under it before it goes (see adoptIntoAttachmentCache), so what sits outside
-// is a picker copy of something never sent, left by a crash, and the saved QR
-// card. That is the right trade for a "free up space" button, which must not
-// reach into directories the OS manages, and the wrong one for a wipe, which
-// must. See wipeCacheDirectory.
+// panic wipe, which empties the directory outright (wipeCacheDirectory).
 export const CACHE_FILE_PREFIX = "airhop_";
 
 // Received files, apart from sent ones, so the quota below counts only what
@@ -382,7 +377,7 @@ export function clearAttachmentCache(): number {
 // will drift again the next time an attachment path is added. Recursive, and
 // best-effort per entry: one locked file must not abort the rest.
 //
-// Async on purpose, not incidentally. See WIPE_YIELD_EVERY.
+// Async on purpose: see WIPE_YIELD_EVERY.
 export async function wipeCacheDirectory(): Promise<void> {
   const dir = new FileSystem.Directory(FileSystem.Paths.cache);
   if (!dir.exists) return;

@@ -7,10 +7,10 @@
 //                  rather than carrying words, and the change dates from here
 //
 // Airhop-only and sent only to a peer proven to run Airhop, so bitchat, which
-// refuses an unknown TLV, never reads one. A value outside the four the picker offers (a later version's
-// choice) is read as the longest offered one not above it, and never as less
-// than a day, so no peer can make a copy here vanish within the minute and no
-// message is refused for its timer.
+// refuses an unknown TLV, never reads one. A value outside the four the picker
+// offers (a later version's choice) is read as the longest offered one not
+// above it, and never as less than a day, so no peer can make a copy here
+// vanish within the minute and no message is refused for its timer.
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

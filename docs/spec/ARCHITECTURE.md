@@ -422,28 +422,30 @@ also meet by address, as Briar's LAN plugin has contacts do
 Each phone hands an Airhop peer its private IPv4 addresses and listening port
 inside the session (Noise payload `0x56`), and again whenever its LAN transport
 restarts on a new network, and the phone whose peer ID sorts lower dials it
-(`src/services/lan-direct-dial.ts`). It is the same link mDNS opens, inside the
-same cap of 8. The address is the peer's word, so it is dialed only if it is
-private (RFC 1918; carrier-grade NAT's `100.64.0.0/10` is left to mDNS), on one
-of this phone's own subnets and not its own, at a port from 1024 up, one address
-per peer, first dialed 20 s after it arrives so mDNS links the pair first where
-it can, at most once every 30 s per peer however many addresses arrive and at
-most eight connects in any 30 s across peers, the longest-waiting peer first,
-and never as a sweep. Three dials that come to nothing drop the address until
-the peer sends one again, which also retires one carried over from a network
-left behind. TypeScript writes nothing to the link until the announce on it
-names that peer, and the native side sends no heartbeat until the far end has
-sent a frame, so an address that is no Airhop phone (a printer's port) is never
-sent a byte; one that does not prove itself within 10 s, names anyone else, or
-arrives once mDNS has linked the pair, is closed, and one an mDNS link joins
-later is closed by its dialer. On Android each LAN dial is bound to the Wi-Fi or
-ethernet network holding its address, as Briar's AndroidLanTcpPlugin binds its
-sockets, so a network with no internet cannot push it onto mobile data. An
-announce shows which identity is speaking, not that its sender is on the far
-end: a host that relays another phone's fresh announce could hold that link, as
-it could on an mDNS link, though Noise keeps what crosses it unreadable. It
-follows the same local network switch, and strangers on a filtered network still
-meet over Bluetooth.
+(`src/services/lan-direct-dial.ts`). It is the same link mDNS opens, and the
+dialer holds the same cap of 8; the phone dialed takes what arrives, up to
+native's inbound bound of 16, rather than leave a latecomer with no link. The
+address is the peer's word, so it is dialed only if it is private (RFC 1918;
+carrier-grade NAT's `100.64.0.0/10` is left to mDNS), on one of this phone's own
+subnets and not its own, at a port from 1024 up, one address per peer, first
+dialed 20 to 35 s after it arrives (at the first 15 s review past 20 s) so mDNS
+links the pair first where it can, at most once every 30 s per peer however many
+addresses arrive and at most eight connects in any 30 s across peers, the
+longest-waiting peer first, and never as a sweep. Three dials that come to
+nothing drop the address until the peer sends one again, which also retires one
+carried over from a network left behind. TypeScript writes nothing to the link
+until the announce on it names that peer, and the native side sends no heartbeat
+until the far end has sent a frame, so an address that is no Airhop phone (a
+printer's port) is never sent a byte; one that does not prove itself within
+10 s, names anyone else, or arrives once mDNS has linked the pair, is closed, and
+one an mDNS link joins later is closed by its dialer. On Android each LAN dial
+is bound to the Wi-Fi or Ethernet network holding its address, as Briar's
+AndroidLanTcpPlugin binds its sockets, so a network with no internet cannot push
+it onto mobile data. An announce shows which identity is speaking, not that its
+sender is on the far end: a host that relays another phone's fresh announce
+could hold that link, as it could on an mDNS link, though Noise keeps what
+crosses it unreadable. It follows the same local network switch, and strangers
+on a filtered network still meet over Bluetooth.
 
 This is the only transport off by default. Publishing tells every device on the
 network, and whoever runs it, that this phone is carrying Airhop, which on a
@@ -804,12 +806,15 @@ Messages inside a Noise session, the Double Ratchet's included, carry no
 signature: the session already authenticates them to the recipient, and a
 long-term signature would let anyone holding a packet and its message key prove
 who wrote it, so DMs over the mesh stay deniable (courier mail and internet DMs
-do not: the deposit and the gift wrap's seal are signed). Fragments are
-unsigned, since the reassembled packet is checked as any other: verified when
-signed, authenticated by its session when it is Noise. Signatures are required
-where a claimed sender is otherwise unverifiable: announces, public and private
-channel messages, attachments, voice frames, board posts, sync requests, LEAVE,
-and gateway and bridge deposits.
+do not: the deposit and the gift wrap's seal are signed). The exception is the
+internet DM prekey batch handed over inside a session (`0x57`): it is signed and
+names its recipient, since the same batch also travels in a gift wrap, so it can
+show that two phones exchanged keys and when, never what they said. Fragments
+are unsigned, since the reassembled packet is checked as any other: verified
+when signed, authenticated by its session when it is Noise. Signatures are
+required where a claimed sender is otherwise unverifiable: announces, public and
+private channel messages, attachments, voice frames, board posts, sync requests,
+LEAVE, and gateway and bridge deposits.
 
 ## 6. Messaging
 
@@ -874,10 +879,11 @@ predates, or a resend of one disappearing messages removed) is still
 acknowledged as delivered, since the sender waits on it, but owes no read
 receipt and recreates nothing.
 
-**Folded threads.** Blocking a contact also blocks the location pseudonym a card exchange folded
-into their thread. A card exchange that merges a pseudonymous thread moves its
-queued mail onto the contact, and a send still naming the folded key goes to
-the contact, so this phone's main identity never writes to a cell key.
+**Folded threads.** Blocking a contact also blocks the location pseudonym a card
+exchange folded into their thread. A card exchange that merges a pseudonymous
+thread moves its queued mail onto the contact, and a send still naming the
+folded key goes to the contact, so this phone's main identity never writes to a
+cell key.
 
 **Attachments, pins and rings.** These are narrower. A DM attachment goes only
 sealed inside the Noise session, over a direct link, to a peer that has proven
@@ -885,8 +891,11 @@ it can read one, and is acknowledged under a stable media ID: bitchat's for a
 photo or voice note, Airhop's own for a video note or clip, which bitchat never
 acknowledges ([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). A
 pin or a ring needs a link and a session, and is refused rather than queued
-without them. A group invite or key update with no link waits for the peer's
-next announce.
+without them. A group invite or key update that finds no route waits for the
+member's next announce. A key update to a member with no link of their own
+waits too, even when it went out, since a member who just walked off still looks
+reachable for a while; an invite is not repeated, since a repeat after a decline
+would bring the group back.
 
 ### Store-and-forward
 
@@ -912,9 +921,10 @@ post also writes one line into the chat it belongs to.
 A file in a public room crosses as one signed packet (`0x22`), split into
 fragments on Bluetooth ([PROTOCOLS.md section 3.2](PROTOCOLS.md#32-file-packet-payload)).
 A DM attachment goes sealed inside the Noise session
-([Direct messages](#direct-messages)). Airhop sends photos at 256 KiB, voice notes
-at 512 KiB and anything else at 1 MiB, and accepts 1 MiB of any type, bitchat-ios's
-decoder ceiling. Received files share a 100 MiB budget, oldest out first.
+([Direct messages](#direct-messages)). Airhop resizes photos to 256 KiB within a
+512 KiB cap, sends voice notes up to 512 KiB and anything else up to 1 MiB, and
+accepts 1 MiB of any type, bitchat-ios's decoder ceiling. Received files share
+a 100 MiB budget, oldest out first.
 
 Voice notes are recorded AAC (16 kHz mono, 16 kbps), not live, so a two-minute
 note stays inside bitchat-ios's 30-second reassembly window in a room. A video
@@ -1030,7 +1040,7 @@ link exists, so nobody can forward their way in.
 
 - Messages are sealed with ChaCha20-Poly1305 under the current epoch key and broadcast as `0x25`, with group ID and epoch in the clear so relays can carry them
 - Bluetooth only. Group messages do not bridge to Nostr, so a member who walks out of range stops receiving until they return
-- Rotating the key bumps the epoch; older epochs are refused
+- Rotating the key bumps the epoch; older epochs are refused. A post under a newer epoch than the key held (a member back from away hears it through sync before the creator's key update arrives) is held, up to 64 across groups with the one furthest ahead dropped first, and read once that update lands
 - A group pins the `creatorFingerprint` it was created with, and a state naming a different creator is refused even at a higher epoch
 
 ### Room messages
@@ -1074,7 +1084,7 @@ the mint cannot link issuance to redemption. That fits a mesh app.
 
 ### Wallet tab
 
-- **Balance card:** the primary unit's spendable balance, with unconfirmed, reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
+- **Balance card:** the primary unit's spendable balance, unconfirmed ecash included and named beneath it, with reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
 - **Receive** lists scan a QR code, paste a token and top up over Lightning. **Send** lists create a token, zap a Nostr contact and pay a Lightning invoice. The rail is a choice inside the verb.
 - **Scan** reads a token, a bolt11 invoice or an npub and opens the sheet that handles it, filled in. It never claims or pays by itself.
 - **`cashu:` links.** Airhop registers NUT-00's scheme and token QRs carry it, so a camera scan opens Receive filled in, never claimed. Airhop's own hand-off bounced back (no other wallet) opens Share.
@@ -1087,7 +1097,7 @@ the mint cannot link issuance to redemption. That fits a mesh app.
 
 | Operation   | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Balance     | Spendable proofs per (mint, unit), with unverified and reserved amounts shown apart from the headline                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Balance     | Spendable proofs per (mint, unit), unverified ones included and named under the headline, reserved ones shown apart from it                                                                                                                                                                                                                                                                                                                                                                           |
 | Deposit     | bolt11 from the mint (NUT-04), polled while the sheet is open and reconciled on next launch                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Withdraw    | Pay a bolt11 from ecash (NUT-05), quoted with the routing reserve first, unused reserve returned as change                                                                                                                                                                                                                                                                                                                                                                                            |
 | Send        | Build a token from held proofs, fee-aware so the recipient can claim the amount asked                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -1204,17 +1214,17 @@ a banner and disables what would fail.
 
 ### Payment security model
 
-| Attack              | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Double-spend        | The mint is the only authority. Sends and melts spend confirmed coins first, and one that must include unconfirmed ecash says so. An offline receipt is stored unverified and swapped on its own (one staged swap per receipt) by the reconcile pass once the mint is reachable, or by a refresh; a receipt the mint refuses (a NUT error, or a check its own keys disprove, never a rate limit, a server error or no answer) leaves the balance and its row keeps the token. A NUT-07 state check only removes what is spent; it never marks a coin verified |
-| Fake token          | NUT-12 DLEQ against the mint's cached keys on every receive. A failing witness is rejected. Offline, a token is taken only when every coin's witness verifies; one with a coin that carries none, or whose keys are not cached, waits in the chat for the mint                                                                                                                                                                                                                                                                                                |
-| Inflated amount     | Amounts come from the decoded proofs, each bounded before summing, never from a declared field                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Token interception  | DMs encrypt the token. A token posted to a public channel is redeemable by any reader, which the UI says before sending                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| Interrupted send    | Proofs move to a reserved bucket and the token stays on the transaction, so a crash or an unrouted DM leaves the value reclaimable                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Lost mint answer    | Only the mint's own NUT error (HTTP 400 with a code, including one cashu-ts wraps in `StaleKeysetError`) is a refusal. A 5xx, a 429 or a proxy's error page reads as a lost connection at every recovery site and in a melt, so the stored outputs or change blanks stay for the next pass, and a melt left in doubt is reported as such rather than failed. A mint lacks NUT-09 only when its advertised NUTs or a 404 say so                                                                                                                                |
-| Mint failure        | The user picks mints. Balances are per (mint, unit) and never pooled, so one failing mint cannot take the rest                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Proofs at rest      | The encrypted wallet partition ([Wallet partition](#wallet-partition)). Without the key the wallet locks rather than falling back to plaintext                                                                                                                                                                                                                                                                                                                                                                                                                |
-| IP linkage over Tor | The mint network gate above                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Attack              | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Double-spend        | The mint is the only authority. Sends, melts and nutzap locks spend confirmed coins first, and one that must include unconfirmed ecash says so. An offline receipt is stored unverified and swapped on its own (one staged swap per receipt) by the reconcile pass once the mint is reachable, or by a refresh; a receipt the mint refuses (a NUT error, or a check its own keys disprove, never a rate limit, a server error or no answer) leaves the balance and its row keeps the token. A NUT-07 state check only removes what is spent; it never marks a coin verified |
+| Fake token          | NUT-12 DLEQ against the mint's cached keys on every receive. A failing witness is rejected. Offline, a token is taken only when every coin's witness verifies; one with a coin that carries none, or whose keys are not cached, waits in the chat for the mint                                                                                                                                                                                                                                                                                                              |
+| Inflated amount     | Amounts come from the decoded proofs, each bounded before summing, never from a declared field                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Token interception  | DMs encrypt the token. A token posted to a public channel is redeemable by any reader, which the UI says before sending                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Interrupted send    | Proofs move to a reserved bucket and the token stays on the transaction, so a crash or an unrouted DM leaves the value reclaimable                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Lost mint answer    | Only the mint's own NUT error (HTTP 400 with a code, including one cashu-ts wraps in `StaleKeysetError`) is a refusal. A 5xx, a 429 or a proxy's error page reads as a lost connection at every recovery site and in a melt, so the stored outputs or change blanks stay for the next pass, and a melt left in doubt is reported as such rather than failed. A mint lacks NUT-09 only when its advertised NUTs or a 404 say so                                                                                                                                              |
+| Mint failure        | The user picks mints. Balances are per (mint, unit) and never pooled, so one failing mint cannot take the rest                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Proofs at rest      | The encrypted wallet partition ([Wallet partition](#wallet-partition)). Without the key the wallet locks rather than falling back to plaintext                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| IP linkage over Tor | The mint network gate above                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 Two limits hold regardless. DLEQ proves the mint signed a proof, not that the
 sender has not spent it. And a reclaimed send races the recipient until the mint
@@ -1363,7 +1373,9 @@ that screen, and the mesh runs normally throughout. Four things lead there:
 
 Only turning Tor off, or a start the native client accepts (Try again, or a
 bridge change), leaves the held state. Turning the internet switch off and on
-again lands back in it.
+again lands back in it. A start that fails acts only if Tor and the internet are
+still on and no newer start has begun; otherwise whatever changed them has
+already set the state, and a late failure must not undo it.
 
 #### Bridges
 
@@ -2054,9 +2066,9 @@ xcframework on macOS.
 files the build scripts write, against `vendor.lock.json`, so a binary cannot
 change without a recorded rebuild, and it refuses an executable or archive
 anywhere else in the tree. That does not prove a binary corresponds to its
-source; rebuilding it does. The Android container build is reproducible (run it
-twice from clean and `SHA256SUMS.android` must not move), and `build-native.yml`
-rebuilds both platforms in CI.
+source; rebuilding it does. The Android container build is reproducible (run
+it twice from clean and `SHA256SUMS.android` must not move), and
+`build-native.yml` rebuilds both platforms in CI.
 
 ### Toolchain versions
 

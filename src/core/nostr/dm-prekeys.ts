@@ -45,7 +45,8 @@ const HEADER_BYTES = 55;
 const SIGN_DOMAIN = new TextEncoder().encode("airhop-dm-prekeys-v1");
 const SEAL_PROLOGUE = new TextEncoder().encode("airhop-dm-prekey-seal-v1");
 // bitchat's buckets. A private message carries at most 255 bytes of text
-// (PRIVATE_MESSAGE_MAX_CONTENT_BYTES), so every envelope fits the first two.
+// (PRIVATE_MESSAGE_MAX_CONTENT_BYTES), so a short envelope fits 512 and the
+// longest, incompressible text with a timer, fits 1024.
 const PAD_BUCKETS = [256, 512, 1024, 2048];
 
 export interface DmPrekey {

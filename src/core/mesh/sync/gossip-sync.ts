@@ -137,7 +137,7 @@ const TYPE_BIT_AIRHOP_CHANNEL = 24;
 //
 // FILE_TRANSFER is bit 7 in bitchat and is deliberately absent here, which is
 // the one place this table diverges from theirs. An attachment is up to 1 MiB,
-// so serving one from sync is ten to forty-five seconds of exclusive radio time
+// so serving one from sync is about a minute of exclusive radio time
 // per asking peer, against a GCS filter sized at 400 bytes for items that are
 // small and numerous. bitchat's own reassembly also expires 30 seconds after the
 // first fragment, so a re-flooded file frequently fails on arrival anyway and
@@ -708,17 +708,17 @@ export class GossipSync {
     );
   }
 
-  // Keep a packet to offer peers who missed it. Called only once the packet
-  // was accepted: a store fed before verification fills with forgeries that
-  // evict real history and are then served to everyone who asks. Broadcasts
-  // only, and never a type that is not gossiped. An announce replaces its
-  // sender's older one.
   // The newest announce held from this peer, which `track` keeps over any
   // older one.
   newestAnnounce(peerID: string): Packet | undefined {
     return this.announces.get(peerID);
   }
 
+  // Keep a packet to offer peers who missed it. Called only once the packet
+  // was accepted: a store fed before verification fills with forgeries that
+  // evict real history and are then served to everyone who asks. Broadcasts
+  // only, and never a type that is not gossiped. An announce replaces its
+  // sender's older one.
   track(packet: Packet): void {
     if (!isBroadcast(packet) || syncBitForType(packet.type) === null) return;
     const key = bytesToHex(computePacketId(packet));

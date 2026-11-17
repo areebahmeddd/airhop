@@ -318,8 +318,8 @@ export function initI18n(): void {
   // The recorded language when it still agrees with the direction in force,
   // otherwise one that does: `bootLanguage` is the UI's fallback, and prose in
   // the wrong frame is what this mechanism prevents. `wanted` is tried before
-  // the default because a panic wipe clears the record while the native flag
-  // survives, and on a right-to-left phone the device language is right.
+  // the default because on a first launch on a right-to-left phone there is
+  // no record yet, and the device language is the right one.
   const recorded = store.frameLanguage;
   bootLanguage =
     recorded !== null &&

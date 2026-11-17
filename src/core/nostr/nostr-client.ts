@@ -548,7 +548,8 @@ export class NostrClient {
   // A connection proves one key, ever: a second would link the two (a
   // location's key to the main one, say) on that relay. So a connection that
   // has seen a proof, accepted or refused, is never sent one from another key,
-  // and a refused proof is not sent again on it, so that relay stays refused.
+  // and a refused proof is not sent again for the same challenge, so that relay
+  // stays refused until it asks afresh.
   // One the relay never answered may be sent again by the same key. A
   // throwaway key stands for no one, so a post that brought one goes out on a
   // connection signed in as anyone.
