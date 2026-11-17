@@ -2,13 +2,13 @@
 //
 // A separate file from tor-routing.test.ts because each pins its own platform
 // in the react-native mock, and the native modules differ with it (the
-// TorSocket module is present here). `Platform.OS` is read per call, so nothing
+// RelaySocket module is present here). `Platform.OS` is read per call, so nothing
 // else forces the split.
 //
 // The gap these cover: `enableTorRouting` awaits `awaitTorReady` before it
 // claims anything, so a user toggling Tor on gets an honest answer. But
 // `primeTorRoutingOnStartup` cannot wait, since it runs before the mesh exists.
-// It installs the Tor socket and lets Arti bootstrap behind it, and the claim
+// It routes the relay socket through Tor and lets Arti bootstrap behind it, and the claim
 // rises only when the status feed or a foreground revalidation reports ready.
 //
 // Every relay socket goes through Arti's SOCKS, so a bootstrap that has not
@@ -74,6 +74,7 @@ let torStatusListener: ((s: unknown) => void) | null = null;
 const mockRemoveListener = jest.fn();
 const mockSetAppForeground = jest.fn<Promise<void>, [boolean]>();
 const mockHoldRoute = jest.fn<Promise<void>, []>(() => Promise.resolve());
+const mockRelayConnect = jest.fn<void, [string, string, boolean]>();
 
 jest.mock("react-native", () => ({
   Platform: { OS: "ios" },
@@ -105,12 +106,18 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
   },
 }));
 
-// Arti is present in this build, which is what makes the iOS path reachable.
-jest.mock("@bridge/NativeAirhopTorSocket", () => ({
+// Present, as in every iOS build. The route a socket takes is read off the
+// `viaTor` its connect call carries.
+jest.mock("@bridge/NativeAirhopRelaySocket", () => ({
   __esModule: true,
-  isTorSocketNativeAvailable: () => true,
-  AirhopTorSocketNative: {},
-  subscribeTorSocket: jest.fn(),
+  isRelaySocketNativeAvailable: () => true,
+  AirhopRelaySocketNative: {
+    connect: (id: string, url: string, viaTor: boolean) =>
+      mockRelayConnect(id, url, viaTor),
+    send: jest.fn(),
+    close: jest.fn(),
+  },
+  subscribeRelaySocket: () => ({ remove: jest.fn() }),
 }));
 
 jest.mock("../mesh-service", () => ({
@@ -170,6 +177,7 @@ import {
   type TorBootstrapPhase,
 } from "@store/mesh-state-store";
 import { useWebSocketImplementation } from "nostr-tools/pool";
+import { RelayWebSocket } from "../relay-websocket";
 import {
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
@@ -177,12 +185,16 @@ import {
   setTorBridgeMode,
   setTorRouting,
 } from "../tor-routing";
-import { TorWebSocket } from "../tor-websocket";
 
-// The socket factory nostr-tools dials relays through. The direct one is the
-// runtime's own WebSocket, which tor-routing captures before any swap.
+// The socket factory nostr-tools dials relays through.
 const socketFactory = jest.mocked(useWebSocketImplementation);
-const DIRECT_SOCKET = globalThis.WebSocket;
+
+// Whether a relay socket opened now would go through Tor.
+function nextSocketViaTor(): boolean {
+  mockRelayConnect.mockClear();
+  new RelayWebSocket("wss://relay.example");
+  return mockRelayConnect.mock.calls[0][2];
+}
 
 function status(over: Partial<{ isReady: boolean; isStarting: boolean }> = {}) {
   return {
@@ -230,30 +242,37 @@ describe("enabling Tor on iOS", () => {
     expect(result.ok).toBe(true);
     expect(mockStartTor).toHaveBeenCalled();
     expect(mockAwaitTorReady).toHaveBeenCalled();
-    expect(socketFactory).toHaveBeenLastCalledWith(TorWebSocket);
+    expect(socketFactory).toHaveBeenLastCalledWith(RelayWebSocket);
+    expect(nextSocketViaTor()).toBe(true);
     expect(useMeshStateStore.getState().torActive).toBe(true);
   });
 
-  it("puts the direct socket back when Tor is turned off", async () => {
+  // The socket stays the capped one; only its route changes.
+  it("puts the direct route back when Tor is turned off", async () => {
     await setTorRouting(true);
-    expect(socketFactory).toHaveBeenLastCalledWith(TorWebSocket);
+    expect(nextSocketViaTor()).toBe(true);
 
     await setTorRouting(false);
 
-    expect(socketFactory).toHaveBeenLastCalledWith(DIRECT_SOCKET);
+    expect(socketFactory).toHaveBeenLastCalledWith(RelayWebSocket);
+    expect(nextSocketViaTor()).toBe(false);
   });
 
   // A bridge change restarts Arti. A relay pool rebuilt in that gap has to fail
   // on the Tor socket, never open on the direct one.
-  it("keeps the Tor socket through a bridge change", async () => {
+  it("keeps the Tor route through a bridge change", async () => {
     await setTorRouting(true);
     mockTorEnabled = true;
-    socketFactory.mockClear();
+    let viaTorWhileStopped: boolean | null = null;
+    mockStopTor.mockImplementationOnce(async () => {
+      viaTorWhileStopped = nextSocketViaTor();
+    });
 
     await setTorBridgeMode("snowflake");
 
     expect(mockStopTor).toHaveBeenCalled();
-    expect(socketFactory).not.toHaveBeenCalledWith(DIRECT_SOCKET);
+    expect(viaTorWhileStopped).toBe(true);
+    expect(nextSocketViaTor()).toBe(true);
   });
 
   it("stays fail-closed, and keeps Arti, when the bootstrap times out", async () => {
@@ -271,13 +290,13 @@ describe("enabling Tor on iOS", () => {
     expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 
-  it("falls back to the direct socket when Arti throws", async () => {
+  it("falls back to the direct route when Arti throws", async () => {
     mockAwaitTorReady.mockRejectedValue(new Error("arti exploded"));
 
     const result = await setTorRouting(true);
 
     expect(result).toEqual({ ok: false, reason: "error" });
-    expect(socketFactory).toHaveBeenLastCalledWith(DIRECT_SOCKET);
+    expect(nextSocketViaTor()).toBe(false);
     expect(useMeshStateStore.getState().torActive).toBe(false);
   });
 });
@@ -421,7 +440,26 @@ describe("surviving a Tor client that kills the process", () => {
 });
 
 describe("startup priming on iOS", () => {
-  it("installs the Tor socket without waiting for the bootstrap", async () => {
+  // React Native's own socket bounds no incoming message, so it carries no relay
+  // connection on iOS, Tor or not.
+  it("installs the capped relay socket with Tor off", () => {
+    primeTorRoutingOnStartup();
+
+    expect(socketFactory).toHaveBeenLastCalledWith(RelayWebSocket);
+    expect(nextSocketViaTor()).toBe(false);
+  });
+
+  it("installs the capped relay socket with the internet off", () => {
+    mockTorEnabled = true;
+    mockInternetEnabled = false;
+
+    primeTorRoutingOnStartup();
+
+    expect(socketFactory).toHaveBeenLastCalledWith(RelayWebSocket);
+    expect(mockStartTor).not.toHaveBeenCalled();
+  });
+
+  it("routes the relay socket through Tor without waiting for the bootstrap", async () => {
     mockTorEnabled = true;
 
     primeTorRoutingOnStartup();
@@ -432,7 +470,7 @@ describe("startup priming on iOS", () => {
     // fails closed rather than leaking to clear net.
     expect(mockStartTor).toHaveBeenCalled();
     expect(mockSetTorBootstrap).toHaveBeenCalledWith("starting");
-    expect(socketFactory).toHaveBeenLastCalledWith(TorWebSocket);
+    expect(nextSocketViaTor()).toBe(true);
   });
 
   it("does not claim Tor before a circuit exists", async () => {

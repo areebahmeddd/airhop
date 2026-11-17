@@ -12,8 +12,10 @@
 // proxy under every Java HTTP client (React Native's factory and the default
 // ProxySelector), so every web request is covered, `fetch` and downloads
 // included. React Native's WebSocket cannot speak SOCKS5 on iOS, so
-// nostr-tools gets TorWebSocket instead and nothing else is covered, which is
-// why wallet-service refuses a mint call there.
+// nostr-tools gets RelayWebSocket instead and nothing else is covered, which is
+// why wallet-service refuses a mint call there. That socket carries every iOS
+// relay connection, Tor or not, since it also caps an incoming message; this
+// module only names its route.
 //
 // Both fail closed at the socket: arti_client has no clearnet path, so a request
 // made before a circuit exists fails instead of falling back. Protection starts
@@ -22,12 +24,12 @@
 // This is the single choke point for the Tor decision, so the socket factory,
 // the native client and the persisted preference cannot drift apart.
 
+import { isRelaySocketNativeAvailable } from "@bridge/NativeAirhopRelaySocket";
 import NativeAirhopTor, {
   subscribeTorStatus,
   type Spec as TorModule,
   type TorStatus,
 } from "@bridge/NativeAirhopTor";
-import { isTorSocketNativeAvailable } from "@bridge/NativeAirhopTorSocket";
 import { setTorTeardown } from "@core/nostr/tor-teardown-handle";
 import { OBFS4_BRIDGE_LINES, SNOWFLAKE_BRIDGE_LINES } from "@data/bridges";
 import {
@@ -38,11 +40,7 @@ import { useSettingsStore, type TorBridgeMode } from "@store/settings-store";
 import { useWebSocketImplementation } from "nostr-tools/pool";
 import { Platform } from "react-native";
 import { getMeshService } from "./mesh-service";
-import { TorWebSocket } from "./tor-websocket";
-
-// The real React Native WebSocket, captured before any swap so it can be
-// restored when Tor is turned off.
-const DirectWebSocket = WebSocket;
+import { RelayWebSocket, setRelaySocketRoute } from "./relay-websocket";
 
 export interface TorRoutingResult {
   ok: boolean;
@@ -108,24 +106,31 @@ function setNostrBlocked(blocked: boolean): void {
   getMeshService()?.restartNostr();
 }
 
-// iOS only: Android needs no shim, because its proxy is installed one layer
-// lower in the HTTP client every socket is built from.
-function needsTorWebSocketShim(): boolean {
-  return Platform.OS === "ios" && isTorSocketNativeAvailable();
+// iOS only: Android's proxy is installed one layer lower, in the HTTP client
+// every socket is built from, so React Native's own socket reaches Tor there.
+function hasRelaySocket(): boolean {
+  return Platform.OS === "ios" && isRelaySocketNativeAvailable();
 }
 
-// Safe to call repeatedly. useWebSocketImplementation is a nostr-tools setter,
-// not a React hook.
-function installTorSocket(): void {
-  if (!needsTorWebSocketShim()) return;
+// Before the first relay pool, Tor or not, since React Native's socket bounds
+// no incoming message. Safe to call repeatedly: useWebSocketImplementation is a
+// nostr-tools setter, not a React hook.
+function installRelaySocket(): void {
+  if (!hasRelaySocket()) return;
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  useWebSocketImplementation(TorWebSocket);
+  useWebSocketImplementation(RelayWebSocket);
 }
 
-function installDirectSocket(): void {
-  if (!needsTorWebSocketShim()) return;
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useWebSocketImplementation(DirectWebSocket);
+// Each socket reads the route as it opens, so a pool built after this, and any
+// relay reconnecting in an older one, takes it.
+function routeRelaysViaTor(): void {
+  installRelaySocket();
+  setRelaySocketRoute(true);
+}
+
+function routeRelaysDirect(): void {
+  installRelaySocket();
+  setRelaySocketRoute(false);
 }
 
 // How long a bootstrap may run before it is called blocked, per mode.
@@ -196,11 +201,10 @@ function watchTorBootstrap(): void {
   setTorTeardown(() => {
     stopWatchingTorBootstrap();
     setTorActive(false);
-    // A wipe stops Arti and deletes its state, so a factory left pointing at a
-    // Tor socket would dial a proxy that no longer exists for the rest of the
-    // process. The wipe also clears torEnabled, so this restores the socket the
-    // preference now asks for.
-    installDirectSocket();
+    // A wipe stops Arti and deletes its state, so a route left on Tor would dial
+    // a proxy that no longer exists for the rest of the process. The wipe also
+    // clears torEnabled, so this restores the route the preference now asks for.
+    routeRelaysDirect();
     setTorTeardown(null);
   });
   statusSubscription = subscribeTorStatus((status) => {
@@ -246,7 +250,7 @@ function stopWatchingTorBootstrap(): void {
 }
 
 // Turn Tor routing on or off at runtime, from the settings toggle. Starts or
-// stops Arti, swaps the socket path where one is needed, persists the
+// stops Arti, moves the relay route where one is needed, persists the
 // preference, and rebuilds the Nostr transport so connections re-open on the
 // selected route.
 export async function setTorRouting(
@@ -308,7 +312,7 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
   try {
     watchTorBootstrap();
     setTorBootstrap("starting");
-    installTorSocket();
+    routeRelaysViaTor();
     // Persist first, so a relaunch during the bootstrap comes back on Tor rather
     // than on the clear net.
     useSettingsStore.getState().setTorEnabled(true);
@@ -366,7 +370,7 @@ async function enableTorRouting(restarting = false): Promise<TorRoutingResult> {
     // there is nothing to wait for, and leaving the app with no internet half
     // would be worse than the clear net it started on. Unwind completely.
     await NativeAirhopTor.stopTor(false).catch(() => {});
-    installDirectSocket();
+    routeRelaysDirect();
     setTorActive(false);
     useSettingsStore.getState().setTorEnabled(false);
     stopWatchingTorBootstrap();
@@ -386,7 +390,7 @@ async function disableTorRouting(restarting = false): Promise<void> {
   // gap (a foreground revalidation reading the stopping client as ready) must
   // fail on the Tor socket rather than open on the direct one, as Android's
   // keepHeld does for HTTP.
-  if (!restarting) installDirectSocket();
+  if (!restarting) routeRelaysDirect();
   // Nothing is starting, so the marker has nothing left to warn about. This is
   // also how Tor off leaves the held state a crashed start left behind.
   useSettingsStore.getState().setTorStartPending(false);
@@ -424,6 +428,8 @@ async function disableTorRouting(restarting = false): Promise<void> {
 // gives: with no internet half, Arti would bootstrap for nobody. Switching the
 // internet on later starts it from there.
 export function primeTorRoutingOnStartup(): void {
+  // Ahead of both gates: the socket is the same whichever route it takes.
+  installRelaySocket();
   if (!useSettingsStore.getState().internetEnabled) return;
   startTorFromPreference();
 }
@@ -456,7 +462,7 @@ function startTorFromPreference(): void {
 
   if (NativeAirhopTor == null) {
     // The preference is on but Tor is unavailable in this build. Leave the
-    // direct socket in place rather than breaking the internet half entirely;
+    // direct route in place rather than breaking the internet half entirely;
     // the toggle surfaces it.
     return;
   }
@@ -466,7 +472,7 @@ function startTorFromPreference(): void {
   // waits for the circuit, and the watcher opens the gate when Arti is ready.
   // Applied rather than written, so a pool built on the direct socket before
   // this ran is torn down instead of outliving the switch to Tor.
-  installTorSocket();
+  routeRelaysViaTor();
   setNostrBlocked(true);
   // The claim does not. Asserting it here would assert onion routing before a
   // circuit existed, and on a network that blocks Tor it would sit green for
@@ -532,7 +538,7 @@ export function applyInternetAvailability(enabled: boolean): void {
   // Read before the phase goes to idle below.
   const held = isHoldingAfterFailedStart();
   stopWatchingTorBootstrap();
-  installDirectSocket();
+  routeRelaysDirect();
   // Nothing may be held down in the name of a Tor that is no longer running.
   writeNostrBlocked(false);
   setTorActive(false);

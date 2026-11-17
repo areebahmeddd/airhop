@@ -2,14 +2,14 @@
 //
 // A separate file from tor-routing-ios.test.ts because each pins its own
 // platform in the react-native mock, and the native modules differ with it
-// (no TorSocket here). `Platform.OS` is read per call, so nothing else forces
+// (no RelaySocket here). `Platform.OS` is read per call, so nothing else forces
 // the split. The model under test is the same on both: start the embedded
 // client, point the app's sockets at it, report honestly, fail closed. What
 // this file exists to pin down is the one place they still differ.
 //
-// Android installs no WebSocket shim. iOS swaps nostr-tools' WebSocket for
-// TorWebSocket, because React Native's own cannot speak SOCKS5. Android needs no
-// such swap: the proxy is installed one layer lower, into the OkHttp client that
+// Android installs no WebSocket shim. iOS gives nostr-tools RelayWebSocket,
+// because React Native's own cannot speak SOCKS5 there. Android needs no such
+// swap: the proxy is installed one layer lower, into the OkHttp client that
 // `fetch` and WebSocket are both built from, so every socket the app opens is
 // already covered. Asserting that here is what stops somebody "fixing" the
 // asymmetry by installing a shim that would do nothing but break relay traffic.
@@ -106,13 +106,13 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
   },
 }));
 
-// Absent, as it is in every Android build. The per-socket shim is an iOS
-// workaround and there is nothing here for it to attach to.
-jest.mock("@bridge/NativeAirhopTorSocket", () => ({
+// Absent, as it is in every Android build. The per-socket shim is iOS only
+// and there is nothing here for it to attach to.
+jest.mock("@bridge/NativeAirhopRelaySocket", () => ({
   __esModule: true,
-  isTorSocketNativeAvailable: () => false,
-  AirhopTorSocketNative: undefined,
-  subscribeTorSocket: jest.fn(),
+  isRelaySocketNativeAvailable: () => false,
+  AirhopRelaySocketNative: undefined,
+  subscribeRelaySocket: jest.fn(),
 }));
 
 jest.mock("../mesh-service", () => ({
@@ -239,7 +239,9 @@ describe("enabling Tor on Android", () => {
   test("never swaps the WebSocket implementation", async () => {
     // The whole point of the Android design. A shim here would replace working
     // relay sockets with ones dialing a native module that does not exist.
+    primeTorRoutingOnStartup();
     await setTorRouting(true);
+    await setTorRouting(false);
     expect(mockUseWebSocketImplementation).not.toHaveBeenCalled();
   });
 

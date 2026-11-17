@@ -1,7 +1,7 @@
 // Arti-based Tor integration for Airhop.
 //
 // Boots the embedded Tor client from native/arti and exposes its SOCKS5 proxy
-// on 127.0.0.1:39050. AirhopTorSocket is the one path through that port.
+// on 127.0.0.1:39050. AirhopRelaySocket is the one path through that port.
 //
 // Binary dependency: ios/Frameworks/arti.xcframework, built by
 // native/arti/build-apple.sh from native/arti/src. The header beside the
@@ -127,7 +127,7 @@ extension Notification.Name {
 
 // MARK: - SOCKS endpoint
 
-/// Outside the manager because AirhopTorSocket reads it off the main actor, and
+/// Outside the manager because AirhopRelaySocket reads it off the main actor, and
 /// the manager is @MainActor. Both sides read these, so the port cannot drift.
 enum AirhopTorEndpoint {
   /// 39050, not 9050. Nothing else on the device is expected to hold it, and

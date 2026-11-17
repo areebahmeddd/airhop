@@ -8,10 +8,10 @@
 // from geo-relay.ts.
 //
 // Tor proxy: this client never touches the socket directly. Routing Nostr
-// through Tor is done one level up, by swapping nostr-tools' WebSocket
-// implementation (see tor-routing.ts): on iOS for TorWebSocket, which tunnels
-// over Arti's SOCKS5 proxy, and on Android by the proxy installed into the
-// shared OkHttp client every socket is built from.
+// through Tor is done one level up (see tor-routing.ts): on iOS by
+// RelayWebSocket, the native socket nostr-tools is given, which tunnels over
+// Arti's SOCKS5 proxy, and on Android by the proxy installed into the shared
+// OkHttp client every socket is built from.
 //
 // Pings catch a socket that went silent without closing, which reconnect alone
 // never notices; on React Native they run as a cheap REQ every 29 s.

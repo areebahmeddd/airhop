@@ -356,8 +356,8 @@ async function startMeshWithPermissions(
   if (perm !== null) applyBlePermissionResult(perm);
 
   // Apply the persisted Tor preference BEFORE the mesh starts, so the very first
-  // relay pool is built on the Tor socket (never leaking the clear net for a Tor
-  // user). No-op when Tor is off or unavailable.
+  // relay pool is built on the right socket: the capped one on iOS, routed
+  // through Tor for a Tor user, so the clear net never leaks.
   //
   // Guarded because it is the last thing standing between here and the mesh
   // existing. As a bare call, a throw here stops initMeshService on the next line

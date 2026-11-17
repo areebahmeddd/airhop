@@ -1920,7 +1920,7 @@ export default function ArchitecturePage() {
                   ["core/move/", "the transfer code, handshake, safety words and bundle"],
                   [
                     "services/",
-                    "mesh-service, wallet-service, payment-router, geohash-channel-service, bridge-service, tor-routing, tor-websocket, panic-wipe",
+                    "mesh-service, wallet-service, payment-router, geohash-channel-service, bridge-service, tor-routing, relay-websocket, panic-wipe",
                   ],
                 ]}
               />

@@ -101,7 +101,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 ### Native Code
 
 - Swift lives in `ios/`, Kotlin in `android/`. They expose **raw bytes** to TypeScript: no protocol logic, no routing decisions, no crypto.
-- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopVideoModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopTorSocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot, and the `AirhopMeshWidget` home screen widget; these are services and receivers, not modules.
+- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopVideoModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopRelaySocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot, and the `AirhopMeshWidget` home screen widget; these are services and receivers, not modules.
 - `AirhopAppModule` diverges by platform: iOS rejects `restart`, `setAutoStartOnBoot`, `copyApkToCache`, `startRingAlert` and `stopRingAlert`, since it can relaunch nothing, has no boot receiver, has no sideloading to share an APK into, and has no ringtone loop outside CallKit. `setMeshSnapshot` runs on both: the home screen widget is the Kotlin `AirhopMeshWidget` on Android and the `AirhopWidget` extension on iOS, which share their rules (`MeshWidgetState.kt`, `MeshWidgetState.swift`) and their copy (`npm run i18n:native`).
 - `native/arti/` (Rust) and `native/iptproxy/` (Go) are the one exception to "raw bytes only": a Tor client and its pluggable transports, each owning a SOCKS5 listener and its own lifecycle. They still know nothing about mesh packets, routing or message encryption, and both platforms build the same sources.
 
@@ -138,7 +138,7 @@ Two kinds of files are pinned and checked in CI. Both fail the build rather than
 
 - `tsc --strict` passes with zero errors.
 - No `any` in `src/core/` or `src/bridge/`.
-- Named exports only in `src/core/`. A `src/bridge/` spec default-exports its module, per React Native's spec convention, and names everything else. The exception is `NativeAirhopTorSocket.ts`, a classic module that exports `AirhopTorSocketNative` by name.
+- Named exports only in `src/core/`. A `src/bridge/` spec default-exports its module, per React Native's spec convention, and names everything else. The exception is `NativeAirhopRelaySocket.ts`, a classic module that exports `AirhopRelaySocketNative` by name.
 - File naming: `kebab-case.ts`. The one exception is `src/bridge/Native*.ts`, which keeps React Native's spec naming. A file's name and its primary export agree (`alert-modal.tsx` exports `AlertModal`).
 - Module specifiers: leaving your top-level `src/` layer means a path alias (`@core/mesh/wire/packet-codec`); staying inside the layer stays relative (`./message-bubble`, `../shared`). Aliases are declared in `tsconfig.json` and mirrored in `package.json` for Jest.
 - Write escape sequences, never the literal byte. A regex holding a raw backspace instead of `\b` matches nothing and makes git treat the file as binary, so it is unenforced and unreviewable at once. CI runs `npm run verify:invisibles` over control characters, bidirectional overrides and zero-width characters.

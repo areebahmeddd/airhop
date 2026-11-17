@@ -1307,6 +1307,12 @@ SOCKS5 and everything else stays outside the tunnel. That is why a Cashu mint
 call is refused on iOS while Tor is on, and needs no such refusal on Android
 ([Mint network gate](#mint-network-gate)).
 
+That socket carries every iOS relay connection, Tor or not, because it also
+bounds what a relay can send: a message past 1 MiB fails the socket before more
+is buffered, where React Native's own WebSocket buffers any length a relay
+declares. On Android, React Native's WebSocket is OkHttp's, which exposes no
+inbound limit, so a relay's message there has no size bound.
+
 Each destination (host and port) gets circuits of its own, so two relays, or a
 relay and a mint, are never tied together by a shared circuit. The listener
 accepts SOCKS credentials but ignores them: they authenticate nothing in Tor's
@@ -2132,7 +2138,7 @@ So there is one module per hardware or OS capability and no more.
 | `AirhopLANModule`         | Both     | mDNS discovery, its TCP links, a link dialed at an address a peer handed over, and the transfer socket                                                                                                                        |
 | `AirhopWiFiPairing`       | iOS      | The system pairing sheet that fast path needs                                                                                                                                                                                 |
 | `AirhopTorModule`         | Both     | Embedded Arti's lifecycle and bootstrap status                                                                                                                                                                                |
-| `AirhopTorSocket`         | iOS      | The SOCKS5 WebSocket that iOS needs and Android does not                                                                                                                                                                      |
+| `AirhopRelaySocket`       | iOS      | The WebSocket every relay connection rides, through Arti's SOCKS5 or direct, with a 1 MiB cap on an incoming message                                                                                                          |
 | `AirhopAppModule`         | Both     | Process-level operations: recent log and the mesh snapshot on both; relaunch, start on boot, APK sharing and the ring loop on Android only, which iOS rejects                                                                 |
 | `AirhopForegroundService` | Android  | Keeps the process, and so the mesh, alive in the background                                                                                                                                                                   |
 | `AirhopMeshWidget`        | Android  | The home screen widget: the reachable count and the time it was counted, drawn from the snapshot JS pushes                                                                                                                    |

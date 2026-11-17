@@ -20,7 +20,7 @@ that exposes it to the React Native bridge.
 | `AirhopVideoModule.swift` | Live video, recording and the transcode; codecs in `AirhopVideoMedia`    |
 | `AirhopTorModule.swift`   | The bridge face of the embedded Tor client                               |
 | `AirhopTorManager.swift`  | Boots Arti and owns its SOCKS5 proxy                                     |
-| `AirhopTorSocket.swift`   | A WebSocket that rides that proxy, for relay connections                 |
+| `AirhopRelaySocket.swift` | Capped WebSocket for every relay connection, via that proxy or direct    |
 | `AirhopIPtProxy.swift`    | The pluggable transports Arti dials to reach a bridge                    |
 | `AirhopLog.swift`         | One `os_log` category per module, read back into the export              |
 | `*.lproj/`                | Permission and service strings, checked against `src/i18n/` in CI        |
