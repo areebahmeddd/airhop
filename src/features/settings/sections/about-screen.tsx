@@ -52,6 +52,7 @@ export default function AboutScreen({
               }
               onPress={onOpenVersion}
               accessibilityLabel={T("settings.about.version_a11y")}
+              accessibilityValue={APP_VERSION}
             />
             <GroupDivider />
             <SettingLinkRow

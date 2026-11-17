@@ -3,9 +3,10 @@
 // Hand-written, since the screens render their rows in JSX.
 // `settings-index.test.ts` keeps it in sync with them.
 //
-// Indexed: every row the shared row primitives render unconditionally. Not
-// indexed: state-dependent rows, live diagnostics readouts, "Coming soon" rows,
-// and the relay lists (raw Pressables, so they cannot carry a highlight).
+// Indexed: every row the shared row primitives render unconditionally, and
+// the Tor screen's connection modes, which open their screen since a raw
+// Pressable cannot carry a highlight. Not indexed: state-dependent rows, live
+// diagnostics readouts, "Coming soon" rows, and the relay lists.
 
 import { getLanguage, type TranslationKey, type Translator } from "@i18n";
 import type { FeatherIconName } from "@react-native-vector-icons/feather/static";
@@ -173,6 +174,30 @@ export const SETTINGS_INDEX = [
     descriptionKey: "settings.conn.tor_desc",
     sectionKey: HUB,
     icon: "globe",
+    target: { kind: "screen", view: "tor" },
+  },
+  {
+    key: "tor-obfs4",
+    labelKey: "settings.tor.mode_obfs4",
+    descriptionKey: "settings.tor.mode_obfs4_desc",
+    sectionKey: "settings.conn.tor",
+    icon: "shield",
+    target: { kind: "screen", view: "tor" },
+  },
+  {
+    key: "tor-snowflake",
+    labelKey: "settings.tor.mode_snowflake",
+    descriptionKey: "settings.tor.mode_snowflake_desc",
+    sectionKey: "settings.conn.tor",
+    icon: "shield",
+    target: { kind: "screen", view: "tor" },
+  },
+  {
+    key: "tor-custom",
+    labelKey: "settings.tor.mode_custom",
+    descriptionKey: "settings.tor.mode_custom_desc",
+    sectionKey: "settings.conn.tor",
+    icon: "shield",
     target: { kind: "screen", view: "tor" },
   },
   {

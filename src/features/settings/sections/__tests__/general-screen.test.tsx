@@ -68,7 +68,9 @@ async function renderScreen(): Promise<void> {
 
 // Through the row and its confirm, the way a user resets.
 async function resetSettings(): Promise<void> {
-  await userEvent.setup().press(screen.getByText(t("settings.general.reset")));
+  await userEvent
+    .setup()
+    .press(screen.getByRole("button", { name: t("settings.general.reset") }));
   const confirm = useAlertStore
     .getState()
     .buttons.find((b) => b.text === t("settings.general.reset_confirm"));
@@ -128,6 +130,21 @@ describe("Reset settings", () => {
     expect(s.internetEnabled).toBe(false);
   });
 
+  // Records of what this install was shown, not preferences: a reset must not
+  // bring back a notice the user already dismissed.
+  it("leaves the primer and background-limits records as they were", async () => {
+    useSettingsStore.setState({
+      permissionPrimerSeen: true,
+      backgroundLimitsAcknowledged: true,
+    });
+    await renderScreen();
+    await resetSettings();
+
+    const s = useSettingsStore.getState();
+    expect(s.permissionPrimerSeen).toBe(true);
+    expect(s.backgroundLimitsAcknowledged).toBe(true);
+  });
+
   it("never shows a subscriber a kept setting switched off", async () => {
     // The app lock stands itself down on an on-to-off edge, so a reset that
     // defaults everything and puts the kept values back afterwards releases
@@ -148,7 +165,11 @@ describe("Reset settings", () => {
 describe("Keep media for", () => {
   async function pickRetention(days: 7 | 14 | 30): Promise<void> {
     const user = userEvent.setup();
-    await user.press(screen.getByText(t("settings.general.media_retention")));
+    await user.press(
+      screen.getByRole("button", {
+        name: t("settings.general.media_retention"),
+      }),
+    );
     await user.press(
       screen.getByRole("button", {
         name: tPlural("settings.general.retention_days", days),
@@ -179,7 +200,9 @@ describe("Disappearing messages", () => {
   async function pickMessageRetention(days: 0 | 1 | 7 | 30): Promise<void> {
     const user = userEvent.setup();
     await user.press(
-      screen.getByText(t("settings.general.message_retention_default")),
+      screen.getByRole("button", {
+        name: t("settings.general.message_retention_default"),
+      }),
     );
     await user.press(
       screen.getByRole("button", {
@@ -262,7 +285,9 @@ describe("the option sheets", () => {
   it("announce the current undo window as selected", async () => {
     useSettingsStore.setState({ undoSendSeconds: 10 });
     await renderScreen();
-    await userEvent.setup().press(screen.getByText(t("settings.general.undo")));
+    await userEvent
+      .setup()
+      .press(screen.getByRole("button", { name: t("settings.general.undo") }));
 
     const name = (
       key: "settings.general.undo_2" | "settings.general.undo_10",
@@ -280,7 +305,9 @@ describe("the option sheets", () => {
     await renderScreen();
     await userEvent
       .setup()
-      .press(screen.getByText(t("settings.general.quality")));
+      .press(
+        screen.getByRole("button", { name: t("settings.general.quality") }),
+      );
 
     expect(
       screen.getByRole("button", {
@@ -289,5 +316,28 @@ describe("the option sheets", () => {
         }),
       }),
     ).toBeSelected();
+  });
+});
+
+// The label stands in for the row's text, so a value the row shows has to be
+// read out with it.
+describe("value rows", () => {
+  it("read their current value to a screen reader", async () => {
+    useSettingsStore.setState({ undoSendSeconds: 2, uploadQuality: "medium" });
+    await renderScreen();
+
+    expect(
+      screen.getByRole("button", { name: t("settings.general.undo") }),
+    ).toHaveAccessibilityValue({ text: t("settings.general.undo_2") });
+    expect(
+      screen.getByRole("button", { name: t("settings.general.quality") }),
+    ).toHaveAccessibilityValue({ text: t("settings.general.quality_medium") });
+    expect(
+      screen.getByRole("button", {
+        name: t("settings.general.media_retention"),
+      }),
+    ).toHaveAccessibilityValue({
+      text: tPlural("settings.general.retention_days", 7),
+    });
   });
 });

@@ -153,6 +153,9 @@ const MESSAGE_RETENTION_CONFIRM: Record<
 //   tor*, internetEnabled  someone who chose Tor, its bridges or no internet at
 //                        all would otherwise be put on the clear net by a tap
 //                        meant to fix the theme.
+//   permissionPrimerSeen, backgroundLimitsAcknowledged  records of what this
+//                        install has already been shown, not preferences, so
+//                        a reset must not bring a dismissed notice back.
 const KEPT_BY_RESET = [
   "stayInvisible",
   "appLockEnabled",
@@ -166,6 +169,8 @@ const KEPT_BY_RESET = [
   "torBridgeMode",
   "torBridgeLines",
   "internetEnabled",
+  "permissionPrimerSeen",
+  "backgroundLimitsAcknowledged",
 ] as const;
 
 // The unshipped features. Each row states what it will do rather than linking
@@ -357,6 +362,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   {undoLabel(T, TP, undoSendSeconds)}
                 </Text>
               }
+              accessibilityValue={undoLabel(T, TP, undoSendSeconds)}
               onPress={() => setShowUndoSheet(true)}
             />
             <GroupDivider />
@@ -391,6 +397,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   {T(QUALITY_META[uploadQuality].labelKey)}
                 </Text>
               }
+              accessibilityValue={T(QUALITY_META[uploadQuality].labelKey)}
             />
             <GroupDivider />
             {/* Here, not in Privacy & security: its neighbors there are about
@@ -405,6 +412,10 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   {TP("settings.general.retention_days", mediaRetentionDays)}
                 </Text>
               }
+              accessibilityValue={TP(
+                "settings.general.retention_days",
+                mediaRetentionDays,
+              )}
               onPress={() => setShowRetentionSheet(true)}
             />
             <GroupDivider />

@@ -364,6 +364,7 @@ export default function ConnectivityGroup({
           label={T("settings.conn.tor")}
           description={T("settings.conn.tor_desc")}
           control={<Text style={styles.settingValue}>{torSummary()}</Text>}
+          accessibilityValue={torSummary()}
           onPress={onOpenTor}
         />
         {/* iOS only, a platform limit rather than a policy: Tor there wraps

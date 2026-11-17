@@ -133,6 +133,7 @@ export default function StorageScreen({ onBack }: Props): React.JSX.Element {
               onPress={handleClearCache}
               chevron={false}
               accessibilityLabel={T("settings.storage.clear_cache")}
+              accessibilityValue={formatBytes(stats.cacheBytes)}
               control={
                 <Text
                   style={[

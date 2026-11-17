@@ -62,6 +62,7 @@ const SECTION_VIEW: Record<string, string> = {
   "settings.section.appearance": "root",
   "settings.section.help": "help",
   "settings.section.about": "about",
+  "settings.conn.tor": "tor",
 };
 
 const ENTRIES: readonly SettingsEntry[] = SETTINGS_INDEX;
@@ -126,6 +127,15 @@ describe("searchSettings", () => {
     expect(labels("storage data")[0]).toBe(t("settings.section.storage"));
     expect(labels("data storage")[0]).toBe(t("settings.section.storage"));
     expect(labels("report bug")[0]).toBe(t("settings.help.bug"));
+  });
+
+  it("finds Tor bridges by transport name", () => {
+    const keys = (q: string): string[] =>
+      searchSettings(q, t).map((h) => h.entry.key);
+    expect(keys("snowflake")).toContain("tor-snowflake");
+    expect(keys("obfs4")).toContain("tor-obfs4");
+    expect(keys("webtunnel")).toContain("tor-custom");
+    expect(keys("bridges")).toContain("tor-custom");
   });
 
   it("returns nothing for a word that lands on no entry", () => {

@@ -156,6 +156,9 @@ export default function SecurityScreen({ onBack }: Props): React.JSX.Element {
                       {T(APP_LOCK_DELAY_LABELS[appLockDelaySeconds])}
                     </Text>
                   }
+                  accessibilityValue={T(
+                    APP_LOCK_DELAY_LABELS[appLockDelaySeconds],
+                  )}
                   onPress={() => setShowDelaySheet(true)}
                 />
               </>

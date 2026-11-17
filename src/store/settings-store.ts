@@ -67,9 +67,10 @@ interface SettingsState {
   // The stored preference can differ from the rendered language while a restart
   // is required to apply a right-to-left layout direction.
   language: LanguagePreference;
-  // Language recorded for the native layout direction. It lives outside MMKV,
-  // so it survives the panic wipe along with the native RTL flag and is read
-  // once during i18n startup to distinguish Arabic, Persian, and Urdu.
+  // Language recorded for the native layout direction, read once during i18n
+  // startup to tell Arabic, Persian and Urdu apart. Reset carries it through,
+  // and so does the panic wipe (it resets after clearing storage), since the
+  // native RTL flag it describes survives both.
   frameLanguage: LanguageCode | null;
   // Monospace typeface for keys, IDs, geohashes, and amounts.
   monoFont: MonoFont;
@@ -182,8 +183,9 @@ interface SettingsState {
 const DEFAULTS = {
   theme: "system",
   language: "system",
-  // Unknown until the first `applyLayoutDirection`. A fresh install has never
-  // called `forceRTL`, so its frame is left to right regardless.
+  // Unknown until the first `applyLayoutDirection`. A fresh install's frame
+  // follows the device's language, since React Native allows right to left
+  // by default, which is why i18n startup tries the device language first.
   frameLanguage: null as LanguageCode | null,
   monoFont: "system",
   undoSendSeconds: 2,
