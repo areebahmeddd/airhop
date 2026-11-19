@@ -130,7 +130,8 @@ const strings: Strings = {
   "home.how.title": "Sieć mesh tworzy się sama.",
   "home.how.sub":
     "Pobliskie węzły tworzą samonaprawiającą się sieć mesh przez Bluetooth. Kiedy jest internet, przekaźniki Nostr ją rozszerzają, bez infrastruktury, którą ktokolwiek kontroluje.",
-  "home.how.cta": "Przeczytaj pełną architekturę",
+  "home.how.cta": "Przeczytaj o architekturze",
+  "home.how.paper": "Przeczytaj whitepaper",
   "home.how.discover.title": "Wykrywanie",
   "home.how.discover.line":
     "Telefony z Airhop albo bitchat znajdują się automatycznie przez Bluetooth. Bez parowania, bez konfiguracji.",

@@ -129,7 +129,8 @@ const strings: Strings = {
   "home.how.title": "میش خود بن جاتا ہے۔",
   "home.how.sub":
     "قریبی نوڈ Bluetooth پر خود کو درست کرنے والا میش بنا لیتے ہیں۔ جب انٹرنیٹ ہو تو Nostr ریلے اسے مزید پھیلا دیتے ہیں، اور ایسا کوئی ڈھانچہ نہیں جس پر کسی کا اختیار ہو۔",
-  "home.how.cta": "مکمل فن تعمیر پڑھیں",
+  "home.how.cta": "فن تعمیر پڑھیں",
+  "home.how.paper": "وائٹ پیپر پڑھیں",
   "home.how.discover.title": "دریافت",
   "home.how.discover.line":
     "Airhop یا bitchat چلانے والے فون Bluetooth پر ایک دوسرے کو خود بخود ڈھونڈ لیتے ہیں۔ نہ جوڑا بنانا، نہ ترتیب دینا۔",

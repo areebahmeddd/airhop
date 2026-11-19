@@ -130,7 +130,8 @@ const strings: Strings = {
   "home.how.title": "Mesh hujiunda yenyewe.",
   "home.how.sub":
     "Vituo vilivyo karibu huunda mesh inayojirekebisha kupitia Bluetooth. Intaneti ikiwepo, vipeperushi vya Nostr huipanua, bila miundombinu inayodhibitiwa na yeyote.",
-  "home.how.cta": "Soma muundo kamili",
+  "home.how.cta": "Soma muundo",
+  "home.how.paper": "Soma waraka",
   "home.how.discover.title": "Kugundua",
   "home.how.discover.line":
     "Simu zinazotumia Airhop au bitchat hugunduana kiotomatiki kupitia Bluetooth. Hakuna kuunganisha, hakuna kusanidi.",

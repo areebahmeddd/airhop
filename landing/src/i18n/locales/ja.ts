@@ -130,7 +130,8 @@ const strings: Strings = {
   "home.how.title": "メッシュはひとりでにできあがる。",
   "home.how.sub":
     "近くのノードが Bluetooth 上で自己修復するメッシュをつくります。インターネットがあれば Nostr リレーがそれを広げます。誰かが握る基盤はありません。",
-  "home.how.cta": "アーキテクチャ全文を読む",
+  "home.how.cta": "アーキテクチャを読む",
+  "home.how.paper": "ホワイトペーパーを読む",
   "home.how.discover.title": "発見",
   "home.how.discover.line":
     "Airhop や bitchat が動いている端末どうしは、Bluetooth で自動的に見つけ合います。ペアリングも設定も不要です。",

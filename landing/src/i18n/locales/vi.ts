@@ -130,7 +130,8 @@ const strings: Strings = {
   "home.how.title": "Mạng mesh tự hình thành.",
   "home.how.sub":
     "Các nút ở gần tạo thành một mạng mesh tự phục hồi qua Bluetooth. Khi có internet, các relay Nostr mở rộng nó, không có hạ tầng nào do ai đó kiểm soát.",
-  "home.how.cta": "Đọc toàn bộ kiến trúc",
+  "home.how.cta": "Đọc kiến trúc",
+  "home.how.paper": "Đọc sách trắng",
   "home.how.discover.title": "Phát hiện",
   "home.how.discover.line":
     "Các điện thoại chạy Airhop hoặc bitchat tự tìm thấy nhau qua Bluetooth. Không ghép đôi, không thiết lập.",

@@ -129,7 +129,8 @@ const strings: Strings = {
   "home.how.title": "Meshet bildar sig självt.",
   "home.how.sub":
     "Närliggande noder bildar ett självläkande mesh över Bluetooth. När det finns internet utökar Nostr-reläer det, utan infrastruktur som någon styr.",
-  "home.how.cta": "Läs hela arkitekturen",
+  "home.how.cta": "Läs om arkitekturen",
+  "home.how.paper": "Läs vitboken",
   "home.how.discover.title": "Hitta",
   "home.how.discover.line":
     "Telefoner med Airhop eller bitchat hittar varandra automatiskt över Bluetooth. Ingen parkoppling, ingen inställning.",

@@ -118,7 +118,8 @@ const strings: Strings = {
   "home.how.title": "網狀網路會自己形成。",
   "home.how.sub":
     "附近的節點透過 Bluetooth 組成可自我修復的網狀網路。有網路時，Nostr 中繼會把它延伸出去，而這些基礎設施不受任何人控制。",
-  "home.how.cta": "閱讀完整架構",
+  "home.how.cta": "閱讀架構",
+  "home.how.paper": "閱讀白皮書",
   "home.how.discover.title": "發現",
   "home.how.discover.line":
     "執行 Airhop 或 bitchat 的手機會透過 Bluetooth 自動找到彼此。無需配對，無需設定。",

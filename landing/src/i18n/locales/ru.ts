@@ -130,7 +130,8 @@ const strings: Strings = {
   "home.how.title": "Mesh собирается сама.",
   "home.how.sub":
     "Соседние узлы образуют самовосстанавливающуюся mesh по Bluetooth. Когда есть интернет, реле Nostr расширяют её, без инфраструктуры, которой кто-то владеет.",
-  "home.how.cta": "Читать полную архитектуру",
+  "home.how.cta": "Читать об архитектуре",
+  "home.how.paper": "Читать whitepaper",
   "home.how.discover.title": "Обнаружение",
   "home.how.discover.line":
     "Телефоны с Airhop или bitchat находят друг друга автоматически по Bluetooth. Без сопряжения, без настройки.",

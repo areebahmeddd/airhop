@@ -129,7 +129,8 @@ const strings: Strings = {
   "home.how.title": "Mesh terbentuk dengan sendirinya.",
   "home.how.sub":
     "Simpul di sekitar membentuk mesh yang memulihkan diri lewat Bluetooth. Ketika ada internet, relai Nostr memperluasnya, tanpa infrastruktur yang dikendalikan siapa pun.",
-  "home.how.cta": "Baca arsitektur lengkapnya",
+  "home.how.cta": "Baca arsitekturnya",
+  "home.how.paper": "Baca whitepaper",
   "home.how.discover.title": "Menemukan",
   "home.how.discover.line":
     "Ponsel yang menjalankan Airhop atau bitchat saling menemukan otomatis lewat Bluetooth. Tanpa penyandingan, tanpa penyiapan.",

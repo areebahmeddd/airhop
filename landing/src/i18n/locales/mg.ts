@@ -132,7 +132,8 @@ const strings: Strings = {
   "home.how.title": "Miforona ho azy ny harato.",
   "home.how.sub":
     "Ny teboka akaiky dia mamorona harato mamboatra ny tenany amin'ny Bluetooth. Rehefa misy Internet, dia manitatra azy ny mpanelanelana Nostr, tsy misy fotodrafitrasa fehezin'olona.",
-  "home.how.cta": "Vakio ny rafitra feno",
+  "home.how.cta": "Vakio ny rafitra",
+  "home.how.paper": "Vakio ny taratasy fotsy",
   "home.how.discover.title": "Mahita",
   "home.how.discover.line":
     "Mifankahita ho azy amin'ny Bluetooth ny findy mampandeha Airhop na bitchat. Tsy misy fampifandraisana, tsy misy fandrindrana.",

@@ -130,7 +130,8 @@ const strings: Strings = {
   "home.how.title": "मेश अपने आप बन जाता है।",
   "home.how.sub":
     "पास के नोड Bluetooth पर अपने आप ठीक होने वाला मेश बना लेते हैं। जब इंटरनेट हो, तो Nostr रिले उसे और आगे बढ़ा देते हैं, और ऐसा कोई ढाँचा नहीं जिस पर किसी का नियंत्रण हो।",
-  "home.how.cta": "पूरा आर्किटेक्चर पढ़ें",
+  "home.how.cta": "आर्किटेक्चर पढ़ें",
+  "home.how.paper": "व्हाइटपेपर पढ़ें",
   "home.how.discover.title": "खोज",
   "home.how.discover.line":
     "Airhop या bitchat चलाने वाले फ़ोन Bluetooth पर एक-दूसरे को अपने आप ढूँढ लेते हैं। न पेयरिंग, न सेटअप।",

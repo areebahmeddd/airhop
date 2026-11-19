@@ -127,7 +127,8 @@ const strings: Strings = {
   "home.how.title": "메시는 스스로 만들어집니다.",
   "home.how.sub":
     "가까운 노드들이 Bluetooth 위에서 스스로 복구하는 메시를 이룹니다. 인터넷이 있으면 Nostr 릴레이가 이를 넓히며, 누구도 통제하는 기반 시설은 없습니다.",
-  "home.how.cta": "전체 아키텍처 읽기",
+  "home.how.cta": "아키텍처 읽기",
+  "home.how.paper": "백서 읽기",
   "home.how.discover.title": "발견",
   "home.how.discover.line":
     "Airhop이나 bitchat을 실행하는 휴대폰들은 Bluetooth로 자동으로 서로를 찾습니다. 페어링도 설정도 없습니다.",
