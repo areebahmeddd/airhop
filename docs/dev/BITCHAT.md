@@ -773,11 +773,11 @@ This makes it valuable for **protests, disaster zones, events, and remote areas*
 
 - Relay nodes cannot read private traffic (only opaque padded ciphertext).
 - A malicious relay can **drop** messages (mitigated by courier redundancy and outbox retry).
-- A malicious relay **cannot** read, link across days, or amplify messages beyond their TTL.
+- A malicious relay **cannot** read private traffic or amplify messages beyond their TTL. It can recognize a device across days, since the peer ID never rotates (see above).
 
 ### Replay Protection
 
-- Public broadcasts: 6-hour acceptance window + deduplication.
+- Public broadcasts: a 2-minute timestamp window on live packets, 6 hours for ones served by gossip sync, plus deduplication.
 - Private payloads: protected by Noise nonces (replay invalidates MAC).
 
 ### Panic Wipe
