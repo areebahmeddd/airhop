@@ -9,7 +9,7 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.pathreplacing}
 \usepackage[hidelinks]{hyperref}
-\hypersetup{pdftitle={Airhop: Offline-First Encrypted Messaging over a Bluetooth Mesh},pdfauthor={Areeb Ahmed Shariff}}
+\hypersetup{pdftitle={Airhop: An Offline-First Peer-to-Peer Messaging System},pdfauthor={Areeb Ahmed Shariff}}
 \usepackage{microtype}
 
 \newcommand{\code}[1]{\texttt{#1}}
@@ -30,12 +30,10 @@
 
 \begin{document}
 
-\title{Airhop: Offline-First Encrypted Messaging over a Bluetooth Mesh}
+\title{Airhop: An Offline-First Peer-to-Peer Messaging System}
 
 \author{\IEEEauthorblockN{Areeb Ahmed Shariff}
-\IEEEauthorblockA{Bengaluru, India\\
-areebshariff@acm.org\\[4pt]
-Version 1.0, December 2026}}
+\IEEEauthorblockA{areebshariff@acm.org}}
 
 \maketitle
 
@@ -644,7 +642,7 @@ Pay with fake or spent ecash & A1 & DLEQ checked offline against cached keys; un
 
 \textbf{Compatibility.} Airhop extends the shared format by four rules. Its packet types and session payload types start at \hx{50} and its capability bits at 24, far from where other clients allocate, and a test fails if bitchat's packet types come within 16 values. Clients relay a type they do not know as an ordinary broadcast, so Airhop's types cross their phones unread. Capabilities that change how Airhop sends count only when proven inside a session, so nobody in range can force a downgrade. And payloads are relayed exactly as received (Section~\ref{sec:packets}). Where bitchat-ios and bitchat-android disagree, Airhop follows bitchat-ios; one known defect in it is noted in Section~\ref{sec:limits}.
 
-\textbf{Platform differences.} Most come from the operating systems and are stated where they apply: background discovery and power control (Section~\ref{sec:power}), Wi-Fi Aware pairing (Section~\ref{sec:transports}) and Tor coverage (Section~\ref{sec:internet}). The interface ships in 35 languages, three of them right to left, with every catalog compiled in, since a download would be a network call and a fingerprint in exactly the conditions the app is for.
+\textbf{Platform differences.} Most come from the operating systems and are stated where they apply: background discovery and power control (Section~\ref{sec:power}), Wi-Fi Aware pairing (Section~\ref{sec:transports}) and Tor coverage (Section~\ref{sec:internet}). The interface ships in 50 languages, with every catalog compiled in, since a download would be a network call and a fingerprint in exactly the conditions the app is for.
 
 % ===================================================================
 \section{Security Analysis}
