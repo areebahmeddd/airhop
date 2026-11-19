@@ -2116,7 +2116,7 @@ The Tor client and its transports, all in `native/arti/TOOLCHAIN.env`:
 | Arti client | `0.48.0`        |                                                          |
 | cbindgen    | `0.29.4`        | Generates `arti.h`                                       |
 | Go          | `1.27.4`        |                                                          |
-| IPtProxy    | `5.8.1`         | Release and commit, so a tag cannot move under the build |
+| IPtProxy    | `5.9.0`         | Release and commit, so a tag cannot move under the build |
 | gomobile    | pinned commit   | Upstream would otherwise resolve `@latest`               |
 | NDK         | `30.0.16248370` | r28 and later align to the 16 KiB Play requires          |
 

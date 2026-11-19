@@ -1,6 +1,6 @@
 {
   "files": {
-    "android/app/libs/IPtProxy.aar": "802baec0215fc0c08b20ecafbb61e427c04ae0d5dd88fcc494877cb4f87f78a9",
+    "android/app/libs/IPtProxy.aar": "ef01b6e79e8b468ff085790e64d1698c67449b4f39ddb120e303523945ddbbbe",
     "android/app/src/main/jniLibs/arm64-v8a/libarti_airhop.so": "b5aa90377c4e054bbc6f39afd1b4dc474f14f199f6079198454569a24041ad49",
     "android/app/src/main/jniLibs/armeabi-v7a/libarti_airhop.so": "c72e45e7be808fccb950775b498db2114dbc6032842da56a84f332aec440fae7",
     "android/app/src/main/jniLibs/x86_64/libarti_airhop.so": "682b04f7563a24d8f17c340bb56cbe83871f4961da62d002e74f4b078e8873c9",

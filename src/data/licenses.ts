@@ -352,7 +352,7 @@ const CATALOG: {
       },
       {
         name: "IPtProxy",
-        version: "5.8.1",
+        version: "5.9.0",
         license: "MIT",
         repo: "https://github.com/tladesignz/IPtProxy",
       },
