@@ -2,6 +2,16 @@
 
 All notable changes are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.0.11 · Albatross (2026-11-21)
+
+### What's New
+
+- feat: support relay firmware on ESP32 nodes by @areebahmeddd
+- feat: forward-secret internet DMs, LAN direct dial, WebTunnel by @areebahmeddd in #97
+- fix: session keys, bluetooth write queues and media by @areebahmeddd in #95
+
+**Full changelog:** [v1.0.10..v1.0.11](https://github.com/areebahmeddd/airhop/compare/v1.0.10..v1.0.11)
+
 ## v1.0.10 · Albatross (2026-11-02)
 
 ### What's New
