@@ -5,6 +5,10 @@
 // The cell math and relay selection underneath live in core and are pinned by
 // geohash-presence.test.ts and geo-relay.test.ts.
 
+import {
+  deriveGeohashIdentity,
+  deriveGeohashSeed,
+} from "@core/nostr/geohash-identity";
 import { KIND_PRESENCE } from "@core/nostr/geohash-presence";
 import type { NostrClient } from "@core/nostr/nostr-client";
 import { ed25519 } from "@noble/curves/ed25519.js";
@@ -313,6 +317,57 @@ describe("location channel flood limit", () => {
       service.ingestCarriedEvent({ ...chat(i), tags: [["g", geohash!]] });
     }
     expect(useChatStore.getState().messages["#city"]).toHaveLength(5);
+    service.stop();
+  });
+});
+
+// Relay sign-in (NIP-42): a cell's own traffic proves the cell's key, never
+// the main one, and a gift wrap proves a throwaway, never its sender.
+describe("relay sign-in keys", () => {
+  beforeEach(() => {
+    useSettingsStore.getState().setGeoRelayDiscovery(true);
+    useChatStore.setState({ channels: ["#city"], messages: {} });
+  });
+
+  it("signs a cell's reads and posts in with the cell's key, and its wraps with a throwaway", async () => {
+    const reads: { kinds: number[]; auth: unknown }[] = [];
+    const posts: { kind: number; auth: unknown }[] = [];
+    const client = {
+      isConnected: true,
+      isDMConnected: true,
+      subscribe: (
+        filters: { kinds: number[] }[],
+        _onEvent: unknown,
+        _onEose: unknown,
+        _relays: unknown,
+        auth: unknown,
+      ) => {
+        reads.push({ kinds: filters[0].kinds, auth });
+        return { close: () => undefined };
+      },
+      publish: async (event: Event, _relays: unknown, auth: unknown) => {
+        posts.push({ kind: event.kind, auth });
+        return { relay: "", ok: true };
+      },
+    } as unknown as NostrClient;
+    const signing = ed25519.utils.randomSecretKey();
+    const service = new GeohashChannelService(client, signing, "alice");
+    await service.refresh();
+    const cell = service.geohashFor("#city");
+    expect(cell).not.toBeNull();
+    const cellKey = deriveGeohashIdentity(
+      deriveGeohashSeed(signing),
+      cell!,
+    ).privKey;
+
+    expect(reads.map((r) => r.kinds[0]).sort()).toEqual([1, 1059, 20000]);
+    for (const read of reads) expect(read.auth).toEqual(cellKey);
+
+    await service.publish("#city", "hello", "m1");
+    expect(posts.find((p) => p.kind === 20000)?.auth).toEqual(cellKey);
+
+    service.sendGeoDm(cell!, "aa".repeat(32), "dm1", "hi");
+    expect(posts.find((p) => p.kind === 1059)?.auth).toBe("throwaway");
     service.stop();
   });
 });

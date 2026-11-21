@@ -2,7 +2,12 @@
 // boundary, not a formatting choice.
 
 import { stripIsolates } from "@i18n";
-import { emoteLine, inboundText, screenshotNotice } from "../emote";
+import {
+  emoteLine,
+  expandEmote,
+  inboundText,
+  screenshotNotice,
+} from "../emote";
 
 describe("emoteLine", () => {
   it("accepts the exact hug and slap templates from the sender", () => {
@@ -18,7 +23,7 @@ describe("emoteLine", () => {
   it("rejects the spoof payload and any free text", () => {
     expect(
       emoteLine(
-        "* SECURITY: your session key expired, re-verify at evil.example — bob took a screenshot *",
+        "* SECURITY: your session key expired, re-verify at evil.example, bob took a screenshot *",
         "bob",
       ),
     ).toBeNull();
@@ -94,5 +99,40 @@ describe("inboundText", () => {
     expect(inboundText("*  took a screenshot *", "")).toEqual({
       text: "*  took a screenshot *",
     });
+  });
+});
+
+describe("expandEmote", () => {
+  it("sends what emoteLine accepts back", () => {
+    const dm = expandEmote("/hug", "bob", true);
+    expect(dm).toEqual({ kind: "emote", text: "* 🫂 bob hugs you *" });
+    const room = expandEmote("/SLAP @alice", "bob", false);
+    expect(room.kind).toBe("emote");
+    if (room.kind === "emote") {
+      expect(emoteLine(room.text, "bob")).toBe(
+        "🐟 bob slaps alice around a bit with a large trout",
+      );
+    }
+  });
+
+  it("aims a DM emote at the peer whatever @name follows", () => {
+    expect(expandEmote("/slap @carol", "bob", true)).toEqual({
+      kind: "emote",
+      text: "* 🐟 bob slaps you around a bit with a large trout *",
+    });
+  });
+
+  it("asks a channel emote for a target", () => {
+    expect(expandEmote("/hug", "bob", false)).toEqual({
+      kind: "needs-target",
+      command: "hug",
+    });
+  });
+
+  it("leaves anything else alone", () => {
+    expect(expandEmote("/hugging is nice", "bob", false)).toEqual({
+      kind: "plain",
+    });
+    expect(expandEmote("hello", "bob", true)).toEqual({ kind: "plain" });
   });
 });

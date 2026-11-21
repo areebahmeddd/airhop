@@ -39,8 +39,11 @@ describe("isMessageExpired", () => {
   });
 
   it("falls back to the sender's clock for a row without an arrival time", () => {
-    const legacy = msg({ timestampMs: NOW - 2 * DAY, receivedAtMs: undefined });
-    expect(isMessageExpired(legacy, NOW, DAY)).toBe(true);
+    const unstamped = msg({
+      timestampMs: NOW - 2 * DAY,
+      receivedAtMs: undefined,
+    });
+    expect(isMessageExpired(unstamped, NOW, DAY)).toBe(true);
   });
 
   it.each([
@@ -193,5 +196,50 @@ describe("withoutExpired", () => {
     );
     expect(out["dm:alice"].map((m) => m.id)).toEqual(["fresh"]);
     expect(out["#room"]).toBe(room);
+  });
+});
+
+// A private message keeps the timer it was sent with, the same on both phones:
+// ours from sending, theirs from when it was first on screen.
+describe("a private message's own timer", () => {
+  it("counts ours from sending, whatever the default", () => {
+    const mine = msg({ isMine: true, status: "read", disappearAfterMs: DAY });
+    expect(isMessageExpired(mine, NOW + DAY, 0)).toBe(false);
+    expect(isMessageExpired(mine, NOW + DAY + 1, 0)).toBe(true);
+  });
+
+  it("counts theirs only from when it was first on screen", () => {
+    const unread = msg({ disappearAfterMs: DAY });
+    expect(isMessageExpired(unread, NOW + 30 * DAY, 0)).toBe(false);
+    const seen = msg({ disappearAfterMs: DAY, seenAtMs: NOW + 10 * DAY });
+    expect(isMessageExpired(seen, NOW + 11 * DAY, 0)).toBe(false);
+    expect(isMessageExpired(seen, NOW + 11 * DAY + 1, 0)).toBe(true);
+  });
+
+  it("is kept for good when sent with the timer off, even with a default on", () => {
+    const off = msg({ disappearAfterMs: 0, seenAtMs: NOW });
+    expect(isMessageExpired(off, NOW + 365 * DAY, DAY)).toBe(false);
+  });
+
+  it("still keeps an unclaimed token and a message still on its way", () => {
+    const sending = msg({
+      isMine: true,
+      status: "queued",
+      disappearAfterMs: DAY,
+    });
+    expect(isMessageExpired(sending, NOW + 2 * DAY, 0)).toBe(false);
+  });
+
+  it("sets the next sweep by its own deadline, with the default off", () => {
+    const all = {
+      "dm:alice": [
+        msg({ id: "a", isMine: true, status: "read", disappearAfterMs: DAY }),
+        msg({ id: "b", disappearAfterMs: DAY }),
+      ],
+    };
+    expect(nextExpiryAtMs(all, NOW, 0)).toBe(NOW + DAY + 1);
+    expect(withoutExpired(all["dm:alice"], NOW + DAY + 1, 0)).toEqual([
+      all["dm:alice"][1],
+    ]);
   });
 });

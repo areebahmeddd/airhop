@@ -165,7 +165,7 @@ export const strings: Strings = {
     "Naghahanap ng mga device sa malapit at nagpapasa ng mensahe sa pagitan nila. Ganito nabubuo ang mesh, at gumagana ito nang walang koneksyon sa internet.",
   "onboarding.primer.location.title": "Lokasyon",
   "onboarding.primer.location.body":
-    "Inilalagay ka sa mga channel ng lugar sa malapit, mula sa isang bloke hanggang sa isang rehiyon. Hindi ka kailanman sinusubaybayan ng Airhop, at lumalabas lang sa device mo ang tumpak mong lokasyon kapag nagpadala ka ng location pin sa isang tao.",
+    "Inilalagay ka sa mga channel ng lugar sa malapit, mula sa isang bloke hanggang sa isang rehiyon. Hindi ka kailanman sinusubaybayan ng Airhop, at hindi kailanman lumalabas sa device mo ang tumpak mong lokasyon.",
   "onboarding.primer.notifications.title": "Mga Abiso",
   "onboarding.primer.notifications.body":
     "Tumanggap ng alerto para sa bagong mensahe kahit sarado ang app. Ginagawa ang mga abiso nang lokal sa device mo, walang server na kasangkot.",
@@ -399,7 +399,40 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Hindi naabot ang bawat miyembro. Subukan ulit habang malapit sila.",
   "chat.group.you_were_added": "Naidagdag ka sa {name}.",
-  "chat.group.added_you": "Idinagdag ka sa {name}",
+  "chat.timer.you_set_1": "Itinakda mo ang naglalahong mga mensahe sa 1 araw",
+  "chat.timer.you_set_7": "Itinakda mo ang naglalahong mga mensahe sa 7 araw",
+  "chat.timer.you_set_30": "Itinakda mo ang naglalahong mga mensahe sa 30 araw",
+  "chat.timer.you_off": "Pinatay mo ang naglalahong mga mensahe",
+  "chat.timer.you_set_local_1":
+    "Itinakda mo ang naglalahong mga mensahe sa 1 araw sa teleponong ito",
+  "chat.timer.you_set_local_7":
+    "Itinakda mo ang naglalahong mga mensahe sa 7 araw sa teleponong ito",
+  "chat.timer.you_set_local_30":
+    "Itinakda mo ang naglalahong mga mensahe sa 30 araw sa teleponong ito",
+  "chat.timer.you_off_local":
+    "Pinatay mo ang naglalahong mga mensahe sa teleponong ito",
+  "chat.timer.peer_set_1":
+    "Itinakda ni {name} ang naglalahong mga mensahe sa 1 araw",
+  "chat.timer.peer_set_7":
+    "Itinakda ni {name} ang naglalahong mga mensahe sa 7 araw",
+  "chat.timer.peer_set_30":
+    "Itinakda ni {name} ang naglalahong mga mensahe sa 30 araw",
+  "chat.timer.peer_off": "Pinatay ni {name} ang naglalahong mga mensahe",
+  "chat.timer.sheet_shared":
+    "Para sa mga mensaheng ipapadala mula ngayon, sa parehong telepono. Sa telepono ng nagpadala, binibilang ang oras ng bawat isa mula nang ipadala, at sa kabilang telepono, mula nang unang mabasa. Hindi mapipigilan ang mga screenshot.",
+  "chat.timer.sheet_pending":
+    "Nakatakda sa teleponong ito. Makakarating ito kay {name} sa susunod ninyong pagkonekta, saka ito iiral sa parehong telepono.",
+  "chat.timer.sheet_bitchat":
+    "Sa teleponong ito lang. Hindi sinusuportahan ng app ni {name} ang magkasamang timer.",
+  "chat.timer.sheet_local":
+    "Sa teleponong ito lang muna. Kung sinusuportahan ng app ni {name} ang magkasamang timer, makakarating ito sa kanya sa susunod ninyong pagkonekta.",
+  "chat.group.invited": "Inimbitahan ka sa {name}.",
+  "chat.group.invited_you": "Inimbitahan ka sa {name}",
+  "chat.group.decline": "Tanggihan",
+  "chat.group.decline_title": "Tanggihan ang imbitasyon sa {name}?",
+  "chat.group.decline_body":
+    "Wala si {name} sa iyong mga contact. I-block din sila, at hindi ka na makakatanggap ng imbitasyon o mensahe mula sa kanila.",
+  "chat.group.decline_block": "Tanggihan at i-block",
   "chat.group.you_were_removed":
     "Inalis ka sa {name}. Hindi ka na makakabasa o makakapagpadala ng mensahe rito.",
   "chat.group.removed_you": "Inalis ka sa {name}",
@@ -1233,6 +1266,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Hindi nabuo ang token",
+  "wallet.send.unverified_note":
+    "Bahagi ng bayad na ito ang ecash na hindi pa kinukumpirma ng minto.",
   "wallet.send.title": "Magpadala ng ecash",
   "wallet.send.amount_in": "Halaga sa {unit}",
   "wallet.send.body":
@@ -1292,15 +1327,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Natubos sa {mint}. Napatutunayang sa iyo na ito ngayon: hindi na gumagana ang kopya ng token na ito sa nagpadala.",
   "wallet.receive.pending_unconfirmed":
-    "Nakaimbak mula sa {mint}, pero hindi pa kinukumpirma ng mint na hindi pa ito nagagastos. Awtomatiko itong kinukumpirma sa mint kapag online ka na.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Nakaimbak mula sa {mint}, pero hindi pa kinukumpirma ng mint na hindi pa ito nagagastos. Tumutugma ang lagda nito, kaya tunay ang token. Awtomatiko itong kinukumpirma sa mint kapag online ka na.",
   "wallet.receive.dleq_ok":
     "Tumutugma ang lagda ng mint, kaya tunay ang token.",
-  "wallet.receive.dleq_uncached":
-    "Wala rito ang mga susi ng mint, kaya hindi nasuri ang lagda nang offline.",
-  "wallet.receive.dleq_missing":
-    "Hindi lahat ng barya rito ay may patunay ng lagda ng mint, kaya hindi ito nasuri nang offline.",
   "wallet.receive.dleq_warning":
     "Hangga't hindi ito nakukumpirma online, sa prinsipyo ay maaaring nagastos na ito ng nagpadala sa ibang lugar.",
   "wallet.receive.failed": "Hindi natanggap",
@@ -1666,6 +1695,8 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Itutok sa QR code ng token, invoice o npub.",
   "wallet.scan.no_any":
     "Walang natagpuang token, invoice o npub sa imaheng iyon.",
+  "wallet.scan.not_usable":
+    "Hindi magagamit ng Airhop dito ang QR code na ito.",
   "wallet.scan.use_camera_a11y": "Mag-scan gamit ang camera",
   "wallet.scan.use_camera": "Gamitin ang camera",
   "wallet.scan.pick_image_a11y":
@@ -1771,6 +1802,11 @@ export const strings: Strings = {
     "Nakakandado sa wallet mo ang bayad na ito.",
   "wallet.svc.locked_ours_offline_body":
     "Angkinin ito kapag online ka na. Walang ibang makakakuha nito samantala.",
+  "wallet.svc.offline_cap":
+    "Kapag offline, hanggang {limit} lang ang hindi pa kumpirmadong ecash bawat minto.",
+  "wallet.svc.offline_unchecked": "Hindi masusuri offline ang ecash na ito.",
+  "wallet.svc.claim_online_body":
+    "Angkinin ito kapag online ka na at kaya na itong kumpirmahin ng minto.",
   "wallet.svc.already_spent": "Nagastos na ang ecash na ito.",
   "wallet.svc.already_spent_body":
     "Ang nagpadala ng token na ito ang unang tumubos nito, o ipinadala rin ang parehong token sa iba.",
@@ -2111,10 +2147,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Pinakamatagal na nananatiling mababasa ang mga usapan, at pinakamalaki ang kinakain sa disk.",
   "settings.general.message_retention": "Naglalahong mga mensahe",
-  "settings.general.message_retention_desc":
-    "Binubura ang mga mensahe at ang media nito sa phone na ito pagkalipas ng napiling oras",
-  "settings.general.message_retention_sheet":
-    "Binibilang mula nang dumating ang bawat mensahe sa phone na ito, at ang phone na ito lang ang nakakalimot. Itinatago ng phone ng kausap mo ang kopya niya, hindi mapipigilan ang mga screenshot, at mananatili ang mga bayad mula sa pribadong chat na hindi mo pa naaangkin hanggang angkinin mo ang mga ito.",
+  "settings.general.message_retention_default":
+    "Default na timer para sa mga bagong chat",
+  "settings.general.message_retention_default_desc":
+    "Para sa mga bagong direktang mensahe, at sa mga room, channel at grupo sa teleponong ito",
+  "settings.general.message_retention_default_sheet":
+    "Nagsisimula ang mga bagong direktang mensahe sa timer na ito, at puwede itong palitan ng sinuman sa inyo sa chat. Sinusunod ito ng mga room, channel at grupo sa teleponong ito lang, bilang mula nang dumating ang bawat mensahe. Hindi mapipigilan ang mga screenshot, at mananatili ang mga bayad na ipinadala sa iyo sa direktang mensahe hanggang kunin mo ang mga ito.",
   "settings.general.message_retention_off_desc":
     "Mananatili ang mga mensahe hanggang i-clear mo ang chat o umalis ka rito",
   "settings.general.message_retention_1_desc":
@@ -2126,11 +2164,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Burahin ang mas lumang mga mensahe?",
   "settings.general.message_retention_confirm_1":
-    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 1 araw, kasama ang media nila. Hindi na ito mababawi.",
+    "Buburahin na ngayon sa phone na ito ang mga mensahe sa room, channel, grupo at mga chat na sinimulan mula sa channel ng lokasyon na mas luma sa 1 araw, kasama ang media nila. May sariling timer ang ibang direktang mensahe. Hindi na ito mababawi.",
   "settings.general.message_retention_confirm_7":
-    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 7 araw, kasama ang media nila. Hindi na ito mababawi.",
+    "Buburahin na ngayon sa phone na ito ang mga mensahe sa room, channel, grupo at mga chat na sinimulan mula sa channel ng lokasyon na mas luma sa 7 araw, kasama ang media nila. May sariling timer ang ibang direktang mensahe. Hindi na ito mababawi.",
   "settings.general.message_retention_confirm_30":
-    "Buburahin na ngayon sa phone na ito ang mga mensaheng mas luma sa 30 araw, kasama ang media nila. Hindi na ito mababawi.",
+    "Buburahin na ngayon sa phone na ito ang mga mensahe sa room, channel, grupo at mga chat na sinimulan mula sa channel ng lokasyon na mas luma sa 30 araw, kasama ang media nila. May sariling timer ang ibang direktang mensahe. Hindi na ito mababawi.",
   "settings.general.reset_desc":
     "Ibinabalik ang mga kagustuhan sa kanilang default, nang hindi ginagalaw ang iyong pagkakakilanlan, mensahe, contact at wallet",
   "settings.general.reset_title": "I-reset ang mga setting?",
@@ -2279,6 +2317,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Live na video",
   "settings.conn.live_video_desc":
     "I-stream ang camera mo sa mga tao sa malapit, at panoorin ang kanila",
+  "settings.conn.live_video_on_title": "I-on ang live na video?",
+  "settings.conn.live_video_on_body":
+    "Makakapag-live ka mula sa camera sa mga nasa saklaw ng Bluetooth, at lalabas sa mga chat mo ang kanilang mga live at mare-record sa teleponong ito.",
+  "settings.conn.live_video_off_title": "I-off ang live na video?",
+  "settings.conn.live_video_off_body":
+    "Hindi ka na makakapag-live, at hindi na ipapakita o ire-record ang mga live ng iba. Darating pa rin ang maikling live bilang karaniwang video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Pagruruta sa Tor",
   "settings.conn.tor_desc":
@@ -2309,12 +2353,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Itinatago na gumagamit ka ng Tor. Mas mabilis kaysa Snowflake, pero pampubliko ang mga bridge na ito at hinaharangan ng ilang network.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Itinatago na gumagamit ka ng Tor sa pamamagitan ng pagmukhang karaniwang pagbisita sa website. Mas mahirap harangan kaysa sa iba.",
   "settings.tor.mode_custom": "Sariling bridge",
   "settings.tor.mode_custom_desc":
-    "Gumamit ng mga obfs4 bridge line mula sa bridges.torproject.org. Subukan ito kapag nabigo ang iba.",
+    "Gumamit ng mga obfs4 o WebTunnel bridge line mula sa bridges.torproject.org. Subukan ito kapag nabigo ang iba.",
   "settings.tor.custom_placeholder": "I-paste ang isang bridge line kada linya",
   "settings.tor.custom_apply_hint": "I-tap sa labas ng kahon para kumonekta.",
   "settings.tor.custom_empty": "Magdagdag muna ng kahit isang bridge line.",
@@ -2686,6 +2727,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Tawag",
   "notif.ring.title": "Tinatawagan ka ni {sender}",
   "notif.ring.body": "Suriin ang iyong mga mensahe",
+  "notif.action.reply": "Sumagot",
+  "notif.action.send": "Ipadala",
+  "notif.action.mark_read": "Markahang nabasa",
+  "notif.reply.failed_title": "Hindi naipadala",
+  "notif.reply.failed_body":
+    "Hindi naipadala ang sagot mo sa {chat}. Buksan ang chat para subukan ulit.",
+  "notif.reply.held_title": "Naghihintay maipadala",
+  "notif.reply.held_body":
+    "Maipapadala ang sagot mo sa {chat} kapag tumatakbo na ang Airhop.",
+  "notif.reply.cut_title": "Bahagyang naipadala",
+  "notif.reply.cut_body":
+    "Masyadong mahaba ang sagot mo sa {chat}, kaya hindi naipadala ang dulo nito.",
 };
 
 export const plurals: Plurals = {

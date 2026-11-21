@@ -35,7 +35,7 @@ A security regression in any of these is a critical bug that blocks the release.
 Check for:
 
 - Any `import` or `require` of: `crypto-js`, `node-forge`, `sjcl`, `elliptic`, `tweetnacl`, `libsodium`, `openpgp`, `bcrypt`, `argon2`: **FAIL**
-- Usage of `Math.random()` or `Date.now()` as a nonce source, or `Math.random()` for any privacy-relevant number (use `secureRandom()`): **FAIL**
+- `Math.random()` or `Date.now()` used as a nonce source, or `Math.random()` for any privacy-relevant number (use `secureRandom()`): **FAIL**
 - `node:crypto` or `crypto.subtle`: **FAIL** (neither belongs in the app; `@noble` covers both)
 - Missing polyfill: `react-native-get-random-values` must be the first import in `src/app/app.tsx`: **FAIL**
 
@@ -54,11 +54,11 @@ Check for:
 
 ### 3. Packet Signing & Verification
 
-**Rule:** Every outgoing packet is signed, except the types bitchat leaves unsigned (Noise handshakes, fragments, ping, pong and carrier broadcasts). Airhop signs its own Noise transport packets, which bitchat sends unsigned, and accepts them either way: the session's AEAD authenticates them. A group message from bitchat arrives unsigned and authenticates inside its ciphertext, so its handler keys on the inner signing key, never the outer sender ID. Every signed incoming packet is verified before display or action, and one that fails is dropped silently. The codec only encodes and decodes: `signPacket` and `verifyPacket` are called by `mesh-service.ts`. Relaying is separate: a relay forwards bytes it may not be able to check, except `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` and `BOARD_POST`, which are verified before the relay decision (`mayRelay`).
+**Rule:** Every outgoing packet is signed, except the types bitchat leaves unsigned (Noise handshakes, Noise transport, fragments, ping, pong and carrier broadcasts). Noise transport (`NOISE_ENCRYPTED`) carries every DM, receipt and Double Ratchet message (Noise payload `0x55`) unsigned, as bitchat-ios sends it: the session's AEAD authenticates it to the recipient alone, so a DM over the mesh is deniable (courier mail and internet DMs are not: a courier deposit and a gift wrap's seal are signed; the `0x57` DM prekey batch inside is signed and names its recipient, so it shows two phones exchanged keys, never what they said). A signature arriving on one (bitchat-ios signs a DM it source-routes, bitchat-android signs every one) is ignored. A group message from bitchat arrives unsigned and authenticates inside its ciphertext, so its handler keys on the inner signing key, never the outer sender ID. Every signed incoming packet is verified before display or action, and one that fails is dropped silently. The codec only encodes and decodes: `signPacket` and `verifyPacket` are called by `mesh-service.ts`. Relaying is separate: a relay forwards bytes it may not be able to check, except `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` and `BOARD_POST`, which are verified before the relay decision (`mayRelay`).
 
 Check for:
 
-- A send path that puts a packet of a signed type on the air without `signPacket`: **FAIL**
+- A send path that puts a packet of a signed type on the air without `signPacket`, or signs a `NOISE_ENCRYPTED` packet: **FAIL**
 - A receive path that acts on a signed type without `verifyPacket` against the sender's resolved key: **FAIL**
 - An unsigned kind trusted on its outer sender ID: **FAIL**
 - A `LEAVE`, `FILE_TRANSFER`, `VOICE_FRAME`, `VIDEO_FRAME` or `BOARD_POST` relayed, or its ID recorded, before `mayRelay` passes it: **FAIL**. Ingress may peek at the duplicate set first (`FloodRouter.seen`, which records nothing), so a copy of an ID already accepted skips the check
@@ -99,22 +99,24 @@ Check for:
 Check for:
 
 - Ratchet key reuse (each ratchet step must derive a fresh chain key): **FAIL**
-- `DR_ENCRYPTED` handled before its packet signature is checked: **FAIL**
+- A ratchet message accepted anywhere but inside the Noise session it is bound to, or a long-term signature put on one: **FAIL**
 - Ratchet state (keys, counters, the skipped-key cache) changed before the message authenticates: **FAIL** (a forgery must leave it byte-identical)
 - A ratchet used under a Noise session other than the one it was seeded from: **FAIL** (decrypting under a replaced session still held for its grace, 60 s or while a file from that peer is still arriving, is the one exception; sealing under one never is)
 - A ratchet carried over to a new session instead of reseeded, seeded at handshake completion rather than on the peer's `0x21` with bit 26, or seeded twice in one session: **FAIL**
 - The Nostr key in an announce, any of bits 24 to 26 set outside a `0x21`, or `0x54` sent to a peer that has not proven bit 26: **FAIL**
 - Missing out-of-order message key caching: **WARN**
 
-### 7. One-time Prekeys (`0x24`)
+### 7. Prekeys (`0x24` courier bundles, `0x57` internet DM batches)
 
 Prekey bundles carry only **public** prekeys and are broadcast in the clear, signed, exactly as bitchat does. Do not flag an unencrypted bundle: publishing the public halves is the design. Check instead for:
 
 - Bundle not Ed25519-signed by the owner's identity key: **FAIL**
 - Bundle accepted without verifying that signature against the key held for the owner, or from a packet whose sender is not the owner: **FAIL**
-- A **private** prekey leaving the device in any form, or stored anywhere but the keychain item `airhop.prekeys.local.v1`: **FAIL**
+- A **private** prekey leaving the device in any form, or stored anywhere but the keychain (`airhop.prekeys.local.v1` for courier, `DM_PREKEY_ITEMS` for internet DMs): **FAIL**
 - A consumed one-time prekey being reused to open a second envelope: **FAIL** (defeats the forward secrecy the prekey exists for)
 - Consumed private prekeys retained beyond the grace window without being dropped: **WARN**
+- An internet DM batch (`0x57`) accepted unsigned, for another recipient, or with an `issuedAt` no later than the batch held; a DM key spent before its seal opened, or opened for anyone but the peer it was handed to: **FAIL**
+- Prekey items not deleted when the identity is replaced (`IDENTITY_PREKEY_ITEMS`): **FAIL**
 
 ### 8. Cashu / Payments
 
@@ -185,7 +187,7 @@ The one sanctioned path for identity keys to leave the phone. Check for:
 ### Double Ratchet
 ✅ / ⚠️ / ❌: [finding]  (skip if not applicable)
 
-### One-time Prekeys
+### Prekeys
 ✅ / ⚠️ / ❌: [finding]  (skip if not applicable)
 
 ### Payments

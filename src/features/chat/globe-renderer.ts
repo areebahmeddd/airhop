@@ -221,7 +221,7 @@ function drawRings(
     if (!anyFront) continue;
     appendRuns(coastlines, frontRuns(pts), cx, cy, r, clip, seg);
     // A ring grazing the limb has no point clearly in front, and closing it
-    // along the horizon would fill an arc of the disc. As bitchat guards it.
+    // along the horizon would fill an arc of the disc.
     if (!anyFacing) continue;
 
     const polygon = fillPolygon(pts, cx, cy, r);

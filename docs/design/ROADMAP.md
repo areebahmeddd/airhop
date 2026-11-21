@@ -26,7 +26,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** A live DM runs on one Noise XX session, so a leaked session key exposes the whole session. Courier mail exists only on bitchat-ios, sealed to a one-time prekey when it holds one and to the recipient's long-term key otherwise, where a leak of that key exposes every piece of mail still waiting.
 
-**Airhop:** Signal's Double Ratchet inside the Noise session for Airhop-to-Airhop DMs, so every message has its own key. One-time prekeys for courier mail on both platforms, in bitchat-ios's format: bundles travel signed over the mesh and never touch Nostr, and an envelope seals to a one-time prekey, so waiting mail survives the long-term key leaking later.
+**Airhop:** Signal's Double Ratchet inside the Noise session for Airhop-to-Airhop DMs, so every message has its own key. One-time prekeys for courier mail on both platforms, in bitchat-ios's format: bundles travel signed over the mesh and never touch Nostr, and an envelope seals to a one-time prekey, so waiting mail survives the long-term key leaking later. Internet DMs between Airhop phones seal to keys each phone hands the other privately.
 
 ### Gap 5: Files and Video
 
@@ -44,7 +44,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** The protocol work is excellent. The app around it is hard to use.
 
-**Airhop:** This is priority one. It follows the conventions Apple's Human Interface Guidelines and Material Design agree on, so it behaves the way people expect a messaging app to, and it reads in 35 languages.
+**Airhop:** This is priority one. It follows the conventions Apple's Human Interface Guidelines and Material Design agree on, so it behaves the way people expect a messaging app to, and it reads in 50 languages.
 
 ## 2. Version Targets
 
@@ -96,7 +96,6 @@ Relay support is written and simulated but has never met hardware; see [PROTOCOL
 
 Neither watchOS nor Wear OS lets an app run the background Bluetooth a mesh node needs, so both are interfaces to the phone app rather than nodes. The watch holds no keys and no history: the phone pushes a little state to it and runs what it asks. Both watches already mirror the phone's notifications, rings included, so reading and replying start on the phone. What the watch shows follows the notification preview setting, and message text never sits on an always-on face. Each ships inside the phone app's store listing: embedded in the iPhone app, and as a Wear OS bundle in the same Play listing.
 
-- [ ] A reply action on message notifications, which both watches mirror
 - [ ] Apple Watch app over WatchConnectivity: panic trigger and an unread-count complication
 - [ ] Wear OS app over the Wearable Data Layer: panic trigger and an unread-count tile
 - [ ] Panic trigger guarded against accidental taps, acting only while the two are connected
@@ -195,7 +194,7 @@ Since v1.2.0 the engine lives in `src/core/`, so it can ship on its own, and shi
 
 **Goal:** Independent verification of every security guarantee before the v2.0.0 flagship release.
 
-This phase exists because cryptographic correctness cannot be self-certified. The Noise XX state machine, Double Ratchet ratchet steps, key storage boundaries, and packet signing paths all require external eyes before Airhop can be recommended for high-risk use. The v1.6.0 SDK packages are included in the audit scope, because a public API that ships without independent review is a liability for every downstream developer building on it. [OTF's Security Lab](https://www.opentech.fund/labs/security-lab/) funds audits of internet freedom tools and publishes the reports.
+This phase exists because cryptographic correctness cannot be self-certified. The Noise XX state machine, the Double Ratchet's steps, key storage boundaries, and packet signing paths all require external eyes before Airhop can be recommended for high-risk use. The v1.6.0 SDK packages are included in the audit scope, because a public API that ships without independent review is a liability for every downstream developer building on it. [OTF's Security Lab](https://www.opentech.fund/labs/security-lab/) funds audits of internet freedom tools and publishes the reports.
 
 - [ ] Engage a third-party security firm (Cure53 or equivalent) for a full cryptographic audit covering `src/core/crypto/`, packet signing, key storage, the wallet, and the public API surface of `@airhop/core`
 - [ ] Engage a second independent auditor for the BLE mesh layer, Nostr bridge, device transfer, Tor integration, and `@airhop/ble`
@@ -207,7 +206,7 @@ This phase exists because cryptographic correctness cannot be self-certified. Th
 
 #### v2.0.0: Flagship Interface
 
-**Goal:** A production-grade chat interface once the SDK and audit are complete, plus a standing transparency commitment.
+**Goal:** A production-grade chat interface once the SDK and the audits are complete, plus a standing transparency commitment.
 
 Private communication should be understandable, not merely trusted. v2.0.0 redesigns the interface for both modern and constrained devices, and makes the documentation and audit trail a permanent obligation rather than a release artifact.
 

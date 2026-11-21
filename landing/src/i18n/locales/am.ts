@@ -120,7 +120,8 @@ const strings: Strings = {
   "home.how.title": "መረቡ በራሱ ይመሠረታል።",
   "home.how.sub":
     "በአቅራቢያ ያሉ መስቀለኞች በ Bluetooth ላይ ራሱን የሚጠግን መረብ ይመሠርታሉ። ኢንተርኔት ሲኖር የ Nostr ማስተላለፊያዎች ያሰፉታል፤ ማንም የሚቆጣጠረው መሠረተ ልማት ሳይኖር።",
-  "home.how.cta": "ሙሉውን አወቃቀር ያንብቡ",
+  "home.how.cta": "አወቃቀሩን ያንብቡ",
+  "home.how.paper": "የነጭ ወረቀቱን ያንብቡ",
   "home.how.discover.title": "ማግኘት",
   "home.how.discover.line":
     "Airhop ወይም bitchat የሚያሄዱ ስልኮች በ Bluetooth እርስ በርስ በራስ ሰር ይገኛኛሉ። ማጣመር የለም፣ ማዋቀር የለም።",

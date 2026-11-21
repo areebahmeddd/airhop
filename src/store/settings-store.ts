@@ -2,6 +2,7 @@
 // defaults by the panic wipe (via reset()), so a wipe leaves a true first-run
 // state with no trace of the previous user's choices.
 
+import { DISAPPEARING_TIMER_DAYS } from "@core/mesh/wire/dm-timer";
 import { MAX_CUSTOM_RELAYS, validateRelayUrl } from "@core/nostr/geo-relay";
 import type { BitcoinUnit } from "@core/payments/cashu";
 import type { LanguageCode, LanguagePreference } from "@i18n";
@@ -40,12 +41,11 @@ export const UPLOAD_QUALITY_VALUES: Record<UploadQuality, number> = {
 export const MEDIA_RETENTION_DAY_OPTIONS = [7, 14, 30] as const;
 export type MediaRetentionDays = (typeof MEDIA_RETENTION_DAY_OPTIONS)[number];
 
-// How long a message stays on this phone (disappearing messages); 0 is Off.
-//
-// Off by default, so nothing disappears that nobody asked to lose. Counted from
-// when each message reached this phone, and local: the other phone keeps its
-// copy. See utils/message-expiry and services/message-retention.
-export const MESSAGE_RETENTION_DAY_OPTIONS = [0, 1, 7, 30] as const;
+// The disappearing-messages default, in days; 0 is Off. New mesh chats start
+// on it, and rooms and other chats follow it on this phone, counted from when
+// each message arrived (utils/message-expiry, services/message-retention).
+// Off by default, so nothing disappears that nobody asked to lose.
+export const MESSAGE_RETENTION_DAY_OPTIONS = DISAPPEARING_TIMER_DAYS;
 export type MessageRetentionDays =
   (typeof MESSAGE_RETENTION_DAY_OPTIONS)[number];
 
@@ -67,9 +67,10 @@ interface SettingsState {
   // The stored preference can differ from the rendered language while a restart
   // is required to apply a right-to-left layout direction.
   language: LanguagePreference;
-  // Language recorded for the native layout direction. It lives outside MMKV,
-  // so it survives the panic wipe along with the native RTL flag and is read
-  // once during i18n startup to distinguish Arabic, Persian, and Urdu.
+  // Language recorded for the native layout direction, read once during i18n
+  // startup to tell Arabic, Persian and Urdu apart. Reset carries it through,
+  // and so does the panic wipe (it resets after clearing storage), since the
+  // native RTL flag it describes survives both.
   frameLanguage: LanguageCode | null;
   // Monospace typeface for keys, IDs, geohashes, and amounts.
   monoFont: MonoFont;
@@ -182,8 +183,9 @@ interface SettingsState {
 const DEFAULTS = {
   theme: "system",
   language: "system",
-  // Unknown until the first `applyLayoutDirection`. A fresh install has never
-  // called `forceRTL`, so its frame is left to right regardless.
+  // Unknown until the first `applyLayoutDirection`. A fresh install's frame
+  // follows the device's language, since React Native allows right to left
+  // by default, which is why i18n startup tries the device language first.
   frameLanguage: null as LanguageCode | null,
   monoFont: "system",
   undoSendSeconds: 2,
@@ -191,8 +193,8 @@ const DEFAULTS = {
   uploadQuality: "high",
   mediaRetentionDays: 7,
   messageRetentionDays: 0 as MessageRetentionDays,
-  liveVoiceEnabled: true,
-  liveVideoEnabled: true,
+  liveVoiceEnabled: false,
+  liveVideoEnabled: false,
   spamFilterEnabled: true,
   hideNotificationPreviews: true,
   ringAlertsEnabled: true,

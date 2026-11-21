@@ -2,14 +2,14 @@
 //
 // A separate file from tor-routing-ios.test.ts because each pins its own
 // platform in the react-native mock, and the native modules differ with it
-// (no TorSocket here). `Platform.OS` is read per call, so nothing else forces
+// (no RelaySocket here). `Platform.OS` is read per call, so nothing else forces
 // the split. The model under test is the same on both: start the embedded
 // client, point the app's sockets at it, report honestly, fail closed. What
 // this file exists to pin down is the one place they still differ.
 //
-// Android installs no WebSocket shim. iOS swaps nostr-tools' WebSocket for
-// TorWebSocket, because React Native's own cannot speak SOCKS5. Android needs no
-// such swap: the proxy is installed one layer lower, into the OkHttp client that
+// Android installs no WebSocket shim. iOS gives nostr-tools RelayWebSocket,
+// because React Native's own cannot speak SOCKS5 there. Android needs no such
+// swap: the proxy is installed one layer lower, into the OkHttp client that
 // `fetch` and WebSocket are both built from, so every socket the app opens is
 // already covered. Asserting that here is what stops somebody "fixing" the
 // asymmetry by installing a shim that would do nothing but break relay traffic.
@@ -106,13 +106,13 @@ jest.mock("@bridge/NativeAirhopTor", () => ({
   },
 }));
 
-// Absent, as it is in every Android build. The per-socket shim is an iOS
-// workaround and there is nothing here for it to attach to.
-jest.mock("@bridge/NativeAirhopTorSocket", () => ({
+// Absent, as it is in every Android build. The per-socket shim is iOS only
+// and there is nothing here for it to attach to.
+jest.mock("@bridge/NativeAirhopRelaySocket", () => ({
   __esModule: true,
-  isTorSocketNativeAvailable: () => false,
-  AirhopTorSocketNative: undefined,
-  subscribeTorSocket: jest.fn(),
+  isRelaySocketNativeAvailable: () => false,
+  AirhopRelaySocketNative: undefined,
+  subscribeRelaySocket: jest.fn(),
 }));
 
 jest.mock("../mesh-service", () => ({
@@ -239,7 +239,9 @@ describe("enabling Tor on Android", () => {
   test("never swaps the WebSocket implementation", async () => {
     // The whole point of the Android design. A shim here would replace working
     // relay sockets with ones dialing a native module that does not exist.
+    primeTorRoutingOnStartup();
     await setTorRouting(true);
+    await setTorRouting(false);
     expect(mockUseWebSocketImplementation).not.toHaveBeenCalled();
   });
 
@@ -541,6 +543,39 @@ describe("surviving a Tor client that kills the process", () => {
 
     expect(mockTorStartPending).toBe(false);
   });
+
+  // The first start answers after the internet went off and on and a second
+  // start began: the marker is the second start's until it answers.
+  test("an older start answering late leaves a newer start's marker", async () => {
+    mockTorEnabled = true;
+    let finishFirst: () => void = () => {};
+    let finishSecond: () => void = () => {};
+    mockStartTor.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finishFirst = resolve;
+      }),
+    );
+    mockStartTor.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finishSecond = resolve;
+      }),
+    );
+    primeTorRoutingOnStartup();
+    applyInternetAvailability(false);
+    applyInternetAvailability(true);
+    expect(mockStartTor).toHaveBeenCalledTimes(2);
+
+    finishFirst();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockTorStartPending).toBe(true);
+
+    // The newer start clears its own.
+    finishSecond();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(mockTorStartPending).toBe(false);
+  });
 });
 
 describe("startup priming on Android", () => {
@@ -606,6 +641,69 @@ describe("startup priming on Android", () => {
 
     expect(mockSetTorBootstrap).toHaveBeenLastCalledWith("blocked");
     expect(useMeshStateStore.getState().torActive).toBe(false);
+  });
+
+  // Turned off while the start was running: Tor is already idle, and a
+  // "blocked" written now would stay with nothing left to clear it.
+  test("a start refused after Tor was turned off reports nothing", async () => {
+    mockTorEnabled = true;
+    let refuse: (err: Error) => void = () => {};
+    mockStartTor.mockReturnValue(
+      new Promise<void>((_, reject) => {
+        refuse = reject;
+      }),
+    );
+    primeTorRoutingOnStartup();
+    mockTorEnabled = false;
+
+    refuse(new Error("port busy"));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
+  });
+
+  // The internet switch already stopped Arti and set the state, so a "blocked"
+  // written now would contradict a switch the user turned off on purpose.
+  test("a start refused after the internet was switched off reports nothing", async () => {
+    mockTorEnabled = true;
+    let refuse: (err: Error) => void = () => {};
+    mockStartTor.mockReturnValue(
+      new Promise<void>((_, reject) => {
+        refuse = reject;
+      }),
+    );
+    primeTorRoutingOnStartup();
+    mockInternetEnabled = false;
+
+    refuse(new Error("port busy"));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
+  });
+
+  // An older start refused while a newer one is still running: the newer one
+  // reports for itself.
+  test("an older start refused while a newer one runs reports nothing", async () => {
+    mockTorEnabled = true;
+    let refuseFirst: (err: Error) => void = () => {};
+    mockStartTor.mockReturnValueOnce(
+      new Promise<void>((_, reject) => {
+        refuseFirst = reject;
+      }),
+    );
+    mockStartTor.mockReturnValueOnce(new Promise(() => {}));
+    primeTorRoutingOnStartup();
+    applyInternetAvailability(false);
+    applyInternetAvailability(true);
+    expect(mockStartTor).toHaveBeenCalledTimes(2);
+
+    refuseFirst(new Error("port busy"));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
   });
 
   test("holds the relay pool until Arti reports it is ready", () => {
@@ -947,7 +1045,7 @@ describe("bridge modes", () => {
       rebuiltWhileOff.push(!mockTorEnabled || !mockNostrBlocked);
     });
 
-    const result = await setTorBridgeMode("custom", "webtunnel 192.0.2.1:443");
+    const result = await setTorBridgeMode("custom", "meek_lite 192.0.2.1:443");
 
     expect(result).toEqual({ ok: false, reason: "error" });
     expect(mockTorEnabled).toBe(true);
@@ -960,6 +1058,24 @@ describe("bridge modes", () => {
     // same way) rather than offering a Try again for a crash.
     expect(mockTorStartPending).toBe(false);
     mockRestartNostr.mockReset();
+  });
+
+  // The user backs out of a bridge change and turns Tor off while the new
+  // start runs, and then it is refused (every WebTunnel line on a stale iPhone
+  // build is): Tor off already set the state, so no hold may follow it.
+  test("a restart refused after Tor was turned off holds nothing", async () => {
+    await setTorRouting(true);
+    mockStartTor.mockImplementation(async () => {
+      mockTorEnabled = false;
+      throw new Error("bridge line");
+    });
+    mockHoldRoute.mockClear();
+    mockSetTorBootstrap.mockClear();
+
+    await setTorBridgeMode("custom", "webtunnel 192.0.2.1:443 url=https://x");
+
+    expect(mockHoldRoute).not.toHaveBeenCalled();
+    expect(mockSetTorBootstrap).not.toHaveBeenCalledWith("blocked");
   });
 
   // The preference is what the iOS mint gate and every other Tor claim read.

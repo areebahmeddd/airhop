@@ -429,20 +429,11 @@ A "gateway" device can bridge the BLE mesh to the Nostr internet:
 
 ### 8.3 Video
 
-**Status: Live video written on both platforms, in review.** The released
-builds carry video only as a file. The live video work in review defines
-LIVE_VIDEO_V1 (`docs/LIVE_VIDEO_V1.md`): `VIDEO_FRAME` (`0x2D`) in the room and
-Noise payload `0x0A` in a DM, H.264 Constrained Baseline with AAC-LC audio,
-packets of at most 352 bytes protected by Reed-Solomon parity, and a final
-`video_<id>.mp4` that replaces viewers' live copy when it fits 100 KiB. Clips
-and gallery videos are transcoded to fit and named `clip_*.mp4`.
+**Status: Live video written on both platforms, in review.** The released builds carry video only as a file. The live video work in review defines LIVE_VIDEO_V1 (`docs/LIVE_VIDEO_V1.md`): `VIDEO_FRAME` (`0x2D`) in the room and Noise payload `0x0A` in a DM, H.264 Constrained Baseline with AAC-LC audio, packets of at most 352 bytes protected by Reed-Solomon parity, and a final `video_<id>.mp4` that replaces viewers' live copy when it fits 100 KiB. Clips and gallery videos are transcoded to fit and named `clip_*.mp4`.
 
 ### 8.4 Push-to-Talk / Live Voice Streaming
 
-**Status: Shipped on both platforms.** In bitchat-ios, `Features/voice/` holds
-`PTTAudioCodec`, `PTTAudioFormat`, `PTTCaptureEngine`, `PTTBurstPlayer` and
-`PTTSettings`; `Protocols/VoiceBurstPacket.swift` is the wire format, and
-`MessageType.voiceFrame = 0x29` carries public bursts.
+**Status: Shipped on both platforms.** In bitchat-ios, `Features/voice/` holds `PTTAudioCodec`, `PTTAudioFormat`, `PTTCaptureEngine`, `PTTBurstPlayer` and `PTTSettings`; `Protocols/VoiceBurstPacket.swift` is the wire format, and `MessageType.voiceFrame = 0x29` carries public bursts.
 
 Scopes:
 
@@ -526,7 +517,7 @@ bitchat/ios/bitchat/
 
 | Class/File                     | Role                                                             |
 | ------------------------------ | ---------------------------------------------------------------- |
-| `AppRuntime.swift`             | Composition root - wires all services on launch                  |
+| `AppRuntime.swift`             | Composition root that wires all services on launch               |
 | `BLEService.swift`             | CoreBluetooth dual-role mesh engine (central + peripheral)       |
 | `MessageRouter.swift`          | Routes messages across transports + outbox + courier             |
 | `NostrTransport.swift`         | Nostr as a `Transport` protocol implementation                   |
@@ -782,11 +773,11 @@ This makes it valuable for **protests, disaster zones, events, and remote areas*
 
 - Relay nodes cannot read private traffic (only opaque padded ciphertext).
 - A malicious relay can **drop** messages (mitigated by courier redundancy and outbox retry).
-- A malicious relay **cannot** read, link across days, or amplify messages beyond their TTL.
+- A malicious relay **cannot** read private traffic or amplify messages beyond their TTL. It can recognize a device across days, since the peer ID never rotates (see above).
 
 ### Replay Protection
 
-- Public broadcasts: 6-hour acceptance window + deduplication.
+- Public broadcasts: a 2-minute timestamp window on live packets, 6 hours for ones served by gossip sync, plus deduplication.
 - Private payloads: protected by Noise nonces (replay invalidates MAC).
 
 ### Panic Wipe
@@ -852,12 +843,12 @@ From the whitepaper's "Future Work" section and the code as checked out.
 
 ### Landed Refactors
 
-1. **Architecture V2**: landed. `AppRuntime` is the composition root and feature-scoped models read from `ConversationStore` directly.
-2. **BLE transport architecture V3**: landed. One engine domain with capability ports and feature-owned state, including `BLEEngineScheduler`, `BLERadioController` and `BLELinkAuthState`.
+1. **Architecture V2**: `AppRuntime` is the composition root and feature-scoped models read from `ConversationStore` directly.
+2. **BLE transport architecture V3**: one engine domain with capability ports and feature-owned state, including `BLEEngineScheduler`, `BLERadioController` and `BLELinkAuthState`.
 
 ### Other Observations
 
-1. **Android Tor integration**: shipped. `ArtiTorManager.kt` brought Android to parity with the iOS Arti integration.
+1. **Android Tor integration**: `ArtiTorManager.kt` embeds Arti, at parity with bitchat-ios.
 2. **Rust client compatibility**: bitchat-android's former `CHANGELOG.md`, removed before 2.0.2, mentioned a Rust implementation.
 3. **Wi-Fi Aware transport (bitchat-android)**: implemented in `wifi-aware/`, off unless enabled in debug settings.
 4. **Bulletin board**: shipped on bitchat-ios as `BoardPackets.swift` (`0x23`). Not in the bitchat-android type registry.
@@ -951,6 +942,4 @@ The outbox is the sender's own queue and never goes on the wire. Courier envelop
 | PTT max burst duration        | 120 s                          |                                                       |
 | PTT jitter buffer             | 350 ms                         | Before starting live playback                         |
 
-_This document reflects bitchat-ios 1.8.0 and bitchat-android 2.2.0. For how Airhop
-behaves, read `src/` and [ARCHITECTURE.md](../spec/ARCHITECTURE.md). The bitchat
-protocol is public domain (Unlicense). Airhop is MIT licensed._
+_This document reflects bitchat-ios 1.8.0 and bitchat-android 2.2.0. For how Airhop behaves, read `src/` and [ARCHITECTURE.md](../spec/ARCHITECTURE.md). The bitchat protocol is public domain (Unlicense). Airhop is MIT licensed._

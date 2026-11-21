@@ -50,11 +50,13 @@ describe("publishCourierDrop", () => {
     expect(client.publish).toHaveBeenCalledTimes(1);
     const published = (client.publish as jest.Mock).mock.calls[0][0] as Event;
     expect(published.kind).toBe(1401);
+    // A relay that wants sign-in is shown a throwaway key, never the device's.
+    expect((client.publish as jest.Mock).mock.calls[0][2]).toBe("throwaway");
     const xTag = published.tags.find(([t]) => t === "x");
     expect(xTag?.[1]).toBe(bytesToHex(envelope.recipientTag));
   });
 
-  it("event has an expiration tag within range of the envelope expiry", async () => {
+  it("tags the event to expire with the envelope", async () => {
     let published: Event | null = null;
     const client = makeClient({
       publish: jest.fn().mockImplementation((event: Event) => {
@@ -78,7 +80,7 @@ describe("publishCourierDrop", () => {
 });
 
 describe("subscribeCourierDrops", () => {
-  it("calls client.subscribe with a kind 1401 filter", () => {
+  it("subscribes with a kind 1401 filter", () => {
     const client = makeClient();
     const tag = crypto.getRandomValues(new Uint8Array(16));
 

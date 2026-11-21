@@ -151,6 +151,11 @@ private final class LANTransport {
     var closing = false
     /// Sends handed to the connection and not yet processed.
     var pendingSends = 0
+    /// Whether the far end has sent a frame. No heartbeat goes out until it
+    /// has, so a link dialed at an address a peer handed over writes nothing to
+    /// a host that never speaks; TypeScript writes nothing until the announce
+    /// on it names the peer it expects.
+    var heard = false
   }
 
   private let emit: (String, [String: Any]) -> Void
@@ -306,6 +311,7 @@ private final class LANTransport {
         closeLink(linkID)
         continue
       }
+      guard link.heard else { continue }
       link.connection.send(
         content: Framing.encode(Data()),
         completion: .contentProcessed { [weak self] error in
@@ -478,6 +484,57 @@ private final class LANTransport {
     }
   }
 
+  /// The port the listener accepts links on, 0 while there is none.
+  func port(completion: @escaping (UInt16) -> Void) {
+    queue.async { completion(self.listener?.port?.rawValue ?? 0) }
+  }
+
+  /// A peer's address, handed over inside its session. Which one, and whether,
+  /// is decided in TypeScript (services/lan-direct-dial.ts); this refuses only
+  /// what is not an IPv4 literal, so nothing is ever looked up. The link takes
+  /// the caller's ID, which it knows before `linkConnected` arrives.
+  func connect(
+    host: String,
+    port: UInt16,
+    linkID: String,
+    completion: @escaping (LANFailure?) -> Void
+  ) {
+    queue.async {
+      guard self.listener != nil else {
+        completion(.connectFailed("LAN transport is not running"))
+        return
+      }
+      guard self.links[linkID] == nil else {
+        completion(.connectFailed("Link \(linkID) already exists"))
+        return
+      }
+      guard let address = IPv4Address(host), let nwPort = NWEndpoint.Port(rawValue: port)
+      else {
+        completion(.connectFailed("Not an IPv4 address and port"))
+        return
+      }
+      let connection = NWConnection(
+        to: .hostPort(host: .ipv4(address), port: nwPort),
+        using: self.tcpParameters()
+      )
+      // Named, so the inbound cap, which counts unnamed links, leaves it out.
+      self.adopt(
+        connection,
+        direction: "out",
+        serviceName: "address \(host):\(port)",
+        linkID: linkID,
+        onReady: completion
+      )
+    }
+  }
+
+  func disconnect(linkID: String, completion: @escaping () -> Void) {
+    queue.async {
+      self.closeLink(linkID)
+      completion()
+    }
+  }
+
   /// Register a connection and follow it to ready or failure.
   ///
   /// `onReady` is the dial's promise and fires exactly once. An inbound
@@ -486,6 +543,7 @@ private final class LANTransport {
     _ connection: NWConnection,
     direction: String,
     serviceName: String? = nil,
+    linkID chosenID: String? = nil,
     onReady: ((LANFailure?) -> Void)? = nil
   ) {
     // Over the cap an inbound connection is refused at once rather than
@@ -498,7 +556,7 @@ private final class LANTransport {
       return
     }
     linkSeq += 1
-    let linkID = "lan-\(direction)-\(linkSeq)"
+    let linkID = chosenID ?? "lan-\(direction)-\(linkSeq)"
     links[linkID] = Link(connection: connection, serviceName: serviceName)
     if let serviceName { linkByName[serviceName] = linkID }
 
@@ -610,6 +668,7 @@ private final class LANTransport {
   private func noteRead(_ linkID: String) {
     guard var link = links[linkID] else { return }
     link.lastReadAt = ProcessInfo.processInfo.systemUptime
+    link.heard = true
     links[linkID] = link
   }
 
@@ -1105,6 +1164,44 @@ final class AirhopLANModule: RCTEventEmitter {
         resolve(nil)
       }
     }
+  }
+
+  @objc(lanPort:rejecter:)
+  func lanPort(
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    transport.port { resolve(Int($0)) }
+  }
+
+  @objc(connectToAddress:port:linkID:resolver:rejecter:)
+  func connectToAddress(
+    host: String,
+    port: Double,
+    linkID: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard port >= 1, port <= 65_535 else {
+      reject("CONNECT_FAILED", "Port out of range", nil)
+      return
+    }
+    transport.connect(host: host, port: UInt16(port), linkID: linkID) { failure in
+      if let failure {
+        reject(failure.code, failure.message, nil)
+      } else {
+        resolve(nil)
+      }
+    }
+  }
+
+  @objc(closeLANLink:resolver:rejecter:)
+  func closeLANLink(
+    linkID: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    transport.disconnect(linkID: linkID) { resolve(nil) }
   }
 
   @objc(writeToLANLink:dataBase64:resolver:rejecter:)

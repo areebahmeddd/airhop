@@ -1,7 +1,7 @@
 // Noise XX handshake, transport sessions, replay window and the exporter secret
 // that seeds the Double Ratchet.
 import { ed25519, x25519 } from "@noble/curves/ed25519.js";
-import { bytesToHex } from "@noble/hashes/utils.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import { NoiseHandshake } from "../noise-xx";
 
 function makeKeypair() {
@@ -49,7 +49,7 @@ describe("Noise XX handshake", () => {
   test("transport round-trips a run of messages as the nonce increments", () => {
     // Both sides derive matching transport keys and advance their nonces in
     // step. Both run this code, so it cannot catch a split that disagrees with
-    // bitchat's; only a cross-implementation vector could.
+    // bitchat's; the published vector below does.
     const iKeys = makeKeypair();
     const rKeys = makeKeypair();
 
@@ -112,19 +112,126 @@ describe("Noise XX handshake", () => {
     expect(new TextDecoder().decode(sR.decrypt(ct))).toBe("still ours");
   });
 
-  test("wrong responder key causes handshake failure", () => {
+  test("a msg2 answering another initiator's msg1 is refused", () => {
     const iKeys = makeKeypair();
     const rKeys = makeKeypair();
-    const wrongKeys = makeKeypair();
+    const otherKeys = makeKeypair();
 
     const initiator = NoiseHandshake.createInitiator(iKeys.priv);
     const responder = NoiseHandshake.createResponder(rKeys.priv);
-    const wrongInitiator = NoiseHandshake.createInitiator(wrongKeys.priv);
+    const otherInitiator = NoiseHandshake.createInitiator(otherKeys.priv);
+    // Started, so its own ephemeral is in its transcript.
+    initiator.writeMsg1();
 
-    responder.readMsg1(wrongInitiator.writeMsg1());
+    responder.readMsg1(otherInitiator.writeMsg1());
     const msg2 = responder.writeMsg2();
-    // Initiator that did the original msg1 tries to consume this msg2
     expect(() => initiator.readMsg2(msg2)).toThrow();
+  });
+});
+
+// The first Noise_XX_25519_ChaChaPoly_SHA256 vector of the cacophony set,
+// which bitchat-ios tests against too. Its handshake messages carry payloads,
+// which this handshake never sends, so they cannot be compared; the split
+// depends only on the keys and the DH results, so the transport messages pin
+// the key schedule, which key each side sends with, and the nonce layout.
+describe("published vector", () => {
+  const VECTOR = {
+    prologue: "4a6f686e2047616c74",
+    initStatic:
+      "e61ef9919cde45dd5f82166404bd08e38bceb5dfdfded0a34c8df7ed542214d1",
+    initEphemeral:
+      "893e28b9dc6ca8d611ab664754b8ceb7bac5117349a4439a6b0569da977c464a",
+    respStatic:
+      "4a3acbfdb163dec651dfa3194dece676d437029c62a408b4c5ea9114246e4893",
+    respEphemeral:
+      "bbdb4cdbd309f1a1f2e1456967fe288cadd6f712d65dc7b7793d5e63da6b375b",
+    // msg1 is the initiator's ephemeral key followed by its payload in clear.
+    initEphemeralPub:
+      "ca35def5ae56cec33dc2036731ab14896bc4c75dbb07a61f879f8e3afa4c7944",
+    // Responder, initiator, responder: nonces 0, 0, 1.
+    transport: [
+      {
+        payload: "4361726c204d656e676572",
+        ciphertext: "96763ed773f8e47bb3712f0e29b3060ffc956ffc146cee53d5e1df",
+      },
+      {
+        payload: "4a65616e2d426170746973746520536179",
+        ciphertext:
+          "3e40f15f6f3a46ae446b253bf8b1d9ffb6ed9b174d272328ff91a7e2e5c79c07f5",
+      },
+      {
+        payload: "457567656e2042f6686d20766f6e2042617765726b",
+        ciphertext:
+          "eb3f3515110702e047a6c9da4478b6ead94873c11c0f2d710ddb3f09fce024b3a58502ae3f",
+      },
+    ],
+  };
+
+  // A handshake message draws its ephemeral key with the first 32-byte
+  // getRandomValues call it makes; later draws (the curve library's own
+  // blinding) stay random.
+  function withEphemeral<T>(key: string, run: () => T): T {
+    let pending: Uint8Array | null = hexToBytes(key);
+    const original = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+    const spy = jest
+      .spyOn(globalThis.crypto, "getRandomValues")
+      .mockImplementation(<A extends ArrayBufferView | null>(array: A): A => {
+        if (
+          pending !== null &&
+          array instanceof Uint8Array &&
+          array.length === 32
+        ) {
+          array.set(pending);
+          pending = null;
+          return array;
+        }
+        return original(array as never) as A;
+      });
+    try {
+      return run();
+    } finally {
+      spy.mockRestore();
+    }
+  }
+
+  test("derives the published transport keys and nonces", () => {
+    const prologue = hexToBytes(VECTOR.prologue);
+    const initiator = NoiseHandshake.createInitiator(
+      hexToBytes(VECTOR.initStatic),
+      prologue,
+    );
+    const responder = NoiseHandshake.createResponder(
+      hexToBytes(VECTOR.respStatic),
+      prologue,
+    );
+    const msg1 = withEphemeral(VECTOR.initEphemeral, () =>
+      initiator.writeMsg1(),
+    );
+    expect(bytesToHex(msg1)).toBe(VECTOR.initEphemeralPub);
+    responder.readMsg1(msg1);
+    const msg2 = withEphemeral(VECTOR.respEphemeral, () =>
+      responder.writeMsg2(),
+    );
+    initiator.readMsg2(msg2);
+    responder.readMsg3(initiator.writeMsg3());
+    const sessions = { i: initiator.split(), r: responder.split() };
+
+    const [fromR0, fromI0, fromR1] = VECTOR.transport;
+    // Each message on the wire is a 4-byte nonce, then the AEAD output.
+    const sent = [
+      sessions.r.encrypt(hexToBytes(fromR0.payload)),
+      sessions.i.encrypt(hexToBytes(fromI0.payload)),
+      sessions.r.encrypt(hexToBytes(fromR1.payload)),
+    ];
+    expect(sent.map((m) => bytesToHex(m.slice(4)))).toEqual(
+      VECTOR.transport.map((m) => m.ciphertext),
+    );
+    expect(sent.map((m) => bytesToHex(m.slice(0, 4)))).toEqual([
+      "00000000",
+      "00000000",
+      "00000001",
+    ]);
+    expect(bytesToHex(sessions.i.decrypt(sent[0]))).toBe(fromR0.payload);
   });
 });
 

@@ -127,12 +127,15 @@ export default function ChannelInfoSheet({
     channel !== null ? s.nameForChannel(channel) : undefined,
   );
   // Subscribed rather than read once, so adding or removing a member updates
-  // this sheet while it is open.
+  // this sheet while it is open. A pending invite shows the roster it offers.
   const groupRaw = useGroupStore((s) => {
     const c = channel ?? "";
     if (!c.startsWith("group:")) return undefined;
     const gid = c.slice("group:".length);
-    return s.groups.find((g) => g.groupID === gid);
+    return (
+      s.groups.find((g) => g.groupID === gid) ??
+      s.invites.find((i) => i.groupID === gid)
+    );
   });
 
   // Bookmark state and place name for a location channel. The channel's geohash

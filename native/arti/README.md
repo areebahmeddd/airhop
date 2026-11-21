@@ -65,7 +65,13 @@ Neither script trusts its toolchain:
 2. Regenerate `Cargo.lock` and **review every dependency change**. This is a Tor client; the dependency graph is part of the security review.
 3. Rebuild both platforms, re-record the hashes, and update the `arti` entry in `src/data/licenses.ts`.
 4. Read the upstream changelog for API and cargo-feature breaks. Both happen, and a dropped feature fails at resolve time with a list of what is available, which is the easy case; an API change fails at compile time in `lib.rs`.
-5. Run `cargo audit` in this directory, by hand rather than in CI, as with govulncheck for the transports. Two findings are known and accepted: RUSTSEC-2023-0071 (`rsa`, a timing attack on decryption, while Arti only verifies RSA signatures) and RUSTSEC-2024-0436 (`paste`, unmaintained). Anything else goes upstream, and the update waits for a release that carries the fix.
+5. Run `cargo audit` in this directory, by hand rather than in CI, as with govulncheck for the transports. These findings are known and accepted:
+   - RUSTSEC-2023-0071 (`rsa`): a timing attack on decryption, while Arti only verifies RSA signatures.
+   - RUSTSEC-2024-0436 (`paste`) and RUSTSEC-2025-0141 (`bincode`): unmaintained.
+   - RUSTSEC-2026-0387 (`crypto-bigint` 0.5): listed in `Cargo.lock` but compiled into nothing.
+   - RUSTSEC-2026-0459 (bundled SQLite): needs crafted files in Arti's private state directory. Fixed once `tor-dirmgr` takes `rusqlite` 0.41.
+
+   Anything else goes upstream, and the update waits for a release that carries the fix.
 
 A compiler bump moves `RUST_VERSION` in `TOOLCHAIN.env` and the channel in `rust-toolchain.toml` together. The build asserts they agree.
 
@@ -78,6 +84,8 @@ Run the container build twice from clean and confirm `SHA256SUMS.android` does n
 **Bridges are an argument to `start`, not a setter beside it.** They are fixed when the client is constructed, so a setter could be called afterwards and silently do nothing, and anything that cleared it would let a later start take a direct route for a user who asked not to have one. The transports themselves live in [`native/iptproxy`](../iptproxy); this crate only receives the loopback ports they landed on.
 
 **A cryptographic provider is chosen here.** rustls needs one and arti does not pick: `tor-rtcompat` takes rustls with no provider feature and requires the application to install one, or rustls panics inside `TorClient::builder`. `ring` rather than the `aws-lc-rs` upstream prefers, because aws-lc-rs needs cmake and libclang inside the container for three Android ABIs and two Apple slices, while ring builds with the NDK clang and is already in the graph under `rustls-webpki`. The hybrid post-quantum handshake aws-lc-rs would add is tracked separately. Both the cargo feature and an explicit `install_default` are set, because feature unification is something a later dependency change can undo silently.
+
+**`libc` is held at 0.2.189 in `Cargo.lock`.** `tor-memquota` needs `sysinfo` 0.38, whose Apple process code calls `proc_pidinfo`, which `libc` 0.2.191 declares for macOS only, so the iOS slices fail to compile. A `cargo update` that raises `libc` has to wait for a `sysinfo` that builds for iOS against it.
 
 **Panics are caught, not aborted.** Unwinding across an FFI boundary is undefined behavior, so every entry point runs inside `catch_panic`, which returns `AIRHOP_TOR_ERR_PANIC` and puts the message in the status summary. Aborting is the simpler way to be sound and the wrong trade: it takes the Bluetooth mesh, the wallet and the courier store with it, none of which depend on Tor.
 

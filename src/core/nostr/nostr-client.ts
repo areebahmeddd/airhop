@@ -8,10 +8,10 @@
 // from geo-relay.ts.
 //
 // Tor proxy: this client never touches the socket directly. Routing Nostr
-// through Tor is done one level up, by swapping nostr-tools' WebSocket
-// implementation (see tor-routing.ts): on iOS for TorWebSocket, which tunnels
-// over Arti's SOCKS5 proxy, and on Android by the proxy installed into the
-// shared OkHttp client every socket is built from.
+// through Tor is done one level up (see tor-routing.ts): on iOS by
+// RelayWebSocket, the native socket nostr-tools is given, which tunnels over
+// Arti's SOCKS5 proxy, and on Android by the proxy installed into the shared
+// OkHttp client every socket is built from.
 //
 // Pings catch a socket that went silent without closing, which reconnect alone
 // never notices; on React Native they run as a cheap REQ every 29 s.
@@ -23,8 +23,9 @@
 // network comes back.
 
 import { BoundedIdSet } from "@utils/bounded-id-set";
-import type { Event } from "nostr-tools";
-import type { Subscription } from "nostr-tools/abstract-relay";
+import type { Event, EventTemplate, VerifiedEvent } from "nostr-tools";
+import { finalizeEvent, generateSecretKey, getPublicKey } from "nostr-tools";
+import type { AbstractRelay, Subscription } from "nostr-tools/abstract-relay";
 import type { Filter } from "nostr-tools/filter";
 import type { SubCloser } from "nostr-tools/pool";
 import { SimplePool } from "nostr-tools/pool";
@@ -50,7 +51,10 @@ const MAX_RELAY_COUNT = 5;
 // added and it would never be contacted. Sized to hold both halves.
 const MAX_OVERRIDE_RELAY_COUNT = GEO_RELAY_COUNT + MAX_CUSTOM_RELAYS;
 
-// How long to wait for a publish ACK from at least one relay.
+// How long to wait for a publish ACK from at least one relay. A post a relay
+// refused for sign-in takes three round trips (the refusal, the proof, the
+// resend), which a slow Tor circuit can stretch past this: the caller then
+// sends again a post that landed, and the recipient drops the copy by its id.
 const PUBLISH_TIMEOUT_MS = 8_000;
 
 // A relay that misses its first connect is dropped for good (see the header),
@@ -101,6 +105,37 @@ const EOSE_MARKER = {} as Event;
 const RESUBSCRIBE_BASE_MS = 15_000;
 const RESUBSCRIBE_MAX_MS = 5 * 60_000;
 
+// The prefix a relay closes a read or refuses a post with when it wants
+// sign-in first (NIP-42). Matched without the space NIP-42 puts after it.
+const AUTH_REQUIRED = "auth-required:";
+
+// A relay's challenge is signed into the proof and sent back, so an outsized
+// one is refused rather than echoed. Real challenges are a few dozen
+// characters; this leaves room for any relay's format and none for abuse.
+const MAX_CHALLENGE_LENGTH = 4_096;
+
+const THROWAWAY = "throwaway";
+
+// Who a relay that demands sign-in (NIP-42) is shown an operation comes from:
+// the secret of the key the operation belongs to, or a key made for that one
+// sign-in. An operation passing none never signs in, and stays refused there.
+export type RelayAuth = Uint8Array | typeof THROWAWAY;
+
+// The one key proven on a relay's connection, and the challenge it signed.
+interface SignIn {
+  relay: AbstractRelay;
+  // The key's public half, or THROWAWAY.
+  identity: string;
+  challenge: string;
+  // nostr-tools keeps an accepted sign-in for its connection, so being asked
+  // to sign again after one means the connection is a new one.
+  accepted: boolean;
+  // Whether the relay answered the proof. nostr-tools stops waiting after
+  // 4.4 s, which a slow Tor circuit outlasts; a proof it gave up on may yet be
+  // accepted, so the same key may send it again, and no other key may.
+  answered: boolean;
+}
+
 export interface NostrClientConfig {
   // Called whenever the set of live relay connections crosses the has-any /
   // has-none boundary, so the UI can reflect whether the internet bridge is up.
@@ -133,6 +168,9 @@ export class NostrClient {
   // from one still on its first connect. Bounded by the relays this client
   // has opened, a handful per cell visited.
   private readonly everLive = new Set<string>();
+  // Per pool key, the sign-in on its current connection. Forgotten once the
+  // relay is seen down, since a reconnect starts without one.
+  private readonly signIns = new Map<string, SignIn>();
 
   constructor(config: NostrClientConfig = {}) {
     this.onConnectionChange = config.onConnectionChange;
@@ -189,7 +227,7 @@ export class NostrClient {
   // the UI's internet-bridge indicator tracks real connectivity without churn.
   private reconcileConnected(): void {
     const status = this.pool.listConnectionStatus();
-    this.noteLive(status);
+    this.noteStatus(status);
     const any = [...status.values()].some(Boolean);
     if (any !== this.connected) {
       this.connected = any;
@@ -236,6 +274,7 @@ export class NostrClient {
     onEvent: EventHandler,
     onEose?: EoseHandler,
     relays?: string[],
+    auth?: RelayAuth,
   ): SubCloser {
     const targets = this.resolveRelays(relays);
     const delivered = new BoundedIdSet(MAX_DELIVERED_IDS);
@@ -268,15 +307,53 @@ export class NostrClient {
     // listen there again while the banner still reads connected, so a closed
     // subscription is reopened after a backoff until the caller closes it.
     // Counted once toward EOSE: a reopening is not a second backfill.
+    //
+    // A relay that wants sign-in closes with AUTH_REQUIRED. Signing in and
+    // reopening happen here rather than through nostr-tools' `onauth`, whose
+    // reopened subscription is never handed back to the closer, so it would
+    // outlive the call (a location's feed running on after leaving the cell).
+    // Reopened at once, once per connection; refused again on the same one, it
+    // backs off like any other close. nostr-tools ends a refused read's
+    // backfill just before reporting the close, so that end is held for a
+    // moment: a refusal that signs in hands it to the reopened read, whose own
+    // backfill then ends it, and EOSE does not fire ahead of what that relay
+    // serves. A refusal arriving after nostr-tools' own EOSE timeout (4.4 s,
+    // a slow Tor circuit) finds the end already given, and the signed-in
+    // backfill then arrives after it, as live events do.
     let active = true;
     const closers = new Map<string, SubCloser>();
+    const reopenedUnder = new Map<string, SignIn>();
     const open = (
       key: string,
       url: string,
       filter: Filter,
       attempt: number,
+      countsEose = attempt === 0,
     ): void => {
       const openedAtMs = Date.now();
+      let endHeld = false;
+      const endBackfill =
+        countsEose && oneose !== undefined
+          ? (): void => {
+              endHeld = true;
+              queueMicrotask(() => {
+                if (!endHeld) return;
+                endHeld = false;
+                oneose();
+              });
+            }
+          : undefined;
+      const reopenLater = (failures: number): void => {
+        const delay = Math.min(
+          RESUBSCRIBE_BASE_MS * 2 ** failures,
+          RESUBSCRIBE_MAX_MS,
+        );
+        const timer = setTimeout(() => {
+          this.resubscribeTimers.delete(timer);
+          if (active && !this.closed) open(key, url, filter, failures + 1);
+        }, delay);
+        this.resubscribeTimers.add(timer);
+      };
       let newest: number | undefined;
       closers.set(
         key,
@@ -287,23 +364,31 @@ export class NostrClient {
             this.lastEmitted = resumeCursor(filter, newest);
             deliver(event);
           },
-          oneose: attempt === 0 ? oneose : undefined,
+          oneose: endBackfill,
           alreadyHaveEvent,
-          onclose: () => {
+          onclose: (reasons) => {
             if (!active || this.closed) return;
+            const reason = reasons[0]?.reason ?? "";
+            if (auth !== undefined && isAuthRequired(reason)) {
+              const owesEnd = endHeld;
+              endHeld = false;
+              void this.signIn(url, auth).then((signIn) => {
+                if (!active || this.closed) return;
+                if (signIn === null || reopenedUnder.get(key) === signIn) {
+                  if (owesEnd) oneose?.();
+                  reopenLater(attempt);
+                  return;
+                }
+                reopenedUnder.set(key, signIn);
+                open(key, url, filter, attempt, owesEnd);
+              });
+              return;
+            }
             // One that outlived the longest backoff was healthy, so its close
             // starts over. Not EOSE, which a relay that never connected sends.
-            const failures =
-              Date.now() - openedAtMs >= RESUBSCRIBE_MAX_MS ? 0 : attempt;
-            const delay = Math.min(
-              RESUBSCRIBE_BASE_MS * 2 ** failures,
-              RESUBSCRIBE_MAX_MS,
+            reopenLater(
+              Date.now() - openedAtMs >= RESUBSCRIBE_MAX_MS ? 0 : attempt,
             );
-            const timer = setTimeout(() => {
-              this.resubscribeTimers.delete(timer);
-              if (active && !this.closed) open(key, url, filter, failures + 1);
-            }, delay);
-            this.resubscribeTimers.add(timer);
           },
         }),
       );
@@ -386,7 +471,14 @@ export class NostrClient {
   // onConnectionChange never reports the recovery, so nothing held for it is
   // ever sent. Its own reconnect brings it back. A relay never yet live is
   // still tried, which is how a new cell's relays are first opened.
-  async publish(event: Event, relays?: string[]): Promise<PublishResult> {
+  //
+  // A relay that refuses the post for want of sign-in gets it once more, the
+  // same event, after signing in as `auth` allows (see signIn).
+  async publish(
+    event: Event,
+    relays?: string[],
+    auth?: RelayAuth,
+  ): Promise<PublishResult> {
     const targets = this.withoutReconnecting(this.resolveRelays(relays));
     if (targets.length === 0) {
       throw new Error("Publish skipped: every relay is reconnecting");
@@ -409,8 +501,10 @@ export class NostrClient {
 
       const promises = this.pool.publish(targets, event);
       targets.forEach((relay, i) => {
-        promises[i]
-          ?.then(() => {
+        const answer = promises[i];
+        if (answer === undefined) return;
+        this.resendSignedIn(answer, relay, event, auth)
+          .then(() => {
             results.push({ relay, ok: true });
             if (!resolved) {
               resolved = true;
@@ -435,12 +529,93 @@ export class NostrClient {
     });
   }
 
+  private resendSignedIn(
+    answer: Promise<string>,
+    url: string,
+    event: Event,
+    auth?: RelayAuth,
+  ): Promise<string> {
+    if (auth === undefined) return answer;
+    return answer.catch(async (err: unknown) => {
+      if (!isAuthRequired(err) || !(await this.signIn(url, auth))) throw err;
+      return this.pool.publish([url], event)[0];
+    });
+  }
+
+  // Signs in to a relay that asked, and resolves to the sign-in its connection
+  // now holds when `auth`'s operation may go ahead under it, or null.
+  //
+  // A connection proves one key, ever: a second would link the two (a
+  // location's key to the main one, say) on that relay. So a connection that
+  // has seen a proof, accepted or refused, is never sent one from another key,
+  // and a refused proof is not sent again for the same challenge, so that relay
+  // stays refused until it asks afresh.
+  // One the relay never answered may be sent again by the same key. A
+  // throwaway key stands for no one, so a post that brought one goes out on a
+  // connection signed in as anyone.
+  // nostr-tools keeps a sign-in for its connection and drops it on reconnect;
+  // the record here is dropped once the relay is seen down (noteStatus), or
+  // once nostr-tools asks again after an accepted one. Whichever operation is
+  // refused first on a connection signs it in: on a reconnect that is a read
+  // still open (nostr-tools resends those the moment it opens), but on a first
+  // connect, or with the read waiting out a backoff, a post can claim it, and
+  // the read stays refused on that relay until the connection drops.
+  // `automaticallyAuth` stays off: it answers every challenge with one key,
+  // whatever the operation.
+  private async signIn(url: string, auth: RelayAuth): Promise<SignIn | null> {
+    const key = poolKey(url);
+    if (key === null || this.closed) return null;
+    const identity = auth === THROWAWAY ? THROWAWAY : getPublicKey(auth);
+    let sent: SignIn | undefined;
+    try {
+      const relay = await this.pool.ensureRelay(url, {
+        connectionTimeout: CONNECT_TIMEOUT_MS,
+      });
+      // Called only when this connection holds no accepted sign-in.
+      const sign = async (template: EventTemplate): Promise<VerifiedEvent> => {
+        const challenge = template.tags.find((t) => t[0] === "challenge")?.[1];
+        const prior = this.signIns.get(key);
+        const refusedHere = prior?.relay === relay && !prior.accepted;
+        if (
+          this.closed ||
+          typeof challenge !== "string" ||
+          challenge.length === 0 ||
+          challenge.length > MAX_CHALLENGE_LENGTH ||
+          (refusedHere &&
+            ((prior.answered && prior.challenge === challenge) ||
+              prior.identity !== identity))
+        ) {
+          throw new Error("sign-in declined");
+        }
+        sent = { relay, identity, challenge, accepted: false, answered: false };
+        this.signIns.set(key, sent);
+        return finalizeEvent(
+          template,
+          auth === THROWAWAY ? generateSecretKey() : auth,
+        );
+      };
+      await relay.auth(sign);
+      const current = this.signIns.get(key);
+      if (this.closed || current?.relay !== relay) return null;
+      current.accepted = true;
+      current.answered = true;
+      return current.identity === identity || identity === THROWAWAY
+        ? current
+        : null;
+    } catch (err: unknown) {
+      if (sent !== undefined && !String(err).includes("auth timed out")) {
+        sent.answered = true;
+      }
+      return null;
+    }
+  }
+
   // Drops the relays that were live once and are down now. One mid first
   // connect also reads as down, but a publish joins that connect rather than
   // starting its own, so only a relay seen live is in backoff.
   private withoutReconnecting(targets: string[]): string[] {
     const status = this.pool.listConnectionStatus();
-    this.noteLive(status);
+    this.noteStatus(status);
     return targets.filter((url) => {
       const key = poolKey(url);
       return (
@@ -449,8 +624,11 @@ export class NostrClient {
     });
   }
 
-  private noteLive(status: Map<string, boolean>): void {
+  private noteStatus(status: Map<string, boolean>): void {
     for (const [url, live] of status) if (live) this.everLive.add(url);
+    for (const key of this.signIns.keys()) {
+      if (status.get(key) !== true) this.signIns.delete(key);
+    }
   }
 
   // Query relays and collect all matching events up to EOSE: each verified,
@@ -487,6 +665,7 @@ export class NostrClient {
     clearInterval(this.connectionPoll);
     this.resubscribeTimers.forEach(clearTimeout);
     this.resubscribeTimers.clear();
+    this.signIns.clear();
     this.pool.destroy();
     // Anything still queued belongs to subscriptions that have just gone away,
     // and its handlers close over a transport this client no longer owns. A
@@ -512,6 +691,11 @@ function resumeCursor(filter: Filter, newest: number): number | undefined {
   const nowSeconds = Math.floor(Date.now() / 1000);
   const cursor = Math.min(newest, nowSeconds) - RECONNECT_SKEW_SECONDS;
   return filter.since === undefined ? cursor : Math.max(filter.since, cursor);
+}
+
+function isAuthRequired(reason: unknown): boolean {
+  const text = reason instanceof Error ? reason.message : reason;
+  return typeof text === "string" && text.startsWith(AUTH_REQUIRED);
 }
 
 // The key nostr-tools files a relay under in its pool, or null for a URL it

@@ -45,11 +45,12 @@ The signature covers, in order: the 1-byte-length-prefixed context `"bitchat-pre
 ## Prekey Rules
 
 - **Bundles are public by design.** They carry only public halves; bitchat floods them in the clear, and sealing them breaks interop.
-- **Private prekeys never leave the device.** One keychain item, `airhop.prekeys.local.v1` (`KEYCHAIN_ITEMS.localPrekeys`), one blob, as bitchat-ios keeps one Keychain blob. Never MMKV: it appends, so a deleted key lingers in the file until a rewrite. Peer bundles are public and stay in MMKV. The panic wipe deletes both; prekeys never move to a new phone.
+- **Private prekeys never leave the device.** One keychain item, `airhop.prekeys.local.v1` (`KEYCHAIN_ITEMS.localPrekeys`), one blob. Never MMKV: it appends, so a deleted key lingers in the file until a rewrite. Peer bundles are public and stay in MMKV. The panic wipe deletes both; prekeys never move to a new phone.
 - **Keychain failures leave no state.** A read that throws mints nothing, writes nothing and builds no bundle, and the next use retries (an iOS relaunch before first unlock lands here). A write that throws keeps the state in memory and retries on the next change.
 - **Single use, consumed first.** Consume the prekey the moment an envelope opens under it, before any block, payload-type or message-ID check can return, then publish a fresh bundle (`emitPrekeyBundle(true)`) so senders stop using it. bitchat-ios consumes inside `openPrekeyPayload` for the same reason.
 - **One prekey per message.** `PeerPrekeyStore.assign(noiseKey, messageID)` returns the prekey already assigned to that message, so every re-seal for a new courier or a retry spends the same one (bitchat-ios `assignRecipientPrekey`). A newer bundle from the owner keeps used IDs and assignments for prekeys it still offers.
 - **Grace, then gone.** A consumed private key is kept 48 h so a second in-flight envelope sealed to it still opens, then dropped. At most 8 consumed keys are kept whatever their age, an Airhop-only cap: anyone holding our bundle can spend prekeys at will, and every one kept grows a keychain value some platforms cap near 2 KiB.
+- **Retired after a month.** An unused key leaves the bundle 30 days after it was made and opens for 7 days and 25 h more: the bundle is re-dated every 3 days, so the last one listing a key can be dated the day it left, a sender may seal to that for 7 days, and the envelope may travel a day. Each record stores when its key was made.
 
 ## Envelope
 
@@ -134,12 +135,12 @@ The sender seals **once** per send pass and addresses the same bytes to every co
 | Expiry               | At most 24 h plus 1 h slack; longer is refused, not clamped |
 | Identical ciphertext | Merged; the budget rises only before the first spray        |
 
-**On a verified announce** (`sprayCourierTo`), as bitchat-ios splits it:
+**On a verified announce** (`sprayCourierTo`):
 
-- **On a link we hold:** hand over the peer's own mail with a budget of 1, retired only once the write lands (`offerHandover` / `commitHandover`); then spray half the budget of anything else, once per peer, never back to its depositor and never their own mail (`offerSpray` / `commitSpray`). Both commit only after the transport confirms, so a full GATT queue costs nothing.
-- **Heard through relays:** flood the peer's own mail toward them at most once per envelope per 10 minutes, and keep carrying it (`offerRemoteHandover`). Never spray: a flood cannot confirm a carrier took the copy, so no budget would be spent and every peer within seven hops would end up carrying one.
+- **On a link a handshake proved** (`LinkRegistry.provenLinkFor`): hand over the peer's own mail with a budget of 1, retired only once the write lands (`offerHandover` / `commitHandover`); then spray half the budget of anything else, once per peer, never back to its depositor and never their own mail (`offerSpray` / `commitSpray`). Both commit only after the transport confirms, so a full GATT queue costs nothing.
+- **Heard through relays, or on a link not yet proved:** flood the peer's own mail toward them at most once per envelope per 10 minutes, and keep carrying it (`offerRemoteHandover`). Never spray: a flood cannot confirm a carrier took the copy, so no budget would be spent and every peer within seven hops would end up carrying one.
 
-bitchat-ios hands over only on a link whose Noise session was made on that link. Airhop does not record which link a session came from, so it hands over on any link bound by a direct announce.
+A link is proved when a Noise handshake with the peer completes over it while it is bound to them (`noteLinkProven`), and the proof goes with the binding. A direct announce on an unproved link opens a handshake, or reruns the session already held, and its completion hands the mail over at once. The binding alone is not enough: anyone in range can replay a peer's fresh announce onto a link of their own, and a handover down it deletes the carried copy.
 
 ## What Not to Do
 

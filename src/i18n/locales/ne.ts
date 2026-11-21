@@ -159,7 +159,7 @@ export const strings: Strings = {
     "नजिकका यन्त्र भेट्टाउँछ र तिनका बीच सन्देश पुर्‍याउँछ। मेश यसरी नै बन्छ, र यो इन्टरनेटबिना काम गर्छ।",
   "onboarding.primer.location.title": "स्थान",
   "onboarding.primer.location.body":
-    "तपाईंलाई नजिकका क्षेत्रका च्यानलमा राख्छ, एउटा टोलदेखि पूरै क्षेत्रसम्म। Airhop ले तपाईंलाई कहिल्यै पछ्याउँदैन, र तपाईंको ठ्याक्कै स्थान तपाईंले कसैलाई आफ्नो स्थान पठाउँदा मात्र यन्त्रबाहिर जान्छ।",
+    "तपाईंलाई नजिकका क्षेत्रका च्यानलमा राख्छ, एउटा टोलदेखि पूरै क्षेत्रसम्म। Airhop ले तपाईंलाई कहिल्यै पछ्याउँदैन, र तपाईंको ठ्याक्कै स्थान कहिल्यै यन्त्रबाहिर जाँदैन।",
   "onboarding.primer.notifications.title": "सूचना",
   "onboarding.primer.notifications.body":
     "एप बन्द हुँदा पनि नयाँ सन्देशका सूचना पाउनुहोस्। सूचना तपाईंकै यन्त्रमा स्थानीय रूपमा बन्छन्, कुनै सर्भरको संलग्नताबिना।",
@@ -384,7 +384,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "हरेक सदस्यसम्म पुग्न सकिएन। उनीहरू नजिकै हुँदा फेरि प्रयास गर्नुहोस्।",
   "chat.group.you_were_added": "तपाईंलाई {name} मा थपियो।",
-  "chat.group.added_you": "तपाईंलाई {name} मा थपे",
+  "chat.timer.you_set_1": "तपाईंले हराउने सन्देशहरू 1 दिनमा सेट गर्नुभयो",
+  "chat.timer.you_set_7": "तपाईंले हराउने सन्देशहरू 7 दिनमा सेट गर्नुभयो",
+  "chat.timer.you_set_30": "तपाईंले हराउने सन्देशहरू 30 दिनमा सेट गर्नुभयो",
+  "chat.timer.you_off": "तपाईंले हराउने सन्देशहरू बन्द गर्नुभयो",
+  "chat.timer.you_set_local_1":
+    "तपाईंले यो फोनमा हराउने सन्देशहरू 1 दिनमा सेट गर्नुभयो",
+  "chat.timer.you_set_local_7":
+    "तपाईंले यो फोनमा हराउने सन्देशहरू 7 दिनमा सेट गर्नुभयो",
+  "chat.timer.you_set_local_30":
+    "तपाईंले यो फोनमा हराउने सन्देशहरू 30 दिनमा सेट गर्नुभयो",
+  "chat.timer.you_off_local": "तपाईंले यो फोनमा हराउने सन्देशहरू बन्द गर्नुभयो",
+  "chat.timer.peer_set_1": "{name} ले हराउने सन्देशहरू 1 दिनमा सेट गर्नुभयो",
+  "chat.timer.peer_set_7": "{name} ले हराउने सन्देशहरू 7 दिनमा सेट गर्नुभयो",
+  "chat.timer.peer_set_30": "{name} ले हराउने सन्देशहरू 30 दिनमा सेट गर्नुभयो",
+  "chat.timer.peer_off": "{name} ले हराउने सन्देशहरू बन्द गर्नुभयो",
+  "chat.timer.sheet_shared":
+    "अबदेखि पठाइने सन्देशहरूका लागि, दुवै फोनमा। पठाउनेको फोनमा प्रत्येक सन्देशको समय पठाएदेखि गनिन्छ, र अर्को फोनमा पहिलो पटक पढिएदेखि। स्क्रिनसट रोक्न सकिँदैन।",
+  "chat.timer.sheet_pending":
+    "यो फोनमा सेट भयो। अर्को पटक तपाईंहरू जोडिँदा यो {name} सम्म पुग्छ, अनि दुवै फोनमा लागू हुन्छ।",
+  "chat.timer.sheet_bitchat":
+    "यो फोनमा मात्र। {name} को एपले साझा टाइमर समर्थन गर्दैन।",
+  "chat.timer.sheet_local":
+    "अहिलेलाई यो फोनमा मात्र। {name} को एपले साझा टाइमर समर्थन गर्छ भने, अर्को पटक तपाईंहरू जोडिँदा यो उहाँसम्म पुग्छ।",
+  "chat.group.invited": "तपाईंलाई {name} मा निम्तो दिइएको छ।",
+  "chat.group.invited_you": "तपाईंलाई {name} मा निम्तो दिए",
+  "chat.group.decline": "अस्वीकार गर्नुहोस्",
+  "chat.group.decline_title": "{name} को निम्तो अस्वीकार गर्ने?",
+  "chat.group.decline_body":
+    "{name} तपाईंका सम्पर्कहरूमा हुनुहुन्न। उहाँलाई पनि रोक्नुहोस्, अनि उहाँबाट फेरि निम्तो वा सन्देश आउने छैन।",
+  "chat.group.decline_block": "अस्वीकार गरेर रोक्नुहोस्",
   "chat.group.you_were_removed":
     "तपाईंलाई {name} बाट हटाइयो। अब तपाईं यहाँ न पढ्न सक्नुहुन्छ न सन्देश पठाउन।",
   "chat.group.removed_you": "तपाईंलाई {name} बाट हटाए",
@@ -1174,6 +1203,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "टोकन बन्न सकेन",
+  "wallet.send.unverified_note":
+    "यो भुक्तानीको केही भाग टकसारले अझै पुष्टि नगरेको ecash हो।",
   "wallet.send.title": "ecash पठाउनुहोस्",
   "wallet.send.amount_in": "{unit} मा रकम",
   "wallet.send.body":
@@ -1233,14 +1264,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} मा साटियो। अब यो प्रमाणसहित तपाईंको हो: पठाउनेसँग भएको यो टोकनको प्रतिलिपि अब चल्दैन।",
   "wallet.receive.pending_unconfirmed":
-    "{mint} बाट राखियो, तर टकसारले यो नखर्चिएको हो भनेर अझै पुष्टि गरेको छैन। अनलाइन भएपछि टकसारसँग आफैं पुष्टि हुन्छ।",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} बाट राखियो, तर टकसारले यो नखर्चिएको हो भनेर अझै पुष्टि गरेको छैन। यसको हस्ताक्षर मिल्छ, त्यसैले टोकन साँचो हो। अनलाइन भएपछि टकसारसँग आफैं पुष्टि हुन्छ।",
   "wallet.receive.dleq_ok": "टकसारको हस्ताक्षर मिल्छ, त्यसैले टोकन साँचो हो।",
-  "wallet.receive.dleq_uncached":
-    "टकसारका कुञ्जी यहाँ छैनन्, त्यसैले हस्ताक्षर अफलाइन जाँच्न सकिएन।",
-  "wallet.receive.dleq_missing":
-    "यसका सबै सिक्कामा टकसारको हस्ताक्षर प्रमाण छैन, त्यसैले अफलाइन जाँच्न सकिएन।",
   "wallet.receive.dleq_warning":
     "अनलाइन पुष्टि नभएसम्म, सिद्धान्ततः पठाउनेले यो अन्तै खर्च गरिसकेको हुन सक्छ।",
   "wallet.receive.failed": "लिन सकिएन",
@@ -1598,6 +1623,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR कोड स्क्यान गर्नुहोस्",
   "wallet.scan.aim_any": "टोकन, बिल वा npub को QR कोडमा तेर्स्याउनुहोस्।",
   "wallet.scan.no_any": "त्यो तस्बिरमा टोकन, बिल वा npub भेटिएन।",
+  "wallet.scan.not_usable": "Airhop ले यहाँ यो QR कोड प्रयोग गर्न सक्दैन।",
   "wallet.scan.use_camera_a11y": "क्यामेराले स्क्यान गर्नुहोस्",
   "wallet.scan.use_camera": "क्यामेरा चलाउनुहोस्",
   "wallet.scan.pick_image_a11y": "सुरक्षित तस्बिरबाट QR कोड पढ्नुहोस्",
@@ -1696,6 +1722,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "यो भुक्तानी तपाईंको वालेटमा बाँधिएको छ।",
   "wallet.svc.locked_ours_offline_body":
     "अनलाइन भएपछि यसलाई लिनुहोस्। त्यतिन्जेल अरू कसैले यसलाई लिन सक्दैन।",
+  "wallet.svc.offline_cap":
+    "अफलाइनमा, प्रत्येक टकसारको अपुष्ट ecash को सीमा {limit} हो।",
+  "wallet.svc.offline_unchecked": "यो ecash अफलाइनमा जाँच गर्न सकिँदैन।",
+  "wallet.svc.claim_online_body":
+    "अनलाइन भएपछि, टकसारले पुष्टि गर्न सक्दा यसलाई लिनुहोस्।",
   "wallet.svc.already_spent": "यो ecash पहिल्यै खर्च भइसकेको छ।",
   "wallet.svc.already_spent_body":
     "यो टोकन पठाउनेले पहिले नै साट्यो, वा उही टोकन अरू कसैलाई पनि पठायो।",
@@ -2021,10 +2052,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "कुराकानी सबैभन्दा लामो समय पढ्न योग्य राख्छ, र डिस्कमा सबैभन्दा धेरै ठाउँ लिन्छ।",
   "settings.general.message_retention": "हराउने सन्देशहरू",
-  "settings.general.message_retention_desc":
-    "सन्देशहरू र तिनका मिडिया छानिएको समयपछि यो फोनबाट मेटिन्छन्",
-  "settings.general.message_retention_sheet":
-    "हरेक सन्देश यो फोनमा आइपुगेदेखि गनिन्छ, र यो फोनले मात्र बिर्सन्छ। अर्को व्यक्तिको फोनले आफ्नो प्रति राख्छ, स्क्रिनसट रोक्न सकिँदैन, र निजी कुराकानीमा पठाइएका, तपाईंले नलिएका भुक्तानीहरू नलिउन्जेल रहन्छन्।",
+  "settings.general.message_retention_default":
+    "नयाँ च्याटका लागि पूर्वनिर्धारित टाइमर",
+  "settings.general.message_retention_default_desc":
+    "नयाँ सिधा सन्देशका लागि, र यो फोनमा कोठा, च्यानल र समूहका लागि",
+  "settings.general.message_retention_default_sheet":
+    "नयाँ सिधा सन्देश यही टाइमरबाट सुरु हुन्छ, र कुनै पनि व्यक्तिले च्याटमा यसलाई बदल्न सक्छ। कोठा, च्यानल र समूहले यो फोनमा मात्र यसलाई मान्छन्, प्रत्येक सन्देश आइपुगेको समयदेखि गनेर। स्क्रिनसट रोक्न सकिँदैन, र सिधा सन्देशमा तपाईंलाई पठाइएका भुक्तानीहरू तपाईंले नलिउन्जेल रहन्छन्।",
   "settings.general.message_retention_off_desc":
     "तपाईंले च्याट खाली नगरेसम्म वा नछोडेसम्म सन्देशहरू रहन्छन्",
   "settings.general.message_retention_1_desc":
@@ -2036,11 +2069,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "पुराना सन्देशहरू मेटाउने?",
   "settings.general.message_retention_confirm_1":
-    "1 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। यो फिर्ता गर्न सकिँदैन।",
+    "कोठा, च्यानल, समूह र स्थान च्यानलबाट सुरु भएका च्याटका 1 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। अन्य सिधा सन्देशहरूले आफ्नै टाइमर राख्छन्। यो फिर्ता गर्न सकिँदैन।",
   "settings.general.message_retention_confirm_7":
-    "7 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। यो फिर्ता गर्न सकिँदैन।",
+    "कोठा, च्यानल, समूह र स्थान च्यानलबाट सुरु भएका च्याटका 7 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। अन्य सिधा सन्देशहरूले आफ्नै टाइमर राख्छन्। यो फिर्ता गर्न सकिँदैन।",
   "settings.general.message_retention_confirm_30":
-    "30 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। यो फिर्ता गर्न सकिँदैन।",
+    "कोठा, च्यानल, समूह र स्थान च्यानलबाट सुरु भएका च्याटका 30 दिनभन्दा पुराना सन्देशहरू तिनका मिडियासहित अहिले नै यो फोनबाट मेटिनेछन्। अन्य सिधा सन्देशहरूले आफ्नै टाइमर राख्छन्। यो फिर्ता गर्न सकिँदैन।",
   "settings.general.reset_desc":
     "रोजाइहरूलाई पूर्वनिर्धारितमा फर्काउँछ, तपाईंको पहिचान, सन्देश, सम्पर्क र वालेट नछोई",
   "settings.general.reset_title": "सेटिङ रिसेट गर्ने?",
@@ -2183,6 +2216,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "लाइभ भिडियो",
   "settings.conn.live_video_desc":
     "आफ्नो क्यामेरा नजिकका मानिसहरूलाई स्ट्रिम गर्नुहोस्, र उनीहरूको हेर्नुहोस्",
+  "settings.conn.live_video_on_title": "लाइभ भिडियो खोल्ने?",
+  "settings.conn.live_video_on_body":
+    "तपाईं क्यामेराबाट ब्लुटुथ दायराका मानिसहरूका लागि लाइभ जान सक्नुहुन्छ, र उनीहरूको लाइभ तपाईंको च्याटमा देखिन्छ र यो फोनमा रेकर्ड हुन्छ।",
+  "settings.conn.live_video_off_title": "लाइभ भिडियो बन्द गर्ने?",
+  "settings.conn.live_video_off_body":
+    "तपाईं अब लाइभ जान सक्नुहुन्न, र अरूको लाइभ न देखिन्छ न रेकर्ड हुन्छ। छोटो लाइभ भने साधारण भिडियोका रूपमा आइपुग्छ।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor बाटो",
   "settings.conn.tor_desc":
@@ -2213,12 +2252,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "तपाईंले Tor चलाएको लुकाउँछ। Snowflake भन्दा छिटो, तर यी ब्रिज सार्वजनिक छन् र केही नेटवर्कले रोक्छन्।",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "सामान्य वेबसाइट भ्रमणजस्तो देखिएर तपाईंले Tor प्रयोग गरेको लुकाउँछ। अरूभन्दा रोक्न गाह्रो।",
   "settings.tor.mode_custom": "आफ्ना ब्रिज",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org बाट पाएका obfs4 ब्रिज लाइनहरू प्रयोग गर्नुहोस्। अरू असफल भएमा यो प्रयास गर्नुहोस्।",
+    "bridges.torproject.org बाट पाएका obfs4 वा WebTunnel ब्रिज लाइनहरू प्रयोग गर्नुहोस्। अरू असफल भएमा यो प्रयास गर्नुहोस्।",
   "settings.tor.custom_placeholder": "प्रति लाइन एउटा ब्रिज लाइन टाँस्नुहोस्",
   "settings.tor.custom_apply_hint": "जडान गर्न बाकसबाहिर ट्याप गर्नुहोस्।",
   "settings.tor.custom_empty": "पहिले कम्तीमा एउटा ब्रिज लाइन थप्नुहोस्।",
@@ -2580,6 +2616,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "घण्टी",
   "notif.ring.title": "{sender} तपाईंलाई घण्टी बजाउँदै हुनुहुन्छ",
   "notif.ring.body": "आफ्ना सन्देशहरू जाँच गर्नुहोस्",
+  "notif.action.reply": "जवाफ दिनुहोस्",
+  "notif.action.send": "पठाउनुहोस्",
+  "notif.action.mark_read": "पढियो चिनो लगाउनुहोस्",
+  "notif.reply.failed_title": "पठाइएन",
+  "notif.reply.failed_body":
+    "{chat} लाई तपाईंको जवाफ पठाइएन। फेरि प्रयास गर्न च्याट खोल्नुहोस्।",
+  "notif.reply.held_title": "पठाउन पर्खँदै",
+  "notif.reply.held_body": "Airhop चलेपछि {chat} लाई तपाईंको जवाफ पठाइनेछ।",
+  "notif.reply.cut_title": "आंशिक रूपमा पठाइयो",
+  "notif.reply.cut_body":
+    "{chat} लाई तपाईंको जवाफ धेरै लामो थियो, त्यसैले यसको अन्तिम भाग पठाइएन।",
 };
 
 export const plurals: Plurals = {

@@ -2,6 +2,7 @@
 // and a fake clock: bitchat's VideoStreamLossSimulationTests, case for case.
 
 import { Prng } from "../../../../__tests__/simulation/harness/prng";
+import { LIVE_VIDEO_QUALITIES } from "../live-video-quality";
 import {
   decodeVideoBurstPacket,
   encodeEntries,
@@ -51,19 +52,51 @@ interface Sent {
   data: Uint8Array;
 }
 
-// A 10 s stream: 8 fps video with a 2 s GOP (keyframes about 2.4 KB, deltas
-// 120 to 260 B) and 64 ms audio frames of about 96 B. `lose` decides per
-// packet whether the channel drops it.
+interface Profile {
+  frameMs: number;
+  gop: number;
+  keyframeBytes: number;
+  deltaBytes: [number, number];
+  audioBytes: [number, number];
+}
+
+// 8 fps video with a 2 s GOP (keyframes about 2.4 KB, deltas 120 to 260 B)
+// and 64 ms audio frames of about 96 B.
+const LOW: Profile = {
+  frameMs: 125,
+  gop: 16,
+  keyframeBytes: 2_400,
+  deltaBytes: [120, 259],
+  audioBytes: [80, 109],
+};
+
+// The High preset: 24 fps and 360 kbps with a 2 s GOP, a keyframe about ten
+// deltas' worth, and 24 kbps of audio.
+const HIGH: Profile = {
+  frameMs: 42,
+  gop: 48,
+  keyframeBytes: 16_000,
+  deltaBytes: [1_200, 1_899],
+  audioBytes: [170, 209],
+};
+
+// A 10 s stream. `lose` decides per packet whether the channel drops it.
 function run(
   seed: number,
   lose: (index: number) => boolean,
-  { fec = fecPolicy(0.25, 0.5), reorderMs = 0 } = {},
+  {
+    fec = fecPolicy(0.25, 0.5),
+    reorderMs = 0,
+    profile = LOW,
+    maxBufferedBytes = undefined as number | undefined,
+  } = {},
 ): {
   outputs: LiveVideoOutput[];
   sentVideo: Sent[];
   sentAudio: Sent[];
   assembler: VideoStreamAssembler;
   packetizer: VideoStreamPacketizer;
+  peakBufferedBytes: number;
 } {
   const random = new Prng(seed);
   const packetizer = new VideoStreamPacketizer(
@@ -71,7 +104,12 @@ function run(
     config,
     fec,
   );
-  const assembler = new VideoStreamAssembler();
+  const assembler = new VideoStreamAssembler(
+    undefined,
+    undefined,
+    maxBufferedBytes,
+  );
+  let peakBufferedBytes = 0;
   const sentVideo: Sent[] = [];
   const sentAudio: Sent[] = [];
   let inFlight: { due: number; order: number; packet: Uint8Array }[] = [];
@@ -93,6 +131,10 @@ function run(
     inFlight = inFlight.filter((p) => p.due > now);
     for (const { packet } of due) {
       outputs.push(...assembler.onPacket(decode(packet), packet.length, now));
+      peakBufferedBytes = Math.max(
+        peakBufferedBytes,
+        assembler.stats().bufferedBytes,
+      );
     }
     outputs.push(...assembler.onTick(now));
   };
@@ -103,18 +145,20 @@ function run(
   let frame = 0;
   for (let now = 0; now <= 10_000; now += 4) {
     if (now >= nextVideo) {
-      const keyframe = frame % 16 === 0;
-      const data = random.bytes(keyframe ? 2_400 : random.int(120, 259));
+      const keyframe = frame % profile.gop === 0;
+      const data = random.bytes(
+        keyframe ? profile.keyframeBytes : random.int(...profile.deltaBytes),
+      );
       sentVideo.push({ keyframe, data });
       send(
         now,
         packetizer.add({ track: "video", ptsMs: now, keyframe, data }, now),
       );
       frame++;
-      nextVideo += 125;
+      nextVideo += profile.frameMs;
     }
     if (now >= nextAudio) {
-      const data = random.bytes(random.int(80, 109));
+      const data = random.bytes(random.int(...profile.audioBytes));
       sentAudio.push({ keyframe: false, data });
       send(
         now,
@@ -131,7 +175,14 @@ function run(
   send(10_000, packetizer.finish(10_000, 10_000));
   for (let now = 10_000; now <= 13_000; now += 10) deliver(now);
   if (!assembler.isFinished) outputs.push(...assembler.flush());
-  return { outputs, sentVideo, sentAudio, assembler, packetizer };
+  return {
+    outputs,
+    sentVideo,
+    sentAudio,
+    assembler,
+    packetizer,
+    peakBufferedBytes,
+  };
 }
 
 describe("live video over a lossy channel", () => {
@@ -186,6 +237,33 @@ describe("live video over a lossy channel", () => {
         r.sentAudio.length * 0.95,
       );
       expect(endedCount(r.outputs)).toBe(1);
+    },
+  );
+
+  test.each([80, 81, 82])(
+    "a High stream with loss plays the same under the byte budget (seed %i)",
+    (seed) => {
+      const options = {
+        fec: LIVE_VIDEO_QUALITIES.high.fec,
+        reorderMs: 120,
+        profile: HIGH,
+      };
+      const lossy = (): ((index: number) => boolean) => {
+        const loss = new Prng(seed * 7919);
+        return () => loss.chance(0.05);
+      };
+      const budgeted = run(seed, lossy(), options);
+      const unbounded = run(seed, lossy(), {
+        ...options,
+        maxBufferedBytes: Infinity,
+      });
+      expect(budgeted.outputs).toEqual(unbounded.outputs);
+      expect(budgeted.peakBufferedBytes).toBeLessThan(200_000);
+      expect(budgeted.assembler.stats().recoveredShards).toBeGreaterThan(0);
+      expect(videoOf(budgeted.outputs).length).toBeGreaterThanOrEqual(
+        budgeted.sentVideo.length * 0.8,
+      );
+      expect(endedCount(budgeted.outputs)).toBe(1);
     },
   );
 
@@ -426,6 +504,153 @@ describe("VideoStreamAssembler edge cases", () => {
       ...Array.from({ length: 193 }, (_, i) => i + 2),
     ]);
     expect(assembler.stats().audioUnits).toBe(194);
+  });
+
+  const piece = (
+    track: VideoTrack,
+    sequence: number,
+    fragmentIndex: number,
+    fragmentCount: number,
+    bytes: number,
+    keyframe = false,
+  ): LiveVideoEntry => ({
+    ...unit(track, sequence, keyframe),
+    fragmentIndex,
+    fragmentCount,
+    bytes: new Uint8Array(bytes).fill(sequence & 0xff),
+  });
+
+  test("far-ahead units that never finish stay within the byte budget, then expire", () => {
+    const assembler = new VideoStreamAssembler();
+    assembler.onPacket(dataPacket(0, 0, [unit("video", 0, true)]), 0, 0);
+    // Forty units of 255 fragments, all but the last of each sent: about
+    // 3 MB that counts alone would hold until the stream ended.
+    let packet = 1;
+    let peak = 0;
+    for (let u = 0; u < 40; u++) {
+      for (let f = 0; f < 254; f++) {
+        const entry = piece("video", 1_000 + u, f, 255, 310);
+        assembler.onPacket(dataPacket(packet, packet, [entry]), 0, packet / 10);
+        peak = Math.max(peak, assembler.stats().bufferedBytes);
+        packet++;
+      }
+    }
+    expect(peak).toBeGreaterThan(2 * 1024 * 1024 - 310);
+    expect(peak).toBeLessThanOrEqual(2 * 1024 * 1024);
+    // Three gap waits after the last unit's first piece, nothing is left.
+    expect(assembler.onTick(1_017 + 2_700)).toEqual([]);
+    expect(assembler.stats().bufferedBytes).toBe(0);
+    // The stream plays on with its picture intact.
+    const next = assembler.onPacket(
+      dataPacket(packet, packet, [unit("video", 1)]),
+      0,
+      3_800,
+    );
+    expect(videoOf(next).map((u) => u.sequence)).toEqual([1]);
+    expect(assembler.isFinished).toBe(false);
+  });
+
+  test("a pending unit expires three gap waits after its first piece", () => {
+    const assembler = new VideoStreamAssembler(900);
+    assembler.onPacket(dataPacket(0, 0, [unit("video", 0, true)]), 0, 0);
+    // A slow unit finishing just inside its expiry still plays.
+    assembler.onPacket(dataPacket(1, 1, [piece("video", 1, 0, 2, 50)]), 0, 100);
+    const slow = assembler.onPacket(
+      dataPacket(2, 2, [piece("video", 1, 1, 2, 50)]),
+      0,
+      2_799,
+    );
+    expect(videoOf(slow).map((u) => u.sequence)).toEqual([1]);
+    // One that misses it is let go, and its late piece rebuilds nothing.
+    assembler.onPacket(
+      dataPacket(3, 3, [piece("video", 2, 0, 2, 50)]),
+      0,
+      2_900,
+    );
+    assembler.onTick(5_599);
+    expect(assembler.stats().bufferedBytes).toBe(50);
+    assembler.onTick(5_600);
+    expect(assembler.stats().bufferedBytes).toBe(0);
+    const late = assembler.onPacket(
+      dataPacket(4, 4, [piece("video", 2, 1, 2, 50)]),
+      0,
+      5_700,
+    );
+    expect(videoOf(late)).toEqual([]);
+    expect(assembler.stats().bufferedBytes).toBe(50);
+  });
+
+  test("over the byte budget, pending units go before any gap is skipped", () => {
+    const assembler = new VideoStreamAssembler(900, 256 * 1024, 1_000);
+    const outputs = [
+      dataPacket(0, 0, [piece("video", 0, 0, 1, 100, true)]),
+      // Half of a unit far ahead, then unit 1 lost and deltas behind it.
+      dataPacket(1, 1, [piece("video", 50, 0, 2, 300)]),
+      dataPacket(2, 2, [piece("video", 2, 0, 1, 300)]),
+      dataPacket(3, 3, [piece("video", 3, 0, 1, 300)]),
+      dataPacket(4, 4, [piece("video", 4, 0, 1, 300)]),
+    ].flatMap((p, i) => assembler.onPacket(p, 0, i));
+    expect(outputs.map((o) => o.kind)).toEqual(["video"]);
+    expect(assembler.stats().bufferedBytes).toBe(900);
+  });
+
+  test("ready units over the byte budget freeze the picture until the next keyframe", () => {
+    const assembler = new VideoStreamAssembler(900, 256 * 1024, 1_000);
+    const first = assembler.onPacket(
+      dataPacket(0, 0, [piece("video", 0, 0, 1, 100, true)]),
+      0,
+      0,
+    );
+    expect(videoOf(first)).toHaveLength(1);
+    // Unit 1 is lost; deltas pile up behind it well inside the gap wait.
+    for (const sequence of [2, 3, 4]) {
+      const held = assembler.onPacket(
+        dataPacket(sequence, sequence, [piece("video", sequence, 0, 1, 300)]),
+        0,
+        sequence * 10,
+      );
+      expect(held).toEqual([]);
+    }
+    const over = assembler.onPacket(
+      dataPacket(5, 5, [piece("video", 5, 0, 1, 300)]),
+      0,
+      50,
+    );
+    // The gap is skipped at once and the deltas after it withheld, as for
+    // packet loss; the stream stays up.
+    expect(over).toEqual(
+      Array.from({ length: 5 }, () => ({ kind: "videoSkipped", count: 1 })),
+    );
+    expect(assembler.stats().bufferedBytes).toBe(0);
+    expect(assembler.isFinished).toBe(false);
+    const resumed = assembler.onPacket(
+      dataPacket(6, 6, [piece("video", 6, 0, 1, 300, true)]),
+      0,
+      60,
+    );
+    expect(videoOf(resumed).map((u) => [u.sequence, u.keyframe])).toEqual([
+      [6, true],
+    ]);
+  });
+
+  // The excess sits in audio: video, short only a piece still on its way,
+  // must not lose its gap to it.
+  test("over the byte budget, the track holding the excess skips, not the other", () => {
+    const assembler = new VideoStreamAssembler(900, 256 * 1024, 1_000);
+    const outputs = [
+      dataPacket(0, 0, [
+        piece("video", 0, 0, 1, 50, true),
+        piece("audio", 0, 0, 1, 10),
+      ]),
+      // Video unit 1 lost, unit 2 ready behind it; audio unit 1 lost and
+      // units 2 to 5 ready behind it, more than video holds.
+      dataPacket(1, 1, [piece("video", 2, 0, 1, 50)]),
+      ...[2, 3, 4, 5].map((sequence) =>
+        dataPacket(sequence, sequence, [piece("audio", sequence, 0, 1, 240)]),
+      ),
+    ].flatMap((p, i) => assembler.onPacket(p, 0, i));
+    expect(outputs.some((o) => o.kind === "videoSkipped")).toBe(false);
+    expect(audioOf(outputs)).toHaveLength(5);
   });
 
   test("CANCELED ends the stream at once", () => {

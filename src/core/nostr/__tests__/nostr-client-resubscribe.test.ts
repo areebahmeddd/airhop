@@ -7,9 +7,11 @@
 import type { Filter } from "nostr-tools/filter";
 import { NostrClient } from "../nostr-client";
 
+type OnClose = (reasons: { url: string; reason: string }[]) => void;
+
 interface MockSub {
   relay: string;
-  onclose?: () => void;
+  onclose?: OnClose;
   closed: boolean;
 }
 
@@ -22,7 +24,7 @@ jest.mock("nostr-tools/pool", () => ({
     subscribeMany(
       relays: string[],
       _filter: Filter,
-      params: { onclose?: () => void },
+      params: { onclose?: OnClose },
     ): { close: () => void } {
       const sub: MockSub = {
         relay: relays[0],
@@ -33,7 +35,7 @@ jest.mock("nostr-tools/pool", () => ({
       return {
         close: () => {
           sub.closed = true;
-          sub.onclose?.();
+          sub.onclose?.([{ url: sub.relay, reason: "closed by caller" }]);
         },
       };
     }
@@ -60,7 +62,7 @@ test("reopens a relay's subscription after the relay drops it", () => {
   client.subscribe([{ kinds: [1059] }], () => undefined, undefined, [RELAY]);
   expect(mockSubs).toHaveLength(1);
 
-  mockSubs[0].onclose?.();
+  mockSubs[0].onclose?.([{ url: RELAY, reason: "relay connection closed" }]);
   jest.advanceTimersByTime(15_000);
   expect(mockSubs).toHaveLength(2);
   expect(mockSubs[1].relay).toBe(RELAY);
@@ -80,7 +82,7 @@ test("stays closed once the caller or the client closes", () => {
   expect(mockSubs).toHaveLength(1);
 
   client.subscribe([{ kinds: [1059] }], () => undefined, undefined, [RELAY]);
-  mockSubs[1].onclose?.();
+  mockSubs[1].onclose?.([{ url: RELAY, reason: "relay connection closed" }]);
   client.close();
   jest.advanceTimersByTime(10 * 60_000);
   expect(mockSubs).toHaveLength(2);

@@ -503,7 +503,7 @@ describe("LiveVideoReceiver", () => {
     const { receiver } = setup();
     const { packetizer, streamID } = stream();
     for (const p of packetizer.start()) receiver.onPacket(SENDER, ROOM, p);
-    // 400 KB in one instant, far past 96 kB/s with three seconds of burst.
+    // 400 KB in one instant, far past 96 KB/s with three seconds of burst.
     for (let i = 0; i < 1_200; i++) {
       for (const p of packetizer.add(
         {

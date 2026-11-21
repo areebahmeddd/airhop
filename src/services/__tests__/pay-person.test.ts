@@ -139,6 +139,7 @@ beforeEach(() => {
     fee: 0,
     exact: true,
     proofs: [],
+    unverified: false,
   });
   mockedPrepare.mockResolvedValue({
     mintUrl: MINT,
@@ -148,6 +149,7 @@ beforeEach(() => {
     fee: 0,
     exact: true,
     proofs: [],
+    unverified: false,
     txId: "tx-token-1",
     token: "cashuBtoken",
   });
@@ -285,6 +287,18 @@ describe("payPerson commits exactly once", () => {
     expect(result?.rail).toBe("nutzap-undelivered");
     expect(result?.final).toBe(true);
     expect(result?.token).toBe("cashuBlocked");
+    expect(mockedPrepare).not.toHaveBeenCalled();
+  });
+
+  it("does not fall through to a token when publishing throws after the lock", async () => {
+    // Rule 1 for an error that is not the relay's answer, such as a timeout.
+    useMesh({ directLink: false, peerNostrPubkey: PUBKEY, route: "sent" });
+    mockedPublish.mockRejectedValue(new Error("relay timeout"));
+
+    const result = await payPerson({ peerID: PEER, amount: 500 });
+
+    expect(result).toBeNull();
+    expect(mockedLock).toHaveBeenCalledTimes(1);
     expect(mockedPrepare).not.toHaveBeenCalled();
   });
 
@@ -433,6 +447,7 @@ describe("payPerson asks before money moves", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       pricedFromCacheAgeMs: 2 * 86_400_000 + 5_000,
     });
 
@@ -461,6 +476,7 @@ describe("payPerson asks before money moves", () => {
       fee: 0,
       exact: false,
       proofs: [],
+      unverified: false,
       pricedFromCacheAgeMs: 86_400_000,
     });
 
@@ -505,6 +521,7 @@ describe("payPerson asks before money moves", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       pricedFromCacheAgeMs: 3 * 86_400_000,
     });
 
@@ -548,6 +565,7 @@ describe("a token too large for the queue", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       txId: "tx-token-1",
       token: LARGE,
     });
@@ -592,6 +610,7 @@ describe("a token too large for the queue", () => {
       fee: 0,
       exact: true,
       proofs: [],
+      unverified: false,
       txId: "tx-token-1",
       token: "cashuBtoken",
     });

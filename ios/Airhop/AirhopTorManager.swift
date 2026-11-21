@@ -1,12 +1,12 @@
 // Arti-based Tor integration for Airhop.
 //
 // Boots the embedded Tor client from native/arti and exposes its SOCKS5 proxy
-// on 127.0.0.1:39050. AirhopTorSocket is the one path through that port.
+// on 127.0.0.1:39050. AirhopRelaySocket is the one path through that port.
 //
 // Binary dependency: ios/Frameworks/arti.xcframework, built by
 // native/arti/build-apple.sh from native/arti/src. The header beside the
-// library is generated from src/ffi_c.rs, so the declarations below and the Rust
-// they bind to cannot drift without the build saying so.
+// library is generated from src/ffi_c.rs, but the declarations below bind by
+// symbol name, so a change there needs them changed and the slices rebuilt.
 
 import Foundation
 import OSLog
@@ -31,7 +31,8 @@ private func airhop_tor_start(
   _ socksPort: UInt16,
   _ bridgeLines: UnsafePointer<CChar>?,
   _ obfs4Port: UInt16,
-  _ snowflakePort: UInt16
+  _ snowflakePort: UInt16,
+  _ webtunnelPort: UInt16
 ) -> Int32
 
 @_silgen_name("airhop_tor_stop")
@@ -126,7 +127,7 @@ extension Notification.Name {
 
 // MARK: - SOCKS endpoint
 
-/// Outside the manager because AirhopTorSocket reads it off the main actor, and
+/// Outside the manager because AirhopRelaySocket reads it off the main actor, and
 /// the manager is @MainActor. Both sides read these, so the port cannot drift.
 enum AirhopTorEndpoint {
   /// 39050, not 9050. Nothing else on the device is expected to hold it, and
@@ -254,7 +255,8 @@ public final class AirhopTorManager: ObservableObject {
             UInt16(AirhopTorEndpoint.socksPort),
             linesPtr,
             ports[.obfs4] ?? 0,
-            ports[.snowflake] ?? 0
+            ports[.snowflake] ?? 0,
+            ports[.webtunnel] ?? 0
           )
         }
       }

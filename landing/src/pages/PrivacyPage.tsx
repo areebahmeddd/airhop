@@ -67,8 +67,8 @@ export default function PrivacyPage() {
                 and are never sent to us. They are protected by the operating system's app sandbox
                 and whole-device encryption, not by a separate app-level cipher, so a person with
                 access to an unlocked device can read them. Delete a conversation at any time, wipe
-                everything with panic wipe, or turn on Disappearing messages in General to clear
-                each message 1, 7 or 30 days after it arrives.
+                everything with panic wipe, or set Disappearing messages for a chat, or as the
+                default for new chats, to clear messages after 1, 7 or 30 days.
               </li>
               <li>
                 <strong>Private group state.</strong> Group names, member lists, and the current
@@ -140,14 +140,14 @@ export default function PrivacyPage() {
                 members of that group.
               </li>
               <li>
-                Live voice, on unless you turn it off. Holding the mic streams your voice to
+                Live voice, only if you turn it on. Holding the mic then streams your voice to
                 everyone in Bluetooth range as you speak. A public burst is signed but not
                 encrypted, the same as a room attachment. In a direct message it stays inside that
                 peer's encrypted session. When you let go, the same audio is also sent as an
                 ordinary voice note.
               </li>
               <li>
-                Live video, on unless you turn it off, and only while you choose to go live. Your
+                Live video, only if you turn it on, and only while you choose to go live. Your
                 camera, and your microphone unless you mute it, stream to everyone in Bluetooth
                 range. Like live voice, a public stream is signed but not encrypted, and in a direct
                 message it stays inside that peer's encrypted session. When it ends, a short stream
@@ -218,6 +218,13 @@ export default function PrivacyPage() {
               uses.
             </p>
             <p className="text-[15px] leading-[1.75]">
+              With it on, your phone also hands the private address and port it listens on to Airhop
+              phones it already has an encrypted session with, inside that session, so the two can
+              connect on a network that hides devices from each other. A phone connects only to an
+              address on its own network, and keeps the connection only once the phone there proves
+              who it is.
+            </p>
+            <p className="text-[15px] leading-[1.75]">
               Message contents are unaffected: they stay end-to-end encrypted exactly as over
               Bluetooth. What the network operator can observe is that connections exist, when, and
               roughly how much data moves, in the way any network operator can. Local network is off
@@ -244,7 +251,10 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Third-party relays.</strong> Nostr relays are operated by third parties
-                whose retention and privacy practices are outside this project's control.
+                whose retention and privacy practices are outside this project's control. A relay
+                may refuse a request until the app signs in. Airhop signs in only when refused, with
+                the key that request already belongs to, and never proves two of your keys on one
+                connection, which would link them for that relay.
               </li>
             </ul>
           </section>
@@ -345,9 +355,9 @@ export default function PrivacyPage() {
               Tor hides your address from the relay, but not the fact that you are using Tor. On a
               direct connection the first hop goes to a publicly listed relay, so whoever runs your
               network can see Tor in use, and may block it. Bridges close that. A bridge is an
-              unlisted entry point, and obfs4 or Snowflake sits in front of it so the connection
-              looks like random noise or ordinary web traffic rather than Tor. Both are built into
-              the app, and bridges are off by default.
+              unlisted entry point, and obfs4, Snowflake or WebTunnel sits in front of it so the
+              connection looks like random noise or ordinary web traffic rather than Tor. All three
+              are built into the app, and bridges are off by default.
             </p>
             <p className="text-[15px] leading-[1.75]">
               A bridge replaces the public relay your connection would normally start from, so it
@@ -391,11 +401,14 @@ export default function PrivacyPage() {
                 <strong>Private sessions.</strong> Noise XX with X25519 and ChaCha20-Poly1305.
               </li>
               <li>
-                <strong>Forward secrecy.</strong> Provided by Double Ratchet for live conversations,
-                and by single-use prekeys for messages left for someone who is offline, so an
-                undelivered message stays protected even if a long-term key is compromised later.
-                That needs their prekeys from the last week; without them, the message is sealed to
-                their long-term key.
+                <strong>Forward secrecy.</strong> Provided by the Double Ratchet for live
+                conversations, and by single-use prekeys for messages left for someone who is
+                offline, so an undelivered message stays protected even if a long-term key is
+                compromised later. That needs their prekeys from the last week; without them, the
+                message is sealed to their long-term key. Over the internet, a message between two
+                Airhop phones that have met is sealed to a key the recipient handed over privately:
+                a single-use key while any is left, otherwise a weekly key deleted 15 days after it
+                was made. Receipts, and messages to someone you have not met, use the long-term key.
               </li>
               <li>
                 <strong>Private groups.</strong> Group messages use ChaCha20-Poly1305 under a shared
@@ -453,11 +466,13 @@ export default function PrivacyPage() {
                 Also removed by clearing the cache, a panic wipe, or removing the app.
               </li>
               <li>
-                <strong>Messages:</strong> until you delete them, or for 1, 7 or 30 days after they
-                reach your phone if you turn on Disappearing messages in General (off by default).
-                It applies to your phone only; the other person keeps their copy. Messages still
-                being delivered, and payments sent to you in a private chat that you have not
-                claimed, stay until they are done.
+                <strong>Messages:</strong> until you delete them, or for 1, 7 or 30 days if you turn
+                on Disappearing messages (off by default). In a direct message with another Airhop
+                phone the timer is shared, so both phones delete their copy, counted from sending on
+                one and from first reading on the other; with a bitchat user, in a chat started from
+                a location channel, and in rooms, channels and groups, it applies to your phone
+                only. Screenshots cannot be prevented. Messages still being delivered, and payments
+                sent to you in a direct message that you have not claimed, stay until they are done.
               </li>
               <li>
                 <strong>Groups, contacts, and keys:</strong> until you delete them, run a panic
@@ -513,7 +528,7 @@ export default function PrivacyPage() {
               </TextLink>
               . It has no user accounts, no cookies, and no analytics.{" "}
               <strong>
-                We have no interest in your personal data and collect none of it (and never will!).
+                We have no interest in your personal data, collect none of it, and never will.
               </strong>
             </p>
             <p className="text-[15px] leading-[1.75]">

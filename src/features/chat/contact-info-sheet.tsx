@@ -8,7 +8,7 @@
 // More sheet, not here.
 
 import { RingRefusalReason } from "@core/mesh/wire/ring-payload";
-import { useT } from "@i18n";
+import { useT, useTPlural } from "@i18n";
 import { textAlignEnd } from "@i18n/layout";
 import { rejected } from "@platform/haptics";
 import {
@@ -22,7 +22,10 @@ import { hasKeys, isVerified, useContactsStore } from "@store/contacts-store";
 import { useMeshStateStore } from "@store/mesh-state-store";
 import { REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { useRingStore } from "@store/ring-store";
-import { useSettingsStore } from "@store/settings-store";
+import {
+  useSettingsStore,
+  type MessageRetentionDays,
+} from "@store/settings-store";
 import Avatar from "@ui/components/avatar";
 import BottomSheet from "@ui/components/bottom-sheet";
 import CopyGlyph from "@ui/components/copy-glyph";
@@ -51,8 +54,17 @@ import { isNostrId, NOSTR_ID_PREFIX, peerIDToUsername } from "@utils/username";
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import VerifyContactScreen from "../contacts/verify-contact-screen";
-import { SettingRow, SettingSwitch } from "../settings/settings-primitives";
+import { messageRetentionLabel } from "../settings/message-retention-labels";
+import {
+  SettingLinkRow,
+  SettingRow,
+  SettingSwitch,
+  useSharedStyles,
+} from "../settings/settings-primitives";
 import SendEcashSheet from "../wallet/send-ecash-sheet";
+import DisappearingTimerSheet, {
+  useDmTimerDays,
+} from "./disappearing-timer-sheet";
 
 const CORNER_BTN_SIZE = 32;
 
@@ -67,8 +79,10 @@ export default function ContactInfoSheet({
   onClose,
 }: Props): React.JSX.Element {
   const T = useT();
+  const TP = useTPlural();
   const Colors = useThemeColors();
   const styles = useMemo(() => createStyles(Colors), [Colors]);
+  const settingStyles = useSharedStyles();
   const peerID = channel?.startsWith("dm:") ? channel.slice(3) : null;
 
   const messages = useChatStore((s) =>
@@ -85,6 +99,7 @@ export default function ContactInfoSheet({
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [verifying, setVerifying] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [pickingTimer, setPickingTimer] = useState(false);
 
   // Our own name, for the echo in the thread. Derived the same way the thread
   // derives it, so a payment started here and one started from the composer put
@@ -97,6 +112,12 @@ export default function ContactInfoSheet({
   }, []);
 
   const name = peerID ? resolveDisplayName(peerID) : "";
+  const timerDays = useDmTimerDays(channel);
+  const timerDaysLabel = messageRetentionLabel(
+    T,
+    TP,
+    timerDays as MessageRetentionDays,
+  );
   const isOnline =
     peer !== undefined && nowMs - peer.lastSeenMs < REACHABLE_TTL_MS;
   // A relay node in range, in a thread opened from history or a pasted peer
@@ -555,6 +576,24 @@ export default function ContactInfoSheet({
                   </React.Fragment>
                 ))}
               </View>
+              {/* A location pseudonym's chat follows the default on this
+                  phone, as a room does: there is no lasting peer to agree a
+                  timer with. */}
+              {peerID !== null && !isAnonymous && !isRelay && (
+                <View style={styles.infoCard}>
+                  <SettingLinkRow
+                    icon="watch"
+                    label={T("settings.general.message_retention")}
+                    control={
+                      <Text style={settingStyles.settingValue}>
+                        {timerDaysLabel}
+                      </Text>
+                    }
+                    accessibilityValue={timerDaysLabel}
+                    onPress={() => setPickingTimer(true)}
+                  />
+                </View>
+              )}
               {/* Needs real keys (renameable is setAllowRing's hasKeys gate).
                   A keyless peer sees it disabled, pointing at Verify. */}
               {(ringGrantable || canVerify) && (
@@ -688,6 +727,10 @@ export default function ContactInfoSheet({
             : {})}
         />
       )}
+      <DisappearingTimerSheet
+        peerID={pickingTimer ? peerID : null}
+        onClose={() => setPickingTimer(false)}
+      />
     </>
   );
 }

@@ -127,7 +127,8 @@ export const strings = {
   "home.how.title": "The mesh forms itself.",
   "home.how.sub":
     "Nearby nodes form a self-healing mesh over Bluetooth. When there is internet, Nostr relays extend it, with no infrastructure anyone controls.",
-  "home.how.cta": "Read the full architecture",
+  "home.how.cta": "Read the architecture",
+  "home.how.paper": "Read the whitepaper",
   "home.how.discover.title": "Discover",
   "home.how.discover.line":
     "Phones running Airhop or bitchat find each other automatically over Bluetooth. No pairing, no setup.",

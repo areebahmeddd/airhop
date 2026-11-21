@@ -204,6 +204,7 @@ describe("FragmentManager", () => {
 
     expect(reassembled).not.toBeNull();
     expect((reassembled! as Packet).type).toBe(PacketType.CHANNEL_MSG);
+    expect((reassembled! as Packet).payload).toEqual(packet.payload);
   });
 
   test("reassembles out-of-order fragments", () => {
@@ -220,6 +221,7 @@ describe("FragmentManager", () => {
     }
 
     expect(reassembled).not.toBeNull();
+    expect((reassembled! as Packet).payload).toEqual(packet.payload);
   });
 
   test("duplicate fragments do not corrupt reassembly", () => {

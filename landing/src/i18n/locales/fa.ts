@@ -129,7 +129,8 @@ const strings: Strings = {
   "home.how.title": "مش خودش شکل می‌گیرد.",
   "home.how.sub":
     "گره‌های نزدیک روی Bluetooth یک مش خودترمیم می‌سازند. وقتی اینترنت باشد، رله‌های Nostr آن را گسترش می‌دهند، بدون زیرساختی که در اختیار کسی باشد.",
-  "home.how.cta": "خواندن معماری کامل",
+  "home.how.cta": "خواندن معماری",
+  "home.how.paper": "خواندن وایت\u200cپیپر",
   "home.how.discover.title": "کشف",
   "home.how.discover.line":
     "گوشی‌هایی که Airhop یا bitchat دارند خودکار روی Bluetooth همدیگر را پیدا می‌کنند. بدون جفت‌سازی، بدون تنظیمات.",

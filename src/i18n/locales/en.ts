@@ -196,7 +196,7 @@ export const strings = {
     "Finds nearby devices and relays messages between them. This creates the mesh and works without an internet connection.",
   "onboarding.primer.location.title": "Location",
   "onboarding.primer.location.body":
-    "Places you in nearby area channels, from a block to a region. Airhop never tracks you, and your precise location leaves your device only when you send someone a location pin.",
+    "Places you in nearby area channels, from a block to a region. Airhop never tracks you, and your precise location never leaves your device.",
   "onboarding.primer.notifications.title": "Notifications",
   "onboarding.primer.notifications.body":
     "Receive alerts for new messages even when the app is closed. Notifications are created locally on your device, with no server involvement.",
@@ -418,7 +418,37 @@ export const strings = {
   "chat.group.unreachable":
     "Could not reach every member. Try again while they’re nearby.",
   "chat.group.you_were_added": "You were added to {name}.",
-  "chat.group.added_you": "Added you to {name}",
+  "chat.timer.you_set_1": "You set disappearing messages to 1 day",
+  "chat.timer.you_set_7": "You set disappearing messages to 7 days",
+  "chat.timer.you_set_30": "You set disappearing messages to 30 days",
+  "chat.timer.you_off": "You turned off disappearing messages",
+  "chat.timer.you_set_local_1":
+    "You set disappearing messages to 1 day on this phone",
+  "chat.timer.you_set_local_7":
+    "You set disappearing messages to 7 days on this phone",
+  "chat.timer.you_set_local_30":
+    "You set disappearing messages to 30 days on this phone",
+  "chat.timer.you_off_local":
+    "You turned off disappearing messages on this phone",
+  "chat.timer.peer_set_1": "{name} set disappearing messages to 1 day",
+  "chat.timer.peer_set_7": "{name} set disappearing messages to 7 days",
+  "chat.timer.peer_set_30": "{name} set disappearing messages to 30 days",
+  "chat.timer.peer_off": "{name} turned off disappearing messages",
+  "chat.timer.sheet_shared":
+    "For messages sent from now on, on both phones. Each one counts down from when it’s sent on the sender’s phone, and from when it’s first read on the other. Screenshots can’t be prevented.",
+  "chat.timer.sheet_pending":
+    "Set on this phone. It reaches {name} the next time you’re connected, then applies on both phones.",
+  "chat.timer.sheet_bitchat":
+    "Only on this phone. {name}’s app doesn’t support shared timers.",
+  "chat.timer.sheet_local":
+    "Only on this phone for now. If {name}’s app supports shared timers, it reaches them the next time you connect.",
+  "chat.group.invited": "You’re invited to {name}.",
+  "chat.group.invited_you": "Invited you to {name}",
+  "chat.group.decline": "Decline",
+  "chat.group.decline_title": "Decline the invite to {name}?",
+  "chat.group.decline_body":
+    "{name} isn’t in your contacts. Block them too, and you won’t get invites or messages from them again.",
+  "chat.group.decline_block": "Decline and block",
   "chat.group.you_were_removed":
     "You were removed from {name}. You can no longer read or send messages here.",
   "chat.group.removed_you": "Removed you from {name}",
@@ -1206,6 +1236,8 @@ export const strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Could not build the token",
+  "wallet.send.unverified_note":
+    "Part of this payment is ecash the mint has not confirmed yet.",
   "wallet.send.title": "Send ecash",
   "wallet.send.amount_in": "Amount in {unit}",
   "wallet.send.body":
@@ -1265,15 +1297,9 @@ export const strings = {
   "wallet.receive.redeemed_at":
     "Redeemed at {mint}. It is provably yours now: the sender’s copy of this token no longer works.",
   "wallet.receive.pending_unconfirmed":
-    "Stored from {mint}, but the mint has not confirmed it is unspent yet. It is confirmed with the mint automatically once you are online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Stored from {mint}, but the mint has not confirmed it is unspent yet. Its signature checks out, so the token is genuine. It is confirmed with the mint automatically once you are online.",
   "wallet.receive.dleq_ok":
     "The mint’s signature checks out, so the token is genuine.",
-  "wallet.receive.dleq_uncached":
-    "The mint’s keys are not cached here, so the signature could not be checked offline.",
-  "wallet.receive.dleq_missing":
-    "Not every coin in it carries the mint’s signature proof, so it could not be checked offline.",
   "wallet.receive.dleq_warning":
     "Until it is confirmed online, the sender could in principle have spent it elsewhere.",
   "wallet.receive.failed": "Could not receive",
@@ -1629,6 +1655,7 @@ export const strings = {
   "wallet.scan.title_any": "Scan a QR code",
   "wallet.scan.aim_any": "Point at a token, invoice or npub QR code.",
   "wallet.scan.no_any": "No token, invoice or npub found in that image.",
+  "wallet.scan.not_usable": "That QR code isn’t one Airhop can use here.",
   "wallet.scan.use_camera_a11y": "Scan with the camera",
   "wallet.scan.use_camera": "Use camera",
   "wallet.scan.pick_image_a11y": "Read a QR code from a saved image",
@@ -1727,6 +1754,11 @@ export const strings = {
   "wallet.svc.locked_ours_offline": "This payment is locked to your wallet.",
   "wallet.svc.locked_ours_offline_body":
     "Claim it once you are online. Nobody else can take it meanwhile.",
+  "wallet.svc.offline_cap":
+    "Offline, unconfirmed ecash is limited to {limit} per mint.",
+  "wallet.svc.offline_unchecked": "This ecash can’t be checked offline.",
+  "wallet.svc.claim_online_body":
+    "Claim this one once you are online, when the mint can confirm it.",
   "wallet.svc.already_spent": "This ecash has already been spent.",
   "wallet.svc.already_spent_body":
     "Whoever sent this token redeemed it first, or sent the same token to someone else.",
@@ -2048,10 +2080,11 @@ export const strings = {
   "settings.general.retention_30_desc":
     "Keeps threads readable longest, and keeps the most on disk.",
   "settings.general.message_retention": "Disappearing messages",
-  "settings.general.message_retention_desc":
-    "Messages and their media are deleted from this phone after the selected time",
-  "settings.general.message_retention_sheet":
-    "Counted from when each message reached this phone, and only this phone forgets. The other person’s phone keeps its copy, screenshots can’t be prevented, and payments sent to you in a private chat stay until you claim them.",
+  "settings.general.message_retention_default": "Default timer for new chats",
+  "settings.general.message_retention_default_desc":
+    "For new direct messages, and for rooms, channels and groups on this phone",
+  "settings.general.message_retention_default_sheet":
+    "New direct messages start with this timer, and either person can change it in the chat. Rooms, channels and groups follow it on this phone only, counted from when each message arrived. Screenshots can’t be prevented, and payments sent to you in a direct message stay until you claim them.",
   "settings.general.message_retention_off_desc":
     "Messages stay until you clear the chat or leave it",
   "settings.general.message_retention_1_desc":
@@ -2061,11 +2094,11 @@ export const strings = {
     "Keeps threads readable longest",
   "settings.general.message_retention_confirm_title": "Delete older messages?",
   "settings.general.message_retention_confirm_1":
-    "Messages older than 1 day will be deleted from this phone now, with their media. This can’t be undone.",
+    "Messages older than 1 day in rooms, channels, groups and chats started from a location channel will be deleted from this phone now, with their media. Other direct messages keep their own timers. This can’t be undone.",
   "settings.general.message_retention_confirm_7":
-    "Messages older than 7 days will be deleted from this phone now, with their media. This can’t be undone.",
+    "Messages older than 7 days in rooms, channels, groups and chats started from a location channel will be deleted from this phone now, with their media. Other direct messages keep their own timers. This can’t be undone.",
   "settings.general.message_retention_confirm_30":
-    "Messages older than 30 days will be deleted from this phone now, with their media. This can’t be undone.",
+    "Messages older than 30 days in rooms, channels, groups and chats started from a location channel will be deleted from this phone now, with their media. Other direct messages keep their own timers. This can’t be undone.",
   "settings.general.reset_desc":
     "Puts preferences back to their defaults, leaving your identity, messages, contacts and wallet untouched",
   "settings.general.reset_title": "Reset settings?",
@@ -2205,6 +2238,12 @@ export const strings = {
   "settings.conn.live_video": "Live video",
   "settings.conn.live_video_desc":
     "Stream your camera to people nearby, and watch theirs",
+  "settings.conn.live_video_on_title": "Turn on live video?",
+  "settings.conn.live_video_on_body":
+    "You can go live from the camera to people in Bluetooth range, and their streams show in your chats and are recorded on this phone.",
+  "settings.conn.live_video_off_title": "Turn off live video?",
+  "settings.conn.live_video_off_body":
+    "You can no longer go live, and streams from others are not shown or recorded. A short one still arrives as an ordinary video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor routing",
   "settings.conn.tor_desc": "Route Nostr traffic through Tor for extra privacy",
@@ -2234,12 +2273,9 @@ export const strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Hides that you use Tor. Faster than Snowflake, but these bridges are public and some networks block them.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Hides that you use Tor by looking like an ordinary website visit. Harder to block than the others.",
   "settings.tor.mode_custom": "Custom bridges",
   "settings.tor.mode_custom_desc":
-    "Use obfs4 bridge lines from bridges.torproject.org. Try this when the others fail.",
+    "Use obfs4 or WebTunnel bridge lines from bridges.torproject.org. Try this when the others fail.",
   "settings.tor.custom_placeholder": "Paste one bridge line per line",
   "settings.tor.custom_apply_hint": "Tap outside the box to connect.",
   "settings.tor.custom_empty": "Add at least one bridge line first.",
@@ -2602,6 +2638,18 @@ export const strings = {
   "notif.ring.hidden": "Ring",
   "notif.ring.title": "{sender} is ringing you",
   "notif.ring.body": "Check your messages",
+  "notif.action.reply": "Reply",
+  "notif.action.send": "Send",
+  "notif.action.mark_read": "Mark as read",
+  "notif.reply.failed_title": "Not sent",
+  "notif.reply.failed_body":
+    "Your reply to {chat} didn’t send. Open the chat to try again.",
+  "notif.reply.held_title": "Waiting to send",
+  "notif.reply.held_body":
+    "Your reply to {chat} will send once Airhop is running.",
+  "notif.reply.cut_title": "Partly sent",
+  "notif.reply.cut_body":
+    "Your reply to {chat} was too long, so its end wasn’t sent.",
 } as const;
 
 // Plural forms live apart from the flat strings because plural categories are

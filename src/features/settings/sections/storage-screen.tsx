@@ -13,7 +13,7 @@
 import {
   clearAttachmentCache,
   getAttachmentCacheBytes,
-} from "@services/file-transfer-service";
+} from "@services/attachment-cache";
 import { getMeshService } from "@services/mesh-service";
 import { MMKV_STORE_IDS } from "@services/panic-wipe";
 import { showAlert } from "@store/alert-store";
@@ -133,6 +133,7 @@ export default function StorageScreen({ onBack }: Props): React.JSX.Element {
               onPress={handleClearCache}
               chevron={false}
               accessibilityLabel={T("settings.storage.clear_cache")}
+              accessibilityValue={formatBytes(stats.cacheBytes)}
               control={
                 <Text
                   style={[

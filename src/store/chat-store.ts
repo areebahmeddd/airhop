@@ -3,7 +3,11 @@
 
 import type { CatalogKey, TranslationVars } from "@i18n";
 import { MAX_CHANNEL_NAME } from "@utils/deep-link";
-import { isMessageExpired, type WalletClaims } from "@utils/message-expiry";
+import {
+  isMessageExpired,
+  messageRetentionWindowMs,
+  type WalletClaims,
+} from "@utils/message-expiry";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useActivityStore } from "./activity-store";
@@ -15,6 +19,7 @@ import {
 } from "./expired-messages";
 import { getStorage } from "./mmkv";
 import { OUTBOX_TTL_MS } from "./outbox-store";
+import { useSettingsStore } from "./settings-store";
 
 export type AttachmentType = "image" | "voice" | "document" | "video";
 
@@ -64,6 +69,47 @@ export interface ChatAttachment {
   sizeBytes?: number;
 }
 
+// A mesh chat's disappearing timer, and the change that set it. Until someone
+// sets one it is a default, with `setAtMs` 0, so any real change wins: the
+// timer the chat's first row came with, ours or theirs, and between two
+// phones that started on different defaults, the one from the higher peer ID
+// (isLaterTimerChange), which both phones' first messages carry.
+export interface DmChatTimer {
+  ms: number;
+  setAtMs: number;
+  // Whose it is: a peer ID, ours or theirs.
+  setBy: string;
+  // Set by us and not yet acknowledged by the peer: sent again whenever they
+  // prove they run Airhop and none is on its way, so a change whose message
+  // expired unsent still reaches them.
+  unshared?: true;
+}
+
+// Whether a chat keeps a timer of its own: a mesh DM. A location or other
+// Nostr-only chat follows the default on this phone, like a room.
+export function hasOwnTimer(channel: string): boolean {
+  return channel.startsWith("dm:") && !channel.startsWith("dm:nostr_");
+}
+
+// Whether `change` replaces `current`: the later one, ties to the higher
+// peer ID, so two phones that cross changes settle on the same one.
+export function isLaterTimerChange(
+  change: DmChatTimer,
+  current: DmChatTimer,
+): boolean {
+  return (
+    change.setAtMs > current.setAtMs ||
+    (change.setAtMs === current.setAtMs && change.setBy > current.setBy)
+  );
+}
+
+// The timer a private chat starts with: the default for new chats.
+export function defaultDmTimerMs(): number {
+  return messageRetentionWindowMs(
+    useSettingsStore.getState().messageRetentionDays,
+  );
+}
+
 export interface ChatMessage {
   id: string;
   channel: string;
@@ -84,6 +130,15 @@ export interface ChatMessage {
   // (e.g. "you took a screenshot"). Never sent over the mesh, and never inferred
   // from text: matching on user text lets any peer forge a system row.
   isSystem?: boolean;
+  // A mesh DM row's disappearing timer, kept with the row (a later change to
+  // the chat's timer never moves it): ours counts from sending, theirs from
+  // `seenAtMs`. 0 is never. Absent outside a mesh DM, whose rows follow the
+  // default on this phone (utils/message-expiry).
+  disappearAfterMs?: number;
+  // When a received DM was first read (on screen in its open thread, or marked
+  // read from its notification), so a copy nobody has read yet does not
+  // disappear.
+  seenAtMs?: number;
   // The catalog key `text` was rendered from, for rows the app writes itself:
   // a location card's summary, a group membership notice, a payment receipt.
   // These are the only rows whose words belong to Airhop rather than to a
@@ -193,6 +248,8 @@ interface ChatState {
   // peer ID we do not know yet, and replying to them from that identity is
   // correct.
   geoDmCells: Record<string, string>;
+  // Each mesh chat's disappearing timer, by channel (DmChatTimer).
+  dmTimers: Record<string, DmChatTimer>;
   // The name a location-channel peer goes by, keyed by their per-cell pubkey.
   //
   // A geohash nickname rides the `n` tag on their CHANNEL messages, so it is
@@ -333,6 +390,9 @@ interface ChatState {
   failStaleSending: (olderThanMs: number, now?: number) => void;
   setActiveChannel: (channel: string) => void;
   markChannelRead: (channel: string) => void;
+  // The thread is open and on screen: received rows start their countdown.
+  markSeen: (channel: string, nowMs: number) => void;
+  setDmTimer: (channel: string, timer: DmChatTimer) => void;
   setLastThread: (channel: string) => void;
   clearAll: () => void;
 }
@@ -356,7 +416,7 @@ export function subscribeInboundMessages(fn: InboundListener): () => void {
 // conversation, the oldest rows a full thread trims, and expired ones. Fired
 // after the state no longer holds them, so an observer counting what still
 // references a file sees the store as it now is. A side channel for the same
-// reason as the inbound one: file deletion (services/file-transfer-service)
+// reason as the inbound one: file deletion (services/attachment-cache)
 // stays out of this store.
 //
 // Not fired by clearAll: the panic wipe empties the cache directory itself.
@@ -550,6 +610,7 @@ export const useChatStore = create<ChatState>()(
       channelReach: {},
       channelRedirects: {},
       geoDmCells: {},
+      dmTimers: {},
       geoDmNames: {},
       geoCardExchange: {},
       clearedAt: {},
@@ -638,6 +699,32 @@ export const useChatStore = create<ChatState>()(
             ...msg,
             receivedAtMs: msg.receivedAtMs ?? prior?.receivedAtMs ?? Date.now(),
           };
+          // A private message keeps the timer its chat had when it was sent
+          // or arrived, unless it carried its sender's (DmChatTimer for how a
+          // chat's own timer starts and settles). A row this phone writes into
+          // the chat (a pin, a payment, a ring) takes the chat's timer and
+          // settles nothing.
+          let dmTimers = state.dmTimers;
+          if (hasOwnTimer(msg.channel) && msg.systemKey !== undefined) {
+            arrived.disappearAfterMs ??=
+              dmTimers[msg.channel]?.ms ?? defaultDmTimerMs();
+          } else if (hasOwnTimer(msg.channel)) {
+            const current = dmTimers[msg.channel];
+            const carried = {
+              ms: msg.disappearAfterMs ?? defaultDmTimerMs(),
+              setAtMs: 0,
+              setBy: msg.senderID,
+            };
+            const settles =
+              current === undefined ||
+              (!msg.isMine &&
+                msg.disappearAfterMs !== undefined &&
+                current.setAtMs === 0 &&
+                isLaterTimerChange(carried, current));
+            const chatTimer = settles ? carried : current;
+            if (settles) dmTimers = { ...dmTimers, [msg.channel]: carried };
+            arrived.disappearAfterMs ??= chatTimer.ms;
+          }
           // Insert by timestamp instead of appending. Mesh messages can arrive
           // out of order (a multi-hop relay is slower than a direct link but
           // still carries the ORIGINAL sender timestamp), which otherwise
@@ -686,6 +773,7 @@ export const useChatStore = create<ChatState>()(
           return {
             messages: { ...state.messages, [msg.channel]: kept },
             unreadCounts: { ...state.unreadCounts, [msg.channel]: newUnread },
+            dmTimers,
           };
         });
         notifyRemoved(trimmed);
@@ -892,6 +980,10 @@ export const useChatStore = create<ChatState>()(
       },
 
       removeChannel(channel: string) {
+        // dmTimers is kept: a private chat's timer outlives its history, as
+        // both phones agreed on it, so a chat started again picks up where it
+        // was.
+        //
         // Leaving takes the key, so who else held it is no longer ours to
         // keep. Rejoining rebuilds the roster from live traffic.
         useChannelMembersStore.getState().clearChannel(channel);
@@ -1129,6 +1221,27 @@ export const useChatStore = create<ChatState>()(
         });
       },
 
+      markSeen(channel: string, nowMs: number) {
+        const list = get().messages[channel];
+        if (list?.some((m) => !m.isMine && m.seenAtMs === undefined) !== true) {
+          return;
+        }
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            [channel]: (state.messages[channel] ?? []).map((m) =>
+              m.isMine || m.seenAtMs !== undefined
+                ? m
+                : { ...m, seenAtMs: nowMs },
+            ),
+          },
+        }));
+      },
+
+      setDmTimer(channel: string, timer: DmChatTimer) {
+        set((state) => ({ dmTimers: { ...state.dmTimers, [channel]: timer } }));
+      },
+
       // Opening a conversation clears both records of it: the unread count on
       // its row and its rows in the bell. The OS notification for the channel
       // is dismissed at the same moment (dismissNotificationsFor).
@@ -1156,6 +1269,7 @@ export const useChatStore = create<ChatState>()(
           channelReach: {},
           channelRedirects: {},
           geoDmCells: {},
+          dmTimers: {},
           geoDmNames: {},
           geoCardExchange: {},
           clearedAt: {},
@@ -1185,6 +1299,7 @@ export const useChatStore = create<ChatState>()(
         // turns a reply to a location-channel DM into a message from our
         // durable identity.
         geoDmCells: state.geoDmCells,
+        dmTimers: state.dmTimers,
         geoDmNames: state.geoDmNames,
         // Persisted alongside it: a half-finished exchange has to survive a
         // relaunch, or tapping Keep and reopening the app would offer it again
@@ -1195,6 +1310,19 @@ export const useChatStore = create<ChatState>()(
     },
   ),
 );
+
+// Settle the sends a dead process left behind, once per JS runtime, by
+// whichever comes first: the app's first mount, or a boot start running the
+// mesh headless. Module scope, not component state: an Android Activity
+// recreated under a live runtime remounts the app while its sends are still
+// running, and settling then would fail rows this runtime is carrying.
+let staleSendsSettled = false;
+
+export function settleStaleSendsOnce(): void {
+  if (staleSendsSettled) return;
+  staleSendsSettled = true;
+  useChatStore.getState().failStaleSending(0);
+}
 
 // A location-channel message arrives over BLE and Nostr; only the first counts.
 export function hasStoredMessage(channel: string, id: string): boolean {

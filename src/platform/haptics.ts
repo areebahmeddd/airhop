@@ -21,8 +21,8 @@ export function acknowledged(): void {
 }
 
 // A press-and-hold crossed its threshold. The only gesture with no visible
-// progress, so the tick is what confirms the hold is working. Used by the
-// message bubble and both chat lists.
+// progress, so the tick is what confirms the hold is working: a long-press
+// opening a menu, or a held voice or video note starting or locking.
 export function held(): void {
   void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
 }

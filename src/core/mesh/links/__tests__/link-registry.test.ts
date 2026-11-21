@@ -197,6 +197,60 @@ describe("LinkRegistry", () => {
     });
   });
 
+  describe("proof", () => {
+    it("takes a handshake's proof only on a link bound to that peer", () => {
+      links.open("ble", "c:1");
+      links.prove("c:1", "alice");
+      expect(links.provenLinkFor("alice")).toBeUndefined();
+
+      links.open("ble", "c:2");
+      links.bind("c:2", "bob");
+      links.prove("c:2", "alice");
+      expect(links.provenLinkFor("alice")).toBeUndefined();
+
+      links.bind("c:1", "alice");
+      expect(links.provenLinkFor("alice")).toBeUndefined();
+      links.prove("c:1", "alice");
+      expect(links.provenLinkFor("alice")).toEqual({ id: "c:1", kind: "ble" });
+    });
+
+    it("names a proven link even when the preferred one is not", () => {
+      links.open("ble", "c:1");
+      links.open("ble", "p:1");
+      links.bind("c:1", "alice");
+      links.prove("c:1", "alice");
+      // Bound later, so preferred, but no handshake ran over it.
+      links.bind("p:1", "alice");
+
+      expect(links.linkFor("alice")?.id).toBe("p:1");
+      expect(links.provenLinkFor("alice")?.id).toBe("c:1");
+    });
+
+    it("lasts only as long as the binding", () => {
+      const proven = (linkID: string): void => {
+        links.open("ble", linkID);
+        links.bind(linkID, "alice");
+        links.prove(linkID, "alice");
+      };
+
+      proven("c:1");
+      links.close("c:1");
+      links.open("ble", "c:1");
+      links.bind("c:1", "alice");
+      expect(links.provenLinkFor("alice")).toBeUndefined();
+
+      proven("c:2");
+      links.unbind("alice");
+      links.bind("c:2", "alice");
+      expect(links.provenLinkFor("alice")).toBeUndefined();
+
+      proven("c:3");
+      links.bind("c:3", "mallory");
+      links.bind("c:3", "alice");
+      expect(links.provenLinkFor("alice")).toBeUndefined();
+    });
+  });
+
   // A link closing and a peer leaving are different events. Only the second
   // owes the caller anything, so `close` reports the peer only when it was its
   // last link.
@@ -223,7 +277,7 @@ describe("LinkRegistry", () => {
   });
 
   describe("selection", () => {
-    it("prefers WiFi when a peer is held on both radios", () => {
+    it("prefers Wi-Fi when a peer is held on both radios", () => {
       links.open("ble", "c:1");
       links.open("wifi", "wifi-1");
       links.bind("c:1", "peer-a");

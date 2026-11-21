@@ -159,7 +159,7 @@ export const strings: Strings = {
     "근처 기기를 찾고 그 사이에서 메시지를 중계합니다. 이렇게 메시가 만들어지며 인터넷 연결 없이 작동합니다.",
   "onboarding.primer.location.title": "위치",
   "onboarding.primer.location.body":
-    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며, 정확한 위치는 누군가에게 위치를 보낼 때만 기기 밖으로 나갑니다.",
+    "블록 단위부터 지역 단위까지 근처 지역 채널에 참여시켜 줍니다. Airhop은 절대 사용자를 추적하지 않으며, 정확한 위치는 절대 기기 밖으로 나가지 않습니다.",
   "onboarding.primer.notifications.title": "알림",
   "onboarding.primer.notifications.body":
     "앱이 닫혀 있을 때도 새 메시지 알림을 받습니다. 알림은 기기 안에서 만들어지며 서버는 관여하지 않습니다.",
@@ -380,7 +380,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "모든 멤버에게 닿지는 못했습니다. 그들이 근처에 있을 때 다시 시도하세요.",
   "chat.group.you_were_added": "{name}에 추가되었습니다.",
-  "chat.group.added_you": "{name}에 나를 추가했습니다",
+  "chat.timer.you_set_1": "사라지는 메시지를 1일로 설정했습니다",
+  "chat.timer.you_set_7": "사라지는 메시지를 7일로 설정했습니다",
+  "chat.timer.you_set_30": "사라지는 메시지를 30일로 설정했습니다",
+  "chat.timer.you_off": "사라지는 메시지를 껐습니다",
+  "chat.timer.you_set_local_1":
+    "이 휴대폰에서 사라지는 메시지를 1일로 설정했습니다",
+  "chat.timer.you_set_local_7":
+    "이 휴대폰에서 사라지는 메시지를 7일로 설정했습니다",
+  "chat.timer.you_set_local_30":
+    "이 휴대폰에서 사라지는 메시지를 30일로 설정했습니다",
+  "chat.timer.you_off_local": "이 휴대폰에서 사라지는 메시지를 껐습니다",
+  "chat.timer.peer_set_1": "{name}님이 사라지는 메시지를 1일로 설정했습니다",
+  "chat.timer.peer_set_7": "{name}님이 사라지는 메시지를 7일로 설정했습니다",
+  "chat.timer.peer_set_30": "{name}님이 사라지는 메시지를 30일로 설정했습니다",
+  "chat.timer.peer_off": "{name}님이 사라지는 메시지를 껐습니다",
+  "chat.timer.sheet_shared":
+    "지금부터 보내는 메시지에 두 휴대폰 모두 적용됩니다. 보낸 사람의 휴대폰에서는 보낸 때부터, 상대 휴대폰에서는 처음 읽힌 때부터 각 메시지의 시간을 셉니다. 스크린샷은 막을 수 없습니다.",
+  "chat.timer.sheet_pending":
+    "이 휴대폰에 설정했습니다. 다음에 연결될 때 {name}님에게 전달되고, 그 후 두 휴대폰 모두에 적용됩니다.",
+  "chat.timer.sheet_bitchat":
+    "이 휴대폰에만 적용됩니다. {name}님의 앱은 공유 타이머를 지원하지 않습니다.",
+  "chat.timer.sheet_local":
+    "지금은 이 휴대폰에만 적용됩니다. {name}님의 앱이 공유 타이머를 지원하면 다음에 연결될 때 상대에게 전달됩니다.",
+  "chat.group.invited": "{name}에 초대되었습니다.",
+  "chat.group.invited_you": "{name}에 나를 초대했습니다",
+  "chat.group.decline": "거절",
+  "chat.group.decline_title": "{name} 초대를 거절할까요?",
+  "chat.group.decline_body":
+    "{name}은(는) 연락처에 없습니다. 함께 차단하면 더 이상 초대나 메시지를 받지 않습니다.",
+  "chat.group.decline_block": "거절하고 차단",
   "chat.group.you_were_removed":
     "{name}에서 제외되었습니다. 여기서는 더 이상 읽거나 보낼 수 없습니다.",
   "chat.group.removed_you": "{name}에서 나를 제외했습니다",
@@ -1173,6 +1202,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "토큰을 만들지 못했습니다",
+  "wallet.send.unverified_note":
+    "이 결제의 일부는 민트가 아직 확인하지 않은 ecash입니다.",
   "wallet.send.title": "ecash 보내기",
   "wallet.send.amount_in": "{unit} 단위 금액",
   "wallet.send.body":
@@ -1232,14 +1263,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}에서 교환했습니다. 이제 증명 가능하게 내 것이며, 보낸 사람이 가진 이 토큰의 사본은 더 이상 작동하지 않습니다.",
   "wallet.receive.pending_unconfirmed":
-    "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint}에서 받아 저장했지만 민트가 아직 미사용 여부를 확인해 주지 않았습니다. 서명이 확인되므로 토큰은 진짜입니다. 온라인이 되면 민트에서 자동으로 확인됩니다.",
   "wallet.receive.dleq_ok": "민트의 서명이 확인되므로 토큰은 진짜입니다.",
-  "wallet.receive.dleq_uncached":
-    "민트의 키가 여기에 캐시되어 있지 않아 서명을 오프라인에서 확인하지 못했습니다.",
-  "wallet.receive.dleq_missing":
-    "일부 코인에 민트의 서명 증명이 없어 오프라인에서 확인하지 못했습니다.",
   "wallet.receive.dleq_warning":
     "온라인에서 확인되기 전까지는 보낸 사람이 다른 곳에서 이미 썼을 가능성이 원칙적으로 남아 있습니다.",
   "wallet.receive.failed": "받지 못했습니다",
@@ -1594,6 +1619,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR 코드 스캔",
   "wallet.scan.aim_any": "토큰, 인보이스 또는 npub QR 코드를 비추세요.",
   "wallet.scan.no_any": "그 이미지에서 토큰, 인보이스, npub을 찾지 못했습니다.",
+  "wallet.scan.not_usable": "이 QR 코드는 여기서 Airhop이 사용할 수 없습니다.",
   "wallet.scan.use_camera_a11y": "카메라로 스캔",
   "wallet.scan.use_camera": "카메라 사용",
   "wallet.scan.pick_image_a11y": "저장된 이미지에서 QR 코드 읽기",
@@ -1692,6 +1718,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "이 결제는 내 지갑에 잠겨 있습니다.",
   "wallet.svc.locked_ours_offline_body":
     "온라인이 되면 받으세요. 그동안 다른 누구도 가져갈 수 없습니다.",
+  "wallet.svc.offline_cap":
+    "오프라인에서는 확인되지 않은 ecash를 민트마다 최대 {limit}까지 받을 수 있습니다.",
+  "wallet.svc.offline_unchecked": "이 ecash는 오프라인에서 확인할 수 없습니다.",
+  "wallet.svc.claim_online_body":
+    "온라인이 되어 민트가 확인할 수 있을 때 받으세요.",
   "wallet.svc.already_spent": "이 ecash는 이미 사용되었습니다.",
   "wallet.svc.already_spent_body":
     "이 토큰을 보낸 사람이 먼저 교환했거나, 같은 토큰을 다른 사람에게도 보냈습니다.",
@@ -2012,10 +2043,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "대화를 가장 오래 읽을 수 있게 해주며, 저장 공간도 가장 많이 씁니다.",
   "settings.general.message_retention": "사라지는 메시지",
-  "settings.general.message_retention_desc":
-    "메시지와 미디어가 선택한 기간이 지나면 이 기기에서 삭제됩니다",
-  "settings.general.message_retention_sheet":
-    "각 메시지가 이 기기에 도착한 때부터 계산하며, 잊는 것은 이 기기뿐입니다. 상대방 기기에는 사본이 남고, 스크린숏은 막을 수 없으며, 개인 대화로 온 결제 중 아직 받지 않은 것은 받을 때까지 남아 있습니다.",
+  "settings.general.message_retention_default": "새 채팅의 기본 타이머",
+  "settings.general.message_retention_default_desc":
+    "새 다이렉트 메시지와 이 휴대폰의 방, 채널, 그룹에 적용",
+  "settings.general.message_retention_default_sheet":
+    "새 다이렉트 메시지는 이 타이머로 시작하며, 누구든 채팅에서 바꿀 수 있습니다. 방, 채널, 그룹은 이 휴대폰에서만 이를 따르며 각 메시지가 도착한 때부터 셉니다. 스크린샷은 막을 수 없으며, 다이렉트 메시지로 받은 결제는 직접 받을 때까지 남습니다.",
   "settings.general.message_retention_off_desc":
     "채팅을 비우거나 나갈 때까지 메시지가 남아 있습니다",
   "settings.general.message_retention_1_desc":
@@ -2027,11 +2059,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "오래된 메시지를 삭제할까요?",
   "settings.general.message_retention_confirm_1":
-    "1일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+    "1일이 지난 방, 채널, 그룹, 위치 채널에서 시작한 채팅의 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 그 밖의 다이렉트 메시지는 각자의 타이머를 따릅니다. 되돌릴 수 없습니다.",
   "settings.general.message_retention_confirm_7":
-    "7일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+    "7일이 지난 방, 채널, 그룹, 위치 채널에서 시작한 채팅의 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 그 밖의 다이렉트 메시지는 각자의 타이머를 따릅니다. 되돌릴 수 없습니다.",
   "settings.general.message_retention_confirm_30":
-    "30일이 지난 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 되돌릴 수 없습니다.",
+    "30일이 지난 방, 채널, 그룹, 위치 채널에서 시작한 채팅의 메시지가 미디어와 함께 지금 이 기기에서 삭제됩니다. 그 밖의 다이렉트 메시지는 각자의 타이머를 따릅니다. 되돌릴 수 없습니다.",
   "settings.general.reset_desc":
     "신원, 메시지, 연락처, 지갑은 그대로 둔 채 환경설정을 기본값으로 되돌립니다",
   "settings.general.reset_title": "설정을 초기화할까요?",
@@ -2172,6 +2204,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "라이브 영상",
   "settings.conn.live_video_desc":
     "근처 사람들에게 카메라를 스트리밍하고 그들의 방송도 보세요",
+  "settings.conn.live_video_on_title": "라이브 영상을 켤까요?",
+  "settings.conn.live_video_on_body":
+    "카메라로 블루투스 범위 안의 사람들에게 라이브를 할 수 있고, 다른 사람의 라이브도 채팅에 표시되며 이 휴대폰에 녹화됩니다.",
+  "settings.conn.live_video_off_title": "라이브 영상을 끌까요?",
+  "settings.conn.live_video_off_body":
+    "더 이상 라이브를 할 수 없고, 다른 사람의 라이브도 표시되거나 녹화되지 않습니다. 짧은 라이브는 일반 영상으로 도착합니다.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 경로 설정",
   "settings.conn.tor_desc":
@@ -2203,12 +2241,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor 사용 사실을 숨깁니다. Snowflake보다 빠르지만 이 브리지는 공개되어 있어 차단하는 망도 있습니다.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "일반 웹사이트 방문처럼 보이게 해 Tor 사용을 숨깁니다. 다른 방법보다 차단하기 어렵습니다.",
   "settings.tor.mode_custom": "사용자 브리지",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org에서 받은 obfs4 브리지 라인을 사용하세요. 다른 방법이 안 될 때 시도하세요.",
+    "bridges.torproject.org에서 받은 obfs4 또는 WebTunnel 브리지 라인을 사용하세요. 다른 방법이 안 될 때 시도하세요.",
   "settings.tor.custom_placeholder": "한 줄에 브리지 라인 하나씩 붙여넣기",
   "settings.tor.custom_apply_hint": "연결하려면 입력란 밖을 누르세요.",
   "settings.tor.custom_empty": "먼저 브리지 라인을 하나 이상 추가하세요.",
@@ -2563,6 +2598,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "벨 알림",
   "notif.ring.title": "{sender}님이 벨을 울리고 있습니다",
   "notif.ring.body": "메시지를 확인하세요",
+  "notif.action.reply": "답장",
+  "notif.action.send": "보내기",
+  "notif.action.mark_read": "읽음으로 표시",
+  "notif.reply.failed_title": "보내지 못함",
+  "notif.reply.failed_body":
+    "{chat}에 답장을 보내지 못했습니다. 채팅을 열어 다시 시도하세요.",
+  "notif.reply.held_title": "전송 대기 중",
+  "notif.reply.held_body": "Airhop이 실행되면 {chat}에 답장이 전송됩니다.",
+  "notif.reply.cut_title": "일부만 전송됨",
+  "notif.reply.cut_body":
+    "{chat}에 보낸 답장이 너무 길어 끝부분은 전송되지 않았습니다.",
 };
 
 export const plurals: Plurals = {

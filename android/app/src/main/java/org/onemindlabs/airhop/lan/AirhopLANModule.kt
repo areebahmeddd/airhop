@@ -128,6 +128,33 @@ private const val CONNECT_TIMEOUT_MS = 5_000
 private const val FAREWELL_FLUSH_MS = 300L
 private const val FAREWELL_POLL_MS = 10L
 
+// A dotted IPv4 literal as an address, never a lookup: getByAddress resolves
+// nothing, where getByName would send a hostname to DNS.
+internal fun ipv4Literal(host: String): InetAddress? {
+    val parts = host.split('.')
+    if (parts.size != 4) return null
+    val bytes = ByteArray(4)
+    for ((i, part) in parts.withIndex()) {
+        if (part.isEmpty() || part.length > 3 || !part.all { it in '0'..'9' }) return null
+        val value = part.toInt()
+        if (value > 255) return null
+        bytes[i] = value.toByte()
+    }
+    return InetAddress.getByAddress(bytes)
+}
+
+// Whether `address` falls in `network`/`prefixLength`: the check that picks
+// the Wi-Fi or ethernet network a dial belongs on.
+internal fun onSubnet(address: ByteArray, network: ByteArray, prefixLength: Int): Boolean {
+    if (address.size != network.size || prefixLength !in 0..address.size * 8) return false
+    for (bit in 0 until prefixLength) {
+        val mask = 0x80 ushr (bit % 8)
+        val i = bit / 8
+        if ((address[i].toInt() and mask) != (network[i].toInt() and mask)) return false
+    }
+    return true
+}
+
 // Whether an interface can carry local peers, by the LOCAL_IFACE_PREFIXES rule.
 // An accepted socket on anything else is refused: loopback is another app on
 // this phone, cellular is a stranger on the carrier's network.
@@ -156,6 +183,31 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             null
         }
 
+    // A socket for a dial to `target` on the local network, bound to the Wi-Fi
+    // or ethernet network that holds its subnet. Unbound, Android routes it by
+    // the default network, which on Wi-Fi with no internet (a venue's login
+    // page) can be mobile data, where a private address leads nowhere. No
+    // match (a hotspot this phone serves, which has no Network object) leaves
+    // it to the routing table, which already sends it to the right interface.
+    private fun localSocket(target: InetAddress): Socket {
+        val socket = Socket()
+        val manager = connectivityManager() ?: return socket
+        val network =
+            localNetworks.firstOrNull { network ->
+                val addresses = manager.getLinkProperties(network)?.linkAddresses ?: emptyList()
+                addresses.any {
+                    it.address is Inet4Address &&
+                        onSubnet(target.address, it.address.address, it.prefixLength)
+                }
+            } ?: return socket
+        try {
+            network.bindSocket(socket)
+        } catch (e: Exception) {
+            Log.w(TAG, "Dial not bound to its network: ${e.message}")
+        }
+        return socket
+    }
+
     private fun connectivityManager(): ConnectivityManager? =
         try {
             reactContext.applicationContext.getSystemService(ConnectivityManager::class.java)
@@ -182,6 +234,11 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         @Volatile var writingSinceMs = 0L
         // Writes handed over and not yet finished, queued ones included.
         val pendingWrites = AtomicInteger(0)
+        // Whether the far end has sent a frame. No heartbeat goes out until it
+        // has, so a link dialed at an address a peer handed over writes nothing
+        // to a host that never speaks; TypeScript writes nothing until the
+        // announce on it names the peer it expects.
+        @Volatile var heard = false
     }
 
     private val links = ConcurrentHashMap<String, LinkState>()
@@ -202,8 +259,10 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     private val nameByLink = ConcurrentHashMap<String, String>()
 
     private var serverSocket: ServerSocket? = null
-    private var serverPort: Int = 0
-    private var instanceName: String? = null
+    // Read from the bridge thread (lanPort, connectToAddress) and written on
+    // teardown from NSD callbacks.
+    @Volatile private var serverPort: Int = 0
+    @Volatile private var instanceName: String? = null
 
     private var moveServer: ServerSocket? = null
 
@@ -211,6 +270,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     private var discoveryListener: NsdManager.DiscoveryListener? = null
     private var networkReceiver: BroadcastReceiver? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    // The Wi-Fi and ethernet networks joined now, as the callback reports them.
+    private val localNetworks = ConcurrentHashMap.newKeySet<Network>()
 
     // Multicast is dropped by WiFi power save unless something holds this lock,
     // which is why the app can find peers while the screen is on and silently
@@ -310,6 +371,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             runCatching { connectivityManager()?.unregisterNetworkCallback(it) }
         }
         networkCallback = null
+        localNetworks.clear()
 
         multicastLock?.let { runCatching { if (it.isHeld) it.release() } }
         multicastLock = null
@@ -437,9 +499,15 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                     .build()
             val callback =
                 object : ConnectivityManager.NetworkCallback() {
-                    override fun onAvailable(network: Network) = reportAvailability()
+                    override fun onAvailable(network: Network) {
+                        localNetworks.add(network)
+                        reportAvailability()
+                    }
 
-                    override fun onLost(network: Network) = reportAvailability()
+                    override fun onLost(network: Network) {
+                        localNetworks.remove(network)
+                        reportAvailability()
+                    }
                 }
             try {
                 connectivityManager()?.registerNetworkCallback(request, callback)
@@ -637,7 +705,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         try {
             ioExecutor.execute {
                 try {
-                    val socket = Socket()
+                    val socket = localSocket(peer.host)
                     socket.connect(InetSocketAddress(peer.host, peer.port), CONNECT_TIMEOUT_MS)
                     val id = "lan-out-${linkCounter.incrementAndGet()}"
                     if (registerLink(id, socket, serviceName, generation = generation)) {
@@ -655,6 +723,62 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             promise.reject("CONNECT_FAILED", "LAN transport is shutting down", e)
         }
+    }
+
+    @ReactMethod
+    fun lanPort(promise: Promise) {
+        promise.resolve(if (instanceName != null) serverPort else 0)
+    }
+
+    // A peer's address, handed over inside its session. Which one, and whether,
+    // is decided in TypeScript (services/lan-direct-dial.ts); this only refuses
+    // what is not a dotted IPv4 literal, so nothing here ever looks a name up.
+    // The link takes the caller's ID, which it knows before linkConnected
+    // arrives.
+    @ReactMethod
+    fun connectToAddress(host: String, port: Double, linkID: String, promise: Promise) {
+        val address = ipv4Literal(host)
+        val portNumber = port.toInt()
+        when {
+            address == null || portNumber !in 1..65_535 -> {
+                promise.reject("CONNECT_FAILED", "Not an IPv4 address and port")
+                return
+            }
+            instanceName == null -> {
+                promise.reject("CONNECT_FAILED", "LAN transport is not running")
+                return
+            }
+            links.containsKey(linkID) -> {
+                promise.reject("CONNECT_FAILED", "Link $linkID already exists")
+                return
+            }
+        }
+        val generation = sessionGeneration.get()
+        try {
+            ioExecutor.execute {
+                val socket = localSocket(address)
+                try {
+                    socket.connect(InetSocketAddress(address, portNumber), CONNECT_TIMEOUT_MS)
+                } catch (e: Exception) {
+                    runCatching { socket.close() }
+                    promise.reject("CONNECT_FAILED", e.message, e)
+                    return@execute
+                }
+                if (registerLink(linkID, socket, generation = generation)) {
+                    promise.resolve(null)
+                } else {
+                    promise.reject("CONNECT_FAILED", "LAN transport stopped")
+                }
+            }
+        } catch (e: Exception) {
+            promise.reject("CONNECT_FAILED", "LAN transport is shutting down", e)
+        }
+    }
+
+    @ReactMethod
+    fun closeLANLink(linkID: String, promise: Promise) {
+        if (links[linkID]?.move == false) handleLinkClose(linkID)
+        promise.resolve(null)
     }
 
     private fun ensureServerSocket(): Boolean {
@@ -809,6 +933,8 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
             }
             return
         }
+        // A transfer's own protocol writes first, as on iOS.
+        if (!link.move && !link.heard) return
         ioExecutor.execute {
             try {
                 writeFrame(link, ByteArray(0))
@@ -895,6 +1021,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
                         handleLinkClose(linkID)
                         return@execute
                     }
+                links[linkID]?.heard = true
                 // A heartbeat carries nothing.
                 if (payload.isEmpty()) continue
                 emitEvent(
@@ -1033,7 +1160,7 @@ class AirhopLANModule(private val reactContext: ReactApplicationContext) :
     fun dialMove(host: String, port: Double, promise: Promise) {
         try {
             ioExecutor.execute {
-                val socket = Socket()
+                val socket = ipv4Literal(host)?.let(::localSocket) ?: Socket()
                 try {
                     socket.connect(InetSocketAddress(host, port.toInt()), CONNECT_TIMEOUT_MS)
                 } catch (e: Exception) {

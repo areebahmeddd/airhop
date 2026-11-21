@@ -8,26 +8,46 @@ import {
   encodeDmReceipt,
 } from "../dm-payload";
 
+const SENT = 1_800_000_000_123;
+
 describe("message round-trip", () => {
-  it("preserves id and text", () => {
+  it("preserves id, text and the time it was sent", () => {
     expect(
-      decodeDmPayload(encodeDmMessage("peer-123-abc", "hello there")),
+      decodeDmPayload(encodeDmMessage("peer-123-abc", "hello there", SENT)),
     ).toEqual({
       type: DmPayloadType.MESSAGE,
       messageId: "peer-123-abc",
       text: "hello there",
+      sentAtMs: SENT,
     });
   });
 
   it("handles empty text and unicode", () => {
-    expect(decodeDmPayload(encodeDmMessage("id1", "日本語 🎉"))?.text).toBe(
-      "日本語 🎉",
-    );
-    expect(decodeDmPayload(encodeDmMessage("id2", ""))).toEqual({
+    expect(
+      decodeDmPayload(encodeDmMessage("id1", "日本語 🎉", SENT))?.text,
+    ).toBe("日本語 🎉");
+    expect(decodeDmPayload(encodeDmMessage("id2", "", SENT))).toEqual({
       type: DmPayloadType.MESSAGE,
       messageId: "id2",
       text: "",
+      sentAtMs: SENT,
     });
+  });
+
+  // The packet around it is unsigned: the time is only trusted from here.
+  it("refuses a message without the time it was sent", () => {
+    expect(
+      decodeDmPayload(
+        new Uint8Array([
+          0x01,
+          2,
+          0x69,
+          0x64,
+          0,
+          ...new TextEncoder().encode("hi"),
+        ]),
+      ),
+    ).toBeNull();
   });
 });
 

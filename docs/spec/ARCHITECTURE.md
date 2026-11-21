@@ -93,7 +93,7 @@ native.
 
 | Feature                                              | Offline (BLE)             | Online (Nostr)      | Notes                                                                                                                                   |
 | ---------------------------------------------------- | ------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [Private DMs](#direct-messages)                      | Yes, Noise XX (+DR)       | Yes, NIP-17 wrap    | Delivery and read receipts on every path. Double Ratchet only between Airhop peers                                                      |
+| [Private DMs](#direct-messages)                      | Yes, Noise XX (+ ratchet) | Yes, NIP-17 wrap    | Delivery and read receipts on every path. Double Ratchet only between Airhop peers                                                      |
 | [Public channels](#public-channels)                  | Yes, TTL flood            | Yes, kind 20000     | `#bluetooth` is the mesh room; the location channels `#block` to `#region` run on both transports                                       |
 | [Private channels](#private-channels-airhop-only)    | Yes, sealed `0x50` packet | Optional, same blob | Airhop only. Key rides an invite link, no member cap                                                                                    |
 | [Private groups](#private-groups-bitchat-compatible) | Yes, sealed `0x25` packet | No                  | bitchat compatible. Creator-signed roster, max 16, Bluetooth only                                                                       |
@@ -117,7 +117,7 @@ native.
 | [Lightning](#wallet-operations)                      | No                        | Yes                 | Top up or cash out through a mint the user chooses (NUT-04 / NUT-05)                                                                    |
 | [Wallet recovery](#recovery)                         | No                        | Yes                 | A 12-word phrase rebuilds the balance from the mints that signed it (NUT-13 / NUT-09)                                                   |
 | [Contact verification](#verifying-a-contact)         | Yes, QR or safety code    | n/a                 | A camera scan, or each reading their own six-word safety code to the other                                                              |
-| [Panic wipe](#panic-wipe)                            | Yes                       | Yes                 | Panic button on Profile. Destroys keys, messages, groups, board, prekeys                                                                |
+| [Panic wipe](#panic-wipe)                            | Yes                       | Yes                 | Panic button on the You tab. Destroys keys, messages, groups, board, prekeys                                                            |
 | [bitchat compatibility](#ground-rules)               | Yes                       | Yes                 | Same wire format both directions. Airhop-only types are ignored by bitchat                                                              |
 
 ## 2. Identity
@@ -189,7 +189,7 @@ A name does not prove who holds the key. That is confirmed separately, two ways:
   side). Against one person's code the impostor must match six fixed words:
   about 2^42 keys at 5,200 hashes each, roughly 2^54 hash operations per person
   targeted, done in advance. Scanning the QR in person compares the full keys
-  and stays the strong path. Confirms keys already held rather than importing
+  and stays the strong path. It confirms keys already held rather than importing
   any, so it grants no re-pinning power and needs none. This is what lets
   someone reachable only by call or radio be verified at all.
 
@@ -203,7 +203,8 @@ independent, so a contact learned from a link can be verified on a call.
   Which packets are signed, and why the rest need not be, is under
   [Not every packet is signed](#not-every-packet-is-signed).
 - Receivers verify signatures before displaying or acting on a message, and
-  drop unsigned and invalid-signature packets before display.
+  drop unsigned and invalid-signature packets before display, except the
+  types that are unsigned by design (see below), which authenticate otherwise.
 - Relaying is separate from verification. A node forwards opaque bytes it may not
   be able to check, since it may not hold the sender's key yet, and the flood
   router runs before per-type verification. Four types are the exception, as in
@@ -258,7 +259,7 @@ Follows bitchat's design:
 
 - Dual-role: every device is both GATT Central (scanner) and GATT Peripheral (advertiser)
 - Service UUID `F47B5E2D-4A9E-4C5A-9B3F-8E1D2C3A4B5C`, bitchat-compatible
-- TTL at most 7, decremented per relay and clamped by neighbor count as bitchat-ios does ([PROTOCOLS.md section 4](PROTOCOLS.md#4-routing-constants))
+- TTL at most 7, decremented per relay and clamped by neighbor count ([PROTOCOLS.md section 4](PROTOCOLS.md#4-routing-constants))
 - Jitter of 10 to 220 ms before relay, by neighbor count (8 to 25 ms for live voice and fragments), which prevents cascade storms
 - Dedup against a 1,000-entry seen set of packet IDs, each expiring after 5 minutes, with fragments in a second set of their own and live voice and video in a third (10,000 entries, 150 s) so neither file traffic nor a stream can shorten the window. A duplicate is dropped before its signature is checked, and never cancels this phone's own pending relay: Bluetooth links are point to point, so a neighbor's copy says nothing about the others
 - Fragments of 467 data bytes inside a 512-byte frame, the BLE write ceiling
@@ -414,6 +415,38 @@ logs from two networks link them. The ring sorts on that random name, so
 discovery needs no durable identifier, and identity is proven in the ANNOUNCE
 once the link is up.
 
+**A second way in.** Ships, hotels and conferences often filter mDNS while still
+letting devices reach each other, so peers who already share a Noise session
+also meet by address, as Briar's LAN plugin has contacts do
+([`LanTcpPlugin`](https://github.com/briar/briar/blob/master/bramble-core/src/main/java/org/briarproject/bramble/plugin/tcp/LanTcpPlugin.java)).
+Each phone hands an Airhop peer its private IPv4 addresses and listening port
+inside the session (Noise payload `0x56`), and again whenever its LAN transport
+restarts on a new network, and the phone whose peer ID sorts lower dials it
+(`src/services/lan-direct-dial.ts`). It is the same link mDNS opens, and the
+dialer holds the same cap of 8; the phone dialed takes what arrives, up to
+native's inbound bound of 16, rather than leave a latecomer with no link. The
+address is the peer's word, so it is dialed only if it is private (RFC 1918;
+carrier-grade NAT's `100.64.0.0/10` is left to mDNS), on one of this phone's own
+subnets and not its own, at a port from 1024 up, one address per peer, first
+dialed 20 to 35 s after it arrives (at the first 15 s review past 20 s) so mDNS
+links the pair first where it can, at most once every 30 s per peer however many
+addresses arrive and at most eight connects in any 30 s across peers, the
+longest-waiting peer first, and never as a sweep. Three dials that come to
+nothing drop the address until the peer sends one again, which also retires one
+carried over from a network left behind. TypeScript writes nothing to the link
+until the announce on it names that peer, and the native side sends no heartbeat
+until the far end has sent a frame, so an address that is no Airhop phone (a
+printer's port) is never sent a byte; one that does not prove itself within
+10 s, names anyone else, or arrives once mDNS has linked the pair, is closed, and
+one an mDNS link joins later is closed by its dialer. On Android each LAN dial
+is bound to the Wi-Fi or Ethernet network holding its address, as Briar's
+AndroidLanTcpPlugin binds its sockets, so a network with no internet cannot push
+it onto mobile data. An announce shows which identity is speaking, not that its
+sender is on the far end: a host that relays another phone's fresh announce
+could hold that link, as it could on an mDNS link, though Noise keeps what
+crosses it unreadable. It follows the same local network switch, and strangers
+on a filtered network still meet over Bluetooth.
+
 This is the only transport off by default. Publishing tells every device on the
 network, and whoever runs it, that this phone is carrying Airhop, which on a
 workplace or venue network is an attendance list. The Settings copy says that
@@ -444,7 +477,7 @@ Five things still limit it:
 | Constraint            | Consequence                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Client isolation      | Most guest and venue Wi-Fi blocks peer-to-peer traffic at the access point, and it cannot be detected before trying. The UI has to say "No Airhop devices on this network" rather than spin                                                                                                                                                                                                                                                    |
-| mDNS filtering        | Common even where ordinary traffic works, and reads the same as client isolation. Phones in range still meet over Bluetooth                                                                                                                                                                                                                                                                                                                    |
+| mDNS filtering        | Common even where ordinary traffic works, and reads the same as client isolation. Phones already in a session meet by address instead (above); strangers still meet over Bluetooth                                                                                                                                                                                                                                                             |
 | iOS background        | A TCP socket has no equivalent of `bluetooth-central`. With background running on, the mesh keeps LAN wanted off screen on iOS as on Android, but iOS suspends the app, and a suspended app has its listener reclaimed; the failure reaches the controller, whose retry ladder and the refresh on resume bring it back. In practice LAN carries traffic on iOS only while the app runs, and Bluetooth keeps the mesh alive with the screen off |
 | Local network refusal | A permission refusal is retried for about 2 s, then left to a resume, the switch or the next start. On iOS a refused browse still lets the listener come up, so the transport reads available and dies a moment later; resetting the retries on that edge would republish every couple of seconds for good                                                                                                                                     |
 | Hotspot hosts         | A phone sharing its connection serves the network rather than joins it, so `ConnectivityManager` has no `Network` for it. Availability is read off the interfaces instead. Android has served mDNS on that interface since 13; below that the host sees an empty network, which reads the same as client isolation                                                                                                                             |
@@ -453,10 +486,11 @@ Five things still limit it:
 
 - **Relay list.** 300+ public relays from georelays (`nostr_relays.csv`, the directory bitchat's relay lists come from), taken weekly as published, bundled as `assets/data/nostr_relays.csv` and compiled into `src/data/relays.ts`
 - **Choosing relays.** A location cell's relays are chosen by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) distance from the cell: its ten nearest (the five nearest, which bitchat's clients use, plus five warm backups, all used for both publishing and subscribing), plus up to five the user adds. DMs use a pool of well-known relays, at most five
-- **DMs.** NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)
-- **Channels and presence.** Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none, as bitchat-ios does. It pauses off screen, as on bitchat-ios, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
+- **DMs.** NIP-17-shaped gift-wrap for private DMs, so no message content or metadata reaches relays. The layering is NIP-17's; the encryption inside each layer is bitchat's `nip44-v2` rather than the published NIP-44, and has to be, since the event signature covers the ciphertext and interop is byte for byte. See [PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44). Between Airhop phones that have met, a message inside is also sealed to a one-time or weekly key the recipient handed over in a session or an earlier DM and later deletes, so a key leaked later does not open the messages relays kept. Receipts, key batches, a message to a contact known only from a card, and one sent after a week with no fresh key still go under the long-term key, as bitchat sends them. A sealed message is padded to its own sizes, so a relay that reads sizes can tell an Airhop pair's messages from bitchat's ([section 7.2](PROTOCOLS.md#72-forward-secret-internet-dms-between-airhop-phones))
+- **Channels and presence.** Kinds 20000 and 20001 for geohash channels and presence heartbeats. A heartbeat goes to the cell's own geo relays, where the cell reads presence, and is skipped when the cell has none. It pauses off screen, since position is only re-read on a refresh. It never falls back to the DM relays, where nobody in the cell listens and the relays carrying this phone's DMs would learn where it is
 - **Publishing.** A publish goes to every relay in its set and counts as sent on the first acceptance, so no single relay is load-bearing
 - **Subscribing.** Each relay is subscribed on its own, so a subscription a relay closed is reopened there alone, and an event ID counts as seen across relays only once its signature has verified, so one hostile relay's forged copy cannot hide the genuine event the others deliver. A reconnect resumes 15 minutes behind the newest event that relay sent, except a gift-wrap subscription, which asks again from where it opened, since wrap timestamps are blurred
+- **Sign-in (NIP-42).** A relay may refuse a read or a post until the client signs its challenge ([NIP-42](https://github.com/nostr-protocol/nips/blob/master/42.md)). Airhop signs in only when refused with `auth-required:`, never on a challenge alone, and with the key the operation belongs to: a location cell's own key for its feed, notes, DM inbox and posts, the main key for the DM inbox, and a key made for the one sign-in for a gift wrap or courier drop, since the main key would tie the wrap to its sender. Everything else never signs in and stays refused there: courier mail reads, the bridge, private channels, the wallet, and a gateway's carried posts, which are someone else's events. A connection proves one key, ever: a second would link the two on that relay, so the first to sign in keeps it, a refused proof is not sent again on it (one the relay never answered within nostr-tools' 4.4 s may be, by the same key), and a reconnect starts over. A refused read is reopened once by `NostrClient` itself, under the closer its caller holds (nostr-tools' own `onauth` reopen is never handed back to the closer, so it would outlive the call), and a refused post is sent once more, unchanged, to the relay that refused it. nostr-tools' pool-wide `automaticallyAuth` stays off, since it answers every challenge with one key
 - **First connect.** nostr-tools retries a relay that drops, but never one whose first connect fails, so a pool is built only when it has a route: with Tor on, it waits for the circuit
 - **Connectivity.** It is read from the sockets themselves, on every question and on a 5 s poll, because nostr-tools reports a socket dropping, and its own reconnect, to no hook. Every consumer (the gateway capability, the banners, the uplink flush) follows those edges. A DM, a location DM and a courier drop are published only to the default DM relays, so they count a route only while one of those is live (`isDMConnected`, bitchat-ios `isDMRelayConnected`); a live location or custom relay alone is not one
 - **Replays.** Every subscribe replays the inbox's lookback, so gift wraps and courier mail already opened are recorded across launches (`nostr-processed-events`, [Data at rest](#data-at-rest)) and a relaunch neither files nor acknowledges them again
@@ -660,15 +694,15 @@ is waiting on the scan.
 
 What protects each kind of traffic:
 
-| Traffic               | Protection                                                                                                                                                |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live DM session       | Noise XX: mutual auth, forward secrecy per session                                                                                                        |
-| Live DM, Airhop peers | Double Ratchet inside that session: forward secrecy per message                                                                                           |
-| Courier envelope      | Noise X one-way seal to a one-time prekey, or to the recipient's static key when no fresh one is held                                                     |
-| Nostr DM              | bitchat's `nip44-v2` inside a NIP-17-shaped gift-wrap ([PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)) |
-| Private channel       | XChaCha20-Poly1305 under the key in the invite link                                                                                                       |
-| Private group         | ChaCha20-Poly1305 under the current epoch key                                                                                                             |
-| Public channel        | Plaintext plus Ed25519 signature, readable by every peer                                                                                                  |
+| Traffic               | Protection                                                                                                                                                                                                                                                                                                     |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live DM session       | Noise XX: mutual auth, forward secrecy per session                                                                                                                                                                                                                                                             |
+| Live DM, Airhop peers | Double Ratchet inside that session: forward secrecy per message                                                                                                                                                                                                                                                |
+| Courier envelope      | Noise X one-way seal to a one-time prekey, or to the recipient's static key when no fresh one is held                                                                                                                                                                                                          |
+| Nostr DM              | bitchat's `nip44-v2` inside a NIP-17-shaped gift-wrap ([PROTOCOLS.md section 7.1](PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)); between Airhop phones also sealed to a key the recipient deletes ([section 7.2](PROTOCOLS.md#72-forward-secret-internet-dms-between-airhop-phones)) |
+| Private channel       | XChaCha20-Poly1305 under the key in the invite link                                                                                                                                                                                                                                                            |
+| Private group         | ChaCha20-Poly1305 under the current epoch key                                                                                                                                                                                                                                                                  |
+| Public channel        | Plaintext plus Ed25519 signature, readable by every peer                                                                                                                                                                                                                                                       |
 
 ### Sessions: Noise XX
 
@@ -688,8 +722,7 @@ nonce, and a 1024-nonce window refuses any nonce already seen.
 
 Sessions live in memory and are kept across link drops, since resuming one is
 far cheaper than a fresh handshake and radios drop links constantly, but not
-forever: at 21.6 hours of age (90% of a day, polled each minute, as bitchat-ios
-does) a fresh handshake replaces the session, so a leaked transport key reads
+forever: at 21.6 hours of age (90% of a day, polled each minute) a fresh handshake replaces the session, so a leaked transport key reads
 at most a day of traffic. Between two Airhop phones the lower peer ID starts
 it, and the higher starts one only if the session reaches 24 hours, so the two
 never cross. A replaced session and the ratchet bound to it keep decrypting for
@@ -737,8 +770,8 @@ Noise alone, and courier mail does not use it.
 
 - Per-message forward secrecy: compromise of message N does not expose N-1 or N+1
 - Break-in recovery: if current keys leak, future messages are protected again after a few ratchet steps
-- A `DR_ENCRYPTED` packet is signed, and the signature is checked before the ratchet is touched. Decryption then runs on a copy of the state, kept only once the message authenticates, so a forgery leaves the ratchet exactly as it was
-- A message that fails to decrypt is discarded, as the Signal specification requires; an out-of-step pair recovers through the session convergence above. More than 1000 lost messages in one chain (`MAX_SKIP`) leave the pair out of step until a restart or a LEAVE, the same trade bitchat-ios makes, since healing on that error would bring back the replay teardown
+- A ratchet message travels inside the Noise session it is bound to (Noise payload `0x55`), so the session's AEAD refuses a forgery before the ratchet is touched and hides the header that steers it, and the message is deniable: nothing about it is signed. The time it shows travels inside it too and must fall within the freshness window of the packet's own time, so a relay cannot restamp a message it held back. Decryption then runs on a copy of the state, kept only once the message authenticates, so a message that fails leaves the ratchet exactly as it was
+- A message that fails to decrypt is discarded, as the Signal specification requires; an out-of-step pair recovers through the session convergence above. More than 1000 lost messages in one chain (`MAX_SKIP`) leave the pair out of step until a restart, a LEAVE or the next rekey (24 h at most), which seeds a fresh ratchet
 
 X3DH is not used, since the Noise handshake already seeds the ratchet. The seed
 is the handshake's exporter secret, a third HKDF output of `split()` alongside
@@ -769,14 +802,19 @@ prekey.
 
 Noise handshake messages are unsigned, matching bitchat, because the peer may
 not hold this phone's signing key yet and the handshake authenticates itself.
-Messages inside a Noise session carry no redundant signature, since the session
-already authenticates them. A ratchet message is the exception: its header
-travels in the clear and steers the ratchet, so `DR_ENCRYPTED` is sent signed
-and the signature is checked before the ratchet is touched. Fragments are
-unsigned, since the reassembled packet is verified. Signatures are required
-where a claimed sender is otherwise unverifiable: announces, public and private
-channel messages, attachments, voice frames, board posts, sync requests, LEAVE,
-and gateway and bridge deposits.
+Messages inside a Noise session, the Double Ratchet's included, carry no
+signature: the session already authenticates them to the recipient, and a
+long-term signature would let anyone holding a packet and its message key prove
+who wrote it, so DMs over the mesh stay deniable (courier mail and internet DMs
+do not: the deposit and the gift wrap's seal are signed). The exception is the
+internet DM prekey batch handed over inside a session (`0x57`): it is signed and
+names its recipient, since the same batch also travels in a gift wrap, so it can
+show that two phones exchanged keys and when, never what they said. Fragments
+are unsigned, since the reassembled packet is checked as any other: verified
+when signed, authenticated by its session when it is Noise. Signatures are
+required where a claimed sender is otherwise unverifiable: announces, public and
+private channel messages, attachments, voice frames, board posts, sync requests,
+LEAVE, and gateway and bridge deposits.
 
 ## 6. Messaging
 
@@ -816,7 +854,7 @@ the message ID and the recipient collapses duplicates, so a peer who walks into
 range while a relay holds their copy gets it over the radio. The outbox caps
 each recipient's queue, and a message it evicts shows as failed rather than
 waiting forever. A retry that finds the recipient in range but still
-handshaking costs no attempt, as in bitchat-ios, since nothing left the phone;
+handshaking costs no attempt, since nothing left the phone;
 the message waits out the outbox week. A flood with no direct link does cost one.
 
 **Relay copies.** A relay copy is paced: republished daily once a relay accepted it, every two
@@ -830,11 +868,10 @@ drops back to queued.
 delivery receipt, and owes a read receipt until the thread is opened (bounded
 per conversation). Owed receipts are not stored: each launch rebuilds them from
 the unread rows from others. A read receipt goes back over the mesh when the
-sender is still reachable, and over Nostr when they have left, as bitchat-ios
-routes it; couriered mail owes one like any other DM. One that finds no route
-when the thread opens (in range with no session, or out of range with no
-Nostr) waits for that peer's next route, and in range a handshake is started
-for it, as bitchat-ios holds receipts until the handshake.
+sender is still reachable, and over Nostr when they have left; couriered mail
+owes one like any other DM. One that finds no route when the thread opens (in
+range with no session, or out of range with no Nostr) waits for that peer's
+next route, and in range a handshake is started for it.
 
 **Deleted threads.** A DM brings a deleted thread back only when the chat store
 keeps the row, on every path. A row the store refuses (one the thread's clear
@@ -842,10 +879,11 @@ predates, or a resend of one disappearing messages removed) is still
 acknowledged as delivered, since the sender waits on it, but owes no read
 receipt and recreates nothing.
 
-**Folded threads.** Blocking a contact also blocks the location pseudonym a card exchange folded
-into their thread. A card exchange that merges a pseudonymous thread moves its
-queued mail onto the contact, and a send still naming the folded key goes to
-the contact, so this phone's main identity never writes to a cell key.
+**Folded threads.** Blocking a contact also blocks the location pseudonym a card
+exchange folded into their thread. A card exchange that merges a pseudonymous
+thread moves its queued mail onto the contact, and a send still naming the
+folded key goes to the contact, so this phone's main identity never writes to a
+cell key.
 
 **Attachments, pins and rings.** These are narrower. A DM attachment goes only
 sealed inside the Noise session, over a direct link, to a peer that has proven
@@ -853,8 +891,11 @@ it can read one, and is acknowledged under a stable media ID: bitchat's for a
 photo or voice note, Airhop's own for a video note or clip, which bitchat never
 acknowledges ([PROTOCOLS.md section 3.3](PROTOCOLS.md#private-media-0x20)). A
 pin or a ring needs a link and a session, and is refused rather than queued
-without them. A group invite or key update with no link waits for the peer's
-next announce.
+without them. A group invite or key update that finds no route waits for the
+member's next announce. A key update to a member with no link of their own
+waits too, even when it went out, since a member who just walked off still looks
+reachable for a while; an invite is not repeated, since a repeat after a decline
+would bring the group back.
 
 ### Store-and-forward
 
@@ -880,14 +921,20 @@ post also writes one line into the chat it belongs to.
 A file in a public room crosses as one signed packet (`0x22`), split into
 fragments on Bluetooth ([PROTOCOLS.md section 3.2](PROTOCOLS.md#32-file-packet-payload)).
 A DM attachment goes sealed inside the Noise session
-([Direct messages](#direct-messages)). Airhop sends photos at 256 KiB, voice notes
-at 512 KiB and anything else at 1 MiB, and accepts 1 MiB of any type, bitchat-ios's
-decoder ceiling. Received files share a 100 MiB budget, oldest out first.
+([Direct messages](#direct-messages)). Airhop resizes photos to 256 KiB within a
+512 KiB cap, sends voice notes up to 512 KiB and anything else up to 1 MiB, and
+accepts 1 MiB of any type, bitchat-ios's decoder ceiling. Received files share
+a 100 MiB budget, oldest out first.
 
 Voice notes are recorded AAC (16 kHz mono, 16 kbps), not live, so a two-minute
 note stays inside bitchat-ios's 30-second reassembly window in a room. A video
 is shrunk to fit its recipient, its picture held to 350 kbps between two Airhop
-phones, and played inline; a round video note is held to record.
+phones, and played inline; a round video note is held to record. In a thread
+only the notes on screen hold a player, and the newest two loop (none while
+the camera or a live stream has the screen, or the app is out of sight), since
+each player holds a hardware decoder and a low-end phone has only a handful. A
+video playing with sound gives up the speaker when the app goes to the
+background, a call included.
 
 ### Live voice and video
 
@@ -901,7 +948,10 @@ neighbor once, on its fastest link, from their origin and at every relay, and
 a live write left in a Bluetooth link's queue past 1.5 s is dropped unsent
 there. That queue's depth is what a video stream paces itself by, and the
 radio is asked for a faster connection interval while live video is sent or
-received.
+received. Both are opt-in, since live voice streams before the mic is let go
+and both play what anyone in range sends. While they are off, holding the mic
+records a voice note, and a stream arrives only if it is short enough for its
+sender to resend as a file.
 The formats are in
 [PROTOCOLS.md section 3.1](PROTOCOLS.md#31-voice-burst-payload) and
 [section 3.10](PROTOCOLS.md#310-live-video).
@@ -961,7 +1011,7 @@ nobody in Bluetooth range is in it, so it runs over Nostr only. Its messages
 carry a `t=teleport` tag, and bitchat lists the sender as teleported rather than
 nearby.
 
-The cell is picked on a globe or typed as its geohash, as in bitchat. The globe
+The cell is picked on a globe or typed as its geohash. The globe
 draws Natural Earth geometry bundled with the app, the same files bitchat ships,
 so it works offline and asks no one anything: no map tiles, no map SDK, and no
 place-name lookup for wherever it is pointed, since each of those would tell a
@@ -990,7 +1040,7 @@ link exists, so nobody can forward their way in.
 
 - Messages are sealed with ChaCha20-Poly1305 under the current epoch key and broadcast as `0x25`, with group ID and epoch in the clear so relays can carry them
 - Bluetooth only. Group messages do not bridge to Nostr, so a member who walks out of range stops receiving until they return
-- Rotating the key bumps the epoch; older epochs are refused
+- Rotating the key bumps the epoch; older epochs are refused. A post under a newer epoch than the key held (a member back from away hears it through sync before the creator's key update arrives) is held, up to 64 across groups with the one furthest ahead dropped first, and read once that update lands
 - A group pins the `creatorFingerprint` it was created with, and a state naming a different creator is refused even at a higher epoch
 
 ### Room messages
@@ -1034,7 +1084,7 @@ the mint cannot link issuance to redemption. That fits a mesh app.
 
 ### Wallet tab
 
-- **Balance card:** the primary unit's spendable balance, with unconfirmed, reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
+- **Balance card:** the primary unit's spendable balance, unconfirmed ecash included and named beneath it, with reserved, other-unit and pending-deposit amounts stated beside it rather than folded in (units are separate currencies and never summed), and four actions: Receive, Send, Scan and Mints.
 - **Receive** lists scan a QR code, paste a token and top up over Lightning. **Send** lists create a token, zap a Nostr contact and pay a Lightning invoice. The rail is a choice inside the verb.
 - **Scan** reads a token, a bolt11 invoice or an npub and opens the sheet that handles it, filled in. It never claims or pays by itself.
 - **`cashu:` links.** Airhop registers NUT-00's scheme and token QRs carry it, so a camera scan opens Receive filled in, never claimed. Airhop's own hand-off bounced back (no other wallet) opens Share.
@@ -1045,18 +1095,18 @@ the mint cannot link issuance to redemption. That fits a mesh app.
 
 ### Wallet operations
 
-| Operation   | Behavior                                                                                                                                                                                                                                                                                                          |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Balance     | Spendable proofs per (mint, unit), with unverified and reserved amounts shown apart from the headline                                                                                                                                                                                                             |
-| Deposit     | bolt11 from the mint (NUT-04), polled while the sheet is open and reconciled on next launch                                                                                                                                                                                                                       |
-| Withdraw    | Pay a bolt11 from ecash (NUT-05), quoted with the routing reserve first, unused reserve returned as change                                                                                                                                                                                                        |
-| Send        | Build a token from held proofs, fee-aware so the recipient can claim the amount asked                                                                                                                                                                                                                             |
-| Receive     | Paste, scan or claim from a message. Swapped at once when the mint is reachable; otherwise stored unverified and swapped automatically by `reconcile` when it is (up to two accounts per pass). Coins locked to someone else, or whose keysets contradict the token's unit, are refused before anything is stored |
-| Pay         | The [`payPerson` ladder](#paying-a-person)                                                                                                                                                                                                                                                                        |
-| Refresh     | NUT-07 state check, then this wallet's own coins outside the recovery phrase as one swap, then each offline receipt as its own swap (oldest first, eight per refresh). A refused receipt is removed and kept as a token on its failed row; one worth no more than its fee waits                                   |
-| Backup      | The 12-word phrase (NUT-13, NUT-09), with the uncovered remainder shown                                                                                                                                                                                                                                           |
-| Consolidate | A token names one mint, so two mints' ecash never combine. `consolidateMints` moves it instead: the destination mint issues an invoice and the source pays it, for one routing fee and no other app                                                                                                               |
-| History     | Every send, receive, deposit, withdrawal, nutzap and swap, with status                                                                                                                                                                                                                                            |
+| Operation   | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Balance     | Spendable proofs per (mint, unit), unverified ones included and named under the headline, reserved ones shown apart from it                                                                                                                                                                                                                                                                                                                                                                           |
+| Deposit     | bolt11 from the mint (NUT-04), polled while the sheet is open and reconciled on next launch                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Withdraw    | Pay a bolt11 from ecash (NUT-05), quoted with the routing reserve first, unused reserve returned as change                                                                                                                                                                                                                                                                                                                                                                                            |
+| Send        | Build a token from held proofs, fee-aware so the recipient can claim the amount asked                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Receive     | Paste, scan or claim from a message. Swapped at once when the mint is reachable; otherwise, when every coin's DLEQ checks out against the cached keys, stored unverified, up to 10,000 sat per account, and swapped automatically by `reconcile` when it is (up to two accounts per pass). A token it cannot check, or one past that cap, waits for the mint and stays in the chat. Coins locked to someone else, or whose keysets contradict the token's unit, are refused before anything is stored |
+| Pay         | The [`payPerson` ladder](#paying-a-person)                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Refresh     | NUT-07 state check, then this wallet's own coins outside the recovery phrase as one swap, then each offline receipt as its own swap (oldest first, eight per refresh). A refused receipt is removed and kept as a token on its failed row; one worth no more than its fee waits                                                                                                                                                                                                                       |
+| Backup      | The 12-word phrase (NUT-13, NUT-09), with the uncovered remainder shown                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Consolidate | A token names one mint, so two mints' ecash never combine. `consolidateMints` moves it instead: the destination mint issues an invoice and the source pays it, for one routing fee and no other app                                                                                                                                                                                                                                                                                                   |
+| History     | Every send, receive, deposit, withdrawal, nutzap and swap, with status                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ### Fiat units
 
@@ -1069,11 +1119,12 @@ rate is ever applied.
 ### Token in a message
 
 A payment is a message whose body is a token string. Whatever carries text
-carries it (encrypted in a DM, always signed), and the recipient sees a payment
-card. A token with DLEQ witnesses runs past the 255-byte message cap of the
-Noise, Nostr and courier paths, so only the Airhop-to-Airhop ratchet carries it;
-anywhere else the [payment ladder](#paying-a-person) picks another rail, and a
-queued token says where it can go.
+carries it (encrypted in a DM, authenticated to the recipient), and the
+recipient sees a payment card. A token with DLEQ witnesses runs past the
+255-byte message cap of the Noise, Nostr and courier paths, so only the
+Airhop-to-Airhop ratchet carries it; anywhere else the [payment
+ladder](#paying-a-person) picks another rail, and a queued token says where it
+can go.
 
 A `cashuB` token names a v2 keyset by an 8-byte short id that only the mint's
 keyset list expands. When a token from a held mint names a keyset newer than the
@@ -1151,7 +1202,7 @@ is not.
 
 Every mint call passes `assertMintNetworkAllowed` in `wallet-service.ts`.
 
-- **Internet switch off:** no mint call at all, since the switch promises Bluetooth only. The refusal is `offline`, so a received token is stored unconfirmed and swapped by the reconcile pass that turning the switch back on starts, and Lightning actions say why they are off.
+- **Internet switch off:** no mint call at all, since the switch promises Bluetooth only. The refusal is `offline`, so a received token whose DLEQ checks out is stored unconfirmed and swapped by the reconcile pass that turning the switch back on starts, and Lightning actions say why they are off.
 - **Tor on, iOS:** refused (`tor-blocked`) unless the user allows mint calls over the clear net. Tor wraps only Nostr WebSockets there, so `fetch` would expose the IP. Android routes every web request through the proxy and needs no refusal.
 
 The reconcile pass and every refresh, including the one the pass runs to redeem
@@ -1163,17 +1214,17 @@ a banner and disables what would fail.
 
 ### Payment security model
 
-| Attack              | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Double-spend        | The mint is the only authority. An offline receipt is stored unverified and swapped on its own (one staged swap per receipt) by the reconcile pass once the mint is reachable, or by a refresh; a receipt the mint refuses (a NUT error, or a check its own keys disprove, never a rate limit, a server error or no answer) leaves the balance and its row keeps the token. A NUT-07 state check only removes what is spent; it never marks a coin verified |
-| Fake token          | NUT-12 DLEQ against the mint's cached keys on every receive. A failing witness is rejected; a coin with no witness, or no cached keys, reports "unchecked", and a token is "valid" only when every coin's witness verifies                                                                                                                                                                                                                                  |
-| Inflated amount     | Amounts come from the decoded proofs, each bounded before summing, never from a declared field                                                                                                                                                                                                                                                                                                                                                              |
-| Token interception  | DMs encrypt the token. A token posted to a public channel is redeemable by any reader, which the UI says before sending                                                                                                                                                                                                                                                                                                                                     |
-| Interrupted send    | Proofs move to a reserved bucket and the token stays on the transaction, so a crash or an unrouted DM leaves the value reclaimable                                                                                                                                                                                                                                                                                                                          |
-| Lost mint answer    | Only the mint's own NUT error (HTTP 400 with a code, including one cashu-ts wraps in `StaleKeysetError`) is a refusal. A 5xx, a 429 or a proxy's error page reads as a lost connection at every recovery site and in a melt, so the stored outputs or change blanks stay for the next pass, and a melt left in doubt is reported as such rather than failed. A mint lacks NUT-09 only when its advertised NUTs or a 404 say so                              |
-| Mint failure        | The user picks mints. Balances are per (mint, unit) and never pooled, so one failing mint cannot take the rest                                                                                                                                                                                                                                                                                                                                              |
-| Proofs at rest      | The encrypted wallet partition ([Wallet partition](#wallet-partition)). Without the key the wallet locks rather than falling back to plaintext                                                                                                                                                                                                                                                                                                              |
-| IP linkage over Tor | The mint network gate above                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Attack              | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Double-spend        | The mint is the only authority. Sends, melts and nutzap locks spend confirmed coins first, and one that must include unconfirmed ecash says so. An offline receipt is stored unverified and swapped on its own (one staged swap per receipt) by the reconcile pass once the mint is reachable, or by a refresh; a receipt the mint refuses (a NUT error, or a check its own keys disprove, never a rate limit, a server error or no answer) leaves the balance and its row keeps the token. A NUT-07 state check only removes what is spent; it never marks a coin verified |
+| Fake token          | NUT-12 DLEQ against the mint's cached keys on every receive. A failing witness is rejected. Offline, a token is taken only when every coin's witness verifies; one with a coin that carries none, or whose keys are not cached, waits in the chat for the mint                                                                                                                                                                                                                                                                                                              |
+| Inflated amount     | Amounts come from the decoded proofs, each bounded before summing, never from a declared field                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Token interception  | DMs encrypt the token. A token posted to a public channel is redeemable by any reader, which the UI says before sending                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Interrupted send    | Proofs move to a reserved bucket and the token stays on the transaction, so a crash or an unrouted DM leaves the value reclaimable                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Lost mint answer    | Only the mint's own NUT error (HTTP 400 with a code, including one cashu-ts wraps in `StaleKeysetError`) is a refusal. A 5xx, a 429 or a proxy's error page reads as a lost connection at every recovery site and in a melt, so the stored outputs or change blanks stay for the next pass, and a melt left in doubt is reported as such rather than failed. A mint lacks NUT-09 only when its advertised NUTs or a 404 say so                                                                                                                                              |
+| Mint failure        | The user picks mints. Balances are per (mint, unit) and never pooled, so one failing mint cannot take the rest                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Proofs at rest      | The encrypted wallet partition ([Wallet partition](#wallet-partition)). Without the key the wallet locks rather than falling back to plaintext                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| IP linkage over Tor | The mint network gate above                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 Two limits hold regardless. DLEQ proves the mint signed a proof, not that the
 sender has not spent it. And a reclaimed send races the recipient until the mint
@@ -1204,7 +1255,7 @@ traffic leaves it.
 
 ### Presence
 
-The Status picker in Profile sets how findable the phone is:
+The Status picker on the You tab sets how findable the phone is:
 
 | Status    | Radios                                             | Survives a relaunch |
 | --------- | -------------------------------------------------- | ------------------- |
@@ -1266,6 +1317,12 @@ SOCKS5 and everything else stays outside the tunnel. That is why a Cashu mint
 call is refused on iOS while Tor is on, and needs no such refusal on Android
 ([Mint network gate](#mint-network-gate)).
 
+That socket carries every iOS relay connection, Tor or not, because it also
+bounds what a relay can send: a message past 1 MiB fails the socket before more
+is buffered, where React Native's own WebSocket buffers any length a relay
+declares. On Android, React Native's WebSocket is OkHttp's, which exposes no
+inbound limit, so a relay's message there has no size bound.
+
 Each destination (host and port) gets circuits of its own, so two relays, or a
 relay and a mint, are never tied together by a shared circuit. The listener
 accepts SOCKS credentials but ignores them: they authenticate nothing in Tor's
@@ -1316,7 +1373,9 @@ that screen, and the mesh runs normally throughout. Four things lead there:
 
 Only turning Tor off, or a start the native client accepts (Try again, or a
 bridge change), leaves the held state. Turning the internet switch off and on
-again lands back in it.
+again lands back in it. A start that fails acts only if Tor and the internet are
+still on and no newer start has begun; otherwise whatever changed them has
+already set the state, and a late failure must not undo it.
 
 #### Bridges
 
@@ -1328,7 +1387,7 @@ unlisted entry point, and the transport in front of it disguises the connection.
 | Direct     | The IP, from the relay                    | None. The default                      |
 | obfs4      | That Tor is in use, as random bytes       | Public lines, some networks block them |
 | Snowflake  | That Tor is in use, with no list to block | Slowest to connect                     |
-| WebTunnel  | That Tor is in use, as an HTTPS visit     | Fewer bridges exist                    |
+| WebTunnel  | That Tor is in use, as an HTTPS visit     | No built-in lines, so through Custom   |
 | Custom     | The same, from lines you supply           | You fetch them yourself                |
 
 Bridges stay off by default: one is slower than a direct connection and only
@@ -1361,25 +1420,27 @@ leaves: destroyed by a panic wipe, or moved to a new phone.
 
 ### Key storage
 
-| Secret                 | Storage                       | Backed by                         |
-| ---------------------- | ----------------------------- | --------------------------------- |
-| `noiseStaticPrivKey`   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| `signingPrivKey`       | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Wallet AES-256 key     | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Nutzap P2PK privkey    | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Recovery phrase        | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| One-time prekey keys   | `expo-secure-store`           | iOS Keychain / Android Keystore   |
-| Cashu proofs           | `react-native-mmkv` (AES-256) | File encrypted with the key above |
-| Noise and DR sessions  | Memory only                   | Not persisted                     |
-| Group and channel keys | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
-| Message history        | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
+| Secret                   | Storage                       | Backed by                         |
+| ------------------------ | ----------------------------- | --------------------------------- |
+| `noiseStaticPrivKey`     | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| `signingPrivKey`         | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Wallet AES-256 key       | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Nutzap P2PK privkey      | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Recovery phrase          | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| One-time prekey keys     | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Internet DM prekeys      | `expo-secure-store`           | iOS Keychain / Android Keystore   |
+| Cashu proofs             | `react-native-mmkv` (AES-256) | File encrypted with the key above |
+| Noise sessions, ratchets | Memory only                   | Not persisted                     |
+| Group and channel keys   | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
+| Message history          | `react-native-mmkv`           | See [Data at rest](#data-at-rest) |
 
-The six `expo-secure-store` secrets go through `src/core/crypto/keychain.ts`, as
-five items (the two identity keys share one); nothing else calls
+The seven `expo-secure-store` secrets go through `src/core/crypto/keychain.ts`,
+as six items (the two identity keys share one); nothing else calls
 `expo-secure-store` directly. The module exports a union type of the item names,
-so a caller cannot write a secret outside the registry. The one-time prekeys are
-a single blob because MMKV appends: a consumed key deleted there lingers in the
-file until a rewrite, and forward secrecy rests on it being gone.
+so a caller cannot write a secret outside the registry. Each set of prekeys
+(courier mail, internet DMs) is a single blob in the keychain because MMKV
+appends: a consumed key deleted there lingers in the file until a rewrite, and
+forward secrecy rests on it being gone.
 
 That registry is what the [panic wipe](#panic-wipe) walks, since
 `expo-secure-store` has no delete-all. A secret stored under an ad-hoc key would
@@ -1421,12 +1482,14 @@ a condemned identity again and never boots it; the mark clears only when that
 delete succeeds or a new identity (onboarding, or a transfer arriving) takes
 its place.
 
-The launch sweep that deletes secrets with no identity to own them leaves two
-items alone. The one-time prekeys, because the mesh can publish a batch right
-after onboarding, and a delete landing late would drop keys peers are already
-sealing to. And the wallet's file key, because the wallet partition opens at
-launch on every install, identity or not, and deleting its key under it would
-leave the wallet unreadable on the next launch. The panic wipe deletes both.
+The launch sweep that deletes secrets with no identity to own them leaves three
+items alone. Both sets of prekeys (`IDENTITY_PREKEY_ITEMS`), because the mesh
+can hand out a batch right after onboarding, and a delete landing late would
+drop keys peers are already sealing to; every path that replaces an identity
+deletes them instead. And the wallet's file key, because the wallet partition
+opens at launch on every install, identity or not, and deleting its key under it
+would leave the wallet unreadable on the next launch. The panic wipe deletes all
+three.
 
 ### Storage key names
 
@@ -1506,33 +1569,55 @@ gift wraps and courier messages this identity has already opened (public event
 and message IDs with the time each was recorded, kept for the inbox's lookback
 plus an hour, at most 5,000 per inbox), because relays replay a whole lookback
 on every subscribe and each replay would otherwise be filed and acknowledged
-again, as bitchat-ios's `NostrProcessedEventStore` prevents. Which IDs a phone
+again. Which IDs a phone
 opened says who writes to it, so the panic wipe clears it, and a transfer moves
 it with the chat history.
 
 History leaves the phone row by row as well as all at once. Leaving or clearing
 a conversation, removing a message, the 200-message trim and disappearing
 messages all report the rows they take (`subscribeRemovedMessages` in
-`chat-store.ts`), and `file-transfer-service` deletes each attachment file no
-remaining row references, counted across every conversation since forwards
-share files, and never one a send or receive still holds. Leaving or clearing
-also drops the conversation's lines in the bell, which keep a preview of each
-message. Disappearing messages (General, off by default; 1, 7 or 30 days) time
-each message from when it reached this phone, a local `receivedAtMs` rather
-than the sender's clock, hide it from the thread, search and the conversation
-lists the moment it expires, and remove it, its files, its bell line, its
-outbox entry and any read receipt still owed for it at launch, at the next
-message's deadline (checked at least hourly), and on a return to the app once
-a deadline has passed (`src/services/message-retention.ts`). A message still
-on its way stays past the window: one sending, queued or with a courier, a DM
-the outbox retries with no relay holding a copy, and a live stream. So does a
-Cashu token received in a DM until the wallet has claimed it, since its bubble
-holds the only copy; a token posted to a room expires like any other message.
-A removed DM's ID is kept for the outbox week, so a resend
-from a sender whose delivery receipt was lost is acknowledged and refused
-rather than shown again (`src/store/expired-messages.ts`). A clock that went
-back deletes nothing. It is this phone's alone: the other phone keeps its copy.
-The conversation's notification is dismissed once nothing in it is unread.
+`chat-store.ts`), and `attachment-cache` deletes each attachment file no
+remaining row references, counted across every conversation since forwards share
+files, and never one a send or receive still holds. Leaving or clearing also
+drops the conversation's lines in the bell, which keep a preview of each
+message. Disappearing messages are set per mesh chat (its info sheet, or the
+timer beside the name in the thread header, shown while one is on) and default
+for new chats from General (off by default; 1, 7 or 30 days). Each private
+message keeps the timer it was sent with, so a change applies to new messages
+only, and between Airhop phones it travels with each text message on every route (the
+`0x50` TLV, [PROTOCOLS.md section
+3.3](PROTOCOLS.md#33-noise-inner-payload-types)), so both phones delete their
+copy alike: the sender's from sending, the recipient's from when it was first
+read (on screen in the open thread, or marked read from its notification), so an
+offline recipient loses nothing unread. A chat starts on the timer its first
+message carried; two phones that started on different defaults settle on the
+higher peer ID's, since both first messages carry one. A change goes to the peer
+as a message without words through the outbox, the later change winning (ties to
+the higher peer ID), and leaves a row in both threads when it changes how long
+messages last; picking the timer a chat merely started on makes it a change too.
+This phone's latest change is sent again until the peer acknowledges it, so one set
+before a peer has proven it runs Airhop, or whose message expired unsent, still
+arrives, and the picker says it is waiting. With a bitchat peer the timer stays
+on this phone, and the picker and the row say so. A photo, voice note or file,
+and a row this phone writes into the chat (a pin, a payment, a ring), follow
+each phone's own chat timer. Deleting a chat keeps its timer, so a chat started
+again picks up where both phones left it. Rooms, channels, groups and location
+chats follow the default on this phone alone, timed from when each message
+reached it, a local `receivedAtMs` rather than the sender's clock. Either way a
+message is hidden from the thread, search and the conversation lists the moment
+it expires, and is removed, with its files, its bell line, its outbox entry and
+any read receipt still owed for it, at launch, at the next message's deadline
+(checked at least hourly), and on a return to the app once a deadline has passed
+(`src/services/message-retention.ts`). A message still on its way stays past the
+window: one sending, queued or with a courier, a DM the outbox retries with no
+relay holding a copy, and a live stream. So does a Cashu token received in a DM
+until the wallet has claimed it, since its bubble holds the only copy; a token
+posted to a room expires like any other message. A removed DM's ID is kept for
+the outbox week, so a resend from a sender whose delivery receipt was lost is
+acknowledged and refused rather than shown again
+(`src/store/expired-messages.ts`). A clock that went back deletes nothing. A
+modified client or a screenshot can still keep a copy. The conversation's
+notification is dismissed once nothing in it is unread.
 
 ### App lock
 
@@ -1556,6 +1641,8 @@ default, in Privacy & security) closes that gap. Decisions live in
   lock asks. Back leaves the app; screen readers cannot reach beneath.
 - **Nobody reads behind it.** Receipts, marking read, live voice and the Mesh
   and Wallet "seen" states wait, and messages notify as if the app were away.
+- **Nobody answers past it.** Message notifications lose Reply and Mark as
+  read while it is on, and turning it on takes the cards already shown down.
 - **Reset settings leaves it on**, with its delay, as it leaves the media
   retention window, the internet switch and Tor, and its confirm says so:
   dropping any of them would lower a protection or delete media unasked. The
@@ -1610,7 +1697,7 @@ library, not the app.
 
 ### Moving to a new phone
 
-It starts from Profile, Transfer to a new phone, on the old phone, and Transfer
+It starts from Transfer to a new phone on the old phone's You tab, and Transfer
 from another phone on the new phone's welcome screen. The new phone shows a QR
 code, the old phone scans it, and everything crosses one TCP connection on the
 local network: the same Wi-Fi, or a hotspot either phone serves. No internet, no
@@ -1637,6 +1724,7 @@ erases itself (the panic wipe) once the new one confirms it has everything.
 | Wallet, phrase, P2PK key     | Yes   | The wallet lands under the new phone's own file key                         |
 | Settings                     | Yes   | Less the ones describing the old phone (`DEVICE_SETTINGS`)                  |
 | One-time prekey private keys | No    | Never leave the phone that made them; the new phone publishes a fresh batch |
+| Internet DM prekeys, both    | No    | Ours never leave; contacts hand the new phone theirs when it first writes   |
 | Noise and ratchet sessions   | No    | Memory only. Renegotiated on first contact, as after any restart            |
 | Carried courier mail, board  | No    | Other people's mail, and public posts the mesh gossips back                 |
 | Media files, Tor state       | No    | Attachments render as "not on this device"; Tor state is this phone's own   |
@@ -1665,8 +1753,8 @@ The sequence, and where it can stop:
    replaces the code, since whoever answered has read it.
 5. The new phone holds the bundle whole, checks it, then writes under a
    `receiving` marker: every partition, the wallet, its secrets, and the
-   identity last, each read back. One-time prekeys an earlier identity left on
-   the phone are deleted, so the arriving identity never publishes them. It
+   identity last, each read back. Prekeys an earlier identity left on the
+   phone are deleted, so the arriving identity never hands them out. It
    marks `committed` and sends the commit.
 6. The old phone erases itself and says so. The new phone clears its marker.
 
@@ -1733,7 +1821,7 @@ persisted.
 | Threat                      | Countermeasure                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Replay                      | Content-derived packet IDs, a deduplicator, and a ±2 minute freshness window on every packet at ingress, so stale packets are neither relayed nor acted on. A packet tagged `IS_RSR` is judged on the sync rules alone, fresh or not: TTL 0, from the peer bound to the link a request went to in the last 30 s, and a type sync serves within the age it serves it for (announces 60 s, public and group messages 6 h, board posts 7 days). Live voice and video frames are also refused once 30 s old |
-| Replayed session traffic    | A Noise or Double Ratchet packet that fails to decrypt is discarded and never tears down a session, so a genuine packet replayed after it has left the dedup window cannot evict working keys or spend the handshake budget                                                                                                                                                                                                                                                                             |
+| Replayed session traffic    | A Noise packet, or a ratchet message inside one, that fails to decrypt is discarded and never tears down a session, so a genuine packet replayed after it has left the dedup window cannot evict working keys or spend the handshake budget                                                                                                                                                                                                                                                             |
 | Handshake flood             | Inbound handshakes are rate-limited and pending ones expire ([Sessions: Noise XX](#sessions-noise-xx))                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Key compromise (session)    | Noise XX forward secrecy, so past sessions stay safe if a static key later leaks, and a session renewed daily, so a leaked transport key reads at most a day                                                                                                                                                                                                                                                                                                                                            |
 | Key compromise (DM history) | Double Ratchet per-message keys seeded from the Noise exporter secret rather than the public transcript hash, so the chain is not derivable by observers                                                                                                                                                                                                                                                                                                                                                |
@@ -1749,7 +1837,7 @@ persisted.
 | Relay abuse              | A forged file, board post, voice or video frame, or LEAVE is dropped before it is relayed; nothing addressed to this phone or sent under its own ID is relayed by it. A receiving card is shown only for a sender whose key is held, at most three at once, unnamed in public rooms                                                                                                                                                                                                                         |
 | Confused-deputy delivery | Directed packets are relayed but rendered only by the addressee, so a relay never surfaces someone else's private content                                                                                                                                                                                                                                                                                                                                                                                   |
 | Storage exhaustion       | Received media shares a 100 MiB budget, oldest out first, and sent media is not counted, so anyone who announced once cannot fill the phone a file at a time                                                                                                                                                                                                                                                                                                                                                |
-| Traffic analysis (BLE)   | Private payloads (Noise, Double Ratchet and private channels) are encrypted and padded to fixed buckets, so their length says little about the message. Public traffic is plaintext by design, and headers are always in the clear (see [Out of scope](#out-of-scope))                                                                                                                                                                                                                                      |
+| Traffic analysis (BLE)   | Private payloads (Noise, ratchet messages inside it, and private channels) are encrypted and padded to fixed buckets, so their length says little about the message. Public traffic is plaintext by design, and headers are always in the clear (see [Out of scope](#out-of-scope))                                                                                                                                                                                                                         |
 
 #### Relays and the internet
 
@@ -1769,10 +1857,10 @@ persisted.
 
 #### Payments
 
-| Threat                 | Countermeasure                                                                                                                                                                                                                          |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hostile payment source | Ecash is redeemed only from a mint the user added, before or when a token asks, and incoming proofs are DLEQ-verified before anything is stored; offline, a token reads as genuine only when every coin carries a witness that verifies |
-| Cashu double-spend     | The mint enforces this with blind-signature tracking; the receiver redeems promptly, and on its own once the mint is reachable                                                                                                          |
+| Threat                 | Countermeasure                                                                                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hostile payment source | Ecash is redeemed only from a mint the user added, before or when a token asks, and incoming proofs are DLEQ-verified before anything is stored; offline, a token is taken only when every coin carries a witness that verifies |
+| Cashu double-spend     | The mint enforces this with blind-signature tracking; the receiver redeems promptly, and on its own once the mint is reachable                                                                                                  |
 
 #### The device
 
@@ -1780,7 +1868,7 @@ persisted.
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Picked-up unlocked phone       | The optional app lock: the phone's own screen lock before anything shows, from launch and after the chosen time away. Sheets stand down beneath it, and nothing behind it counts as read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Physical device seizure        | Panic wipe by triple-tap, with keys in the keychain, hardware-backed on modern devices. Attachments are swept on a schedule (General, Keep media for: 7 days by default, 14 or 30 by choice, with no unbounded option), so a stored photo does not outlive its conversation                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Screen surveillance            | Notification previews can be withheld (Settings, Security), since the system renders them on the lock screen. The app-switcher snapshot is covered on both platforms, hung off leaving the app rather than losing focus so a system dialog never raises it; Android needs API 33, leaving 26 to 32 exposed. Screenshots stay possible on purpose, and one taken inside a chat is announced to the other side rather than blocked, except on Android 13, where detecting one needs a media read permission Airhop does not hold                                                                                                                                                              |
+| Screen surveillance            | Notification previews can be withheld (Settings, Privacy & security), since the system renders them on the lock screen. The app-switcher snapshot is covered on both platforms, hung off leaving the app rather than losing focus so a system dialog never raises it; Android needs API 33, leaving 26 to 32 exposed. Screenshots stay possible on purpose, and one taken inside a chat is announced to the other side rather than blocked, except on Android 13, where detecting one needs a media read permission Airhop does not hold                                                                                                                                                    |
 | Cloud backup or phone transfer | Nothing on either platform is backed up or moved by the OS, so a backup held by Apple or Google holds no history, contacts or keys. See [Data at rest](#data-at-rest)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Identity lifted by a transfer  | Started only after the OS confirms the owner. The old phone dials only an address on one of its own local subnets, and reaches only the phone whose code it scanned (Noise XX pinned to the key in the code, the token as prologue); nothing is advertised on the network. Both phones show six words from the handshake, and nothing freezes or installs until the person confirms them on the new phone, so a third phone that read the code and connected first is turned away. The old phone erases itself once the new phone commits. A transfer that ends unconfirmed freezes the old phone rather than let two run one identity. See [Moving to a new phone](#moving-to-a-new-phone) |
 
@@ -1819,7 +1907,7 @@ Three of those read right to left and several are written in scripts with
 rendering rules the code has to know about, so this is a correctness concern
 rather than a presentation one. A mention that never fires, a name that reorders
 the punctuation around it and a row frozen in last week's language are all
-silent: nothing looks broken, and the feature simply does not work.
+silent: nothing looks broken, and the feature does not work.
 
 ### Decisions
 
@@ -1978,9 +2066,9 @@ xcframework on macOS.
 files the build scripts write, against `vendor.lock.json`, so a binary cannot
 change without a recorded rebuild, and it refuses an executable or archive
 anywhere else in the tree. That does not prove a binary corresponds to its
-source; rebuilding it does. The Android container build is reproducible (run it
-twice from clean and `SHA256SUMS.android` must not move), and `build-native.yml`
-rebuilds both platforms in CI.
+source; rebuilding it does. The Android container build is reproducible (run
+it twice from clean and `SHA256SUMS.android` must not move), and
+`build-native.yml` rebuilds both platforms in CI.
 
 ### Toolchain versions
 
@@ -1990,15 +2078,21 @@ Expo and move only when those do.
 
 Android:
 
-| Tool                  | Version         | Pinned in                                    | Free to bump                 |
-| --------------------- | --------------- | -------------------------------------------- | ---------------------------- |
-| JDK (Temurin)         | `21`            | `setup-android/action.yml`                   | Yes, within what AGP accepts |
-| Gradle                | `9.4.1`         | `android/gradle/wrapper/`, checksum included | Yes                          |
-| Kotlin                | `2.2.0`         | React Native's `libs.versions.toml`          | No                           |
-| Android Gradle plugin | `9.2.1`         | React Native's catalog                       | No                           |
-| NDK                   | `27.1.12297006` | `setup-android/action.yml`                   | No, matches React Native     |
-| `minSdk`              | `26`            | `android/gradle.properties`                  | Yes                          |
-| `compileSdk`          | Expo's          | the `expo-root-project` plugin               | No, bump Expo                |
+| Tool                  | Version         | Pinned in                                    | Free to bump             |
+| --------------------- | --------------- | -------------------------------------------- | ------------------------ |
+| JDK (Temurin)         | `21`            | `setup-android/action.yml`                   | Yes, see below           |
+| Gradle                | `9.6.1`         | `android/gradle/wrapper/`, checksum included | Yes, see below           |
+| Kotlin                | `2.2.0`         | React Native's `libs.versions.toml`          | No                       |
+| Android Gradle plugin | `9.2.1`         | React Native's catalog                       | No                       |
+| NDK                   | `27.1.12297006` | `setup-android/action.yml`                   | No, matches React Native |
+| `minSdk`              | `26`            | `android/gradle.properties`                  | Yes                      |
+| `compileSdk`          | Expo's          | the `expo-root-project` plugin               | No, bump Expo            |
+
+React Native caps both. Gradle 9.7 and later embed Kotlin 2.4, which React
+Native's and Expo's Gradle plugins, compiled with Kotlin 2.2, cannot read, so
+Gradle stays on 9.6. React Native recommends JDK 17 and warns about newer ones,
+and compiles every module to Java 17 bytecode whichever JDK runs Gradle, so the
+JDK stays on the 21 CI already runs.
 
 AGP 9's built-in Kotlin and new DSL are switched off in
 `android/gradle.properties` while the app and several native dependencies still
@@ -2018,13 +2112,13 @@ The Tor client and its transports, all in `native/arti/TOOLCHAIN.env`:
 
 | Tool        | Version         | Note                                                     |
 | ----------- | --------------- | -------------------------------------------------------- |
-| Rust        | `1.98.1`        |                                                          |
-| Arti client | `0.47.0`        |                                                          |
+| Rust        | `1.99.1`        |                                                          |
+| Arti client | `0.48.0`        |                                                          |
 | cbindgen    | `0.29.4`        | Generates `arti.h`                                       |
-| Go          | `1.26.9`        |                                                          |
-| IPtProxy    | `5.7.0`         | Release and commit, so a tag cannot move under the build |
+| Go          | `1.27.4`        |                                                          |
+| IPtProxy    | `5.9.0`         | Release and commit, so a tag cannot move under the build |
 | gomobile    | pinned commit   | Upstream would otherwise resolve `@latest`               |
-| NDK         | `28.2.13676358` | r28 aligns to the 16 KiB Play requires                   |
+| NDK         | `30.0.16248370` | r28 and later align to the 16 KiB Play requires          |
 
 One value, several files. Each carries a comment saying so, and a mismatch fails
 a build rather than drifting quietly:
@@ -2053,10 +2147,10 @@ So there is one module per hardware or OS capability and no more.
 | `AirhopVoiceModule`       | Both     | AAC-LC capture and playback for live push-to-talk; voice notes record through `expo-audio`                                                                                                                                    |
 | `AirhopVideoModule`       | Both     | Live video's camera and H.264 encoder, decoding onto a native surface, the MP4 a stream is recorded into, and re-encoding a video to the trimmed part and a smaller size before it is sent, with the trimmer's preview frames |
 | `AirhopWiFiModule`        | Both     | Wi-Fi Aware same-platform fast path                                                                                                                                                                                           |
-| `AirhopLANModule`         | Both     | mDNS discovery, its TCP links, and the transfer socket                                                                                                                                                                        |
+| `AirhopLANModule`         | Both     | mDNS discovery, its TCP links, a link dialed at an address a peer handed over, and the transfer socket                                                                                                                        |
 | `AirhopWiFiPairing`       | iOS      | The system pairing sheet that fast path needs                                                                                                                                                                                 |
 | `AirhopTorModule`         | Both     | Embedded Arti's lifecycle and bootstrap status                                                                                                                                                                                |
-| `AirhopTorSocket`         | iOS      | The SOCKS5 WebSocket that iOS needs and Android does not                                                                                                                                                                      |
+| `AirhopRelaySocket`       | iOS      | The WebSocket every relay connection rides, through Arti's SOCKS5 or direct, with a 1 MiB cap on an incoming message                                                                                                          |
 | `AirhopAppModule`         | Both     | Process-level operations: recent log and the mesh snapshot on both; relaunch, start on boot, APK sharing and the ring loop on Android only, which iOS rejects                                                                 |
 | `AirhopForegroundService` | Android  | Keeps the process, and so the mesh, alive in the background                                                                                                                                                                   |
 | `AirhopMeshWidget`        | Android  | The home screen widget: the reachable count and the time it was counted, drawn from the snapshot JS pushes                                                                                                                    |
@@ -2076,7 +2170,7 @@ runtimes agree on safely. The full per-module contract is in
 `src/bridge/NativeAirhopBLE.ts` has eleven methods:
 
 1. `startAdvertising` / `stopAdvertising`: GATT Peripheral
-2. `startScanning` / `stopScanning`: GATT Central. Stopping the scan also disconnects every link this phone dialed, pending dials included, as bitchat-ios does when it stops, so stopping the mesh leaves no central link up to carry a neighbor's traffic, or a new identity's announce after a wipe. Duty cycling and power changes keep their links; Invisible only stops advertising
+2. `startScanning` / `stopScanning`: GATT Central. Stopping the scan also disconnects every link this phone dialed, pending dials included, so stopping the mesh leaves no central link up to carry a neighbor's traffic, or a new identity's announce after a wipe. Duty cycling and power changes keep their links; Invisible only stops advertising
 3. `writeToLink`: raw bytes to a connected peer, through a per-link FIFO queue the radio's readiness callbacks release. Each write carries a deadline (`ttlMs`, 1.5 s for live voice and video, none otherwise) past which native drops it unsent, and resolves with the link's queue depth
 4. `setLiveMediaActive`: raise connection priority while live video is sent or received, and lower it after
 5. `getRadioState`: support, power, authorization, location and battery in one answer
@@ -2142,13 +2236,14 @@ design exists to prevent.
 | Matrix          | Rejected     | Requires a homeserver, which is a single point of failure. Federated but not serverless                                                           |
 | XMPP            | Rejected     | Also requires an always-on server, with a complex extension ecosystem and a limited offline story                                                 |
 | Signal Protocol | Rejected     | Signal owns the relay infrastructure and requires a phone number, so it is not permissionless                                                     |
+| MLS (Marmot)    | Rejected     | Needs one ordered stream of group changes, which a mesh split while offline cannot give, so group state forks. Not bitchat-compatible either      |
 | SimpleX         | Close second | No persistent identifiers and privacy-first, but no BLE mesh story, a smaller ecosystem and fewer relays                                          |
 | Nostr           | Chosen       | Permissionless keypair identity, 300+ independent relays, NIP-17 gift-wrap for DMs, NIP-61 for payments, and bitchat already validated the choice |
 
 ### Noise XX over TLS or X3DH
 
 - TLS requires CAs and server certificates, which a serverless system cannot have
-- X3DH alone does not mutually authenticate: the receiver does not authenticate the sender in the handshake
+- X3DH starts a session with a peer who is offline. Noise XX already authenticates both sides when they meet, and courier mail's one-time prekeys cover the offline case
 - Noise XX gives mutual authentication and forward secrecy with no CAs, is proven in WireGuard, and is what bitchat uses
 
 ### Relay URLs stay strict
@@ -2182,7 +2277,7 @@ not go through the HTTP stack at all.
 
 ### Double Ratchet alongside Noise XX
 
-- Noise XX gives forward secrecy per session, with a new key on each reconnect
+- Noise XX gives forward secrecy per session, with fresh ephemeral keys for each handshake
 - It does not give per-message forward secrecy within a session
 - Double Ratchet rotates keys per message, so one message's key does not expose its neighbors
 - Offline mail does not ride it: a courier envelope is sealed with Noise X to a one-time prekey, which gives it forward secrecy of its own and is what bitchat reads

@@ -14,10 +14,12 @@ beforeEach(() => {
 // in the keychain would be published under the new key, linking the two.
 test("a new identity starts without the previous identity's prekeys", async () => {
   await writeSecret(KEYCHAIN_ITEMS.localPrekeys, "old-identity-prekeys");
+  await writeSecret(KEYCHAIN_ITEMS.dmPrekeys, "old-identity-dm-prekeys");
 
   const peerID = await writeNewIdentity();
 
   expect(await readSecret(KEYCHAIN_ITEMS.localPrekeys)).toBeNull();
+  expect(await readSecret(KEYCHAIN_ITEMS.dmPrekeys)).toBeNull();
   expect((await loadIdentity())?.peerID).toBe(peerID);
 });
 

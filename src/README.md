@@ -129,21 +129,21 @@ The test suite follows four principles:
 
 ### Test coverage
 
-| Layer            | Covered                                                                | Excluded                                  |
-| ---------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
-| `core/crypto/`   | Noise XX/X, Double Ratchet, keychain, contact cards, verification QR   | None                                      |
-| `core/encoding/` | Base64 round-trips and malformed input                                 | None                                      |
-| `core/mesh/`     | Wire format, routing, gossip, fragments, voice, video, bulletin board  | Native BLE I/O                            |
-| `core/nostr/`    | Gift-wrap, geohash identity, relay discovery, bitchat interoperability | Live network calls (`NostrClient` mocked) |
-| `core/payments/` | Cashu BDHKE, DLEQ, proof selection, Nutzap, seed handling              | Mint connectivity                         |
-| `core/router/`   | Peer registry and transport selection                                  | Native transports                         |
-| `core/spam/`     | Rate buckets, near-copy and disguise detection, bitchat's test cases   | None                                      |
-| `i18n/`          | Catalog completeness, plural rules, right-to-left layout helpers       | None                                      |
-| `services/`      | Per-service behavior: payments, geohash channels, transfers, policy    | Physical radios (simulated)               |
-| `store/`         | State transitions and persistence shape                                | MMKV persistence (mocked)                 |
-| `platform/`      | OEM battery-settings URI resolution, device-owner authentication       | OS dialogs                                |
-| `utils/`         | Stateless utilities                                                    | None                                      |
-| `__tests__/`     | Whole-app lifecycle and multi-device simulation                        | Physical radios (simulated)               |
+| Layer            | Covered                                                                                                                       | Excluded                    |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `core/crypto/`   | Noise XX/X, Double Ratchet, keychain, contact cards, verification QR                                                          | None                        |
+| `core/encoding/` | Base64 round-trips and malformed input                                                                                        | None                        |
+| `core/mesh/`     | Wire format, routing, gossip, fragments, voice, video, bulletin board                                                         | Native BLE I/O              |
+| `core/nostr/`    | Gift-wrap, DM prekeys, relay sign-in (real pool, scripted relay), geohash identity, relay discovery, bitchat interoperability | Live relays                 |
+| `core/payments/` | Cashu BDHKE, DLEQ, proof selection, Nutzap, seed handling                                                                     | Mint connectivity           |
+| `core/router/`   | Peer registry and transport selection                                                                                         | Native transports           |
+| `core/spam/`     | Rate buckets, near-copy and disguise detection, bitchat's test cases                                                          | None                        |
+| `i18n/`          | Catalog completeness, plural rules, right-to-left layout helpers                                                              | None                        |
+| `services/`      | Per-service behavior: payments, geohash channels, transfers, policy                                                           | Physical radios (simulated) |
+| `store/`         | State transitions and persistence shape                                                                                       | MMKV persistence (mocked)   |
+| `platform/`      | OEM battery-settings URI resolution, device-owner authentication                                                              | OS dialogs                  |
+| `utils/`         | Stateless utilities                                                                                                           | None                        |
+| `__tests__/`     | Whole-app lifecycle and multi-device simulation                                                                               | Physical radios (simulated) |
 
 Most of the application's behavioral coverage is in `src/__tests__/`, because
 those suites exercise the system as a whole rather than any single component.

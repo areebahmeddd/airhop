@@ -24,7 +24,7 @@ describe("confirmDeviceOwner", () => {
     expect(mockAuthenticate).not.toHaveBeenCalled();
   });
 
-  test("a passed prompt, with the passcode allowed as a fallback", async () => {
+  test("a passed prompt passes, with the passcode allowed as a fallback", async () => {
     mockLevel.mockResolvedValue(3);
     mockAuthenticate.mockResolvedValue({ success: true });
     await expect(confirmDeviceOwner(PARAMS)).resolves.toBe("passed");

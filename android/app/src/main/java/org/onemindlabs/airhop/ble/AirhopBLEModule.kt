@@ -1311,12 +1311,12 @@ class AirhopBLEModule(private val reactContext: ReactApplicationContext) :
         }
     }
 
-    // Also drops every link this side dialed, pending dials included, as
-    // bitchat-ios does when it stops. Otherwise an Away phone, or one off screen
-    // with background running off, stays connected to its neighbors, and after
-    // a panic wipe the new identity announces down the connection that carried
-    // the old one's LEAVE. Duty cycling and power changes go through
-    // stopScanCycle and keep their links; Invisible only stops advertising.
+    // Also drops every link this side dialed, pending dials included. Otherwise
+    // an Away phone, or one off screen with background running off, stays
+    // connected to its neighbors, and after a panic wipe the new identity
+    // announces down the connection that carried the old one's LEAVE. Duty
+    // cycling and power changes go through stopScanCycle and keep their links;
+    // Invisible only stops advertising.
     @ReactMethod
     fun stopScanning(promise: Promise) {
         try {

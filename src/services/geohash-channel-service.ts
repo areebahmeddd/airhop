@@ -586,10 +586,16 @@ export class GeohashChannelService {
   // receivers that already hold it see the same event. Resolves whether a
   // relay accepted it.
   republishOwnEvent(event: NostrEvent, geohash: string): Promise<boolean> {
-    return this.client.publish(event, this.relaysForGeohash(geohash)).then(
-      () => true,
-      () => false,
-    );
+    return this.client
+      .publish(
+        event,
+        this.relaysForGeohash(geohash),
+        this.identityFor(geohash).privKey,
+      )
+      .then(
+        () => true,
+        () => false,
+      );
   }
 
   // Everyone who has posted in this channel recently, newest first.
@@ -629,8 +635,8 @@ export class GeohashChannelService {
   //     the same instant, round after round, group by timing alone.
   private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // Presence only while on screen, as bitchat-ios. Position is re-read only on
-  // refresh, so a pocketed phone would keep claiming a cell it left.
+  // Presence only while on screen. Position is re-read only on refresh, so a
+  // pocketed phone would keep claiming a cell it left.
   private foreground = true;
 
   setForeground(foreground: boolean): void {
@@ -741,7 +747,11 @@ export class GeohashChannelService {
         },
         this.identityFor(geohash).privKey,
       );
-      await this.client.publish(event, relays);
+      await this.client.publish(
+        event,
+        relays,
+        this.identityFor(geohash).privKey,
+      );
       // A permanent note has no mesh board post to render it locally, and our
       // own bridged copy is filtered out on receive, so add it optimistically:
       // the author sees their own note the moment it goes out.
@@ -779,7 +789,11 @@ export class GeohashChannelService {
         },
         this.identityFor(geohash).privKey,
       );
-      await this.client.publish(event, relays);
+      await this.client.publish(
+        event,
+        relays,
+        this.identityFor(geohash).privKey,
+      );
       return true;
     } catch {
       return false;
@@ -1012,7 +1026,8 @@ export class GeohashChannelService {
   ): void {
     const identity = this.identityFor(geohash);
     const { event } = wrapDm(envelope, identity.privKey, recipientPubkey);
-    void this.client.publish(event).then(
+    // Signing in with the cell's key would tie the wrap to its sender.
+    void this.client.publish(event, undefined, "throwaway").then(
       () => onAnswer?.(true),
       () => onAnswer?.(false),
     );
@@ -1254,6 +1269,9 @@ export class GeohashChannelService {
         },
       ],
       (event) => this.handleGeoDm(event, geohash),
+      undefined,
+      undefined,
+      identity.privKey,
     );
     this.dmSubscriptions.set(channel, () => dmClose.close());
 
@@ -1279,6 +1297,7 @@ export class GeohashChannelService {
       },
       undefined,
       this.relaysForGeohash(geohash),
+      identity.privKey,
     );
     this.noteSubscriptions.set(channel, () => notesClose.close());
   }
@@ -1358,6 +1377,7 @@ export class GeohashChannelService {
       (event) => this.handleNoteDeletion(event),
       undefined,
       this.relaysForGeohash(geohash),
+      this.identityFor(geohash).privKey,
     );
     this.deletionSubscriptions.set(channel, () => deletionsClose.close());
   }

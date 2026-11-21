@@ -90,11 +90,7 @@ function tamperToken(raw: string): string {
 // Append coins nobody signed to a genuine token, carrying no witness: real
 // denominations under the mint's real keyset, so offline they look like any
 // coin whose sender stripped its witness to shorten a QR code.
-function padWithForgeries(
-  raw: string,
-  amounts: number[],
-  opts: { keepGenuine: boolean } = { keepGenuine: true },
-): string {
+function padWithForgeries(raw: string, amounts: number[]): string {
   const decoded = getDecodedToken(raw, []);
   const keysetId = decoded.proofs[0]?.id ?? "";
   const forged = amounts.map((amount) => ({
@@ -108,7 +104,7 @@ function padWithForgeries(
   return getEncodedToken({
     mint: decoded.mint,
     unit: decoded.unit,
-    proofs: [...(opts.keepGenuine ? decoded.proofs : []), ...forged],
+    proofs: [...decoded.proofs, ...forged],
   } as unknown as Token);
 }
 
@@ -1284,12 +1280,12 @@ test("W14 a tampered token is refused in a dead zone, a real one is not", async 
 
 test("W24 a real coin cannot vouch for forged ones in a dead zone", async () => {
   // One genuine 4 sat coin, witness and all, and a pile of made-up coins with
-  // none. Offline the phone can check only the one, so the token must read as
-  // unconfirmed, never "genuine": someone selling for ecash in a dead zone acts
-  // on that word.
+  // none. Offline the phone can check only the one, so the token is not taken
+  // until the mint can be asked: someone selling for ecash in a dead zone must
+  // not see a forgery in the balance.
   const s = (scenario = new Scenario({
     id: "W24",
-    title: "a partly witnessed token reads unconfirmed and never pays",
+    title: "a partly witnessed token waits for the mint and never pays",
     seed: 124,
   }));
   const mint = new MintFabric(s.world);
@@ -1312,34 +1308,20 @@ test("W24 a real coin cannot vouch for forged ones in a dead zone", async () => 
   const padded = padWithForgeries(genuine, [256, 128]);
 
   mint.setConditions({ offline: true });
-  const stored = await bob.receiveTokenResult(padded);
+  const offline = await bob.receiveTokenResult(padded);
   s.check(
-    "in the dead zone it is stored, but not called genuine",
-    stored?.outcome === "stored" && stored.dleq === "unchecked",
-    stored === null
-      ? "refused"
-      : `outcome=${stored.outcome} dleq=${stored.dleq ?? "none"}`,
-  );
-  s.check(
-    "and it counts only as unconfirmed",
-    bob.balance() === 388 && bob.unverifiedBalance() === 388,
-    `balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
+    "in the dead zone it is not taken",
+    offline === null && bob.totalHeld() === 0,
+    offline === null ? bob.walletDebug() : `outcome=${offline.outcome}`,
   );
 
-  // Back online, as a pull-to-refresh runs it.
+  // Back online, claimed again from the chat.
   mint.setConditions({ offline: false });
-  await bob.reconcile();
-  await bob.refreshWallet();
+  const online = await bob.receiveTokenResult(padded);
   s.check(
-    "the mint refuses the token, and none of it stays in the balance",
-    bob.totalHeld() === 0,
-    bob.walletDebug(),
-  );
-  const refused = bob.refusedReceipts();
-  s.check(
-    "its receipt keeps the token to hand back",
-    refused.length === 1 && refused[0]?.amount === 388,
-    JSON.stringify(refused.map((r) => r.amount)),
+    "the mint refuses it, and none of it reaches the balance",
+    online === null && bob.totalHeld() === 0,
+    online === null ? bob.walletDebug() : `outcome=${online.outcome}`,
   );
   s.check(
     "and the mint issued nothing for the forgeries",
@@ -1350,10 +1332,11 @@ test("W24 a real coin cannot vouch for forged ones in a dead zone", async () => 
   s.assert(true);
 });
 
-test("W26 one forged receipt cannot freeze a wallet", async () => {
+test("W26 one refused receipt cannot freeze a wallet", async () => {
   // Offline receipts pool in one account until a refresh. Swapped as one
   // batch, a single refused coin would fail the whole swap on every refresh,
-  // leaving the honest receipts beside it in their senders' hands.
+  // leaving the honest receipts beside it in their senders' hands. The refused
+  // one is genuine offline and disowned by the mint, as after a lost key.
   const s = (scenario = new Scenario({
     id: "W26",
     title: "each receipt is swapped on its own",
@@ -1371,18 +1354,25 @@ test("W26 one forged receipt cannot freeze a wallet", async () => {
 
   const first = await alice.prepareSend(64);
   alice.confirmLastSend();
+  const disowned = await alice.prepareSend(128);
+  alice.confirmLastSend();
   const second = await alice.prepareSend(32);
   alice.confirmLastSend();
-  s.check("alice built two tokens", first !== null && second !== null);
-  if (first === null || second === null) {
+  s.check(
+    "alice built three tokens",
+    first !== null && disowned !== null && second !== null,
+  );
+  if (first === null || disowned === null || second === null) {
     s.assert(false);
     return;
   }
-  const forged = padWithForgeries(first, [128], { keepGenuine: false });
+  for (const proof of getDecodedToken(disowned, []).proofs) {
+    mint.disown(proof.secret);
+  }
 
   // Taken in with the internet off: three receipts, none of them swapped.
   bob.setSetting("internetEnabled", false);
-  for (const token of [first, forged, second]) {
+  for (const token of [first, disowned, second]) {
     await bob.receiveTokenResult(token);
   }
   bob.setSetting("internetEnabled", true);
@@ -1394,12 +1384,12 @@ test("W26 one forged receipt cannot freeze a wallet", async () => {
 
   await bob.refreshWallet();
   s.check(
-    "one refresh swaps the honest receipts and refuses the forged one",
+    "one refresh swaps the honest receipts and refuses the disowned one",
     bob.balance() === 96 && bob.unverifiedBalance() === 0,
     `balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
   );
   s.check(
-    "the forged receipt keeps its token and leaves the balance",
+    "the refused receipt keeps its token and leaves the balance",
     bob.refusedReceipts().length === 1,
     JSON.stringify(bob.refusedReceipts().map((r) => r.amount)),
   );
@@ -1411,8 +1401,8 @@ test("W26 one forged receipt cannot freeze a wallet", async () => {
     `balance=${bob.balance()}`,
   );
   s.check(
-    "no sat was created or destroyed",
-    alice.totalHeld() + bob.totalHeld() === 500,
+    "nothing but the disowned coins left circulation",
+    alice.totalHeld() + bob.totalHeld() === 500 - 128,
     `alice=${alice.totalHeld()} bob=${bob.totalHeld()}`,
   );
   s.expectNone("process health", noCrashes(devices));
@@ -1554,10 +1544,10 @@ test("W28 a token from before a key rotation still pays", async () => {
   // Mints rotate keys and keep honoring the old ones as inputs. NUT-01 serves
   // keys for active keysets only, so after a refresh the old keyset is listed
   // with no keys cached. That is a gap in what this phone knows, not evidence
-  // of forgery.
+  // of forgery: offline the token waits, and online it redeems.
   const s = (scenario = new Scenario({
     id: "W28",
-    title: "an old-keyset token is stored offline and redeemed online",
+    title: "an old-keyset token waits offline and redeems online",
     seed: 128,
   }));
   const mint = new MintFabric(s.world);
@@ -1585,27 +1575,24 @@ test("W28 a token from before a key rotation still pays", async () => {
   await bob.addMint(mint.url);
 
   mint.setConditions({ offline: true });
-  const stored = await bob.receiveTokenResult(older);
+  const waiting = await bob.receiveTokenResult(older);
   s.check(
-    "in a dead zone it is stored, not refused as forged",
-    stored?.outcome === "stored" && stored.dleq === "unchecked",
-    stored === null
-      ? "refused"
-      : `outcome=${stored.outcome} dleq=${stored.dleq ?? "none"}`,
+    "in a dead zone it waits, taking nothing on trust",
+    waiting === null && bob.totalHeld() === 0,
+    waiting === null ? bob.walletDebug() : `outcome=${waiting.outcome}`,
   );
 
   mint.setConditions({ offline: false });
   const redeemed = await bob.receiveTokenResult(old);
+  const claimed = await bob.receiveTokenResult(older);
   s.check(
-    "online it redeems, fetching the old keyset's keys by id",
-    redeemed?.outcome === "swapped",
-    redeemed === null ? "refused" : `outcome=${redeemed.outcome}`,
+    "online both redeem, fetching the old keyset's keys by id",
+    redeemed?.outcome === "swapped" && claimed?.outcome === "swapped",
+    `old=${redeemed?.outcome ?? "refused"} older=${claimed?.outcome ?? "refused"}`,
   );
 
-  await bob.reconcile();
-  await bob.refreshWallet();
   s.check(
-    "and the stored one is confirmed once the mint is reachable",
+    "and both are confirmed",
     bob.balance() === 96 && bob.unverifiedBalance() === 0,
     `balance=${bob.balance()} unverified=${bob.unverifiedBalance()}`,
   );

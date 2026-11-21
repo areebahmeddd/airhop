@@ -56,7 +56,7 @@ export interface Spec extends TurboModule {
   // voice at a time" means in practice.
   //
   // iOS plays under the .playback category with .spokenAudio and
-  // .mixWithOthers while nothing is capturing, as bitchat-ios does, so a
+  // .mixWithOthers while nothing is capturing, so a
   // burst neither drops Bluetooth headphones to call quality nor ducks other
   // audio. It moves to .playAndRecord only while capture runs.
   startPlayback(): Promise<void>;

@@ -138,8 +138,19 @@ function nutzapEvent(proofs: Proof[], extraTags: string[][] = []): Event {
   } as Event;
 }
 
-async function settle(): Promise<void> {
-  // The watcher's queue runs on its own; give it the turns it needs.
+// The watcher's queue runs on its own, and every redemption or refusal ends by
+// settling its event, so that is what to wait for.
+async function settle(...events: Event[]): Promise<void> {
+  const deadline = Date.now() + 30_000;
+  while (!events.every((event) => settled(event.id))) {
+    if (Date.now() > deadline) throw new Error("a nutzap never settled");
+    await new Promise((resolve) => setTimeout(resolve, 5));
+  }
+}
+
+// For an event that must stay unsettled, or a replay that must do nothing,
+// there is no end to wait for, only the queue's turns.
+async function drain(): Promise<void> {
   for (let i = 0; i < 400; i++) {
     await new Promise((resolve) => setTimeout(resolve, 5));
   }
@@ -176,7 +187,7 @@ describe("a genuine nutzap", () => {
     );
     deliver(withWitness);
     deliver(stripped);
-    await settle();
+    await settle(withWitness, stripped);
 
     expect(held()).toBe(24);
     expect(settled(withWitness.id) && settled(stripped.id)).toBe(true);
@@ -195,7 +206,7 @@ describe("a nutzap we cannot take", () => {
   it("writes no row and is never tried again: locked to someone else", async () => {
     const event = nutzapEvent(await lockedProofs(8, THEIR_PUB));
     deliver(event);
-    await settle();
+    await settle(event);
 
     expect(nutzapRows()).toHaveLength(0);
     expect(settled(event.id)).toBe(true);
@@ -206,7 +217,7 @@ describe("a nutzap we cannot take", () => {
       ["unit", "usd"],
     ]);
     deliver(event);
-    await settle();
+    await settle(event);
 
     expect(nutzapRows()).toHaveLength(0);
     expect(settled(event.id)).toBe(true);
@@ -219,7 +230,7 @@ describe("a nutzap we cannot take", () => {
       tag[0] === "u" ? ["u", "https://stranger.test"] : tag,
     );
     deliver(event);
-    await settle();
+    await settle(event);
 
     expect(useWalletStore.getState().history).toHaveLength(0);
     expect(settled(event.id)).toBe(true);
@@ -230,7 +241,7 @@ describe("a nutzap we cannot take", () => {
       forgedLockedProofs(await lockedProofs(8, OUR_PUB)),
     );
     deliver(forged);
-    await settle();
+    await settle(forged);
     const swapsAfterFirst = fabric.swapCount;
 
     expect(nutzapRows()).toHaveLength(0);
@@ -238,7 +249,7 @@ describe("a nutzap we cannot take", () => {
 
     // A relay replays it on the next subscription.
     deliver(forged);
-    await settle();
+    await drain();
     expect(fabric.swapCount).toBe(swapsAfterFirst);
   });
 });
@@ -259,7 +270,7 @@ describe("a mint that gives no answer about a nutzap", () => {
     }) as typeof globalThis.fetch;
     try {
       deliver(event);
-      await settle();
+      await drain();
     } finally {
       globalThis.fetch = inner;
     }
@@ -268,7 +279,7 @@ describe("a mint that gives no answer about a nutzap", () => {
 
     // The relay replays it on the next subscription.
     deliver(event);
-    await settle();
+    await settle(event);
     expect(held()).toBe(8);
     expect(settled(event.id)).toBe(true);
   });
@@ -292,7 +303,7 @@ describe("a nutzap from someone blocked", () => {
     useBlockedStore.getState().blockAlias(`nostr_${event.pubkey}`, SENDER_PEER);
 
     deliver(event);
-    await settle();
+    await settle(event);
 
     // The coins are ours either way; only the announcement is withheld.
     expect(held()).toBe(8);
@@ -302,7 +313,7 @@ describe("a nutzap from someone blocked", () => {
     useBlockedStore.getState().unblockPeer(SENDER_PEER);
     const next = nutzapEvent(await lockedProofs(4, OUR_PUB));
     deliver(next);
-    await settle();
+    await settle(next);
     expect(announced).toEqual([4]);
   });
 });
@@ -311,7 +322,7 @@ describe("a nutzap whose outputs reuse a counter the mint has signed", () => {
   it("is redeemed past the clash, not settled unredeemed", async () => {
     const first = nutzapEvent(await lockedProofs(8, OUR_PUB));
     deliver(first);
-    await settle();
+    await settle(first);
     expect(held()).toBe(8);
 
     // A restore that missed this keyset: the phrase's counters fall behind
@@ -319,7 +330,7 @@ describe("a nutzap whose outputs reuse a counter the mint has signed", () => {
     useWalletStore.getState().resetCounters();
     const event = nutzapEvent(await lockedProofs(16, OUR_PUB));
     deliver(event);
-    await settle();
+    await settle(event);
 
     expect(held()).toBe(24);
     expect(settled(event.id)).toBe(true);
@@ -337,7 +348,7 @@ describe("a nutzap after the mint rotated its keyset", () => {
     const event = nutzapEvent(await lockedProofs(8, OUR_PUB));
     fabric.rotateKeyset();
     deliver(event);
-    await settle();
+    await settle(event);
 
     expect(held()).toBe(8);
     expect(nutzapRows().map((tx) => tx.status)).toEqual(["completed"]);
@@ -368,7 +379,7 @@ describe("a burst of nutzaps", () => {
       for (const event of events) deliver(event);
       // A relay's duplicate while the first copy is in flight.
       deliver(events[0]!);
-      await settle();
+      await settle(...events);
     } finally {
       globalThis.fetch = inner;
     }

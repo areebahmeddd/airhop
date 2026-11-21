@@ -7,8 +7,9 @@
 //  1. Proofs are never deleted to send. They are reserved against a transaction
 //     id and dropped only once delivery is confirmed (`reclaimSend` recovers).
 //  2. Nothing counts as verified until the mint has signed for it, and a token
-//     whose DLEQ check fails is refused. Offline credits are marked unverified
-//     and redeemed first when online.
+//     whose DLEQ check fails is refused. Offline, only coins whose DLEQ proves
+//     the mint signed them are credited, marked unverified, capped per account,
+//     spent last and redeemed first when online.
 //  3. No mint call goes over the clear net while Tor is on (iOS: Arti wraps
 //     only WebSockets, not fetch).
 //  4. A (mint, unit) pair is one account; units never mix.
@@ -101,6 +102,7 @@ import {
   type StoredMint,
   type WalletTx,
 } from "@store/wallet-store";
+import { formatUnitAmount } from "@utils/format";
 import {
   translateStored,
   txFailure,
@@ -166,6 +168,8 @@ export type WalletErrorCode =
   | "mint-error"
   // The token string did not decode.
   | "invalid-token"
+  // What was pasted to pay is not a Lightning invoice.
+  | "invalid-invoice"
   // The token is not what it claims: a DLEQ witness that fails, a unit its
   // coins do not have, coins locked to someone else. Do not credit it.
   | "forged-token"
@@ -367,17 +371,16 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
     );
   }
   if (isMintOperationError(err)) {
-    return new WalletError("mint-error", err.message, String(err), {
+    // No detail: `String(err)` is the same text again behind a class name.
+    return new WalletError("mint-error", err.message, undefined, {
       mintCode: err.code,
     });
   }
   const message = err instanceof Error ? err.message : String(err);
+  // The platform's own text ("Network request failed") would follow ours in
+  // whatever language the OS speaks, adding nothing.
   if (isNetworkFailure(err)) {
-    return new WalletError(
-      "offline",
-      { key: "wallet.svc.mint_unreachable" },
-      message,
-    );
+    return new WalletError("offline", { key: "wallet.svc.mint_unreachable" });
   }
   // A server error, a rate limit or a proxy's page in the mint's place. The
   // body can be a whole HTML page, so it is not shown; the status says enough.
@@ -390,7 +393,7 @@ function asWalletError(err: unknown, fallback: WalletErrorCode): WalletError {
       vars: { status: err.status },
     });
   }
-  return new WalletError(fallback, message, String(err));
+  return new WalletError(fallback, message);
 }
 
 // ---- Network policy ----
@@ -533,7 +536,9 @@ function newWallet(url: string, unit: string): Wallet {
 async function getWallet(
   mintUrl: string,
   unit: string,
-  opts: { offline?: boolean; forceRefresh?: boolean } = {},
+  // `create` lists the mint if it is not listed yet: restore names mints a
+  // fresh install has never seen.
+  opts: { offline?: boolean; forceRefresh?: boolean; create?: boolean } = {},
 ): Promise<Wallet> {
   const url = normalizeMintUrl(mintUrl);
   const key = accountKey(url, unit);
@@ -594,7 +599,7 @@ async function getWallet(
   }
   // The snapshot re-adds the mint, so a wipe during the fetch must stop it.
   if (walletEpoch !== epoch) throw lockedError();
-  persistMintSnapshot(url, unit, wallet);
+  persistMintSnapshot(url, unit, wallet, opts.create === true);
   cacheWallet(key, wallet);
   return wallet;
 }
@@ -611,12 +616,16 @@ function cacheWallet(key: string, wallet: Wallet): void {
 }
 
 // Persist what the mint told us so a cold start works offline: keys for DLEQ,
-// fees for selection, units and NUTs for feature gating.
+// fees for selection, units and NUTs for feature gating. Only addMint and a
+// restore (`create`) make the record: an operation still in flight when its
+// mint is removed must not put it back on the list for later passes to contact.
 function persistMintSnapshot(
   mintUrl: string,
   unit: string,
   wallet: Wallet,
+  create = false,
 ): void {
+  if (!create && storedMint(mintUrl) === undefined) return;
   const store = useWalletStore.getState();
   let cache: KeyChainCache | undefined;
   let feePpkByKeysetId: Record<string, number> | undefined;
@@ -690,6 +699,15 @@ export function resetWalletService(): void {
   activeSeed = null;
   nutzapPrivKey = null;
   nutzapKeySeen = undefined;
+}
+
+// The wallet again after resetWalletService left the same storage in place (a
+// device transfer that failed or was canceled): new coins derive from the
+// recovery phrase again, not from random secrets nothing can restore.
+export async function resumeWalletService(): Promise<void> {
+  if (!isWalletStorageReady()) return;
+  await loadBackupState();
+  void peekNutzapKey();
 }
 
 // ---- Store readiness ----
@@ -911,6 +929,8 @@ export async function restoreFromRecoveryPhrase(params: {
 
   const store = useWalletStore.getState();
   const recovered: Record<string, number> = {};
+  // Per account, for the history: each mint's balance is its own.
+  const credits = new Map<string, number>();
   const mintsScanned: string[] = [];
   const mintsFailed: { mintUrl: string; reason: string }[] = [];
   let proofCount = 0;
@@ -925,7 +945,7 @@ export async function restoreFromRecoveryPhrase(params: {
       // rather than "not looked", and leaves their counters behind coins the
       // mint has signed. The forced refresh records every unit the mint
       // issues, even on a fresh install.
-      await getWallet(url, "sat", { forceRefresh: true });
+      await getWallet(url, "sat", { forceRefresh: true, create: true });
       const units = storedMint(url)?.units ?? ["sat"];
 
       for (const unit of units) {
@@ -972,6 +992,11 @@ export async function restoreFromRecoveryPhrase(params: {
           proofCount += credited.added;
           alreadyHeld += live.length - credited.added;
           recovered[unit] = (recovered[unit] ?? 0) + credited.addedValue;
+          const account = accountKey(url, unit);
+          credits.set(
+            account,
+            (credits.get(account) ?? 0) + credited.addedValue,
+          );
         }
       }
       mintsScanned.push(url);
@@ -984,15 +1009,15 @@ export async function restoreFromRecoveryPhrase(params: {
     }
   }
 
-  // One row per unit: summing sat and usd would be no currency at all.
-  for (const [unit, amount] of Object.entries(recovered)) {
+  for (const [account, amount] of credits) {
     if (amount <= 0) continue;
+    const { mintUrl, unit } = parseAccountKey(account);
     recordTx({
       kind: "receive",
       status: "completed",
       amount,
       unit,
-      mintUrl: mintsScanned[0] ?? params.mintUrls[0],
+      mintUrl,
       memo: t("wallet.svc.restored"),
     });
   }
@@ -1097,12 +1122,15 @@ export async function addMint(rawUrl: string): Promise<AddMintResult> {
   assertMintNetworkAllowed();
 
   const wallet = newWallet(url, "sat");
+  const epoch = walletEpoch;
   try {
     await wallet.loadMint(true);
   } catch (err) {
     throw asWalletError(err, "no-mint");
   }
-  persistMintSnapshot(url, "sat", wallet);
+  // A panic wipe during the fetch must not get the mint written back.
+  if (walletEpoch !== epoch) throw lockedError();
+  persistMintSnapshot(url, "sat", wallet, true);
   cacheWallet(accountKey(url, "sat"), wallet);
 
   const record = storedMint(url);
@@ -1305,30 +1333,24 @@ export interface ReceiveResult {
   mintUrl: string;
   memo?: string;
   // "swapped"     redeemed at the mint; the value is now provably ours
-  // "stored"      kept offline, unverified: the mint has not confirmed it is
-  //               unspent, and `dleq` says whether it is even genuine
+  // "stored"      kept offline, unverified: genuine by DLEQ, but the mint has
+  //               not confirmed it is unspent
   // "duplicate"   every proof was already in the wallet; nothing was credited
   // "own-pending" the coins are our own unsettled send; reclaim it instead
   // "claiming"    an earlier claim of these coins waits on the mint's answer
   outcome: "swapped" | "stored" | "duplicate" | "own-pending" | "claiming";
   // Why we did not swap, when outcome is "stored".
   offlineReason?: string;
-  // The offline DLEQ check, for the receipt UI. "valid" only when every coin
-  // carries a witness that verifies.
+  // The offline DLEQ check. "valid" only when every coin carries a witness
+  // that verifies; "unchecked" when the sender left one out or this phone
+  // lacks the mint's keys.
   dleq: "valid" | "unchecked";
-  // Why "unchecked": the sender left witnesses out, or this phone lacks the
-  // mint's keys.
-  dleqGap?: "witness" | "keys";
 }
 
-type DleqVerdict = Pick<ReceiveResult, "dleq" | "dleqGap">;
+type DleqVerdict = Pick<ReceiveResult, "dleq">;
 
 function dleqVerdict(result: DleqResult): DleqVerdict {
-  if (result.status === "valid") return { dleq: "valid" };
-  const byWitness =
-    result.status === "unchecked" &&
-    (result.code === "no-witness" || result.code === "partial-witness");
-  return { dleq: "unchecked", dleqGap: byWitness ? "witness" : "keys" };
+  return { dleq: result.status === "valid" ? "valid" : "unchecked" };
 }
 
 // Throttle for keyset fetches triggered by chat tokens, keyed by mint alone:
@@ -1592,6 +1614,21 @@ async function receiveTokenOnce(
     };
   }
 
+  // One claim of a token at a time. The chat card and the Receive screen can
+  // both ask, and the slower swap would meet "already spent" and leave a
+  // receive row that no coins of its own ever close.
+  if (firstSecret !== undefined && tokenClaimsInFlight.has(firstSecret)) {
+    return {
+      amount: info.amount,
+      unit: info.unit,
+      mintUrl: url,
+      memo: info.memo,
+      outcome: "claiming",
+      ...verdict,
+    };
+  }
+  if (firstSecret !== undefined) tokenClaimsInFlight.add(firstSecret);
+
   // Swap so the proofs are provably unspent and unknown to the sender.
   const txId = newTxId();
   // Whether the mint could have seen the request.
@@ -1681,6 +1718,15 @@ async function receiveTokenOnce(
     if (signingKey !== undefined) {
       throw walletErr.code === "tor-blocked" ? walletErr : lockedToUsOffline();
     }
+    // Taken without the mint only when every coin proves the mint signed it,
+    // since a token with no DLEQ to check could be forged, and only up to the
+    // cap. Otherwise the claim waits for the mint: the token stays in the chat
+    // and a staged request keeps its preview for `reconcile`.
+    const unchecked = verdict.dleq !== "valid";
+    if (unchecked || overOfflineCap(url, info.unit, info.amount)) {
+      if (walletErr.code === "tor-blocked") throw walletErr;
+      throw unchecked ? uncheckedOfflineError() : offlineCapError(info.unit);
+    }
     // The request may never have left, or only its answer was lost. Store
     // the proofs unverified and keep the preview on the same transaction; a
     // replay drops them as it credits the real outputs, so nothing counts
@@ -1689,7 +1735,56 @@ async function receiveTokenOnce(
       counterparty: opts.counterparty,
       ...(staged ? { txId } : {}),
     });
+  } finally {
+    if (firstSecret !== undefined) tokenClaimsInFlight.delete(firstSecret);
   }
+}
+
+// First secrets of the tokens being claimed right now.
+const tokenClaimsInFlight = new Set<string>();
+
+// The most ecash one account takes offline before its mint has confirmed it,
+// in the account's unit, so a token spent twice and passed on costs at most
+// this. Only bitcoin units: nothing here can price a mint's own currency.
+const OFFLINE_UNVERIFIED_CAP: Readonly<Record<string, number>> = {
+  sat: 10_000,
+  msat: 10_000_000,
+};
+
+function overOfflineCap(
+  mintUrl: string,
+  unit: string,
+  amount: number,
+): boolean {
+  const cap = OFFLINE_UNVERIFIED_CAP[unit];
+  if (cap === undefined) return false;
+  const held = (
+    useWalletStore.getState().proofs[accountKey(mintUrl, unit)] ?? []
+  )
+    .filter((p) => p.verified !== true)
+    .reduce((sum, p) => sum + p.amount, 0);
+  return held + amount > cap;
+}
+
+function offlineCapError(unit: string): WalletError {
+  return new WalletError(
+    "offline",
+    {
+      key: "wallet.svc.offline_cap",
+      vars: {
+        limit: formatUnitAmount(OFFLINE_UNVERIFIED_CAP[unit] ?? 0, unit),
+      },
+    },
+    t("wallet.svc.claim_online_body"),
+  );
+}
+
+function uncheckedOfflineError(): WalletError {
+  return new WalletError(
+    "offline",
+    { key: "wallet.svc.offline_unchecked" },
+    t("wallet.svc.claim_online_body"),
+  );
 }
 
 // Keep the token's own proofs unverified: the offline mesh case, redeemed first
@@ -1702,6 +1797,9 @@ function storeOffline(
   verdict: DleqVerdict,
   opts: { counterparty?: string; txId?: string } = {},
 ): ReceiveResult {
+  // Removed while the claim waited on it: as with creditProofs, nothing is
+  // filed under a mint the user dropped, and the token stays unclaimed.
+  if (storedMint(mintUrl) === undefined) throw cause;
   const store = useWalletStore.getState();
   // The coins are filed under their receipt, which a refresh swaps (or
   // refuses) on its own.
@@ -1767,6 +1865,10 @@ function creditProofs(
   proofs: Proof[],
   opts: { verified: boolean },
 ): { added: number; addedValue: number } {
+  // An answer that lands after its mint was removed: the removal gave up what
+  // was held there, and coins written now would bring the account back for
+  // the next pass to contact.
+  if (storedMint(mintUrl) === undefined) return { added: 0, addedValue: 0 };
   const store = useWalletStore.getState();
   const derived = isSeedActive();
   return store.addProofs(
@@ -1794,6 +1896,8 @@ export interface SendQuote {
   // it; a mint that raised fees since will take more. Undefined when live.
   pricedFromCacheAgeMs?: number;
   proofs: StoredProof[];
+  // Some of `proofs` the mint never confirmed, so the confirm says so.
+  unverified: boolean;
 }
 
 export interface PreparedSend extends SendQuote {
@@ -1841,15 +1945,18 @@ export async function quoteSend(params: {
   const record = storedMint(account.mintUrl);
 
   // With keysets cached, defer to cashu-ts's selector and fee handling, which
-  // get rotated keysets and mixed fee schedules right.
+  // get rotated keysets and mixed fee schedules right. Coins the mint signed
+  // for us go first, so ecash it never confirmed is passed on only when they
+  // cannot make the amount.
   try {
     const wallet = await getWallet(account.mintUrl, unit, { offline: true });
-    const proofLikes = account.proofs.map(toProofLike);
-    const result = wallet.sendOffline(amount, proofLikes, {
-      includeFees: true,
-      exactMatch: true,
-    });
-    const selected = matchStored(account.proofs, result.send);
+    const send = (pool: StoredProof[]): Proof[] =>
+      wallet.sendOffline(amount, pool.map(toProofLike), {
+        includeFees: true,
+        exactMatch: true,
+      }).send;
+    const chosen = verifiedFirst(account.proofs, send);
+    const selected = matchStored(account.proofs, chosen);
     const spend = selected.reduce((s, p) => s + p.amount, 0);
     // `matchStored` silently drops proofs it cannot map. Trusted blindly, that
     // quotes `exact: true` with a short or empty list and a negative fee, and
@@ -1857,10 +1964,10 @@ export async function quoteSend(params: {
     // the payment sent; nothing downstream can tell. Throw into the catch,
     // which re-selects with our own selector: the same path as a cold cache,
     // so no new failure mode.
-    if (selected.length !== result.send.length || spend < amount) {
+    if (selected.length !== chosen.length || spend < amount) {
       throw new Error(
         // Not user-facing: an invariant breach for the stack trace.
-        `offline selection did not map back to stored proofs (matched ${String(selected.length)} of ${String(result.send.length)}, covering ${String(spend)} of ${String(amount)})`,
+        `offline selection did not map back to stored proofs (matched ${String(selected.length)} of ${String(chosen.length)}, covering ${String(spend)} of ${String(amount)})`,
       );
     }
     return {
@@ -1872,6 +1979,7 @@ export async function quoteSend(params: {
       exact: true,
       proofs: selected,
       pricedFromCacheAgeMs: feeCacheAgeMs(account.mintUrl),
+      unverified: selected.some((p) => p.verified !== true),
     };
   } catch (err) {
     if (err instanceof WalletError && err.code === "locked") throw err;
@@ -1896,6 +2004,7 @@ export async function quoteSend(params: {
       exact: selection.exact,
       proofs: selection.selected,
       pricedFromCacheAgeMs: feeCacheAgeMs(account.mintUrl),
+      unverified: selection.selected.some((p) => p.verified !== true),
     };
   }
 }
@@ -2115,6 +2224,40 @@ function pickAccount(
     key: "wallet.svc.have_tried_send",
     vars: { total, unit, amount },
   });
+}
+
+// A selection from the verified coins alone when they can make it, else from
+// all of them. `select` throws, or comes back short, when the pool cannot.
+function verifiedFirst(
+  proofs: StoredProof[],
+  select: (pool: StoredProof[]) => Proof[],
+): Proof[] {
+  const verified = proofs.filter((p) => p.verified === true);
+  if (verified.length > 0 && verified.length < proofs.length) {
+    try {
+      const chosen = select(verified);
+      if (chosen.length > 0) return chosen;
+    } catch {
+      // Not enough among the verified: every coin is a candidate.
+    }
+  }
+  return select(proofs);
+}
+
+// verifiedFirst for a selection that resolves later.
+async function verifiedFirstAsync<T>(
+  proofs: StoredProof[],
+  select: (pool: StoredProof[]) => Promise<T>,
+): Promise<T> {
+  const verified = proofs.filter((p) => p.verified === true);
+  if (verified.length > 0 && verified.length < proofs.length) {
+    try {
+      return await select(verified);
+    } catch {
+      // Not enough among the verified: every coin is a candidate.
+    }
+  }
+  return select(proofs);
 }
 
 // By secret, so a reservation removes exactly the rows cashu-ts chose. Drops
@@ -2637,7 +2780,9 @@ export async function reconcile(): Promise<void> {
 // await minutes of round trips.
 export function reconcileIfDue(): void {
   if (reconcileInFlight !== null) return;
-  if (Date.now() - lastReconcileAtMs < RECONCILE_MIN_INTERVAL_MS) return;
+  // A clock moved back counts as due, not as hours of waiting.
+  const since = Date.now() - lastReconcileAtMs;
+  if (since >= 0 && since < RECONCILE_MIN_INTERVAL_MS) return;
   void reconcile().catch(() => {
     // Offline, or a mint is down. The next trigger tries again.
   });
@@ -2927,11 +3072,18 @@ function voidSendsSpentBySwap(spent: Set<string>): void {
     if (send?.kind !== "send") continue;
     const { mintUrl, unit } = parseAccountKey(entry.account);
     store.dropReserved(txId);
-    store.addProofs(
+    const rest = entry.proofs.filter((p) => !spent.has(p.secret));
+    store.addProofs(mintUrl, unit, rest);
+    // The recipient still holds these in the token, as after a reclaim, so
+    // they are spent last and swapped by the next refresh.
+    store.markUnverified(
       mintUrl,
       unit,
-      entry.proofs.filter((p) => !spent.has(p.secret)),
+      rest.map((p) => p.secret),
+      txId,
     );
+    // The send is their receipt now, so one they came in under has none left.
+    closeReceipts(receiptsOf(rest));
     // The token is dead, so the row offers nothing to copy.
     store.updateTx(txId, {
       status: "failed",
@@ -3062,8 +3214,12 @@ async function runReconcilePass(): Promise<void> {
 
   // Unanswered melts: if paid, the change is signed against blanks only this
   // device can unblind.
-  for (const tx of state.history) {
-    if (tx.kind !== "melt" || tx.status !== "pending") continue;
+  for (const seen of state.history) {
+    if (seen.kind !== "melt" || seen.status !== "pending") continue;
+    // Read again: the deposits above take seconds, long enough for a melt
+    // that was in flight when the pass began to settle or gain its blanks.
+    const tx = useWalletStore.getState().history.find((t) => t.id === seen.id);
+    if (tx?.status !== "pending") continue;
     // Its answer is not late, it is still on its way.
     if (meltsInFlight.has(tx.id)) continue;
     // No blanks means it died before its request: the mint never saw it.
@@ -3297,6 +3453,11 @@ async function claimLightningDepositOnce(
   if (quote.state === "ISSUED") {
     if (tx.mintOutputs !== undefined) {
       return recoverMintOutputs(wallet, tx, quote);
+    }
+    // Credited already, by `reconcile` when the app came back from the wallet
+    // that paid it. Reported, so the deposit sheet still waiting shows it.
+    if (tx.status === "completed") {
+      return tx.errorKey === "wallet.svc.mint_lost" ? 0 : tx.amount;
     }
     store.updateTx(tx.id, { status: "completed" });
     return 0;
@@ -3534,12 +3695,22 @@ async function recoverMeltChange(tx: WalletTx): Promise<void> {
     }
   }
 
+  // What the inputs paid beyond the invoice, as the live path counts it. The
+  // change also returns the inputs' overage, so the reserve less the change
+  // would understate it.
+  const inputs = useWalletStore
+    .getState()
+    .reserved[tx.id]?.proofs.reduce((sum, p) => sum + p.amount, 0);
   spendReserved(tx.id);
   store.updateTx(tx.id, {
     status: "completed",
     error: undefined,
     meltOutputs: undefined,
-    ...(recovered > 0 ? { fee: Math.max(0, (tx.fee ?? 0) - recovered) } : {}),
+    ...(inputs !== undefined
+      ? { fee: Math.max(0, inputs - recovered - tx.amount) }
+      : recovered > 0
+        ? { fee: Math.max(0, (tx.fee ?? 0) - recovered) }
+        : {}),
   });
 }
 
@@ -3575,7 +3746,7 @@ export async function quoteLightningWithdrawal(params: {
   const invoice = params.invoice.trim().replace(/^lightning:/i, "");
   if (!/^ln(bc|tb|bcrt)[0-9a-z]+$/i.test(invoice)) {
     throw new WalletError(
-      "invalid-token",
+      "invalid-invoice",
       { key: "wallet.svc.not_an_invoice" },
       t("wallet.svc.not_an_invoice_body"),
     );
@@ -3625,9 +3796,9 @@ interface MeltSelection {
   total: number;
 }
 
-// cashu-ts's selector first: ours ranks unverified proofs first, right for a
-// send but wrong for a melt, where the mint checks every input at once. Ours is
-// the cold-cache fallback.
+// cashu-ts's selector first, over the verified coins before all of them, since
+// the mint checks every input at once and one it never confirmed only raises
+// the failure odds. Ours is the cold-cache fallback.
 function selectForMelt(
   wallet: Wallet,
   quote: MeltQuote,
@@ -3635,15 +3806,16 @@ function selectForMelt(
 ): MeltSelection {
   let selected: StoredProof[];
   try {
-    const result = wallet.selectProofsToSend(
-      available.map(toProofLike),
-      quote.total,
-      true,
+    const chosen = verifiedFirst(
+      available,
+      (pool) =>
+        wallet.selectProofsToSend(pool.map(toProofLike), quote.total, true)
+          .send,
     );
-    selected = matchStored(available, result.send);
+    selected = matchStored(available, chosen);
     // `matchStored` drops unmapped proofs, which would under-fund the melt.
     if (
-      selected.length !== result.send.length ||
+      selected.length !== chosen.length ||
       selected.reduce((s, p) => s + p.amount, 0) < quote.total
     ) {
       throw new Error("melt selection did not map back to stored proofs");
@@ -4393,12 +4565,18 @@ async function lockProofsOnce(
   let result: SendResponse;
   let staged = false;
   try {
+    // Confirmed coins first, as a send takes them: a coin the mint never saw
+    // may already be spent, and its refusal would read as in doubt.
     const { preview, stored } = await prepareRecoverableSwap(wallet, () =>
-      wallet.prepareSwapToSend(
-        params.amount,
-        available.map(toProofLike),
-        { includeFees: true },
-        { send: { type: "p2pk", options: { pubkey: params.recipientPubkey } } },
+      verifiedFirstAsync(available, (pool) =>
+        wallet.prepareSwapToSend(
+          params.amount,
+          pool.map(toProofLike),
+          { includeFees: true },
+          {
+            send: { type: "p2pk", options: { pubkey: params.recipientPubkey } },
+          },
+        ),
       ),
     );
     assertSameWallet(epoch);

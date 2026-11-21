@@ -25,8 +25,7 @@ SRC_DIR="$BUILD_ROOT/IPtProxy.go"
 # shellcheck disable=SC1091
 source "$REPO_ROOT/native/arti/TOOLCHAIN.env"
 
-# The ABIs android/app/src/main/jniLibs ships. Upstream also builds android/386,
-# which Airhop does not package.
+# The ABIs android/app/src/main/jniLibs ships.
 GOMOBILE_TARGETS=android/arm64,android/arm,android/amd64
 EXPECTED_ABIS=(arm64-v8a armeabi-v7a x86_64)
 

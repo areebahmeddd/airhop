@@ -27,7 +27,7 @@ const PNG = new Uint8Array([
 
 describe("file-packet", () => {
   describe("TLV encode/decode", () => {
-    it("round-trips a file with all fields", () => {
+    it("round-trips a file's name, type, channel and content", () => {
       const p = {
         fileName: "photo.png",
         mimeType: "image/png",

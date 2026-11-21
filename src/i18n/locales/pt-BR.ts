@@ -162,7 +162,7 @@ export const strings: Strings = {
     "Encontra aparelhos por perto e repassa mensagens entre eles. É assim que a malha nasce, e funciona sem conexão com a internet.",
   "onboarding.primer.location.title": "Localização",
   "onboarding.primer.location.body":
-    "Coloca você nos canais das áreas próximas, da quadra à região. O Airhop nunca rastreia você, e sua localização exata só sai do aparelho quando você envia sua localização para alguém.",
+    "Coloca você nos canais das áreas próximas, da quadra à região. O Airhop nunca rastreia você, e sua localização exata nunca sai do aparelho.",
   "onboarding.primer.notifications.title": "Notificações",
   "onboarding.primer.notifications.body":
     "Receba avisos de mensagens novas mesmo com o app fechado. As notificações são criadas no seu aparelho, sem nenhum servidor envolvido.",
@@ -392,7 +392,39 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Não foi possível alcançar todos os membros. Tente de novo quando estiverem por perto.",
   "chat.group.you_were_added": "Você foi adicionado a {name}.",
-  "chat.group.added_you": "Adicionou você a {name}",
+  "chat.timer.you_set_1": "Você definiu as mensagens temporárias para 1 dia",
+  "chat.timer.you_set_7": "Você definiu as mensagens temporárias para 7 dias",
+  "chat.timer.you_set_30": "Você definiu as mensagens temporárias para 30 dias",
+  "chat.timer.you_off": "Você desativou as mensagens temporárias",
+  "chat.timer.you_set_local_1":
+    "Você definiu as mensagens temporárias para 1 dia neste celular",
+  "chat.timer.you_set_local_7":
+    "Você definiu as mensagens temporárias para 7 dias neste celular",
+  "chat.timer.you_set_local_30":
+    "Você definiu as mensagens temporárias para 30 dias neste celular",
+  "chat.timer.you_off_local":
+    "Você desativou as mensagens temporárias neste celular",
+  "chat.timer.peer_set_1": "{name} definiu as mensagens temporárias para 1 dia",
+  "chat.timer.peer_set_7":
+    "{name} definiu as mensagens temporárias para 7 dias",
+  "chat.timer.peer_set_30":
+    "{name} definiu as mensagens temporárias para 30 dias",
+  "chat.timer.peer_off": "{name} desativou as mensagens temporárias",
+  "chat.timer.sheet_shared":
+    "Para as mensagens enviadas a partir de agora, nos dois celulares. No celular de quem envia, o tempo de cada uma conta a partir do envio, e no outro, a partir da primeira leitura. Não dá para impedir capturas de tela.",
+  "chat.timer.sheet_pending":
+    "Definido neste celular. O temporizador chega a {name} na próxima vez que vocês se conectarem e depois vale nos dois celulares.",
+  "chat.timer.sheet_bitchat":
+    "Só neste celular. O app de {name} não aceita temporizadores compartilhados.",
+  "chat.timer.sheet_local":
+    "Só neste celular por enquanto. Se o app de {name} aceitar temporizadores compartilhados, o temporizador chega a essa pessoa na próxima vez que vocês se conectarem.",
+  "chat.group.invited": "Você foi convidado para {name}.",
+  "chat.group.invited_you": "Convidou você para {name}",
+  "chat.group.decline": "Recusar",
+  "chat.group.decline_title": "Recusar o convite para {name}?",
+  "chat.group.decline_body":
+    "{name} não está nos seus contatos. Bloqueie também e você não vai receber mais convites nem mensagens dessa pessoa.",
+  "chat.group.decline_block": "Recusar e bloquear",
   "chat.group.you_were_removed":
     "Você foi removido de {name}. Não dá mais para ler nem enviar mensagens aqui.",
   "chat.group.removed_you": "Removeu você de {name}",
@@ -1208,6 +1240,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Não foi possível montar o token",
+  "wallet.send.unverified_note":
+    "Parte deste pagamento é ecash que a casa de emissão ainda não confirmou.",
   "wallet.send.title": "Enviar ecash",
   "wallet.send.amount_in": "Valor em {unit}",
   "wallet.send.body":
@@ -1267,15 +1301,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Resgatado em {mint}. Agora é seu de forma comprovável: a cópia deste token que quem enviou tem não funciona mais.",
   "wallet.receive.pending_unconfirmed":
-    "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. Ele é confirmado com a casa de emissão automaticamente assim que você estiver online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Guardado de {mint}, mas a casa de emissão ainda não confirmou que não foi gasto. A assinatura confere, então o token é autêntico. Ele é confirmado com a casa de emissão automaticamente assim que você estiver online.",
   "wallet.receive.dleq_ok":
     "A assinatura da casa de emissão confere, então o token é autêntico.",
-  "wallet.receive.dleq_uncached":
-    "As chaves da casa de emissão não estão guardadas aqui, então a assinatura não pôde ser conferida offline.",
-  "wallet.receive.dleq_missing":
-    "Nem toda moeda nele traz a prova de assinatura da casa de emissão, então não deu para conferir offline.",
   "wallet.receive.dleq_warning":
     "Até ser confirmado online, quem enviou poderia em princípio já ter gasto em outro lugar.",
   "wallet.receive.failed": "Não foi possível receber",
@@ -1636,6 +1664,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any":
     "Aponte para o código QR de um token, uma fatura ou um npub.",
   "wallet.scan.no_any": "Nenhum token, fatura ou npub encontrado nessa imagem.",
+  "wallet.scan.not_usable": "O Airhop não consegue usar este código QR aqui.",
   "wallet.scan.use_camera_a11y": "Escanear com a câmera",
   "wallet.scan.use_camera": "Usar a câmera",
   "wallet.scan.pick_image_a11y": "Ler um código QR de uma imagem salva",
@@ -1744,6 +1773,11 @@ export const strings: Strings = {
     "Este pagamento está travado para a sua carteira.",
   "wallet.svc.locked_ours_offline_body":
     "Resgate quando estiver online. Ninguém mais pode pegá-lo enquanto isso.",
+  "wallet.svc.offline_cap":
+    "Offline, o ecash não confirmado é limitado a {limit} por casa de emissão.",
+  "wallet.svc.offline_unchecked": "Este ecash não pode ser verificado offline.",
+  "wallet.svc.claim_online_body":
+    "Resgate este quando estiver online e a casa de emissão puder confirmá-lo.",
   "wallet.svc.already_spent": "Este ecash já foi gasto.",
   "wallet.svc.already_spent_body":
     "Quem enviou este token resgatou primeiro, ou mandou o mesmo token para outra pessoa.",
@@ -2078,10 +2112,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mantém as conversas legíveis por mais tempo e ocupa mais disco.",
   "settings.general.message_retention": "Mensagens temporárias",
-  "settings.general.message_retention_desc":
-    "As mensagens e suas mídias são apagadas deste aparelho após o tempo escolhido",
-  "settings.general.message_retention_sheet":
-    "Contado a partir de quando cada mensagem chegou a este aparelho, e só este aparelho esquece. O aparelho da outra pessoa guarda a cópia dela, capturas de tela não podem ser impedidas e pagamentos de conversas privadas que você ainda não resgatou ficam até você resgatá-los.",
+  "settings.general.message_retention_default":
+    "Temporizador padrão para novos chats",
+  "settings.general.message_retention_default_desc":
+    "Para novas mensagens diretas, e para salas, canais e grupos neste celular",
+  "settings.general.message_retention_default_sheet":
+    "Novas mensagens diretas começam com este temporizador, e qualquer um dos dois pode mudá-lo no chat. Salas, canais e grupos o seguem só neste celular, contando a partir da chegada de cada mensagem. Não dá para impedir capturas de tela, e os pagamentos enviados a você em uma mensagem direta ficam até você resgatá-los.",
   "settings.general.message_retention_off_desc":
     "As mensagens ficam até você limpar a conversa ou sair dela",
   "settings.general.message_retention_1_desc":
@@ -2093,11 +2129,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Apagar mensagens mais antigas?",
   "settings.general.message_retention_confirm_1":
-    "Mensagens com mais de 1 dia serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+    "Mensagens com mais de 1 dia em salas, canais, grupos e chats iniciados a partir de um canal de localização serão apagadas deste aparelho agora, junto com suas mídias. As demais mensagens diretas mantêm seus próprios temporizadores. Isso não pode ser desfeito.",
   "settings.general.message_retention_confirm_7":
-    "Mensagens com mais de 7 dias serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+    "Mensagens com mais de 7 dias em salas, canais, grupos e chats iniciados a partir de um canal de localização serão apagadas deste aparelho agora, junto com suas mídias. As demais mensagens diretas mantêm seus próprios temporizadores. Isso não pode ser desfeito.",
   "settings.general.message_retention_confirm_30":
-    "Mensagens com mais de 30 dias serão apagadas deste aparelho agora, junto com suas mídias. Isso não pode ser desfeito.",
+    "Mensagens com mais de 30 dias em salas, canais, grupos e chats iniciados a partir de um canal de localização serão apagadas deste aparelho agora, junto com suas mídias. As demais mensagens diretas mantêm seus próprios temporizadores. Isso não pode ser desfeito.",
   "settings.general.reset_desc":
     "Devolve as preferências ao padrão, sem mexer na sua identidade, mensagens, contatos e carteira",
   "settings.general.reset_title": "Redefinir as configurações?",
@@ -2244,6 +2280,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Vídeo ao vivo",
   "settings.conn.live_video_desc":
     "Transmita sua câmera para pessoas por perto e assista às delas",
+  "settings.conn.live_video_on_title": "Ligar o vídeo ao vivo?",
+  "settings.conn.live_video_on_body":
+    "Você pode fazer live com a câmera para quem estiver no alcance do Bluetooth, e as lives deles aparecem nas suas conversas e são gravadas neste celular.",
+  "settings.conn.live_video_off_title": "Desligar o vídeo ao vivo?",
+  "settings.conn.live_video_off_body":
+    "Você não pode mais fazer live, e as lives dos outros não são mostradas nem gravadas. Uma live curta ainda chega como um vídeo comum.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Roteamento por Tor",
   "settings.conn.tor_desc":
@@ -2275,12 +2317,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Esconde que você usa Tor. Mais rápido que o Snowflake, mas estas pontes são públicas e algumas redes as bloqueiam.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Esconde que você usa Tor parecendo uma visita comum a um site. Mais difícil de bloquear que os outros.",
   "settings.tor.mode_custom": "Pontes próprias",
   "settings.tor.mode_custom_desc":
-    "Use linhas de ponte obfs4 de bridges.torproject.org. Tente isto quando as outras falharem.",
+    "Use linhas de ponte obfs4 ou WebTunnel de bridges.torproject.org. Tente isto quando as outras falharem.",
   "settings.tor.custom_placeholder": "Cole uma linha de ponte por linha",
   "settings.tor.custom_apply_hint": "Toque fora da caixa para conectar.",
   "settings.tor.custom_empty": "Adicione ao menos uma linha de ponte primeiro.",
@@ -2652,6 +2691,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Chamada",
   "notif.ring.title": "{sender} está chamando você",
   "notif.ring.body": "Confira suas mensagens",
+  "notif.action.reply": "Responder",
+  "notif.action.send": "Enviar",
+  "notif.action.mark_read": "Marcar como lido",
+  "notif.reply.failed_title": "Não enviada",
+  "notif.reply.failed_body":
+    "Sua resposta para {chat} não foi enviada. Abra a conversa para tentar de novo.",
+  "notif.reply.held_title": "Aguardando envio",
+  "notif.reply.held_body":
+    "Sua resposta para {chat} será enviada quando o Airhop estiver em execução.",
+  "notif.reply.cut_title": "Enviada em parte",
+  "notif.reply.cut_body":
+    "Sua resposta para {chat} era longa demais, então o final não foi enviado.",
 };
 
 export const plurals: Plurals = {

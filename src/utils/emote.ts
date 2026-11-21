@@ -47,6 +47,33 @@ export function emoteLine(text: string, senderNickname: string): string | null {
   return null;
 }
 
+export type EmoteResult =
+  | { kind: "plain" }
+  | { kind: "emote"; text: string }
+  // A channel emote with no @name to aim at.
+  | { kind: "needs-target"; command: string };
+
+// The line a typed /hug or /slap sends. In a DM the target is always "you",
+// bitchat's second person on its private-chat branch, since a DM has one
+// recipient and the nickname would read as a line about them in their own DM.
+// In a channel it is a trailing @name.
+export function expandEmote(
+  text: string,
+  nickname: string,
+  isDM: boolean,
+): EmoteResult {
+  const emote = /^\/(hug|slap)(?:\s+(.*))?$/i.exec(text);
+  if (!emote) return { kind: "plain" };
+  const command = emote[1].toLowerCase();
+  const target = isDM ? "you" : (emote[2] ?? "").trim().replace(/^@/, "");
+  if (target.length === 0) return { kind: "needs-target", command };
+  const { emoji, verb, suffix } = TEMPLATES[command === "hug" ? 0 : 1];
+  return {
+    kind: "emote",
+    text: `* ${emoji} ${nickname} ${verb} ${target}${suffix} *`,
+  };
+}
+
 // What this node sends when its user takes a screenshot, byte for byte what
 // bitchat-ios sends. The local row saying so is keyed separately.
 export function screenshotNotice(nickname: string): string {

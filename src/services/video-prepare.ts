@@ -14,8 +14,8 @@
 //
 // The plan is core/mesh/video/transcode-plan; native runs one pass of it at a
 // time and decides nothing. A pass that misses the budget gets one retry at a
-// bitrate scaled by the overshoot, as bitchat-ios does, and a second miss is
-// reported rather than looped.
+// bitrate scaled by the overshoot, and a second miss is reported rather than
+// looped.
 //
 // Nothing a pass writes outlives it unless it succeeds: cancel, a panic wipe
 // and, on iOS, a trip to the background all stop the pass, and native deletes
@@ -49,7 +49,7 @@ import {
   type EventSubscription,
   type NativeEventSubscription,
 } from "react-native";
-import { adoptIntoAttachmentCache } from "./file-transfer-service";
+import { adoptIntoAttachmentCache } from "./attachment-cache";
 import {
   currentWipeGeneration,
   isCurrentWipeGeneration,

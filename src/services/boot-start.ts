@@ -15,15 +15,17 @@ import {
   notifyTorAppForeground,
   primeTorRoutingOnStartup,
 } from "@services/tor-routing";
+import { settleStaleSendsOnce } from "@store/chat-store";
 import { useSettingsStore } from "@store/settings-store";
 import { peerIDToUsername } from "@utils/username";
 import { AppRegistry, Platform } from "react-native";
 import { startBackgroundNotice } from "./background-notice";
 
-import { startAttachmentCleanup } from "./file-transfer-service";
+import { startAttachmentCleanup } from "./attachment-cache";
 import { sweepMediaIfDue } from "./media-retention";
 import { startMessageRetention } from "./message-retention";
 import { readMoveMarker } from "./move-marker";
+import { handleQuickAction } from "./notification-actions";
 import { startNotificationPipeline } from "./notification-pipeline";
 import { applyStartupPresence } from "./presence-service";
 import { startReachabilityWatch } from "./reachability";
@@ -63,6 +65,9 @@ async function bootStartMesh(): Promise<void> {
   } catch {
     // Tor is a preference, not a prerequisite.
   }
+  // Before the mesh carries anything, so the app's first mount later does not
+  // fail what this headless run is still sending.
+  settleStaleSendsOnce();
   const nickname = peerIDToUsername(identity.peerID);
   initMeshService(identity, nickname);
   applyStartupPresence();
@@ -76,6 +81,7 @@ async function bootStartMesh(): Promise<void> {
   startNotificationPipeline(
     () => nickname,
     (channel) => getMeshService()?.mentionSuffixFor(channel) ?? null,
+    handleQuickAction,
   );
   startBackgroundNotice();
   startReachabilityWatch();

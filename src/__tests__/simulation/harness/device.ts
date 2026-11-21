@@ -109,6 +109,7 @@ export interface DeviceSpec {
   // wants it has to say so, the same way a person would.
   lanEnabled?: boolean;
   liveVoiceEnabled?: boolean;
+  liveVideoEnabled?: boolean;
   // Loads the real panic wipe into the sandbox. Opt-in because it pulls in the
   // notification stack, which every phone that never wipes would pay to build.
   wipeable?: boolean;
@@ -450,6 +451,16 @@ export class SimDevice {
       connectToPeer: async (serviceName: string) => {
         port.connect(serviceName);
       },
+      lanPort: async () => port.listenPort(),
+      connectToAddress: async (host: string, at: number, linkID: string) => {
+        if (!port.connectAddress(host, at, linkID)) {
+          throw Object.assign(new Error("refused"), { code: "CONNECT_FAILED" });
+        }
+      },
+      closeLANLink: async (linkID: string) => {
+        port.closeLink(linkID);
+      },
+      localSubnets: async () => port.localSubnets(),
       writeToLANLink: async (linkID: string, dataBase64: string) => {
         port.write(linkID, dataBase64);
       },
@@ -978,6 +989,21 @@ export class SimDevice {
 
   knowsGroup(groupIDHex: string): boolean {
     return call(this.inner.stores.groupStore, "get", groupIDHex) !== undefined;
+  }
+
+  // An invite to this group waits for the user.
+  isInvitedTo(groupIDHex: string): boolean {
+    return (
+      call(this.inner.stores.groupStore, "invite", groupIDHex) !== undefined
+    );
+  }
+
+  // Join a group the user was invited to, as the invite bar's Join does.
+  acceptGroupInvite(groupIDHex: string): boolean {
+    this.log("ACCEPT_GROUP", groupIDHex.slice(0, 8));
+    return (
+      call(this.inner.stores.groupStore, "acceptInvite", groupIDHex) === true
+    );
   }
 
   // ---- bulletin board ----
@@ -1803,6 +1829,11 @@ function buildSandbox(
       stores.settingsStore,
       "setLiveVoiceEnabled",
       spec.liveVoiceEnabled ?? true,
+    );
+    call(
+      stores.settingsStore,
+      "setLiveVideoEnabled",
+      spec.liveVideoEnabled ?? true,
     );
 
     // Swap the socket BEFORE mesh-service can build a pool. nostr-tools keeps

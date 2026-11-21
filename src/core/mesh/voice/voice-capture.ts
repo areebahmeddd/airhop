@@ -226,7 +226,8 @@ export class VoiceCaptureSession {
     // packets number from 1 whether or not that has happened yet.
     this.seq = 1;
     this.dataPacketCount = 0;
-    this.burstStartMs = Date.now();
+    // Monotonic, so the phone's clock set mid burst cannot move the ceiling.
+    this.burstStartMs = performance.now();
     this.pendingFrames = [];
     this.pendingSize = 0;
     this.recorded = [];
@@ -307,7 +308,7 @@ export class VoiceCaptureSession {
     // is still held, and the release path is what reports the burst as finished.
     // Dropping here caps the live stream and the finalized note together, since
     // both are fed from this one call.
-    if (Date.now() - this.burstStartMs >= MAX_BURST_MS) return;
+    if (performance.now() - this.burstStartMs >= MAX_BURST_MS) return;
 
     const frameCost = 2 + frameData.length; // u16 length prefix + data
     // A single frame that cannot fit a packet on its own is dropped rather

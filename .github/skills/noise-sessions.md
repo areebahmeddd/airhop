@@ -15,7 +15,7 @@ How two peers get a live encrypted session, keep it, and heal it when the two si
 | Path                                                                                                         | Holds                                                                                        |
 | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
 | `src/core/crypto/noise-xx.ts`                                                                                | `NoiseHandshake` (create, write/read msg1 to msg3, `clone`, `split`) and `NoiseSession`      |
-| `src/core/crypto/noise-x.ts`                                                                                 | `noiseXSeal` / `noiseXOpen`, one-way sealing for courier mail                                |
+| `src/core/crypto/noise-x.ts`                                                                                 | `noiseXSeal` / `noiseXOpen`, one-way sealing for courier mail and internet DMs               |
 | `src/core/crypto/double-ratchet.ts`                                                                          | Signal Double Ratchet for Airhop-to-Airhop DMs                                               |
 | `src/core/crypto/session-rekey.ts`                                                                           | When a session is renewed, and how long a replaced one keeps decrypting                      |
 | `src/core/mesh/wire/nostr-key-payload.ts`                                                                    | `0x54`, the Nostr key handed over inside a session                                           |
@@ -28,12 +28,12 @@ How two peers get a live encrypted session, keep it, and heal it when the two si
 
 ## Which Pattern
 
-| Pattern  | Algorithm name                     | Use                                   |
-| -------- | ---------------------------------- | ------------------------------------- |
-| Noise XX | `Noise_XX_25519_ChaChaPoly_SHA256` | Live sessions between reachable peers |
-| Noise X  | `Noise_X_25519_ChaChaPoly_SHA256`  | One-way sealing of courier envelopes  |
+| Pattern  | Algorithm name                     | Use                                            |
+| -------- | ---------------------------------- | ---------------------------------------------- |
+| Noise XX | `Noise_XX_25519_ChaChaPoly_SHA256` | Live sessions between reachable peers          |
+| Noise X  | `Noise_X_25519_ChaChaPoly_SHA256`  | One-way seals: courier envelopes, internet DMs |
 
-XX whenever the peer can answer. X only for store-and-forward: it has no forward secrecy of its own, which is why courier mail seals to one-time prekeys when it can (see [`courier-envelopes.md`](courier-envelopes.md)).
+XX whenever the peer can answer. X only for a one-way seal: courier mail and, between Airhop phones, internet DMs. It has no forward secrecy of its own, which is why both seal to prekeys when they can (see [`courier-envelopes.md`](courier-envelopes.md) and [`nostr-gift-wrap.md`](nostr-gift-wrap.md)).
 
 ## Noise XX Handshake
 
@@ -63,13 +63,13 @@ The prologue is empty on every mesh session, as bitchat sends it; only a device 
 bitchat-ios counts every handshake message in its global bucket, so a flood of forged msg1 starves its own initiations; here the global bucket covers only the one unauthenticated message that creates state and floods a reply, and a per-peer refusal spends no global budget. The msg1 gate runs before any DH. A refused initiation of ours leaves the DM in the outbox.
 
 - **Lost msg3.** A responder attempt that expires while we still hold a session with that peer means the initiator completed on msg2 and its msg3 never arrived: the two sides now hold different sessions. As in bitchat-ios's rollback, the old session stays and we send one msg1 of our own, whose session replaces it only on completion. The attempt waits while the peer is unheard or no link is up.
-- **Failed decrypt.** A Noise or Double Ratchet packet that fails to decrypt is discarded and never clears a session (Signal DR section 3.5; bitchat-ios `BLENoisePacketHandler`). A genuine signed packet replayed after it leaves the 1000-entry dedup fails this way, so clearing on failure would let anyone who recorded one evict working keys.
+- **Failed decrypt.** A Noise packet or ratchet message that fails to decrypt is discarded and never clears a session (Signal DR section 3.5; bitchat-ios `BLENoisePacketHandler`). A genuine packet replayed after it leaves the 1000-entry dedup fails this way, so clearing on failure would let anyone who recorded one evict working keys.
 - **No session.** Sealed traffic from an announced peer we hold no session with (their side survived a crash on ours) is answered with a handshake (`recoverSession`). A peer that never announced gets nothing, so forged sender IDs cannot fan out into flooded handshakes.
-- **Out of step past `MAX_SKIP`.** More than 1000 lost messages in one ratchet chain leave the pair out of step until a restart or a `LEAVE`. A replay raises the same error, so healing on it would bring back the replay teardown; bitchat-ios makes the same trade.
+- **Out of step past `MAX_SKIP`.** More than 1000 lost messages in one ratchet chain leave the pair out of step until a restart, a `LEAVE` or the next rekey (24 h at most), which seeds a fresh ratchet.
 
 ## Rekey
 
-A session is renewed by a fresh XX handshake at 21.6 h of age (90% of 24 h), checked every 60 s (`rekeyAgedSessions`), as bitchat-ios renews its own. A leaked transport key then reads at most a day of traffic.
+A session is renewed by a fresh XX handshake at 21.6 h of age (90% of 24 h), checked every 60 s (`rekeyAgedSessions`). A leaked transport key then reads at most a day of traffic.
 
 | Rule                  | Value                                                                                                                                                                                                   |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -100,19 +100,20 @@ The nonce is prepended so the receiver can decrypt out of order (bitchat's `useE
 new[i] = (old[i - bs] << bt) | (old[i - bs - 1] >> (8 - bt))   // bs = shift >> 3, bt = shift & 7
 ```
 
-bitchat-ios and bitchat-android shift right, which forgets recent nonces: after 0 to 100 in order, 93 to 99 decrypt a second time. `NOISE_ENCRYPTED` signatures are not checked on receive, and their dedup ID covers a timestamp anyone can restamp, so this window is the only replay guard for session payloads. Do not copy their `markNonceAsSeen`.
+bitchat-ios and bitchat-android shift right, which forgets recent nonces: after 0 to 100 in order, 93 to 99 decrypt a second time. `NOISE_ENCRYPTED` is sent unsigned (deniable), a signature on one is not checked, and its dedup ID covers a timestamp anyone can restamp, so this window is the only replay guard for session payloads, ratchet messages included. Do not copy their `markNonceAsSeen`.
 
 ## Double Ratchet
 
-Airhop-to-Airhop DMs ride `DR_ENCRYPTED` for per-message forward secrecy; bitchat peers, and any peer whose `0x21` does not prove capability bit 26 (`doubleRatchet`), keep plain Noise transport. Nothing public says a peer is Airhop: the bit travels in `0x21` only, never in an announce.
+Airhop-to-Airhop DMs ride the Double Ratchet for per-message forward secrecy, as Noise payload `0x55` (`RATCHET_MESSAGE`) inside the session it is bound to; bitchat peers, and any peer whose `0x21` does not prove capability bit 26 (`doubleRatchet`), keep plain Noise transport. Nothing public says a peer is Airhop: the bit travels in `0x21` only, never in an announce, and a listener sees only `NOISE_ENCRYPTED`.
 
 - **Seed.** `HKDF(exporterSecret, info "airhop-dr-seed-v1")` from the completed XX session. Never the handshake hash, which is public: every input to it crossed the air. Initiator seeds a sender, responder a receiver.
 - **When.** On the peer's `0x21` carrying bit 26, under the session sent under (`seedRatchetOnProof`), once per session: the proof is sent again (the echo, a re-proven ring grant) and reseeding a live ratchet desyncs it. The initiator seeds on the responder's proof, which follows msg3, so its first ratchet message cannot fall into the msg2 window. Until both proofs cross, DMs ride plain Noise; the initiator holds its queue up to 5 s for the responder's proof, so a long DM goes on the ratchet rather than to the relays.
 - **Binding.** A ratchet counts only while the session it was seeded from is the one held (`ratchetFor`), apart from the grace a replaced one is held for decrypting.
-- **Receive.** The packet is signed and its signature checked before the ratchet is touched, since the 40-byte ratchet header is cleartext. A responder that receives DR traffic before the initiator's proof seeds then; it never sends DR first.
+- **Receive.** The Noise session opens the packet first, so its AEAD refuses a forgery before the ratchet is touched and the 40-byte ratchet header never travels in the clear. The message opens only under the ratchet bound to the session that opened it, the one sent under or one held for stragglers. A responder that receives a ratchet message before the initiator's proof seeds then; it never sends one first.
 - **Nostr key.** Each side sends `0x54` to a peer that proved bit 26 and is a saved contact or someone a DM has passed with: after each such proof, so a lost one is made good, and once when the first DM passes in a proven session. A stranger who only completes a handshake never gets it. A receiver applies it only after the same session's `0x21` is accepted, which may drop a Nostr key planted on the contact.
 - **First message.** A responder has no sending chain until it hears the initiator's first ratchet message, so the initiator sends one on seeding: an empty `DELIVERED` receipt under a random message ID, filed nowhere. When the chain appears the responder flushes what waited for it, and `waitForDmProof` (a payment, a video's budget) resolves only once this side can seal.
 - **Receipts** go over the ratchet when `canEncrypt` (a fresh responder has no sending chain until the initiator's first message), otherwise over Noise in bitchat's format.
+- **Sent time.** The plaintext carries a required `0x52` TLV, the time it was sent; one more than 2 minutes from its packet's timestamp is dropped without a receipt and resent by the outbox, so a relay cannot restamp a held message as new.
 - **Skipped keys** are capped at `MAX_SKIP` (1000).
 
 ## Noise X Sealing
@@ -138,3 +139,4 @@ One session per peer ID, whichever radio carries it: BLE, Wi-Fi Aware or LAN, pl
 - Set bit 26 anywhere but a `0x21`, or send `0x54` to a peer that has not proved the bit.
 - Create a separate session per transport, or persist one across restarts.
 - Use Noise X for live DMs.
+- Sign a `NOISE_ENCRYPTED` packet, or carry a ratchet message anywhere but inside the session it is bound to.

@@ -5,9 +5,9 @@
 // blob, and the fragment layer splits it into frames that fit a single BLE write.
 // There is no app-level chunking and no JSON metadata. Canonical tags are
 // fileName (0x01), fileSize (0x02), mimeType (0x03) and content (0x04); Airhop
-// appends channel (0x05) and duration (0x06), which bitchat skips as unknown, so
-// multi-channel routing and voice-note durations survive without breaking its
-// parsing.
+// appends channel (0x05), duration (0x06) and caption (0x07), which bitchat
+// skips as unknown, so multi-channel routing, voice-note durations and captions
+// survive without breaking its parsing.
 
 // Limits. MAX_FILE_BYTES is bitchat's FileTransferLimits ceiling, which both
 // clients accept on receive for a file of any type. The per-type figures are
@@ -199,8 +199,8 @@ export function extensionForMime(mimeType: string): string {
 
 // The name a received file is stored under. A known type takes the extension
 // its validated MIME implies, since the OS opens a file by its extension and
-// the sender chose this one. Anything else keeps the sender's, as bitchat-ios
-// does, or a .docx sent as octet-stream would open in nothing.
+// the sender chose this one. Anything else keeps the sender's, or a .docx sent
+// as octet-stream would open in nothing.
 export function receivedFileName(name: string, mimeType: string): string {
   const extension = EXTENSION_BY_MIME[mimeType.trim().toLowerCase()];
   if (extension === undefined) return ensureFileExtension(name, mimeType);

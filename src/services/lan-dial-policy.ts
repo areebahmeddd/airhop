@@ -8,6 +8,12 @@
 // Policy, so it is a pure function here rather than a decision in native. Same
 // split as power-policy.ts.
 
+import {
+  ipv4Octets,
+  isOnLocalSubnet,
+  type LocalSubnet,
+} from "@core/move/local-subnet";
+
 // Links one phone opens on a network.
 //
 // Sized against Bluetooth rather than the network: bitchat caps central links at
@@ -52,4 +58,33 @@ export function dialTargets(
   neighbors.delete(selfName);
 
   return [...neighbors].filter((name) => name > selfName).sort();
+}
+
+// RFC 1918 space: the only addresses a peer's LAN endpoint is dialed at, and
+// the only ones this phone hands over. A campus network's public address
+// stays with mDNS, and nothing a peer names can point a dial off the network.
+export function isPrivateIPv4(host: string): boolean {
+  const octets = ipv4Octets(host);
+  if (octets === null) return false;
+  const [a, b] = octets;
+  return (
+    a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)
+  );
+}
+
+// The address of a peer's LAN endpoint to dial, or null: the first one that
+// is private, on one of this phone's own subnets, and not this phone's own.
+// Never more than one, so a list of addresses cannot be turned into a scan.
+export function directDialHost(
+  hosts: readonly string[],
+  subnets: readonly LocalSubnet[],
+): string | null {
+  return (
+    hosts.find(
+      (host) =>
+        isPrivateIPv4(host) &&
+        isOnLocalSubnet(host, subnets) &&
+        !subnets.some((subnet) => subnet.address === host),
+    ) ?? null
+  );
 }

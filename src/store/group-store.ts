@@ -5,7 +5,9 @@
 //
 // State arrives two ways: our own groups (we are the creator) via upsertLocal,
 // and groups we are invited to via a creator-signed GroupStatePayload the caller
-// has already verified (upsertFromState). A newer epoch replaces an older one.
+// has already verified. An invite waits in `invites` until the user joins
+// (acceptInvite) or declines it, so nobody can put us in a group unasked. A
+// newer epoch replaces an older one.
 
 import {
   type BitchatGroup,
@@ -30,6 +32,10 @@ export interface StoredGroup {
   key: string; // hex epoch key
 }
 
+interface StoredInvite extends StoredGroup {
+  receivedAtMs: number;
+}
+
 export interface RuntimeGroup {
   groupID: Uint8Array;
   name: string;
@@ -44,8 +50,19 @@ interface GroupState {
   // Groups the user left. The creator is never told, so its next key rotation
   // would otherwise bring the group back as "you were added".
   left: string[];
+  invites: StoredInvite[];
   upsertLocal: (group: BitchatGroup, key: Uint8Array) => void;
   upsertFromState: (payload: GroupStatePayload) => void;
+  // Holds a verified state as an invite, or updates the one held. Null when
+  // refused (another creator, or an older epoch); otherwise the invites the
+  // cap pushed out, whose rows the caller removes. A contact's invites are not
+  // held to the per-creator share.
+  addInvite: (
+    payload: GroupStatePayload,
+    opts?: { fromContact?: boolean },
+  ) => string[] | null;
+  invite: (groupIDHex: string) => RuntimeGroup | undefined;
+  acceptInvite: (groupIDHex: string) => boolean;
   get: (groupIDHex: string) => RuntimeGroup | undefined;
   getByID: (groupID: Uint8Array) => RuntimeGroup | undefined;
   nameForChannel: (channel: string) => string | undefined;
@@ -60,6 +77,12 @@ interface GroupState {
 const STORAGE_ID = "group-store";
 const STORAGE_KEY = "groups";
 const LEFT_KEY = "left";
+const INVITES_KEY = "invites";
+// Newest kept. Anyone who completes a handshake can invite us, so the list is
+// bounded however many arrive, and one creator holds only a few of its places:
+// pushing out someone else's invite then takes seven identities, not one.
+const MAX_INVITES = 20;
+const MAX_INVITES_PER_CREATOR = 3;
 const storage = getStorage(STORAGE_ID);
 
 function toStoredMember(m: GroupMember): StoredMember {
@@ -106,6 +129,41 @@ function loadLeft(): string[] {
   }
 }
 
+function loadInvites(): StoredInvite[] {
+  const raw = storage.getString(INVITES_KEY);
+  if (raw === undefined) return [];
+  try {
+    return (JSON.parse(raw) as StoredInvite[]).filter(
+      (i) => creatorKeyOf(i) !== undefined,
+    );
+  } catch {
+    return [];
+  }
+}
+
+function stateToStored(payload: GroupStatePayload): StoredGroup {
+  return toStored(
+    {
+      groupID: payload.groupID,
+      name: payload.name,
+      epoch: payload.epoch,
+      members: payload.members,
+      creatorFingerprint: payload.creatorFingerprint,
+    },
+    payload.key,
+  );
+}
+
+// Whether `entry` may replace `existing`: the same creator under the same key,
+// at an epoch no older.
+function supersedes(entry: StoredGroup, existing: StoredGroup): boolean {
+  return (
+    entry.epoch >= existing.epoch &&
+    entry.creatorFingerprint === existing.creatorFingerprint &&
+    creatorKeyOf(entry) === creatorKeyOf(existing)
+  );
+}
+
 function creatorKeyOf(g: StoredGroup): string | undefined {
   return g.members.find((m) => m.fingerprint === g.creatorFingerprint)
     ?.signingKey;
@@ -141,9 +199,8 @@ export const useGroupStore = create<GroupState>((set, get) => {
   function put(entry: StoredGroup): void {
     set((state) => {
       const existing = state.groups.find((g) => g.groupID === entry.groupID);
-      // Ignore an older epoch: the newest key/roster wins.
-      if (existing !== undefined && entry.epoch < existing.epoch) return state;
-      // A group keeps the creator it was created with.
+      // An older epoch is ignored: the newest key and roster win. And a group
+      // keeps the creator it was created with.
       //
       // The epoch guard above orders updates but says nothing about who is
       // allowed to make them, and the caller only checks that a state is signed
@@ -157,13 +214,7 @@ export const useGroupStore = create<GroupState>((set, get) => {
       //
       // Pinning here rather than at the call site because this is the last
       // point every path goes through, local and remote alike.
-      if (
-        existing !== undefined &&
-        (entry.creatorFingerprint !== existing.creatorFingerprint ||
-          creatorKeyOf(entry) !== creatorKeyOf(existing))
-      ) {
-        return state;
-      }
+      if (existing !== undefined && !supersedes(entry, existing)) return state;
       const groups = [
         ...state.groups.filter((g) => g.groupID !== entry.groupID),
         entry,
@@ -178,9 +229,23 @@ export const useGroupStore = create<GroupState>((set, get) => {
     else storage.set(LEFT_KEY, JSON.stringify(left));
   }
 
+  function setInvites(invites: StoredInvite[]): void {
+    if (invites.length === 0) storage.remove(INVITES_KEY);
+    else storage.set(INVITES_KEY, JSON.stringify(invites));
+    set({ invites });
+  }
+
+  function forgetLeft(groupIDHex: string): void {
+    if (!get().hasLeft(groupIDHex)) return;
+    const left = get().left.filter((id) => id !== groupIDHex);
+    persistLeft(left);
+    set({ left });
+  }
+
   return {
     groups: load(),
     left: loadLeft(),
+    invites: loadInvites(),
 
     upsertLocal(group, key) {
       put(toStored(group, key));
@@ -189,24 +254,47 @@ export const useGroupStore = create<GroupState>((set, get) => {
     // An accepted state is the creator adding us, including back into a group
     // we once left.
     upsertFromState(payload) {
-      const groupIDHex = bytesToHex(payload.groupID);
-      if (get().hasLeft(groupIDHex)) {
-        const left = get().left.filter((id) => id !== groupIDHex);
-        persistLeft(left);
-        set({ left });
-      }
-      put(
-        toStored(
-          {
-            groupID: payload.groupID,
-            name: payload.name,
-            epoch: payload.epoch,
-            members: payload.members,
-            creatorFingerprint: payload.creatorFingerprint,
-          },
-          payload.key,
-        ),
+      forgetLeft(bytesToHex(payload.groupID));
+      put(stateToStored(payload));
+    },
+
+    addInvite(payload, opts = {}) {
+      const entry = stateToStored(payload);
+      const existing = get().invites.find((i) => i.groupID === entry.groupID);
+      if (existing !== undefined && !supersedes(entry, existing)) return null;
+      const all = [
+        ...get().invites.filter((i) => i.groupID !== entry.groupID),
+        { ...entry, receivedAtMs: existing?.receivedAtMs ?? Date.now() },
+      ];
+      const overShare = new Set(
+        opts.fromContact === true
+          ? []
+          : all
+              .filter((i) => i.creatorFingerprint === entry.creatorFingerprint)
+              .slice(0, -MAX_INVITES_PER_CREATOR)
+              .map((i) => i.groupID),
       );
+      const kept = all.filter((i) => !overShare.has(i.groupID));
+      setInvites(kept.slice(-MAX_INVITES));
+      return [
+        ...overShare,
+        ...kept.slice(0, -MAX_INVITES).map((i) => i.groupID),
+      ];
+    },
+
+    invite(groupIDHex) {
+      const i = get().invites.find((x) => x.groupID === groupIDHex);
+      return i !== undefined ? toRuntime(i) : undefined;
+    },
+
+    acceptInvite(groupIDHex) {
+      const invite = get().invites.find((i) => i.groupID === groupIDHex);
+      if (invite === undefined) return false;
+      setInvites(get().invites.filter((i) => i.groupID !== groupIDHex));
+      forgetLeft(groupIDHex);
+      const { receivedAtMs: _received, ...group } = invite;
+      put(group);
+      return true;
     },
 
     get(groupIDHex) {
@@ -221,7 +309,10 @@ export const useGroupStore = create<GroupState>((set, get) => {
     nameForChannel(channel) {
       if (!channel.startsWith("group:")) return undefined;
       const id = channel.slice("group:".length);
-      return get().groups.find((g) => g.groupID === id)?.name;
+      return (
+        get().groups.find((g) => g.groupID === id)?.name ??
+        get().invites.find((i) => i.groupID === id)?.name
+      );
     },
 
     remove(groupIDHex) {
@@ -232,8 +323,13 @@ export const useGroupStore = create<GroupState>((set, get) => {
       });
     },
 
+    // Declining an invite is leaving too, so the creator's next rotation does
+    // not ask again.
     leave(groupIDHex) {
       get().remove(groupIDHex);
+      if (get().invites.some((i) => i.groupID === groupIDHex)) {
+        setInvites(get().invites.filter((i) => i.groupID !== groupIDHex));
+      }
       if (get().hasLeft(groupIDHex)) return;
       const left = [...get().left, groupIDHex];
       persistLeft(left);
@@ -245,13 +341,14 @@ export const useGroupStore = create<GroupState>((set, get) => {
     },
 
     reload() {
-      set({ groups: load(), left: loadLeft() });
+      set({ groups: load(), left: loadLeft(), invites: loadInvites() });
     },
 
     clearAll() {
-      set({ groups: [], left: [] });
+      set({ groups: [], left: [], invites: [] });
       storage.remove(STORAGE_KEY);
       storage.remove(LEFT_KEY);
+      storage.remove(INVITES_KEY);
     },
   };
 });

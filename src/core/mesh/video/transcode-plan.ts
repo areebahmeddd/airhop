@@ -15,7 +15,7 @@
 import { MAX_BITCHAT_VIDEO_BYTES } from "../wire/file-packet";
 
 export const MAX_TRANSCODE_SOURCE_MS = 60_000;
-// Two passes, as bitchat-ios makes; a second miss is reported, not looped.
+// Two passes; a second miss is reported, not looped.
 export const MAX_TRANSCODE_ATTEMPTS = 2;
 
 // A source with no usable duration plans as if it ran the full 60 s.
@@ -50,7 +50,7 @@ export interface TranscodeSource {
 }
 
 // The part of the source to send, as the trimmer leaves it. Without one a pass
-// keeps the first MAX_TRANSCODE_SOURCE_MS, as bitchat-ios does.
+// keeps the first MAX_TRANSCODE_SOURCE_MS.
 export interface TranscodeRange {
   startMs: number;
   endMs: number;

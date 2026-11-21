@@ -160,7 +160,7 @@ export const strings: Strings = {
     "近くの端末を見つけ、その間でメッセージを中継します。これがメッシュを作り、インターネットなしで動きます。",
   "onboarding.primer.location.title": "位置情報",
   "onboarding.primer.location.body":
-    "街区から地域まで、近くのエリアチャンネルにあなたを配置します。Airhopがあなたを追跡することはなく、正確な位置が端末の外に出るのは、誰かに位置情報を送ったときだけです。",
+    "街区から地域まで、近くのエリアチャンネルにあなたを配置します。Airhopがあなたを追跡することはなく、正確な位置が端末の外に出ることもありません。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "アプリを閉じていても新着メッセージの通知を受け取れます。通知は端末内で作られ、サーバーは関与しません。",
@@ -387,7 +387,34 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "全員には届きませんでした。相手が近くにいるときにもう一度お試しください。",
   "chat.group.you_were_added": "{name}に追加されました。",
-  "chat.group.added_you": "{name}にあなたを追加しました",
+  "chat.timer.you_set_1": "消えるメッセージを1日に設定しました",
+  "chat.timer.you_set_7": "消えるメッセージを7日に設定しました",
+  "chat.timer.you_set_30": "消えるメッセージを30日に設定しました",
+  "chat.timer.you_off": "消えるメッセージをオフにしました",
+  "chat.timer.you_set_local_1": "この端末で消えるメッセージを1日に設定しました",
+  "chat.timer.you_set_local_7": "この端末で消えるメッセージを7日に設定しました",
+  "chat.timer.you_set_local_30":
+    "この端末で消えるメッセージを30日に設定しました",
+  "chat.timer.you_off_local": "この端末で消えるメッセージをオフにしました",
+  "chat.timer.peer_set_1": "{name}さんが消えるメッセージを1日に設定しました",
+  "chat.timer.peer_set_7": "{name}さんが消えるメッセージを7日に設定しました",
+  "chat.timer.peer_set_30": "{name}さんが消えるメッセージを30日に設定しました",
+  "chat.timer.peer_off": "{name}さんが消えるメッセージをオフにしました",
+  "chat.timer.sheet_shared":
+    "今後送るメッセージに、両方の端末で適用されます。各メッセージは、送信側の端末では送信した時から、相手の端末では初めて読まれた時から、それぞれカウントダウンします。スクリーンショットは防げません。",
+  "chat.timer.sheet_pending":
+    "この端末で設定しました。次に接続したときに{name}さんに届き、その後は両方の端末で適用されます。",
+  "chat.timer.sheet_bitchat":
+    "この端末のみです。{name}さんのアプリは共有タイマーに対応していません。",
+  "chat.timer.sheet_local":
+    "今はこの端末のみです。{name}さんのアプリが共有タイマーに対応していれば、次に接続したときに相手に届きます。",
+  "chat.group.invited": "{name}に招待されました。",
+  "chat.group.invited_you": "{name}にあなたを招待しました",
+  "chat.group.decline": "辞退",
+  "chat.group.decline_title": "{name}への招待を辞退しますか。",
+  "chat.group.decline_body":
+    "{name}は連絡先にいません。ブロックもすると、今後この人から招待やメッセージは届きません。",
+  "chat.group.decline_block": "辞退してブロック",
   "chat.group.you_were_removed":
     "{name}から削除されました。ここでの読み書きはできません。",
   "chat.group.removed_you": "{name}からあなたを削除しました",
@@ -1192,6 +1219,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "トークンを作成できませんでした",
+  "wallet.send.unverified_note":
+    "この支払いの一部は、ミントがまだ確認していないecashです。",
   "wallet.send.title": "ecashを送る",
   "wallet.send.amount_in": "金額（{unit}）",
   "wallet.send.body":
@@ -1251,14 +1280,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}で引き換えました。これで証明可能にあなたのものとなり、送信者側のこのトークンの控えはもう使えません。",
   "wallet.receive.pending_unconfirmed":
-    "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。オンラインになると自動的にミントで確認されます。",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint}から保存しましたが、ミントは未使用だとまだ確認していません。署名は正しいので、トークンは本物です。オンラインになると自動的にミントで確認されます。",
   "wallet.receive.dleq_ok": "ミントの署名は正しく、トークンは本物です。",
-  "wallet.receive.dleq_uncached":
-    "ミントの鍵がここに保存されていないため、オフラインでは署名を確認できませんでした。",
-  "wallet.receive.dleq_missing":
-    "一部のコインにミントの署名証明が付いていないため、オフラインでは確認できませんでした。",
   "wallet.receive.dleq_warning":
     "オンラインで確認されるまでは、送信者が別の場所で使っていた可能性も原理的には残ります。",
   "wallet.receive.failed": "受け取れませんでした",
@@ -1617,6 +1640,7 @@ export const strings: Strings = {
     "トークン、請求書、npubのQRコードにカメラを向けてください。",
   "wallet.scan.no_any":
     "その画像にトークン、請求書、npubは見つかりませんでした。",
+  "wallet.scan.not_usable": "このQRコードはここではAirhopで使えません。",
   "wallet.scan.use_camera_a11y": "カメラで読み取る",
   "wallet.scan.use_camera": "カメラを使う",
   "wallet.scan.pick_image_a11y": "保存した画像からQRコードを読み取る",
@@ -1718,6 +1742,11 @@ export const strings: Strings = {
     "この支払いはあなたのウォレットにロックされています。",
   "wallet.svc.locked_ours_offline_body":
     "オンラインになってから受け取ってください。その間、ほかの誰も受け取れません。",
+  "wallet.svc.offline_cap":
+    "オフラインでは、未確認のecashはミントごとに{limit}までです。",
+  "wallet.svc.offline_unchecked": "このecashはオフラインでは確認できません。",
+  "wallet.svc.claim_online_body":
+    "オンラインになり、ミントが確認できるようになってから受け取ってください。",
   "wallet.svc.already_spent": "このecashはすでに使用されています。",
   "wallet.svc.already_spent_body":
     "このトークンを送った人が先に引き換えたか、同じトークンを別の人にも送ったかのどちらかです。",
@@ -2042,10 +2071,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "会話を最も長く読める状態に保ち、その分ディスクも使います。",
   "settings.general.message_retention": "消えるメッセージ",
-  "settings.general.message_retention_desc":
-    "メッセージとそのメディアは、選んだ期間が過ぎるとこの端末から削除されます",
-  "settings.general.message_retention_sheet":
-    "各メッセージがこの端末に届いた時点から数え、忘れるのはこの端末だけです。相手の端末には写しが残り、スクリーンショットは防げず、個別チャットで届いた支払いのうち、まだ受け取っていないものは受け取るまで残ります。",
+  "settings.general.message_retention_default":
+    "新しいチャットのデフォルトタイマー",
+  "settings.general.message_retention_default_desc":
+    "新しいダイレクトメッセージと、この端末のルーム、チャンネル、グループに適用",
+  "settings.general.message_retention_default_sheet":
+    "新しいダイレクトメッセージはこのタイマーで始まり、どちらもチャット内で変更できます。ルーム、チャンネル、グループはこの端末でのみこれに従い、各メッセージが届いた時点から数えます。スクリーンショットは防げません。ダイレクトメッセージで送られた支払いは受け取るまで残ります。",
   "settings.general.message_retention_off_desc":
     "チャットを消去するか退出するまでメッセージは残ります",
   "settings.general.message_retention_1_desc":
@@ -2057,11 +2088,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "古いメッセージを削除しますか",
   "settings.general.message_retention_confirm_1":
-    "1日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+    "1日より前に届いた、ルーム、チャンネル、グループ、および位置チャンネルから始めたチャットのメッセージが、メディアごと今すぐこの端末から削除されます。その他のダイレクトメッセージはそれぞれのタイマーに従います。元に戻すことはできません。",
   "settings.general.message_retention_confirm_7":
-    "7日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+    "7日より前に届いた、ルーム、チャンネル、グループ、および位置チャンネルから始めたチャットのメッセージが、メディアごと今すぐこの端末から削除されます。その他のダイレクトメッセージはそれぞれのタイマーに従います。元に戻すことはできません。",
   "settings.general.message_retention_confirm_30":
-    "30日より前に届いたメッセージが、メディアごと今すぐこの端末から削除されます。元に戻すことはできません。",
+    "30日より前に届いた、ルーム、チャンネル、グループ、および位置チャンネルから始めたチャットのメッセージが、メディアごと今すぐこの端末から削除されます。その他のダイレクトメッセージはそれぞれのタイマーに従います。元に戻すことはできません。",
   "settings.general.reset_desc":
     "識別情報、メッセージ、連絡先、ウォレットはそのままに、設定を初期値へ戻します",
   "settings.general.reset_title": "設定をリセットしますか",
@@ -2203,6 +2234,12 @@ export const strings: Strings = {
     "マイクを押すと、代わりにボイスメモを録音します。指を離すと送信され、相手が再生するまで誰にも聞かれません。",
   "settings.conn.live_video": "ライブ動画",
   "settings.conn.live_video_desc": "近くの人にカメラを配信し、相手の配信も視聴",
+  "settings.conn.live_video_on_title": "ライブ動画をオンにしますか",
+  "settings.conn.live_video_on_body":
+    "カメラからBluetooth圏内の人に配信でき、相手の配信もチャットに表示されてこの端末に録画されます。",
+  "settings.conn.live_video_off_title": "ライブ動画をオフにしますか",
+  "settings.conn.live_video_off_body":
+    "配信できなくなり、他の人の配信も表示や録画をしなくなります。短い配信は通常の動画として届きます。",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor経由の通信",
   "settings.conn.tor_desc":
@@ -2233,12 +2270,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Torの利用を隠します。Snowflakeより速いものの、これらのブリッジは公開されており遮断する回線もあります。",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "通常のウェブサイト閲覧のように見せて、Torの利用を隠します。他より遮断されにくい方法です。",
   "settings.tor.mode_custom": "カスタムブリッジ",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.orgで入手したobfs4のブリッジ行を使います。他が失敗したときに試してください。",
+    "bridges.torproject.orgで入手したobfs4またはWebTunnelのブリッジ行を使います。他が失敗したときに試してください。",
   "settings.tor.custom_placeholder": "1行につき1つのブリッジ行を貼り付け",
   "settings.tor.custom_apply_hint": "接続するにはボックスの外をタップします。",
   "settings.tor.custom_empty": "まず1つ以上のブリッジ行を追加してください。",
@@ -2604,6 +2638,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "呼び出し",
   "notif.ring.title": "{sender}があなたを呼び出しています",
   "notif.ring.body": "メッセージを確認してください",
+  "notif.action.reply": "返信",
+  "notif.action.send": "送信",
+  "notif.action.mark_read": "既読にする",
+  "notif.reply.failed_title": "送信されませんでした",
+  "notif.reply.failed_body":
+    "{chat} への返信は送信されませんでした。チャットを開いてもう一度お試しください。",
+  "notif.reply.held_title": "送信待ち",
+  "notif.reply.held_body": "{chat} への返信は Airhop の動作中に送信されます。",
+  "notif.reply.cut_title": "一部のみ送信",
+  "notif.reply.cut_body":
+    "{chat} への返信が長すぎたため、最後の部分は送信されませんでした。",
 };
 
 export const plurals: Plurals = {

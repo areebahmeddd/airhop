@@ -1,8 +1,7 @@
 // Packets held for gossip sync, oldest first, under a count and a byte budget.
 //
-// Mirrors bitchat-ios GossipSyncManager.PacketStore. The count alone is not a
-// bound: a thousand packets at their type's payload cap would pin over 100 MiB,
-// so the oldest go until both hold.
+// The count alone is not a bound: a thousand packets at their type's payload
+// cap would pin over 100 MiB, so the oldest go until both hold.
 import type { Packet } from "../wire/packet-codec";
 
 // A received packet also holds its wire form, and a crafted DEFLATE stream can

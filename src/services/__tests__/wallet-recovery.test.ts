@@ -286,6 +286,31 @@ describe("a melt answered by something other than the mint", () => {
     expect(spendable()).toBe(64 - 33);
   });
 
+  // An overage of 14 is under the swap-down floor, so the whole 1024 goes in
+  // and the change returns the overage with the unused reserve.
+  it("books the fee the route took, not the reserve less the change", async () => {
+    fabric.setConditions({ meltFeeReserve: 10, meltActualFee: 3 });
+    await fund(1024);
+    const quote = await quoteLightningWithdrawal({
+      invoice: simInvoice(1000),
+      mintUrl: fabric.url,
+    });
+    fabric.setConditions({
+      httpFailures: {
+        "/v1/melt/bolt11": { failure: "proxy-page", when: "after" },
+      },
+    });
+    await expect(payLightningInvoice(quote)).rejects.toMatchObject({
+      inDoubt: true,
+    });
+
+    fabric.setConditions({ httpFailures: {} });
+    await reconcile();
+    expect(meltRow()?.status).toBe("completed");
+    expect(spendable()).toBe(1024 - 1003);
+    expect(meltRow()?.fee).toBe(3);
+  });
+
   it("is released once the quote says unpaid, after a rate limit kept it from the mint", async () => {
     await fund(64);
     const quote = await quoteLightningWithdrawal({

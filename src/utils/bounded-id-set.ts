@@ -1,5 +1,5 @@
 // A set of IDs capped at `capacity`, dropping the oldest added when it grows
-// past it, as bitchat-ios's BoundedIDSet does.
+// past it.
 //
 // For IDs that arrive from relays or off the air, where an unbounded set is
 // memory anyone in range can spend. Re-adding an ID already held neither moves

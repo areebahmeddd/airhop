@@ -10,7 +10,7 @@
 // Presence heartbeats are ephemeral (kind 2xxxx in Nostr) and are not
 // persisted by relays.
 //
-// Heartbeat interval: 40-80 s (jittered) matching bitchat-ios behavior.
+// Heartbeat interval: 40-80 s (jittered).
 
 import type { Event } from "nostr-tools";
 import { finalizeEvent, getPublicKey } from "nostr-tools";
@@ -159,9 +159,9 @@ export class GeohashPresence {
   // belong to the caller, which knows which channels the user is in.
   //
   // `relays` is the cell's own relay set, where everyone in the cell reads
-  // presence. With none, the heartbeat is skipped, as bitchat-ios skips it:
-  // NostrClient would fall back to the default DM relays, which already see
-  // this cell's key on the geo DM inbox and would then learn its cell too.
+  // presence. With none, the heartbeat is skipped: NostrClient would fall back
+  // to the default DM relays, which already see this cell's key on the geo DM
+  // inbox and would then learn its cell too.
   async publishHeartbeat(geohash: string, relays: string[]): Promise<void> {
     if (relays.length === 0) return;
     await this.publishPresence(geohash, relays);
@@ -185,7 +185,13 @@ export class GeohashPresence {
       since: Math.floor(Date.now() / 1000) - CHANNEL_LOOKBACK_SECONDS,
       limit: CHANNEL_INITIAL_LIMIT,
     };
-    const closer = this.client.subscribe([filter], onEvent, onEose, relays);
+    const closer = this.client.subscribe(
+      [filter],
+      onEvent,
+      onEose,
+      relays,
+      this.privKey,
+    );
     return () => closer.close();
   }
 
@@ -248,7 +254,7 @@ export class GeohashPresence {
     // signed event straight back so the caller can ferry it over the mesh.
     if (!relaysConnected) return { event, delivered: false };
     try {
-      await this.client.publish(event, relays);
+      await this.client.publish(event, relays, this.privKey);
       return { event, delivered: true };
     } catch {
       // No relay ACKed (offline, or none reachable for this cell). The event is
@@ -274,7 +280,7 @@ export class GeohashPresence {
       },
       this.privKey,
     );
-    await this.client.publish(event, relays);
+    await this.client.publish(event, relays, this.privKey);
   }
 }
 

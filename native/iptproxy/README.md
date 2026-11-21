@@ -51,11 +51,11 @@ The `git add` is not optional on a first build. `verify-vendored.js` hashes trac
 
 ## Deliberate choices
 
-**Built here, not vendored.** Upstream commits a prebuilt xcframework and publishes an aar on Maven, and their CocoaPod installs the committed binary. Either route puts a large binary nobody here compiled into the app, which is what [`scripts/verify-vendored.js`](../../scripts/verify-vendored.js) exists to prevent. `fetch-sources.sh` deletes the committed xcframework so their "already built" shortcut cannot ship it.
+**Built here, not vendored.** Upstream publishes a prebuilt xcframework as a release download for Swift Package Manager and an aar on Maven. Either route puts a large binary nobody here compiled into the app, which is what [`scripts/verify-vendored.js`](../../scripts/verify-vendored.js) exists to prevent.
 
 **Pinned by commit, and gomobile taken from `go.mod`.** Upstream resolves dnstt by a name that moves and gomobile with `@latest`, so the same script run twice can produce different binaries. An unversioned `go install` resolves through IPtProxy's own module instead, where their `tool` directive already pins it.
 
-**Three ABIs and two slices.** Upstream builds android/386 and a macOS slice as well. Airhop packages neither.
+**Three ABIs and two slices.** Upstream's Apple build adds a macOS slice, which Airhop does not package, so both target lists are written out in the build scripts.
 
 **dnstt is built but unused.** It is compiled in and there is no build tag to leave it out. Excluding it would mean forking, which costs more than the bytes do.
 
@@ -70,7 +70,7 @@ The `git add` is not optional on a first build. `verify-vendored.js` hashes trac
 5. Run govulncheck over what the build compiles, once by hand rather than in CI, since it fetches a tool and a database. After `fetch-sources.sh`, in `.native-build/iptproxy-src/iptproxy/IPtProxy.go`, install it for the host first (`go run` would build it for Android and fail to start), then scan each target with the Go version `TOOLCHAIN.env` pins:
 
    ```bash
-   GOBIN="$PWD/../../go-tools" go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+   GOBIN="$PWD/../../go-tools" go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
    GOOS=android GOARCH=arm64 CGO_ENABLED=0 ../../go-tools/govulncheck -tags netcgo ./...
    GOOS=ios GOARCH=arm64 CGO_ENABLED=0 ../../go-tools/govulncheck ./...
    ```

@@ -6,15 +6,22 @@
 // on the same channel, while everything else uses Airhop's. Getting this wrong
 // does not error: the message goes out where the other app cannot see it, or
 // arrives shaped so it renders as noise.
-import { ed25519 } from "@noble/curves/ed25519.js";
+import { ed25519, x25519 } from "@noble/curves/ed25519.js";
 import { NoiseHandshake } from "../../crypto/noise-xx";
+import { peerIDFromNoiseKey } from "../../crypto/peer-id";
 import {
   decodeNoisePayload,
   decodePrivateMessagePacket,
   encodeNoisePrivateMessage,
   NoisePayloadType,
 } from "../../mesh/wire/noise-payload";
-import { Flags, PacketType, type Packet } from "../../mesh/wire/packet-codec";
+import {
+  decodePacket,
+  encodePacket,
+  Flags,
+  PacketType,
+  type Packet,
+} from "../../mesh/wire/packet-codec";
 import {
   decodeAirhopChannelPayload,
   decodeMeshPublicPayload,
@@ -27,11 +34,8 @@ import {
 
 function makeIdentity(): RouterIdentity {
   const signingPrivKey = ed25519.utils.randomSecretKey();
-  const signingPubKey = ed25519.getPublicKey(signingPrivKey);
-  const peerID = Array.from(signingPubKey.slice(0, 8))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
   const noiseStaticPrivKey = ed25519.utils.randomSecretKey();
+  const peerID = peerIDFromNoiseKey(x25519.getPublicKey(noiseStaticPrivKey));
   return { peerID, signingPrivKey, noiseStaticPrivKey };
 }
 
@@ -47,6 +51,21 @@ function makePeerNoiseSession() {
   responder.readMsg3(initiator.writeMsg3());
 
   return { sessionI: initiator.split(), sessionR: responder.split() };
+}
+
+// A DM as it arrives off the mesh: unsigned, since the session alone
+// authenticates it.
+function inboundDm(payload: Uint8Array): Packet {
+  return {
+    type: PacketType.NOISE_ENCRYPTED,
+    ttl: 7,
+    flags: 0,
+    senderID: new Uint8Array(8),
+    recipientID: new Uint8Array(8),
+    timestamp: Date.now(),
+    signature: new Uint8Array(64),
+    payload,
+  };
 }
 
 describe("public message payloads", () => {
@@ -115,7 +134,7 @@ describe("PeerRegistry", () => {
     expect(r.get("0000000000000000")).toBeUndefined();
   });
 
-  test("update and get works for a fresh peer", () => {
+  test("get returns a peer once update has added it", () => {
     const r = new PeerRegistry();
     r.update({
       peerID: "aabbccdd00112233",
@@ -410,6 +429,11 @@ describe("MessageRouter", () => {
     expect(unicasts.length).toBe(1);
     expect(unicasts[0].peerID).toBe(recipientPeerID);
     expect(unicasts[0].packet.type).toBe(PacketType.NOISE_ENCRYPTED);
+    // Unsigned, so the DM is deniable: the session proves the sender to the
+    // recipient and no one else.
+    const packet = unicasts[0].packet;
+    expect(packet.flags & Flags.SIGNED).toBe(0);
+    expect(decodePacket(encodePacket(packet))!.flags & Flags.SIGNED).toBe(0);
 
     // The recipient decrypts to a bitchat NoisePayload private message.
     const decrypted = sessionR.decrypt(unicasts[0].packet.payload);
@@ -440,16 +464,7 @@ describe("MessageRouter", () => {
       encodeNoisePrivateMessage("id7", "private message")!,
     );
 
-    const incomingPacket: Packet = {
-      type: PacketType.NOISE_ENCRYPTED,
-      ttl: 7,
-      flags: Flags.SIGNED,
-      senderID: new Uint8Array(8),
-      recipientID: new Uint8Array(8),
-      timestamp: 1000,
-      signature: new Uint8Array(64),
-      payload: ciphertext,
-    };
+    const incomingPacket = inboundDm(ciphertext);
 
     const router = new MessageRouter(
       identity,
@@ -473,17 +488,9 @@ describe("MessageRouter", () => {
       () => {},
       () => {},
     );
-    const packet: Packet = {
-      type: PacketType.NOISE_ENCRYPTED,
-      ttl: 7,
-      flags: 0,
-      senderID: new Uint8Array(8),
-      recipientID: new Uint8Array(8),
-      timestamp: 0,
-      signature: new Uint8Array(64),
-      payload: new Uint8Array(0),
-    };
-    expect(router.decryptDm(packet, "unknown000000000")).toBeNull();
+    expect(
+      router.decryptDm(inboundDm(new Uint8Array(0)), "unknown000000000"),
+    ).toBeNull();
   });
 
   // lastSeenMs is refreshed only by ANNOUNCE, which arrives on a 15-30s jitter.
@@ -537,18 +544,9 @@ describe("MessageRouter", () => {
       jest.advanceTimersByTime(GAP_MS * 10);
       expect(registry.isReachable(senderPeerID)).toBe(false);
 
-      const packet: Packet = {
-        type: PacketType.NOISE_ENCRYPTED,
-        ttl: 7,
-        flags: Flags.SIGNED,
-        senderID: new Uint8Array(8),
-        recipientID: new Uint8Array(8),
-        timestamp: Date.now(),
-        signature: new Uint8Array(64),
-        payload: sessionI.encrypt(
-          encodeNoisePrivateMessage("m1", "still here")!,
-        ),
-      };
+      const packet = inboundDm(
+        sessionI.encrypt(encodeNoisePrivateMessage("m1", "still here")!),
+      );
 
       const np = router.decryptDm(packet, senderPeerID);
       expect(np).not.toBeNull();
@@ -572,16 +570,7 @@ describe("MessageRouter", () => {
       expect(registry.isReachable(senderPeerID)).toBe(false);
 
       router.decryptDm(
-        {
-          type: PacketType.NOISE_ENCRYPTED,
-          ttl: 7,
-          flags: Flags.SIGNED,
-          senderID: new Uint8Array(8),
-          recipientID: new Uint8Array(8),
-          timestamp: Date.now(),
-          signature: new Uint8Array(64),
-          payload: sessionI.encrypt(encodeNoisePrivateMessage("m1", "hi")!),
-        },
+        inboundDm(sessionI.encrypt(encodeNoisePrivateMessage("m1", "hi")!)),
         senderPeerID,
       );
 
@@ -604,19 +593,7 @@ describe("MessageRouter", () => {
       jest.advanceTimersByTime(GAP_MS * 10);
 
       expect(
-        router.decryptDm(
-          {
-            type: PacketType.NOISE_ENCRYPTED,
-            ttl: 7,
-            flags: Flags.SIGNED,
-            senderID: new Uint8Array(8),
-            recipientID: new Uint8Array(8),
-            timestamp: Date.now(),
-            signature: new Uint8Array(64),
-            payload: new Uint8Array([1, 2, 3, 4]),
-          },
-          senderPeerID,
-        ),
+        router.decryptDm(inboundDm(new Uint8Array([1, 2, 3, 4])), senderPeerID),
       ).toBeNull();
       expect(registry.isReachable(senderPeerID)).toBe(false);
     });
@@ -944,6 +921,13 @@ describe("PeerRegistry: out-of-band re-pinning", () => {
 
   test("the source hint is not stored on the peer", () => {
     const r = withPinnedPeer();
+    r.update({
+      peerID: PEER,
+      noisePubKey: NOISE,
+      signingPubKey: PINNED,
+      nickname: "alice",
+      trusted: true,
+    });
     expect(r.get(PEER)).not.toHaveProperty("trusted");
   });
 });

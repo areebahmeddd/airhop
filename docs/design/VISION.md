@@ -8,13 +8,13 @@ Airhop is a **cross-platform (iOS + Android) React Native application** for priv
 
 It is a **spiritual fork of bitchat** ([permissionlesstech/bitchat](https://github.com/permissionlesstech/bitchat)). We share bitchat's BLE wire protocol, service UUIDs, security model, and Nostr transport. We are not competitors. We are builders on the same open foundation, extending it with:
 
-- One TypeScript codebase in place of two native apps that drift apart and break cross-platform compat
+- One TypeScript codebase in place of two native apps that drift apart and break cross-platform compatibility
 - Two Wi-Fi transports beside Bluetooth: Wi-Fi Aware as the same-platform fast path, and LAN over mDNS and TCP, which carries the mesh between an iPhone and an Android as no direct-Wi-Fi stack can
 - Bridges and pluggable transports on top of Tor, so the internet half still works where Tor itself is blocked; bitchat routes through Tor but has neither
 - A full Cashu wallet, not a token decoder: balances, mints, Lightning in and out, and value moving device to device with no internet
 - Double Ratchet on live DMs, so every message has its own key, and one-time prekeys for mail left with a courier on both platforms, so waiting mail survives a key leaking later
 - Video that plays inline; bitchat carries it across the wire but opens it on neither platform
-- An interface built for people who are not us, in 35 languages, with QR contact exchange and names derived from keys
+- An interface built for people who are not us, in  50 languages, with QR contact exchange and names derived from keys
 
 The full comparison is in [`ROADMAP.md`](ROADMAP.md), section 1.
 
@@ -26,19 +26,19 @@ These do not change under schedule pressure or feature requests.
 
 2. **Offline first.** Every feature must work with zero internet connectivity. Internet bridges _enhance_ the experience; they never _enable_ it.
 
-3. **No accounts, ever.** Identity is a cryptographic key pair generated on-device and stored in OS Keychain. Nothing registers anywhere. There is no "create account" screen.
+3. **No accounts, ever.** Identity is a cryptographic key pair generated on-device and stored in the OS keychain. Nothing registers anywhere. There is no "create account" screen.
 
 4. **No central server.** No infrastructure to seize. No company to subpoena. No service to shut down. If Airhop's servers were seized tomorrow, the app would still work.
 
-5. **Nothing to hand over.** Message content exists only on the devices in the conversation. No server copy, so no account to subpoena and no backup to compel. Keys live in the Keychain, never beside the history. Panic wipe destroys every key, message and cached file in under one second.
+5. **Nothing to hand over.** Message content exists only on the devices in the conversation. No server copy, so no account to subpoena and no backup to compel. Keys live in the keychain, never beside the history. Panic wipe destroys every key, message and cached file in under one second.
 
-6. **bitchat wire compatibility.** Airhop nodes must communicate with bitchat nodes. The BLE packet wire format, service UUIDs, and peer ID derivation algorithm are fixed. Breaking this requires a protocol version bump and explicit compat testing.
+6. **bitchat wire compatibility.** Airhop nodes must communicate with bitchat nodes. The BLE packet wire format, service UUIDs, and peer ID derivation algorithm are fixed. Breaking this requires a protocol version bump and explicit compatibility testing.
 
 7. **Protocol compliance over clever shortcuts.** When in doubt, do what bitchat does. The bitchat team are smart engineers who made deliberate choices.
 
 ## Features in Practice
 
-What each feature is for, and when someone would actually reach for it.
+What each feature is for, and when someone would reach for it.
 
 ### Messaging
 
@@ -65,7 +65,7 @@ What each feature is for, and when someone would actually reach for it.
 - Human-readable names. Your key decides your name, so nobody chooses or registers one. A name is a label, not proof: scanning a contact's QR code is what binds it to a person.
 - QR contacts. A scanned card carries public keys, and the peer ID is checked against them before anything is trusted. A card arriving by `airhop://` link is recorded as unverified; only an in-person scan counts.
 - End-to-end encryption. Live sessions use Noise XX. Nobody in the middle, including relaying phones, can read a private message.
-- Forward secrecy. Double Ratchet for live chats, and single-use prekeys for mail left with a courier, so an old message stays protected even if a key leaks later.
+- Forward secrecy. Double Ratchet for live chats, and single-use prekeys for mail left with a courier and for messages over the internet between Airhop phones, so an old message stays protected even if a key leaks later.
 - Transfer to a new phone. The new phone shows a code, the old one scans it, and your name, contacts, chats and wallet move across over Wi-Fi or a hotspot. Contacts notice nothing, and the old phone erases itself, so the identity is moved, never copied.
 - Panic wipe. The panic button on the You tab, triple-tapped to skip the confirmation, and every key, message, group, notice and prekey is gone in under a second.
 

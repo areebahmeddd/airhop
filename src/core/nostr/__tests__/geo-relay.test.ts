@@ -217,7 +217,7 @@ describe("geo-relay", () => {
       expect(entries[0].url).toBe("wss://relay4.test.com");
     });
 
-    it("handles empty CSV", () => {
+    it("returns no entries for an empty CSV", () => {
       expect(parseRelaysCsv("Relay URL,Latitude,Longitude")).toHaveLength(0);
       expect(parseRelaysCsv("")).toHaveLength(0);
     });

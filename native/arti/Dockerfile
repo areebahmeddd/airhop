@@ -15,7 +15,7 @@
 # Apple slices are built separately by build-apple.sh.
 # Built through build-in-container.sh.
 
-FROM rust:1.98.1-slim-trixie@sha256:f47a8de237dcbb0b0ce1099901e60a89728e3d51f24e664b40e947171538ade7
+FROM rust:1.99.1-slim-trixie@sha256:f6c4a35d21dbb3c89d7a8d056c193e94fc09037f2b58dd858b09c39a47dd02d7
 
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 

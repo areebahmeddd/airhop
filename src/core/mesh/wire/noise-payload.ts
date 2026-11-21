@@ -7,6 +7,13 @@
 // bitchat's NoisePayload.decode rejects an unknown first byte, so raw text here
 // is dropped outright.
 
+import {
+  completeDmTimer,
+  encodeDmTimer,
+  readDmTimerTlv,
+  type DmTimer,
+} from "./dm-timer";
+
 // bitchat NoisePayloadType (BitchatProtocol.swift). 0x04/0x05 are reserved;
 // Airhop has no verify (0x10/0x11) or vouch (0x12) payloads.
 export const NoisePayloadType = {
@@ -67,6 +74,21 @@ export const NoisePayloadType = {
   // someone a DM has passed with. Inside the session rather than in the
   // public announce, which would hand the inbox to anyone in range.
   NOSTR_KEY: 0x54,
+  // One Double Ratchet message, header and ciphertext (double-ratchet.ts),
+  // whose plaintext is a DM payload (dm-payload.ts). Inside the session so its
+  // AEAD rejects a forgery before any ratchet work, hides the header, and
+  // proves the sender to the recipient alone. Sent only to a peer whose 0x21
+  // proved Capability.doubleRatchet, or whose own 0x55 seeded this side, so
+  // bitchat never receives it.
+  RATCHET_MESSAGE: 0x55,
+  // Where this phone's LAN transport listens (lan-endpoint-payload.ts), so a
+  // peer on the same network can dial it where mDNS is filtered. Sent only to
+  // a peer whose 0x21 proved Capability.doubleRatchet.
+  LAN_ENDPOINT: 0x56,
+  // A signed batch of keys this phone hands one contact for forward-secret
+  // internet DMs (core/nostr/dm-prekeys.ts), inside a session or a gift wrap.
+  // Sent only to a peer proven to run Airhop, and never broadcast.
+  DM_PREKEYS: 0x57,
 } as const;
 export type NoisePayloadTypeValue =
   (typeof NoisePayloadType)[keyof typeof NoisePayloadType];
@@ -96,19 +118,21 @@ function utf8(s: string): Uint8Array {
   return new TextEncoder().encode(s);
 }
 
-// Encode a PrivateMessagePacket: [0x00,len,messageID][0x01,len,content].
-// Returns null when either field exceeds its single-byte length; see
-// PRIVATE_MESSAGE_MAX_CONTENT_BYTES.
+// Encode a PrivateMessagePacket: [0x00,len,messageID][0x01,len,content], then
+// an Airhop peer's disappearing timer (dm-timer.ts). Returns null when either
+// field exceeds its single-byte length; see PRIVATE_MESSAGE_MAX_CONTENT_BYTES.
 export function encodePrivateMessagePacket(
   messageID: string,
   content: string,
+  timer?: DmTimer,
 ): Uint8Array | null {
   const id = utf8(messageID);
   const c = utf8(content);
   if (id.length > 255 || c.length > PRIVATE_MESSAGE_MAX_CONTENT_BYTES) {
     return null;
   }
-  const out = new Uint8Array(2 + id.length + 2 + c.length);
+  const extra = timer === undefined ? [] : encodeDmTimer(timer);
+  const out = new Uint8Array(2 + id.length + 2 + c.length + extra.length);
   let o = 0;
   out[o++] = TLV_MESSAGE_ID;
   out[o++] = id.length;
@@ -117,15 +141,17 @@ export function encodePrivateMessagePacket(
   out[o++] = TLV_CONTENT;
   out[o++] = c.length;
   out.set(c, o);
+  out.set(extra, o + c.length);
   return out;
 }
 
 export function decodePrivateMessagePacket(
   data: Uint8Array,
-): { messageID: string; content: string } | null {
+): { messageID: string; content: string; timer?: DmTimer } | null {
   let off = 0;
   let messageID: string | null = null;
   let content: string | null = null;
+  const timer: Partial<DmTimer> = {};
   const dec = new TextDecoder();
   while (off + 2 <= data.length) {
     const type = data[off];
@@ -136,10 +162,14 @@ export function decodePrivateMessagePacket(
     off += len;
     if (type === TLV_MESSAGE_ID) messageID = dec.decode(value);
     else if (type === TLV_CONTENT) content = dec.decode(value);
-    else return null;
+    else if (!readDmTimerTlv(type, value, timer)) return null;
   }
   if (messageID === null || content === null) return null;
-  return { messageID, content };
+  const complete = completeDmTimer(timer);
+  if (complete === null) return null;
+  return complete === undefined
+    ? { messageID, content }
+    : { messageID, content, timer: complete };
 }
 
 function typedPayload(type: number, body: Uint8Array): Uint8Array {
@@ -159,8 +189,9 @@ export function encodeNoisePayload(type: number, body: Uint8Array): Uint8Array {
 export function encodeNoisePrivateMessage(
   messageID: string,
   content: string,
+  timer?: DmTimer,
 ): Uint8Array | null {
-  const pmp = encodePrivateMessagePacket(messageID, content);
+  const pmp = encodePrivateMessagePacket(messageID, content, timer);
   if (pmp === null) return null;
   return typedPayload(NoisePayloadType.PRIVATE_MESSAGE, pmp);
 }

@@ -11,6 +11,7 @@ import { hexToBytes } from "@noble/hashes/utils.js";
 import { type NoiseSession } from "../crypto/noise-xx";
 import { ANNOUNCE_CONNECTED_MAX_MS } from "../mesh/discovery/announce-manager";
 import { originTtl } from "../mesh/routing/origin-ttl";
+import type { DmTimer } from "../mesh/wire/dm-timer";
 import {
   decodeNoisePayload,
   encodeNoisePayload,
@@ -559,8 +560,9 @@ export function encodeDmPayload(
   messageID: string,
   text: string,
   session: NoiseSession,
+  timer?: DmTimer,
 ): Uint8Array | null {
-  const inner = encodeNoisePrivateMessage(messageID, text);
+  const inner = encodeNoisePrivateMessage(messageID, text, timer);
   if (inner === null) return null;
   return session.encrypt(inner);
 }
@@ -638,13 +640,14 @@ export class MessageRouter {
     recipientPeerID: string,
     text: string,
     messageID: string,
+    timer?: DmTimer,
   ): "sent" | "needs-courier" {
     const peer = this.registry.get(recipientPeerID);
 
     // This is the path a bitchat peer's DM travels: NOISE_ENCRYPTED carrying a
     // bitchat NoisePayload private message.
     if (peer?.session !== undefined) {
-      const payload = encodeDmPayload(messageID, text, peer.session);
+      const payload = encodeDmPayload(messageID, text, peer.session, timer);
       // Content longer than one PrivateMessagePacket (255 bytes) falls through
       // rather than send something bitchat can't parse.
       if (payload !== null) {
@@ -713,37 +716,39 @@ export class MessageRouter {
   // there.
   //
   // Returns null when no session exists, so the caller can fall back or wait.
+  // A session passed in is enough on its own: a reply to a peer past its
+  // reachability window (a receipt for courier mail) is flooded rather than
+  // dropped.
   buildNoisePayloadPacket(
     recipientPeerID: string,
     type: number,
     body: Uint8Array,
     session?: NoiseSession,
   ): Packet | null {
-    const peer = this.registry.get(recipientPeerID);
-    const sealer = session ?? peer?.session;
-    if (peer === undefined || sealer === undefined) return null;
+    const sealer = session ?? this.registry.get(recipientPeerID)?.session;
+    if (sealer === undefined) return null;
     const payload = sealer.encrypt(encodeNoisePayload(type, body));
     return this.makeNoisePacket(recipientPeerID, payload);
   }
 
-  // Build and sign a NOISE_ENCRYPTED unicast packet around an already-encrypted
-  // payload.
+  // A NOISE_ENCRYPTED unicast packet around an already-encrypted payload.
+  // Unsigned: the session's AEAD already proves the sender to the recipient,
+  // and a signature would let anyone holding the packet and its message key
+  // prove to a third party who wrote it.
   private makeNoisePacket(
     recipientPeerID: string,
     encryptedPayload: Uint8Array,
   ): Packet {
-    const packet: Packet = {
+    return {
       type: PacketType.NOISE_ENCRYPTED,
       ttl: 7,
-      flags: Flags.HAS_RECIPIENT | Flags.SIGNED,
+      flags: Flags.HAS_RECIPIENT,
       senderID: hexToBytes(this.identity.peerID),
       recipientID: hexToBytes(recipientPeerID),
       timestamp: Date.now(),
       signature: new Uint8Array(64),
       payload: encryptedPayload,
     };
-    packet.signature = signPacket(packet, this.identity.signingPrivKey);
-    return packet;
   }
 
   // Decrypt an incoming NOISE_ENCRYPTED payload into its typed NoisePayload

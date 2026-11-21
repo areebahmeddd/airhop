@@ -21,7 +21,8 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
-import { RingRefusalReason } from "@core/mesh/wire/ring-payload";
+import { NoisePayloadType } from "@core/mesh/wire/noise-payload";
+import { encodeRing, RingRefusalReason } from "@core/mesh/wire/ring-payload";
 import { REACHABLE_TTL_MS } from "@store/peer-store";
 import { RING_COOLDOWN_MS } from "@store/ring-store";
 import { SimDevice, type DeviceSpec } from "../harness/device";
@@ -390,6 +391,65 @@ test("RG08 a ring or a pin with no link at all is refused, not reported sent", a
   s.check("back in range, the ring goes", alice.ring(bob.peerID) !== null);
   const landed = await waitFor(s.world, () => bob.ringsReceived(thread) === 1);
   s.check("and lands", landed);
+
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+// The packet around a ring is unsigned, so a relay could hold one and restamp
+// it fresh. The send time sealed inside it gives it away.
+test("RG09 a ring held back and restamped stays quiet", async () => {
+  const s = (scenario = new Scenario({
+    id: "RG09",
+    title: "a restamped ring",
+  }));
+  const { alice, bob } = await acquainted(s);
+  bob.allowRing(alice.peerID, true);
+  await waitFor(s.world, () => alice.peerAcceptsRing(bob.peerID), 10_000);
+  const router = (
+    alice.mesh as unknown as {
+      router: {
+        sendNoisePayload: (
+          peerID: string,
+          type: number,
+          body: Uint8Array,
+        ) => boolean;
+      };
+    }
+  ).router;
+  const thread = `dm:${alice.peerID}`;
+
+  router.sendNoisePayload(
+    bob.peerID,
+    NoisePayloadType.RING,
+    encodeRing("held-ring", Date.now() - 10 * 60_000),
+  );
+  await advanceFor(s.world, 5_000);
+  s.check(
+    "a ring sent ten minutes ago does not sound",
+    bob.ringsReceived(thread) === 0,
+  );
+  s.check(
+    "and gets no reply that would say whether alice may still ring",
+    alice.ringState(bob.peerID).refusal === null,
+  );
+
+  router.sendNoisePayload(
+    bob.peerID,
+    NoisePayloadType.RING,
+    encodeRing("ahead-ring", Date.now() + 10 * 60_000),
+  );
+  await advanceFor(s.world, 5_000);
+  s.check(
+    "nor does one dated ten minutes ahead",
+    bob.ringsReceived(thread) === 0,
+  );
+
+  s.check("a ring sent now goes out", alice.ring(bob.peerID) !== null);
+  s.check(
+    "and sounds",
+    await waitFor(s.world, () => bob.ringsReceived(thread) === 1),
+  );
 
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();

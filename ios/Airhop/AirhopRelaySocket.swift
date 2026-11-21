@@ -1,24 +1,28 @@
-// A WebSocket that rides Arti's SOCKS5 proxy so nostr-tools can route relay
-// connections through Tor. React Native's built-in WebSocket cannot speak
-// SOCKS5, so this exposes URLSessionWebSocketTask over a proxied session and
-// bridges each socket's lifecycle to JS as `TorSocketEvent`s keyed by a
-// per-connection id.
+// The WebSocket every Nostr relay connection rides on iOS, Tor or not:
+// URLSessionWebSocketTask, whose receive fails once a message passes
+// `maximumMessageSize`. React Native's own WebSocket (SocketRocket) buffers a
+// message of any declared length, so a hostile relay could exhaust memory with
+// one huge frame, and it cannot speak SOCKS5 either. Each socket's lifecycle
+// reaches JS as `RelaySocketEvent`s keyed by a per-connection id.
 //
-// The only Tor-proxied path on iOS. Everything else is issued from TypeScript
-// and sits outside the tunnel, which is why the wallet mint gate and the update
-// check refuse rather than route while Tor is on.
+// Two sessions: one through Arti's SOCKS5 proxy, one direct. JS names the route
+// per connection (tor-routing.ts is the one place that decides it), since iOS
+// has no process-wide proxy hook. While Tor is wanted, the relay pool is held
+// until a circuit exists, so nothing reaches the direct session in its name.
+// Everything else iOS sends is issued from TypeScript and sits outside the
+// tunnel, which is why the wallet mint gate and the update check refuse rather
+// than route while Tor is on.
 //
-// Bridge file: AirhopTorSocket.mm
-// TypeScript spec: src/bridge/NativeAirhopTorSocket.ts
-// JS WebSocket shim: src/services/tor-websocket.ts
+// Bridge file: AirhopRelaySocket.mm
+// TypeScript spec: src/bridge/NativeAirhopRelaySocket.ts
+// JS WebSocket shim: src/services/relay-websocket.ts
 //
 // Security:
 //  - TLS is validated end to end to the relay by URLSession's default trust
-//    evaluation. We deliberately never implement urlSession(_:didReceive:), so
-//    there is no certificate bypass: SOCKS only tunnels the TCP stream; the
-//    wss:// handshake and certificate check still happen against the real relay
-//    at the Tor exit, exactly as they would on a direct connection.
-//  - The session is ephemeral, so no cookies, cache, or credentials persist to
+//    evaluation. There is deliberately no urlSession(_:didReceive:), so there is
+//    no certificate bypass: SOCKS only tunnels the TCP stream; the wss://
+//    handshake and certificate check still happen against the real relay.
+//  - Both sessions are ephemeral, so no cookies, cache or credentials persist to
 //    disk that could correlate one Tor circuit with another.
 //  - waitsForConnectivity is off: if Arti's SOCKS port is not listening the
 //    connect fails fast and is reported as an error + close. The JS layer keeps
@@ -27,15 +31,24 @@
 import Foundation
 import React
 
-@objc(AirhopTorSocket)
-final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
+@objc(AirhopRelaySocket)
+final class AirhopRelaySocket: RCTEventEmitter, URLSessionWebSocketDelegate {
 
-  private static let eventName = "TorSocketEvent"
+  private static let eventName = "RelaySocketEvent"
 
-  // Guards `tasks`, which is touched from both the JS method queue (connect /
-  // send / close) and the session's delegate queue (receive / delegate).
+  // The largest message a relay may send. Every event Airhop sends or expects
+  // is a few KiB, and public relays refuse events far smaller than this. Set
+  // explicitly because Apple documents no default.
+  private static let maxMessageBytes = 1 << 20
+
+  // Guards `tasks` and `sessions`, which are touched from both the JS method
+  // queue (connect / send / close) and the sessions' delegate queue (receive /
+  // delegate).
   private let lock = NSLock()
   private var tasks: [String: URLSessionWebSocketTask] = [:]
+  // Keyed by route, created on first use. A session holds its delegate
+  // strongly, so each is invalidated with the module.
+  private var sessions: [Bool: URLSession] = [:]
   private var hasListeners = false
 
   // Serialized delegate queue keeps receive callbacks and delegate events off
@@ -43,26 +56,33 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
   private lazy var delegateQueue: OperationQueue = {
     let queue = OperationQueue()
     queue.maxConcurrentOperationCount = 1
-    queue.name = "org.onemindlabs.airhop.torsocket"
+    queue.name = "org.onemindlabs.airhop.relaysocket"
     return queue
   }()
 
-  private lazy var session: URLSession = {
+  private func session(viaTor: Bool) -> URLSession {
+    lock.lock()
+    defer { lock.unlock() }
+    if let session = sessions[viaTor] { return session }
     let cfg = URLSessionConfiguration.ephemeral
     cfg.waitsForConnectivity = false
-    cfg.connectionProxyDictionary = [
-      "SOCKSEnable": 1,
-      "SOCKSProxy": AirhopTorEndpoint.socksHost,
-      "SOCKSPort": AirhopTorEndpoint.socksPort,
-    ]
-    return URLSession(configuration: cfg, delegate: self, delegateQueue: delegateQueue)
-  }()
+    if viaTor {
+      cfg.connectionProxyDictionary = [
+        "SOCKSEnable": 1,
+        "SOCKSProxy": AirhopTorEndpoint.socksHost,
+        "SOCKSPort": AirhopTorEndpoint.socksPort,
+      ]
+    }
+    let session = URLSession(configuration: cfg, delegate: self, delegateQueue: delegateQueue)
+    sessions[viaTor] = session
+    return session
+  }
 
   // MARK: - RCTEventEmitter
 
   override static func requiresMainQueueSetup() -> Bool { false }
 
-  override func supportedEvents() -> [String]! { [AirhopTorSocket.eventName] }
+  override func supportedEvents() -> [String]! { [AirhopRelaySocket.eventName] }
 
   override func startObserving() { hasListeners = true }
   override func stopObserving() { hasListeners = false }
@@ -71,7 +91,7 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
     guard hasListeners else { return }
     var body: [String: Any] = ["id": id, "type": type]
     for (key, value) in extra { body[key] = value }
-    sendEvent(withName: AirhopTorSocket.eventName, body: body)
+    sendEvent(withName: AirhopRelaySocket.eventName, body: body)
   }
 
   // MARK: - Task registry (atomic claim so exactly one path reports close)
@@ -114,8 +134,8 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
 
   // MARK: - JS API
 
-  @objc(connect:url:)
-  func connect(_ id: String, url urlString: String) {
+  @objc(connect:url:viaTor:)
+  func connect(_ id: String, url urlString: String, viaTor: Bool) {
     guard let url = URL(string: urlString),
       let scheme = url.scheme?.lowercased(),
       scheme == "wss" || scheme == "ws"
@@ -124,7 +144,8 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
       emit(id, "close", ["code": 1006, "reason": "invalid websocket url"])
       return
     }
-    let task = session.webSocketTask(with: url)
+    let task = session(viaTor: viaTor).webSocketTask(with: url)
+    task.maximumMessageSize = AirhopRelaySocket.maxMessageBytes
     store(id, task)
     task.resume()
     receive(id)
@@ -161,9 +182,11 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
       guard let self = self else { return }
       switch result {
       case .failure(let error):
-        // Terminal for this socket. Report + close once (claim wins the race
-        // with any concurrent delegate callback).
-        if self.claim(id) != nil {
+        // Terminal for this socket, a message past maximumMessageSize included.
+        // Report + close once (claim wins the race with any concurrent delegate
+        // callback), and drop the connection so it holds nothing open.
+        if let claimed = self.claim(id) {
+          claimed.cancel()
           self.emit(id, "error", ["message": error.localizedDescription])
           self.emit(id, "close", ["code": 1006, "reason": "receive failed"])
         }
@@ -172,8 +195,8 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
         case .string(let text):
           self.emit(id, "message", ["data": text])
         case .data(let data):
-          // Nostr frames are JSON text; a binary frame is unexpected but we pass
-          // it through base64-encoded so the JS side can decode if it must.
+          // Nostr frames are JSON text; a binary frame is unexpected but passes
+          // through base64-encoded so the JS side can decode if it must.
           self.emit(id, "message", ["data": data.base64EncodedString(), "binary": true])
         @unknown default:
           break
@@ -222,11 +245,16 @@ final class AirhopTorSocket: RCTEventEmitter, URLSessionWebSocketDelegate {
 
   override func invalidate() {
     let live: [URLSessionWebSocketTask]
+    let open: [URLSession]
     lock.lock()
     live = Array(tasks.values)
     tasks.removeAll()
+    open = Array(sessions.values)
+    sessions.removeAll()
     lock.unlock()
     for task in live { task.cancel(with: .goingAway, reason: nil) }
+    // Releases the strong reference each session holds to this module.
+    for session in open { session.finishTasksAndInvalidate() }
     super.invalidate()
   }
 }

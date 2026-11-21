@@ -38,6 +38,10 @@ import { useThemeColors } from "@ui/theme";
 import React, { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import {
+  MESSAGE_RETENTION_DESCRIPTION,
+  messageRetentionLabel,
+} from "../message-retention-labels";
+import {
   GroupDivider,
   SettingLinkRow,
   SettingRow,
@@ -124,17 +128,6 @@ const RETENTION_DESCRIPTION: Record<MediaRetentionDays, TranslationKey> = {
   30: "settings.general.retention_30_desc",
 };
 
-// Disappearing messages, keyed on their union for the same reason.
-const MESSAGE_RETENTION_DESCRIPTION: Record<
-  MessageRetentionDays,
-  TranslationKey
-> = {
-  0: "settings.general.message_retention_off_desc",
-  1: "settings.general.message_retention_1_desc",
-  7: "settings.general.message_retention_7_desc",
-  30: "settings.general.message_retention_30_desc",
-};
-
 // What a shorter window deletes, said before it does. A whole sentence per
 // window rather than a count spliced in, since "older than 1 day" declines
 // differently from the bare "1 day" the picker shows.
@@ -146,16 +139,6 @@ const MESSAGE_RETENTION_CONFIRM: Record<
   7: "settings.general.message_retention_confirm_7",
   30: "settings.general.message_retention_confirm_30",
 };
-
-function messageRetentionLabel(
-  T: Translator,
-  TP: PluralTranslator,
-  days: MessageRetentionDays,
-): string {
-  return days === 0
-    ? T("common.off")
-    : TP("settings.general.retention_days", days);
-}
 
 // What Reset settings leaves alone, as its confirm says.
 //   stayInvisible        status belongs to the Profile picker, and the running
@@ -170,6 +153,9 @@ function messageRetentionLabel(
 //   tor*, internetEnabled  someone who chose Tor, its bridges or no internet at
 //                        all would otherwise be put on the clear net by a tap
 //                        meant to fix the theme.
+//   permissionPrimerSeen, backgroundLimitsAcknowledged  records of what this
+//                        install has already been shown, not preferences, so
+//                        a reset must not bring a dismissed notice back.
 const KEPT_BY_RESET = [
   "stayInvisible",
   "appLockEnabled",
@@ -183,6 +169,8 @@ const KEPT_BY_RESET = [
   "torBridgeMode",
   "torBridgeLines",
   "internetEnabled",
+  "permissionPrimerSeen",
+  "backgroundLimitsAcknowledged",
 ] as const;
 
 // The unshipped features. Each row states what it will do rather than linking
@@ -349,13 +337,18 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
             <SettingLinkRow
               id="message-retention"
               icon="watch"
-              label={T("settings.general.message_retention")}
-              description={T("settings.general.message_retention_desc")}
+              label={T("settings.general.message_retention_default")}
+              description={T("settings.general.message_retention_default_desc")}
               control={
                 <Text style={styles.settingValue}>
                   {messageRetentionLabel(T, TP, messageRetentionDays)}
                 </Text>
               }
+              accessibilityValue={messageRetentionLabel(
+                T,
+                TP,
+                messageRetentionDays,
+              )}
               onPress={() => setShowMessageRetentionSheet(true)}
             />
             <GroupDivider />
@@ -369,6 +362,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   {undoLabel(T, TP, undoSendSeconds)}
                 </Text>
               }
+              accessibilityValue={undoLabel(T, TP, undoSendSeconds)}
               onPress={() => setShowUndoSheet(true)}
             />
             <GroupDivider />
@@ -403,6 +397,7 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   {T(QUALITY_META[uploadQuality].labelKey)}
                 </Text>
               }
+              accessibilityValue={T(QUALITY_META[uploadQuality].labelKey)}
             />
             <GroupDivider />
             {/* Here, not in Privacy & security: its neighbors there are about
@@ -417,6 +412,10 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
                   {TP("settings.general.retention_days", mediaRetentionDays)}
                 </Text>
               }
+              accessibilityValue={TP(
+                "settings.general.retention_days",
+                mediaRetentionDays,
+              )}
               onPress={() => setShowRetentionSheet(true)}
             />
             <GroupDivider />
@@ -564,10 +563,10 @@ export default function GeneralScreen({ onBack }: Props): React.JSX.Element {
         sheetStyle={styles.sheet}
       >
         <Text style={styles.sheetTitle}>
-          {T("settings.general.message_retention")}
+          {T("settings.general.message_retention_default")}
         </Text>
         <Text style={styles.sheetSubtitle}>
-          {T("settings.general.message_retention_sheet")}
+          {T("settings.general.message_retention_default_sheet")}
         </Text>
         <View style={styles.optionGroup}>
           {MESSAGE_RETENTION_DAY_OPTIONS.map((days, i) => {

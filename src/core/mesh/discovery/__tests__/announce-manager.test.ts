@@ -164,12 +164,12 @@ describe("ANNOUNCE capabilities TLV", () => {
 
   test("gateway-off announce omits the capabilities TLV", () => {
     const id = makeIdentity();
-    const withCap = encodeAnnouncePayload(id, "alice", 0);
-    const decoded = decodeAnnouncePayload(withCap, new Uint8Array(8));
+    const payload = encodeAnnouncePayload(id, "alice", 0);
+    const decoded = decodeAnnouncePayload(payload, new Uint8Array(8));
     expect(decoded?.capabilities).toBe(0);
     // Absent entirely, not merely decoding to zero: a peer with no bits has to
     // look like an old client on the wire.
-    expect(readTlv(withCap, TLV_CAPABILITIES)).toBeNull();
+    expect(readTlv(payload, TLV_CAPABILITIES)).toBeNull();
   });
 
   test("round-trips the gateway capability through decode", () => {

@@ -8,6 +8,9 @@
 //              keeps decrypting (longer while a file is arriving), a peer
 //              that restarted, and a wipe mid-rekey.
 //   SK08       A session alone earns no Nostr key: a DM has to pass first.
+//   SK09-SK10c The disappearing timer: shared by both phones, held until the
+//              peer proves it runs Airhop, and sent again until acknowledged.
+//   SK11       A ratchet message held back and restamped is not shown as new.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
@@ -28,6 +31,7 @@ jest.mock("@bridge/NativeAirhopWiFi", () => {
   return { __esModule: true, default: shim.wifiBridge };
 });
 
+import { ratchetEncrypt, type RatchetState } from "@core/crypto/double-ratchet";
 import {
   HELD_SESSION_GRACE_MS,
   REKEY_AT_MS,
@@ -39,6 +43,7 @@ import { encodeDmMessage } from "@core/mesh/wire/dm-payload";
 import { NoisePayloadType } from "@core/mesh/wire/noise-payload";
 import {
   decodePacket,
+  Flags,
   PacketType,
   type Packet,
 } from "@core/mesh/wire/packet-codec";
@@ -94,7 +99,6 @@ interface Internals {
   localCapabilities: (forPeer?: string) => number;
   sendPeerState: (peerID: string) => void;
   sendNostrKey: (...args: unknown[]) => void;
-  sendDRMessage: (peerID: string, payload: Uint8Array, state: object) => void;
   switchToStaged: (peerID: string) => void;
   onAuthenticatedPeerState: (...args: unknown[]) => void;
   onNostrKey: (...args: unknown[]) => void;
@@ -104,6 +108,27 @@ interface Internals {
 
 function internals(device: SimDevice): Internals {
   return device.mesh as unknown as Internals;
+}
+
+// A ratchet message as `from` sealed it before a rekey switched: under the
+// session and the ratchet then current, arriving now.
+function sealBeforeSwitch(
+  from: SimDevice,
+  to: SimDevice,
+  session: unknown,
+  ratchet: unknown,
+  id: string,
+  text: string,
+): void {
+  internals(from).router.sendNoisePayload(
+    to.peerID,
+    NoisePayloadType.RATCHET_MESSAGE,
+    ratchetEncrypt(
+      ratchet as RatchetState,
+      encodeDmMessage(id, text, Date.now()),
+    ),
+    session,
+  );
 }
 
 function decodeWrite(dataBase64: string): Packet | null {
@@ -194,8 +219,16 @@ test("SK01 the ratchet seeds only after both proofs, and the Nostr key arrives i
   const announcesWithNostr: string[] = [];
   const announcesWithRatchet: string[] = [];
   let announces = 0;
+  // And every private packet: the ratchet rides the Noise session, whose
+  // packets go unsigned so a DM is deniable.
+  let sealed = 0;
+  let signedSealed = 0;
   const stop = radio.tapWrites((fromID, _link, data) => {
     const p = decodeWrite(data);
+    if (p?.type === PacketType.NOISE_ENCRYPTED) {
+      sealed++;
+      if ((p.flags & Flags.SIGNED) !== 0) signedSealed++;
+    }
     if (p?.type !== PacketType.ANNOUNCE) return;
     announces++;
     let off = 0;
@@ -257,6 +290,11 @@ test("SK01 the ratchet seeds only after both proofs, and the Nostr key arrives i
     "nor an Airhop-only proof bit",
     announcesWithRatchet.length === 0,
     `bit 25 or 26 from [${announcesWithRatchet.join(", ")}]`,
+  );
+  s.check(
+    "every private packet went unsigned, the ratchet's included",
+    sealed > 0 && signedSealed === 0,
+    `${String(sealed)} sealed, ${String(signedSealed)} signed`,
   );
   for (const d of [alice, bob]) {
     const seeded = events.indexOf(`${d.id}:seed`);
@@ -353,9 +391,16 @@ test("SK03 a peer that proves no ratchet gets no Nostr key and no ratchet", asyn
   s.check("alice and bob hear each other", await met(s, alice, bob));
   s.check("they are talking", await talking(s, alice, bob));
 
+  // Nor any other payload only Airhop reads: bitchat drops an unknown type.
+  const airhopOnly = [
+    NoisePayloadType.NOSTR_KEY,
+    NoisePayloadType.RATCHET_MESSAGE,
+    NoisePayloadType.LAN_ENDPOINT,
+    NoisePayloadType.DM_PREKEYS,
+  ] as number[];
   s.check(
-    "alice never sent bob her Nostr key",
-    !aliceSends.includes(NoisePayloadType.NOSTR_KEY),
+    "alice never sent bob her Nostr key, nor any other Airhop-only payload",
+    !aliceSends.some((type) => airhopOnly.includes(type)),
     `payload types sent: ${aliceSends.map((t) => `0x${t.toString(16)}`).join(", ")}`,
   );
   s.check(
@@ -477,13 +522,8 @@ test("SK05 a ratchet message sealed under the old session opens for a minute, th
   s.check("the session was renewed", rekeyed);
 
   // A message the low side sealed just before switching, arriving late.
-  const seal = (id: string, text: string): void => {
-    internals(low).sendDRMessage(
-      high.peerID,
-      encodeDmMessage(id, text),
-      oldRatchet as object,
-    );
-  };
+  const seal = (id: string, text: string): void =>
+    sealBeforeSwitch(low, high, oldSession, oldRatchet, id, text);
   seal("straggler-1", "sealed before the switch");
   s.check(
     "inside the grace window it opens under the held session",
@@ -557,10 +597,13 @@ test("SK05b a file still arriving keeps the old session past its minute, through
 
     // The last fragment lands: the assembly is gone, then the packet opens.
     arriving = false;
-    internals(low).sendDRMessage(
-      high.peerID,
-      encodeDmMessage("file-tail", "sealed before the switch, opened late"),
-      oldRatchet as object,
+    sealBeforeSwitch(
+      low,
+      high,
+      oldSession,
+      oldRatchet,
+      "file-tail",
+      "sealed before the switch, opened late",
     );
     s.check(
       "and it opens what was sealed under it",
@@ -735,6 +778,297 @@ test("SK08 a handshake alone earns no Nostr key; a DM exchanged does, and it lan
       contactOf(alice, bob.peerID)?.provenAirhop === true,
   );
 
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+interface TimerView {
+  dmTimers: Record<string, { ms: number; setAtMs: number; setBy: string }>;
+}
+
+function chatTimer(device: SimDevice, peer: SimDevice): number | undefined {
+  const state = device.store("chatStore").getState() as unknown as TimerView;
+  return state.dmTimers[`dm:${peer.peerID}`]?.ms;
+}
+
+function rowKeys(device: SimDevice, peer: SimDevice): string[] {
+  return device
+    .messages(`dm:${peer.peerID}`)
+    .map((m) => (m as { systemKey?: string }).systemKey ?? "")
+    .filter((k) => k.startsWith("chat.timer."));
+}
+
+function rowTimer(
+  device: SimDevice,
+  peer: SimDevice,
+  text: string,
+): number | undefined {
+  const row = device
+    .messages(`dm:${peer.peerID}`)
+    .find((m) => m.text === text) as { disappearAfterMs?: number } | undefined;
+  return row?.disappearAfterMs;
+}
+
+test("SK09 a disappearing timer set on one phone holds on both, message by message", async () => {
+  const s = (scenario = new Scenario({
+    id: "SK09",
+    title: "a shared disappearing timer",
+    seed: 1309,
+  }));
+  const { alice, bob } = pair(s);
+  s.check("alice and bob hear each other", await met(s, alice, bob));
+  s.check("they are talking", await talking(s, alice, bob));
+  s.check(
+    "a message from before keeps no timer",
+    rowTimer(bob, alice, "hello") === 0,
+  );
+
+  (
+    alice.mesh as unknown as {
+      setDisappearingTimer: (peerID: string, ms: number) => void;
+    }
+  ).setDisappearingTimer(bob.peerID, DAY_MS);
+  s.check(
+    "the change reaches bob's phone",
+    await waitFor(s.world, () => chatTimer(bob, alice) === DAY_MS, 20_000),
+  );
+  s.check(
+    "and each phone says who set it",
+    rowKeys(alice, bob).join() === "chat.timer.you_set_1" &&
+      rowKeys(bob, alice).join() === "chat.timer.peer_set_1",
+    `alice=${rowKeys(alice, bob).join()} bob=${rowKeys(bob, alice).join()}`,
+  );
+  s.check(
+    "an earlier message keeps the timer it was sent with",
+    rowTimer(bob, alice, "hello") === 0 && rowTimer(alice, bob, "hi") === 0,
+  );
+
+  s.check("alice writes", await delivered(s, alice, bob, "gone tomorrow"));
+  s.check(
+    "the message carries the day on both phones",
+    rowTimer(alice, bob, "gone tomorrow") === DAY_MS &&
+      rowTimer(bob, alice, "gone tomorrow") === DAY_MS,
+  );
+  s.check("bob answers", await delivered(s, bob, alice, "so is this"));
+  s.check(
+    "and bob's reply takes the chat's timer too",
+    rowTimer(bob, alice, "so is this") === DAY_MS &&
+      rowTimer(alice, bob, "so is this") === DAY_MS,
+  );
+
+  // Both change it at once: the phones settle on one.
+  const setTimer = (d: SimDevice, peer: SimDevice, ms: number): void =>
+    (
+      d.mesh as unknown as {
+        setDisappearingTimer: (peerID: string, ms: number) => void;
+      }
+    ).setDisappearingTimer(peer.peerID, ms);
+  setTimer(alice, bob, 7 * DAY_MS);
+  setTimer(bob, alice, 30 * DAY_MS);
+  await advanceFor(s.world, 10_000);
+  s.check(
+    "crossing changes settle on the same timer on both phones",
+    chatTimer(alice, bob) !== undefined &&
+      chatTimer(alice, bob) === chatTimer(bob, alice),
+    `alice=${String(chatTimer(alice, bob))} bob=${String(chatTimer(bob, alice))}`,
+  );
+
+  // A clock far ahead is believed up to a year, so alice's next change,
+  // dated after it, is still a number bob's phone reads.
+  const acked = (
+    alice.mesh as unknown as {
+      receiveTimerChange: (
+        senderKey: string,
+        timer: { ms: number; setAtMs: number },
+      ) => boolean;
+    }
+  ).receiveTimerChange(bob.peerID, {
+    ms: 0,
+    setAtMs: Date.now() + 10 * 365 * DAY_MS,
+  });
+  const record = (alice.store("chatStore").getState() as unknown as TimerView)
+    .dmTimers[`dm:${bob.peerID}`];
+  s.check(
+    "a change dated ten years ahead is applied, dated a year ahead at most",
+    acked && record.ms === 0 && record.setAtMs <= Date.now() + 366 * DAY_MS,
+  );
+
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+test("SK10 a timer set before the peer proves it runs Airhop waits for that proof", async () => {
+  const s = (scenario = new Scenario({
+    id: "SK10",
+    title: "a local-only disappearing timer",
+    seed: 1310,
+  }));
+  const { alice, bob } = pair(s);
+  s.check("alice and bob hear each other", await met(s, alice, bob));
+  (
+    alice.mesh as unknown as {
+      setDisappearingTimer: (peerID: string, ms: number) => void;
+    }
+  ).setDisappearingTimer(bob.peerID, 7 * DAY_MS);
+  await advanceFor(s.world, 10_000);
+  s.check("alice's chat keeps it", chatTimer(alice, bob) === 7 * DAY_MS);
+  s.check(
+    "nothing reached bob",
+    chatTimer(bob, alice) === undefined && rowKeys(bob, alice).length === 0,
+  );
+  s.check(
+    "once they talk and bob proves Airhop, it reaches him",
+    (await talking(s, alice, bob)) &&
+      (await waitFor(
+        s.world,
+        () => chatTimer(bob, alice) === 7 * DAY_MS,
+        20_000,
+      )) &&
+      rowKeys(bob, alice).join() === "chat.timer.peer_set_7",
+  );
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+// The registry forgets a stranger, and with them the proof that they run
+// Airhop. A timer change queued before then would go as an empty message.
+test("SK10b a queued timer change waits rather than arriving without its timer", async () => {
+  const s = (scenario = new Scenario({
+    id: "SK10b",
+    title: "a held disappearing timer change",
+    seed: 1311,
+  }));
+  const { alice, bob } = pair(s);
+  s.check("alice and bob hear each other", await met(s, alice, bob));
+  s.check("they are talking", await talking(s, alice, bob));
+  const mesh = alice.mesh as unknown as {
+    peerRunsAirhop: (peerID: string) => boolean;
+    enqueueOutbox: (entry: Record<string, unknown>) => void;
+    trySendDm: (peerID: string, text: string, id: string) => string;
+    sendViaCourier: (peerID: string, text: string, id: string) => boolean;
+  };
+  mesh.peerRunsAirhop = () => false;
+  mesh.enqueueOutbox({
+    id: "timer-held",
+    recipientPeerID: bob.peerID,
+    channel: `dm:${bob.peerID}`,
+    text: "",
+    createdAtMs: Date.now(),
+    timerMs: DAY_MS,
+    timerSetAtMs: Date.now(),
+  });
+  s.check(
+    "neither the mesh nor a courier sends it",
+    mesh.trySendDm(bob.peerID, "", "timer-held") === "handshaking" &&
+      !mesh.sendViaCourier(bob.peerID, "", "timer-held"),
+  );
+  await advanceFor(s.world, 5_000);
+  s.check(
+    "bob never sees an empty message",
+    bob
+      .messages(`dm:${alice.peerID}`)
+      .every((m) => m.text !== "" || m.isSystem === true),
+  );
+  s.check(
+    "and it stays queued",
+    (
+      alice.store("outboxStore").getState() as unknown as {
+        pending: { id: string }[];
+      }
+    ).pending.some((m) => m.id === "timer-held"),
+  );
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+// A change is only an outbox entry, which expires after a week whether or
+// not it went. Until bob acknowledges it, it goes again when he is back.
+test("SK10c a timer change that expired unsent goes again when the peer is back", async () => {
+  const s = (scenario = new Scenario({
+    id: "SK10c",
+    title: "an unacknowledged disappearing timer change",
+    seed: 1313,
+  }));
+  const { alice, bob, radio } = pair(s);
+  s.check("alice and bob hear each other", await met(s, alice, bob));
+  s.check("they are talking", await talking(s, alice, bob));
+  radio.setIsolated("bob", true);
+  await waitFor(s.world, () => !radio.isLinked("alice", "bob"), 30_000);
+  (
+    alice.mesh as unknown as {
+      setDisappearingTimer: (peerID: string, ms: number) => void;
+    }
+  ).setDisappearingTimer(bob.peerID, 7 * DAY_MS);
+  const outbox = alice.store("outboxStore").getState() as unknown as {
+    pending: { id: string; timerSetAtMs?: number }[];
+    resolve: (id: string) => void;
+  };
+  const queued = outbox.pending.filter((m) => m.timerSetAtMs !== undefined);
+  s.check("the change is queued for bob", queued.length === 1);
+  // As the week's eviction would.
+  for (const m of queued) outbox.resolve(m.id);
+  const pendingTimer = (): boolean =>
+    (
+      alice.store("chatStore").getState() as unknown as {
+        dmTimers: Record<string, { unshared?: true }>;
+      }
+    ).dmTimers[`dm:${bob.peerID}`]?.unshared === true;
+  s.check("alice still holds it as not acknowledged", pendingTimer());
+
+  radio.setIsolated("bob", false);
+  s.check(
+    "back in reach, it reaches bob",
+    await waitFor(s.world, () => chatTimer(bob, alice) === 7 * DAY_MS, 60_000),
+  );
+  s.check(
+    "and his acknowledgement settles it on alice's phone",
+    await waitFor(s.world, () => !pendingTimer(), 30_000),
+  );
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+// The packet around a ratchet message is unsigned, so a relay could hold one
+// and restamp it fresh. The time under the ratchet gives it away.
+test("SK11 a ratchet message held back and restamped is not shown as new", async () => {
+  const s = (scenario = new Scenario({
+    id: "SK11",
+    title: "a restamped ratchet message",
+    seed: 1312,
+  }));
+  const { alice, bob } = pair(s);
+  s.check("alice and bob hear each other", await met(s, alice, bob));
+  s.check("they are talking", await talking(s, alice, bob));
+  const session = internals(alice).registry.sessionFor(bob.peerID);
+  const ratchet = internals(alice).drStates.get(bob.peerID)?.ratchet;
+  const send = (id: string, text: string, sentAtMs: number): unknown =>
+    internals(alice).router.sendNoisePayload(
+      bob.peerID,
+      NoisePayloadType.RATCHET_MESSAGE,
+      ratchetEncrypt(
+        ratchet as RatchetState,
+        encodeDmMessage(id, text, sentAtMs),
+      ),
+      session,
+    );
+
+  send("held-1", "held for ten minutes", Date.now() - 10 * 60_000);
+  await advanceFor(s.world, 5_000);
+  s.check(
+    "a message sent ten minutes before its packet is dropped",
+    !bob.texts(`dm:${alice.peerID}`).includes("held for ten minutes"),
+  );
+  send("fresh-1", "sent just now", Date.now());
+  s.check(
+    "one sent with its packet is shown",
+    await waitFor(
+      s.world,
+      () => bob.texts(`dm:${alice.peerID}`).includes("sent just now"),
+      5_000,
+    ),
+  );
   s.expectNone("process health", noCrashes([alice, bob]));
   s.assert();
 });

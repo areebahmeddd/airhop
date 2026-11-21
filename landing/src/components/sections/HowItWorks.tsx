@@ -3,12 +3,16 @@ import LeaderLabel from "@/components/ui/LeaderLabel";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { useInView } from "@/hooks/useInView";
 import { useDirection, useT, type TranslationKey } from "@/i18n";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { REPO_LINKS } from "@/lib/links";
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 
 const RelayMap = lazy(() => import("./RelayMap"));
+
+const CTA_PILL =
+  "label group border-line bg-card-subtle text-secondary hover:border-line-strong hover:bg-inner hover:text-ink inline-flex h-11 items-center gap-2 rounded-full border ps-5 pe-4 text-[11px] font-semibold tracking-widest transition-colors duration-150";
 
 const RELAY_MAP_FALLBACK = (
   <div className="px-6 pt-5 pb-3">
@@ -51,11 +55,8 @@ export default function HowItWorks() {
           sub={T("home.how.sub")}
         />
 
-        <div className="mt-6 flex justify-center">
-          <Link
-            to="/architecture/"
-            className="label group border-line bg-card-subtle text-secondary hover:border-line-strong hover:bg-inner hover:text-ink inline-flex h-11 items-center gap-2 rounded-full border ps-5 pe-4 text-[11px] font-semibold tracking-widest transition-colors duration-150"
-          >
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link to="/architecture/" className={CTA_PILL}>
             {T("home.how.cta")}
             <ForwardArrow
               size={13}
@@ -63,6 +64,19 @@ export default function HowItWorks() {
               aria-hidden="true"
             />
           </Link>
+          <a
+            href={REPO_LINKS.airhopWhitepaper}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={CTA_PILL}
+          >
+            {T("home.how.paper")}
+            <ArrowUpRight
+              size={13}
+              className="shrink-0 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              aria-hidden="true"
+            />
+          </a>
         </div>
 
         <div className="mx-auto mt-10 grid max-w-6xl grid-cols-1 gap-4 md:grid-cols-3">

@@ -154,7 +154,7 @@ export const strings: Strings = {
     "用來找出附近裝置並在它們之間中繼訊息。網狀網路由此成形，沒有網路連線也能用。",
   "onboarding.primer.location.title": "定位",
   "onboarding.primer.location.body":
-    "把你放進附近的區域頻道，小到一個街廓，大到一整個地區。Airhop 從不追蹤你，只有在你傳送位置給別人時，你的精確位置才會離開這台裝置。",
+    "把你放進附近的區域頻道，小到一個街廓，大到一整個地區。Airhop 從不追蹤你，你的精確位置也從不離開這台裝置。",
   "onboarding.primer.notifications.title": "通知",
   "onboarding.primer.notifications.body":
     "就算 App 關著也能收到新訊息提醒。通知是在你的裝置本機產生的，不經過任何伺服器。",
@@ -366,7 +366,32 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "無法觸及每一位成員。等對方在附近時再試一次。",
   "chat.group.you_were_added": "你被加進了 {name}。",
-  "chat.group.added_you": "把你加進了 {name}",
+  "chat.timer.you_set_1": "你將限時訊息設為 1 天",
+  "chat.timer.you_set_7": "你將限時訊息設為 7 天",
+  "chat.timer.you_set_30": "你將限時訊息設為 30 天",
+  "chat.timer.you_off": "你關閉了限時訊息",
+  "chat.timer.you_set_local_1": "你在此手機上將限時訊息設為 1 天",
+  "chat.timer.you_set_local_7": "你在此手機上將限時訊息設為 7 天",
+  "chat.timer.you_set_local_30": "你在此手機上將限時訊息設為 30 天",
+  "chat.timer.you_off_local": "你在此手機上關閉了限時訊息",
+  "chat.timer.peer_set_1": "{name} 將限時訊息設為 1 天",
+  "chat.timer.peer_set_7": "{name} 將限時訊息設為 7 天",
+  "chat.timer.peer_set_30": "{name} 將限時訊息設為 30 天",
+  "chat.timer.peer_off": "{name} 關閉了限時訊息",
+  "chat.timer.sheet_shared":
+    "適用於從現在起傳送的訊息，兩支手機都會執行。在傳送方的手機上，每則訊息從傳送時開始計時；在另一支手機上，從首次閱讀時開始計時。無法阻止截圖。",
+  "chat.timer.sheet_pending":
+    "已在此手機上設定。下次你們連線時會同步給 {name}，之後在兩支手機上生效。",
+  "chat.timer.sheet_bitchat": "僅此手機。{name} 的應用程式不支援共用計時。",
+  "chat.timer.sheet_local":
+    "目前僅此手機。如果 {name} 的應用程式支援共用計時，下次你們連線時會同步給對方。",
+  "chat.group.invited": "你被邀請加入 {name}。",
+  "chat.group.invited_you": "邀請你加入 {name}",
+  "chat.group.decline": "拒絕",
+  "chat.group.decline_title": "拒絕加入 {name} 的邀請？",
+  "chat.group.decline_body":
+    "{name} 不在你的聯絡人中。一併封鎖後，你將不會再收到對方的邀請或訊息。",
+  "chat.group.decline_block": "拒絕並封鎖",
   "chat.group.you_were_removed":
     "你被移出了 {name}。你在這裡不能再閱讀或傳送訊息了。",
   "chat.group.removed_you": "把你移出了 {name}",
@@ -1109,6 +1134,7 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "無法建立這個代幣",
+  "wallet.send.unverified_note": "這筆付款中有一部分是鑄幣廠尚未確認的 ecash。",
   "wallet.send.title": "傳送 ecash",
   "wallet.send.amount_in": "金額（{unit}）",
   "wallet.send.body":
@@ -1168,14 +1194,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "已在 {mint} 兌付。現在它可以被證明屬於你：傳送方手上的這份代幣副本不再有效。",
   "wallet.receive.pending_unconfirmed":
-    "已從 {mint} 存入，但鑄幣廠還沒確認它未被花用。連上網路後會自動向鑄幣廠確認。",
-  "wallet.receive.pending_unconfirmed_genuine":
     "已從 {mint} 存入，但鑄幣廠還沒確認它未被花用。它的簽章對得上，所以這個代幣是真的。連上網路後會自動向鑄幣廠確認。",
   "wallet.receive.dleq_ok": "鑄幣廠的簽章對得上，所以這個代幣是真的。",
-  "wallet.receive.dleq_uncached":
-    "這個鑄幣廠的金鑰沒有快取在這裡，所以無法離線核對簽章。",
-  "wallet.receive.dleq_missing":
-    "其中並非每個幣都帶有鑄幣廠的簽章證明，所以無法離線核對。",
   "wallet.receive.dleq_warning":
     "在連上網路確認之前，傳送方理論上有可能已經把它花在別處。",
   "wallet.receive.failed": "無法接收",
@@ -1515,6 +1535,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "掃描 QR 碼",
   "wallet.scan.aim_any": "對準代幣、發票或 npub 的 QR 碼。",
   "wallet.scan.no_any": "那張圖裡沒有找到代幣、發票或 npub。",
+  "wallet.scan.not_usable": "Airhop 無法在這裡使用這個 QR 碼。",
   "wallet.scan.use_camera_a11y": "用相機掃描",
   "wallet.scan.use_camera": "使用相機",
   "wallet.scan.pick_image_a11y": "從已儲存的圖片中讀取 QR 碼",
@@ -1609,6 +1630,9 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "這筆付款已鎖到你的錢包。",
   "wallet.svc.locked_ours_offline_body":
     "連上網路後再領取即可。在這段期間，別人無法拿走它。",
+  "wallet.svc.offline_cap": "離線時，每個鑄幣廠的未確認 ecash 上限為 {limit}。",
+  "wallet.svc.offline_unchecked": "這筆 ecash 無法離線驗證。",
+  "wallet.svc.claim_online_body": "等你連上網路、鑄幣廠能確認時再領取這筆。",
   "wallet.svc.already_spent": "這筆 ecash 已經被花掉了。",
   "wallet.svc.already_spent_body":
     "送這個代幣的人自己先兌付了，或者把同一個代幣也送給了別人。",
@@ -1914,10 +1938,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "對話讀得到的時間最長，佔用的磁碟也最多。",
   "settings.general.message_retention": "限時訊息",
-  "settings.general.message_retention_desc":
-    "訊息及其媒體會在所選時間後從這台裝置上刪除",
-  "settings.general.message_retention_sheet":
-    "從每則訊息抵達這台裝置時開始計算，而且只有這台裝置會忘記。對方的裝置仍保留副本，無法阻止螢幕截圖，私訊中尚未領取的付款會一直保留到你領取為止。",
+  "settings.general.message_retention_default": "新聊天的預設計時",
+  "settings.general.message_retention_default_desc":
+    "用於新的私訊，以及此手機上的房間、頻道和群組",
+  "settings.general.message_retention_default_sheet":
+    "新的私訊以此計時開始，雙方都可以在聊天中更改。房間、頻道和群組僅在此手機上遵循，從每則訊息抵達時開始計算。無法阻止截圖，私訊中傳給你的付款會一直保留，直到你領取。",
   "settings.general.message_retention_off_desc":
     "訊息會一直保留，直到你清除或退出聊天",
   "settings.general.message_retention_1_desc":
@@ -1926,11 +1951,11 @@ export const strings: Strings = {
   "settings.general.message_retention_30_desc": "讓對話保持可讀的時間最長",
   "settings.general.message_retention_confirm_title": "刪除較舊的訊息？",
   "settings.general.message_retention_confirm_1":
-    "超過 1 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+    "房間、頻道、群組以及從位置頻道發起的聊天中超過 1 天的訊息會連同媒體立即從這台裝置上刪除。其他私訊保留各自的計時。此動作無法復原。",
   "settings.general.message_retention_confirm_7":
-    "超過 7 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+    "房間、頻道、群組以及從位置頻道發起的聊天中超過 7 天的訊息會連同媒體立即從這台裝置上刪除。其他私訊保留各自的計時。此動作無法復原。",
   "settings.general.message_retention_confirm_30":
-    "超過 30 天的訊息會連同媒體立即從這台裝置上刪除。此動作無法復原。",
+    "房間、頻道、群組以及從位置頻道發起的聊天中超過 30 天的訊息會連同媒體立即從這台裝置上刪除。其他私訊保留各自的計時。此動作無法復原。",
   "settings.general.reset_desc":
     "把偏好設定回復為預設值，你的身分、訊息、聯絡人和錢包都不受影響",
   "settings.general.reset_title": "重設設定？",
@@ -2063,6 +2088,12 @@ export const strings: Strings = {
     "按住麥克風會改成錄一則語音留言。放開後才送出，別人不點開就聽不到。",
   "settings.conn.live_video": "直播影片",
   "settings.conn.live_video_desc": "向附近的人直播你的相機，也觀看他們的直播",
+  "settings.conn.live_video_on_title": "要開啟直播影片嗎？",
+  "settings.conn.live_video_on_body":
+    "你可以用相機向藍牙範圍內的人直播，他們的直播也會顯示在你的聊天中，並錄在這支手機上。",
+  "settings.conn.live_video_off_title": "要關閉直播影片嗎？",
+  "settings.conn.live_video_off_body":
+    "你將無法再直播，別人的直播也不會顯示或錄下。較短的直播仍會作為一般影片送達。",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor 路由",
   "settings.conn.tor_desc": "把 Nostr 流量經 Tor 轉送，多一層隱私",
@@ -2091,12 +2122,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "隱藏你正在使用 Tor。比 Snowflake 快，但這些橋接是公開的，有些網路會封鎖。",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "讓流量看起來像一般的網站瀏覽，藉此隱藏你在使用 Tor。比其他方式更難封鎖。",
   "settings.tor.mode_custom": "自訂橋接",
   "settings.tor.mode_custom_desc":
-    "使用來自 bridges.torproject.org 的 obfs4 橋接行。其他方式失敗時可嘗試此項。",
+    "使用來自 bridges.torproject.org 的 obfs4 或 WebTunnel 橋接行。其他方式失敗時可嘗試此項。",
   "settings.tor.custom_placeholder": "每行貼上一條橋接",
   "settings.tor.custom_apply_hint": "點按框外即可連線。",
   "settings.tor.custom_empty": "請先新增至少一條橋接。",
@@ -2440,6 +2468,15 @@ export const strings: Strings = {
   "notif.ring.hidden": "響鈴",
   "notif.ring.title": "{sender} 正在響鈴通知你",
   "notif.ring.body": "請查看你的訊息",
+  "notif.action.reply": "回覆",
+  "notif.action.send": "傳送",
+  "notif.action.mark_read": "標為已讀",
+  "notif.reply.failed_title": "未傳送",
+  "notif.reply.failed_body": "你傳給 {chat} 的回覆未能傳送。開啟聊天再試一次。",
+  "notif.reply.held_title": "等待傳送",
+  "notif.reply.held_body": "你傳給 {chat} 的回覆將在 Airhop 執行時傳送。",
+  "notif.reply.cut_title": "部分已傳送",
+  "notif.reply.cut_body": "你傳給 {chat} 的回覆太長，結尾部分未傳送。",
 };
 
 export const plurals: Plurals = {

@@ -4,7 +4,12 @@
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import type { Event } from "nostr-tools";
-import { finalizeEvent, generateSecretKey, getPublicKey } from "nostr-tools";
+import {
+  finalizeEvent,
+  generateSecretKey,
+  getPublicKey,
+  verifyEvent,
+} from "nostr-tools";
 import { bitchatNip44Encrypt } from "../bitchat-nip44";
 import {
   deriveNostrPrivKey,
@@ -77,17 +82,21 @@ describe("wrapDm / unwrapDm", () => {
     expect(event.kind).toBe(1059);
   });
 
-  it("returns a signed event with a non-empty signature", () => {
+  it("returns an event signed by the wrapper key", () => {
     const sender = makePair();
     const recipient = makePair();
 
-    const { event } = wrapDm("sig check", sender.priv, recipient.pub);
+    const { event, wrapperPubkey } = wrapDm(
+      "sig check",
+      sender.priv,
+      recipient.pub,
+    );
 
-    expect(typeof event.sig).toBe("string");
-    expect(event.sig.length).toBe(128); // 64-byte hex
+    expect(event.pubkey).toBe(wrapperPubkey);
+    expect(verifyEvent(event)).toBe(true);
   });
 
-  it("two wraps of the same message produce different events (ephemeral key)", () => {
+  it("wraps the same message under a fresh ephemeral key each time", () => {
     const sender = makePair();
     const recipient = makePair();
 
@@ -307,14 +316,6 @@ describe("rumor shape", () => {
 });
 
 describe("deriveNostrPrivKey", () => {
-  it("produces a 32-byte key", () => {
-    const edPriv = ed25519.utils.randomSecretKey();
-    const nostrPriv = deriveNostrPrivKey(edPriv);
-
-    expect(nostrPriv).toBeInstanceOf(Uint8Array);
-    expect(nostrPriv.length).toBe(32);
-  });
-
   // Pinned from the current implementation: a change here moves every user to
   // a new Nostr identity.
   it("gives a pinned key for a fixed input", () => {
@@ -330,7 +331,7 @@ describe("deriveNostrPrivKey", () => {
     expect(k1).not.toEqual(k2);
   });
 
-  it("derived key is usable as a Nostr signing key", () => {
+  it("derives a key usable as a Nostr signing key", () => {
     const edPriv = ed25519.utils.randomSecretKey();
     const nostrPriv = deriveNostrPrivKey(edPriv);
 

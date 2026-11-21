@@ -117,9 +117,10 @@ object ArtiNative {
         bridgeLines: String,
         obfs4Port: Int,
         snowflakePort: Int,
+        webtunnelPort: Int,
     ): Int =
         if (isAvailable) {
-            nativeStart(dataDir, socksPort, bridgeLines, obfs4Port, snowflakePort)
+            nativeStart(dataDir, socksPort, bridgeLines, obfs4Port, snowflakePort, webtunnelPort)
         } else {
             ERR_CLIENT
         }
@@ -147,6 +148,7 @@ object ArtiNative {
         bridgeLines: String,
         obfs4Port: Int,
         snowflakePort: Int,
+        webtunnelPort: Int,
     ): Int
 
     private external fun nativeStop(): Int

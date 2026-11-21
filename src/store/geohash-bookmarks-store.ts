@@ -1,7 +1,6 @@
 // Bookmarked geohash cells. Persisted so a saved place survives a restart and
 // can be reopened from the "Go to a place" sheet even after the user has left
-// the channel. Mirrors bitchat's GeohashBookmarksStore: a plain list of cells
-// the user chose to keep, newest first.
+// the channel: a plain list of cells the user chose to keep, newest first.
 //
 // Only the bare geohash is stored. Its human-readable place name is resolved
 // separately and cached in place-names-store, so a bookmark never depends on a

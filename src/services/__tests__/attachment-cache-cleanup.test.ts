@@ -53,7 +53,7 @@ import {
   holdAttachmentFile,
   INCOMING_FILE_PREFIX,
   startAttachmentCleanup,
-} from "../file-transfer-service";
+} from "../attachment-cache";
 
 const CACHE = "file:///app/Library/Caches/";
 const PHOTO = `${CACHE}${INCOMING_FILE_PREFIX}1800000000000_img_a.jpg`;

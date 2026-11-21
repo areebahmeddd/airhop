@@ -1,7 +1,7 @@
 // The pluggable transports Arti dials to reach a bridge, built from
 // native/iptproxy.
 //
-// Arti would normally run obfs4 and Snowflake as child processes, which iOS
+// Arti would normally run the transports as child processes, which iOS
 // forbids. IPtProxy runs them in-process and exposes each as a SOCKS5 listener
 // on loopback; this owns their lifecycle and reports the ports they landed on.
 //
@@ -18,6 +18,7 @@ import OSLog
 enum AirhopTransport: String {
   case obfs4
   case snowflake
+  case webtunnel
 
   /// The transports named by a newline-separated list of bridge lines.
   ///

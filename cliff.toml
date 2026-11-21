@@ -9,15 +9,27 @@ body = """
 
 ### What's New
 
-{% for commit in commits %}{% if commit.author.name is not containing("[bot]") %}\
+{% for commit in commits | sort(attribute="group") %}{% if commit.author.name is not containing("[bot]") %}\
 {% set subject = commit.message | split(pat="\n") | first | trim %}\
 {% if commit.remote.username %}{% set handle = commit.remote.username %}\
 {% elif commit.author.email is ending_with("@users.noreply.github.com") %}{% set handle = commit.author.email | split(pat="@") | first | split(pat="+") | last %}\
 {% else %}{% set handle = commit.author.name %}{% endif %}\
-- {{ subject }} (by @{{ handle }})\
-{% if commit.remote.pr_number and subject is not containing("(#" ~ commit.remote.pr_number ~ ")") %} (#{{ commit.remote.pr_number }}){% endif %} \
-[{{ commit.id | truncate(length=7, end="") }}]
+{% if commit.remote.pr_number %}{% set subject = subject | replace(from=" (#" ~ commit.remote.pr_number ~ ")", to="") %}{% endif %}\
+- {{ subject }} by @{{ handle }}\
+{% if commit.remote.pr_number %} in #{{ commit.remote.pr_number }}{% endif %}
 {% endif %}{% endfor %}
+{% set_global newcomers = [] %}\
+{% for contributor in github.contributors %}\
+{% if contributor.is_first_time and contributor.username is not containing("[bot]") %}{% set_global newcomers = newcomers | concat(with=contributor) %}{% endif %}\
+{% endfor %}\
+{% if newcomers | length > 0 %}\
+### New Contributors
+
+{% for contributor in newcomers %}\
+- @{{ contributor.username }} made their first contribution\
+{% if contributor.pr_numbers %} in #{{ contributor.pr_numbers | first }}{% endif %}
+{% endfor %}
+{% endif %}\
 {% if previous.version %}**Full changelog:** [{{ previous.version }}..{{ version }}](https://github.com/areebahmeddd/airhop/compare/{{ previous.version }}..{{ version }})
 {% endif %}
 """
@@ -30,7 +42,8 @@ filter_unconventional = false
 filter_commits = true
 commit_parsers = [
   { message = "^chore\\(release\\):", skip = true },
-  { message = "^[a-z]+(\\(.+?\\))?!?:", skip = false },
+  { message = "^feat(\\(.+?\\))?!?:", group = "features" },
+  { message = "^[a-z]+(\\(.+?\\))?!?:", group = "others" },
   { message = ".*", skip = true },
 ]
 tag_pattern = "v[0-9].*"

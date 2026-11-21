@@ -81,10 +81,11 @@ export default function SendLocationSheet({
     // who never sends a pin is never prompted.
     const granted = await requestLocationPermission();
     if (stale()) return;
+    // A refusal is the user's own answer, so it is shown but not felt. The
+    // failures below come after a GPS fix that can take long enough to look away.
     if (!granted) {
       const { canAskAgain } = await locationPermissionState();
       if (stale()) return;
-      rejected();
       setBlocked(!canAskAgain);
       setPhase("failed-fix");
       return;

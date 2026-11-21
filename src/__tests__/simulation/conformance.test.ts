@@ -383,9 +383,7 @@ test("X02 Airhop's private extensions cost a bitchat node nothing", async () => 
     "it dropped every Airhop-only type as unknown rather than mishandling it",
     droppedTypes.every(
       (t) =>
-        t === PacketType.CHANNEL_ENC ||
-        t === PacketType.DR_ENCRYPTED ||
-        t === PacketType.CHANNEL_MSG_AIRHOP,
+        t === PacketType.CHANNEL_ENC || t === PacketType.CHANNEL_MSG_AIRHOP,
     ),
     `dropped types: ${droppedTypes.map((t) => `0x${t.toString(16)}`).join(", ")}`,
   );
@@ -860,26 +858,16 @@ testWithBitchat("X03 Airhop's constants match the bitchat-ios sources", () => {
     ).matchAll(/case\s+\w+\s*=\s*0x([0-9a-fA-F]{2})/g),
   ].map((m) => parseInt(m[1], 16));
   const bitchatMax = Math.max(0, ...bitchatTypes);
-  const airhopOnly = [
-    PacketType.DR_ENCRYPTED,
-    PacketType.CHANNEL_ENC,
-    PacketType.CHANNEL_MSG_AIRHOP,
-  ];
+  const airhopOnly = [PacketType.CHANNEL_ENC, PacketType.CHANNEL_MSG_AIRHOP];
   const HEADROOM = 0x10;
   s.check(
     "bitchat's registry was read, not assumed",
     bitchatTypes.length > 10,
     `parsed ${bitchatTypes.length} types, max 0x${bitchatMax.toString(16)}`,
   );
-  // DR_ENCRYPTED is the one exception: 0x12 sits inside bitchat's range but on
-  // a value it has never assigned, and it predates this rule. Left alone
-  // because moving a shipped type costs a migration; it is listed here so the
-  // exemption is visible rather than forgotten.
   s.check(
     "Airhop's extensions clear bitchat's frontier by a safe margin",
-    airhopOnly
-      .filter((t) => t !== PacketType.DR_ENCRYPTED)
-      .every((t) => t > bitchatMax + HEADROOM),
+    airhopOnly.every((t) => t > bitchatMax + HEADROOM),
     `bitchat max=0x${bitchatMax.toString(16)}, airhop=[${airhopOnly
       .map((t) => `0x${t.toString(16)}`)
       .join(", ")}]`,

@@ -131,7 +131,8 @@ const strings: Strings = {
   "home.how.title": "La rete mesh si forma da sola.",
   "home.how.sub":
     "I nodi vicini formano una rete mesh che si autoripara via Bluetooth. Quando c'è internet, i relay Nostr la estendono, senza infrastrutture controllate da nessuno.",
-  "home.how.cta": "Leggi l'architettura completa",
+  "home.how.cta": "Leggi l'architettura",
+  "home.how.paper": "Leggi il whitepaper",
   "home.how.discover.title": "Scoprire",
   "home.how.discover.line":
     "I telefoni con Airhop o bitchat si trovano automaticamente via Bluetooth. Nessun abbinamento, nessuna configurazione.",

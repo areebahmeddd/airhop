@@ -55,13 +55,13 @@ import {
   wipeWalletStorage,
 } from "@store/wallet-store";
 import { settleOr, withTimeout } from "@utils/with-timeout";
+import { wipeCacheDirectory } from "./attachment-cache";
 import {
   clearBackgroundNotice,
   stopBackgroundNotice,
 } from "./background-notice";
 import { resetBoardAlerts } from "./board-alerts";
 import { syncAutoStartOnBoot } from "./boot-sync";
-import { wipeCacheDirectory } from "./file-transfer-service";
 import { settleLiveVideoWork } from "./live-video-work";
 import { clearLocationCache } from "./location-service";
 import { stopNotificationPipeline } from "./notification-pipeline";
@@ -116,8 +116,8 @@ export const MMKV_STORE_IDS = [
   // board-store holds signed public bulletin-board posts tied to this identity's
   // signing key; a wipe erases them along with the rest of this identity's data.
   "board-store",
-  // prekey-store holds peers' prekey bundles, which say who this identity
-  // talks to. Our own one-time prekey private keys are a keychain item.
+  // prekey-store holds peers' prekey bundles and internet DM prekeys, which say
+  // who this identity talks to. Our own prekey private keys are keychain items.
   "prekey-store",
   // courier-store holds sealed envelopes carried for other people. Unreadable
   // here (each is Noise X to a key this device does not hold), but a bag of a
@@ -150,6 +150,9 @@ export const MMKV_STORE_IDS = [
   // nostr-keys-store pairs the npubs that wrote to this identity with the mesh
   // peers they claim to be, the same who-talks-to-whom the inbox IDs reveal.
   "nostr-keys-store",
+  // held-quick-actions holds replies typed into notifications and not sent
+  // yet: message content, like the conversations above.
+  "held-quick-actions",
 ] as const;
 
 // What the wipe managed to do. Only the one claim the caller must not make

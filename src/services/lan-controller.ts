@@ -15,7 +15,9 @@
 //
 // Dialing. mDNS returns the whole network, so who to connect to is a decision
 // rather than a consequence. lan-dial-policy.ts makes it; native opens the
-// sockets it is told to.
+// sockets it is told to. A peer already in a session can also be dialed at the
+// address it handed over (lan-direct-dial.ts), for which this reports the port
+// it listens on.
 
 import NativeAirhopLAN from "@bridge/NativeAirhopLAN";
 import type { LanState } from "@store/mesh-state-store";
@@ -105,7 +107,11 @@ export class LANController {
   constructor(
     private readonly makeInstanceName: () => string,
     private readonly onState?: (state: LanState) => void,
+    // The port this phone accepts LAN links on once listening, null once not.
+    private readonly onListening?: (port: number | null) => void,
   ) {}
+
+  private listenPort: number | null = null;
 
   // What we are currently published as, and what the ring sorts on. Empty until
   // the first start.
@@ -287,6 +293,19 @@ export class LANController {
     this.discovered.clear();
     this.dialing.clear();
     this.linkCount = 0;
+    if (this.listenPort !== null) {
+      this.listenPort = null;
+      this.onListening?.(null);
+    }
+  }
+
+  // The listener's port is read once it is up. A start that intent overtook
+  // in the meantime reports nothing.
+  private async reportListening(generation: number): Promise<void> {
+    const port = (await NativeAirhopLAN?.lanPort().catch(() => 0)) ?? 0;
+    if (generation !== this.generation || !this.started || port <= 0) return;
+    this.listenPort = port;
+    this.onListening?.(port);
   }
 
   private scheduleRetry(): void {
@@ -439,6 +458,7 @@ export class LANController {
     // the plan is walked again periodically.
     this.scheduleSettle();
     this.scheduleReview();
+    void this.reportListening(generation);
   }
 
   private async releaseNative(): Promise<void> {
@@ -454,6 +474,10 @@ export class LANController {
 
   get isStarted(): boolean {
     return this.started;
+  }
+
+  get port(): number | null {
+    return this.listenPort;
   }
 
   get isUnsupported(): boolean {

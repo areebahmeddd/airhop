@@ -10,8 +10,8 @@
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-  <uses-permission android:name="android.permission.BLUETOOTH"/>
-  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+  <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
   <!-- neverForLocation: a scan result is read for the service UUID, the peer
@@ -23,18 +23,18 @@
   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
   <uses-permission android:name="android.permission.CAMERA"/>
   <!-- ConnectivityManager.requestNetwork() throws SecurityException without
-       this, and it is the only way to stand up a WiFi Aware data path.
+       this, and it is the only way to stand up a Wi-Fi Aware data path.
        Discovery works without it, so the absence is invisible until two peers
        open a socket. Normal protection level, granted on install. -->
   <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-  <!-- Lets the LAN transport hold a MulticastLock. WiFi power save drops
+  <!-- Lets the LAN transport hold a MulticastLock. Wi-Fi power save drops
        multicast when the screen goes off, and mDNS is multicast, so without
        this discovery stops the moment the phone is pocketed. Normal protection
        level, granted on install. -->
   <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-  <!-- Required for Android 14+ to keep BLE active in a foreground service -->
+  <!-- Required for Android 14+ to keep BLE active in a foreground service. -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
@@ -43,15 +43,14 @@
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
   <!-- A few seconds only, while AirhopBootService gets the JS runtime up. -->
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
-  <!-- Android 13+ (API 33) runtime permission for WiFi Aware discovery. The
-       same-platform WiFi fast path is optional, so a denial never blocks the
+  <!-- Android 13+ (API 33) runtime permission for Wi-Fi Aware discovery. The
+       same-platform Wi-Fi fast path is optional, so a denial never blocks the
        BLE mesh. Below API 33 Aware needs fine location instead, which is asked
        for only on API <=30, where BLE needs it, so Android 12 and 12L go
        without the fast path rather than see a location prompt for it.
 
-       neverForLocation for the same reason as BLUETOOTH_SCAN: a WiFi Aware peer
-       handle is an opaque discovery token, not a position. bitchat-android
-       declares the flag here too. -->
+       neverForLocation for the same reason as BLUETOOTH_SCAN: a Wi-Fi Aware peer
+       handle is an opaque discovery token, not a position. -->
   <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:usesPermissionFlags="neverForLocation"/>
   <!-- Android 17 drops local network traffic without this, including the
        Wi-Fi Aware data path (link-local IPv6) and the LAN transport. Once
@@ -59,15 +58,14 @@
        requests it on API 37+, in the Nearby devices group the Bluetooth
        permissions already use. -->
   <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
-  <!-- Android 13+ runtime permission for local message notifications -->
+  <!-- Android 13+ runtime permission for local message notifications. -->
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <!-- Hands a downloaded release APK to the system installer, for the update
        path on the Version screen: users with no reachable store still need a
-       way to get a fix. It only opens the installer; the user confirms in a
-       system dialog, "Install unknown apps" must be allowed, and Android
-       refuses an APK not signed by the release key. Strip it, and the download
-       path with it, from any Play-distributed flavor: Play forbids an app
-       updating itself by any other route. -->
+       way to get a fix. It only opens the installer, "Install unknown apps"
+       must be allowed, and Android refuses an APK not signed by the release
+       key. Strip it, and the download path with it, from any Play-distributed
+       flavor: Play forbids an app updating itself by any other route. -->
   <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" tools:replace="android:maxSdkVersion"/>
   <!-- No broad media access. From API 33 the image picker is the system photo
@@ -86,7 +84,7 @@
        required feature and infers requirements from permissions: CAMERA
        implies an autofocus camera and RECORD_AUDIO a microphone, neither of
        which the mesh needs, while nothing implies Bluetooth LE, the one thing
-       it cannot run without. bitchat-android declares the same set. -->
+       it cannot run without. -->
   <uses-feature android:name="android.hardware.bluetooth" android:required="true"/>
   <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
   <!-- QR scanning and capture are optional: a contact can be added from a link
@@ -119,14 +117,13 @@
        React Native registers its callback unconditionally. -->
   <!-- Puts Airhop under Settings > Apps > Airhop > Language on Android 13, so
        someone whose system language Airhop does not ship can still pick one it
-       does. Reaches only the strings the OS renders. Inert below API 33. -->
+       does. Reaches only the strings the OS renders. -->
   <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="false" android:dataExtractionRules="@xml/data_extraction_rules" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false" android:requestLegacyExternalStorage="true" android:localeConfig="@xml/locales_config" tools:targetApi="33">
     <!-- Android 16 ignores the portrait lock on any display at least 600dp
          wide (a foldable's inner screen, a tablet, a desktop window). The shell
          has no breakpoints and is laid out for a phone in portrait, so
          compatibility mode is the better experience. Android 17 removed this
-         opt-out, so it stops applying there whatever the targetSdk; the app
-         still renders on a large display, only unpolished. -->
+         opt-out, so it stops applying there whatever the targetSdk. -->
     <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true"/>
     <!-- Read by expo-notifications at runtime. Written here rather than through
          the config plugin because prebuild is never run in this repo, so the
@@ -136,10 +133,6 @@
          pair so the two notices look like one app. -->
     <meta-data android:name="expo.modules.notifications.default_notification_icon" android:resource="@drawable/notification_icon"/>
     <meta-data android:name="expo.modules.notifications.default_notification_color" android:resource="@color/notification_icon_color"/>
-    <meta-data android:name="expo.modules.updates.ENABLED" android:value="false"/>
-    <meta-data android:name="expo.modules.updates.ENABLE_BSDIFF_PATCH_SUPPORT" android:value="true"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
     <!-- No expo-audio AudioControlsService and no
          FOREGROUND_SERVICE_MEDIA_PLAYBACK: the service starts only from
          AudioPlayer.setActiveForLockScreen(), which Airhop never calls, and

@@ -2,9 +2,9 @@
 // another does not throw away what someone was typing. Keyed by the chat-store
 // channel key (`#name`, `dm:<peer>`, `group:<id>`).
 //
-// Memory only, as bitchat keeps them: a draft is plaintext message content and
-// must not reach disk, and losing one when the app is killed is acceptable.
-// The panic wipe clears them all, and leaving a conversation clears its own.
+// Memory only: a draft is plaintext message content and must not reach disk,
+// and losing one when the app is killed is acceptable. The panic wipe clears
+// them all, and leaving a conversation clears its own.
 
 // Bounds so a pasted wall of text or a long session cannot grow this forever.
 const MAX_DRAFT_LENGTH = 8_000;

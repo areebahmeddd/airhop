@@ -93,8 +93,8 @@ export function GeohashJumpSheet({
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // The globe opens over this sheet, as bitchat's does, so closing it comes
-  // back to the sheet as it was left, typing and all.
+  // The globe opens over this sheet, so closing it comes back to the sheet as
+  // it was left, typing and all.
   const [picking, setPicking] = useState(false);
   // Go closes the globe at once instead of sliding it away. The sheet closes
   // right behind it, and iOS ignores closing a sheet whose globe is still

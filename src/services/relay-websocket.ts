@@ -1,7 +1,8 @@
-// A minimal WebSocket implementation backed by the AirhopTorSocket native
-// module, which tunnels over Arti's SOCKS5 proxy. nostr-tools accepts a custom
-// WebSocket via useWebSocketImplementation(); tor-routing.ts installs this one
-// on iOS so relay connections go through Tor.
+// A minimal WebSocket implementation backed by the AirhopRelaySocket native
+// module, which caps an incoming message and can tunnel over Arti's SOCKS5
+// proxy. nostr-tools accepts a custom WebSocket via useWebSocketImplementation();
+// tor-routing.ts installs this one on iOS and names the route with
+// setRelaySocketRoute.
 //
 // It implements exactly the surface nostr-tools' AbstractRelay touches: the
 // on* handler properties, send(), close(), readyState, and the static
@@ -9,19 +10,28 @@
 // no binaryType), which is fine because nostr-tools never uses those.
 
 import {
-  AirhopTorSocketNative,
-  subscribeTorSocket,
-  type TorSocketEvent,
-} from "@bridge/NativeAirhopTorSocket";
+  AirhopRelaySocketNative,
+  subscribeRelaySocket,
+  type RelaySocketEvent,
+} from "@bridge/NativeAirhopRelaySocket";
 import type { EventSubscription } from "react-native";
 
 // Per-process unique id source. A plain counter is enough for uniqueness within
 // one app run and, unlike a random id, is fully deterministic.
 let nextId = 0;
 
+// Read when a socket is constructed, so a route change reaches every socket
+// opened after it, a relay's reconnect included. Sockets already open keep
+// their route; tor-routing.ts tears the pool down on every change that matters.
+let viaTor = false;
+
+export function setRelaySocketRoute(tor: boolean): void {
+  viaTor = tor;
+}
+
 type Handler = ((event: unknown) => void) | null;
 
-export class TorWebSocket {
+export class RelayWebSocket {
   // WHATWG ready-state constants, exposed both statically and per-instance
   // because nostr-tools reads them off the constructor (this._WebSocket.OPEN).
   static readonly CONNECTING = 0;
@@ -51,14 +61,14 @@ export class TorWebSocket {
 
   constructor(url: string) {
     this.url = url;
-    this.id = `tor-${nextId++}`;
-    this.sub = subscribeTorSocket((event) => this.handle(event));
+    this.id = `relay-${nextId++}`;
+    this.sub = subscribeRelaySocket((event) => this.handle(event));
     // The native module is guaranteed present here: tor-routing.ts only installs
-    // this implementation after isTorSocketNativeAvailable() returns true.
-    AirhopTorSocketNative?.connect(this.id, url);
+    // this implementation after isRelaySocketNativeAvailable() returns true.
+    AirhopRelaySocketNative?.connect(this.id, url, viaTor);
   }
 
-  private handle(event: TorSocketEvent): void {
+  private handle(event: RelaySocketEvent): void {
     if (event.id !== this.id) return;
     switch (event.type) {
       case "open": {
@@ -66,7 +76,7 @@ export class TorWebSocket {
         const queued = this.pending;
         this.pending = [];
         for (const frame of queued) {
-          AirhopTorSocketNative?.send(this.id, frame);
+          AirhopRelaySocketNative?.send(this.id, frame);
         }
         this.onopen?.({ type: "open" });
         break;
@@ -93,7 +103,7 @@ export class TorWebSocket {
   send(data: string): void {
     const frame = typeof data === "string" ? data : String(data);
     if (this.readyState === this.OPEN) {
-      AirhopTorSocketNative?.send(this.id, frame);
+      AirhopRelaySocketNative?.send(this.id, frame);
     } else if (this.readyState === this.CONNECTING) {
       this.pending.push(frame);
     }
@@ -105,7 +115,7 @@ export class TorWebSocket {
       return;
     }
     this.readyState = this.CLOSING;
-    AirhopTorSocketNative?.close(this.id, code ?? 1000, reason ?? "");
+    AirhopRelaySocketNative?.close(this.id, code ?? 1000, reason ?? "");
     // The native close emits a "close" event, which finalizes readyState and
     // removes the listener; no need to duplicate that here.
   }

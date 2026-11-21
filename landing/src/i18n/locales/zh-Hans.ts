@@ -117,7 +117,8 @@ const strings: Strings = {
   "home.how.title": "网状网络会自己形成。",
   "home.how.sub":
     "附近的节点通过 Bluetooth 组成可自愈的网状网络。有网络时，Nostr 中继会把它延伸出去，而这些基础设施不受任何人控制。",
-  "home.how.cta": "阅读完整架构",
+  "home.how.cta": "阅读架构",
+  "home.how.paper": "阅读白皮书",
   "home.how.discover.title": "发现",
   "home.how.discover.line":
     "运行 Airhop 或 bitchat 的手机通过 Bluetooth 自动找到彼此。无需配对，无需设置。",

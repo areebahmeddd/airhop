@@ -125,7 +125,8 @@ const strings: Strings = {
   "home.how.title": "الشبكة تتشكّل من تلقاء نفسها.",
   "home.how.sub":
     "العقد القريبة تكوّن شبكة متشابكة تُصلح نفسها عبر Bluetooth. وحين يتوفر إنترنت تمدّها مُرحّلات Nostr، بلا بنية تحتية يتحكم بها أحد.",
-  "home.how.cta": "اقرأ البنية كاملة",
+  "home.how.cta": "اقرأ البنية",
+  "home.how.paper": "اقرأ الورقة البيضاء",
   "home.how.discover.title": "الاكتشاف",
   "home.how.discover.line":
     "الهواتف التي تشغّل Airhop أو bitchat تجد بعضها تلقائيًا عبر Bluetooth. بلا إقران وبلا إعداد.",

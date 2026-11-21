@@ -65,6 +65,7 @@ import { prekeysHeldFor, SimDevice } from "./harness/device";
 import { noCrashes, noForgedSenders } from "./harness/invariants";
 import { media } from "./harness/media-fabric";
 import { RadioFabric } from "./harness/radio-fabric";
+import { RelayNode } from "./harness/relay-node";
 import { Scenario, waitFor } from "./harness/scenario";
 
 let scenario: Scenario | null = null;
@@ -1723,11 +1724,12 @@ test("C14c a session proof does not move a key a human verified", async () => {
   s.assert();
 });
 
-test("C11 one forged ratchet packet does not break a conversation", async () => {
-  // A DR_ENCRYPTED header is cleartext, and a packet only has to be addressed
-  // to bob and claim alice. Decrypted before it is authenticated, one such
-  // packet would step bob's ratchet onto a chain alice never had, and every DM
-  // between them would fail from then on without a word.
+test("C11 one forged ratchet message does not break a conversation", async () => {
+  // A ratchet message rides alice's Noise session, unsigned, so a forger has
+  // only to address a packet to bob and claim alice. Reaching the ratchet
+  // before it is authenticated, one would step bob's ratchet onto a chain
+  // alice never had, and every DM between them would fail from then on
+  // without a word. The session's AEAD has to refuse it first.
   const s = (scenario = new Scenario({
     id: "C11",
     title: "forged Double Ratchet packet",
@@ -1775,13 +1777,20 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
     ),
   );
 
-  // A fresh ratchet key in the header, as a forger would pick, once unsigned
-  // and once signed with mallory's own key.
-  const forged = new Uint8Array(40 + 48).fill(0x5a);
-  forged.set(ed25519.utils.randomSecretKey(), 0);
-  forged.fill(0, 32, 40);
+  // A plausible Noise frame (a nonce well ahead, then a ratchet message's
+  // worth of bytes), once unsigned and once signed with mallory's own key.
+  const forged = new Uint8Array(4 + 1 + 40 + 48 + 16).fill(0x5a);
+  forged.set([0, 0, 0x10, 0], 0);
+  const router = (
+    bob.mesh as unknown as {
+      router: {
+        decryptDmUnder: (packet: Packet, ...rest: unknown[]) => unknown;
+      };
+    }
+  ).router;
+  const opened = jest.spyOn(router, "decryptDmUnder");
   const unsigned: Packet = {
-    type: PacketType.DR_ENCRYPTED,
+    type: PacketType.NOISE_ENCRYPTED,
     ttl: 7,
     flags: Flags.HAS_RECIPIENT,
     senderID: hexToBytes(alice.peerID),
@@ -1797,7 +1806,7 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
     bob.id,
     mallory.id,
     forgeSigned({
-      type: PacketType.DR_ENCRYPTED,
+      type: PacketType.NOISE_ENCRYPTED,
       claimedPeerID: alice.peerID,
       recipientPeerID: bob.peerID,
       payload: forged,
@@ -1806,6 +1815,16 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
     }),
   );
   await s.world.advance(1_000);
+  // The session's AEAD is what refuses them, so neither reaches the ratchet.
+  const forgeries = opened.mock.calls
+    .map((call, i) => ({ call, result: opened.mock.results[i]?.value }))
+    .filter(({ call }) => bytesToHex(call[0].payload) === bytesToHex(forged));
+  opened.mockRestore();
+  s.check(
+    "the session refused both forgeries before the ratchet",
+    forgeries.length === 2 && forgeries.every(({ result }) => result === null),
+    `${String(forgeries.length)} forgeries reached the session`,
+  );
 
   const sentAt = s.world.now;
   alice.send(`dm:${bob.peerID}`, "after the forgery");
@@ -1837,11 +1856,12 @@ test("C11 one forged ratchet packet does not break a conversation", async () => 
   s.assert();
 });
 
-test("C11b a genuine ratchet packet replayed past dedup does not evict the session", async () => {
-  // The signature is alice's own, so it passes, and the message key is spent,
-  // so decryption fails. Dedup holds 1000 packet IDs and anyone in range can
-  // push that many, and the freshness window is two minutes. A session torn
-  // down on that failure is one any listener can evict at will.
+test("C11b a genuine ratchet message replayed past dedup does not evict the session", async () => {
+  // The frame is alice's own, sealed under the live session, so only the
+  // session's replay window stands between it and a spent message key. Dedup
+  // holds 1000 packet IDs and anyone in range can push that many, and the
+  // freshness window is two minutes. A session torn down on that failure is one
+  // any listener can evict at will.
   const s = (scenario = new Scenario({
     id: "C11b",
     title: "replayed Double Ratchet packet",
@@ -1871,7 +1891,7 @@ test("C11b a genuine ratchet packet replayed past dedup does not evict the sessi
 
   // The first message opens the session and rides plain Noise; the ratchet is
   // seeded once each side has proven itself inside it, so the next one is a
-  // ratchet packet worth replaying.
+  // ratchet message worth replaying.
   alice.send(`dm:${bob.peerID}`, "zero");
   await waitFor(
     s.world,
@@ -1881,12 +1901,17 @@ test("C11b a genuine ratchet packet replayed past dedup does not evict the sessi
     20_000,
   );
 
+  // The control: what gets captured below is a ratchet message.
+  const ratchetOpened = jest.spyOn(
+    bob.mesh as unknown as { onRatchetMessage: (...args: unknown[]) => void },
+    "onRatchetMessage",
+  );
   const captured: string[] = [];
   const stop = radio.tapWrites((fromID, _link, data) => {
     const p = decodeWrite(data);
     if (
       fromID === alice.id &&
-      p?.type === PacketType.DR_ENCRYPTED &&
+      p?.type === PacketType.NOISE_ENCRYPTED &&
       bytesToHex(p.recipientID) === bob.peerID
     ) {
       captured.push(data);
@@ -1899,7 +1924,13 @@ test("C11b a genuine ratchet packet replayed past dedup does not evict the sessi
     20_000,
   );
   stop();
-  s.check("a ratchet packet was captured", captured.length > 0);
+  const viaRatchet = ratchetOpened.mock.calls.length;
+  ratchetOpened.mockRestore();
+  s.check(
+    "a ratchet message was captured",
+    captured.length > 0 && viaRatchet > 0,
+    `${String(captured.length)} frames, ${String(viaRatchet)} opened by the ratchet`,
+  );
 
   const sessionFor = (): unknown =>
     (
@@ -1926,21 +1957,34 @@ test("C11b a genuine ratchet packet replayed past dedup does not evict the sessi
     };
     inject(s, radio, bob.id, mallory.id, bytesToBase64(encodePacket(filler)));
   }
-  // The control: the replay got past dedup and reached the ratchet, which is
-  // the only place it could cost the session anything. Still in dedup, it
-  // would be dropped first and the session check below would pass for nothing.
+  // The control: the replay got past dedup and reached the session, the only
+  // place it could cost anything. Still in dedup, it would be dropped first and
+  // the session check below would pass for nothing.
+  const sessionSaw = jest.spyOn(
+    bob.mesh as unknown as { onNoiseEncrypted: (packet: unknown) => void },
+    "onNoiseEncrypted",
+  );
   const ratchetSaw = jest.spyOn(
-    bob.mesh as unknown as { onDREncrypted: (packet: unknown) => void },
-    "onDREncrypted",
+    bob.mesh as unknown as { onRatchetMessage: (...args: unknown[]) => void },
+    "onRatchetMessage",
   );
   for (const frame of captured) inject(s, radio, bob.id, mallory.id, frame);
   await s.world.advance(1_000);
-  const reached = ratchetSaw.mock.calls.length;
+  const reached = sessionSaw.mock.calls.length;
+  const opened = ratchetSaw.mock.calls.length;
+  sessionSaw.mockRestore();
   ratchetSaw.mockRestore();
   s.check(
-    "the replay reached the ratchet",
+    "the replay reached the session",
     reached === captured.length,
     `${String(reached)} of ${String(captured.length)} replayed frames`,
+  );
+  // Refused by the session's replay window, before the ratchet: a spent
+  // message key is never asked about.
+  s.check(
+    "and the session's replay window refused it before the ratchet",
+    opened === 0,
+    `${String(opened)} reached the ratchet`,
   );
 
   s.check("bob still holds the same session", sessionFor() === before);
@@ -2338,5 +2382,115 @@ test("C17 an older announce arriving late does not roll a peer's name back", asy
   s.check("a newer announce still renames her", nickname() === "carol-later");
 
   s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+test("C18 a replayed announce on a silent link takes no carried mail", async () => {
+  // A carrier hands mail over, and lets go of it, only down a link a Noise
+  // handshake proved. Bob's genuine announce, caught where he really is and
+  // replayed onto a link that never announced, binds that link to him, and
+  // passes every check an announce can: signed, fresh, never seen here. Only
+  // the handshake that link cannot complete tells it from Bob. The carrier
+  // floods a copy toward him and keeps the original.
+  const s = (scenario = new Scenario({
+    id: "C18",
+    title: "courier handover waits for a proven link",
+    seed: 1801,
+  }));
+  const radio = new RadioFabric(s.world);
+  const [alice, carrier, bob] = (
+    [
+      ["alice", 11],
+      ["carrier", 22],
+      ["bob", 33],
+    ] as const
+  ).map(([id, seedByte]) =>
+    SimDevice.create(s.world, { id, platform: "android", seedByte }),
+  );
+  // Two boxes that only repeat, so neither ever announces: the attacker's
+  // radio beside the carrier, and the ear beside Bob.
+  const pole = new RelayNode(s.world, { id: "pole" });
+  const ear = new RelayNode(s.world, { id: "ear" });
+  const cast = [alice, carrier, bob];
+  for (const d of cast) radio.add(d);
+  radio.add(pole);
+  radio.add(ear);
+  s.track(...cast);
+  radio.setTopology([
+    ["alice", "carrier"],
+    ["alice", "bob"],
+    ["carrier", "bob"],
+  ]);
+  for (const d of cast) d.launch();
+  pole.launch();
+  ear.launch();
+
+  const met = await waitFor(
+    s.world,
+    () => cast.every((d) => d.peerCount() === 2),
+    30_000,
+  );
+  await s.world.advance(10_000);
+  s.check("everyone met", met);
+
+  // Bob leaves for good, so alice's DM goes to the carrier.
+  radio.setTopology([["alice", "carrier"]]);
+  await waitFor(s.world, () => !radio.isLinked("carrier", "bob"), 20_000);
+  await s.world.advance(90_000);
+  const text = "the key is under the mat";
+  const status = alice.send(`dm:${bob.peerID}`, text);
+  s.check("alice handed it to a carrier", status === "carried", status);
+  const bag = (carrier.mesh as unknown as { courier: { size: number } })
+    .courier;
+  s.check(
+    "the carrier holds it",
+    await waitFor(s.world, () => bag.size > 0, 60_000),
+  );
+
+  // Bob is across town, heard only by the ear; the pole is beside the carrier.
+  radio.setTopology([
+    ["carrier", "pole"],
+    ["bob", "ear"],
+  ]);
+  let caught: string | undefined;
+  const stopTap = radio.tapWrites((who, _linkID, dataBase64) => {
+    if (who !== bob.id || caught !== undefined) return;
+    if (decodeWrite(dataBase64)?.type === PacketType.ANNOUNCE) {
+      caught = dataBase64;
+    }
+  });
+  const heard = await waitFor(
+    s.world,
+    () => caught !== undefined && radio.isLinked("carrier", "pole"),
+    60_000,
+  );
+  stopTap();
+  s.check("bob's live announce was caught", heard);
+  s.check(
+    "and replayed to the carrier down the pole's link",
+    caught !== undefined && radio.injectTo(carrier.id, "pole", caught),
+  );
+  await s.world.advance(60_000);
+  s.check(
+    "the carrier keeps the mail it could not prove it handed over",
+    bag.size > 0,
+    `size=${String(bag.size)}`,
+  );
+
+  // Bob really walks up: his link completes the handshake, and the mail goes.
+  radio.setTopology([["carrier", "bob"]]);
+  const delivered = await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes(text),
+    180_000,
+  );
+  s.check("bob gets it once he is really there", delivered);
+  s.check(
+    "and the carrier lets go of it",
+    await waitFor(s.world, () => bag.size === 0, 30_000),
+    `size=${String(bag.size)}`,
+  );
+
+  s.expectNone("process health", noCrashes(cast));
   s.assert();
 });

@@ -17,6 +17,10 @@
 // (video_<id>.mp4), if it arrives, takes the row over. Packets after a silence
 // close open a row for the new segment, since joining two recordings needs a
 // remux; the sender's file, being the whole stream, replaces both.
+//
+// Every wait above runs on the monotonic clock: the phone's clock set mid
+// stream would read as a long silence or a burst of late frames. Wall time
+// only names the recording and stamps the row.
 
 import NativeAirhopVideo from "@bridge/NativeAirhopVideo";
 import { bytesToBase64 } from "@core/encoding/base64";
@@ -43,7 +47,7 @@ import {
   deleteUnreferencedAttachments,
   enforceIncomingQuota,
   INCOMING_FILE_PREFIX,
-} from "./file-transfer-service";
+} from "./attachment-cache";
 import { trackLiveVideoWork } from "./live-video-work";
 import { sweepMediaIfDue } from "./media-retention";
 
@@ -121,6 +125,7 @@ export interface LiveVideoReceiverDeps {
   stopAudio: (streamKey: string) => void;
   // A stream opened or closed; `streamCount` has the new number.
   onStreamsChanged?: () => void;
+  // Monotonic milliseconds.
   now?: () => number;
 }
 
@@ -135,7 +140,7 @@ export class LiveVideoReceiver {
   private readonly now: () => number;
 
   constructor(private readonly deps: LiveVideoReceiverDeps) {
-    this.now = deps.now ?? Date.now;
+    this.now = deps.now ?? (() => performance.now());
   }
 
   static get available(): boolean {
@@ -146,7 +151,7 @@ export class LiveVideoReceiver {
   // either over or will reopen with a fresh START. Nor can the partial
   // recordings behind them, sent or received, which no row points at any more
   // and which would otherwise sit unplayable against the received-media quota
-  // until retention, as bitchat-ios sweeps its own at start.
+  // until retention.
   dropStaleRows(): void {
     const chat = useChatStore.getState();
     for (const [channel, list] of Object.entries(chat.messages)) {
@@ -339,7 +344,7 @@ export class LiveVideoReceiver {
       senderPeerID,
       streamID,
       channel,
-      rowID: resumed ? `${base}-${String(now)}` : base,
+      rowID: resumed ? `${base}-${String(Date.now())}` : base,
       assembler: new VideoStreamAssembler(),
       playout: new LiveVideoPlayout<Unit>(),
       config: null,
@@ -421,7 +426,7 @@ export class LiveVideoReceiver {
     stream.config = config;
     const file = new FileSystem.File(
       FileSystem.Paths.cache,
-      `${INCOMING_FILE_PREFIX}${String(this.now())}_${liveVideoFileName(stream.streamID)}`,
+      `${INCOMING_FILE_PREFIX}${String(Date.now())}_${liveVideoFileName(stream.streamID)}`,
     );
     stream.recordingPath = file.uri;
     void NativeAirhopVideo?.startRecording(
@@ -447,12 +452,12 @@ export class LiveVideoReceiver {
       senderID: stream.senderPeerID,
       senderNickname: this.deps.resolveNickname(stream.senderPeerID),
       text: "",
-      timestampMs: this.now(),
+      timestampMs: Date.now(),
       isMine: false,
       liveVideo: {
         streamID: stream.streamID,
         state: "live",
-        startedAtMs: this.now(),
+        startedAtMs: Date.now(),
         width: config.width,
         height: config.height,
         hasAudio: config.hasAudio,

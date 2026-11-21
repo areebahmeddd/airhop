@@ -1,13 +1,19 @@
 // Refreshing an account swaps each offline receipt on its own. A receipt is
-// the unit of refusal, as in CDK and Nutshell: a stranger's forged token can
-// cost only itself, never block the honest receipts beside it or every later
-// refresh. And a coin is verified only by a swap that completed, never by a
+// the unit of refusal, as in CDK and Nutshell: a token the mint will not take
+// can cost only itself, never block the honest receipts beside it or every
+// later refresh. And a coin is verified only by a swap that completed, never by a
 // state check (NUT-07 calls a coin it has never seen unspent).
 //
 // Runs the real wallet service against the simulated mint, which verifies
 // every input it is handed.
 
-import { getEncodedToken, Mint, Wallet, type Token } from "@cashu/cashu-ts";
+import {
+  getDecodedToken,
+  getEncodedToken,
+  Mint,
+  Wallet,
+  type Token,
+} from "@cashu/cashu-ts";
 import type { StoredProof } from "@core/payments/stored-proof";
 import { t } from "@i18n";
 import { secp256k1 } from "@noble/curves/secp256k1.js";
@@ -72,25 +78,15 @@ function strangersToken(sats: number): Promise<string> {
   return strangersTokenAt(fabric.url, sats);
 }
 
-// Coins nobody signed, in a real keyset and denomination, carrying no witness:
-// offline, nothing tells them from a genuine transfer.
-function forgedToken(sats: number): string {
-  const keysetId = keysetRefsOf(useWalletStore.getState().mints)[0]?.id ?? "";
-  const C = bytesToHex(
-    secp256k1.getPublicKey(crypto.getRandomValues(new Uint8Array(32)), true),
-  );
-  return getEncodedToken({
-    mint: fabric.url,
-    unit: UNIT,
-    proofs: [
-      {
-        id: keysetId,
-        amount: sats,
-        secret: bytesToHex(crypto.getRandomValues(new Uint8Array(32))),
-        C,
-      },
-    ],
-  } as unknown as Token);
+// Coins the mint signed and now refuses to swap: the DLEQ checks out offline,
+// and only the mint can tell.
+async function refusedToken(sats: number): Promise<string> {
+  const token = await strangersToken(sats);
+  const ids = keysetRefsOf(useWalletStore.getState().mints).map((k) => k.id);
+  for (const proof of getDecodedToken(token, ids).proofs) {
+    fabric.disown(proof.secret);
+  }
+  return token;
 }
 
 beforeAll(async () => {
@@ -119,42 +115,42 @@ beforeEach(async () => {
   await addMint(fabric.url);
 });
 
-describe("one forged receipt among honest ones", () => {
+describe("one refused receipt among honest ones", () => {
   it("is refused on its own, and the honest ones are swapped", async () => {
     await receiveOffline(await strangersToken(8));
     await receiveOffline(await strangersToken(16));
-    await receiveOffline(forgedToken(32));
+    await receiveOffline(await refusedToken(32));
     const honest = [receiptOf(8)!, receiptOf(16)!];
-    const forged = receiptOf(32)!;
+    const refused = receiptOf(32)!;
     expect(sum(held())).toBe(56);
 
     const result = await refreshAccount(fabric.url, UNIT);
 
     expect(result.swapped).toBe(24);
     expect(result.refused).toBe(32);
-    expect(result.receipts[forged]).toBe("refused");
+    expect(result.receipts[refused]).toBe("refused");
     expect(sum(held())).toBe(24);
     expect(held().every((p) => p.verified === true)).toBe(true);
     for (const id of honest) expect(row(id)?.status).toBe("completed");
     // Not destroyed: the row keeps them as a token to hand back.
-    expect(row(forged)?.status).toBe("failed");
-    expect(row(forged)?.token).toMatch(/^cashuB/);
+    expect(row(refused)?.status).toBe("failed");
+    expect(row(refused)?.token).toMatch(/^cashuB/);
   });
 
   it("is no longer called taken in, so its token goes back to the mint", async () => {
-    const forged = forgedToken(32);
-    await receiveOffline(forged);
+    const refused = await refusedToken(32);
+    await receiveOffline(refused);
     await refreshAccount(fabric.url, UNIT);
 
     expect(useWalletStore.getState().claimedTokens).toHaveLength(0);
     // Pasted again it is refused by the mint, not read as already held.
-    await expect(receiveToken(forged)).rejects.toMatchObject({
+    await expect(receiveToken(refused)).rejects.toMatchObject({
       code: "mint-error",
     });
   });
 
   it("leaves the next refresh with nothing to fail on", async () => {
-    await receiveOffline(forgedToken(32));
+    await receiveOffline(await refusedToken(32));
     await refreshAccount(fabric.url, UNIT);
 
     await receiveOffline(await strangersToken(8));
@@ -178,9 +174,9 @@ describe("verified", () => {
     expect(everyCoin().every((p) => p.verified !== true)).toBe(true);
   });
 
-  it("is never granted to coins whose swap cannot even be prepared", async () => {
-    // A keyset the mint does not know: NUT-07 still says UNSPENT (it has no
-    // record), and the swap is refused before it is built.
+  it("is never granted to coins that cannot be checked offline", async () => {
+    // A keyset this phone has no keys for, so no DLEQ can be checked: the
+    // claim waits for the mint rather than being taken on trust.
     const token = getEncodedToken({
       mint: fabric.url,
       unit: UNIT,
@@ -193,17 +189,17 @@ describe("verified", () => {
         },
       ],
     } as unknown as Token);
-    await receiveOffline(token);
-    const receipt = receiptOf(8)!;
-
-    const result = await refreshAccount(fabric.url, UNIT);
-
-    expect(result.receipts[receipt]).toBe("refused");
-    expect(everyCoin().some((p) => p.verified === true)).toBe(false);
+    useSettingsStore.setState({ internetEnabled: false });
+    await expect(receiveToken(token)).rejects.toMatchObject({
+      code: "offline",
+      copy: { key: "wallet.svc.offline_unchecked" },
+    });
+    expect(everyCoin()).toHaveLength(0);
+    expect(useWalletStore.getState().claimedTokens).toHaveLength(0);
   });
 
   it("is never granted to coins the mint will not take", async () => {
-    await receiveOffline(forgedToken(16));
+    await receiveOffline(await refusedToken(16));
     await refreshAccount(fabric.url, UNIT);
     expect(everyCoin()).toHaveLength(0);
   });
@@ -250,7 +246,7 @@ describe("a receipt whose coins are paid on", () => {
 
 describe("settling a reclaim", () => {
   it("keeps a refused reclaim's token to copy, saying the coins were its own", async () => {
-    await receiveOffline(forgedToken(32));
+    await receiveOffline(await refusedToken(32));
     const send = await prepareSend({ amount: 32 });
     expect(reclaimSend(send.txId)).toBe(true);
 
@@ -327,10 +323,9 @@ function rateLimitKeysetKeys(): () => void {
 describe("a mint that gives no answer about a receipt", () => {
   it("leaves it pending on a rate limit, never refused", async () => {
     // Coins from a keyset rotated out, so preparing the swap fetches its keys.
-    const token = await strangersToken(8);
+    await receiveOffline(await strangersToken(8));
     fabric.rotateKeyset();
     await addMint(fabric.url);
-    await receiveOffline(token);
     const receipt = receiptOf(8)!;
 
     const stop = rateLimitKeysetKeys();

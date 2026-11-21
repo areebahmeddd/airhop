@@ -153,7 +153,7 @@ export const strings: Strings = {
     "በአቅራቢያ ያሉ መሣሪያዎችን ያገኛል፤ በመካከላቸውም መልእክቶችን ያስተላልፋል። ሜሹ የሚፈጠረው በዚህ ነው፤ ያለ ኢንተርኔት ግንኙነትም ይሠራል።",
   "onboarding.primer.location.title": "አካባቢ",
   "onboarding.primer.location.body":
-    "ከሰፈር እስከ ክልል ድረስ በአቅራቢያ ባሉ የአካባቢ ሰርጦች ውስጥ ያስገባሃል። Airhop ፈጽሞ አይከታተልህም፤ ትክክለኛ አካባቢህም ከመሣሪያህ የሚወጣው ለአንድ ሰው የአካባቢ ምልክት ስትልክ ብቻ ነው።",
+    "ከሰፈር እስከ ክልል ድረስ በአቅራቢያ ባሉ የአካባቢ ሰርጦች ውስጥ ያስገባሃል። Airhop ፈጽሞ አይከታተልህም፤ ትክክለኛ አካባቢህም ከመሣሪያህ ፈጽሞ አይወጣም።",
   "onboarding.primer.notifications.title": "ማሳወቂያዎች",
   "onboarding.primer.notifications.body":
     "መተግበሪያው ተዘግቶም እንኳ ስለ አዲስ መልእክቶች ማሳወቂያ ተቀበል። ማሳወቂያዎች የሚፈጠሩት በመሣሪያህ ውስጥ ነው፤ ምንም አገልጋይ አይሳተፍም።",
@@ -362,7 +362,32 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "ሁሉንም አባላት መድረስ አልተቻለም። በአቅራቢያ ሲሆኑ እንደገና ሞክር።",
   "chat.group.you_were_added": "ወደ {name} ተጨምረሃል።",
-  "chat.group.added_you": "ወደ {name} ጨምሮሃል",
+  "chat.timer.you_set_1": "የሚጠፉ መልእክቶችን ወደ 1 ቀን አቀናብረዋል",
+  "chat.timer.you_set_7": "የሚጠፉ መልእክቶችን ወደ 7 ቀናት አቀናብረዋል",
+  "chat.timer.you_set_30": "የሚጠፉ መልእክቶችን ወደ 30 ቀናት አቀናብረዋል",
+  "chat.timer.you_off": "የሚጠፉ መልእክቶችን አጥፍተዋል",
+  "chat.timer.you_set_local_1": "የሚጠፉ መልእክቶችን በዚህ ስልክ ላይ ወደ 1 ቀን አቀናብረዋል",
+  "chat.timer.you_set_local_7": "የሚጠፉ መልእክቶችን በዚህ ስልክ ላይ ወደ 7 ቀናት አቀናብረዋል",
+  "chat.timer.you_set_local_30": "የሚጠፉ መልእክቶችን በዚህ ስልክ ላይ ወደ 30 ቀናት አቀናብረዋል",
+  "chat.timer.you_off_local": "የሚጠፉ መልእክቶችን በዚህ ስልክ ላይ አጥፍተዋል",
+  "chat.timer.peer_set_1": "{name} የሚጠፉ መልእክቶችን ወደ 1 ቀን አቀናብሯል",
+  "chat.timer.peer_set_7": "{name} የሚጠፉ መልእክቶችን ወደ 7 ቀናት አቀናብሯል",
+  "chat.timer.peer_set_30": "{name} የሚጠፉ መልእክቶችን ወደ 30 ቀናት አቀናብሯል",
+  "chat.timer.peer_off": "{name} የሚጠፉ መልእክቶችን አጥፍቷል",
+  "chat.timer.sheet_shared":
+    "ከአሁን በኋላ ለሚላኩ መልእክቶች፣ በሁለቱም ስልኮች። በላኪው ስልክ ላይ እያንዳንዱ ከተላከበት ጊዜ ጀምሮ ይቆጠራል፣ በሌላኛው ስልክ ደግሞ መጀመሪያ ከተነበበበት ጊዜ ጀምሮ። ቅጽበታዊ ገጽ እይታዎችን መከላከል አይቻልም።",
+  "chat.timer.sheet_pending":
+    "በዚህ ስልክ ላይ ተቀናብሯል። በሚቀጥለው ጊዜ ስትገናኙ {name} ጋር ይደርሳል፣ ከዚያም በሁለቱም ስልኮች ላይ ይተገበራል።",
+  "chat.timer.sheet_bitchat": "በዚህ ስልክ ብቻ። የ{name} መተግበሪያ የጋራ ሰዓት ቆጣሪን አይደግፍም።",
+  "chat.timer.sheet_local":
+    "ለአሁን በዚህ ስልክ ብቻ። የ{name} መተግበሪያ የጋራ ሰዓት ቆጣሪን የሚደግፍ ከሆነ፣ በሚቀጥለው ጊዜ ስትገናኙ ይደርሳቸዋል።",
+  "chat.group.invited": "ወደ {name} ተጋብዘሃል።",
+  "chat.group.invited_you": "ወደ {name} ጋብዞሃል",
+  "chat.group.decline": "አትቀበል",
+  "chat.group.decline_title": "ወደ {name} የቀረበውን ግብዣ አትቀበልም?",
+  "chat.group.decline_body":
+    "{name} በእውቂያዎችህ ውስጥ የለም። ይህንንም ሰው አግድ፤ ከዚያ በኋላ ከዚህ ሰው ግብዣዎችን ወይም መልእክቶችን አትቀበልም።",
+  "chat.group.decline_block": "አትቀበል እና አግድ",
   "chat.group.you_were_removed": "ከ{name} ተወግደሃል። ከእንግዲህ እዚህ ማንበብም መላክም አትችልም።",
   "chat.group.removed_you": "ከ{name} አስወግዶሃል",
   "chat.group.add_failed": "እነሱን መጨመር አልተቻለም",
@@ -1110,6 +1135,7 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ቶከኑ ሊገነባ አልቻለም",
+  "wallet.send.unverified_note": "የዚህ ክፍያ ከፊሉ ሚንቱ ገና ያላረጋገጠው ecash ነው።",
   "wallet.send.title": "ecash ላክ",
   "wallet.send.amount_in": "መጠን በ{unit}",
   "wallet.send.body":
@@ -1169,14 +1195,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "በ{mint} ተመንዝሯል። አሁን በማስረጃ የአንተ ነው፦ የላኪው የዚህ ቶከን ቅጂ ከእንግዲህ አይሠራም።",
   "wallet.receive.pending_unconfirmed":
-    "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም። በመስመር ላይ ስትሆን ከሚንቱ ጋር በራሱ ይረጋገጣል።",
-  "wallet.receive.pending_unconfirmed_genuine":
     "ከ{mint} ተከማችቷል፤ ግን ሚንቱ ገና አለመውጣቱን አላረጋገጠም። ፊርማው ትክክል ነው፤ ስለዚህ ቶከኑ እውነተኛ ነው። በመስመር ላይ ስትሆን ከሚንቱ ጋር በራሱ ይረጋገጣል።",
   "wallet.receive.dleq_ok": "የሚንቱ ፊርማ ትክክል ሆኖ ተገኝቷል፤ ስለዚህ ቶከኑ እውነተኛ ነው።",
-  "wallet.receive.dleq_uncached":
-    "የሚንቱ ቁልፎች እዚህ አልተከማቹም፤ ስለዚህ ፊርማው ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
-  "wallet.receive.dleq_missing":
-    "በውስጡ ያሉት ሳንቲሞች ሁሉም የሚንቱን የፊርማ ማስረጃ አልያዙም፤ ስለዚህ ከመስመር ውጭ ሊረጋገጥ አልቻለም።",
   "wallet.receive.dleq_warning":
     "በመስመር ላይ እስኪረጋገጥ ድረስ ላኪው በመርህ ደረጃ ሌላ ቦታ አውጥቶት ሊሆን ይችላል።",
   "wallet.receive.failed": "መቀበል አልተቻለም",
@@ -1517,6 +1537,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR ኮድ ቃኝ",
   "wallet.scan.aim_any": "ወደ ቶከን፣ ደረሰኝ ወይም npub QR ኮድ አነጣጥር።",
   "wallet.scan.no_any": "በዚያ ምስል ውስጥ ቶከን፣ ደረሰኝ ወይም npub አልተገኘም።",
+  "wallet.scan.not_usable": "ያ የQR ኮድ እዚህ Airhop ሊጠቀምበት የሚችል አይደለም።",
   "wallet.scan.use_camera_a11y": "በካሜራ ቃኝ",
   "wallet.scan.use_camera": "ካሜራ ተጠቀም",
   "wallet.scan.pick_image_a11y": "ከተቀመጠ ምስል የQR ኮድ አንብብ",
@@ -1610,6 +1631,10 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "ይህ ክፍያ ለቦርሳህ ተቆልፏል።",
   "wallet.svc.locked_ours_offline_body":
     "በመስመር ላይ ስትሆን ውሰደው። እስከዚያው ሌላ ማንም ሊወስደው አይችልም።",
+  "wallet.svc.offline_cap":
+    "ከመስመር ውጭ፣ ያልተረጋገጠ ecash በአንድ ሚንት እስከ {limit} ብቻ ነው።",
+  "wallet.svc.offline_unchecked": "ይህ ecash ከመስመር ውጭ ሊረጋገጥ አይችልም።",
+  "wallet.svc.claim_online_body": "በመስመር ላይ ስትሆን፣ ሚንቱ ሊያረጋግጠው ሲችል ይህንን ውሰደው።",
   "wallet.svc.already_spent": "ይህ ecash አስቀድሞ ወጪ ሆኗል።",
   "wallet.svc.already_spent_body":
     "ይህን ቶከን የላከው ሰው መጀመሪያ መንዝሮታል፣ ወይም ተመሳሳዩን ቶከን ለሌላ ሰው ልኮታል።",
@@ -1915,10 +1940,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "ውይይቶችን ረዥሙን ጊዜ ሊነበቡ የሚችሉ ያደርጋቸዋል፤ በዲስክ ላይም በጣም ብዙ ይይዛል።",
   "settings.general.message_retention": "የሚጠፉ መልእክቶች",
-  "settings.general.message_retention_desc":
-    "መልእክቶችና ሚዲያቸው ከተመረጠው ጊዜ በኋላ ከዚህ ስልክ ይሰረዛሉ",
-  "settings.general.message_retention_sheet":
-    "እያንዳንዱ መልእክት ይህን ስልክ ከደረሰበት ጊዜ ጀምሮ ይቆጠራል፣ የሚረሳውም ይህ ስልክ ብቻ ነው። የሌላው ሰው ስልክ ቅጂውን ይይዛል፣ ቅጽበታዊ ገጽ እይታዎችን መከላከል አይቻልም፣ በግል ውይይት የተላኩልህ ያልወሰድካቸው ክፍያዎችም እስክትወስዳቸው ድረስ ይቆያሉ።",
+  "settings.general.message_retention_default": "ለአዲስ ውይይቶች ነባሪ ሰዓት ቆጣሪ",
+  "settings.general.message_retention_default_desc":
+    "ለአዲስ ቀጥተኛ መልእክቶች፣ እና በዚህ ስልክ ላይ ላሉ ክፍሎች፣ ቻናሎችና ቡድኖች",
+  "settings.general.message_retention_default_sheet":
+    "አዲስ ቀጥተኛ መልእክቶች በዚህ ሰዓት ቆጣሪ ይጀምራሉ፣ እና ማንኛውም ሰው በውይይቱ ውስጥ ሊቀይረው ይችላል። ክፍሎች፣ ቻናሎች እና ቡድኖች በዚህ ስልክ ላይ ብቻ ይከተሉታል፣ እያንዳንዱ መልእክት ከደረሰበት ጊዜ ጀምሮ ይቆጠራል። ቅጽበታዊ ገጽ እይታዎችን መከላከል አይቻልም፣ እና በቀጥተኛ መልእክት የተላኩልዎ ክፍያዎች እስኪቀበሏቸው ድረስ ይቆያሉ።",
   "settings.general.message_retention_off_desc":
     "ውይይቱን እስክታጸዳ ወይም እስክትወጣ ድረስ መልእክቶች ይቆያሉ",
   "settings.general.message_retention_1_desc": "ስልኩ ራሱ አደጋ ከሆነ በጣም ጥቂት ይተዋል",
@@ -1927,11 +1953,11 @@ export const strings: Strings = {
     "ውይይቶችን ረጅሙን ጊዜ ሊነበቡ የሚችሉ ያደርጋል",
   "settings.general.message_retention_confirm_title": "የቆዩ መልእክቶች ይሰረዙ?",
   "settings.general.message_retention_confirm_1":
-    "ከ1 ቀን በላይ የቆዩ መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ይህ ሊቀለበስ አይችልም።",
+    "ከ1 ቀን በላይ የቆዩ የክፍሎች፣ የቻናሎች፣ የቡድኖች እና ከአካባቢ ሰርጥ የተጀመሩ ውይይቶች መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ሌሎች ቀጥተኛ መልእክቶች የራሳቸውን ሰዓት ቆጣሪ ይጠብቃሉ። ይህ ሊቀለበስ አይችልም።",
   "settings.general.message_retention_confirm_7":
-    "ከ7 ቀን በላይ የቆዩ መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ይህ ሊቀለበስ አይችልም።",
+    "ከ7 ቀን በላይ የቆዩ የክፍሎች፣ የቻናሎች፣ የቡድኖች እና ከአካባቢ ሰርጥ የተጀመሩ ውይይቶች መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ሌሎች ቀጥተኛ መልእክቶች የራሳቸውን ሰዓት ቆጣሪ ይጠብቃሉ። ይህ ሊቀለበስ አይችልም።",
   "settings.general.message_retention_confirm_30":
-    "ከ30 ቀን በላይ የቆዩ መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ይህ ሊቀለበስ አይችልም።",
+    "ከ30 ቀን በላይ የቆዩ የክፍሎች፣ የቻናሎች፣ የቡድኖች እና ከአካባቢ ሰርጥ የተጀመሩ ውይይቶች መልእክቶች ከሚዲያቸው ጋር አሁን ከዚህ ስልክ ይሰረዛሉ። ሌሎች ቀጥተኛ መልእክቶች የራሳቸውን ሰዓት ቆጣሪ ይጠብቃሉ። ይህ ሊቀለበስ አይችልም።",
   "settings.general.reset_desc":
     "ማንነትህን፣ መልእክቶችህን፣ እውቂያዎችህንና ቦርሳህን ሳይነካ ምርጫዎችን ወደ ነባሪያቸው ይመልሳል",
   "settings.general.reset_title": "ቅንብሮች ዳግም ይጀመሩ?",
@@ -2066,6 +2092,12 @@ export const strings: Strings = {
     "ማይኩን ተጭነህ ስትይዝ በምትኩ የድምፅ መልእክት ይቀዳል። ስትለቀው ይላካል፤ እስኪያጫውቱትም ማንም አይሰማውም።",
   "settings.conn.live_video": "ቀጥታ ቪዲዮ",
   "settings.conn.live_video_desc": "ካሜራዎን በአቅራቢያ ላሉ ሰዎች ያሰራጩ፣ የእነሱንም ይመልከቱ",
+  "settings.conn.live_video_on_title": "ቀጥታ ቪዲዮ ይብራ?",
+  "settings.conn.live_video_on_body":
+    "ከካሜራው በብሉቱዝ ክልል ውስጥ ላሉ ሰዎች በቀጥታ መልቀቅ ትችላለህ፤ የእነሱም ስርጭቶች በውይይቶችህ ውስጥ ይታያሉ፣ በዚህ ስልክም ይቀዳሉ።",
+  "settings.conn.live_video_off_title": "ቀጥታ ቪዲዮ ይጥፋ?",
+  "settings.conn.live_video_off_body":
+    "ከእንግዲህ በቀጥታ መልቀቅ አትችልም፤ የሌሎች ስርጭቶችም አይታዩም፣ አይቀዱምም። አጭር ስርጭት ግን እንደ ተራ ቪዲዮ ይደርሳል።",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "የTor አቅጣጫ",
   "settings.conn.tor_desc": "ለተጨማሪ ግላዊነት የNostr ትራፊክን በTor በኩል አሳልፍ",
@@ -2094,12 +2126,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor እንደምትጠቀም ይደብቃል። ከ Snowflake ይፈጥናል፣ ግን እነዚህ ድልድዮች ይፋዊ ናቸው እና አንዳንድ አውታረ መረቦች ያግዷቸዋል።",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ተራ የድር ጣቢያ ጉብኝት በመምሰል Tor መጠቀምህን ይደብቃል። ከሌሎቹ ለማገድ ይከብዳል።",
   "settings.tor.mode_custom": "ብጁ ድልድዮች",
   "settings.tor.mode_custom_desc":
-    "ከ bridges.torproject.org የተገኙ የ obfs4 ድልድይ መስመሮችን ተጠቀም። ሌሎቹ ሲወድቁ ይህን ሞክር።",
+    "ከ bridges.torproject.org የተገኙ የ obfs4 ወይም WebTunnel ድልድይ መስመሮችን ተጠቀም። ሌሎቹ ሲወድቁ ይህን ሞክር።",
   "settings.tor.custom_placeholder": "በአንድ መስመር አንድ የድልድይ መስመር ለጥፍ",
   "settings.tor.custom_apply_hint": "ለመገናኘት ከሳጥኑ ውጭ ንካ።",
   "settings.tor.custom_empty": "መጀመሪያ ቢያንስ አንድ የድልድይ መስመር ጨምር።",
@@ -2442,6 +2471,15 @@ export const strings: Strings = {
   "notif.ring.hidden": "ደወል",
   "notif.ring.title": "{sender} እየደወለልህ ነው",
   "notif.ring.body": "መልእክቶችህን አረጋግጥ",
+  "notif.action.reply": "መልስ",
+  "notif.action.send": "ላክ",
+  "notif.action.mark_read": "እንደተነበበ ምልክት አድርግ",
+  "notif.reply.failed_title": "አልተላከም",
+  "notif.reply.failed_body": "{chat}፦ መልስህ አልተላከም። እንደገና ለመሞከር ውይይቱን ክፈት።",
+  "notif.reply.held_title": "ለመላክ በመጠበቅ ላይ",
+  "notif.reply.held_body": "{chat}፦ መልስህ Airhop ሲሰራ ይላካል።",
+  "notif.reply.cut_title": "በከፊል ተልኳል",
+  "notif.reply.cut_body": "{chat}፦ መልስህ በጣም ረጅም ስለነበር መጨረሻው አልተላከም።",
 };
 
 export const plurals: Plurals = {

@@ -21,6 +21,7 @@ import {
   NEARBY_COOLDOWN_MS,
   nearbyNotificationContent,
   notificationContentFor,
+  offersQuickActions,
   paymentNotificationContent,
   ringNotificationContent,
   ringVerdict,
@@ -126,7 +127,7 @@ describe("shouldHapticPing", () => {
 
 describe("notificationContentFor", () => {
   it("shows sender as the title for a DM", () => {
-    // Hiding content is off unless asked for, so the default call shows it.
+    // The hide argument defaults to off, so a call without it shows the content.
     expect(notificationContentFor(msg({ text: "yo" }))).toEqual({
       title: "alice",
       body: "yo",
@@ -485,5 +486,40 @@ describe("isReplayedRoomMessage", () => {
     expect(replayed("dm:0123456789abcdef")).toBe(false);
     expect(replayed("group:abc")).toBe(false);
     expect(replayed("#secret", old, true)).toBe(false);
+  });
+});
+
+describe("offersQuickActions", () => {
+  const offers = (
+    channel: string,
+    opts: {
+      hasChannelKey?: boolean;
+      hidePreviews?: boolean;
+      appLockEnabled?: boolean;
+    } = {},
+  ) =>
+    offersQuickActions({
+      channel,
+      hasChannelKey: opts.hasChannelKey ?? false,
+      hidePreviews: opts.hidePreviews ?? false,
+      appLockEnabled: opts.appLockEnabled ?? false,
+    });
+
+  it("offers a reply where the audience is known", () => {
+    expect(offers("dm:0123456789abcdef")).toBe(true);
+    expect(offers("dm:nostr_abc")).toBe(true);
+    expect(offers("group:abc")).toBe(true);
+    expect(offers("#secret", { hasChannelKey: true })).toBe(true);
+  });
+
+  it("never offers one into a public room or a location cell", () => {
+    expect(offers("#bluetooth")).toBe(false);
+    expect(offers("#city")).toBe(false);
+    expect(offers("geohash:u4pruy")).toBe(false);
+  });
+
+  it("offers nothing with previews hidden or behind the app lock", () => {
+    expect(offers("dm:0123456789abcdef", { hidePreviews: true })).toBe(false);
+    expect(offers("dm:0123456789abcdef", { appLockEnabled: true })).toBe(false);
   });
 });

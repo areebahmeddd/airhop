@@ -165,7 +165,7 @@ export const strings: Strings = {
     "Hutafuta vifaa vilivyo karibu na kupitisha jumbe kati yake. Hivi ndivyo mesh inavyoundwa, na hufanya kazi bila muunganisho wa intaneti.",
   "onboarding.primer.location.title": "Mahali",
   "onboarding.primer.location.body":
-    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe, na mahali ulipo hasa hutoka kwenye kifaa chako tu unapomtumia mtu pini ya mahali.",
+    "Hukuweka kwenye vituo vya eneo lililo karibu, kuanzia mtaa mmoja hadi kanda nzima. Airhop haikufuatilii kamwe, na mahali ulipo hasa hapatoki kamwe kwenye kifaa chako.",
   "onboarding.primer.notifications.title": "Arifa",
   "onboarding.primer.notifications.body":
     "Pokea taarifa za jumbe mpya hata programu ikiwa imefungwa. Arifa hutengenezwa hapa kwenye kifaa chako, bila seva yoyote kuhusika.",
@@ -394,7 +394,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Haikuweza kumfikia kila mwanachama. Jaribu tena wakiwa karibu.",
   "chat.group.you_were_added": "Umeongezwa kwenye {name}.",
-  "chat.group.added_you": "Amekuongeza kwenye {name}",
+  "chat.timer.you_set_1": "Umeweka jumbe zinazotoweka kuwa siku 1",
+  "chat.timer.you_set_7": "Umeweka jumbe zinazotoweka kuwa siku 7",
+  "chat.timer.you_set_30": "Umeweka jumbe zinazotoweka kuwa siku 30",
+  "chat.timer.you_off": "Umezima jumbe zinazotoweka",
+  "chat.timer.you_set_local_1":
+    "Umeweka jumbe zinazotoweka kuwa siku 1 kwenye simu hii",
+  "chat.timer.you_set_local_7":
+    "Umeweka jumbe zinazotoweka kuwa siku 7 kwenye simu hii",
+  "chat.timer.you_set_local_30":
+    "Umeweka jumbe zinazotoweka kuwa siku 30 kwenye simu hii",
+  "chat.timer.you_off_local": "Umezima jumbe zinazotoweka kwenye simu hii",
+  "chat.timer.peer_set_1": "{name} ameweka jumbe zinazotoweka kuwa siku 1",
+  "chat.timer.peer_set_7": "{name} ameweka jumbe zinazotoweka kuwa siku 7",
+  "chat.timer.peer_set_30": "{name} ameweka jumbe zinazotoweka kuwa siku 30",
+  "chat.timer.peer_off": "{name} amezima jumbe zinazotoweka",
+  "chat.timer.sheet_shared":
+    "Kwa jumbe zinazotumwa kuanzia sasa, kwenye simu zote mbili. Kwenye simu ya mtumaji, muda wa kila ujumbe huhesabiwa tangu kutumwa, na kwenye simu nyingine tangu kusomwa mara ya kwanza. Picha za skrini haziwezi kuzuiwa.",
+  "chat.timer.sheet_pending":
+    "Imewekwa kwenye simu hii. Kipima muda kitamfikia {name} mtakapounganika tena, kisha kitatumika kwenye simu zote mbili.",
+  "chat.timer.sheet_bitchat":
+    "Simu hii tu. Programu ya {name} haitumii vipima muda vya pamoja.",
+  "chat.timer.sheet_local":
+    "Simu hii tu kwa sasa. Ikiwa programu ya {name} inatumia vipima muda vya pamoja, kipima muda kitamfikia mtakapounganika tena.",
+  "chat.group.invited": "Umealikwa kwenye {name}.",
+  "chat.group.invited_you": "Amekualika kwenye {name}",
+  "chat.group.decline": "Kataa",
+  "chat.group.decline_title": "Kataa mwaliko wa {name}?",
+  "chat.group.decline_body":
+    "{name} hayumo kwenye anwani zako. Mzuie pia, na hutapokea tena mialiko wala jumbe kutoka kwake.",
+  "chat.group.decline_block": "Kataa na zuia",
   "chat.group.you_were_removed":
     "Umeondolewa kwenye {name}. Huwezi tena kusoma wala kutuma jumbe hapa.",
   "chat.group.removed_you": "Amekuondoa kwenye {name}",
@@ -1204,6 +1233,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tokeni haikuweza kutengenezwa",
+  "wallet.send.unverified_note":
+    "Sehemu ya malipo haya ni ecash ambayo mint bado haijaithibitisha.",
   "wallet.send.title": "Tuma ecash",
   "wallet.send.amount_in": "Kiasi katika {unit}",
   "wallet.send.body":
@@ -1263,15 +1294,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Imekombolewa kwenye {mint}. Sasa ni yako kwa uthibitisho: nakala ya tokeni hii aliyo nayo mtumaji haifanyi kazi tena.",
   "wallet.receive.pending_unconfirmed":
-    "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika. Itathibitishwa na mint kiotomatiki utakapokuwa mtandaoni.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Imehifadhiwa kutoka {mint}, lakini mint bado haijathibitisha kuwa haijatumika. Saini yake inalingana, kwa hivyo tokeni ni halisi. Itathibitishwa na mint kiotomatiki utakapokuwa mtandaoni.",
   "wallet.receive.dleq_ok":
     "Saini ya mint inalingana, kwa hivyo tokeni ni halisi.",
-  "wallet.receive.dleq_uncached":
-    "Funguo za mint hazipo hapa, kwa hivyo saini haikuweza kukaguliwa nje ya mtandao.",
-  "wallet.receive.dleq_missing":
-    "Si kila sarafu ndani yake ina uthibitisho wa saini ya mint, kwa hivyo haikuweza kukaguliwa nje ya mtandao.",
   "wallet.receive.dleq_warning":
     "Hadi itakapothibitishwa mtandaoni, kimsingi mtumaji anaweza kuwa ameitumia mahali pengine.",
   "wallet.receive.failed": "Haikuweza kupokelewa",
@@ -1641,6 +1666,7 @@ export const strings: Strings = {
     "Elekeza kwenye msimbo wa QR wa tokeni, ankara au npub.",
   "wallet.scan.no_any":
     "Hakuna tokeni, ankara au npub iliyopatikana kwenye picha hiyo.",
+  "wallet.scan.not_usable": "Airhop haiwezi kutumia msimbo huu wa QR hapa.",
   "wallet.scan.use_camera_a11y": "Changanua kwa kamera",
   "wallet.scan.use_camera": "Tumia kamera",
   "wallet.scan.pick_image_a11y":
@@ -1742,6 +1768,12 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Malipo haya yamefungwa kwenye pochi yako.",
   "wallet.svc.locked_ours_offline_body":
     "Yadai ukiwa mtandaoni. Kwa sasa hakuna mtu mwingine anayeweza kuyachukua.",
+  "wallet.svc.offline_cap":
+    "Ukiwa nje ya mtandao, ecash isiyothibitishwa ina kikomo cha {limit} kwa kila mint.",
+  "wallet.svc.offline_unchecked":
+    "Ecash hii haiwezi kukaguliwa nje ya mtandao.",
+  "wallet.svc.claim_online_body":
+    "Dai hii ukiwa mtandaoni, mint itakapoweza kuithibitisha.",
   "wallet.svc.already_spent": "Ecash hii tayari imetumika.",
   "wallet.svc.already_spent_body":
     "Yeyote aliyetuma tokeni hii aliikomboa kwanza, au alituma tokeni ileile kwa mtu mwingine pia.",
@@ -2080,10 +2112,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Huweka mazungumzo yakisomeka kwa muda mrefu zaidi, na huchukua nafasi kubwa zaidi kwenye diski.",
   "settings.general.message_retention": "Jumbe zinazotoweka",
-  "settings.general.message_retention_desc":
-    "Jumbe na midia yake hufutwa kwenye simu hii baada ya muda uliochaguliwa",
-  "settings.general.message_retention_sheet":
-    "Huhesabiwa tangu kila ujumbe ulipofika kwenye simu hii, na ni simu hii pekee inayosahau. Simu ya mtu mwingine huhifadhi nakala yake, picha za skrini haziwezi kuzuiwa, na malipo uliyotumiwa kwenye mazungumzo ya faragha ambayo hujayadai hubaki hadi uyadai.",
+  "settings.general.message_retention_default":
+    "Kipima muda chaguomsingi cha gumzo mpya",
+  "settings.general.message_retention_default_desc":
+    "Kwa jumbe mpya za moja kwa moja, na kwa vyumba, chaneli na vikundi kwenye simu hii",
+  "settings.general.message_retention_default_sheet":
+    "Jumbe mpya za moja kwa moja huanza na kipima muda hiki, na yeyote kati yenu anaweza kukibadilisha kwenye gumzo. Vyumba, chaneli na vikundi hukifuata kwenye simu hii tu, kuhesabu tangu kila ujumbe ulipofika. Picha za skrini haziwezi kuzuiwa, na malipo uliyotumiwa kwenye ujumbe wa moja kwa moja hubaki hadi uyadai.",
   "settings.general.message_retention_off_desc":
     "Jumbe hubaki hadi usafishe gumzo au uliondoke",
   "settings.general.message_retention_1_desc":
@@ -2095,11 +2129,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Futa jumbe za zamani zaidi?",
   "settings.general.message_retention_confirm_1":
-    "Jumbe zilizozidi siku 1 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Hili haliwezi kutenduliwa.",
+    "Jumbe za vyumba, chaneli, vikundi na gumzo zilizoanzishwa kutoka kituo cha mahali zilizozidi siku 1 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Jumbe zingine za moja kwa moja zinabaki na vipima muda vyake. Hili haliwezi kutenduliwa.",
   "settings.general.message_retention_confirm_7":
-    "Jumbe zilizozidi siku 7 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Hili haliwezi kutenduliwa.",
+    "Jumbe za vyumba, chaneli, vikundi na gumzo zilizoanzishwa kutoka kituo cha mahali zilizozidi siku 7 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Jumbe zingine za moja kwa moja zinabaki na vipima muda vyake. Hili haliwezi kutenduliwa.",
   "settings.general.message_retention_confirm_30":
-    "Jumbe zilizozidi siku 30 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Hili haliwezi kutenduliwa.",
+    "Jumbe za vyumba, chaneli, vikundi na gumzo zilizoanzishwa kutoka kituo cha mahali zilizozidi siku 30 zitafutwa kwenye simu hii sasa, pamoja na midia yake. Jumbe zingine za moja kwa moja zinabaki na vipima muda vyake. Hili haliwezi kutenduliwa.",
   "settings.general.reset_desc":
     "Hurudisha mapendeleo kwenye hali zake za kawaida, bila kugusa utambulisho, jumbe, anwani na pochi yako",
   "settings.general.reset_title": "Uweke upya mipangilio?",
@@ -2245,6 +2279,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video ya moja kwa moja",
   "settings.conn.live_video_desc":
     "Tiririsha kamera yako kwa watu walio karibu, na utazame zao",
+  "settings.conn.live_video_on_title": "Uwashe video ya moja kwa moja?",
+  "settings.conn.live_video_on_body":
+    "Utaweza kurusha moja kwa moja kutoka kwenye kamera kwa watu walio ndani ya masafa ya Bluetooth, na matangazo yao yataonekana kwenye mazungumzo yako na kurekodiwa kwenye simu hii.",
+  "settings.conn.live_video_off_title": "Uzime video ya moja kwa moja?",
+  "settings.conn.live_video_off_body":
+    "Hutaweza tena kurusha moja kwa moja, na matangazo ya wengine hayataonyeshwa wala kurekodiwa. Tangazo fupi bado litafika kama video ya kawaida.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Uelekezaji wa Tor",
   "settings.conn.tor_desc":
@@ -2276,12 +2316,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Huficha kuwa unatumia Tor. Haraka kuliko Snowflake, lakini madaraja haya ni ya umma na baadhi ya mitandao huyazuia.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Huficha kuwa unatumia Tor kwa kuonekana kama kutembelea tovuti ya kawaida. Ngumu kuzuia kuliko nyingine.",
   "settings.tor.mode_custom": "Madaraja yako",
   "settings.tor.mode_custom_desc":
-    "Tumia mistari ya daraja ya obfs4 kutoka bridges.torproject.org. Jaribu hii wakati nyingine zinashindwa.",
+    "Tumia mistari ya daraja ya obfs4 au WebTunnel kutoka bridges.torproject.org. Jaribu hii wakati nyingine zinashindwa.",
   "settings.tor.custom_placeholder":
     "Bandika mstari mmoja wa daraja kwa kila mstari",
   "settings.tor.custom_apply_hint": "Gusa nje ya kisanduku ili kuunganisha.",
@@ -2657,6 +2694,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Kengele",
   "notif.ring.title": "{sender} anakupigia kengele",
   "notif.ring.body": "Angalia ujumbe wako",
+  "notif.action.reply": "Jibu",
+  "notif.action.send": "Tuma",
+  "notif.action.mark_read": "Weka alama kuwa imesomwa",
+  "notif.reply.failed_title": "Haikutumwa",
+  "notif.reply.failed_body":
+    "Jibu lako kwa {chat} halikutumwa. Fungua mazungumzo ujaribu tena.",
+  "notif.reply.held_title": "Inasubiri kutumwa",
+  "notif.reply.held_body":
+    "Jibu lako kwa {chat} litatumwa Airhop ikiwa inafanya kazi.",
+  "notif.reply.cut_title": "Imetumwa sehemu",
+  "notif.reply.cut_body":
+    "Jibu lako kwa {chat} lilikuwa refu mno, kwa hiyo mwisho wake haukutumwa.",
 };
 
 export const plurals: Plurals = {

@@ -158,7 +158,7 @@ export const strings: Strings = {
     "কাছের ডিভাইস খুঁজে বের করে এবং তাদের মধ্যে বার্তা আদান-প্রদান করে। এতেই মেশ তৈরি হয় এবং ইন্টারনেট সংযোগ ছাড়াই চলে।",
   "onboarding.primer.location.title": "অবস্থান",
   "onboarding.primer.location.body":
-    "আপনাকে কাছের এলাকার চ্যানেলে রাখে, একটি পাড়া থেকে গোটা অঞ্চল পর্যন্ত। Airhop কখনো আপনাকে অনুসরণ করে না, আর আপনার নির্ভুল অবস্থান কেবল তখনই আপনার ডিভাইসের বাইরে যায় যখন আপনি কাউকে নিজের অবস্থান পাঠান।",
+    "আপনাকে কাছের এলাকার চ্যানেলে রাখে, একটি পাড়া থেকে গোটা অঞ্চল পর্যন্ত। Airhop কখনো আপনাকে অনুসরণ করে না, আর আপনার নির্ভুল অবস্থান কখনো আপনার ডিভাইসের বাইরে যায় না।",
   "onboarding.primer.notifications.title": "বিজ্ঞপ্তি",
   "onboarding.primer.notifications.body":
     "অ্যাপ বন্ধ থাকলেও নতুন বার্তার খবর পান। বিজ্ঞপ্তি আপনার ডিভাইসেই তৈরি হয়, কোনো সার্ভার জড়িত থাকে না।",
@@ -385,7 +385,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "সব সদস্যের কাছে পৌঁছানো গেল না। তারা কাছে থাকলে আবার চেষ্টা করুন।",
   "chat.group.you_were_added": "আপনাকে {name}-এ যোগ করা হয়েছে।",
-  "chat.group.added_you": "আপনাকে {name}-এ যোগ করেছেন",
+  "chat.timer.you_set_1": "আপনি অদৃশ্য হওয়া বার্তা 1 দিনে সেট করেছেন",
+  "chat.timer.you_set_7": "আপনি অদৃশ্য হওয়া বার্তা 7 দিনে সেট করেছেন",
+  "chat.timer.you_set_30": "আপনি অদৃশ্য হওয়া বার্তা 30 দিনে সেট করেছেন",
+  "chat.timer.you_off": "আপনি অদৃশ্য হওয়া বার্তা বন্ধ করেছেন",
+  "chat.timer.you_set_local_1":
+    "আপনি এই ফোনে অদৃশ্য হওয়া বার্তা 1 দিনে সেট করেছেন",
+  "chat.timer.you_set_local_7":
+    "আপনি এই ফোনে অদৃশ্য হওয়া বার্তা 7 দিনে সেট করেছেন",
+  "chat.timer.you_set_local_30":
+    "আপনি এই ফোনে অদৃশ্য হওয়া বার্তা 30 দিনে সেট করেছেন",
+  "chat.timer.you_off_local": "আপনি এই ফোনে অদৃশ্য হওয়া বার্তা বন্ধ করেছেন",
+  "chat.timer.peer_set_1": "{name} অদৃশ্য হওয়া বার্তা 1 দিনে সেট করেছেন",
+  "chat.timer.peer_set_7": "{name} অদৃশ্য হওয়া বার্তা 7 দিনে সেট করেছেন",
+  "chat.timer.peer_set_30": "{name} অদৃশ্য হওয়া বার্তা 30 দিনে সেট করেছেন",
+  "chat.timer.peer_off": "{name} অদৃশ্য হওয়া বার্তা বন্ধ করেছেন",
+  "chat.timer.sheet_shared":
+    "এখন থেকে পাঠানো বার্তার জন্য, দুটি ফোনেই। প্রেরকের ফোনে প্রতিটি বার্তার সময় পাঠানোর মুহূর্ত থেকে গণনা হয়, আর অন্য ফোনে প্রথম পড়ার মুহূর্ত থেকে। স্ক্রিনশট আটকানো যায় না।",
+  "chat.timer.sheet_pending":
+    "এই ফোনে সেট হয়েছে। পরের বার আপনারা সংযুক্ত হলে এটি {name}-এর কাছে পৌঁছাবে, তারপর দুই ফোনেই প্রযোজ্য হবে।",
+  "chat.timer.sheet_bitchat":
+    "শুধু এই ফোনে। {name}-এর অ্যাপ যৌথ টাইমার সমর্থন করে না।",
+  "chat.timer.sheet_local":
+    "আপাতত শুধু এই ফোনে। {name}-এর অ্যাপ যৌথ টাইমার সমর্থন করলে, পরের বার আপনারা সংযুক্ত হলে এটি তাদের কাছে পৌঁছাবে।",
+  "chat.group.invited": "আপনাকে {name}-এ আমন্ত্রণ জানানো হয়েছে।",
+  "chat.group.invited_you": "আপনাকে {name}-এ আমন্ত্রণ জানিয়েছেন",
+  "chat.group.decline": "প্রত্যাখ্যান",
+  "chat.group.decline_title": "{name}-এর আমন্ত্রণ প্রত্যাখ্যান করবেন?",
+  "chat.group.decline_body":
+    "{name} আপনার পরিচিতিতে নেই। তাদেরও ব্লক করুন, তাহলে তাদের কাছ থেকে আর আমন্ত্রণ বা বার্তা পাবেন না।",
+  "chat.group.decline_block": "প্রত্যাখ্যান ও ব্লক",
   "chat.group.you_were_removed":
     "আপনাকে {name} থেকে সরানো হয়েছে। আপনি এখানে আর পড়তে বা বার্তা পাঠাতে পারবেন না।",
   "chat.group.removed_you": "আপনাকে {name} থেকে সরিয়েছেন",
@@ -1175,6 +1204,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "টোকেনটি বানানো গেল না",
+  "wallet.send.unverified_note":
+    "এই পেমেন্টের একাংশ এমন ecash যা মিন্ট এখনও নিশ্চিত করেনি।",
   "wallet.send.title": "ecash পাঠান",
   "wallet.send.amount_in": "{unit}-এ পরিমাণ",
   "wallet.send.body":
@@ -1234,14 +1265,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint}-এ ভাঙানো হয়েছে। এটি এখন প্রমাণসহ আপনার: প্রেরকের কাছে থাকা এই টোকেনের অনুলিপি আর কাজ করে না।",
   "wallet.receive.pending_unconfirmed":
-    "{mint} থেকে রাখা হয়েছে, কিন্তু মিন্ট এখনো নিশ্চিত করেনি যে এটি খরচ হয়নি। অনলাইনে এলে মিন্টের সঙ্গে আপনাআপনি নিশ্চিত হয়ে যায়।",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} থেকে রাখা হয়েছে, কিন্তু মিন্ট এখনো নিশ্চিত করেনি যে এটি খরচ হয়নি। এর সই মিলে যায়, তাই টোকেনটি আসল। অনলাইনে এলে মিন্টের সঙ্গে আপনাআপনি নিশ্চিত হয়ে যায়।",
   "wallet.receive.dleq_ok": "মিন্টের সই মিলে যায়, তাই টোকেনটি আসল।",
-  "wallet.receive.dleq_uncached":
-    "এই মিন্টের কী এখানে জমা নেই, তাই অফলাইনে সই মিলিয়ে দেখা গেল না।",
-  "wallet.receive.dleq_missing":
-    "এর সব মুদ্রায় মিন্টের সইয়ের প্রমাণ নেই, তাই অফলাইনে মিলিয়ে দেখা গেল না।",
   "wallet.receive.dleq_warning":
     "অনলাইনে নিশ্চিত না হওয়া পর্যন্ত প্রেরক নীতিগতভাবে এটি অন্যত্র খরচ করে থাকতে পারেন।",
   "wallet.receive.failed": "নেওয়া গেল না",
@@ -1597,6 +1622,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR কোড স্ক্যান করুন",
   "wallet.scan.aim_any": "টোকেন, ইনভয়েস বা npub-এর QR কোডের দিকে ধরুন।",
   "wallet.scan.no_any": "সেই ছবিতে কোনো টোকেন, ইনভয়েস বা npub পাওয়া যায়নি।",
+  "wallet.scan.not_usable": "এই QR কোডটি Airhop এখানে ব্যবহার করতে পারে না।",
   "wallet.scan.use_camera_a11y": "ক্যামেরা দিয়ে স্ক্যান করুন",
   "wallet.scan.use_camera": "ক্যামেরা ব্যবহার করুন",
   "wallet.scan.pick_image_a11y": "সংরক্ষিত একটি ছবি থেকে QR কোড পড়ুন",
@@ -1694,6 +1720,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "এই পেমেন্ট আপনার ওয়ালেটে তালাবদ্ধ।",
   "wallet.svc.locked_ours_offline_body":
     "অনলাইনে এলে এটি নিন। এর মধ্যে অন্য কেউ এটি নিতে পারবে না।",
+  "wallet.svc.offline_cap":
+    "অফলাইনে প্রতি মিন্টে নিশ্চিত না হওয়া ecash সর্বোচ্চ {limit}।",
+  "wallet.svc.offline_unchecked": "এই ecash অফলাইনে যাচাই করা যায় না।",
+  "wallet.svc.claim_online_body":
+    "অনলাইনে এলে, যখন মিন্ট এটি নিশ্চিত করতে পারবে, তখন এটি নিন।",
   "wallet.svc.already_spent": "এই ecash আগেই খরচ হয়ে গেছে।",
   "wallet.svc.already_spent_body":
     "যিনি এই টোকেনটি পাঠিয়েছেন তিনি আগেই এটি ভাঙিয়েছেন, বা একই টোকেন অন্য কাউকেও পাঠিয়েছেন।",
@@ -2023,10 +2054,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "কথোপকথন সবচেয়ে বেশিদিন পড়া যায়, আর ডিস্কেও সবচেয়ে বেশি জমে।",
   "settings.general.message_retention": "অদৃশ্য হওয়া বার্তা",
-  "settings.general.message_retention_desc":
-    "বেছে নেওয়া সময় পরে বার্তা ও তার মিডিয়া এই ফোন থেকে মুছে যায়",
-  "settings.general.message_retention_sheet":
-    "প্রতিটি বার্তা এই ফোনে পৌঁছানোর সময় থেকে গোনা হয়, আর শুধু এই ফোনই ভুলে যায়। অন্যজনের ফোন নিজের কপি রেখে দেয়, স্ক্রিনশট আটকানো যায় না, আর ব্যক্তিগত চ্যাটে পাঠানো যে পেমেন্ট এখনও নেননি তা নেওয়া পর্যন্ত থেকে যায়।",
+  "settings.general.message_retention_default": "নতুন চ্যাটের ডিফল্ট টাইমার",
+  "settings.general.message_retention_default_desc":
+    "নতুন ব্যক্তিগত বার্তার জন্য, এবং এই ফোনে রুম, চ্যানেল ও গ্রুপের জন্য",
+  "settings.general.message_retention_default_sheet":
+    "নতুন ব্যক্তিগত বার্তা এই টাইমার দিয়ে শুরু হয়, এবং যে কেউ চ্যাটে এটি বদলাতে পারেন। রুম, চ্যানেল ও গ্রুপ শুধু এই ফোনে এটি মেনে চলে, প্রতিটি বার্তা পৌঁছানোর সময় থেকে গণনা করে। স্ক্রিনশট আটকানো যায় না, আর ব্যক্তিগত বার্তায় আপনাকে পাঠানো পেমেন্ট আপনি দাবি না করা পর্যন্ত থাকে।",
   "settings.general.message_retention_off_desc":
     "চ্যাট খালি না করা বা ছেড়ে না যাওয়া পর্যন্ত বার্তা থেকে যায়",
   "settings.general.message_retention_1_desc":
@@ -2037,11 +2069,11 @@ export const strings: Strings = {
     "কথোপকথন সবচেয়ে বেশি দিন পড়ার মতো রাখে",
   "settings.general.message_retention_confirm_title": "পুরোনো বার্তা মুছবেন?",
   "settings.general.message_retention_confirm_1":
-    "1 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। এটি ফেরানো যাবে না।",
+    "রুম, চ্যানেল, গ্রুপ এবং অবস্থান চ্যানেল থেকে শুরু হওয়া চ্যাটের 1 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। অন্য ব্যক্তিগত বার্তা নিজের টাইমার মেনে চলে। এটি ফেরানো যাবে না।",
   "settings.general.message_retention_confirm_7":
-    "7 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। এটি ফেরানো যাবে না।",
+    "রুম, চ্যানেল, গ্রুপ এবং অবস্থান চ্যানেল থেকে শুরু হওয়া চ্যাটের 7 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। অন্য ব্যক্তিগত বার্তা নিজের টাইমার মেনে চলে। এটি ফেরানো যাবে না।",
   "settings.general.message_retention_confirm_30":
-    "30 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। এটি ফেরানো যাবে না।",
+    "রুম, চ্যানেল, গ্রুপ এবং অবস্থান চ্যানেল থেকে শুরু হওয়া চ্যাটের 30 দিনের চেয়ে পুরোনো বার্তা তাদের মিডিয়াসহ এখনই এই ফোন থেকে মুছে যাবে। অন্য ব্যক্তিগত বার্তা নিজের টাইমার মেনে চলে। এটি ফেরানো যাবে না।",
   "settings.general.reset_desc":
     "পছন্দগুলো তাদের আদি অবস্থায় ফেরায়, আপনার পরিচয়, বার্তা, পরিচিতি ও ওয়ালেট অক্ষত রেখে",
   "settings.general.reset_title": "সেটিংস রিসেট করবেন?",
@@ -2184,6 +2216,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "লাইভ ভিডিও",
   "settings.conn.live_video_desc":
     "কাছের মানুষদের কাছে আপনার ক্যামেরা স্ট্রিম করুন, আর তাদেরটা দেখুন",
+  "settings.conn.live_video_on_title": "লাইভ ভিডিও চালু করবেন?",
+  "settings.conn.live_video_on_body":
+    "ক্যামেরা থেকে ব্লুটুথের নাগালের মানুষদের কাছে লাইভে যেতে পারবেন, আর তাদের লাইভ আপনার চ্যাটে দেখা যাবে ও এই ফোনে রেকর্ড হবে।",
+  "settings.conn.live_video_off_title": "লাইভ ভিডিও বন্ধ করবেন?",
+  "settings.conn.live_video_off_body":
+    "আপনি আর লাইভে যেতে পারবেন না, আর অন্যদের লাইভ দেখানো বা রেকর্ড করা হবে না। ছোট লাইভ অবশ্য সাধারণ ভিডিও হিসেবে আসবে।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor রাউটিং",
   "settings.conn.tor_desc":
@@ -2214,12 +2252,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "আপনি Tor ব্যবহার করছেন তা লুকায়। Snowflake-এর চেয়ে দ্রুত, তবে এই ব্রিজগুলি প্রকাশ্য এবং কিছু নেটওয়ার্ক সেগুলি আটকায়।",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "সাধারণ ওয়েবসাইট ভিজিটের মতো দেখিয়ে আপনি Tor ব্যবহার করছেন তা লুকায়। অন্যগুলোর চেয়ে ব্লক করা কঠিন।",
   "settings.tor.mode_custom": "নিজের ব্রিজ",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org থেকে পাওয়া obfs4 ব্রিজ লাইন ব্যবহার করুন। অন্যগুলো ব্যর্থ হলে এটি চেষ্টা করুন।",
+    "bridges.torproject.org থেকে পাওয়া obfs4 বা WebTunnel ব্রিজ লাইন ব্যবহার করুন। অন্যগুলো ব্যর্থ হলে এটি চেষ্টা করুন।",
   "settings.tor.custom_placeholder": "প্রতি লাইনে একটি ব্রিজ লাইন পেস্ট করুন",
   "settings.tor.custom_apply_hint": "সংযোগ করতে বাক্সের বাইরে ট্যাপ করুন।",
   "settings.tor.custom_empty": "প্রথমে অন্তত একটি ব্রিজ লাইন যোগ করুন।",
@@ -2578,6 +2613,17 @@ export const strings: Strings = {
   "notif.ring.hidden": "রিং",
   "notif.ring.title": "{sender} আপনাকে রিং করছেন",
   "notif.ring.body": "আপনার বার্তা দেখুন",
+  "notif.action.reply": "উত্তর দিন",
+  "notif.action.send": "পাঠান",
+  "notif.action.mark_read": "পঠিত চিহ্নিত করুন",
+  "notif.reply.failed_title": "পাঠানো হয়নি",
+  "notif.reply.failed_body":
+    "{chat}-এ আপনার উত্তর পাঠানো যায়নি। আবার চেষ্টা করতে চ্যাটটি খুলুন।",
+  "notif.reply.held_title": "পাঠানোর অপেক্ষায়",
+  "notif.reply.held_body": "Airhop চালু হলে {chat}-এ আপনার উত্তর পাঠানো হবে।",
+  "notif.reply.cut_title": "আংশিক পাঠানো হয়েছে",
+  "notif.reply.cut_body":
+    "{chat}-এ আপনার উত্তর খুব দীর্ঘ ছিল, তাই শেষ অংশ পাঠানো হয়নি।",
 };
 
 export const plurals: Plurals = {

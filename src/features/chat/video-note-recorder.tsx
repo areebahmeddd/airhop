@@ -19,7 +19,7 @@ import { MIN_BURST_KEEP_MS } from "@core/mesh/voice/voice-capture";
 import { MAX_FILE_BYTES, MAX_VIDEO_SECONDS } from "@core/mesh/wire/file-packet";
 import { t, useT } from "@i18n";
 import { isRTLLayout } from "@i18n/layout";
-import { acknowledged, armed, held, released } from "@platform/haptics";
+import { armed, held, released } from "@platform/haptics";
 import { ensurePermission } from "@platform/permissions";
 import { Feather } from "@react-native-vector-icons/feather/static";
 import { setAudioForPlayback } from "@services/audio-session";
@@ -585,10 +585,7 @@ export function useVideoNoteRecorder({
         seconds: elapsedSecs,
         hintStyle,
         cancel: () => finish("cancel"),
-        send: () => {
-          acknowledged();
-          finish("send");
-        },
+        send: () => finish("send"),
       }
     : null;
 

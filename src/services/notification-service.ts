@@ -13,10 +13,16 @@
 // small amount of module-level state the policy needs: whether the app is
 // foregrounded, and which conversation is currently open.
 
-import { t } from "@i18n";
+import { getLanguage, t } from "@i18n";
 import { arrived } from "@platform/haptics";
 import { stopRingAlert } from "@platform/ring-alert";
 import type { ChatMessage } from "@store/chat-store";
+import {
+  clearHeldQuickActions,
+  holdQuickAction,
+  loadHeldQuickActions,
+  type QuickAction,
+} from "@store/held-quick-actions";
 import { useIncomingRingStore } from "@store/incoming-ring-store";
 import { RING_ALERT_DURATION_MS } from "@store/ring-store";
 import { useSettingsStore } from "@store/settings-store";
@@ -33,6 +39,10 @@ import {
   shouldNotifyNearby,
   shouldSystemNotify,
 } from "./notification-policy";
+import {
+  currentWipeGeneration,
+  isCurrentWipeGeneration,
+} from "./wipe-generation";
 
 // Android notification channel for messages. Separate from the silent
 // "mesh running" foreground-service channel, and high importance so messages
@@ -50,6 +60,19 @@ const NEARBY_NOTIFICATION_ID = "nearby_peers";
 
 // The tabs a notice that is not about a conversation can open.
 type NoticeTab = "mesh" | "wallet";
+
+// Reply and Mark as read on a message card. Neither brings the app forward:
+// that is the point of answering from the shade. Both ask for the device
+// passcode on iOS, so a locked phone answers nobody; Android has no such switch
+// for an inline reply, and its lock screen hides the actions only where the
+// user has set it to hide sensitive content.
+const MESSAGE_CATEGORY_ID = "message";
+const REPLY_ACTION_ID = "reply";
+const MARK_READ_ACTION_ID = "mark_read";
+
+// Responses already acted on. A cold start can hand the same response to the
+// listener and to the last-response read, and a reply must not go out twice.
+const MAX_SEEN_RESPONSES = 32;
 
 const PAYMENT_ID_PREFIX = "payment_";
 
@@ -86,6 +109,12 @@ let openTab: ((tab: NoticeTab) => void) | null = null;
 // until a navigator registers, which is the Activity the tap launched.
 let pendingChannel: string | null = null;
 let pendingTab: NoticeTab | null = null;
+let quickActionHandler: ((action: QuickAction) => void) | null = null;
+const seenResponses: string[] = [];
+// The language the message category's buttons were last registered in, so a
+// language change re-registers them before the next card.
+let categoryLanguage: string | null = null;
+let categoryRegistration: Promise<void> = Promise.resolve();
 let configured = false;
 let responseSub: Notifications.EventSubscription | null = null;
 // When the last nearby notice went out, for the cooldown. Module state, not
@@ -168,6 +197,37 @@ export function setTabNavigator(fn: ((tab: NoticeTab) => void) | null): void {
     const tab = pendingTab;
     pendingTab = null;
     fn(tab);
+  }
+}
+
+// What acts on a Reply or Mark as read. Set with the mesh, which a reply needs
+// and this module must not import; held answers run the moment it is set.
+export function setQuickActionHandler(
+  fn: ((action: QuickAction) => void) | null,
+): void {
+  quickActionHandler = fn;
+  if (fn === null) return;
+  const held = loadHeldQuickActions(Date.now());
+  if (held.length === 0) return;
+  // Cleared first, so an answer that throws is not run again on every start.
+  clearHeldQuickActions();
+  for (const action of held) {
+    // Its "Waiting to send" card is answered now, whatever the outcome.
+    if (action.kind === "reply") void dismissHeldCard(action.channel);
+    runQuickAction(fn, action);
+  }
+}
+
+// Never throws: this runs inside a mesh start and a tray callback, and a send
+// that failed must cost the reply, not the app.
+function runQuickAction(
+  fn: (action: QuickAction) => void,
+  action: QuickAction,
+): void {
+  try {
+    fn(action);
+  } catch {
+    // The row, if one was written, is left failed for Retry by the launch sweep.
   }
 }
 
@@ -283,6 +343,11 @@ export async function configureNotifications(): Promise<void> {
 function routeFromResponse(response: Notifications.NotificationResponse): void {
   const data = response.notification.request.content.data;
   const channel = data?.channel;
+  const action = response.actionIdentifier;
+  if (action === REPLY_ACTION_ID || action === MARK_READ_ACTION_ID) {
+    if (typeof channel === "string") void takeQuickAction(response, channel);
+    return;
+  }
   if (typeof channel === "string") {
     if (navigate !== null) navigate(channel);
     else pendingChannel = channel;
@@ -297,6 +362,89 @@ function routeFromResponse(response: Notifications.NotificationResponse): void {
   }
 }
 
+async function takeQuickAction(
+  response: Notifications.NotificationResponse,
+  channel: string,
+): Promise<void> {
+  const { identifier } = response.notification.request;
+  const key = `${identifier}:${String(response.notification.date)}:${response.actionIdentifier}`;
+  if (seenResponses.includes(key)) return;
+  seenResponses.push(key);
+  if (seenResponses.length > MAX_SEEN_RESPONSES) seenResponses.shift();
+  // Spent, so a later read of the last response cannot act on it again.
+  try {
+    Notifications.clearLastNotificationResponse();
+  } catch {
+    // The seen list above still stops a repeat in this process.
+  }
+  const generation = currentWipeGeneration();
+  // Taken down either way: Android keeps a replied card spinning until the app
+  // updates it, and an answered card has nothing left to say. A ring from the
+  // same DM ends too, as opening the thread ends it. Awaited, so it cannot land
+  // after, and take down, a card posted under the same id.
+  await dismissNotificationsFor(channel);
+  // A wipe meanwhile destroyed the conversation this answers.
+  if (!isCurrentWipeGeneration(generation)) return;
+  const atMs = Date.now();
+  const action: QuickAction =
+    response.actionIdentifier === REPLY_ACTION_ID
+      ? { kind: "reply", channel, text: response.userText ?? "", atMs }
+      : { kind: "read", channel, atMs };
+  // Nothing can send yet (an iOS background launch before the mesh is up), so
+  // it waits on disk for the next mesh start rather than in this process.
+  if (quickActionHandler !== null) runQuickAction(quickActionHandler, action);
+  else if (!holdQuickAction(action, atMs)) {
+    if (action.kind === "reply") void notifyReply(channel, "failed");
+  } else if (action.kind === "reply") {
+    // The card it was typed into is gone, so this one says it has not sent.
+    void notifyReply(channel, "held");
+  }
+}
+
+// The message category's buttons, registered in the current language before a
+// card that uses them. Best effort: a card whose category failed to register
+// shows no buttons, and a tap still opens the chat. One registration at a time,
+// shared: two cards awaiting separate ones could post out of order, the older
+// text replacing the newer.
+function ensureMessageCategory(): Promise<void> {
+  const language = getLanguage();
+  if (categoryLanguage !== language) {
+    categoryLanguage = language;
+    categoryRegistration = registerMessageCategory(language);
+  }
+  return categoryRegistration;
+}
+
+async function registerMessageCategory(language: string): Promise<void> {
+  try {
+    await Notifications.setNotificationCategoryAsync(MESSAGE_CATEGORY_ID, [
+      {
+        identifier: REPLY_ACTION_ID,
+        buttonTitle: t("notif.action.reply"),
+        textInput: {
+          submitButtonTitle: t("notif.action.send"),
+          placeholder: t("chat.thread.message_placeholder"),
+        },
+        options: {
+          opensAppToForeground: false,
+          isAuthenticationRequired: true,
+        },
+      },
+      {
+        identifier: MARK_READ_ACTION_ID,
+        buttonTitle: t("notif.action.mark_read"),
+        options: {
+          opensAppToForeground: false,
+          isAuthenticationRequired: true,
+        },
+      },
+    ]);
+  } catch {
+    // Retried before the next card, unless the language moved on meanwhile.
+    if (categoryLanguage === language) categoryLanguage = null;
+  }
+}
+
 // Called for every genuinely-new inbound message (see chat-store's inbound
 // observer). Decides between a system notification (backgrounded), a soft
 // haptic (foreground, different chat), or nothing (your own message, or the
@@ -308,6 +456,9 @@ export async function handleInboundMessage(
   // the only place that knows our own nickname; this file stays a pure renderer
   // of whatever it is handed.
   mentionsMe = false,
+  // Whether the card carries Reply and Mark as read (offersQuickActions),
+  // decided by the caller, which holds the chat and settings state.
+  quickActions = false,
 ): Promise<void> {
   if (
     shouldHapticPing({
@@ -341,6 +492,7 @@ export async function handleInboundMessage(
     useSettingsStore.getState().hideNotificationPreviews,
     mentionsMe,
   );
+  if (quickActions) await ensureMessageCategory();
   try {
     await Notifications.scheduleNotificationAsync({
       identifier: channelToId(msg.channel),
@@ -350,6 +502,7 @@ export async function handleInboundMessage(
         data: { channel: msg.channel },
         sound: "default",
         badge: totalUnread,
+        ...(quickActions ? { categoryIdentifier: MESSAGE_CATEGORY_ID } : {}),
       },
       // A channel-only trigger delivers immediately on the given Android
       // channel; iOS ignores channelId and delivers immediately too.
@@ -473,6 +626,85 @@ export async function dismissNearbyNotification(): Promise<void> {
 export async function dismissNotificationsFor(channel: string): Promise<void> {
   await dismissMessageNotificationFor(channel);
   await endRingAlertFor(channel);
+}
+
+// What became of a reply typed into a card, when it is not simply sent. Nobody
+// is looking at the thread, so a card says it instead, and a tap opens the
+// thread: a failed row there offers Retry.
+//   failed: it did not go out, or was not allowed to any more
+//   held: nothing can send it yet; it goes at the next mesh start
+//   cut: longer than a card reply may run, so its end was not sent
+export type ReplyOutcome = "failed" | "held" | "cut";
+
+const REPLY_OUTCOME_KEYS = {
+  failed: {
+    title: "notif.reply.failed_title",
+    body: "notif.reply.failed_body",
+  },
+  held: { title: "notif.reply.held_title", body: "notif.reply.held_body" },
+  cut: { title: "notif.reply.cut_title", body: "notif.reply.cut_body" },
+} as const;
+
+export async function notifyReply(
+  channel: string,
+  outcome: ReplyOutcome,
+): Promise<void> {
+  const keys = REPLY_OUTCOME_KEYS[outcome];
+  // Hidden previews never name a chat, here or anywhere.
+  const chat = useSettingsStore.getState().hideNotificationPreviews
+    ? t("notif.someone")
+    : channelLabel(channel);
+  try {
+    await Notifications.scheduleNotificationAsync({
+      // A held reply's card has an id of its own, so a message arriving in the
+      // chat meanwhile does not replace it before it has sent.
+      identifier:
+        outcome === "held" ? heldCardId(channel) : channelToId(channel),
+      content: {
+        title: t(keys.title),
+        body: t(keys.body, { chat }),
+        data: { channel },
+        sound: "default",
+      },
+      trigger:
+        Platform.OS === "android" ? { channelId: MESSAGES_CHANNEL_ID } : null,
+    });
+  } catch {
+    // Permission gone or refused: the row in the thread still says what happened.
+  }
+}
+
+function heldCardId(channel: string): string {
+  return `held_${channel.replace(/[^a-zA-Z0-9]/g, "_")}`;
+}
+
+async function dismissHeldCard(channel: string): Promise<void> {
+  try {
+    await Notifications.dismissNotificationAsync(heldCardId(channel));
+  } catch {
+    // Already gone.
+  }
+}
+
+// Take every message card out of the shade, for the moment the app lock is
+// switched on: their Reply and Mark as read would act past it.
+export async function dismissMessageNotifications(): Promise<void> {
+  let presented: Notifications.Notification[];
+  try {
+    presented = await Notifications.getPresentedNotificationsAsync();
+  } catch {
+    // No tray on this platform.
+    return;
+  }
+  for (const n of presented) {
+    const id = n.request.identifier;
+    if (!id.startsWith("msg_")) continue;
+    try {
+      await Notifications.dismissNotificationAsync(id);
+    } catch {
+      // Already gone.
+    }
+  }
 }
 
 // Clear a conversation's message card and nothing else, for disappearing
@@ -601,6 +833,7 @@ export async function dismissPreviewNotifications(): Promise<void> {
     const id = n.request.identifier;
     if (
       !id.startsWith("msg_") &&
+      !id.startsWith("held_") &&
       !id.startsWith(PAYMENT_ID_PREFIX) &&
       !isRingNotification(n)
     ) {
@@ -662,9 +895,10 @@ async function cancelScheduledRings(): Promise<void> {
 // phone whose database has just been destroyed. Nothing else should call this:
 // clearing someone's whole tray is the wipe's business and nobody else's.
 export async function dismissAllNotifications(): Promise<void> {
-  // A held tap names a conversation the wipe has just destroyed.
+  // A held tap or answer names a conversation the wipe has just destroyed.
   pendingChannel = null;
   pendingTab = null;
+  clearHeldQuickActions();
   try {
     await Notifications.dismissAllNotificationsAsync();
   } catch {

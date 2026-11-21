@@ -17,10 +17,12 @@ let mockMesh: {
 const mockPrimeTor = jest.fn();
 const mockNotifyTorForeground = jest.fn();
 const mockStartPipeline = jest.fn();
+const mockHandleQuickAction = jest.fn();
 const mockStartReachability = jest.fn();
 const mockStartNotice = jest.fn();
 const mockSweepMedia = jest.fn();
 const mockApplyStartupPresence = jest.fn();
+const mockSettleStaleSends = jest.fn();
 let mockWipePending = false;
 let mockMoveMarker: string | null = null;
 let mockSettings = { autoStartOnBoot: true, backgroundMeshEnabled: true };
@@ -55,13 +57,18 @@ jest.mock("@services/tor-routing", () => ({
   notifyTorAppForeground: (foreground: boolean) =>
     mockNotifyTorForeground(foreground),
 }));
+jest.mock("@store/chat-store", () => ({
+  settleStaleSendsOnce: () => mockSettleStaleSends(),
+}));
 jest.mock("@store/settings-store", () => ({
   useSettingsStore: { getState: () => mockSettings },
 }));
 jest.mock("../boot-sync", () => ({ syncBootStart: jest.fn() }));
 jest.mock("../notification-pipeline", () => ({
-  startNotificationPipeline: (nickname: () => string) =>
-    mockStartPipeline(nickname),
+  startNotificationPipeline: (...args: unknown[]) => mockStartPipeline(...args),
+}));
+jest.mock("../notification-actions", () => ({
+  handleQuickAction: (action: unknown) => mockHandleQuickAction(action),
 }));
 jest.mock("../background-notice", () => ({
   startBackgroundNotice: () => mockStartNotice(),
@@ -72,7 +79,7 @@ jest.mock("../reachability", () => ({
 jest.mock("../media-retention", () => ({
   sweepMediaIfDue: () => mockSweepMedia(),
 }));
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   startAttachmentCleanup: jest.fn(),
 }));
 jest.mock("../message-retention", () => ({
@@ -137,6 +144,26 @@ describe("bootStartMesh", () => {
     // The mention check reads the name the mesh announces.
     const nickname = mockStartPipeline.mock.calls[0][0] as () => string;
     expect(nickname()).toBe(mockInitMeshService.mock.calls[0][1]);
+    // A reply typed into a card while no screen exists still goes out.
+    const quickAction = mockStartPipeline.mock.calls[0][2] as (
+      action: unknown,
+    ) => void;
+    quickAction({ kind: "read", channel: "dm:x" });
+    expect(mockHandleQuickAction).toHaveBeenCalledWith({
+      kind: "read",
+      channel: "dm:x",
+    });
+  });
+
+  // Settled here, before anything is sent, so the app's first mount later
+  // does not fail what this headless run is still carrying.
+  test("settles the last process's sends before the mesh starts", async () => {
+    mockSettleStaleSends.mockImplementation(() => {
+      expect(mockInitMeshService).not.toHaveBeenCalled();
+    });
+    await runBoot();
+    expect(mockSettleStaleSends).toHaveBeenCalledTimes(1);
+    expect(mockInitMeshService).toHaveBeenCalledTimes(1);
   });
 
   // No screen exists, so the mesh and Tor start at off-screen power rather
@@ -163,7 +190,7 @@ describe("bootStartMesh", () => {
     );
   });
 
-  test("an unfinished panic wipe keeps the identity down, keychain unread", async () => {
+  test("starts nothing, keychain unread, while a panic wipe is unfinished", async () => {
     mockWipePending = true;
 
     await runBoot();

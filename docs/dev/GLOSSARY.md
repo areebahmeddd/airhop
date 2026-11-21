@@ -16,7 +16,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **Location channel**: A public room scoped to a geohash cell and carried over Nostr, from `#region` down to `#block`.
 
-**One-time prekey**: A single-use X25519 key a phone publishes in advance, signed, in a prekey bundle (packet type `0x24`) flooded over the mesh. A courier envelope is sealed to one, so mail left with a carrier stays safe if the recipient's long-term key leaks later.
+**One-time prekey**: A single-use X25519 key a phone hands out in advance, signed. Courier prekeys go in a bundle (packet type `0x24`) flooded over the mesh, and a courier envelope is sealed to one; internet DM prekeys go privately to one contact, with a weekly last-resort key beside them, and a DM over Nostr between Airhop phones is sealed to one. Either way a message stays safe if the recipient's long-term key leaks later.
 
 **Peer ID**: A phone's 8-byte mesh address, `hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`. It stays the same until a panic wipe replaces the identity.
 
@@ -26,19 +26,19 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[ChaCha20-Poly1305](https://datatracker.ietf.org/doc/html/rfc8439)**: An authenticated encryption cipher (AEAD). The symmetric cipher inside Noise XX and Noise X.
 
-**[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: Signal's per-message key agreement, which gives each message its own key so one leaked key exposes no other message. Airhop runs it on live DMs between two Airhop phones, seeded from and bound to their Noise session. Courier mail gets its forward secrecy from one-time prekeys instead.
+**[Double Ratchet](https://signal.org/docs/specifications/doubleratchet/)**: Signal's per-message key agreement, which gives each message its own key so one leaked key exposes no other message. Airhop runs it on live DMs between two Airhop phones, seeded from and bound to their Noise session. Courier mail and internet DMs get their forward secrecy from one-time prekeys instead.
 
-**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve signature scheme. Packets are signed with the sender's Ed25519 key, and a signature is verified before a packet is displayed or acted on; `LEAVE`, files, board posts, and voice and video frames are also verified before they are relayed.
+**[Ed25519](https://ed25519.cr.yp.to/)**: An elliptic curve signature scheme. Packets are signed with the sender's Ed25519 key, apart from Noise traffic, fragments, ping and pong, and carriers, and a signature is verified before a packet is displayed or acted on; `LEAVE`, files, board posts, and voice and video frames are also verified before they are relayed.
 
 **[HKDF](https://datatracker.ietf.org/doc/html/rfc5869)**: HMAC-based Key Derivation Function. Derives keys from Diffie-Hellman outputs inside Noise, the Double Ratchet and the Nostr DM construction.
 
-**[Noise Protocol / Noise XX / Noise X](https://noiseprotocol.org/noise.html)**: A framework for authenticated key exchange. Airhop uses `Noise_XX_25519_ChaChaPoly_SHA256` for live DM sessions over any direct link (mutual authentication, forward secrecy) and `Noise_X_25519_ChaChaPoly_SHA256` to seal courier envelopes one way.
+**[Noise Protocol / Noise XX / Noise X](https://noiseprotocol.org/noise.html)**: A framework for authenticated key exchange. Airhop uses `Noise_XX_25519_ChaChaPoly_SHA256` for live DM sessions over any direct link (mutual authentication, forward secrecy) and `Noise_X_25519_ChaChaPoly_SHA256` to seal courier envelopes and internet DMs one way.
 
 **[SHA-256](https://en.wikipedia.org/wiki/SHA-2)**: A cryptographic hash. Derives the peer ID, packet deduplication IDs and GCS filter entries, and is the hash inside the Noise suite. Airhop does not use SipHash.
 
 **[X25519](https://cr.yp.to/ecdh.html)**: Diffie-Hellman over Curve25519. The key agreement inside Noise XX, Noise X and the Double Ratchet.
 
-**[X3DH](https://signal.org/docs/specifications/x3dh/)**: Signal's Extended Triple Diffie-Hellman, which starts a Double Ratchet with an offline recipient from prekeys published in advance. Airhop does not use it: the Noise handshake already seeds the ratchet, and one-time prekeys serve courier mail.
+**[X3DH](https://signal.org/docs/specifications/x3dh/)**: Signal's Extended Triple Diffie-Hellman, which starts a Double Ratchet with an offline recipient from prekeys published in advance. Airhop does not use it: the Noise handshake already seeds the ratchet, and one-time prekeys serve courier mail and internet DMs between Airhop phones.
 
 **[XChaCha20-Poly1305](https://libsodium.gitbook.io/doc/secret-key_cryptography/aead/chacha20-poly1305/xchacha20-poly1305_construction)**: ChaCha20-Poly1305 with a 192-bit nonce, long enough to draw at random safely. bitchat's Nostr DM construction uses it ([PROTOCOLS.md section 7.1](../spec/PROTOCOLS.md#71-the-nostr-dm-construction-is-not-the-published-nip-44)).
 
@@ -52,7 +52,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **GCS (Golomb-Coded Set)**: A compact probabilistic set of hashes, smaller than a Bloom filter. Gossip sync uses one so two peers can see which packets each holds and exchange only what is missing (`gossip-sync.ts`). See [Golomb coding](https://en.wikipedia.org/wiki/Golomb_coding).
 
-**LAN transport**: Airhop's mesh over a shared Wi-Fi network or hotspot, found by mDNS and carried over TCP. It carries the same packets as Bluetooth and works between an iPhone and an Android. Off by default.
+**LAN transport**: Airhop's mesh over a shared Wi-Fi network or hotspot, found by mDNS, or by a direct dial between phones already in a session where mDNS is filtered, and carried over TCP. It carries the same packets as Bluetooth and works between an iPhone and an Android. Off by default.
 
 **[LRU (Least Recently Used)](https://en.wikipedia.org/wiki/Cache_replacement_policies#LRU)**: An eviction policy that drops the least recently used entry when a cache is full. The packet deduplication seen-set uses it (1,000 entries, 5 minutes).
 
@@ -72,8 +72,6 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula)**: Great-circle distance between two coordinates. `geo-relay.ts` uses it to pick the relays nearest a geohash from `assets/data/nostr_relays.csv`.
 
-**[Nostr](https://nostr.com)**: Notes and Other Stuff Transmitted by Relays. An open protocol where clients sign events with key pairs and publish them to relays. Airhop's internet transport when radio range runs out.
-
 **NIP (Nostr Implementation Possibility)**: A numbered Nostr specification. The full list is at [github.com/nostr-protocol/nips](https://github.com/nostr-protocol/nips).
 
 **[NIP-17](https://github.com/nostr-protocol/nips/blob/master/17.md)**: Nostr private direct messages, wrapped in gift wrap so relays see neither sender, recipient nor content.
@@ -83,6 +81,8 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 **[NIP-44](https://github.com/nostr-protocol/nips/blob/master/44.md)**: Nostr's versioned encryption standard: ChaCha20 with an HMAC-SHA256 tag. bitchat's variant, which Airhop implements byte for byte, uses XChaCha20-Poly1305 instead.
 
 **[NIP-61](https://github.com/nostr-protocol/nips/blob/master/61.md)**: Nutzaps: Cashu ecash sent in a Nostr event, locked to the recipient's key.
+
+**[Nostr](https://nostr.com)**: Notes and Other Stuff Transmitted by Relays. An open protocol where clients sign events with key pairs and publish them to relays. Airhop's internet transport when radio range runs out.
 
 ## Payments
 
@@ -112,7 +112,7 @@ Short definitions of the terms used across the docs and the code, for anyone rea
 
 **[CLDR plural category](https://cldr.unicode.org/index/cldr-spec/plural-rules)**: The grammatical number forms a language uses. English has `one` and `other`, Russian four, Arabic six, Chinese only `other`. `tPlural` picks one per call through the rules in `src/i18n/plurals.ts`.
 
-**Endonym**: A language's name in its own script (`فارسی`, `русский`, `简体中文`). What the language picker lists, as bitchat's `AppLanguageSettings.endonym(for:)` does.
+**Endonym**: A language's name in its own script (`فارسی`, `русский`, `简体中文`). What the language picker lists.
 
 **[ICU](https://icu.unicode.org/)**: The Unicode internationalization library behind `Intl`. It backs date, time and number formatting, so `src/utils/format.ts` pins the locale and numbering system to keep output stable across OS versions. Hermes exposes `DateTimeFormat`, `NumberFormat` and `Collator` from it, but not `PluralRules`.
 

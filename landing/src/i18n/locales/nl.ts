@@ -131,7 +131,8 @@ const strings: Strings = {
   "home.how.title": "De mesh vormt zichzelf.",
   "home.how.sub":
     "Nabije knooppunten vormen via Bluetooth een zelfherstellende mesh. Als er internet is, breiden Nostr-relays hem uit, zonder infrastructuur die iemand beheert.",
-  "home.how.cta": "Lees de volledige architectuur",
+  "home.how.cta": "Lees de architectuur",
+  "home.how.paper": "Lees de whitepaper",
   "home.how.discover.title": "Ontdekken",
   "home.how.discover.line":
     "Telefoons met Airhop of bitchat vinden elkaar automatisch via Bluetooth. Geen koppelen, geen instellen.",

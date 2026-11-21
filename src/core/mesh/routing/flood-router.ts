@@ -100,13 +100,11 @@ export function relayLimit(
 }
 
 // Types that travel to one peer, given a recipient: bitchat-ios
-// BLEReceivePipeline's isDirectedEncrypted set, plus Airhop's DR_ENCRYPTED.
-// A directed packet is relayed at full depth with no clamp, since fewer hops
-// means fewer deliveries.
+// BLEReceivePipeline's isDirectedEncrypted set. A directed packet is relayed at
+// full depth with no clamp, since fewer hops means fewer deliveries.
 function isDirectedType(type: PacketType): boolean {
   switch (type) {
     case PacketType.NOISE_ENCRYPTED:
-    case PacketType.DR_ENCRYPTED:
     case PacketType.COURIER_ENV:
     case PacketType.PING:
     case PacketType.PONG:

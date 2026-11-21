@@ -226,8 +226,7 @@ internal class VideoTranscoder(context: Context) {
                     VideoEncoderSettings.Builder()
                         .setBitrate(plan.videoBitrate)
                         .setiFrameIntervalSeconds(plan.keyframeIntervalSeconds.toFloat())
-                        // No reordering, as bitchat-ios encodes: every frame
-                        // decodes as it arrives.
+                        // No reordering: every frame decodes as it arrives.
                         .setMaxBFrames(0)
                         .build()
                 )

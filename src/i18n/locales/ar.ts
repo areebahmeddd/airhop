@@ -156,7 +156,7 @@ export const strings: Strings = {
     "يعثر على الأجهزة القريبة ويمرّر الرسائل بينها. هذا ما يصنع الشبكة، ويعمل دون اتصال بالإنترنت.",
   "onboarding.primer.location.title": "الموقع",
   "onboarding.primer.location.body":
-    "يضعك في قنوات المناطق القريبة، من الحي إلى الإقليم. لا يتتبعك Airhop أبدًا، ولا يغادر موقعك الدقيق جهازك إلا حين ترسل موقعك إلى شخص ما.",
+    "يضعك في قنوات المناطق القريبة، من الحي إلى الإقليم. لا يتتبعك Airhop أبدًا، ولا يغادر موقعك الدقيق جهازك أبدًا.",
   "onboarding.primer.notifications.title": "الإشعارات",
   "onboarding.primer.notifications.body":
     "تصلك تنبيهات بالرسائل الجديدة حتى عندما يكون التطبيق مغلقًا. تُنشأ الإشعارات محليًا على جهازك، دون أي خادم.",
@@ -373,7 +373,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "تعذّر الوصول إلى كل الأعضاء. حاول مرة أخرى وهم بالجوار.",
   "chat.group.you_were_added": "تمت إضافتك إلى {name}.",
-  "chat.group.added_you": "أضافك إلى {name}",
+  "chat.timer.you_set_1": "ضبطت الرسائل المؤقتة على يوم واحد",
+  "chat.timer.you_set_7": "ضبطت الرسائل المؤقتة على 7 أيام",
+  "chat.timer.you_set_30": "ضبطت الرسائل المؤقتة على 30 يومًا",
+  "chat.timer.you_off": "أوقفت الرسائل المؤقتة",
+  "chat.timer.you_set_local_1":
+    "ضبطت الرسائل المؤقتة على يوم واحد على هذا الهاتف",
+  "chat.timer.you_set_local_7":
+    "ضبطت الرسائل المؤقتة على 7 أيام على هذا الهاتف",
+  "chat.timer.you_set_local_30":
+    "ضبطت الرسائل المؤقتة على 30 يومًا على هذا الهاتف",
+  "chat.timer.you_off_local": "أوقفت الرسائل المؤقتة على هذا الهاتف",
+  "chat.timer.peer_set_1": "ضبط {name} الرسائل المؤقتة على يوم واحد",
+  "chat.timer.peer_set_7": "ضبط {name} الرسائل المؤقتة على 7 أيام",
+  "chat.timer.peer_set_30": "ضبط {name} الرسائل المؤقتة على 30 يومًا",
+  "chat.timer.peer_off": "أوقف {name} الرسائل المؤقتة",
+  "chat.timer.sheet_shared":
+    "للرسائل المرسلة من الآن فصاعدًا، على الهاتفين. يُحسب وقت كل رسالة من إرسالها على هاتف المرسل، ومن قراءتها لأول مرة على الهاتف الآخر. لا يمكن منع لقطات الشاشة.",
+  "chat.timer.sheet_pending":
+    "ضُبط على هذا الهاتف. سيصل إلى {name} في المرة القادمة التي تتصلان فيها، ثم يُطبَّق على الهاتفين.",
+  "chat.timer.sheet_bitchat":
+    "على هذا الهاتف فقط. تطبيق {name} لا يدعم المؤقتات المشتركة.",
+  "chat.timer.sheet_local":
+    "على هذا الهاتف فقط حاليًا. إذا كان تطبيق {name} يدعم المؤقتات المشتركة، فسيصل إليه المؤقت في المرة القادمة التي تتصلان فيها.",
+  "chat.group.invited": "أنت مدعو إلى {name}.",
+  "chat.group.invited_you": "دعاك إلى {name}",
+  "chat.group.decline": "رفض",
+  "chat.group.decline_title": "رفض الدعوة إلى {name}؟",
+  "chat.group.decline_body":
+    "{name} ليس ضمن جهات اتصالك. احظره أيضًا، ولن تصلك منه دعوات أو رسائل بعد الآن.",
+  "chat.group.decline_block": "رفض وحظر",
   "chat.group.you_were_removed":
     "تمت إزالتك من {name}. لم يعد بإمكانك القراءة أو الإرسال هنا.",
   "chat.group.removed_you": "أزالك من {name}",
@@ -1147,6 +1176,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "تعذّر بناء التوكن",
+  "wallet.send.unverified_note":
+    "جزء من هذه الدفعة نقد إلكتروني لم تؤكده دار السك بعد.",
   "wallet.send.title": "إرسال نقد إلكتروني",
   "wallet.send.amount_in": "المبلغ بـ {unit}",
   "wallet.send.body":
@@ -1206,14 +1237,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "صُرف عند {mint}. أصبح لك بشكل مثبت: نسخة المرسل من هذا التوكن لم تعد تعمل.",
   "wallet.receive.pending_unconfirmed":
-    "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "خُزّن من {mint}، لكن دار السك لم تؤكد بعد أنه غير منفق. توقيعه صحيح، فالتوكن أصلي. يُؤكَّد مع دار السك تلقائيًا بمجرد اتصالك.",
   "wallet.receive.dleq_ok": "توقيع دار السك صحيح، فالتوكن أصلي.",
-  "wallet.receive.dleq_uncached":
-    "مفاتيح دار السك غير مخزّنة هنا، لذا تعذّر فحص التوقيع دون اتصال.",
-  "wallet.receive.dleq_missing":
-    "ليست كل عملة فيه تحمل إثبات توقيع دار السك، لذا تعذّر فحصه دون اتصال.",
   "wallet.receive.dleq_warning":
     "إلى أن يُؤكَّد عبر الإنترنت، يمكن للمرسل نظريًا أن يكون قد أنفقه في مكان آخر.",
   "wallet.receive.failed": "تعذّر الاستقبال",
@@ -1561,6 +1586,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any":
     "وجّه الكاميرا نحو رمز استجابة سريعة لتوكن أو فاتورة أو npub.",
   "wallet.scan.no_any": "لم يُعثر على توكن أو فاتورة أو npub في تلك الصورة.",
+  "wallet.scan.not_usable": "لا يستطيع Airhop استخدام رمز QR هذا هنا.",
   "wallet.scan.use_camera_a11y": "المسح بالكاميرا",
   "wallet.scan.use_camera": "استخدام الكاميرا",
   "wallet.scan.pick_image_a11y": "قراءة رمز استجابة سريعة من صورة محفوظة",
@@ -1658,6 +1684,12 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "هذه الدفعة مقفلة على محفظتك.",
   "wallet.svc.locked_ours_offline_body":
     "استلمها عندما تتصل بالإنترنت. لا يستطيع أحد غيرك أخذها في الأثناء.",
+  "wallet.svc.offline_cap":
+    "دون اتصال، يقتصر النقد الإلكتروني غير المؤكد على {limit} لكل دار سك.",
+  "wallet.svc.offline_unchecked":
+    "لا يمكن التحقق من هذا النقد الإلكتروني دون اتصال.",
+  "wallet.svc.claim_online_body":
+    "استلم هذه الدفعة عندما تتصل بالإنترنت، حين تستطيع دار السك تأكيدها.",
   "wallet.svc.already_spent": "هذا النقد الإلكتروني أُنفق بالفعل.",
   "wallet.svc.already_spent_body":
     "من أرسل هذا التوكن صرفه أولًا، أو أرسل التوكن نفسه إلى شخص آخر.",
@@ -1976,10 +2008,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "يبقي المحادثات مقروءة أطول مدة، ويشغل أكبر مساحة.",
   "settings.general.message_retention": "الرسائل المؤقتة",
-  "settings.general.message_retention_desc":
-    "تُحذف الرسائل ووسائطها من هذا الهاتف بعد المدة المختارة",
-  "settings.general.message_retention_sheet":
-    "تُحسب المدة من وصول كل رسالة إلى هذا الهاتف، وهذا الهاتف وحده ينسى. يحتفظ هاتف الشخص الآخر بنسخته، ولا يمكن منع لقطات الشاشة، والمدفوعات التي وصلتك في محادثة خاصة ولم تستلمها تبقى حتى تستلمها.",
+  "settings.general.message_retention_default":
+    "المؤقت الافتراضي للمحادثات الجديدة",
+  "settings.general.message_retention_default_desc":
+    "للرسائل المباشرة الجديدة، وللغرف والقنوات والمجموعات على هذا الهاتف",
+  "settings.general.message_retention_default_sheet":
+    "تبدأ الرسائل المباشرة الجديدة بهذا المؤقت، ويمكن لأي من الطرفين تغييره داخل المحادثة. تتبعه الغرف والقنوات والمجموعات على هذا الهاتف فقط، محسوبًا من وصول كل رسالة. لا يمكن منع لقطات الشاشة، وتبقى المدفوعات المرسلة إليك في رسالة مباشرة حتى تستلمها.",
   "settings.general.message_retention_off_desc":
     "تبقى الرسائل حتى تمسح المحادثة أو تغادرها",
   "settings.general.message_retention_1_desc":
@@ -1989,11 +2023,11 @@ export const strings: Strings = {
     "يبقي المحادثات مقروءة أطول مدة",
   "settings.general.message_retention_confirm_title": "حذف الرسائل الأقدم؟",
   "settings.general.message_retention_confirm_1":
-    "ستُحذف الرسائل الأقدم من يوم واحد من هذا الهاتف الآن مع وسائطها. لا يمكن التراجع عن ذلك.",
+    "ستُحذف الرسائل الأقدم من يوم واحد في الغرف والقنوات والمجموعات والمحادثات التي بدأت من قناة موقع من هذا الهاتف الآن مع وسائطها. تحتفظ الرسائل المباشرة الأخرى بمؤقتاتها الخاصة. لا يمكن التراجع عن ذلك.",
   "settings.general.message_retention_confirm_7":
-    "ستُحذف الرسائل الأقدم من 7 أيام من هذا الهاتف الآن مع وسائطها. لا يمكن التراجع عن ذلك.",
+    "ستُحذف الرسائل الأقدم من 7 أيام في الغرف والقنوات والمجموعات والمحادثات التي بدأت من قناة موقع من هذا الهاتف الآن مع وسائطها. تحتفظ الرسائل المباشرة الأخرى بمؤقتاتها الخاصة. لا يمكن التراجع عن ذلك.",
   "settings.general.message_retention_confirm_30":
-    "ستُحذف الرسائل الأقدم من 30 يومًا من هذا الهاتف الآن مع وسائطها. لا يمكن التراجع عن ذلك.",
+    "ستُحذف الرسائل الأقدم من 30 يومًا في الغرف والقنوات والمجموعات والمحادثات التي بدأت من قناة موقع من هذا الهاتف الآن مع وسائطها. تحتفظ الرسائل المباشرة الأخرى بمؤقتاتها الخاصة. لا يمكن التراجع عن ذلك.",
   "settings.general.reset_desc":
     "يعيد التفضيلات إلى قيمها الافتراضية، مع ترك هويتك ورسائلك وجهات اتصالك ومحفظتك دون مساس",
   "settings.general.reset_title": "إعادة ضبط الإعدادات؟",
@@ -2131,6 +2165,12 @@ export const strings: Strings = {
     "الضغط المستمر على الميكروفون يسجّل ملاحظة صوتية بدلًا من ذلك. تُرسل عندما تفلت، ولا يسمعها أحد حتى يشغّلها.",
   "settings.conn.live_video": "فيديو مباشر",
   "settings.conn.live_video_desc": "بث الكاميرا للأشخاص القريبين، ومشاهدة بثهم",
+  "settings.conn.live_video_on_title": "تفعيل الفيديو المباشر؟",
+  "settings.conn.live_video_on_body":
+    "يمكنك البث مباشرة من الكاميرا إلى من هم ضمن نطاق البلوتوث، وتظهر بثوثهم في محادثاتك وتُسجَّل على هذا الهاتف.",
+  "settings.conn.live_video_off_title": "تعطيل الفيديو المباشر؟",
+  "settings.conn.live_video_off_body":
+    "لن تتمكن من البث المباشر بعد الآن، ولن تُعرض بثوث الآخرين أو تُسجَّل. أما البث القصير فيصل كفيديو عادي.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "توجيه Tor",
   "settings.conn.tor_desc": "وجّه حركة Nostr عبر Tor لخصوصية إضافية",
@@ -2159,12 +2199,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "يخفي استخدامك لـ Tor. أسرع من Snowflake، لكن هذه الجسور علنية وبعض الشبكات تحجبها.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "يخفي استخدامك لـ Tor بجعله يبدو كزيارة عادية لموقع ويب. حظره أصعب من غيره.",
   "settings.tor.mode_custom": "جسور مخصصة",
   "settings.tor.mode_custom_desc":
-    "استخدم أسطر جسور obfs4 من bridges.torproject.org. جرّب هذا عندما تفشل الخيارات الأخرى.",
+    "استخدم أسطر جسور obfs4 أو WebTunnel من bridges.torproject.org. جرّب هذا عندما تفشل الخيارات الأخرى.",
   "settings.tor.custom_placeholder": "الصق سطر جسر واحد في كل سطر",
   "settings.tor.custom_apply_hint": "انقر خارج المربع للاتصال.",
   "settings.tor.custom_empty": "أضف سطر جسر واحدًا على الأقل أولًا.",
@@ -2520,6 +2557,16 @@ export const strings: Strings = {
   "notif.ring.hidden": "رنين",
   "notif.ring.title": "{sender} يرنّ لك",
   "notif.ring.body": "تحقق من رسائلك",
+  "notif.action.reply": "رد",
+  "notif.action.send": "إرسال",
+  "notif.action.mark_read": "وسم كمقروء",
+  "notif.reply.failed_title": "لم يُرسل",
+  "notif.reply.failed_body":
+    "لم يُرسل ردك إلى {chat}. افتح المحادثة لتحاول مرة أخرى.",
+  "notif.reply.held_title": "بانتظار الإرسال",
+  "notif.reply.held_body": "سيُرسل ردك إلى {chat} عندما يعمل Airhop.",
+  "notif.reply.cut_title": "أُرسل جزئيًا",
+  "notif.reply.cut_body": "كان ردك إلى {chat} طويلًا جدًا، فلم تُرسل نهايته.",
 };
 
 export const plurals: Plurals = {

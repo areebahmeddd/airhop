@@ -3,8 +3,9 @@
 // Spec: https://signal.org/docs/specifications/doubleratchet/
 //
 // Provides per-message forward secrecy and break-in recovery. Used for LIVE
-// direct messages between two Airhop peers (packet type DR_ENCRYPTED); offline
-// courier mail takes the one-way Noise X + one-time prekey path instead.
+// direct messages between two Airhop peers, inside their Noise session
+// (NoisePayloadType.RATCHET_MESSAGE); courier mail and internet DMs take the
+// one-way Noise X + prekey path instead.
 //
 // The root key comes from the completed Noise XX handshake's exporter secret,
 // which descends from a chaining key that absorbed both parties' ephemeral DH

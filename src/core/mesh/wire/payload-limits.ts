@@ -21,7 +21,7 @@ const TWICE_V1_FRAME_BYTES = 128 * 1024; // a v1 frame's 16-bit length, doubled
 
 // The largest public message shown. Both apps send one as a v1 frame, whose
 // payload tops out here; the decode cap above keeps headroom only so a larger
-// one can still be relayed and synced. As bitchat-ios BLEPublicMessageHandler.
+// one can still be relayed and synced.
 export const MAX_DELIVERED_PUBLIC_BYTES = 0xffff;
 
 export function maxPayloadBytes(type: PacketType): number {
@@ -33,7 +33,6 @@ export function maxPayloadBytes(type: PacketType): number {
     case PacketType.CHANNEL_MSG_AIRHOP:
     case PacketType.CHANNEL_ENC:
     case PacketType.GROUP_MESSAGE:
-    case PacketType.DR_ENCRYPTED:
       return TWICE_V1_FRAME_BYTES;
     case PacketType.COURIER_ENV:
     case PacketType.NOSTR_CARRIER:

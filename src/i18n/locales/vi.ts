@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Tìm các thiết bị ở gần và chuyển tiếp tin nhắn giữa chúng. Đây là thứ tạo nên mạng lưới và chạy được mà không cần kết nối Internet.",
   "onboarding.primer.location.title": "Vị trí",
   "onboarding.primer.location.body":
-    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn, và vị trí chính xác của bạn chỉ rời khỏi thiết bị khi bạn gửi vị trí cho ai đó.",
+    "Đặt bạn vào các kênh khu vực ở gần, từ một khu phố tới cả một vùng. Airhop không bao giờ theo dõi bạn, và vị trí chính xác của bạn không bao giờ rời khỏi thiết bị.",
   "onboarding.primer.notifications.title": "Thông báo",
   "onboarding.primer.notifications.body":
     "Nhận báo tin nhắn mới ngay cả khi ứng dụng đã đóng. Thông báo được tạo ngay trên thiết bị của bạn, không có máy chủ nào tham gia.",
@@ -382,7 +382,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Không tới được mọi thành viên. Hãy thử lại khi họ ở gần.",
   "chat.group.you_were_added": "Bạn đã được thêm vào {name}.",
-  "chat.group.added_you": "Đã thêm bạn vào {name}",
+  "chat.timer.you_set_1": "Bạn đã đặt tin nhắn tự xóa là 1 ngày",
+  "chat.timer.you_set_7": "Bạn đã đặt tin nhắn tự xóa là 7 ngày",
+  "chat.timer.you_set_30": "Bạn đã đặt tin nhắn tự xóa là 30 ngày",
+  "chat.timer.you_off": "Bạn đã tắt tin nhắn tự xóa",
+  "chat.timer.you_set_local_1":
+    "Bạn đã đặt tin nhắn tự xóa là 1 ngày trên điện thoại này",
+  "chat.timer.you_set_local_7":
+    "Bạn đã đặt tin nhắn tự xóa là 7 ngày trên điện thoại này",
+  "chat.timer.you_set_local_30":
+    "Bạn đã đặt tin nhắn tự xóa là 30 ngày trên điện thoại này",
+  "chat.timer.you_off_local": "Bạn đã tắt tin nhắn tự xóa trên điện thoại này",
+  "chat.timer.peer_set_1": "{name} đã đặt tin nhắn tự xóa là 1 ngày",
+  "chat.timer.peer_set_7": "{name} đã đặt tin nhắn tự xóa là 7 ngày",
+  "chat.timer.peer_set_30": "{name} đã đặt tin nhắn tự xóa là 30 ngày",
+  "chat.timer.peer_off": "{name} đã tắt tin nhắn tự xóa",
+  "chat.timer.sheet_shared":
+    "Cho tin nhắn gửi từ bây giờ, trên cả hai điện thoại. Trên điện thoại người gửi, mỗi tin được tính giờ từ lúc gửi, và trên điện thoại kia từ lần đầu được đọc. Không thể ngăn chụp màn hình.",
+  "chat.timer.sheet_pending":
+    "Đã đặt trên điện thoại này. Hẹn giờ sẽ đến với {name} vào lần tới hai bạn kết nối, rồi áp dụng trên cả hai điện thoại.",
+  "chat.timer.sheet_bitchat":
+    "Chỉ trên điện thoại này. Ứng dụng của {name} không hỗ trợ hẹn giờ chung.",
+  "chat.timer.sheet_local":
+    "Tạm thời chỉ trên điện thoại này. Nếu ứng dụng của {name} hỗ trợ hẹn giờ chung, hẹn giờ sẽ đến với họ vào lần tới hai bạn kết nối.",
+  "chat.group.invited": "Bạn được mời vào {name}.",
+  "chat.group.invited_you": "Đã mời bạn vào {name}",
+  "chat.group.decline": "Từ chối",
+  "chat.group.decline_title": "Từ chối lời mời vào {name}?",
+  "chat.group.decline_body":
+    "{name} không có trong danh bạ của bạn. Chặn luôn họ, bạn sẽ không nhận lời mời hay tin nhắn từ họ nữa.",
+  "chat.group.decline_block": "Từ chối và chặn",
   "chat.group.you_were_removed":
     "Bạn đã bị gỡ khỏi {name}. Bạn không còn đọc hay gửi tin nhắn ở đây được nữa.",
   "chat.group.removed_you": "Đã gỡ bạn khỏi {name}",
@@ -1187,6 +1216,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Không dựng được token",
+  "wallet.send.unverified_note":
+    "Một phần khoản thanh toán này là ecash nhà đúc chưa xác nhận.",
   "wallet.send.title": "Gửi ecash",
   "wallet.send.amount_in": "Số tiền tính bằng {unit}",
   "wallet.send.body":
@@ -1246,14 +1277,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Đã đổi tại {mint}. Giờ nó chứng minh được là của bạn: bản sao token này của người gửi không còn dùng được.",
   "wallet.receive.pending_unconfirmed":
-    "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Đã lưu từ {mint}, nhưng nhà đúc chưa xác nhận nó chưa bị tiêu. Chữ ký của nó hợp lệ, nên token là thật. Nó sẽ tự động được xác nhận với nhà đúc khi bạn có mạng.",
   "wallet.receive.dleq_ok": "Chữ ký của nhà đúc hợp lệ, nên token là thật.",
-  "wallet.receive.dleq_uncached":
-    "Khóa của nhà đúc không được lưu sẵn ở đây, nên không kiểm tra được chữ ký khi ngoại tuyến.",
-  "wallet.receive.dleq_missing":
-    "Không phải đồng nào trong đó cũng mang bằng chứng chữ ký của nhà đúc, nên không kiểm tra được khi ngoại tuyến.",
   "wallet.receive.dleq_warning":
     "Cho tới khi nó được xác nhận lúc có mạng, về lý thuyết người gửi có thể đã tiêu nó ở nơi khác.",
   "wallet.receive.failed": "Không nhận được",
@@ -1613,6 +1638,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Hãy hướng vào mã QR của token, hóa đơn hoặc npub.",
   "wallet.scan.no_any":
     "Không tìm thấy token, hóa đơn hay npub nào trong hình đó.",
+  "wallet.scan.not_usable": "Airhop không thể dùng mã QR này ở đây.",
   "wallet.scan.use_camera_a11y": "Quét bằng máy ảnh",
   "wallet.scan.use_camera": "Dùng máy ảnh",
   "wallet.scan.pick_image_a11y": "Đọc một mã QR từ hình ảnh đã lưu",
@@ -1712,6 +1738,12 @@ export const strings: Strings = {
     "Khoản thanh toán này đã được khóa vào ví của bạn.",
   "wallet.svc.locked_ours_offline_body":
     "Hãy nhận nó khi bạn có mạng. Trong lúc đó không ai khác lấy được nó.",
+  "wallet.svc.offline_cap":
+    "Khi ngoại tuyến, ecash chưa được xác nhận bị giới hạn ở {limit} cho mỗi nhà đúc.",
+  "wallet.svc.offline_unchecked":
+    "Không thể kiểm tra ecash này khi ngoại tuyến.",
+  "wallet.svc.claim_online_body":
+    "Hãy nhận khoản này khi bạn có mạng và nhà đúc có thể xác nhận nó.",
   "wallet.svc.already_spent": "Khoản ecash này đã bị tiêu rồi.",
   "wallet.svc.already_spent_body":
     "Người gửi token này đã đổi nó trước, hoặc đã gửi cùng token đó cho người khác.",
@@ -2040,10 +2072,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Giữ cuộc trò chuyện đọc được lâu nhất, và cũng chiếm đĩa nhiều nhất.",
   "settings.general.message_retention": "Tin nhắn tự xóa",
-  "settings.general.message_retention_desc":
-    "Tin nhắn và phương tiện kèm theo bị xóa khỏi điện thoại này sau thời gian đã chọn",
-  "settings.general.message_retention_sheet":
-    "Tính từ lúc mỗi tin nhắn đến điện thoại này, và chỉ điện thoại này quên. Điện thoại của người kia vẫn giữ bản sao, không thể ngăn chụp màn hình, và các khoản thanh toán trong trò chuyện riêng mà bạn chưa nhận sẽ còn lại cho đến khi bạn nhận.",
+  "settings.general.message_retention_default":
+    "Hẹn giờ mặc định cho cuộc trò chuyện mới",
+  "settings.general.message_retention_default_desc":
+    "Cho tin nhắn riêng mới, và cho phòng, kênh và nhóm trên điện thoại này",
+  "settings.general.message_retention_default_sheet":
+    "Tin nhắn riêng mới bắt đầu với hẹn giờ này, và ai cũng có thể đổi nó trong cuộc trò chuyện. Phòng, kênh và nhóm chỉ theo nó trên điện thoại này, tính từ khi mỗi tin nhắn đến. Không thể ngăn chụp màn hình, và các khoản thanh toán gửi cho bạn qua tin nhắn riêng sẽ ở lại đến khi bạn nhận.",
   "settings.general.message_retention_off_desc":
     "Tin nhắn ở lại cho đến khi bạn xóa đoạn chat hoặc rời khỏi nó",
   "settings.general.message_retention_1_desc":
@@ -2055,11 +2089,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Xóa các tin nhắn cũ hơn?",
   "settings.general.message_retention_confirm_1":
-    "Các tin nhắn cũ hơn 1 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+    "Các tin nhắn cũ hơn 1 ngày trong phòng, kênh, nhóm và các cuộc trò chuyện bắt đầu từ một kênh vị trí sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Các tin nhắn riêng khác giữ hẹn giờ riêng của chúng. Không thể hoàn tác.",
   "settings.general.message_retention_confirm_7":
-    "Các tin nhắn cũ hơn 7 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+    "Các tin nhắn cũ hơn 7 ngày trong phòng, kênh, nhóm và các cuộc trò chuyện bắt đầu từ một kênh vị trí sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Các tin nhắn riêng khác giữ hẹn giờ riêng của chúng. Không thể hoàn tác.",
   "settings.general.message_retention_confirm_30":
-    "Các tin nhắn cũ hơn 30 ngày sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Không thể hoàn tác.",
+    "Các tin nhắn cũ hơn 30 ngày trong phòng, kênh, nhóm và các cuộc trò chuyện bắt đầu từ một kênh vị trí sẽ bị xóa khỏi điện thoại này ngay bây giờ, cùng với phương tiện của chúng. Các tin nhắn riêng khác giữ hẹn giờ riêng của chúng. Không thể hoàn tác.",
   "settings.general.reset_desc":
     "Đưa các tùy chọn về mặc định, còn danh tính, tin nhắn, liên hệ và ví của bạn vẫn nguyên vẹn",
   "settings.general.reset_title": "Đặt lại cài đặt?",
@@ -2206,6 +2240,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video trực tiếp",
   "settings.conn.live_video_desc":
     "Phát camera của bạn cho người ở gần, và xem buổi phát của họ",
+  "settings.conn.live_video_on_title": "Bật video trực tiếp?",
+  "settings.conn.live_video_on_body":
+    "Bạn có thể phát trực tiếp từ camera tới mọi người trong tầm Bluetooth, và các buổi phát của họ hiện trong cuộc trò chuyện của bạn và được ghi lại trên điện thoại này.",
+  "settings.conn.live_video_off_title": "Tắt video trực tiếp?",
+  "settings.conn.live_video_off_body":
+    "Bạn không thể phát trực tiếp nữa, và các buổi phát của người khác không được hiển thị hay ghi lại. Buổi phát ngắn vẫn tới dưới dạng video thông thường.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Định tuyến qua Tor",
   "settings.conn.tor_desc": "Đưa lưu lượng Nostr qua Tor để riêng tư hơn",
@@ -2235,12 +2275,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Che giấu việc bạn dùng Tor. Nhanh hơn Snowflake, nhưng các cầu nối này công khai và một số mạng chặn chúng.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Ẩn việc bạn dùng Tor bằng cách trông như một lượt truy cập web bình thường. Khó chặn hơn các cách khác.",
   "settings.tor.mode_custom": "Cầu nối riêng",
   "settings.tor.mode_custom_desc":
-    "Dùng các dòng cầu nối obfs4 từ bridges.torproject.org. Hãy thử cách này khi các cách khác thất bại.",
+    "Dùng các dòng cầu nối obfs4 hoặc WebTunnel từ bridges.torproject.org. Hãy thử cách này khi các cách khác thất bại.",
   "settings.tor.custom_placeholder": "Dán mỗi dòng một dòng cầu nối",
   "settings.tor.custom_apply_hint": "Chạm bên ngoài ô để kết nối.",
   "settings.tor.custom_empty": "Hãy thêm ít nhất một dòng cầu nối trước.",
@@ -2605,6 +2642,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Chuông",
   "notif.ring.title": "{sender} đang gọi chuông cho bạn",
   "notif.ring.body": "Hãy kiểm tra tin nhắn của bạn",
+  "notif.action.reply": "Trả lời",
+  "notif.action.send": "Gửi",
+  "notif.action.mark_read": "Đánh dấu đã đọc",
+  "notif.reply.failed_title": "Chưa gửi được",
+  "notif.reply.failed_body":
+    "Câu trả lời của bạn tới {chat} chưa gửi được. Hãy mở cuộc trò chuyện để thử lại.",
+  "notif.reply.held_title": "Đang chờ gửi",
+  "notif.reply.held_body":
+    "Câu trả lời của bạn tới {chat} sẽ được gửi khi Airhop đang chạy.",
+  "notif.reply.cut_title": "Đã gửi một phần",
+  "notif.reply.cut_body":
+    "Câu trả lời của bạn tới {chat} quá dài nên phần cuối chưa được gửi.",
 };
 
 export const plurals: Plurals = {

@@ -160,7 +160,7 @@ export const strings: Strings = {
     "Mencari peranti berdekatan dan menyampaikan mesej antara mereka. Begitulah mesh terbentuk, dan ia berfungsi tanpa sambungan internet.",
   "onboarding.primer.location.title": "Lokasi",
   "onboarding.primer.location.body":
-    "Meletakkan anda dalam saluran kawasan berdekatan, daripada satu blok sehingga satu wilayah. Airhop tidak pernah menjejaki anda, dan lokasi tepat anda hanya keluar daripada peranti apabila anda menghantar pin lokasi kepada seseorang.",
+    "Meletakkan anda dalam saluran kawasan berdekatan, daripada satu blok sehingga satu wilayah. Airhop tidak pernah menjejaki anda, dan lokasi tepat anda tidak pernah keluar daripada peranti anda.",
   "onboarding.primer.notifications.title": "Pemberitahuan",
   "onboarding.primer.notifications.body":
     "Terima makluman untuk mesej baharu walaupun aplikasi ditutup. Pemberitahuan dicipta secara setempat pada peranti anda, tanpa penglibatan pelayan.",
@@ -387,7 +387,41 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tidak semua ahli dapat dicapai. Cuba lagi semasa mereka berdekatan.",
   "chat.group.you_were_added": "Anda ditambah ke dalam {name}.",
-  "chat.group.added_you": "Menambah anda ke dalam {name}",
+  "chat.timer.you_set_1": "Anda menetapkan mesej hilang sendiri kepada 1 hari",
+  "chat.timer.you_set_7": "Anda menetapkan mesej hilang sendiri kepada 7 hari",
+  "chat.timer.you_set_30":
+    "Anda menetapkan mesej hilang sendiri kepada 30 hari",
+  "chat.timer.you_off": "Anda mematikan mesej hilang sendiri",
+  "chat.timer.you_set_local_1":
+    "Anda menetapkan mesej hilang sendiri kepada 1 hari pada telefon ini",
+  "chat.timer.you_set_local_7":
+    "Anda menetapkan mesej hilang sendiri kepada 7 hari pada telefon ini",
+  "chat.timer.you_set_local_30":
+    "Anda menetapkan mesej hilang sendiri kepada 30 hari pada telefon ini",
+  "chat.timer.you_off_local":
+    "Anda mematikan mesej hilang sendiri pada telefon ini",
+  "chat.timer.peer_set_1":
+    "{name} menetapkan mesej hilang sendiri kepada 1 hari",
+  "chat.timer.peer_set_7":
+    "{name} menetapkan mesej hilang sendiri kepada 7 hari",
+  "chat.timer.peer_set_30":
+    "{name} menetapkan mesej hilang sendiri kepada 30 hari",
+  "chat.timer.peer_off": "{name} mematikan mesej hilang sendiri",
+  "chat.timer.sheet_shared":
+    "Untuk mesej yang dihantar mulai sekarang, pada kedua-dua telefon. Pada telefon pengirim, tempoh setiap mesej dikira dari masa dihantar, dan pada telefon yang satu lagi dari kali pertama dibaca. Tangkapan skrin tidak dapat dihalang.",
+  "chat.timer.sheet_pending":
+    "Ditetapkan pada telefon ini. Pemasa ini akan sampai kepada {name} apabila anda berhubung lagi, kemudian berkuat kuasa pada kedua-dua telefon.",
+  "chat.timer.sheet_bitchat":
+    "Telefon ini sahaja. Aplikasi {name} tidak menyokong pemasa dikongsi.",
+  "chat.timer.sheet_local":
+    "Telefon ini sahaja buat masa ini. Jika aplikasi {name} menyokong pemasa dikongsi, pemasa ini akan sampai kepadanya apabila anda berhubung lagi.",
+  "chat.group.invited": "Anda dijemput ke {name}.",
+  "chat.group.invited_you": "Menjemput anda ke {name}",
+  "chat.group.decline": "Tolak",
+  "chat.group.decline_title": "Tolak jemputan ke {name}?",
+  "chat.group.decline_body":
+    "{name} tiada dalam kenalan anda. Sekat mereka juga, dan anda tidak akan menerima jemputan atau mesej daripada mereka lagi.",
+  "chat.group.decline_block": "Tolak dan sekat",
   "chat.group.you_were_removed":
     "Anda dikeluarkan daripada {name}. Anda tidak lagi boleh membaca atau menghantar mesej di sini.",
   "chat.group.removed_you": "Mengeluarkan anda daripada {name}",
@@ -1206,6 +1240,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Token tidak dapat dibina",
+  "wallet.send.unverified_note":
+    "Sebahagian bayaran ini ialah ecash yang belum disahkan oleh mint.",
   "wallet.send.title": "Hantar ecash",
   "wallet.send.amount_in": "Jumlah dalam {unit}",
   "wallet.send.body":
@@ -1265,14 +1301,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ditebus di {mint}. Ia kini terbukti milik anda: salinan token ini pada pengirim tidak lagi berfungsi.",
   "wallet.receive.pending_unconfirmed":
-    "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Disimpan daripada {mint}, tetapi mint belum mengesahkan ia belum dibelanjakan. Tandatangannya sah, jadi tokennya tulen. Ia disahkan dengan mint secara automatik sebaik anda dalam talian.",
   "wallet.receive.dleq_ok": "Tandatangan mint sah, jadi tokennya tulen.",
-  "wallet.receive.dleq_uncached":
-    "Kunci mint tidak tersimpan di sini, jadi tandatangannya tidak dapat disemak secara luar talian.",
-  "wallet.receive.dleq_missing":
-    "Bukan setiap syiling di dalamnya membawa bukti tandatangan mint, jadi ia tidak dapat disemak secara luar talian.",
   "wallet.receive.dleq_warning":
     "Sehingga ia disahkan dalam talian, pengirim pada dasarnya mungkin sudah membelanjakannya di tempat lain.",
   "wallet.receive.failed": "Tidak dapat menerima",
@@ -1634,6 +1664,8 @@ export const strings: Strings = {
   "wallet.scan.title_any": "Imbas kod QR",
   "wallet.scan.aim_any": "Halakan ke kod QR token, invois atau npub.",
   "wallet.scan.no_any": "Tiada token, invois atau npub ditemui dalam imej itu.",
+  "wallet.scan.not_usable":
+    "Airhop tidak boleh menggunakan kod QR ini di sini.",
   "wallet.scan.use_camera_a11y": "Imbas dengan kamera",
   "wallet.scan.use_camera": "Guna kamera",
   "wallet.scan.pick_image_a11y": "Baca kod QR daripada imej tersimpan",
@@ -1735,6 +1767,12 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Bayaran ini dikunci kepada dompet anda.",
   "wallet.svc.locked_ours_offline_body":
     "Tuntut sebaik anda dalam talian. Sementara itu, tiada orang lain boleh mengambilnya.",
+  "wallet.svc.offline_cap":
+    "Semasa luar talian, ecash yang belum disahkan dihadkan kepada {limit} bagi setiap mint.",
+  "wallet.svc.offline_unchecked":
+    "Ecash ini tidak boleh disemak secara luar talian.",
+  "wallet.svc.claim_online_body":
+    "Tuntut yang ini sebaik anda dalam talian, apabila mint boleh mengesahkannya.",
   "wallet.svc.already_spent": "Ecash ini sudah dibelanjakan.",
   "wallet.svc.already_spent_body":
     "Sesiapa yang menghantar token ini menebusnya dahulu, atau menghantar token yang sama kepada orang lain juga.",
@@ -2073,10 +2111,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mengekalkan perbualan boleh dibaca paling lama, dan paling banyak memakan ruang cakera.",
   "settings.general.message_retention": "Mesej hilang sendiri",
-  "settings.general.message_retention_desc":
-    "Mesej dan medianya dipadam daripada telefon ini selepas tempoh yang dipilih",
-  "settings.general.message_retention_sheet":
-    "Dikira dari saat setiap mesej sampai ke telefon ini, dan hanya telefon ini yang lupa. Telefon orang lain menyimpan salinannya, tangkapan skrin tidak boleh dihalang dan bayaran dalam sembang peribadi yang belum anda tuntut kekal sehingga anda menuntutnya.",
+  "settings.general.message_retention_default":
+    "Pemasa lalai untuk sembang baharu",
+  "settings.general.message_retention_default_desc":
+    "Untuk mesej terus baharu, serta bilik, saluran dan kumpulan pada telefon ini",
+  "settings.general.message_retention_default_sheet":
+    "Mesej terus baharu bermula dengan pemasa ini, dan mana-mana pihak boleh mengubahnya dalam sembang. Bilik, saluran dan kumpulan mengikutinya pada telefon ini sahaja, dikira dari masa setiap mesej tiba. Tangkapan skrin tidak dapat dihalang, dan bayaran yang dihantar kepada anda melalui mesej terus kekal sehingga anda menuntutnya.",
   "settings.general.message_retention_off_desc":
     "Mesej kekal sehingga anda mengosongkan sembang atau keluar daripadanya",
   "settings.general.message_retention_1_desc":
@@ -2088,11 +2128,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Padam mesej yang lebih lama?",
   "settings.general.message_retention_confirm_1":
-    "Mesej yang lebih lama daripada 1 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+    "Mesej bilik, saluran, kumpulan dan sembang yang dimulakan dari saluran lokasi yang lebih lama daripada 1 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Mesej terus lain mengekalkan pemasanya sendiri. Ini tidak boleh dibuat asal.",
   "settings.general.message_retention_confirm_7":
-    "Mesej yang lebih lama daripada 7 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+    "Mesej bilik, saluran, kumpulan dan sembang yang dimulakan dari saluran lokasi yang lebih lama daripada 7 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Mesej terus lain mengekalkan pemasanya sendiri. Ini tidak boleh dibuat asal.",
   "settings.general.message_retention_confirm_30":
-    "Mesej yang lebih lama daripada 30 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Ini tidak boleh dibuat asal.",
+    "Mesej bilik, saluran, kumpulan dan sembang yang dimulakan dari saluran lokasi yang lebih lama daripada 30 hari akan dipadam daripada telefon ini sekarang, bersama medianya. Mesej terus lain mengekalkan pemasanya sendiri. Ini tidak boleh dibuat asal.",
   "settings.general.reset_desc":
     "Mengembalikan keutamaan kepada nilai lalainya, tanpa menyentuh identiti, mesej, kenalan dan dompet anda",
   "settings.general.reset_title": "Tetap semula tetapan?",
@@ -2238,6 +2278,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Video langsung",
   "settings.conn.live_video_desc":
     "Strim kamera anda kepada orang berdekatan, dan tonton siaran mereka",
+  "settings.conn.live_video_on_title": "Hidupkan video langsung?",
+  "settings.conn.live_video_on_body":
+    "Anda boleh bersiaran langsung dari kamera kepada orang dalam jangkauan Bluetooth, dan siaran mereka dipaparkan dalam sembang anda serta dirakam pada telefon ini.",
+  "settings.conn.live_video_off_title": "Matikan video langsung?",
+  "settings.conn.live_video_off_body":
+    "Anda tidak lagi boleh bersiaran langsung, dan siaran orang lain tidak dipaparkan atau dirakam. Siaran yang pendek tetap tiba sebagai video biasa.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Penghalaan Tor",
   "settings.conn.tor_desc":
@@ -2269,12 +2315,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Menyembunyikan penggunaan Tor. Lebih laju daripada Snowflake, tetapi jambatan ini awam dan sesetengah rangkaian menyekatnya.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Menyembunyikan penggunaan Tor dengan kelihatan seperti lawatan laman web biasa. Lebih sukar disekat daripada yang lain.",
   "settings.tor.mode_custom": "Jambatan sendiri",
   "settings.tor.mode_custom_desc":
-    "Gunakan baris jambatan obfs4 daripada bridges.torproject.org. Cuba ini apabila yang lain gagal.",
+    "Gunakan baris jambatan obfs4 atau WebTunnel daripada bridges.torproject.org. Cuba ini apabila yang lain gagal.",
   "settings.tor.custom_placeholder": "Tampal satu baris jambatan setiap baris",
   "settings.tor.custom_apply_hint": "Ketik di luar kotak untuk menyambung.",
   "settings.tor.custom_empty":
@@ -2643,6 +2686,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Dering",
   "notif.ring.title": "{sender} sedang mendering anda",
   "notif.ring.body": "Semak mesej anda",
+  "notif.action.reply": "Balas",
+  "notif.action.send": "Hantar",
+  "notif.action.mark_read": "Tandakan sudah dibaca",
+  "notif.reply.failed_title": "Tidak dihantar",
+  "notif.reply.failed_body":
+    "Balasan anda kepada {chat} tidak dihantar. Buka sembang untuk mencuba lagi.",
+  "notif.reply.held_title": "Menunggu dihantar",
+  "notif.reply.held_body":
+    "Balasan anda kepada {chat} akan dihantar apabila Airhop berjalan.",
+  "notif.reply.cut_title": "Dihantar sebahagian",
+  "notif.reply.cut_body":
+    "Balasan anda kepada {chat} terlalu panjang, jadi bahagian akhirnya tidak dihantar.",
 };
 
 export const plurals: Plurals = {

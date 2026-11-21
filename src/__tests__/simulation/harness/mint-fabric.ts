@@ -673,6 +673,7 @@ export class MintFabric {
       .find((k) => k.id === input.id)
       ?.keys.get(input.amount);
     if (priv === undefined) return true;
+    if (this.disownedYs.has(this.yFor(input.secret))) return true;
     try {
       const expected = hashToCurve(
         new TextEncoder().encode(input.secret),
@@ -729,6 +730,8 @@ export class MintFabric {
   // Spent proofs, keyed by Y = hash_to_curve(secret), which is how NUT-07
   // identifies a proof without revealing its secret.
   private readonly spentYs = new Set<string>();
+  // Coins it signed and now refuses (see `disown`).
+  private readonly disownedYs = new Set<string>();
 
   private swap(body: Record<string, unknown>): Response {
     this.swapCount++;
@@ -1163,6 +1166,12 @@ export class MintFabric {
   // "somebody else redeemed this token first" looks like from here.
   markSpent(secret: string): void {
     this.spentYs.add(this.yFor(secret));
+  }
+
+  // Test affordance: refuse a coin it signed, as a mint that lost a key does.
+  // NUT-07 still calls it unspent, so only the swap is refused.
+  disown(secret: string): void {
+    this.disownedYs.add(this.yFor(secret));
   }
 
   isSpent(secret: string): boolean {

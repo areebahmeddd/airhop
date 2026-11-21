@@ -82,5 +82,9 @@ describe("board gossip sync", () => {
     g.track(packet(PacketType.BOARD_POST, 5));
     const missing = g.handleFilter(emptyFilterRequest(1 << TYPE_BIT_ANNOUNCE));
     expect(missing).toHaveLength(0);
+    // The same post is offered once the board bit is asked for.
+    expect(
+      g.handleFilter(emptyFilterRequest(1 << TYPE_BIT_BOARD)),
+    ).toHaveLength(1);
   });
 });

@@ -51,15 +51,17 @@ import {
 } from "@react-native-vector-icons/feather/static";
 import { MaterialDesignIcons } from "@react-native-vector-icons/material-design-icons/static";
 import {
+  adoptIntoAttachmentCache,
+  CACHE_FILE_PREFIX,
+  discardPickerCopy,
+  holdAttachmentFile,
+} from "@services/attachment-cache";
+import {
   setAudioForPlayback,
   setAudioForRecording,
 } from "@services/audio-session";
 import {
-  adoptIntoAttachmentCache,
   AttachmentTooLargeError,
-  CACHE_FILE_PREFIX,
-  discardPickerCopy,
-  holdAttachmentFile,
   sizeLabel,
 } from "@services/file-transfer-service";
 import {
@@ -67,10 +69,13 @@ import {
   type GeoParticipant,
 } from "@services/geohash-channel-service";
 import { prepareImageForSend } from "@services/image-compression";
+import { keepAsContact } from "@services/keep-as-contact";
 import { LiveVideoReceiver } from "@services/live-video-receiver";
 import type { FinishedLiveVideo } from "@services/live-video-sender";
 import { hasLocationPermission } from "@services/location-service";
 import { getMeshService } from "@services/mesh-service";
+import { transmitMessage } from "@services/message-send";
+import { dismissNotificationsFor } from "@services/notification-service";
 import {
   receiveTrustingMint,
   reportWalletError,
@@ -100,7 +105,7 @@ import {
 } from "@store/chat-store";
 import { loadDraft, saveDraft } from "@store/composer-drafts";
 import { useContactsStore } from "@store/contacts-store";
-import { useGroupStore } from "@store/group-store";
+import { groupChannel, useGroupStore } from "@store/group-store";
 import { locationOffBanner, useMeshStateStore } from "@store/mesh-state-store";
 import { isPerson, REACHABLE_TTL_MS, usePeerStore } from "@store/peer-store";
 import { placeNameKey, usePlaceNamesStore } from "@store/place-names-store";
@@ -145,7 +150,7 @@ import {
 import { isManualGeoChannel, manualGeohashOf } from "@utils/channel-key";
 import { channelInviteLink } from "@utils/deep-link";
 import { unconfirmedSince } from "@utils/delivery-silence";
-import { emoteLine, screenshotNotice } from "@utils/emote";
+import { emoteLine, expandEmote, screenshotNotice } from "@utils/emote";
 import {
   amountParts,
   formatBytes,
@@ -212,6 +217,7 @@ import {
   TextInput,
   View,
   type GestureResponderEvent,
+  type ListViewToken,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type StyleProp,
@@ -243,6 +249,9 @@ import {
   publicCharsLeft,
 } from "./compose-budget";
 import ContactInfoSheet from "./contact-info-sheet";
+import DisappearingTimerSheet, {
+  useDmTimerDays,
+} from "./disappearing-timer-sheet";
 import { dmReachesOverInternet } from "./dm-reaches-over-internet";
 import {
   carriesEcash,
@@ -250,12 +259,12 @@ import {
   PUBLIC_FORWARD_BURST,
 } from "./forward-rules";
 import ForwardSheet from "./forward-sheet";
+import GroupInviteBar from "./group-invite-bar";
 import {
   CANCEL_SLIDE_DISARM,
   CANCEL_SLIDE_DISTANCE,
   LOCK_SLIDE_DISTANCE,
 } from "./hold-gesture";
-import { keepAsContact } from "./keep-as-contact";
 import LiveBadge from "./live-badge";
 import LiveVideoStudio from "./live-video-studio";
 import LiveVideoViewer from "./live-video-viewer";
@@ -268,6 +277,7 @@ import { activateOnly } from "./screen-reader-actions";
 import SendLocationSheet from "./send-location-sheet";
 import { useAwaitingReceipt } from "./use-awaiting-receipt";
 import { useExclusivePlayback } from "./use-exclusive-playback";
+import { videoNoteIds, videoNotePlayback } from "./video-note-playback";
 import {
   useVideoNoteRecorder,
   type RecordedVideoNote,
@@ -505,7 +515,7 @@ function mediaHeightForAspect(aspect: number | null): number {
 
 function systemRowIcon(
   key: string | undefined,
-): "camera" | "alert-circle" | "info" {
+): "camera" | "alert-circle" | "watch" | "info" {
   if (
     key?.startsWith("chat.board.urgent") === true ||
     key === "chat.dm.signing_key_refused"
@@ -513,6 +523,8 @@ function systemRowIcon(
     return "alert-circle";
   }
   if (key?.startsWith("chat.screenshot") === true) return "camera";
+  // The icon the timer's own controls carry.
+  if (key?.startsWith("chat.timer.") === true) return "watch";
   return "info";
 }
 
@@ -533,6 +545,9 @@ const VOICE_PLAY_SIZE = 32;
 // Header action circles. Same 32pt as the app header's pills, so a circular
 // icon button is one size everywhere it appears in chrome.
 const HEADER_ICON_SIZE = 32;
+// A payment card's Claim pill, kept small inside the bubble; nothing else in
+// the card is tappable, so its slop overlaps nothing.
+const PAYMENT_CLAIM_HEIGHT = 28;
 
 // Slash commands offered by the "/" quick-picker. Only the ones handleSend
 // actually acts on appear here, so the list never advertises a command that does
@@ -666,16 +681,19 @@ function videoTrackAspect(track: VideoTrack | null): number | null {
 // autoplay is what makes it read as a face rather than a file, and it stops for
 // anyone who asked the OS for less motion, who gets a still frame and a tap.
 // Sound is the thread's to give, one clip at a time as for voice notes, and a
-// live voice burst turns it off as it pauses a voice note.
+// live voice burst turns it off as it pauses a voice note. `looping` is the
+// thread's too: only the newest notes on screen move (video-note-playback.ts).
 function VideoNoteAttachment({
   uri,
   withSound,
+  looping,
   onToggleSound,
   onFinished,
   onAskResend,
 }: {
   uri: string;
   withSound: boolean;
+  looping: boolean;
   onToggleSound: () => void;
   onFinished: () => void;
   onAskResend?: () => void;
@@ -708,9 +726,12 @@ function VideoNoteAttachment({
     // its silent loop, rather than repeating someone's words until tapped.
     player.loop = !withSound;
     if (withSound) player.replay();
-    else if (reduceMotion) player.pause();
+  }, [player, withSound]);
+  useEffect(() => {
+    if (withSound) return;
+    if (reduceMotion || !looping) player.pause();
     else player.play();
-  }, [player, reduceMotion, withSound]);
+  }, [player, reduceMotion, withSound, looping]);
   const onFinishedRef = useRef(onFinished);
   const withSoundRef = useRef(withSound);
   useEffect(() => {
@@ -783,6 +804,30 @@ function VideoNoteAttachment({
         )}
       </View>
     </Pressable>
+  );
+}
+
+// A video note off screen: the same circle with no player behind it, so the
+// list's window can hold any number of notes while only those in view take a
+// decoder. Still a button, so a screen reader can play it from here.
+function VideoNotePlaceholder({
+  onToggleSound,
+}: {
+  onToggleSound: () => void;
+}): React.JSX.Element {
+  const T = useT();
+  const Colors = useThemeColors();
+  return (
+    <Pressable
+      onPress={onToggleSound}
+      accessibilityRole="button"
+      accessibilityLabel={T("chat.video_note.a11y")}
+      accessibilityState={{ checked: false }}
+      style={[
+        videoAttachmentStyles.note,
+        { backgroundColor: Colors.mediaBackdrop },
+      ]}
+    />
   );
 }
 
@@ -1828,6 +1873,23 @@ export default function MessageThread({
   // sealed under the group's epoch key and broadcast as 0x25, not plaintext.
   const isGroup = channel.startsWith("group:");
   const groupName = useGroupStore((s) => s.nameForChannel(channel));
+  const invitePending = useGroupStore(
+    (s) =>
+      isGroup && s.invites.some((i) => groupChannel(i.groupID) === channel),
+  );
+  // The creator withdrew the invite while it was open: its chat is gone, so
+  // there is nothing left here to show.
+  const inviteWithdrawn = useChatStore(
+    (s) =>
+      isGroup &&
+      !s.channels.includes(channel) &&
+      !invitePending &&
+      useGroupStore.getState().get(channel.slice("group:".length)) ===
+        undefined,
+  );
+  useEffect(() => {
+    if (inviteWithdrawn) onBack();
+  }, [inviteWithdrawn, onBack]);
   // A private channel is exactly one that holds an encryption key: the same test
   // the info sheet makes as `isPrivate`, so the header and the sheet you reach
   // by tapping it cannot disagree about the room. One predicate, two uses.
@@ -2301,6 +2363,27 @@ export default function MessageThread({
   const releasePlaying = useCallback((id: string): void => {
     setPlayingMessageId((current) => (current === id ? null : current));
   }, []);
+  // Video notes on screen, oldest first, which decide who holds a player
+  // (video-note-playback.ts).
+  const [visibleNoteIds, setVisibleNoteIds] = useState<readonly string[]>([]);
+  // Stable across renders, as FlatList requires of both.
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ListViewToken[] }): void => {
+      const ids = videoNoteIds(
+        viewableItems.map((token) => token.item as ChatMessage),
+      );
+      setVisibleNoteIds((prev) =>
+        prev.length === ids.length && prev.every((id, i) => id === ids[i])
+          ? prev
+          : ids,
+      );
+    },
+  ).current;
+  // A note only flung past never gets a player.
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 10,
+    minimumViewTime: 150,
+  }).current;
   // Each mounted voice note's seek, by message id, so the bubble's
   // screen-reader actions can move through a note the way a tap on its bars
   // does.
@@ -2308,8 +2391,8 @@ export default function MessageThread({
   // A live stream's sound is the same speaker: a note given sound silences the
   // stream, and a stream unmuted stops the note. Whatever the user starts (a
   // note, a video, the trimmer's preview, a stream's sound) also silences a
-  // live voice burst, as bitchat-ios does; the burst still shows as talking and
-  // still arrives as a voice note.
+  // live voice burst; the burst still shows as talking and still arrives as a
+  // voice note.
   const liveVideoReceiver = getMeshService()?.liveVideoReceiver ?? null;
   useEffect(() => {
     if (playingMessageId === null) return;
@@ -2365,6 +2448,7 @@ export default function MessageThread({
   const keysetRefs = useMemo(() => keysetRefsOf(mints), [mints]);
   const [showChannelInfo, setShowChannelInfo] = useState(false);
   const [showDMInfo, setShowDMInfo] = useState(false);
+  const [pickingTimer, setPickingTimer] = useState(false);
   // Channel-message sender profile sheet: tap a message's avatar/name to
   // see who they are and message them, same as tapping a peer on the Mesh
   // tab. Not used in a DM thread (only one other participant there,
@@ -2471,11 +2555,13 @@ export default function MessageThread({
   const blockedPeerIDs = useBlockedStore((s) => s.blockedPeerIDs);
   const blockedAliases = useBlockedStore((s) => s.blockedAliases);
   // Disappearing messages leave the screen when they expire, whenever the
-  // sweep gets to them. Checked on the peer clock, and only while the setting
-  // is on, so a thread with it off never recomputes for the clock.
+  // sweep gets to them. Checked on the peer clock, in a private chat always,
+  // since its messages carry their own timers, and elsewhere only while the
+  // default is on, so a room with it off never recomputes for the clock.
   const messageRetentionDays = useSettingsStore((s) => s.messageRetentionDays);
   const retentionWindowMs = messageRetentionWindowMs(messageRetentionDays);
-  const expiryClock = retentionWindowMs > 0 ? peerClock : 0;
+  const expiryClock =
+    retentionWindowMs > 0 || channel.startsWith("dm:") ? peerClock : 0;
   const awaitingReceipt = useAwaitingReceipt();
   const msgs = useMemo(() => {
     const all = withoutExpired(
@@ -2511,6 +2597,8 @@ export default function MessageThread({
   // A DM with a durable mesh identity rather than a per-cell geohash
   // pseudonym. Gates the attach options that need a Noise session to exist.
   const isMeshDM = isDM && dmPeerID !== null && !isNostrId(dmPeerID);
+  // A location pseudonym's chat follows the default, as a room does.
+  const dmTimerDays = useDmTimerDays(isMeshDM ? channel : null);
   // Read at render, which the attach menu does each time it opens. Only a
   // peer that has proven it reads pins is offered one.
   const acceptsLocationPin =
@@ -2592,10 +2680,22 @@ export default function MessageThread({
   const [appActive, setAppActive] = useState(
     () => AppState.currentState === "active",
   );
+  // Read by the listener below, which is subscribed once.
+  const playingVideoRef = useRef(false);
+  playingVideoRef.current = msgs.some(
+    (m) => m.id === playingMessageId && m.attachment?.type === "video",
+  );
   useEffect(() => {
-    const sub = AppState.addEventListener("change", (next) =>
-      setAppActive(next === "active"),
-    );
+    const sub = AppState.addEventListener("change", (next) => {
+      setAppActive(next === "active");
+      // The OS pauses video players in the background, a call included, so a
+      // video given sound gives up the speaker rather than come back paused
+      // with its sound badge still on. Not on "inactive": a glance at Control
+      // Center must not stop it.
+      if (next === "background" && playingVideoRef.current) {
+        setPlayingMessageId(null);
+      }
+    });
     return () => sub.remove();
   }, []);
   // Nobody reads behind the app lock, so receipts and live audio wait for it.
@@ -2870,12 +2970,9 @@ export default function MessageThread({
         `+${formatUnitAmount(result.amount, result.unit)}`,
         result.outcome === "swapped"
           ? t("wallet.receive.redeemed_at", { mint: hostOf(result.mintUrl) })
-          : t(
-              result.dleq === "valid"
-                ? "wallet.receive.pending_unconfirmed_genuine"
-                : "wallet.receive.pending_unconfirmed",
-              { mint: hostOf(result.mintUrl) },
-            ),
+          : t("wallet.receive.pending_unconfirmed", {
+              mint: hostOf(result.mintUrl),
+            }),
       );
     } catch (err) {
       reportWalletError(err);
@@ -2901,10 +2998,6 @@ export default function MessageThread({
     dmStatusTimerRef.current = setTimeout(() => {
       setDmStatus(null);
     }, 4000);
-  }
-
-  function showQueuedStatus(): void {
-    showStatus("queued");
   }
 
   // ---- Composer length budget ----
@@ -2961,6 +3054,8 @@ export default function MessageThread({
             if (!message.senderID.startsWith("nostr_")) {
               getMeshService()?.forgetPeer(message.senderID);
             }
+            // Their DM card would otherwise sit in the tray, offering Reply.
+            void dismissNotificationsFor(`dm:${message.senderID}`);
           },
         },
       ],
@@ -3056,124 +3151,9 @@ export default function MessageThread({
   ]);
 
   // The real transmission, run when the hold window elapses or is committed.
-  // Reads everything from the message and from live getters, so it is safe to
-  // call from a stale closure (a fired timer, or the unmount flush).
+  // Safe from a stale closure (a fired timer, or the unmount flush).
   function transmit(msg: ChatMessage): void {
-    const setStatus = useChatStore.getState().setMessageStatus;
-    const msgChannel = msg.channel;
-    const service = getMeshService();
-    if (!service) {
-      setStatus(msgChannel, msg.id, "failed");
-      return;
-    }
-    if (msgChannel.startsWith("dm:")) {
-      const dmPeerID = msgChannel.slice(3);
-      // Sending to someone saves them as a contact too, so replying to a DM
-      // that started inbound keeps them, not just DMs you initiated.
-      keepAsContact(
-        dmPeerID,
-        usePeerStore.getState().getPeer(dmPeerID)?.nickname ??
-          resolveDisplayName(dmPeerID),
-      );
-      const result = service.sendDm(dmPeerID, msg.text, msg.id);
-      // "sent"/"sent-nostr" upgrade to delivered/read via receipts. When no
-      // route exists now it is either "carried" (a courier took a sealed copy)
-      // or "queued" (held locally for retry); both surface the queued notice.
-      setStatus(
-        msgChannel,
-        msg.id,
-        result === "needs-courier"
-          ? "carried"
-          : result === "queued"
-            ? "queued"
-            : "sent",
-      );
-      if (result === "needs-courier" || result === "queued") {
-        showQueuedStatus();
-      }
-    } else if (msgChannel.startsWith("group:")) {
-      // Private group: seal under the epoch key and broadcast (0x25).
-      //
-      // A group is Bluetooth-only, so reach is the same question a channel
-      // broadcast faces, and it gets the same three answers. Reporting "sent"
-      // whenever the packet is merely sealed gives a message to a group nobody is
-      // in range of a tick it has not earned. Groups have no delivery receipts on
-      // either client, so this tick is all the user gets and it has to be true.
-      const sent = service.sendGroupMessage(
-        msgChannel.slice("group:".length),
-        msg.text,
-        msg.id,
-      );
-      if (!sent.sealed) {
-        // We no longer hold the group's key, so the creator removed us. Terminal:
-        // unlike every other failure here, walking around does not fix it.
-        setStatus(msgChannel, msg.id, "failed");
-        showStatus("no-group-key");
-      } else if (sent.meshLinks > 0) {
-        setStatus(msgChannel, msg.id, "sent");
-      } else {
-        // Sealed but nobody in range. NOT a failure: the packet is now a gossip
-        // candidate for six hours, so the first member to come into range
-        // and ask for a sync gets it. "queued" is exactly that, and it is the
-        // common case for a group, whose members are specific people who are
-        // usually not all nearby. Marking it failed would paint most group
-        // messages red for something that is about to work.
-        setStatus(msgChannel, msg.id, "queued");
-        showStatus("group-queued");
-      }
-    } else {
-      // Three outcomes: it reached a link or a live relay ("sent"), a gateway
-      // peer took it to publish for us ("carried"), or it went nowhere. Read
-      // from what happened, not from whether the channel may use the internet,
-      // or a location channel on Bluetooth alone shows a sent tick.
-      //
-      // The row's id is the wire id, so a retry is the same message again and
-      // collapses with the first copy wherever both land.
-      const sent = service.sendChannelMessage(
-        msgChannel,
-        msg.text,
-        msg.id,
-        msg.nearbyOnly === true,
-      );
-      const settle = (reach: typeof sent, announce: boolean): void => {
-        if (reach.meshLinks > 0 || reach.nostr) {
-          setStatus(msgChannel, msg.id, "sent");
-        } else if (reach.gateway) {
-          setStatus(msgChannel, msg.id, "carried");
-          if (announce) showStatus("gateway");
-        } else if (
-          isGeoChannel(msgChannel) ||
-          useChatStore.getState().channelKeys[msgChannel] !== undefined
-        ) {
-          // A location cell's audience is everyone in it, reached over the
-          // internet. A Bluetooth neighbor arriving later will sync the packet,
-          // but the cell itself never sees it, so this is as far as it goes.
-          //
-          // A private channel's sealed packet is never kept for sync and its
-          // relay publish is one-shot, so nothing sends it later either. Failed
-          // is what offers Retry.
-          setStatus(msgChannel, msg.id, "failed");
-          if (announce) showNoReachStatus();
-        } else {
-          // A public mesh room's audience IS whoever is in range, and the packet
-          // stays a gossip candidate for six hours, so the next neighbor to
-          // turn up gets it. Same reasoning as the group branch above: this is
-          // waiting, not broken, and painting it red would be the harsher of
-          // two lies.
-          setStatus(msgChannel, msg.id, "queued");
-          if (announce) showNoReachStatus();
-        }
-      };
-      settle(sent, true);
-      // Only a relay carried it, on the strength of an open socket. Every relay
-      // may still refuse or never answer, so the answer has the last word. No
-      // hint then: it could land on whatever thread is open by the time.
-      if (sent.meshLinks === 0 && sent.nostr) {
-        void sent.settled?.then((reach) => {
-          if (!reach.nostr) settle(reach, false);
-        });
-      }
-    }
+    transmitMessage(msg, { notice: showStatus });
   }
 
   // Latest transmit, so the unmount flush uses current closures without
@@ -3247,40 +3227,22 @@ export default function MessageThread({
   function handleSend(): void {
     let text = draft.trim();
     if (!text) return;
-    // Fun IRC-style emotes, matching bitchat: /hug and /slap become an action
-    // message both sides see. In a DM the target defaults to the peer; in a
-    // channel it comes from a trailing @name.
-    //
-    // A DM uses the second person, matching bitchat: its handleEmote sends
-    // "slaps you around a bit with a large trout" on the private-chat branch,
-    // and its reader matches that literal string. The recipient's nickname would
-    // read as a third-person line about them in their own DM. English, never
-    // translated: this text crosses the wire and bitchat matches it as a
-    // substring.
-    const emote = /^\/(hug|slap)(?:\s+(.*))?$/i.exec(text);
-    if (emote) {
-      const kind = emote[1].toLowerCase();
-      // A DM has exactly one recipient, so a trailing @name cannot redirect it
-      // and is ignored: the target is always "you".
-      const target = isDM ? "you" : (emote[2] ?? "").trim().replace(/^@/, "");
-      // A channel emote needs a @name. The draft stays so it can be finished,
-      // and the toast says what is missing rather than the send going quiet.
-      if (target.length === 0) {
-        setToast({
-          message: t("chat.cmd.emote_needs_target", { command: kind }),
-          icon: "at-sign",
-        });
-        return;
-      }
-      const emoji = kind === "hug" ? "🫂" : "🐟";
-      const action = kind === "hug" ? "hugs" : "slaps";
-      const suffix = kind === "slap" ? " around a bit with a large trout" : "";
-      text = `* ${emoji} ${localNickname} ${action} ${target}${suffix} *`;
+    const emote = expandEmote(text, localNickname, isDM);
+    // A channel emote needs a @name. The draft stays so it can be finished,
+    // and the toast says what is missing rather than the send going quiet.
+    if (emote.kind === "needs-target") {
+      setToast({
+        message: t("chat.cmd.emote_needs_target", { command: emote.command }),
+        icon: "at-sign",
+      });
+      return;
+    }
+    if (emote.kind === "emote") {
       // An emote expands a short command into a whole sentence, so it is the
       // one way text can pass the composer budget and still overrun it. Clamp
       // again rather than refuse: the emote is decoration, and a trimmed trout
       // beats a message that encodes to null and vanishes.
-      text = clampDraft(text);
+      text = clampDraft(emote.text);
     }
     // At most one message is ever held: commit the previous one first.
     commitHeld();
@@ -4825,6 +4787,10 @@ export default function MessageThread({
   // The mesh holds incoming live sound while a note records; see
   // setNoteRecording.
   const noteRecording = isRecording || videoNote.active;
+  // Video notes hold still while the camera or a live stream has the screen,
+  // and while nobody can see them (background, the app lock).
+  const notesMayLoop =
+    present && liveViewer === null && liveStudio === null && !videoNote.active;
   useEffect(() => {
     const service = getMeshService();
     if (!service) return;
@@ -4931,8 +4897,8 @@ export default function MessageThread({
       const talking = names.length > 0;
       if (talking && !liveTalkingRef.current) {
         jumpToLatest();
-        // A live voice and a voice note would play over each other, so the
-        // note pauses, as bitchat-ios pauses it for a burst.
+        // A live voice and a voice note would play over each other, so the note
+        // pauses.
         setPlayingMessageId(null);
       }
       // Nobody is holding the floor any more, so the banner is about to go and
@@ -5379,19 +5345,32 @@ export default function MessageThread({
             />
           );
         }
-        return isVideoNoteName(attachment.name) ? (
-          <VideoNoteAttachment
-            uri={attachment.uri}
-            withSound={playingMessageId === messageId}
-            onToggleSound={() =>
-              setPlayingMessageId((current) =>
-                current === messageId ? null : messageId,
-              )
-            }
-            onFinished={() => releasePlaying(messageId)}
-            onAskResend={onAskResend}
-          />
-        ) : (
+        if (isVideoNoteName(attachment.name)) {
+          const playback = videoNotePlayback(
+            messageId,
+            visibleNoteIds,
+            playingMessageId,
+            notesMayLoop,
+          );
+          const toggleSound = (): void =>
+            setPlayingMessageId((current) =>
+              current === messageId ? null : messageId,
+            );
+          if (playback === "none") {
+            return <VideoNotePlaceholder onToggleSound={toggleSound} />;
+          }
+          return (
+            <VideoNoteAttachment
+              uri={attachment.uri}
+              withSound={playingMessageId === messageId}
+              looping={playback === "loop"}
+              onToggleSound={toggleSound}
+              onFinished={() => releasePlaying(messageId)}
+              onAskResend={onAskResend}
+            />
+          );
+        }
+        return (
           <VideoAttachment
             uri={attachment.uri}
             liveRecording={liveVideoStreamOf(attachment.name) !== null}
@@ -5532,7 +5511,7 @@ export default function MessageThread({
         )}
         {paid && (
           <View style={styles.paymentCardClaimed}>
-            <Feather name="check" size={13} color={Colors.online} />
+            <Feather name="check" size={13} color={Colors.success} />
             <Text style={styles.paymentCardClaimedText}>
               {t("chat.ecash.claimed")}
             </Text>
@@ -5543,7 +5522,7 @@ export default function MessageThread({
         {!isMine &&
           (isTokenClaimed(token) ? (
             <View style={styles.paymentCardClaimed}>
-              <Feather name="check" size={13} color={Colors.online} />
+              <Feather name="check" size={13} color={Colors.success} />
               <Text style={styles.paymentCardClaimedText}>
                 {t("chat.ecash.claimed")}
               </Text>
@@ -5558,10 +5537,12 @@ export default function MessageThread({
             </View>
           ) : (
             <Pressable
-              style={[
+              style={({ pressed }) => [
                 styles.paymentCardClaim,
+                pressed && styles.paymentCardClaimPressed,
                 claimingToken !== null && styles.paymentCardClaimBusy,
               ]}
+              hitSlop={hitSlopFor(PAYMENT_CLAIM_HEIGHT)}
               disabled={claimingToken !== null}
               onPress={() => void claimToken(token)}
               accessibilityRole="button"
@@ -5846,6 +5827,23 @@ export default function MessageThread({
           </Pressable>
         )}
 
+        {/* The chat's timer, shown while it is on, and the way to change it
+            without opening the info sheet. */}
+        {isMeshDM && !dmWithRelay && !selecting && dmTimerDays > 0 && (
+          <Pressable
+            style={styles.headerAction}
+            onPress={() => setPickingTimer(true)}
+            hitSlop={hitSlopFor(HEADER_ICON_SIZE)}
+            accessibilityRole="button"
+            accessibilityLabel={T("settings.general.message_retention")}
+            accessibilityValue={{
+              text: TP("settings.general.retention_days", dmTimerDays),
+            }}
+          >
+            <Feather name="watch" size={18} color={Colors.textSecondary} />
+          </Pressable>
+        )}
+
         {/* Separate circles, as on the Chats header: a joined track reads as
             one control, and these do two unrelated things. */}
         {!isDM && !isGroup && !selecting && (
@@ -5929,6 +5927,8 @@ export default function MessageThread({
           maxToRenderPerBatch={12}
           windowSize={11}
           updateCellsBatchingPeriod={50}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
           // Hold the reader's place when rows are removed above them. A thread
           // keeps 200 messages (chat-store MAX_PER_CHANNEL) and trims the
           // oldest, so in a busy room someone reading back has the ground move
@@ -6028,6 +6028,12 @@ export default function MessageThread({
             const renderState = [
               revealedAttachments.has(item.id) ? "reveal" : "",
               playingMessageId === item.id ? "play" : "",
+              videoNotePlayback(
+                item.id,
+                visibleNoteIds,
+                playingMessageId,
+                notesMayLoop,
+              ),
               autoDownloadMedia ? "auto" : "",
               tokens.length === 0
                 ? ""
@@ -6643,7 +6649,10 @@ export default function MessageThread({
       {/* The compose row and the recording bar under it, measured as one: a
           video note's camera stops above both. */}
       <View onLayout={(e) => setComposeAreaHeight(e.nativeEvent.layout.height)}>
-        {!selecting && (
+        {!selecting && invitePending && (
+          <GroupInviteBar channel={channel} onDeclined={onBack} />
+        )}
+        {!selecting && !invitePending && (
           <View style={styles.composeBar}>
             {/* Attach. Always present, grayed where media cannot be delivered, so
             the bar keeps its shape and the reason is one tap away. */}
@@ -7029,6 +7038,12 @@ export default function MessageThread({
         <ContactInfoSheet
           channel={showDMInfo ? channel : null}
           onClose={() => setShowDMInfo(false)}
+        />
+      )}
+      {isMeshDM && (
+        <DisappearingTimerSheet
+          peerID={pickingTimer ? channel.slice(3) : null}
+          onClose={() => setPickingTimer(false)}
         />
       )}
 
@@ -8204,11 +8219,15 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
       borderRadius: Radius.sm,
       backgroundColor: Colors.accent,
       paddingHorizontal: Spacing.sm,
-      paddingVertical: Spacing.xs,
+      minHeight: PAYMENT_CLAIM_HEIGHT,
+      justifyContent: "center",
       alignSelf: "flex-start",
     },
+    paymentCardClaimPressed: {
+      opacity: PRESSED_OPACITY,
+    },
     paymentCardClaimBusy: {
-      opacity: 0.5,
+      opacity: DISABLED_OPACITY,
     },
     paymentCardClaimed: {
       flexDirection: "row",
@@ -8219,7 +8238,7 @@ function createStyles(Colors: ReturnType<typeof useThemeColors>) {
     },
     paymentCardClaimedText: {
       fontSize: FontSize.xs,
-      color: Colors.online,
+      color: Colors.success,
       fontWeight: FontWeight.semibold,
     },
     paymentCardVoid: {

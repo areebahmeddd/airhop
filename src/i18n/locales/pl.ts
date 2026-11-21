@@ -161,7 +161,7 @@ export const strings: Strings = {
     "Znajduje urządzenia w pobliżu i przekazuje wiadomości między nimi. Tak powstaje sieć mesh i działa bez internetu.",
   "onboarding.primer.location.title": "Lokalizacja",
   "onboarding.primer.location.body":
-    "Umieszcza cię w kanałach okolicy, od kwartału po region. Airhop nigdy cię nie śledzi, a twoja dokładna lokalizacja opuszcza urządzenie tylko wtedy, gdy wyślesz komuś pinezkę z lokalizacją.",
+    "Umieszcza cię w kanałach okolicy, od kwartału po region. Airhop nigdy cię nie śledzi, a twoja dokładna lokalizacja nigdy nie opuszcza urządzenia.",
   "onboarding.primer.notifications.title": "Powiadomienia",
   "onboarding.primer.notifications.body":
     "Dostajesz alerty o nowych wiadomościach, nawet gdy aplikacja jest zamknięta. Powiadomienia powstają lokalnie na urządzeniu, bez udziału serwera.",
@@ -389,7 +389,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Nie udało się dotrzeć do każdego członka. Spróbuj ponownie, gdy będą w pobliżu.",
   "chat.group.you_were_added": "Dodano cię do {name}.",
-  "chat.group.added_you": "Dodał cię do {name}",
+  "chat.timer.you_set_1": "Ustawiono znikające wiadomości na 1 dzień",
+  "chat.timer.you_set_7": "Ustawiono znikające wiadomości na 7 dni",
+  "chat.timer.you_set_30": "Ustawiono znikające wiadomości na 30 dni",
+  "chat.timer.you_off": "Wyłączono znikające wiadomości",
+  "chat.timer.you_set_local_1":
+    "Ustawiono znikające wiadomości na 1 dzień na tym telefonie",
+  "chat.timer.you_set_local_7":
+    "Ustawiono znikające wiadomości na 7 dni na tym telefonie",
+  "chat.timer.you_set_local_30":
+    "Ustawiono znikające wiadomości na 30 dni na tym telefonie",
+  "chat.timer.you_off_local": "Wyłączono znikające wiadomości na tym telefonie",
+  "chat.timer.peer_set_1": "{name} ustawia znikające wiadomości na 1 dzień",
+  "chat.timer.peer_set_7": "{name} ustawia znikające wiadomości na 7 dni",
+  "chat.timer.peer_set_30": "{name} ustawia znikające wiadomości na 30 dni",
+  "chat.timer.peer_off": "{name} wyłącza znikające wiadomości",
+  "chat.timer.sheet_shared":
+    "Dla wiadomości wysyłanych od teraz, na obu telefonach. Na telefonie nadawcy czas każdej liczy się od wysłania, a na drugim od pierwszego przeczytania. Zrzutów ekranu nie da się zablokować.",
+  "chat.timer.sheet_pending":
+    "Ustawiono na tym telefonie. {name} otrzyma licznik przy następnym połączeniu, a potem zacznie on działać na obu telefonach.",
+  "chat.timer.sheet_bitchat":
+    "Tylko na tym telefonie. Aplikacja {name} nie obsługuje wspólnych liczników.",
+  "chat.timer.sheet_local":
+    "Na razie tylko na tym telefonie. Jeśli aplikacja {name} obsługuje wspólne liczniki, licznik dotrze do tej osoby przy następnym połączeniu.",
+  "chat.group.invited": "Zaproszono cię do {name}.",
+  "chat.group.invited_you": "Zaprosił cię do {name}",
+  "chat.group.decline": "Odrzuć",
+  "chat.group.decline_title": "Odrzucić zaproszenie do {name}?",
+  "chat.group.decline_body":
+    "{name} nie ma w twoich kontaktach. Zablokuj tę osobę, a nie dostaniesz od niej więcej zaproszeń ani wiadomości.",
+  "chat.group.decline_block": "Odrzuć i zablokuj",
   "chat.group.you_were_removed":
     "Usunięto cię z {name}. Nie możesz już tu czytać ani wysyłać wiadomości.",
   "chat.group.removed_you": "Usunął cię z {name}",
@@ -1208,6 +1237,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Nie udało się zbudować tokena",
+  "wallet.send.unverified_note":
+    "Część tej płatności to ecash, którego mennica jeszcze nie potwierdziła.",
   "wallet.send.title": "Wyślij ecash",
   "wallet.send.amount_in": "Kwota w {unit}",
   "wallet.send.body":
@@ -1267,15 +1298,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Zrealizowane w {mint}. Teraz w sposób sprawdzalny należy do ciebie: kopia tego tokena u nadawcy już nie działa.",
   "wallet.receive.pending_unconfirmed":
-    "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Zapisane z {mint}, ale mennica jeszcze nie potwierdziła, że jest niewydane. Podpis się zgadza, więc token jest prawdziwy. Zostanie automatycznie potwierdzone w mennicy, gdy będziesz online.",
   "wallet.receive.dleq_ok":
     "Podpis mennicy się zgadza, więc token jest prawdziwy.",
-  "wallet.receive.dleq_uncached":
-    "Kluczy tej mennicy tu nie ma, więc podpisu nie dało się sprawdzić offline.",
-  "wallet.receive.dleq_missing":
-    "Nie każda moneta w nim ma dowód podpisu mennicy, więc nie dało się go sprawdzić offline.",
   "wallet.receive.dleq_warning":
     "Dopóki nie zostanie potwierdzone online, nadawca mógł w zasadzie wydać to gdzie indziej.",
   "wallet.receive.failed": "Nie udało się odebrać",
@@ -1636,6 +1661,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Wyceluj w kod QR tokena, faktury lub npub.",
   "wallet.scan.no_any":
     "Nie znaleziono tokena, faktury ani npub na tym obrazie.",
+  "wallet.scan.not_usable": "Airhop nie może tu użyć tego kodu QR.",
   "wallet.scan.use_camera_a11y": "Skanuj aparatem",
   "wallet.scan.use_camera": "Użyj aparatu",
   "wallet.scan.pick_image_a11y": "Odczytaj kod QR z zapisanego obrazu",
@@ -1737,6 +1763,11 @@ export const strings: Strings = {
     "Ta płatność jest zablokowana dla twojego portfela.",
   "wallet.svc.locked_ours_offline_body":
     "Odbierz ją, gdy będziesz online. Nikt inny nie może jej w międzyczasie zabrać.",
+  "wallet.svc.offline_cap":
+    "Offline niepotwierdzony ecash jest ograniczony do {limit} na mennicę.",
+  "wallet.svc.offline_unchecked": "Tego ecash nie da się sprawdzić offline.",
+  "wallet.svc.claim_online_body":
+    "Odbierz tę płatność, gdy będziesz online i mennica będzie mogła ją potwierdzić.",
   "wallet.svc.already_spent": "Ten ecash został już wydany.",
   "wallet.svc.already_spent_body":
     "Ten, kto wysłał ten token, zrealizował go pierwszy albo wysłał ten sam token jeszcze komuś innemu.",
@@ -2068,10 +2099,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Najdłużej utrzymuje wątki czytelnymi i najwięcej trzyma na dysku.",
   "settings.general.message_retention": "Znikające wiadomości",
-  "settings.general.message_retention_desc":
-    "Wiadomości i ich multimedia są usuwane z tego telefonu po wybranym czasie",
-  "settings.general.message_retention_sheet":
-    "Liczone od chwili, gdy każda wiadomość dotarła na ten telefon, i zapomina tylko ten telefon. Telefon drugiej osoby zachowuje swoją kopię, zrzutom ekranu nie da się zapobiec, a nieodebrane płatności z czatów prywatnych zostają, dopóki ich nie odbierzesz.",
+  "settings.general.message_retention_default":
+    "Domyślny licznik dla nowych czatów",
+  "settings.general.message_retention_default_desc":
+    "Dla nowych wiadomości bezpośrednich oraz dla pokojów, kanałów i grup na tym telefonie",
+  "settings.general.message_retention_default_sheet":
+    "Nowe wiadomości bezpośrednie zaczynają z tym licznikiem, a każda ze stron może go zmienić w czacie. Pokoje, kanały i grupy stosują go tylko na tym telefonie, licząc od nadejścia każdej wiadomości. Zrzutów ekranu nie da się zablokować, a płatności wysłane ci w wiadomości bezpośredniej zostają, dopóki ich nie odbierzesz.",
   "settings.general.message_retention_off_desc":
     "Wiadomości zostają, dopóki nie wyczyścisz czatu lub go nie opuścisz",
   "settings.general.message_retention_1_desc":
@@ -2083,11 +2116,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Usunąć starsze wiadomości?",
   "settings.general.message_retention_confirm_1":
-    "Wiadomości starsze niż 1 dzień zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+    "Wiadomości z pokojów, kanałów, grup i czatów rozpoczętych z kanału lokalizacyjnego starsze niż 1 dzień zostaną teraz usunięte z tego telefonu razem z multimediami. Pozostałe wiadomości bezpośrednie zachowują własne liczniki. Tego nie da się cofnąć.",
   "settings.general.message_retention_confirm_7":
-    "Wiadomości starsze niż 7 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+    "Wiadomości z pokojów, kanałów, grup i czatów rozpoczętych z kanału lokalizacyjnego starsze niż 7 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Pozostałe wiadomości bezpośrednie zachowują własne liczniki. Tego nie da się cofnąć.",
   "settings.general.message_retention_confirm_30":
-    "Wiadomości starsze niż 30 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Tego nie da się cofnąć.",
+    "Wiadomości z pokojów, kanałów, grup i czatów rozpoczętych z kanału lokalizacyjnego starsze niż 30 dni zostaną teraz usunięte z tego telefonu razem z multimediami. Pozostałe wiadomości bezpośrednie zachowują własne liczniki. Tego nie da się cofnąć.",
   "settings.general.reset_desc":
     "Przywraca ustawieniom wartości domyślne, nie ruszając tożsamości, wiadomości, kontaktów ani portfela",
   "settings.general.reset_title": "Zresetować ustawienia?",
@@ -2234,6 +2267,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Wideo na żywo",
   "settings.conn.live_video_desc":
     "Transmituj kamerę do osób w pobliżu i oglądaj ich transmisje",
+  "settings.conn.live_video_on_title": "Włączyć wideo na żywo?",
+  "settings.conn.live_video_on_body":
+    "Możesz nadawać na żywo z kamery do osób w zasięgu Bluetooth, a ich transmisje pojawią się w twoich czatach i zostaną nagrane na tym telefonie.",
+  "settings.conn.live_video_off_title": "Wyłączyć wideo na żywo?",
+  "settings.conn.live_video_off_body":
+    "Nie możesz już nadawać na żywo, a transmisje innych nie są pokazywane ani nagrywane. Krótka i tak dotrze jako zwykłe wideo.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Trasowanie przez Tor",
   "settings.conn.tor_desc":
@@ -2265,12 +2304,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Ukrywa, że używasz Tor. Szybsze niż Snowflake, ale te mostki są publiczne i część sieci je blokuje.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Ukrywa korzystanie z Tor, wyglądając jak zwykłe odwiedziny strony. Trudniejszy do zablokowania niż pozostałe.",
   "settings.tor.mode_custom": "Własne mostki",
   "settings.tor.mode_custom_desc":
-    "Użyj linii mostków obfs4 z bridges.torproject.org. Spróbuj tego, gdy inne zawiodą.",
+    "Użyj linii mostków obfs4 lub WebTunnel z bridges.torproject.org. Spróbuj tego, gdy inne zawiodą.",
   "settings.tor.custom_placeholder": "Wklej jedną linię mostka w wierszu",
   "settings.tor.custom_apply_hint": "Dotknij poza polem, aby połączyć.",
   "settings.tor.custom_empty": "Najpierw dodaj co najmniej jedną linię mostka.",
@@ -2644,6 +2680,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Dzwonienie",
   "notif.ring.title": "{sender} dzwoni do ciebie",
   "notif.ring.body": "Sprawdź swoje wiadomości",
+  "notif.action.reply": "Odpowiedz",
+  "notif.action.send": "Wyślij",
+  "notif.action.mark_read": "Oznacz jako przeczytane",
+  "notif.reply.failed_title": "Nie wysłano",
+  "notif.reply.failed_body":
+    "Nie wysłano odpowiedzi ({chat}). Otwórz czat, aby spróbować ponownie.",
+  "notif.reply.held_title": "Czeka na wysłanie",
+  "notif.reply.held_body":
+    "Odpowiedź ({chat}) zostanie wysłana, gdy Airhop będzie działać.",
+  "notif.reply.cut_title": "Wysłano częściowo",
+  "notif.reply.cut_body":
+    "Odpowiedź ({chat}) była za długa, więc jej koniec nie został wysłany.",
 };
 
 export const plurals: Plurals = {

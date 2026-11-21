@@ -162,7 +162,7 @@ export const strings: Strings = {
     "Mahita ny fitaovana akaiky ary mampita hafatra eo amin'izy ireo. Izay no mamorona ny harato, ary miasa tsy misy fifandraisana Internet.",
   "onboarding.primer.location.title": "Toerana",
   "onboarding.primer.location.body":
-    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop, ary tsy mivoaka ny fitaovanao ny toeranao marina raha tsy mandefa marika toerana amin'olona ianao.",
+    "Mametraka anao ao amin'ny fantsonan'ny faritra akaiky, manomboka amin'ny bokotany ka hatramin'ny faritra. Tsy manaraka anao mihitsy ny Airhop, ary tsy mivoaka mihitsy ny fitaovanao ny toeranao marina.",
   "onboarding.primer.notifications.title": "Fampandrenesana",
   "onboarding.primer.notifications.body":
     "Mandraisa fampandrenesana momba ny hafatra vaovao na dia mihidy aza ny rindranasa. Amboarina eo amin'ny fitaovanao ny fampandrenesana, tsy misy mpizara mandray anjara.",
@@ -398,7 +398,38 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Tsy tratra ny mpikambana rehetra. Andramo indray rehefa akaiky izy ireo.",
   "chat.group.you_were_added": "Nampidirina tao amin'ny {name} ianao.",
-  "chat.group.added_you": "Nampiditra anao tao amin'ny {name}",
+  "chat.timer.you_set_1": "Napetrakao ho 1 andro ny hafatra manjavona",
+  "chat.timer.you_set_7": "Napetrakao ho 7 andro ny hafatra manjavona",
+  "chat.timer.you_set_30": "Napetrakao ho 30 andro ny hafatra manjavona",
+  "chat.timer.you_off": "Novonoinao ny hafatra manjavona",
+  "chat.timer.you_set_local_1":
+    "Napetrakao ho 1 andro amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.you_set_local_7":
+    "Napetrakao ho 7 andro amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.you_set_local_30":
+    "Napetrakao ho 30 andro amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.you_off_local":
+    "Novonoinao amin'ity finday ity ny hafatra manjavona",
+  "chat.timer.peer_set_1": "Napetrak'i {name} ho 1 andro ny hafatra manjavona",
+  "chat.timer.peer_set_7": "Napetrak'i {name} ho 7 andro ny hafatra manjavona",
+  "chat.timer.peer_set_30":
+    "Napetrak'i {name} ho 30 andro ny hafatra manjavona",
+  "chat.timer.peer_off": "Novonoin'i {name} ny hafatra manjavona",
+  "chat.timer.sheet_shared":
+    "Ho an'ny hafatra alefa manomboka izao, amin'ireo finday roa. Amin'ny finday nandefa azy, isaina manomboka amin'ny nandefasana azy ny fotoanan'ny hafatra tsirairay, ary amin'ilay finday iray hafa, manomboka amin'ny namakiana azy voalohany. Tsy azo sakanana ny pikantsary.",
+  "chat.timer.sheet_pending":
+    "Napetraka amin'ity finday ity. Ho tonga any amin'i {name} izy amin'ny fifandraisanareo manaraka, ary avy eo dia hihatra amin'ny finday roa.",
+  "chat.timer.sheet_bitchat":
+    "Amin'ity finday ity ihany. Tsy mahay fameram-potoana iombonana ny fampiharan'i {name}.",
+  "chat.timer.sheet_local":
+    "Amin'ity finday ity ihany aloha. Raha mahay fameram-potoana iombonana ny fampiharan'i {name}, dia ho tonga any aminy izy amin'ny fifandraisanareo manaraka.",
+  "chat.group.invited": "Nasaina ho ao amin'ny {name} ianao.",
+  "chat.group.invited_you": "Nanasa anao ho ao amin'ny {name}",
+  "chat.group.decline": "Lavina",
+  "chat.group.decline_title": "Lavina ny fanasana ho ao amin'ny {name}?",
+  "chat.group.decline_body":
+    "Tsy ao amin'ny mpifandraisanao i {name}. Sakano koa izy, dia tsy handray fanasana na hafatra avy aminy intsony ianao.",
+  "chat.group.decline_block": "Lavina sy sakanana",
   "chat.group.you_were_removed":
     "Nesorina tao amin'ny {name} ianao. Tsy afaka mamaky na mandefa hafatra eto intsony ianao.",
   "chat.group.removed_you": "Nanaisotra anao tao amin'ny {name}",
@@ -1232,6 +1263,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Tsy voaforona ny tapakila",
+  "wallet.send.unverified_note":
+    "Ecash mbola tsy nohamarinin'ny mpamoaka ny ampahany amin'ity fandoavam-bola ity.",
   "wallet.send.title": "Mandefa ecash",
   "wallet.send.amount_in": "Sanda amin'ny {unit}",
   "wallet.send.body":
@@ -1293,15 +1326,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Novidina tao amin'i {mint}. Azo porofoina fa anao izy izao: tsy miasa intsony ny dikan'ity tapakila ity teo an-tanan'ny mpandefa.",
   "wallet.receive.pending_unconfirmed":
-    "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy. Hohamarinina ho azy amin'ny mpamoaka izy raha vao an-tserasera ianao.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Voatahiry avy amin'i {mint}, saingy tsy mbola nohamarinin'ny mpamoaka fa tsy lany izy. Mifanaraka ny soniany, ka tena izy ny tapakila. Hohamarinina ho azy amin'ny mpamoaka izy raha vao an-tserasera ianao.",
   "wallet.receive.dleq_ok":
     "Mifanaraka ny sonian'ny mpamoaka, ka tena izy ny tapakila.",
-  "wallet.receive.dleq_uncached":
-    "Tsy voatahiry eto ny lakilen'ny mpamoaka, ka tsy voamarina tsy misy Internet ny sonia.",
-  "wallet.receive.dleq_missing":
-    "Tsy ny vola madinika rehetra ao anatiny no mitondra ny porofon'ny sonian'ny mpamoaka, ka tsy voamarina tsy misy Internet izy.",
   "wallet.receive.dleq_warning":
     "Mandra-pahamarina azy an-tserasera, dia mety efa nolanian'ny mpandefa tany an-toeran-kafa izy.",
   "wallet.receive.failed": "Tsy voaray",
@@ -1668,6 +1695,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Atodiho amin'ny kaody QR tapakila, faktiora na npub.",
   "wallet.scan.no_any":
     "Tsy nahitana tapakila, faktiora na npub tao amin'io sary io.",
+  "wallet.scan.not_usable": "Tsy azon'i Airhop ampiasaina eto io kaody QR io.",
   "wallet.scan.use_camera_a11y": "Alaivo sary amin'ny fakan-tsary",
   "wallet.scan.use_camera": "Ampiasao ny fakan-tsary",
   "wallet.scan.pick_image_a11y": "Vakio ny kaody QR avy amin'ny sary voatahiry",
@@ -1775,6 +1803,12 @@ export const strings: Strings = {
     "Mihidy amin'ny kitapom-bolanao ity fandoavam-bola ity.",
   "wallet.svc.locked_ours_offline_body":
     "Raiso rehefa an-tserasera ianao. Tsy misy olon-kafa afaka maka azy mandritra izany.",
+  "wallet.svc.offline_cap":
+    "Raha tsy misy Internet, ny ecash tsy voamarina dia voafetra ho {limit} isaky ny mpamoaka.",
+  "wallet.svc.offline_unchecked":
+    "Tsy azo hamarinina ity ecash ity raha tsy misy Internet.",
+  "wallet.svc.claim_online_body":
+    "Raiso ity rehefa an-tserasera ianao, rehefa afaka manamarina azy ny mpamoaka.",
   "wallet.svc.already_spent": "Efa lany ity ecash ity.",
   "wallet.svc.already_spent_body":
     "Ilay nandefa ity tapakila ity no nividy azy voalohany, na nandefa tapakila mitovy tamin'olon-kafa koa.",
@@ -2116,10 +2150,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Mitazona ny resaka ho vakiana ela indrindra, ary mitana kapila be indrindra.",
   "settings.general.message_retention": "Hafatra manjavona",
-  "settings.general.message_retention_desc":
-    "Voafafa amin'ity finday ity ny hafatra sy ny media miaraka aminy aorian'ny fotoana voafidy",
-  "settings.general.message_retention_sheet":
-    "Isaina manomboka amin'ny fotoana nahatongavan'ny hafatra tsirairay teto amin'ity finday ity, ary ity finday ity ihany no manadino. Mitazona ny dika mitovy aminy ny findain'ilay olona hafa, tsy azo sakanana ny pikantsary, ary mijanona ny fandoavana nalefa taminao tamin'ny resaka manokana mbola tsy noraisinao mandra-pandraisinao azy.",
+  "settings.general.message_retention_default":
+    "Fameram-potoana mahazatra ho an'ny resaka vaovao",
+  "settings.general.message_retention_default_desc":
+    "Ho an'ny hafatra mivantana vaovao, ary ho an'ny efitrano, fantsona sy vondrona amin'ity finday ity",
+  "settings.general.message_retention_default_sheet":
+    "Manomboka amin'ity fameram-potoana ity ny hafatra mivantana vaovao, ary samy afaka manova azy ao anatin'ny resaka ianareo. Manaraka azy amin'ity finday ity ihany ny efitrano, fantsona ary vondrona, isaina manomboka amin'ny nahatongavan'ny hafatra tsirairay. Tsy azo sakanana ny pikantsary, ary mijanona mandra-pakanao azy ny fandoavam-bola nalefa taminao tamin'ny hafatra mivantana.",
   "settings.general.message_retention_off_desc":
     "Mijanona ny hafatra mandra-pamafanao ny resaka na mandra-pialanao aminy",
   "settings.general.message_retention_1_desc":
@@ -2131,11 +2167,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Hamafa ny hafatra taloha kokoa?",
   "settings.general.message_retention_confirm_1":
-    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 1 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+    "Ho voafafa amin'ity finday ity izao ny hafatra amin'ny efitrano, fantsona, vondrona ary resaka natomboka tamin'ny fantsonan-toerana mihoatra ny 1 andro, miaraka amin'ny media. Mitazona ny fameram-potoanany manokana ny hafatra mivantana hafa. Tsy azo foanana izany.",
   "settings.general.message_retention_confirm_7":
-    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 7 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+    "Ho voafafa amin'ity finday ity izao ny hafatra amin'ny efitrano, fantsona, vondrona ary resaka natomboka tamin'ny fantsonan-toerana mihoatra ny 7 andro, miaraka amin'ny media. Mitazona ny fameram-potoanany manokana ny hafatra mivantana hafa. Tsy azo foanana izany.",
   "settings.general.message_retention_confirm_30":
-    "Ho voafafa amin'ity finday ity izao ny hafatra mihoatra ny 30 andro, miaraka amin'ny media. Tsy azo foanana izany.",
+    "Ho voafafa amin'ity finday ity izao ny hafatra amin'ny efitrano, fantsona, vondrona ary resaka natomboka tamin'ny fantsonan-toerana mihoatra ny 30 andro, miaraka amin'ny media. Mitazona ny fameram-potoanany manokana ny hafatra mivantana hafa. Tsy azo foanana izany.",
   "settings.general.reset_desc":
     "Mamerina ny safidy amin'ny laoniny, fa tsy mikasika ny maha-ianao anao, ny hafatrao, ny fifandraisanao ary ny kitapom-bolanao",
   "settings.general.reset_title": "Averina ny fandrindrana?",
@@ -2290,6 +2326,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Horonan-tsary mivantana",
   "settings.conn.live_video_desc":
     "Alefaso mivantana amin'ny olona akaiky ny fakantsarinao, ary jereo ny azy ireo",
+  "settings.conn.live_video_on_title": "Alefa ny horonan-tsary mivantana?",
+  "settings.conn.live_video_on_body":
+    "Afaka mandefa mivantana avy amin'ny fakantsary ho an'ny olona ao anatin'ny fetran'ny Bluetooth ianao, ary miseho ao amin'ny resakao ny fandefasan'izy ireo ary voarakitra amin'ity finday ity.",
+  "settings.conn.live_video_off_title": "Vonoina ny horonan-tsary mivantana?",
+  "settings.conn.live_video_off_body":
+    "Tsy afaka mandefa mivantana intsony ianao, ary tsy aseho na raketina intsony ny fandefasan'ny hafa. Ny fandefasana fohy kosa dia tonga ho horonan-tsary tsotra ihany.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Fitondrana amin'ny Tor",
   "settings.conn.tor_desc":
@@ -2321,12 +2363,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Manafina fa mampiasa Tor ianao. Haingana noho ny Snowflake, saingy ampahibemaso ireo tetezana ireo ka sakanan'ny tambajotra sasany.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Manafina ny fampiasanao Tor amin'ny fanaovana azy ho toy ny fitsidihana tranonkala mahazatra. Sarotra sakanana noho ny hafa.",
   "settings.tor.mode_custom": "Tetezana manokana",
   "settings.tor.mode_custom_desc":
-    "Ampiasao ny andalana tetezana obfs4 avy amin'ny bridges.torproject.org. Andramo ity rehefa tsy mety ny hafa.",
+    "Ampiasao ny andalana tetezana obfs4 na WebTunnel avy amin'ny bridges.torproject.org. Andramo ity rehefa tsy mety ny hafa.",
   "settings.tor.custom_placeholder":
     "Apetaho tsipika tetezana iray isaky ny andalana",
   "settings.tor.custom_apply_hint": "Tsindrio ivelan'ny boaty mba hifandray.",
@@ -2706,6 +2745,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Antso",
   "notif.ring.title": "Miantso anao i {sender}",
   "notif.ring.body": "Jereo ny hafatrao",
+  "notif.action.reply": "Valio",
+  "notif.action.send": "Alefaso",
+  "notif.action.mark_read": "Mariho ho voavaky",
+  "notif.reply.failed_title": "Tsy lasa",
+  "notif.reply.failed_body":
+    "{chat}: tsy lasa ny valinteninao. Sokafy ny resaka mba hanandramana indray.",
+  "notif.reply.held_title": "Miandry halefa",
+  "notif.reply.held_body":
+    "{chat}: halefa ny valinteninao rehefa mandeha ny Airhop.",
+  "notif.reply.cut_title": "Lasa ny ampahany",
+  "notif.reply.cut_body":
+    "{chat}: lava loatra ny valinteninao, ka tsy lasa ny faran'izy io.",
 };
 
 export const plurals: Plurals = {

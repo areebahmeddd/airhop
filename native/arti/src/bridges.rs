@@ -25,12 +25,21 @@ use crate::{AIRHOP_TOR_ERR_BRIDGE_LINE, AIRHOP_TOR_ERR_BRIDGE_TRANSPORT};
 pub struct TransportPorts {
     pub obfs4: u16,
     pub snowflake: u16,
+    pub webtunnel: u16,
 }
 
-/// Transport names Airhop ships. A line naming anything else is refused rather
-/// than passed through, because nothing would be listening for it.
-const OBFS4: &str = "obfs4";
-const SNOWFLAKE: &str = "snowflake";
+impl TransportPorts {
+    /// Every transport Airhop ships, by the name a bridge line gives it. A line
+    /// naming anything else is refused rather than passed through, because
+    /// nothing would be listening for it.
+    fn shipped(&self) -> [(&'static str, u16); 3] {
+        [
+            ("obfs4", self.obfs4),
+            ("snowflake", self.snowflake),
+            ("webtunnel", self.webtunnel),
+        ]
+    }
+}
 
 /// Arti packs a transport's settings into the SOCKS5 username and password, 255
 /// bytes each. A longer line parses and configures cleanly, then fails per
@@ -60,17 +69,21 @@ pub fn apply(
 
     // Only the transports the lines name. Configuring one nothing references
     // would hide a typo in a transport name behind a working build.
-    let mut needs_obfs4 = false;
-    let mut needs_snowflake = false;
+    let mut needed: Vec<(&str, u16)> = Vec::new();
 
     for bridge in &parsed {
         match bridge.get_transport() {
-            Some(OBFS4) => needs_obfs4 = true,
-            Some(SNOWFLAKE) => needs_snowflake = true,
             // An unlisted relay with no transport. Arti spells that as the
             // empty name; a missing one means the same.
             None | Some("") => {}
-            Some(_) => return Err(AIRHOP_TOR_ERR_BRIDGE_TRANSPORT),
+            Some(name) => {
+                let Some(transport) = ports.shipped().into_iter().find(|(n, _)| *n == name) else {
+                    return Err(AIRHOP_TOR_ERR_BRIDGE_TRANSPORT);
+                };
+                if !needed.contains(&transport) {
+                    needed.push(transport);
+                }
+            }
         }
         check_settings_len(bridge)?;
     }
@@ -79,11 +92,8 @@ pub fn apply(
         builder.bridges().bridges().push(bridge);
     }
 
-    if needs_obfs4 {
-        push_transport(builder, OBFS4, ports.obfs4)?;
-    }
-    if needs_snowflake {
-        push_transport(builder, SNOWFLAKE, ports.snowflake)?;
+    for (name, port) in needed {
+        push_transport(builder, name, port)?;
     }
 
     // Explicit rather than `Auto`, which infers from whether the list is empty.
@@ -142,13 +152,16 @@ fn check_settings_len(bridge: &BridgeConfigBuilder) -> Result<(), i32> {
 mod test {
     use super::*;
 
-    // Documentation addresses (RFC 5737) and a placeholder relay identity. The
-    // value does not matter to parsing; only its shape does.
+    // Documentation addresses (RFC 5737, RFC 3849) and a placeholder relay
+    // identity. The value does not matter to parsing; only its shape does.
     const FINGERPRINT: &str = "0123456789ABCDEF0123456789ABCDEF01234567";
     const OBFS4_LINE: &str = "obfs4 192.0.2.1:443 0123456789ABCDEF0123456789ABCDEF01234567 \
         cert=abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ012345 iat-mode=0";
     const SNOWFLAKE_LINE: &str = "snowflake 192.0.2.3:80 0123456789ABCDEF0123456789ABCDEF01234567 \
         url=https://example.invalid/ fronts=a.example,b.example";
+    const WEBTUNNEL_LINE: &str =
+        "webtunnel [2001:db8::1]:443 0123456789ABCDEF0123456789ABCDEF01234567 \
+        url=https://example.invalid/0123456789abcdef ver=0.0.1";
     const DIRECT_LINE: &str = "192.0.2.9:9001 0123456789ABCDEF0123456789ABCDEF01234567";
 
     fn builder() -> TorClientConfigBuilder {
@@ -159,6 +172,7 @@ mod test {
         TransportPorts {
             obfs4: 47100,
             snowflake: 47200,
+            webtunnel: 47300,
         }
     }
 
@@ -177,9 +191,9 @@ mod test {
     }
 
     #[test]
-    fn obfs4_and_snowflake_configure() {
+    fn every_shipped_transport_configures() {
         let mut b = builder();
-        let input = format!("{OBFS4_LINE}\n{SNOWFLAKE_LINE}");
+        let input = format!("{OBFS4_LINE}\n{SNOWFLAKE_LINE}\n{WEBTUNNEL_LINE}");
         assert_eq!(apply(&mut b, &input, ports()), Ok(true));
         assert!(b.build().is_ok());
     }
@@ -205,11 +219,14 @@ mod test {
     /// The fail-closed case: a transport was asked for but is not running.
     #[test]
     fn a_transport_with_no_port_is_refused() {
-        let mut b = builder();
-        assert_eq!(
-            apply(&mut b, OBFS4_LINE, TransportPorts::default()),
-            Err(AIRHOP_TOR_ERR_BRIDGE_TRANSPORT)
-        );
+        for line in [OBFS4_LINE, SNOWFLAKE_LINE, WEBTUNNEL_LINE] {
+            let mut b = builder();
+            assert_eq!(
+                apply(&mut b, line, TransportPorts::default()),
+                Err(AIRHOP_TOR_ERR_BRIDGE_TRANSPORT),
+                "{line}"
+            );
+        }
     }
 
     #[test]

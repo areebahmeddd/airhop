@@ -104,15 +104,6 @@ describe("link builders round-trip", () => {
   });
 });
 
-describe("peer links", () => {
-  it("parses a peer link to its id", () => {
-    expect(parseAirhopLink("airhop://peer/aabbccdd00112233")).toEqual({
-      kind: "peer",
-      peerID: "aabbccdd00112233",
-    });
-  });
-});
-
 describe("isMeshLink", () => {
   it("matches the widget's link and nothing longer", () => {
     expect(isMeshLink("airhop://mesh")).toBe(true);

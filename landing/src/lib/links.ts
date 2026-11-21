@@ -37,6 +37,8 @@ export const REPO_LINKS = {
   progressDoc: `${REPO_URL}/blob/main/docs/dev/PROGRESS.md`,
   roadmapDoc: `${REPO_URL}/blob/main/docs/design/ROADMAP.md`,
   visionDoc: `${REPO_URL}/blob/main/docs/design/VISION.md`,
+  airhopWhitepaper: `${REPO_URL}/blob/main/docs/paper/airhop/airhop-whitepaper.pdf`,
+  airlinkWhitepaper: `${REPO_URL}/blob/main/docs/paper/airlink/airlink-whitepaper.pdf`,
   issues: `${REPO_URL}/issues`,
   discussions: `${REPO_URL}/discussions`,
   releases: `${REPO_URL}/releases/latest`,

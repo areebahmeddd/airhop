@@ -281,7 +281,8 @@ export function SettingRow({
 // already show their own trailing control (e.g. a value or a switch).
 // `external` swaps that chevron for an outgoing-arrow glyph, marking rows
 // that leave the app (browser, mail client, GitHub) rather than navigate
-// to another in-app screen.
+// to another in-app screen. The label stands in for the row's text with a
+// screen reader, so a row showing a value passes it as `accessibilityValue`.
 export function SettingLinkRow({
   id,
   icon,
@@ -293,11 +294,13 @@ export function SettingLinkRow({
   chevron = true,
   external = false,
   accessibilityLabel,
+  accessibilityValue,
 }: SettingRowProps & {
   onPress: () => void;
   chevron?: boolean;
   external?: boolean;
   accessibilityLabel?: string;
+  accessibilityValue?: string;
 }): React.JSX.Element {
   const Colors = useThemeColors();
   const T = useT();
@@ -320,6 +323,11 @@ export function SettingLinkRow({
               label: accessibilityLabel ?? label,
             })
           : (accessibilityLabel ?? label)
+      }
+      accessibilityValue={
+        accessibilityValue === undefined
+          ? undefined
+          : { text: accessibilityValue }
       }
     >
       <View style={styles.settingIcon}>

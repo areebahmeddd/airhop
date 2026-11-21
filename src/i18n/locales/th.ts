@@ -157,7 +157,7 @@ export const strings: Strings = {
     "ค้นหาอุปกรณ์ที่อยู่ใกล้เคียงและส่งต่อข้อความระหว่างกัน สิ่งนี้สร้างเมชขึ้นมาและทำงานได้โดยไม่ต้องเชื่อมต่ออินเทอร์เน็ต",
   "onboarding.primer.location.title": "ตำแหน่ง",
   "onboarding.primer.location.body":
-    "จัดคุณเข้าช่องพื้นที่ใกล้เคียง ตั้งแต่ระดับบล็อกไปจนถึงระดับภูมิภาค Airhop ไม่เคยติดตามคุณ และตำแหน่งที่แม่นยำของคุณจะออกจากเครื่องก็ต่อเมื่อคุณส่งตำแหน่งให้ใครสักคนเท่านั้น",
+    "จัดคุณเข้าช่องพื้นที่ใกล้เคียง ตั้งแต่ระดับบล็อกไปจนถึงระดับภูมิภาค Airhop ไม่เคยติดตามคุณ และตำแหน่งที่แม่นยำของคุณไม่เคยออกจากเครื่อง",
   "onboarding.primer.notifications.title": "การแจ้งเตือน",
   "onboarding.primer.notifications.body":
     "รับการแจ้งเตือนข้อความใหม่แม้ในขณะที่ปิดแอปอยู่ การแจ้งเตือนถูกสร้างขึ้นภายในเครื่องของคุณ โดยไม่มีเซิร์ฟเวอร์เข้ามาเกี่ยวข้อง",
@@ -376,7 +376,36 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "ติดต่อสมาชิกไม่ครบทุกคน ลองอีกครั้งขณะที่พวกเขาอยู่ใกล้",
   "chat.group.you_were_added": "คุณถูกเพิ่มเข้า {name}",
-  "chat.group.added_you": "เพิ่มคุณเข้า {name}",
+  "chat.timer.you_set_1": "คุณตั้งข้อความที่หายไปเป็น 1 วัน",
+  "chat.timer.you_set_7": "คุณตั้งข้อความที่หายไปเป็น 7 วัน",
+  "chat.timer.you_set_30": "คุณตั้งข้อความที่หายไปเป็น 30 วัน",
+  "chat.timer.you_off": "คุณปิดข้อความที่หายไป",
+  "chat.timer.you_set_local_1":
+    "คุณตั้งข้อความที่หายไปเป็น 1 วันบนโทรศัพท์เครื่องนี้",
+  "chat.timer.you_set_local_7":
+    "คุณตั้งข้อความที่หายไปเป็น 7 วันบนโทรศัพท์เครื่องนี้",
+  "chat.timer.you_set_local_30":
+    "คุณตั้งข้อความที่หายไปเป็น 30 วันบนโทรศัพท์เครื่องนี้",
+  "chat.timer.you_off_local": "คุณปิดข้อความที่หายไปบนโทรศัพท์เครื่องนี้",
+  "chat.timer.peer_set_1": "{name} ตั้งข้อความที่หายไปเป็น 1 วัน",
+  "chat.timer.peer_set_7": "{name} ตั้งข้อความที่หายไปเป็น 7 วัน",
+  "chat.timer.peer_set_30": "{name} ตั้งข้อความที่หายไปเป็น 30 วัน",
+  "chat.timer.peer_off": "{name} ปิดข้อความที่หายไป",
+  "chat.timer.sheet_shared":
+    "สำหรับข้อความที่ส่งตั้งแต่นี้ไป บนโทรศัพท์ทั้งสองเครื่อง บนเครื่องผู้ส่ง แต่ละข้อความจะนับเวลาตั้งแต่ส่ง และบนอีกเครื่องจะนับตั้งแต่อ่านครั้งแรก ป้องกันการจับภาพหน้าจอไม่ได้",
+  "chat.timer.sheet_pending":
+    "ตั้งไว้บนโทรศัพท์เครื่องนี้ จะไปถึง {name} เมื่อเชื่อมต่อกันครั้งถัดไป แล้วจึงมีผลกับทั้งสองเครื่อง",
+  "chat.timer.sheet_bitchat":
+    "เฉพาะโทรศัพท์เครื่องนี้ แอปของ {name} ไม่รองรับตัวจับเวลาร่วม",
+  "chat.timer.sheet_local":
+    "ตอนนี้เฉพาะโทรศัพท์เครื่องนี้ หากแอปของ {name} รองรับตัวจับเวลาร่วม ตัวจับเวลาจะไปถึงอีกฝ่ายเมื่อเชื่อมต่อกันครั้งถัดไป",
+  "chat.group.invited": "คุณได้รับเชิญเข้า {name}",
+  "chat.group.invited_you": "เชิญคุณเข้า {name}",
+  "chat.group.decline": "ปฏิเสธ",
+  "chat.group.decline_title": "ปฏิเสธคำเชิญเข้า {name} หรือไม่",
+  "chat.group.decline_body":
+    "{name} ไม่ได้อยู่ในรายชื่อติดต่อของคุณ บล็อกพวกเขาด้วย แล้วคุณจะไม่ได้รับคำเชิญหรือข้อความจากพวกเขาอีก",
+  "chat.group.decline_block": "ปฏิเสธและบล็อก",
   "chat.group.you_were_removed":
     "คุณถูกนำออกจาก {name} คุณอ่านหรือส่งข้อความที่นี่ไม่ได้อีกต่อไป",
   "chat.group.removed_you": "นำคุณออกจาก {name}",
@@ -1154,6 +1183,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "สร้างโทเคนไม่สำเร็จ",
+  "wallet.send.unverified_note":
+    "บางส่วนของการชำระเงินนี้เป็น ecash ที่มินต์ยังไม่ได้ยืนยัน",
   "wallet.send.title": "ส่ง ecash",
   "wallet.send.amount_in": "จำนวนเป็น {unit}",
   "wallet.send.body":
@@ -1213,14 +1244,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "แลกที่ {mint} แล้ว ตอนนี้มันเป็นของคุณอย่างพิสูจน์ได้ สำเนาโทเคนนี้ของผู้ส่งใช้ไม่ได้อีกต่อไป",
   "wallet.receive.pending_unconfirmed":
-    "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้ ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
-  "wallet.receive.pending_unconfirmed_genuine":
     "เก็บไว้จาก {mint} แล้ว แต่มินต์ยังไม่ได้ยืนยันว่ามันยังไม่ถูกใช้ ลายเซ็นของมันตรวจสอบผ่าน โทเคนจึงเป็นของแท้ ระบบจะยืนยันกับมินต์โดยอัตโนมัติเมื่อคุณออนไลน์",
   "wallet.receive.dleq_ok": "ลายเซ็นของมินต์ตรวจสอบผ่าน โทเคนจึงเป็นของแท้",
-  "wallet.receive.dleq_uncached":
-    "กุญแจของมินต์ไม่ได้แคชไว้ที่นี่ จึงตรวจสอบลายเซ็นแบบออฟไลน์ไม่ได้",
-  "wallet.receive.dleq_missing":
-    "เหรียญบางส่วนในนั้นไม่มีหลักฐานลายเซ็นของมินต์ จึงตรวจสอบแบบออฟไลน์ไม่ได้",
   "wallet.receive.dleq_warning":
     "จนกว่าจะได้รับการยืนยันขณะออนไลน์ ผู้ส่งอาจใช้มันไปที่อื่นแล้วก็เป็นได้",
   "wallet.receive.failed": "รับไม่สำเร็จ",
@@ -1571,6 +1596,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "สแกนคิวอาร์โค้ด",
   "wallet.scan.aim_any": "หันไปที่คิวอาร์โค้ดของโทเคน ใบแจ้งหนี้ หรือ npub",
   "wallet.scan.no_any": "ไม่พบโทเคน ใบแจ้งหนี้ หรือ npub ในรูปนั้น",
+  "wallet.scan.not_usable": "Airhop ใช้คิวอาร์โค้ดนี้ที่นี่ไม่ได้",
   "wallet.scan.use_camera_a11y": "สแกนด้วยกล้อง",
   "wallet.scan.use_camera": "ใช้กล้อง",
   "wallet.scan.pick_image_a11y": "อ่านคิวอาร์โค้ดจากรูปที่บันทึกไว้",
@@ -1669,6 +1695,11 @@ export const strings: Strings = {
     "การชำระเงินนี้ถูกล็อกไว้กับกระเป๋าเงินของคุณ",
   "wallet.svc.locked_ours_offline_body":
     "เคลมได้เมื่อคุณออนไลน์ ระหว่างนี้ไม่มีใครเอาไปได้",
+  "wallet.svc.offline_cap":
+    "ขณะออฟไลน์ ecash ที่ยังไม่ได้ยืนยันรับได้ไม่เกิน {limit} ต่อมินต์",
+  "wallet.svc.offline_unchecked": "ตรวจสอบ ecash นี้แบบออฟไลน์ไม่ได้",
+  "wallet.svc.claim_online_body":
+    "เคลมรายการนี้เมื่อคุณออนไลน์และมินต์ยืนยันได้",
   "wallet.svc.already_spent": "ecash นี้ถูกใช้ไปแล้ว",
   "wallet.svc.already_spent_body":
     "ผู้ที่ส่งโทเคนนี้แลกมันไปก่อน หรือส่งโทเคนใบเดียวกันให้คนอื่นด้วย",
@@ -1987,10 +2018,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "ทำให้อ่านบทสนทนาย้อนหลังได้นานที่สุด และกินพื้นที่มากที่สุด",
   "settings.general.message_retention": "ข้อความที่หายไป",
-  "settings.general.message_retention_desc":
-    "ข้อความและสื่อของข้อความจะถูกลบจากโทรศัพท์เครื่องนี้หลังเวลาที่เลือก",
-  "settings.general.message_retention_sheet":
-    "นับจากเวลาที่แต่ละข้อความมาถึงโทรศัพท์เครื่องนี้ และมีเพียงเครื่องนี้ที่ลืม โทรศัพท์ของอีกฝ่ายยังเก็บสำเนาไว้ ป้องกันการจับภาพหน้าจอไม่ได้ และการชำระเงินในแชทส่วนตัวที่คุณยังไม่ได้เคลมจะยังอยู่จนกว่าคุณจะเคลม",
+  "settings.general.message_retention_default":
+    "ตัวจับเวลาเริ่มต้นสำหรับแชทใหม่",
+  "settings.general.message_retention_default_desc":
+    "สำหรับข้อความโดยตรงใหม่ และห้อง ช่อง และกลุ่มบนโทรศัพท์เครื่องนี้",
+  "settings.general.message_retention_default_sheet":
+    "ข้อความโดยตรงใหม่จะเริ่มด้วยตัวจับเวลานี้ และใครก็เปลี่ยนได้ในแชท ห้อง ช่อง และกลุ่มจะใช้ตามนี้บนโทรศัพท์เครื่องนี้เท่านั้น นับจากเวลาที่แต่ละข้อความมาถึง ป้องกันการจับภาพหน้าจอไม่ได้ และเงินที่ส่งถึงคุณในข้อความโดยตรงจะอยู่จนกว่าคุณจะรับ",
   "settings.general.message_retention_off_desc":
     "ข้อความจะอยู่จนกว่าคุณจะล้างแชทหรือออกจากแชท",
   "settings.general.message_retention_1_desc":
@@ -2000,11 +2033,11 @@ export const strings: Strings = {
   "settings.general.message_retention_30_desc": "ทำให้อ่านบทสนทนาได้นานที่สุด",
   "settings.general.message_retention_confirm_title": "ลบข้อความเก่าหรือไม่",
   "settings.general.message_retention_confirm_1":
-    "ข้อความที่เก่ากว่า 1 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ย้อนกลับไม่ได้",
+    "ข้อความในห้อง ช่อง กลุ่ม และแชทที่เริ่มจากช่องตำแหน่งที่เก่ากว่า 1 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ข้อความโดยตรงอื่นใช้ตัวจับเวลาของตัวเอง ย้อนกลับไม่ได้",
   "settings.general.message_retention_confirm_7":
-    "ข้อความที่เก่ากว่า 7 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ย้อนกลับไม่ได้",
+    "ข้อความในห้อง ช่อง กลุ่ม และแชทที่เริ่มจากช่องตำแหน่งที่เก่ากว่า 7 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ข้อความโดยตรงอื่นใช้ตัวจับเวลาของตัวเอง ย้อนกลับไม่ได้",
   "settings.general.message_retention_confirm_30":
-    "ข้อความที่เก่ากว่า 30 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ย้อนกลับไม่ได้",
+    "ข้อความในห้อง ช่อง กลุ่ม และแชทที่เริ่มจากช่องตำแหน่งที่เก่ากว่า 30 วันจะถูกลบจากโทรศัพท์เครื่องนี้ทันทีพร้อมสื่อ ข้อความโดยตรงอื่นใช้ตัวจับเวลาของตัวเอง ย้อนกลับไม่ได้",
   "settings.general.reset_desc":
     "คืนการตั้งค่ากลับเป็นค่าเริ่มต้น โดยไม่แตะต้องตัวตน ข้อความ ผู้ติดต่อ และกระเป๋าเงินของคุณ",
   "settings.general.reset_title": "รีเซ็ตการตั้งค่าหรือไม่",
@@ -2143,6 +2176,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "วิดีโอสด",
   "settings.conn.live_video_desc":
     "ถ่ายทอดกล้องของคุณให้คนใกล้ ๆ และดูของพวกเขา",
+  "settings.conn.live_video_on_title": "เปิดวิดีโอสดหรือไม่",
+  "settings.conn.live_video_on_body":
+    "คุณจะไลฟ์จากกล้องให้คนในระยะบลูทูธดูได้ และไลฟ์ของพวกเขาจะแสดงในแชตของคุณและถูกบันทึกไว้ในโทรศัพท์เครื่องนี้",
+  "settings.conn.live_video_off_title": "ปิดวิดีโอสดหรือไม่",
+  "settings.conn.live_video_off_body":
+    "คุณจะไลฟ์ไม่ได้อีก และไลฟ์ของคนอื่นจะไม่แสดงหรือถูกบันทึก ไลฟ์สั้นๆ ยังคงมาถึงเป็นวิดีโอธรรมดา",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "การกำหนดเส้นทางผ่าน Tor",
   "settings.conn.tor_desc":
@@ -2173,12 +2212,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "ซ่อนว่าคุณใช้ Tor เร็วกว่า Snowflake แต่บริดจ์เหล่านี้เป็นสาธารณะและบางเครือข่ายบล็อกไว้",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ซ่อนว่าคุณใช้ Tor โดยทำให้ดูเหมือนการเข้าชมเว็บไซต์ทั่วไป บล็อกยากกว่าวิธีอื่น",
   "settings.tor.mode_custom": "บริดจ์ของคุณเอง",
   "settings.tor.mode_custom_desc":
-    "ใช้บรรทัดบริดจ์ obfs4 จาก bridges.torproject.org ลองวิธีนี้เมื่อวิธีอื่นไม่ได้ผล",
+    "ใช้บรรทัดบริดจ์ obfs4 หรือ WebTunnel จาก bridges.torproject.org ลองวิธีนี้เมื่อวิธีอื่นไม่ได้ผล",
   "settings.tor.custom_placeholder": "วางบรรทัดบริดจ์หนึ่งบรรทัดต่อหนึ่งแถว",
   "settings.tor.custom_apply_hint": "แตะนอกกล่องเพื่อเชื่อมต่อ",
   "settings.tor.custom_empty": "เพิ่มบรรทัดบริดจ์อย่างน้อยหนึ่งบรรทัดก่อน",
@@ -2535,6 +2571,16 @@ export const strings: Strings = {
   "notif.ring.hidden": "เสียงเรียก",
   "notif.ring.title": "{sender} กำลังโทรเรียกคุณ",
   "notif.ring.body": "ตรวจสอบข้อความของคุณ",
+  "notif.action.reply": "ตอบกลับ",
+  "notif.action.send": "ส่ง",
+  "notif.action.mark_read": "ทำเครื่องหมายว่าอ่านแล้ว",
+  "notif.reply.failed_title": "ส่งไม่สำเร็จ",
+  "notif.reply.failed_body":
+    "ส่งคำตอบถึง {chat} ไม่สำเร็จ เปิดแชทเพื่อลองอีกครั้ง",
+  "notif.reply.held_title": "รอส่ง",
+  "notif.reply.held_body": "คำตอบถึง {chat} จะถูกส่งเมื่อ Airhop ทำงาน",
+  "notif.reply.cut_title": "ส่งไปบางส่วน",
+  "notif.reply.cut_body": "คำตอบถึง {chat} ยาวเกินไป จึงไม่ได้ส่งส่วนท้าย",
 };
 
 export const plurals: Plurals = {

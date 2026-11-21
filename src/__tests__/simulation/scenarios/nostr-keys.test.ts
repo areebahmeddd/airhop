@@ -9,6 +9,12 @@
 //         claim on that npub, and keeps the key past the launch.
 //   NK03  The key a session handed over outlives a relaunch for a peer whose
 //         DM went unanswered, without making them a contact.
+//   NK04  Internet DMs between Airhop phones go sealed to one-time keys the
+//         session handed over, and a phone that lost its keys is handed fresh
+//         ones and the DM goes again.
+//   NK05  A sealed DM from an npub nobody maps proves its sender, and a phone
+//         holding none of the peer's keys sends under the long-term key and
+//         is handed a batch.
 
 jest.mock("expo-location", () => ({}));
 jest.mock("react-native/Libraries/EventEmitter/RCTDeviceEventEmitter", () =>
@@ -355,6 +361,197 @@ test("NK03 an unanswered peer's Nostr key survives a relaunch", async () => {
   s.check(
     "removing the thread forgets the key",
     learned()[bob.peerID] === undefined,
+  );
+
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+interface DmPrekeyInternals {
+  localDmPrekeys: {
+    keys: unknown[];
+    spend: (kind: number, id: number, peerID: string) => boolean;
+  };
+}
+
+// One-time keys a device opened a message under: each is deleted as it
+// opens, so they are counted at the spend.
+const spends = new WeakMap<SimDevice, number>();
+
+function countSpends(d: SimDevice): void {
+  const store = (d.mesh as unknown as DmPrekeyInternals).localDmPrekeys;
+  const spend = store.spend.bind(store);
+  spends.set(d, 0);
+  store.spend = (kind, id, peerID) => {
+    const ok = spend(kind, id, peerID);
+    if (ok && kind === 0) spends.set(d, (spends.get(d) ?? 0) + 1);
+    return ok;
+  };
+}
+
+function spentOneTime(d: SimDevice): number {
+  return spends.get(d) ?? 0;
+}
+
+test("NK04 internet DMs between Airhop phones go sealed to keys handed over in person", async () => {
+  const s = (scenario = new Scenario({
+    id: "NK04",
+    title: "forward-secret internet DMs",
+    seed: 404,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, online("alice", 11), relay);
+  const bob = SimDevice.create(s.world, online("bob", 22), relay);
+  radio.add(alice);
+  radio.add(bob);
+  s.track(alice, bob);
+  alice.launch();
+  bob.launch();
+  countSpends(bob);
+  await relayUp(s, relay, alice);
+  await relayUp(s, relay, bob);
+
+  // In range, they talk: the session hands each the other's Nostr key and a
+  // batch of keys to seal to.
+  alice.send(`dm:${bob.peerID}`, "hello");
+  await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("hello"),
+    60_000,
+  );
+  bob.send(`dm:${alice.peerID}`, "hi");
+  s.check(
+    "they talk in range",
+    await waitFor(
+      s.world,
+      () => alice.texts(`dm:${bob.peerID}`).includes("hi"),
+      60_000,
+    ),
+  );
+  await s.world.advance(5_000);
+
+  radio.setIsolated(bob.id, true);
+  alice.send(`dm:${bob.peerID}`, "over the internet");
+  s.check(
+    "out of range, the DM arrives over the internet",
+    await waitFor(
+      s.world,
+      () => bob.texts(`dm:${alice.peerID}`).includes("over the internet"),
+      120_000,
+    ),
+  );
+  s.check(
+    "sealed to a one-time key bob handed over, which opening it spent",
+    spentOneTime(bob) === 1,
+    `spent=${String(spentOneTime(bob))}`,
+  );
+
+  // Bob's phone loses its keys (a transfer to a new phone, say): alice's next
+  // message is sealed to a key he no longer holds.
+  (bob.mesh as unknown as DmPrekeyInternals).localDmPrekeys.keys = [];
+  alice.send(`dm:${bob.peerID}`, "after the move");
+  s.check(
+    "it is answered with fresh keys and sent again, and then opens",
+    await waitFor(
+      s.world,
+      () => bob.texts(`dm:${alice.peerID}`).includes("after the move"),
+      300_000,
+    ),
+  );
+
+  s.expectNone("process health", noCrashes([alice, bob]));
+  s.assert();
+});
+
+function sealsTo(d: SimDevice, peer: SimDevice): boolean {
+  return (
+    d.mesh as unknown as { peerDmPrekeys: { has: (id: string) => boolean } }
+  ).peerDmPrekeys.has(peer.peerID);
+}
+
+test("NK05 a sealed DM proves its sender, and a phone without keys is handed some", async () => {
+  const s = (scenario = new Scenario({
+    id: "NK05",
+    title: "sealed DMs recover on their own",
+    seed: 405,
+  }));
+  const radio = new RadioFabric(s.world);
+  const relay = new RelayFabric(s.world);
+  const alice = SimDevice.create(s.world, online("alice", 13), relay);
+  const bob = SimDevice.create(s.world, online("bob", 24), relay);
+  radio.add(alice);
+  radio.add(bob);
+  s.track(alice, bob);
+  alice.launch();
+  bob.launch();
+  countSpends(bob);
+  await relayUp(s, relay, alice);
+  await relayUp(s, relay, bob);
+  scanCard(s, alice, bob);
+
+  alice.send(`dm:${bob.peerID}`, "hello");
+  await waitFor(
+    s.world,
+    () => bob.texts(`dm:${alice.peerID}`).includes("hello"),
+    60_000,
+  );
+  bob.send(`dm:${alice.peerID}`, "hi");
+  s.check(
+    "they talk in range",
+    await waitFor(
+      s.world,
+      () => alice.texts(`dm:${bob.peerID}`).includes("hi"),
+      60_000,
+    ),
+  );
+  await s.world.advance(5_000);
+  radio.setIsolated(bob.id, true);
+
+  // What an unblock leaves: alice no longer maps bob's npub, and holds none
+  // of his keys. His sealed DM proves who sealed it.
+  (alice.mesh as unknown as { forgetPeer: (id: string) => void }).forgetPeer(
+    bob.peerID,
+  );
+  bob.send(`dm:${alice.peerID}`, "sealed by me");
+  s.check(
+    "a sealed DM from an npub alice no longer maps lands in bob's thread",
+    await waitFor(
+      s.world,
+      () => alice.texts(`dm:${bob.peerID}`).includes("sealed by me"),
+      120_000,
+    ),
+  );
+  s.check(
+    "and maps his npub again",
+    nostrRoute(alice).get(bob.nostrPubkey) === bob.peerID,
+  );
+
+  // Alice holds no key of bob's, so she sends under his long-term key, and
+  // bob answers with a batch.
+  alice.send(`dm:${bob.peerID}`, "unsealed");
+  s.check(
+    "a DM with no key to seal to still arrives",
+    await waitFor(
+      s.world,
+      () => bob.texts(`dm:${alice.peerID}`).includes("unsealed"),
+      120_000,
+    ),
+  );
+  s.check(
+    "and gets alice keys to seal to",
+    await waitFor(s.world, () => sealsTo(alice, bob), 120_000),
+  );
+  const spentBefore = spentOneTime(bob);
+  alice.send(`dm:${bob.peerID}`, "sealed again");
+  s.check(
+    "her next DM goes sealed",
+    (await waitFor(
+      s.world,
+      () => bob.texts(`dm:${alice.peerID}`).includes("sealed again"),
+      120_000,
+    )) && spentOneTime(bob) === spentBefore + 1,
+    `spent ${String(spentBefore)} -> ${String(spentOneTime(bob))}`,
   );
 
   s.expectNone("process health", noCrashes([alice, bob]));

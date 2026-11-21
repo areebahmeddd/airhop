@@ -124,6 +124,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
                     bridgeLines,
                     ports[AirhopTransport.OBFS4] ?: 0,
                     ports[AirhopTransport.SNOWFLAKE] ?: 0,
+                    ports[AirhopTransport.WEBTUNNEL] ?: 0,
                 )
             if (rc != ArtiNative.OK && rc != ArtiNative.ERR_ALREADY_RUNNING) {
                 Log.e(TAG, "arti start failed (rc=$rc)")
@@ -155,7 +156,7 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
     // The next startTor or stopTor moves it on.
     @ReactMethod
     fun stopTor(keepHeld: Boolean, promise: Promise) {
-        attemptEpoch.incrementAndGet()
+        val epoch = attemptEpoch.incrementAndGet()
         stopPolling()
         worker.execute {
             // Held while the client winds down, then direct: never routed to a
@@ -165,7 +166,10 @@ class AirhopTorModule(private val reactContext: ReactApplicationContext) :
             ArtiNative.stop()
             AirhopIPtProxy.stop()
             if (!keepHeld) AirhopTorProxy.route(null)
-            emitStatus()
+            // Only while no start has come since, as the poll does: a start
+            // queued behind this stop would otherwise hear "not running" as
+            // its own answer.
+            if (epoch == attemptEpoch.get()) emitStatus()
             promise.resolve(null)
         }
     }

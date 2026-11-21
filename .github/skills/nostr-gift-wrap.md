@@ -17,7 +17,7 @@ How a DM, a receipt or parked courier mail crosses the internet when no radio re
 | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | `src/core/nostr/gift-wrap.ts`        | `wrapDm`, `unwrapDm`, `deriveNostrPrivKey`                                                       |
 | `src/core/nostr/bitchat-nip44.ts`    | bitchat's `nip44-v2` encryption, even-Y key normalization                                        |
-| `src/core/nostr/bitchat-envelope.ts` | The `bitchat1:` content: DM, receipt and contact card                                            |
+| `src/core/nostr/bitchat-envelope.ts` | The `bitchat1:` content: DM, receipt, contact card and prekey batch                              |
 | `src/core/nostr/courier-relay.ts`    | `publishCourierDrop`, `subscribeCourierDrops` (kind 1401)                                        |
 | `src/core/nostr/nostr-client.ts`     | `NostrClient`: pool, per-relay subscriptions, `isConnected`, `isDMConnected`                     |
 | `src/core/nostr/processed-events.ts` | Wraps and courier mail already opened, kept across launches (own MMKV partition, wiped on panic) |
@@ -62,11 +62,15 @@ No recipient tag is checked on the rumor: the seal is encrypted to our key, so a
 
 ## The bitchat1: Envelope
 
-bitchat never puts raw text in a Nostr DM. The rumor's content is `"bitchat1:" + base64url(packet)`, where the packet is an unsigned `NOISE_ENCRYPTED` frame (the mesh wire format) holding a Noise payload: `PRIVATE_MESSAGE`, `DELIVERED`, `READ_RECEIPT`, or Airhop's `CONTACT_CARD`. A bitchat client drops a DM without the prefix.
+bitchat never puts raw text in a Nostr DM. The rumor's content is `"bitchat1:" + base64url(packet)`, where the packet is an unsigned `NOISE_ENCRYPTED` frame (the mesh wire format) holding a Noise payload: `PRIVATE_MESSAGE`, `DELIVERED`, `READ_RECEIPT`, or Airhop's `CONTACT_CARD` and `DM_PREKEYS`. A bitchat client drops a DM without the prefix.
 
 - Content is capped at one `PrivateMessagePacket`, 255 UTF-8 bytes; `encodeBitchatDmEnvelope` returns null past it.
 - A pseudonymous (location-channel) DM puts random bytes in `senderID`, never our mesh ID, which would tie the cell identity to it.
-- **Receipts.** A message read after its sender left range has no mesh route for its receipt, so `sendReadReceipts` sends it over Nostr, as bitchat-ios routes one; a DM that arrived over Nostr is acknowledged over Nostr. Couriered mail is acknowledged over both routes.
+- **Receipts.** A message read after its sender left range has no mesh route for its receipt, so `sendReadReceipts` sends it over Nostr; a DM that arrived over Nostr is acknowledged over Nostr. Couriered mail is acknowledged over both routes.
+
+## Forward-Secret DMs Between Airhop Phones
+
+`src/core/nostr/dm-prekeys.ts`, `dm-prekey-store.ts`; [PROTOCOLS section 7.2](../../docs/spec/PROTOCOLS.md#72-forward-secret-internet-dms-between-airhop-phones). To a peer proven to run Airhop the `bitchat1:` content goes sealed (Noise X, `"airhop1:"` prefix) to one of their one-time keys, else their weekly last-resort key, else the long-term key as bitchat sends it. Keys arrive in a signed batch (`0x57`) meant for one contact, inside the session with `0x54` or inside a gift wrap, never broadcast. The seal proves the sender's peer ID: it binds the npub to that peer, over a mapping another peer only claimed, and a one-time key opens only for the peer it was handed to and is deleted as it opens. Batches carry a rising `issuedAt`, so a delayed copy cannot roll a contact back. A message under the long-term key earns its sender a batch; one that does not open earns a batch flagged to resend queued mail, even from a peer not yet proven. The local pool (four keychain values) never evicts a key a contact may still seal to, and holds at most one batch unused and one retired per contact. Receipts, batches and location DMs stay unsealed.
 
 ## Courier Drop (Kind 1401)
 
@@ -89,6 +93,7 @@ content: base64(CourierEnvelope TLV), as bitchat-ios createCourierDropEvent
 - **One subscription per relay and filter.** The pool reports a close only once every relay in a call has closed, so each relay's subscription is its own and is reopened on its own after a backoff. `NostrClient.subscribe` keeps one delivered-ID set across them, recorded only after verification, and hands nostr-tools a lookup-only `alreadyHaveEvent`.
 - **A reconnect resumes 15 minutes behind, except for gift wraps (`resumeCursor`).** nostr-tools resumes a reconnected subscription from `lastEmitted`, capped at now. `NostrClient` sets it as each verified event lands: 15 minutes behind the newest `created_at` that relay sent, never before the requested `since`, so neither a sender with a slow clock nor one validly signed event from a fast clock makes a reconnect skip what was sent meanwhile. A wrap's `created_at` is blurred (15 minutes either side here, up to two days back under NIP-59), so a gift-wrap subscription gets no cursor and a reconnect repeats the `since` it opened with. Dedup absorbs the replay.
 - **`isConnected` reads the sockets on every call**, so a gateway that just lost signal stops advertising and publishing into a dead pool. `isDMConnected` is true only for a live default DM relay: DM, geo-DM and courier-drop publishes gate on it (bitchat-ios `isDMRelayConnected`), while the gateway capability, the banner and the bridge gate on `isConnected`.
+- **Sign-in (NIP-42).** `subscribe` and `publish` take a `RelayAuth`: the secret of the key the operation belongs to, or `"throwaway"`. The inbox passes the main key, a location cell's feed, notes, deletions, DM inbox and posts pass the cell's key, and gift wraps and courier drops pass `"throwaway"`; anything else passes none and never signs in. Sign-in happens only after a refusal starting `auth-required:`. A read reopens once in `NostrClient`'s own reopen path, never through nostr-tools' `onauth` (its reopened subscription is not handed back to the closer); a post is resent once, the same event to the same relay. One key per connection: the first proof, accepted or refused, owns it until the relay is seen down, and a refused proof is not resent. A throwaway post goes out on a connection already signed in as anyone, since it proves no one. Challenges over 4,096 characters and anything after `close()` are never signed.
 - **Tor.** Relay sockets open only when `tor-routing.ts` allows. While Tor is wanted and not yet carrying, or held after a failed start, `nostrBlockedByTor` holds the pool: nothing falls back to the clear net.
 
 ## What Not to Do
@@ -99,3 +104,4 @@ content: base64(CourierEnvelope TLV), as bitchat-ios createCourierDropEvent
 - Use the Ed25519 signing key directly with nostr-tools; derive the secp256k1 key first.
 - Put raw text in a DM rumor, or our mesh ID in a location-channel envelope.
 - Subscribe across relays in one call, or open a relay socket around the Tor gate.
+- Pass `onauth` to nostr-tools or turn on `automaticallyAuth`, sign in with the main key for a gift wrap or courier drop, or prove a second key on a connection that has already seen one.

@@ -163,6 +163,8 @@ final class MeshWidgetStateTests: XCTestCase {
     let paused = snap(3, at: now, meshOn: false)
     XCTAssertNil(MeshWidgetState.staleAtMs(for: paused, state: state(paused)))
     XCTAssertNil(MeshWidgetState.staleAtMs(for: nil, state: .unset))
+    let stale = snap(3, at: now - MeshWidgetState.staleAfterMs - 1)
+    XCTAssertNil(MeshWidgetState.staleAtMs(for: stale, state: state(stale)))
   }
 
   // ---- What it draws ----

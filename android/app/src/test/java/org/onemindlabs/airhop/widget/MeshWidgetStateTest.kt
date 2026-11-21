@@ -64,7 +64,7 @@ class MeshWidgetStateTest {
     }
 
     @Test
-    fun aReadingAgesOutAtFifteenMinutes() {
+    fun aReadingAgesOutAtItsCutoff() {
         val at = now - STALE_AFTER_MS
         assertEquals(MeshWidgetState.Counted(2, at), state(snap(2, at)))
         assertEquals(MeshWidgetState.Stale, state(snap(2, at - 1)))

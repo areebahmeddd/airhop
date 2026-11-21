@@ -138,6 +138,68 @@ describe("restoring a different phrase", () => {
   });
 });
 
+describe("restoring on a new phone", () => {
+  it("finds coins under a keyset the mint has since rotated out", async () => {
+    // Mints keep honoring old keysets as inputs, so coins issued before a
+    // rotation are still money, and the restore has to look there too.
+    const phrase = generateRecoveryPhrase();
+    await restoreFromRecoveryPhrase({ phrase, mintUrls: [fabric.url] });
+    await fund(16);
+    fabric.rotateKeyset();
+
+    await freshPhoneSamePhrase();
+    await addMint(fabric.url);
+    const restored = await restoreFromRecoveryPhrase({
+      phrase,
+      mintUrls: [fabric.url],
+    });
+
+    expect(restored.recovered[UNIT]).toBe(16);
+    expect(spendable()).toBe(16);
+  });
+
+  it("files what each mint gave back under that mint", async () => {
+    const other = new MintFabric(world, "https://counters-b.test");
+    other.install();
+    try {
+      const phrase = generateRecoveryPhrase();
+      await addMint(other.url);
+      await restoreFromRecoveryPhrase({
+        phrase,
+        mintUrls: [fabric.url, other.url],
+      });
+      await fund(8);
+      const deposit = await createLightningDeposit({
+        amount: 16,
+        mintUrl: other.url,
+      });
+      await claimLightningDeposit(other.url, UNIT, deposit.quoteId);
+
+      await freshPhoneSamePhrase();
+      await addMint(fabric.url);
+      await addMint(other.url);
+      await restoreFromRecoveryPhrase({
+        phrase,
+        mintUrls: [fabric.url, other.url],
+      });
+
+      const rows = useWalletStore
+        .getState()
+        .history.filter((t) => t.kind === "receive")
+        .map((t) => [t.mintUrl, t.amount]);
+      expect(rows).toEqual(
+        expect.arrayContaining([
+          [fabric.url, 8],
+          [other.url, 16],
+        ]),
+      );
+      expect(rows).toHaveLength(2);
+    } finally {
+      other.uninstall();
+    }
+  });
+});
+
 describe("restoring the phrase already in use", () => {
   it("reports and records nothing it already held", async () => {
     // A phrase with no history at the mint, so every coin it can find is

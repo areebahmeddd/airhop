@@ -50,6 +50,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 | Payments: tokens, DLEQ, NIP-61, seed (pure)                      | `src/core/payments/`                               |
 | Runtime wiring: mesh, wallet, Tor, anything touching a mint      | `src/services/`                                    |
 | Which peers the LAN transport dials, and the cap on it           | `src/services/lan-dial-policy.ts`                  |
+| Dialing a session peer at the LAN address it handed over         | `src/services/lan-direct-dial.ts`                  |
 | Screen logic                                                     | `src/features/`                                    |
 | UI components, hooks, theme tokens                               | `src/ui/`                                          |
 | Thin wrappers over OS APIs (permissions, haptics)                | `src/platform/`                                    |
@@ -58,7 +59,7 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 | Stateless helpers                                                | `src/utils/`                                       |
 | Generated and static tables (relays, bridges, licenses)          | `src/data/`                                        |
 | Bundled relay list, refreshed by CI                              | `assets/data/nostr_relays.csv`                     |
-| Globe picker geometry (Natural Earth, as bitchat bundles it)     | `assets/data/world/`, `src/data/world-geometry.ts` |
+| Globe picker geometry (Natural Earth)                            | `assets/data/world/`, `src/data/world-geometry.ts` |
 | Globe picker projection, camera and detail rules (pure)          | `src/utils/globe-*.ts`                             |
 | Native module specs (hand-maintained, interop layer)             | `src/bridge/`                                      |
 | Root component and tab state machine                             | `src/app/`                                         |
@@ -94,13 +95,13 @@ Then read the [skill](#skills) for the subsystem you are about to touch.
 - Never change the `packet-codec.ts` byte layout without bumping the protocol version and keeping a decode path for the old one.
 - Never change the BLE Service UUID (`F47B5E2D...`) or Characteristic UUID (`A1B2C3D4...`). A change partitions the network.
 - Never change peer ID derivation (`hex(SHA-256(noiseStaticPubKey)).slice(0, 16)`, defined once in `src/core/crypto/peer-id.ts`). Gossip sync and DM addressing depend on it.
-- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) is bitchat's too and stays wire-identical, and so is `0x2D`, sent and played exactly as bitchat does (LIVE_VIDEO_V1). `0xA0` to `0xA3` are Airlink's link-local update types and never allocated here. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
+- Airhop-only packet types start at `0x50`. bitchat allocates forward from below and has reached `0x2D` (live video), with `0x2A` and `0x2B` reserved upstream. `0x29` (push-to-talk) and `0x2D` are bitchat's too and stay wire-identical; `0x2D` is sent and played exactly as bitchat does (LIVE_VIDEO_V1). `0xA0` to `0xA3` are Airlink's link-local update types and never allocated here. [PROTOCOLS.md](docs/spec/PROTOCOLS.md) section 3 is the registry.
 - A protocol change ships only after a message exchange across Airhop, bitchat-ios and bitchat-android.
 
 ### Native Code
 
 - Swift lives in `ios/`, Kotlin in `android/`. They expose **raw bytes** to TypeScript: no protocol logic, no routing decisions, no crypto.
-- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopVideoModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopTorSocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot, and the `AirhopMeshWidget` home screen widget; these are services and receivers, not modules.
+- Each spec in `src/bridge/` has one module behind it. `AirhopBLEModule`, `AirhopVoiceModule`, `AirhopVideoModule`, `AirhopWiFiModule`, `AirhopLANModule`, `AirhopTorModule` and `AirhopAppModule` exist on both platforms; `AirhopRelaySocket` and `AirhopWiFiPairing` are iOS only. Android also runs `AirhopForegroundService`, `AirhopBootReceiver` with `AirhopBootService` for the opt-in start after a reboot, and the `AirhopMeshWidget` home screen widget; these are services and receivers, not modules.
 - `AirhopAppModule` diverges by platform: iOS rejects `restart`, `setAutoStartOnBoot`, `copyApkToCache`, `startRingAlert` and `stopRingAlert`, since it can relaunch nothing, has no boot receiver, has no sideloading to share an APK into, and has no ringtone loop outside CallKit. `setMeshSnapshot` runs on both: the home screen widget is the Kotlin `AirhopMeshWidget` on Android and the `AirhopWidget` extension on iOS, which share their rules (`MeshWidgetState.kt`, `MeshWidgetState.swift`) and their copy (`npm run i18n:native`).
 - `native/arti/` (Rust) and `native/iptproxy/` (Go) are the one exception to "raw bytes only": a Tor client and its pluggable transports, each owning a SOCKS5 listener and its own lifecycle. They still know nothing about mesh packets, routing or message encryption, and both platforms build the same sources.
 
@@ -137,7 +138,7 @@ Two kinds of files are pinned and checked in CI. Both fail the build rather than
 
 - `tsc --strict` passes with zero errors.
 - No `any` in `src/core/` or `src/bridge/`.
-- Named exports only in `src/core/`. A `src/bridge/` spec default-exports its module, per React Native's spec convention, and names everything else. The exception is `NativeAirhopTorSocket.ts`, a classic module that exports `AirhopTorSocketNative` by name.
+- Named exports only in `src/core/`. A `src/bridge/` spec default-exports its module, per React Native's spec convention, and names everything else. The exception is `NativeAirhopRelaySocket.ts`, a classic module that exports `AirhopRelaySocketNative` by name.
 - File naming: `kebab-case.ts`. The one exception is `src/bridge/Native*.ts`, which keeps React Native's spec naming. A file's name and its primary export agree (`alert-modal.tsx` exports `AlertModal`).
 - Module specifiers: leaving your top-level `src/` layer means a path alias (`@core/mesh/wire/packet-codec`); staying inside the layer stays relative (`./message-bubble`, `../shared`). Aliases are declared in `tsconfig.json` and mirrored in `package.json` for Jest.
 - Write escape sequences, never the literal byte. A regex holding a raw backspace instead of `\b` matches nothing and makes git treat the file as binary, so it is unenforced and unreviewable at once. CI runs `npm run verify:invisibles` over control characters, bidirectional overrides and zero-width characters.

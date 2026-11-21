@@ -1,4 +1,4 @@
-// Tier S: the gossip sync and replay contract, across real phones.
+// Tier SY: the gossip sync and replay contract, across real phones.
 //
 // Each scenario pins a property that only appears with more than one device and
 // more than one hop. The unit tests in core/mesh cover the shapes; these cover

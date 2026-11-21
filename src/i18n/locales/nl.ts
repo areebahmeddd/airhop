@@ -163,7 +163,7 @@ export const strings: Strings = {
     "Vindt toestellen in de buurt en geeft berichten tussen ze door. Zo ontstaat de mesh, en het werkt zonder internetverbinding.",
   "onboarding.primer.location.title": "Locatie",
   "onboarding.primer.location.body":
-    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit, en je precieze locatie verlaat je toestel alleen als je iemand je locatie stuurt.",
+    "Zet je in de kanalen van gebieden dichtbij, van een huizenblok tot een regio. Airhop volgt je nooit, en je precieze locatie verlaat je toestel nooit.",
   "onboarding.primer.notifications.title": "Meldingen",
   "onboarding.primer.notifications.body":
     "Krijg meldingen van nieuwe berichten, ook als de app dicht is. Meldingen worden op je eigen toestel gemaakt, zonder server ertussen.",
@@ -389,7 +389,39 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "Niet alle leden konden worden bereikt. Probeer het opnieuw als ze in de buurt zijn.",
   "chat.group.you_were_added": "Je bent toegevoegd aan {name}.",
-  "chat.group.added_you": "Heeft je toegevoegd aan {name}",
+  "chat.timer.you_set_1": "Je hebt verdwijnende berichten op 1 dag gezet",
+  "chat.timer.you_set_7": "Je hebt verdwijnende berichten op 7 dagen gezet",
+  "chat.timer.you_set_30": "Je hebt verdwijnende berichten op 30 dagen gezet",
+  "chat.timer.you_off": "Je hebt verdwijnende berichten uitgezet",
+  "chat.timer.you_set_local_1":
+    "Je hebt verdwijnende berichten op deze telefoon op 1 dag gezet",
+  "chat.timer.you_set_local_7":
+    "Je hebt verdwijnende berichten op deze telefoon op 7 dagen gezet",
+  "chat.timer.you_set_local_30":
+    "Je hebt verdwijnende berichten op deze telefoon op 30 dagen gezet",
+  "chat.timer.you_off_local":
+    "Je hebt verdwijnende berichten op deze telefoon uitgezet",
+  "chat.timer.peer_set_1": "{name} heeft verdwijnende berichten op 1 dag gezet",
+  "chat.timer.peer_set_7":
+    "{name} heeft verdwijnende berichten op 7 dagen gezet",
+  "chat.timer.peer_set_30":
+    "{name} heeft verdwijnende berichten op 30 dagen gezet",
+  "chat.timer.peer_off": "{name} heeft verdwijnende berichten uitgezet",
+  "chat.timer.sheet_shared":
+    "Voor berichten die je vanaf nu stuurt, op beide telefoons. Op de telefoon van de afzender telt elk bericht af vanaf het versturen, op de andere vanaf het eerste lezen. Screenshots zijn niet te voorkomen.",
+  "chat.timer.sheet_pending":
+    "Ingesteld op deze telefoon. De timer komt bij {name} aan zodra jullie weer verbinding maken, en geldt dan op beide telefoons.",
+  "chat.timer.sheet_bitchat":
+    "Alleen op deze telefoon. De app van {name} ondersteunt geen gedeelde timers.",
+  "chat.timer.sheet_local":
+    "Voorlopig alleen op deze telefoon. Als de app van {name} gedeelde timers ondersteunt, komt de timer daar aan zodra jullie weer verbinding maken.",
+  "chat.group.invited": "Je bent uitgenodigd voor {name}.",
+  "chat.group.invited_you": "Heeft je uitgenodigd voor {name}",
+  "chat.group.decline": "Weigeren",
+  "chat.group.decline_title": "Uitnodiging voor {name} weigeren?",
+  "chat.group.decline_body":
+    "{name} staat niet in je contacten. Blokkeer diegene ook, dan krijg je geen uitnodigingen of berichten meer.",
+  "chat.group.decline_block": "Weigeren en blokkeren",
   "chat.group.you_were_removed":
     "Je bent weggehaald uit {name}. Je kunt hier niet meer lezen of sturen.",
   "chat.group.removed_you": "Heeft je weggehaald uit {name}",
@@ -1203,6 +1235,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Het token kon niet worden gemaakt",
+  "wallet.send.unverified_note":
+    "Een deel van deze betaling is ecash die de mint nog niet heeft bevestigd.",
   "wallet.send.title": "Ecash sturen",
   "wallet.send.amount_in": "Bedrag in {unit}",
   "wallet.send.body":
@@ -1262,15 +1296,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "Ingewisseld bij {mint}. Het is nu aantoonbaar van jou: de kopie van dit token bij de afzender werkt niet meer.",
   "wallet.receive.pending_unconfirmed":
-    "Opgeslagen van {mint}, maar de mint heeft nog niet bevestigd dat het onbesteed is. Het wordt automatisch bij de mint bevestigd zodra je online bent.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "Opgeslagen van {mint}, maar de mint heeft nog niet bevestigd dat het onbesteed is. De handtekening klopt wel, dus het token is echt. Het wordt automatisch bij de mint bevestigd zodra je online bent.",
   "wallet.receive.dleq_ok":
     "De handtekening van de mint klopt, dus het token is echt.",
-  "wallet.receive.dleq_uncached":
-    "De sleutels van de mint staan hier niet, dus de handtekening kon offline niet worden gecontroleerd.",
-  "wallet.receive.dleq_missing":
-    "Niet elke munt erin heeft het handtekeningbewijs van de mint, dus het kon offline niet worden gecontroleerd.",
   "wallet.receive.dleq_warning":
     "Tot het online is bevestigd, kan de afzender het in principe elders hebben uitgegeven.",
   "wallet.receive.failed": "Ontvangen lukte niet",
@@ -1630,6 +1658,7 @@ export const strings: Strings = {
   "wallet.scan.aim_any": "Richt op de QR-code van een token, factuur of npub.",
   "wallet.scan.no_any":
     "Geen token, factuur of npub gevonden in die afbeelding.",
+  "wallet.scan.not_usable": "Airhop kan deze QR-code hier niet gebruiken.",
   "wallet.scan.use_camera_a11y": "Scannen met de camera",
   "wallet.scan.use_camera": "Camera gebruiken",
   "wallet.scan.pick_image_a11y":
@@ -1736,6 +1765,12 @@ export const strings: Strings = {
     "Deze betaling is vergrendeld voor jouw portemonnee.",
   "wallet.svc.locked_ours_offline_body":
     "Haal hem op zodra je online bent. Niemand anders kan hem ondertussen pakken.",
+  "wallet.svc.offline_cap":
+    "Offline is onbevestigde ecash beperkt tot {limit} per mint.",
+  "wallet.svc.offline_unchecked":
+    "Deze ecash kan offline niet worden gecontroleerd.",
+  "wallet.svc.claim_online_body":
+    "Haal deze op zodra je online bent en de mint hem kan bevestigen.",
   "wallet.svc.already_spent": "Deze ecash is al besteed.",
   "wallet.svc.already_spent_body":
     "Wie dit token stuurde heeft het eerder ingewisseld, of hetzelfde token ook naar iemand anders gestuurd.",
@@ -2072,10 +2107,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Houdt gesprekken het langst leesbaar, en neemt de meeste ruimte in.",
   "settings.general.message_retention": "Verdwijnende berichten",
-  "settings.general.message_retention_desc":
-    "Berichten en hun media worden na de gekozen tijd van deze telefoon verwijderd",
-  "settings.general.message_retention_sheet":
-    "Geteld vanaf het moment dat elk bericht deze telefoon bereikte, en alleen deze telefoon vergeet. De telefoon van de ander houdt zijn kopie, screenshots zijn niet te voorkomen en betalingen uit privéchats die je nog niet hebt opgehaald, blijven tot je ze ophaalt.",
+  "settings.general.message_retention_default":
+    "Standaardtimer voor nieuwe chats",
+  "settings.general.message_retention_default_desc":
+    "Voor nieuwe directe berichten, en voor ruimtes, kanalen en groepen op deze telefoon",
+  "settings.general.message_retention_default_sheet":
+    "Nieuwe directe berichten beginnen met deze timer, en jullie kunnen hem allebei in de chat wijzigen. Ruimtes, kanalen en groepen volgen hem alleen op deze telefoon, gerekend vanaf de aankomst van elk bericht. Screenshots zijn niet te voorkomen, en betalingen die je in een direct bericht ontvangt, blijven tot je ze int.",
   "settings.general.message_retention_off_desc":
     "Berichten blijven tot je de chat leegmaakt of verlaat",
   "settings.general.message_retention_1_desc":
@@ -2087,11 +2124,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Oudere berichten verwijderen?",
   "settings.general.message_retention_confirm_1":
-    "Berichten ouder dan 1 dag worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+    "Berichten ouder dan 1 dag in ruimtes, kanalen, groepen en chats die vanuit een locatiekanaal zijn gestart, worden nu van deze telefoon verwijderd, samen met hun media. Andere directe berichten houden hun eigen timers. Dit kan niet ongedaan worden gemaakt.",
   "settings.general.message_retention_confirm_7":
-    "Berichten ouder dan 7 dagen worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+    "Berichten ouder dan 7 dagen in ruimtes, kanalen, groepen en chats die vanuit een locatiekanaal zijn gestart, worden nu van deze telefoon verwijderd, samen met hun media. Andere directe berichten houden hun eigen timers. Dit kan niet ongedaan worden gemaakt.",
   "settings.general.message_retention_confirm_30":
-    "Berichten ouder dan 30 dagen worden nu van deze telefoon verwijderd, samen met hun media. Dit kan niet ongedaan worden gemaakt.",
+    "Berichten ouder dan 30 dagen in ruimtes, kanalen, groepen en chats die vanuit een locatiekanaal zijn gestart, worden nu van deze telefoon verwijderd, samen met hun media. Andere directe berichten houden hun eigen timers. Dit kan niet ongedaan worden gemaakt.",
   "settings.general.reset_desc":
     "Zet voorkeuren terug op de standaard en laat je identiteit, berichten, contacten en portemonnee met rust",
   "settings.general.reset_title": "Instellingen resetten?",
@@ -2236,6 +2273,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Livevideo",
   "settings.conn.live_video_desc":
     "Stream je camera naar mensen in de buurt en kijk naar die van hen",
+  "settings.conn.live_video_on_title": "Livevideo aanzetten?",
+  "settings.conn.live_video_on_body":
+    "Je kunt met de camera live gaan voor iedereen binnen Bluetooth-bereik, en hun streams verschijnen in je chats en worden op deze telefoon opgenomen.",
+  "settings.conn.live_video_off_title": "Livevideo uitzetten?",
+  "settings.conn.live_video_off_body":
+    "Je kunt niet meer live gaan, en streams van anderen worden niet getoond of opgenomen. Een korte komt toch aan als gewone video.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Via Tor routeren",
   "settings.conn.tor_desc":
@@ -2266,12 +2309,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Verbergt dat je Tor gebruikt. Sneller dan Snowflake, maar deze bridges zijn openbaar en sommige netwerken blokkeren ze.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Verbergt dat je Tor gebruikt door op een gewoon websitebezoek te lijken. Moeilijker te blokkeren dan de andere.",
   "settings.tor.mode_custom": "Eigen bridges",
   "settings.tor.mode_custom_desc":
-    "Gebruik obfs4-bridgeregels van bridges.torproject.org. Probeer dit als de andere niet werken.",
+    "Gebruik obfs4- of WebTunnel-bridgeregels van bridges.torproject.org. Probeer dit als de andere niet werken.",
   "settings.tor.custom_placeholder": "Plak één bridge-regel per regel",
   "settings.tor.custom_apply_hint":
     "Tik buiten het vak om verbinding te maken.",
@@ -2644,6 +2684,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Bellen",
   "notif.ring.title": "{sender} belt je",
   "notif.ring.body": "Bekijk je berichten",
+  "notif.action.reply": "Beantwoorden",
+  "notif.action.send": "Sturen",
+  "notif.action.mark_read": "Als gelezen markeren",
+  "notif.reply.failed_title": "Niet verstuurd",
+  "notif.reply.failed_body":
+    "Je antwoord aan {chat} is niet verstuurd. Open de chat om het opnieuw te proberen.",
+  "notif.reply.held_title": "Wacht op verzending",
+  "notif.reply.held_body":
+    "Je antwoord aan {chat} wordt verstuurd zodra Airhop draait.",
+  "notif.reply.cut_title": "Deels verstuurd",
+  "notif.reply.cut_body":
+    "Je antwoord aan {chat} was te lang, dus het einde is niet verstuurd.",
 };
 
 export const plurals: Plurals = {

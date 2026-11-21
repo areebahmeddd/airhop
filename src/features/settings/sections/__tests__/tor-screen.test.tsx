@@ -155,7 +155,7 @@ describe("the connection section", () => {
 
     expect(connectionTitle()).toBeOnTheScreen();
     expect(
-      screen.getByText(t("settings.tor.mode_snowflake")),
+      screen.getByRole("button", { name: t("settings.tor.mode_snowflake") }),
     ).toBeOnTheScreen();
   });
 

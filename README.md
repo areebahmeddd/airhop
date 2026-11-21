@@ -40,7 +40,9 @@
 
 Airhop is an iOS + Android app (macOS and Windows coming soon) for private, offline-first peer-to-peer communication over [Bluetooth mesh](https://en.wikipedia.org/wiki/Mesh_networking) networks, with [Nostr](https://nostr.org) internet bridging and [Cashu](https://cashu.space) [ecash](https://en.wikipedia.org/wiki/Ecash) payments. **Our mission is to make censorship-resistant communication available to anyone: during natural disasters, internet blackouts, mass protests, or any situation where networks are unavailable, surveilled, or shut down.**
 
-I built this at a 24-hour hackathon (July 2026) during my final year of undergrad, on top of the foundation of [bitchat](https://bitchat.free). It uses the same [BLE wire protocol](docs/spec/PROTOCOLS.md) and [service UUIDs](docs/spec/PROTOCOLS.md#1-ble-identifiers), meaning Airhop-installed devices can automatically discover and join the same mesh as nearby bitchat-installed devices, relay messages, and exchange DMs with zero setup. It also extends the protocol with [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) forward secrecy, offline ecash payments, and offline AI (not present in bitchat _at the time_). [ [Project Trailer](https://youtube.com/watch?v=6gnkkEt1uqY) / [Project Demo](https://youtube.com/watch?v=78kaIALZhKM) ]
+I built this at a 24-hour hackathon (July 2026) during my final year of undergrad, on top of the foundation of [bitchat](https://bitchat.free). It uses the same [BLE wire protocol](docs/spec/PROTOCOLS.md) and [service UUIDs](docs/spec/PROTOCOLS.md#1-ble-identifiers), so phones running Airhop automatically discover and join the same mesh as nearby phones running bitchat, relay messages, and exchange DMs with zero setup. It also extends the protocol with [Double Ratchet](https://signal.org/docs/specifications/doubleratchet) forward secrecy, offline ecash payments, and offline AI (not present in bitchat _at the time_). [ [Project Trailer](https://youtube.com/watch?v=6gnkkEt1uqY) / [Project Demo](https://youtube.com/watch?v=78kaIALZhKM) ]
+
+Read the [Airhop whitepaper](docs/paper/airhop/airhop-whitepaper.pdf) for the full design.
 
 > [!NOTE]
 > Airhop is an independent side project built and maintained by [Areeb Ahmed](https://github.com/areebahmeddd) in his free time. It is not backed by any company or organization, not affiliated with or endorsed by permissionlesstech or the bitchat project, and not an impersonation of any existing app or service.
@@ -128,7 +130,7 @@ Notes on the numbers:
 - Text messages (channel and DM) are tiny and effectively instant on any transport. Throughput only matters for files.
 - The ~18 KiB/s figure is 467 bytes per fragment sent one every 25 ms. The delay is required: without it the radio drops fragments and the transfer never completes.
 - A channel attachment paces at 30 ms instead (~15 KiB/s), since each broadcast fragment requires one radio write per connected peer, increasing airtime usage as the room grows.
-- A 1 MiB file (the per-file cap) takes about 56 seconds to one peer. bitchat rejects anything larger as it decodes the packet, so the cap is not ours to raise and chunking above it was dropped. An Airhop-only path stays possible, but it cannot be the default without losing bitchat compatibility.
+- A 1 MiB file (the per-file cap) takes about 56 seconds to one peer. bitchat rejects anything larger as it decodes the packet, so the cap is not ours to raise. An Airhop-only path for larger files stays possible, but it cannot be the default without losing bitchat compatibility.
 - LAN needs no such pacing, since the 25 ms delay is a Bluetooth requirement rather than a protocol one. The 467-byte fragment size stays regardless: the receiver reassembles by index and a peer may be relaying to Bluetooth next.
 - Wi-Fi Aware doesn’t work across platforms. Apple requires pairing that Android can’t complete, so connections are limited to Android-to-Android (Android 10+) or iPhone-to-iPhone (iOS 26+, paired once).
 - Nostr relays carry small signed events, not file bytes. Files can be shared over Nostr only by uploading them to a separate HTTP host and posting a link ([NIP-96](https://github.com/nostr-protocol/nips/blob/master/96.md)). Airhop does not do this: that host is a central server that can log, throttle, or take down your files, which is exactly what this app avoids. Attachments therefore travel only over Bluetooth, LAN or Wi-Fi.
@@ -246,10 +248,10 @@ cd .. && npm run android
 | Document                                          | Description                                                      |
 | ------------------------------------------------- | ---------------------------------------------------------------- |
 | [VISION.md](docs/design/VISION.md)                | Why Airhop exists and what it will never compromise on           |
-| [ROADMAP.md](docs/design/ROADMAP.md)              | Version targets (v0.5.0 to v2.0.0), and gap analysis             |
+| [ROADMAP.md](docs/design/ROADMAP.md)              | Version targets (v0.5.0 to v2.0.0) and gap analysis              |
 | [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md)      | System architecture, design decisions, and stack rationale       |
 | [PROTOCOLS.md](docs/spec/PROTOCOLS.md)            | Wire format, BLE UUIDs, and protocol specifications              |
-| [BITCHAT.md](docs/dev/BITCHAT.md)                 | Bitchat codebase deep dive and implementation reference          |
+| [BITCHAT.md](docs/dev/BITCHAT.md)                 | bitchat codebase deep dive and implementation reference          |
 | [PROGRESS.md](docs/dev/PROGRESS.md)               | Current build and development milestones                         |
 | [SECURITY-REVIEW.md](docs/dev/SECURITY-REVIEW.md) | Threat model, attacks tested, findings, fixes and accepted risks |
 | [GLOSSARY.md](docs/dev/GLOSSARY.md)               | Definitions of technical terms used throughout the documentation |
@@ -270,7 +272,7 @@ Airhop would not exist without the work of the bitchat community. Thank you to e
 
 ## Support
 
-Help keep the project going by donating via the website, sponsoring on GitHub, or simply giving this repository a star. What the project needs funding for is published as a [`funding.json`](https://airhop.1mindlabs.org/funding.json) manifest, following the [funding.json](https://fundingjson.org) standard.
+Help keep the project going by donating via the website, sponsoring on GitHub, or giving this repository a star. What the project needs funding for is published as a [`funding.json`](https://airhop.1mindlabs.org/funding.json) manifest, following the [funding.json](https://fundingjson.org) standard.
 
 <a href="https://www.star-history.com/?repos=areebahmeddd%2Fairhop&type=date&legend=top-left">
  <picture>

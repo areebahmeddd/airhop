@@ -77,8 +77,8 @@ describe("LocalPrekeyStore", () => {
     expect(second.prekeys).toHaveLength(PREKEY_MAX_PREKEYS);
   });
 
-  // Unused keys never expire here, so a quiet pool is still good. Re-dating it
-  // keeps senders sealing to it rather than falling back to the static key.
+  // A quiet pool is still good until its keys retire. Re-dating it keeps
+  // senders sealing to it rather than falling back to the static key.
   it("re-dates an unchanged bundle before senders would call it stale", () => {
     jest.useFakeTimers();
     try {
@@ -141,8 +141,110 @@ describe("LocalPrekeyStore", () => {
     for (let i = 0; i < 50; i++) {
       store.consume(store.buildBundle(noise.pub, signPriv)!.prekeys[0].id);
     }
-    // One live batch and one consumed batch: 12 + 16 * 44 bytes, as base64.
-    expect(slot.value!.length).toBeLessThanOrEqual(956);
+    // One live batch and one consumed batch: 12 + 16 * 52 bytes, as base64.
+    expect(slot.value!.length).toBeLessThanOrEqual(1128);
+  });
+
+  // The bundle is re-dated every 3 days, so the last one to list a key can be
+  // dated the day it left, and a sender may seal to that for a week and the
+  // envelope travel a day.
+  it("retires an unused key after a month and opens it a week and a day longer", () => {
+    jest.useFakeTimers();
+    try {
+      const day = 24 * 60 * 60 * 1000;
+      const store = new LocalPrekeyStore(memorySlot());
+      const signPriv = ed25519.utils.randomSecretKey();
+      const noise = x25519Keypair();
+      const first = store.buildBundle(noise.pub, signPriv)!;
+      const oldId = first.prekeys[0].id;
+      const t0 = Date.now();
+
+      jest.setSystemTime(t0 + 29 * day);
+      expect(store.buildBundle(noise.pub, signPriv)!.prekeys).toEqual(
+        first.prekeys,
+      );
+
+      jest.setSystemTime(t0 + 30 * day);
+      const next = store.buildBundle(noise.pub, signPriv)!;
+      expect(next.prekeys).toHaveLength(PREKEY_MAX_PREKEYS);
+      expect(next.prekeys.some((p) => p.id === oldId)).toBe(false);
+      expect(next.generatedAt).toBeGreaterThan(first.generatedAt);
+
+      expect(
+        store.privForId(oldId, t0 + 30 * day + 7 * day + 24 * 60 * 60 * 1000),
+      ).not.toBeNull();
+      expect(
+        store.privForId(oldId, t0 + 30 * day + 8 * day + 2 * 60 * 60 * 1000),
+      ).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("keeps its keys when the clock is set back", () => {
+    jest.useFakeTimers();
+    try {
+      const slot = memorySlot();
+      const signPriv = ed25519.utils.randomSecretKey();
+      const noise = x25519Keypair();
+      const bundle = new LocalPrekeyStore(slot).buildBundle(
+        noise.pub,
+        signPriv,
+      )!;
+      jest.setSystemTime(Date.now() - 60 * 60 * 1000);
+      const reopened = new LocalPrekeyStore(slot);
+      for (const p of bundle.prekeys) {
+        expect(x25519.getPublicKey(reopened.privForId(p.id)!)).toEqual(
+          p.publicKey,
+        );
+      }
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("spends a retired key without changing the bundle", () => {
+    jest.useFakeTimers();
+    try {
+      const day = 24 * 60 * 60 * 1000;
+      const store = new LocalPrekeyStore(memorySlot());
+      const signPriv = ed25519.utils.randomSecretKey();
+      const noise = x25519Keypair();
+      const oldId = store.buildBundle(noise.pub, signPriv)!.prekeys[0].id;
+      jest.setSystemTime(Date.now() + 30 * day);
+      const bundle = store.buildBundle(noise.pub, signPriv)!;
+
+      expect(store.consume(oldId)).toBe(false);
+      expect(store.buildBundle(noise.pub, signPriv)).toEqual(bundle);
+      // Opened once, it keeps only the consumed grace, not the retired one.
+      expect(
+        store.privForId(oldId, Date.now() + 47 * 60 * 60 * 1000),
+      ).not.toBeNull();
+      expect(
+        store.privForId(oldId, Date.now() + 49 * 60 * 60 * 1000),
+      ).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("stays inside a small keychain value with a batch published, retired and spent", () => {
+    jest.useFakeTimers();
+    try {
+      const slot = memorySlot();
+      const store = new LocalPrekeyStore(slot);
+      const signPriv = ed25519.utils.randomSecretKey();
+      const noise = x25519Keypair();
+      store.buildBundle(noise.pub, signPriv);
+      jest.setSystemTime(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      for (let i = 0; i < 20; i++) {
+        store.consume(store.buildBundle(noise.pub, signPriv)!.prekeys[0].id);
+      }
+      // 12 + 24 * 52 bytes, as base64, under the 2 KiB some keychains allow.
+      expect(slot.value!.length).toBeLessThanOrEqual(1680);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   // Before first unlock an iOS relaunch cannot read the keychain. Minting then

@@ -68,9 +68,9 @@ internal class LinkWriteQueue(
     private var closed = false
 
     // `ttlMs` of zero or less never expires. The bounds count the head the
-    // radio holds, as bitchat-android's do, but not an entry past its deadline:
-    // it will never be sent, so it is dropped here wherever it waits rather
-    // than holding a slot until it reaches the head.
+    // radio holds, but not an entry past its deadline: it will never be sent,
+    // so it is dropped here wherever it waits rather than holding a slot until
+    // it reaches the head.
     @Synchronized
     fun offer(data: ByteArray, ttlMs: Long, nowMs: Long): Offer {
         if (closed) return Offer.CLOSED
@@ -211,7 +211,7 @@ internal class LinkWriteQueue(
     }
 
     companion object {
-        // Per link, as bitchat-android bounds it.
+        // Per link.
         const val MAX_ENTRIES = 256
         const val MAX_BYTES = 1L shl 20
 

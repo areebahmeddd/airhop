@@ -5,9 +5,11 @@
 // decides what a reader sees: an expired message is hidden the moment it
 // expires and removed at the next sweep.
 //
-// Timed from when the message reached this phone (ChatMessage.receivedAtMs),
-// which is what the setting promises: "keep history on this phone for N days".
-// Local only; nothing on the wire changes, and the other phone keeps its copy.
+// A private message keeps the timer it was sent with (disappearAfterMs),
+// which both phones apply alike: ours from sending, theirs from when it was
+// first read (seenAtMs), so a copy nobody has read does not disappear unseen.
+// Every other row, a location chat's included, follows the default on this
+// phone alone, timed from when it reached this phone (ChatMessage.receivedAtMs).
 //
 // Rows still in flight are kept past the window (see isMessageExpired), and so
 // is a Cashu token received in a DM. It is claimed only by hand, from its bubble, so deleting the row deletes the
@@ -36,6 +38,8 @@ type ExpiryFields = Pick<
   | "liveVideo"
   | "isMine"
   | "text"
+  | "disappearAfterMs"
+  | "seenAtMs"
 >;
 
 // What the wallet has taken in: the first proof secret of each token it
@@ -91,6 +95,20 @@ function isInFlight(
   );
 }
 
+// When a row's countdown started and how long it runs, or null when it has
+// none: a timer that is off, or a received DM nobody has read yet.
+function countdown(
+  message: ExpiryFields,
+  windowMs: number,
+): { fromMs: number; ms: number } | null {
+  const own = message.disappearAfterMs;
+  if (own === undefined) {
+    return windowMs > 0 ? { fromMs: arrivedAtMs(message), ms: windowMs } : null;
+  }
+  const fromMs = message.isMine ? arrivedAtMs(message) : message.seenAtMs;
+  return own > 0 && fromMs !== undefined ? { fromMs, ms: own } : null;
+}
+
 export function isMessageExpired(
   message: ExpiryFields,
   nowMs: number,
@@ -99,7 +117,8 @@ export function isMessageExpired(
   awaitingReceipt?: ReadonlySet<string>,
 ): boolean {
   // Off, or a window nothing could have stored: never a reason to delete.
-  if (!(windowMs > 0)) return false;
+  const timer = countdown(message, windowMs);
+  if (timer === null) return false;
   // Still in flight: the transport, the outbox or a courier still holds it and
   // reports back to the row, and deleting it would discard the outbox entry
   // with it, so a DM to a peer away longer than the window would vanish
@@ -108,9 +127,9 @@ export function isMessageExpired(
   if (isInFlight(message, awaitingReceipt) || message.liveVideo !== undefined) {
     return false;
   }
-  // An arrival in the future is a clock that moved back, not a fresh message.
+  // A start in the future is a clock that moved back, not a fresh message.
   // Kept: deleting on a bad clock is the worse failure, as for media.
-  if (!(nowMs - arrivedAtMs(message) > windowMs)) return false;
+  if (!(nowMs - timer.fromMs > timer.ms)) return false;
   // Last, since it decodes: only rows otherwise past the window pay for it.
   return !holdsUnclaimedToken(message, claims);
 }
@@ -123,12 +142,13 @@ export function nextExpiryAtMs(
   nowMs: number,
   windowMs: number,
 ): number | null {
-  if (!(windowMs > 0)) return null;
   let next: number | null = null;
   for (const list of Object.values(messages)) {
     for (const m of list) {
+      const timer = countdown(m, windowMs);
+      if (timer === null) continue;
       // isMessageExpired takes strictly more than the window.
-      const at = arrivedAtMs(m) + windowMs + 1;
+      const at = timer.fromMs + timer.ms + 1;
       if (at > nowMs && (next === null || at < next)) next = at;
     }
   }
@@ -143,7 +163,6 @@ export function withoutExpired(
   windowMs: number,
   awaitingReceipt?: ReadonlySet<string>,
 ): ChatMessage[] {
-  if (!(windowMs > 0)) return list;
   const kept = list.filter(
     (m) => !isMessageExpired(m, nowMs, windowMs, undefined, awaitingReceipt),
   );
@@ -157,7 +176,6 @@ export function withoutExpiredInAll(
   windowMs: number,
   awaitingReceipt?: ReadonlySet<string>,
 ): Record<string, ChatMessage[]> {
-  if (!(windowMs > 0)) return messages;
   let out: Record<string, ChatMessage[]> | null = null;
   for (const [channel, list] of Object.entries(messages)) {
     const kept = withoutExpired(list, nowMs, windowMs, awaitingReceipt);

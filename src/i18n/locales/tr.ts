@@ -164,7 +164,7 @@ export const strings: Strings = {
     "Yakındaki cihazları bulur ve mesajları aralarında aktarır. Mesh böyle kurulur ve internet bağlantısı olmadan çalışır.",
   "onboarding.primer.location.title": "Konum",
   "onboarding.primer.location.body":
-    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumun cihazından yalnızca birine konum işareti gönderdiğinde çıkar.",
+    "Seni bir sokak arasından bir bölgeye kadar yakın alan kanallarına yerleştirir. Airhop seni asla izlemez ve kesin konumun cihazından asla çıkmaz.",
   "onboarding.primer.notifications.title": "Bildirimler",
   "onboarding.primer.notifications.body":
     "Uygulama kapalıyken bile yeni mesajlar için uyarı al. Bildirimler cihazında yerel olarak oluşturulur, hiçbir sunucu işin içinde değildir.",
@@ -389,7 +389,36 @@ export const strings: Strings = {
   // ---- Chats: private groups ----
   "chat.group.unreachable": "Her üyeye ulaşılamadı. Yakındayken yeniden dene.",
   "chat.group.you_were_added": "{name} grubuna eklendin.",
-  "chat.group.added_you": "Seni {name} grubuna ekledi",
+  "chat.timer.you_set_1": "Kaybolan mesajları 1 gün olarak ayarladınız",
+  "chat.timer.you_set_7": "Kaybolan mesajları 7 gün olarak ayarladınız",
+  "chat.timer.you_set_30": "Kaybolan mesajları 30 gün olarak ayarladınız",
+  "chat.timer.you_off": "Kaybolan mesajları kapattınız",
+  "chat.timer.you_set_local_1":
+    "Bu telefonda kaybolan mesajları 1 gün olarak ayarladınız",
+  "chat.timer.you_set_local_7":
+    "Bu telefonda kaybolan mesajları 7 gün olarak ayarladınız",
+  "chat.timer.you_set_local_30":
+    "Bu telefonda kaybolan mesajları 30 gün olarak ayarladınız",
+  "chat.timer.you_off_local": "Bu telefonda kaybolan mesajları kapattınız",
+  "chat.timer.peer_set_1": "{name} kaybolan mesajları 1 gün olarak ayarladı",
+  "chat.timer.peer_set_7": "{name} kaybolan mesajları 7 gün olarak ayarladı",
+  "chat.timer.peer_set_30": "{name} kaybolan mesajları 30 gün olarak ayarladı",
+  "chat.timer.peer_off": "{name} kaybolan mesajları kapattı",
+  "chat.timer.sheet_shared":
+    "Bundan sonra gönderilen mesajlar için, iki telefonda da. Her mesajın süresi gönderenin telefonunda gönderildiği andan, diğer telefonda ilk kez okunduğu andan itibaren işler. Ekran görüntüleri engellenemez.",
+  "chat.timer.sheet_pending":
+    "Bu telefonda ayarlandı. Bir sonraki bağlantınızda {name} kişisine ulaşır, ardından iki telefonda da geçerli olur.",
+  "chat.timer.sheet_bitchat":
+    "Yalnızca bu telefonda. {name} kişisinin uygulaması ortak zamanlayıcıları desteklemiyor.",
+  "chat.timer.sheet_local":
+    "Şimdilik yalnızca bu telefonda. {name} kişisinin uygulaması ortak zamanlayıcıları destekliyorsa, zamanlayıcı bir sonraki bağlantınızda ona ulaşır.",
+  "chat.group.invited": "{name} grubuna davet edildin.",
+  "chat.group.invited_you": "Seni {name} grubuna davet etti",
+  "chat.group.decline": "Reddet",
+  "chat.group.decline_title": "{name} daveti reddedilsin mi?",
+  "chat.group.decline_body":
+    "{name} kişilerinde değil. Onu da engellersen ondan bir daha davet ya da mesaj almazsın.",
+  "chat.group.decline_block": "Reddet ve engelle",
   "chat.group.you_were_removed":
     "{name} grubundan çıkarıldın. Burada artık okuyamaz ya da mesaj gönderemezsin.",
   "chat.group.removed_you": "Seni {name} grubundan çıkardı",
@@ -1193,6 +1222,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "Jeton oluşturulamadı",
+  "wallet.send.unverified_note":
+    "Bu ödemenin bir kısmı darphanenin henüz onaylamadığı ecash.",
   "wallet.send.title": "Ecash gönder",
   "wallet.send.amount_in": "{unit} cinsinden tutar",
   "wallet.send.body":
@@ -1252,14 +1283,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} darphanesinde bozduruldu. Artık kanıtlanabilir biçimde senin: gönderendeki kopyası artık çalışmıyor.",
   "wallet.receive.pending_unconfirmed":
-    "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} kaynağından kaydedildi ama darphane harcanmamış olduğunu henüz onaylamadı. İmzası tutuyor, yani jeton gerçek. Çevrimiçi olur olmaz darphaneyle otomatik olarak onaylanır.",
   "wallet.receive.dleq_ok": "Darphanenin imzası tutuyor, yani jeton gerçek.",
-  "wallet.receive.dleq_uncached":
-    "Darphanenin anahtarları burada yok, bu yüzden imza çevrimdışı denetlenemedi.",
-  "wallet.receive.dleq_missing":
-    "İçindeki paraların hepsi darphanenin imza kanıtını taşımıyor, bu yüzden çevrimdışı denetlenemedi.",
   "wallet.receive.dleq_warning":
     "Çevrimiçi onaylanana kadar gönderen ilkece onu başka bir yerde harcamış olabilir.",
   "wallet.receive.failed": "Alınamadı",
@@ -1619,6 +1644,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR kodu tara",
   "wallet.scan.aim_any": "Bir jeton, fatura veya npub QR koduna doğrult.",
   "wallet.scan.no_any": "O görüntüde jeton, fatura veya npub bulunamadı.",
+  "wallet.scan.not_usable": "Airhop bu QR kodunu burada kullanamaz.",
   "wallet.scan.use_camera_a11y": "Kamerayla tara",
   "wallet.scan.use_camera": "Kamerayı kullan",
   "wallet.scan.pick_image_a11y": "Kayıtlı bir görüntüden QR kod oku",
@@ -1721,6 +1747,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "Bu ödeme senin cüzdanına kilitli.",
   "wallet.svc.locked_ours_offline_body":
     "Çevrimiçi olduğunda al. Bu arada başka kimse onu alamaz.",
+  "wallet.svc.offline_cap":
+    "Çevrimdışıyken onaylanmamış ecash, darphane başına {limit} ile sınırlıdır.",
+  "wallet.svc.offline_unchecked": "Bu ecash çevrimdışıyken doğrulanamaz.",
+  "wallet.svc.claim_online_body":
+    "Bunu çevrimiçi olduğunda, darphane onaylayabildiğinde al.",
   "wallet.svc.already_spent": "Bu ecash zaten harcanmış.",
   "wallet.svc.already_spent_body":
     "Bu jetonu gönderen onu önce kendisi bozdurmuş ya da aynı jetonu başka birine de göndermiş.",
@@ -2050,10 +2081,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "Konuşmaları en uzun süre okunabilir tutar ve diskte en çok yer kaplar.",
   "settings.general.message_retention": "Kaybolan mesajlar",
-  "settings.general.message_retention_desc":
-    "Mesajlar ve medyaları seçilen sürenin ardından bu telefondan silinir",
-  "settings.general.message_retention_sheet":
-    "Her mesajın bu telefona ulaştığı andan itibaren sayılır ve yalnızca bu telefon unutur. Karşı tarafın telefonu kendi kopyasını saklar, ekran görüntüleri engellenemez ve özel sohbetlerde gelen ve henüz almadığın ödemeler sen alana kadar kalır.",
+  "settings.general.message_retention_default":
+    "Yeni sohbetler için varsayılan zamanlayıcı",
+  "settings.general.message_retention_default_desc":
+    "Yeni doğrudan mesajlar için, ve bu telefondaki odalar, kanallar ve gruplar için",
+  "settings.general.message_retention_default_sheet":
+    "Yeni doğrudan mesajlar bu zamanlayıcıyla başlar ve ikinizden biri sohbette değiştirebilir. Odalar, kanallar ve gruplar buna yalnızca bu telefonda uyar, her mesajın ulaştığı andan itibaren sayılır. Ekran görüntüleri engellenemez ve doğrudan mesajla size gönderilen ödemeler siz alana kadar kalır.",
   "settings.general.message_retention_off_desc":
     "Sohbeti temizleyene ya da ondan ayrılana kadar mesajlar kalır",
   "settings.general.message_retention_1_desc":
@@ -2065,11 +2098,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "Eski mesajlar silinsin mi?",
   "settings.general.message_retention_confirm_1":
-    "1 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+    "Odalar, kanallar, gruplar ve bir konum kanalından başlatılan sohbetlerdeki 1 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Diğer doğrudan mesajlar kendi zamanlayıcılarını korur. Bu geri alınamaz.",
   "settings.general.message_retention_confirm_7":
-    "7 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+    "Odalar, kanallar, gruplar ve bir konum kanalından başlatılan sohbetlerdeki 7 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Diğer doğrudan mesajlar kendi zamanlayıcılarını korur. Bu geri alınamaz.",
   "settings.general.message_retention_confirm_30":
-    "30 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Bu geri alınamaz.",
+    "Odalar, kanallar, gruplar ve bir konum kanalından başlatılan sohbetlerdeki 30 günden eski mesajlar, medyalarıyla birlikte şimdi bu telefondan silinecek. Diğer doğrudan mesajlar kendi zamanlayıcılarını korur. Bu geri alınamaz.",
   "settings.general.reset_desc":
     "Tercihleri varsayılanlarına döndürür; kimliğine, mesajlarına, kişilerine ve cüzdanına dokunmaz",
   "settings.general.reset_title": "Ayarlar sıfırlansın mı?",
@@ -2213,6 +2246,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "Canlı video",
   "settings.conn.live_video_desc":
     "Kameranı yakındaki kişilere yayınla ve onlarınkini izle",
+  "settings.conn.live_video_on_title": "Canlı video açılsın mı?",
+  "settings.conn.live_video_on_body":
+    "Kameradan Bluetooth menzilindeki kişilere canlı yayın yapabilirsin, onların yayınları da sohbetlerinde görünür ve bu telefona kaydedilir.",
+  "settings.conn.live_video_off_title": "Canlı video kapatılsın mı?",
+  "settings.conn.live_video_off_body":
+    "Artık canlı yayın yapamazsın, başkalarının yayınları da gösterilmez ve kaydedilmez. Kısa bir yayın yine de normal bir video olarak gelir.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor yönlendirmesi",
   "settings.conn.tor_desc":
@@ -2243,12 +2282,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "Tor kullandığını gizler. Snowflake'ten hızlıdır, ancak bu köprüler herkese açıktır ve bazı ağlar engeller.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "Sıradan bir web sitesi ziyareti gibi görünerek Tor kullandığını gizler. Diğerlerinden daha zor engellenir.",
   "settings.tor.mode_custom": "Kendi köprülerin",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org adresinden aldığın obfs4 köprü satırlarını kullan. Diğerleri başarısız olduğunda bunu dene.",
+    "bridges.torproject.org adresinden aldığın obfs4 veya WebTunnel köprü satırlarını kullan. Diğerleri başarısız olduğunda bunu dene.",
   "settings.tor.custom_placeholder": "Her satıra bir köprü satırı yapıştır",
   "settings.tor.custom_apply_hint": "Bağlanmak için kutunun dışına dokun.",
   "settings.tor.custom_empty": "Önce en az bir köprü satırı ekle.",
@@ -2613,6 +2649,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "Çağrı",
   "notif.ring.title": "{sender} seni arıyor",
   "notif.ring.body": "Mesajlarını kontrol et",
+  "notif.action.reply": "Yanıtla",
+  "notif.action.send": "Gönder",
+  "notif.action.mark_read": "Okundu işaretle",
+  "notif.reply.failed_title": "Gönderilmedi",
+  "notif.reply.failed_body":
+    "{chat} sohbetine yanıtın gönderilmedi. Yeniden denemek için sohbeti aç.",
+  "notif.reply.held_title": "Gönderilmeyi bekliyor",
+  "notif.reply.held_body":
+    "{chat} sohbetine yanıtın Airhop çalıştığında gönderilecek.",
+  "notif.reply.cut_title": "Kısmen gönderildi",
+  "notif.reply.cut_body":
+    "{chat} sohbetine yanıtın çok uzundu, bu yüzden sonu gönderilmedi.",
 };
 
 export const plurals: Plurals = {

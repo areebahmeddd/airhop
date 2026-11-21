@@ -90,31 +90,26 @@ async function renderScreen(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-// Every other permission is granted, so the only switch left off is Photos.
-function offSwitches() {
-  return screen
-    .getAllByRole("switch")
-    .filter((s) => (s.props as { value?: boolean }).value !== true);
+function photosSwitch() {
+  return screen.getByRole("switch", { name: t("settings.permissions.photos") });
 }
 
 describe("the Photos row", () => {
   it("is on when both reading and saving are allowed", async () => {
     await renderScreen();
-    expect(offSwitches()).toHaveLength(0);
+    expect(photosSwitch()).toBeChecked();
   });
 
   it("is off while sending from the library is refused, even with saving allowed", async () => {
     mockGrants.library = BLOCKED;
     await renderScreen();
-    expect(offSwitches()).toHaveLength(1);
+    expect(photosSwitch()).not.toBeChecked();
   });
 
   it("asks for the library read when that is the grant still open", async () => {
     mockGrants.library = ASKABLE;
     await renderScreen();
-    const [photos] = offSwitches();
-
-    await fireEvent(photos, "valueChange", true);
+    await fireEvent(photosSwitch(), "valueChange", true);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(mockRequestLibrary).toHaveBeenCalledTimes(1);
@@ -127,9 +122,7 @@ describe("the Photos switch, to a screen reader", () => {
     mockGrants.library = ASKABLE;
     await renderScreen();
 
-    const photos = screen.getByRole("switch", {
-      name: t("settings.permissions.photos"),
-    });
+    const photos = photosSwitch();
     expect(photos).not.toBeChecked();
     expect(photos).toBeEnabled();
     expect(photos).toHaveProp(
@@ -142,8 +135,9 @@ describe("the Photos switch, to a screen reader", () => {
     mockGrants.library = BLOCKED;
     await renderScreen();
 
-    expect(
-      screen.getByRole("switch", { name: t("settings.permissions.photos") }),
-    ).toHaveProp("accessibilityHint", t("settings.permissions.open_settings"));
+    expect(photosSwitch()).toHaveProp(
+      "accessibilityHint",
+      t("settings.permissions.open_settings"),
+    );
   });
 });

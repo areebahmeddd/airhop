@@ -19,7 +19,7 @@ import { condemnIdentity, isIdentityCondemned } from "../wipe-marker";
 
 // The same three the panic wipe test replaces: each reaches a native runtime
 // at import, and none of them is what a move does.
-jest.mock("../file-transfer-service", () => ({
+jest.mock("../attachment-cache", () => ({
   wipeCacheDirectory: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock("../notification-service", () => ({

@@ -78,11 +78,11 @@ describe("mineNonceTag", () => {
       content: "x",
     };
     const tag = mineNonceTag(fields, 256, clock);
-    if (tag === null) return;
-    expect(Number(tag[2])).toBeLessThan(32);
+    expect(tag).not.toBeNull();
+    expect(Number(tag![2])).toBeLessThan(32);
     // Whatever it settled on, the ID meets it.
-    const id = getEventHash({ ...fields, tags: [tag] });
-    expect(validatedDifficulty(id, [tag])).toBe(Number(tag[2]));
+    const id = getEventHash({ ...fields, tags: [tag!] });
+    expect(validatedDifficulty(id, [tag!])).toBe(Number(tag![2]));
   });
 });
 

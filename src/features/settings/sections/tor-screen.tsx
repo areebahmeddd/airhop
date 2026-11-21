@@ -47,11 +47,11 @@ interface Props {
 }
 
 // Off first because it is the default and right on an uncensored network.
-// The transports follow in the order the docs and site name them. Custom last:
-// the answer when the built-in ones have been blocked.
+// The built-in transports follow. Custom last: the answer when those have been
+// blocked, and the only way in for WebTunnel, whose lines are handed out one at
+// a time rather than published in a built-in list.
 const MODES: {
-  // Null is a transport the app carries but does not offer yet.
-  value: TorBridgeMode | null;
+  value: TorBridgeMode;
   labelKey: TranslationKey;
   descriptionKey: TranslationKey;
 }[] = [
@@ -69,11 +69,6 @@ const MODES: {
     value: "snowflake",
     labelKey: "settings.tor.mode_snowflake",
     descriptionKey: "settings.tor.mode_snowflake_desc",
-  },
-  {
-    value: null,
-    labelKey: "settings.tor.mode_webtunnel",
-    descriptionKey: "settings.tor.mode_webtunnel_desc",
   },
   {
     value: "custom",
@@ -252,9 +247,7 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
           </UpperText>
           <View style={styles.optionGroup}>
             {MODES.map((mode, i) => {
-              const value = mode.value;
-              const selected = value !== null && value === bridgeMode;
-              const disabled = busy || value === null;
+              const selected = mode.value === bridgeMode;
               return (
                 <React.Fragment key={mode.labelKey}>
                   {i > 0 && <GroupDivider />}
@@ -263,11 +256,11 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
                       styles.optionRowGrouped,
                       pressed && styles.rowPressed,
                     ]}
-                    onPress={() => value !== null && chooseMode(value)}
-                    disabled={disabled}
+                    onPress={() => chooseMode(mode.value)}
+                    disabled={busy}
                     hitSlop={HIT_SLOP}
                     accessibilityRole="button"
-                    accessibilityState={{ selected, disabled }}
+                    accessibilityState={{ selected, disabled: busy }}
                     accessibilityLabel={T(mode.labelKey)}
                   >
                     <View style={styles.optionText}>
@@ -282,11 +275,6 @@ export default function TorScreen({ onBack }: Props): React.JSX.Element {
                         size={18}
                         color={Colors.textPrimary}
                       />
-                    )}
-                    {value === null && (
-                      <Text style={styles.comingSoon}>
-                        {T("settings.coming_soon")}
-                      </Text>
                     )}
                   </Pressable>
                 </React.Fragment>

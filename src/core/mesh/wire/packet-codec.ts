@@ -165,9 +165,8 @@ export function padsBLEFrame(type: PacketType): boolean {
     // length. These are the two bitchat pads, and the set has to match.
     case PacketType.NOISE_ENCRYPTED:
     case PacketType.NOISE_HANDSHAKE:
-    // Airhop-only private types in the same class. bitchat drops both as
-    // unknown, so padding them costs no compatibility.
-    case PacketType.DR_ENCRYPTED:
+    // Airhop's private channel, in the same class. bitchat drops it as
+    // unknown, so padding it costs no compatibility.
     case PacketType.CHANNEL_ENC:
       return true;
     default:

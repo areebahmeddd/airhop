@@ -69,7 +69,7 @@ export async function publishCourierDrop(
     throwawayKey,
   );
 
-  await client.publish(event);
+  await client.publish(event, undefined, "throwaway");
 }
 
 // Subscribe to incoming courier drops addressed to the given recipient tags.
@@ -123,8 +123,8 @@ function parseCourierDropEvent(event: Event): SealedEnvelope | null {
     return null;
   }
   if (envelope === null || envelope.ciphertext.length === 0) return null;
-  // The envelope's own tag must match the filterable one, as bitchat-ios
-  // checks, or a mislabeled drop rides a subscription it does not belong to.
+  // The envelope's own tag must match the filterable one, or a mislabeled drop
+  // rides a subscription it does not belong to.
   if (bytesToHex(envelope.recipientTag) !== xTag[1].toLowerCase()) return null;
 
   if (envelope.expiryMs < Date.now()) return null;

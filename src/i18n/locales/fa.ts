@@ -158,7 +158,7 @@ export const strings: Strings = {
     "دستگاه‌های نزدیک را پیدا می‌کند و پیام‌ها را میانشان جابه‌جا می‌کند. مش از همین ساخته می‌شود و بدون اتصال اینترنت کار می‌کند.",
   "onboarding.primer.location.title": "موقعیت مکانی",
   "onboarding.primer.location.body":
-    "شما را در کانال‌های منطقهٔ نزدیک قرار می‌دهد، از یک محله تا یک استان. Airhop هرگز شما را ردیابی نمی‌کند، و موقعیت دقیقتان تنها وقتی از دستگاهتان بیرون می‌رود که موقعیتی را برای کسی بفرستید.",
+    "شما را در کانال‌های منطقهٔ نزدیک قرار می‌دهد، از یک محله تا یک استان. Airhop هرگز شما را ردیابی نمی‌کند، و موقعیت دقیقتان هرگز از دستگاهتان بیرون نمی‌رود.",
   "onboarding.primer.notifications.title": "اعلان‌ها",
   "onboarding.primer.notifications.body":
     "حتی وقتی برنامه بسته است، از پیام‌های تازه باخبر شوید. اعلان‌ها روی خود دستگاه شما ساخته می‌شوند و هیچ سروری در کار نیست.",
@@ -382,7 +382,37 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "به همهٔ اعضا نرسید. وقتی نزدیک بودند دوباره تلاش کنید.",
   "chat.group.you_were_added": "شما به {name} افزوده شدید.",
-  "chat.group.added_you": "شما را به {name} افزود",
+  "chat.timer.you_set_1": "پیام‌های ناپدیدشونده را روی 1 روز گذاشتید",
+  "chat.timer.you_set_7": "پیام‌های ناپدیدشونده را روی 7 روز گذاشتید",
+  "chat.timer.you_set_30": "پیام‌های ناپدیدشونده را روی 30 روز گذاشتید",
+  "chat.timer.you_off": "پیام‌های ناپدیدشونده را خاموش کردید",
+  "chat.timer.you_set_local_1":
+    "پیام‌های ناپدیدشونده را در همین گوشی روی 1 روز گذاشتید",
+  "chat.timer.you_set_local_7":
+    "پیام‌های ناپدیدشونده را در همین گوشی روی 7 روز گذاشتید",
+  "chat.timer.you_set_local_30":
+    "پیام‌های ناپدیدشونده را در همین گوشی روی 30 روز گذاشتید",
+  "chat.timer.you_off_local":
+    "پیام‌های ناپدیدشونده را در همین گوشی خاموش کردید",
+  "chat.timer.peer_set_1": "{name} پیام‌های ناپدیدشونده را روی 1 روز گذاشت",
+  "chat.timer.peer_set_7": "{name} پیام‌های ناپدیدشونده را روی 7 روز گذاشت",
+  "chat.timer.peer_set_30": "{name} پیام‌های ناپدیدشونده را روی 30 روز گذاشت",
+  "chat.timer.peer_off": "{name} پیام‌های ناپدیدشونده را خاموش کرد",
+  "chat.timer.sheet_shared":
+    "برای پیام‌هایی که از این پس فرستاده می‌شوند، روی هر دو گوشی. زمان هر پیام روی گوشی فرستنده از فرستادن، و روی گوشی دیگر از نخستین خواندن شمرده می‌شود. جلوی گرفتن نماگرفت را نمی‌توان گرفت.",
+  "chat.timer.sheet_pending":
+    "روی همین گوشی تنظیم شد. دفعهٔ بعد که به هم وصل شوید به {name} می‌رسد و بعد روی هر دو گوشی اعمال می‌شود.",
+  "chat.timer.sheet_bitchat":
+    "فقط روی همین گوشی. برنامهٔ {name} از زمان‌سنج مشترک پشتیبانی نمی‌کند.",
+  "chat.timer.sheet_local":
+    "فعلا فقط روی همین گوشی. اگر برنامهٔ {name} از زمان‌سنج مشترک پشتیبانی کند، دفعهٔ بعد که به هم وصل شوید به او می‌رسد.",
+  "chat.group.invited": "شما به {name} دعوت شدید.",
+  "chat.group.invited_you": "شما را به {name} دعوت کرد",
+  "chat.group.decline": "رد کردن",
+  "chat.group.decline_title": "دعوت به {name} رد شود؟",
+  "chat.group.decline_body":
+    "{name} در مخاطبان شما نیست. او را هم مسدود کنید تا دیگر دعوت یا پیامی از او نگیرید.",
+  "chat.group.decline_block": "رد کردن و مسدود کردن",
   "chat.group.you_were_removed":
     "شما از {name} برداشته شدید. دیگر نمی‌توانید اینجا بخوانید یا بفرستید.",
   "chat.group.removed_you": "شما را از {name} برداشت",
@@ -1179,6 +1209,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "توکن ساخته نشد",
+  "wallet.send.unverified_note":
+    "بخشی از این پرداخت ecash است که ضراب‌خانه هنوز آن را تأیید نکرده است.",
   "wallet.send.title": "فرستادن ecash",
   "wallet.send.amount_in": "مبلغ به {unit}",
   "wallet.send.body":
@@ -1238,15 +1270,9 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "در {mint} بازخرید شد. اکنون به شکل اثبات‌پذیر از آن شماست: نسخهٔ فرستنده از این توکن دیگر کار نمی‌کند.",
   "wallet.receive.pending_unconfirmed":
-    "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
-  "wallet.receive.pending_unconfirmed_genuine":
     "از {mint} ذخیره شد، اما ضراب‌خانه هنوز تأیید نکرده که خرج‌نشده است. امضایش درست است، پس توکن اصل است. همین که برخط شوید، خودکار با ضراب‌خانه تأیید می‌شود.",
   "wallet.receive.dleq_ok":
     "امضای ضراب‌خانه درست از آب درمی‌آید، پس توکن اصل است.",
-  "wallet.receive.dleq_uncached":
-    "کلیدهای ضراب‌خانه اینجا ذخیره نیستند، پس امضا به شکل برون‌خط بررسی نشد.",
-  "wallet.receive.dleq_missing":
-    "همهٔ سکه‌های آن گواه امضای ضراب‌خانه را ندارند، پس نشد آن را برون‌خط بررسی کرد.",
   "wallet.receive.dleq_warning":
     "تا وقتی برخط تأیید نشده، در اصل ممکن است فرستنده آن را جای دیگری خرج کرده باشد.",
   "wallet.receive.failed": "دریافت نشد",
@@ -1604,6 +1630,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "اسکن کد QR",
   "wallet.scan.aim_any": "روی کد QR یک توکن، صورتحساب یا npub بگیرید.",
   "wallet.scan.no_any": "در آن تصویر توکن، صورتحساب یا npub پیدا نشد.",
+  "wallet.scan.not_usable": "Airhop نمی‌تواند از این کد QR اینجا استفاده کند.",
   "wallet.scan.use_camera_a11y": "پویش با دوربین",
   "wallet.scan.use_camera": "استفاده از دوربین",
   "wallet.scan.pick_image_a11y": "خواندن یک کد QR از تصویری ذخیره‌شده",
@@ -1704,6 +1731,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "این پرداخت به کیف پول شما قفل شده است.",
   "wallet.svc.locked_ours_offline_body":
     "وقتی برخط شدید آن را دریافت کنید. در این میان هیچ‌کس دیگری نمی‌تواند آن را بردارد.",
+  "wallet.svc.offline_cap":
+    "در حالت برون‌خط، ecash تأییدنشده به {limit} برای هر ضراب‌خانه محدود است.",
+  "wallet.svc.offline_unchecked": "این ecash را نمی‌توان برون‌خط بررسی کرد.",
+  "wallet.svc.claim_online_body":
+    "این یکی را وقتی برخط شدید دریافت کنید، زمانی که ضراب‌خانه بتواند آن را تأیید کند.",
   "wallet.svc.already_spent": "این ecash از پیش خرج شده است.",
   "wallet.svc.already_spent_body":
     "هر کس این توکن را فرستاده زودتر بازخریدش کرده، یا همان توکن را به کس دیگری هم داده است.",
@@ -2033,10 +2065,12 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "گفتگوها را بیش از همه خواندنی نگه می‌دارد و بیشترین فضا را هم می‌گیرد.",
   "settings.general.message_retention": "پیام‌های ناپدیدشونده",
-  "settings.general.message_retention_desc":
-    "پیام‌ها و رسانه‌هایشان پس از مدت انتخاب‌شده از این گوشی حذف می‌شوند",
-  "settings.general.message_retention_sheet":
-    "از زمانی شمرده می‌شود که هر پیام به این گوشی رسیده، و فقط این گوشی فراموش می‌کند. گوشی طرف مقابل نسخهٔ خودش را نگه می‌دارد، جلوی اسکرین‌شات را نمی‌شود گرفت و پرداخت‌هایی که در گفتگوی خصوصی برایتان فرستاده شده و هنوز دریافت نکرده‌اید تا وقتی دریافتشان کنید می‌مانند.",
+  "settings.general.message_retention_default":
+    "زمان‌سنج پیش‌فرض برای گفت‌وگوهای تازه",
+  "settings.general.message_retention_default_desc":
+    "برای پیام‌های مستقیم تازه، و برای اتاق‌ها، کانال‌ها و گروه‌ها روی همین گوشی",
+  "settings.general.message_retention_default_sheet":
+    "پیام‌های مستقیم تازه با این زمان‌سنج شروع می‌شوند و هر دو نفر می‌توانند آن را در گفت‌وگو تغییر دهند. اتاق‌ها، کانال‌ها و گروه‌ها فقط روی همین گوشی از آن پیروی می‌کنند، از زمان رسیدن هر پیام. جلوی گرفتن نماگرفت را نمی‌توان گرفت، و پرداخت‌هایی که در پیام مستقیم برایتان فرستاده می‌شود تا زمانی که دریافتشان کنید می‌مانند.",
   "settings.general.message_retention_off_desc":
     "پیام‌ها می‌مانند تا گفتگو را پاک کنید یا از آن خارج شوید",
   "settings.general.message_retention_1_desc":
@@ -2048,11 +2082,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "پیام‌های قدیمی‌تر حذف شوند؟",
   "settings.general.message_retention_confirm_1":
-    "پیام‌های قدیمی‌تر از 1 روز همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. این کار برگشت‌پذیر نیست.",
+    "پیام‌های قدیمی‌تر از 1 روز در اتاق‌ها، کانال‌ها، گروه‌ها و گفت‌وگوهایی که از یک کانال موقعیت شروع شده‌اند همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. سایر پیام‌های مستقیم زمان‌سنج خودشان را نگه می‌دارند. این کار برگشت‌پذیر نیست.",
   "settings.general.message_retention_confirm_7":
-    "پیام‌های قدیمی‌تر از 7 روز همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. این کار برگشت‌پذیر نیست.",
+    "پیام‌های قدیمی‌تر از 7 روز در اتاق‌ها، کانال‌ها، گروه‌ها و گفت‌وگوهایی که از یک کانال موقعیت شروع شده‌اند همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. سایر پیام‌های مستقیم زمان‌سنج خودشان را نگه می‌دارند. این کار برگشت‌پذیر نیست.",
   "settings.general.message_retention_confirm_30":
-    "پیام‌های قدیمی‌تر از 30 روز همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. این کار برگشت‌پذیر نیست.",
+    "پیام‌های قدیمی‌تر از 30 روز در اتاق‌ها، کانال‌ها، گروه‌ها و گفت‌وگوهایی که از یک کانال موقعیت شروع شده‌اند همین حالا همراه با رسانه‌هایشان از این گوشی حذف می‌شوند. سایر پیام‌های مستقیم زمان‌سنج خودشان را نگه می‌دارند. این کار برگشت‌پذیر نیست.",
   "settings.general.reset_desc":
     "ترجیحات را به حالت پیش‌فرض بازمی‌گرداند و هویت، پیام‌ها، مخاطبان و کیف پول شما را دست‌نخورده می‌گذارد",
   "settings.general.reset_title": "تنظیمات بازنشانی شود؟",
@@ -2194,6 +2228,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "ویدیوی زنده",
   "settings.conn.live_video_desc":
     "دوربینت را برای افراد نزدیک پخش کن و پخش آن‌ها را ببین",
+  "settings.conn.live_video_on_title": "ویدیوی زنده روشن شود؟",
+  "settings.conn.live_video_on_body":
+    "می‌توانید با دوربین برای کسانی که در محدودهٔ بلوتوث‌اند پخش زنده کنید، و پخش‌های آن‌ها در گفتگوهایتان نمایش داده و روی این گوشی ضبط می‌شود.",
+  "settings.conn.live_video_off_title": "ویدیوی زنده خاموش شود؟",
+  "settings.conn.live_video_off_body":
+    "دیگر نمی‌توانید پخش زنده کنید، و پخش‌های دیگران نه نمایش داده می‌شود و نه ضبط. پخش کوتاه همچنان به‌صورت یک ویدیوی معمولی می‌رسد.",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "مسیردهی Tor",
   "settings.conn.tor_desc":
@@ -2223,12 +2263,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "پنهان می‌کند که از Tor استفاده می‌کنید. سریع‌تر از Snowflake، اما این پل‌ها عمومی‌اند و برخی شبکه‌ها آنها را مسدود می‌کنند.",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "با شبیه‌سازی بازدید معمولی از یک وب‌سایت، استفاده از Tor را پنهان می‌کند. مسدود کردنش از بقیه سخت‌تر است.",
   "settings.tor.mode_custom": "پل‌های دلخواه",
   "settings.tor.mode_custom_desc":
-    "از خطوط پل obfs4 از bridges.torproject.org استفاده کنید. وقتی بقیه کار نکردند این را امتحان کنید.",
+    "از خطوط پل obfs4 یا WebTunnel از bridges.torproject.org استفاده کنید. وقتی بقیه کار نکردند این را امتحان کنید.",
   "settings.tor.custom_placeholder": "در هر خط یک خط پل را بچسبانید",
   "settings.tor.custom_apply_hint": "برای اتصال، بیرون کادر را لمس کنید.",
   "settings.tor.custom_empty": "ابتدا دست‌کم یک خط پل اضافه کنید.",
@@ -2590,6 +2627,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "زنگ",
   "notif.ring.title": "{sender} برای شما زنگ می‌زند",
   "notif.ring.body": "پیام‌هایتان را بررسی کنید",
+  "notif.action.reply": "پاسخ",
+  "notif.action.send": "بفرست",
+  "notif.action.mark_read": "خوانده‌شده علامت بزن",
+  "notif.reply.failed_title": "فرستاده نشد",
+  "notif.reply.failed_body":
+    "پاسخ شما به {chat} فرستاده نشد. برای تلاش دوباره، گفتگو را باز کنید.",
+  "notif.reply.held_title": "در انتظار ارسال",
+  "notif.reply.held_body":
+    "پاسخ شما به {chat} وقتی Airhop در حال اجرا باشد فرستاده می‌شود.",
+  "notif.reply.cut_title": "بخشی فرستاده شد",
+  "notif.reply.cut_body":
+    "پاسخ شما به {chat} خیلی طولانی بود، برای همین انتهای آن فرستاده نشد.",
 };
 
 export const plurals: Plurals = {

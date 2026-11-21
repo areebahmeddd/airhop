@@ -1,0 +1,790 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage[hyphens]{url}
+\usepackage{cite}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,decorations.pathreplacing}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Airhop: An Offline-First Peer-to-Peer Messaging System},pdfauthor={Areeb Ahmed Shariff}}
+\usepackage{microtype}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\hx}[1]{\texttt{0x#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setlength{\IEEEiedtopsep}{2pt}
+
+\tikzset{
+  >={Stealth[length=4pt]},
+  box/.style={draw,rounded corners=1.5pt,align=center,font=\scriptsize,inner sep=3pt,minimum height=5mm},
+  dec/.style={draw,diamond,aspect=2.6,align=center,font=\scriptsize,inner sep=0.5pt},
+  note/.style={font=\scriptsize,align=left,inner sep=1pt},
+  lab/.style={font=\scriptsize,inner sep=1pt},
+  flow/.style={->,thick},
+}
+
+\hyphenation{Air-hop Air-link bit-chat Nos-tr Cas-hu}
+
+\begin{document}
+
+\title{Airhop: An Offline-First Peer-to-Peer Messaging System}
+
+\author{\IEEEauthorblockN{Areeb Ahmed Shariff}
+\IEEEauthorblockA{areebshariff@acm.org}}
+
+\maketitle
+
+\begin{abstract}
+When the internet fails or is shut off, people who are near each other still need to talk privately. Airhop is a messaging app for iOS and Android in which nearby phones form an end-to-end encrypted mesh over Bluetooth Low Energy (BLE), with no accounts and no servers. Wi-Fi Aware, a shared local network and fixed Airlink relay nodes extend the mesh, and Nostr relays, optionally reached through an embedded Tor client with pluggable transports, carry messages whenever any connection exists. Between Airhop phones, a direct message has forward secrecy on every path while the sender holds a fresh key for the recipient. Messages over the mesh run a Double Ratchet seeded from the Noise XX handshake with no extra messages. Mail left with other phones to carry is sealed to one-time prekeys flooded over the mesh, and messages sent through relays are sealed to keys the recipient later deletes. The wire format stays compatible with the bitchat protocol Airhop builds on. Airhop also carries Cashu ecash over the mesh and accepts it offline only when the mint's signatures verify, up to a fixed amount. We describe the design, give a threat model with the mechanism that answers each attack, and report what has been validated on a host: an extensive test suite, byte-level vectors from independent implementations, and a multi-device simulation with adversarial scenarios. Range, latency, delivery rate and power have not yet been measured on phones; we state what that evaluation needs.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Bluetooth Low Energy, mesh networking, delay-tolerant networking, end-to-end encryption, forward secrecy, Noise protocol, Double Ratchet, Nostr, ecash, censorship resistance
+\end{IEEEkeywords}
+
+% ===================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Mobile networks go down in disasters and are switched off during conflicts, protests and elections. Access Now and its partners documented at least 313 internet shutdowns in 52 countries in 2025~\cite{keepiton2025}. Ships, camps and remote places often have no connection at all. In many of these cases, the people who need to coordinate are close to each other.
+
+Messengers built on the internet, such as Signal, SimpleX and Session~\cite{doubleratchet,simplex,session2020}, stop working in these conditions, however good their cryptography. Phones can instead talk directly and relay for each other, and mesh apps have been promoted for exactly this use at protests~\cite{bridgefy}. Building one securely is hard: Bridgefy, a widely used mesh messenger, allowed impersonation, tracking and decryption~\cite{bridgefy}, and still had practical attacks after adopting the Signal protocol~\cite{bridgefy2022}. Briar~\cite{briar} exchanges messages only between contacts who have added each other, and Meshtastic~\cite{meshtasticintro} needs a LoRa radio for every user.
+
+Airhop builds on bitchat~\cite{bitchat,bitchatwp}, an open, public-domain protocol in which phones form a BLE mesh with no setup, sign their packets, open Noise XX sessions~\cite{noise} for private messages, and reach further through Nostr~\cite{nip01}. That protocol leaves gaps that matter to people at risk. A session has no key per message, messages left on relays have no forward secrecy~\cite[Sec.~5.3]{bitchatwp}, and its two apps, bitchat-ios and bitchat-android, are separate codebases~\cite{bitchat,bitchatandroid} that implement different parts of it~\cite{airhopspec}. Airhop keeps the wire format and peer identity, so its phones join the same mesh, and closes these gaps without changing what other clients see. This paper describes Airhop 1.0.0.
+
+\textbf{Contributions.}
+\begin{enumerate}
+\item \emph{Forward secrecy on every path a direct message takes, between Airhop phones.} A Double Ratchet~\cite{doubleratchet} runs inside each Noise XX session, seeded from a third output of the handshake's final key derivation, so it costs no extra messages and cannot be computed from long-term keys or from the bytes on the air. Mail carried for an absent recipient is sealed to one-time prekeys flooded over the mesh, with no server. Messages sent through relays are sealed to keys the recipient hands over privately and later deletes. Each path falls back to long-term keys only when the sender holds no fresh key (Sections~\ref{sec:sessions}, \ref{sec:courier} and~\ref{sec:internet}).
+\item \emph{Interoperability with extensions kept clear of other clients.} The whole protocol is one TypeScript core for both platforms that interoperates with other clients at the byte level. It places its extensions where other clients will not collide with them, trusts capabilities only when proven inside a session, checks forgeable packet types before relaying them, and relays every payload exactly as received so signatures keep verifying (Sections~\ref{sec:packets}, \ref{sec:routing} and~\ref{sec:impl}).
+\item \emph{One mesh over several radios and the internet.} A single link table joins BLE, Wi-Fi Aware and TCP links on a shared network, with LAN links capped by a ring that every phone computes the same way. A fixed order chooses among the mesh, Nostr and couriers for each direct message, and internet traffic can run through embedded Tor with bridges, failing closed (Sections~\ref{sec:transports} and~\ref{sec:internet}).
+\item \emph{Ecash that moves offline with bounded risk.} Cashu tokens~\cite{nut00} travel as messages. A phone accepts one offline only when every coin's proof of the mint's signature verifies, holds such coins apart until the mint confirms them, and never deletes value it has sent until delivery (Section~\ref{sec:payments}).
+\end{enumerate}
+
+\textbf{Status.} Every mechanism in Sections~\ref{sec:overview} to~\ref{sec:impl} is implemented in Airhop 1.0.0. Validation so far is on a host: tests, vectors, fuzzing and a multi-device simulation. Radio range, timing, delivery rate and battery cost have not yet been measured on phones.
+
+The rest of the paper is organized as follows. Section~\ref{sec:background} gives background, Section~\ref{sec:goals} the goals and threat model, and Section~\ref{sec:overview} an overview of the system. Sections~\ref{sec:design} to~\ref{sec:apps} cover the design one part at a time and Section~\ref{sec:impl} the implementation. Sections~\ref{sec:security} and~\ref{sec:validation} give the security analysis and validation, Section~\ref{sec:related} related work, Sections~\ref{sec:limits} and~\ref{sec:future} limitations and future work, and Section~\ref{sec:conclusion} concludes.
+
+% ===================================================================
+\section{Background}
+\label{sec:background}
+
+\subsection{A phone mesh}
+Every phone is at once a BLE central, which scans and connects, and a peripheral, which advertises and accepts connections, on one GATT service with one characteristic~\cite{btcore}. A phone writes a packet to a neighbor and is notified of the neighbor's packets. A packet has a small binary header, an 8-byte sender identifier (the \emph{peer ID}), an optional recipient, a payload and an optional Ed25519 signature~\cite{rfc8032}. A phone that has not seen a packet before forwards it to its other neighbors with its time-to-live (TTL) reduced by one, so a message crosses several phones; this is a controlled \emph{flood}. Each phone periodically broadcasts a signed \emph{announce} carrying its nickname and public keys.
+
+\subsection{Noise and the Double Ratchet}
+The Noise Protocol Framework~\cite{noise} builds key exchanges from Diffie-Hellman (DH) operations over a running hash and a \emph{chaining key}. In the XX pattern, two parties exchange three messages: ephemeral keys first, then each party's static key, encrypted. Both end up authenticated to each other, and their transport keys depend on ephemeral DH results, so a static key that leaks later does not expose the session. The final step, \emph{split}, derives the transport keys from the chaining key with HKDF~\cite{rfc5869}. The one-way X pattern lets a sender who knows a recipient's static key seal one message to it. Noise XX has been verified symbolically with Noise Explorer~\cite{noiseexplorer}.
+
+The Double Ratchet~\cite{doubleratchet} gives each message its own key and deletes it after use. A symmetric chain advances with every message, and a DH step mixes in fresh key material whenever the conversation changes direction. Keys that leak later therefore expose no earlier message (forward secrecy), and the conversation recovers from a compromise once fresh DH steps occur. Signal started the ratchet with X3DH and now uses PQXDH~\cite{x3dh,pqxdh}, both of which let a sender begin with an offline recipient by using keys the recipient published in advance, called \emph{prekeys}. Signal's protocol has been analyzed formally~\cite{cohngordon2017}.
+
+\subsection{Nostr}
+Nostr~\cite{nip01} is a protocol of signed events stored and served by independent relays; anyone may run one, and a client may use many. An identity is a secp256k1 key pair. Private messages use \emph{gift wrap}~\cite{nip17,nip59}: the message is sealed and signed by its author, then wrapped again under a throwaway key, so a relay sees the recipient but neither the author nor the content.
+
+\subsection{Cashu ecash}
+Cashu~\cite{nut00} is Chaumian ecash~\cite{chaum1983} backed by bitcoin. A \emph{mint} signs coins blindly, so it cannot link a coin it issued to the coin later redeemed. A coin, or \emph{proof}, is a secret and the mint's signature on it; a \emph{token} is a string of one or more proofs, and whoever holds it can spend it. Only the mint can tell whether a proof has been spent. A discrete-log-equality (DLEQ) proof~\cite{nut12} lets a receiver check offline that the mint really signed a coin.
+
+\subsection{Delay-tolerant delivery and set reconciliation}
+When no end-to-end path exists, a message can be stored, carried by a moving node and forwarded later~\cite{fall2003,rfc4838}. Epidemic routing copies it to every node met~\cite{vahdat2000}; spray and wait hands out a fixed number of copies and then waits~\cite{spyropoulos2005}. Two nodes that hold overlapping sets of messages can find what one lacks by exchanging a compact summary. A Golomb-coded set (GCS)~\cite{putze2007,golomb1966} sorts hashed identifiers and encodes the gaps between them, close to the minimum size for its false-positive rate.
+
+% ===================================================================
+\section{Goals and Threat Model}
+\label{sec:goals}
+
+\subsection{Goals}
+{\renewcommand{\labelenumi}{G\arabic{enumi}.}
+\begin{enumerate}
+\item \emph{Offline first.} Every feature that can work with no internet does. The internet extends reach; it never enables a core function.
+\item \emph{No accounts, no servers.} An identity is a key pair made on the phone. The project runs no relay, mint or other infrastructure.
+\item \emph{Compatibility.} An Airhop phone is an ordinary peer to other clients of the protocol, and its additions cross their phones unread.
+\item \emph{Confidentiality with forward secrecy.} Private content is end-to-end encrypted on every path. Between Airhop phones, a key that leaks later does not open direct messages already sent, as long as the sender held a fresh key. Direct messages over the mesh are deniable. Public content is authenticated.
+\item \emph{Bounded cost.} Anyone in radio range can send anything, so every table, queue and costly operation has a limit.
+\item \emph{Nothing to hand over.} Readable content exists only on the phones in the conversation. It can be destroyed on demand, and moved to a new phone, after which the old phone erases itself.
+\end{enumerate}}
+
+\textbf{Non-goals.} Airhop does not hide that a phone is present and transmitting, which phones exchange packets, or a phone's identity over time: headers carry sender and recipient IDs in the clear, and the peer ID never rotates. It offers no two-way calls, for which BLE is far too slow, and no moderation beyond each phone's own block and mute lists.
+
+\subsection{Threat model}
+\label{sec:threat}
+We consider five adversaries, none of which can break the cryptographic primitives of Table~\ref{tab:layers}.
+{\renewcommand{\labelenumi}{A\arabic{enumi}.}
+\begin{enumerate}
+\item \emph{An active attacker in radio range}, including a malicious peer, forwarding phone or courier. It can transmit any packet, forge any field nothing authenticates (sender, TTL, flags, timestamp), replay what it heard, create any number of identities, run a modified client, and drop or alter whatever passes through it.
+\item \emph{A passive radio observer}, possibly with receivers in several places, recording everything in range.
+\item \emph{A hostile Nostr relay} that stores, drops, injects or inspects events and logs connections.
+\item \emph{A network operator or censor} who sees and blocks IP traffic, including by deep packet inspection.
+\item \emph{Someone holding the phone}, locked or unlocked, or anyone who later obtains its long-term keys.
+\end{enumerate}}
+Out of scope are a compromised operating system, jamming, locating a phone by its emissions, and inferring who talks to whom from the timing of radio traffic. A Cashu mint is trusted to honor its coins; Section~\ref{sec:limits} returns to that trust. Section~\ref{sec:security} walks these adversaries against the design.
+
+% ===================================================================
+\section{System Overview}
+\label{sec:overview}
+
+Fig.~\ref{fig:arch} shows the parts of the app. Screens read state from stores and call a service layer. The service layer owns the radios, the outbox and the long-lived runtime: the \emph{mesh service} decides what to send and where, the wallet service is the only code that talks to a mint, and the Tor routing service is the one place internet routing is decided. Beneath it, the \emph{protocol core} is pure TypeScript: cryptography, the wire format, routing, sync, couriers, rooms, Nostr and payments. Native modules, one per hardware or operating-system capability, carry raw bytes and decide nothing about a packet. Dependencies point down only, so the whole protocol runs in a test process without a phone. Table~\ref{tab:layers} lists the mechanisms by level, from what the user touches to what carries the bytes.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize,
+  lay/.style={draw,minimum width=8.3cm,align=center,inner sep=2.5pt},
+  sub/.style={draw,fill=white,align=center,inner sep=1.5pt,minimum height=6mm,text width=#1},
+  sub/.default=1.2cm]
+\node[lay,minimum height=8mm] (ui) at (0,0) {\textbf{Screens and stores}\\[-1pt]chats, rooms, mesh radar, wallet, settings};
+\node[lay,minimum height=8mm,below=2.5mm of ui] (svc) {\textbf{Services}\\[-1pt]mesh service, outbox, wallet, Tor routing, gateway, transfer};
+\node[lay,fill=black!6,minimum height=13mm,below=2.5mm of svc] (core) {};
+\node[anchor=north,font=\scriptsize\bfseries,inner sep=1.5pt] at (core.north) {Protocol core: pure TypeScript, no native imports};
+\node[sub,minimum height=5mm] at ($(core.south)+(-3.45,0.4)$) {crypto};
+\node[sub,minimum height=5mm] at ($(core.south)+(-2.07,0.4)$) {wire};
+\node[sub,minimum height=5mm] at ($(core.south)+(-0.69,0.4)$) {mesh, sync};
+\node[sub,minimum height=5mm] at ($(core.south)+(0.69,0.4)$) {courier};
+\node[sub,minimum height=5mm] at ($(core.south)+(2.07,0.4)$) {Nostr};
+\node[sub,minimum height=5mm] at ($(core.south)+(3.45,0.4)$) {payments};
+\node[lay,minimum height=5mm,below=2.5mm of core] (br) {\textbf{Bridge}: module specifications; bytes cross as base64};
+\node[lay,minimum height=9mm,below=2.5mm of br] (nat) {};
+\node[anchor=north,font=\scriptsize\bfseries,inner sep=1.5pt] at (nat.north) {Native modules (Swift, Kotlin; Rust and Go for Tor)};
+\node[sub=1.45cm,minimum height=4mm] at ($(nat.south)+(-3.25,0.3)$) {BLE};
+\node[sub=1.45cm,minimum height=4mm] at ($(nat.south)+(-1.63,0.3)$) {Wi-Fi Aware};
+\node[sub=1.45cm,minimum height=4mm] at ($(nat.south)+(0,0.3)$) {LAN};
+\node[sub=1.45cm,minimum height=4mm] at ($(nat.south)+(1.63,0.3)$) {voice, video};
+\node[sub=1.45cm,minimum height=4mm] at ($(nat.south)+(3.25,0.3)$) {Tor (Arti)};
+\draw[->] (ui) -- (svc); \draw[->] (svc) -- (core); \draw[->] (core) -- (br); \draw[->] (br) -- (nat);
+\end{tikzpicture}
+\caption{Layers of the app. Arrows show the direction of dependency. Only the bottom layer touches hardware, and it makes no protocol decision.}
+\label{fig:arch}
+\end{figure}
+
+\begin{table}[t]
+\caption{Mechanisms by level}
+\label{tab:layers}
+\centering
+\scriptsize
+\begin{tabular}{@{}L{1.25cm}L{1.9cm}L{4.6cm}@{}}
+\toprule
+Level & Job & In Airhop \\
+\midrule
+Application & What the user touches & Direct messages, public and location channels, private channels and groups, bulletin board, files, live voice and video, wallet \\
+Protocol & How phones agree, sync and stay private & Signed packets, flood routing, gossip sync, Noise XX and X, Double Ratchet, courier envelopes, one-time prekeys, gift wrap, Cashu \\
+Primitive & One algorithm doing one job & Key agreement: X25519~\cite{rfc7748}. Signatures: Ed25519~\cite{rfc8032}, secp256k1 Schnorr. Encryption: ChaCha20-Poly1305~\cite{rfc8439}, XChaCha20-Poly1305, AES-256. Hashing and derivation: SHA-256 and SHA-512~\cite{fips180_4}, HMAC, HKDF. Coding: DEFLATE, Reed-Solomon \\
+Transport & What carries the bytes & BLE, Wi-Fi Aware, TCP on a local network, Nostr relays over WebSocket, Tor \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{The paths of a message.} A direct message (DM) can take the six paths of Fig.~\ref{fig:paths}. If the recipient holds a link to the sender, it goes down that link. If the recipient is elsewhere in the mesh, it floods with the recipient's ID set, and only the recipient can decrypt it. If no radio reaches the recipient, the DM goes through Nostr relays, directly or through Tor, when the sender knows the recipient's Nostr key; otherwise it is sealed and left with couriers. On every path the message waits in the sender's outbox until a receipt names it, so a retry can take another path, and the recipient keeps one copy whatever arrives.
+
+\textbf{An example.} Alice sends Bob ``meet at gate 3''. There is no internet, and Bob is two hops away. Alice's phone holds no session with Bob, so it floods the first Noise XX message with Bob's ID set, and the phone between them relays it and the replies without reading them. Once both identity proofs have crossed, the ratchet is seeded, and Alice's words travel as a ratchet message inside the session, padded to 256 bytes. The relaying phone sees only an encrypted packet addressed to Bob. Bob's phone decrypts it, shows it once, and sends a delivery receipt back the same way, which clears Alice's outbox.
+
+\textbf{Relay nodes.} Airlink~\cite{airlinkwp}, the relay firmware of the Airhop ecosystem, turns an ESP32 board into a fixed peer on such a path. It relays like a phone, answers gossip sync, holds courier mail for phones that are away, and links distant nodes over LoRa. Airhop reserves packet types \hx{A0} to \hx{A3} for node-to-node updates and never relays them, and reads two announce fields to draw a node as equipment rather than a person. That flag decides presentation and nothing else, since any device can set it. Airlink is described in its own paper.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize,
+  ph/.style={draw,rounded corners=1pt,minimum width=2.6mm,minimum height=4.2mm,inner sep=0},
+  nd/.style={draw,thick,fill=black!15,minimum width=4mm,minimum height=3mm,inner sep=0},
+  cl/.style={draw,ellipse,minimum width=12mm,minimum height=5mm,inner sep=0.3pt,font=\scriptsize},
+  rowlab/.style={font=\scriptsize,anchor=west,text width=3.9cm,align=left}]
+\def\xa{0} \def\xb{3.6} \def\dy{0.72}
+\foreach \i in {0,...,5} {
+  \node[ph] (A\i) at (\xa,-\i*\dy) {}; \node[lab,left=0.5mm of A\i] {A};
+  \node[ph] (B\i) at (\xb,-\i*\dy) {}; \node[lab,right=0.5mm of B\i] {B};
+}
+\draw[thick] (A0) -- node[above,lab]{one link} (B0);
+\node[ph] (r1) at (1.2,-\dy) {}; \node[ph] (r2) at (2.4,-\dy) {};
+\draw[densely dotted,thick] (A1) -- (r1) -- (r2) -- (B1);
+\node[nd] (n2) at (1.8,-2*\dy) {}; \draw[densely dotted,thick] (A2) -- (n2) -- (B2);
+\node[lab,above=0.3mm of n2] {Airlink node};
+\node[ph] (k3) at (1.2,-3*\dy) {}; \node[ph,densely dashed] (k3b) at (2.4,-3*\dy) {};
+\draw[densely dotted,thick] (A3) -- (k3); \draw[->,dashed] (k3) -- node[above,lab]{walks} (k3b); \draw[densely dotted,thick] (k3b) -- (B3);
+\node[cl] (c4) at (1.8,-4*\dy) {relays}; \draw[->] (A4) -- (c4); \draw[->] (c4) -- (B4);
+\node[cl,minimum width=7mm] (t5) at (1.05,-5*\dy) {Tor}; \node[cl] (c5) at (2.45,-5*\dy) {relays};
+\draw[->] (A5) -- (t5); \draw[->] (t5) -- (c5); \draw[->] (c5) -- (B5);
+\node[rowlab] at (3.95,0) {(1) Direct: BLE, Wi-Fi Aware, LAN};
+\node[rowlab] at (3.95,-\dy) {(2) Flood via phones, TTL $\le$ 7};
+\node[rowlab] at (3.95,-2*\dy) {(3) Through an Airlink node};
+\node[rowlab] at (3.95,-3*\dy) {(4) Courier, sealed and carried};
+\node[rowlab] at (3.95,-4*\dy) {(5) Nostr gift wrap};
+\node[rowlab] at (3.95,-5*\dy) {(6) Nostr through Tor};
+\draw[densely dotted,thick] (-0.3,-4.45) -- (0.1,-4.45) node[right,lab]{radio hop};
+\draw[->] (1.45,-4.45) -- (1.85,-4.45) node[right,lab]{internet};
+\end{tikzpicture}
+\caption{The paths a direct message from A to B can take. Paths 1 to 4 need no internet. Airlink nodes can also link to each other over LoRa, joining sites phones cannot. On every path the content is end-to-end encrypted.}
+\label{fig:paths}
+\end{figure}
+
+% ===================================================================
+\section{Mesh Design}
+\label{sec:design}
+
+This section and the two after it describe the design one part at a time; this one covers the mesh itself. Each subsection states the problem a part solves, how it works and its key numbers. The packet frame, flood rules, announces, Noise sessions, gossip sync, courier envelope and live media formats are those of the bitchat protocol, which Airhop shares; the rest of these sections, and every rule noted as a change, is Airhop's. All constants are in Airhop's specification~\cite{airhopspec}.
+
+\subsection{Identity and verification}
+\label{sec:identity}
+
+\textbf{Keys.} An identity is generated on the phone and never registered anywhere. It holds an X25519 static key for Noise, an Ed25519 key for signatures, and a secp256k1 key for Nostr, derived from the private signing key with HKDF so that one identity has one stable Nostr key. The peer ID is the first 8 bytes of the SHA-256 hash of the Noise static public key, so a peer ID cannot be claimed without that key; a receiver checks the derivation on every announce and every completed session. A display name is an adjective and a noun picked by the peer ID's first 2 bytes, followed by those 2 bytes in hex. It is a label, not a proof: there are only 65,536 names, and anyone can generate keys until one matches. Other clients let users choose nicknames, so a sender in a public room is always shown with the last four characters of its peer ID.
+
+\textbf{Which key speaks for a peer.} An announce is signed with a key carried in the same announce, so an attacker who heard a victim's public Noise key could sign a consistent announce under the victim's peer ID first. Airhop therefore resolves every signing key in a fixed order of trust: a key the peer proved inside a completed Noise session (Section~\ref{sec:sessions}), then a saved contact's key, then the key the first announce carried. A proof may correct a first-announce key, or an unverified contact's key, that an attacker won the race for. No announce can overwrite a proven key, and an announce contradicting a saved contact's key is refused whole.
+
+\textbf{Verification.} Two methods bind a key to a person. Scanning a contact's QR code in person compares full keys, and only an in-person scan may replace keys already bound to a peer ID. A card that arrives by link is signed by its own signing key, so no one who passes it on can change a field without re-signing it, but it is recorded as unverified, and the peer's first session proof corrects a substituted signing key.
+
+Without a camera, each person reads their own \emph{safety code} aloud: six words from their own Noise and signing keys alone, stretched by 5,200 rounds of SHA-512. A code computed over both people's keys would let a man in the middle, who chooses a fake key on each side, search for any collision between the two, about $2^{21}$ keys per side. Against one person's code the impostor must match six fixed words: about $2^{42}$ keys at 5,200 hashes each, or roughly $2^{54}$ hash operations per targeted person. That is within reach of a well-funded attacker, which is why the in-person scan remains the strong path.
+
+\subsection{Packets}
+\label{sec:packets}
+
+Every radio carries the same frame (Fig.~\ref{fig:frame}). Airhop decodes the older version~1 header and always sends version~2.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize,
+  f/.style={draw,minimum height=7mm,align=center,inner sep=0.5pt,font=\scriptsize},
+  o/.style={draw,densely dashed,minimum height=7mm,align=center,inner sep=0.5pt,font=\scriptsize}]
+\def\u{0.72}
+\node[f,minimum width=1*\u cm,anchor=west] (v) at (0,0) {ver\\1};
+\node[f,minimum width=1*\u cm,anchor=west] (t) at (v.east) {type\\1};
+\node[f,minimum width=1*\u cm,anchor=west] (ttl) at (t.east) {TTL\\1};
+\node[f,minimum width=3.6*\u cm,anchor=west] (ts) at (ttl.east) {timestamp (ms)\\8};
+\node[f,minimum width=1.3*\u cm,anchor=west] (fl) at (ts.east) {flags\\1};
+\node[f,minimum width=2.4*\u cm,anchor=west] (pl) at (fl.east) {length\\4};
+\draw[decorate,decoration={brace,amplitude=3pt,mirror}] ($(v.south west)+(0,-0.05)$) -- node[below=2pt,lab]{fixed header, 16 bytes} ($(pl.south east)+(0,-0.05)$);
+\node[f,minimum width=1.8*\u cm,anchor=west] (s) at (0,-1.35) {sender\\8};
+\node[o,minimum width=1.9*\u cm,anchor=west] (r) at (s.east) {recipient\\8};
+\node[o,minimum width=1.6*\u cm,anchor=west] (ro) at (r.east) {route\\1+8$n$};
+\node[o,minimum width=1.6*\u cm,anchor=west] (os) at (ro.east) {orig.\\size 4};
+\node[f,minimum width=2.4*\u cm,anchor=west] (p) at (os.east) {payload};
+\node[o,minimum width=1.9*\u cm,anchor=west] (sg) at (p.east) {signature\\64};
+\end{tikzpicture}
+\caption{The packet frame, with field sizes in bytes. Dashed fields are present only when a flag says so: recipient, source route, compressed payload (preceded by its original size) and signature. A fifth flag marks a solicited sync response. The signature covers the whole packet encoded with TTL 0, that flag clear and padding applied, so forwarding phones can lower the TTL and mark responses without breaking it.}
+\label{fig:frame}
+\end{figure}
+
+\textbf{Signing.} A packet whose sender nothing else vouches for carries an Ed25519 signature: announces, public and private-channel messages, files, voice and video frames, board posts, sync requests, departures and gateway deposits. A receiver verifies before it displays or acts on one, and a missing key or flag is a failed check, never a skipped one. A few kinds go unsigned, each because something else authenticates it or nothing acts on its sender. Noise handshake messages authenticate themselves. Messages inside a Noise session are authenticated by its AEAD, and leaving them unsigned keeps a mesh DM deniable: a long-term signature would let anyone holding a packet and its key prove who wrote it. Fragments are checked as the reassembled packet, group messages inside their ciphertext, and the Nostr events a gateway or bridge broadcasts by their own signatures; pings and pongs carry nothing to trust. The specification lists them all~\cite{airhopspec}.
+
+\textbf{Padding.} Only session traffic, handshakes and private-channel packets are padded, since only there would ciphertext length reveal plaintext length. They are padded with PKCS\#7~\cite{rfc5652} to the smallest of 256, 512, 1,024 or 2,048 bytes that fits; since PKCS\#7 encodes at most 255 bytes of padding, a frame that would need more, or exceeds 2,032 bytes, goes unpadded. Every other type travels at its natural length, because its size reveals nothing secret and padding costs airtime: the largest voice packet, 298 bytes, would grow to a whole 512-byte BLE write.
+
+\textbf{Compression and signatures.} Payloads may be compressed with raw DEFLATE~\cite{rfc1951}, whose output is not canonical: clients on different platforms use different encoders that read each other's streams but need not produce the same bytes. A signature covers a re-encoding of the packet, so a verifier or forwarding phone that compressed the payload again could reject a valid packet, or pass on one whose signature no longer verifies. Airhop keeps every received payload exactly as it arrived, compressed bytes and the decision to compress included, and reuses that form whenever it verifies or relays. Decompression stops at the first byte beyond the declared size, and each packet type has its own size ceiling, so a small packet cannot expand into a large allocation.
+
+\textbf{Freshness and identity.} A packet must be within 2~minutes of the receiver's clock at ingress, or it is neither relayed nor acted on; live voice and video frames are refused once 30~s old. Gossip-sync responses follow their own rules (Section~\ref{sec:sync}). A packet's ID, used to detect duplicates, is the first 16 bytes of the SHA-256 hash of its type, sender, timestamp and payload.
+
+\subsection{Routing}
+\label{sec:routing}
+
+The mesh floods, because no phone knows the topology and the topology changes as people move. The rules below keep the flood from swamping a dense room or dying out in a sparse chain.
+
+\textbf{TTL by degree.} Packets carry a TTL of at most 7. A phone caps a broadcast's TTL by its \emph{degree}, the number of neighbors it holds: 7 with two or fewer, 6 with three to five, 5 with six or more, then lowers it by one before relaying. In a dense crowd every phone hears many copies, so a packet needs fewer hops; in a chain, every hop counts.
+
+\textbf{Who wrote a broadcast.} A packet that always left its author at TTL 7 would tell every neighbor who wrote it. Airhop draws an authored broadcast's starting TTL at random from the three values at and below the cap for the author's degree. Relaying phones at the same degree emit at most one below the cap, so the lower two values look relayed; by construction, about a third of authored broadcasts remain attributable by TTL. Announces and directed packets keep 7.
+
+\textbf{Jitter and duplicates.} Before relaying, a phone waits a random delay that grows with degree, from 10 to 40~ms with two or fewer neighbors up to 100 to 220~ms with 10 or more, so that copies spread out rather than collide; live media and broadcast fragments wait 8 to 25~ms. A duplicate is recognized by packet ID in a set of recently seen IDs: 1,000 entries kept for 5~minutes. Fragments have a second set of the same size, so that one 1~MiB file of over 2,000 fragments cannot flush the message window, and live media a third, of 10,000 entries kept for 150~s. A duplicate is dropped before its signature is checked, so a packet heard from several neighbors costs one check.
+
+\textbf{Verify before relaying.} Most packets are relayed before they are checked, because a relaying phone often lacks the sender's key and the mesh exists to reach strangers. Five types are checked first: a departure (\code{LEAVE}), a file, a board post, and live voice and video frames. Each costs nothing to forge under any peer ID in earshot, and relaying a forgery spends the room's airtime and carries it to phones that check less strictly. The receiver looks up the ID, checks the packet, and records the ID only if the check passes, so a forged copy that arrives first cannot claim the genuine packet's ID and shadow it.
+
+\textbf{Fragments.} The BLE stack accepts at most 512 bytes in one write, so a larger packet is cut into fragments of 467 data bytes, each a whole 512-byte frame carrying its parent's TTL and recipient. A file is at most 1~MiB, the largest that every client accepts. A phone holds at most 128 reassemblies and 8~MiB across them, and drops one idle for 30~s. A full table evicts the reassembly idle longest: a genuine transfer over BLE sends a fragment every 25 to 30~ms, so a burst of forged one-fragment streams evicts its own kind first. Past the byte budget, new fragments are refused rather than evicting anything, so junk cannot cancel genuine transfers.
+
+\textbf{Fan-out and routes.} A broadcast goes once to each neighbor on each radio, on that neighbor's most recently bound link, and never back to the neighbor it came from. Live media goes once per neighbor, on its fastest link. Airhop follows a source route when a packet names it as a hop, but never builds one, because building routes requires every phone to publish its neighbor list in cleartext.
+
+\subsection{Gossip sync}
+\label{sec:sync}
+
+\textbf{Catching up.} A phone that walks into a room should see what was said while it was away. Every 15~s, and 1~s after a new neighbor's first link, a phone sends each neighbor a signed sync request holding a GCS filter of the packets it has, at a 1\,\% false-positive rate and at most 400 bytes. Board posts get a round of their own every 60~s, so a busy room's messages cannot push them out of the filter. The neighbor answers with what the filter lacks.
+
+\textbf{Containment.} Sync must not become a way to flood the mesh or replay old packets. Requests and responses travel at TTL 0 and are never relayed. A request is answered only if it comes from the peer bound to that link and verifies against its key, at most eight times per 30~s per peer. A response is exempt from the 2-minute window, but is accepted only at TTL 0, only on a link to which this phone sent a request in the last 30~s, and only for a type that sync serves, within that type's age limit: announces 60~s, public and group messages 6~hours, board posts 7~days. Each kind has its own store (1,000 public messages, 200 group messages, 200 board posts, the latest announce per peer), and only packets that passed their checks are kept, so forgeries neither evict real history nor get served onward. Location-channel messages travel under an Airhop sync bit that other clients ignore, so they catch up too. Files, live media, courier mail and pings are not synced, and neither are prekey bundles, a gap Section~\ref{sec:limits} returns to.
+
+\subsection{Sessions and per-message keys}
+\label{sec:sessions}
+
+\textbf{Noise XX sessions.} Every private conversation over the mesh runs in a \code{Noise\_XX\_25519\_ChaChaPoly\_SHA256} session. If the peer is not adjacent, the handshake floods with the recipient set, like any directed packet. Transport messages carry a counter nonce checked against a 1,024-nonce replay window. Sessions live in memory only and survive link drops, since radios drop links constantly and a handshake costs DH operations. At 21.6~hours of age, 90\,\% of a day, a new handshake replaces the session, so no session outlives a day and a leaked transport key reads at most that much; between Airhop phones the lower peer ID starts it, so two rekeys never cross. A packet that fails to decrypt is discarded and never tears a session down: the duplicate set is a bounded window that anyone in range can flush, and a recorded packet replayed after it would otherwise evict working keys. Inbound handshakes are limited to 10 a minute per claimed peer and 30 first messages a minute in total, since a first message is the one unauthenticated message that creates state.
+
+\textbf{Proving what a peer is.} After the handshake each side sends an identity proof inside the session (Noise payload \hx{21}): its signing key and its capability bits. The session completed only if the peer's static key hashes to its peer ID, so the proof binds the signing key to the peer ID; this is how a proven key outranks an announced one (Section~\ref{sec:identity}). Capability bits in a public announce are a hint anyone can forge; bits in the proof are authoritative. Airhop's own bits appear only in the proof, and bit 26 marks an Airhop peer and turns on the ratchet below.
+
+\textbf{The ratchet seed.} A Double Ratchet needs a root key that both sides share and nobody else can compute. Signal derives one from a prekey handshake, which needs published prekeys and a key agreement of its own. Two phones that have just completed Noise XX already share such a value. Noise's split derives the two transport keys as the first two outputs of HKDF over the chaining key; Airhop asks the same HKDF for a third output, the \emph{exporter secret}, and derives the ratchet's root key from it under a fixed label (Fig.~\ref{fig:seed}). Noise already defines HKDF with up to three outputs, and HKDF produces each output from the one before, so the transport keys are unchanged and clients that know nothing of the ratchet still interoperate. The chaining key absorbed the ephemeral DH results, whose private halves are erased at split, so the root key cannot be rebuilt from long-term keys, and it costs no extra messages. The pattern is the one TLS uses to export keying material from a finished handshake~\cite{rfc5705,rfc8446}.
+
+Two other seeds look natural and are unsafe. The handshake hash also mixes in both ephemeral keys, but only their public halves: every input to it crossed the air, and handshakes flood the mesh, so anyone in range could compute it and read the ratchet. A DH between the two static keys would stay computable from long-term keys forever.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize,
+  msg/.style={->,thick},
+  lbl/.style={font=\scriptsize,fill=white,inner sep=1pt}]
+\def\xi{0} \def\xr{6.2}
+\node[font=\scriptsize\bfseries] at (\xi,0.3) {Initiator I};
+\node[font=\scriptsize\bfseries] at (\xr,0.3) {Responder R};
+\draw[densely dotted] (\xi,0.1) -- (\xi,-5.5); \draw[densely dotted] (\xr,0.1) -- (\xr,-5.5);
+\draw[msg] (\xi,-0.3) -- node[lbl]{msg1: $e$} (\xr,-0.3);
+\draw[msg] (\xr,-0.8) -- node[lbl]{msg2: $e,\ ee,\ s,\ es$} (\xi,-0.8);
+\draw[msg] (\xi,-1.3) -- node[lbl]{msg3: $s,\ se$} (\xr,-1.3);
+\node[box,text width=6.6cm,fill=black!6] at (3.1,-2.0) {Both: $\mathit{split}$: $(k_1,k_2,X)=\mathrm{HKDF}(ck,\varepsilon,3)$. $k_1,k_2$ are the transport keys, unchanged; $X$ is the exporter secret. Ephemeral private keys erased.};
+\draw[msg] (\xr,-2.85) -- node[lbl]{proof \hx{21}: signing key, bit 26 (inside the session)} (\xi,-2.85);
+\node[note,anchor=west,text width=4.3cm] at (\xi+0.1,-3.4) {I: $rk=\mathrm{HKDF}(X,\text{``airhop-dr-seed-v1''})$; sending chain from a fresh ratchet key and R's static key};
+\draw[msg] (\xi,-4.0) -- node[lbl]{proof \hx{21}; first ratchet message \hx{55}} (\xr,-4.0);
+\node[note,anchor=east,text width=4.0cm,align=right] at (\xr-0.1,-4.55) {R: same $rk$; receives, then steps its ratchet and gains a sending chain};
+\draw[msg,<->] (\xi,-5.15) -- node[lbl]{\hx{55} ratchet messages, inside the Noise session} (\xr,-5.15);
+\end{tikzpicture}
+\caption{Noise XX and the ratchet seed. The root key descends from the chaining key $ck$, which absorbed the ephemeral DH results, not from the public handshake hash. The initiator starts against the responder's static key, since it knows no fresh ratchet key of the responder's yet; the responder moves to a fresh key at its first DH step. A peer that never proves bit 26 keeps the plain Noise session.}
+\label{fig:seed}
+\end{figure}
+
+\textbf{Carrying the ratchet.} A ratchet message travels as a Noise payload (\hx{55}) inside the session it was seeded from. The session's AEAD rejects a forgery before any ratchet work, which matters because a forged ratchet header could otherwise cost a DH and up to 1,000 key derivations before failing. It also hides the header from listeners and keeps the message deniable, since nothing about it is signed. The time a message shows travels inside it and must be within 2~minutes of its packet's, so a phone that held it back cannot present it as new. A message is decrypted on a copy of the ratchet state, which is kept only if the message authenticates. The ratchet is bound to its session and seeded afresh with every new session and rekey. Plain Noise, Nostr and courier messages carry at most 255 bytes of text, the limit of the shared message format; the ratchet carries longer ones.
+
+\textbf{Recovery.} Signal's ratchet recovers from a compromise only as the conversation continues; Airhop's also restarts from a fresh handshake at least daily. More than 1,000 lost messages in one chain leave a pair out of step until a restart, a departure or the next rekey, which bounds that rare case.
+
+\subsection{Offline mail}
+\label{sec:courier}
+
+When nothing reaches a DM's recipient, the sender seals it and leaves it with other phones, called \emph{couriers}, that may meet the recipient. Fig.~\ref{fig:courier} shows one envelope's life.
+
+\textbf{Prekeys.} Sealing to the recipient's long-term key would let anyone who later obtains that key open every envelope still in transit. So each phone makes a batch of one-time X25519 prekeys, signs it, and floods it to each new link as a prekey bundle (\hx{24}); bundles are never published to Nostr. A bundle whose owner's signing key is not yet known is relayed and held, the latest per owner for up to 64 owners, until an announce supplies the key. A phone re-dates its own bundle every 3~days so that unused keys stay usable.
+
+\textbf{Sealing and depositing.} The sender encrypts the message with Noise X to one of the recipient's prekeys, with a prologue that names the prekey's ID, so the envelope opens only against that key. Every re-seal of one message targets the same prekey, and the recipient retires a prekey once it has opened a message. If the sender holds no bundle younger than 7~days, it seals to the static key instead. The plaintext is a typed private message of at most 255 bytes of text, so courier mail is text only. The sender deposits the envelope with up to four directly linked couriers, each given the full copy budget below, and, while a Nostr relay is connected, also leaves a copy there as an event of kind 1401.
+
+\textbf{Carrying.} A courier judges each envelope by its own limits: at most 40 envelopes in total, 16~KiB each, and 24~hours of life plus 1~hour for clock skew, with a longer expiry refused rather than shortened. Each depositor has a quota, five envelopes for a saved contact and two for any other sender whose announce verified, and the second tier may fill at most half the pool. Each envelope carries a copy budget, initially four; on a proven link with another courier, a courier passes on half of what remains, as in binary spray and wait~\cite{spyropoulos2005}.
+
+\textbf{Handover.} A courier hands mail to the recipient only down a link that a Noise handshake has proven to belong to that peer while bound to it. An announce alone proves nothing: anyone in range can replay a peer's fresh announce onto a link of their own. When the courier hears the recipient's announce through other phones, or on a link not yet proven, it floods a copy toward them at most once per envelope per 10~minutes and keeps carrying, since nothing acknowledges a flood; on a direct link it then starts a handshake, which proves the link and releases the mail. The recipient drops duplicates by the sender's message ID and answers with a delivery receipt, like any DM.
+
+\textbf{Linkability.} An envelope names its recipient by a tag, an HMAC of the day number keyed by the recipient's Noise static public key. That key is broadcast in every announce, so anyone who heard one can compute the tag for any day and follow a phone's mail. The tag is part of the shared format, so fixing it needs a change agreed across clients; until then Airhop keeps it byte for byte.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize,msg/.style={->,thick},lbl/.style={font=\scriptsize,fill=white,inner sep=1pt}]
+\def\xa{0} \def\xc{3.1} \def\xb{6.2}
+\node[font=\scriptsize\bfseries,anchor=base] at (\xa,0.25) {Sender A};
+\node[font=\scriptsize\bfseries,anchor=base] at (\xc,0.25) {Courier C};
+\node[font=\scriptsize\bfseries,anchor=base] at (\xb,0.25) {Recipient B};
+\foreach \x in {\xa,\xc,\xb} \draw[densely dotted] (\x,0.1) -- (\x,-6.35);
+\draw[msg] (\xb,-0.35) -- node[lbl]{signed prekey bundle \hx{24}, flooded earlier} (\xa,-0.35);
+\node[note,anchor=west,text width=2.8cm] at (\xa+0.1,-1.05) {B is out of reach. A seals with Noise X to one of B's prekeys; the prologue names its ID.};
+\draw[msg] (\xa,-1.9) -- node[lbl]{signed deposit} (\xc,-1.9);
+\node[note,anchor=west,text width=2.8cm] at (\xc+0.1,-2.35) {C checks size, expiry and A's quota, then carries it.};
+\draw[->,dashed] (\xc,-3.0) -- node[above,font=\scriptsize,inner sep=1.5pt]{half its budget} (\xc+1.5,-3.0);
+\node[right,draw,solid,rounded corners=1pt,font=\scriptsize,inner sep=1.5pt] at (\xc+1.5,-3.0) {courier D};
+\node[note,anchor=east,text width=2.8cm,align=right] at (\xb-0.1,-3.42) {Later, B and C link directly.};
+\draw[msg] (\xb,-3.85) -- node[lbl]{announce} (\xc,-3.85);
+\draw[msg,<->] (\xc,-4.3) -- node[lbl]{Noise XX proves the link} (\xb,-4.3);
+\draw[msg] (\xc,-4.75) -- node[lbl]{handover; C retires it} (\xb,-4.75);
+\node[note,anchor=east,text width=2.8cm,align=right] at (\xb-0.1,-5.4) {B opens it, retires the prekey, drops duplicates by message ID.};
+\draw[msg] (\xb,-6.1) -- node[lbl]{delivery receipt, by any path} (\xa,-6.1);
+\end{tikzpicture}
+\caption{One courier envelope from deposit to receipt. C passes half its copy budget to another courier, D, on a proven link. No courier holds a key that opens the envelope.}
+\label{fig:courier}
+\end{figure}
+
+\subsection{Rooms}
+\label{sec:rooms}
+
+Rooms come in three kinds, each with its own balance between reach and control, and a bulletin board sits beside them.
+
+\textbf{Public rooms.} \code{\#bluetooth} is the mesh room: everyone in radio range, in signed plaintext. \emph{Location channels} are rooms for a geohash cell~\cite{geohash} of the phone's position at five precisions, from a 7-character block to a 2-character region, so everyone in the same place derives the same room. They run over Nostr and, in Airhop, also over BLE under a packet type of their own (\hx{51}) that names the cell, so they work with no internet and a phone that has moved does not show one block's history in the next; other clients relay this type without displaying it. A cell can also be opened from a globe or by typing its geohash, with no map service queried, and then runs over Nostr only.
+
+Each cell has its own Nostr key derived from the identity's private key, so other people in a cell, and its relays, cannot link a phone that only reads there to its identity or to another cell. Posting links them, since a post carries the mesh-derived name, and so do the default DM relays, which see one connection ask for both the main inbox and each joined cell's.
+
+\textbf{Private channels.} A symmetric key made at creation rides inside the invite link, so anyone with the link can read; there is no roster and no member limit, which suits a QR code on a flyer. Messages are sealed with XChaCha20-Poly1305~\cite{xchacha} and broadcast as \hx{50}. The creator chooses whether the sealed message is also published to Nostr.
+
+\textbf{Private groups.} The creator signs a roster of up to 16 members and delivers the group key to each inside their Noise session, so there is no link to forward. Messages are sealed with ChaCha20-Poly1305 under the current epoch key, with the group ID and epoch in the clear so other phones can relay them. A roster change advances the epoch, and older epochs are refused. Because the group ID travels in the clear, anyone could craft a self-signed state that names themselves creator and omits a victim, whose client would then discard the key; a group therefore pins the creator it was created with and refuses any state naming another, even at a higher epoch. Membership stays on the phones that hold the keys: relay-managed Nostr groups were not used, because they make a server the authority on who may speak.
+
+\textbf{Bulletin board.} Signed public notices (\hx{23}) outlive a conversation: each carries an expiry its author chose, at most 7~days, and is gossip-synced until then.
+
+% ===================================================================
+\section{Other Radios and the Internet}
+\label{sec:beyond}
+
+This section covers what carries messages beyond the BLE mesh: the other radios, the router that picks among them, and the internet path.
+
+\subsection{Transports and the router}
+\label{sec:transports}
+
+\textbf{One link table.} Every radio carries the same packet frames, and the mesh sees all links in one table, so nothing above it needs to know which radio a packet used. Broadcasts go to every neighbor on every radio (Section~\ref{sec:routing}), because no phone knows which radio reaches whom. A packet for a neighbor goes down one link, preferring Wi-Fi Aware, then the local network, then BLE, because the faster radios move an attachment that BLE would cut into thousands of writes.
+
+\textbf{Bluetooth LE.} BLE is the radio that always works, and the only one that relays across strangers. An Android phone places its peer ID in its scan response so a scanner can recognize it before connecting. An iPhone advertises the service identifier alone, since iOS cannot advertise service data, and peers learn its ID from its first announce.
+
+\textbf{Wi-Fi Aware.} Wi-Fi Aware~\cite{wifiaware} links phones directly over Wi-Fi with no router, on Android from API level 29 and on iOS from version 26. It is on by default but links only two phones of the same platform, because iOS connects only devices paired through the system~\cite{applewifiaware}, a step Android cannot complete.
+
+\textbf{Local network.} An iPhone and an Android phone on the same Wi-Fi network or hotspot otherwise have no direct path. Airhop discovers peers with multicast DNS service discovery~\cite{rfc6762,rfc6763} and links them over TCP, with the same frames. The transport is off by default, because publishing on a network tells everyone on it, and whoever runs it, that this phone runs Airhop.
+
+mDNS returns everyone on the network, and linking all of them is quadratic: 30 phones fully linked hold 435 sockets, and one broadcast costs 841 writes, because every phone relays to everyone it holds. Every phone therefore sorts the discovered names into one ring and links to the four on either side, so no phone holds more than eight LAN links. That is close to the six links a phone holds over BLE, so a LAN room behaves as the routing constants expect, and the same broadcast costs 211 writes. Both ends compute the same ring with no negotiation.
+
+An mDNS record is visible to the whole network and logged by ordinary infrastructure, so the published name is random per session, never the peer ID, and identity is proven in the announce once the link is up. Some managed networks filter mDNS while still letting devices connect. Phones that already share a session therefore also exchange their private addresses~\cite{rfc1918} and listening ports inside it (Noise payload \hx{56}). The lower peer ID dials, counted against the LAN cap, only an address on one of its own subnets and a port from 1024 up, after giving mDNS 20~s to link the pair first, at a limited rate, and never as a scan. Nothing is written to a dialed link until the announce on it names the expected peer, so an address that turns out to be some other device is never sent a byte.
+
+\textbf{Choosing a path.} Fig.~\ref{fig:ladder} shows how a direct message chooses its path. The mesh comes first even when the internet is available: when a radio reaches the peer, a relay would spend data and give a third party metadata for a hop the phone can make itself. A peer counts as reachable over the mesh only while heard within 45~s on a direct link or 60~s through others, so a flood to someone who has left does not keep a message from Nostr or a courier. The Nostr step needs one of the default DM relays to be connected. The message stays in the outbox, for up to a week, until a receipt names it. A retry reuses its ID, so a peer who walks into range while a relay still holds a copy gets it over the radio and sees it once. Fig.~\ref{fig:pipeline} follows a message through every stage, from the composer to the receipt that clears the outbox.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\node[box,text width=3.0cm] (q) at (2.8,0) {DM in the outbox, with its message ID};
+\node[dec] (d1) at (2.8,-1.0) {mesh\\reach?};
+\node[dec] (d2) at (0.55,-2.15) {session?};
+\node[box,text width=1.45cm] (o2) at (2.75,-2.15) {start Noise XX; message waits};
+\node[dec] (d3) at (0.55,-3.35) {ratchet\\ready?};
+\node[box,text width=1.45cm] (o3) at (2.75,-3.35) {Noise session alone};
+\node[box,text width=1.9cm] (o1) at (0.55,-4.5) {ratchet message inside the session};
+\node[dec] (d4) at (5.15,-2.15) {Nostr key and\\DM relay up?};
+\node[box,text width=2.0cm] (o4) at (5.15,-3.55) {gift wrap, sealed to a DM prekey if held};
+\node[box,text width=2.0cm] (o5) at (5.15,-4.62) {courier, sealed to a one-time prekey if held};
+\node[box,text width=7.6cm] (k) at (2.8,-5.55) {The outbox keeps the message until a delivery or read receipt names it; each retry walks the tree again under the same ID.};
+\draw[flow] (q)--(d1);
+\draw[flow] (d1.west) -| node[lab,above,pos=0.25]{yes} (d2.north);
+\draw[flow] (d1.east) -| node[lab,above,pos=0.25]{no} (d4.north);
+\draw[flow] (d2)--node[lab,above]{no}(o2); \draw[flow] (d2)--node[lab,right]{yes}(d3);
+\draw[flow] (d3)--node[lab,above]{no}(o3); \draw[flow] (d3)--node[lab,right]{yes}(o1);
+\draw[flow] (d4)--node[lab,right]{yes}(o4);
+\draw[flow] (d4.east) -- ++(0.25,0) |- node[lab,right,pos=0.25]{no} (o5.east);
+\end{tikzpicture}
+\caption{How a direct message chooses its path. ``Mesh reach'' means a direct link to the peer, or any neighbor to flood through, with the peer heard recently; ``ratchet ready'' means both sides have proven bit 26 and the sender holds a sending chain. With no prekey held, a gift wrap or courier envelope falls back to the long-term key. A handshake that never completes leaves the message in the outbox for the next attempt.}
+\label{fig:ladder}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[font=\scriptsize,
+  st/.style={draw,rounded corners=1.5pt,align=center,text width=1.72cm,minimum height=11mm,inner sep=2pt}]
+\node[font=\scriptsize\bfseries,rotate=90] at (-1.2,0) {Sender};
+\node[st] (s1) at (0,0) {Compose; outbox entry with message ID};
+\node[st,right=3mm of s1] (s2) {Choose a path (Fig.~\ref{fig:ladder})};
+\node[st,right=3mm of s2] (s3) {Seal: ratchet, Noise, Noise X or gift wrap};
+\node[st,right=3mm of s3] (s4) {Frame: header; sign unless in a session; pad if private};
+\node[st,right=3mm of s4] (s5) {Fragment if over 512~B on BLE};
+\node[st,right=3mm of s5] (s6) {Link table picks link(s); jitter if relaying};
+\node[st,right=3mm of s6] (s7) {Native queue and write; live writes expire at 1.5~s};
+\foreach \a/\b in {s1/s2,s2/s3,s3/s4,s4/s5,s5/s6,s6/s7} \draw[flow] (\a)--(\b);
+\node[font=\scriptsize\bfseries,rotate=90] at (-1.2,-2.2) {Each receiver};
+\node[st] (r1) at (0,-2.2) {Read from link; reassemble fragments};
+\node[st,right=3mm of r1] (r2) {Parse within bounds; inflate up to declared size};
+\node[st,right=3mm of r2] (r3) {Fresh: $\pm$2~min, or a solicited sync reply};
+\node[st,right=3mm of r3] (r4) {Seen ID? Drop before any check};
+\node[st,right=3mm of r4] (r5) {Five types: verify before relaying};
+\node[st,right=3mm of r5] (r6) {Record ID; relay with TTL cap and jitter};
+\node[st,right=3mm of r6] (r7) {Addressed here: verify or decrypt; store; receipt};
+\foreach \a/\b in {r1/r2,r2/r3,r3/r4,r4/r5,r5/r6,r6/r7} \draw[flow] (\a)--(\b);
+\draw[flow,densely dashed] (s7.south) -- ++(0,-0.4) -| node[pos=0.25,above,lab]{over a radio, the LAN or a Nostr relay} (r1.north);
+\draw[flow,densely dashed] (r7.east) -- ++(0.25,0) |- node[pos=0.75,above,lab]{the receipt travels back and clears the outbox} ($(s1.north)+(0,0.3)$) -- (s1.north);
+\end{tikzpicture}
+\caption{Stages from compose to delivery. The top row runs once on the sender; the bottom row runs on every phone a packet reaches, and its last stage only on the addressee. A packet that fails any stage is dropped silently; for the five pre-checked types its ID is not recorded, so a forgery cannot shadow the genuine packet. A phone forwards what it cannot read, and never relays a packet addressed to it or sent under its own ID.}
+\label{fig:pipeline}
+\end{figure*}
+
+\subsection{Internet reach}
+\label{sec:internet}
+
+Airhop runs no servers, so its internet path is public Nostr relays. A directory of over 300 ships with the app and is updated weekly from a public crawl of relays and their estimated locations~\cite{georelays}.
+
+\textbf{Direct messages over Nostr.} An internet DM is a NIP-17 gift wrap~\cite{nip17,nip59}. The encryption inside each layer follows the protocol's own construction rather than the published NIP-44~\cite{nip44}: XChaCha20-Poly1305 rather than ChaCha20 with HMAC, a different key derivation, and no padding. Airhop matches it byte for byte, because the event signature covers the ciphertext and nothing else would interoperate. A phone names its Nostr key only inside a Noise session (payload \hx{54}), and only to a saved contact or someone it has exchanged a DM with; announces never carry it. So neither a listener in range nor a stranger who merely completes a handshake can tie a phone's radio identity to its internet inbox. A peer met on the mesh but never written to has no internet route, though courier mail still reaches it.
+
+\textbf{Forward secrecy through relays.} Relays keep gift wraps, which are encrypted to the recipient's long-term key, so a key taken later would open every message a relay kept. Between Airhop phones, the inner message is therefore also sealed with Noise X to a \emph{DM prekey}, inside an unchanged gift wrap. Each phone gives each contact a signed batch of DM prekeys (Noise payload \hx{57}): three one-time keys and one last-resort key, handed over inside the session or a gift wrap, never broadcast or published, so no stranger can spend them. A sender uses an unused one-time key less than a week old, else the last-resort key while it is less than a week old, else the long-term key. A one-time key is deleted when it opens a message; the last-resort key is replaced weekly and deleted once it is 15~days old, at the app's next run, which bounds what a later leak exposes. Batches carry a rising issue time, so a copy that waited on a relay cannot roll a contact back to retired keys.
+
+The sealed message is padded to 256, 512, 1,024 or 2,048 bytes. Relays see the same event kinds and tags as before, but the padded sizes set an Airhop pair's messages apart. Receipts and prekey batches go under the long-term key. Unlike a mesh DM, an internet DM is not deniable: the gift wrap's inner seal is signed by its author, which binds the author to the ciphertext. The same holds for a courier deposit.
+
+\textbf{Relays.} A DM goes to at most five well-known relays and counts as sent on the first that accepts it. Each relay is subscribed separately, and an event counts as seen only after its signature verifies, so one relay's forged copy cannot hide the genuine event another delivers. When a relay demands that a client sign a challenge first (NIP-42~\cite{nip42}), Airhop signs only after being refused, and only with the key the operation belongs to: a cell's key for that cell's traffic, the main key for the DM inbox, and a single-use key for a gift wrap or a courier copy. A connection proves at most one key, since a second would link the two on that relay.
+
+\textbf{Location channels and presence.} A location channel's messages are Nostr events of kind 20000 sent to the 10 relays nearest the cell, plus up to five the user adds; picking by distance means everyone in one city converges on the same relays. Presence heartbeats name only coarse cells, about 5~km or wider, and go only to that cell's relays, never to the DM relays, which would otherwise learn where the phone is.
+
+\textbf{Gateway and bridge.} Two opt-in roles let a phone with internet carry traffic for phones without it. A \emph{gateway} publishes a mesh-only phone's signed location-channel message to that cell's relays and puts the cell's relay traffic on the mesh, at most 10 deposits a minute per depositor and 30 events a minute onto the mesh. A \emph{bridge} joins two crowds out of radio range by republishing each one's \code{\#bluetooth} messages through a Nostr rendezvous cell of about 1.2~km. Every carried event is checked against its own signature, and private traffic takes neither path.
+
+\textbf{Tor.} Both platforms embed Arti~\cite{arti}, the Tor Project's Rust client~\cite{tor2004}, listening as a SOCKS5 proxy on the loopback interface. It is off by default. When it is on, every relay connection is dialed through it, each destination gets its own circuits, and a request made before a circuit exists fails rather than going direct, so protection starts when the user turns it on. When Tor is wanted but cannot run, the app holds internet traffic and says so rather than falling back, while the mesh keeps working. Every entry point into the Rust code catches panics, so a fault in Tor costs the user Tor and nothing else.
+
+A direct connection to Tor hides the phone's address from relays but shows a network observer that Tor is in use. Bridges hide that: obfs4~\cite{obfs4} and Snowflake~\cite{snowflake2024} with built-in lines synced from the Tor Project, and WebTunnel~\cite{webtunnel} with lines the user supplies. iOS forbids the child processes in which these transports would normally run, so they are compiled into the app from IPtProxy~\cite{iptproxy} and reached over loopback. On Android the proxy covers every web request; on iOS it covers only the Nostr connections, so a call to a Cashu mint is refused there while Tor is on unless the user allows it in the clear.
+
+Table~\ref{tab:fs} summarizes how private traffic is protected between Airhop phones. With other clients, a DM falls back to the plain Noise session on the mesh and a gift wrap under the long-term key through relays, and courier mail is unchanged.
+
+\begin{table}[t]
+\caption{Protection of private traffic between Airhop phones}
+\label{tab:fs}
+\centering
+\scriptsize
+\begin{tabular}{@{}L{1.6cm}L{3.3cm}L{2.65cm}@{}}
+\toprule
+Path & Encryption & Forward secrecy \\
+\midrule
+Mesh DM & Double Ratchet inside the Noise XX session & Per message; session rekeyed within a day \\
+Courier envelope & Noise X to a one-time prekey, else the static key & Per message, while a bundle under 7~days old is held \\
+Nostr DM & Noise X to a DM prekey, inside the gift wrap & Per one-time key; last-resort key at most 15~days \\
+Private group & ChaCha20-Poly1305, epoch key & None within an epoch \\
+Private channel & XChaCha20-Poly1305, invite key & None \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ===================================================================
+\section{Media, Payments and the Device}
+\label{sec:apps}
+
+This section covers what runs on top of the mesh and what the phone keeps: live media, power, payments, storage, the panic wipe and device transfer.
+
+\subsection{Live media}
+\label{sec:media}
+
+\textbf{Shared rules.} Push-to-talk and live video follow the protocol's shared formats. Both are opt-in, because they play whatever anyone in range sends. Neither is gossip-synced, since stale media is worthless, and a live write that waits in a BLE link's queue for more than 1.5~s is dropped unsent.
+
+\textbf{Voice.} A push-to-talk burst is AAC-LC audio at 16~kHz, mono, 16~kbit/s, in packets (\hx{29}) whose audio is at most 210 bytes, so a voice packet never needs fragmenting or padding. The receiver plays it through a 350~ms jitter buffer.
+
+\textbf{Video.} A live stream (\hx{2D}) is H.264 video with optional AAC audio, in packets of at most 352 bytes so that a signed packet still fits one BLE write. Packets are grouped into blocks protected by a systematic Reed-Solomon erasure code~\cite{reedsolomon1960} over GF($2^8$), at most 32 source and 16 parity packets per block, so any $k$ of $k+r$ packets rebuild a block. A sender paces itself to at most 24 packets a second when any BLE hop is ahead, and backs off as link queues grow. A lost frame freezes the picture until the next keyframe rather than corrupting it.
+
+Two choices are Airhop's own. Congestion is read from the lower median of the neighbors' queue depths rather than the deepest, so a viewer who walked away does not freeze the picture for the whole room. And a receiver holds at most four streams and 24~MiB, with 2~MiB of buffered frames per stream, so a hostile sender cannot exhaust its memory.
+
+\subsection{Power and background operation}
+\label{sec:power}
+
+\textbf{Power modes.} A mesh helps only if phones keep running it in a pocket, and continuous BLE scanning is costly. On Android, a pure TypeScript function picks one of four modes from the battery level, charging, foreground state and the system battery saver, and native code applies it (Table~\ref{tab:power}). A backgrounded phone, or one in battery saver, uses \code{power-saver} (\code{ultra-low-power} when critical); a charging phone in the foreground uses \code{performance}; otherwise the battery decides. Dropping to a lower band is immediate, but climbing back needs 3 percentage points more, because a phone hovering at a threshold would otherwise restart its scanner at every percent. iOS gives apps no control over scan rate and already throttles background BLE, so the mode is ignored there.
+
+\begin{table}[t]
+\caption{Radio power modes on Android}
+\label{tab:power}
+\centering
+\scriptsize
+\begin{tabular}{@{}L{2.2cm}L{1.35cm}L{0.95cm}L{2.25cm}@{}}
+\toprule
+Mode & Scan and advertise & Transmit power & Used when \\
+\midrule
+\code{performance} & low latency, continuous & high & foreground and charging \\
+\code{balanced} & balanced, continuous & medium & foreground, battery above 20\,\% \\
+\code{power-saver} & low power, 2~s on, 28~s off & low & background; battery saver; battery at or below 20\,\% \\
+\code{ultra-low-power} & low power, 1~s on, 29~s off & ultra low & battery at or below 10\,\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Background operation.} An Android phone runs the mesh in a foreground service of the connected-device type, with a headless JavaScript task that keeps timers running, and declares that it never uses scans for location, so scan results arrive without a location grant. An iPhone keeps receiving BLE data in the background and is relaunched on a Bluetooth event, but in the background iOS moves its service identifier to an overflow area that only an iOS device scanning for that identifier can see~\cite{applecbbackground}. An Android phone therefore cannot discover a backgrounded iPhone until it is reopened; links already open keep working.
+
+\subsection{Payments}
+\label{sec:payments}
+
+\textbf{Tokens as messages.} The wallet holds Cashu ecash at mints the user chooses; Airhop ships with none. A payment is a message whose body is a token, so whatever carries text carries value: a token sent over BLE moves it at once, with no internet on either side. Top-ups and withdrawals over Lightning go through the mint and need the internet. A mint signs each unit, such as the sat ($10^{-8}$ bitcoin), with its own set of keys, a \emph{keyset}, and balances are kept per \emph{account}: one mint and one unit.
+
+\textbf{Receiving offline.} Only the mint knows whether a coin is spent, so an offline receiver cannot rule out a double spend. It can rule out a fake: a coin's DLEQ proof~\cite{nut12} shows that the mint signed it, checkable against the mint's keys cached earlier. A phone accepts a token offline only when every coin carries a proof that verifies. It keeps such coins apart as unconfirmed, up to 10,000 sat per account, and swaps them for fresh coins as soon as the mint is reachable. A token it cannot check, or one past that cap, waits in the chat for the mint. Coins locked to someone else's key~\cite{nut11}, and tokens whose declared unit contradicts the coins' keysets, are refused before anything is stored.
+
+\textbf{Sending.} A send reserves the coins rather than deleting them, so a crash or an undelivered message leaves the value reclaimable, and reclaiming swaps them at once when online so the copy handed out stops working. One function pays a person from every entry point and tries four ways in order. A direct radio link comes first. Next is a nutzap~\cite{nip61}: coins locked to the recipient's key and published to their relays, which is final. Then comes a token in a DM; once it includes DLEQ proofs it exceeds the 255-byte limit of the plain Noise, Nostr and courier paths, so only the ratchet carries it. Last, the token is handed back to the user to pass on by hand.
+
+\textbf{Recovery.} Every coin's secret derives from a 12-word BIP-39 phrase~\cite{bip39,nut13} kept in the keychain, so a lost phone's balance can be rebuilt from the mints' records~\cite{nut09}. The phrase backup stays off until the user has seen the phrase and proved they wrote it down. It does not cover the identity or chats, which move by device transfer.
+
+\subsection{On the device}
+\label{sec:rest}
+
+\textbf{Keys.} Private keys live only in the platform keychain, through one registry that the wipe walks, since the keychain API has no delete-all and a secret stored outside the registry would survive a wipe. Items are readable after the first unlock since boot, because iOS relaunches the app for a Bluetooth event while the phone is locked, and are never backed up or restorable to another device. Prekeys are kept in keychain items rather than in the database: the key-value store appends, so a deleted value may stay in its file until the file is rewritten, and forward secrecy rests on a used prekey being gone.
+
+\textbf{Messages and files.} Messages and settings live in MMKV~\cite{mmkv} under the operating system's file encryption~\cite{appledataprotection,androidfbe}; a second key in the same keychain would add nothing against someone who can read the app's files on an unlocked phone. The wallet is the exception, because its coins are bearer instruments: its store is encrypted with AES-256 under a random key from the keychain, and if the keychain refuses, the wallet reports itself locked rather than opening unencrypted. The operating system backs up and transfers none of it.
+
+Disappearing messages are set per conversation. Between Airhop phones the timer travels with each text message, so both phones remove it from their history; attachments and the rows a phone writes itself, such as a payment, follow each phone's own timer. Like any deleted value, a removed message may stay in the store's file until that is rewritten, and a modified client can keep a copy. Received media share a 100~MiB budget and are swept after a chosen period, and an optional app lock asks for the phone's own screen lock.
+
+\textbf{Panic wipe.} A triple tap on the panic button in the You tab deletes every keychain item, every store, the media cache, delivered notifications and the Tor client's state, which would show that the phone used Tor and roughly when. It cannot reach two things: Wi-Fi Aware pairings on iOS, which apps have no way to remove, and photos the user saved to the gallery. It reports whether the keychain confirmed the deletion rather than claiming success, because a locked keychain on a seized phone may refuse, and an identity whose deletion was refused is never booted again.
+
+\textbf{Moving to a new phone.} An identity is moved, never copied, since two phones answering one identity's handshakes would break its sessions. The new phone shows a QR code holding a one-time key, a random token and its local addresses. The old phone, after its owner unlocks it, dials only an address on one of its own subnets and runs Noise XX with its identity key against the key in the code, with the token in the prologue, so it reaches only the phone it scanned. Both phones then show six words derived from the handshake, and nothing is installed until the person confirms they match, so a third phone that read the code and connected first is turned away.
+
+The new phone writes everything and confirms with a digest of what was offered; only then does the old phone erase itself. A marker on each phone settles every interruption on the next launch. The peer ID, name and Nostr key are unchanged, so contacts keep talking to the same identity. Prekeys are not moved, since they never leave the phone that made them: the new phone publishes fresh ones. A message already sealed to an old prekey cannot be opened there; it arrives only when the sender resends it, which the sender's outbox does for up to a week.
+
+Table~\ref{tab:caps} collects the main bounds that keep the system stable under load and abuse.
+
+\begin{table}[t]
+\caption{Main bounds and their reasons}
+\label{tab:caps}
+\centering
+\scriptsize
+\begin{tabular}{@{}L{2.35cm}L{1.55cm}L{3.55cm}@{}}
+\toprule
+Bound & Value & Reason \\
+\midrule
+TTL & $\le$ 7 & Reach; clamped by degree \\
+Seen packet IDs & 1,000, 5~min & Duplicates; fragments and live media in their own sets \\
+Freshness window & $\pm$2~min & Replay outside sync \\
+BLE frame, fragment data & 512~B, 467~B & One BLE write per frame \\
+Reassemblies & 128, 8~MiB, 30~s idle & Junk cannot cancel real transfers \\
+File size & 1~MiB & Largest size every client accepts \\
+Sync filter & 400~B, 1\,\% & One request fits one frame \\
+Sync responses & 8 per 30~s per peer & Catch-up cannot flood \\
+Handshakes in & 10/min per peer, 30/min first messages & Unauthenticated state \\
+Skipped ratchet keys & 1,000 & Memory per conversation \\
+Courier pool & 40; 16~KiB; 24~h & A courier's own limits \\
+Deposits per depositor & 5 contact, 2 other & No identity crowds out another \\
+LAN links & 8 & BLE-like degree on any network \\
+Gateway deposits & 10/min per depositor & Carried traffic per phone \\
+Live video receive & 4 streams, 24~MiB; 2~MiB buffered per stream & Memory against hostile streams \\
+Unconfirmed ecash & 10,000 sat per account & Loss bound before the mint confirms \\
+Received media & 100~MiB & Storage against strangers \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ===================================================================
+\section{Implementation}
+\label{sec:impl}
+
+\begin{table*}[t]
+\caption{Threat model: attacks, mitigations and residual risk}
+\label{tab:threats}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}L{3.3cm}cL{7.3cm}L{5.0cm}@{}}
+\toprule
+Attack & Adversary & Mitigation & Residual risk \\
+\midrule
+Forge messages under another's peer ID & A1 & Peer ID is the hash of the Noise key; Ed25519 verified against the key resolved in trust order; a missing signature fails & A stranger's first-announce key is first come, first served after a restart \\
+Rebind a known peer's signing key & A1 & A key proven in a session outranks any announce; an announce contradicting a saved contact is refused; a proof corrects an attacker's earlier pin & None for contacts; strangers as above \\
+Man in the middle on a session & A1 & Noise XX, with the authenticated static key required to derive the claimed peer ID; QR scan or per-person safety code & Unverified contacts rest on first contact; a safety-code forgery costs about $2^{54}$ hashes per target \\
+Read relayed or carried private traffic & A1, A2 & Noise, ratchet, Noise X and gift-wrap encryption; session traffic padded to fixed sizes & Lengths of public traffic; headers \\
+Replay a packet & A1 & $\pm$2~min freshness; duplicate sets per kind; sync replies only on a link with a pending request; ratchet time inside the ciphertext; failed decrypts never tear down sessions & Inside the window, a replay reaches only phones that missed the original, as a normal duplicate \\
+Flood handshakes, sync, fragments or identities & A1 & Handshake rate limits; sync at TTL~0, 8 replies per 30~s; reassembly cap with idle eviction and a byte budget that refuses rather than evicts; peer tables never evict a live link & Airtime on the shared radio; jamming is out of scope \\
+Relay forged departures, files, posts or media & A1 & Verified before relaying; the ID is recorded only after the check & A genuine packet whose author's announce never arrived stops at this phone \\
+Take over or empty a private group & A1 & The creator is pinned at creation; any state naming another creator is refused & A private channel's link is its membership; members are not authenticated to each other \\
+Read or follow courier mail & A1, A2 & Noise X to a one-time prekey; handover only on a proven link; quotas per depositor; expiry refused, not clamped & Recipient tags are linkable across days; a courier can drop mail, offset by several couriers and the Nostr copy \\
+Read past messages with a stolen key & A5 & Per-message ratchet keys; daily rekey; one-time courier prekeys; Nostr DMs sealed to DM prekeys, last-resort keys deleted within 15~days & Groups and private channels; DMs with clients that lack these additions; receipts and prekey batches; any message sent with no fresh key \\
+Prove to others who wrote a DM & A5 & Mesh DMs and ratchet messages go unsigned inside the Noise session & Nostr DMs and courier deposits are signed by their author \\
+Inspect, inject or correlate at a Nostr relay & A3 & Gift wrap; events deduplicated only after their signature verifies; Nostr key given only to contacts; per-cell keys; one key per relay connection; Tor hides the address & The recipient's key is visible; padded sizes mark Airhop pairs; posting, or the default DM relays, link a cell to the identity; an unbounded WebSocket frame on Android \\
+Block or detect Tor & A4 & obfs4, Snowflake and WebTunnel bridges; fails closed and holds & Tor without a bridge is visible \\
+Make a phone dial a device on its network & A1 & Addresses only from a session peer; private address on the phone's own subnet; port 1024 or above; rate-limited; nothing written before the announce names the peer & A few silent connection attempts to a local device \\
+Force a downgrade, such as media in the clear & A1 & Only capabilities proven in a session change how Airhop sends; DM attachments are sent only sealed & None known \\
+Take the phone & A5 & Keys in the keychain, never backed up; panic wipe with an honest report; optional app lock; no operating-system backups & Keys are readable after first unlock; deleted values may linger in store files; a compromised operating system defeats all of this \\
+Lift the identity during a transfer & A1, A5 & Owner check; dial only own subnets; Noise XX pinned to the scanned key, token as prologue; matching words confirmed; move, not copy & A person who confirms without comparing the words \\
+Pay with fake or spent ecash & A1 & DLEQ checked offline against cached keys; unconfirmed coins kept apart, capped per account, swapped when the mint is reachable & A double spend within the cap succeeds until the mint is reached \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\textbf{Stack.} Airhop is a React Native~\cite{reactnative} app on Expo, in the bare workflow with the New Architecture~\cite{rnnewarch}, written in strict TypeScript. All cryptography comes from three dependency-free libraries, \code{@noble/curves}, \code{@noble/hashes} and \code{@noble/ciphers}~\cite{noblecurves,noblehashes,nobleciphers}, whose earlier releases have had independent audits listed in their repositories; no other cryptographic library is allowed. Nostr uses \code{nostr-tools}, the wallet \code{cashu-ts}, compression \code{pako}, storage MMKV~\cite{mmkv} through \code{react-native-mmkv}, and the keychain \code{expo-secure-store}. Every random value that protects anything comes from the operating system's secure generator.
+
+\textbf{Boundaries.} The protocol core imports nothing native, so the wire format, handshakes, routing and sync run in a test process exactly as on a phone, and a fix reaches both platforms at once. Each native module serves one capability (BLE, Wi-Fi Aware, the local network, voice, video, Tor, process-level operations) behind a hand-written TypeScript specification identical on both platforms; bytes cross as base64. Native code queues writes, applies the power mode it is told, and reports links and packets; it holds no routing, cryptographic or protocol logic. Tor is the one exception: Arti is Rust and the pluggable transports are Go, each owning a SOCKS listener and its own life cycle. They are built from pinned toolchains, the Android libraries reproducibly in a container, and every committed binary's hash is checked in continuous integration.
+
+\textbf{Compatibility.} Airhop extends the shared format by four rules. Its packet types and session payload types start at \hx{50} and its capability bits at 24, far from where other clients allocate, and a test fails if bitchat's packet types come within 16 values. Clients relay a type they do not know as an ordinary broadcast, so Airhop's types cross their phones unread. Capabilities that change how Airhop sends count only when proven inside a session, so nobody in range can force a downgrade. And payloads are relayed exactly as received (Section~\ref{sec:packets}). Where bitchat-ios and bitchat-android disagree, Airhop follows bitchat-ios; one known defect in it is noted in Section~\ref{sec:limits}.
+
+\textbf{Platform differences.} Most come from the operating systems and are stated where they apply: background discovery and power control (Section~\ref{sec:power}), Wi-Fi Aware pairing (Section~\ref{sec:transports}) and Tor coverage (Section~\ref{sec:internet}). The interface ships in 50 languages, with every catalog compiled in, since a download would be a network call and a fingerprint in exactly the conditions the app is for.
+
+% ===================================================================
+\section{Security Analysis}
+\label{sec:security}
+
+Table~\ref{tab:threats} walks the adversaries of Section~\ref{sec:threat}: each attack, what stops or bounds it, and what remains. Four properties carry most of the weight. Private content is end-to-end encrypted on every path, and between Airhop phones every DM path has forward secrecy while the sender holds a fresh key (G4, Table~\ref{tab:fs}). Every identity claim is checked against a key bound to the peer ID, and the strongest binding available wins. Every resource a stranger in radio range can make a phone spend, from signature checks to memory, storage and airtime, is bounded (G5); the one known gap is on the internet side, where a hostile Nostr relay can send an Android phone an unbounded WebSocket frame. And failures fail closed: a packet that fails a check is dropped, Tor that cannot run holds traffic rather than going direct, and a wallet without its key stays locked.
+
+\textbf{What is not stopped.} Metadata on the mesh is visible. Headers name sender and recipient in the clear, the peer ID never changes, and announces carry public keys and a nickname, so a passive observer in range can see which phones are present and which exchange packets, and follow a phone across places and days; authored broadcasts are partly attributable by TTL (Section~\ref{sec:routing}). Receivers in several places can correlate traffic by timing. A relay sees which Nostr key receives gift wraps. A courier or relay can drop what it carries. None of these protections survives a compromised operating system.
+
+\textbf{What is not proven.} This analysis is informal. The exporter-seeded ratchet has not been analyzed formally, and neither has the reuse of one static X25519 key across the Noise handshake, the ratchet's first step, the courier fallback and the courier tag; the cited analyses cover Noise XX and Signal's protocol, not this composition. Both are in scope for the independent audits of Section~\ref{sec:future}.
+
+% ===================================================================
+\section{Validation}
+\label{sec:validation}
+
+Everything in this section ran on a host, not a phone.
+
+\textbf{Platform.} A laptop with an Intel Core i5-11320H and 16~GiB of RAM, running Windows~11, ran the TypeScript suites under Node.js 24.22 with Jest 30.5 and TypeScript 6.0, against React Native 0.88 on Expo SDK~58. Continuous integration runs the same suites on Ubuntu 24.04 with Node.js 22, type-checks the app, runs the linter and the translation audit, verifies the hash of every committed native binary, produces Android and iOS release builds, and runs the native unit tests on both platforms. The bitchat vectors and constants were taken from local checkouts of bitchat-ios 1.8.0 and bitchat-android 2.2.0.
+
+\textbf{Tests.} The suite has more than 280 test files and 4,500 tests, 12 of them vector cases skipped by design. They cover the codecs, cryptography, routing, sync, couriers, Nostr, payments, the services that wire them together, the stores and the screens' logic. Life-cycle suites drive the real mesh service against a model of each operating system's contract: permissions granted, refused and revoked, Bluetooth toggled mid-message, the foreground service killed by a battery manager, and the keychain unreadable at launch. Their native layer is a transcription of the Kotlin and Swift modules, kept in step with them by hand, not the compiled modules. About 190 native unit tests, in JUnit and XCTest, cover the pure parts of the native code, such as write queues, framing, Wi-Fi Aware dial tie-breaks and Tor status codes.
+
+\textbf{Interoperability vectors.} Expected values come from outside Airhop. Airhop replays, unchanged, the 181 wire vectors that bitchat-ios publishes, covering packets, session payloads, file and announce fields, padding, compression, capabilities and peer IDs. All but 14 give the expected result: 12 are skipped because they exercise inputs Airhop refuses by design, such as a neighbor list it never writes or a nickname past its 32-byte budget, and 2 are kept as known divergences on inputs Airhop never builds. Courier seals are opened from vectors made with the Python \code{noiseprotocol} package, a separate implementation, and from vectors bitchat-ios generated. A gift-wrapped DM from bitchat-ios is decrypted. The live video format's golden vectors, and a Reed-Solomon parity vector from bitchat-ios's encoder, which is not in its 1.8.0 release, are reproduced. DEFLATE output is pinned to zlib 1.3.1. A conformance test reads constants from a bitchat checkout (link limits, attachment ceilings, frame and file sizes, gateway quotas, packet types) and fails on any mismatch; it passed locally, and it skips in CI, which has no checkout.
+
+\textbf{Fuzzing.} Twenty-six decoders, from the packet frame to the courier envelope, are fed random and mutated inputs (bit flips, truncation, appended bytes, extreme lengths) from a fixed seed, 3,000 iterations each by default, and must never throw; a second check confirms that the mutations still reach the parsers. This is a modest, deterministic campaign, not coverage-guided fuzzing.
+
+\textbf{Multi-device simulation.} Each simulated phone is a fully isolated copy of the app, with its own mesh service, stores and storage, over modeled radios on one virtual clock, with jitter drawn from a fixed seed. The BLE model has range as an explicit topology, at most six links a phone, 512-byte frames (larger ones are dropped and counted), 25~ms latency with jitter, and optional loss, duplication, corruption and reordering. In-process Nostr relays run behind the real \code{nostr-tools} client, and a real blind-signature mint on secp256k1 runs behind the wallet's HTTP calls. Scenarios assert invariants as well as outcomes: no forged sender is shown, nothing is shown twice, delivery state never moves backwards, and no ecash is created or destroyed. The scenarios, all on simulated phones, include:
+\begin{itemize}
+\item a message crossing a chain of five phones in which only neighbors hear each other;
+\item a room of 25 phones, alternating Android and iPhone models, in which five send at once and every message arrives exactly once;
+\item six phones converging under 20\,\% loss and 10\,\% duplication;
+\item an eight-phone soak of 300 random events (messages, kills, isolation, radio toggles, up to 30\,\% loss and 5\,\% corruption) that must end consistent;
+\item courier mail carried by a third phone, offline ecash with double-spend refusal by the mint, and recovery from a swap whose answer never arrived;
+\item a mixed mesh with an emulated bitchat client, across which public messages, sync, board posts, voice and gateway traffic pass both ways and Airhop's own types cross unread;
+\item bare relay nodes that hold no keys, the weakest form a relay can take: one hop, chains, and a ring that forwards each packet once.
+\end{itemize}
+
+\textbf{Adversarial scenarios.} The attacks of Table~\ref{tab:threats} run against live simulated meshes: forged announces rebinding keys, a contact impersonated after a restart, forged and replayed departures and ratchet messages, 500 identities flooding first handshake messages, 1,100 forgeries under a real peer's ID followed by a newcomer's sync, 250 Sybil identities, a forged private-channel message, a token padded with forged coins, a race for the transfer code, and a panic wipe. Each is refused or bounded as the table states.
+
+\textbf{What the simulation does not show.} It does not model airtime, bandwidth, collisions, connection intervals, write backpressure, MTU negotiation, radio propagation or true concurrency. The native modules it drives are transcriptions, and Tor and Lightning are not real. The emulated bitchat client reuses Airhop's packet codec, so a bug in the codec would not show, and it runs no Noise sessions, so DMs with other clients rest on the vectors above. Runs repeat their schedule but not their ciphertext, since keys stay random. The simulation shows that the protocol logic holds under the conditions it models; it says nothing about how fast or how far.
+
+\textbf{Availability.} The source, the specification and every vector file are in the Airhop repository~\cite{airhopspec}, with the vectors in \code{docs/spec/} and beside the wire tests. Running \code{npm test} runs every suite above, the simulation included.
+
+\textbf{Not yet measured.} Table~\ref{tab:field} lists the field evaluation that would answer what the host cannot.
+
+\begin{table}[t]
+\caption{Field evaluation plan}
+\label{tab:field}
+\centering
+\scriptsize
+\begin{tabular}{@{}L{2.5cm}L{4.95cm}@{}}
+\toprule
+Scenario & Measures \\
+\midrule
+Chain of 1 to 7 hops, mixed platforms & Delivery rate, latency per hop and end to end, duplicates \\
+Range, indoors and outdoors & Distance per hop for each platform pair \\
+Dense room of 25 or more phones & Delivery, airtime, control traffic, battery \\
+Power modes over a day in a pocket & Battery drain per mode; discovery delay \\
+Courier in a moving crowd & Delivery delay and copies per message \\
+Interoperability on hardware & Rooms, DMs, files, voice and video with other clients \\
+LAN and Wi-Fi Aware & Time for a 1~MiB file against BLE \\
+Tor on hostile networks & Bootstrap time and success per bridge type \\
+Low-end phones & Handshake, signature and ratchet cost \\
+With Airlink nodes & Reach and delivery with and without nodes \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\caption{Airhop and related systems}
+\label{tab:compare}
+\centering
+\scriptsize
+\begin{tabular}{@{}L{1.45cm}L{1.55cm}L{1.05cm}L{1.5cm}L{1.3cm}@{}}
+\toprule
+System & Works with no infrastructure & Multi-hop over radio & Identifier & Extra hardware \\
+\midrule
+Airhop & Yes: BLE, Wi-Fi Aware & Yes & Key pair & None; Airlink optional \\
+bitchat~\cite{bitchat} & Yes: BLE & Yes & Key pair & None \\
+Briar~\cite{briar} & Yes, between contacts & No & Key pair, contacts added & None \\
+Meshtastic~\cite{meshtasticintro} & Yes: LoRa & Yes & Node key pair & LoRa radio per user \\
+Signal~\cite{doubleratchet} & No & No & Phone number & None \\
+SimpleX~\cite{simplex} & No & No & None & None \\
+Session~\cite{session2020} & No & No & Key pair & None \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ===================================================================
+\section{Related Work}
+\label{sec:related}
+
+Table~\ref{tab:compare} summarizes the differences that matter to someone choosing a tool for a shutdown or a crowd.
+
+\textbf{Phone meshes.} bitchat~\cite{bitchat,bitchatwp} defined the protocol Airhop shares; Airhop adds the forward secrecy, radios, Tor bridges, wallet, device transfer and hardening rules described above, in one codebase for both platforms. The attacks on Bridgefy~\cite{bridgefy,bridgefy2022} are why Airhop verifies before acting, binds identity to keys and bounds every resource. Briar~\cite{briar,briarbsp} syncs messages directly between contacts over Bluetooth, Wi-Fi and Tor and never relays private messages through strangers, which avoids flood controls at the cost of a mesh's reach; Airhop's exchange of local addresses inside a session follows Briar's LAN plugin~\cite{briarlan}. Berty~\cite{berty} also works offline between nearby devices, over BLE and the platforms' own peer-to-peer frameworks, and encrypts with a symmetric-key ratchet. The Serval Mesh~\cite{serval} carried messages and calls over Wi-Fi among phones in disasters. Rangzen~\cite{rangzen} spreads anonymous broadcasts phone to phone during a blackout and ranks them by social trust to resist spam.
+
+\textbf{Radio networks.} Meshtastic~\cite{meshtasticintro} floods over LoRa between radios each user carries, reaching kilometers at the cost of hardware; in the Airhop ecosystem, LoRa runs only between fixed Airlink nodes~\cite{airlinkwp}, and phones need nothing extra. Reticulum~\cite{reticulum} is a cryptographic network stack with its own addressing that runs over many media at once, LoRa among them; Airhop instead carries one shared packet format over every link, so the mesh stays compatible with phones that only speak BLE.
+
+\textbf{Internet messengers.} Signal~\cite{doubleratchet,x3dh,pqxdh} defined the Double Ratchet and the prekeys that Airhop adapts, but needs a phone number and Signal's servers. SimpleX~\cite{simplex} has no user identifiers and passes messages through relay servers over one-way queues. Session~\cite{session2020} routes through a network of service nodes with onion requests. All three need an internet path; in Airhop, the internet extends a mesh that works without it.
+
+\textbf{Delay-tolerant networking.} Courier mail is store-carry-forward~\cite{fall2003,rfc4838} with a binary spray-and-wait budget~\cite{spyropoulos2005}. What is specific here is that envelopes are sealed to one-time prekeys that themselves travel over the same opportunistic mesh, with no server to publish them.
+
+% ===================================================================
+\section{Limitations}
+\label{sec:limits}
+
+\textbf{Physics and platforms.} BLE is short-range and low-rate, so a mesh needs density and patience, and live video is a narrow, best-effort stream. The platform limits stated above all reduce reach: a backgrounded iPhone is invisible to Android phones, Wi-Fi Aware never crosses platforms, the local network fails under client isolation, which cannot be detected before trying, and iOS suspends the app's sockets in the background, so the LAN carries iOS traffic only while the app is open.
+
+\textbf{Trust.} Mints hold the value behind their coins and can refuse to redeem or disappear, and a phone may accept a double-spent token offline up to its cap. Relays can drop, delay or log traffic; several relays per message bound the first two, and Tor the third.
+
+\textbf{Protocol gaps.} Prekey bundles are not gossip-synced, so a phone that arrives after a bundle has flooded seals courier mail to that owner's static key, without forward secrecy for that envelope. Group and private-channel messages have no forward secrecy. A DM to another client, over Nostr or by courier holds at most 255 bytes of text. A phone holds at most 72 one-time DM prekeys, three per contact, so past 24 active contacts the rest are sealed to a last-resort key. A relay connection proves at most one key, so a second cell, or a cell's inbox beside the main one, stays refused on a relay that demands sign-in until the connection drops. On Android, a Nostr relay's WebSocket frame has no size bound. Cryptography runs on the JavaScript thread, so a burst of handshakes on an old phone can delay the interface. Release 1.8.0 of bitchat-ios re-compresses a signed packet before verifying it, so it can drop a valid public message of 100 bytes or more from another implementation; the fix belongs in that client.
+
+\textbf{Assurance.} The cryptography and protocol have been reviewed internally and attacked in simulation, but not audited independently. Airhop should not be relied on in high-risk situations until they are.
+
+% ===================================================================
+\section{Future Work}
+\label{sec:future}
+
+The first step is the field evaluation of Table~\ref{tab:field}, followed by a comparison with other mesh messengers on the same metrics. The directions below are designed but not scheduled.
+
+\textbf{Independent audits.} One audit of the cryptography (Noise, the ratchet and its seed, couriers and prekeys, sealed Nostr DMs, signing, key storage, wipe, transfer, wallet) and one of the mesh, Nostr and Tor layers, published in full.
+
+\textbf{Post-quantum key agreement.} Ciphertext kept on relays can be recorded now and broken later. Between Airhop phones, an ML-KEM-768~\cite{fips203} exchange inside the Noise session, mixed into the ratchet seed, would protect it, as Signal's PQXDH~\cite{pqxdh} and post-quantum ratchet~\cite{spqr} do, at a cost of about five BLE fragments per session.
+
+\textbf{Forward secrecy for rooms.} Sender-key chains that ratchet per message within each group epoch, and key rotation with fresh invite links for private channels.
+
+\textbf{Unlinkable identity.} A rotating radio identity and unlinkable courier tags. Both change shared wire formats, so they need agreement across clients; changing either alone would split the network.
+
+\textbf{Device protection.} A passphrase mode that keeps history unreadable on a locked, seized phone at the cost of background operation, a one-tap high-risk preset, and reproducible builds of the whole Android app.
+
+\textbf{Airlink.} A combined evaluation with Airlink nodes, measuring reach and delivery with and without them.
+
+% ===================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+When the network is gone, the people who need to talk are often near each other. Airhop lets their phones carry each other's messages over Bluetooth and Wi-Fi, with no accounts or servers, and uses fixed Airlink nodes and the internet to reach further when they exist. Between Airhop phones, a direct message keeps forward secrecy on every path while the sender holds a fresh key. The whole protocol is one core for both platforms that stays compatible with the mesh it joins, and ecash moves offline within stated bounds. The design is validated on a host through tests, external vectors and a multi-device simulation; field evaluation is the next step. Airhop is open source under the MIT license at \url{https://github.com/areebahmeddd/airhop}.
+
+\section*{Acknowledgment}
+Airhop builds on the bitchat protocol by permissionlesstech, released into the public domain. The implementation, the internal security review and the drafting of this paper were assisted by an AI model (Claude, by Anthropic); the author checked the content against the source and is responsible for it.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

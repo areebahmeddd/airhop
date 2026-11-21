@@ -47,8 +47,8 @@ const MAX_CONCURRENT_SESSIONS = 8;
 // range can hold the floor indefinitely, streaming into whichever room the
 // listener happens to be looking at, and an honest client's own 120-second limit
 // is no help because a hostile one simply does not have it. Real speech arrives
-// at about 2 KiB/s, so the rate ceiling is generous enough that a burst crossing
-// it is not speech.
+// at about 2 kB/s (16 kbps), so the rate ceiling is generous enough that a
+// burst crossing it is not speech.
 const MAX_BURST_BYTES = 384 * 1024;
 const MAX_BYTES_PER_SECOND = 6_000;
 
@@ -133,7 +133,10 @@ class VoiceSession {
   // is in. Null until END, and for an end inferred from silence or a cap.
   private endTotal: number | null = null;
   private graceTimer: ReturnType<typeof setTimeout> | null = null;
-  private startMs = Date.now();
+  // Every wait here runs on the monotonic clock: the phone's clock set mid
+  // burst would otherwise read as a flood of audio, cutting it off, or as
+  // gaps that never expire.
+  private startMs = performance.now();
   // Cumulative audio bytes delivered by this burst, for the caps above.
   private receivedBytes = 0;
 
@@ -165,7 +168,7 @@ class VoiceSession {
     this.receivedBytes += frames.reduce((sum, f) => sum + f.length, 0);
     // +2s of slack so the very first packets, which arrive before any elapsed
     // time has accumulated, are not judged as an infinite rate.
-    const elapsedSec = (Date.now() - this.startMs) / 1000 + 2;
+    const elapsedSec = (performance.now() - this.startMs) / 1000 + 2;
     if (
       this.receivedBytes > MAX_BURST_BYTES ||
       this.receivedBytes > MAX_BYTES_PER_SECOND * elapsedSec
@@ -190,7 +193,7 @@ class VoiceSession {
       this.buffer.shift();
     }
 
-    this.buffer.push({ seq, frames, arrivedMs: Date.now() });
+    this.buffer.push({ seq, frames, arrivedMs: performance.now() });
 
     // Sort buffer by sequence number (handles reordering).
     this.buffer.sort((a, b) => seqDiff(a.seq, b.seq));
@@ -202,7 +205,7 @@ class VoiceSession {
     }
 
     // The first flush waits out the jitter window from the start of the burst.
-    this.scheduleFlush(JITTER_BUFFER_MS - (Date.now() - this.startMs));
+    this.scheduleFlush(JITTER_BUFFER_MS - (performance.now() - this.startMs));
     return true;
   }
 
@@ -274,7 +277,7 @@ class VoiceSession {
   // Arm the flush `delayMs` from now, unless one is already due sooner.
   private scheduleFlush(delayMs: number): void {
     const delay = Math.max(0, delayMs);
-    const atMs = Date.now() + delay;
+    const atMs = performance.now() + delay;
     if (this.flushTimer !== null) {
       if (this.flushAtMs <= atMs) return;
       clearTimeout(this.flushTimer);
@@ -304,7 +307,7 @@ class VoiceSession {
     // arrived, and then skipped: a lost packet costs its own audio, never the
     // rest of the burst.
     const toDeliver: BufferedFrame[] = [];
-    const now = Date.now();
+    const now = performance.now();
     while (this.buffer.length > 0) {
       const next = this.buffer[0];
       const gapExpired = now - next.arrivedMs >= JITTER_BUFFER_MS;

@@ -663,7 +663,6 @@ export class RadioFabric {
       0x04: "COURIER_ENV",
       0x10: "NOISE_HANDSHAKE",
       0x11: "NOISE_ENCRYPTED",
-      0x12: "DR_ENCRYPTED",
       0x20: "FRAGMENT",
       0x21: "REQUEST_SYNC",
       0x22: "FILE_TRANSFER",

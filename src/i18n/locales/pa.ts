@@ -156,7 +156,7 @@ export const strings: Strings = {
     "ਨੇੜਲੇ ਡੀਵਾਈਸ ਲੱਭਦਾ ਹੈ ਅਤੇ ਉਹਨਾਂ ਵਿਚਕਾਰ ਸੁਨੇਹੇ ਅੱਗੇ ਭੇਜਦਾ ਹੈ। ਇਸੇ ਨਾਲ ਮੈਸ਼ ਬਣਦਾ ਹੈ ਅਤੇ ਇਹ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਦੇ ਚੱਲਦਾ ਹੈ।",
   "onboarding.primer.location.title": "ਟਿਕਾਣਾ",
   "onboarding.primer.location.body":
-    "ਤੁਹਾਨੂੰ ਨੇੜਲੇ ਇਲਾਕੇ ਦੇ ਚੈਨਲਾਂ ਵਿੱਚ ਰੱਖਦਾ ਹੈ, ਇੱਕ ਬਲਾਕ ਤੋਂ ਲੈ ਕੇ ਇੱਕ ਖੇਤਰ ਤੱਕ। Airhop ਤੁਹਾਡਾ ਪਿੱਛਾ ਕਦੇ ਨਹੀਂ ਕਰਦਾ, ਅਤੇ ਤੁਹਾਡਾ ਸਹੀ ਟਿਕਾਣਾ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਤੋਂ ਸਿਰਫ਼ ਉਦੋਂ ਬਾਹਰ ਜਾਂਦਾ ਹੈ ਜਦੋਂ ਤੁਸੀਂ ਕਿਸੇ ਨੂੰ ਆਪਣਾ ਟਿਕਾਣਾ ਭੇਜਦੇ ਹੋ।",
+    "ਤੁਹਾਨੂੰ ਨੇੜਲੇ ਇਲਾਕੇ ਦੇ ਚੈਨਲਾਂ ਵਿੱਚ ਰੱਖਦਾ ਹੈ, ਇੱਕ ਬਲਾਕ ਤੋਂ ਲੈ ਕੇ ਇੱਕ ਖੇਤਰ ਤੱਕ। Airhop ਤੁਹਾਡਾ ਪਿੱਛਾ ਕਦੇ ਨਹੀਂ ਕਰਦਾ, ਅਤੇ ਤੁਹਾਡਾ ਸਹੀ ਟਿਕਾਣਾ ਕਦੇ ਵੀ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਤੋਂ ਬਾਹਰ ਨਹੀਂ ਜਾਂਦਾ।",
   "onboarding.primer.notifications.title": "ਸੂਚਨਾਵਾਂ",
   "onboarding.primer.notifications.body":
     "ਐਪ ਬੰਦ ਹੋਣ ’ਤੇ ਵੀ ਨਵੇਂ ਸੁਨੇਹਿਆਂ ਦੀ ਸੂਚਨਾ ਲਵੋ। ਸੂਚਨਾਵਾਂ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ’ਤੇ ਹੀ ਬਣਾਈਆਂ ਜਾਂਦੀਆਂ ਹਨ, ਕਿਸੇ ਸਰਵਰ ਦੀ ਕੋਈ ਭੂਮਿਕਾ ਨਹੀਂ।",
@@ -383,7 +383,38 @@ export const strings: Strings = {
   "chat.group.unreachable":
     "ਹਰ ਮੈਂਬਰ ਤੱਕ ਨਹੀਂ ਪਹੁੰਚਿਆ ਜਾ ਸਕਿਆ। ਜਦੋਂ ਉਹ ਨੇੜੇ ਹੋਣ ਤਾਂ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
   "chat.group.you_were_added": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚ ਜੋੜਿਆ ਗਿਆ ਹੈ।",
-  "chat.group.added_you": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚ ਜੋੜਿਆ",
+  "chat.timer.you_set_1": "ਤੁਸੀਂ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 1 ਦਿਨ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.you_set_7": "ਤੁਸੀਂ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 7 ਦਿਨਾਂ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.you_set_30": "ਤੁਸੀਂ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 30 ਦਿਨਾਂ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.you_off": "ਤੁਸੀਂ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ ਬੰਦ ਕੀਤੇ",
+  "chat.timer.you_set_local_1":
+    "ਤੁਸੀਂ ਇਸ ਫ਼ੋਨ ’ਤੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 1 ਦਿਨ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.you_set_local_7":
+    "ਤੁਸੀਂ ਇਸ ਫ਼ੋਨ ’ਤੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 7 ਦਿਨਾਂ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.you_set_local_30":
+    "ਤੁਸੀਂ ਇਸ ਫ਼ੋਨ ’ਤੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 30 ਦਿਨਾਂ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.you_off_local": "ਤੁਸੀਂ ਇਸ ਫ਼ੋਨ ’ਤੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ ਬੰਦ ਕੀਤੇ",
+  "chat.timer.peer_set_1": "{name} ਨੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 1 ਦਿਨ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.peer_set_7":
+    "{name} ਨੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 7 ਦਿਨਾਂ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.peer_set_30":
+    "{name} ਨੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ 30 ਦਿਨਾਂ ’ਤੇ ਸੈੱਟ ਕੀਤੇ",
+  "chat.timer.peer_off": "{name} ਨੇ ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ ਬੰਦ ਕੀਤੇ",
+  "chat.timer.sheet_shared":
+    "ਹੁਣ ਤੋਂ ਭੇਜੇ ਸੁਨੇਹਿਆਂ ਲਈ, ਦੋਵਾਂ ਫ਼ੋਨਾਂ ’ਤੇ। ਭੇਜਣ ਵਾਲੇ ਦੇ ਫ਼ੋਨ ’ਤੇ ਹਰ ਸੁਨੇਹੇ ਦਾ ਸਮਾਂ ਭੇਜਣ ਤੋਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਦੂਜੇ ਫ਼ੋਨ ’ਤੇ ਪਹਿਲੀ ਵਾਰ ਪੜ੍ਹੇ ਜਾਣ ਤੋਂ। ਸਕ੍ਰੀਨਸ਼ਾਟ ਰੋਕੇ ਨਹੀਂ ਜਾ ਸਕਦੇ।",
+  "chat.timer.sheet_pending":
+    "ਇਸ ਫ਼ੋਨ ’ਤੇ ਸੈੱਟ ਹੋ ਗਿਆ। ਅਗਲੀ ਵਾਰ ਤੁਹਾਡੇ ਜੁੜਨ ’ਤੇ ਇਹ {name} ਤੱਕ ਪਹੁੰਚੇਗਾ, ਫਿਰ ਦੋਵਾਂ ਫ਼ੋਨਾਂ ’ਤੇ ਲਾਗੂ ਹੋਵੇਗਾ।",
+  "chat.timer.sheet_bitchat":
+    "ਸਿਰਫ਼ ਇਸ ਫ਼ੋਨ ’ਤੇ। {name} ਦੀ ਐਪ ਸਾਂਝੇ ਟਾਈਮਰ ਨਹੀਂ ਸਮਝਦੀ।",
+  "chat.timer.sheet_local":
+    "ਹਾਲੇ ਸਿਰਫ਼ ਇਸ ਫ਼ੋਨ ’ਤੇ। ਜੇ {name} ਦੀ ਐਪ ਸਾਂਝੇ ਟਾਈਮਰ ਸਮਝਦੀ ਹੈ, ਤਾਂ ਅਗਲੀ ਵਾਰ ਤੁਹਾਡੇ ਜੁੜਨ ’ਤੇ ਇਹ ਉਨ੍ਹਾਂ ਤੱਕ ਪਹੁੰਚ ਜਾਵੇਗਾ।",
+  "chat.group.invited": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚ ਸੱਦਾ ਦਿੱਤਾ ਗਿਆ ਹੈ।",
+  "chat.group.invited_you": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚ ਸੱਦਾ ਦਿੱਤਾ",
+  "chat.group.decline": "ਇਨਕਾਰ ਕਰੋ",
+  "chat.group.decline_title": "{name} ਦਾ ਸੱਦਾ ਇਨਕਾਰ ਕਰਨਾ ਹੈ?",
+  "chat.group.decline_body":
+    "{name} ਤੁਹਾਡੇ ਸੰਪਰਕਾਂ ਵਿੱਚ ਨਹੀਂ ਹਨ। ਉਹਨਾਂ ਨੂੰ ਵੀ ਬਲਾਕ ਕਰੋ, ਫਿਰ ਉਹਨਾਂ ਤੋਂ ਹੋਰ ਸੱਦੇ ਜਾਂ ਸੁਨੇਹੇ ਨਹੀਂ ਆਉਣਗੇ।",
+  "chat.group.decline_block": "ਇਨਕਾਰ ਕਰੋ ਅਤੇ ਬਲਾਕ ਕਰੋ",
   "chat.group.you_were_removed":
     "ਤੁਹਾਨੂੰ {name} ਵਿੱਚੋਂ ਹਟਾ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਤੁਸੀਂ ਹੁਣ ਇੱਥੇ ਨਾ ਪੜ੍ਹ ਸਕਦੇ ਹੋ ਨਾ ਭੇਜ ਸਕਦੇ ਹੋ।",
   "chat.group.removed_you": "ਤੁਹਾਨੂੰ {name} ਵਿੱਚੋਂ ਹਟਾਇਆ",
@@ -1183,6 +1214,8 @@ export const strings: Strings = {
 
   // ---- Wallet: send ----
   "wallet.send.build_failed": "ਟੋਕਨ ਨਹੀਂ ਬਣ ਸਕਿਆ",
+  "wallet.send.unverified_note":
+    "ਇਸ ਭੁਗਤਾਨ ਦਾ ਕੁਝ ਹਿੱਸਾ ਅਜਿਹਾ ecash ਹੈ ਜਿਸ ਦੀ ਮਿੰਟ ਨੇ ਅਜੇ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ।",
   "wallet.send.title": "ecash ਭੇਜੋ",
   "wallet.send.amount_in": "{unit} ਵਿੱਚ ਰਕਮ",
   "wallet.send.body":
@@ -1242,14 +1275,8 @@ export const strings: Strings = {
   "wallet.receive.redeemed_at":
     "{mint} ’ਤੇ ਭੁਨਾ ਲਿਆ। ਹੁਣ ਇਹ ਸਾਬਤ ਤੌਰ ’ਤੇ ਤੁਹਾਡਾ ਹੈ: ਭੇਜਣ ਵਾਲੇ ਕੋਲ ਇਸ ਟੋਕਨ ਦੀ ਕਾਪੀ ਹੁਣ ਕੰਮ ਨਹੀਂ ਕਰਦੀ।",
   "wallet.receive.pending_unconfirmed":
-    "{mint} ਤੋਂ ਸੰਭਾਲਿਆ, ਪਰ ਮਿੰਟ ਨੇ ਹਾਲੇ ਇਹ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਕਿ ਇਹ ਖ਼ਰਚਿਆ ਨਹੀਂ ਗਿਆ। ਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਹੀ ਮਿੰਟ ਨਾਲ ਆਪਣੇ-ਆਪ ਪੁਸ਼ਟੀ ਹੋ ਜਾਂਦੀ ਹੈ।",
-  "wallet.receive.pending_unconfirmed_genuine":
     "{mint} ਤੋਂ ਸੰਭਾਲਿਆ, ਪਰ ਮਿੰਟ ਨੇ ਹਾਲੇ ਇਹ ਪੁਸ਼ਟੀ ਨਹੀਂ ਕੀਤੀ ਕਿ ਇਹ ਖ਼ਰਚਿਆ ਨਹੀਂ ਗਿਆ। ਇਸ ਦੇ ਦਸਤਖ਼ਤ ਸਹੀ ਹਨ, ਇਸ ਲਈ ਟੋਕਨ ਅਸਲੀ ਹੈ। ਆਨਲਾਈਨ ਹੁੰਦਿਆਂ ਹੀ ਮਿੰਟ ਨਾਲ ਆਪਣੇ-ਆਪ ਪੁਸ਼ਟੀ ਹੋ ਜਾਂਦੀ ਹੈ।",
   "wallet.receive.dleq_ok": "ਮਿੰਟ ਦੇ ਦਸਤਖ਼ਤ ਸਹੀ ਨਿਕਲਦੇ ਹਨ, ਇਸ ਲਈ ਟੋਕਨ ਅਸਲੀ ਹੈ।",
-  "wallet.receive.dleq_uncached":
-    "ਮਿੰਟ ਦੀਆਂ ਕੁੰਜੀਆਂ ਇੱਥੇ ਕੈਸ਼ ਨਹੀਂ ਹਨ, ਇਸ ਲਈ ਦਸਤਖ਼ਤ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਜਾਂਚੇ ਨਹੀਂ ਜਾ ਸਕੇ।",
-  "wallet.receive.dleq_missing":
-    "ਇਸ ਦੇ ਹਰ ਸਿੱਕੇ ਵਿੱਚ ਮਿੰਟ ਦੇ ਦਸਤਖ਼ਤ ਦਾ ਸਬੂਤ ਨਹੀਂ ਹੈ, ਇਸ ਲਈ ਇਸ ਨੂੰ ਬਿਨਾਂ ਇੰਟਰਨੈੱਟ ਜਾਂਚਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ।",
   "wallet.receive.dleq_warning":
     "ਜਦੋਂ ਤੱਕ ਆਨਲਾਈਨ ਪੁਸ਼ਟੀ ਨਹੀਂ ਹੁੰਦੀ, ਸਿਧਾਂਤਕ ਤੌਰ ’ਤੇ ਭੇਜਣ ਵਾਲਾ ਇਸ ਨੂੰ ਕਿਤੇ ਹੋਰ ਖ਼ਰਚ ਚੁੱਕਾ ਹੋ ਸਕਦਾ ਹੈ।",
   "wallet.receive.failed": "ਲਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ",
@@ -1605,6 +1632,7 @@ export const strings: Strings = {
   "wallet.scan.title_any": "QR ਕੋਡ ਸਕੈਨ ਕਰੋ",
   "wallet.scan.aim_any": "ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਦੇ QR ਕੋਡ ਵੱਲ ਸੇਧੋ।",
   "wallet.scan.no_any": "ਉਸ ਤਸਵੀਰ ਵਿੱਚ ਕੋਈ ਟੋਕਨ, ਇਨਵੌਇਸ ਜਾਂ npub ਨਹੀਂ ਮਿਲਿਆ।",
+  "wallet.scan.not_usable": "Airhop ਇੱਥੇ ਇਸ QR ਕੋਡ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਸਕਦਾ।",
   "wallet.scan.use_camera_a11y": "ਕੈਮਰੇ ਨਾਲ ਸਕੈਨ ਕਰੋ",
   "wallet.scan.use_camera": "ਕੈਮਰਾ ਵਰਤੋ",
   "wallet.scan.pick_image_a11y": "ਸੰਭਾਲੀ ਤਸਵੀਰ ਵਿੱਚੋਂ QR ਕੋਡ ਪੜ੍ਹੋ",
@@ -1706,6 +1734,11 @@ export const strings: Strings = {
   "wallet.svc.locked_ours_offline": "ਇਹ ਭੁਗਤਾਨ ਤੁਹਾਡੇ ਵਾਲਿਟ ਨਾਲ ਲਾਕ ਹੈ।",
   "wallet.svc.locked_ours_offline_body":
     "ਆਨਲਾਈਨ ਹੋਣ ’ਤੇ ਇਸ ਨੂੰ ਪ੍ਰਾਪਤ ਕਰੋ। ਉਦੋਂ ਤੱਕ ਕੋਈ ਹੋਰ ਇਸ ਨੂੰ ਨਹੀਂ ਲੈ ਸਕਦਾ।",
+  "wallet.svc.offline_cap":
+    "ਆਫ਼ਲਾਈਨ, ਹਰ ਮਿੰਟ ਲਈ ਅਪੁਸ਼ਟ ecash ਦੀ ਹੱਦ {limit} ਹੈ।",
+  "wallet.svc.offline_unchecked": "ਇਹ ecash ਆਫ਼ਲਾਈਨ ਜਾਂਚਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ।",
+  "wallet.svc.claim_online_body":
+    "ਆਨਲਾਈਨ ਹੋਣ ’ਤੇ, ਜਦੋਂ ਮਿੰਟ ਇਸ ਦੀ ਪੁਸ਼ਟੀ ਕਰ ਸਕੇ, ਇਸ ਨੂੰ ਪ੍ਰਾਪਤ ਕਰੋ।",
   "wallet.svc.already_spent": "ਇਹ ecash ਪਹਿਲਾਂ ਹੀ ਖ਼ਰਚਿਆ ਜਾ ਚੁੱਕਾ ਹੈ।",
   "wallet.svc.already_spent_body":
     "ਜਿਸ ਨੇ ਇਹ ਟੋਕਨ ਭੇਜਿਆ, ਉਸ ਨੇ ਇਹ ਪਹਿਲਾਂ ਭੁਨਾ ਲਿਆ, ਜਾਂ ਉਹੀ ਟੋਕਨ ਕਿਸੇ ਹੋਰ ਨੂੰ ਵੀ ਭੇਜ ਦਿੱਤਾ।",
@@ -2033,10 +2066,11 @@ export const strings: Strings = {
   "settings.general.retention_30_desc":
     "ਗੱਲਬਾਤਾਂ ਸਭ ਤੋਂ ਲੰਮਾ ਸਮਾਂ ਪੜ੍ਹਨਯੋਗ ਰੱਖਦਾ ਹੈ, ਅਤੇ ਡਿਸਕ ’ਤੇ ਸਭ ਤੋਂ ਵੱਧ ਰੱਖਦਾ ਹੈ।",
   "settings.general.message_retention": "ਗਾਇਬ ਹੋਣ ਵਾਲੇ ਸੁਨੇਹੇ",
-  "settings.general.message_retention_desc":
-    "ਸੁਨੇਹੇ ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਮੀਡੀਆ ਚੁਣੇ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਂਦੇ ਹਨ",
-  "settings.general.message_retention_sheet":
-    "ਹਰ ਸੁਨੇਹੇ ਦੇ ਇਸ ਫ਼ੋਨ ’ਤੇ ਪਹੁੰਚਣ ਤੋਂ ਗਿਣਿਆ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਸਿਰਫ਼ ਇਹੀ ਫ਼ੋਨ ਭੁੱਲਦਾ ਹੈ। ਦੂਜੇ ਵਿਅਕਤੀ ਦਾ ਫ਼ੋਨ ਆਪਣੀ ਕਾਪੀ ਰੱਖਦਾ ਹੈ, ਸਕ੍ਰੀਨਸ਼ਾਟ ਰੋਕੇ ਨਹੀਂ ਜਾ ਸਕਦੇ, ਅਤੇ ਨਿੱਜੀ ਚੈਟ ਵਿੱਚ ਭੇਜੇ ਗਏ ਜੋ ਭੁਗਤਾਨ ਤੁਸੀਂ ਅਜੇ ਪ੍ਰਾਪਤ ਨਹੀਂ ਕੀਤੇ, ਉਹ ਪ੍ਰਾਪਤ ਕਰਨ ਤੱਕ ਰਹਿੰਦੇ ਹਨ।",
+  "settings.general.message_retention_default": "ਨਵੀਆਂ ਚੈਟਾਂ ਲਈ ਡਿਫ਼ਾਲਟ ਟਾਈਮਰ",
+  "settings.general.message_retention_default_desc":
+    "ਨਵੇਂ ਸਿੱਧੇ ਸੁਨੇਹਿਆਂ ਲਈ, ਅਤੇ ਇਸ ਫ਼ੋਨ ’ਤੇ ਰੂਮਾਂ, ਚੈਨਲਾਂ ਅਤੇ ਗਰੁੱਪਾਂ ਲਈ",
+  "settings.general.message_retention_default_sheet":
+    "ਨਵੇਂ ਸਿੱਧੇ ਸੁਨੇਹੇ ਇਸੇ ਟਾਈਮਰ ਨਾਲ ਸ਼ੁਰੂ ਹੁੰਦੇ ਹਨ, ਅਤੇ ਕੋਈ ਵੀ ਚੈਟ ਵਿੱਚ ਇਸਨੂੰ ਬਦਲ ਸਕਦਾ ਹੈ। ਰੂਮ, ਚੈਨਲ ਅਤੇ ਗਰੁੱਪ ਸਿਰਫ਼ ਇਸ ਫ਼ੋਨ ’ਤੇ ਇਸਨੂੰ ਮੰਨਦੇ ਹਨ, ਹਰ ਸੁਨੇਹੇ ਦੇ ਪਹੁੰਚਣ ਦੇ ਸਮੇਂ ਤੋਂ ਗਿਣ ਕੇ। ਸਕ੍ਰੀਨਸ਼ਾਟ ਰੋਕੇ ਨਹੀਂ ਜਾ ਸਕਦੇ, ਅਤੇ ਸਿੱਧੇ ਸੁਨੇਹੇ ਵਿੱਚ ਤੁਹਾਨੂੰ ਭੇਜੇ ਭੁਗਤਾਨ ਤਦ ਤੱਕ ਰਹਿੰਦੇ ਹਨ ਜਦ ਤੱਕ ਤੁਸੀਂ ਉਨ੍ਹਾਂ ਨੂੰ ਲੈ ਨਹੀਂ ਲੈਂਦੇ।",
   "settings.general.message_retention_off_desc":
     "ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਚੈਟ ਸਾਫ਼ ਨਹੀਂ ਕਰਦੇ ਜਾਂ ਛੱਡਦੇ ਨਹੀਂ, ਸੁਨੇਹੇ ਰਹਿੰਦੇ ਹਨ",
   "settings.general.message_retention_1_desc":
@@ -2048,11 +2082,11 @@ export const strings: Strings = {
   "settings.general.message_retention_confirm_title":
     "ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਮਿਟਾਉਣੇ ਹਨ?",
   "settings.general.message_retention_confirm_1":
-    "1 ਦਿਨ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
+    "ਰੂਮਾਂ, ਚੈਨਲਾਂ, ਗਰੁੱਪਾਂ ਅਤੇ ਟਿਕਾਣਾ ਚੈਨਲ ਤੋਂ ਸ਼ੁਰੂ ਹੋਈਆਂ ਚੈਟਾਂ ਦੇ 1 ਦਿਨ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਹੋਰ ਸਿੱਧੇ ਸੁਨੇਹੇ ਆਪਣੇ ਟਾਈਮਰ ਰੱਖਦੇ ਹਨ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
   "settings.general.message_retention_confirm_7":
-    "7 ਦਿਨਾਂ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
+    "ਰੂਮਾਂ, ਚੈਨਲਾਂ, ਗਰੁੱਪਾਂ ਅਤੇ ਟਿਕਾਣਾ ਚੈਨਲ ਤੋਂ ਸ਼ੁਰੂ ਹੋਈਆਂ ਚੈਟਾਂ ਦੇ 7 ਦਿਨਾਂ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਹੋਰ ਸਿੱਧੇ ਸੁਨੇਹੇ ਆਪਣੇ ਟਾਈਮਰ ਰੱਖਦੇ ਹਨ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
   "settings.general.message_retention_confirm_30":
-    "30 ਦਿਨਾਂ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
+    "ਰੂਮਾਂ, ਚੈਨਲਾਂ, ਗਰੁੱਪਾਂ ਅਤੇ ਟਿਕਾਣਾ ਚੈਨਲ ਤੋਂ ਸ਼ੁਰੂ ਹੋਈਆਂ ਚੈਟਾਂ ਦੇ 30 ਦਿਨਾਂ ਤੋਂ ਪੁਰਾਣੇ ਸੁਨੇਹੇ ਉਨ੍ਹਾਂ ਦੇ ਮੀਡੀਆ ਸਮੇਤ ਹੁਣੇ ਇਸ ਫ਼ੋਨ ਤੋਂ ਮਿਟ ਜਾਣਗੇ। ਹੋਰ ਸਿੱਧੇ ਸੁਨੇਹੇ ਆਪਣੇ ਟਾਈਮਰ ਰੱਖਦੇ ਹਨ। ਇਸਨੂੰ ਵਾਪਸ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।",
   "settings.general.reset_desc":
     "ਤਰਜੀਹਾਂ ਨੂੰ ਉਨ੍ਹਾਂ ਦੇ ਮੂਲ ’ਤੇ ਵਾਪਸ ਲੈ ਜਾਂਦਾ ਹੈ, ਤੁਹਾਡੀ ਪਛਾਣ, ਸੁਨੇਹੇ, ਸੰਪਰਕ ਅਤੇ ਵਾਲਿਟ ਉਵੇਂ ਦੇ ਉਵੇਂ ਛੱਡ ਕੇ",
   "settings.general.reset_title": "ਸੈਟਿੰਗਾਂ ਮੁੜ-ਸੈੱਟ ਕਰਨੀਆਂ ਹਨ?",
@@ -2192,6 +2226,12 @@ export const strings: Strings = {
   "settings.conn.live_video": "ਲਾਈਵ ਵੀਡੀਓ",
   "settings.conn.live_video_desc":
     "ਆਪਣਾ ਕੈਮਰਾ ਨੇੜਲੇ ਲੋਕਾਂ ਤੱਕ ਸਟ੍ਰੀਮ ਕਰੋ, ਅਤੇ ਉਨ੍ਹਾਂ ਦਾ ਦੇਖੋ",
+  "settings.conn.live_video_on_title": "ਲਾਈਵ ਵੀਡੀਓ ਚਾਲੂ ਕਰਨੀ ਹੈ?",
+  "settings.conn.live_video_on_body":
+    "ਤੁਸੀਂ ਕੈਮਰੇ ਤੋਂ ਬਲੂਟੁੱਥ ਦੀ ਪਹੁੰਚ ਵਿਚਲੇ ਲੋਕਾਂ ਲਈ ਲਾਈਵ ਜਾ ਸਕੋਗੇ, ਅਤੇ ਉਹਨਾਂ ਦੀਆਂ ਲਾਈਵ ਸਟ੍ਰੀਮਾਂ ਤੁਹਾਡੀਆਂ ਗੱਲਾਂ ਵਿੱਚ ਦਿਸਣਗੀਆਂ ਅਤੇ ਇਸ ਫ਼ੋਨ ’ਤੇ ਰਿਕਾਰਡ ਹੋਣਗੀਆਂ।",
+  "settings.conn.live_video_off_title": "ਲਾਈਵ ਵੀਡੀਓ ਬੰਦ ਕਰਨੀ ਹੈ?",
+  "settings.conn.live_video_off_body":
+    "ਤੁਸੀਂ ਹੁਣ ਲਾਈਵ ਨਹੀਂ ਜਾ ਸਕੋਗੇ, ਅਤੇ ਦੂਜਿਆਂ ਦੀਆਂ ਲਾਈਵ ਸਟ੍ਰੀਮਾਂ ਨਾ ਦਿਸਣਗੀਆਂ, ਨਾ ਰਿਕਾਰਡ ਹੋਣਗੀਆਂ। ਛੋਟੀ ਸਟ੍ਰੀਮ ਫਿਰ ਵੀ ਆਮ ਵੀਡੀਓ ਵਜੋਂ ਆਵੇਗੀ।",
   "settings.conn.tor_short": "Tor",
   "settings.conn.tor": "Tor ਰਾਊਟਿੰਗ",
   "settings.conn.tor_desc": "ਵਾਧੂ ਨਿੱਜਤਾ ਲਈ Nostr ਦੀ ਆਵਾਜਾਈ Tor ਰਾਹੀਂ ਭੇਜੋ",
@@ -2221,12 +2261,9 @@ export const strings: Strings = {
   "settings.tor.mode_obfs4": "obfs4",
   "settings.tor.mode_obfs4_desc":
     "ਲੁਕਾਉਂਦਾ ਹੈ ਕਿ ਤੁਸੀਂ Tor ਵਰਤ ਰਹੇ ਹੋ। Snowflake ਤੋਂ ਤੇਜ਼, ਪਰ ਇਹ ਬ੍ਰਿਜ ਜਨਤਕ ਹਨ ਅਤੇ ਕੁਝ ਨੈੱਟਵਰਕ ਇਨ੍ਹਾਂ ਨੂੰ ਰੋਕਦੇ ਹਨ।",
-  "settings.tor.mode_webtunnel": "WebTunnel",
-  "settings.tor.mode_webtunnel_desc":
-    "ਆਮ ਵੈੱਬਸਾਈਟ ਵਿਜ਼ਿਟ ਵਾਂਗ ਦਿਖ ਕੇ ਲੁਕਾਉਂਦਾ ਹੈ ਕਿ ਤੁਸੀਂ Tor ਵਰਤਦੇ ਹੋ। ਬਾਕੀਆਂ ਨਾਲੋਂ ਬਲਾਕ ਕਰਨਾ ਔਖਾ।",
   "settings.tor.mode_custom": "ਆਪਣੇ ਬ੍ਰਿਜ",
   "settings.tor.mode_custom_desc":
-    "bridges.torproject.org ਤੋਂ ਮਿਲੀਆਂ obfs4 ਬ੍ਰਿਜ ਲਾਈਨਾਂ ਵਰਤੋ। ਬਾਕੀ ਅਸਫਲ ਹੋਣ ਉੱਤੇ ਇਹ ਅਜ਼ਮਾਓ।",
+    "bridges.torproject.org ਤੋਂ ਮਿਲੀਆਂ obfs4 ਜਾਂ WebTunnel ਬ੍ਰਿਜ ਲਾਈਨਾਂ ਵਰਤੋ। ਬਾਕੀ ਅਸਫਲ ਹੋਣ ਉੱਤੇ ਇਹ ਅਜ਼ਮਾਓ।",
   "settings.tor.custom_placeholder": "ਹਰ ਲਾਈਨ ਵਿੱਚ ਇੱਕ ਬ੍ਰਿਜ ਲਾਈਨ ਚਿਪਕਾਓ",
   "settings.tor.custom_apply_hint": "ਕਨੈਕਟ ਕਰਨ ਲਈ ਬਾਕਸ ਤੋਂ ਬਾਹਰ ਟੈਪ ਕਰੋ।",
   "settings.tor.custom_empty": "ਪਹਿਲਾਂ ਘੱਟੋ-ਘੱਟ ਇੱਕ ਬ੍ਰਿਜ ਲਾਈਨ ਸ਼ਾਮਲ ਕਰੋ।",
@@ -2592,6 +2629,18 @@ export const strings: Strings = {
   "notif.ring.hidden": "ਘੰਟੀ",
   "notif.ring.title": "{sender} ਤੁਹਾਨੂੰ ਘੰਟੀ ਵਜਾ ਰਿਹਾ ਹੈ",
   "notif.ring.body": "ਆਪਣੇ ਸੁਨੇਹੇ ਵੇਖੋ",
+  "notif.action.reply": "ਜਵਾਬ ਦਿਓ",
+  "notif.action.send": "ਭੇਜੋ",
+  "notif.action.mark_read": "ਪੜ੍ਹਿਆ ਨਿਸ਼ਾਨ ਲਾਓ",
+  "notif.reply.failed_title": "ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ",
+  "notif.reply.failed_body":
+    "{chat} ਨੂੰ ਤੁਹਾਡਾ ਜਵਾਬ ਨਹੀਂ ਭੇਜਿਆ ਜਾ ਸਕਿਆ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਲਈ ਚੈਟ ਖੋਲ੍ਹੋ।",
+  "notif.reply.held_title": "ਭੇਜਣ ਦੀ ਉਡੀਕ ਵਿੱਚ",
+  "notif.reply.held_body":
+    "Airhop ਚੱਲਣ ’ਤੇ {chat} ਨੂੰ ਤੁਹਾਡਾ ਜਵਾਬ ਭੇਜ ਦਿੱਤਾ ਜਾਵੇਗਾ।",
+  "notif.reply.cut_title": "ਕੁਝ ਹਿੱਸਾ ਭੇਜਿਆ ਗਿਆ",
+  "notif.reply.cut_body":
+    "{chat} ਨੂੰ ਤੁਹਾਡਾ ਜਵਾਬ ਬਹੁਤ ਲੰਮਾ ਸੀ, ਇਸ ਲਈ ਉਸਦਾ ਆਖਰੀ ਹਿੱਸਾ ਨਹੀਂ ਭੇਜਿਆ ਗਿਆ।",
 };
 
 export const plurals: Plurals = {

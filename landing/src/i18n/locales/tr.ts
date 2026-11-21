@@ -128,7 +128,8 @@ const strings: Strings = {
   "home.how.title": "Mesh ağı kendiliğinden kurulur.",
   "home.how.sub":
     "Yakındaki düğümler Bluetooth üzerinden kendini onaran bir mesh ağı kurar. İnternet olduğunda Nostr röleleri bunu genişletir; kimsenin denetlediği bir altyapı olmadan.",
-  "home.how.cta": "Mimarinin tamamını okuyun",
+  "home.how.cta": "Mimariyi okuyun",
+  "home.how.paper": "Teknik raporu okuyun",
   "home.how.discover.title": "Keşif",
   "home.how.discover.line":
     "Airhop ya da bitchat çalıştıran telefonlar Bluetooth üzerinden birbirini otomatik bulur. Eşleştirme yok, kurulum yok.",

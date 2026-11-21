@@ -17,13 +17,13 @@ function state() {
   return useSettingsStore.getState();
 }
 
-describe("liveVoiceEnabled", () => {
-  it("defaults on, matching bitchat's PTTSettings", () => {
-    // A walkie-talkie nobody can find is not a feature. bitchat ships this on
-    // and so does Airhop; turning it off is the deliberate act.
-    state().setLiveVoiceEnabled(false);
+describe("live voice and live video", () => {
+  it("are off by default, and the panic wipe turns them back off", () => {
+    state().setLiveVoiceEnabled(true);
+    state().setLiveVideoEnabled(true);
     state().reset();
-    expect(state().liveVoiceEnabled).toBe(true);
+    expect(state().liveVoiceEnabled).toBe(false);
+    expect(state().liveVideoEnabled).toBe(false);
   });
 });
 

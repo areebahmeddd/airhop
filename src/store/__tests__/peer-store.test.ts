@@ -1,6 +1,6 @@
-// Peer store: two behaviors that are easy to break because the two writers
-// (ANNOUNCE-driven upsertPeer, RSSI-poll-driven updateRssi) touch the same
-// entry from different sources at different cadences.
+// Peer store: two writers (ANNOUNCE-driven upsertPeer, RSSI-poll-driven
+// updateRssi) touch the same entry from different sources at different
+// cadences, and reachability, relay nodes and the unseen-peer dot all read it.
 
 import {
   countReachablePeers,

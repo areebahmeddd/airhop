@@ -36,7 +36,7 @@ describe("presence", () => {
       expect(hash.startsWith("xn")).toBe(true);
     });
 
-    it("returns correct precision length", () => {
+    it("returns a hash as long as the precision asked for", () => {
       for (let p = 1; p <= 9; p++) {
         expect(encodeGeohash(0, 0, p)).toHaveLength(p);
       }
@@ -59,7 +59,7 @@ describe("presence", () => {
       expect(Math.abs(decoded.lng - original.lng)).toBeLessThan(0.1);
     });
 
-    it("handles single-character hash (precision 1)", () => {
+    it("decodes a single-character hash to a point inside its cell", () => {
       const hash = encodeGeohash(0, 0, 1);
       expect(hash).toBe("s");
       // Cell "s" spans 0..45 on both axes; the decode is inside it.

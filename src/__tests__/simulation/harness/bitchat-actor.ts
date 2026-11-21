@@ -6,9 +6,9 @@
 // to Airhop's, and its whole job is to disagree when Airhop is wrong:
 //
 //   * It interprets only the packet types bitchat defines. Airhop's own
-//     extensions (DR_ENCRYPTED 0x12, CHANNEL_ENC 0x50, CHANNEL_MSG_AIRHOP
-//     0x51) reach no handler, while still being RELAYED like any other
-//     packet (BLEService's type switch logs `case .none` and falls through to
+//     extensions (CHANNEL_ENC 0x50, CHANNEL_MSG_AIRHOP 0x51) reach no
+//     handler, while still being RELAYED like any other packet (BLEService's
+//     type switch logs `case .none` and falls through to
 //     scheduleRelayIfNeeded). Both halves matter: Airhop's extras must cost
 //     bitchat nothing AND must still cross a mesh made of bitchat phones.
 //   * It refuses a courier envelope whose expiry is beyond 24h + 1h slack,

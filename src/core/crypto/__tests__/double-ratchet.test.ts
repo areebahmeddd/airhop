@@ -71,7 +71,7 @@ describe("Double Ratchet", () => {
     expect(decode(ratchetDecrypt(bob, ct3))).toBe("a->b again");
   });
 
-  test("out-of-order delivery (skipped messages)", () => {
+  test("decrypts messages delivered out of order", () => {
     const { alice, bob } = makeAliceBob();
 
     const ct0 = ratchetEncrypt(alice, encode("first"));

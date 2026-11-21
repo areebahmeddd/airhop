@@ -42,6 +42,7 @@ jest.mock("@bridge/NativeAirhopVoice", () => {
   return { __esModule: true, default: createNativeVoiceMock().module };
 });
 
+import { MAX_LAN_LINKS } from "@services/lan-dial-policy";
 import { SimDevice, type DeviceSpec } from "../harness/device";
 import { noCrashes } from "../harness/invariants";
 import { LanFabric } from "../harness/lan-fabric";
@@ -225,6 +226,47 @@ test("L03 a crowded network does not become a full mesh", async () => {
     "which is the ring's total, counted once per pair",
     lan.linkCount() === (specs.length * 8) / 2,
     `links=${lan.linkCount()} expected ${(specs.length * 8) / 2}`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+// The ring opens links and never trims them, so a room that has settled at
+// the cap must still take a phone that arrives later.
+test("L03c a phone joining a settled room still gets links", async () => {
+  const s = (scenario = new Scenario({
+    id: "L03c",
+    title: "a latecomer to a full ring",
+    seed: 712,
+  }));
+  const specs = Array.from({ length: 10 }, (_, i) =>
+    phone(`q${String(i)}`, 50 + i),
+  );
+  const { lan, devices } = room(s, specs);
+  s.track(...devices);
+  const [late, ...early] = devices;
+  for (const d of early) lan.join(d.id, "conference");
+  for (const d of early) d.launch();
+  await s.world.advance(60_000);
+  s.check(
+    "the first nine settle at the cap",
+    early.every((d) => lan.linkCountFor(d.id) === MAX_LAN_LINKS),
+    early.map((d) => lan.linkCountFor(d.id)).join(","),
+  );
+
+  lan.join(late.id, "conference");
+  late.launch();
+  s.check(
+    "the latecomer is linked and hears the room",
+    await waitFor(
+      s.world,
+      () =>
+        lan.linkCountFor(late.id) > 0 &&
+        early.every((d) => late.peers().includes(d.peerID)),
+      180_000,
+    ),
+    `links=${lan.linkCountFor(late.id)}`,
   );
 
   s.expectNone("process health", noCrashes(devices));
@@ -513,6 +555,196 @@ test("L08 a packet too long for Bluetooth crosses from LAN onto Bluetooth", asyn
     "nothing was written past the Bluetooth frame",
     radio.framesOversized === 0,
     `oversized=${String(radio.framesOversized)}`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+// Ships, hotels and conferences drop mDNS while still passing the TCP. Two
+// phones that met over Bluetooth hand each other their LAN address inside the
+// session, and the lower peer ID dials it, so the conversation carries on over
+// Wi-Fi once they walk out of Bluetooth range.
+test("L09 phones in a session meet over the network where mDNS is filtered", async () => {
+  const s = (scenario = new Scenario({
+    id: "L09",
+    title: "direct dial past a filtered network",
+    seed: 709,
+  }));
+  const { radio, lan, devices } = room(s, [
+    phone("a", 11, "android"),
+    phone("b", 22, "ios"),
+  ]);
+  const [a, b] = devices;
+  s.track(a, b);
+  lan.setMdnsFiltered("hotel", true);
+  lan.join("a", "hotel");
+  lan.join("b", "hotel");
+  radio.setTopology([["a", "b"]]);
+  a.launch();
+  b.launch();
+
+  s.check(
+    "they meet over Bluetooth",
+    await waitFor(
+      s.world,
+      () => a.peers().includes(b.peerID) && b.peers().includes(a.peerID),
+      40_000,
+    ),
+  );
+  s.check(
+    "the filtered network never revealed them to each other",
+    lan.dialsAttempted === 0 && lan.linkCount() === 0,
+  );
+  a.send(`dm:${b.peerID}`, "hello over the radio");
+  s.check(
+    "and talk, which opens the session",
+    await waitFor(
+      s.world,
+      () => b.texts(`dm:${a.peerID}`).includes("hello over the radio"),
+      30_000,
+    ),
+  );
+  s.check(
+    "inside the session they find each other on the network",
+    await waitFor(s.world, () => lan.isLinked("a", "b"), 60_000),
+    `dials=${lan.dialsAttempted} refused=${lan.dialsRefused}`,
+  );
+  s.check(
+    "with one dial, at the right address, and nothing refused",
+    lan.dialsAttempted === 1 && lan.dialsRefused === 0,
+    `dials=${lan.dialsAttempted} refused=${lan.dialsRefused}`,
+  );
+
+  radio.setTopology([]);
+  await s.world.advance(2_000);
+  b.send(`dm:${a.peerID}`, "and now over wifi");
+  s.check(
+    "out of Bluetooth range the conversation carries on over the LAN",
+    await waitFor(
+      s.world,
+      () => a.texts(`dm:${b.peerID}`).includes("and now over wifi"),
+      30_000,
+    ),
+    `frames=${lan.framesCarried}`,
+  );
+  s.check(
+    "with no Bluetooth link between them",
+    a.bleLinkCount() === 0 && b.bleLinkCount() === 0,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+// Direct dial follows no ring: every lower-ID session peer dials, so on a
+// filtered network the highest ID in a crowd of saved contacts is dialed by
+// all of them. Each dialer holds the cap on its own side; the one they all
+// dial takes every one of them, within native's inbound bound, rather than
+// leaving any with no link.
+test("L09c a phone dialed by every session peer takes them all", async () => {
+  const s = (scenario = new Scenario({
+    id: "L09c",
+    title: "the accepting side of direct dial leaves nobody out",
+    seed: 711,
+  }));
+  const specs = Array.from({ length: 10 }, (_, i) =>
+    phone(`p${String(i)}`, 30 + i),
+  );
+  const { radio, lan, devices } = room(s, specs);
+  s.track(...devices);
+  lan.setMdnsFiltered("hotel", true);
+  for (const spec of specs) lan.join(spec.id, "hotel");
+  const pairs: [string, string][] = [];
+  for (let i = 0; i < specs.length; i++) {
+    for (let j = i + 1; j < specs.length; j++) {
+      pairs.push([specs[i].id, specs[j].id]);
+    }
+  }
+  radio.setTopology(pairs);
+  for (const d of devices) d.launch();
+
+  const top = devices.reduce((a, b) => (a.peerID > b.peerID ? a : b));
+  const others = devices.filter((d) => d !== top);
+  await waitFor(
+    s.world,
+    () => others.every((d) => top.peers().includes(d.peerID)),
+    60_000,
+  );
+  for (const d of others) d.send(`dm:${top.peerID}`, `hello from ${d.id}`);
+  s.check(
+    "every phone opens a session with the same peer",
+    await waitFor(
+      s.world,
+      () =>
+        others.every((d) =>
+          top.texts(`dm:${d.peerID}`).includes(`hello from ${d.id}`),
+        ),
+      60_000,
+    ),
+  );
+  s.check(
+    "every one of them is linked to it over the network",
+    await waitFor(
+      s.world,
+      () => others.every((d) => lan.isLinked(d.id, top.id)),
+      180_000,
+    ),
+    `links=${lan.linkCountFor(top.id)} dials=${lan.dialsAttempted}`,
+  );
+  await s.world.advance(60_000);
+  s.check(
+    "and holds them, past the dialer's own cap",
+    lan.linkCountFor(top.id) === others.length && others.length > MAX_LAN_LINKS,
+    `links=${lan.linkCountFor(top.id)}`,
+  );
+
+  s.expectNone("process health", noCrashes(devices));
+  s.assert(true);
+});
+
+test("L09b with the local network switched off, no address is handed over or dialed", async () => {
+  const s = (scenario = new Scenario({
+    id: "L09b",
+    title: "direct dial follows the local network setting",
+    seed: 710,
+  }));
+  const { radio, lan, devices } = room(s, [
+    phone("a", 11, "android"),
+    phone("b", 22, "android", false),
+  ]);
+  const [a, b] = devices;
+  s.track(a, b);
+  lan.setMdnsFiltered("hotel", true);
+  lan.join("a", "hotel");
+  lan.join("b", "hotel");
+  radio.setTopology([["a", "b"]]);
+  a.launch();
+  b.launch();
+  await waitFor(
+    s.world,
+    () => a.peers().includes(b.peerID) && b.peers().includes(a.peerID),
+    40_000,
+  );
+  a.send(`dm:${b.peerID}`, "hello");
+  await waitFor(
+    s.world,
+    () => b.texts(`dm:${a.peerID}`).includes("hello"),
+    30_000,
+  );
+  await s.world.advance(60_000);
+  s.check(
+    "nobody dialed an address",
+    lan.dialsAttempted === 0 && lan.linkCount() === 0,
+    `dials=${lan.dialsAttempted}`,
+  );
+
+  // Turned on, it comes up and the peers meet on the network.
+  b.setSetting("lanTransportEnabled", true);
+  s.check(
+    "switched on, they meet over the network",
+    await waitFor(s.world, () => lan.isLinked("a", "b"), 60_000),
+    `dials=${lan.dialsAttempted} refused=${lan.dialsRefused}`,
   );
 
   s.expectNone("process health", noCrashes(devices));

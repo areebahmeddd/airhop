@@ -131,7 +131,8 @@ const strings: Strings = {
   "home.how.title": "Kusang nabubuo ang mesh.",
   "home.how.sub":
     "Ang malalapit na node ay bumubuo ng mesh na kusang nag-aayos sa pamamagitan ng Bluetooth. Kapag may internet, pinalalawak ito ng mga relay ng Nostr, nang walang imprastrakturang kontrolado ninuman.",
-  "home.how.cta": "Basahin ang buong arkitektura",
+  "home.how.cta": "Basahin ang arkitektura",
+  "home.how.paper": "Basahin ang whitepaper",
   "home.how.discover.title": "Pagtuklas",
   "home.how.discover.line":
     "Ang mga teleponong may Airhop o bitchat ay awtomatikong nagkikita sa Bluetooth. Walang pagpapares, walang setup.",

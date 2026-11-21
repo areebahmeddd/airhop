@@ -1,9 +1,9 @@
 // Persistent storage for signed bulletin-board posts and their tombstones.
 //
-// Mirrors bitchat-ios's BoardStore. Posts are signed public notices designed to
-// outlive chat: they stay on disk until their author-chosen expiry (max 7 days).
-// Tombstones are retained until the deleted post's original expiry so the delete
-// keeps outrunning stale copies of the post.
+// Posts are signed public notices designed to outlive chat: they stay on disk
+// until their author-chosen expiry (max 7 days). Tombstones are retained until
+// the deleted post's original expiry so the delete keeps outrunning stale
+// copies of the post.
 //
 // The caller MUST have verified the wire signature (`verifyBoardWire`) before
 // calling ingest; this store owns the quota, expiry and de-duplication logic,
@@ -265,10 +265,10 @@ export const useBoardStore = create<BoardState>((set, get) => {
         });
       }
     } else if (retainUntilOverride !== undefined) {
-      // Restored from disk, as bitchat-ios restores it: the deadline recorded
-      // when the tombstone was first applied stands. Orphan status is not
-      // persisted, so a restored tombstone no longer counts toward the orphan
-      // caps, which bound what one session can take in.
+      // Restored from disk: the deadline recorded when the tombstone was first
+      // applied stands. Orphan status is not persisted, so a restored tombstone
+      // no longer counts toward the orphan caps, which bound what one session
+      // can take in.
       retainUntil = Math.min(retainUntilOverride, maxRetain);
       isOrphan = false;
     } else {
