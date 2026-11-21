@@ -63,7 +63,7 @@ Airhop builds on bitchat~\cite{bitchat,bitchatwp}, an open, public-domain protoc
 \item \emph{Ecash that moves offline with bounded risk.} Cashu tokens~\cite{nut00} travel as messages. A phone accepts one offline only when every coin's proof of the mint's signature verifies, holds such coins apart until the mint confirms them, and never deletes value it has sent until delivery (Section~\ref{sec:payments}).
 \end{enumerate}
 
-\textbf{Status.} Every mechanism in Sections~\ref{sec:overview} to~\ref{sec:impl} is implemented in Airhop 1.0.0. Validation so far is on a host: tests, vectors, fuzzing and a multi-device simulation. Radio range, timing, delivery rate and battery cost have not been measured on phones, and this paper presents no such result.
+\textbf{Status.} Every mechanism in Sections~\ref{sec:overview} to~\ref{sec:impl} is implemented in Airhop 1.0.0. Validation so far is on a host: tests, vectors, fuzzing and a multi-device simulation. Radio range, timing, delivery rate and battery cost have not yet been measured on phones.
 
 The rest of the paper is organized as follows. Section~\ref{sec:background} gives background, Section~\ref{sec:goals} the goals and threat model, and Section~\ref{sec:overview} an overview of the system. Sections~\ref{sec:design} to~\ref{sec:apps} cover the design one part at a time and Section~\ref{sec:impl} the implementation. Sections~\ref{sec:security} and~\ref{sec:validation} give the security analysis and validation, Section~\ref{sec:related} related work, Sections~\ref{sec:limits} and~\ref{sec:future} limitations and future work, and Section~\ref{sec:conclusion} concludes.
 
@@ -347,16 +347,17 @@ When nothing reaches a DM's recipient, the sender seals it and leaves it with ot
 \centering
 \begin{tikzpicture}[font=\scriptsize,msg/.style={->,thick},lbl/.style={font=\scriptsize,fill=white,inner sep=1pt}]
 \def\xa{0} \def\xc{3.1} \def\xb{6.2}
-\node[font=\scriptsize\bfseries] at (\xa,0.3) {Sender A};
-\node[font=\scriptsize\bfseries] at (\xc,0.3) {Courier C};
-\node[font=\scriptsize\bfseries] at (\xb,0.3) {Recipient B};
+\node[font=\scriptsize\bfseries,anchor=base] at (\xa,0.25) {Sender A};
+\node[font=\scriptsize\bfseries,anchor=base] at (\xc,0.25) {Courier C};
+\node[font=\scriptsize\bfseries,anchor=base] at (\xb,0.25) {Recipient B};
 \foreach \x in {\xa,\xc,\xb} \draw[densely dotted] (\x,0.1) -- (\x,-6.35);
-\draw[msg] (\xb,-0.25) -- node[lbl]{signed prekey bundle \hx{24}, flooded earlier} (\xa,-0.45);
+\draw[msg] (\xb,-0.35) -- node[lbl]{signed prekey bundle \hx{24}, flooded earlier} (\xa,-0.35);
 \node[note,anchor=west,text width=2.8cm] at (\xa+0.1,-1.05) {B is out of reach. A seals with Noise X to one of B's prekeys; the prologue names its ID.};
 \draw[msg] (\xa,-1.9) -- node[lbl]{signed deposit} (\xc,-1.9);
 \node[note,anchor=west,text width=2.8cm] at (\xc+0.1,-2.35) {C checks size, expiry and A's quota, then carries it.};
-\draw[->,dashed] (\xc,-3.0) -- node[below,font=\scriptsize,inner sep=1.5pt]{half its budget} (\xc+1.3,-3.0) node[right,draw,rounded corners=1pt,font=\scriptsize,inner sep=1.5pt]{courier D};
-\node[note,anchor=east,text width=2.8cm,align=right] at (\xb-0.1,-3.45) {Later, B and C link directly.};
+\draw[->,dashed] (\xc,-3.0) -- node[above,font=\scriptsize,inner sep=1.5pt]{half its budget} (\xc+1.5,-3.0);
+\node[right,draw,solid,rounded corners=1pt,font=\scriptsize,inner sep=1.5pt] at (\xc+1.5,-3.0) {courier D};
+\node[note,anchor=east,text width=2.8cm,align=right] at (\xb-0.1,-3.42) {Later, B and C link directly.};
 \draw[msg] (\xb,-3.85) -- node[lbl]{announce} (\xc,-3.85);
 \draw[msg,<->] (\xc,-4.3) -- node[lbl]{Noise XX proves the link} (\xb,-4.3);
 \draw[msg] (\xc,-4.75) -- node[lbl]{handover; C retires it} (\xb,-4.75);
@@ -416,8 +417,8 @@ An mDNS record is visible to the whole network and logged by ordinary infrastruc
 \node[box,text width=1.45cm] (o3) at (2.75,-3.35) {Noise session alone};
 \node[box,text width=1.9cm] (o1) at (0.55,-4.5) {ratchet message inside the session};
 \node[dec] (d4) at (5.15,-2.15) {Nostr key and\\DM relay up?};
-\node[box,text width=2.0cm] (o4) at (5.15,-3.35) {gift wrap, sealed to a DM prekey if held};
-\node[box,text width=2.0cm] (o5) at (5.15,-4.5) {courier, sealed to a one-time prekey if held};
+\node[box,text width=2.0cm] (o4) at (5.15,-3.55) {gift wrap, sealed to a DM prekey if held};
+\node[box,text width=2.0cm] (o5) at (5.15,-4.62) {courier, sealed to a one-time prekey if held};
 \node[box,text width=7.6cm] (k) at (2.8,-5.55) {The outbox keeps the message until a delivery or read receipt names it; each retry walks the tree again under the same ID.};
 \draw[flow] (q)--(d1);
 \draw[flow] (d1.west) -| node[lab,above,pos=0.25]{yes} (d2.north);
@@ -453,7 +454,7 @@ An mDNS record is visible to the whole network and logged by ordinary infrastruc
 \node[st,right=3mm of r5] (r6) {Record ID; relay with TTL cap and jitter};
 \node[st,right=3mm of r6] (r7) {Addressed here: verify or decrypt; store; receipt};
 \foreach \a/\b in {r1/r2,r2/r3,r3/r4,r4/r5,r5/r6,r6/r7} \draw[flow] (\a)--(\b);
-\draw[flow,densely dashed] (s7.south) -- ++(0,-0.27) -| node[pos=0.25,above,lab]{over a radio, the LAN or a Nostr relay} (r1.north);
+\draw[flow,densely dashed] (s7.south) -- ++(0,-0.4) -| node[pos=0.25,above,lab]{over a radio, the LAN or a Nostr relay} (r1.north);
 \draw[flow,densely dashed] (r7.east) -- ++(0.25,0) |- node[pos=0.75,above,lab]{the receipt travels back and clears the outbox} ($(s1.north)+(0,0.3)$) -- (s1.north);
 \end{tikzpicture}
 \caption{Stages from compose to delivery. The top row runs once on the sender; the bottom row runs on every phone a packet reaches, and its last stage only on the addressee. A packet that fails any stage is dropped silently; for the five pre-checked types its ID is not recorded, so a forgery cannot shadow the genuine packet. A phone forwards what it cannot read, and never relays a packet addressed to it or sent under its own ID.}
@@ -562,7 +563,7 @@ Mode & Scan and advertise & Transmit power & Used when \\
 
 Disappearing messages are set per conversation. Between Airhop phones the timer travels with each text message, so both phones remove it from their history; attachments and the rows a phone writes itself, such as a payment, follow each phone's own timer. Like any deleted value, a removed message may stay in the store's file until that is rewritten, and a modified client can keep a copy. Received media share a 100~MiB budget and are swept after a chosen period, and an optional app lock asks for the phone's own screen lock.
 
-\textbf{Panic wipe.} A triple tap on the panic button in the You tab deletes every keychain item, every store, the media cache, delivered notifications and the Tor client's state, which would show that the phone used Tor and roughly when. It reports whether the keychain confirmed the deletion rather than claiming success, because a locked keychain on a seized phone may refuse, and an identity whose deletion was refused is never booted again.
+\textbf{Panic wipe.} A triple tap on the panic button in the You tab deletes every keychain item, every store, the media cache, delivered notifications and the Tor client's state, which would show that the phone used Tor and roughly when. It cannot reach two things: Wi-Fi Aware pairings on iOS, which apps have no way to remove, and photos the user saved to the gallery. It reports whether the keychain confirmed the deletion rather than claiming success, because a locked keychain on a seized phone may refuse, and an identity whose deletion was refused is never booted again.
 
 \textbf{Moving to a new phone.} An identity is moved, never copied, since two phones answering one identity's handshakes would break its sessions. The new phone shows a QR code holding a one-time key, a random token and its local addresses. The old phone, after its owner unlocks it, dials only an address on one of its own subnets and runs Noise XX with its identity key against the key in the code, with the token in the prologue, so it reaches only the phone it scanned. Both phones then show six words derived from the handshake, and nothing is installed until the person confirms they match, so a third phone that read the code and connected first is turned away.
 
@@ -688,7 +689,7 @@ Everything in this section ran on a host, not a phone.
 \textbf{Not yet measured.} Table~\ref{tab:field} lists the field evaluation that would answer what the host cannot.
 
 \begin{table}[t]
-\caption{Field evaluation plan, not yet run}
+\caption{Field evaluation plan}
 \label{tab:field}
 \centering
 \scriptsize

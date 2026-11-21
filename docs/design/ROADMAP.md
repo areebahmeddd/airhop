@@ -44,7 +44,7 @@ What Airhop adds to bitchat, what each version sets out to do, and the risks the
 
 **bitchat:** The protocol work is excellent. The app around it is hard to use.
 
-**Airhop:** This is priority one. It follows the conventions Apple's Human Interface Guidelines and Material Design agree on, so it behaves the way people expect a messaging app to, and it reads in 35 languages.
+**Airhop:** This is priority one. It follows the conventions Apple's Human Interface Guidelines and Material Design agree on, so it behaves the way people expect a messaging app to, and it reads in 50 languages.
 
 ## 2. Version Targets
 

@@ -14,7 +14,7 @@ It is a **spiritual fork of bitchat** ([permissionlesstech/bitchat](https://gith
 - A full Cashu wallet, not a token decoder: balances, mints, Lightning in and out, and value moving device to device with no internet
 - Double Ratchet on live DMs, so every message has its own key, and one-time prekeys for mail left with a courier on both platforms, so waiting mail survives a key leaking later
 - Video that plays inline; bitchat carries it across the wire but opens it on neither platform
-- An interface built for people who are not us, in 35 languages, with QR contact exchange and names derived from keys
+- An interface built for people who are not us, in  50 languages, with QR contact exchange and names derived from keys
 
 The full comparison is in [`ROADMAP.md`](ROADMAP.md), section 1.
 
